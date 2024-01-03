@@ -4,51 +4,45 @@ using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+[TestFixture]
+public class RedirectPathTests
 {
-    [TestFixture]
-    public class RedirectPathTests
+    class AppHost() : AppSelfHostBase(nameof(RedirectPathTests), typeof(RedirectPathTests).Assembly)
     {
-        class AppHost : AppSelfHostBase
+        public override void Configure(Container container)
         {
-            public AppHost() 
-                : base(nameof(RedirectPathTests), typeof(RedirectPathTests).Assembly)
+            SetConfig(new HostConfig
             {
-            }
-
-            public override void Configure(Container container)
-            {
-                SetConfig(new HostConfig
-                {
-                    DefaultRedirectPath = "~/does-resolve"
-                });
-            }
-
-            public override string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
-            {
-                return virtualPath == "~/does-resolve"
-                    ? base.ResolveAbsoluteUrl("~/webpage.html", httpReq)
-                    : base.ResolveAbsoluteUrl(virtualPath, httpReq);
-            }
+                DefaultRedirectPath = "~/does-resolve"
+            });
         }
 
-        private readonly ServiceStackHost appHost;
-
-        public RedirectPathTests()
+        public override string ResolveAbsoluteUrl(string virtualPath, IRequest httpReq)
         {
-            appHost = new AppHost()
-                .Init()
-                .Start(Config.ListeningOn);
+            return virtualPath == "~/does-resolve"
+                ? base.ResolveAbsoluteUrl("~/webpage.html", httpReq)
+                : base.ResolveAbsoluteUrl(virtualPath, httpReq);
         }
+    }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown() => appHost.Dispose();
+    private readonly ServiceStackHost appHost;
 
-        [Test]
-        public void DefaultRedirectPath_RelativeUrl_does_resolve()
-        {
-            var html = Config.ListeningOn.GetStringFromUrl();
-            Assert.That(html, Does.Contain("Default index"));
-        }
+    public RedirectPathTests()
+    {
+        appHost = new AppHost()
+            .Init()
+            .Start(Config.ListeningOn);
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown() => appHost.Dispose();
+
+    [Test]
+    public void DefaultRedirectPath_RelativeUrl_does_resolve()
+    {
+        var html = Config.ListeningOn.GetStringFromUrl();
+        Assert.That(html, Does.Contain("Default index"));
     }
 }

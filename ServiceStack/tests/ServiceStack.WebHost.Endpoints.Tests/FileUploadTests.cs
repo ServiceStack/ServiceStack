@@ -10,84 +10,84 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 #pragma warning disable CS0618
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+[TestFixture]
+public class FileUploadTests
 {
-    [TestFixture]
-    public class FileUploadTests
+    string ListeningOn = Config.ListeningOn;
+    ExampleAppHostHttpListener appHost;
+
+    [OneTimeSetUp]
+    public void TextFixtureSetUp()
     {
-        string ListeningOn = Config.ListeningOn;
-        ExampleAppHostHttpListener appHost;
-
-        [OneTimeSetUp]
-        public void TextFixtureSetUp()
+        try
         {
-            try
-            {
-                appHost = new ExampleAppHostHttpListener();
-                appHost.Init();
-                appHost.Start(ListeningOn);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            appHost = new ExampleAppHostHttpListener();
+            appHost.Init();
+            appHost.Start(ListeningOn);
         }
-
-        [OneTimeTearDown]
-        public void TestFixtureTearDown()
+        catch (Exception)
         {
-            appHost.Dispose();
+            throw;
         }
+    }
 
-        [Test]
-        [Ignore("Helps debugging when you need to find out WTF is going on")]
-        public void Run_for_30secs()
+    [OneTimeTearDown]
+    public void TestFixtureTearDown()
+    {
+        appHost.Dispose();
+    }
+
+    [Test]
+    [Ignore("Helps debugging when you need to find out WTF is going on")]
+    public void Run_for_30secs()
+    {
+        Thread.Sleep(30000);
+    }
+
+    public void AssertResponse<T>(HttpWebResponse response, Action<T> customAssert)
+    {
+        var contentType = response.ContentType;
+
+        AssertResponse(response, contentType);
+
+        var contents = response.GetResponseStream().ReadToEnd();
+        var result = DeserializeResult<T>(response, contents, contentType);
+
+        customAssert(result);
+    }
+
+    private static T DeserializeResult<T>(WebResponse response, string contents, string contentType)
+    {
+        T result;
+        switch (contentType)
         {
-            Thread.Sleep(30000);
+            case MimeTypes.Xml:
+                result = XmlSerializer.DeserializeFromString<T>(contents);
+                break;
+
+            case MimeTypes.Json:
+            case MimeTypes.Json + ContentFormat.Utf8Suffix:
+                result = JsonSerializer.DeserializeFromString<T>(contents);
+                break;
+
+            case MimeTypes.Jsv:
+                result = TypeSerializer.DeserializeFromString<T>(contents);
+                break;
+
+            default:
+                throw new NotSupportedException(response.ContentType);
         }
+        return result;
+    }
 
-        public void AssertResponse<T>(HttpWebResponse response, Action<T> customAssert)
-        {
-            var contentType = response.ContentType;
-
-            AssertResponse(response, contentType);
-
-            var contents = response.GetResponseStream().ReadToEnd();
-            var result = DeserializeResult<T>(response, contents, contentType);
-
-            customAssert(result);
-        }
-
-        private static T DeserializeResult<T>(WebResponse response, string contents, string contentType)
-        {
-            T result;
-            switch (contentType)
-            {
-                case MimeTypes.Xml:
-                    result = XmlSerializer.DeserializeFromString<T>(contents);
-                    break;
-
-                case MimeTypes.Json:
-                case MimeTypes.Json + ContentFormat.Utf8Suffix:
-                    result = JsonSerializer.DeserializeFromString<T>(contents);
-                    break;
-
-                case MimeTypes.Jsv:
-                    result = TypeSerializer.DeserializeFromString<T>(contents);
-                    break;
-
-                default:
-                    throw new NotSupportedException(response.ContentType);
-            }
-            return result;
-        }
-
-        public void AssertResponse(HttpWebResponse response, string contentType)
-        {
-            var statusCode = (int)response.StatusCode;
-            Assert.That(statusCode, Is.LessThan(400));
-            Assert.That(response.ContentType.StartsWith(contentType));
-        }
+    public void AssertResponse(HttpWebResponse response, string contentType)
+    {
+        var statusCode = (int)response.StatusCode;
+        Assert.That(statusCode, Is.LessThan(400));
+        Assert.That(response.ContentType.StartsWith(contentType));
+    }
 
 #if !NETCORE
         [Test]
@@ -111,354 +111,353 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 #endif
 
-        [Test]
-        public void Can_POST_upload_file_using_ServiceClient()
+    [Test]
+    public void Can_POST_upload_file_using_ServiceClient()
+    {
+        IServiceClient client = new JsonServiceClient(ListeningOn);
+
+        var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+
+
+        var response = client.PostFile<FileUploadResponse>(
+            ListeningOn + "/fileuploads", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
+
+
+        var expectedContents = uploadFile.OpenRead().ReadToEnd();
+        Assert.That(response.Name, Is.EqualTo("file"));
+        Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+        Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+        Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
+        Assert.That(response.Contents, Is.EqualTo(expectedContents));
+    }
+
+    [Test]
+    public void Can_POST_upload_file_using_ServiceClient_with_request()
+    {
+        IServiceClient client = new JsonServiceClient(ListeningOn);
+
+        var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+
+        var request = new FileUpload { CustomerId = 123, CustomerName = "Foo,Bar" };
+        var response = client.PostFileWithRequest<FileUploadResponse>(
+            ListeningOn + "/fileuploads", 
+            uploadFile, 
+            request);
+
+        var expectedContents = uploadFile.OpenRead().ReadToEnd();
+        Assert.That(response.Name, Is.EqualTo("file"));
+        Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+        Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+        Assert.That(response.Contents, Is.EqualTo(expectedContents));
+        Assert.That(response.CustomerName, Is.EqualTo("Foo,Bar"));
+        Assert.That(response.CustomerId, Is.EqualTo(123));
+    }
+
+    [Test]
+    public void Can_POST_upload_file_using_ServiceClient_with_request_and_QueryString()
+    {
+        IServiceClient client = new JsonServiceClient(ListeningOn);
+
+        var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+
+        var request = new FileUpload();
+        var response = client.PostFileWithRequest<FileUploadResponse>(
+            ListeningOn + "/fileuploads?CustomerId=123&CustomerName=Foo,Bar",
+            uploadFile, request);
+
+        var expectedContents = uploadFile.OpenRead().ReadToEnd();
+        Assert.That(response.Name, Is.EqualTo("file"));
+        Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+        Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+        Assert.That(response.Contents, Is.EqualTo(expectedContents));
+        Assert.That(response.CustomerName, Is.EqualTo("Foo,Bar"));
+        Assert.That(response.CustomerId, Is.EqualTo(123));
+    }
+
+    [Test]
+    public void Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString()
+    {
+        IServiceClient client = new JsonServiceClient(ListeningOn);
+        var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+
+        using (var stream1 = uploadFile.OpenRead())
+        using (var stream2 = uploadFile.OpenRead())
         {
-            IServiceClient client = new JsonServiceClient(ListeningOn);
+            var response = client.PostFilesWithRequest<MultipleFileUploadResponse>(
+                ListeningOn + "/multi-fileuploads?CustomerId=123",
+                new MultipleFileUpload { CustomerName = "Foo,Bar" },
+                new[] {
+                    new UploadFile("upload1.html", stream1),
+                    new UploadFile("upload2.html", stream2),
+                });
+
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
+
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            var file1 = response.Results[0];
+            Assert.That(file1.Name, Is.EqualTo("upload0"));
+            Assert.That(file1.FileName, Is.EqualTo("upload1.html"));
+            Assert.That(file1.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(file1.Contents, Is.EqualTo(expectedContents));
+            Assert.That(file1.CustomerName, Is.EqualTo("Foo,Bar"));
+            Assert.That(file1.CustomerId, Is.EqualTo(123));
+
+            var file2 = response.Results[1];
+            Assert.That(file2.Name, Is.EqualTo("upload1"));
+            Assert.That(file2.FileName, Is.EqualTo("upload2.html"));
+            Assert.That(file2.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(file2.Contents, Is.EqualTo(expectedContents));
+            Assert.That(file2.CustomerName, Is.EqualTo("Foo,Bar"));
+            Assert.That(file2.CustomerId, Is.EqualTo(123));
+        }
+    }
+
+    [Test]
+    public async Task Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString_JsonHttpClient()
+    {
+        var client = new JsonHttpClient(ListeningOn);
+        var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+
+        using (var stream1 = uploadFile.OpenRead())
+        using (var stream2 = uploadFile.OpenRead())
+        {
+            var response = await client.PostFilesWithRequestAsync<MultipleFileUploadResponse>(
+                new MultipleFileUpload { CustomerId = 123, CustomerName = "Foo,Bar" },
+                new[] {
+                    new UploadFile("upload1.html", stream1),
+                    new UploadFile("upload2.html", stream2),
+                });
+
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
+
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            var file1 = response.Results[0];
+            Assert.That(file1.Name, Is.EqualTo("upload0"));
+            Assert.That(file1.FileName, Is.EqualTo("upload1.html"));
+            Assert.That(file1.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(file1.Contents, Is.EqualTo(expectedContents));
+            Assert.That(file1.CustomerName, Is.EqualTo("Foo,Bar"));
+            Assert.That(file1.CustomerId, Is.EqualTo(123));
+
+            var file2 = response.Results[1];
+            Assert.That(file2.Name, Is.EqualTo("upload1"));
+            Assert.That(file2.FileName, Is.EqualTo("upload2.html"));
+            Assert.That(file2.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(file2.Contents, Is.EqualTo(expectedContents));
+            Assert.That(file2.CustomerName, Is.EqualTo("Foo,Bar"));
+            Assert.That(file2.CustomerId, Is.EqualTo(123));
+        }
+    }
+
+    [Test]
+    public void Can_POST_upload_file_using_ServiceClient_with_request_containing_utf8_chars()
+    {
+        var client = new JsonServiceClient(ListeningOn);
+        var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+
+        var request = new FileUpload { CustomerId = 123, CustomerName = "Föяšč" };
+        var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
+
+        var expectedContents = uploadFile.OpenRead().ReadToEnd();
+        Assert.That(response.Name, Is.EqualTo("file"));
+        Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+        Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+        Assert.That(response.Contents, Is.EqualTo(expectedContents));
+        Assert.That(response.CustomerName, Is.EqualTo("Föяšč"));
+        Assert.That(response.CustomerId, Is.EqualTo(123));
+    }
+
+    [Test]
+    public void Can_handle_error_on_POST_upload_file_using_ServiceClient()
+    {
+        IServiceClient client = new JsonServiceClient(ListeningOn);
+
+        var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+
+        try
+        {
+            client.PostFile<FileUploadResponse>(
+                ListeningOn + "/fileuploads/ThrowError", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
+
+            Assert.Fail("Upload Service should've thrown an error");
+        }
+        catch (Exception ex)
+        {
+            var webEx = ex as WebServiceException;
+            var response = (FileUploadResponse)webEx.ResponseDto;
+            Assert.That(response.ResponseStatus.ErrorCode,
+                Is.EqualTo(typeof(NotSupportedException).Name));
+            Assert.That(response.ResponseStatus.Message, Is.EqualTo("ThrowError"));
+        }
+    }
+
+    [Test]
+    public void Can_GET_upload_file()
+    {
+        var uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+#pragma warning disable CS0618, SYSLIB0014
+        var webRequest = WebRequest.CreateHttp(ListeningOn + "/fileuploads/TestExistingDir/upload.html");
+#pragma warning restore CS0618, SYSLIB0014
+        var expectedContents = uploadedFile.OpenRead().ReadToEnd();
+
+        var webResponse = webRequest.GetResponse();
+        var actualContents = webResponse.GetResponseStream().ReadToEnd();
+
+        Assert.That(webResponse.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadedFile.Name)));
+        Assert.That(actualContents, Is.EqualTo(expectedContents));
+    }
+
+    [Test]
+    public void Can_POST_upload_file_and_apply_filter_using_ServiceClient()
+    {
+        try
+        {
+            var client = new JsonServiceClient(ListeningOn);
 
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-
+            bool isFilterCalled = false;
+            ServiceClientBase.GlobalRequestFilter = request => { isFilterCalled = true; };
 
             var response = client.PostFile<FileUploadResponse>(
                 ListeningOn + "/fileuploads", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
 
 
             var expectedContents = uploadFile.OpenRead().ReadToEnd();
+            Assert.That(isFilterCalled);
             Assert.That(response.Name, Is.EqualTo("file"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
             Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
             Assert.That(response.Contents, Is.EqualTo(expectedContents));
         }
-
-        [Test]
-        public void Can_POST_upload_file_using_ServiceClient_with_request()
+        finally
         {
-            IServiceClient client = new JsonServiceClient(ListeningOn);
-
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-
-            var request = new FileUpload { CustomerId = 123, CustomerName = "Foo,Bar" };
-            var response = client.PostFileWithRequest<FileUploadResponse>(
-                ListeningOn + "/fileuploads", 
-                uploadFile, 
-                request);
-
-            var expectedContents = uploadFile.OpenRead().ReadToEnd();
-            Assert.That(response.Name, Is.EqualTo("file"));
-            Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
-            Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
-            Assert.That(response.Contents, Is.EqualTo(expectedContents));
-            Assert.That(response.CustomerName, Is.EqualTo("Foo,Bar"));
-            Assert.That(response.CustomerId, Is.EqualTo(123));
+            ServiceClientBase.GlobalRequestFilter = null;  //reset this to not cause side-effects
         }
+    }
 
-        [Test]
-        public void Can_POST_upload_file_using_ServiceClient_with_request_and_QueryString()
-        {
-            IServiceClient client = new JsonServiceClient(ListeningOn);
-
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-
-            var request = new FileUpload();
-            var response = client.PostFileWithRequest<FileUploadResponse>(
-                ListeningOn + "/fileuploads?CustomerId=123&CustomerName=Foo,Bar",
-                uploadFile, request);
-
-            var expectedContents = uploadFile.OpenRead().ReadToEnd();
-            Assert.That(response.Name, Is.EqualTo("file"));
-            Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
-            Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
-            Assert.That(response.Contents, Is.EqualTo(expectedContents));
-            Assert.That(response.CustomerName, Is.EqualTo("Foo,Bar"));
-            Assert.That(response.CustomerId, Is.EqualTo(123));
-        }
-
-        [Test]
-        public void Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString()
-        {
-            IServiceClient client = new JsonServiceClient(ListeningOn);
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-
-            using (var stream1 = uploadFile.OpenRead())
-            using (var stream2 = uploadFile.OpenRead())
-            {
-                var response = client.PostFilesWithRequest<MultipleFileUploadResponse>(
-                    ListeningOn + "/multi-fileuploads?CustomerId=123",
-                    new MultipleFileUpload { CustomerName = "Foo,Bar" },
-                    new[] {
-                        new UploadFile("upload1.html", stream1),
-                        new UploadFile("upload2.html", stream2),
-                    });
-
-                var expectedContents = uploadFile.OpenRead().ReadToEnd();
-
-                Assert.That(response.Results.Count, Is.EqualTo(2));
-
-                var file1 = response.Results[0];
-                Assert.That(file1.Name, Is.EqualTo("upload0"));
-                Assert.That(file1.FileName, Is.EqualTo("upload1.html"));
-                Assert.That(file1.ContentLength, Is.EqualTo(uploadFile.Length));
-                Assert.That(file1.Contents, Is.EqualTo(expectedContents));
-                Assert.That(file1.CustomerName, Is.EqualTo("Foo,Bar"));
-                Assert.That(file1.CustomerId, Is.EqualTo(123));
-
-                var file2 = response.Results[1];
-                Assert.That(file2.Name, Is.EqualTo("upload1"));
-                Assert.That(file2.FileName, Is.EqualTo("upload2.html"));
-                Assert.That(file2.ContentLength, Is.EqualTo(uploadFile.Length));
-                Assert.That(file2.Contents, Is.EqualTo(expectedContents));
-                Assert.That(file2.CustomerName, Is.EqualTo("Foo,Bar"));
-                Assert.That(file2.CustomerId, Is.EqualTo(123));
-            }
-        }
-
-        [Test]
-        public async Task Can_POST_upload_multiple_files_using_ServiceClient_with_request_and_QueryString_JsonHttpClient()
-        {
-            var client = new JsonHttpClient(ListeningOn);
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-
-            using (var stream1 = uploadFile.OpenRead())
-            using (var stream2 = uploadFile.OpenRead())
-            {
-                var response = await client.PostFilesWithRequestAsync<MultipleFileUploadResponse>(
-                    new MultipleFileUpload { CustomerId = 123, CustomerName = "Foo,Bar" },
-                    new[] {
-                        new UploadFile("upload1.html", stream1),
-                        new UploadFile("upload2.html", stream2),
-                    });
-
-                var expectedContents = uploadFile.OpenRead().ReadToEnd();
-
-                Assert.That(response.Results.Count, Is.EqualTo(2));
-
-                var file1 = response.Results[0];
-                Assert.That(file1.Name, Is.EqualTo("upload0"));
-                Assert.That(file1.FileName, Is.EqualTo("upload1.html"));
-                Assert.That(file1.ContentLength, Is.EqualTo(uploadFile.Length));
-                Assert.That(file1.Contents, Is.EqualTo(expectedContents));
-                Assert.That(file1.CustomerName, Is.EqualTo("Foo,Bar"));
-                Assert.That(file1.CustomerId, Is.EqualTo(123));
-
-                var file2 = response.Results[1];
-                Assert.That(file2.Name, Is.EqualTo("upload1"));
-                Assert.That(file2.FileName, Is.EqualTo("upload2.html"));
-                Assert.That(file2.ContentLength, Is.EqualTo(uploadFile.Length));
-                Assert.That(file2.Contents, Is.EqualTo(expectedContents));
-                Assert.That(file2.CustomerName, Is.EqualTo("Foo,Bar"));
-                Assert.That(file2.CustomerId, Is.EqualTo(123));
-            }
-        }
-
-        [Test]
-        public void Can_POST_upload_file_using_ServiceClient_with_request_containing_utf8_chars()
+    [Test]
+    public void Can_POST_upload_stream_using_ServiceClient()
+    {
+        try
         {
             var client = new JsonServiceClient(ListeningOn);
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
-            var request = new FileUpload { CustomerId = 123, CustomerName = "Föяšč" };
-            var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
-
-            var expectedContents = uploadFile.OpenRead().ReadToEnd();
-            Assert.That(response.Name, Is.EqualTo("file"));
-            Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
-            Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
-            Assert.That(response.Contents, Is.EqualTo(expectedContents));
-            Assert.That(response.CustomerName, Is.EqualTo("Föяšč"));
-            Assert.That(response.CustomerId, Is.EqualTo(123));
-        }
-
-        [Test]
-        public void Can_handle_error_on_POST_upload_file_using_ServiceClient()
-        {
-            IServiceClient client = new JsonServiceClient(ListeningOn);
-
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-
-            try
+            using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
             {
-                client.PostFile<FileUploadResponse>(
-                    ListeningOn + "/fileuploads/ThrowError", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
+                var fileName = "upload.html";
 
-                Assert.Fail("Upload Service should've thrown an error");
-            }
-            catch (Exception ex)
-            {
-                var webEx = ex as WebServiceException;
-                var response = (FileUploadResponse)webEx.ResponseDto;
-                Assert.That(response.ResponseStatus.ErrorCode,
-                    Is.EqualTo(typeof(NotSupportedException).Name));
-                Assert.That(response.ResponseStatus.Message, Is.EqualTo("ThrowError"));
-            }
-        }
-
-        [Test]
-        public void Can_GET_upload_file()
-        {
-            var uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
-#pragma warning disable CS0618, SYSLIB0014
-            var webRequest = WebRequest.CreateHttp(ListeningOn + "/fileuploads/TestExistingDir/upload.html");
-#pragma warning restore CS0618, SYSLIB0014
-            var expectedContents = uploadedFile.OpenRead().ReadToEnd();
-
-            var webResponse = webRequest.GetResponse();
-            var actualContents = webResponse.GetResponseStream().ReadToEnd();
-
-            Assert.That(webResponse.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadedFile.Name)));
-            Assert.That(actualContents, Is.EqualTo(expectedContents));
-        }
-
-        [Test]
-        public void Can_POST_upload_file_and_apply_filter_using_ServiceClient()
-        {
-            try
-            {
-                var client = new JsonServiceClient(ListeningOn);
-
-                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
                 bool isFilterCalled = false;
-                ServiceClientBase.GlobalRequestFilter = request => { isFilterCalled = true; };
-
+                ServiceClientBase.GlobalRequestFilter = request =>
+                {
+                    isFilterCalled = true;
+                };
                 var response = client.PostFile<FileUploadResponse>(
-                    ListeningOn + "/fileuploads", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
+                    "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
 
+                fileStream.Position = 0;
+                var expectedContents = fileStream.ReadToEnd();
 
-                var expectedContents = uploadFile.OpenRead().ReadToEnd();
                 Assert.That(isFilterCalled);
                 Assert.That(response.Name, Is.EqualTo("file"));
-                Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
-                Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
-                Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
+                Assert.That(response.FileName, Is.EqualTo(fileName));
+                Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
+                Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
                 Assert.That(response.Contents, Is.EqualTo(expectedContents));
             }
-            finally
-            {
-                ServiceClientBase.GlobalRequestFilter = null;  //reset this to not cause side-effects
-            }
         }
-
-        [Test]
-        public void Can_POST_upload_stream_using_ServiceClient()
+        finally
         {
-            try
-            {
-                var client = new JsonServiceClient(ListeningOn);
-
-                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
-                {
-                    var fileName = "upload.html";
-
-                    bool isFilterCalled = false;
-                    ServiceClientBase.GlobalRequestFilter = request =>
-                    {
-                        isFilterCalled = true;
-                    };
-                    var response = client.PostFile<FileUploadResponse>(
-                        "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
-
-                    fileStream.Position = 0;
-                    var expectedContents = fileStream.ReadToEnd();
-
-                    Assert.That(isFilterCalled);
-                    Assert.That(response.Name, Is.EqualTo("file"));
-                    Assert.That(response.FileName, Is.EqualTo(fileName));
-                    Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
-                    Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
-                    Assert.That(response.Contents, Is.EqualTo(expectedContents));
-                }
-            }
-            finally
-            {
-                ServiceClientBase.GlobalRequestFilter = null;  //reset this to not cause side-effects
-            }
+            ServiceClientBase.GlobalRequestFilter = null;  //reset this to not cause side-effects
         }
+    }
 
-        [Test]
-        public void Can_POST_upload_stream_using_JsonHttpClient()
-        {
-            try
-            {
-                var client = new JsonHttpClient(ListeningOn);
-
-                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
-                {
-                    var fileName = "upload.html";
-
-                    bool isFilterCalled = false;
-                    JsonHttpClient.GlobalRequestFilter = request =>
-                    {
-                        isFilterCalled = true;
-                    };
-                    var response = client.PostFile<FileUploadResponse>(
-                        "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
-
-                    fileStream.Position = 0;
-                    var expectedContents = fileStream.ReadToEnd();
-
-                    Assert.That(isFilterCalled);
-                    Assert.That(response.Name, Is.EqualTo("file"));
-                    Assert.That(response.FileName, Is.EqualTo(fileName));
-                    Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
-                    Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
-                    Assert.That(response.Contents, Is.EqualTo(expectedContents));
-                }
-            }
-            finally
-            {
-                JsonHttpClient.GlobalRequestFilter = null;  //reset this to not cause side-effects
-            }
-        }
-
-        [Test]
-        public void PostFileWithRequest_returns_the_same_date_as_normal_Put_with_ServiceClient()
-        {
-            var client = new JsonServiceClient(ListeningOn);
-
-            using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
-            {
-                var request = new FileUpload {
-                    CreatedDate = new DateTime(2014, 1, 1, 1, 0, 0)
-                };
-                
-                var response = client.PostFileWithRequest<FileUploadResponse>(
-                    "/fileuploads",
-                    fileStream,
-                    "upload.html",
-                    request);
-
-                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
-
-                response = client.Put(request);
-
-                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
-            }
-        }
-
-        [Test]
-        public void PostFileWithRequest_returns_the_same_date_as_normal_Put_with_JsonHttpClient()
+    [Test]
+    public void Can_POST_upload_stream_using_JsonHttpClient()
+    {
+        try
         {
             var client = new JsonHttpClient(ListeningOn);
 
             using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
             {
-                var request = new FileUpload
+                var fileName = "upload.html";
+
+                bool isFilterCalled = false;
+                JsonHttpClient.GlobalRequestFilter = request =>
                 {
-                    CreatedDate = new DateTime(2014, 1, 1, 1, 0, 0)
+                    isFilterCalled = true;
                 };
+                var response = client.PostFile<FileUploadResponse>(
+                    "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
 
-                var response = client.PostFileWithRequest<FileUploadResponse>(
-                    "/fileuploads",
-                    fileStream,
-                    "upload.html",
-                    request);
+                fileStream.Position = 0;
+                var expectedContents = fileStream.ReadToEnd();
 
-                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
-
-                response = client.Put(request);
-
-                Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
+                Assert.That(isFilterCalled);
+                Assert.That(response.Name, Is.EqualTo("file"));
+                Assert.That(response.FileName, Is.EqualTo(fileName));
+                Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
+                Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
+                Assert.That(response.Contents, Is.EqualTo(expectedContents));
             }
+        }
+        finally
+        {
+            JsonHttpClient.GlobalRequestFilter = null;  //reset this to not cause side-effects
+        }
+    }
+
+    [Test]
+    public void PostFileWithRequest_returns_the_same_date_as_normal_Put_with_ServiceClient()
+    {
+        var client = new JsonServiceClient(ListeningOn);
+
+        using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
+        {
+            var request = new FileUpload {
+                CreatedDate = new DateTime(2014, 1, 1, 1, 0, 0)
+            };
+                
+            var response = client.PostFileWithRequest<FileUploadResponse>(
+                "/fileuploads",
+                fileStream,
+                "upload.html",
+                request);
+
+            Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
+
+            response = client.Put(request);
+
+            Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
+        }
+    }
+
+    [Test]
+    public void PostFileWithRequest_returns_the_same_date_as_normal_Put_with_JsonHttpClient()
+    {
+        var client = new JsonHttpClient(ListeningOn);
+
+        using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath()).OpenRead())
+        {
+            var request = new FileUpload
+            {
+                CreatedDate = new DateTime(2014, 1, 1, 1, 0, 0)
+            };
+
+            var response = client.PostFileWithRequest<FileUploadResponse>(
+                "/fileuploads",
+                fileStream,
+                "upload.html",
+                request);
+
+            Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
+
+            response = client.Put(request);
+
+            Assert.That(response.CreatedDate, Is.EqualTo(request.CreatedDate).Within(TimeSpan.FromHours(1)));
         }
     }
 }

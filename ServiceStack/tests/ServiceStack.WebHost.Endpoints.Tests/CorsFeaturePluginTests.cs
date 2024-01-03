@@ -1,74 +1,73 @@
 ﻿using NUnit.Framework;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+[Route("/corsplugin", "GET")]
+public class CorsFeaturePlugin { }
+
+public class CorsFeaturePluginResponse
 {
-    [Route("/corsplugin", "GET")]
-    public class CorsFeaturePlugin { }
+    public bool IsSuccess { get; set; }
+}
 
-    public class CorsFeaturePluginResponse
+public class CorsFeaturePluginService : IService
+{
+    public object Any(CorsFeaturePlugin request)
     {
-        public bool IsSuccess { get; set; }
+        return new CorsFeaturePluginResponse { IsSuccess = true };
+    }
+}
+
+[TestFixture]
+public class CorsFeaturePluginTests
+{
+    public class CorsFeaturePluginAppHostHttpListener
+        : AppHostHttpListenerBase
+    {
+        public CorsFeaturePluginAppHostHttpListener()
+            : base("Cors Feature Tests", typeof(CorsFeatureService).Assembly) { }
+
+        public override void Configure(Funq.Container container)
+        {
+            Plugins.Add(new CorsFeature { AutoHandleOptionsRequests = true });
+        }
     }
 
-    public class CorsFeaturePluginService : IService
+    ServiceStackHost appHost;
+
+    [OneTimeSetUp]
+    public void OnTestFixtureSetUp()
     {
-        public object Any(CorsFeaturePlugin request)
-        {
-            return new CorsFeaturePluginResponse { IsSuccess = true };
-        }
+        appHost = new CorsFeaturePluginAppHostHttpListener()
+            .Init()
+            .Start(Config.AbsoluteBaseUri);
     }
 
-    [TestFixture]
-    public class CorsFeaturePluginTests
+    [OneTimeTearDown]
+    public void OnTestFixtureTearDown()
     {
-        public class CorsFeaturePluginAppHostHttpListener
-            : AppHostHttpListenerBase
+        appHost.Dispose();
+    }
+
+    [Test]
+    public void Can_Get_CORS_Headers_with_non_matching_OPTIONS_Request()
+    {
+        "{0}/corsplugin".Fmt(Config.ServiceStackBaseUri).OptionsFromUrl(responseFilter: r =>
         {
-            public CorsFeaturePluginAppHostHttpListener()
-                : base("Cors Feature Tests", typeof(CorsFeatureService).Assembly) { }
+            Assert.That(r.GetHeader(HttpHeaders.AllowOrigin), Is.EqualTo(CorsFeature.DefaultOrigin));
+            Assert.That(r.GetHeader(HttpHeaders.AllowMethods), Is.EqualTo(CorsFeature.DefaultMethods));
+            Assert.That(r.GetHeader(HttpHeaders.AllowHeaders), Is.EqualTo(CorsFeature.DefaultHeaders));
+        });
+    }
 
-            public override void Configure(Funq.Container container)
-            {
-                Plugins.Add(new CorsFeature { AutoHandleOptionsRequests = true });
-            }
-        }
-
-        ServiceStackHost appHost;
-
-        [OneTimeSetUp]
-        public void OnTestFixtureSetUp()
+    [Test]
+    public void Can_Get_CORS_Headers_with_not_found_OPTIONS_Request()
+    {
+        "{0}/notfound".Fmt(Config.ServiceStackBaseUri).OptionsFromUrl(responseFilter: r =>
         {
-            appHost = new CorsFeaturePluginAppHostHttpListener()
-                .Init()
-                .Start(Config.AbsoluteBaseUri);
-        }
-
-        [OneTimeTearDown]
-        public void OnTestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
-
-        [Test]
-        public void Can_Get_CORS_Headers_with_non_matching_OPTIONS_Request()
-        {
-            "{0}/corsplugin".Fmt(Config.ServiceStackBaseUri).OptionsFromUrl(responseFilter: r =>
-                {
-                    Assert.That(r.GetHeader(HttpHeaders.AllowOrigin), Is.EqualTo(CorsFeature.DefaultOrigin));
-                    Assert.That(r.GetHeader(HttpHeaders.AllowMethods), Is.EqualTo(CorsFeature.DefaultMethods));
-                    Assert.That(r.GetHeader(HttpHeaders.AllowHeaders), Is.EqualTo(CorsFeature.DefaultHeaders));
-                });
-        }
-
-        [Test]
-        public void Can_Get_CORS_Headers_with_not_found_OPTIONS_Request()
-        {
-            "{0}/notfound".Fmt(Config.ServiceStackBaseUri).OptionsFromUrl(responseFilter: r =>
-            {
-                Assert.That(r.GetHeader(HttpHeaders.AllowOrigin), Is.EqualTo(CorsFeature.DefaultOrigin));
-                Assert.That(r.GetHeader(HttpHeaders.AllowMethods), Is.EqualTo(CorsFeature.DefaultMethods));
-                Assert.That(r.GetHeader(HttpHeaders.AllowHeaders), Is.EqualTo(CorsFeature.DefaultHeaders));
-            });
-        }
+            Assert.That(r.GetHeader(HttpHeaders.AllowOrigin), Is.EqualTo(CorsFeature.DefaultOrigin));
+            Assert.That(r.GetHeader(HttpHeaders.AllowMethods), Is.EqualTo(CorsFeature.DefaultMethods));
+            Assert.That(r.GetHeader(HttpHeaders.AllowHeaders), Is.EqualTo(CorsFeature.DefaultHeaders));
+        });
     }
 }

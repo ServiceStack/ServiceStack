@@ -6,65 +6,64 @@ using ServiceStack.Support;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+public class JsonpTests
 {
-	public class JsonpTests
+	protected const string ListeningOn = Config.BaseUriHost;
+
+	ExampleAppHostHttpListener appHost;
+
+	[OneTimeSetUp]
+	public void OnTestFixtureSetUp()
 	{
-		protected const string ListeningOn = "http://localhost:1337/";
+		LogManager.LogFactory = new ConsoleLogFactory();
 
-		ExampleAppHostHttpListener appHost;
+		appHost = new ExampleAppHostHttpListener();
+		appHost.Init();
+		appHost.Start(ListeningOn);
+	}
 
-		[OneTimeSetUp]
-		public void OnTestFixtureSetUp()
-		{
-			LogManager.LogFactory = new ConsoleLogFactory();
+	[OneTimeTearDown]
+	public void OnTestFixtureTearDown()
+	{
+		Dispose();
+	}
 
-			appHost = new ExampleAppHostHttpListener();
-			appHost.Init();
-			appHost.Start(ListeningOn);
-		}
+	public void Dispose()
+	{
+		if (appHost == null) return;
+		appHost.Dispose();
+	}
 
-		[OneTimeTearDown]
-		public void OnTestFixtureTearDown()
-		{
-			Dispose();
-		}
-
-		public void Dispose()
-		{
-			if (appHost == null) return;
-			appHost.Dispose();
-		}
-
-		[Test]
-		public void Can_GET_single_Movie_using_RestClient_with_JSONP()
-		{
-            var url = ListeningOn + "all-movies/1?callback=cb";
-			string response;
+	[Test]
+	public void Can_GET_single_Movie_using_RestClient_with_JSONP()
+	{
+		var url = ListeningOn + "all-movies/1?callback=cb";
+		string response;
 
 #pragma warning disable CS0618, SYSLIB0014
-			var webReq = WebRequest.CreateHttp(url);
+		var webReq = WebRequest.CreateHttp(url);
 #pragma warning restore CS0618, SYSLIB0014
-			webReq.Accept = "*/*";
-			using (var webRes = webReq.GetResponse())
-			{
-                Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.JavaScript));
-				response = webRes.ReadToEnd();
-			}
-
-			Assert.That(response, Is.Not.Null, "No response received");
-			Console.WriteLine(response);
-			Assert.That(response, Does.StartWith("cb("));
-			Assert.That(response, Does.EndWith(")"));
-			Assert.That(response.Length, Is.GreaterThan(50));
-		}
-
-		[Test]
-		public void Can_create_Utf8_callback()
+		webReq.Accept = "*/*";
+		using (var webRes = webReq.GetResponse())
 		{
-			var bytes = DataCache.CreateJsonpPrefix("test");
-			var fromUtf8 = bytes.FromUtf8Bytes();
-			Assert.That(fromUtf8, Is.EqualTo("test("));
+			Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.JavaScript));
+			response = webRes.ReadToEnd();
 		}
+
+		Assert.That(response, Is.Not.Null, "No response received");
+		Console.WriteLine(response);
+		Assert.That(response, Does.StartWith("cb("));
+		Assert.That(response, Does.EndWith(")"));
+		Assert.That(response.Length, Is.GreaterThan(50));
+	}
+
+	[Test]
+	public void Can_create_Utf8_callback()
+	{
+		var bytes = DataCache.CreateJsonpPrefix("test");
+		var fromUtf8 = bytes.FromUtf8Bytes();
+		Assert.That(fromUtf8, Is.EqualTo("test("));
 	}
 }

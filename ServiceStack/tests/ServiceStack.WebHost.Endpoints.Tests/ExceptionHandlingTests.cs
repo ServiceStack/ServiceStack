@@ -10,746 +10,745 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 #pragma warning disable CS0618
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+[Route("/users")]
+[DataContract]
+public class User {}
+
+[DataContract]
+public class UserResponse : IHasResponseStatus
 {
-    [Route("/users")]
-    [DataContract]
-    public class User {}
+    [DataMember(Order = 1)] public ResponseStatus ResponseStatus { get; set; }
+}
 
-    [DataContract]
-    public class UserResponse : IHasResponseStatus
+[Route("/usersvoid")]
+public class UserVoid {}
+
+[DataContract]
+public class UserVoidResponse : IHasResponseStatus
+{
+    [DataMember(Order = 1)] public ResponseStatus ResponseStatus { get; set; }
+}
+
+public class UserReturnVoid : IReturnVoid {}
+
+public class UserService : Service
+{
+    public object Get(User request)
     {
-        [DataMember(Order = 1)] public ResponseStatus ResponseStatus { get; set; }
+        return new HttpError(HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
     }
 
-    [Route("/usersvoid")]
-    public class UserVoid {}
-
-    [DataContract]
-    public class UserVoidResponse : IHasResponseStatus
+    public object Post(User request)
     {
-        [DataMember(Order = 1)] public ResponseStatus ResponseStatus { get; set; }
+        throw new HttpError(HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
     }
 
-    public class UserReturnVoid : IReturnVoid {}
-
-    public class UserService : Service
+    public object Delete(User request)
     {
-        public object Get(User request)
-        {
-            return new HttpError(HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
-        }
-
-        public object Post(User request)
-        {
-            throw new HttpError(HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
-        }
-
-        public object Delete(User request)
-        {
-            throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
-        }
-
-        public object Put(User request)
-        {
-            throw new ArgumentException();
-        }
-
-        public void Delete(UserVoid request)
-        {
-            throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
-        }
-
-        public void Delete(UserReturnVoid request)
-        {
-            throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
-        }
+        throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
     }
 
-    public class CustomException : ArgumentException
+    public object Put(User request)
     {
-        public CustomException() : base("User Defined Error")
-        {
-        }
+        throw new ArgumentException();
     }
 
-    public class ExceptionWithResponseStatus {}
-
-    public class ExceptionWithResponseStatusResponse
+    public void Delete(UserVoid request)
     {
-        public ResponseStatus ResponseStatus { get; set; }
+        throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
     }
 
-    public class ExceptionWithResponseStatusService : Service
+    public void Delete(UserReturnVoid request)
     {
-        public object Any(ExceptionWithResponseStatus request)
-        {
-            throw new CustomException();
-        }
+        throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
+    }
+}
+
+public class CustomException : ArgumentException
+{
+    public CustomException() : base("User Defined Error")
+    {
+    }
+}
+
+public class ExceptionWithResponseStatus {}
+
+public class ExceptionWithResponseStatusResponse
+{
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+public class ExceptionWithResponseStatusService : Service
+{
+    public object Any(ExceptionWithResponseStatus request)
+    {
+        throw new CustomException();
+    }
+}
+
+public class ExceptionNoResponseStatus {}
+
+public class ExceptionNoResponseStatusResponse {}
+
+public class ExceptionNoResponseStatusService : Service
+{
+    public object Any(ExceptionNoResponseStatus request)
+    {
+        throw new CustomException();
+    }
+}
+
+public class ExceptionNoResponseDto {}
+
+public class ExceptionNoResponseDtoService : Service
+{
+    public object Any(ExceptionNoResponseDto request)
+    {
+        throw new CustomException();
+    }
+}
+
+public class ExceptionReturnVoid : IReturnVoid {}
+
+public class ExceptionReturnVoidService : Service
+{
+    public void Any(ExceptionReturnVoid request)
+    {
+        throw new CustomException();
+    }
+}
+
+public class CaughtException {}
+public class CaughtExceptionAsync {}
+
+public class CaughtExceptionService : Service
+{
+    public object Any(CaughtException request)
+    {
+        throw new ArgumentException();
     }
 
-    public class ExceptionNoResponseStatus {}
-
-    public class ExceptionNoResponseStatusResponse {}
-
-    public class ExceptionNoResponseStatusService : Service
+    public async Task<object> Any(CaughtExceptionAsync request)
     {
-        public object Any(ExceptionNoResponseStatus request)
-        {
-            throw new CustomException();
-        }
+        await Task.Yield();
+        throw new ArgumentException();
+    }
+}
+
+public class UncatchedException {}
+public class UncatchedExceptionAsync {}
+public class UncatchedExceptionResponse {}
+
+public class UncatchedExceptionService : Service
+{
+    public object Any(UncatchedException request)
+    {
+        //We don't wrap a try..catch block around the service (which happens with ServiceBase<> automatically)
+        //so the global exception handling strategy is invoked
+        throw new ArgumentException();
     }
 
-    public class ExceptionNoResponseDto {}
-
-    public class ExceptionNoResponseDtoService : Service
+    public async Task<object> Any(UncatchedExceptionAsync request)
     {
-        public object Any(ExceptionNoResponseDto request)
-        {
-            throw new CustomException();
-        }
+        await Task.Yield();
+        throw new ArgumentException();
     }
+}
 
-    public class ExceptionReturnVoid : IReturnVoid {}
+[Route("/binding-error/{Id}")]
+public class ExceptionWithRequestBinding
+{
+    public int Id { get; set; }
+}
 
-    public class ExceptionReturnVoidService : Service
+public class ExceptionWithRequestBindingService : Service
+{
+    public object Any(ExceptionWithRequestBinding request)
     {
-        public void Any(ExceptionReturnVoid request)
-        {
-            throw new CustomException();
-        }
+        return request;
     }
+}
 
-    public class CaughtException {}
-    public class CaughtExceptionAsync {}
+public class CustomHttpError
+{
+    public int StatusCode { get; set; }
+    public string StatusDescription { get; set; }
+}
 
-    public class CaughtExceptionService : Service
+public class CustomHttpErrorResponse
+{
+    public string Custom { get; set; }
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+public class CustomHttpErrorService : Service
+{
+    public object Any(CustomHttpError request)
     {
-        public object Any(CaughtException request)
-        {
-            throw new ArgumentException();
-        }
-
-        public async Task<object> Any(CaughtExceptionAsync request)
-        {
-            await Task.Yield();
-            throw new ArgumentException();
-        }
+        throw new HttpError(request.StatusCode, request.StatusDescription);
     }
+}
 
-    public class UncatchedException {}
-    public class UncatchedExceptionAsync {}
-    public class UncatchedExceptionResponse {}
 
-    public class UncatchedExceptionService : Service
+[Route("/alwaysthrowsjsscope")]
+[DataContract]
+public class AlwaysThrowsJsScope
+{
+    [DataMember] public string TheValue { get; set; }
+}
+
+public class CustomFieldHttpError {}
+
+public class CustomFieldHttpErrorResponse
+{
+    public string Custom { get; set; }
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+public class CustomFieldHttpErrorService : Service
+{
+    public object Any(CustomFieldHttpError request)
     {
-        public object Any(UncatchedException request)
-        {
-            //We don't wrap a try..catch block around the service (which happens with ServiceBase<> automatically)
-            //so the global exception handling strategy is invoked
-            throw new ArgumentException();
-        }
-
-        public async Task<object> Any(UncatchedExceptionAsync request)
-        {
-            await Task.Yield();
-            throw new ArgumentException();
-        }
-    }
-
-    [Route("/binding-error/{Id}")]
-    public class ExceptionWithRequestBinding
-    {
-        public int Id { get; set; }
-    }
-
-    public class ExceptionWithRequestBindingService : Service
-    {
-        public object Any(ExceptionWithRequestBinding request)
-        {
-            return request;
-        }
-    }
-
-    public class CustomHttpError
-    {
-        public int StatusCode { get; set; }
-        public string StatusDescription { get; set; }
-    }
-
-    public class CustomHttpErrorResponse
-    {
-        public string Custom { get; set; }
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
-    public class CustomHttpErrorService : Service
-    {
-        public object Any(CustomHttpError request)
-        {
-            throw new HttpError(request.StatusCode, request.StatusDescription);
-        }
-    }
-
-
-    [Route("/alwaysthrowsjsscope")]
-    [DataContract]
-    public class AlwaysThrowsJsScope
-    {
-        [DataMember] public string TheValue { get; set; }
-    }
-
-    public class CustomFieldHttpError {}
-
-    public class CustomFieldHttpErrorResponse
-    {
-        public string Custom { get; set; }
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
-    public class CustomFieldHttpErrorService : Service
-    {
-        public object Any(CustomFieldHttpError request)
-        {
-            throw new HttpError(new CustomFieldHttpErrorResponse
-                {
-                    Custom = "Ignored",
-                    ResponseStatus = new ResponseStatus("StatusErrorCode", "StatusErrorMessage")
-                },
-                500,
-                "HeaderErrorCode");
-        }
-
-        public object Any(AlwaysThrowsJsScope request) =>
-            throw new HttpError(HttpStatusCode.BadRequest)
+        throw new HttpError(new CustomFieldHttpErrorResponse
             {
-                ResultScope = () => JsConfig.With(new Text.Config
-                {
-                    TextCase = TextCase.SnakeCase,
-                })
-            };
-    }
-
-
-    public class DirectHttpError {}
-
-    public class DirectResponseService : Service
-    {
-        public object Any(DirectHttpError request)
-        {
-            base.Response.StatusCode = 500;
-            base.Response.StatusDescription = "HeaderErrorCode";
-
-            return new CustomFieldHttpErrorResponse
-            {
-                Custom = "Not Ignored",
+                Custom = "Ignored",
                 ResponseStatus = new ResponseStatus("StatusErrorCode", "StatusErrorMessage")
-            };
-        }
+            },
+            500,
+            "HeaderErrorCode");
     }
 
-    public class ErrorStream {}
-
-    public class ErrorStreamService : Service
-    {
-        [AddHeader(ContentType = "application/pdf")]
-        public Stream Any(ErrorStream request)
+    public object Any(AlwaysThrowsJsScope request) =>
+        throw new HttpError(HttpStatusCode.BadRequest)
         {
-            throw new NotImplementedException("Exception in Stream Response");
-        }
-    }
-
-    [TestFixture]
-    public class ExceptionHandlingTests
-    {
-        public class AppHost : AppSelfHostBase
-        {
-            public AppHost()
-                : base(nameof(ExceptionHandlingTests), typeof(UserService).Assembly)
+            ResultScope = () => JsConfig.With(new Text.Config
             {
-            }
-
-            public override void Configure(Container container)
-            {
-                JsConfig.Init(new Text.Config
-                {
-                    TextCase = TextCase.CamelCase,
-                });
-
-                SetConfig(new HostConfig
-                {
-                    DebugMode = false,
-                });
-
-                Plugins.Add(new ProtoBufFormat());
-
-                GlobalRequestFilters.Add((req, res, dto) => {
-                    if (dto is UncatchedException || dto is UncatchedExceptionAsync)
-                        throw new ArgumentException();
-                });
-
-                //Custom global uncaught exception handling strategy
-                this.UncaughtExceptionHandlers.Add((req, res, operationName, ex) =>
-                {
-                    res.WriteAsync($"UncaughtException {ex.GetType().Name}")
-                        .ContinueWith(t => res.EndRequest(skipHeaders: true));
-                });
-
-                this.ServiceExceptionHandlers.Add((httpReq, request, ex) =>
-                {
-                    if (request is UncatchedException || request is UncatchedExceptionAsync)
-                        throw ex;
-
-                    if (request is CaughtException || request is CaughtExceptionAsync)
-                        return DtoUtils.CreateErrorResponse(request, new ArgumentException("ExceptionCaught"));
-
-                    return null;
-                });
-            }
-
-            public override void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
-            {
-                "In OnExceptionTypeFilter...".Print();
-                base.OnExceptionTypeFilter(ex, responseStatus);
-            }
-
-            public override Task OnUncaughtException(IRequest httpReq, IResponse httpRes, string operationName,
-                Exception ex)
-            {
-                "In OnUncaughtException...".Print();
-                return base.OnUncaughtException(httpReq, httpRes, operationName, ex);
-            }
-        }
-
-        AppHost appHost;
-
-        public ExceptionHandlingTests()
-        {
-            appHost = new AppHost();
-            appHost.Init();
-            appHost.Start(Config.ListeningOn);
-        }
-
-        [OneTimeTearDown]
-        public void OnTestFixtureTearDown()
-        {
-            appHost.Dispose();
-            appHost.UncaughtExceptionHandlers = null;
-            JsConfig.Reset();
-        }
-
-        static IRestClient[] ServiceClients =
-        {
-            new JsonServiceClient(Config.ListeningOn),
-            new JsonHttpClient(Config.ListeningOn),
-            new XmlServiceClient(Config.ListeningOn),
-            new JsvServiceClient(Config.ListeningOn),
-            new ProtoBufServiceClient(Config.ListeningOn),
-            //SOAP not supported in HttpListener
-            //new Soap11ServiceClient(ServiceClientBaseUri),
-            //new Soap12ServiceClient(ServiceClientBaseUri)
+                TextCase = TextCase.SnakeCase,
+            })
         };
+}
 
 
-        [Test, TestCaseSource("ServiceClients")]
-        public void Handles_Returned_Http_Error(IRestClient client)
+public class DirectHttpError {}
+
+public class DirectResponseService : Service
+{
+    public object Any(DirectHttpError request)
+    {
+        base.Response.StatusCode = 500;
+        base.Response.StatusDescription = "HeaderErrorCode";
+
+        return new CustomFieldHttpErrorResponse
         {
-            try
-            {
-                client.Get<UserResponse>("/users");
-                Assert.Fail();
-            }
-            catch (WebServiceException ex)
-            {
-                Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.BadRequest));
-                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
-                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
-            }
+            Custom = "Not Ignored",
+            ResponseStatus = new ResponseStatus("StatusErrorCode", "StatusErrorMessage")
+        };
+    }
+}
+
+public class ErrorStream {}
+
+public class ErrorStreamService : Service
+{
+    [AddHeader(ContentType = "application/pdf")]
+    public Stream Any(ErrorStream request)
+    {
+        throw new NotImplementedException("Exception in Stream Response");
+    }
+}
+
+[TestFixture]
+public class ExceptionHandlingTests
+{
+    public class AppHost : AppSelfHostBase
+    {
+        public AppHost()
+            : base(nameof(ExceptionHandlingTests), typeof(UserService).Assembly)
+        {
         }
 
-        [Test, TestCaseSource("ServiceClients")]
-        public void Handles_Thrown_Http_Error(IRestClient client)
+        public override void Configure(Container container)
         {
-            try
+            JsConfig.Init(new Text.Config
             {
-                client.Post<UserResponse>("/users", new User());
-                Assert.Fail();
-            }
-            catch (WebServiceException ex)
+                TextCase = TextCase.CamelCase,
+            });
+
+            SetConfig(new HostConfig
             {
-                Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.BadRequest));
-                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
-                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
-            }
+                DebugMode = false,
+            });
+
+            Plugins.Add(new ProtoBufFormat());
+
+            GlobalRequestFilters.Add((req, res, dto) => {
+                if (dto is UncatchedException || dto is UncatchedExceptionAsync)
+                    throw new ArgumentException();
+            });
+
+            //Custom global uncaught exception handling strategy
+            this.UncaughtExceptionHandlers.Add((req, res, operationName, ex) =>
+            {
+                res.WriteAsync($"UncaughtException {ex.GetType().Name}")
+                    .ContinueWith(t => res.EndRequest(skipHeaders: true));
+            });
+
+            this.ServiceExceptionHandlers.Add((httpReq, request, ex) =>
+            {
+                if (request is UncatchedException || request is UncatchedExceptionAsync)
+                    throw ex;
+
+                if (request is CaughtException || request is CaughtExceptionAsync)
+                    return DtoUtils.CreateErrorResponse(request, new ArgumentException("ExceptionCaught"));
+
+                return null;
+            });
         }
 
-        [Test, TestCaseSource("ServiceClients")]
-        public void Handles_Thrown_Http_Error_With_Forbidden_status_code(IRestClient client)
+        public override void OnExceptionTypeFilter(Exception ex, ResponseStatus responseStatus)
         {
-            try
-            {
-                client.Delete<UserResponse>("/users");
-                Assert.Fail();
-            }
-            catch (WebServiceException ex)
-            {
-                Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.Forbidden));
-                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
-                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
-            }
+            "In OnExceptionTypeFilter...".Print();
+            base.OnExceptionTypeFilter(ex, responseStatus);
         }
 
-        [Test, TestCaseSource("ServiceClients")]
-        public void Handles_Thrown_Http_Error_With_Forbidden_status_code_in_void_method(IRestClient client)
+        public override Task OnUncaughtException(IRequest httpReq, IResponse httpRes, string operationName,
+            Exception ex)
         {
-            try
+            "In OnUncaughtException...".Print();
+            return base.OnUncaughtException(httpReq, httpRes, operationName, ex);
+        }
+    }
+
+    AppHost appHost;
+
+    public ExceptionHandlingTests()
+    {
+        appHost = new AppHost();
+        appHost.Init();
+        appHost.Start(Config.ListeningOn);
+    }
+
+    [OneTimeTearDown]
+    public void OnTestFixtureTearDown()
+    {
+        appHost.Dispose();
+        appHost.UncaughtExceptionHandlers = null;
+        JsConfig.Reset();
+    }
+
+    static IRestClient[] ServiceClients =
+    {
+        new JsonServiceClient(Config.ListeningOn),
+        new JsonHttpClient(Config.ListeningOn),
+        new XmlServiceClient(Config.ListeningOn),
+        new JsvServiceClient(Config.ListeningOn),
+        new ProtoBufServiceClient(Config.ListeningOn),
+        //SOAP not supported in HttpListener
+        //new Soap11ServiceClient(ServiceClientBaseUri),
+        //new Soap12ServiceClient(ServiceClientBaseUri)
+    };
+
+
+    [Test, TestCaseSource("ServiceClients")]
+    public void Handles_Returned_Http_Error(IRestClient client)
+    {
+        try
+        {
+            client.Get<UserResponse>("/users");
+            Assert.Fail();
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.BadRequest));
+            Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
+            Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+        }
+    }
+
+    [Test, TestCaseSource("ServiceClients")]
+    public void Handles_Thrown_Http_Error(IRestClient client)
+    {
+        try
+        {
+            client.Post<UserResponse>("/users", new User());
+            Assert.Fail();
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.BadRequest));
+            Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
+            Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+        }
+    }
+
+    [Test, TestCaseSource("ServiceClients")]
+    public void Handles_Thrown_Http_Error_With_Forbidden_status_code(IRestClient client)
+    {
+        try
+        {
+            client.Delete<UserResponse>("/users");
+            Assert.Fail();
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.Forbidden));
+            Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
+            Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+        }
+    }
+
+    [Test, TestCaseSource("ServiceClients")]
+    public void Handles_Thrown_Http_Error_With_Forbidden_status_code_in_void_method(IRestClient client)
+    {
+        try
+        {
+            client.Delete<UserVoidResponse>("/usersvoid");
+            Assert.Fail();
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.Forbidden));
+            Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
+            Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+        }
+    }
+
+    [Test, TestCaseSource("ServiceClients")]
+    public void Handles_Thrown_Http_Error_With_Forbidden_status_code_using_IReturnVoid(IRestClient client)
+    {
+        try
+        {
+            client.Delete(new UserReturnVoid());
+            Assert.Fail();
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.Forbidden));
+            Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
+            Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+        }
+    }
+
+    [Test, TestCaseSource("ServiceClients")]
+    public void Handles_Normal_Exception(IRestClient client)
+    {
+        try
+        {
+            client.Put<UserResponse>("/users", new User());
+            Assert.Fail();
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.IsAny400());
+            Assert.That(!ex.IsAny500());
+            Assert.That(ex.ErrorCode, Is.EqualTo("ArgumentException"));
+            Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.BadRequest));
+        }
+    }
+
+    [Test, TestCaseSource("ServiceClients")]
+    public void Handles_Exception_in_Stream_Response(IRestClient client)
+    {
+        try
+        {
+            var response = client.Get<Stream>(new ErrorStream());
+            Assert.Fail();
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.IsAny400());
+            Assert.That(!ex.IsAny500());
+            Assert.That(ex.ErrorCode, Is.EqualTo("NotImplementedException"));
+            Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.MethodNotAllowed));
+        }
+    }
+
+    public string PredefinedJsonUrl<T>()
+    {
+        return Config.ListeningOn + "json/reply/" + typeof(T).Name;
+    }
+
+    [Test]
+    public void Returns_populated_dto_when_has_ResponseStatus()
+    {
+        try
+        {
+            var json = PredefinedJsonUrl<ExceptionWithResponseStatus>().GetJsonFromUrl();
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            Assert.That(ex.IsAny400());
+
+            if (ex is WebException webEx)
             {
-                client.Delete<UserVoidResponse>("/usersvoid");
-                Assert.Fail();
-            }
-            catch (WebServiceException ex)
-            {
-                Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.Forbidden));
-                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
-                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+                var errorResponse = ((HttpWebResponse) webEx.Response);
+                Assert.That(webEx.IsAny400());
+                Assert.That(!webEx.IsAny500());
+                var body = errorResponse.GetResponseStream().ReadToEnd();
+                Assert.That(body, Is.EqualTo(
+                    "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\",\"errors\":[]}}"));
             }
         }
+    }
 
-        [Test, TestCaseSource("ServiceClients")]
-        public void Handles_Thrown_Http_Error_With_Forbidden_status_code_using_IReturnVoid(IRestClient client)
+    [Test]
+    public void Returns_empty_dto_when_NoResponseStatus()
+    {
+        try
         {
-            try
+            var json = PredefinedJsonUrl<ExceptionNoResponseStatus>().GetJsonFromUrl();
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            Assert.That(ex.IsAny400());
+
+            if (ex is WebException webEx)
             {
-                client.Delete(new UserReturnVoid());
-                Assert.Fail();
-            }
-            catch (WebServiceException ex)
-            {
-                Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.Forbidden));
-                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
-                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+                var errorResponse = ((HttpWebResponse) webEx.Response);
+                var body = errorResponse.GetResponseStream().ReadToEnd();
+                Assert.That(body, Is.EqualTo("{}"));
             }
         }
+    }
 
-        [Test, TestCaseSource("ServiceClients")]
-        public void Handles_Normal_Exception(IRestClient client)
+    [Test]
+    public void Returns_no_body_when_NoResponseDto()
+    {
+        try
         {
-            try
+            var json = PredefinedJsonUrl<ExceptionNoResponseDto>().GetJsonFromUrl();
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            Assert.That(ex.IsAny400());
+
+            if (ex is WebException webEx)
             {
-                client.Put<UserResponse>("/users", new User());
-                Assert.Fail();
-            }
-            catch (WebServiceException ex)
-            {
-                Assert.That(ex.IsAny400());
-                Assert.That(!ex.IsAny500());
-                Assert.That(ex.ErrorCode, Is.EqualTo("ArgumentException"));
-                Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.BadRequest));
+                var errorResponse = ((HttpWebResponse) webEx.Response);
+                var body = errorResponse.GetResponseStream().ReadToEnd();
+                Assert.That(body,
+                    Does.StartWith(
+                        "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
         }
+    }
 
-        [Test, TestCaseSource("ServiceClients")]
-        public void Handles_Exception_in_Stream_Response(IRestClient client)
+    [Test]
+    public void Returns_exception_when_ReturnVoid()
+    {
+        try
         {
-            try
-            {
-                var response = client.Get<Stream>(new ErrorStream());
-                Assert.Fail();
-            }
-            catch (WebServiceException ex)
-            {
-                Assert.That(ex.IsAny400());
-                Assert.That(!ex.IsAny500());
-                Assert.That(ex.ErrorCode, Is.EqualTo("NotImplementedException"));
-                Assert.That(ex.StatusCode, Is.EqualTo((int) System.Net.HttpStatusCode.MethodNotAllowed));
-            }
+            var json = PredefinedJsonUrl<ExceptionReturnVoid>().GetJsonFromUrl();
+            Assert.Fail("Should throw");
         }
-
-        public string PredefinedJsonUrl<T>()
+        catch (Exception ex)
         {
-            return Config.ListeningOn + "json/reply/" + typeof(T).Name;
-        }
+            Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.BadRequest));
 
-        [Test]
-        public void Returns_populated_dto_when_has_ResponseStatus()
-        {
-            try
+            if (ex is WebException webEx)
             {
-                var json = PredefinedJsonUrl<ExceptionWithResponseStatus>().GetJsonFromUrl();
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.IsAny400());
-
-                if (ex is WebException webEx)
-                {
-                    var errorResponse = ((HttpWebResponse) webEx.Response);
-                    Assert.That(webEx.IsAny400());
-                    Assert.That(!webEx.IsAny500());
-                    var body = errorResponse.GetResponseStream().ReadToEnd();
-                    Assert.That(body, Is.EqualTo(
-                        "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\",\"errors\":[]}}"));
-                }
-            }
-        }
-
-        [Test]
-        public void Returns_empty_dto_when_NoResponseStatus()
-        {
-            try
-            {
-                var json = PredefinedJsonUrl<ExceptionNoResponseStatus>().GetJsonFromUrl();
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.IsAny400());
-
-                if (ex is WebException webEx)
-                {
-                    var errorResponse = ((HttpWebResponse) webEx.Response);
-                    var body = errorResponse.GetResponseStream().ReadToEnd();
-                    Assert.That(body, Is.EqualTo("{}"));
-                }
-            }
-        }
-
-        [Test]
-        public void Returns_no_body_when_NoResponseDto()
-        {
-            try
-            {
-                var json = PredefinedJsonUrl<ExceptionNoResponseDto>().GetJsonFromUrl();
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.IsAny400());
-
-                if (ex is WebException webEx)
-                {
-                    var errorResponse = ((HttpWebResponse) webEx.Response);
-                    var body = errorResponse.GetResponseStream().ReadToEnd();
-                    Assert.That(body,
-                        Does.StartWith(
-                            "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
-                }
-            }
-        }
-
-        [Test]
-        public void Returns_exception_when_ReturnVoid()
-        {
-            try
-            {
-                var json = PredefinedJsonUrl<ExceptionReturnVoid>().GetJsonFromUrl();
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.BadRequest));
-
-                if (ex is WebException webEx)
-                {
-                    var errorResponse = ((HttpWebResponse) webEx.Response);
-                    var body = errorResponse.GetResponseStream().ReadToEnd();
-                    Assert.That(body,
-                        Does.StartWith(
-                            "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
-                }
-            }
-
-            try
-            {
-                var client = new JsonServiceClient(Config.ListeningOn);
-                client.Get(new ExceptionReturnVoid());
-                Assert.Fail("Should throw");
-            }
-            catch (WebServiceException ex)
-            {
-                Assert.That(ex.StatusCode, Is.EqualTo(400));
-                Assert.That(ex.IsAny400());
-                Assert.That(ex.StatusDescription, Is.EqualTo(typeof(CustomException).Name));
-                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(CustomException).Name));
-                Assert.That(ex.ErrorMessage, Is.EqualTo("User Defined Error"));
-                Assert.That(ex.ResponseBody,
+                var errorResponse = ((HttpWebResponse) webEx.Response);
+                var body = errorResponse.GetResponseStream().ReadToEnd();
+                Assert.That(body,
                     Does.StartWith(
                         "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
         }
 
-        [Test]
-        public void Returns_custom_ResponseStatus_with_CustomFieldHttpError()
+        try
         {
-            try
-            {
-                var json = PredefinedJsonUrl<CustomFieldHttpError>().GetJsonFromUrl();
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.InternalServerError));
+            var client = new JsonServiceClient(Config.ListeningOn);
+            client.Get(new ExceptionReturnVoid());
+            Assert.Fail("Should throw");
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.StatusCode, Is.EqualTo(400));
+            Assert.That(ex.IsAny400());
+            Assert.That(ex.StatusDescription, Is.EqualTo(typeof(CustomException).Name));
+            Assert.That(ex.ErrorCode, Is.EqualTo(typeof(CustomException).Name));
+            Assert.That(ex.ErrorMessage, Is.EqualTo("User Defined Error"));
+            Assert.That(ex.ResponseBody,
+                Does.StartWith(
+                    "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+        }
+    }
 
-                if (ex is WebException webEx)
-                {
-                    var errorResponse = ((HttpWebResponse) webEx.Response);
-                    Assert.That((int) errorResponse.StatusCode, Is.EqualTo(500));
-                    Assert.That(webEx.IsAny500());
-                    Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+    [Test]
+    public void Returns_custom_ResponseStatus_with_CustomFieldHttpError()
+    {
+        try
+        {
+            var json = PredefinedJsonUrl<CustomFieldHttpError>().GetJsonFromUrl();
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.InternalServerError));
 
-                    var body = errorResponse.GetResponseStream().ReadToEnd();
-                    var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
-                    var errorStatus = customResponse.ResponseStatus;
-                    Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
-                    Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
-                    Assert.That(customResponse.Custom, Is.Null);
-                }
+            if (ex is WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse) webEx.Response);
+                Assert.That((int) errorResponse.StatusCode, Is.EqualTo(500));
+                Assert.That(webEx.IsAny500());
+                Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+
+                var body = errorResponse.GetResponseStream().ReadToEnd();
+                var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
+                var errorStatus = customResponse.ResponseStatus;
+                Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
+                Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
+                Assert.That(customResponse.Custom, Is.Null);
             }
         }
+    }
 
-        [Test]
-        public void Returns_custom_Status_and_Description_with_CustomHttpError()
+    [Test]
+    public void Returns_custom_Status_and_Description_with_CustomHttpError()
+    {
+        try
         {
-            try
-            {
-                var json = PredefinedJsonUrl<CustomHttpError>()
-                    .AddQueryParam("StatusCode", 406)
-                    .AddQueryParam("StatusDescription", "CustomDescription")
-                    .GetJsonFromUrl();
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotAcceptable));
+            var json = PredefinedJsonUrl<CustomHttpError>()
+                .AddQueryParam("StatusCode", 406)
+                .AddQueryParam("StatusDescription", "CustomDescription")
+                .GetJsonFromUrl();
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.NotAcceptable));
                 
-                if (ex is WebException webEx)
-                {
-                    var errorResponse = ((HttpWebResponse) webEx.Response);
-                    Assert.That((int) errorResponse.StatusCode, Is.EqualTo(406));
-                    Assert.That(webEx.IsAny400());
-                    Assert.That(errorResponse.StatusDescription, Is.EqualTo("CustomDescription"));
-                }
+            if (ex is WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse) webEx.Response);
+                Assert.That((int) errorResponse.StatusCode, Is.EqualTo(406));
+                Assert.That(webEx.IsAny400());
+                Assert.That(errorResponse.StatusDescription, Is.EqualTo("CustomDescription"));
             }
         }
+    }
 
-        [Test]
-        public void Returns_custom_ResponseStatus_with_DirectHttpError()
+    [Test]
+    public void Returns_custom_ResponseStatus_with_DirectHttpError()
+    {
+        try
         {
-            try
-            {
-                var json = PredefinedJsonUrl<DirectHttpError>().GetJsonFromUrl();
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.InternalServerError));
+            var json = PredefinedJsonUrl<DirectHttpError>().GetJsonFromUrl();
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.InternalServerError));
 
-                if (ex is WebException webEx)
-                {
-                    var errorResponse = ((HttpWebResponse) webEx.Response);
-                    Assert.That((int) errorResponse.StatusCode, Is.EqualTo(500));
-                    Assert.That(webEx.IsAny500());
-                    Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
+            if (ex is WebException webEx)
+            {
+                var errorResponse = ((HttpWebResponse) webEx.Response);
+                Assert.That((int) errorResponse.StatusCode, Is.EqualTo(500));
+                Assert.That(webEx.IsAny500());
+                Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
 
-                    var body = errorResponse.GetResponseStream().ReadToEnd();
-                    var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
-                    var errorStatus = customResponse.ResponseStatus;
-                    Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
-                    Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
-                    Assert.That(customResponse.Custom, Is.EqualTo("Not Ignored"));
-                }
+                var body = errorResponse.GetResponseStream().ReadToEnd();
+                var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
+                var errorStatus = customResponse.ResponseStatus;
+                Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
+                Assert.That(errorStatus.Message, Is.EqualTo("StatusErrorMessage"));
+                Assert.That(customResponse.Custom, Is.EqualTo("Not Ignored"));
             }
         }
+    }
 
-        [Test]
-        public void Can_override_global_exception_handling()
+    [Test]
+    public void Can_override_global_exception_handling()
+    {
+#pragma warning disable CS0618, SYSLIB0014
+        var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedException>());
+#pragma warning restore CS0618, SYSLIB0014
+        var res = req.GetResponse().ReadToEnd();
+        Assert.AreEqual("UncaughtException ArgumentException", res);
+    }
+
+    [Test]
+    public void Can_override_global_exception_handling_async()
+    {
+#pragma warning disable CS0618, SYSLIB0014
+        var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedExceptionAsync>());
+#pragma warning restore CS0618, SYSLIB0014
+        var res = req.GetResponse().ReadToEnd();
+        Assert.AreEqual("UncaughtException ArgumentException", res);
+    }
+
+    [Test]
+    public void Can_override_caught_exception()
+    {
+        try
         {
 #pragma warning disable CS0618, SYSLIB0014
-            var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedException>());
+            var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtException>());
 #pragma warning restore CS0618, SYSLIB0014
             var res = req.GetResponse().ReadToEnd();
-            Assert.AreEqual("UncaughtException ArgumentException", res);
+            Assert.Fail("Should Throw");
         }
+        catch (WebException ex)
+        {
+            Assert.That(ex.IsAny400());
+            var json = ex.GetResponseBody();
+            var response = json.FromJson<ErrorResponse>();
+            Assert.That(response.ResponseStatus.Message, Is.EqualTo("ExceptionCaught"));
+        }
+    }
 
-        [Test]
-        public void Can_override_global_exception_handling_async()
+    [Test]
+    public void Can_override_caught_exception_async()
+    {
+        try
         {
 #pragma warning disable CS0618, SYSLIB0014
-            var req = WebRequest.CreateHttp(PredefinedJsonUrl<UncatchedExceptionAsync>());
+            var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtExceptionAsync>());
 #pragma warning restore CS0618, SYSLIB0014
             var res = req.GetResponse().ReadToEnd();
-            Assert.AreEqual("UncaughtException ArgumentException", res);
+            Assert.Fail("Should Throw");
         }
-
-        [Test]
-        public void Can_override_caught_exception()
+        catch (WebException ex)
         {
-            try
-            {
-#pragma warning disable CS0618, SYSLIB0014
-                var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtException>());
-#pragma warning restore CS0618, SYSLIB0014
-                var res = req.GetResponse().ReadToEnd();
-                Assert.Fail("Should Throw");
-            }
-            catch (WebException ex)
-            {
-                Assert.That(ex.IsAny400());
-                var json = ex.GetResponseBody();
-                var response = json.FromJson<ErrorResponse>();
-                Assert.That(response.ResponseStatus.Message, Is.EqualTo("ExceptionCaught"));
-            }
-        }
-
-        [Test]
-        public void Can_override_caught_exception_async()
-        {
-            try
-            {
-#pragma warning disable CS0618, SYSLIB0014
-                var req = WebRequest.CreateHttp(PredefinedJsonUrl<CaughtExceptionAsync>());
-#pragma warning restore CS0618, SYSLIB0014
-                var res = req.GetResponse().ReadToEnd();
-                Assert.Fail("Should Throw");
-            }
-            catch (WebException ex)
-            {
-                Assert.That(ex.IsAny400());
+            Assert.That(ex.IsAny400());
 #if NETFX
                 var json = ex.GetResponseBody();
                 var response = json.FromJson<ErrorResponse>();
                 Assert.That(response.ResponseStatus.Message, Is.EqualTo("ExceptionCaught"));
 #endif                
-            }
         }
+    }
 
-        [Test]
-        public void Request_binding_error_raises_UncaughtException()
+    [Test]
+    public void Request_binding_error_raises_UncaughtException()
+    {
+        var response = PredefinedJsonUrl<ExceptionWithRequestBinding>()
+            .AddQueryParam("Id", "NaN")
+            .GetStringFromUrl();
+
+        Assert.That(response, Is.EqualTo("UncaughtException SerializationException"));
+    }
+
+    [Test]
+    public void Does_serialize_HttpError_with_CustomScope()
+    {
+        try
         {
-            var response = PredefinedJsonUrl<ExceptionWithRequestBinding>()
-                .AddQueryParam("Id", "NaN")
-                .GetStringFromUrl();
-
-            Assert.That(response, Is.EqualTo("UncaughtException SerializationException"));
+            var json = Config.ListeningOn.AppendPath("/alwaysthrowsjsscope").GetJsonFromUrl();
+            Assert.Fail("Should throw");
         }
-
-        [Test]
-        public void Does_serialize_HttpError_with_CustomScope()
+        catch (Exception e)
         {
-            try
-            {
-                var json = Config.ListeningOn.AppendPath("/alwaysthrowsjsscope").GetJsonFromUrl();
-                Assert.Fail("Should throw");
-            }
-            catch (Exception e)
-            {
-                Assert.That(e.IsAny400());
+            Assert.That(e.IsAny400());
 #if NETFX
                 var json = e.GetResponseBody();
                 Assert.That(json, Does.Contain("response_status"));
 #endif                
-            }
         }
     }
 }

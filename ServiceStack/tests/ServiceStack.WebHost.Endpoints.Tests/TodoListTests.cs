@@ -4,139 +4,138 @@ using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.WebHost.IntegrationTests.Services
+namespace ServiceStack.WebHost.IntegrationTests.Services;
+
+public class Todo
 {
-	public class Todo
+	public int Id { get; set; }
+	public string Name { get; set; }
+	public string Content { get; set; }
+	public bool Done { get; set; }
+
+	public bool Equals(Todo other)
 	{
-		public int Id { get; set; }
-		public string Name { get; set; }
-		public string Content { get; set; }
-		public bool Done { get; set; }
-
-		public bool Equals(Todo other)
-		{
-			if (ReferenceEquals(null, other)) return false;
-			if (ReferenceEquals(this, other)) return true;
-			return other.Id == Id && Equals(other.Name, Name) && Equals(other.Content, Content) && other.Done.Equals(Done);
-		}
-
-		public override bool Equals(object obj)
-		{
-			if (ReferenceEquals(null, obj)) return false;
-			if (ReferenceEquals(this, obj)) return true;
-			if (obj.GetType() != typeof (Todo)) return false;
-			return Equals((Todo) obj);
-		}
-
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				int result = Id;
-				result = (result*397) ^ (Name != null ? Name.GetHashCode() : 0);
-				result = (result*397) ^ (Content != null ? Content.GetHashCode() : 0);
-				result = (result*397) ^ Done.GetHashCode();
-				return result;
-			}
-		}
+		if (ReferenceEquals(null, other)) return false;
+		if (ReferenceEquals(this, other)) return true;
+		return other.Id == Id && Equals(other.Name, Name) && Equals(other.Content, Content) && other.Done.Equals(Done);
 	}
 
-    [Route("/todolist")]
-	public class TodoList : List<Todo>
+	public override bool Equals(object obj)
 	{
-		public TodoList() {}
-		public TodoList(IEnumerable<Todo> collection) : base(collection) {}
+		if (ReferenceEquals(null, obj)) return false;
+		if (ReferenceEquals(this, obj)) return true;
+		if (obj.GetType() != typeof (Todo)) return false;
+		return Equals((Todo) obj);
 	}
 
-	public class TodoListResponse
+	public override int GetHashCode()
 	{
-		public TodoList Results { get; set; }
-
-		public ResponseStatus ResponseStatus { get; set; }
-	}
-
-    [DefaultRequest(typeof(TodoList))]
-	public class TodoListService : Service
-	{
-		public object Get(TodoList request)
+		unchecked
 		{
-			return new TodoListResponse { Results = request };
-		}
-
-		public object Post(TodoList request)
-		{
-			return new TodoListResponse { Results = request };
-		}
-
-		public object Put(TodoList request)
-		{
-			return new TodoListResponse { Results = request };
-		}
-
-		public object Delete(TodoList request)
-		{
-			return new TodoListResponse { Results = request };
+			int result = Id;
+			result = (result*397) ^ (Name != null ? Name.GetHashCode() : 0);
+			result = (result*397) ^ (Content != null ? Content.GetHashCode() : 0);
+			result = (result*397) ^ Done.GetHashCode();
+			return result;
 		}
 	}
+}
 
-	[TestFixture]
-	public class TodoListTests
+[Route("/todolist")]
+public class TodoList : List<Todo>
+{
+	public TodoList() {}
+	public TodoList(IEnumerable<Todo> collection) : base(collection) {}
+}
+
+public class TodoListResponse
+{
+	public TodoList Results { get; set; }
+
+	public ResponseStatus ResponseStatus { get; set; }
+}
+
+[DefaultRequest(typeof(TodoList))]
+public class TodoListService : Service
+{
+	public object Get(TodoList request)
 	{
-		private const string ListeningOn = "http://localhost:8082/";
+		return new TodoListResponse { Results = request };
+	}
 
-		public class TodoListAppHostHttpListener
-			: AppHostHttpListenerBase
-		{
-			public TodoListAppHostHttpListener()
-				: base("TodoList Tests", typeof(TodoList).Assembly) { }
+	public object Post(TodoList request)
+	{
+		return new TodoListResponse { Results = request };
+	}
 
-			public override void Configure(Container container) {}
-		}
+	public object Put(TodoList request)
+	{
+		return new TodoListResponse { Results = request };
+	}
 
-		TodoListAppHostHttpListener appHost;
+	public object Delete(TodoList request)
+	{
+		return new TodoListResponse { Results = request };
+	}
+}
 
-		readonly Todo[] Todos = new[] {
-			new Todo { Id = 1, Name = "Todo1", Content = "Content1", Done = false},
-			new Todo { Id = 2, Name = "Todo2", Content = "Content2", Done = true},
-			new Todo { Id = 3, Name = "Todo3", Content = "Content3", Done = false},
-		};
+[TestFixture]
+public class TodoListTests
+{
+	private const string ListeningOn = "http://localhost:8082/";
 
-		[OneTimeSetUp]
-		public void OnTestFixtureSetUp()
-		{
-			appHost = new TodoListAppHostHttpListener();
-			appHost.Init();
-			appHost.Start(ListeningOn);
-		}
+	public class TodoListAppHostHttpListener
+		: AppHostHttpListenerBase
+	{
+		public TodoListAppHostHttpListener()
+			: base("TodoList Tests", typeof(TodoList).Assembly) { }
 
-		[OneTimeTearDown]
-		public void OnTestFixtureTearDown()
-		{
-			appHost.Dispose();
-		}
+		public override void Configure(Container container) {}
+	}
 
-		[Test]
-		public void Can_Send_TodoList()
-		{
-			var serviceClient = new JsonServiceClient(ListeningOn);
-			var response = serviceClient.Send<TodoListResponse>(new TodoList(Todos));
-			Assert.That(response.Results, Is.EquivalentTo(Todos));
-		}
+	TodoListAppHostHttpListener appHost;
 
-		[Test]
-		public void Can_Post_TodoList()
-		{
-			var serviceClient = new JsonServiceClient(ListeningOn);
-            var response = serviceClient.Post<TodoListResponse>("/todolist", new TodoList(Todos));
-			Assert.That(response.Results, Is.EquivalentTo(Todos));
-		}
+	readonly Todo[] Todos = new[] {
+		new Todo { Id = 1, Name = "Todo1", Content = "Content1", Done = false},
+		new Todo { Id = 2, Name = "Todo2", Content = "Content2", Done = true},
+		new Todo { Id = 3, Name = "Todo3", Content = "Content3", Done = false},
+	};
 
-		[Test]
-		public void Can_Get_TodoList()
-		{
-			var serviceClient = new JsonServiceClient(ListeningOn);
-			var response = serviceClient.Get<TodoListResponse>("/todolist");
-			Assert.That(response.Results.Count, Is.EqualTo(0));
-		}
+	[OneTimeSetUp]
+	public void OnTestFixtureSetUp()
+	{
+		appHost = new TodoListAppHostHttpListener();
+		appHost.Init();
+		appHost.Start(ListeningOn);
+	}
+
+	[OneTimeTearDown]
+	public void OnTestFixtureTearDown()
+	{
+		appHost.Dispose();
+	}
+
+	[Test]
+	public void Can_Send_TodoList()
+	{
+		var serviceClient = new JsonServiceClient(ListeningOn);
+		var response = serviceClient.Send<TodoListResponse>(new TodoList(Todos));
+		Assert.That(response.Results, Is.EquivalentTo(Todos));
+	}
+
+	[Test]
+	public void Can_Post_TodoList()
+	{
+		var serviceClient = new JsonServiceClient(ListeningOn);
+		var response = serviceClient.Post<TodoListResponse>("/todolist", new TodoList(Todos));
+		Assert.That(response.Results, Is.EquivalentTo(Todos));
+	}
+
+	[Test]
+	public void Can_Get_TodoList()
+	{
+		var serviceClient = new JsonServiceClient(ListeningOn);
+		var response = serviceClient.Get<TodoListResponse>("/todolist");
+		Assert.That(response.Results.Count, Is.EqualTo(0));
 	}
 }

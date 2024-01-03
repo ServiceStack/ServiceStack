@@ -4,173 +4,167 @@ using System.Net;
 using Funq;
 using NUnit.Framework;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+public class AutoBatchAppHost() : AppSelfHostBase(nameof(AutoBatchTests), typeof(AutoBatchIndexServices).Assembly)
 {
-    public class AutoBatchAppHost : AppSelfHostBase
+    public override void Configure(Container container)
     {
-        public AutoBatchAppHost()
-            : base(typeof(AutoBatchTests).Name, typeof(AutoBatchIndexServices).Assembly)
+        GlobalRequestFilters.Add((req, res, dto) =>
         {
-        }
+            var autoBatchIndex = req.GetItem(Keywords.AutoBatchIndex)?.ToString();
+            if (autoBatchIndex != null)
+            {
+                res.RemoveHeader("GlobalRequestFilterAutoBatchIndex");
+                res.AddHeader("GlobalRequestFilterAutoBatchIndex", autoBatchIndex);
+            }
+        });
 
-        public override void Configure(Container container)
+        GlobalResponseFilters.Add((req, res, dto) =>
         {
-            GlobalRequestFilters.Add((req, res, dto) =>
-            {
-                var autoBatchIndex = req.GetItem(Keywords.AutoBatchIndex)?.ToString();
-                if (autoBatchIndex != null)
-                {
-                    res.RemoveHeader("GlobalRequestFilterAutoBatchIndex");
-                    res.AddHeader("GlobalRequestFilterAutoBatchIndex", autoBatchIndex);
-                }
-            });
+            var autoBatchIndex = req.GetItem(Keywords.AutoBatchIndex)?.ToString();
 
-            GlobalResponseFilters.Add((req, res, dto) =>
+            if (autoBatchIndex != null)
             {
-                var autoBatchIndex = req.GetItem(Keywords.AutoBatchIndex)?.ToString();
-
-                if (autoBatchIndex != null)
+                if (dto is IMeta response)
                 {
-                    if (dto is IMeta response)
+                    response.Meta = new Dictionary<string, string>
                     {
-                        response.Meta = new Dictionary<string, string>
-                        {
-                            ["GlobalResponseFilterAutoBatchIndex"] = autoBatchIndex
-                        };
-                    }
+                        ["GlobalResponseFilterAutoBatchIndex"] = autoBatchIndex
+                    };
                 }
-            });
-        }
+            }
+        });
+    }
+}
+
+public class GetAutoBatchIndex : IReturn<GetAutoBatchIndexResponse>
+{
+}
+
+public class GetCustomAutoBatchIndex : IReturn<GetAutoBatchIndexResponse>
+{
+}
+
+public class GetAutoBatchIndexResponse : IMeta
+{
+    public string Index { get; set; }
+    public Dictionary<string, string> Meta { get; set; }
+}
+
+public class AutoBatchIndexServices : Service
+{
+    public object Any(GetAutoBatchIndex request)
+    {
+        var autoBatchIndex = Request.GetItem(Keywords.AutoBatchIndex)?.ToString();
+        return new GetAutoBatchIndexResponse
+        {
+            Index = autoBatchIndex
+        };
     }
 
-    public class GetAutoBatchIndex : IReturn<GetAutoBatchIndexResponse>
+    public GetAutoBatchIndexResponse Any(GetCustomAutoBatchIndex request)
     {
+        var autoBatchIndex = Request.GetItem(Keywords.AutoBatchIndex)?.ToString();
+        return new GetAutoBatchIndexResponse
+        {
+            Index = autoBatchIndex
+        };
     }
 
-    public class GetCustomAutoBatchIndex : IReturn<GetAutoBatchIndexResponse>
+    public object Any(GetCustomAutoBatchIndex[] requests)
     {
+        var responses = new List<GetAutoBatchIndexResponse>();
+
+        Request.EachRequest<GetCustomAutoBatchIndex>(dto =>
+        {
+            responses.Add(Any(dto));
+        });
+
+        return responses;
+    }
+}
+
+[TestFixture]
+public class AutoBatchTests
+{
+    private ServiceStackHost appHost;
+
+    [OneTimeSetUp]
+    public void TestFixtureSetUp()
+    {
+        appHost = new AutoBatchAppHost()
+            .Init()
+            .Start(Config.AbsoluteBaseUri);
     }
 
-    public class GetAutoBatchIndexResponse : IMeta
+    [OneTimeTearDown]
+    public void TestFixtureTearDown()
     {
-        public string Index { get; set; }
-        public Dictionary<string, string> Meta { get; set; }
+        appHost.Dispose();
     }
 
-    public class AutoBatchIndexServices : Service
+    [Test]
+    public void Single_requests_dont_set_AutoBatchIndex()
     {
-        public object Any(GetAutoBatchIndex request)
-        {
-            var autoBatchIndex = Request.GetItem(Keywords.AutoBatchIndex)?.ToString();
-            return new GetAutoBatchIndexResponse
-            {
-                Index = autoBatchIndex
-            };
-        }
+        var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
-        public GetAutoBatchIndexResponse Any(GetCustomAutoBatchIndex request)
-        {
-            var autoBatchIndex = Request.GetItem(Keywords.AutoBatchIndex)?.ToString();
-            return new GetAutoBatchIndexResponse
-            {
-                Index = autoBatchIndex
-            };
-        }
+        WebHeaderCollection responseHeaders = null;
 
-        public object Any(GetCustomAutoBatchIndex[] requests)
-        {
-            var responses = new List<GetAutoBatchIndexResponse>();
+        client.ResponseFilter = resp => { responseHeaders = resp.Headers; };
 
-            Request.EachRequest<GetCustomAutoBatchIndex>(dto =>
-            {
-                responses.Add(Any(dto));
-            });
+        var response = client.Send(new GetAutoBatchIndex());
 
-            return responses;
-        }
+        Assert.Null(response.Index);
+        Assert.Null(response.Meta);
+        Assert.IsFalse(responseHeaders.AllKeys.Contains("GlobalRequestFilterAutoBatchIndex"));
     }
 
-    [TestFixture]
-    public class AutoBatchTests
+    [Test]
+    public void Multi_requests_set_AutoBatchIndex()
     {
-        private ServiceStackHost appHost;
+        var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
-        [OneTimeSetUp]
-        public void TestFixtureSetUp()
+        WebHeaderCollection responseHeaders = null;
+
+        client.ResponseFilter = response => { responseHeaders = response.Headers; };
+
+        var responses = client.SendAll(new[]
         {
-            appHost = new AutoBatchAppHost()
-                .Init()
-                .Start(Config.AbsoluteBaseUri);
-        }
+            new GetAutoBatchIndex(),
+            new GetAutoBatchIndex()
+        });
 
-        [OneTimeTearDown]
-        public void TestFixtureTearDown()
+        Assert.AreEqual("0", responses[0].Index);
+        Assert.AreEqual("0", responses[0].Meta["GlobalResponseFilterAutoBatchIndex"]);
+
+        Assert.AreEqual("1", responses[1].Index);
+        Assert.AreEqual("1", responses[1].Meta["GlobalResponseFilterAutoBatchIndex"]);
+
+        Assert.AreEqual("1", responseHeaders["GlobalRequestFilterAutoBatchIndex"]);
+    }
+
+    [Test]
+    public void Custom_multi_requests_set_AutoBatchIndex()
+    {
+        var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+        WebHeaderCollection responseHeaders = null;
+
+        client.ResponseFilter = response => { responseHeaders = response.Headers; };
+
+        var responses = client.SendAll(new[]
         {
-            appHost.Dispose();
-        }
+            new GetCustomAutoBatchIndex(),
+            new GetCustomAutoBatchIndex()
+        });
 
-        [Test]
-        public void Single_requests_dont_set_AutoBatchIndex()
-        {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+        Assert.AreEqual("0", responses[0].Index);
+        Assert.AreEqual("0", responses[0].Meta["GlobalResponseFilterAutoBatchIndex"]);
 
-            WebHeaderCollection responseHeaders = null;
+        Assert.AreEqual("1", responses[1].Index);
+        Assert.AreEqual("1", responses[1].Meta["GlobalResponseFilterAutoBatchIndex"]);
 
-            client.ResponseFilter = resp => { responseHeaders = resp.Headers; };
-
-            var response = client.Send(new GetAutoBatchIndex());
-
-            Assert.Null(response.Index);
-            Assert.Null(response.Meta);
-            Assert.IsFalse(responseHeaders.AllKeys.Contains("GlobalRequestFilterAutoBatchIndex"));
-        }
-
-        [Test]
-        public void Multi_requests_set_AutoBatchIndex()
-        {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-
-            WebHeaderCollection responseHeaders = null;
-
-            client.ResponseFilter = response => { responseHeaders = response.Headers; };
-
-            var responses = client.SendAll(new[]
-            {
-                new GetAutoBatchIndex(),
-                new GetAutoBatchIndex()
-            });
-
-            Assert.AreEqual("0", responses[0].Index);
-            Assert.AreEqual("0", responses[0].Meta["GlobalResponseFilterAutoBatchIndex"]);
-
-            Assert.AreEqual("1", responses[1].Index);
-            Assert.AreEqual("1", responses[1].Meta["GlobalResponseFilterAutoBatchIndex"]);
-
-            Assert.AreEqual("1", responseHeaders["GlobalRequestFilterAutoBatchIndex"]);
-        }
-
-        [Test]
-        public void Custom_multi_requests_set_AutoBatchIndex()
-        {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-
-            WebHeaderCollection responseHeaders = null;
-
-            client.ResponseFilter = response => { responseHeaders = response.Headers; };
-
-            var responses = client.SendAll(new[]
-            {
-                new GetCustomAutoBatchIndex(),
-                new GetCustomAutoBatchIndex()
-            });
-
-            Assert.AreEqual("0", responses[0].Index);
-            Assert.AreEqual("0", responses[0].Meta["GlobalResponseFilterAutoBatchIndex"]);
-
-            Assert.AreEqual("1", responses[1].Index);
-            Assert.AreEqual("1", responses[1].Meta["GlobalResponseFilterAutoBatchIndex"]);
-
-            Assert.AreEqual("1", responseHeaders["GlobalRequestFilterAutoBatchIndex"]);
-        }
+        Assert.AreEqual("1", responseHeaders["GlobalRequestFilterAutoBatchIndex"]);
     }
 }

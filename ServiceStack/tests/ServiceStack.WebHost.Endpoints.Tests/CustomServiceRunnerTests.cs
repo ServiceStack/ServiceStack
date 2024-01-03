@@ -2,88 +2,82 @@
 using NUnit.Framework;
 using ServiceStack.Host;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+[TestFixture]
+public class CustomServiceRunnerTests
 {
-    [TestFixture]
-    public class CustomServiceRunnerTests
+    string ListeningOn = Config.AbsoluteBaseUri;
+    private ServiceStackHost appHost;
+
+    [OneTimeSetUp]
+    public void TestFixtureSetUp()
     {
-        string ListeningOn = Config.AbsoluteBaseUri;
-        private ServiceStackHost appHost;
+        appHost = new CustomServiceRunnerAppHost()
+            .Init()
+            .Start(ListeningOn);
+    }
 
-        [OneTimeSetUp]
-        public void TestFixtureSetUp()
+    [OneTimeTearDown]
+    public void TestFixtureTearDown()
+    {
+        appHost.Dispose();
+    }
+
+    public class CustomServiceRunnerAppHost()
+        : AppHostHttpListenerBase("CustomServiceRunner", typeof(CustomServiceRunnerAppHost).Assembly)
+    {
+        public override void Configure(Container container) {}
+
+        public override Web.IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
         {
-            appHost = new CustomServiceRunnerAppHost()
-                .Init()
-                .Start(ListeningOn);
+            return new CustomServiceRunner<TRequest>(this, actionContext);
         }
+    }
 
-        [OneTimeTearDown]
-        public void TestFixtureTearDown()
+    public class CustomServiceRunner<T>(IAppHost appHost, ActionContext actionContext)
+        : ServiceRunner<T>(appHost, actionContext)
+    {
+        public override object OnAfterExecute(Web.IRequest req, object response, object service)
         {
-            appHost.Dispose();
-        }
-
-        public class CustomServiceRunnerAppHost : AppHostHttpListenerBase
-        {
-            public CustomServiceRunnerAppHost()
-                : base("CustomServiceRunner", typeof(CustomServiceRunnerAppHost).Assembly) { }
-
-            public override void Configure(Container container) {}
-
-            public override Web.IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
+            if (response is CustomRunnerResponse dto)
             {
-                return new CustomServiceRunner<TRequest>(this, actionContext);
+                dto.ServiceName = base.ActionContext.ServiceType.Name;
+                dto.RequestName = base.ActionContext.RequestType.Name;
             }
+            return base.OnAfterExecute(req, response, service);
         }
+    }
 
-        public class CustomServiceRunner<T> : ServiceRunner<T>
+    public class CustomRunner : IReturn<CustomRunnerResponse>
+    {
+        public int Id { get; set; }
+    }
+
+    public class CustomRunnerResponse
+    {
+        public int Id { get; set; }
+        public string RequestName { get; set; }
+        public string ServiceName { get; set; }
+    }
+
+    public class CustomRunnerService : Service
+    {
+        public object Get(CustomRunner request)
         {
-            public CustomServiceRunner(IAppHost appHost, ActionContext actionContext)
-                : base(appHost, actionContext) {
-            }
-
-            public override object OnAfterExecute(Web.IRequest req, object response, object service)
-            {
-                if (response is CustomRunnerResponse dto)
-                {
-                    dto.ServiceName = base.ActionContext.ServiceType.Name;
-                    dto.RequestName = base.ActionContext.RequestType.Name;
-                }
-                return base.OnAfterExecute(req, response, service);
-            }
+            return new CustomRunnerResponse { Id = 1 };
         }
+    }
 
-        public class CustomRunner : IReturn<CustomRunnerResponse>
-        {
-            public int Id { get; set; }
-        }
+    [Test]
+    public void ServiceRunner_has_Request_and_ServiceType()
+    {
+        var client = new JsonServiceClient(ListeningOn);
 
-        public class CustomRunnerResponse
-        {
-            public int Id { get; set; }
-            public string RequestName { get; set; }
-            public string ServiceName { get; set; }
-        }
+        var response = client.Get(new CustomRunner { Id = 1 });
 
-        public class CustomRunnerService : Service
-        {
-            public object Get(CustomRunner request)
-            {
-                return new CustomRunnerResponse { Id = 1 };
-            }
-        }
-
-        [Test]
-        public void ServiceRunner_has_Request_and_ServiceType()
-        {
-            var client = new JsonServiceClient(ListeningOn);
-
-            var response = client.Get(new CustomRunner { Id = 1 });
-
-            Assert.That(response.Id, Is.EqualTo(1));
-            Assert.That(response.ServiceName, Is.EqualTo(nameof(CustomRunnerService)));
-            Assert.That(response.RequestName, Is.EqualTo(nameof(CustomRunner)));
-        }
+        Assert.That(response.Id, Is.EqualTo(1));
+        Assert.That(response.ServiceName, Is.EqualTo(nameof(CustomRunnerService)));
+        Assert.That(response.RequestName, Is.EqualTo(nameof(CustomRunner)));
     }
 }

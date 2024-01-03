@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests;
 
@@ -41,10 +39,8 @@ public class PerfServices : Service
     }
 }
 
-public class AppHostSmartPool : AppHostHttpListenerSmartPoolBase
+public class AppHostSmartPool() : AppHostHttpListenerSmartPoolBase("SmartPool Test", typeof(PerfServices).Assembly)
 {
-    public AppHostSmartPool() : base("SmartPool Test", typeof(PerfServices).Assembly) { }
-
     public override void Configure(Container container)
     {
     }

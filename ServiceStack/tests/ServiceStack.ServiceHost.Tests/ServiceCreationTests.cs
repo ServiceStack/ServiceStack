@@ -9,7 +9,7 @@ namespace ServiceStack.ServiceHost.Tests
     {
         public bool RequestFilterExecuted { get; set; }
         public bool ContextualRequestFilterExecuted { get; set; }
-        public bool RequestFilterDependenyIsResolved { get; set; }
+        public bool RequestFilterDependencyIsResolved { get; set; }
     }
     public class ServiceCreationResponse
     {

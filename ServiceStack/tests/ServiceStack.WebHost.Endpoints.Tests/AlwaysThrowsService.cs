@@ -6,338 +6,337 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
-using ServiceStack.Text;
 using ServiceStack.Validation;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+[DataContract]
+public class AlwaysThrows
 {
-    [DataContract]
-    public class AlwaysThrows
+    [DataMember]
+    public int? StatusCode { get; set; }
+    [DataMember]
+    public string Value { get; set; }
+}
+
+[Route("/throwslist/{StatusCode}/{Value}")]
+[DataContract]
+public class AlwaysThrowsList
+{
+    [DataMember]
+    public int? StatusCode { get; set; }
+    [DataMember]
+    public string Value { get; set; }
+}
+
+[Route("/throwsvalidation")]
+[DataContract]
+public class AlwaysThrowsValidation
+{
+    [DataMember]
+    public string Value { get; set; }
+}
+
+public class AlwaysThrowsValidator : AbstractValidator<AlwaysThrowsValidation>
+{
+    public AlwaysThrowsValidator()
     {
-        [DataMember]
-        public int? StatusCode { get; set; }
-        [DataMember]
-        public string Value { get; set; }
+        RuleFor(x => x.Value).NotEmpty();
+    }
+}
+
+public class ThrowArgumentException : IReturn<ThrowArgumentException>
+{
+    public int Id { get; set; }
+}
+
+[DataContract]
+public class AlwaysThrowsResponse : IHasResponseStatus
+{
+    public AlwaysThrowsResponse()
+    {
+        this.ResponseStatus = new ResponseStatus();
     }
 
-    [Route("/throwslist/{StatusCode}/{Value}")]
-    [DataContract]
-    public class AlwaysThrowsList
+    [DataMember]
+    public string Result { get; set; }
+
+    [DataMember]
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+[DataContract]
+public class BasicAuthRequired
+{
+    public string Name { get; set; }
+}
+
+public class AlwaysThrowsService : Service
+{
+    public object Any(AlwaysThrows request)
     {
-        [DataMember]
-        public int? StatusCode { get; set; }
-        [DataMember]
-        public string Value { get; set; }
+        if (request.StatusCode.HasValue)
+        {
+            throw new HttpError(
+                request.StatusCode.Value,
+                nameof(NotImplementedException),
+                GetErrorMessage(request.Value));
+        }
+
+        throw new NotImplementedException(GetErrorMessage(request.Value));
     }
 
-    [Route("/throwsvalidation")]
-    [DataContract]
-    public class AlwaysThrowsValidation
+    public List<AlwaysThrows> Any(AlwaysThrowsList request)
     {
-        [DataMember]
-        public string Value { get; set; }
+        Any(request.ConvertTo<AlwaysThrows>());
+
+        return new List<AlwaysThrows>();
     }
 
-    public class AlwaysThrowsValidator : AbstractValidator<AlwaysThrowsValidation>
+    public List<AlwaysThrows> Any(AlwaysThrowsValidation request)
     {
-        public AlwaysThrowsValidator()
-        {
-            RuleFor(x => x.Value).NotEmpty();
-        }
+        return new List<AlwaysThrows>();
     }
 
-    public class ThrowArgumentException : IReturn<ThrowArgumentException>
+    public static string GetErrorMessage(string value)
     {
-        public int Id { get; set; }
+        return value + " is not implemented";
     }
 
-    [DataContract]
-    public class AlwaysThrowsResponse : IHasResponseStatus
+    public object Any(BasicAuthRequired request)
     {
-        public AlwaysThrowsResponse()
-        {
-            this.ResponseStatus = new ResponseStatus();
-        }
-
-        [DataMember]
-        public string Result { get; set; }
-
-        [DataMember]
-        public ResponseStatus ResponseStatus { get; set; }
+        return request;
     }
 
-    [DataContract]
-    public class BasicAuthRequired
+    public object Any(ThrowArgumentException request)
     {
-        public string Name { get; set; }
+        throw new ArgumentNullException("Id");
     }
+}
 
-    public class AlwaysThrowsService : Service
+public class AlwaysThrowsAppHost : AppHostHttpListenerBase
+{
+    public AlwaysThrowsAppHost()
+        : base("Always Throws Service", typeof(AlwaysThrowsService).Assembly) { }
+
+    public override void Configure(Container container)
     {
-        public object Any(AlwaysThrows request)
-        {
-            if (request.StatusCode.HasValue)
-            {
-                throw new HttpError(
-                    request.StatusCode.Value,
-                    nameof(NotImplementedException),
-                    GetErrorMessage(request.Value));
-            }
-
-            throw new NotImplementedException(GetErrorMessage(request.Value));
-        }
-
-        public List<AlwaysThrows> Any(AlwaysThrowsList request)
-        {
-            Any(request.ConvertTo<AlwaysThrows>());
-
-            return new List<AlwaysThrows>();
-        }
-
-        public List<AlwaysThrows> Any(AlwaysThrowsValidation request)
-        {
-            return new List<AlwaysThrows>();
-        }
-
-        public static string GetErrorMessage(string value)
-        {
-            return value + " is not implemented";
-        }
-
-        public object Any(BasicAuthRequired request)
-        {
-            return request;
-        }
-
-        public object Any(ThrowArgumentException request)
-        {
-            throw new ArgumentNullException("Id");
-        }
-    }
-
-    public class AlwaysThrowsAppHost : AppHostHttpListenerBase
-    {
-        public AlwaysThrowsAppHost()
-            : base("Always Throws Service", typeof(AlwaysThrowsService).Assembly) { }
-
-        public override void Configure(Container container)
-        {
 #if !NETCORE
             Plugins.Add(new SoapFormat());
 #endif
-            Plugins.Add(new ValidationFeature());
+        Plugins.Add(new ValidationFeature());
 
-            container.RegisterValidators(typeof(AlwaysThrowsValidator).Assembly);
+        container.RegisterValidators(typeof(AlwaysThrowsValidator).Assembly);
 
-            Plugins.Add(new CustomAuthenticationPlugin());
-        }
+        Plugins.Add(new CustomAuthenticationPlugin());
     }
+}
 
-    public class CustomAuthenticationPlugin : IPlugin
+public class CustomAuthenticationPlugin : IPlugin
+{
+    public void Register(IAppHost appHost)
     {
-        public void Register(IAppHost appHost)
+        appHost.PreRequestFilters.Add((httpReq, httpResp) =>
         {
-            appHost.PreRequestFilters.Add((httpReq, httpResp) =>
+            if (httpReq.OperationName != nameof(BasicAuthRequired))
+                return;
+
+            var credentials = httpReq.GetBasicAuthUserAndPassword();
+            if (!credentials.HasValue)
             {
-                if (httpReq.OperationName != nameof(BasicAuthRequired))
-                    return;
+                // throw new UnauthorizedAccessException();
+                httpResp.StatusCode = (int)HttpStatusCode.Unauthorized;
+                httpResp.EndRequestWithNoContent();
+                return;
+            }
 
-                var credentials = httpReq.GetBasicAuthUserAndPassword();
-                if (!credentials.HasValue)
-                {
-                    // throw new UnauthorizedAccessException();
-                    httpResp.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    httpResp.EndRequestWithNoContent();
-                    return;
-                }
+            string username = credentials.Value.Key;
+            string password = credentials.Value.Value;
 
-                string username = credentials.Value.Key;
-                string password = credentials.Value.Value;
-
-                // TODO: get DI working
-                // TODO: Use PasswordList.SystemPass in production
-                var isAuth = password == "p@55word";
-                if (!isAuth)
-                {
-                    // throw new UnauthorizedAccessException();
-                    httpResp.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    httpResp.EndRequestWithNoContent();
-                }
-            });
-        }
+            // TODO: get DI working
+            // TODO: Use PasswordList.SystemPass in production
+            var isAuth = password == "p@55word";
+            if (!isAuth)
+            {
+                // throw new UnauthorizedAccessException();
+                httpResp.StatusCode = (int)HttpStatusCode.Unauthorized;
+                httpResp.EndRequestWithNoContent();
+            }
+        });
     }
+}
 
-    /// <summary>
-    /// This base class executes all Web Services ignorant of the endpoints its hosted on.
-    /// The same tests below are re-used by the Unit and Integration TestFixture's declared below
-    /// </summary>
-    [TestFixture]
-    public abstract class WebServicesTests
+/// <summary>
+/// This base class executes all Web Services ignorant of the endpoints its hosted on.
+/// The same tests below are re-used by the Unit and Integration TestFixture's declared below
+/// </summary>
+[TestFixture]
+public abstract class WebServicesTests
     //: TestBase
+{
+    public const string ListeningOn = "http://localhost:1337/";
+    private const string TestString = "ServiceStack";
+
+    private ServiceStackHost appHost;
+
+    [OneTimeSetUp]
+    public void TestFixtureSetUp()
     {
-        public const string ListeningOn = "http://localhost:1337/";
-        private const string TestString = "ServiceStack";
+        appHost = new AlwaysThrowsAppHost()
+            .Init()
+            .Start(ListeningOn);
+    }
 
-        private ServiceStackHost appHost;
+    [OneTimeTearDown]
+    public void TestFixtureTearDown()
+    {
+        appHost.Dispose();
+    }
 
-        [OneTimeSetUp]
-        public void TestFixtureSetUp()
+    protected abstract IServiceClient CreateNewServiceClient();
+
+    [Test]
+    public void Can_Handle_Exception_from_AlwaysThrowService()
+    {
+        var client = CreateNewServiceClient();
+        try
         {
-            appHost = new AlwaysThrowsAppHost()
-                .Init()
-                .Start(ListeningOn);
+            var response = client.Send<AlwaysThrowsResponse>(
+                new AlwaysThrows { Value = TestString });
+
+            Assert.Fail("Should throw HTTP errors");
         }
-
-        [OneTimeTearDown]
-        public void TestFixtureTearDown()
+        catch (WebServiceException webEx)
         {
-            appHost.Dispose();
+            var response = (AlwaysThrowsResponse)webEx.ResponseDto;
+            var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
+            Assert.That(response.ResponseStatus.ErrorCode,
+                Is.EqualTo(nameof(NotImplementedException)));
+            Assert.That(response.ResponseStatus.Message,
+                Is.EqualTo(expectedError));
         }
+    }
 
-        protected abstract IServiceClient CreateNewServiceClient();
-
-        [Test]
-        public void Can_Handle_Exception_from_AlwaysThrowService()
+    [Test]
+    public void Can_Handle_ThrowArgumentException()
+    {
+        var client = CreateNewServiceClient();
+        try
         {
-            var client = CreateNewServiceClient();
-            try
-            {
-                var response = client.Send<AlwaysThrowsResponse>(
-                    new AlwaysThrows { Value = TestString });
+            var response = client.Send<ThrowArgumentException>(
+                new ThrowArgumentException());
 
-                Assert.Fail("Should throw HTTP errors");
-            }
-            catch (WebServiceException webEx)
-            {
-                var response = (AlwaysThrowsResponse)webEx.ResponseDto;
-                var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
-                Assert.That(response.ResponseStatus.ErrorCode,
-                    Is.EqualTo(nameof(NotImplementedException)));
-                Assert.That(response.ResponseStatus.Message,
-                    Is.EqualTo(expectedError));
-            }
+            Assert.Fail("Should throw HTTP errors");
         }
-
-        [Test]
-        public void Can_Handle_ThrowArgumentException()
+        catch (WebServiceException webEx)
         {
-            var client = CreateNewServiceClient();
-            try
-            {
-                var response = client.Send<ThrowArgumentException>(
-                    new ThrowArgumentException());
-
-                Assert.Fail("Should throw HTTP errors");
-            }
-            catch (WebServiceException webEx)
-            {
-                Assert.That(webEx.StatusCode, Is.EqualTo(400));
-                Assert.That(webEx.StatusDescription, Is.EqualTo(nameof(ArgumentNullException)));
-                Assert.That(webEx.Message.Replace("\r\n", "\n"), Does.StartWith("Value cannot be null."));
-                Assert.That(webEx.ErrorCode, Is.EqualTo(nameof(ArgumentNullException)));
-                Assert.That(webEx.ErrorMessage.Replace("\r\n", "\n"), Does.StartWith("Value cannot be null."));
-            }
+            Assert.That(webEx.StatusCode, Is.EqualTo(400));
+            Assert.That(webEx.StatusDescription, Is.EqualTo(nameof(ArgumentNullException)));
+            Assert.That(webEx.Message.Replace("\r\n", "\n"), Does.StartWith("Value cannot be null."));
+            Assert.That(webEx.ErrorCode, Is.EqualTo(nameof(ArgumentNullException)));
+            Assert.That(webEx.ErrorMessage.Replace("\r\n", "\n"), Does.StartWith("Value cannot be null."));
         }
+    }
 
-        [Test]
-        public void Can_Handle_Exception_from_AlwaysThrowsList_with_GET_route()
-        {
-            var client = CreateNewServiceClient();
+    [Test]
+    public void Can_Handle_Exception_from_AlwaysThrowsList_with_GET_route()
+    {
+        var client = CreateNewServiceClient();
 #if !NETCORE
             if (client is WcfServiceClient) return;
 #endif
-            try
-            {
-                var response = client.Get<List<AlwaysThrows>>("/throwslist/404/{0}".Fmt(TestString));
-
-                Assert.Fail("Should throw HTTP errors");
-            }
-            catch (WebServiceException webEx)
-            {
-                Assert.That(webEx.StatusCode, Is.EqualTo(404));
-
-                var response = (ErrorResponse)webEx.ResponseDto;
-                var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
-                Assert.That(response.ResponseStatus.ErrorCode,
-                    Is.EqualTo(nameof(NotImplementedException)));
-                Assert.That(response.ResponseStatus.Message,
-                    Is.EqualTo(expectedError));
-            }
-        }
-
-        [Test]
-        public void Can_Handle_Exception_from_AlwaysThrowsValidation()
+        try
         {
-            var client = CreateNewServiceClient();
-            try
-            {
-                var response = client.Send<List<AlwaysThrows>>(
-                    new AlwaysThrowsValidation());
+            var response = client.Get<List<AlwaysThrows>>("/throwslist/404/{0}".Fmt(TestString));
 
-                Assert.Fail("Should throw HTTP errors");
-            }
-            catch (WebServiceException webEx)
-            {
-                var response = (ErrorResponse)webEx.ResponseDto;
-                var status = response.ResponseStatus;
-                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(status.Message, Is.EqualTo("'Value' must not be empty."));
-                Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(status.Errors[0].FieldName, Is.EqualTo("Value"));
-                Assert.That(status.Errors[0].Message, Is.EqualTo("'Value' must not be empty."));
-            }
+            Assert.Fail("Should throw HTTP errors");
         }
-
-        [Test]
-        public void Can_handle_no_content_BasicAuth_exception()
+        catch (WebServiceException webEx)
         {
-            var client = CreateNewServiceClient();
-            try
-            {
-                var response = client.Send<BasicAuthRequired>(
-                    new BasicAuthRequired { Name = "Test" });
+            Assert.That(webEx.StatusCode, Is.EqualTo(404));
 
-                Assert.Fail("Should throw HTTP errors");
-            }
-            catch (WebServiceException webEx)
-            {
-                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
-                Assert.That(webEx.ResponseDto, Is.Null);
-            }
+            var response = (ErrorResponse)webEx.ResponseDto;
+            var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
+            Assert.That(response.ResponseStatus.ErrorCode,
+                Is.EqualTo(nameof(NotImplementedException)));
+            Assert.That(response.ResponseStatus.Message,
+                Is.EqualTo(expectedError));
         }
     }
 
-    public class XmlIntegrationTests : WebServicesTests
+    [Test]
+    public void Can_Handle_Exception_from_AlwaysThrowsValidation()
     {
-        protected override IServiceClient CreateNewServiceClient()
+        var client = CreateNewServiceClient();
+        try
         {
-            return new XmlServiceClient(ListeningOn);
+            var response = client.Send<List<AlwaysThrows>>(
+                new AlwaysThrowsValidation());
+
+            Assert.Fail("Should throw HTTP errors");
+        }
+        catch (WebServiceException webEx)
+        {
+            var response = (ErrorResponse)webEx.ResponseDto;
+            var status = response.ResponseStatus;
+            Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+            Assert.That(status.Message, Is.EqualTo("'Value' must not be empty."));
+            Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+            Assert.That(status.Errors[0].FieldName, Is.EqualTo("Value"));
+            Assert.That(status.Errors[0].Message, Is.EqualTo("'Value' must not be empty."));
         }
     }
 
-    public class JsonIntegrationTests : WebServicesTests
+    [Test]
+    public void Can_handle_no_content_BasicAuth_exception()
     {
-        protected override IServiceClient CreateNewServiceClient()
+        var client = CreateNewServiceClient();
+        try
         {
-            return new JsonServiceClient(ListeningOn);
-        }
-    }
+            var response = client.Send<BasicAuthRequired>(
+                new BasicAuthRequired { Name = "Test" });
 
-    public class JsonHttpIntegrationTests : WebServicesTests
-    {
-        protected override IServiceClient CreateNewServiceClient()
+            Assert.Fail("Should throw HTTP errors");
+        }
+        catch (WebServiceException webEx)
         {
-            return new JsonHttpClient(ListeningOn);
+            Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            Assert.That(webEx.ResponseDto, Is.Null);
         }
     }
+}
 
-    public class JsvIntegrationTests : WebServicesTests
+public class XmlIntegrationTests : WebServicesTests
+{
+    protected override IServiceClient CreateNewServiceClient()
     {
-        protected override IServiceClient CreateNewServiceClient()
-        {
-            return new JsvServiceClient(ListeningOn);
-        }
+        return new XmlServiceClient(ListeningOn);
     }
+}
+
+public class JsonIntegrationTests : WebServicesTests
+{
+    protected override IServiceClient CreateNewServiceClient()
+    {
+        return new JsonServiceClient(ListeningOn);
+    }
+}
+
+public class JsonHttpIntegrationTests : WebServicesTests
+{
+    protected override IServiceClient CreateNewServiceClient()
+    {
+        return new JsonHttpClient(ListeningOn);
+    }
+}
+
+public class JsvIntegrationTests : WebServicesTests
+{
+    protected override IServiceClient CreateNewServiceClient()
+    {
+        return new JsvServiceClient(ListeningOn);
+    }
+}
 
 #if !NETCORE
     public class Soap11IntegrationTests : WebServicesTests
@@ -356,4 +355,3 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 #endif
-}

@@ -1,89 +1,86 @@
 ﻿using System.Text;
 using NUnit.Framework;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+//[Route("/HelloWorld/Greeting/{FirstName}/{LastName}", "GET")]
+[Route("/HelloWorld/Greeting/{FirstName}", "GET")]
+[Restrict(RequestAttributes.InternalNetworkAccess)]
+public class HelloWorldName : IReturn<HelloWorldGreeting>
 {
-    //[Route("/HelloWorld/Greeting/{FirstName}/{LastName}", "GET")]
-    [Route("/HelloWorld/Greeting/{FirstName}", "GET")]
-    [Restrict(RequestAttributes.InternalNetworkAccess)]
-    public class HelloWorldName : IReturn<HelloWorldGreeting>
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+}
+
+public class HelloWorldGreeting
+{
+    public string Greeting { get; set; }
+}
+
+public class HelloWorldService : Service
+{
+    public HelloWorldGreeting Get(HelloWorldName request)
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        var answer = new HelloWorldGreeting
+        {
+            Greeting = "Hello " + request.FirstName + " " + request.LastName
+        };
+        return answer;
+    }
+}
+
+public class EncodingTestsAppHost() : AppHostHttpListenerBase("EncodingTests", typeof(HelloWorldService).Assembly)
+{
+    public override void Configure(Funq.Container container) {}
+}
+
+[TestFixture]
+public class EncodingTests
+{
+    private EncodingTestsAppHost appHost;
+
+    [OneTimeSetUp]
+    public void TestFixtureSetUp()
+    {
+        appHost = new EncodingTestsAppHost();
+        appHost.Init();
+        appHost.Start(Config.AbsoluteBaseUri);
     }
 
-    public class HelloWorldGreeting
+    [OneTimeTearDown]
+    public void TestFixtureTearDown()
     {
-        public string Greeting { get; set; }
+        appHost.Dispose();
     }
 
-    public class HelloWorldService : Service
+    private HelloWorldGreeting PerformRequest(string firstName, string lastName)
     {
-        public HelloWorldGreeting Get(HelloWorldName request)
-        {
-            var answer = new HelloWorldGreeting
-            {
-                Greeting = "Hello " + request.FirstName + " " + request.LastName
-            };
-            return answer;
-        }
+        var client = new JsonServiceClient(Config.ServiceStackBaseUri);
+        var query = string.Format("/HelloWorld/Greeting/{0}?lastname={1}", firstName, lastName);
+        return client.Get<HelloWorldGreeting>(query);
     }
 
-    public class EncodingTestsAppHost : AppHostHttpListenerBase
+    [Test]
+    public void Can_Get_Greeting_When_Querystring_Contains_Non_ASCII_Chars()
     {
-        public EncodingTestsAppHost() : base("EncodingTests", typeof(HelloWorldService).Assembly) { }
-        public override void Configure(Funq.Container container) {}
+        var firstName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Pål"));
+        var lastName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Smådalø"));
+        Assert.That(PerformRequest(firstName, lastName).Greeting, Is.EqualTo(string.Format("Hello {0} {1}", firstName, lastName)));
     }
 
-    [TestFixture]
-    public class EncodingTests
+    [Test]
+    public void Can_Get_Greeting_When_Only_Url_Contains_Non_ASCII_Chars()
     {
-        private EncodingTestsAppHost appHost;
-
-        [OneTimeSetUp]
-        public void TestFixtureSetUp()
-        {
-            appHost = new EncodingTestsAppHost();
-            appHost.Init();
-            appHost.Start(Config.AbsoluteBaseUri);
-        }
-
-        [OneTimeTearDown]
-        public void TestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
-
-        private HelloWorldGreeting PerformRequest(string firstName, string lastName)
-        {
-            var client = new JsonServiceClient(Config.ServiceStackBaseUri);
-            var query = string.Format("/HelloWorld/Greeting/{0}?lastname={1}", firstName, lastName);
-            return client.Get<HelloWorldGreeting>(query);
-        }
-
-        [Test]
-        public void Can_Get_Greeting_When_Querystring_Contains_Non_ASCII_Chars()
-        {
-            var firstName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Pål"));
-            var lastName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Smådalø"));
-            Assert.That(PerformRequest(firstName, lastName).Greeting, Is.EqualTo(string.Format("Hello {0} {1}", firstName, lastName)));
-        }
-
-        [Test]
-        public void Can_Get_Greeting_When_Only_Url_Contains_Non_ASCII_Chars()
-        {
-            var firstName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Pål"));
-            var lastName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Smith"));
-            Assert.That(PerformRequest(firstName, lastName).Greeting, Is.EqualTo(string.Format("Hello {0} {1}", firstName, lastName)));
-        }
-
-        [Test]
-        public void Can_Get_Greeting_When_Querystring_Contains_Only_ASCII_Chars()
-        {
-            var firstName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("John"));
-            var lastName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Smith"));
-            Assert.That(PerformRequest(firstName, lastName).Greeting, Is.EqualTo(string.Format("Hello {0} {1}", firstName, lastName)));
-        }
+        var firstName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Pål"));
+        var lastName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Smith"));
+        Assert.That(PerformRequest(firstName, lastName).Greeting, Is.EqualTo(string.Format("Hello {0} {1}", firstName, lastName)));
     }
 
+    [Test]
+    public void Can_Get_Greeting_When_Querystring_Contains_Only_ASCII_Chars()
+    {
+        var firstName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("John"));
+        var lastName = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("Smith"));
+        Assert.That(PerformRequest(firstName, lastName).Greeting, Is.EqualTo(string.Format("Hello {0} {1}", firstName, lastName)));
+    }
 }

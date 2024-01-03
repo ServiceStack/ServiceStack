@@ -5,89 +5,84 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+public class CancellableRequestAppHost()
+    : AppSelfHostBase("CancellableRequests", typeof(CancellableRequestTestService).Assembly)
 {
-    public class CancellableRequestAppHost : AppSelfHostBase
+    public override void Configure(Container container)
     {
-        public CancellableRequestAppHost()
-            : base("CancellableRequests", typeof(CancellableRequestTestService).Assembly) { }
+        Plugins.Add(new CancellableRequestsFeature());
+    }
+}
 
-        public override void Configure(Container container)
+public class TestCancelRequest : IReturn<TestCancelRequestResponse>
+{
+    public string Tag { get; set; }
+}
+
+public class TestCancelRequestResponse
+{
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+public class CancellableRequestTestService : Service
+{
+    public object Any(TestCancelRequest req)
+    {
+        using var cancellableRequest = base.Request.CreateCancellableRequest();
+        while (true)
         {
-            Plugins.Add(new CancellableRequestsFeature());
+            cancellableRequest.Token.ThrowIfCancellationRequested();
+            Thread.Sleep(100);
         }
     }
+}
 
-    public class TestCancelRequest : IReturn<TestCancelRequestResponse>
+public class CancellableRequestTests
+{
+    ServiceStackHost appHost;
+
+    [OneTimeSetUp]
+    public void OnTestFixtureSetUp()
     {
-        public string Tag { get; set; }
+        appHost = new CancellableRequestAppHost()
+            .Init()
+            .Start(Config.AbsoluteBaseUri);
     }
 
-    public class TestCancelRequestResponse
+    [OneTimeTearDown]
+    public void OnTestFixtureTearDown()
     {
-        public ResponseStatus ResponseStatus { get; set; }
+        appHost.Dispose();
     }
 
-    public class CancellableRequestTestService : Service
+    [Test]
+    public async Task Can_Cancel_long_running_request()
     {
-        public object Any(TestCancelRequest req)
+        var tag = Guid.NewGuid().ToString();
+        var client = new JsonServiceClient(Config.AbsoluteBaseUri) {
+            RequestFilter = req => req.Headers[HttpHeaders.XTag] = tag
+        };
+
+        var responseTask = client.PostAsync(new TestCancelRequest
         {
-            using (var cancellableRequest = base.Request.CreateCancellableRequest())
-            {
-                while (true)
-                {
-                    cancellableRequest.Token.ThrowIfCancellationRequested();
-                    Thread.Sleep(100);
-                }
-            }
+            Tag = tag
+        });
+
+        await Task.Delay(1000);
+
+        var cancelResponse = client.Post(new CancelRequest { Tag = tag });
+        Assert.That(cancelResponse.Tag, Is.EqualTo(tag));
+
+        try
+        {
+            var response = await responseTask;
+            Assert.Fail("Should throw");
         }
-    }
-
-    public class CancellableRequestTests
-    {
-        ServiceStackHost appHost;
-
-        [OneTimeSetUp]
-        public void OnTestFixtureSetUp()
+        catch (WebServiceException ex)
         {
-            appHost = new CancellableRequestAppHost()
-                .Init()
-                .Start(Config.AbsoluteBaseUri);
-        }
-
-        [OneTimeTearDown]
-        public void OnTestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
-
-        [Test]
-        public async Task Can_Cancel_long_running_request()
-        {
-            var tag = Guid.NewGuid().ToString();
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri) {
-                RequestFilter = req => req.Headers[HttpHeaders.XTag] = tag
-            };
-
-            var responseTask = client.PostAsync(new TestCancelRequest
-            {
-                Tag = tag
-            });
-
-            await Task.Delay(1000);
-
-            var cancelResponse = client.Post(new CancelRequest { Tag = tag });
-            Assert.That(cancelResponse.Tag, Is.EqualTo(tag));
-
-            try
-            {
-                var response = await responseTask;
-                Assert.Fail("Should throw");
-            }
-            catch (WebServiceException ex)
-            {
-                Assert.That(ex.ErrorCode, Is.EqualTo(typeof(OperationCanceledException).Name));
-            }
+            Assert.That(ex.ErrorCode, Is.EqualTo(typeof(OperationCanceledException).Name));
         }
     }
 }

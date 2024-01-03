@@ -16,9 +16,9 @@ public class AutoQueryDataServiceTests : AutoQueryDataTests
     static AutoQueryDataServiceTests()
     {
 #if NETFX
-            //https://githubengineering.com/crypto-removal-notice/
-            ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        //https://githubengineering.com/crypto-removal-notice/
+        ServicePointManager.Expect100Continue = true;
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 #endif
     }
 

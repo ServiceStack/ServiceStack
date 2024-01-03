@@ -6,207 +6,206 @@ using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+[Route("/sendjson")]
+public class SendJson : IRequiresRequestStream, IReturn<string>
 {
-    [Route("/sendjson")]
-    public class SendJson : IRequiresRequestStream, IReturn<string>
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
+    public int Id { get; set; }
+    public string Name { get; set; }
 
-        public Stream RequestStream { get; set; }
+    public Stream RequestStream { get; set; }
+}
+
+[Route("/sendtext")]
+public class SendText : IRequiresRequestStream, IReturn<string>
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+
+    public string ContentType { get; set; }
+
+    public Stream RequestStream { get; set; }
+}
+
+[Route("/sendraw")]
+public class SendRaw : IRequiresRequestStream, IReturn<byte[]>
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+
+    public string ContentType { get; set; }
+
+    public Stream RequestStream { get; set; }
+}
+
+public class SendRawService : Service
+{
+    [JsonOnly]
+    public async Task<object> Any(SendJson request)
+    {
+        base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
+
+        return await request.RequestStream.ReadToEndAsync();
     }
 
-    [Route("/sendtext")]
-    public class SendText : IRequiresRequestStream, IReturn<string>
+    public async Task<object> Any(SendText request)
     {
-        public int Id { get; set; }
+        base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
 
-        public string Name { get; set; }
-
-        public string ContentType { get; set; }
-
-        public Stream RequestStream { get; set; }
+        base.Request.ResponseContentType = request.ContentType ?? base.Request.AcceptTypes[0];
+        return await request.RequestStream.ReadToEndAsync();
     }
 
-    [Route("/sendraw")]
-    public class SendRaw : IRequiresRequestStream, IReturn<byte[]>
+    public async Task<object> Any(SendRaw request)
     {
-        public int Id { get; set; }
+        base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
 
-        public string Name { get; set; }
-
-        public string ContentType { get; set; }
-
-        public Stream RequestStream { get; set; }
+        base.Request.ResponseContentType = request.ContentType ?? base.Request.AcceptTypes[0];
+        return await request.RequestStream.ReadToEndAsync();
     }
+}
 
-    public class SendRawService : Service
+public class TestBody
+{
+    public string Foo { get; set; }
+}
+
+public class JsonServiceClientSendBodyTests : ServiceClientSendBodyTests
+{
+    public override IServiceClient CreateClient()
     {
-        [JsonOnly]
-        public async Task<object> Any(SendJson request)
-        {
-            base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
-
-            return await request.RequestStream.ReadToEndAsync();
-        }
-
-        public async Task<object> Any(SendText request)
-        {
-            base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
-
-            base.Request.ResponseContentType = request.ContentType ?? base.Request.AcceptTypes[0];
-            return await request.RequestStream.ReadToEndAsync();
-        }
-
-        public async Task<object> Any(SendRaw request)
-        {
-            base.Response.AddHeader("X-Args", $"{request.Id},{request.Name}");
-
-            base.Request.ResponseContentType = request.ContentType ?? base.Request.AcceptTypes[0];
-            return await request.RequestStream.ReadToEndAsync();
-        }
+        return new JsonServiceClient(Config.ListeningOn);
     }
+}
 
-    public class TestBody
+public class JsonHttpClientSendBodyTests : ServiceClientSendBodyTests
+{
+    public override IServiceClient CreateClient()
     {
-        public string Foo { get; set; }
+        return new JsonHttpClient(Config.ListeningOn);
     }
+}
 
-    public class JsonServiceClientSendBodyTests : ServiceClientSendBodyTests
+public abstract class ServiceClientSendBodyTests
+{
+    class AppHost : AppSelfHostBase
     {
-        public override IServiceClient CreateClient()
+        public AppHost() 
+            : base(nameof(ServiceClientSendBodyTests), typeof(SendRawService).Assembly) {}
+
+        public override void Configure(Container container)
         {
-            return new JsonServiceClient(Config.ListeningOn);
         }
     }
 
-    public class JsonHttpClientSendBodyTests : ServiceClientSendBodyTests
+    private readonly ServiceStackHost appHost;
+
+    protected ServiceClientSendBodyTests()
     {
-        public override IServiceClient CreateClient()
-        {
-            return new JsonHttpClient(Config.ListeningOn);
-        }
+        appHost = new AppHost()
+            .Init()
+            .Start(Config.ListeningOn);
     }
 
-    public abstract class ServiceClientSendBodyTests
+    [OneTimeTearDown]
+    public void OneTimeTearDown() => appHost.Dispose();
+
+
+    public abstract IServiceClient CreateClient();
+
+    public SendJson CreateSendJson(IServiceClient client)
     {
-        class AppHost : AppSelfHostBase
+        if (client is ServiceClientBase scb)
         {
-            public AppHost() 
-                : base(nameof(ServiceClientSendBodyTests), typeof(SendRawService).Assembly) {}
-
-            public override void Configure(Container container)
-            {
-            }
+            scb.ResponseFilter = res => Assert.That(res.Headers["X-Args"], Is.EqualTo("1,name"));
+        }
+        else if (client is JsonHttpClient jhc)
+        {
+            jhc.ResponseFilter = res => Assert.That(res.Headers.GetValues("X-Args").FirstOrDefault(), Is.EqualTo("1,name"));
         }
 
-        private readonly ServiceStackHost appHost;
-
-        protected ServiceClientSendBodyTests()
+        return new SendJson
         {
-            appHost = new AppHost()
-                .Init()
-                .Start(Config.ListeningOn);
+            Id = 1,
+            Name = "name",
+        };
+    }
+
+    public SendText CreateSendText(IServiceClient client)
+    {
+        if (client is ServiceClientBase scb)
+        {
+            scb.ResponseFilter = res => Assert.That(res.Headers["X-Args"], Is.EqualTo("1,name"));
+        }
+        else if (client is JsonHttpClient jhc)
+        {
+            jhc.ResponseFilter = res => Assert.That(res.Headers.GetValues("X-Args").FirstOrDefault(), Is.EqualTo("1,name"));
         }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown() => appHost.Dispose();
-
-
-        public abstract IServiceClient CreateClient();
-
-        public SendJson CreateSendJson(IServiceClient client)
+        return new SendText
         {
-            if (client is ServiceClientBase scb)
-            {
-                scb.ResponseFilter = res => Assert.That(res.Headers["X-Args"], Is.EqualTo("1,name"));
-            }
-            else if (client is JsonHttpClient jhc)
-            {
-                jhc.ResponseFilter = res => Assert.That(res.Headers.GetValues("X-Args").FirstOrDefault(), Is.EqualTo("1,name"));
-            }
+            Id = 1,
+            Name = "name",
+            ContentType = "text/plain"
+        };
+    }
 
-            return new SendJson
-            {
-                Id = 1,
-                Name = "name",
-            };
-        }
+    [Test]
+    public void Can_SendBody()
+    {
+        var client = CreateClient();
+        var toRequest = CreateSendJson(client);
 
-        public SendText CreateSendText(IServiceClient client)
-        {
-            if (client is ServiceClientBase scb)
-            {
-                scb.ResponseFilter = res => Assert.That(res.Headers["X-Args"], Is.EqualTo("1,name"));
-            }
-            else if (client is JsonHttpClient jhc)
-            {
-                jhc.ResponseFilter = res => Assert.That(res.Headers.GetValues("X-Args").FirstOrDefault(), Is.EqualTo("1,name"));
-            }
+        var body = new TestBody { Foo = "Bar" };
 
-            return new SendText
-            {
-                Id = 1,
-                Name = "name",
-                ContentType = "text/plain"
-            };
-        }
+        var json = client.PostBody(toRequest, body);
+        Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
 
-        [Test]
-        public void Can_SendBody()
-        {
-            var client = CreateClient();
-            var toRequest = CreateSendJson(client);
+        json = client.PutBody(toRequest, body.ToJson());
+        Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
 
-            var body = new TestBody { Foo = "Bar" };
+        json = client.PatchBody(toRequest, MemoryStreamFactory.GetStream(body.ToJson().ToUtf8Bytes()));
+        Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
+    }
 
-            var json = client.PostBody(toRequest, body);
-            Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
+    [Test]
+    public async Task Can_SendBody_Async()
+    {
+        var client = CreateClient();
+        var toRequest = CreateSendJson(client);
 
-            json = client.PutBody(toRequest, body.ToJson());
-            Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
+        var body = new TestBody { Foo = "Bar" };
 
-            json = client.PatchBody(toRequest, MemoryStreamFactory.GetStream(body.ToJson().ToUtf8Bytes()));
-            Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
-        }
+        var json = await client.PostBodyAsync(toRequest, body);
+        Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
 
-        [Test]
-        public async Task Can_SendBody_Async()
-        {
-            var client = CreateClient();
-            var toRequest = CreateSendJson(client);
+        json = await client.PutBodyAsync(toRequest, body.ToJson());
+        Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
 
-            var body = new TestBody { Foo = "Bar" };
+        json = await client.PatchBodyAsync(toRequest, MemoryStreamFactory.GetStream(body.ToJson().ToUtf8Bytes()));
+        Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
+    }
 
-            var json = await client.PostBodyAsync(toRequest, body);
-            Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
+    [Test]
+    public void Can_SendBody_Raw_String()
+    {
+        var client = CreateClient();
+        var toRequest = CreateSendText(client);
 
-            json = await client.PutBodyAsync(toRequest, body.ToJson());
-            Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
+        var str = client.PutBody(toRequest, "foo");
+        Assert.That(str, Is.EqualTo("foo"));
+    }
 
-            json = await client.PatchBodyAsync(toRequest, MemoryStreamFactory.GetStream(body.ToJson().ToUtf8Bytes()));
-            Assert.That(json.FromJson<TestBody>().Foo, Is.EqualTo("Bar"));
-        }
+    [Test]
+    public async Task Can_SendBody_Raw_String_Async()
+    {
+        var client = CreateClient();
+        var toRequest = CreateSendText(client);
 
-        [Test]
-        public void Can_SendBody_Raw_String()
-        {
-            var client = CreateClient();
-            var toRequest = CreateSendText(client);
-
-            var str = client.PutBody(toRequest, "foo");
-            Assert.That(str, Is.EqualTo("foo"));
-        }
-
-        [Test]
-        public async Task Can_SendBody_Raw_String_Async()
-        {
-            var client = CreateClient();
-            var toRequest = CreateSendText(client);
-
-            var str = await client.PutBodyAsync(toRequest, "foo");
-            Assert.That(str, Is.EqualTo("foo"));
-        }
+        var str = await client.PutBodyAsync(toRequest, "foo");
+        Assert.That(str, Is.EqualTo("foo"));
     }
 }

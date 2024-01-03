@@ -3,23 +3,22 @@ using System;
 using System.Collections.Specialized;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+public class HttpUtility
 {
-    public class HttpUtility
+    public static NameValueCollection ParseQueryString(string query)
     {
-        public static NameValueCollection ParseQueryString(string query)
+        NameValueCollection result = [];
+
+        var queryDict = QueryHelpers.ParseQuery(query);
+
+        foreach(var key in queryDict.Keys)
         {
-            NameValueCollection result = new NameValueCollection();
-
-            var queryDict = QueryHelpers.ParseQuery(query);
-
-            foreach(var key in queryDict.Keys)
-            {
-                result.Add(key, String.Join("; ", queryDict[key]));
-            }
-
-            return result;
+            result.Add(key, String.Join("; ", queryDict[key]));
         }
+
+        return result;
     }
 }
-#endif  
+#endif

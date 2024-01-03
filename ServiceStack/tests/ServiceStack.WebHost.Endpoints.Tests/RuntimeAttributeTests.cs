@@ -10,95 +10,94 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+public class RuntimeAttributes : IReturn<RuntimeAttributes>
 {
-    public class RuntimeAttributes : IReturn<RuntimeAttributes>
+    public int Id { get; set; }
+}
+
+public class RuntimeAttributeService : Service
+{
+    public object Any(RuntimeAttributes request)
     {
-        public int Id { get; set; }
+        return request;
+    }
+}
+
+public class RuntimeAttributeRequestFilter : RequestFilterAttribute
+{
+    public override void Execute(IRequest req, IResponse res, object requestDto)
+    {
+        ((RuntimeAttributes)requestDto).Id++;
+    }
+}
+
+[TestFixture]
+public class RuntimeAttributeTests
+{
+    private ServiceStackHost appHost;
+
+    [OneTimeSetUp]
+    public void OnTestFixtureSetUp()
+    {
+        appHost = new RuntimeAttributeAppHost()
+            .Init()
+            .Start(Config.ListeningOn);
     }
 
-    public class RuntimeAttributeService : Service
+    [OneTimeTearDown]
+    public void OnTestFixtureTearDown()
     {
-        public object Any(RuntimeAttributes request)
+        appHost.Dispose();
+    }
+
+    public class RuntimeAttributeAppHost : AppSelfHostBase
+    {
+        public RuntimeAttributeAppHost()
+            : base(typeof(RuntimeAttributeTests).Name, typeof (RuntimeAttributeAppHost).Assembly)
         {
-            return request;
+            typeof(RuntimeAttributes)
+                .AddAttributes(new RuntimeAttributeRequestFilter());
+
+            typeof(Register)
+                .AddAttributes(new RouteAttribute("/custom-register"))
+                .AddAttributes(new RestrictAttribute(RequestAttributes.Json));
+        }
+
+        public override void Configure(Container container)
+        {
+            this.RegisterService<RegisterService>("/register");
+
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                new IAuthProvider[] {
+                    new BasicAuthProvider(), 
+                }));
         }
     }
 
-    public class RuntimeAttributeRequestFilter : RequestFilterAttribute
+    [Test]
+    public void Does_add_CustomAttributes_to_when_added_in_AppHost_constructor()
     {
-        public override void Execute(IRequest req, IResponse res, object requestDto)
-        {
-            ((RuntimeAttributes)requestDto).Id++;
-        }
+        var restPath = RestHandler.FindMatchingRestPath("GET", "/custom-register", out _);
+
+        Assert.That(restPath, Is.Not.Null);
+        Assert.That(restPath.RequestType, Is.EqualTo(typeof(Register)));
+
+        //Allows JSON
+        appHost.ServiceController.AssertServiceRestrictions(typeof(Register), RequestAttributes.Json);
+
+        Assert.Throws<UnauthorizedAccessException>(() =>
+            appHost.ServiceController.AssertServiceRestrictions(typeof(Register), RequestAttributes.Xml));
     }
 
-    [TestFixture]
-    public class RuntimeAttributeTests
+    [Test]
+    public void Can_add_RequestFilter_attribute_in_Configure()
     {
-        private ServiceStackHost appHost;
+        var client = new JsonServiceClient(Config.ListeningOn);
 
-        [OneTimeSetUp]
-        public void OnTestFixtureSetUp()
-        {
-            appHost = new RuntimeAttributeAppHost()
-                .Init()
-                .Start(Config.ListeningOn);
-        }
+        var response = client.Get(new RuntimeAttributes { Id = 1 });
 
-        [OneTimeTearDown]
-        public void OnTestFixtureTearDown()
-        {
-            appHost.Dispose();
-        }
-
-        public class RuntimeAttributeAppHost : AppSelfHostBase
-        {
-            public RuntimeAttributeAppHost()
-                : base(typeof(RuntimeAttributeTests).Name, typeof (RuntimeAttributeAppHost).Assembly)
-            {
-                typeof(RuntimeAttributes)
-                    .AddAttributes(new RuntimeAttributeRequestFilter());
-
-                typeof(Register)
-                    .AddAttributes(new RouteAttribute("/custom-register"))
-                    .AddAttributes(new RestrictAttribute(RequestAttributes.Json));
-            }
-
-            public override void Configure(Container container)
-            {
-                this.RegisterService<RegisterService>("/register");
-
-                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                    new IAuthProvider[] {
-                        new BasicAuthProvider(), 
-                    }));
-            }
-        }
-
-        [Test]
-        public void Does_add_CustomAttributes_to_when_added_in_AppHost_constructor()
-        {
-            var restPath = RestHandler.FindMatchingRestPath("GET", "/custom-register", out _);
-
-            Assert.That(restPath, Is.Not.Null);
-            Assert.That(restPath.RequestType, Is.EqualTo(typeof(Register)));
-
-            //Allows JSON
-            appHost.ServiceController.AssertServiceRestrictions(typeof(Register), RequestAttributes.Json);
-
-            Assert.Throws<UnauthorizedAccessException>(() =>
-                appHost.ServiceController.AssertServiceRestrictions(typeof(Register), RequestAttributes.Xml));
-        }
-
-        [Test]
-        public void Can_add_RequestFilter_attribute_in_Configure()
-        {
-            var client = new JsonServiceClient(Config.ListeningOn);
-
-            var response = client.Get(new RuntimeAttributes { Id = 1 });
-
-            Assert.That(response.Id, Is.EqualTo(2));
-        }
+        Assert.That(response.Id, Is.EqualTo(2));
     }
 }

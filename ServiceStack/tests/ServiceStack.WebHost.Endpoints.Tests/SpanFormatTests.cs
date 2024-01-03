@@ -8,90 +8,87 @@ using ServiceStack.Formats;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests;
+
+public class CreateMovies : IReturn<CreateMovies>
 {
-    public class CreateMovies : IReturn<CreateMovies>
-    {
-        public List<Tests.Support.Host.Movie> Movies { get; set; }
-    }
+    public List<Tests.Support.Host.Movie> Movies { get; set; }
+}
 
-    public class CreateMoviesAsync : IReturn<CreateMoviesAsync>
-    {
-        public List<Tests.Support.Host.Movie> Movies { get; set; }
-    }
+public class CreateMoviesAsync : IReturn<CreateMoviesAsync>
+{
+    public List<Tests.Support.Host.Movie> Movies { get; set; }
+}
 
-    public class CreateMoviesService : Service
-    {
-        public object Any(CreateMovies request) => request;
+public class CreateMoviesService : Service
+{
+    public object Any(CreateMovies request) => request;
 
-        public async Task<object> Any(CreateMoviesAsync request)
-        {
-            await Task.Yield();
-            return request;
-        }
+    public async Task<object> Any(CreateMoviesAsync request)
+    {
+        await Task.Yield();
+        return request;
     }
+}
     
-    public class SpanFormatTests
+public class SpanFormatTests
+{
+    class AppHost() : AppSelfHostBase(nameof(SpanFormatTests), typeof(SpanFormatTests).Assembly)
     {
-        class AppHost : AppSelfHostBase
+        public override void Configure(Container container)
         {
-            public AppHost() : base(nameof(SpanFormatTests), typeof(SpanFormatTests).Assembly) {}
-
-            public override void Configure(Container container)
-            {
-            }
         }
+    }
 
-        private readonly ServiceStackHost appHost;
+    private readonly ServiceStackHost appHost;
 
-        public SpanFormatTests()
-        {
-            appHost = new AppHost()
-                .Init()
-                .Start(Config.ListeningOn);
-        }
+    public SpanFormatTests()
+    {
+        appHost = new AppHost()
+            .Init()
+            .Start(Config.ListeningOn);
+    }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-            appHost.Dispose();
-            DefaultMemory.Configure();
-        }
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        appHost.Dispose();
+        DefaultMemory.Configure();
+    }
 
-        [Test]
-        public void Does_deserialize_json_RequestBody()
-        {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+    [Test]
+    public void Does_deserialize_json_RequestBody()
+    {
+        var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
-            var response = client.Post(new CreateMovies {
-                Movies = ResetMoviesService.Top5Movies
-            });
+        var response = client.Post(new CreateMovies {
+            Movies = ResetMoviesService.Top5Movies
+        });
 
-            Assert.That(response.Movies, Is.EquivalentTo(ResetMoviesService.Top5Movies));
+        Assert.That(response.Movies, Is.EquivalentTo(ResetMoviesService.Top5Movies));
 
-            var responseAsync = client.Post(new CreateMoviesAsync {
-                Movies = ResetMoviesService.Top5Movies
-            });
+        var responseAsync = client.Post(new CreateMoviesAsync {
+            Movies = ResetMoviesService.Top5Movies
+        });
 
-            Assert.That(responseAsync.Movies, Is.EquivalentTo(ResetMoviesService.Top5Movies));
-        }
+        Assert.That(responseAsync.Movies, Is.EquivalentTo(ResetMoviesService.Top5Movies));
+    }
 
-        [Test]
-        public async Task Does_deserialize_json_RequestBody_Async()
-        {
-            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+    [Test]
+    public async Task Does_deserialize_json_RequestBody_Async()
+    {
+        var client = new JsonServiceClient(Config.AbsoluteBaseUri);
 
-            var response = await client.PostAsync(new CreateMovies {
-                Movies = ResetMoviesService.Top5Movies
-            });
+        var response = await client.PostAsync(new CreateMovies {
+            Movies = ResetMoviesService.Top5Movies
+        });
 
-            Assert.That(response.Movies, Is.EquivalentTo(ResetMoviesService.Top5Movies));
+        Assert.That(response.Movies, Is.EquivalentTo(ResetMoviesService.Top5Movies));
 
-            var responseAsync = await client.PostAsync(new CreateMoviesAsync {
-                Movies = ResetMoviesService.Top5Movies
-            });
+        var responseAsync = await client.PostAsync(new CreateMoviesAsync {
+            Movies = ResetMoviesService.Top5Movies
+        });
 
-            Assert.That(responseAsync.Movies, Is.EquivalentTo(ResetMoviesService.Top5Movies));
-        }
+        Assert.That(responseAsync.Movies, Is.EquivalentTo(ResetMoviesService.Top5Movies));
     }
 }
