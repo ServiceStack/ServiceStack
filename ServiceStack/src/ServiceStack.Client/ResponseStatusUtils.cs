@@ -26,7 +26,7 @@ namespace ServiceStack
             var to = new ResponseStatus {
                 ErrorCode = errorCode,
                 Message = errorMessage,
-                Errors = new List<ResponseError>(),
+                Errors = [],
             };
             if (validationErrors != null)
             {

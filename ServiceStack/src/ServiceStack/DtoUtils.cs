@@ -18,14 +18,15 @@ public static class DtoUtils
     public static ResponseStatus CreateResponseStatus(Exception ex, object request = null, bool debugMode = false)
     {
         var e = ex.UnwrapIfSingleException();
+        var responseStatus = (e is IResponseStatusConvertible customStatus ? customStatus.ToResponseStatus() : null) 
+            ?? ServiceStackHost.Instance?.CreateResponseStatus(ex, request)
+            ?? ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
             
-        var responseStatus = (e is IResponseStatusConvertible customStatus
-            ? customStatus.ToResponseStatus()
-            : null) ?? ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
-            
-        if (responseStatus == null)
-            return null;
+        return responseStatus == null ? null : PopulateResponseStatus(responseStatus, request, e, debugMode);
+    }
 
+    public static ResponseStatus PopulateResponseStatus(ResponseStatus responseStatus, object request, Exception e, bool debugMode = false)
+    {
         if (debugMode)
         {
 #if !NETCORE
