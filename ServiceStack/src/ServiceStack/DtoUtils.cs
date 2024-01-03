@@ -32,7 +32,7 @@ public static class DtoUtils
 #if !NETCORE
                 if (e is System.Web.HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
                 {
-                    responseStatus.Errors ??= new List<ResponseError>();
+                    responseStatus.Errors ??= [];
                     foreach (var err in compileEx.Results.Errors)
                     {
                         responseStatus.Errors.Add(new ResponseError { Message = err.ToString() });
