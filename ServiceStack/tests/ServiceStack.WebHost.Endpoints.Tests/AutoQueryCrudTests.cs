@@ -150,17 +150,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         
                         container.AddSingleton<IAuthRepository>(c =>
                             new InMemoryAuthRepository());
-                        host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
-                            new IAuthProvider[] {
-                                new CredentialsAuthProvider(host.AppSettings),
+                        host.Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                        [
+                            new CredentialsAuthProvider(host.AppSettings),
                                 new JwtAuthProvider(host.AppSettings) {
                                     RequireSecureConnection = false,
                                     AuthKey = AuthKey,
                                     CreatePayloadFilter = (obj, session) => {
                                         obj[nameof(AuthUserSession.City)] = ((AuthUserSession)session).City;
                                     }
-                                }, 
-                            }));
+                                }
+                        ]));
                         
                         var jwtProvider = host.GetPlugin<AuthFeature>().AuthProviders.OfType<JwtAuthProvider>().First();
                         JwtUserToken = jwtProvider.CreateJwtBearerToken(new AuthUserSession {
