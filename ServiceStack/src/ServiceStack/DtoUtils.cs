@@ -19,7 +19,7 @@ public static class DtoUtils
     {
         var e = ex.UnwrapIfSingleException();
         var responseStatus = (e is IResponseStatusConvertible customStatus ? customStatus.ToResponseStatus() : null) 
-            ?? ServiceStackHost.Instance?.CreateResponseStatus(ex, request)
+            ?? ServiceStackHost.Instance?.CreateResponseStatus(e, request)
             ?? ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
             
         return responseStatus == null ? null : PopulateResponseStatus(responseStatus, request, e, debugMode);
@@ -30,7 +30,7 @@ public static class DtoUtils
         if (debugMode)
         {
 #if !NETCORE
-                if (ex is System.Web.HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
+                if (e is System.Web.HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
                 {
                     responseStatus.Errors ??= new List<ResponseError>();
                     foreach (var err in compileEx.Results.Errors)
