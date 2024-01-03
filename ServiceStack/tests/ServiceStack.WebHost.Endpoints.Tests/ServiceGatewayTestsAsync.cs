@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
-using ServiceStack.Logging;
 using ServiceStack.Messaging;
-using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
@@ -92,25 +88,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public object Any(SGSendAsyncGetInternal request)
         {
-            request.Value += "> " + Request.Verb + " " + typeof(SGSendAsyncGetInternal).Name;
+            request.Value += "> " + Request.Verb + " " + nameof(SGSendAsyncGetInternal);
             return Gateway.SendAsync(request.ConvertTo<SGAsyncGetInternal>());
         }
 
         public object Any(SGSendAsyncGetExternal request)
         {
-            request.Value += "> " + Request.Verb + " " + typeof(SGSendAsyncGetExternal).Name;
+            request.Value += "> " + Request.Verb + " " + nameof(SGSendAsyncGetExternal);
             return Gateway.SendAsync(request.ConvertTo<SGAsyncGetExternal>());
         }
 
         public object Any(SGSendAsyncPostInternal request)
         {
-            request.Value += "> " + Request.Verb + " " + typeof(SGSendAsyncPostInternal).Name;
+            request.Value += "> " + Request.Verb + " " + nameof(SGSendAsyncPostInternal);
             return Gateway.SendAsync(request.ConvertTo<SGAsyncPostInternal>());
         }
 
         public object Any(SGSendAsyncPostExternal request)
         {
-            request.Value += "> " + Request.Verb + " " + typeof(SGSendAsyncPostExternal).Name;
+            request.Value += "> " + Request.Verb + " " + nameof(SGSendAsyncPostExternal);
             return Gateway.SendAsync(request.ConvertTo<SGAsyncPostExternal>());
         }
 
@@ -118,7 +114,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var requests = 3.Times(i => new SGAsyncGetAnyInternal
             {
-                Value = request.Value + "> " + Request.Verb + " " + typeof(SGSendAllAsyncGetAnyInternal).Name + i
+                Value = request.Value + "> " + Request.Verb + " " + nameof(SGSendAllAsyncGetAnyInternal) + i
             });
 
             return Gateway.SendAllAsync(requests);
@@ -128,7 +124,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var requests = 3.Times(i => new SGAsyncPostExternal
             {
-                Value = request.Value + "> " + Request.Verb + " " + typeof(SGSendAllAsyncPostExternal).Name + i
+                Value = request.Value + "> " + Request.Verb + " " + nameof(SGSendAllAsyncPostExternal) + i
             });
 
             return Gateway.SendAllAsync(requests);
@@ -136,13 +132,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public async Task Any(SGPublishAsyncPostInternalVoid request)
         {
-            request.Value += "> " + Request.Verb + " " + typeof(SGPublishAsyncPostInternalVoid).Name;
+            request.Value += "> " + Request.Verb + " " + nameof(SGPublishAsyncPostInternalVoid);
             await Gateway.PublishAsync(request.ConvertTo<SGAsyncPostInternalVoid>());
         }
 
         public async Task Any(SGPublishAsyncPostExternalVoid request)
         {
-            request.Value += "> " + Request.Verb + " " + typeof(SGPublishAsyncPostExternalVoid).Name;
+            request.Value += "> " + Request.Verb + " " + nameof(SGPublishAsyncPostExternalVoid);
             await Gateway.PublishAsync(request.ConvertTo<SGAsyncPostExternalVoid>());
         }
 
@@ -150,7 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var requests = 3.Times(i => new SGAsyncPostInternalVoid
             {
-                Value = request.Value + "> " + Request.Verb + " " + typeof(SGPublishAllAsyncPostInternalVoid).Name + i
+                Value = request.Value + "> " + Request.Verb + " " + nameof(SGPublishAllAsyncPostInternalVoid) + i
             });
 
             await Gateway.PublishAllAsync(requests);
@@ -160,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var requests = 3.Times(i => new SGAsyncPostExternalVoid
             {
-                Value = request.Value + "> " + Request.Verb + " " + typeof(SGPublishAllAsyncPostExternalVoid).Name + i
+                Value = request.Value + "> " + Request.Verb + " " + nameof(SGPublishAllAsyncPostExternalVoid) + i
             });
 
             await Gateway.PublishAllAsync(requests);
@@ -234,27 +230,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Get(SGAsyncGetInternal request)
         {
             if (request.Throw)
-                throw new ArgumentException("ERROR " + typeof(SGSendAsyncGetInternal).Name);
+                throw new ArgumentException("ERROR " + nameof(SGSendAsyncGetInternal));
 
-            request.Value += "> GET " + typeof(SGAsyncGetInternal).Name;
+            request.Value += "> GET " + nameof(SGAsyncGetInternal);
             return request;
         }
 
         public object Post(SGAsyncPostInternal request)
         {
-            request.Value += "> POST " + typeof(SGAsyncPostInternal).Name;
+            request.Value += "> POST " + nameof(SGAsyncPostInternal);
             return Task.FromResult(request);
         }
 
         public object Any(SGAsyncGetAnyInternal request)
         {
-            request.Value += "> ANY " + typeof(SGAsyncGetAnyInternal).Name;
+            request.Value += "> ANY " + nameof(SGAsyncGetAnyInternal);
             return request;
         }
 
         public void Post(SGAsyncPostInternalVoid request)
         {
-            request.Value += "> POST " + typeof(SGAsyncPostInternalVoid).Name;
+            request.Value += "> POST " + nameof(SGAsyncPostInternalVoid);
         }
     }
 
@@ -265,27 +261,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             await Task.Yield();
 
             if (request.Throw)
-                throw new ArgumentException("ERROR " + typeof(SGAsyncGetExternal).Name);
+                throw new ArgumentException("ERROR " + nameof(SGAsyncGetExternal));
 
-            request.Value += "> GET " + typeof(SGAsyncGetExternal).Name;
+            request.Value += "> GET " + nameof(SGAsyncGetExternal);
             return await Task.FromResult(request);
         }
 
         public async Task<object> Post(SGAsyncPostExternal request)
         {
-            request.Value += "> POST " + typeof(SGAsyncPostExternal).Name;
+            request.Value += "> POST " + nameof(SGAsyncPostExternal);
             return await Task.FromResult(request);
         }
 
         public Task Any(SGAsyncGetAnyExternal request)
         {
-            request.Value += "> ANY " + typeof(SGAsyncGetAnyExternal).Name;
+            request.Value += "> ANY " + nameof(SGAsyncGetAnyExternal);
             return Task.FromResult(request);
         }
 
         public Task Post(SGAsyncPostExternalVoid request)
         {
-            request.Value += "> POST " + typeof(SGAsyncPostExternalVoid).Name;
+            request.Value += "> POST " + nameof(SGAsyncPostExternalVoid);
             return Task.FromResult((object)null);
         }
     }
@@ -306,7 +302,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         class MixedAppHost : AppSelfHostBase
         {
-            public MixedAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
+            public MixedAppHost() : base(nameof(ServiceGatewayTests), typeof(ServiceGatewayServices).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -366,7 +362,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         class MixedAppHost : AppSelfHostBase
         {
-            public MixedAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
+            public MixedAppHost() : base(nameof(ServiceGatewayTests), typeof(ServiceGatewayServices).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -407,7 +403,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         class AllInternalAppHost : AppSelfHostBase
         {
-            public AllInternalAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
+            public AllInternalAppHost() : base(nameof(ServiceGatewayTests), typeof(ServiceGatewayServices).Assembly) { }
 
             public override void Configure(Container container)
             {

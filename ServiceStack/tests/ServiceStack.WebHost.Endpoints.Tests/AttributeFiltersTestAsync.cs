@@ -28,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             dto.RequestFilterExecuted = true;
 
             //Check for equality to previous cache to ensure a filter attribute is no singleton
-            dto.RequestFilterDependenyIsResolved = Cache != null && !Cache.Equals(previousCache);
+            dto.RequestFilterDependencyIsResolved = Cache != null && !Cache.Equals(previousCache);
 
             previousCache = Cache;
             return TypeConstants.EmptyTask;
@@ -38,11 +38,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     //Only executed for the provided HTTP methods (GET, POST) 
-    public class ContextualFilterTestAsyncAttribute : RequestFilterAsyncAttribute
+    public class ContextualFilterTestAsyncAttribute(ApplyTo applyTo) : RequestFilterAsyncAttribute(applyTo)
     {
-        public ContextualFilterTestAsyncAttribute(ApplyTo applyTo)
-            : base(applyTo) {}
-
         public override Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             var dto = (AttributeFilteredAsync)requestDto;
@@ -57,16 +54,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [ContextualFilterTestAsync(ApplyTo.Delete | ApplyTo.Put)]
     public class AttributeFilteredAsync
     {
-        public AttributeFilteredAsync()
-        {
-            this.AttrsExecuted = new List<string>();
-        }
-
         public bool RequestFilterExecuted { get; set; }
         public bool ContextualRequestFilterExecuted { get; set; }
         public bool InheritedRequestFilterExecuted { get; set; }
-        public bool RequestFilterDependenyIsResolved { get; set; }
-        public List<string> AttrsExecuted { get; set; }
+        public bool RequestFilterDependencyIsResolved { get; set; }
+        public List<string> AttrsExecuted { get; set; } = [];
     }
 
     //Always executed
@@ -92,13 +84,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     }
 
     //Only executed for the provided HTTP methods (GET, POST) 
-    public class ContextualResponseFilterTestAsyncAttribute : ResponseFilterAsyncAttribute
+    public class ContextualResponseFilterTestAsyncAttribute(ApplyTo applyTo) : ResponseFilterAsyncAttribute(applyTo)
     {
-        public ContextualResponseFilterTestAsyncAttribute(ApplyTo applyTo)
-            : base(applyTo)
-        {
-        }
-
         public override Task ExecuteAsync(IRequest req, IResponse res, object responseDto)
         {
             var dto = responseDto as AttributeFilteredAsyncResponse;
@@ -165,12 +152,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class PriorityAttributeTestAsync : IReturn<PriorityAttributeTestAsync>
     {
-        public PriorityAttributeTestAsync()
-        {
-            this.Names = new List<string>();
-        }
-
-        public List<string> Names { get; set; }
+        public List<string> Names { get; set; } = [];
     }
 
     public class PriorityAttributeAsyncService : Service
@@ -201,7 +183,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RequestFilterExecuted = request.RequestFilterExecuted,
                 InheritedRequestFilterExecuted = request.InheritedRequestFilterExecuted,
                 ContextualRequestFilterExecuted = request.ContextualRequestFilterExecuted,
-                RequestFilterDependencyIsResolved = request.RequestFilterDependenyIsResolved,
+                RequestFilterDependencyIsResolved = request.RequestFilterDependencyIsResolved,
                 ResponseFilterDependencyIsResolved = false
             };
         }
@@ -230,8 +212,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class AttributeFiltersAsyncTest
     {
-        private const string ListeningOn = "http://localhost:1337/";
-        private const string ServiceClientBaseUri = "http://localhost:1337/";
+        private const string ListeningOn = Config.BaseUriHost;
+        private const string ServiceClientBaseUri = Config.BaseUriHost;
 
         public class AppHost
             : AppHostHttpListenerBase
@@ -313,7 +295,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException e)
             {
                 //Ensure we have stack trace present
-                Assert.IsTrue(e.ResponseBody.Contains("ThrowingFilterAttribute"), "No stack trace in the response (it's probably empty)");
+                Assert.That(e.ResponseBody, Does.Contain("ThrowingFilterAttribute"), "No stack trace in the response (it's probably empty)");
             }
         }
 

@@ -4,7 +4,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class Config
     {
-        public static readonly string ServiceStackBaseUri = Environment.GetEnvironmentVariable("CI_BASEURI") ?? "http://localhost:20000";
+        public const string BaseUri = "http://localhost:20000";
+        public const string BaseUriHost = "http://localhost:20000/";
+        public static readonly string ServiceStackBaseUri = Environment.GetEnvironmentVariable("CI_BASEURI") ?? BaseUri;
         public static readonly string AbsoluteBaseUri = ServiceStackBaseUri + "/";
         
         public static readonly string HostNameBaseUrl = "http://DESKTOP-BCS76J0:20000/"; //Allow fiddler

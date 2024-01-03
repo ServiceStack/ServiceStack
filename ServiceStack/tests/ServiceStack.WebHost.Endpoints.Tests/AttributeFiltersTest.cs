@@ -219,17 +219,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class AttributeFiltersTest
     {
-        private const string ListeningOn = "http://localhost:1337/";
-        private const string ServiceClientBaseUri = "http://localhost:1337/";
+        private const string ListeningOn = Config.BaseUriHost;
+        private const string ServiceClientBaseUri = Config.BaseUriHost;
 
-        public class AttributeFiltersAppHostHttpListener
-            : AppHostHttpListenerBase
+        public class AttributeFiltersAppHostHttpListener() : AppHostHttpListenerBase("Attribute Filters Tests",
+            typeof(AttributeAttributeFilteredService).Assembly)
         {
-
-            public AttributeFiltersAppHostHttpListener()
-                : base("Attribute Filters Tests", typeof(AttributeAttributeFilteredService).Assembly)
-            { }
-
             public override void Configure(Funq.Container container)
             {
                 container.Register<ICacheClient>(c => new MemoryCacheClient()).ReusedWithin(Funq.ReuseScope.None);
@@ -303,7 +298,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException e)
             {
                 //Ensure we have stack trace present
-                Assert.IsTrue(e.ResponseBody.Contains("ThrowingFilterAttribute"), "No stack trace in the response (it's probably empty)");
+                Assert.That(e.ResponseBody, Does.Contain("ThrowingFilterAttribute"), "No stack trace in the response (it's probably empty)");
             }
         }
 
