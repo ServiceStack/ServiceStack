@@ -12,8 +12,10 @@ using MyApp.Components;
 using MyApp.Components.Account;
 using MyApp.ServiceInterface;
 
+Console.WriteLine("Program.cs");
 var builder = WebApplication.CreateBuilder(args);
 
+Console.WriteLine("WebApplication.CreateBuilder(args)");
 var services = builder.Services;
 var config = builder.Configuration;
 
@@ -26,6 +28,7 @@ services.AddScoped<IdentityUserAccessor>();
 services.AddScoped<IdentityRedirectManager>();
 services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
+Console.WriteLine("services.AddAuthentication()");
 services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -46,6 +49,7 @@ services.AddAuthentication(options =>
 services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("App_Data"));
 
+Console.WriteLine("services.AddDbContext()");
 // $ dotnet ef migrations add CreateIdentitySchema
 // $ dotnet ef database update
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -53,6 +57,7 @@ services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString/*, b => b.MigrationsAssembly(nameof(MyApp))*/ ));
 services.AddDatabaseDeveloperPageExceptionFilter();
 
+Console.WriteLine("services.AddIdentityCore()");
 services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -67,6 +72,7 @@ services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, AdditionalUserC
 var baseUrl = builder.Configuration["ApiBaseUrl"] ??
     (builder.Environment.IsDevelopment() ? "https://localhost:5001" : "http://" + IPAddress.Loopback);
 services.AddScoped(c => new HttpClient { BaseAddress = new Uri(baseUrl) });
+Console.WriteLine("services.AddBlazorServerIdentityApiClient()");
 services.AddBlazorServerIdentityApiClient(baseUrl);
 services.AddLocalStorage();
 
@@ -74,6 +80,7 @@ services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
 
 // Register all services
+Console.WriteLine("services.AddServiceStack()");
 services.AddServiceStack(typeof(MyServices).Assembly, c => {
     c.AddSwagger(o => {
         o.AddJwtBearer();
@@ -81,6 +88,7 @@ services.AddServiceStack(typeof(MyServices).Assembly, c => {
     });
 });
 
+Console.WriteLine("var app = builder.Build();");
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -108,11 +116,13 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
+Console.WriteLine("app.UseServiceStack()");
 app.UseServiceStack(new AppHost(), options =>
 {
     options.MapEndpoints(force:true);
 });
 
+Console.WriteLine("BlazorConfig.Set()");
 BlazorConfig.Set(new()
 {
     Services = app.Services,

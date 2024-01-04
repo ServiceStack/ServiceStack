@@ -9,6 +9,7 @@ public class ConfigureAutoQuery : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices(services => {
+            Console.WriteLine("ConfigureAutoQuery.ConfigureServices()");
             // Enable Audit History
             services.AddSingleton<ICrudEvents>(c =>
                 new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));

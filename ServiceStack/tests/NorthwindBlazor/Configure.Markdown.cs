@@ -11,6 +11,7 @@ public class ConfigureSsg : IHostingStartup
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices((context, services) =>
         {
+            Console.WriteLine("ConfigureSsg.ConfigureServices()");
             context.Configuration.GetSection(nameof(AppConfig)).Bind(AppConfig.Instance);
             services.AddSingleton(AppConfig.Instance);
             services.AddSingleton<MarkdownPages>();

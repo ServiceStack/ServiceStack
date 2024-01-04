@@ -16,6 +16,7 @@ public class ConfigureMq : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices((context, services) => {
+            Console.WriteLine("ConfigureMq.ConfigureServices()");
             var smtpConfig = context.Configuration.GetSection(nameof(SmtpConfig))?.Get<SmtpConfig>();
             if (smtpConfig is not null)
             {
