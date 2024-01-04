@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -125,9 +126,8 @@ public abstract partial class ServiceStackHost
             ReturnRedirectHandler,
             ReturnRequestInfoHandler
         ];
-        DefaultScriptContext = new ScriptContext {
-            ScriptLanguages = { ScriptLisp.Language },
-        }.InitForSharpPages(this);
+        DefaultScriptContext = InitOptions.ScriptContext;
+        DefaultScriptContext.Container = Container;
 
         JsConfig.InitStatics();
     }
@@ -144,14 +144,14 @@ public abstract partial class ServiceStackHost
                 "No Assemblies provided in your AppHost's base constructor.\n"
                 + "To register your services, please provide the assemblies where your web services are defined.");
 
-        var serviceTypes = GetAssemblyTypes(assembliesWithServices);
+        var serviceTypes = GetAssemblyServiceTypes(assembliesWithServices);
         serviceTypes.AddDistinctRange(InitOptions.ServiceTypes);
         InitOptions.ServiceTypes.Clear();
         
         return CreateServiceController(serviceTypes);
     }
 
-    protected List<Type> GetAssemblyTypes(Assembly[] assembliesWithServices)
+    protected List<Type> GetAssemblyServiceTypes(Assembly[] assembliesWithServices)
     {
         var results = new List<Type>();
         string assemblyName = null;
@@ -162,7 +162,7 @@ public abstract partial class ServiceStackHost
             foreach (var assembly in assembliesWithServices)
             {
                 assemblyName = assembly.FullName;
-                foreach (var type in assembly.GetTypes())
+                foreach (var type in assembly.GetTypes().Where(ServiceController.IsServiceType))
                 {
                     if (ExcludeAutoRegisteringServiceTypes.Contains(type))
                         continue;
@@ -265,6 +265,9 @@ public abstract partial class ServiceStackHost
                 OnStartupException(ex, instance.GetType().Name, nameof(RunConfigure));
             }
         }
+
+        GlobalAfterConfigureServices.ForEach(fn => fn(Container));
+        GlobalAfterConfigureServices.Clear();
 
         GlobalBeforeConfigure.Each(RunManagedAction);
         preStartupConfigs.ForEach(RunConfigure);
@@ -512,7 +515,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
     /// </summary>
-    public virtual Container Container { get; private set; } = new() { DefaultOwner = Owner.External };
+    public Container Container { get; protected set; } = new() { DefaultOwner = Owner.External };
 
     /// <summary>
     /// Dynamically register Service Routes
@@ -617,6 +620,11 @@ public abstract partial class ServiceStackHost
     public List<HandleGatewayExceptionDelegate> GatewayExceptionHandlers { get; set; } = [];
     public List<HandleGatewayExceptionAsyncDelegate> GatewayExceptionHandlersAsync { get; set; } = [];
 
+    /// <summary>
+    /// Register static callbacks for configuring dependencies
+    /// </summary>
+    public static List<Action<IServiceCollection>> GlobalAfterConfigureServices { get; } = [];
+    
     /// <summary>
     /// Register static callbacks fired just before AppHost.Configure() 
     /// </summary>

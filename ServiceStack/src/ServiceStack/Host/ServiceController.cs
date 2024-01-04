@@ -167,6 +167,16 @@ public class ServiceController : IServiceController
         }
     }
 
+    public static bool IsRequestType(Type type)
+    {
+        return !type.IsValueType
+               && type != typeof(string)
+               && !type.IsAbstract 
+               && !type.IsGenericTypeDefinition 
+               && !type.ContainsGenericParameters
+               && !type.IsGenericParameter;
+    }
+
     public static bool IsServiceType(Type serviceType)
     {
         return typeof(IService).IsAssignableFrom(serviceType)
@@ -185,10 +195,7 @@ public class ServiceController : IServiceController
 
     public static bool IsServiceAction(string actionName, Type requestType)
     {
-        if (requestType.IsValueType || requestType == typeof(string))
-            return false;
-
-        return IsServiceAction(actionName);
+        return IsRequestType(requestType) && IsServiceAction(actionName);
     }
 
     public static bool IsServiceAction(string actionName)

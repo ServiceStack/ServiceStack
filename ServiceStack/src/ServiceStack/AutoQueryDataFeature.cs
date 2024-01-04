@@ -245,7 +245,7 @@ public class AutoQueryDataFeature : IPlugin, IConfigureServices, IPostConfigureS
 
     public void AfterConfigure(IServiceCollection services)
     {
-        var scannedTypes = ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes();
+        var scannedTypes = ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes(include:Crud.AnyAutoQueryType);
 
         var userRequestDtosMap = ServiceStackHost.InitOptions.ResolveRequestServiceTypesMap();
 

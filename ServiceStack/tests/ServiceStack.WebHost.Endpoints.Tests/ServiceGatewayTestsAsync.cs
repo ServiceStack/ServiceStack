@@ -360,10 +360,8 @@ public class MixedServiceGatewayAsyncTests : ServiceGatewayAsyncTests
         }
     }
 
-    class MixedAppHost : AppSelfHostBase
+    class MixedAppHost() : AppSelfHostBase(nameof(ServiceGatewayTests), typeof(ServiceGatewayServices).Assembly)
     {
-        public MixedAppHost() : base(nameof(ServiceGatewayTests), typeof(ServiceGatewayServices).Assembly) { }
-
         public override void Configure(Container container)
         {
             container.Register<IMessageFactory>(c => new MessageFactory());
@@ -381,10 +379,8 @@ public class MixedServiceGatewayAsyncTests : ServiceGatewayAsyncTests
 
 public class AllExternalServiceGatewayAsyncTests : ServiceGatewayAsyncTests
 {
-    class AllExternalAppHost : AppSelfHostBase
+    class AllExternalAppHost() : AppSelfHostBase(nameof(ServiceGatewayTests), typeof(ServiceGatewayServices).Assembly)
     {
-        public AllExternalAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
-
         public override void Configure(Container container)
         {
             container.Register<IMessageFactory>(c => new MessageFactory());
@@ -401,15 +397,11 @@ public class AllExternalServiceGatewayAsyncTests : ServiceGatewayAsyncTests
 //Tests
 public class AllInternalServiceGatewayAsyncTests : ServiceGatewayAsyncTests
 {
-    class AllInternalAppHost : AppSelfHostBase
+    class AllInternalAppHost() : AppSelfHostBase(nameof(ServiceGatewayTests), typeof(ServiceGatewayServices).Assembly)
     {
-        public AllInternalAppHost() : base(nameof(ServiceGatewayTests), typeof(ServiceGatewayServices).Assembly) { }
-
         public override void Configure(Container container)
         {
             container.Register<IMessageFactory>(c => new MessageFactory());
-                
-            Plugins.Add(new ValidationFeature());
         }
     }
 
@@ -440,7 +432,7 @@ public abstract class ServiceGatewayAsyncTests
 
     public class MessageProducer : IMessageProducer
     {
-        public static List<object> Messages = new List<object>();
+        public static List<object> Messages = [];
 
         public void Publish<T>(T messageBody)
         {

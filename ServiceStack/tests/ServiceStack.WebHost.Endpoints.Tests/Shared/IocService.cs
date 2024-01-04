@@ -273,7 +273,7 @@ namespace ServiceStack.Shared.Tests
                 FunqNoneScopeDisposable_DisposeCount = FunqNoneScopeDisposable.DisposeCount,
                 FunqRequestScopeDepDisposableProperty_DisposeCount = FunqRequestScopeDepDisposableProperty.DisposeCount,
                 AltRequestScopeDepDisposableProperty_DisposeCount = AltRequestScopeDepDisposableProperty.DisposeCount,
-                Container_disposablesCount = HostContext.Container.disposablesCount,
+                Container_disposablesCount = HostContext.Container.DisposablesCount,
             };
         }
     }

@@ -31,6 +31,7 @@ using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 #else
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Hosting;
+using ServiceStack.Script;
 using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
 using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IHostApplicationLifetime;
 #endif
@@ -552,13 +553,7 @@ public static class NetCoreAppHostExtensions
         return builder;
     }
 
-    public static void AddPlugin<T>(this IServiceCollection services, T plugin) where T : IPlugin
-    {
-        ServiceStackHost.InitOptions.Plugins.AddIfNotExists(plugin);
-    }
-
 #if NET8_0_OR_GREATER
-
     public static void AddServiceStack(this IServiceCollection services, Assembly serviceAssembly, Action<ServiceStackServicesOptions>? configure = null) =>
         services.AddServiceStack([serviceAssembly], configure);
     
@@ -577,6 +572,9 @@ public static class NetCoreAppHostExtensions
         {
             services.AddTransient(type);
         }
+        
+        ServiceStackHost.GlobalAfterConfigureServices.ForEach(fn => fn(services));
+        ServiceStackHost.GlobalAfterConfigureServices.Clear();
     }
 #endif
 
@@ -625,6 +623,11 @@ public static class NetCoreAppHostExtensions
         appHost.Init();
 
 #if NET8_0_OR_GREATER
+        if (ServiceStackHost.InitOptions.RegisterServicesInServiceCollection)
+        {
+            appHost.Container.CheckAdapterFirst = true;
+        }
+        
         if (appHost.Options.MapEndpointRouting)
         {
             if (app is Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)

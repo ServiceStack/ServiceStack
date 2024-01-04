@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host;
+using ServiceStack.Script;
 
 #nullable enable
 
@@ -17,6 +18,8 @@ public class ServiceStackServicesOptions
     {
         Services = services;
     }
+    public bool RegisterServicesInServiceCollection => Services != null;
+
     internal void ConfigurePlugins(IServiceCollection services)
     {
         var configurePlugins = Plugins.Where(x => !PluginsConfigured.Contains(x)).OfType<IConfigureServices>();
@@ -33,6 +36,13 @@ public class ServiceStackServicesOptions
         }
         Plugins.ForEach(x => PluginsConfigured.Add(x));
     }
+    
+    /// <summary>
+    /// The fallback ScriptContext to use if no SharpPagesFeature plugin was registered
+    /// </summary>
+    public ScriptContext ScriptContext { get; set; } = new ScriptContext {
+        ScriptLanguages = { ScriptLisp.Language },
+    }.InitForSharpPages();
 
     /// <summary>
     /// Register Assemblies to scan for ServiceStack Services to load before AppHost Configure
@@ -92,6 +102,10 @@ public class ServiceStackServicesOptions
     /// </summary>
     public HashSet<Assembly> ResolveAllServiceAssemblies()
     {
+        // return empty, if not scanning assemblies
+        // if (ServiceAssemblies.Count == 0 && (ServiceStackHost.Instance == null || ServiceStackHost.Instance.ServiceAssemblies.Count == 0))
+        //     return [];
+        
         var assemblies = new HashSet<Assembly>(ServiceAssemblies);
         ServiceTypes.Each(x => assemblies.Add(x.Assembly));
         ServicesRegistered.Each(x => assemblies.Add(x.Assembly));
@@ -112,6 +126,7 @@ public class ServiceStackServicesOptions
     {
         var assemblies = ResolveAllServiceAssemblies();
         var serviceTypes = assemblies.SelectMany(x => x.GetTypes()).Where(x => x.HasInterface(typeof(IService))).ToSet();
+        serviceTypes.AddDistinctRange(ServiceTypes);
         return serviceTypes;
     }
 
@@ -119,14 +134,17 @@ public class ServiceStackServicesOptions
     /// Find all Request DTO types in Service Assemblies
     /// </summary>
     /// <returns></returns>
-    public HashSet<Type> ResolveAssemblyRequestTypes()
+    public HashSet<Type> ResolveAssemblyRequestTypes(Func<Type,bool>? include = null)
     {
         var origAssemblies = ResolveAllServiceAssemblies();
-        var assemblies = new HashSet<Assembly>(origAssemblies);
 
         var serviceTypes = ResolveAssemblyServiceTypes();
         var requestTypes = ServiceController.GetServiceRequestTypes(serviceTypes);
-
+        
+        if (include == null)
+            return requestTypes;
+        
+        var assemblies = new HashSet<Assembly>(origAssemblies);
         foreach (var requestType in requestTypes)
         {
             assemblies.Add(requestType.Assembly);
@@ -134,12 +152,15 @@ public class ServiceStackServicesOptions
         
         foreach (var assembly in assemblies)
         {
-            foreach (var type in assembly.GetTypes().Where(x => x.HasInterface(typeof(IQuery)) || x.HasInterface(typeof(ICrud))))
+            foreach (var type in assembly.GetTypes().Where(include))
             {
+                if (!ServiceController.IsRequestType(type))
+                    continue;
+                
                 requestTypes.Add(type);
             }
         }
-        
+
         return requestTypes;
     }
     

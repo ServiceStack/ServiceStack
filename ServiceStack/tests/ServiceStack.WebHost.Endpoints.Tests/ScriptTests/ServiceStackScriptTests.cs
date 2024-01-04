@@ -80,6 +80,7 @@ public class ServiceStackScriptTests
                 {
                     new DbScriptsAsync(),
                     new AutoQueryScripts(),
+                    new MyValidators(),
                 },
             });
                 

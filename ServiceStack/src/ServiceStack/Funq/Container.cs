@@ -17,7 +17,7 @@ public partial class Container : IDisposable
     Dictionary<ServiceKey, ServiceEntry> services = new();
     Dictionary<ServiceKey, ServiceEntry> servicesReadOnlyCopy;
 
-    public int disposablesCount
+    public int DisposablesCount
     {
         get { lock (disposables) return disposables.Count; }
     }

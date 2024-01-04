@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -139,103 +140,98 @@ public partial class AutoQueryCrudTests
     public AutoQueryCrudTests()
     {
         appHost = new AutoQueryAppHost {
-                ConfigureFn = (host,container) => {
-
-                    container.AddSingleton<ICrudEvents>(c =>
-                            new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()) {
-                                NamedConnections = { AutoQueryAppHost.SqlServerNamedConnection }
-                            }.Reset() //Drop and re-create AutoCrudEvent Table
-                    );
-                    container.Resolve<ICrudEvents>().InitSchema();
-                        
-                    container.AddSingleton<IAuthRepository>(c =>
-                        new InMemoryAuthRepository());
-                    host.Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                    [
-                        new CredentialsAuthProvider(host.AppSettings),
-                        new JwtAuthProvider(host.AppSettings) {
-                            RequireSecureConnection = false,
-                            AuthKey = AuthKey,
-                            CreatePayloadFilter = (obj, session) => {
-                                obj[nameof(AuthUserSession.City)] = ((AuthUserSession)session).City;
-                            }
-                        }
-                    ]));
-                        
-                    var jwtProvider = host.GetPlugin<AuthFeature>().AuthProviders.OfType<JwtAuthProvider>().First();
-                    JwtUserToken = jwtProvider.CreateJwtBearerToken(new AuthUserSession {
-                        Id = SessionExtensions.CreateRandomSessionId(),
-                        UserName = "jwtuser",
-                        FirstName = "JWT",
-                        LastName = "User",
-                        DisplayName = "JWT User",
-                        City = "Japan",
-                    });
-                        
-                    var authRepo = container.Resolve<IAuthRepository>();
-                    authRepo.InitSchema();
-                        
-                    authRepo.CreateUserAuth(new UserAuth {
-                        Id = 1,
-                        Email = "admin@email.com", 
-                        DisplayName = "Admin User",
-                        City = "London",
-                        Roles = new List<string> {
-                            RoleNames.Admin
-                        }
-                    }, "p@55wOrd");
-                        
-                    authRepo.CreateUserAuth(new UserAuth {
-                        Id = 2,
-                        UserName = "manager", 
-                        DisplayName = "The Manager",
-                        City = "Perth",
-                        Roles = new List<string> {
-                            "Employee",
-                            "Manager",
-                        }
-                    }, "p@55wOrd");
-                        
-                    authRepo.CreateUserAuth(new UserAuth {
-                        Id = 3,
-                        Email = "employee@email.com", 
-                        DisplayName = "An Employee",
-                        City = "Manhattan",
-                        Roles = new List<string> {
-                            "Employee",
-                        }
-                    }, "p@55wOrd");
-                        
-                    void AddTenantId(IRequest req, IResponse res, object dto)
-                    {
-                        var userSession = req.SessionAs<AuthUserSession>();
-                        if (userSession.IsAuthenticated)
-                        {
-                            req.SetItem(TenantId, userSession.City switch {
-                                "London" => 10,
-                                "Perth"  => 10,
-                                _        => 20,
-                            });
+            ConfigureFn = (host,container) => {
+                container.AddSingleton<ICrudEvents>(c =>
+                        new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()) {
+                            NamedConnections = { AutoQueryAppHost.SqlServerNamedConnection }
+                        }.Reset() //Drop and re-create AutoCrudEvent Table
+                );
+                container.Resolve<ICrudEvents>().InitSchema();
+                    
+                container.AddSingleton<IAuthRepository>(c =>
+                    new InMemoryAuthRepository());
+                host.Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                [
+                    new CredentialsAuthProvider(host.AppSettings),
+                    new JwtAuthProvider(host.AppSettings) {
+                        RequireSecureConnection = false,
+                        AuthKey = AuthKey,
+                        CreatePayloadFilter = (obj, session) => {
+                            obj[nameof(AuthUserSession.City)] = ((AuthUserSession)session).City;
                         }
                     }
-                            
-                    host.GlobalRequestFilters.Add(AddTenantId);
-                    host.GlobalMessageRequestFilters.Add(AddTenantId);
-
-                    container.AddSingleton<IMessageService>(c => new BackgroundMqService());
-                    var mqService = container.Resolve<IMessageService>();
-                    mqService.RegisterHandler<CreateRockstarAuditTenant>(host.ExecuteMessage);
-                    mqService.RegisterHandler<UpdateRockstarAuditTenant>(host.ExecuteMessage);
-                    mqService.RegisterHandler<PatchRockstarAuditTenant>(host.ExecuteMessage);
-                    mqService.RegisterHandler<RealDeleteAuditTenant>(host.ExecuteMessage);
-                    mqService.RegisterHandler<CreateRockstarAuditMqToken>(host.ExecuteMessage);
-                    host.AfterInitCallbacks.Add(_ => mqService.Start());
-                        
-                    OnConfigure(host, container);
+                ]));
+                    
+                var jwtProvider = host.GetPlugin<AuthFeature>().AuthProviders.OfType<JwtAuthProvider>().First();
+                JwtUserToken = jwtProvider.CreateJwtBearerToken(new AuthUserSession {
+                    Id = SessionExtensions.CreateRandomSessionId(),
+                    UserName = "jwtuser",
+                    FirstName = "JWT",
+                    LastName = "User",
+                    DisplayName = "JWT User",
+                    City = "Japan",
+                });
+                    
+                var authRepo = container.Resolve<IAuthRepository>();
+                authRepo.InitSchema();
+                    
+                authRepo.CreateUserAuth(new UserAuth {
+                    Id = 1,
+                    Email = "admin@email.com", 
+                    DisplayName = "Admin User",
+                    City = "London",
+                    Roles = [RoleNames.Admin]
+                }, "p@55wOrd");
+                    
+                authRepo.CreateUserAuth(new UserAuth {
+                    Id = 2,
+                    UserName = "manager", 
+                    DisplayName = "The Manager",
+                    City = "Perth",
+                    Roles = [
+                        "Employee",
+                        "Manager"
+                    ]
+                }, "p@55wOrd");
+                    
+                authRepo.CreateUserAuth(new UserAuth {
+                    Id = 3,
+                    Email = "employee@email.com", 
+                    DisplayName = "An Employee",
+                    City = "Manhattan",
+                    Roles = ["Employee"]
+                }, "p@55wOrd");
+                    
+                void AddTenantId(IRequest req, IResponse res, object dto)
+                {
+                    var userSession = req.SessionAs<AuthUserSession>();
+                    if (userSession.IsAuthenticated)
+                    {
+                        req.SetItem(TenantId, userSession.City switch {
+                            "London" => 10,
+                            "Perth"  => 10,
+                            _        => 20,
+                        });
+                    }
                 }
+                        
+                host.GlobalRequestFilters.Add(AddTenantId);
+                host.GlobalMessageRequestFilters.Add(AddTenantId);
+
+                container.AddSingleton<IMessageService>(c => new BackgroundMqService());
+                var mqService = container.Resolve<IMessageService>();
+                mqService.RegisterHandler<CreateRockstarAuditTenant>(host.ExecuteMessage);
+                mqService.RegisterHandler<UpdateRockstarAuditTenant>(host.ExecuteMessage);
+                mqService.RegisterHandler<PatchRockstarAuditTenant>(host.ExecuteMessage);
+                mqService.RegisterHandler<RealDeleteAuditTenant>(host.ExecuteMessage);
+                mqService.RegisterHandler<CreateRockstarAuditMqToken>(host.ExecuteMessage);
+                host.AfterInitCallbacks.Add(_ => mqService.Start());
+                    
+                OnConfigure(host, container);
             }
-            .Init()
-            .Start(Config.ListeningOn);
+        }
+        .Init()
+        .Start(Config.ListeningOn);
             
         using var db = appHost.TryResolve<IDbConnectionFactory>().OpenDbConnection();
         db.CreateTable<RockstarAudit>();

@@ -82,14 +82,10 @@ public class ValidationService : Service
 
 public class ValidationExceptionTests
 {
-    class AppHost : AppSelfHostBase
+    class AppHost() : AppSelfHostBase(nameof(ValidationExceptionTests), typeof(ValidationExceptionTests).Assembly)
     {
-        public AppHost() : base(nameof(ValidationExceptionTests), typeof(ValidationExceptionTests).Assembly) { }
-
         public override void Configure(Container container)
         {
-            Plugins.Add(new ValidationFeature());
-                
             container.RegisterValidator(typeof(TriggerValidatorsValidator));
             container.RegisterValidator(typeof(ValidatorIssuesValidator));
         }

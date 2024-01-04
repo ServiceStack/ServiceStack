@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Web;
 using Funq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -349,6 +350,12 @@ public static class HostContext
 
         return -1;
     }
+
+    public static void ConfigureServices(Action<IServiceCollection> configure)
+    {
+        if (configure != null)
+            ServiceStackHost.GlobalAfterConfigureServices.Add(configure);
+    }
         
     public static void ConfigureAppHost(
         Action<ServiceStackHost> beforeConfigure = null,
@@ -368,6 +375,7 @@ public static class HostContext
 
     public static void Reset()
     {
+        ServiceStackHost.GlobalAfterConfigureServices.Clear();
         ServiceStackHost.GlobalBeforeConfigure.Clear();
         ServiceStackHost.GlobalAfterConfigure.Clear();
         ServiceStackHost.GlobalAfterPluginsLoaded.Clear();

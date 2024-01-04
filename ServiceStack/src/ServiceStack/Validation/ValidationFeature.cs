@@ -81,6 +81,37 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
             var assemblies = ServiceStackHost.InitOptions.ResolveAllServiceAssemblies().ToArray();
             services.RegisterValidators(assemblies);
         }
+        
+        if (EnableDeclarativeValidation)
+        {
+            string[] autoQueryPlugins = [Plugins.AutoQuery, Plugins.AutoQueryData];
+            Func<Type,bool> include = ServiceStackHost.InitOptions.Plugins.OfType<Model.IHasStringId>()
+                .Any(plugin => autoQueryPlugins.Contains(plugin.Id))
+                ? Crud.AnyAutoQueryType
+                : null;
+
+            var requestTypes = ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes(include);
+            foreach (var requestType in requestTypes)
+            {
+                var hasValidateRequestAttrs = Validators.HasValidateRequestAttributes(requestType);
+                if (hasValidateRequestAttrs)
+                {
+                    Validators.RegisterRequestRulesFor(requestType);
+                }
+                        
+                var hasValidateAttrs = Validators.HasValidateAttributes(requestType);
+                if (hasValidationSource || hasValidateAttrs)
+                {
+                    services.RegisterNewValidatorIfNotExists(requestType, ImplicitlyValidateChildProperties);
+                    Validators.RegisterPropertyRulesFor(services, requestType, ImplicitlyValidateChildProperties);
+                }
+            }
+        }
+
+        foreach (var dtoType in ValidationExtensions.RegisteredDtoValidators)
+        {
+            Validators.RegisterPropertyRulesFor(services, dtoType, ImplicitlyValidateChildProperties);
+        }
     }
     
     /// <summary>
@@ -159,34 +190,14 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
 
     public void AfterInit(IAppHost appHost)
     {
-        var container = appHost.GetContainer();
+        if (!EnableDeclarativeValidation) return;
         
-        if (EnableDeclarativeValidation)
-        {
-            var hasDynamicRules = ValidationSource != null;
-            
-            foreach (var op in appHost.Metadata.Operations)
-            {
-                var hasValidateRequestAttrs = Validators.HasValidateRequestAttributes(op.RequestType);
-                if (hasValidateRequestAttrs)
-                {
-                    Validators.RegisterRequestRulesFor(op.RequestType);
-                    op.AddRequestTypeValidationRules(Validators.GetTypeRules(op.RequestType));
-                }
-                        
-                var hasValidateAttrs = Validators.HasValidateAttributes(op.RequestType);
-                if (hasDynamicRules || hasValidateAttrs)
-                {
-                    container.RegisterNewValidatorIfNotExists(op.RequestType, ImplicitlyValidateChildProperties);
-                    Validators.RegisterPropertyRulesFor(container, op.RequestType, ImplicitlyValidateChildProperties);
-                    op.AddRequestPropertyValidationRules(Validators.GetPropertyRules(op.RequestType));
-                }
-            }
-        }
+        Validators.ConfigureDelayedPropertyRules();
 
-        foreach (var dtoType in ValidationExtensions.RegisteredDtoValidators)
+        foreach (var op in appHost.Metadata.Operations)
         {
-            Validators.RegisterPropertyRulesFor(container, dtoType, ImplicitlyValidateChildProperties);
+            op.AddRequestTypeValidationRules(Validators.GetTypeRules(op.RequestType));
+            op.AddRequestPropertyValidationRules(Validators.GetPropertyRules(op.RequestType));
         }
     }
 
@@ -500,14 +511,14 @@ public static class ValidationExtensions
         RegisteredDtoValidators.Add(dtoType);
     }
 
-    internal static void RegisterNewValidatorIfNotExists(this Container container, Type requestType, bool registerChildValidators)
+    internal static void RegisterNewValidatorIfNotExists(this IServiceCollection services, Type requestType, bool registerChildValidators)
     {
         // We only need to register a new a Validator if it doesn't already exist for the Type 
         if (!RegisteredDtoValidators.Contains(requestType))
         {
             var typeValidator = typeof(DefaultValidator<>).MakeGenericType(requestType);
-            container.RegisterValidator(typeValidator);
-            Validators.RegisterPropertyRulesFor(container, requestType, registerChildValidators);
+            services.RegisterValidator(typeValidator);
+            Validators.RegisterPropertyRulesFor(services, requestType, registerChildValidators);
         }
     }
 

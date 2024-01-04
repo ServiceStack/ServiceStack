@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
+using ServiceStack.Logging;
 
 namespace Funq;
 
@@ -101,11 +102,23 @@ public partial class Container : IServiceCollection
     public void Add(ServiceDescriptor item)
     {
         CheckReadOnly();
-        
-        var factory = CreateFactory(item);
-        
-        Add(item.ServiceType, factory, item.Lifetime);
-        descriptors.Add(item);
+
+        try
+        {
+            var factory = CreateFactory(item);
+            Add(item.ServiceType, factory, item.Lifetime);
+            descriptors.Add(item);
+        }
+        catch (Exception ex)
+        {
+            var info = item.ImplementationType != null
+                ? $"Type {item.ImplementationType.Name}"
+                : item.ImplementationFactory != null
+                    ? "Factory"
+                    : "Instance";
+            LogManager.GetLogger(GetType()).Error($"Could not register {item!.ServiceType.Name} with {info}", ex);
+            throw;
+        }
     }
 
     private readonly List<ServiceDescriptor> descriptors = [];

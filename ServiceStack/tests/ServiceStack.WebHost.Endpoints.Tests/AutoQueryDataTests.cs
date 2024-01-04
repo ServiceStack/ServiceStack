@@ -20,6 +20,8 @@ public class AutoQueryDataAppHost() : AppSelfHostBase("AutoQueryData", typeof(Au
 {
     public override void Configure()
     {
+        ScriptContext.ScriptMethods.Add(new MyValidators());
+        
         Plugins.Add(new AutoQueryDataFeature
             {
                 MaxLimit = 100,

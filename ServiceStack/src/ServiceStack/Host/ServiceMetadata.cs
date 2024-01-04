@@ -881,6 +881,8 @@ public class Operation : ICloneable
 
     public void AddRequestTypeValidationRules(List<ITypeValidator> typeValidators)
     {
+        if (typeValidators.Count == 0) return;
+        
         RequestTypeValidationRules ??= [];
         RequestTypeValidationRules.AddRange(typeValidators);
 
@@ -907,11 +909,10 @@ public class Operation : ICloneable
 
     public void AddRequestPropertyValidationRules(List<IValidationRule>? propertyValidators)
     {
-        if (propertyValidators != null)
-        {
-            RequestPropertyValidationRules ??= [];
-            RequestPropertyValidationRules.AddRange(propertyValidators);
-        }
+        if (propertyValidators is not { Count: > 0 }) return;
+        
+        RequestPropertyValidationRules ??= [];
+        RequestPropertyValidationRules.AddRange(propertyValidators);
     }
 
     public Operation AddRole(string role)

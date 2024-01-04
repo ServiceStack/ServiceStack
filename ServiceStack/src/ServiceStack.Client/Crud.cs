@@ -17,45 +17,48 @@ public static class Crud
 
     public static bool HasInterface(MetadataOperationType op, string cls) => op.Request.Implements.FirstOrDefault(i => i.Name == cls) != null;
 
-    static string[] AnyRead = { Query, QueryInto };
-    static string[] AnyWrite = { Create, Update, Patch, Delete };
+    static string[] AnyRead = [Query, QueryInto];
+    static string[] AnyWrite = [Create, Update, Patch, Delete];
 
-    public static List<string> Default { get; } = new() {
+    public static List<string> Default { get; } =
+    [
+        nameof(Query),
+        nameof(Create),
+        nameof(Update),
+        nameof(Patch),
+        nameof(Delete)
+    ];
+
+    public static HashSet<string> All { get; } =
+    [
         nameof(Query),
         nameof(Create),
         nameof(Update),
         nameof(Patch),
         nameof(Delete),
-    };
+        nameof(Save)
+    ];
 
-    public static HashSet<string> All { get; } = new() {
-        nameof(Query),
+    public static List<string> Read { get; } =
+    [
+        nameof(Query)
+    ];
+
+    public static List<string> Write { get; } =
+    [
         nameof(Create),
         nameof(Update),
         nameof(Patch),
         nameof(Delete),
-        nameof(Save),
-    };
-
-    public static List<string> Read { get; } = new() {
-        nameof(Query),
-    };
-
-    public static List<string> Write { get; } = new() {
-        nameof(Create),
-        nameof(Update),
-        nameof(Patch),
-        nameof(Delete),
-        nameof(Save),
-    };
+        nameof(Save)
+    ];
 
     public static string[] CrudInterfaceMetadataNames(List<string> operations = null) =>
         (operations ?? Write).Select(x => $"I{x}Db`1").ToArray();
 
 
-    public static string[] ReadInterfaces => new[] { Query, QueryInto };
-    public static string[] WriteInterfaces => new[] { Create, Update, Patch, Delete, Save };
-
+    public static string[] ReadInterfaces => [Query, QueryInto];
+    public static string[] WriteInterfaces => [Create, Update, Patch, Delete, Save];
 
     /// <summary>
     /// Is AutoQuery or Crud Request API
@@ -189,36 +192,41 @@ public static class Crud
     public static bool IsCrudPatch(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IPatchDb<>));
     public static bool IsCrudDelete(Type type) => type.IsOrHasGenericInterfaceTypeOf(typeof(IDeleteDb<>));
 
+    public static bool AnyAutoQueryType(Type type) => type.HasInterface(typeof(IQuery)) || type.HasInterface(typeof(ICrud));
 
     public static string FirstGenericArg(this MetadataTypeName type) => type.GenericArgs?.Length > 0 ? type.GenericArgs[0] : null;
-    public static string[] ApiMarkerInterfaces { get; } = {
+    public static string[] ApiMarkerInterfaces { get; } =
+    [
         nameof(IGet),
         nameof(IPost),
         nameof(IPut),
         nameof(IDelete),
         nameof(IPatch),
         nameof(IOptions),
-        nameof(IStream),
-    };
-    public static string[] ApiReturnInterfaces { get; } = {
+        nameof(IStream)
+    ];
+    public static string[] ApiReturnInterfaces { get; } =
+    [
         typeof(IReturn<>).Name,
-        nameof(IReturnVoid),
-    };
-    public static string[] ApiCrudInterfaces { get; } = {
+        nameof(IReturnVoid)
+    ];
+    public static string[] ApiCrudInterfaces { get; } =
+    [
         Create,
         Update,
         Patch,
         Delete,
-        Save,
-    };
-    public static string[] ApiQueryBaseTypes { get; } = {
+        Save
+    ];
+    public static string[] ApiQueryBaseTypes { get; } =
+    [
         typeof(QueryDb<>).Name,
         typeof(QueryDb<,>).Name,
         typeof(QueryData<>).Name,
-        typeof(QueryData<,>).Name,
-    };
+        typeof(QueryData<,>).Name
+    ];
     public static HashSet<string> ApiInterfaces { get; } = CombineSet(ApiMarkerInterfaces, ApiReturnInterfaces, ApiCrudInterfaces);
-    public static HashSet<string> ApiBaseTypes { get; } = new(ApiQueryBaseTypes);
+    public static HashSet<string> ApiBaseTypes { get; } = [..ApiQueryBaseTypes];
 
     public static HashSet<T> CombineSet<T>(T[] original, params T[][] others)
     {

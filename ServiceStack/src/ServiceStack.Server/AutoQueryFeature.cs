@@ -185,9 +185,8 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
 
     public void AfterConfigure(IServiceCollection services)
     {
-        
         ServiceStackHost.InitOptions.ExcludeServiceAssemblies.Add(GetType().Assembly);
-        var scannedTypes = ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes();
+        var scannedTypes = ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes(include:Crud.AnyAutoQueryType);
 
         var crudServices = GenerateCrudServices?.GenerateMissingServices(this);
         crudServices?.Each(x => scannedTypes.Add(x));

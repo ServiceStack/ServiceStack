@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Resources;
@@ -110,16 +111,16 @@ public static class Validators
 
     public static void AddTypeValidator(List<ITypeValidator> to, IValidateRule attr)
     {
-        var appHost = HostContext.AppHost;
+        var scriptContext = GetScriptContext();
         if (!string.IsNullOrEmpty(attr.Condition))
         {
-            var code = ParseCondition(appHost.ScriptContext, attr.Condition);
+            var code = ParseCondition(scriptContext, attr.Condition);
             to.Add(new ScriptValidator(code, attr.Condition).Init(attr));
         }
         else if (!string.IsNullOrEmpty(attr.Validator))
         {
-            var ret = appHost.EvalExpression(attr
-                .Validator); //Validators can't be cached due to custom code/msgs
+            //Validators can't be cached due to custom code/msgs
+            var ret = JS.eval(scriptContext, attr.Validator);
             if (ret == null)
                 ThrowNoValidator(attr.Validator);
 
@@ -147,7 +148,7 @@ public static class Validators
     /// Register declarative property [Validate] attributes.
     /// </summary>
     /// <returns></returns>
-    public static bool RegisterPropertyRulesFor(Container container, Type dtoType, bool registerChildValidators = true)
+    public static bool RegisterPropertyRulesFor(IServiceCollection services, Type dtoType, bool registerChildValidators = true)
     {
         // Don't register child validators for explicit FluentValidation validators to avoid double registration
         var typesValidatorIsDefault = ValidationExtensions.TypesValidatorsMap.TryGetValue(dtoType, out var typeValidator) 
@@ -198,16 +199,9 @@ public static class Validators
                         // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
                         // Rule.AddValidator(validator);
                             
-                        //validator: Generate the declarative TypeValidator for this property 
-                        var propValidatorType = typeof(IValidator<>).MakeGenericType(elementType);
-                        container.RegisterNewValidatorIfNotExists(elementType, true);
-                        var validator = container.TryResolve(propValidatorType);
-                            
-                        // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
-                        var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(dtoType, elementType);
-                        var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor([propValidatorType, typeof(Type) ])
-                                             ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
-                        var childAdaptor = ciChildAdaptor.Invoke([validator, propValidatorType]) as IPropertyValidator; 
+                        //validator: Generate the declarative TypeValidator for this property
+                        var childAdaptor = CreateChildAdapter(services, dtoType, elementType);
+                        
                         // Rule.AddValidator(validator);
                         collectionRule.AddValidator(childAdaptor);
                             
@@ -236,15 +230,9 @@ public static class Validators
                         ]);
 
                         // var adaptor = new ChildValidatorAdaptor<T,TProperty>(validator, validator.GetType());
-                        // Rule.AddValidator(validator);
-                        var propValidatorType = typeof(IValidator<>).MakeGenericType(pi.PropertyType);
-                        container.RegisterNewValidatorIfNotExists(pi.PropertyType, true);
-                        var validator = container.TryResolve(propValidatorType);
+                        var childAdaptor = CreateChildAdapter(services, dtoType, pi.PropertyType);
 
-                        var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(dtoType, pi.PropertyType);
-                        var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor([propValidatorType, typeof(Type)])
-                                             ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
-                        var childAdaptor = ciChildAdaptor.Invoke([validator, propValidatorType]) as IPropertyValidator; 
+                        // Rule.AddValidator(validator);
                         propRule.AddValidator(childAdaptor);
 
                         typeRules.Add(propRule);
@@ -262,6 +250,27 @@ public static class Validators
         return false;
     }
 
+    public static Func<ICommonContext, IValidator<TProperty>> CreateValidatorProvider<TProperty>()
+    {
+        return ctx => HostContext.Resolve<IValidator<TProperty>>();
+    }
+
+    public static IPropertyValidator CreateChildAdapter(IServiceCollection services, Type dtoType, Type childType)
+    {
+        var propValidatorType = typeof(IValidator<>).MakeGenericType(childType);
+        services.RegisterNewValidatorIfNotExists(childType, true);
+
+        var miProvider = typeof(Validators).GetStaticMethod(nameof(CreateValidatorProvider));
+        var miGenericProvider = miProvider.MakeGenericMethod([childType]);
+        var providerFactory = miGenericProvider.Invoke(null, Array.Empty<object>());
+
+        var childAdapterGenericTypeDef = typeof(ChildValidatorAdaptor<,>).MakeGenericType(dtoType, childType);
+        var ciChildAdaptor = childAdapterGenericTypeDef.GetConstructor([miGenericProvider.ReturnType, typeof(Type)])
+                             ?? throw new Exception("Could not find ChildValidatorAdaptor<T,TElement> Constructor");
+        var childAdaptor = ciChildAdaptor.Invoke([providerFactory, propValidatorType]) as IPropertyValidator;
+        return childAdaptor;
+    }
+
     private static readonly Type[] CollectionCtorTypes = {
         typeof(MemberInfo), typeof(Func<object, object>), typeof(LambdaExpression), typeof(Func<CascadeMode>), typeof(Type), typeof(Type)
     };
@@ -269,20 +278,30 @@ public static class Validators
     private static IValidationRule CreateDeclarativePropertyRuleIfExists(Type type, PropertyInfo pi)
     {
         var allAttrs = pi.AllAttributes();
-        var validateAttrs = allAttrs.Where(x => x is ValidateAttribute).ToList();
+        var validateAttrs = allAttrs.OfType<ValidateAttribute>().ToList();
 
         if (validateAttrs.Count > 0)
         {
             var rule = CreatePropertyRule(type, pi);
-            var validators = (List<IPropertyValidator>) rule.Validators;
-
-            foreach (ValidateAttribute attr in validateAttrs)
-            {
-                validators.AddRule(pi, attr);
-            }
+            DelayConfiguringPropertyRules.Add((pi, rule, validateAttrs));
             return rule;
         }
         return null;
+    }
+
+    // Need to delay configuring property rules which relies on an initialized ScriptContext to resolve validators
+    internal static List<(PropertyInfo, IValidationRule,List<ValidateAttribute>)> DelayConfiguringPropertyRules = [];
+
+    internal static void ConfigureDelayedPropertyRules()
+    {
+        foreach (var (pi, rule, validateAttrs) in DelayConfiguringPropertyRules)
+        {
+            var validators = (List<IPropertyValidator>) rule.Validators;
+            foreach (var attr in validateAttrs)
+            {
+                validators.AddRule(pi, attr);
+            }
+        }
     }
 
     public static List<ITypeValidator> GetTypeRules(Type type) => TypeRulesMap.TryGetValue(type, out var rules)
@@ -322,9 +341,9 @@ public static class Validators
         return new PropertyRule(pi, x => fn(x), null, CascadeMode, type, null);
     }
 
-    public static List<Action<PropertyInfo, IValidateRule>> RuleFilters { get; } = new() {
-        AppendDefaultValueOnEmptyValidators,
-    };
+    public static List<Action<PropertyInfo, IValidateRule>> RuleFilters { get; } = [
+        AppendDefaultValueOnEmptyValidators
+    ];
 
     public static void AppendDefaultValueOnEmptyValidators(PropertyInfo pi, IValidateRule rule)
     {
@@ -340,7 +359,7 @@ public static class Validators
 
     public static void AddRule(this List<IPropertyValidator> validators, PropertyInfo pi, IValidateRule propRule)
     {
-        var appHost = HostContext.AppHost;
+        var scriptContext = GetScriptContext();
         foreach (var ruleFilter in RuleFilters)
         {
             ruleFilter(pi, propRule);
@@ -377,7 +396,7 @@ public static class Validators
         if (propRule.Validator != null)
         {
             //Validators can't be cached due to custom code/msgs
-            var ret = appHost.EvalExpression(propRule.Validator);
+            var ret = JS.eval(scriptContext, propRule.Validator);
             if (ret == null)
                 ThrowNoValidator(propRule.Validator);
 
@@ -401,10 +420,19 @@ public static class Validators
         else if (!string.IsNullOrEmpty(propRule.Condition))
         {
             var evalCode = ScriptCodeUtils.EnsureReturn(propRule.Condition);
-            var page = appHost.ScriptContext.CodeSharpPage(evalCode);
+            var page = scriptContext.CodeSharpPage(evalCode);
             validators.Add(apply(new ScriptConditionValidator(page)));
         }
         else ThrowInvalidValidate();
+    }
+
+    private static ScriptContext GetScriptContext()
+    {
+        var appHost = HostContext.AppHost;
+        var scriptContext = appHost != null
+            ? appHost.ScriptContext
+            : ServiceStackHost.InitOptions.ScriptContext;
+        return scriptContext;
     }
 
     public static PageResult ToPageResult(this PropertyValidatorContext context, SharpPage page)

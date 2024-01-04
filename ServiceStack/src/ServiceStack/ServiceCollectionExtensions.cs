@@ -108,4 +108,23 @@ public static class ServiceCollectionExtensions
         AssertServiceType(serviceType);
         ServiceStackHost.InitOptions.ServiceRoutes[serviceType] = routes;
     }
+    
+    public static void AddPlugin<T>(this IServiceCollection services, T plugin) where T : IPlugin
+    {
+#if NETCORE
+        ServiceStackHost.InitOptions.Plugins.AddIfNotExists(plugin);
+#else
+        HostContext.AssertAppHost().Plugins.AddIfNotExists(plugin);
+#endif
+    }
+
+    public static void ConfigureScriptContext(this IServiceCollection services, Action<Script.ScriptContext> configure)
+    {
+#if NETCORE
+        configure(ServiceStackHost.InitOptions.ScriptContext);
+#else
+        configure(HostContext.AssertAppHost().ScriptContext);
+#endif
+    }
+    
 }
