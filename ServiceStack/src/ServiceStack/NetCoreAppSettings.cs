@@ -11,11 +11,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public class NetCoreAppSettings : IAppSettings
+public class NetCoreAppSettings(IConfiguration configuration) : IAppSettings
 {
-    public IConfiguration Configuration { get; }
-    public NetCoreAppSettings(IConfiguration configuration) => Configuration = configuration;
-
+    public IConfiguration Configuration => configuration;
+    
     static object GetValue(IConfigurationSection section)
     {
         if (section == null)
@@ -92,33 +91,33 @@ public class NetCoreAppSettings : IAppSettings
 
     private IConfigurationSection GetSection(string key)
     {
-        var child = Configuration.GetChildren().FirstOrDefault(x => x.Key == key);
+        var child = configuration.GetChildren().FirstOrDefault(x => x.Key == key);
         if (!child.Exists())
-            child = Configuration.GetSection(key);
+            child = configuration.GetSection(key);
         return child;
     }
 
     public Dictionary<string, string> GetAll()
     {
         var to = new Dictionary<string, string>();
-        foreach (var kvp in Configuration.GetChildren())
+        foreach (var kvp in configuration.GetChildren())
         {
             to[kvp.Key] = kvp.Value;
         }
         return to;
     }
 
-    public List<string> GetAllKeys() => Configuration.GetChildren()
+    public List<string> GetAllKeys() => configuration.GetChildren()
         .Map(x => x.Key);
 
-    public bool Exists(string key) => Configuration.GetChildren().Any(x => x.Key == key)
-        || Configuration.GetSection(key).Exists();
+    public bool Exists(string key) => configuration.GetChildren().Any(x => x.Key == key)
+        || configuration.GetSection(key).Exists();
 
-    public void Set<T>(string key, T value) => Configuration[key] = value is string 
+    public void Set<T>(string key, T value) => configuration[key] = value is string 
         ? value.ToString()
         : TypeSerializer.SerializeToString(value);
 
-    public string GetString(string name) => Configuration[name];
+    public string GetString(string name) => configuration[name];
 
     public IList<string> GetList(string key)
     {

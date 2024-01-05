@@ -124,8 +124,11 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         var configuration = app.ApplicationServices.GetService<IConfiguration>();
         if (configuration != null)
         {
+            // Can be registered in services.AddServiceStack()
+            var appSettings = app.ApplicationServices.GetService<IAppSettings>()
+                ?? new NetCoreAppSettings(configuration);
             if (appHost.AppSettings is AppSettings) // override if default
-                appHost.AppSettings = new NetCoreAppSettings(configuration);
+                appHost.AppSettings = appSettings;
         }
         else
         {
@@ -565,6 +568,7 @@ public static class NetCoreAppHostExtensions
             options.ServiceAssemblies.AddRange(serviceAssemblies);
         configure?.Invoke(options);
 
+        services.AddSingleton<IAppSettings, NetCoreAppSettings>();
         options.ConfigurePlugins(services);
 
         var allServiceTypes = options.GetAllServiceTypes();
