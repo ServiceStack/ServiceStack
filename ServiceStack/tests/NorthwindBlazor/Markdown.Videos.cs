@@ -4,25 +4,24 @@ using ServiceStack.IO;
 
 namespace MyApp;
 
-public class MarkdownVideos : MarkdownPagesBase<MarkdownFileInfo>
+public class MarkdownVideos(ILogger<MarkdownVideos> log, IWebHostEnvironment env, IVirtualFiles fs)
+    : MarkdownPagesBase<MarkdownFileInfo>(log, env, fs)
 {
     public override string Id => "videos";
-    public MarkdownVideos(ILogger<MarkdownVideos> log, IWebHostEnvironment env) : base(log,env) {}
     public Dictionary<string, List<MarkdownFileInfo>> Groups { get; set; } = new();
 
     public List<MarkdownFileInfo> GetVideos(string group)
     {
         return Groups.TryGetValue(group, out var docs)
             ? Fresh(docs.Where(IsVisible).OrderBy(x => x.Order).ThenBy(x => x.FileName).ToList())
-            : new List<MarkdownFileInfo>();
+            : [];
     }
     
     public void LoadFrom(string fromDirectory)
     {
         Groups.Clear();
-        var fs = AssertVirtualFiles();
         var dirs = fs.GetDirectory(fromDirectory).GetDirectories().ToList();
-        Log.LogInformation("Found {0} video directories", dirs.Count);
+        log.LogInformation("Found {Count} video directories", dirs.Count);
 
         var pipeline = CreatePipeline();
 
@@ -44,7 +43,7 @@ public class MarkdownVideos : MarkdownPagesBase<MarkdownFileInfo>
                 }
                 catch (Exception e)
                 {
-                    Log.LogError(e, "Couldn't load {0}: {1}", file.VirtualPath, e.Message);
+                    log.LogError(e, "Couldn't load {VirtualPath}: {Message}", file.VirtualPath, e.Message);
                 }
             }
         }

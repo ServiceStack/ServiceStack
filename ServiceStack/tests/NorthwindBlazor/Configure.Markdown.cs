@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using ServiceStack;
 using ServiceStack.IO;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureSsg))]
@@ -9,11 +8,9 @@ namespace MyApp;
 public class ConfigureSsg : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
-        .ConfigureServices((context, services) =>
+        .ConfigureServices(services =>
         {
             Console.WriteLine("ConfigureSsg.ConfigureServices()");
-            context.Configuration.GetSection(nameof(AppConfig)).Bind(AppConfig.Instance);
-            services.AddSingleton(AppConfig.Instance);
             services.AddSingleton<MarkdownPages>();
             services.AddSingleton<MarkdownVideos>();
         })
@@ -23,9 +20,6 @@ public class ConfigureSsg : IHostingStartup
             {
                 var pages = appHost.Resolve<MarkdownPages>();
                 var videos = appHost.Resolve<MarkdownVideos>();
-
-                new IMarkdownPages[] { pages, videos }
-                    .Each(x => x.VirtualFiles = appHost.VirtualFiles);
 
                 pages.LoadFrom("_pages");
                 videos.LoadFrom("_videos");

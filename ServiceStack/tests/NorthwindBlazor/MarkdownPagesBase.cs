@@ -88,22 +88,13 @@ public class MarkdownFileBase
 public interface IMarkdownPages
 {
     string Id { get; }
-    IVirtualFiles VirtualFiles { get; set; }
     List<MarkdownFileBase> GetAll();
 }
-public abstract class MarkdownPagesBase<T> : IMarkdownPages where T : MarkdownFileBase
+
+public abstract class MarkdownPagesBase<T>(ILogger log, IWebHostEnvironment env, IVirtualFiles fs) : IMarkdownPages
+    where T : MarkdownFileBase
 {
     public abstract string Id { get; }
-    protected ILogger Log { get; }
-    protected IWebHostEnvironment Environment { get; }
-
-    public MarkdownPagesBase(ILogger log, IWebHostEnvironment env)
-    {
-        this.Log = log;
-        this.Environment = env;
-    }
-    
-    public IVirtualFiles VirtualFiles { get; set; } = default!;
 
     public virtual MarkdownPipeline CreatePipeline()
     {
@@ -133,7 +124,7 @@ public abstract class MarkdownPagesBase<T> : IMarkdownPages where T : MarkdownFi
     public virtual T? Fresh(T? doc)
     {
         // Ignore reloading source .md if run in production or as AppTask
-        if (doc == null || !Environment.IsDevelopment() || AppTasks.IsRunAsAppTask())
+        if (doc == null || !env.IsDevelopment() || AppTasks.IsRunAsAppTask())
             return doc;
         var newDoc = Load(doc.Path);
         doc.Update(newDoc);
@@ -175,7 +166,7 @@ public abstract class MarkdownPagesBase<T> : IMarkdownPages where T : MarkdownFi
 
     public virtual T? Load(string path, MarkdownPipeline? pipeline = null)
     {
-        var file = VirtualFiles.GetFile(path)
+        var file = fs.GetFile(path)
                    ?? throw new FileNotFoundException(path.LastRightPart('/'));
         var content = file.ReadAllText();
 
@@ -197,7 +188,7 @@ public abstract class MarkdownPagesBase<T> : IMarkdownPages where T : MarkdownFi
         return doc;
     }
 
-    public virtual bool IsVisible(T doc) => Environment.IsDevelopment() || 
+    public virtual bool IsVisible(T doc) => env.IsDevelopment() || 
         !doc.Draft && (doc.Date == null || doc.Date.Value <= DateTime.UtcNow);
     
     public int WordsPerMin { get; set; } = 225;
@@ -206,9 +197,6 @@ public abstract class MarkdownPagesBase<T> : IMarkdownPages where T : MarkdownFi
     public virtual int LineCount(string str) => str.CountOccurrencesOf('\n');
     public virtual int MinutesToRead(int? words) => (int)Math.Ceiling((words ?? 1) / (double)WordsPerMin);
     
-    protected IVirtualFiles AssertVirtualFiles() => 
-        VirtualFiles ?? throw new NullReferenceException($"{nameof(VirtualFiles)} is not populated");
-
     public virtual List<MarkdownFileBase> GetAll() => new();
 
     public virtual string? StripFrontmatter(string? content)

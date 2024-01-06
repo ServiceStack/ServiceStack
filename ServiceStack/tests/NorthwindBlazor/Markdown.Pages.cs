@@ -1,17 +1,16 @@
 ﻿// run node postinstall.js to update to latest version
 using ServiceStack.IO;
-using ServiceStack.Logging;
 
 namespace MyApp;
 
-public class MarkdownPages : MarkdownPagesBase<MarkdownFileInfo>
+public class MarkdownPages(ILogger<MarkdownPages> log, IWebHostEnvironment env, IVirtualFiles fs)
+    : MarkdownPagesBase<MarkdownFileInfo>(log, env, fs)
 {
     public override string Id => "pages";
 
     public virtual string? DefaultMenuIcon { get; set; } =
         "<svg class='h-6 w-6 shrink-0 text-sky-500' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' aria-hidden='true'><path stroke-linecap='round' stroke-linejoin='round' d='M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25'></path></svg>";
-    
-    public MarkdownPages(ILogger<MarkdownPages> log, IWebHostEnvironment env) : base(log,env) {}
+
     List<MarkdownFileInfo> Pages { get; set; } = new();
     public List<MarkdownFileInfo> GetVisiblePages(string? prefix=null, bool allDirectories=false) => prefix == null 
         ? Pages.Where(x => IsVisible(x) && !x.Slug!.Contains('/')).OrderBy(x => x.Order).ThenBy(x => x.Path).ToList()
@@ -31,12 +30,10 @@ public class MarkdownPages : MarkdownPagesBase<MarkdownFileInfo>
     {
         Sidebars.Clear();
         Pages.Clear();
-        var fs = AssertVirtualFiles();
         var files = fs.GetDirectory(fromDirectory).GetAllFiles()
             .OrderBy(x => x.VirtualPath)
             .ToList();
-        var log = LogManager.GetLogger(GetType());
-        log.InfoFormat("Found {0} pages", files.Count);
+        log.LogInformation("Found {Count} pages", files.Count);
 
         var pipeline = CreatePipeline();
 
@@ -50,7 +47,7 @@ public class MarkdownPages : MarkdownPagesBase<MarkdownFileInfo>
                     if (doc == null)
                         continue;
 
-                    var relativePath = file.VirtualPath.Substring(fromDirectory.Length + 1);
+                    var relativePath = file.VirtualPath[(fromDirectory.Length + 1)..];
                     if (relativePath.IndexOf('/') >= 0)
                     {
                         doc.Slug = relativePath.LastLeftPart('/') + '/' + doc.Slug;
@@ -61,7 +58,7 @@ public class MarkdownPages : MarkdownPagesBase<MarkdownFileInfo>
                 else if (file.Name == "sidebar.json")
                 {
                     var virtualPath = file.VirtualPath.Substring(fromDirectory.Length);
-                    var folder = virtualPath.Substring(0, virtualPath.Length - "sidebar.json".Length).Trim('/');
+                    var folder = virtualPath[..^"sidebar.json".Length].Trim('/');
                     var sidebarJson = file.ReadAllText();
                     var sidebar = sidebarJson.FromJson<List<MarkdownMenu>>();
 
@@ -76,12 +73,12 @@ public class MarkdownPages : MarkdownPagesBase<MarkdownFileInfo>
             }
             catch (Exception e)
             {
-                log.Error(e, "Couldn't load {0}: {1}", file.VirtualPath, e.Message);
+                log.LogError(e, "Couldn't load {VirtualPath}: {Message}", file.VirtualPath, e.Message);
             }
         }
         if (Sidebars.Count > 0)
         {
-            log.Info($"Loaded {Sidebars.Count} sidebars: {Sidebars.Keys.Join(", ")}");
+            log.LogInformation("Loaded {Count} sidebars: {Sidebars}", Sidebars.Count, Sidebars.Keys.Join(", "));
         }
     }
 
@@ -105,7 +102,7 @@ public class MarkdownPages : MarkdownPagesBase<MarkdownFileInfo>
             if (group == null)
             {
                 menuItem = defaultMenu ?? new MarkdownMenu {
-                    Children = new(),
+                    Children = [],
                 };
             }
             else
