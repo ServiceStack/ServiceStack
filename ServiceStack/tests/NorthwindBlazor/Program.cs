@@ -119,7 +119,7 @@ app.MapAdditionalIdentityEndpoints();
 Console.WriteLine("app.UseServiceStack()");
 app.UseServiceStack(new AppHost(), options =>
 {
-    options.MapEndpoints(force:true);
+    options.MapEndpoints();
 });
 
 Console.WriteLine("BlazorConfig.Set()");

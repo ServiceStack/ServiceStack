@@ -61,9 +61,9 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
     public void Configure(IServiceCollection services)
     {
         services.RegisterService(typeof(StoreFileUploadService),   [BasePath, BasePath.CombineWith("{Name}")]);
-        services.RegisterService(typeof(GetFileUploadService),     [BasePath, BasePath.CombineWith("{Name}/{Path*}")]);
-        services.RegisterService(typeof(ReplaceFileUploadService), [BasePath, BasePath.CombineWith("{Name}/{Path*}")]);
-        services.RegisterService(typeof(DeleteFileUploadService),  [BasePath, BasePath.CombineWith("{Name}/{Path*}")]);
+        services.RegisterService(typeof(GetFileUploadService),     [BasePath, BasePath.CombineWith("{Name}/{**Path}")]);
+        services.RegisterService(typeof(ReplaceFileUploadService), [BasePath, BasePath.CombineWith("{Name}/{**Path}")]);
+        services.RegisterService(typeof(DeleteFileUploadService),  [BasePath, BasePath.CombineWith("{Name}/{**Path}")]);
     }
 
     public void Register(IAppHost appHost)
