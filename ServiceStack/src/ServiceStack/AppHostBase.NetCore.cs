@@ -594,6 +594,15 @@ public static class NetCoreAppHostExtensions
         {
             services.AddSingleton<IAppSettings, NetCoreAppSettings>();
         }
+        if (options.ShouldAutoRegister<IVirtualFiles>() && !services.Exists<IVirtualFiles>())
+        {
+            services.AddSingleton<IVirtualFiles>(c =>
+                new FileSystemVirtualFiles(c.GetRequiredService<IWebHostEnvironment>().ContentRootPath));
+        }
+        if (options.ShouldAutoRegister<IVirtualPathProvider>() && !services.Exists<IVirtualPathProvider>())
+        {
+            services.AddSingleton<IVirtualPathProvider>(c => ServiceStackHost.Instance.VirtualFileSources);
+        }
         if (options.ShouldAutoRegister<ICacheClient>() && !services.Exists<ICacheClient>())
         {
             if (services.Exists<IRedisClientsManager>())

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Script;
 
@@ -67,6 +68,8 @@ public class ServiceStackServicesOptions
     /// </summary>
     public List<Type> AutoRegister { get; } = [
         typeof(IAppSettings),
+        typeof(IVirtualFiles),
+        typeof(IVirtualPathProvider),
         typeof(ICacheClient),
         typeof(ICacheClientAsync),
         typeof(MemoryCacheClient),
