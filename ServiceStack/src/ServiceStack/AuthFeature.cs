@@ -234,10 +234,11 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     [Obsolete("The /authenticate alias routes are no longer added by default")]
     public AuthFeature RemoveAuthenticateAliasRoutes()
     {
-        ServiceRoutes[typeof(AuthenticateService)] = new[] {
+        ServiceRoutes[typeof(AuthenticateService)] =
+        [
             "/" + LocalizedStrings.Auth.Localize(),
-            "/" + LocalizedStrings.Auth.Localize() + "/{provider}",
-        };
+            "/" + LocalizedStrings.Auth.Localize() + "/{provider}"
+        ];
         return this;
     }
 
@@ -275,7 +276,7 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         this.SessionType = sessionFactory().GetType();
         this.authProviders = authProviders;
 
-        ServiceRoutes = new Dictionary<Type, string[]> {
+        ServiceRoutes = new() {
             [typeof(AuthenticateService)] = [
                 "/" + LocalizedStrings.Auth.Localize(),
                 "/" + LocalizedStrings.Auth.Localize() + "/{provider}"
@@ -292,10 +293,7 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         this.HtmlRedirect = htmlRedirect ?? "~/" + LocalizedStrings.Login.Localize();
         this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
 
-        FormLayout[0].AllowableValues = new List<string>(
-            authProviders.Where(x => x is not IAuthWithRequest).Select(x => x.Provider)) {
-            "logout"
-        }.ToArray();
+        FormLayout[0].AllowableValues = [..authProviders.Where(x => x is not IAuthWithRequest).Select(x => x.Provider),"logout"];
     }
 
     /// <summary>
@@ -411,7 +409,7 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
 
         var authNavItems = AuthProviders.Select(x => (x as AuthProvider)?.NavItem).Where(x => x != null);
         if (!ViewUtils.NavItemsMap.TryGetValue("auth", out var navItems))
-            ViewUtils.NavItemsMap["auth"] = navItems = new List<NavItem>();
+            ViewUtils.NavItemsMap["auth"] = navItems = [];
 
         var isDefaultHtmlRedirect = HtmlRedirect == "~/" + LocalizedStrings.Login.Localize();
         if (IncludeDefaultLogin && isDefaultHtmlRedirect && !appHost.VirtualFileSources.FileExists("/login.html"))
@@ -602,11 +600,8 @@ public static class AuthFeatureExtensions
         
 }
     
-public class AuthFeatureUnauthorizedHttpHandler : HttpAsyncTaskHandler
+public class AuthFeatureUnauthorizedHttpHandler(AuthFeature feature) : HttpAsyncTaskHandler
 {
-    private readonly AuthFeature feature;
-    public AuthFeatureUnauthorizedHttpHandler(AuthFeature feature) => this.feature = feature;
-        
     public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
     {
         if (feature.HtmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
@@ -639,11 +634,8 @@ public class AuthFeatureUnauthorizedHttpHandler : HttpAsyncTaskHandler
     public override bool RunAsAsync() => true;
 }
     
-public class AuthFeatureAccessDeniedHttpHandler : ForbiddenHttpHandler
+public class AuthFeatureAccessDeniedHttpHandler(AuthFeature feature) : ForbiddenHttpHandler
 {
-    private readonly AuthFeature feature;
-    public AuthFeatureAccessDeniedHttpHandler(AuthFeature feature) => this.feature = feature;
-
     public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
     {
         if (feature.HtmlRedirectAccessDenied != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
