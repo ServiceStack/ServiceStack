@@ -1,37 +1,41 @@
 ﻿#nullable enable
 #if NETCORE
 
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Web;
-using ServiceStack.Logging;
-using ServiceStack.NetCore;
-using ServiceStack.Host;
-using ServiceStack.Host.NetCore;
-using ServiceStack.Host.Handlers;
+using Funq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceStack.Configuration;
-using ServiceStack.IO;
-using ServiceStack.Text;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
+using ServiceStack.Caching;
+using ServiceStack.Configuration;
+using ServiceStack.Host;
+using ServiceStack.Host.Handlers;
+using ServiceStack.Host.NetCore;
+using ServiceStack.IO;
+using ServiceStack.Logging;
+using ServiceStack.Messaging;
+using ServiceStack.NetCore;
+using ServiceStack.Platforms;
+using ServiceStack.Redis;
+using ServiceStack.Text;
+using ServiceStack.Web;
 #if NETSTANDARD2_0
 using IHostApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 #else
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Hosting;
-using ServiceStack.Script;
 using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
 using IHostApplicationLifetime = Microsoft.Extensions.Hosting.IHostApplicationLifetime;
 #endif
@@ -43,7 +47,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
         : base(serviceName, assembliesWithServices)
     {
-        Platforms.PlatformNetCore.HostInstance = this;
+        PlatformNetCore.HostInstance = this;
 
         //IIS Mapping / sometimes UPPER CASE https://serverfault.com/q/292335
         var iisPathBase = Environment.GetEnvironmentVariable("ASPNETCORE_APPL_PATH");
@@ -85,7 +89,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     /// and register services in ConfigureServices(IServiceCollection)
     /// </summary>
     /// <param name="container"></param>
-    public override void Configure(Funq.Container container) => Configure();
+    public override void Configure(Container container) => Configure();
 
     public virtual void Configure() {}
 
@@ -227,7 +231,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     public virtual bool ShouldUseEndpointRoute(HttpContext httpContext)
     {
         var endpoint = httpContext.GetEndpoint();
-        var wildcardEndpoint = endpoint is Microsoft.AspNetCore.Routing.RouteEndpoint routeEndpoint && 
+        var wildcardEndpoint = endpoint is RouteEndpoint routeEndpoint && 
                                routeEndpoint.RoutePattern.RawText?.StartsWith("/{") == true &&
                                routeEndpoint.RoutePattern.RawText?.EndsWith('}') == true;
         var useExistingNonWildcardEndpoint = endpoint != null && !wildcardEndpoint;
@@ -269,7 +273,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         return builder;
     }
     
-    public virtual void RegisterEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
+    public virtual void RegisterEndpoints(IEndpointRouteBuilder routeBuilder)
     {
         if (Options.UseEndpointRouting)
         {
@@ -279,7 +283,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         MapUserDefinedRoutes(routeBuilder);
     }
 
-    public virtual void MapUserDefinedRoutes(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
+    public virtual void MapUserDefinedRoutes(IEndpointRouteBuilder routeBuilder)
     {
         Task HandleRequestAsync(Type requestType, HttpContext httpContext)
         {
@@ -568,7 +572,6 @@ public static class NetCoreAppHostExtensions
             options.ServiceAssemblies.AddRange(serviceAssemblies);
         configure?.Invoke(options);
 
-        services.AddSingleton<IAppSettings, NetCoreAppSettings>();
         options.ConfigurePlugins(services);
 
         var allServiceTypes = options.GetAllServiceTypes();
@@ -579,6 +582,30 @@ public static class NetCoreAppHostExtensions
         
         ServiceStackHost.GlobalAfterConfigureServices.ForEach(fn => fn(services));
         ServiceStackHost.GlobalAfterConfigureServices.Clear();
+
+        if (options.ShouldAutoRegister<IAppSettings>() && !services.Exists<IAppSettings>())
+        {
+            services.AddSingleton<IAppSettings, NetCoreAppSettings>();
+        }
+        if (options.ShouldAutoRegister<ICacheClient>() && !services.Exists<ICacheClient>())
+        {
+            if (services.Exists<IRedisClientsManager>())
+                services.AddSingleton<ICacheClient>(c => c.GetRequiredService<IRedisClientsManager>().GetCacheClient());
+            else
+                services.AddSingleton<ICacheClient>(ServiceStackHost.DefaultCache);
+        }
+        if (options.ShouldAutoRegister<ICacheClientAsync>() && !services.Exists<ICacheClientAsync>())
+        {
+            services.AddSingleton<ICacheClientAsync>(c => c.GetRequiredService<ICacheClient>().AsAsync());
+        }
+        if (options.ShouldAutoRegister<MemoryCacheClient>() && !services.Exists<MemoryCacheClient>())
+        {
+            services.AddSingleton(ServiceStackHost.DefaultCache);
+        }
+        if (options.ShouldAutoRegister<IMessageFactory>() && !services.Exists<IMessageFactory>() && !services.Exists<IMessageService>())
+        {
+            services.AddSingleton<IMessageFactory>(c => c.GetRequiredService<IMessageService>().MessageFactory);
+        }
     }
 #endif
 
@@ -634,7 +661,7 @@ public static class NetCoreAppHostExtensions
         
         if (appHost.Options.MapEndpointRouting)
         {
-            if (app is Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
+            if (app is IEndpointRouteBuilder routeBuilder)
             {
                 appHost.RegisterEndpoints(routeBuilder);
             }
@@ -645,12 +672,12 @@ public static class NetCoreAppHostExtensions
     }
     
 #if NET8_0_OR_GREATER
-    public static void MapEndpoints(this AppHostBase appHost, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure)
+    public static void MapEndpoints(this AppHostBase appHost, Action<IEndpointRouteBuilder> configure)
     {
         if (!appHost.Options.MapEndpointRouting)
             return;
         
-        configure((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)appHost.App);
+        configure((IEndpointRouteBuilder)appHost.App);
     }
     
     public static Task ProcessRequestAsync(this HttpContext httpContext, Func<IRequest,HttpAsyncTaskHandler?>? handlerFactory, string? apiName=null, Action<IRequest>? configure = null)
@@ -726,7 +753,7 @@ public static class NetCoreAppHostExtensions
 
     public static IHttpRequest ToRequest(this HttpContext httpContext, string? operationName = null)
     {
-        var req = new NetCoreRequest(httpContext, operationName, RequestAttributes.None);
+        var req = new NetCoreRequest(httpContext, operationName);
         req.RequestAttributes = req.GetAttributes() | RequestAttributes.Http;
         return req;
     }
