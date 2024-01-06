@@ -701,8 +701,6 @@ public partial class StoreFileUpload : IReturn<StoreFileUploadResponse>, IHasBea
     [DataMember(Order = 1)]
     public string Name { get; set; }
     [DataMember(Order = 2)]
-    public string Path { get; set; }
-    [DataMember(Order = 3)]
     public string BearerToken { get; set; }
 }
 [DataContract]

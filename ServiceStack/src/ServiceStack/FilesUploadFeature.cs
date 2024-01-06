@@ -61,9 +61,9 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
     public void Configure(IServiceCollection services)
     {
         services.RegisterService(typeof(StoreFileUploadService),   [BasePath, BasePath.CombineWith("{Name}")]);
-        services.RegisterService(typeof(GetFileUploadService),     [BasePath, BasePath.CombineWith("{Name}/{**Path}")]);
-        services.RegisterService(typeof(ReplaceFileUploadService), [BasePath, BasePath.CombineWith("{Name}/{**Path}")]);
-        services.RegisterService(typeof(DeleteFileUploadService),  [BasePath, BasePath.CombineWith("{Name}/{**Path}")]);
+        services.RegisterService(typeof(GetFileUploadService),     [BasePath, BasePath.CombineWith("{**Path}")]);
+        services.RegisterService(typeof(ReplaceFileUploadService), [BasePath, BasePath.CombineWith("{**Path}")]);
+        services.RegisterService(typeof(DeleteFileUploadService),  [BasePath, BasePath.CombineWith("{**Path}")]);
     }
 
     public void Register(IAppHost appHost)
@@ -90,6 +90,16 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
                 })
             };
         });
+    }
+
+    public (string name, string? path) GetNameAndPath(string pathInfo)
+    {
+        pathInfo = pathInfo.Substring(BasePath.Length).TrimStart('/');
+        var name = pathInfo.LeftPart('/');
+        var path = pathInfo.Contains('/')
+            ? pathInfo.RightPart('/')
+            : null;
+        return (name, path);
     }
 
     public UploadLocation AssertLocation(string name, IRequest? req=null)
@@ -251,6 +261,7 @@ public class StoreFileUploadService : Service
     public async Task<object> Any(StoreFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
+
         var location = feature.AssertLocation(request.Name, Request);
         if (Request.Files.Length == 0)
             throw HttpError.BadRequest("No files uploaded");
@@ -276,14 +287,18 @@ public class GetFileUploadService : Service
     public async Task<object> Get(GetFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
-        var location = feature.AssertLocation(request.Name, Request);
+        var (name, path) = request.Name != null
+            ? (request.Name, request.Path)
+            : feature.GetNameAndPath(Request.PathInfo);
+        
+        var location = feature.AssertLocation(name, Request);
         var session = await Request.GetSessionAsync();
-        var vfsPath = location.Name.CombineWith(request.Path);
+        var vfsPath = location.Name.CombineWith(path);
         var file = await feature.GetFileAsync(location, Request, session, vfsPath).ConfigAwait();
         if (file == null)
             throw HttpError.NotFound(feature.Errors.FileNotExists);
         var asAttachment = request.Attachment
-            ?? !FileExt.WebFormats.Contains(request.Path.LastRightPart('.'));
+            ?? !FileExt.WebFormats.Contains(path.LastRightPart('.'));
         return new HttpResult(file, asAttachment:asAttachment);
     }
 }
@@ -294,9 +309,13 @@ public class ReplaceFileUploadService : Service
     public async Task<object> Put(ReplaceFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
-        var location = feature.AssertLocation(request.Name, Request);
+        var (name, path) = request.Name != null
+            ? (request.Name, request.Path)
+            : feature.GetNameAndPath(Request.PathInfo);
+        
+        var location = feature.AssertLocation(name, Request);
         var session = await Request.GetSessionAsync();
-        var vfsPath = location.Name.CombineWith(request.Path);
+        var vfsPath = location.Name.CombineWith(path);
         await feature.ReplaceFileAsync(location, Request, session, vfsPath).ConfigAwait();
         return new ReplaceFileUploadResponse();
     }
@@ -308,9 +327,13 @@ public class DeleteFileUploadService : Service
     public async Task<object> Delete(DeleteFileUpload request)
     {
         var feature = AssertPlugin<FilesUploadFeature>();
-        var location = feature.AssertLocation(request.Name, Request);
+        var (name, path) = request.Name != null
+            ? (request.Name, request.Path)
+            : feature.GetNameAndPath(Request.PathInfo);
+
+        var location = feature.AssertLocation(name, Request);
         var session = await Request.GetSessionAsync();
-        var vfsPath = location.Name.CombineWith(request.Path);
+        var vfsPath = location.Name.CombineWith(path);
         var result = await feature.DeleteFileAsync(location, Request, session, vfsPath).ConfigAwait();
         return new DeleteFileUploadResponse {
             Result = result
@@ -324,12 +347,17 @@ public readonly struct ResolvedPath(string publicPath, string virtualPath)
     public string VirtualPath { get; } = virtualPath;
 }
 
-public readonly struct FilesUploadContext
+public readonly struct FilesUploadContext(
+    FilesUploadFeature feature,
+    UploadLocation location,
+    IRequest request,
+    IHttpFile file)
 {
     /// <summary>
     /// The current HTTP Request
     /// </summary>
-    public IRequest Request { get; }
+    public IRequest Request { get; } = request;
+
     /// <summary>
     /// The Request DTO
     /// </summary>
@@ -341,11 +369,13 @@ public readonly struct FilesUploadContext
     /// <summary>
     /// The file to upload
     /// </summary>
-    public IHttpFile File { get; }
+    public IHttpFile File { get; } = file;
+
     /// <summary>
     /// The Uploaded file name
     /// </summary>
-    public string FileName { get; }
+    public string FileName { get; } = file.FileName;
+
     /// <summary>
     /// The Uploaded file extension
     /// </summary>
@@ -357,11 +387,13 @@ public readonly struct FilesUploadContext
     /// <summary>
     /// The FilesUploadFeature Plugin 
     /// </summary>
-    public FilesUploadFeature Feature { get; }
+    public FilesUploadFeature Feature { get; } = feature;
+
     /// <summary>
     /// The UploadLocation used for this upload
     /// </summary>
-    public UploadLocation Location { get; }
+    public UploadLocation Location { get; } = location;
+
     /// <summary>
     /// The User Session associated with this Request
     /// </summary>
@@ -370,15 +402,6 @@ public readonly struct FilesUploadContext
     /// The Authenticated User Id
     /// </summary>
     public string UserAuthId => Session.UserAuthId;
-
-    public FilesUploadContext(FilesUploadFeature feature, UploadLocation location, IRequest request, IHttpFile file)
-    {
-        Feature = feature;
-        Location = location;
-        Request = request;
-        File = file;
-        FileName = file.FileName;
-    }
 
     public string GetLocationPath(string relativePath) => Feature.BasePath.CombineWith(Location.Name, relativePath);
 }
