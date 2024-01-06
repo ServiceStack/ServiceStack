@@ -9,11 +9,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Funq;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -231,7 +229,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     public virtual bool ShouldUseEndpointRoute(HttpContext httpContext)
     {
         var endpoint = httpContext.GetEndpoint();
-        var wildcardEndpoint = endpoint is RouteEndpoint routeEndpoint && 
+        var wildcardEndpoint = endpoint is Microsoft.AspNetCore.Routing.RouteEndpoint routeEndpoint && 
                                routeEndpoint.RoutePattern.RawText?.StartsWith("/{") == true &&
                                routeEndpoint.RoutePattern.RawText?.EndsWith('}') == true;
         var useExistingNonWildcardEndpoint = endpoint != null && !wildcardEndpoint;
@@ -257,7 +255,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         }
         if (operation.RequiresAuthentication)
         {
-            var authAttr = operation.Authorize ?? new AuthorizeAttribute();
+            var authAttr = operation.Authorize ?? new Microsoft.AspNetCore.Authorization.AuthorizeAttribute();
             authAttr.AuthenticationSchemes ??= Options.AuthenticationSchemes;
             builder.RequireAuthorization(authAttr);
         }
@@ -273,7 +271,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         return builder;
     }
     
-    public virtual void RegisterEndpoints(IEndpointRouteBuilder routeBuilder)
+    public virtual void RegisterEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
     {
         if (Options.UseEndpointRouting)
         {
@@ -283,7 +281,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         MapUserDefinedRoutes(routeBuilder);
     }
 
-    public virtual void MapUserDefinedRoutes(IEndpointRouteBuilder routeBuilder)
+    public virtual void MapUserDefinedRoutes(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
     {
         Task HandleRequestAsync(Type requestType, HttpContext httpContext)
         {
@@ -661,7 +659,7 @@ public static class NetCoreAppHostExtensions
         
         if (appHost.Options.MapEndpointRouting)
         {
-            if (app is IEndpointRouteBuilder routeBuilder)
+            if (app is Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
             {
                 appHost.RegisterEndpoints(routeBuilder);
             }
@@ -672,12 +670,12 @@ public static class NetCoreAppHostExtensions
     }
     
 #if NET8_0_OR_GREATER
-    public static void MapEndpoints(this AppHostBase appHost, Action<IEndpointRouteBuilder> configure)
+    public static void MapEndpoints(this AppHostBase appHost, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure)
     {
         if (!appHost.Options.MapEndpointRouting)
             return;
         
-        configure((IEndpointRouteBuilder)appHost.App);
+        configure((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)appHost.App);
     }
     
     public static Task ProcessRequestAsync(this HttpContext httpContext, Func<IRequest,HttpAsyncTaskHandler?>? handlerFactory, string? apiName=null, Action<IRequest>? configure = null)
