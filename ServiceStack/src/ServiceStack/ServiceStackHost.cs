@@ -315,7 +315,8 @@ public abstract partial class ServiceStackHost
                 : pathProviders.First();
         }
 
-        VirtualFiles ??= pathProviders?.FirstOrDefault(x => x is FileSystemVirtualFiles) as IVirtualFiles
+        VirtualFiles ??= Container.TryResolve<IVirtualFiles>()
+                     ?? pathProviders?.FirstOrDefault(x => x is FileSystemVirtualFiles) as IVirtualFiles
                      ?? GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualFiles) as IVirtualFiles;
 
         OnAfterInit();
