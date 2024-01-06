@@ -179,11 +179,9 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             //Initialize VFS
             Config.WebHostPhysicalPath = HostingEnvironment.ContentRootPath;
 
-            if (VirtualFiles == null)
-            {
-                //Set VirtualFiles to point to ContentRootPath (Project Folder)
-                VirtualFiles = new FileSystemVirtualFiles(HostingEnvironment.ContentRootPath);
-            }
+            //Set VirtualFiles to point to ContentRootPath (Project Folder)
+            VirtualFiles ??= ApplicationServices.GetService<IVirtualFiles>()
+                         ?? new FileSystemVirtualFiles(HostingEnvironment.ContentRootPath);
 
             RegisterLicenseFromAppSettings(AppSettings);
         }
