@@ -311,31 +311,42 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                     ? [operation.Method]
                     : route.Verbs;
 
-                foreach (var routeVerb in routeVerbs)
+                string? routeRule = null;
+                try
                 {
-                    if (!EndpointVerbs.TryGetValue(routeVerb, out verb))
-                        continue;
-
-                    var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
-                        HandleRequestAsync(requestType, httpContext));
-                    
-                    ConfigureOperationEndpoint(pathBuilder, operation);
-
-                    foreach (var handler in Options.RouteHandlerBuilders)
+                    foreach (var routeVerb in routeVerbs)
                     {
-                        handler(pathBuilder, operation, routeVerb, route.Path);
+                        if (!EndpointVerbs.TryGetValue(routeVerb, out verb))
+                            continue;
+
+                        routeRule = $"[{verb}] {route.Path}";
+                        var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
+                            HandleRequestAsync(requestType, httpContext));
+                        
+                        ConfigureOperationEndpoint(pathBuilder, operation);
+
+                        foreach (var handler in Options.RouteHandlerBuilders)
+                        {
+                            handler(pathBuilder, operation, routeVerb, route.Path);
+                        }
+                    }
+                    
+                    // Add /custom/path.{format} routes for GET requests
+                    if (routeVerbs.Contains(HttpMethods.Get) && !route.Path.Contains('.') && !route.Path.Contains('*'))
+                    {
+                        routeRule = $"[GET] {route.Path}.format";
+                        var pathBuilder = routeBuilder.MapMethods(route.Path + ".{format}", EndpointVerbs[HttpMethods.Get], 
+                            (string format, HttpResponse response, HttpContext httpContext) =>
+                                HandleRequestAsync(requestType, httpContext));
+                        
+                        ConfigureOperationEndpoint(pathBuilder, operation)
+                            .WithMetadata<string>(route.Path + ".format");
                     }
                 }
-                
-                // Add /custom/path.{format} routes for GET requests
-                if (routeVerbs.Contains(HttpMethods.Get) && !route.Path.Contains('.'))
+                catch (Exception e)
                 {
-                    var pathBuilder = routeBuilder.MapMethods(route.Path + ".{format}", EndpointVerbs[HttpMethods.Get], 
-                            (string format, HttpResponse response, HttpContext httpContext) =>
-                        HandleRequestAsync(requestType, httpContext));
-                    
-                    ConfigureOperationEndpoint(pathBuilder, operation)
-                        .WithMetadata<string>(route.Path + ".format");
+                    LogManager.GetLogger(GetType()).Error($"Error mapping route '{routeRule}' for {requestType.Name}: {e.Message}", e);
+                    throw;
                 }
             }
         }
