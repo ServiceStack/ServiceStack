@@ -34,6 +34,11 @@ public class AuthenticateAttribute : RequestFilterAsyncAttribute
 
 #if NET8_0_OR_GREATER
     /// <summary>
+    /// Restrict authentication to specific comma delimited AuthenticationSchemes
+    /// </summary>
+    public string AuthenticationSchemes { get; set; }
+
+    /// <summary>
     /// Restrict authentication to a specific Policy when using endpoint routing
     /// </summary>
     public string Policy { get; set; }
