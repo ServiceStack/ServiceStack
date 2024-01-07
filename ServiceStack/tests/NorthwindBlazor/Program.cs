@@ -44,8 +44,8 @@ services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
         };
     })
-    .AddScheme<AuthenticationSchemeOptions,BasicAuthenticationHandler<ApplicationUser>>(BasicAuthenticationHandler.Scheme, null)
-    .AddIdentityCookies();
+    //.AddScheme<AuthenticationSchemeOptions,BasicAuthenticationHandler<ApplicationUser>>(BasicAuthenticationHandler.Scheme, null)
+    .AddIdentityCookies(options => options.DisableRedirectsForApis());
 services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("App_Data"));
 
