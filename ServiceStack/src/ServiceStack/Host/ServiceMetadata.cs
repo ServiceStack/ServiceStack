@@ -94,13 +94,10 @@ public class ServiceMetadata(List<RestPath> restPaths)
             ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
         };
 
-        if (validateReqAttrs.Count > 0)
+        var hasAuthValidateAttrs = validateReqAttrs.Any(x => x is IRequireAuthentication);
+        if (hasAuthValidateAttrs)
         {
-            var hasAuthValidateAttrs = validateReqAttrs.Any(x => x is IRequireAuthentication);
-            if (hasAuthValidateAttrs)
-            {
-                operation.RequiresAuthentication = true;
-            }
+            operation.RequiresAuthentication = true;
             var validateRoles = validateReqAttrs.OfType<ValidateHasRoleAttribute>().Select(x => x.Role).ToSet();
             if (validateRoles.Count > 0)
             {

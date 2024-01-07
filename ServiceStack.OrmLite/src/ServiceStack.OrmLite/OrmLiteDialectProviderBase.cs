@@ -34,12 +34,6 @@ namespace ServiceStack.OrmLite
     {
         protected static readonly ILog Log = LogManager.GetLogger(typeof(IOrmLiteDialectProvider));
 
-        protected OrmLiteDialectProviderBase()
-        {
-            Variables = new Dictionary<string, string>();
-            StringSerializer = new JsvStringSerializer();
-        }
-
         #region ADO.NET supported types
         /* ADO.NET UNDERSTOOD DATA TYPES:
 			COUNTER	DbType.Int64
@@ -163,7 +157,7 @@ namespace ServiceStack.OrmLite
 
         public abstract IDbDataParameter CreateParam();
 
-        public Dictionary<string, string> Variables { get; set; }
+        public Dictionary<string, string> Variables { get; set; } = new();
 
         public IOrmLiteExecFilter ExecFilter { get; set; }
 
@@ -187,14 +181,14 @@ namespace ServiceStack.OrmLite
             set => OneTimeConnectionCommands.Add($"SET GLOBAL LOCAL_INFILE={value.ToString().ToUpper()};");
         }
         
-        public List<string> OneTimeConnectionCommands { get; } = new();
-        public List<string> ConnectionCommands { get; } = new();
+        public List<string> OneTimeConnectionCommands { get; } = [];
+        public List<string> ConnectionCommands { get; } = [];
 
         public string ParamString { get; set; } = "@";
 
         public INamingStrategy NamingStrategy { get; set; } = new OrmLiteDefaultNamingStrategy();
 
-        public IStringSerializer StringSerializer { get; set; }
+        public IStringSerializer StringSerializer { get; set; } = new JsvStringSerializer();
 
         private Func<string, string> paramNameFilter;
         public Func<string, string> ParamNameFilter
@@ -279,7 +273,7 @@ namespace ServiceStack.OrmLite
         public virtual bool ShouldQuoteValue(Type fieldType)
         {
             var converter = GetConverter(fieldType);
-            return converter == null || converter is NativeValueOrmLiteConverter;
+            return converter is null or NativeValueOrmLiteConverter;
         }
 
 		public virtual object FromDbRowVersion(Type fieldType, object value)
@@ -300,7 +294,7 @@ namespace ServiceStack.OrmLite
                 return EnumConverter;
 
             return type.IsRefType()
-                ? (IOrmLiteConverter)ReferenceTypeConverter
+                ? ReferenceTypeConverter
                 : ValueTypeConverter;
         }
 
@@ -318,7 +312,7 @@ namespace ServiceStack.OrmLite
                 return EnumConverter;
 
             return fieldType.IsRefType()
-                ? (IOrmLiteConverter)ReferenceTypeConverter
+                ? ReferenceTypeConverter
                 : ValueTypeConverter;
         }
 

@@ -391,8 +391,7 @@ namespace ServiceStack.OrmLite
         {
             if (!OrmLiteConfig.DeoptimizeReader)
             {
-                if (values == null)
-                    values = new object[reader.FieldCount];
+                values ??= new object[reader.FieldCount];
 
                 try
                 {
@@ -464,8 +463,7 @@ namespace ServiceStack.OrmLite
             int count = 0;
             try
             {
-                if (dbCmd.Transaction == null)
-                    dbCmd.Transaction = dbTrans = dbCmd.Connection.BeginTransaction();
+                dbCmd.Transaction ??= dbTrans = dbCmd.Connection.BeginTransaction();
 
                 var dialectProvider = dbCmd.GetDialectProvider();
 
@@ -563,8 +561,7 @@ namespace ServiceStack.OrmLite
             int count = 0;
             try
             {
-                if (dbCmd.Transaction == null)
-                    dbCmd.Transaction = dbTrans = dbCmd.Connection.BeginTransaction();
+                dbCmd.Transaction ??= dbTrans = dbCmd.Connection.BeginTransaction();
 
                 var dialectProvider = dbCmd.GetDialectProvider();
 
@@ -722,33 +719,31 @@ namespace ServiceStack.OrmLite
 
             var dialectProvider = dbCmd.GetDialectProvider();
             var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
-            if (!enableIdentityInsert || pkField == null || !pkField.AutoIncrement)
+            if (!enableIdentityInsert || pkField is not { AutoIncrement: true })
             {
                 dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
                     insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj));
 
                 return InsertInternal<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity);
             }
-            else
+
+            try
             {
-                try
+                dialectProvider.EnableIdentityInsert<T>(dbCmd);
+                dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+                    insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj),
+                    shouldInclude: f => f == pkField);
+                InsertInternal<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity);
+                if (selectIdentity)
                 {
-                    dialectProvider.EnableIdentityInsert<T>(dbCmd);
-                    dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
-                        insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj),
-                        shouldInclude: f => f == pkField);
-                    InsertInternal<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity);
-                    if (selectIdentity)
-                    {
-                        var id = pkField.GetValue(obj);
-                        return Convert.ToInt64(id);
-                    }
-                    return default;
+                    var id = pkField.GetValue(obj);
+                    return Convert.ToInt64(id);
                 }
-                finally
-                {
-                    dialectProvider.DisableIdentityInsert<T>(dbCmd);
-                }
+                return default;
+            }
+            finally
+            {
+                dialectProvider.DisableIdentityInsert<T>(dbCmd);
             }
         }
         
@@ -890,8 +885,7 @@ namespace ServiceStack.OrmLite
 
             try
             {
-                if (dbCmd.Transaction == null)
-                    dbCmd.Transaction = dbTrans = dbCmd.Connection.BeginTransaction();
+                dbCmd.Transaction ??= dbTrans = dbCmd.Connection.BeginTransaction();
 
                 var dialectProvider = dbCmd.GetDialectProvider();
 
@@ -930,8 +924,7 @@ namespace ServiceStack.OrmLite
 
             try
             {
-                if (dbCmd.Transaction == null)
-                    dbCmd.Transaction = dbTrans = dbCmd.Connection.BeginTransaction();
+                dbCmd.Transaction ??= dbTrans = dbCmd.Connection.BeginTransaction();
 
                 var dialectProvider = dbCmd.GetDialectProvider();
 

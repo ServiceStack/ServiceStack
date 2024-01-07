@@ -75,7 +75,7 @@ public class ValidateRequestAttribute : AttributeBase, IValidateRule, IReflectAt
     {
         var to = new ReflectAttribute {
             Name = "ValidateRequest",
-            PropertyArgs = new List<KeyValuePair<PropertyInfo, object>>()
+            PropertyArgs = []
         };
         if (!string.IsNullOrEmpty(Validator))
             to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Validator)), Validator));
@@ -171,10 +171,10 @@ public class ValidateAttribute : AttributeBase, IValidateRule, IReflectAttribute
     /// </summary>
     public string Message { get; set; }
 
-    public static string Combine(string comparand, params string[] conditions)
+    public static string Combine(string comperand, params string[] conditions)
     {
         var sb = new StringBuilder();
-        var joiner = ") " + comparand + " ("; 
+        var joiner = ") " + comperand + " ("; 
         foreach (var condition in conditions)
         {
             if (string.IsNullOrEmpty(condition))
@@ -193,7 +193,7 @@ public class ValidateAttribute : AttributeBase, IValidateRule, IReflectAttribute
     {
         var to = new ReflectAttribute {
             Name = "Validate",
-            PropertyArgs = new List<KeyValuePair<PropertyInfo, object>>()
+            PropertyArgs = []
         };
         if (!string.IsNullOrEmpty(Validator))
             to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Validator)), Validator));
@@ -221,73 +221,25 @@ public class AllowResetAttribute : AttributeBase {}
 public class DenyResetAttribute : AttributeBase {}
     
 //Default IPropertyValidator defined in ValidateScripts
-public class ValidateNullAttribute : ValidateAttribute
-{
-    public ValidateNullAttribute() : base("Null") { }
-}
-public class ValidateEmptyAttribute : ValidateAttribute
-{
-    public ValidateEmptyAttribute() : base("Empty") { }
-}
-public class ValidateEmailAttribute : ValidateAttribute
-{
-    public ValidateEmailAttribute() : base("Email") { }
-}
-public class ValidateNotNullAttribute : ValidateAttribute
-{
-    public ValidateNotNullAttribute() : base("NotNull") { }
-}
-public class ValidateNotEmptyAttribute : ValidateAttribute
-{
-    public ValidateNotEmptyAttribute() : base("NotEmpty") { }
-}
+public class ValidateNullAttribute() : ValidateAttribute("Null");
+public class ValidateEmptyAttribute() : ValidateAttribute("Empty");
+public class ValidateEmailAttribute() : ValidateAttribute("Email");
+public class ValidateNotNullAttribute() : ValidateAttribute("NotNull");
+public class ValidateNotEmptyAttribute() : ValidateAttribute("NotEmpty");
 /// <summary>
 /// Validate property against Fluent Validation CreditCardValidator
 /// </summary>
-public class ValidateCreditCardAttribute : ValidateAttribute
-{
-    public ValidateCreditCardAttribute() : base("CreditCard") { }
-}
-public class ValidateLengthAttribute : ValidateAttribute
-{
-    public ValidateLengthAttribute(int min, int max) : base($"Length({min},{max})") { }
-}
-public class ValidateExactLengthAttribute : ValidateAttribute
-{
-    public ValidateExactLengthAttribute(int length) : base($"ExactLength({length})") { }
-}
-public class ValidateMaximumLengthAttribute : ValidateAttribute
-{
-    public ValidateMaximumLengthAttribute(int max) : base($"MaximumLength({max})") { }
-}
-public class ValidateMinimumLengthAttribute : ValidateAttribute
-{
-    public ValidateMinimumLengthAttribute(int min) : base($"MinimumLength({min})") { }
-}
-public class ValidateLessThanAttribute : ValidateAttribute
-{
-    public ValidateLessThanAttribute(int value) : base($"LessThan({value})") { }
-}
-public class ValidateLessThanOrEqualAttribute : ValidateAttribute
-{
-    public ValidateLessThanOrEqualAttribute(int value) : base($"LessThanOrEqual({value})") { }
-}
-public class ValidateGreaterThanAttribute : ValidateAttribute
-{
-    public ValidateGreaterThanAttribute(int value) : base($"GreaterThan({value})") { }
-}
-public class ValidateGreaterThanOrEqualAttribute : ValidateAttribute
-{
-    public ValidateGreaterThanOrEqualAttribute(int value) : base($"GreaterThanOrEqual({value})") { }
-}
-public class ValidateScalePrecisionAttribute : ValidateAttribute
-{
-    public ValidateScalePrecisionAttribute(int scale, int precision) : base($"ScalePrecision({scale},{precision})") { }
-}
-public class ValidateRegularExpressionAttribute : ValidateAttribute
-{
-    public ValidateRegularExpressionAttribute(string pattern) : base($"RegularExpression(`{pattern}`)") { }
-}
+public class ValidateCreditCardAttribute() : ValidateAttribute("CreditCard");
+public class ValidateLengthAttribute(int min, int max) : ValidateAttribute($"Length({min},{max})");
+public class ValidateExactLengthAttribute(int length) : ValidateAttribute($"ExactLength({length})");
+public class ValidateMaximumLengthAttribute(int max) : ValidateAttribute($"MaximumLength({max})");
+public class ValidateMinimumLengthAttribute(int min) : ValidateAttribute($"MinimumLength({min})");
+public class ValidateLessThanAttribute(int value) : ValidateAttribute($"LessThan({value})");
+public class ValidateLessThanOrEqualAttribute(int value) : ValidateAttribute($"LessThanOrEqual({value})");
+public class ValidateGreaterThanAttribute(int value) : ValidateAttribute($"GreaterThan({value})");
+public class ValidateGreaterThanOrEqualAttribute(int value) : ValidateAttribute($"GreaterThanOrEqual({value})");
+public class ValidateScalePrecisionAttribute(int scale, int precision) : ValidateAttribute($"ScalePrecision({scale},{precision})");
+public class ValidateRegularExpressionAttribute(string pattern) : ValidateAttribute($"RegularExpression(`{pattern}`)");
 public class ValidateEqualAttribute : ValidateAttribute
 {
     public ValidateEqualAttribute(string value) : base($"Equal(`{value}`)") { }
