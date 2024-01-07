@@ -90,37 +90,34 @@ public class ValidateRequestAttribute : AttributeBase, IValidateRule, IReflectAt
         return to;
     }
 }
-    
+
+public interface IRequireAuthentication {}
+
 /* Default ITypeValidator defined in ValidateScripts */
     
-public class ValidateIsAuthenticatedAttribute : ValidateRequestAttribute
+public class ValidateIsAuthenticatedAttribute() : ValidateRequestAttribute("IsAuthenticated"), IRequireAuthentication;
+
+public class ValidateIsAdminAttribute() : ValidateRequestAttribute("IsAdmin"), IRequireAuthentication;
+
+public class ValidateHasRoleAttribute(string role) : ValidateRequestAttribute("HasRole(`" + role + "`)"), IRequireAuthentication
 {
-    public ValidateIsAuthenticatedAttribute() : base("IsAuthenticated") { }
-}
-    
-public class ValidateIsAdminAttribute : ValidateRequestAttribute
+    public string Role => role;
+};
+
+public class ValidateHasPermissionAttribute(string permission) : ValidateRequestAttribute("HasPermission(`" + permission + "`)"), IRequireAuthentication
 {
-    public ValidateIsAdminAttribute() : base("IsAdmin") { }
-}
-    
-public class ValidateHasRoleAttribute : ValidateRequestAttribute
-{
-    public ValidateHasRoleAttribute(string role) : base("HasRole(`" + role + "`)") { }
-}
-    
-public class ValidateHasPermissionAttribute : ValidateRequestAttribute
-{
-    public ValidateHasPermissionAttribute(string permission) : base("HasPermission(`" + permission + "`)") { }
+    public string Permission => permission;
 }
 
-public class ValidateHasClaimAttribute : ValidateRequestAttribute
+public class ValidateHasClaimAttribute(string type, string value) : ValidateRequestAttribute("HasClaim(`" + type + "`,`" + value + "`)"), IRequireAuthentication
 {
-    public ValidateHasClaimAttribute(string type, string value) : base("HasClaim(`" + type + "`,`" + value + "`)") { }
+    public string Type => type;
+    public string Value => value;
 }
 
-public class ValidateHasScopeAttribute : ValidateRequestAttribute
+public class ValidateHasScopeAttribute(string scope) : ValidateRequestAttribute("HasScope(`" + scope + "`)"), IRequireAuthentication
 {
-    public ValidateHasScopeAttribute(string scope) : base("HasScope(`" + scope + "`)") { }
+    public string Scope => scope;
 }
 
     

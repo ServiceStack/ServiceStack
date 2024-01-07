@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -62,7 +63,8 @@ public class ServiceMetadata(List<RestPath> restPaths)
         var description = reqAttrs.OfType<DescriptionAttribute>().FirstOrDefault()?.Description
             ?? reqAttrs.OfType<System.ComponentModel.DescriptionAttribute>().FirstOrDefault()?.Description
             ?? reqAttrs.OfType<ApiMemberAttribute>().FirstOrDefault()?.Description;
-        var notes = reqAttrs.OfType<NotesAttribute>()?.FirstOrDefault()?.Notes;
+        var notes = reqAttrs.OfType<NotesAttribute>().FirstOrDefault()?.Notes;
+        var validateReqAttrs = reqAttrs.OfType<ValidateRequestAttribute>().ToList();
         
         var operation = new Operation
         {
@@ -82,6 +84,8 @@ public class ServiceMetadata(List<RestPath> restPaths)
             RequiresAnyRole = authAttrs.OfType<RequiresAnyRoleAttribute>().SelectMany(x => x.RequiredRoles).ToList(),
             RequiredPermissions = authAttrs.OfType<RequiredPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
             RequiresAnyPermission = authAttrs.OfType<RequiresAnyPermissionAttribute>().SelectMany(x => x.RequiredPermissions).ToList(),
+            RequiredScopes = validateReqAttrs.OfType<ValidateHasScopeAttribute>().Select(x => x.Scope).ToList(),
+            RequiredClaims = validateReqAttrs.OfType<ValidateHasClaimAttribute>().Select(x => new Claim(x.Type, x.Value)).ToList(),
             RequestPropertyAttributes = requestType.GetPublicProperties().SelectMany(x => x.AllAttributes()).Map(x => x.GetType()).ToSet(),
             Tags = tagNames,
             Description = description,
@@ -90,6 +94,29 @@ public class ServiceMetadata(List<RestPath> restPaths)
             ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
         };
 
+        if (validateReqAttrs.Count > 0)
+        {
+            var hasAuthValidateAttrs = validateReqAttrs.Any(x => x is IRequireAuthentication);
+            if (hasAuthValidateAttrs)
+            {
+                operation.RequiresAuthentication = true;
+            }
+            var validateRoles = validateReqAttrs.OfType<ValidateHasRoleAttribute>().Select(x => x.Role).ToSet();
+            if (validateRoles.Count > 0)
+            {
+                operation.RequiredRoles.AddDistinctRange(validateRoles);
+            }
+            var validatePermissions = validateReqAttrs.OfType<ValidateHasPermissionAttribute>().Select(x => x.Permission).ToSet();
+            if (validatePermissions.Count > 0)
+            {
+                operation.RequiredPermissions.AddDistinctRange(validatePermissions);
+            }
+            if (validateReqAttrs.Any(x => x is ValidateIsAdminAttribute))
+            {
+                operation.RequiredRoles.AddIfNotExists(RoleNames.Admin);
+            }
+        }
+
 #if NET8_0_OR_GREATER
         operation.Authorize = reqAttrs.OfType<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().FirstOrDefault();
         if (operation.Authorize == null)
@@ -97,6 +124,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
             var policy = authAttrs.FirstOrDefault(x => x.Policy != null)?.Policy;
             if (policy != null)
             {
+                operation.RequiresAuthentication = true;
                 operation.Authorize = new()
                 {
                     Policy = policy,
@@ -835,11 +863,13 @@ public class Operation : ICloneable
     public List<IRequestFilterBase>? RequestFilterAttributes { get; set; }
     public List<IResponseFilterBase>? ResponseFilterAttributes { get; set; }
     public bool RequiresAuthentication { get; set; }
-    public List<string>? RequiredRoles { get; set; }
-    public List<string>? RequiresAnyRole { get; set; }
-    public List<string>? RequiredPermissions { get; set; }
-    public List<string>? RequiresAnyPermission { get; set; }
-    public List<string>? Tags { get; set; }
+    public List<string> RequiredRoles { get; set; } = [];
+    public List<string> RequiresAnyRole { get; set; } = [];
+    public List<string> RequiredPermissions { get; set; } = [];
+    public List<string> RequiresAnyPermission { get; set; } = [];
+    public List<Claim> RequiredClaims { get; set; } = [];
+    public List<string> RequiredScopes { get; set; } = [];
+    public List<string> Tags { get; set; } = [];
     public string? Description { get; set; }
     public string? Notes { get; set; }
     public ApiCss? LocodeCss { get; set; } 
