@@ -379,8 +379,11 @@ namespace ServiceStack.OrmLite
                 }
                 catch (Exception ex)
                 {
-                    OrmLiteUtils.HandleException(ex, "Could not populate {0}.{1} with {2}: {3}", 
+                    Log.Error(ex, "Could not populate {0}.{1} with {2}: {3}",
                         typeof(T).Name, fieldDef?.Name, value, ex.Message);
+
+                    if (OrmLiteConfig.ThrowOnError)
+                        throw;
                 }
             }
             
