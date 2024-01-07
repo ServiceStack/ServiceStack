@@ -30,9 +30,9 @@ public static class ServiceStackOpenApiExtensions
     {
         configure?.Invoke(OpenApiMetadata);
 
-        options.Services.AddSingleton(OpenApiMetadata);
-        options.Services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
-        options.Services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
+        options.Services!.AddSingleton(OpenApiMetadata);
+        options.Services!.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
+        options.Services!.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
     }
 
     public static void AddBasicAuth(this SwaggerGenOptions options) =>

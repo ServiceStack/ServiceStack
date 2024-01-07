@@ -77,6 +77,11 @@ public class ServiceStackServicesOptions
     ];
 
     internal bool ShouldAutoRegister<T>() => AutoRegister.Contains(typeof(T));
+
+    public List<string> AllowedAuthenticationSchemes { get; } =
+    [
+        "Bearer", "basic", "Identity.Application"
+    ];
     
     internal HashSet<Type> ServicesRegistered = [];
 
@@ -249,8 +254,7 @@ public class ServiceStackOptions
     /// <summary>
     /// The ASP.NET Core AuthenticationSchemes to use for protected ServiceStack APIs
     /// </summary>
-    public string AuthenticationSchemes { get; set; } = 
-        Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme + ",Bearer,basic";
+    public string? AuthenticationSchemes { get; set; }
     
     /// <summary>
     /// Custom handlers to execute for each ServiceStack API endpoint

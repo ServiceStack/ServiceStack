@@ -52,7 +52,8 @@ public class BasicAuthenticationHandler<TUser, TKey>
 {  
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()  
     {  
-        if (!Request.Headers.TryGetValue(HttpHeaders.Authorization, out var auth))
+        if (!Request.Headers.TryGetValue(HttpHeaders.Authorization, out var auth) 
+            || auth.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             return AuthenticateResult.NoResult();
                 
         var authHeader = AuthenticationHeaderValue.Parse(auth!);

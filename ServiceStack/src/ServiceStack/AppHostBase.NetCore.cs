@@ -656,8 +656,19 @@ public static class NetCoreAppHostExtensions
         {
             TopLevelAppModularStartup.Instance.Configure(app);
         }
-        
+
 #if NET8_0_OR_GREATER
+        if (appHost.Options.AuthenticationSchemes == null)
+        {
+            var authOptions = app.ApplicationServices.GetService<IOptions<Microsoft.AspNetCore.Authentication.AuthenticationOptions>>();
+            if (authOptions?.Value != null)
+            {
+                appHost.Options.AuthenticationSchemes = authOptions.Value.SchemeMap.Keys
+                    .Where(x => ServiceStackHost.InitOptions.AllowedAuthenticationSchemes.Contains(x)).Join(",");
+            }
+        }
+        appHost.Options.AuthenticationSchemes ??= Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme;
+        
         configure?.Invoke(appHost.Options);
 
         var appOptions = app.ApplicationServices.GetServices<IConfigureOptions<ServiceStackOptions>>();
