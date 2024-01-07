@@ -227,7 +227,7 @@ namespace ServiceStack.OrmLite
                     {
                         dbCmd.ExecuteSql(dropTableFks);
                     }
-                    dbCmd.ExecuteSql("DROP TABLE " + dialectProvider.GetQuotedTableName(modelDef));
+                    dbCmd.ExecuteSql($"DROP TABLE {dialectProvider.GetQuotedTableName(modelDef)}");
 
                     if (modelDef.PostDropTableSql != null)
                     {
