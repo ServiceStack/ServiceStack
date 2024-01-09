@@ -2137,9 +2137,9 @@ namespace ServiceStack
                     hasBearer.BearerToken = serviceClient.GetTokenCookie();
                 }
             }
-            if (client is IHasVersion clientVersion && clientVersion.Version > 0)
+            if (client is IHasVersion { Version: > 0 } clientVersion)
             {
-                if (request is IHasVersion hasVersion && hasVersion.Version <= 0)
+                if (request is IHasVersion { Version: <= 0 } hasVersion)
                     hasVersion.Version = clientVersion.Version;
             }
         }

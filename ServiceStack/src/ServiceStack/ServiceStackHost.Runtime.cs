@@ -1295,7 +1295,7 @@ public abstract partial class ServiceStackHost
     /// </summary>
     public virtual string GetRefreshToken(IRequest req)
     {
-        if (req.Dto is IHasRefreshToken { RefreshToken: { } } dto)
+        if (req.Dto is IHasRefreshToken { RefreshToken: not null } dto)
             return dto.RefreshToken;
         return null;            
     }

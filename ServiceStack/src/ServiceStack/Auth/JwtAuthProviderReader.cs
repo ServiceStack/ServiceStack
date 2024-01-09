@@ -1100,7 +1100,6 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
             Keywords.TokenCookie,
             DateTime.UtcNow.Add(ExpireTokensIn),
             Keywords.RefreshTokenCookie,
-            DateTime.UtcNow.Add(ExpireRefreshTokensIn),
             ctx.ReferrerUrl);
         return httpResult;
     }
@@ -1115,7 +1114,6 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
             Keywords.TokenCookie,
             DateTime.UtcNow.Add(ExpireTokensIn),
             Keywords.RefreshTokenCookie,
-            DateTime.UtcNow.Add(ExpireRefreshTokensIn),
             ctx.ReferrerUrl);
         return httpResult;
     }
@@ -1127,7 +1125,6 @@ public static class JwtUtils
         string tokenCookie,
         DateTime expireTokenIn,
         string refreshTokenCookie,
-        DateTime expireRefreshTokenIn,
         string referrerUrl)
     {
         var httpResult = new HttpResult(responseDto);
@@ -1139,16 +1136,17 @@ public static class JwtUtils
             });
         responseDto.BearerToken = null;
 
-        var refreshToken = (responseDto as IHasRefreshToken)?.RefreshToken; 
-        if (refreshToken != null)
+        if (responseDto is IHasRefreshTokenExpiry { RefreshToken: not null, RefreshTokenExpiry: not null } hasRefreshToken 
+            && hasRefreshToken.RefreshTokenExpiry > DateTime.UtcNow)
         {
             httpResult.AddCookie(req,
-                new Cookie(refreshTokenCookie, refreshToken, Cookies.RootPath) {
+                new Cookie(refreshTokenCookie, hasRefreshToken.RefreshToken, Cookies.RootPath) {
                     HttpOnly = true,
                     Secure = req.IsSecureConnection,
-                    Expires = expireRefreshTokenIn,
+                    Expires = hasRefreshToken.RefreshTokenExpiry.Value,
                 });
-            ((IHasRefreshToken)responseDto).RefreshToken = null;
+            hasRefreshToken.RefreshToken = null;
+            hasRefreshToken.RefreshTokenExpiry = null;
         }
 
         NotifyJwtCookiesUsed(httpResult);

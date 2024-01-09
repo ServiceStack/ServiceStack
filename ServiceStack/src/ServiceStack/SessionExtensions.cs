@@ -112,7 +112,7 @@ public static class SessionExtensions
         return base64Id;
     }
 
-    static readonly char[] UrlUnsafeBase64Chars = { '+', '/' };
+    static readonly char[] UrlUnsafeBase64Chars = ['+', '/'];
     public static bool Base64StringContainsUrlUnfriendlyChars(string base64)
     {
         return base64.IndexOfAny(UrlUnsafeBase64Chars) >= 0;

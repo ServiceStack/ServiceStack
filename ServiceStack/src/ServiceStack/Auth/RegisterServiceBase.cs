@@ -196,6 +196,7 @@ public abstract class RegisterServiceBase : Service
         UserId = userId,
         BearerToken = typedResponse.BearerToken,
         RefreshToken = typedResponse.RefreshToken,
+        RefreshTokenExpiry = typedResponse.RefreshTokenExpiry,
         Roles = typedResponse.Roles,
         Permissions = typedResponse.Permissions,
         Meta = typedResponse.Meta,

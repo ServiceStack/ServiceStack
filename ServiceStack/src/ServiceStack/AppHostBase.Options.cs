@@ -64,6 +64,11 @@ public class ServiceStackServicesOptions
     public Dictionary<Type, string[]> ServiceRoutes { get; } = new();
 
     /// <summary>
+    /// Custom Rest Paths to register
+    /// </summary>
+    public List<RestPath> Routes { get; set; } = [];
+
+    /// <summary>
     /// Auto Register built-in dependencies when not registered
     /// </summary>
     public List<Type> AutoRegister { get; } = [

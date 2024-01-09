@@ -10,12 +10,7 @@ public class AuthMetadataProvider : IAuthMetadataProvider
 
     public const string ProfileUrlKey = "profileUrl";
 
-    public string NoProfileImgUrl { get; set; }
-
-    public AuthMetadataProvider()
-    {
-        NoProfileImgUrl = JwtClaimTypes.DefaultProfileUrl;
-    }
+    public string NoProfileImgUrl { get; set; } = JwtClaimTypes.DefaultProfileUrl;
 
     public virtual void AddMetadata(IAuthTokens tokens, Dictionary<string, string> authInfo)
     {

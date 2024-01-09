@@ -118,6 +118,7 @@ public abstract partial class ServiceStackHost
         ServiceAssemblies = InitOptions.ServiceAssemblies;
         ServiceAssemblies.AddDistinctRange(assembliesWithServices);
         Plugins = InitOptions.Plugins;
+        RestPaths = InitOptions.Routes;
 
         ContentTypes = new ContentTypes();
         Routes = new ServiceRoutes(this);

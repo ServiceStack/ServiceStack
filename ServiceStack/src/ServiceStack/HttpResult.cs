@@ -515,5 +515,17 @@ public static class HttpResultExtensions
             httpResult.Cookies.Add(cookie);
         return httpResult;
     }
+
+    public static IHttpResult DeleteCookie(this IHttpResult httpResult, IRequest req, string cookieName)
+    {
+        var cookies = (Cookies)((IHttpResponse)req.Response).Cookies;
+        httpResult.Cookies.Add(new Cookie(cookieName, string.Empty, Cookies.RootPath)
+        {
+            Expires = DateTime.UtcNow.AddDays(-1),
+            Secure = cookies.UseSecureCookie(null)
+        });
+        cookies.Collection.RemoveAll(x => x.Name == cookieName);
+        return httpResult;
+    }
         
 }

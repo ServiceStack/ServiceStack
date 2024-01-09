@@ -17,9 +17,9 @@ public class Cookies(IHttpResponse httpRes) : ICookies
     public static DateTime PermanentCookieExpiry { get; set; } = DateTime.UtcNow.AddYears(20);
     public const string RootPath = "/";
 
-    public List<Cookie> Collection { get; set; } = new();
+    public List<Cookie> Collection { get; set; } = [];
 
-    private bool UseSecureCookie(bool? secureOnly) =>
+    public bool UseSecureCookie(bool? secureOnly) =>
         (secureOnly ?? HostContext.Config?.UseSecureCookies ?? true) && httpRes.Request.IsSecureConnection;
 
     /// <summary>

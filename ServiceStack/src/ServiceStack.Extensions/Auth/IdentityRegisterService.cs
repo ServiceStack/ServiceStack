@@ -94,12 +94,11 @@ public abstract class IdentityRegisterServiceBase<TUser,TKey> : RegisterServiceB
 }
 
 [DefaultRequest(typeof(Register))]
-public class IdentityRegisterService<TUser,TKey> : IdentityRegisterServiceBase<TUser,TKey>
+public class IdentityRegisterService<TUser, TKey>(UserManager<TUser> userManager)
+    : IdentityRegisterServiceBase<TUser, TKey>(userManager)
     where TKey : IEquatable<TKey>
-    where TUser : IdentityUser<TKey>
+    where TUser : IdentityUser<TKey>, new()
 {
-    public IdentityRegisterService(UserManager<TUser> userManager) : base(userManager) { }
-
     public async Task<object> PostAsync(Register request)
     {
         var session = await GetSessionAsync();

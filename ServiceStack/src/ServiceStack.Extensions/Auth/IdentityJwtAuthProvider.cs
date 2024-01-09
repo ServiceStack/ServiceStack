@@ -12,10 +12,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
+using ServiceStack.Text.Pools;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
@@ -24,15 +27,19 @@ public interface IIdentityJwtAuthProvider
 {
     string? AuthenticationScheme { get; }
     JwtBearerOptions? Options { get; }
+    bool RequireSecureConnection { get; }
+    TimeSpan ExpireTokensIn { get; }
+    Task<string> CreateAccessTokenFromRefreshTokenAsync(string refreshToken, IRequest request);
 }
 
 /// <summary>
 /// Converts an MVC JwtBearer Cookie into a ServiceStack Session
 /// </summary>
 /// <typeparam name="TUser"></typeparam>
+/// <typeparam name="TKey"></typeparam>
 public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
     where TKey : IEquatable<TKey>
-    where TUser : IdentityUser<TKey>
+    where TUser : IdentityUser<TKey>, new()
 {
     public override string Type => "Bearer";
     public const string Name = "identity";
@@ -73,9 +80,14 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     public TimeSpan ExpireTokensIn { get; set; } = TimeSpan.FromDays(14);
 
     /// <summary>
-    /// How long should JWT Refresh Tokens be valid for. (default 365 days)
+    /// How long should JWT Refresh Tokens be valid for. (default 90 days)
     /// </summary>
-    public TimeSpan ExpireRefreshTokensIn { get; set; } = TimeSpan.FromDays(365);
+    public TimeSpan ExpireRefreshTokensIn { get; set; } = TimeSpan.FromDays(90);
+
+    /// <summary>
+    /// How long to extend the expiry of Refresh Tokens after usage (default None) 
+    /// </summary>
+    public TimeSpan? ExtendRefreshTokenExpiryAfterUsage { get; set; }
 
     /// <summary>
     /// Convenient overload to initialize ExpireTokensIn with an Integer
@@ -106,20 +118,25 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     private long accessIdCounter;
 
     /// <summary>
-    /// Get the last jti AutoId generated  
+    /// Whether to enable JWT Refresh Tokens (default TUser : IRequireRefreshToken) 
     /// </summary>
-    public string LastJwtId() => Interlocked.Read(ref accessIdCounter).ToString();
+    public bool EnableRefreshToken { get; set; }
 
     /// <summary>
-    /// Change resolution for resolving unique jti id for Refresh Tokens
+    /// Whether to invalidate Refresh Tokens on SignOut (default true)
     /// </summary>
-    public Func<IRequest, string>? ResolveRefreshJwtId { get; set; }
+    public bool InvalidateRefreshTokenOnSignOut { get; set; } = true;
 
     /// <summary>
-    /// Get the next AutoId for usage in jti JWT Refresh Tokens  
+    /// Remove Auth Cookies on Authentication
     /// </summary>
-    public string NextRefreshJwtId() => Interlocked.Decrement(ref refreshIdCounter).ToString();
+    public List<string> DeleteCookiesOnJwtCookies { get; set; } = [".AspNetCore.Identity.Application"];
 
+    /// <summary>
+    /// Register GetAccessToken Service to enable Refresh Tokens
+    /// </summary>
+    public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new();
+    
     /// <summary>
     /// Return Valid Audiences in comma-delimited string
     /// </summary>
@@ -133,9 +150,6 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
                 : TokenValidationParameters.ValidAudience;
         }
     }
-
-    private long refreshIdCounter;
-    public string LastRefreshJwtId() => Interlocked.Read(ref refreshIdCounter).ToString();
 
     public List<(string fieldName, string claimType)> MapIdentityUserToClaims { get; set; } =
     [
@@ -172,7 +186,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     /// <summary>
     /// Customize which claims are included in the JWT Refresh Token
     /// </summary>
-    public Action<IRequest, string, List<Claim>>? OnRefreshTokenCreated { get; set; }
+    public Action<IRequest, TUser>? OnRefreshTokenCreated { get; set; }
 
     /// <summary>
     /// Run custom filter after session is restored from a JWT Token
@@ -185,8 +199,8 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         AuthenticationScheme = authenticationScheme ?? JwtBearerDefaults.AuthenticationScheme;
         Options = new JwtBearerOptions();
         ResolveJwtId = _ => NextJwtId();
-        ResolveRefreshJwtId = _ => NextRefreshJwtId();
-
+        EnableRefreshToken = typeof(TUser).HasInterface(typeof(IRequireRefreshToken));
+            
         Label = "JWT";
         FormLayout = [
             new InputInfo(nameof(IHasBearerToken.BearerToken), Html.Input.Types.Textarea)
@@ -232,8 +246,9 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
             IdentityAuth.TokenCookie,
             DateTime.UtcNow.Add(ExpireTokensIn),
             IdentityAuth.RefreshTokenCookie,
-            DateTime.UtcNow.Add(ExpireRefreshTokensIn),
             ctx.ReferrerUrl);
+        
+        DeleteCookiesOnJwtCookies.ForEach(name => httpResult.DeleteCookie(req, name));
         return httpResult;
     }
 
@@ -247,8 +262,9 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
             IdentityAuth.TokenCookie,
             DateTime.UtcNow.Add(ExpireTokensIn),
             IdentityAuth.RefreshTokenCookie,
-            DateTime.UtcNow.Add(ExpireRefreshTokensIn),
             ctx.ReferrerUrl);
+        
+        DeleteCookiesOnJwtCookies.ForEach(name => httpResult.DeleteCookie(req, name));
         return httpResult;
     }
 
@@ -299,7 +315,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
             req.Items[Keywords.Session] = session;
         }
         return Task.CompletedTask;
-    }
+     }
 
     public virtual IAuthSession CreateSessionFromClaims(IRequest req, List<Claim> claims)
     {
@@ -319,8 +335,6 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         HostContext.AppHost.OnSessionFilter(req, session, sessionId);
         return session;
     }
-
-    protected virtual bool EnableRefreshToken() => true;
 
     public async Task<(TUser, IEnumerable<string>)> GetUserAndRolesAsync(IServiceBase service, string email)
     {
@@ -358,18 +372,21 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
                 authContext.UserSource = user;
 
                 authContext.AuthResponse.BearerToken = CreateJwtBearerToken(authContext.AuthService.Request, user, authContext.Session.Roles);
-                authContext.AuthResponse.RefreshToken = EnableRefreshToken()
-                    ? CreateJwtRefreshToken(authService.Request, user.Id.ToString()!, ExpireRefreshTokensIn)
-                    : null;
+                var userRefreshToken = CreateRefreshToken(authService.Request, user);
+                if (userRefreshToken != null)
+                {
+                    authContext.AuthResponse.RefreshToken = userRefreshToken.RefreshToken;
+                    authContext.AuthResponse.RefreshTokenExpiry = userRefreshToken.RefreshTokenExpiry;
+                }
             }
         }
     }
 
-    protected string? CreateJwtBearerToken(IRequest req, TUser user, IEnumerable<string>? roles = null)
+    protected string CreateJwtBearerToken(IRequest req, TUser user, IEnumerable<string>? roles = null)
     {
         var claims = new List<Claim> {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()!),
-            new(JwtClaimTypes.PreferredUserName, user.UserName),
+            new(JwtClaimTypes.PreferredUserName, user.UserName ?? throw new ArgumentNullException(nameof(user.UserName))),
         };
 
         var jti = ResolveJwtId?.Invoke(req);
@@ -431,63 +448,157 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
         return token;
     }
+    
+    public Func<string> GenerateRefreshToken { get; set; } = DefaultGenerateRefreshToken;
 
-    protected virtual string? CreateJwtRefreshToken(IRequest req, string userId, TimeSpan expireRefreshTokensIn)
+    public static string DefaultGenerateRefreshToken()
     {
-        List<Claim> claims = [
-            new(JwtRegisteredClaimNames.Typ, "JWTR"),
-            new(JwtRegisteredClaimNames.Sub, userId)
-        ];
+        const int bufferSize = 64;
+        var buf = BufferPool.GetBuffer(bufferSize);
+        try
+        {
+            var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(buf, 0, bufferSize);
+            return Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(buf, 0, bufferSize);
+        }
+        finally
+        {
+            BufferPool.ReleaseBufferToPool(ref buf);
+        }
+    }
 
-        var jti = ResolveRefreshJwtId?.Invoke(req);
-        if (jti != null)
-            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
+    protected virtual IRequireRefreshToken? CreateRefreshToken(IRequest req, TUser user)
+    {
+        if (!EnableRefreshToken)
+            return null;
+        if (user is IRequireRefreshToken requireRefreshToken)
+        {
+#if NET8_0_OR_GREATER
+            requireRefreshToken.RefreshToken = GenerateRefreshToken();
+            requireRefreshToken.RefreshTokenExpiry = DateTime.UtcNow.Add(ExpireRefreshTokensIn);
 
-        OnRefreshTokenCreated?.Invoke(req, userId, claims);
+            OnRefreshTokenCreated?.Invoke(req, user);
 
-        var credentials = new SigningCredentials(TokenValidationParameters.IssuerSigningKey, HashAlgorithm);
-        var securityToken = new JwtSecurityToken(
-            issuer: TokenValidationParameters.ValidIssuer,
-            audience: Audience,
-            expires: DateTime.UtcNow.Add(expireRefreshTokensIn),
-            claims: claims,
-            signingCredentials: credentials
-        );
+            using var dbContext = IdentityAuth.ResolveDbContext<TUser>(req);
+            var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
+            dbUsers.Where(x => x.Id.Equals(user.Id))
+                .ExecuteUpdate(setters => setters
+                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshToken, requireRefreshToken.RefreshToken)
+                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, requireRefreshToken.RefreshTokenExpiry));
+            
+            return requireRefreshToken;
+#else
+            throw new NotSupportedException("IRequireRefreshToken requires .NET 8.0+");
+#endif
+        }
+        return null;
+    }
 
-        var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
-        return token;
+    public async Task<string> CreateAccessTokenFromRefreshTokenAsync(string refreshToken, IRequest request)
+    {
+        await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(request);
+        var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
+
+        var now = DateTime.UtcNow;
+
+        var user = await dbUsers
+            .Where(x => ((IRequireRefreshToken)x).RefreshToken == refreshToken)
+            .SingleOrDefaultAsync();
+
+        if (user == null)
+            throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+
+        var hasRefreshToken = (IRequireRefreshToken)user;
+        if (hasRefreshToken.RefreshTokenExpiry == null || now > hasRefreshToken.RefreshTokenExpiry)
+            throw HttpError.Forbidden(ErrorMessages.RefreshTokenInvalid.Localize(request));
+        
+        if (user.LockoutEnd != null && user.LockoutEnd > DateTime.UtcNow)
+            throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(request));
+
+        var userManager = request.TryResolve<UserManager<TUser>>();
+        var roles = await userManager.GetRolesAsync(user);
+        
+        var jwt = CreateJwtBearerToken(request, user, roles);
+        return jwt;
     }
 
     public async Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token = default)
     {
-        if (authContext.Result.Cookies.All(x => x.Name != IdentityAuth.TokenCookie))
+        var addJwtCookie = authContext.Result.Cookies.All(x => x.Name != IdentityAuth.TokenCookie);
+        var addRefreshCookie = authContext.Result.Cookies.All(x => x.Name != IdentityAuth.RefreshTokenCookie) && EnableRefreshToken;
+
+        if (addJwtCookie || addRefreshCookie)
         {
             var (user, roles) = await GetUserAndRolesAsync(authContext.Service, authContext.Session.UserAuthName).ConfigAwait();
-            var accessToken = CreateJwtBearerToken(authContext.Request, user, roles);
-            await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
+            if (addJwtCookie)
+            {
+                var accessToken = CreateJwtBearerToken(authContext.Request, user, roles);
+                await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
 
-            authContext.Result.AddCookie(authContext.Request,
-                new Cookie(IdentityAuth.TokenCookie, accessToken, Cookies.RootPath)
+                authContext.Result.AddCookie(authContext.Request,
+                    new Cookie(IdentityAuth.TokenCookie, accessToken, Cookies.RootPath)
+                    {
+                        HttpOnly = true,
+                        Secure = authContext.Request.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                    });
+            }
+
+            if (addRefreshCookie)
+            {
+                var userRefreshToken = CreateRefreshToken(authContext.Request, user);
+                if (userRefreshToken?.RefreshTokenExpiry != null)
                 {
-                    HttpOnly = true,
-                    Secure = authContext.Request.IsSecureConnection,
-                    Expires = DateTime.UtcNow.Add(ExpireTokensIn),
-                });
-        }
+                    authContext.Result.AddCookie(authContext.Request,
+                        new Cookie(IdentityAuth.RefreshTokenCookie, userRefreshToken.RefreshToken, Cookies.RootPath)
+                        {
+                            HttpOnly = true,
+                            Secure = authContext.Request.IsSecureConnection,
+                            Expires = userRefreshToken.RefreshTokenExpiry.Value,
+                        });
+                }
+            }
 
-        if (authContext.Result.Cookies.All(x => x.Name != IdentityAuth.RefreshTokenCookie) && EnableRefreshToken())
-        {
-            var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);
-
-            authContext.Result.AddCookie(authContext.Request,
-                new Cookie(IdentityAuth.RefreshTokenCookie, refreshToken, Cookies.RootPath)
-                {
-                    HttpOnly = true,
-                    Secure = authContext.Request.IsSecureConnection,
-                    Expires = DateTime.UtcNow.Add(ExpireRefreshTokensIn),
-                });
+            DeleteCookiesOnJwtCookies.ForEach(name => 
+                authContext.Result.DeleteCookie(authContext.Request, name));
         }
 
         JwtUtils.NotifyJwtCookiesUsed(authContext.Result);
+    }
+}
+
+
+    
+[DefaultRequest(typeof(GetAccessToken))]
+public class GetAccessTokenIdentityService : Service
+{
+    public async Task<object> Any(GetAccessToken request)
+    {
+        var jwtProvider = HostContext.AssertPlugin<AuthFeature>().AuthProviders
+            .FirstOrDefault(x => x is IIdentityJwtAuthProvider) as IIdentityJwtAuthProvider
+            ?? throw new NotSupportedException("IdentityJwtAuthProvider was not configured");
+        
+        if (jwtProvider.RequireSecureConnection && !Request.IsSecureConnection)
+            throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
+
+        var refreshTokenCookie = Request.Cookies.TryGetValue(Keywords.RefreshTokenCookie, out var refTok)
+            ? refTok.Value
+            : null; 
+
+        var refreshToken = request.RefreshToken ?? refreshTokenCookie;
+        if (refreshToken == null)
+            throw HttpError.Forbidden(ErrorMessages.RefreshTokenInvalid.Localize(Request));
+        
+        var accessToken = await jwtProvider.CreateAccessTokenFromRefreshTokenAsync(refreshToken, Request).ConfigAwait();
+
+        var httpResult = new HttpResult(new GetAccessTokenResponse())
+            .AddCookie(Request,
+                new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
+                    HttpOnly = true,
+                    Secure = Request.IsSecureConnection,
+                    Expires = DateTime.UtcNow.Add(jwtProvider.ExpireTokensIn),
+                });
+        
+        return httpResult;
     }
 }

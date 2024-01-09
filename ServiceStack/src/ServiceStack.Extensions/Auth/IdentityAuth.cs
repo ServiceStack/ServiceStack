@@ -112,9 +112,8 @@ public static class IdentityAuth
         return dbContext;
     }
 
-    public static Microsoft.EntityFrameworkCore.DbSet<TUser> ResolveDbUsers<TUser>(IResolver resolver) where TUser : class
+    public static Microsoft.EntityFrameworkCore.DbSet<TUser> ResolveDbUsers<TUser>(Microsoft.EntityFrameworkCore.DbContext dbContext) where TUser : class
     {
-        var dbContext = ResolveDbContext<TUser>(resolver);
         var dbUsers = (Microsoft.EntityFrameworkCore.DbSet<TUser>) TypeProperties.Get(dbContext.GetType()).GetPublicGetter(
             nameof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<IdentityUser>.Users))(dbContext);
         return dbUsers;

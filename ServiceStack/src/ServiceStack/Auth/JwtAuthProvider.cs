@@ -73,6 +73,9 @@ public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
                 authContext.AuthResponse.RefreshToken = EnableRefreshToken()
                     ? CreateJwtRefreshToken(authService.Request, session.UserAuthId, ExpireRefreshTokensIn)
                     : null;
+                authContext.AuthResponse.RefreshTokenExpiry = authContext.AuthResponse.RefreshToken != null
+                    ? DateTime.UtcNow.Add(ExpireRefreshTokensIn)
+                    : null;
             }
         }
     }
@@ -522,7 +525,6 @@ public class GetAccessTokenService : Service
                 });
         return httpResult;
     }
-
 }
 
 internal static class JwtAuthProviderUtils

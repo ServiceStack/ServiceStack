@@ -30,7 +30,7 @@ public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
 }
 
 [DataContract]
-public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshToken
+public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshTokenExpiry
 {
     [DataMember(Order = 1)] public string UserId { get; set; }
     [DataMember(Order = 2)] public string SessionId { get; set; }
@@ -39,12 +39,13 @@ public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IH
     [DataMember(Order = 5)] public string ReferrerUrl { get; set; }
     [DataMember(Order = 6)] public string BearerToken { get; set; }
     [DataMember(Order = 7)] public string RefreshToken { get; set; }
-    [DataMember(Order = 8)] public string ProfileUrl { get; set; }
-    [DataMember(Order = 9)] public List<string> Roles { get; set; } 
-    [DataMember(Order = 10)] public List<string> Permissions { get; set; } 
+    [DataMember(Order = 8)] public DateTime? RefreshTokenExpiry { get; set; }
+    [DataMember(Order = 9)] public string ProfileUrl { get; set; }
+    [DataMember(Order = 10)] public List<string> Roles { get; set; } 
+    [DataMember(Order = 11)] public List<string> Permissions { get; set; } 
 
-    [DataMember(Order = 11)] public ResponseStatus ResponseStatus { get; set; }
-    [DataMember(Order = 12)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 12)] public ResponseStatus ResponseStatus { get; set; }
+    [DataMember(Order = 13)] public Dictionary<string, string> Meta { get; set; }
 }
 
 [ExcludeMetadata]
@@ -75,7 +76,7 @@ public class Register : IPost, IReturn<RegisterResponse>, IMeta
 }
 
 [DataContract]
-public class RegisterResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshToken
+public class RegisterResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBearerToken, IHasRefreshTokenExpiry
 {
     [DataMember(Order = 1)] public string UserId { get; set; }
     [DataMember(Order = 2)] public string SessionId { get; set; }
@@ -83,48 +84,38 @@ public class RegisterResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBe
     [DataMember(Order = 4)] public string ReferrerUrl { get; set; }
     [DataMember(Order = 5)] public string BearerToken { get; set; }
     [DataMember(Order = 6)] public string RefreshToken { get; set; }
-    [DataMember(Order = 7)] public List<string> Roles { get; set; } 
-    [DataMember(Order = 8)] public List<string> Permissions { get; set; } 
+    [DataMember(Order = 7)] public DateTime? RefreshTokenExpiry { get; set; }
+    [DataMember(Order = 8)] public List<string> Roles { get; set; } 
+    [DataMember(Order = 9)] public List<string> Permissions { get; set; } 
 
-    [DataMember(Order = 9)] public ResponseStatus ResponseStatus { get; set; }
-    [DataMember(Order = 10)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 10)] public ResponseStatus ResponseStatus { get; set; }
+    [DataMember(Order = 11)] public Dictionary<string, string> Meta { get; set; }
 }
 
 [Tag(TagNames.Auth)]
 [DataContract]
 public class AssignRoles : IPost, IReturn<AssignRolesResponse>, IMeta
 {
-    public AssignRoles()
-    {
-        this.Roles = new List<string>();
-        this.Permissions = new List<string>();
-    }
-
     [DataMember(Order = 1)]
     public string UserName { get; set; }
 
     [DataMember(Order = 2)]
-    public List<string> Permissions { get; set; }
+    public List<string> Permissions { get; set; } = [];
 
     [DataMember(Order = 3)]
-    public List<string> Roles { get; set; }
+    public List<string> Roles { get; set; } = [];
+
     [DataMember(Order = 4)] public Dictionary<string, string> Meta { get; set; }
 }
 
 [DataContract]
 public class AssignRolesResponse : IHasResponseStatus, IMeta
 {
-    public AssignRolesResponse()
-    {
-        this.AllRoles = new List<string>();
-        this.AllPermissions = new List<string>();
-    }
-
     [DataMember(Order = 1)]
-    public List<string> AllRoles { get; set; }
+    public List<string> AllRoles { get; set; } = [];
 
     [DataMember(Order = 2)]
-    public List<string> AllPermissions { get; set; }
+    public List<string> AllPermissions { get; set; } = [];
 
     [DataMember(Order = 3)] public Dictionary<string, string> Meta { get; set; }
 
