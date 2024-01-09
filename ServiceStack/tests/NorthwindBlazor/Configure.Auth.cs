@@ -14,6 +14,7 @@ public class ConfigureAuth : IHostingStartup
             services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {
                 options.EnableCredentialsAuth = true;
                 options.EnableJwtAuth = true;
+                options.AuthJwt!.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(100);
                 options.SessionFactory = () => new CustomUserSession();
             })));
         });

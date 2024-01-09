@@ -373,7 +373,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
                 authContext.UserSource = user;
 
                 authContext.AuthResponse.BearerToken = CreateJwtBearerToken(authContext.AuthService.Request, user, authContext.Session.Roles);
-                var userRefreshToken = CreateRefreshToken(authService.Request, user);
+                var userRefreshToken = await CreateRefreshTokenAsync(authService.Request, user).ConfigAwait();
                 if (userRefreshToken != null)
                 {
                     authContext.AuthResponse.RefreshToken = userRefreshToken.RefreshToken;
@@ -468,7 +468,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         }
     }
 
-    protected virtual IRequireRefreshToken? CreateRefreshToken(IRequest req, TUser user)
+    protected virtual async Task<IRequireRefreshToken?> CreateRefreshTokenAsync(IRequest req, TUser user)
     {
         if (!EnableRefreshToken)
             return null;
@@ -480,12 +480,12 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
             OnRefreshTokenCreated?.Invoke(req, user);
 
-            using var dbContext = IdentityAuth.ResolveDbContext<TUser>(req);
+            await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(req);
             var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
-            dbUsers.Where(x => x.Id.Equals(user.Id))
-                .ExecuteUpdate(setters => setters
+            await dbUsers.Where(x => x.Id.Equals(user.Id))
+                .ExecuteUpdateAsync(setters => setters
                     .SetProperty(x => ((IRequireRefreshToken)x).RefreshToken, requireRefreshToken.RefreshToken)
-                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, requireRefreshToken.RefreshTokenExpiry));
+                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, requireRefreshToken.RefreshTokenExpiry)).ConfigAwait();
             
             return requireRefreshToken;
 #else
@@ -535,6 +535,16 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
         var userManager = request.TryResolve<UserManager<TUser>>();
         var roles = await userManager.GetRolesAsync(user);
+
+        #if NET8_0_OR_GREATER
+        if (ExtendRefreshTokenExpiryAfterUsage != null)
+        {
+            var updatedDate = DateTime.UtcNow.Add(ExtendRefreshTokenExpiryAfterUsage.Value);
+            await dbUsers.Where(x => ((IRequireRefreshToken)x).RefreshToken!.Equals(refreshToken))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, updatedDate)).ConfigAwait();
+        }
+        #endif
         
         var jwt = CreateJwtBearerToken(request, user, roles);
         return jwt;
@@ -564,7 +574,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
             if (addRefreshCookie)
             {
-                var userRefreshToken = CreateRefreshToken(authContext.Request, user);
+                var userRefreshToken = await CreateRefreshTokenAsync(authContext.Request, user).ConfigAwait();
                 if (userRefreshToken?.RefreshTokenExpiry != null)
                 {
                     authContext.Result.AddCookie(authContext.Request,
