@@ -6,6 +6,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 
@@ -22,15 +23,15 @@ public static class IdentityAuth
 
     public static IdentityAuthContext<TUser, TKey>? Instance<TUser, TKey>()
         where TKey : IEquatable<TKey>
-        where TUser : IdentityUser<TKey>
+        where TUser : IdentityUser<TKey>, new()
     => Config as IdentityAuthContext<TUser, TKey>;
 
-    public static Action<AuthFeature> For<TUser>(Action<IdentityAuthContext<TUser, string>> configure)
-        where TUser : IdentityUser<string> => For<TUser, string>(configure);
+    public static Action<IServiceCollection,AuthFeature> For<TUser>(Action<IdentityAuthContext<TUser, string>> configure)
+        where TUser : IdentityUser<string>, new() => For<TUser, string>(configure);
 
-    public static Action<AuthFeature> For<TUser,TKey>(Action<IdentityAuthContext<TUser, TKey>> configure)
+    public static Action<IServiceCollection,AuthFeature> For<TUser,TKey>(Action<IdentityAuthContext<TUser, TKey>> configure)
         where TKey : IEquatable<TKey>
-        where TUser : IdentityUser<TKey>
+        where TUser : IdentityUser<TKey>, new()
     {
         var ctx = new IdentityAuthContext<TUser, TKey>(
             () => new IdentityAuthSession(new ClaimsPrincipal()),
@@ -42,8 +43,7 @@ public static class IdentityAuth
         ApplicationAuthProvider = ctx.AuthApplication;
         configure(ctx);
 
-        return authFeature =>
-        {
+        return (services, authFeature) => {
             var authProviders = new List<IAuthProvider>();
             if (ctx.AuthApplication != null) authProviders.Add(ctx.AuthApplication);
             if (ctx is { EnableCredentialsAuth: true, AuthCredentials: not null }) authProviders.Add(ctx.AuthCredentials);
@@ -67,9 +67,12 @@ public static class IdentityAuth
             }
             if (ctx.IncludeRegisterService)
             {
-                authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TKey>)] =
-                    ["/" + "register".Localize()];
-                HostContext.Container.RegisterAs<IdentityRegistrationValidator<TUser, TKey>, IValidator<Register>>();
+                authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TKey>)] = ["/" + "register".Localize()];
+                services.AddSingleton<IValidator<Register>, IdentityRegistrationValidator<TUser, TKey>>();
+            }
+            if (ctx.AuthJwt?.EnableRefreshToken == true)
+            {
+                authFeature.ServiceRoutes[typeof(GetAccessTokenIdentityService)] = ["/" + "access-token".Localize()];
             }
 
             authFeature.OnAfterInit.Add(feature =>
@@ -96,6 +99,26 @@ public static class IdentityAuth
             await next.Invoke();
         });
     }
+
+    public static Microsoft.EntityFrameworkCore.DbContext ResolveDbContext<TUser>(IResolver req) where TUser : class
+    {
+        var userStore = req.TryResolve<IUserStore<TUser>>() ?? throw new NotSupportedException("IUserStore<TUser> is not registered");
+        var dbContextGetter = TypeProperties.Get(userStore.GetType()).GetPublicGetter(
+            nameof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore.Context));
+        if (dbContextGetter is null)
+            throw new NotSupportedException("Failed to resolve DbContext from " + userStore.GetType().Name);
+
+        var dbContext = (Microsoft.EntityFrameworkCore.DbContext)dbContextGetter(userStore);
+        return dbContext;
+    }
+
+    public static Microsoft.EntityFrameworkCore.DbSet<TUser> ResolveDbUsers<TUser>(IResolver resolver) where TUser : class
+    {
+        var dbContext = ResolveDbContext<TUser>(resolver);
+        var dbUsers = (Microsoft.EntityFrameworkCore.DbSet<TUser>) TypeProperties.Get(dbContext.GetType()).GetPublicGetter(
+            nameof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<IdentityUser>.Users))(dbContext);
+        return dbUsers;
+    }
 }
 
 public interface IIdentityAuthContext
@@ -106,40 +129,34 @@ public interface IIdentityAuthContext
 /// <summary>
 /// Configure ServiceStack's Identity Auth Integration
 /// </summary>
-public class IdentityAuthContext<TUser, TKey> : IIdentityAuthContext
-        where TKey : IEquatable<TKey>
-        where TUser : IdentityUser<TKey>
+public class IdentityAuthContext<TUser, TKey>(
+    Func<IAuthSession> sessionFactory,
+    IdentityApplicationAuthProvider<TUser, TKey> authApplication,
+    IdentityCredentialsAuthProvider<TUser, TKey> authCredentials,
+    IdentityJwtAuthProvider<TUser, TKey> authJwt)
+    : IIdentityAuthContext
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>, new()
 {
-    public IdentityAuthContext(Func<IAuthSession> sessionFactory,
-        IdentityApplicationAuthProvider<TUser, TKey> authApplication,
-        IdentityCredentialsAuthProvider<TUser, TKey> authCredentials,
-        IdentityJwtAuthProvider<TUser, TKey> authJwt)
-    {
-        AuthApplication = authApplication;
-        AuthCredentials = authCredentials;
-        AuthJwt = authJwt;
-        SessionFactory = sessionFactory;
-    }
-
     /// <summary>
     /// Specify which Custom AuthUserSession to use
     /// </summary>
-    public Func<IAuthSession> SessionFactory { get; set; }
-    
+    public Func<IAuthSession> SessionFactory { get; set; } = sessionFactory;
+
     /// <summary>
     /// Application Cookie Identity Auth Provider
     /// </summary>
-    public IdentityApplicationAuthProvider<TUser, TKey>? AuthApplication { get; set; }
-    
+    public IdentityApplicationAuthProvider<TUser, TKey>? AuthApplication { get; set; } = authApplication;
+
     /// <summary>
     /// Username/Password SignIn Identity Auth Provider
     /// </summary>
-    public IdentityCredentialsAuthProvider<TUser, TKey>? AuthCredentials { get; set; }
-    
+    public IdentityCredentialsAuthProvider<TUser, TKey>? AuthCredentials { get; set; } = authCredentials;
+
     /// <summary>
     /// JWT Identity Auth Provider
     /// </summary>
-    public IdentityJwtAuthProvider<TUser, TKey>? AuthJwt { get; set; }
+    public IdentityJwtAuthProvider<TUser, TKey>? AuthJwt { get; set; } = authJwt;
 
     /// <summary>
     /// Enable Username/Password SignIn via ServiceStack's Authenticate API (/auth) 

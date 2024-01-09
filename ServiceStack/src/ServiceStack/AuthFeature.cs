@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -19,7 +20,7 @@ namespace ServiceStack;
 /// <summary>
 /// Enable the authentication feature and configure the AuthService.
 /// </summary>
-public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
+public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfigureServices
 {
     public string Id { get; set; } = Plugins.Auth;
     //http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
@@ -70,6 +71,11 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     public bool HasSessionFeature => RegisterPlugins.Any(x => x is SessionFeature);
 
     public List<IAuthEvents> AuthEvents { get; set; } = [];
+
+    /// <summary>
+    /// Invoked before AuthFeature is registered
+    /// </summary>
+    public List<Action<IServiceCollection, AuthFeature>> OnConfigureServices { get; set; } = [];
 
     /// <summary>
     /// Invoked before AuthFeature is registered
@@ -263,9 +269,9 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
     /// </summary>
     public IAuthSession AuthSecretSession { get; set; }
 
-    public AuthFeature(Action<AuthFeature> configure) : this(() => new AuthUserSession(), TypeConstants<IAuthProvider>.EmptyArray)
+    public AuthFeature(Action<IServiceCollection,AuthFeature> configure) : this(() => new AuthUserSession(), TypeConstants<IAuthProvider>.EmptyArray)
     {
-        OnBeforeInit.Add(configure);
+        OnConfigureServices.Add(configure);
     }
         
     public AuthFeature(IAuthProvider authProvider) : this(() => new AuthUserSession(), [authProvider]) {}
@@ -323,6 +329,38 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
 
     private bool hasRegistered;
 
+    public void Configure(IServiceCollection services)
+    {
+        foreach (var configureService in OnConfigureServices)
+        {
+            configureService(services, this);
+        }
+
+        var serviceLookup = ServiceRoutes.GroupBy(x => x.Key);
+        foreach (var lookup in serviceLookup)
+        {
+            var serviceType = lookup.Key;
+            services.RegisterService(serviceType);
+            var defaultVerbs = serviceType.GetVerbs();
+
+            var reqAttr = serviceType.FirstAttribute<DefaultRequestAttribute>();
+            if (reqAttr != null)
+            {
+                foreach (var entry in lookup)
+                {
+                    foreach (var atPath in entry.Value)
+                    {
+                        var verbs = ServiceRoutesVerbs.TryGetValue(atPath, out var v) ? v : defaultVerbs;
+                        ServiceStackHost.InitOptions.Routes.Add(new(reqAttr.RequestType, atPath, verbs));
+                    }
+                }
+            }
+        }
+
+        if (IncludeAuthMetadataProvider && services.Exists<IAuthMetadataProvider>())
+            services.AddSingleton<IAuthMetadataProvider, AuthMetadataProvider>();
+    }
+
     public void Register(IAppHost appHost)
     {
         OnBeforeInit.ForEach(x => x(this));
@@ -342,27 +380,6 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         }
 
         AuthSecretSession = appHost.Config.AuthSecretSession;
-
-        var serviceLookup = ServiceRoutes.GroupBy(x => x.Key);
-        foreach (var lookup in serviceLookup)
-        {
-            var serviceType = lookup.Key;
-            appHost.ServiceController.RegisterService(serviceType);
-            var defaultVerbs = serviceType.GetVerbs();
-
-            var reqAttr = serviceType.FirstAttribute<DefaultRequestAttribute>();
-            if (reqAttr != null)
-            {
-                foreach (var entry in lookup)
-                {
-                    foreach (var atPath in entry.Value)
-                    {
-                        var verbs = ServiceRoutesVerbs.TryGetValue(atPath, out var v) ? v : defaultVerbs;
-                        appHost.Routes.Add(reqAttr.RequestType, atPath, verbs);
-                    }
-                }
-            }
-        }
             
         appHost.ConfigureOperation<Authenticate>(op => op.FormLayout = FormLayout);
         appHost.ConfigureOperation<AssignRoles>(op => op.AddRole(RoleNames.Admin));
@@ -386,9 +403,6 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         {
             appHost.LoadPlugin(RegisterPlugins.ToArray());
         }
-
-        if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
-            appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
 
         if (!appHost.CustomErrorHttpHandlers.ContainsKey(HttpStatusCode.Unauthorized))
             appHost.CustomErrorHttpHandlers[HttpStatusCode.Unauthorized] = new AuthFeatureUnauthorizedHttpHandler(this);
