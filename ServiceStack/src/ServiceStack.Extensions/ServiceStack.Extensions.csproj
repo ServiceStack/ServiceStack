@@ -43,8 +43,8 @@
 
         <PackageReference Include="System.Threading.Channels" Version="8.0.0"/>
 
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3"/>
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3"/>
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.1.2"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.1.2"/>
     </ItemGroup>
 
 </Project>
