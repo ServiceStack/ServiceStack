@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -270,7 +271,9 @@ public class AuthenticateService : Service
             throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.LocalizeFmt(Request, provider.SafeInput()));
 
         if (LogoutAction.EqualsIgnoreCase(request.provider))
-            return await authProvider.LogoutAsync(this, request).ConfigAwait();
+        {
+            return await HandleLogoutAsync(request, authProvider);
+        }
 
         if (authProvider is IAuthWithRequest && !base.Request.IsInProcessRequest())
         {
@@ -418,6 +421,23 @@ public class AuthenticateService : Service
         }
     }
 
+    private async Task<object> HandleLogoutAsync(Authenticate request, IAuthProvider authProvider)
+    {
+        var feature = AssertPlugin<AuthFeature>();
+        foreach (var handler in feature.OnLogoutAsync)
+        {
+            try
+            {
+                await handler(Request).ConfigAwait();
+            }
+            catch (Exception e)
+            {
+                LogManager.GetLogger(GetType()).Error("Error in OnLogoutAsync: " + e.Message, e);
+            }
+        }
+        return await authProvider.LogoutAsync(this, request).ConfigAwait();
+    }
+
     [Obsolete("Use AuthenticateAsync")]
     public AuthenticateResponse Authenticate(Authenticate request)
     {
@@ -452,8 +472,10 @@ public class AuthenticateService : Service
             if (oAuthConfig == null)
                 throw HttpError.NotFound(ErrorMessages.UnknownAuthProviderFmt.LocalizeFmt(Request,provider.SafeInput()));
 
-            if (request.provider == LogoutAction)
-                return await oAuthConfig.LogoutAsync(this, request, token).ConfigAwait() as AuthenticateResponse;
+            if (LogoutAction.EqualsIgnoreCase(request.provider))
+            {
+                return await HandleLogoutAsync(request, oAuthConfig).ConfigAwait() as AuthenticateResponse;
+            }
 
             var result = await AuthenticateAsync(request, provider, 
                 await this.GetSessionAsync(token: token).ConfigAwait(), oAuthConfig, token).ConfigAwait();

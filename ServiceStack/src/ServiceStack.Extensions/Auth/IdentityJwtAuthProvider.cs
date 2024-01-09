@@ -125,7 +125,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     /// <summary>
     /// Whether to invalidate Refresh Tokens on SignOut (default true)
     /// </summary>
-    public bool InvalidateRefreshTokenOnSignOut { get; set; } = true;
+    public bool InvalidateRefreshTokenOnLogout { get; set; } = true;
 
     /// <summary>
     /// Remove Auth Cookies on Authentication
@@ -229,6 +229,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
         feature.AuthResponseDecorator = AuthenticateResponseDecorator;
         feature.RegisterResponseDecorator = RegisterResponseDecorator;
+        feature.OnLogoutAsync.Add(OnLogoutAsync);
     }
 
     public object AuthenticateResponseDecorator(AuthFilterContext ctx)
@@ -494,6 +495,23 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         return null;
     }
 
+    public async Task OnLogoutAsync(IRequest req)
+    {
+#if NET8_0_OR_GREATER
+        var refreshToken = req.GetJwtRefreshToken();
+        if (InvalidateRefreshTokenOnLogout && refreshToken != null)
+        {
+            await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(req);
+            var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
+
+            await dbUsers.Where(x => ((IRequireRefreshToken)x).RefreshToken!.Equals(refreshToken))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshToken, null as string)
+                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, null as DateTime?)).ConfigAwait();
+        }
+#endif
+    }
+
     public async Task<string> CreateAccessTokenFromRefreshTokenAsync(string refreshToken, IRequest request)
     {
         await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(request);
@@ -567,8 +585,6 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     }
 }
 
-
-    
 [DefaultRequest(typeof(GetAccessToken))]
 public class GetAccessTokenIdentityService : Service
 {

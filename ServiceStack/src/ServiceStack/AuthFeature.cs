@@ -86,6 +86,11 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
     /// Invoked after AuthFeature is registered
     /// </summary>
     public List<Action<AuthFeature>> OnAfterInit { get; set; } = [];
+
+    /// <summary>
+    /// Invoked after User is Signed Out
+    /// </summary>
+    public List<Func<IRequest,Task>> OnLogoutAsync { get; set; } = [];
         
     /// <summary>
     /// Login path to redirect to
