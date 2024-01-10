@@ -12,10 +12,11 @@ public class ConfigureAuth : IHostingStartup
         {
             Console.WriteLine("ConfigureAuth.ConfigureServices()");
             services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {
-                options.EnableCredentialsAuth = true;
-                options.EnableJwtAuth = true;
-                options.AuthJwt!.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(100);
                 options.SessionFactory = () => new CustomUserSession();
+                options.CredentialsAuth();
+                options.JwtAuth(x => {
+                    x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90);
+                });
             })));
         });
 }

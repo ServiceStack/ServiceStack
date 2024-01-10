@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,7 +13,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Text.Pools;
@@ -35,8 +32,6 @@ public interface IIdentityJwtAuthProvider
 /// <summary>
 /// Converts an MVC JwtBearer Cookie into a ServiceStack Session
 /// </summary>
-/// <typeparam name="TUser"></typeparam>
-/// <typeparam name="TKey"></typeparam>
 public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
@@ -85,11 +80,6 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     public TimeSpan ExpireRefreshTokensIn { get; set; } = TimeSpan.FromDays(90);
 
     /// <summary>
-    /// How long to extend the expiry of Refresh Tokens after usage (default None) 
-    /// </summary>
-    public TimeSpan? ExtendRefreshTokenExpiryAfterUsage { get; set; }
-
-    /// <summary>
     /// Convenient overload to initialize ExpireTokensIn with an Integer
     /// </summary>
     public int ExpireTokensInDays
@@ -121,11 +111,6 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     /// Whether to enable JWT Refresh Tokens (default TUser : IRequireRefreshToken) 
     /// </summary>
     public bool EnableRefreshToken { get; set; }
-
-    /// <summary>
-    /// Whether to invalidate Refresh Tokens on SignOut (default true)
-    /// </summary>
-    public bool InvalidateRefreshTokenOnLogout { get; set; } = true;
 
     /// <summary>
     /// Remove Auth Cookies on Authentication
@@ -193,6 +178,18 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     /// </summary>
     public Action<IAuthSession, List<Claim>, IRequest>? OnSessionCreated { get; set; }
 
+#if NET8_0_OR_GREATER    
+    /// <summary>
+    /// Whether to invalidate Refresh Tokens on Logout (default true)
+    /// </summary>
+    public bool InvalidateRefreshTokenOnLogout { get; set; } = true;
+
+    /// <summary>
+    /// How long to extend the expiry of Refresh Tokens after usage (default None) 
+    /// </summary>
+    public TimeSpan? ExtendRefreshTokenExpiryAfterUsage { get; set; }
+#endif
+    
     public IdentityJwtAuthProvider(string? authenticationScheme = null)
         : base(null, Realm, Name)
     {
@@ -346,7 +343,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         {
             var session = await service.GetSessionAsync().ConfigAwait();
             if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
-                user = IdentityAuth.Instance<TUser,TKey>()!.SessionToUserConverter(session);
+                user = Context.SessionToUserConverter(session);
         }
 
         if (user == null)
@@ -470,11 +467,12 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
     protected virtual async Task<IRequireRefreshToken?> CreateRefreshTokenAsync(IRequest req, TUser user)
     {
+#if NET8_0_OR_GREATER
         if (!EnableRefreshToken)
             return null;
+
         if (user is IRequireRefreshToken requireRefreshToken)
         {
-#if NET8_0_OR_GREATER
             requireRefreshToken.RefreshToken = GenerateRefreshToken();
             requireRefreshToken.RefreshTokenExpiry = DateTime.UtcNow.Add(ExpireRefreshTokensIn);
 
@@ -488,10 +486,10 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
                     .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, requireRefreshToken.RefreshTokenExpiry)).ConfigAwait();
             
             return requireRefreshToken;
-#else
-            throw new NotSupportedException("IRequireRefreshToken requires .NET 8.0+");
-#endif
         }
+#else
+        throw new NotSupportedException("IRequireRefreshToken requires .NET 8.0+");
+#endif
         return null;
     }
 
@@ -536,7 +534,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         var userManager = request.TryResolve<UserManager<TUser>>();
         var roles = await userManager.GetRolesAsync(user);
 
-        #if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER        
         if (ExtendRefreshTokenExpiryAfterUsage != null)
         {
             var updatedDate = DateTime.UtcNow.Add(ExtendRefreshTokenExpiryAfterUsage.Value);
@@ -544,7 +542,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, updatedDate)).ConfigAwait();
         }
-        #endif
+#endif
         
         var jwt = CreateJwtBearerToken(request, user, roles);
         return jwt;

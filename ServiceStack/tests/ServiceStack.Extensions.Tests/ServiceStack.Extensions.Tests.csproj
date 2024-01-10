@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
 <!-- TODO GET AutoQuery CRUD to work after existing tests have been resolved -->
         <DefineConstants>$(DefineConstants);AUTOQUERY_CRUD</DefineConstants>
     </PropertyGroup>

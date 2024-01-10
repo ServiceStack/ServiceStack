@@ -14,8 +14,6 @@ namespace ServiceStack
     public class WebServiceException
         : Exception, IHasStatusCode, IHasStatusDescription, IResponseStatusConvertible, IHasResponseStatus
     {
-        public static ILog log = LogManager.GetLogger(typeof(WebServiceException));
-
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
@@ -83,6 +81,7 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
+                    var log = LogManager.GetLogger(typeof(WebServiceException));
                     if (log.IsDebugEnabled)
                         log.Debug($"Could not parse Error ResponseStatus {ResponseDto?.GetType().Name}", ex);
                 }
@@ -121,7 +120,7 @@ namespace ServiceStack
 
         public ResponseStatus ToResponseStatus() => ResponseStatus;
 
-        public List<ResponseError> GetFieldErrors() => ResponseStatus?.Errors ?? new List<ResponseError>();
+        public List<ResponseError> GetFieldErrors() => ResponseStatus?.Errors ?? [];
 
         public bool IsAny400() => StatusCode is >= 400 and < 500;
 

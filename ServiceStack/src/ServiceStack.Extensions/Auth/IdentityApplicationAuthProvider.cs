@@ -26,7 +26,7 @@ public interface IIdentityApplicationAuthProvider
 public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, 
     IAuthWithRequest, IAuthPlugin, IIdentityApplicationAuthProvider
     where TKey : IEquatable<TKey>
-    where TUser : IdentityUser<TKey>
+    where TUser : IdentityUser<TKey>, new()
 {
     public const string Name = AuthenticateService.IdentityProvider;
     public const string Realm = "/auth/" + AuthenticateService.IdentityProvider;

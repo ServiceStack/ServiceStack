@@ -1107,7 +1107,7 @@ public static class Lisp
             var fileName = VirtualPathUtils.SafeFileName(url);
             cachedPath = $".lisp/{cachePrefix}{fileName}";
             var cachedFile = vfsCache.GetFile(cachedPath);
-            return cachedFile?.GetTextContentsAsMemory();
+            return cachedFile?.ReadAllTextAsMemory();
         }
 
         private static GithubGist DownloadCachedGist(ScriptScopeContext scope, string gistId, bool force=false)
@@ -1240,7 +1240,7 @@ public static class Lisp
             if (file == null)
                 throw new NotSupportedException($"File does not exist '{path}'");
 
-            var lisp = file.GetTextContentsAsMemory();
+            var lisp = file.ReadAllTextAsMemory();
             return lisp;
         }
 
@@ -2196,7 +2196,7 @@ public static class Lisp
             } catch (LispEvalException ex) {
                 if (ex.Trace.Count < 10)
                     ex.Trace.Add(Str(x));
-                throw ex;
+                throw;
             }
         }
 
