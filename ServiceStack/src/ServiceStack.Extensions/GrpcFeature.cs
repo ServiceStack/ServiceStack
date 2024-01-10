@@ -42,8 +42,7 @@ public static class ServiceCollectionExtensions
 
 public class GrpcMarshallerFactory : MarshallerFactory
 {
-    private static ILog log = LogManager.GetLogger(typeof(GrpcMarshallerFactory));
-    public static readonly GrpcMarshallerFactory Instance = new GrpcMarshallerFactory(GrpcConfig.TypeModel);
+    public static readonly GrpcMarshallerFactory Instance = new(GrpcConfig.TypeModel);
 
     public RuntimeTypeModel TypeModel { get; }
     private GrpcMarshallerFactory(RuntimeTypeModel typeModel) => TypeModel = typeModel;
@@ -61,7 +60,7 @@ public class GrpcMarshallerFactory : MarshallerFactory
         }
         catch (Exception e)
         {
-            log.Error($"Could not serialize '{typeof(T).Name}': " + e.Message, e);
+            LogManager.GetLogger(typeof(GrpcMarshallerFactory)).Error($"Could not serialize '{typeof(T).Name}': " + e.Message, e);
             throw;
         }
     }
@@ -74,7 +73,7 @@ public class GrpcMarshallerFactory : MarshallerFactory
         }
         catch (Exception e)
         {
-            log.Error($"Could not deserialize '{typeof(T).Name}': " + e.Message, e);
+            LogManager.GetLogger(typeof(GrpcMarshallerFactory)).Error($"Could not deserialize '{typeof(T).Name}': " + e.Message, e);
             throw;
         }
     }
@@ -98,17 +97,18 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
     /// <summary>
     /// Only generate specified Verb entries for "ANY" routes
     /// </summary>
-    public List<string> DefaultMethodsForAny { get; set; } = new()
-    {
+    public List<string> DefaultMethodsForAny { get; set; } =
+    [
         HttpMethods.Get,
         HttpMethods.Post,
         HttpMethods.Put,
-        HttpMethods.Delete,
-    };
+        HttpMethods.Delete
+    ];
         
-    public List<string> AutoQueryMethodsForAny { get; set; } = new() {
-        HttpMethods.Get,
-    };
+    public List<string> AutoQueryMethodsForAny { get; set; } =
+    [
+        HttpMethods.Get
+    ];
 
     public Func<Type, List<string>> GenerateMethodsForAny { get; }
         
@@ -117,15 +117,23 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
             ? AutoQueryMethodsForAny
             : DefaultMethodsForAny;
         
-    public HashSet<string> IgnoreResponseHeaders { get; set; } = new() {
+    public HashSet<string>? IgnoreResponseHeaders { get; set; } =
+    [
         HttpHeaders.Vary,
-        HttpHeaders.XPoweredBy,
-    };
+        HttpHeaders.XPoweredBy
+    ];
         
-    public List<Type> RegisterServices { get; set; } = new() {
+    public List<Type> RegisterServices { get; set; } =
+    [
         typeof(StreamFileService),
-        typeof(SubscribeServerEventsService),
-    };
+        typeof(SubscribeServerEventsService)
+    ];
+
+    public List<Type> IncludeRequestTypes { get; } =
+    [
+        typeof(GetAccessToken),
+        typeof(ConvertSessionToToken),
+    ];
         
     internal Dictionary<Type, Type> RequestServiceTypeMap { get; } = new();
 
@@ -137,11 +145,11 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
         
     public bool DisableRequestParamsInHeaders { get; set; }
         
-    public List<ProtoOptionDelegate> ProtoOptions { get; set; } = new()
-    {
+    public List<ProtoOptionDelegate> ProtoOptions { get; set; } =
+    [
         ProtoOption.CSharpNamespace,
-        ProtoOption.PhpNamespace,
-    };
+        ProtoOption.PhpNamespace
+    ];
 
     private readonly IApplicationBuilder app;
     public GrpcFeature(IApplicationBuilder app)
@@ -164,7 +172,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
         {
             if (!typeof(IStreamService).IsAssignableFrom(serviceType))
             {
-                services.RegisterService(serviceType!);
+                services.RegisterService(serviceType);
             }
             else
             {
@@ -176,16 +184,16 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
     public void Register(IAppHost appHost)
     {
         var cors = appHost.GetPlugin<CorsFeature>();
-        if (cors != null)
+        if (cors != null && IgnoreResponseHeaders != null)
         {
-            new[]{
+            IgnoreResponseHeaders.AddDistinctRange([
                 HttpHeaders.AllowOrigin,
                 HttpHeaders.AllowMethods,
                 HttpHeaders.AllowHeaders,
                 HttpHeaders.AllowCredentials,
                 HttpHeaders.ExposeHeaders,
                 HttpHeaders.AccessControlMaxAge,
-            }.Each(x => IgnoreResponseHeaders.Add(x));
+            ]);
         }
             
         NativeTypesService.TypeLinksFilters.Add((req,links) => {
@@ -236,16 +244,19 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
         if (ret != null)
             return ret.Value;
 
-        // don't register hidden services
-        if (op.RequestType.FirstAttribute<RestrictAttribute>()?.VisibilityTo == RequestAttributes.None)
-            return false;
-        if (op.ServiceType.FirstAttribute<RestrictAttribute>()?.VisibilityTo == RequestAttributes.None)
-            return false;
-        if (op.RequestType.FirstAttribute<ExcludeAttribute>()?.Feature.HasFlag(Feature.Metadata) == true)
-            return false;
-        if (op.ServiceType.FirstAttribute<ExcludeAttribute>()?.Feature.HasFlag(Feature.Metadata) == true)
-            return false;
-            
+        // don't register hidden services unless IncludeRequestTypes
+        if (!IncludeRequestTypes.Contains(op.RequestType))
+        {
+            if (op.RequestType.FirstAttribute<RestrictAttribute>()?.VisibilityTo == RequestAttributes.None)
+                return false;
+            if (op.ServiceType.FirstAttribute<RestrictAttribute>()?.VisibilityTo == RequestAttributes.None)
+                return false;
+            if (op.RequestType.FirstAttribute<ExcludeAttribute>()?.Feature.HasFlag(Feature.Metadata) == true)
+                return false;
+            if (op.ServiceType.FirstAttribute<ExcludeAttribute>()?.Feature.HasFlag(Feature.Metadata) == true)
+                return false;
+        }
+
         // Only enable Services via Grpc with known Response Types 
         var responseType = op.ResponseType ?? typeof(EmptyResponse); //void responses can return empty ErrorResponse 
         if (responseType == typeof(object) || responseType == typeof(Task<object>))
@@ -265,7 +276,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
             foreach (var prop in op.RequestType.GetPublicProperties())
             {
                 var dataMember = prop.FirstAttribute<DataMemberAttribute>();
-                if (dataMember != null && dataMember.Order == default)
+                if (dataMember is { Order: 0 })
                     missingMemberOrders.Add(prop.Name);
             }
             if (missingMemberOrders.Count > 0)
@@ -279,7 +290,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
             foreach (var prop in responseType.GetPublicProperties())
             {
                 var dataMember = prop.FirstAttribute<DataMemberAttribute>();
-                if (dataMember != null && dataMember.Order == default)
+                if (dataMember is { Order: 0 })
                     missingMemberOrders.Add(prop.Name);
             }
             if (missingMemberOrders.Count > 0)
@@ -316,6 +327,8 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
                 .DefineType(ServicesName,
                     TypeAttributes.Public | TypeAttributes.Class,
                     GrpcServicesBaseType);
+
+        var log = LogManager.GetLogger(GetType());
 
         var methods = new List<string>();
         foreach (var op in metadataOperations)
@@ -370,12 +383,18 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
             {
                 var requestType = op.RequestType;
                 var methodName = GrpcConfig.GetServiceName(action, requestType.Name);
+                
+                if (methodName == "ChangeConnectionInfo")
+                    Console.WriteLine("HERE ChangeConnectionInfo");
                     
+                if (log.IsDebugEnabled)
+                    log.DebugFormat("grpc {0}({1})", methodName, requestType.Name);
+                
                 var method = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual,
                         
                     CallingConventions.Standard,
                     returnType: typeof(Task<>).MakeGenericType(responseType),
-                    parameterTypes: new[] { requestType, typeof(CallContext) });
+                    parameterTypes: [requestType, typeof(CallContext)]);
 
                 GenerateServiceFilter?.Invoke(typeBuilder, method, requestType);
 
@@ -397,11 +416,14 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
                 {
                     var dynamicMethodName = GrpcConfig.GetServiceName(action + Keywords.Dynamic, requestType.Name);
                         
+                    if (log.IsDebugEnabled)
+                        log.DebugFormat("grpc dynamic {0}(DynamicRequest)", dynamicMethodName);
+                
                     method = typeBuilder.DefineMethod(dynamicMethodName, MethodAttributes.Public | MethodAttributes.Virtual,
                         
                         CallingConventions.Standard,
                         returnType: typeof(Task<>).MakeGenericType(responseType),
-                        parameterTypes: new[] { typeof(DynamicRequest), typeof(CallContext) });
+                        parameterTypes: [typeof(DynamicRequest), typeof(CallContext)]);
 
                     GenerateServiceFilter?.Invoke(typeBuilder, method, requestType);
 
@@ -430,10 +452,13 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
             var responseType = genericDef.GenericTypeArguments[1];
             var methodName = GrpcConfig.GetServerStreamServiceName(requestType.Name);
 
+            if (log.IsDebugEnabled)
+                log.DebugFormat("grpc stream {0}({1})", methodName, requestType.Name);
+                
             var method = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual,
                 CallingConventions.Standard,
                 returnType: typeof(IAsyncEnumerable<>).MakeGenericType(responseType),
-                parameterTypes: new[] { requestType, typeof(CallContext) });
+                parameterTypes: [requestType, typeof(CallContext)]);
 
             GenerateServiceFilter?.Invoke(typeBuilder, method, requestType);
 
@@ -464,7 +489,7 @@ public class TypesProto : NativeTypesBase { }
 [Restrict(VisibilityTo = RequestAttributes.None)]
 public class TypesProtoService(INativeTypesMetadata metadata) : Service
 {
-    private string GetBaseUrl(string baseUrl) => baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? Request.GetBaseUrl();
+    private string GetBaseUrl(string? baseUrl) => baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? Request.GetBaseUrl();
 
     [AddHeader(ContentType = MimeTypes.PlainText)]
     public object Get(TypesProto request)
@@ -563,15 +588,14 @@ public class SubscribeServerEventsService : Service, IStreamService<StreamServer
                 Data = dataLine.RightPart(':').Trim(),
             });
 
-            Dictionary<string, string> meta = null;
+            Dictionary<string, string>? meta = null;
             if (e.Meta != null)
             {
                 foreach (var entry in e.Meta)
                 {
                     if (IgnoreMetaProps.Contains(entry.Key))
                         continue;
-                    if (meta == null)
-                        meta = new Dictionary<string, string>();
+                    meta ??= new();
                     meta[entry.Key] = entry.Value;
                 }
             }

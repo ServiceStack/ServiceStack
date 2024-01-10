@@ -967,18 +967,23 @@ public partial class AutoQueryCrudTests
         };
 
         authClient.Post(createRequest);
-
         RockstarAuditTenant result;
 
-        RetryUntilTrue(() => {
-                using var d = appHost.GetDbConnection();
-                return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
-            },
-            TimeSpan.FromSeconds(2));
-        using (var db = appHost.GetDbConnection())
+        bool ExistsRockstarAuditTenant(string firstName)
         {
-            result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(CreateRockstarAuditTenantMq));
+            using var db = appHost.GetDbConnection();
+            return db.Exists<RockstarAuditTenant>(x => x.FirstName == firstName);
         }
+
+        RockstarAuditTenant GetRockstarAuditTenant(string firstName)
+        {
+            using var db = appHost.GetDbConnection();
+            return db.Single<RockstarAuditTenant>(x => x.FirstName == firstName);
+        }
+
+        ExecUtils.RetryUntilTrue(() => ExistsRockstarAuditTenant(nameof(CreateRockstarAuditTenantMq)),
+            TimeSpan.FromSeconds(2));
+        result = GetRockstarAuditTenant(nameof(CreateRockstarAuditTenantMq));
 
         var updateRequest = new UpdateRockstarAuditTenantMq {
             Id = result.Id,
@@ -986,17 +991,10 @@ public partial class AutoQueryCrudTests
             LivingStatus = LivingStatus.Alive,
         };
         authClient.Put(updateRequest);
-
-        RetryUntilTrue(() => {
-                using var d = appHost.GetDbConnection();
-                return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
-            },
+        ExecUtils.RetryUntilTrue(() => ExistsRockstarAuditTenant(nameof(UpdateRockstarAuditTenantMq)),
             TimeSpan.FromSeconds(2));
-        using (var db = appHost.GetDbConnection())
-        {
-            result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(UpdateRockstarAuditTenantMq));
-        }
-            
+
+        result = GetRockstarAuditTenant(nameof(UpdateRockstarAuditTenantMq));
         Assert.That(result.FirstName, Is.EqualTo(updateRequest.FirstName));
         Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
         Assert.That(result.Age, Is.EqualTo(createRequest.Age));
@@ -1009,17 +1007,10 @@ public partial class AutoQueryCrudTests
             LivingStatus = LivingStatus.Alive,
         };
         authClient.Patch(patchRequest);
-
-        RetryUntilTrue(() => {
-                using var d = appHost.GetDbConnection();
-                return d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
-            },
+        ExecUtils.RetryUntilTrue(() => ExistsRockstarAuditTenant(nameof(PatchRockstarAuditTenantMq)),
             TimeSpan.FromSeconds(2));
-        using (var db = appHost.GetDbConnection())
-        {
-            result = db.Single<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
-        }
-            
+
+        result = GetRockstarAuditTenant(nameof(PatchRockstarAuditTenantMq));
         Assert.That(result.FirstName, Is.EqualTo(patchRequest.FirstName));
         Assert.That(result.LastName, Is.EqualTo(createRequest.LastName));
         Assert.That(result.Age, Is.EqualTo(createRequest.Age));
@@ -1029,16 +1020,9 @@ public partial class AutoQueryCrudTests
         authClient.Delete(new RealDeleteAuditTenantMq {
             Id = result.Id,
         });
-            
-        RetryUntilTrue(() => {
-                using var d = appHost.GetDbConnection();
-                return !d.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq));
-            },
+        ExecUtils.RetryUntilTrue(() => !ExistsRockstarAuditTenant(nameof(PatchRockstarAuditTenantMq)),
             TimeSpan.FromSeconds(2));
-        using (var db = appHost.GetDbConnection())
-        {
-            Assert.That(db.Exists<RockstarAuditTenant>(x => x.FirstName == nameof(PatchRockstarAuditTenantMq)), Is.False);
-        }
+        Assert.That(ExistsRockstarAuditTenant(nameof(PatchRockstarAuditTenantMq)), Is.False);
     }
 
     [Test]

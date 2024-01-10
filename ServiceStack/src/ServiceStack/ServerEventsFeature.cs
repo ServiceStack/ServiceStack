@@ -196,7 +196,7 @@ public class ServerEventsFeature : IPlugin, IConfigureServices, Model.IHasString
         appHost.OnDisposeCallbacks.Add(host => appHost.Resolve<IServerEvents>().Stop());
         
 #if NET8_0_OR_GREATER
-        var host = (AppHostBase)appHost;
+        var host = (IAppHostNetCore)appHost;
         host.MapEndpoints(routeBuilder =>
         {
             routeBuilder.MapGet(StreamPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHandler()))

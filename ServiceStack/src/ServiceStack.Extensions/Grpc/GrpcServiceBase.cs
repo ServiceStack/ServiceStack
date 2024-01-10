@@ -20,7 +20,7 @@ public abstract class GrpcServiceBase : IGrpcService
     private RpcGateway rpcGateway;
     protected RpcGateway RpcGateway => rpcGateway ??= HostContext.AppHost.RpcGateway;
 
-    private GrpcFeature feature;
+    private GrpcFeature? feature;
     protected GrpcFeature Feature => feature ??= HostContext.AssertPlugin<GrpcFeature>();
 
     protected async Task WriteResponseHeadersAsync(IResponse httpRes, CallContext context)
@@ -29,7 +29,7 @@ public abstract class GrpcServiceBase : IGrpcService
         var nonSuccessStatus = res.StatusCode >= 300;
         if (!Feature.DisableResponseHeaders || nonSuccessStatus)
         {
-            foreach (var header in Feature.IgnoreResponseHeaders)
+            foreach (var header in Feature.IgnoreResponseHeaders.Safe())
             {
                 res.Headers.Remove(header);
             }
@@ -54,10 +54,10 @@ public abstract class GrpcServiceBase : IGrpcService
 
                     var desc = status?.ErrorCode ?? res.StatusDescription ??
                         status?.Message ?? HttpStatus.GetStatusDescription(res.StatusCode);
-                    context.ServerCallContext.Status = feature.ToGrpcStatus?.Invoke(httpRes) ?? ToGrpcStatus(res.StatusCode, desc);
+                    context.ServerCallContext!.Status = Feature.ToGrpcStatus?.Invoke(httpRes) ?? ToGrpcStatus(res.StatusCode, desc);
                 }
 
-                await context.ServerCallContext.WriteResponseHeadersAsync(headers).ConfigAwait();
+                await context.ServerCallContext!.WriteResponseHeadersAsync(headers).ConfigAwait();
             }
         }
     }
@@ -71,7 +71,7 @@ public abstract class GrpcServiceBase : IGrpcService
         {
             foreach (var entry in request.Params)
             {
-                context.RequestHeaders.Add("query." + entry.Key, entry.Value);
+                context.RequestHeaders?.Add("query." + entry.Key, entry.Value);
             }
         }
         return Execute<TResponse>(method, typedRequest, context);
@@ -86,8 +86,7 @@ public abstract class GrpcServiceBase : IGrpcService
         var req = new GrpcRequest(context, request, method);
         using var scope = req.StartScope();
         var ret = await RpcGateway.ExecuteAsync<TResponse>(request, req).ConfigAwait();
-        if (req.Response.Dto == null)
-            req.Response.Dto = ret;
+        req.Response.Dto ??= ret;
         await WriteResponseHeadersAsync(req.Response, context).ConfigAwait();
         return ret;
     }
@@ -114,7 +113,7 @@ public abstract class GrpcServiceBase : IGrpcService
 
             var propName = accessor.PropertyInfo.Name; 
             to[propName] = !entry.Key.EndsWith("-bin")
-                ? (object) entry.Value
+                ? entry.Value
                 : entry.ValueBytes;
         }
 
@@ -141,7 +140,7 @@ public abstract class GrpcServiceBase : IGrpcService
         if (service is IRequiresRequest requiresRequest)
             requiresRequest.Request = req;
             
-        IAsyncEnumerable<TResponse> response = default;
+        IAsyncEnumerable<TResponse>? response = default;
         try
         {
             if (AppHost.ApplyPreRequestFilters(req, req.Response))

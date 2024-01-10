@@ -50,9 +50,8 @@ namespace ServiceStack.Extensions.Tests.Protoc
                 container.Resolve<IAuthRepository>().InitSchema();
 
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                    new IAuthProvider[]
-                    {
-                        new BasicAuthProvider(),
+                [
+                    new BasicAuthProvider(),
                         new CredentialsAuthProvider(),
                         new JwtAuthProvider
                         {
@@ -61,9 +60,10 @@ namespace ServiceStack.Extensions.Tests.Protoc
                             AllowInQueryString = true,
                             AllowInFormData = true,
                             IncludeJwtInConvertSessionToTokenResponse = true,
+                            UseTokenCookie = false,
                         },
-                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
-                    }));
+                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false }
+                ]));
 
                 Plugins.Add(new RegistrationFeature());
 
@@ -178,10 +178,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
         
         protected virtual async Task<GrpcServices.GrpcServicesClient> GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
         {
-            if (refreshToken == null)
-            {
-                refreshToken = await GetRefreshToken();
-            }
+            refreshToken ??= await GetRefreshToken();
 
             var client = GetClient(c => {
                 c.RefreshToken = refreshToken;

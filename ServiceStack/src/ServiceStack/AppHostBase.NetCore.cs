@@ -212,7 +212,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     /// </summary>
     public ServiceStackOptions Options { get; set; } = new();
     
-    public readonly Dictionary<string, string[]> EndpointVerbs = new()
+    public Dictionary<string, string[]> EndpointVerbs { get; } = new()
     {
         [HttpMethods.Get] = [HttpMethods.Get],
         [HttpMethods.Post] = [HttpMethods.Post],
@@ -535,6 +535,12 @@ public interface IAppHostNetCore : IAppHost, IRequireConfiguration
 #else
     IWebHostEnvironment HostingEnvironment { get; }
 #endif
+    
+#if NET8_0_OR_GREATER
+    ServiceStackOptions Options { get; }
+    Dictionary<string, string[]> EndpointVerbs { get; }
+    RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation);
+#endif
 }
 
 #if NET8_0_OR_GREATER
@@ -699,7 +705,7 @@ public static class NetCoreAppHostExtensions
     }
     
 #if NET8_0_OR_GREATER
-    public static void MapEndpoints(this AppHostBase appHost, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure)
+    public static void MapEndpoints(this IAppHostNetCore appHost, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure)
     {
         if (!appHost.Options.MapEndpointRouting)
             return;

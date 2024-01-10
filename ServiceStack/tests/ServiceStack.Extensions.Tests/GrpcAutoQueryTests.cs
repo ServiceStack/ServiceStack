@@ -14,10 +14,12 @@ using ProtoBuf.Grpc.Client;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
+using ServiceStack.Model;
 using ServiceStack.OrmLite;
 using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests
 {
@@ -769,10 +771,8 @@ namespace ServiceStack.Extensions.Tests
 
     [ConnectionInfo(NamedConnection = AutoQueryAppHost.SqlServerNamedConnection)]
     [DataContract]
-    public class NamedConnectionServices : Service
+    public class NamedConnectionServices(IAutoQueryDb autoQuery) : Service
     {
-        public IAutoQueryDb AutoQuery { get; set; }
-
         public object Get(ChangeConnectionInfo request)
         {
             return new ChangeDbResponse { Results = Db.Select<Rockstar>() };
@@ -780,7 +780,7 @@ namespace ServiceStack.Extensions.Tests
 
         public object Get(QueryChangeConnectionInfo query)
         {
-            return AutoQuery.Execute(query, AutoQuery.CreateQuery(query, Request), Request);
+            return autoQuery.Execute(query, autoQuery.CreateQuery(query, Request), Request);
         }
     }
 
@@ -866,12 +866,9 @@ namespace ServiceStack.Extensions.Tests
             });
         }
     }
-
-    public class AutoQueryAppHost : AppSelfHostBase
+    
+    public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryService).Assembly)
     {
-        public AutoQueryAppHost()
-            : base("AutoQuery", typeof(AutoQueryService).Assembly) { }
-
         public static readonly string SqlServerConnString = TestsConfig.SqlServerConnString;
         public const string SqlServerNamedConnection = "SqlServer";
         public const string SqlServerProvider = "SqlServer2012";
@@ -900,6 +897,11 @@ namespace ServiceStack.Extensions.Tests
             var grpcFeature = new GrpcFeature(App);
             ConfigureGrpc?.Invoke(grpcFeature);
             Plugins.Add(grpcFeature);
+            
+            ScriptContext.ScriptMethods.AddRange(new ScriptMethods[] {
+                new DbScriptsAsync(),
+                new MyValidators(), 
+            });
 
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
             container.Register<IDbConnectionFactory>(dbFactory);

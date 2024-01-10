@@ -1,4 +1,7 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -49,9 +52,159 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         Platforms.PlatformNetCore.HostInstance = this;
         ServiceController = CreateServiceController(serviceTypes);
     }
+    
+    /// <summary>
+    /// Whether ServiceStack should ignore handling request
+    /// </summary>
+    public Func<HttpContext, bool>? IgnoreRequestHandler { get; set; }
 
-    private string pathBase;
-    public override string PathBase
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Options for app.UseServiceStack(new AppHost(), options => { ... })
+    /// </summary>
+    public ServiceStackOptions Options { get; set; } = new();
+    
+    public Dictionary<string, string[]> EndpointVerbs { get; } = new()
+    {
+        [HttpMethods.Get] = [HttpMethods.Get],
+        [HttpMethods.Post] = [HttpMethods.Post],
+        [HttpMethods.Put] = [HttpMethods.Put],
+        [HttpMethods.Delete] = [HttpMethods.Delete],
+        [HttpMethods.Patch] = [HttpMethods.Patch],
+    };
+    
+    /// <summary>
+    /// Whether to use ASP.NET Core Endpoint Route to invoke ServiceStack APIs
+    /// </summary>
+    public virtual bool ShouldUseEndpointRoute(HttpContext httpContext)
+    {
+        var endpoint = httpContext.GetEndpoint();
+        var wildcardEndpoint = endpoint is Microsoft.AspNetCore.Routing.RouteEndpoint routeEndpoint && 
+                               routeEndpoint.RoutePattern.RawText?.StartsWith("/{") == true &&
+                               routeEndpoint.RoutePattern.RawText?.EndsWith('}') == true;
+        var useExistingNonWildcardEndpoint = endpoint != null && !wildcardEndpoint;
+        return useExistingNonWildcardEndpoint;
+    }
+    
+    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation)
+    {
+        if (operation.ResponseType != null)
+        {
+            if (operation.ResponseType == typeof(byte[]) || operation.ResponseType == typeof(Stream))
+            {
+                builder.Produces(200, responseType:operation.ResponseType, contentType:MimeTypes.Binary);
+            }
+            else
+            {
+                builder.Produces(200, responseType:operation.ResponseType, contentType:MimeTypes.Json);
+            }
+        }
+        else
+        {
+            builder.Produces(Config.Return204NoContentForEmptyResponse ? 204 : 200, responseType:null);
+        }
+        if (operation.RequiresAuthentication)
+        {
+            var authAttr = operation.Authorize ?? new Microsoft.AspNetCore.Authorization.AuthorizeAttribute();
+            authAttr.AuthenticationSchemes ??= Options.AuthenticationSchemes;
+            builder.RequireAuthorization(authAttr);
+        }
+        else
+        {
+            builder.AllowAnonymous();
+        }
+            
+        if (operation.RequestType.ExcludesFeature(Feature.Metadata) || 
+            operation.RequestType.ExcludesFeature(Feature.ApiExplorer))
+            builder.ExcludeFromDescription();
+
+        return builder;
+    }
+    
+    public virtual void RegisterEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
+    {
+        if (Options.UseEndpointRouting)
+        {
+            IgnoreRequestHandler = ShouldUseEndpointRoute;
+        }
+
+        MapUserDefinedRoutes(routeBuilder);
+    }
+
+    public virtual void MapUserDefinedRoutes(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
+    {
+        Task HandleRequestAsync(Type requestType, HttpContext httpContext)
+        {
+            var req = httpContext.ToRequest();
+            var restPath = RestHandler.FindMatchingRestPath(req, out var contentType);
+            var handler = restPath != null
+                ? (HttpAsyncTaskHandler)new RestHandler {
+                    RestPath = restPath, 
+                    RequestName = restPath.RequestType.GetOperationName(), 
+                    ResponseContentType = contentType
+                }
+                : new NotFoundHttpHandler();
+            return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
+        }
+        
+        foreach (var entry in Metadata.OperationsMap)
+        {
+            var requestType = entry.Key;
+            var operation = entry.Value;
+
+            if (!EndpointVerbs.TryGetValue(operation.Method, out var verb))
+                continue;
+
+            foreach (var route in operation.Routes.Safe())
+            {
+                var routeVerbs = route.Verbs == null || (route.Verbs.Length == 1 && route.Verbs[0] == ActionContext.AnyAction) 
+                    ? [operation.Method]
+                    : route.Verbs;
+
+                string? routeRule = null;
+                try
+                {
+                    foreach (var routeVerb in routeVerbs)
+                    {
+                        if (!EndpointVerbs.TryGetValue(routeVerb, out verb))
+                            continue;
+
+                        routeRule = $"[{verb}] {route.Path}";
+                        var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
+                            HandleRequestAsync(requestType, httpContext));
+                        
+                        ConfigureOperationEndpoint(pathBuilder, operation);
+
+                        foreach (var handler in Options.RouteHandlerBuilders)
+                        {
+                            handler(pathBuilder, operation, routeVerb, route.Path);
+                        }
+                    }
+                    
+                    // Add /custom/path.{format} routes for GET requests
+                    if (routeVerbs.Contains(HttpMethods.Get) && !route.Path.Contains('.') && !route.Path.Contains('*'))
+                    {
+                        routeRule = $"[GET] {route.Path}.format";
+                        var pathBuilder = routeBuilder.MapMethods(route.Path + ".{format}", EndpointVerbs[HttpMethods.Get], 
+                            (string format, HttpResponse response, HttpContext httpContext) =>
+                                HandleRequestAsync(requestType, httpContext));
+                        
+                        ConfigureOperationEndpoint(pathBuilder, operation)
+                            .WithMetadata<string>(route.Path + ".format");
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogManager.GetLogger(GetType()).Error($"Error mapping route '{routeRule}' for {requestType.Name}: {e.Message}", e);
+                    throw;
+                }
+            }
+        }
+    }
+#endif
+
+    private string? pathBase;
+    public override string? PathBase
     {
         get => pathBase;
         set
@@ -70,12 +223,13 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         }
     }
 
-    IApplicationBuilder app;
-    public IApplicationBuilder App => app;
-    public IServiceProvider ApplicationServices => app?.ApplicationServices;
+    IApplicationBuilder? app;
+    public IApplicationBuilder App => app ?? throw new ArgumentNullException(nameof(app));
+    public IServiceProvider ApplicationServices => App.ApplicationServices;
 
-    private IWebHostEnvironment env;
-    public IWebHostEnvironment HostingEnvironment => env ??= app?.ApplicationServices.GetService<IWebHostEnvironment>();
+    private IWebHostEnvironment? env;
+    public IWebHostEnvironment HostingEnvironment => env ??= app!.ApplicationServices.GetService<IWebHostEnvironment>()
+        ?? throw new ArgumentNullException(nameof(env));
 
     public virtual void Bind(IApplicationBuilder app)
     {
@@ -230,7 +384,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         return Start([urlBase]);
     }
 
-    public IWebHost WebHost { get; private set; }
+    public IWebHost? WebHost { get; private set; }
 
     public virtual ServiceStackHost Start(string[] urlBases)
     {

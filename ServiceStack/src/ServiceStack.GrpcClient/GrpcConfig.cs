@@ -108,8 +108,7 @@ namespace ServiceStack
 
         public static string GetServerStreamServiceName(string requestName) => ServerStreamServiceNameResolver(requestName);
 
-        private static readonly ConcurrentDictionary<Type, Func<MetaType>> FnCache =
-            new ConcurrentDictionary<Type, Func<MetaType>>();
+        private static readonly ConcurrentDictionary<Type, Func<MetaType>> FnCache = new();
 
         public static MetaType Register(Type type)
         {
@@ -130,7 +129,7 @@ namespace ServiceStack
             requestType.FirstAttribute<TagAttribute>()?.Name == GrpcClientConfig.Keywords.Dynamic;
 
         public static bool IsAutoQueryService(Type requestType, string action) =>
-            requestType.HasInterface(typeof(IQuery));
+            Crud.AnyAutoQueryType(requestType);
 
         public static bool AutoQueryOrDynamicAttribute(Type requestType, string action) =>
             IsAutoQueryService(requestType, action) || HasDynamicAttribute(requestType, action);

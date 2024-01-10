@@ -23,7 +23,7 @@ public class RequestInfoFeature : IPlugin, Model.IHasStringId
             feature => feature.AddDebugLink($"?{Keywords.Debug}={Keywords.RequestInfo}", "Request Info"));
         
 #if NET8_0_OR_GREATER
-        var host = (AppHostBase)appHost;
+        var host = (IAppHostNetCore)appHost;
         host.MapEndpoints(routeBuilder =>
         {
             var handler = new RequestInfoHandler();

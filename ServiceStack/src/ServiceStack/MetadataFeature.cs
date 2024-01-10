@@ -1,6 +1,4 @@
-﻿#if NETCORE        
-using ServiceStack.Host;
-#else
+﻿#if !NETCORE        
 using System.Web;
 #endif
 
@@ -116,7 +114,7 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
         appHost.CatchAllHandlers.Add(GetHandler);
         
 #if NET8_0_OR_GREATER
-        var host = (AppHostBase)appHost;
+        var host = (IAppHostNetCore)appHost;
         host.MapEndpoints(routeBuilder =>
         {
             var tag = GetType().Name;

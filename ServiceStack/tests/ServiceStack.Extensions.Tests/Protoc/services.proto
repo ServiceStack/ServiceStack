@@ -471,23 +471,13 @@ message AuditBase {
 }
 message Authenticate {
    string provider = 1;
-   string State = 2;
-   string oauth_token = 3;
-   string oauth_verifier = 4;
-   string UserName = 5;
-   string Password = 6;
-   bool RememberMe = 7;
-   string ErrorView = 9;
-   string nonce = 10;
-   string uri = 11;
-   string response = 12;
-   string qop = 13;
-   string nc = 14;
-   string cnonce = 15;
-   bool UseTokenCookie = 16;
-   string AccessToken = 17;
-   string AccessTokenSecret = 18;
-   string scope = 19;
+   string UserName = 2;
+   string Password = 3;
+   bool RememberMe = 4;
+   string AccessToken = 5;
+   string AccessTokenSecret = 6;
+   string ReturnUrl = 7;
+   string ErrorView = 8;
    map<string,string> Meta = 20;
 }
 message AuthenticateResponse {
@@ -498,11 +488,12 @@ message AuthenticateResponse {
    string ReferrerUrl = 5;
    string BearerToken = 6;
    string RefreshToken = 7;
-   string ProfileUrl = 8;
-   repeated string Roles = 9;
-   repeated string Permissions = 10;
-   ResponseStatus ResponseStatus = 11;
-   map<string,string> Meta = 12;
+   .google.protobuf.Timestamp RefreshTokenExpiry = 8;
+   string ProfileUrl = 9;
+   repeated string Roles = 10;
+   repeated string Permissions = 11;
+   ResponseStatus ResponseStatus = 12;
+   map<string,string> Meta = 13;
 }
 message Bar {
    string Y = 2;
@@ -1641,8 +1632,11 @@ message RegisterResponse {
    string ReferrerUrl = 4;
    string BearerToken = 5;
    string RefreshToken = 6;
-   ResponseStatus ResponseStatus = 7;
-   map<string,string> Meta = 8;
+   .google.protobuf.Timestamp RefreshTokenExpiry = 7;
+   repeated string Roles = 8;
+   repeated string Permissions = 9;
+   ResponseStatus ResponseStatus = 10;
+   map<string,string> Meta = 11;
 }
 message RequiresAuth {
    string Name = 1;

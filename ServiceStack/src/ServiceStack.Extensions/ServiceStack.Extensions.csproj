@@ -6,6 +6,7 @@
         <RootNamespace>ServiceStack</RootNamespace>
         <LangVersion>default</LangVersion>
         <Title>ServiceStack.Extensions</Title>
+        <Nullable>enable</Nullable>
         <PackageDescription>ServiceStack extensions for .NET Core Apps, including GrpcFeature</PackageDescription>
         <PackageTags>ServiceStack;gRPC;server;GrpcFeature</PackageTags>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>

@@ -10,16 +10,14 @@ using ServiceStack.Data;
 using ServiceStack.Model;
 using ServiceStack.OrmLite;
 using ServiceStack.Script;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests
 {
-    public class NoRockstarAlbumReferences : TypeValidator
+    public class NoRockstarAlbumReferences() : TypeValidator("HasForeignKeyReferences", "Has RockstarAlbum References")
     {
-        public NoRockstarAlbumReferences() 
-            : base("HasForeignKeyReferences", "Has RockstarAlbum References") {}
-
         public override async Task<bool> IsValidAsync(object dto, IRequest request)
         {
             //Example of using compiled accessor delegates to access `Id` property
@@ -78,7 +76,7 @@ namespace ServiceStack.Extensions.Tests
             Assert.That(ex.ErrorCode, Is.EqualTo("NotNull"));
             Assert.That(ex.ErrorMessage, Is.EqualTo("'First Name' must not be empty."));
             var status = ex.ResponseStatus;
-            Assert.That(status.Errors.Count, Is.EqualTo(3));
+            Assert.That(status.Errors.Count, Is.EqualTo(4));
 
             var fieldError = status.Errors.First(x => x.FieldName == nameof(RockstarBase.FirstName));
             Assert.That(fieldError.ErrorCode, Is.EqualTo("NotNull"));
@@ -87,6 +85,10 @@ namespace ServiceStack.Extensions.Tests
             fieldError = status.Errors.First(x => x.FieldName == nameof(RockstarBase.Age));
             Assert.That(fieldError.ErrorCode, Is.EqualTo("NotNull"));
             Assert.That(fieldError.Message, Is.EqualTo("'Age' must not be empty."));
+            
+            fieldError = status.Errors.First(x => x.FieldName == nameof(RockstarBase.DateOfBirth));
+            Assert.That(fieldError.ErrorCode, Is.EqualTo("NotEmpty"));
+            Assert.That(fieldError.Message, Is.EqualTo("'Date Of Birth' must not be empty."));
             
             fieldError = status.Errors.First(x => x.FieldName == nameof(RockstarBase.LastName));
             Assert.That(fieldError.ErrorCode, Is.EqualTo("NotNull"));
@@ -99,7 +101,6 @@ namespace ServiceStack.Extensions.Tests
             try
             {
                 var response = client.Post(new NoAbstractValidator {
-                    DateOfBirth = new DateTime(2001,1,1),
                 });
                 
                 Assert.Fail("Should throw");
@@ -159,7 +160,6 @@ namespace ServiceStack.Extensions.Tests
             try
             {
                 var response = authClient.Post(new DynamicValidationRules {
-                    DateOfBirth = new DateTime(2001,1,1),
                 });
                 
                 Assert.Fail("Should throw");
@@ -208,8 +208,8 @@ namespace ServiceStack.Extensions.Tests
             }
             catch (WebServiceException ex)
             {
+                ex.ResponseStatus.PrintDump();
                 AssertErrorResponse(ex);
-                Console.WriteLine(ex);
             }
         }
 

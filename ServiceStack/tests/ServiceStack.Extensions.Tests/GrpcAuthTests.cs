@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using ProtoBuf.Grpc.Client;
 using ServiceStack.Auth;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 
@@ -95,14 +95,13 @@ namespace ServiceStack.Extensions.Tests
         private static ApiKey liveKey;
         private static ApiKey testKey;
 
-        public class AppHost : AppSelfHostBase
+        public class AppHost() : AppSelfHostBase(nameof(GrpcTests), typeof(MyServices).Assembly)
         {
             public static ApiKey LastApiKey;
-            public AppHost() 
-                : base(nameof(GrpcTests), typeof(MyServices).Assembly) { }
 
             public override void Configure(Container container)
             {
+                LogManager.LogFactory = new ConsoleLogFactory();
                 Plugins.Add(new ValidationFeature());
                 Plugins.Add(new GrpcFeature(App));
 
@@ -110,9 +109,8 @@ namespace ServiceStack.Extensions.Tests
                 container.Resolve<IAuthRepository>().InitSchema();
 
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                    new IAuthProvider[]
-                    {
-                        new BasicAuthProvider(),
+                [
+                    new BasicAuthProvider(),
                         new CredentialsAuthProvider(),
                         new JwtAuthProvider
                         {
@@ -121,9 +119,10 @@ namespace ServiceStack.Extensions.Tests
                             AllowInQueryString = true,
                             AllowInFormData = true,
                             IncludeJwtInConvertSessionToTokenResponse = true,
+                            UseTokenCookie = false,
                         },
-                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
-                    }));
+                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false }
+                ]));
 
                 Plugins.Add(new RegistrationFeature());
 
@@ -135,7 +134,7 @@ namespace ServiceStack.Extensions.Tests
                 AfterInitCallbacks.Add(host => {
                     
                     var authRepo = GetAuthRepository();
-                    (authRepo as InMemoryAuthRepository).Clear();
+                    (authRepo as InMemoryAuthRepository)?.Clear();
                     authRepo.CreateUserAuth(new UserAuth
                     {
                         Id = userId.ToInt(),
@@ -220,11 +219,7 @@ namespace ServiceStack.Extensions.Tests
 
         protected virtual async Task<GrpcServiceClient> GetClientWithRefreshToken(string refreshToken = null, string accessToken = null)
         {
-            if (refreshToken == null)
-            {
-                refreshToken = await GetRefreshToken();
-            }
-
+            refreshToken ??= await GetRefreshToken();
             var client = GetClient();
             client.RefreshToken = refreshToken;
             client.BearerToken = accessToken;

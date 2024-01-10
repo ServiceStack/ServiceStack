@@ -200,10 +200,10 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
 
     private readonly int capacity = feature.Capacity;
 
-    protected readonly ConcurrentQueue<DiagnosticEntry> entries = new();
+    private readonly ConcurrentQueue<DiagnosticEntry> entries = new();
     private long idCounter = 0;
     
-    private readonly List<IDisposable> subscriptions = new();
+    private readonly List<IDisposable> subscriptions = [];
 
     void IObserver<DiagnosticListener>.OnNext(DiagnosticListener diagnosticListener)
     {

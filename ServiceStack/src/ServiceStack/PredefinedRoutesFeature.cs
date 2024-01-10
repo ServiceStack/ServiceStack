@@ -107,7 +107,7 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
         if (JsonApiRoute != null)
         {
 #if NET8_0_OR_GREATER
-            var host = (AppHostBase)appHost;
+            var host = (IAppHostNetCore)appHost;
             host.MapEndpoints(routeBuilder =>
             {
                 var apiPath = ApiHandlers.GetBaseApiPath(JsonApiRoute);

@@ -33,8 +33,8 @@ namespace ServiceStack.Extensions.Tests
         [DataMember(Order = 3)]
         public int? Age { get; set; }
 
-        [Validate("NotEmpty(default('DateTime'))")]
-        //[Validate("NotEmpty")] equivalent to above thanks to: Validators.AppendDefaultValueOnEmptyValidators
+        //[Validate("NotEmpty(default('DateTime'))")]
+        [Validate("NotEmpty")] //equivalent to above thanks to: Validators.AppendDefaultValueOnEmptyValidators
         [DataMember(Order = 4)]
         public DateTime DateOfBirth { get; set; }
         
