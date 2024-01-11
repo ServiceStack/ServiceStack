@@ -426,7 +426,7 @@ namespace CSharpEval
 			}
 			catch (TargetInvocationException ex)
 			{
-				Console.WriteLine(ex.InnerException);
+				Logging.LogManager.GetLogger(GetType()).Error(ex.InnerException!.Message, ex.InnerException);
 				throw ex.InnerException;
 			}
 		}

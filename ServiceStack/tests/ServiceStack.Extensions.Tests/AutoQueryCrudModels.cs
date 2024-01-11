@@ -21,6 +21,7 @@ namespace ServiceStack.Extensions.Tests
         public DateTime? DateDied { get; set; }
         [DataMember(Order = 6)]
         public LivingStatus LivingStatus { get; set; }
+        
     }
 
     [Alias(nameof(Rockstar))]
@@ -69,49 +70,14 @@ namespace ServiceStack.Extensions.Tests
         DateTime ModifiedDate { get; set; }
         string ModifiedBy { get; set; }
         string ModifiedInfo { get; set; }
-        DateTime? SoftDeletedDate { get; set; }
-        string SoftDeletedBy { get; set; }
-        string SoftDeletedInfo { get; set; }
+        DateTime? DeletedDate { get; set; }
+        string DeletedBy { get; set; }
+        string DeletedInfo { get; set; }
     }
 
     public interface IAuditTenant : IAudit
     {
         int TenantId { get; set; }
-    }
-
-    [DataContract]
-    public abstract class AuditBase : IAudit
-    {
-        [DataMember(Order = 1)]
-        public DateTime CreatedDate { get; set; }
-
-        [Required]
-        [DataMember(Order = 2)]
-        public string CreatedBy { get; set; }
-
-        [Required]
-        [DataMember(Order = 3)]
-        public string CreatedInfo { get; set; }
-
-        [DataMember(Order = 4)]
-        public DateTime ModifiedDate { get; set; }
-
-        [Required]
-        [DataMember(Order = 5)]
-        public string ModifiedBy { get; set; }
-
-        [Required]
-        [DataMember(Order = 6)]
-        public string ModifiedInfo { get; set; }
-
-        [Index] //Check if Deleted
-        [DataMember(Order = 7)]
-        public DateTime? SoftDeletedDate { get; set; }
-
-        [DataMember(Order = 8)]
-        public string SoftDeletedBy { get; set; }
-        [DataMember(Order = 9)]
-        public string SoftDeletedInfo { get; set; }
     }
 
     [DataContract]
@@ -137,6 +103,13 @@ namespace ServiceStack.Extensions.Tests
         public DateTime? DateDied { get; set; }
         [DataMember(Order = 8)]
         public LivingStatus LivingStatus { get; set; }
+
+        [DataMember(Order = 9)]
+        public string CreatedInfo { get; set; }
+        [DataMember(Order = 10)]
+        public string ModifiedInfo { get; set; }
+        [DataMember(Order = 11)]
+        public string DeletedInfo { get; set; }
     }
 
     [DataContract]
@@ -218,9 +191,9 @@ namespace ServiceStack.Extensions.Tests
     public abstract class PatchAuditTenantBase<Table, TResponse> : PatchAuditBase<Table, TResponse> { }
 
     [ValidateRequest("IsAuthenticated")]
-    [AutoPopulate(nameof(IAudit.SoftDeletedDate), Eval = "utcNow")]
-    [AutoPopulate(nameof(IAudit.SoftDeletedBy), Eval = "userAuthName")] //or userAuthId
-    [AutoPopulate(nameof(IAudit.SoftDeletedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
+    [AutoPopulate(nameof(IAudit.DeletedDate), Eval = "utcNow")]
+    [AutoPopulate(nameof(IAudit.DeletedBy), Eval = "userAuthName")] //or userAuthId
+    [AutoPopulate(nameof(IAudit.DeletedInfo), Eval = "`${userSession.DisplayName} (${userSession.City})`")]
     [DataContract]
     public abstract class SoftDeleteAuditBase<Table, TResponse> : IUpdateDb<Table>, IReturn<TResponse> { }
 
@@ -229,7 +202,7 @@ namespace ServiceStack.Extensions.Tests
     public abstract class SoftDeleteAuditTenantBase<Table, TResponse> : SoftDeleteAuditBase<Table, TResponse> { }
 
     [ValidateRequest("IsAuthenticated")]
-    [AutoFilter(QueryTerm.Ensure, nameof(IAudit.SoftDeletedDate), Template = SqlTemplate.IsNull)]
+    [AutoFilter(QueryTerm.Ensure, nameof(IAudit.DeletedDate), Template = SqlTemplate.IsNull)]
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId), Eval = "Request.Items.TenantId")]
     [DataContract]
     public abstract class QueryDbTenant<From, Into> : QueryDb<From, Into> { }
@@ -416,7 +389,7 @@ namespace ServiceStack.Extensions.Tests
     }
 
     [QueryDb(QueryTerm.Or)]
-    [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.SoftDeletedDate), SqlTemplate.IsNull)]
+    [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.DeletedDate), SqlTemplate.IsNull)]
     [AutoFilter(QueryTerm.Ensure, nameof(IAuditTenant.TenantId), Eval = "Request.Items.TenantId")]
     [DataContract]
     public class QueryRockstarAuditSubOr : QueryDb<RockstarAuditTenant, RockstarAuto>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using ServiceStack.Logging;
 using ServiceStack.OrmLite.Converters;
 
 namespace ServiceStack.OrmLite.PostgreSQL.Converters
@@ -21,7 +22,7 @@ namespace ServiceStack.OrmLite.PostgreSQL.Converters
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                LogManager.GetLogger(GetType()).Error(e.Message, e);
                 throw;
             }
         }

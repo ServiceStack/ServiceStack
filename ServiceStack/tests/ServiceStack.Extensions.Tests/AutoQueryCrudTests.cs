@@ -803,9 +803,9 @@ namespace ServiceStack.Extensions.Tests
             assertUpdated(softDeleteResponse.Result);
 
             newRockstar = db.SingleById<RockstarAuditTenant>(id);
-            Assert.That(newRockstar.SoftDeletedDate.Value.Date, Is.EqualTo(DateTime.UtcNow.Date));
-            Assert.That(newRockstar.SoftDeletedBy, Is.EqualTo("manager"));
-            Assert.That(newRockstar.SoftDeletedInfo, Is.EqualTo("The Manager (Perth)"));
+            Assert.That(newRockstar.DeletedDate.Value.Date, Is.EqualTo(DateTime.UtcNow.Date));
+            Assert.That(newRockstar.DeletedBy, Is.EqualTo("manager"));
+            Assert.That(newRockstar.DeletedInfo, Is.EqualTo("The Manager (Perth)"));
 
             Assert.That(authClient.Get(new QueryRockstarAudit { Id = id }).Results?.Count ?? 0,
                 Is.EqualTo(0));
@@ -927,14 +927,18 @@ namespace ServiceStack.Extensions.Tests
 
             bool ExistsRockstarAuditTenant(string firstName)
             {
-                using var db = appHost.GetDbConnection();
-                return db.Exists<RockstarAuditTenant>(x => x.FirstName == firstName);
+                return ExecUtils.RetryOnException(() => {
+                    using var db = appHost.GetDbConnection();
+                    return db.Exists<RockstarAuditTenant>(x => x.FirstName == firstName);
+                }, 3);
             }
 
             RockstarAuditTenant GetRockstarAuditTenant(string firstName)
             {
-                using var db = appHost.GetDbConnection();
-                return db.Single<RockstarAuditTenant>(x => x.FirstName == firstName);
+                return ExecUtils.RetryOnException(() => {
+                    using var db = appHost.GetDbConnection();
+                    return db.Single<RockstarAuditTenant>(x => x.FirstName == firstName);
+                }, 3);
             }
 
             ExecUtils.RetryUntilTrue(() => ExistsRockstarAuditTenant(nameof(CreateRockstarAuditTenantMq)),

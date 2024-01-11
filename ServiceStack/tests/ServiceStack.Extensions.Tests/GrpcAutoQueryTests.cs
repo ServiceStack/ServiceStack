@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ProtoBuf;
 using ProtoBuf.Grpc.Client;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
@@ -881,6 +882,7 @@ namespace ServiceStack.Extensions.Tests
         {
             options.ListenLocalhost(TestsConfig.Port, listenOptions =>
             {
+                // Comment out to run Write_Services_proto()
                 listenOptions.Protocols = HttpProtocols.Http2;
             });
         }

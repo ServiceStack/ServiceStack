@@ -62,8 +62,9 @@ public abstract class GrpcServiceBase : IGrpcService
         }
     }
 
-    protected virtual Task<TResponse> ExecuteDynamic<TResponse>(string method, DynamicRequest request, CallContext context, Type requestType)
+    protected virtual Task<TResponse> ExecuteDynamic<TRequest,TResponse>(string method, DynamicRequest request, CallContext context)
     {
+        var requestType = typeof(TRequest);
         AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
         var to = request.Params.ToObjectDictionary();
         var typedRequest = to?.FromObjectDictionary(requestType) ?? requestType.CreateInstance();

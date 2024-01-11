@@ -85,15 +85,6 @@ public class ProtocTests
         return client;
     }
 
-    [Test, Explicit]
-    public void Write_Services_proto()
-    {
-        // before running comment: listenOptions.Protocols = HttpProtocols.Http2;
-        // var proto = TestsConfig.BaseUri.CombineWith("/types/proto").GetStringFromUrl();
-        // Console.WriteLine(proto);
-        // File.WriteAllText("../../../../ServiceStack.Extensions.Tests/Protoc/Services2.proto", proto);
-    }
-
     [Test]
     public async Task Can_call_Multiply_Grpc_Service_GrpcServiceClient()
     {

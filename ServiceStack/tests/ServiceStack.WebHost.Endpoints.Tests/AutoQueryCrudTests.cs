@@ -971,14 +971,18 @@ public partial class AutoQueryCrudTests
 
         bool ExistsRockstarAuditTenant(string firstName)
         {
-            using var db = appHost.GetDbConnection();
-            return db.Exists<RockstarAuditTenant>(x => x.FirstName == firstName);
+            return ExecUtils.RetryOnException(() => {
+                using var db = appHost.GetDbConnection();
+                return db.Exists<RockstarAuditTenant>(x => x.FirstName == firstName);
+            }, 3);
         }
 
         RockstarAuditTenant GetRockstarAuditTenant(string firstName)
         {
-            using var db = appHost.GetDbConnection();
-            return db.Single<RockstarAuditTenant>(x => x.FirstName == firstName);
+            return ExecUtils.RetryOnException(() => {
+                using var db = appHost.GetDbConnection();
+                return db.Single<RockstarAuditTenant>(x => x.FirstName == firstName);
+            }, 3);
         }
 
         ExecUtils.RetryUntilTrue(() => ExistsRockstarAuditTenant(nameof(CreateRockstarAuditTenantMq)),

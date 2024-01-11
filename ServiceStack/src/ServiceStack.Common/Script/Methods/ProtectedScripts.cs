@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Script;
@@ -18,7 +19,7 @@ namespace ServiceStack.Script;
 // ReSharper disable InconsistentNaming
 public class ProtectedScripts : ScriptMethods
 {
-    public static readonly ProtectedScripts Instance = new ProtectedScripts();
+    public static readonly ProtectedScripts Instance = new();
 
     public object resolve(ScriptScopeContext scope, object type)
     {
@@ -1756,7 +1757,7 @@ public class DirectoryScripts : IOScript
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                LogManager.GetLogger(typeof(DirectoryScripts)).Error(ex.Message, ex);
             }
         }
     }        

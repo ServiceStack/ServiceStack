@@ -283,7 +283,7 @@ public class ConvertSessionToTokenResponse : IMeta
 }
     
 [Tag(TagNames.Auth)]
-[DataContract, ExcludeMetadata]
+[DataContract]
 public partial class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>, IMeta
 {
     [DataMember(Order = 1)]

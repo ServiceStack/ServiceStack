@@ -369,9 +369,9 @@ public partial class DefaultScripts
                             scope.ScopedParams[bindTo] = bindValue;
                             itemBindings[bindTo] = bindValue;
                         }
-                        catch (Exception exception)
+                        catch (Exception ex)
                         {
-                            Console.WriteLine(exception);
+                            Logging.LogManager.GetLogger(GetType()).Error(ex.Message, ex);
                         }
                     }
                 }

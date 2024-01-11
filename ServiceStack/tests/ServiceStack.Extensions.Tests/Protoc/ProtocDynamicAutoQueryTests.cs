@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
@@ -16,19 +17,40 @@ public class ProtocDynamicAutoQueryTests
     private static readonly int TotalRockstars = AutoQueryAppHost.SeedRockstars.Length;
     private static readonly int TotalAlbums = AutoQueryAppHost.SeedAlbums.Length;
 
-    private static Type[] DynamicTypes =
+    private static string[] DynamicTypeNames =
     [
-        typeof(ChangeConnectionInfo),
+        nameof(ChangeDb),
+        nameof(ChangeConnectionInfo),
     ];
 
+    public static readonly byte[] AuthKey = AesUtils.CreateKey();
+    
     public ProtocDynamicAutoQueryTests()
     {
         ConsoleLogFactory.Configure();
         appHost = new AutoQueryAppHost {
+                ConfigureFn = (appHost,container) =>
+                {
+                    // For code generation
+                    appHost.Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                    [
+                        new CredentialsAuthProvider(),
+                        new JwtAuthProvider
+                        {
+                            AuthKey = AuthKey,
+                            RequireSecureConnection = false,
+                            AllowInQueryString = true,
+                            AllowInFormData = true,
+                            IncludeJwtInConvertSessionToTokenResponse = true,
+                            UseTokenCookie = false,
+                        },
+                    ]));
+                    appHost.RegisterService<GetFileService>();
+                },
                 ConfigureGrpc = feature =>feature.CreateDynamicService = (requestType, action) =>
                 {
                     Console.WriteLine(requestType.Name);
-                    if (DynamicTypes.Contains(requestType))
+                    if (DynamicTypeNames.Contains(requestType.Name))
                         return true;
                     return GrpcConfig.AutoQueryOrDynamicAttribute(requestType, action);
                 }
@@ -49,6 +71,15 @@ public class ProtocDynamicAutoQueryTests
     public List<Rockstar> Rockstars => AutoQueryAppHost.SeedRockstars.Map(x => x.ConvertTo<Rockstar>());
 
     public List<PagingTest> PagingTests => AutoQueryAppHost.SeedPagingTest.Map(x => x.ConvertTo<PagingTest>());
+
+    [Test, Explicit]
+    public void Write_Services_proto()
+    {
+        // before running comment: listenOptions.Protocols = HttpProtocols.Http2;
+        var proto = TestsConfig.BaseUri.CombineWith("/types/proto?GlobalNamespace=ServiceStack.Extensions.Tests.Protoc").GetStringFromUrl();
+        Console.WriteLine(proto);
+        System.IO.File.WriteAllText("../../../../ServiceStack.Extensions.Tests/Protoc/services.proto", proto);
+    }
 
     [Test]
     public async Task Can_execute_basic_query_dynamic()

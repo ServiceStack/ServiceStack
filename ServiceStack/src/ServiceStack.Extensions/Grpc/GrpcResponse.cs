@@ -30,7 +30,7 @@ public class GrpcResponse : IHttpResponse, IHasHeaders, IWriteEvent, IWriteEvent
 
     public int StatusCode { get; set; } = 200;
 
-    public string StatusDescription { get; set; }
+    public string? StatusDescription { get; set; }
 
     public string ContentType
     {
@@ -48,7 +48,7 @@ public class GrpcResponse : IHttpResponse, IHasHeaders, IWriteEvent, IWriteEvent
         Headers.Remove(name);
     }
 
-    public string GetHeader(string name)
+    public string? GetHeader(string name)
     {
         this.Headers.TryGetValue(name, out var value);
         return value;
@@ -58,7 +58,7 @@ public class GrpcResponse : IHttpResponse, IHasHeaders, IWriteEvent, IWriteEvent
 
     public Stream OutputStream { get; }
 
-    public object Dto { get; set; }
+    public object? Dto { get; set; }
 
     public void Write(string text) { }
 
@@ -99,7 +99,7 @@ public class GrpcResponse : IHttpResponse, IHasHeaders, IWriteEvent, IWriteEvent
 
     public void ClearCookies() { }
 
-    private Channel<string> eventsChannel;
+    private Channel<string>? eventsChannel;
 
     public Channel<string> EventsChannel =>
         eventsChannel ??= Channel.CreateUnbounded<string>(new UnboundedChannelOptions {SingleReader = true});

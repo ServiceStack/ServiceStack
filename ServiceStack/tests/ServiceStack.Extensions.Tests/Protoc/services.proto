@@ -1,16 +1,16 @@
 /* Options:
-Date: 2020-06-03 21:41:31
-Version: 5.81
+Date: 2024-01-11 13:36:18
+Version: 8.01
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
-//GlobalNamespace: 
+GlobalNamespace: ServiceStack.Extensions.Tests.Protoc
 //AddDescriptionAsComments: True
 */
 
 syntax = "proto3";
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 option csharp_namespace = "ServiceStack.Extensions.Tests.Protoc";
 option php_namespace = "ServiceStack.Extensions.Tests.Protoc";
@@ -35,13 +35,13 @@ service GrpcServices {
 
     rpc PostAuthenticate(Authenticate) returns (AuthenticateResponse) {}
 
-    rpc DeleteAuthenticate(Authenticate) returns (AuthenticateResponse) {}
-
     rpc GetChangeConnectionInfo(ChangeConnectionInfo) returns (ChangeDbResponse) {}
 
     rpc GetChangeDb(ChangeDb) returns (ChangeDbResponse) {}
 
     rpc PostConvertSessionToToken(ConvertSessionToToken) returns (ConvertSessionToTokenResponse) {}
+
+    rpc PostCreateBooking(CreateBooking) returns (IdResponse) {}
 
     rpc PostCreateBookmark(CreateBookmark) returns (CreateBookmarkResponse) {}
 
@@ -83,6 +83,8 @@ service GrpcServices {
 
     rpc PostCustomValidationErrors(CustomValidationErrors) returns (RockstarWithIdResponse) {}
 
+    rpc CallDeleteBooking(DeleteBooking) returns (EmptyResponse) {}
+
     rpc CallDeleteRockstar(DeleteRockstar) returns (EmptyResponse) {}
 
     rpc CallDeleteRockstarAudit(DeleteRockstarAudit) returns (RockstarWithIdAndCountResponse) {}
@@ -93,33 +95,9 @@ service GrpcServices {
 
     rpc CallDeleteTodos(DeleteTodos) returns (EmptyResponse) {}
 
-    rpc GetDynamicQueryGetRockstarsDynamic(DynamicRequest) returns (QueryResponse_Rockstar) {}
+    rpc PostDynamicCreateConnectionInfoRockstar(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
 
-    rpc GetDynamicQueryCustomRockstarsSchema(DynamicRequest) returns (QueryResponse_CustomRockstarSchema) {}
-
-    rpc GetDynamicSearchMovies(DynamicRequest) returns (QueryResponse_Movie) {}
-
-    rpc GetDynamicQueryMovies(DynamicRequest) returns (QueryResponse_Movie) {}
-
-    rpc GetDynamicQueryUnknownRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
-
-    rpc GetDynamicQueryRockstarsWithReferences(DynamicRequest) returns (QueryResponse_RockstarReference) {}
-
-    rpc GetDynamicQueryAllFields(DynamicRequest) returns (QueryResponse_AllFields) {}
-
-    rpc GetDynamicQueryTypeWithEnums(DynamicRequest) returns (QueryResponse_TypeWithEnum) {}
-
-    rpc GetDynamicQueryAdhocRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
-
-    rpc GetDynamicQueryAdhoc(DynamicRequest) returns (QueryResponse_Adhoc) {}
-
-    rpc GetDynamicQueryChangeDb(DynamicRequest) returns (QueryResponse_Rockstar) {}
-
-    rpc GetDynamicQueryJoinedRockstarAlbumsCustomSelect(DynamicRequest) returns (QueryResponse_CustomSelectRockstar) {}
-
-    rpc GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(DynamicRequest) returns (QueryResponse_CustomSelectRockstarResponse) {}
-
-    rpc GetDynamicQueryFoos(DynamicRequest) returns (QueryResponse_Foo) {}
+    rpc PutDynamicUpdateConnectionInfoRockstar(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
 
     rpc GetDynamicQueryOverridedRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
 
@@ -133,11 +111,17 @@ service GrpcServices {
 
     rpc GetDynamicQueryRockstarAlbumsCustomLeftJoin(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
 
+    rpc GetDynamicChangeDb(DynamicRequest) returns (ChangeDbResponse) {}
+
+    rpc GetDynamicChangeConnectionInfo(DynamicRequest) returns (ChangeDbResponse) {}
+
     rpc GetDynamicQueryChangeConnectionInfo(DynamicRequest) returns (QueryResponse_Rockstar) {}
 
     rpc GetDynamicQueryRockstarAudit(DynamicRequest) returns (QueryResponse_RockstarAuto) {}
 
     rpc GetDynamicQueryRockstarAuditSubOr(DynamicRequest) returns (QueryResponse_RockstarAuto) {}
+
+    rpc GetDynamicQueryBookings(DynamicRequest) returns (QueryResponse_Booking) {}
 
     rpc GetDynamicQueryBookmarks(DynamicRequest) returns (QueryResponse_Bookmark) {}
 
@@ -185,6 +169,114 @@ service GrpcServices {
 
     rpc GetDynamicQueryRockstarFilters(DynamicRequest) returns (QueryResponse_Rockstar) {}
 
+    rpc GetDynamicQueryGetRockstarsDynamic(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryCustomRockstarsSchema(DynamicRequest) returns (QueryResponse_CustomRockstarSchema) {}
+
+    rpc GetDynamicSearchMovies(DynamicRequest) returns (QueryResponse_Movie) {}
+
+    rpc GetDynamicQueryMovies(DynamicRequest) returns (QueryResponse_Movie) {}
+
+    rpc GetDynamicQueryUnknownRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryRockstarsWithReferences(DynamicRequest) returns (QueryResponse_RockstarReference) {}
+
+    rpc GetDynamicQueryAllFields(DynamicRequest) returns (QueryResponse_AllFields) {}
+
+    rpc GetDynamicQueryTypeWithEnums(DynamicRequest) returns (QueryResponse_TypeWithEnum) {}
+
+    rpc GetDynamicQueryAdhocRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryAdhoc(DynamicRequest) returns (QueryResponse_Adhoc) {}
+
+    rpc GetDynamicQueryChangeDb(DynamicRequest) returns (QueryResponse_Rockstar) {}
+
+    rpc GetDynamicQueryJoinedRockstarAlbumsCustomSelect(DynamicRequest) returns (QueryResponse_CustomSelectRockstar) {}
+
+    rpc GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(DynamicRequest) returns (QueryResponse_CustomSelectRockstarResponse) {}
+
+    rpc GetDynamicQueryFoos(DynamicRequest) returns (QueryResponse_Foo) {}
+
+    rpc PostDynamicCreateRockstar(DynamicRequest) returns (CreateRockstarResponse) {}
+
+    rpc PostDynamicCreateRockstarWithReturn(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostDynamicCreateRockstarWithVoidReturn(DynamicRequest) returns (EmptyResponse) {}
+
+    rpc PostDynamicCreateRockstarWithAutoGuid(DynamicRequest) returns (CreateRockstarWithReturnGuidResponse) {}
+
+    rpc PostDynamicCreateRockstarAudit(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicCreateRockstarAuditTenant(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PutDynamicUpdateRockstarAuditTenant(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PatchDynamicPatchRockstarAuditTenant(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PutDynamicSoftDeleteAuditTenant(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostDynamicCreateRockstarAuditMqToken(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc DeleteDynamicRealDeleteAuditTenant(DynamicRequest) returns (RockstarWithIdAndCountResponse) {}
+
+    rpc PostDynamicCreateRockstarVersion(DynamicRequest) returns (RockstarWithIdAndRowVersionResponse) {}
+
+    rpc PostDynamicCreateRockstarAdhocNonDefaults(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostDynamicCreateRockstarAutoMap(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PutDynamicUpdateRockstar(DynamicRequest) returns (EmptyResponse) {}
+
+    rpc PatchDynamicUpdateRockstarAudit(DynamicRequest) returns (EmptyResponse) {}
+
+    rpc DeleteDynamicDeleteRockstarAudit(DynamicRequest) returns (RockstarWithIdAndCountResponse) {}
+
+    rpc PatchDynamicUpdateRockstarVersion(DynamicRequest) returns (RockstarWithIdAndRowVersionResponse) {}
+
+    rpc PatchDynamicPatchRockstar(DynamicRequest) returns (EmptyResponse) {}
+
+    rpc PutDynamicUpdateRockstarAdhocNonDefaults(DynamicRequest) returns (EmptyResponse) {}
+
+    rpc DeleteDynamicDeleteRockstar(DynamicRequest) returns (EmptyResponse) {}
+
+    rpc DeleteDynamicDeleteRockstarFilters(DynamicRequest) returns (DeleteRockstarCountResponse) {}
+
+    rpc PostDynamicCreateNamedRockstar(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PutDynamicUpdateNamedRockstar(DynamicRequest) returns (RockstarWithIdAndResultResponse) {}
+
+    rpc PostDynamicCreateBooking(DynamicRequest) returns (IdResponse) {}
+
+    rpc PatchDynamicUpdateBooking(DynamicRequest) returns (IdResponse) {}
+
+    rpc DeleteDynamicDeleteBooking(DynamicRequest) returns (EmptyResponse) {}
+
+    rpc PostDynamicValidateCreateRockstar(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicNoAbstractValidator(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicEmptyValidators(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicTriggerAllValidators(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicDynamicValidationRules(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicCustomValidationErrors(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicTestAuthValidators(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicTestMultiAuthValidators(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicTestIsAdmin(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicTestDbCondition(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicTestDbValidator(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicOnlyValidatesRequest(DynamicRequest) returns (RockstarWithIdResponse) {}
+
+    rpc PostDynamicCreateBookmark(DynamicRequest) returns (CreateBookmarkResponse) {}
+
     rpc PostDynamicValidationRules(DynamicValidationRules) returns (RockstarWithIdResponse) {}
 
     rpc PostEmptyValidators(EmptyValidators) returns (RockstarWithIdResponse) {}
@@ -198,8 +290,6 @@ service GrpcServices {
     rpc DeleteEndsWithSuffixRequest(EndsWithSuffixRequest) returns (EndsWithSuffixResponse) {}
 
     rpc PostGetAccessToken(GetAccessToken) returns (GetAccessTokenResponse) {}
-
-    rpc CallGetApiKeys(GetApiKeys) returns (GetApiKeysResponse) {}
 
     rpc CallGetFile(GetFile) returns (FileContent) {}
 
@@ -246,6 +336,8 @@ service GrpcServices {
     rpc GetQueryAdhocRockstars(QueryAdhocRockstars) returns (QueryResponse_Rockstar) {}
 
     rpc GetQueryAllFields(QueryAllFields) returns (QueryResponse_AllFields) {}
+
+    rpc GetQueryBookings(QueryBookings) returns (QueryResponse_Booking) {}
 
     rpc GetQueryBookmarks(QueryBookmarks) returns (QueryResponse_Bookmark) {}
 
@@ -335,12 +427,6 @@ service GrpcServices {
 
     rpc DeleteRealDeleteAuditTenantMq(RealDeleteAuditTenantMq) returns (EmptyResponse) {}
 
-    rpc PostRegenerateApiKeys(RegenerateApiKeys) returns (RegenerateApiKeysResponse) {}
-
-    rpc PutRegister(Register) returns (RegisterResponse) {}
-
-    rpc PostRegister(Register) returns (RegisterResponse) {}
-
     rpc GetRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
 
     rpc PostRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
@@ -384,6 +470,8 @@ service GrpcServices {
     rpc PostTriggerValidators(TriggerValidators) returns (EmptyResponse) {}
 
     rpc PostUnAssignRoles(UnAssignRoles) returns (UnAssignRolesResponse) {}
+
+    rpc PatchUpdateBooking(UpdateBooking) returns (IdResponse) {}
 
     rpc PutUpdateConnectionInfoRockstar(UpdateConnectionInfoRockstar) returns (RockstarWithIdAndResultResponse) {}
 
@@ -458,14 +546,12 @@ message AssignRolesResponse {
 message AuditBase {
    .google.protobuf.Timestamp CreatedDate = 1;
    string CreatedBy = 2;
-   string CreatedInfo = 3;
-   .google.protobuf.Timestamp ModifiedDate = 4;
-   string ModifiedBy = 5;
-   string ModifiedInfo = 6;
-   .google.protobuf.Timestamp SoftDeletedDate = 7;
-   string SoftDeletedBy = 8;
-   string SoftDeletedInfo = 9;
+   .google.protobuf.Timestamp ModifiedDate = 3;
+   string ModifiedBy = 4;
+   .google.protobuf.Timestamp DeletedDate = 5;
+   string DeletedBy = 6;
    oneof subtype {
+      Booking Booking = 64344587;
       RockstarAuditTenant RockstarAuditTenant = 252248706;
    }
 }
@@ -478,7 +564,7 @@ message Authenticate {
    string AccessTokenSecret = 6;
    string ReturnUrl = 7;
    string ErrorView = 8;
-   map<string,string> Meta = 20;
+   map<string,string> Meta = 9;
 }
 message AuthenticateResponse {
    string UserId = 1;
@@ -497,6 +583,16 @@ message AuthenticateResponse {
 }
 message Bar {
    string Y = 2;
+}
+message Booking {
+   int32 Id = 1;
+   RoomType RoomType = 2;
+   int32 RoomNumber = 3;
+   .google.protobuf.Timestamp BookingStartDate = 4;
+   .google.protobuf.Timestamp BookingEndDate = 5;
+   string Notes = 6;
+   bool Cancelled = 7;
+   string Cost = 8;
 }
 message Bookmark {
    string Slug = 1;
@@ -535,8 +631,19 @@ message ConvertSessionToTokenResponse {
    ResponseStatus ResponseStatus = 4;
 }
 message CreateAuditBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+   oneof subtype {
+      CreateAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse CreateAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse = 299297117;
+   }
 }
 message CreateAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message CreateBooking {
+   RoomType RoomType = 1;
+   int32 RoomNumber = 2;
+   .google.protobuf.Timestamp BookingStartDate = 3;
+   .google.protobuf.Timestamp BookingEndDate = 4;
+   string Notes = 5;
+   string Cost = 6;
 }
 message CreateBookmark {
    string Slug = 1;
@@ -724,6 +831,9 @@ message DaoBase {
       Bookmark Bookmark = 439450339;
    }
 }
+message DeleteBooking {
+   int32 Id = 1;
+}
 message DeleteRockstar {
    int32 Id = 1;
 }
@@ -775,8 +885,6 @@ message EndsWithSuffixResponse {
    int32 Count = 2;
    repeated string Words = 3;
 }
-message Entry {
-}
 message FileContent {
    string Name = 1;
    string Type = 2;
@@ -792,20 +900,10 @@ message Foo {
 }
 message GetAccessToken {
    string RefreshToken = 1;
-   bool UseTokenCookie = 2;
-   map<string,string> Meta = 3;
+   map<string,string> Meta = 2;
 }
 message GetAccessTokenResponse {
    string AccessToken = 1;
-   map<string,string> Meta = 2;
-   ResponseStatus ResponseStatus = 3;
-}
-message GetApiKeys {
-   string Environment = 1;
-   map<string,string> Meta = 2;
-}
-message GetApiKeysResponse {
-   repeated UserApiKey Results = 1;
    map<string,string> Meta = 2;
    ResponseStatus ResponseStatus = 3;
 }
@@ -891,6 +989,7 @@ enum HttpStatusCode {
    ExpectationFailed = 417;
    MisdirectedRequest = 421;
    UnprocessableEntity = 422;
+   UnprocessableContent = 422;
    Locked = 423;
    FailedDependency = 424;
    UpgradeRequired = 426;
@@ -909,6 +1008,10 @@ enum HttpStatusCode {
    LoopDetected = 508;
    NotExtended = 510;
    NetworkAuthenticationRequired = 511;
+}
+message IdResponse {
+   string Id = 1;
+   ResponseStatus ResponseStatus = 2;
 }
 message Incr {
    int32 Amount = 1;
@@ -954,17 +1057,20 @@ message PagingTest {
    int32 Value = 3;
 }
 message PatchAuditBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+   oneof subtype {
+      PatchAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse PatchAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse = 346521681;
+   }
 }
 message PatchAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
 }
 message PatchRockstar {
-   string FirstName = 1;
-   string LastName = 2;
-   int32 Age = 3;
-   .google.protobuf.Timestamp DateOfBirth = 4;
-   .google.protobuf.Timestamp DateDied = 5;
-   LivingStatus LivingStatus = 6;
-   int32 Id = 101;
+   int32 Id = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   int32 Age = 4;
+   .google.protobuf.Timestamp DateOfBirth = 5;
+   .google.protobuf.Timestamp DateDied = 6;
+   LivingStatus LivingStatus = 7;
 }
 message PatchRockstarAuditTenant {
    string BearerToken = 201;
@@ -1017,6 +1123,45 @@ message QueryAllFields {
    string Fields = 6;
    map<string,string> Meta = 7;
    string Guid = 201;
+}
+message QueryBase {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   oneof subtype {
+      QueryDb_Rockstar_CustomRockstar QueryDb_Rockstar_CustomRockstar = 1595516;
+      QueryDb_Booking QueryDb_Booking = 67512563;
+      QueryDb_Rockstar_RockstarAlias QueryDb_Rockstar_RockstarAlias = 95568396;
+      QueryDb_PagingTest QueryDb_PagingTest = 110246772;
+      QueryDb_CustomSelectRockstar QueryDb_CustomSelectRockstar = 117530989;
+      QueryDb_Movie QueryDb_Movie = 133134611;
+      QueryDb_RockstarReference QueryDb_RockstarReference = 139856298;
+      QueryDb_Bookmark QueryDb_Bookmark = 146734877;
+      QueryDb_Adhoc QueryDb_Adhoc = 193863048;
+      QueryDb_NamedRockstar QueryDb_NamedRockstar = 217534861;
+      QueryDb_Foo QueryDb_Foo = 239635360;
+      QueryDb_TypeWithEnum QueryDb_TypeWithEnum = 390586478;
+      QueryDb_RockstarAlbum QueryDb_RockstarAlbum = 411180685;
+      QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse = 428847863;
+      QueryDb_Rockstar QueryDb_Rockstar = 447773769;
+      QueryDb_RockstarAuditTenant_RockstarAuto QueryDb_RockstarAuditTenant_RockstarAuto = 450045076;
+      QueryDb_AllFields QueryDb_AllFields = 473971172;
+      QueryDb_Rockstar_CustomRockstarSchema QueryDb_Rockstar_CustomRockstarSchema = 483328659;
+   }
+}
+message QueryBookings {
+   int32 Skip = 1;
+   int32 Take = 2;
+   string OrderBy = 3;
+   string OrderByDesc = 4;
+   string Include = 5;
+   string Fields = 6;
+   map<string,string> Meta = 7;
+   repeated int32 Ids = 201 [packed = false];
 }
 message QueryBookmarks {
    int32 Skip = 1;
@@ -1099,6 +1244,45 @@ message QueryCustomRockstarsSchema {
    int32 Age = 201;
 }
 message QueryDbTenant_RockstarAuditTenant_RockstarAuto {
+}
+message QueryDb_Adhoc {
+}
+message QueryDb_AllFields {
+}
+message QueryDb_Booking {
+}
+message QueryDb_Bookmark {
+}
+message QueryDb_CustomSelectRockstar {
+}
+message QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse {
+}
+message QueryDb_Foo {
+}
+message QueryDb_Movie {
+}
+message QueryDb_NamedRockstar {
+}
+message QueryDb_PagingTest {
+}
+message QueryDb_Rockstar {
+}
+message QueryDb_RockstarAlbum {
+}
+message QueryDb_RockstarAuditTenant_RockstarAuto {
+   oneof subtype {
+      QueryDbTenant_RockstarAuditTenant_RockstarAuto QueryDbTenant_RockstarAuditTenant_RockstarAuto = 375716614;
+   }
+}
+message QueryDb_RockstarReference {
+}
+message QueryDb_Rockstar_CustomRockstar {
+}
+message QueryDb_Rockstar_CustomRockstarSchema {
+}
+message QueryDb_Rockstar_RockstarAlias {
+}
+message QueryDb_TypeWithEnum {
 }
 message QueryFieldRockstars {
    int32 Skip = 1;
@@ -1302,6 +1486,13 @@ message QueryResponse_AllFields {
    int32 Offset = 1;
    int32 Total = 2;
    repeated AllFields Results = 3;
+   map<string,string> Meta = 4;
+   ResponseStatus ResponseStatus = 5;
+}
+message QueryResponse_Booking {
+   int32 Offset = 1;
+   int32 Total = 2;
+   repeated AuditBase Results = 3;
    map<string,string> Meta = 4;
    ResponseStatus ResponseStatus = 5;
 }
@@ -1604,40 +1795,6 @@ message RealDeleteAuditTenantGateway {
 message RealDeleteAuditTenantMq {
    int32 Id = 1;
 }
-message RegenerateApiKeys {
-   string Environment = 1;
-   map<string,string> Meta = 2;
-}
-message RegenerateApiKeysResponse {
-   repeated UserApiKey Results = 1;
-   map<string,string> Meta = 2;
-   ResponseStatus ResponseStatus = 3;
-}
-message Register {
-   string UserName = 1;
-   string FirstName = 2;
-   string LastName = 3;
-   string DisplayName = 4;
-   string Email = 5;
-   string Password = 6;
-   string ConfirmPassword = 7;
-   bool AutoLogin = 8;
-   string ErrorView = 10;
-   map<string,string> Meta = 11;
-}
-message RegisterResponse {
-   string UserId = 1;
-   string SessionId = 2;
-   string UserName = 3;
-   string ReferrerUrl = 4;
-   string BearerToken = 5;
-   string RefreshToken = 6;
-   .google.protobuf.Timestamp RefreshTokenExpiry = 7;
-   repeated string Roles = 8;
-   repeated string Permissions = 9;
-   ResponseStatus ResponseStatus = 10;
-   map<string,string> Meta = 11;
-}
 message RequiresAuth {
    string Name = 1;
    string BearerToken = 2;
@@ -1699,6 +1856,9 @@ message RockstarAuditTenant {
    .google.protobuf.Timestamp DateOfBirth = 6;
    .google.protobuf.Timestamp DateDied = 7;
    LivingStatus LivingStatus = 8;
+   string CreatedInfo = 9;
+   string ModifiedInfo = 10;
+   string DeletedInfo = 11;
 }
 message RockstarAuto {
    int32 Id = 1;
@@ -1755,6 +1915,13 @@ message RockstarWithIdResponse {
    int32 Id = 1;
    ResponseStatus ResponseStatus = 2;
 }
+enum RoomType {
+   Single = 0;
+   Double = 1;
+   Queen = 2;
+   Twin = 3;
+   Suite = 4;
+}
 message SearchMovies {
    int32 Skip = 1;
    int32 Take = 2;
@@ -1776,6 +1943,9 @@ message SecuredResponse {
    ResponseStatus ResponseStatus = 2;
 }
 message SoftDeleteAuditBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+   oneof subtype {
+      SoftDeleteAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse SoftDeleteAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse = 171750308;
+   }
 }
 message SoftDeleteAuditTenant {
    int32 Id = 201;
@@ -1924,8 +2094,21 @@ message UnAssignRolesResponse {
    ResponseStatus ResponseStatus = 4;
 }
 message UpdateAuditBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+   oneof subtype {
+      UpdateAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse UpdateAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse = 298373410;
+   }
 }
 message UpdateAuditTenantBase_RockstarAuditTenant_RockstarWithIdAndResultResponse {
+}
+message UpdateBooking {
+   int32 Id = 1;
+   RoomType RoomType = 2;
+   int32 RoomNumber = 3;
+   .google.protobuf.Timestamp BookingStartDate = 4;
+   .google.protobuf.Timestamp BookingEndDate = 5;
+   string Notes = 6;
+   bool Cancelled = 7;
+   string Cost = 8;
 }
 message UpdateConnectionInfoRockstar {
    string FirstName = 1;
@@ -2003,12 +2186,6 @@ message UpdateTodo {
    string Title = 2;
    int32 Order = 3;
    bool Completed = 4;
-}
-message UserApiKey {
-   string Key = 1;
-   string KeyType = 2;
-   .google.protobuf.Timestamp ExpiryDate = 3;
-   map<string,string> Meta = 4;
 }
 message ValidateCreateRockstar {
    string FirstName = 1;

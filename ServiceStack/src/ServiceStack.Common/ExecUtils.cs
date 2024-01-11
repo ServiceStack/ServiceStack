@@ -231,6 +231,24 @@ public static class ExecUtils
         }
     }
 
+    public static T RetryOnException<T>(Func<T> action, int maxRetries)
+    {
+        for (var i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                return action();
+            }
+            catch
+            {
+                if (i == maxRetries - 1) throw;
+
+                SleepBackOffMultiplier(i);
+            }
+        }
+        return action();
+    }
+
     public static async Task RetryOnExceptionAsync(Func<Task> action, int maxRetries)
     {
         for (var i = 0; i < maxRetries; i++)
@@ -247,6 +265,24 @@ public static class ExecUtils
                 await DelayBackOffMultiplierAsync(i).ConfigAwait();
             }
         }
+    }
+
+    public static async Task<T> RetryOnExceptionAsync<T>(Func<Task<T>> action, int maxRetries)
+    {
+        for (var i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                return await action().ConfigAwait();
+            }
+            catch
+            {
+                if (i == maxRetries - 1) throw;
+
+                await DelayBackOffMultiplierAsync(i).ConfigAwait();
+            }
+        }
+        return await action().ConfigAwait();
     }
 
     /// <summary>

@@ -4,12 +4,12 @@
 // </auto-generated>
 // Original file comments:
 // Options:
-// Date: 2020-06-03 21:41:31
-// Version: 5.81
+// Date: 2024-01-11 13:36:18
+// Version: 8.01
 // Tip: To override a DTO option, remove "//" prefix before updating
 // BaseUrl: http://localhost:20000
 //
-// //GlobalNamespace: 
+// GlobalNamespace: ServiceStack.Extensions.Tests.Protoc
 // //AddDescriptionAsComments: True
 //
 #pragma warning disable 0414, 1591
@@ -35,6 +35,8 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.ChangeDb> __Marshaller_ChangeDb = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.ChangeDb.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToToken> __Marshaller_ConvertSessionToToken = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToToken.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToTokenResponse> __Marshaller_ConvertSessionToTokenResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToTokenResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.CreateBooking> __Marshaller_CreateBooking = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.CreateBooking.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> __Marshaller_IdResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.IdResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.CreateBookmark> __Marshaller_CreateBookmark = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.CreateBookmark.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse> __Marshaller_CreateBookmarkResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.CreateConnectionInfoRockstar> __Marshaller_CreateConnectionInfoRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.CreateConnectionInfoRockstar.Parser.ParseFrom);
@@ -59,6 +61,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.CreateTodo> __Marshaller_CreateTodo = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.CreateTodo.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.CreateTodoResponse> __Marshaller_CreateTodoResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.CreateTodoResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.CustomValidationErrors> __Marshaller_CustomValidationErrors = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.CustomValidationErrors.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking> __Marshaller_DeleteBooking = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstar> __Marshaller_DeleteRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstar.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarAudit> __Marshaller_DeleteRockstarAudit = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarAudit.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> __Marshaller_RockstarWithIdAndCountResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse.Parser.ParseFrom);
@@ -68,30 +71,29 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos> __Marshaller_DeleteTodos = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest> __Marshaller_DynamicRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Marshaller_QueryResponse_Rockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> __Marshaller_QueryResponse_CustomRockstarSchema = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar> __Marshaller_QueryResponse_CustomRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> __Marshaller_QueryResponse_Movie = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> __Marshaller_QueryResponse_RockstarReference = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAuto> __Marshaller_QueryResponse_RockstarAuto = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAuto.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> __Marshaller_QueryResponse_Booking = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark> __Marshaller_QueryResponse_Bookmark = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_NamedRockstar> __Marshaller_QueryResponse_NamedRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_NamedRockstar.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlbum> __Marshaller_QueryResponse_RockstarAlbum = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlbum.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_PagingTest> __Marshaller_QueryResponse_PagingTest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_PagingTest.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlias> __Marshaller_QueryResponse_RockstarAlias = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlias.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> __Marshaller_QueryResponse_CustomRockstarSchema = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> __Marshaller_QueryResponse_AllFields = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> __Marshaller_QueryResponse_TypeWithEnum = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> __Marshaller_QueryResponse_Adhoc = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> __Marshaller_QueryResponse_CustomSelectRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> __Marshaller_QueryResponse_CustomSelectRockstarResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> __Marshaller_QueryResponse_Foo = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar> __Marshaller_QueryResponse_CustomRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAuto> __Marshaller_QueryResponse_RockstarAuto = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAuto.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark> __Marshaller_QueryResponse_Bookmark = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_NamedRockstar> __Marshaller_QueryResponse_NamedRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_NamedRockstar.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlbum> __Marshaller_QueryResponse_RockstarAlbum = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlbum.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_PagingTest> __Marshaller_QueryResponse_PagingTest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_PagingTest.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlias> __Marshaller_QueryResponse_RockstarAlias = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAlias.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.DynamicValidationRules> __Marshaller_DynamicValidationRules = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.DynamicValidationRules.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.EmptyValidators> __Marshaller_EmptyValidators = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.EmptyValidators.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixRequest> __Marshaller_EndsWithSuffixRequest = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixRequest.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixResponse> __Marshaller_EndsWithSuffixResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken> __Marshaller_GetAccessToken = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse> __Marshaller_GetAccessTokenResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys> __Marshaller_GetApiKeys = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse> __Marshaller_GetApiKeysResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetFile> __Marshaller_GetFile = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetFile.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.FileContent> __Marshaller_FileContent = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.FileContent.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.GetHello> __Marshaller_GetHello = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.GetHello.Parser.ParseFrom);
@@ -115,6 +117,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc> __Marshaller_QueryAdhoc = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars> __Marshaller_QueryAdhocRockstars = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields> __Marshaller_QueryAllFields = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryBookings> __Marshaller_QueryBookings = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryBookings.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryBookmarks> __Marshaller_QueryBookmarks = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryBookmarks.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryCaseInsensitiveOrderBy> __Marshaller_QueryCaseInsensitiveOrderBy = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryCaseInsensitiveOrderBy.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.QueryChangeConnectionInfo> __Marshaller_QueryChangeConnectionInfo = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.QueryChangeConnectionInfo.Parser.ParseFrom);
@@ -159,10 +162,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenant> __Marshaller_RealDeleteAuditTenant = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenant.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenantGateway> __Marshaller_RealDeleteAuditTenantGateway = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenantGateway.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenantMq> __Marshaller_RealDeleteAuditTenantMq = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenantMq.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys> __Marshaller_RegenerateApiKeys = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse> __Marshaller_RegenerateApiKeysResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.Register> __Marshaller_Register = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.Register.Parser.ParseFrom);
-    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> __Marshaller_RegisterResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth> __Marshaller_RequiresAuth = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.ResetTodos> __Marshaller_ResetTodos = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.ResetTodos.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.SearchMovies> __Marshaller_SearchMovies = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.SearchMovies.Parser.ParseFrom);
@@ -186,6 +185,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.TriggerValidators> __Marshaller_TriggerValidators = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.TriggerValidators.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.UnAssignRoles> __Marshaller_UnAssignRoles = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.UnAssignRoles.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.UnAssignRolesResponse> __Marshaller_UnAssignRolesResponse = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.UnAssignRolesResponse.Parser.ParseFrom);
+    static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking> __Marshaller_UpdateBooking = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.UpdateConnectionInfoRockstar> __Marshaller_UpdateConnectionInfoRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.UpdateConnectionInfoRockstar.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.UpdateNamedRockstar> __Marshaller_UpdateNamedRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.UpdateNamedRockstar.Parser.ParseFrom);
     static readonly grpc::Marshaller<global::ServiceStack.Extensions.Tests.Protoc.UpdateRockstar> __Marshaller_UpdateRockstar = grpc::Marshallers.Create((arg) => global::Google.Protobuf.MessageExtensions.ToByteArray(arg), global::ServiceStack.Extensions.Tests.Protoc.UpdateRockstar.Parser.ParseFrom);
@@ -261,13 +261,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_Authenticate,
         __Marshaller_AuthenticateResponse);
 
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.Authenticate, global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse> __Method_DeleteAuthenticate = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.Authenticate, global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "DeleteAuthenticate",
-        __Marshaller_Authenticate,
-        __Marshaller_AuthenticateResponse);
-
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.ChangeConnectionInfo, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> __Method_GetChangeConnectionInfo = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.ChangeConnectionInfo, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -288,6 +281,13 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         "PostConvertSessionToToken",
         __Marshaller_ConvertSessionToToken,
         __Marshaller_ConvertSessionToTokenResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.CreateBooking, global::ServiceStack.Extensions.Tests.Protoc.IdResponse> __Method_PostCreateBooking = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.CreateBooking, global::ServiceStack.Extensions.Tests.Protoc.IdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostCreateBooking",
+        __Marshaller_CreateBooking,
+        __Marshaller_IdResponse);
 
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.CreateBookmark, global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse> __Method_PostCreateBookmark = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.CreateBookmark, global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse>(
         grpc::MethodType.Unary,
@@ -429,6 +429,13 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_CustomValidationErrors,
         __Marshaller_RockstarWithIdResponse);
 
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_CallDeleteBooking = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "CallDeleteBooking",
+        __Marshaller_DeleteBooking,
+        __Marshaller_EmptyResponse);
+
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstar, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_CallDeleteRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstar, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -464,103 +471,19 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_DeleteTodos,
         __Marshaller_EmptyResponse);
 
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryGetRockstarsDynamic = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PostDynamicCreateConnectionInfoRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
-        "GetDynamicQueryGetRockstarsDynamic",
+        "PostDynamicCreateConnectionInfoRockstar",
         __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Rockstar);
+        __Marshaller_RockstarWithIdAndResultResponse);
 
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> __Method_GetDynamicQueryCustomRockstarsSchema = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema>(
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PutDynamicUpdateConnectionInfoRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
-        "GetDynamicQueryCustomRockstarsSchema",
+        "PutDynamicUpdateConnectionInfoRockstar",
         __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_CustomRockstarSchema);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> __Method_GetDynamicSearchMovies = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicSearchMovies",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Movie);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> __Method_GetDynamicQueryMovies = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryMovies",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Movie);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryUnknownRockstars = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryUnknownRockstars",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Rockstar);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> __Method_GetDynamicQueryRockstarsWithReferences = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryRockstarsWithReferences",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_RockstarReference);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> __Method_GetDynamicQueryAllFields = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryAllFields",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_AllFields);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> __Method_GetDynamicQueryTypeWithEnums = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryTypeWithEnums",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_TypeWithEnum);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryAdhocRockstars = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryAdhocRockstars",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Rockstar);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> __Method_GetDynamicQueryAdhoc = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryAdhoc",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Adhoc);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryChangeDb = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryChangeDb",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Rockstar);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> __Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryJoinedRockstarAlbumsCustomSelect",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_CustomSelectRockstar);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> __Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_CustomSelectRockstarResponse);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> __Method_GetDynamicQueryFoos = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "GetDynamicQueryFoos",
-        __Marshaller_DynamicRequest,
-        __Marshaller_QueryResponse_Foo);
+        __Marshaller_RockstarWithIdAndResultResponse);
 
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryOverridedRockstars = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
         grpc::MethodType.Unary,
@@ -604,6 +527,20 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_DynamicRequest,
         __Marshaller_QueryResponse_CustomRockstar);
 
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> __Method_GetDynamicChangeDb = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicChangeDb",
+        __Marshaller_DynamicRequest,
+        __Marshaller_ChangeDbResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> __Method_GetDynamicChangeConnectionInfo = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicChangeConnectionInfo",
+        __Marshaller_DynamicRequest,
+        __Marshaller_ChangeDbResponse);
+
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryChangeConnectionInfo = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -624,6 +561,13 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         "GetDynamicQueryRockstarAuditSubOr",
         __Marshaller_DynamicRequest,
         __Marshaller_QueryResponse_RockstarAuto);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> __Method_GetDynamicQueryBookings = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryBookings",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Booking);
 
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark> __Method_GetDynamicQueryBookmarks = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark>(
         grpc::MethodType.Unary,
@@ -786,6 +730,384 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_DynamicRequest,
         __Marshaller_QueryResponse_Rockstar);
 
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryGetRockstarsDynamic = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryGetRockstarsDynamic",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Rockstar);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> __Method_GetDynamicQueryCustomRockstarsSchema = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryCustomRockstarsSchema",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_CustomRockstarSchema);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> __Method_GetDynamicSearchMovies = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicSearchMovies",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Movie);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> __Method_GetDynamicQueryMovies = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryMovies",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Movie);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryUnknownRockstars = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryUnknownRockstars",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Rockstar);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> __Method_GetDynamicQueryRockstarsWithReferences = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryRockstarsWithReferences",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_RockstarReference);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> __Method_GetDynamicQueryAllFields = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryAllFields",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_AllFields);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> __Method_GetDynamicQueryTypeWithEnums = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryTypeWithEnums",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_TypeWithEnum);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryAdhocRockstars = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryAdhocRockstars",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Rockstar);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> __Method_GetDynamicQueryAdhoc = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryAdhoc",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Adhoc);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> __Method_GetDynamicQueryChangeDb = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryChangeDb",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Rockstar);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> __Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryJoinedRockstarAlbumsCustomSelect",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_CustomSelectRockstar);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> __Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_CustomSelectRockstarResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> __Method_GetDynamicQueryFoos = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetDynamicQueryFoos",
+        __Marshaller_DynamicRequest,
+        __Marshaller_QueryResponse_Foo);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarResponse> __Method_PostDynamicCreateRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstar",
+        __Marshaller_DynamicRequest,
+        __Marshaller_CreateRockstarResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PostDynamicCreateRockstarWithReturn = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarWithReturn",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_PostDynamicCreateRockstarWithVoidReturn = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarWithVoidReturn",
+        __Marshaller_DynamicRequest,
+        __Marshaller_EmptyResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithReturnGuidResponse> __Method_PostDynamicCreateRockstarWithAutoGuid = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithReturnGuidResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarWithAutoGuid",
+        __Marshaller_DynamicRequest,
+        __Marshaller_CreateRockstarWithReturnGuidResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicCreateRockstarAudit = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarAudit",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PostDynamicCreateRockstarAuditTenant = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarAuditTenant",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PutDynamicUpdateRockstarAuditTenant = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PutDynamicUpdateRockstarAuditTenant",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PatchDynamicPatchRockstarAuditTenant = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PatchDynamicPatchRockstarAuditTenant",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PutDynamicSoftDeleteAuditTenant = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PutDynamicSoftDeleteAuditTenant",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicCreateRockstarAuditMqToken = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarAuditMqToken",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> __Method_DeleteDynamicRealDeleteAuditTenant = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "DeleteDynamicRealDeleteAuditTenant",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndCountResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse> __Method_PostDynamicCreateRockstarVersion = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarVersion",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndRowVersionResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PostDynamicCreateRockstarAdhocNonDefaults = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarAdhocNonDefaults",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PostDynamicCreateRockstarAutoMap = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateRockstarAutoMap",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_PutDynamicUpdateRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PutDynamicUpdateRockstar",
+        __Marshaller_DynamicRequest,
+        __Marshaller_EmptyResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_PatchDynamicUpdateRockstarAudit = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PatchDynamicUpdateRockstarAudit",
+        __Marshaller_DynamicRequest,
+        __Marshaller_EmptyResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> __Method_DeleteDynamicDeleteRockstarAudit = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "DeleteDynamicDeleteRockstarAudit",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndCountResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse> __Method_PatchDynamicUpdateRockstarVersion = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PatchDynamicUpdateRockstarVersion",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndRowVersionResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_PatchDynamicPatchRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PatchDynamicPatchRockstar",
+        __Marshaller_DynamicRequest,
+        __Marshaller_EmptyResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_PutDynamicUpdateRockstarAdhocNonDefaults = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PutDynamicUpdateRockstarAdhocNonDefaults",
+        __Marshaller_DynamicRequest,
+        __Marshaller_EmptyResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_DeleteDynamicDeleteRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "DeleteDynamicDeleteRockstar",
+        __Marshaller_DynamicRequest,
+        __Marshaller_EmptyResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse> __Method_DeleteDynamicDeleteRockstarFilters = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "DeleteDynamicDeleteRockstarFilters",
+        __Marshaller_DynamicRequest,
+        __Marshaller_DeleteRockstarCountResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PostDynamicCreateNamedRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateNamedRockstar",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PutDynamicUpdateNamedRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PutDynamicUpdateNamedRockstar",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdAndResultResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.IdResponse> __Method_PostDynamicCreateBooking = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.IdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateBooking",
+        __Marshaller_DynamicRequest,
+        __Marshaller_IdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.IdResponse> __Method_PatchDynamicUpdateBooking = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.IdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PatchDynamicUpdateBooking",
+        __Marshaller_DynamicRequest,
+        __Marshaller_IdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> __Method_DeleteDynamicDeleteBooking = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "DeleteDynamicDeleteBooking",
+        __Marshaller_DynamicRequest,
+        __Marshaller_EmptyResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicValidateCreateRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicValidateCreateRockstar",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicNoAbstractValidator = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicNoAbstractValidator",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicEmptyValidators = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicEmptyValidators",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicTriggerAllValidators = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicTriggerAllValidators",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicDynamicValidationRules = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicDynamicValidationRules",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicCustomValidationErrors = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCustomValidationErrors",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicTestAuthValidators = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicTestAuthValidators",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicTestMultiAuthValidators = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicTestMultiAuthValidators",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicTestIsAdmin = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicTestIsAdmin",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicTestDbCondition = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicTestDbCondition",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicTestDbValidator = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicTestDbValidator",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicOnlyValidatesRequest = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicOnlyValidatesRequest",
+        __Marshaller_DynamicRequest,
+        __Marshaller_RockstarWithIdResponse);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse> __Method_PostDynamicCreateBookmark = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PostDynamicCreateBookmark",
+        __Marshaller_DynamicRequest,
+        __Marshaller_CreateBookmarkResponse);
+
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicValidationRules, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> __Method_PostDynamicValidationRules = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.DynamicValidationRules, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -834,13 +1156,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         "PostGetAccessToken",
         __Marshaller_GetAccessToken,
         __Marshaller_GetAccessTokenResponse);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys, global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse> __Method_CallGetApiKeys = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys, global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "CallGetApiKeys",
-        __Marshaller_GetApiKeys,
-        __Marshaller_GetApiKeysResponse);
 
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.GetFile, global::ServiceStack.Extensions.Tests.Protoc.FileContent> __Method_CallGetFile = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.GetFile, global::ServiceStack.Extensions.Tests.Protoc.FileContent>(
         grpc::MethodType.Unary,
@@ -1002,6 +1317,13 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         "GetQueryAllFields",
         __Marshaller_QueryAllFields,
         __Marshaller_QueryResponse_AllFields);
+
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.QueryBookings, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> __Method_GetQueryBookings = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.QueryBookings, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetQueryBookings",
+        __Marshaller_QueryBookings,
+        __Marshaller_QueryResponse_Booking);
 
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.QueryBookmarks, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark> __Method_GetQueryBookmarks = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.QueryBookmarks, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark>(
         grpc::MethodType.Unary,
@@ -1311,27 +1633,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_RealDeleteAuditTenantMq,
         __Marshaller_EmptyResponse);
 
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys, global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse> __Method_PostRegenerateApiKeys = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys, global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "PostRegenerateApiKeys",
-        __Marshaller_RegenerateApiKeys,
-        __Marshaller_RegenerateApiKeysResponse);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.Register, global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> __Method_PutRegister = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.Register, global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "PutRegister",
-        __Marshaller_Register,
-        __Marshaller_RegisterResponse);
-
-    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.Register, global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> __Method_PostRegister = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.Register, global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse>(
-        grpc::MethodType.Unary,
-        __ServiceName,
-        "PostRegister",
-        __Marshaller_Register,
-        __Marshaller_RegisterResponse);
-
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth, global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth> __Method_GetRequiresAuth = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth, global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -1486,6 +1787,13 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         __Marshaller_UnAssignRoles,
         __Marshaller_UnAssignRolesResponse);
 
+    static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking, global::ServiceStack.Extensions.Tests.Protoc.IdResponse> __Method_PatchUpdateBooking = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking, global::ServiceStack.Extensions.Tests.Protoc.IdResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "PatchUpdateBooking",
+        __Marshaller_UpdateBooking,
+        __Marshaller_IdResponse);
+
     static readonly grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.UpdateConnectionInfoRockstar, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> __Method_PutUpdateConnectionInfoRockstar = new grpc::Method<global::ServiceStack.Extensions.Tests.Protoc.UpdateConnectionInfoRockstar, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
@@ -1618,11 +1926,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse> DeleteAuthenticate(global::ServiceStack.Extensions.Tests.Protoc.Authenticate request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> GetChangeConnectionInfo(global::ServiceStack.Extensions.Tests.Protoc.ChangeConnectionInfo request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -1634,6 +1937,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToTokenResponse> PostConvertSessionToToken(global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToToken request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PostCreateBooking(global::ServiceStack.Extensions.Tests.Protoc.CreateBooking request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -1738,6 +2046,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> CallDeleteBooking(global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> CallDeleteRockstar(global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstar request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -1763,72 +2076,12 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryGetRockstarsDynamic(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateConnectionInfoRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> GetDynamicQueryCustomRockstarsSchema(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicSearchMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicQueryMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryUnknownRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> GetDynamicQueryRockstarsWithReferences(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> GetDynamicQueryAllFields(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> GetDynamicQueryTypeWithEnums(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryAdhocRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> GetDynamicQueryJoinedRockstarAlbumsCustomSelect(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> GetDynamicQueryFoos(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateConnectionInfoRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -1863,6 +2116,16 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> GetDynamicChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> GetDynamicChangeConnectionInfo(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryChangeConnectionInfo(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -1874,6 +2137,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAuto> GetDynamicQueryRockstarAuditSubOr(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> GetDynamicQueryBookings(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -1993,6 +2261,276 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryGetRockstarsDynamic(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> GetDynamicQueryCustomRockstarsSchema(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicSearchMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicQueryMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryUnknownRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> GetDynamicQueryRockstarsWithReferences(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> GetDynamicQueryAllFields(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> GetDynamicQueryTypeWithEnums(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryAdhocRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> GetDynamicQueryJoinedRockstarAlbumsCustomSelect(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> GetDynamicQueryFoos(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarResponse> PostDynamicCreateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarWithReturn(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PostDynamicCreateRockstarWithVoidReturn(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithReturnGuidResponse> PostDynamicCreateRockstarWithAutoGuid(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCreateRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PatchDynamicPatchRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicSoftDeleteAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCreateRockstarAuditMqToken(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> DeleteDynamicRealDeleteAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse> PostDynamicCreateRockstarVersion(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAdhocNonDefaults(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAutoMap(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PutDynamicUpdateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PatchDynamicUpdateRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> DeleteDynamicDeleteRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse> PatchDynamicUpdateRockstarVersion(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PatchDynamicPatchRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PutDynamicUpdateRockstarAdhocNonDefaults(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> DeleteDynamicDeleteRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse> DeleteDynamicDeleteRockstarFilters(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateNamedRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateNamedRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PostDynamicCreateBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PatchDynamicUpdateBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> DeleteDynamicDeleteBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicValidateCreateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicNoAbstractValidator(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicEmptyValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTriggerAllValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicDynamicValidationRules(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCustomValidationErrors(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestAuthValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestMultiAuthValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestIsAdmin(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestDbCondition(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestDbValidator(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicOnlyValidatesRequest(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse> PostDynamicCreateBookmark(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicValidationRules(global::ServiceStack.Extensions.Tests.Protoc.DynamicValidationRules request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -2024,11 +2562,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse> PostGetAccessToken(global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse> CallGetApiKeys(global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -2144,6 +2677,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> GetQueryAllFields(global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> GetQueryBookings(global::ServiceStack.Extensions.Tests.Protoc.QueryBookings request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -2368,21 +2906,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse> PostRegenerateApiKeys(global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> PutRegister(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
-      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> PostRegister(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::ServerCallContext context)
-      {
-        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
-      }
-
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth> GetRequiresAuth(global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
@@ -2489,6 +3012,11 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       }
 
       public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.UnAssignRolesResponse> PostUnAssignRoles(global::ServiceStack.Extensions.Tests.Protoc.UnAssignRoles request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      public virtual global::System.Threading.Tasks.Task<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PatchUpdateBooking(global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -2717,22 +3245,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_PostAuthenticate, null, options, request);
       }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse DeleteAuthenticate(global::ServiceStack.Extensions.Tests.Protoc.Authenticate request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return DeleteAuthenticate(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse DeleteAuthenticate(global::ServiceStack.Extensions.Tests.Protoc.Authenticate request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_DeleteAuthenticate, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse> DeleteAuthenticateAsync(global::ServiceStack.Extensions.Tests.Protoc.Authenticate request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return DeleteAuthenticateAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse> DeleteAuthenticateAsync(global::ServiceStack.Extensions.Tests.Protoc.Authenticate request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_DeleteAuthenticate, null, options, request);
-      }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse GetChangeConnectionInfo(global::ServiceStack.Extensions.Tests.Protoc.ChangeConnectionInfo request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return GetChangeConnectionInfo(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -2780,6 +3292,22 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToTokenResponse> PostConvertSessionToTokenAsync(global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToToken request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_PostConvertSessionToToken, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.IdResponse PostCreateBooking(global::ServiceStack.Extensions.Tests.Protoc.CreateBooking request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostCreateBooking(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.IdResponse PostCreateBooking(global::ServiceStack.Extensions.Tests.Protoc.CreateBooking request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostCreateBooking, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PostCreateBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.CreateBooking request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostCreateBookingAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PostCreateBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.CreateBooking request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostCreateBooking, null, options, request);
       }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse PostCreateBookmark(global::ServiceStack.Extensions.Tests.Protoc.CreateBookmark request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -3101,6 +3629,22 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_PostCustomValidationErrors, null, options, request);
       }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse CallDeleteBooking(global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return CallDeleteBooking(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse CallDeleteBooking(global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_CallDeleteBooking, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> CallDeleteBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return CallDeleteBookingAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> CallDeleteBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_CallDeleteBooking, null, options, request);
+      }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse CallDeleteRockstar(global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstar request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return CallDeleteRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -3181,229 +3725,37 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_CallDeleteTodos, null, options, request);
       }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryGetRockstarsDynamic(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateConnectionInfoRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetDynamicQueryGetRockstarsDynamic(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return PostDynamicCreateConnectionInfoRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryGetRockstarsDynamic(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateConnectionInfoRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryGetRockstarsDynamic, null, options, request);
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateConnectionInfoRockstar, null, options, request);
       }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryGetRockstarsDynamicAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateConnectionInfoRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetDynamicQueryGetRockstarsDynamicAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return PostDynamicCreateConnectionInfoRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryGetRockstarsDynamicAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateConnectionInfoRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryGetRockstarsDynamic, null, options, request);
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateConnectionInfoRockstar, null, options, request);
       }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema GetDynamicQueryCustomRockstarsSchema(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutDynamicUpdateConnectionInfoRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetDynamicQueryCustomRockstarsSchema(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return PutDynamicUpdateConnectionInfoRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema GetDynamicQueryCustomRockstarsSchema(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutDynamicUpdateConnectionInfoRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryCustomRockstarsSchema, null, options, request);
+        return CallInvoker.BlockingUnaryCall(__Method_PutDynamicUpdateConnectionInfoRockstar, null, options, request);
       }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> GetDynamicQueryCustomRockstarsSchemaAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateConnectionInfoRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetDynamicQueryCustomRockstarsSchemaAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return PutDynamicUpdateConnectionInfoRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> GetDynamicQueryCustomRockstarsSchemaAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateConnectionInfoRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryCustomRockstarsSchema, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie GetDynamicSearchMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicSearchMovies(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie GetDynamicSearchMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicSearchMovies, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicSearchMoviesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicSearchMoviesAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicSearchMoviesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicSearchMovies, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie GetDynamicQueryMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryMovies(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie GetDynamicQueryMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryMovies, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicQueryMoviesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryMoviesAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicQueryMoviesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryMovies, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryUnknownRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryUnknownRockstars(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryUnknownRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryUnknownRockstars, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryUnknownRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryUnknownRockstarsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryUnknownRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryUnknownRockstars, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference GetDynamicQueryRockstarsWithReferences(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryRockstarsWithReferences(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference GetDynamicQueryRockstarsWithReferences(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryRockstarsWithReferences, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> GetDynamicQueryRockstarsWithReferencesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryRockstarsWithReferencesAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> GetDynamicQueryRockstarsWithReferencesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryRockstarsWithReferences, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields GetDynamicQueryAllFields(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryAllFields(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields GetDynamicQueryAllFields(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryAllFields, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> GetDynamicQueryAllFieldsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryAllFieldsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> GetDynamicQueryAllFieldsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAllFields, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum GetDynamicQueryTypeWithEnums(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryTypeWithEnums(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum GetDynamicQueryTypeWithEnums(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryTypeWithEnums, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> GetDynamicQueryTypeWithEnumsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryTypeWithEnumsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> GetDynamicQueryTypeWithEnumsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryTypeWithEnums, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryAdhocRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryAdhocRockstars(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryAdhocRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryAdhocRockstars, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryAdhocRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryAdhocRockstarsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryAdhocRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAdhocRockstars, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryAdhoc(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryAdhoc, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhocAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryAdhocAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhocAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAdhoc, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryChangeDb(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryChangeDb, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryChangeDbAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryChangeDbAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryChangeDbAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryChangeDb, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar GetDynamicQueryJoinedRockstarAlbumsCustomSelect(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryJoinedRockstarAlbumsCustomSelect(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar GetDynamicQueryJoinedRockstarAlbumsCustomSelect(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> GetDynamicQueryJoinedRockstarAlbumsCustomSelectAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryJoinedRockstarAlbumsCustomSelectAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> GetDynamicQueryJoinedRockstarAlbumsCustomSelectAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponseAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponseAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponseAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo GetDynamicQueryFoos(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryFoos(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo GetDynamicQueryFoos(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryFoos, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> GetDynamicQueryFoosAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return GetDynamicQueryFoosAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> GetDynamicQueryFoosAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryFoos, null, options, request);
+        return CallInvoker.AsyncUnaryCall(__Method_PutDynamicUpdateConnectionInfoRockstar, null, options, request);
       }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryOverridedRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -3501,6 +3853,38 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryRockstarAlbumsCustomLeftJoin, null, options, request);
       }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse GetDynamicChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicChangeDb(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse GetDynamicChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicChangeDb, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> GetDynamicChangeDbAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicChangeDbAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> GetDynamicChangeDbAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicChangeDb, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse GetDynamicChangeConnectionInfo(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicChangeConnectionInfo(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse GetDynamicChangeConnectionInfo(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicChangeConnectionInfo, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> GetDynamicChangeConnectionInfoAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicChangeConnectionInfoAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse> GetDynamicChangeConnectionInfoAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicChangeConnectionInfo, null, options, request);
+      }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryChangeConnectionInfo(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return GetDynamicQueryChangeConnectionInfo(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -3548,6 +3932,22 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAuto> GetDynamicQueryRockstarAuditSubOrAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryRockstarAuditSubOr, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking GetDynamicQueryBookings(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryBookings(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking GetDynamicQueryBookings(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryBookings, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> GetDynamicQueryBookingsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryBookingsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> GetDynamicQueryBookingsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryBookings, null, options, request);
       }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark GetDynamicQueryBookmarks(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -3917,6 +4317,870 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryRockstarFilters, null, options, request);
       }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryGetRockstarsDynamic(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryGetRockstarsDynamic(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryGetRockstarsDynamic(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryGetRockstarsDynamic, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryGetRockstarsDynamicAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryGetRockstarsDynamicAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryGetRockstarsDynamicAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryGetRockstarsDynamic, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema GetDynamicQueryCustomRockstarsSchema(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryCustomRockstarsSchema(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema GetDynamicQueryCustomRockstarsSchema(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryCustomRockstarsSchema, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> GetDynamicQueryCustomRockstarsSchemaAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryCustomRockstarsSchemaAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema> GetDynamicQueryCustomRockstarsSchemaAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryCustomRockstarsSchema, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie GetDynamicSearchMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicSearchMovies(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie GetDynamicSearchMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicSearchMovies, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicSearchMoviesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicSearchMoviesAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicSearchMoviesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicSearchMovies, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie GetDynamicQueryMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryMovies(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie GetDynamicQueryMovies(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryMovies, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicQueryMoviesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryMoviesAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie> GetDynamicQueryMoviesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryMovies, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryUnknownRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryUnknownRockstars(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryUnknownRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryUnknownRockstars, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryUnknownRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryUnknownRockstarsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryUnknownRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryUnknownRockstars, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference GetDynamicQueryRockstarsWithReferences(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryRockstarsWithReferences(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference GetDynamicQueryRockstarsWithReferences(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryRockstarsWithReferences, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> GetDynamicQueryRockstarsWithReferencesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryRockstarsWithReferencesAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference> GetDynamicQueryRockstarsWithReferencesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryRockstarsWithReferences, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields GetDynamicQueryAllFields(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryAllFields(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields GetDynamicQueryAllFields(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryAllFields, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> GetDynamicQueryAllFieldsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryAllFieldsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> GetDynamicQueryAllFieldsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAllFields, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum GetDynamicQueryTypeWithEnums(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryTypeWithEnums(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum GetDynamicQueryTypeWithEnums(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryTypeWithEnums, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> GetDynamicQueryTypeWithEnumsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryTypeWithEnumsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum> GetDynamicQueryTypeWithEnumsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryTypeWithEnums, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryAdhocRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryAdhocRockstars(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryAdhocRockstars(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryAdhocRockstars, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryAdhocRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryAdhocRockstarsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryAdhocRockstarsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAdhocRockstars, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryAdhoc(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc GetDynamicQueryAdhoc(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryAdhoc, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhocAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryAdhocAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc> GetDynamicQueryAdhocAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryAdhoc, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryChangeDb(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar GetDynamicQueryChangeDb(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryChangeDb, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryChangeDbAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryChangeDbAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar> GetDynamicQueryChangeDbAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryChangeDb, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar GetDynamicQueryJoinedRockstarAlbumsCustomSelect(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryJoinedRockstarAlbumsCustomSelect(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar GetDynamicQueryJoinedRockstarAlbumsCustomSelect(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> GetDynamicQueryJoinedRockstarAlbumsCustomSelectAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryJoinedRockstarAlbumsCustomSelectAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar> GetDynamicQueryJoinedRockstarAlbumsCustomSelectAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponseAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponseAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse> GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponseAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo GetDynamicQueryFoos(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryFoos(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo GetDynamicQueryFoos(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetDynamicQueryFoos, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> GetDynamicQueryFoosAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetDynamicQueryFoosAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo> GetDynamicQueryFoosAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetDynamicQueryFoos, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarResponse PostDynamicCreateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarResponse PostDynamicCreateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstar, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarResponse> PostDynamicCreateRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarResponse> PostDynamicCreateRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstar, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateRockstarWithReturn(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarWithReturn(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateRockstarWithReturn(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarWithReturn, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarWithReturnAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarWithReturnAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarWithReturnAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarWithReturn, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PostDynamicCreateRockstarWithVoidReturn(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarWithVoidReturn(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PostDynamicCreateRockstarWithVoidReturn(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarWithVoidReturn, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PostDynamicCreateRockstarWithVoidReturnAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarWithVoidReturnAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PostDynamicCreateRockstarWithVoidReturnAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarWithVoidReturn, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithReturnGuidResponse PostDynamicCreateRockstarWithAutoGuid(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarWithAutoGuid(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithReturnGuidResponse PostDynamicCreateRockstarWithAutoGuid(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarWithAutoGuid, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithReturnGuidResponse> PostDynamicCreateRockstarWithAutoGuidAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarWithAutoGuidAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithReturnGuidResponse> PostDynamicCreateRockstarWithAutoGuidAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarWithAutoGuid, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicCreateRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAudit(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicCreateRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarAudit, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCreateRockstarAuditAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAuditAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCreateRockstarAuditAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarAudit, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAuditTenant(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarAuditTenant, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAuditTenantAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarAuditTenant, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutDynamicUpdateRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicUpdateRockstarAuditTenant(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutDynamicUpdateRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PutDynamicUpdateRockstarAuditTenant, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateRockstarAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicUpdateRockstarAuditTenantAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateRockstarAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PutDynamicUpdateRockstarAuditTenant, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PatchDynamicPatchRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicPatchRockstarAuditTenant(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PatchDynamicPatchRockstarAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PatchDynamicPatchRockstarAuditTenant, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PatchDynamicPatchRockstarAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicPatchRockstarAuditTenantAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PatchDynamicPatchRockstarAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PatchDynamicPatchRockstarAuditTenant, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutDynamicSoftDeleteAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicSoftDeleteAuditTenant(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutDynamicSoftDeleteAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PutDynamicSoftDeleteAuditTenant, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicSoftDeleteAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicSoftDeleteAuditTenantAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicSoftDeleteAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PutDynamicSoftDeleteAuditTenant, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicCreateRockstarAuditMqToken(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAuditMqToken(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicCreateRockstarAuditMqToken(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarAuditMqToken, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCreateRockstarAuditMqTokenAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAuditMqTokenAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCreateRockstarAuditMqTokenAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarAuditMqToken, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse DeleteDynamicRealDeleteAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicRealDeleteAuditTenant(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse DeleteDynamicRealDeleteAuditTenant(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_DeleteDynamicRealDeleteAuditTenant, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> DeleteDynamicRealDeleteAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicRealDeleteAuditTenantAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> DeleteDynamicRealDeleteAuditTenantAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_DeleteDynamicRealDeleteAuditTenant, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse PostDynamicCreateRockstarVersion(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarVersion(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse PostDynamicCreateRockstarVersion(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarVersion, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse> PostDynamicCreateRockstarVersionAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarVersionAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse> PostDynamicCreateRockstarVersionAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarVersion, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateRockstarAdhocNonDefaults(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAdhocNonDefaults(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateRockstarAdhocNonDefaults(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarAdhocNonDefaults, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAdhocNonDefaultsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAdhocNonDefaultsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAdhocNonDefaultsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarAdhocNonDefaults, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateRockstarAutoMap(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAutoMap(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateRockstarAutoMap(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateRockstarAutoMap, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAutoMapAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateRockstarAutoMapAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateRockstarAutoMapAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateRockstarAutoMap, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PutDynamicUpdateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicUpdateRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PutDynamicUpdateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PutDynamicUpdateRockstar, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PutDynamicUpdateRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicUpdateRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PutDynamicUpdateRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PutDynamicUpdateRockstar, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PatchDynamicUpdateRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicUpdateRockstarAudit(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PatchDynamicUpdateRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PatchDynamicUpdateRockstarAudit, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PatchDynamicUpdateRockstarAuditAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicUpdateRockstarAuditAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PatchDynamicUpdateRockstarAuditAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PatchDynamicUpdateRockstarAudit, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse DeleteDynamicDeleteRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicDeleteRockstarAudit(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse DeleteDynamicDeleteRockstarAudit(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_DeleteDynamicDeleteRockstarAudit, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> DeleteDynamicDeleteRockstarAuditAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicDeleteRockstarAuditAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse> DeleteDynamicDeleteRockstarAuditAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_DeleteDynamicDeleteRockstarAudit, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse PatchDynamicUpdateRockstarVersion(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicUpdateRockstarVersion(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse PatchDynamicUpdateRockstarVersion(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PatchDynamicUpdateRockstarVersion, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse> PatchDynamicUpdateRockstarVersionAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicUpdateRockstarVersionAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse> PatchDynamicUpdateRockstarVersionAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PatchDynamicUpdateRockstarVersion, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PatchDynamicPatchRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicPatchRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PatchDynamicPatchRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PatchDynamicPatchRockstar, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PatchDynamicPatchRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicPatchRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PatchDynamicPatchRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PatchDynamicPatchRockstar, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PutDynamicUpdateRockstarAdhocNonDefaults(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicUpdateRockstarAdhocNonDefaults(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse PutDynamicUpdateRockstarAdhocNonDefaults(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PutDynamicUpdateRockstarAdhocNonDefaults, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PutDynamicUpdateRockstarAdhocNonDefaultsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicUpdateRockstarAdhocNonDefaultsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> PutDynamicUpdateRockstarAdhocNonDefaultsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PutDynamicUpdateRockstarAdhocNonDefaults, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse DeleteDynamicDeleteRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicDeleteRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse DeleteDynamicDeleteRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_DeleteDynamicDeleteRockstar, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> DeleteDynamicDeleteRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicDeleteRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> DeleteDynamicDeleteRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_DeleteDynamicDeleteRockstar, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse DeleteDynamicDeleteRockstarFilters(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicDeleteRockstarFilters(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse DeleteDynamicDeleteRockstarFilters(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_DeleteDynamicDeleteRockstarFilters, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse> DeleteDynamicDeleteRockstarFiltersAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicDeleteRockstarFiltersAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse> DeleteDynamicDeleteRockstarFiltersAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_DeleteDynamicDeleteRockstarFilters, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateNamedRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateNamedRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PostDynamicCreateNamedRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateNamedRockstar, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateNamedRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateNamedRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PostDynamicCreateNamedRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateNamedRockstar, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutDynamicUpdateNamedRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicUpdateNamedRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutDynamicUpdateNamedRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PutDynamicUpdateNamedRockstar, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateNamedRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PutDynamicUpdateNamedRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse> PutDynamicUpdateNamedRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PutDynamicUpdateNamedRockstar, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.IdResponse PostDynamicCreateBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateBooking(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.IdResponse PostDynamicCreateBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateBooking, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PostDynamicCreateBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateBookingAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PostDynamicCreateBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateBooking, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.IdResponse PatchDynamicUpdateBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicUpdateBooking(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.IdResponse PatchDynamicUpdateBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PatchDynamicUpdateBooking, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PatchDynamicUpdateBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchDynamicUpdateBookingAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PatchDynamicUpdateBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PatchDynamicUpdateBooking, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse DeleteDynamicDeleteBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicDeleteBooking(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse DeleteDynamicDeleteBooking(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_DeleteDynamicDeleteBooking, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> DeleteDynamicDeleteBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return DeleteDynamicDeleteBookingAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse> DeleteDynamicDeleteBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_DeleteDynamicDeleteBooking, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicValidateCreateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicValidateCreateRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicValidateCreateRockstar(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicValidateCreateRockstar, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicValidateCreateRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicValidateCreateRockstarAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicValidateCreateRockstarAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicValidateCreateRockstar, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicNoAbstractValidator(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicNoAbstractValidator(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicNoAbstractValidator(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicNoAbstractValidator, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicNoAbstractValidatorAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicNoAbstractValidatorAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicNoAbstractValidatorAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicNoAbstractValidator, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicEmptyValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicEmptyValidators(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicEmptyValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicEmptyValidators, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicEmptyValidatorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicEmptyValidatorsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicEmptyValidatorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicEmptyValidators, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTriggerAllValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTriggerAllValidators(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTriggerAllValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicTriggerAllValidators, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTriggerAllValidatorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTriggerAllValidatorsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTriggerAllValidatorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicTriggerAllValidators, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicDynamicValidationRules(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicDynamicValidationRules(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicDynamicValidationRules(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicDynamicValidationRules, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicDynamicValidationRulesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicDynamicValidationRulesAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicDynamicValidationRulesAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicDynamicValidationRules, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicCustomValidationErrors(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCustomValidationErrors(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicCustomValidationErrors(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCustomValidationErrors, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCustomValidationErrorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCustomValidationErrorsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicCustomValidationErrorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCustomValidationErrors, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestAuthValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestAuthValidators(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestAuthValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicTestAuthValidators, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestAuthValidatorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestAuthValidatorsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestAuthValidatorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicTestAuthValidators, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestMultiAuthValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestMultiAuthValidators(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestMultiAuthValidators(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicTestMultiAuthValidators, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestMultiAuthValidatorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestMultiAuthValidatorsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestMultiAuthValidatorsAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicTestMultiAuthValidators, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestIsAdmin(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestIsAdmin(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestIsAdmin(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicTestIsAdmin, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestIsAdminAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestIsAdminAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestIsAdminAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicTestIsAdmin, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestDbCondition(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestDbCondition(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestDbCondition(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicTestDbCondition, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestDbConditionAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestDbConditionAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestDbConditionAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicTestDbCondition, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestDbValidator(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestDbValidator(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicTestDbValidator(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicTestDbValidator, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestDbValidatorAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicTestDbValidatorAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicTestDbValidatorAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicTestDbValidator, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicOnlyValidatesRequest(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicOnlyValidatesRequest(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicOnlyValidatesRequest(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicOnlyValidatesRequest, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicOnlyValidatesRequestAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicOnlyValidatesRequestAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse> PostDynamicOnlyValidatesRequestAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicOnlyValidatesRequest, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse PostDynamicCreateBookmark(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateBookmark(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse PostDynamicCreateBookmark(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PostDynamicCreateBookmark, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse> PostDynamicCreateBookmarkAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PostDynamicCreateBookmarkAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse> PostDynamicCreateBookmarkAsync(global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PostDynamicCreateBookmark, null, options, request);
+      }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse PostDynamicValidationRules(global::ServiceStack.Extensions.Tests.Protoc.DynamicValidationRules request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return PostDynamicValidationRules(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -4028,22 +5292,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse> PostGetAccessTokenAsync(global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_PostGetAccessToken, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse CallGetApiKeys(global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return CallGetApiKeys(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse CallGetApiKeys(global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_CallGetApiKeys, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse> CallGetApiKeysAsync(global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return CallGetApiKeysAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse> CallGetApiKeysAsync(global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_CallGetApiKeys, null, options, request);
       }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.FileContent CallGetFile(global::ServiceStack.Extensions.Tests.Protoc.GetFile request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -4412,6 +5660,22 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields> GetQueryAllFieldsAsync(global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetQueryAllFields, null, options, request);
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking GetQueryBookings(global::ServiceStack.Extensions.Tests.Protoc.QueryBookings request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetQueryBookings(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking GetQueryBookings(global::ServiceStack.Extensions.Tests.Protoc.QueryBookings request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetQueryBookings, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> GetQueryBookingsAsync(global::ServiceStack.Extensions.Tests.Protoc.QueryBookings request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetQueryBookingsAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking> GetQueryBookingsAsync(global::ServiceStack.Extensions.Tests.Protoc.QueryBookings request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetQueryBookings, null, options, request);
       }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark GetQueryBookmarks(global::ServiceStack.Extensions.Tests.Protoc.QueryBookmarks request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
@@ -5117,54 +6381,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_DeleteRealDeleteAuditTenantMq, null, options, request);
       }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse PostRegenerateApiKeys(global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return PostRegenerateApiKeys(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse PostRegenerateApiKeys(global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_PostRegenerateApiKeys, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse> PostRegenerateApiKeysAsync(global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return PostRegenerateApiKeysAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse> PostRegenerateApiKeysAsync(global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_PostRegenerateApiKeys, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse PutRegister(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return PutRegister(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse PutRegister(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_PutRegister, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> PutRegisterAsync(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return PutRegisterAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> PutRegisterAsync(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_PutRegister, null, options, request);
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse PostRegister(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return PostRegister(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse PostRegister(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::CallOptions options)
-      {
-        return CallInvoker.BlockingUnaryCall(__Method_PostRegister, null, options, request);
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> PostRegisterAsync(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
-      {
-        return PostRegisterAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
-      }
-      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse> PostRegisterAsync(global::ServiceStack.Extensions.Tests.Protoc.Register request, grpc::CallOptions options)
-      {
-        return CallInvoker.AsyncUnaryCall(__Method_PostRegister, null, options, request);
-      }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth GetRequiresAuth(global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return GetRequiresAuth(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -5501,6 +6717,22 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       {
         return CallInvoker.AsyncUnaryCall(__Method_PostUnAssignRoles, null, options, request);
       }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.IdResponse PatchUpdateBooking(global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchUpdateBooking(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual global::ServiceStack.Extensions.Tests.Protoc.IdResponse PatchUpdateBooking(global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_PatchUpdateBooking, null, options, request);
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PatchUpdateBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return PatchUpdateBookingAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      public virtual grpc::AsyncUnaryCall<global::ServiceStack.Extensions.Tests.Protoc.IdResponse> PatchUpdateBookingAsync(global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_PatchUpdateBooking, null, options, request);
+      }
       public virtual global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse PutUpdateConnectionInfoRockstar(global::ServiceStack.Extensions.Tests.Protoc.UpdateConnectionInfoRockstar request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return PutUpdateConnectionInfoRockstar(request, new grpc::CallOptions(headers, deadline, cancellationToken));
@@ -5698,10 +6930,10 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_OptionsAuthenticate, serviceImpl.OptionsAuthenticate)
           .AddMethod(__Method_GetAuthenticate, serviceImpl.GetAuthenticate)
           .AddMethod(__Method_PostAuthenticate, serviceImpl.PostAuthenticate)
-          .AddMethod(__Method_DeleteAuthenticate, serviceImpl.DeleteAuthenticate)
           .AddMethod(__Method_GetChangeConnectionInfo, serviceImpl.GetChangeConnectionInfo)
           .AddMethod(__Method_GetChangeDb, serviceImpl.GetChangeDb)
           .AddMethod(__Method_PostConvertSessionToToken, serviceImpl.PostConvertSessionToToken)
+          .AddMethod(__Method_PostCreateBooking, serviceImpl.PostCreateBooking)
           .AddMethod(__Method_PostCreateBookmark, serviceImpl.PostCreateBookmark)
           .AddMethod(__Method_PostCreateConnectionInfoRockstar, serviceImpl.PostCreateConnectionInfoRockstar)
           .AddMethod(__Method_PostCreateNamedRockstar, serviceImpl.PostCreateNamedRockstar)
@@ -5722,34 +6954,26 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_PostCreateRockstarWithVoidReturn, serviceImpl.PostCreateRockstarWithVoidReturn)
           .AddMethod(__Method_PostCreateTodo, serviceImpl.PostCreateTodo)
           .AddMethod(__Method_PostCustomValidationErrors, serviceImpl.PostCustomValidationErrors)
+          .AddMethod(__Method_CallDeleteBooking, serviceImpl.CallDeleteBooking)
           .AddMethod(__Method_CallDeleteRockstar, serviceImpl.CallDeleteRockstar)
           .AddMethod(__Method_CallDeleteRockstarAudit, serviceImpl.CallDeleteRockstarAudit)
           .AddMethod(__Method_CallDeleteRockstarFilters, serviceImpl.CallDeleteRockstarFilters)
           .AddMethod(__Method_CallDeleteTodo, serviceImpl.CallDeleteTodo)
           .AddMethod(__Method_CallDeleteTodos, serviceImpl.CallDeleteTodos)
-          .AddMethod(__Method_GetDynamicQueryGetRockstarsDynamic, serviceImpl.GetDynamicQueryGetRockstarsDynamic)
-          .AddMethod(__Method_GetDynamicQueryCustomRockstarsSchema, serviceImpl.GetDynamicQueryCustomRockstarsSchema)
-          .AddMethod(__Method_GetDynamicSearchMovies, serviceImpl.GetDynamicSearchMovies)
-          .AddMethod(__Method_GetDynamicQueryMovies, serviceImpl.GetDynamicQueryMovies)
-          .AddMethod(__Method_GetDynamicQueryUnknownRockstars, serviceImpl.GetDynamicQueryUnknownRockstars)
-          .AddMethod(__Method_GetDynamicQueryRockstarsWithReferences, serviceImpl.GetDynamicQueryRockstarsWithReferences)
-          .AddMethod(__Method_GetDynamicQueryAllFields, serviceImpl.GetDynamicQueryAllFields)
-          .AddMethod(__Method_GetDynamicQueryTypeWithEnums, serviceImpl.GetDynamicQueryTypeWithEnums)
-          .AddMethod(__Method_GetDynamicQueryAdhocRockstars, serviceImpl.GetDynamicQueryAdhocRockstars)
-          .AddMethod(__Method_GetDynamicQueryAdhoc, serviceImpl.GetDynamicQueryAdhoc)
-          .AddMethod(__Method_GetDynamicQueryChangeDb, serviceImpl.GetDynamicQueryChangeDb)
-          .AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelect)
-          .AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse)
-          .AddMethod(__Method_GetDynamicQueryFoos, serviceImpl.GetDynamicQueryFoos)
+          .AddMethod(__Method_PostDynamicCreateConnectionInfoRockstar, serviceImpl.PostDynamicCreateConnectionInfoRockstar)
+          .AddMethod(__Method_PutDynamicUpdateConnectionInfoRockstar, serviceImpl.PutDynamicUpdateConnectionInfoRockstar)
           .AddMethod(__Method_GetDynamicQueryOverridedRockstars, serviceImpl.GetDynamicQueryOverridedRockstars)
           .AddMethod(__Method_GetDynamicQueryOverridedCustomRockstars, serviceImpl.GetDynamicQueryOverridedCustomRockstars)
           .AddMethod(__Method_GetDynamicQueryCaseInsensitiveOrderBy, serviceImpl.GetDynamicQueryCaseInsensitiveOrderBy)
           .AddMethod(__Method_GetDynamicStreamMovies, serviceImpl.GetDynamicStreamMovies)
           .AddMethod(__Method_GetDynamicQueryCustomRockstarsReferences, serviceImpl.GetDynamicQueryCustomRockstarsReferences)
           .AddMethod(__Method_GetDynamicQueryRockstarAlbumsCustomLeftJoin, serviceImpl.GetDynamicQueryRockstarAlbumsCustomLeftJoin)
+          .AddMethod(__Method_GetDynamicChangeDb, serviceImpl.GetDynamicChangeDb)
+          .AddMethod(__Method_GetDynamicChangeConnectionInfo, serviceImpl.GetDynamicChangeConnectionInfo)
           .AddMethod(__Method_GetDynamicQueryChangeConnectionInfo, serviceImpl.GetDynamicQueryChangeConnectionInfo)
           .AddMethod(__Method_GetDynamicQueryRockstarAudit, serviceImpl.GetDynamicQueryRockstarAudit)
           .AddMethod(__Method_GetDynamicQueryRockstarAuditSubOr, serviceImpl.GetDynamicQueryRockstarAuditSubOr)
+          .AddMethod(__Method_GetDynamicQueryBookings, serviceImpl.GetDynamicQueryBookings)
           .AddMethod(__Method_GetDynamicQueryBookmarks, serviceImpl.GetDynamicQueryBookmarks)
           .AddMethod(__Method_GetDynamicQueryNamedRockstars, serviceImpl.GetDynamicQueryNamedRockstars)
           .AddMethod(__Method_GetDynamicQueryRockstars, serviceImpl.GetDynamicQueryRockstars)
@@ -5773,6 +6997,60 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_GetDynamicQueryFieldsImplicitConventions, serviceImpl.GetDynamicQueryFieldsImplicitConventions)
           .AddMethod(__Method_GetDynamicQueryGetRockstars, serviceImpl.GetDynamicQueryGetRockstars)
           .AddMethod(__Method_GetDynamicQueryRockstarFilters, serviceImpl.GetDynamicQueryRockstarFilters)
+          .AddMethod(__Method_GetDynamicQueryGetRockstarsDynamic, serviceImpl.GetDynamicQueryGetRockstarsDynamic)
+          .AddMethod(__Method_GetDynamicQueryCustomRockstarsSchema, serviceImpl.GetDynamicQueryCustomRockstarsSchema)
+          .AddMethod(__Method_GetDynamicSearchMovies, serviceImpl.GetDynamicSearchMovies)
+          .AddMethod(__Method_GetDynamicQueryMovies, serviceImpl.GetDynamicQueryMovies)
+          .AddMethod(__Method_GetDynamicQueryUnknownRockstars, serviceImpl.GetDynamicQueryUnknownRockstars)
+          .AddMethod(__Method_GetDynamicQueryRockstarsWithReferences, serviceImpl.GetDynamicQueryRockstarsWithReferences)
+          .AddMethod(__Method_GetDynamicQueryAllFields, serviceImpl.GetDynamicQueryAllFields)
+          .AddMethod(__Method_GetDynamicQueryTypeWithEnums, serviceImpl.GetDynamicQueryTypeWithEnums)
+          .AddMethod(__Method_GetDynamicQueryAdhocRockstars, serviceImpl.GetDynamicQueryAdhocRockstars)
+          .AddMethod(__Method_GetDynamicQueryAdhoc, serviceImpl.GetDynamicQueryAdhoc)
+          .AddMethod(__Method_GetDynamicQueryChangeDb, serviceImpl.GetDynamicQueryChangeDb)
+          .AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelect)
+          .AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse)
+          .AddMethod(__Method_GetDynamicQueryFoos, serviceImpl.GetDynamicQueryFoos)
+          .AddMethod(__Method_PostDynamicCreateRockstar, serviceImpl.PostDynamicCreateRockstar)
+          .AddMethod(__Method_PostDynamicCreateRockstarWithReturn, serviceImpl.PostDynamicCreateRockstarWithReturn)
+          .AddMethod(__Method_PostDynamicCreateRockstarWithVoidReturn, serviceImpl.PostDynamicCreateRockstarWithVoidReturn)
+          .AddMethod(__Method_PostDynamicCreateRockstarWithAutoGuid, serviceImpl.PostDynamicCreateRockstarWithAutoGuid)
+          .AddMethod(__Method_PostDynamicCreateRockstarAudit, serviceImpl.PostDynamicCreateRockstarAudit)
+          .AddMethod(__Method_PostDynamicCreateRockstarAuditTenant, serviceImpl.PostDynamicCreateRockstarAuditTenant)
+          .AddMethod(__Method_PutDynamicUpdateRockstarAuditTenant, serviceImpl.PutDynamicUpdateRockstarAuditTenant)
+          .AddMethod(__Method_PatchDynamicPatchRockstarAuditTenant, serviceImpl.PatchDynamicPatchRockstarAuditTenant)
+          .AddMethod(__Method_PutDynamicSoftDeleteAuditTenant, serviceImpl.PutDynamicSoftDeleteAuditTenant)
+          .AddMethod(__Method_PostDynamicCreateRockstarAuditMqToken, serviceImpl.PostDynamicCreateRockstarAuditMqToken)
+          .AddMethod(__Method_DeleteDynamicRealDeleteAuditTenant, serviceImpl.DeleteDynamicRealDeleteAuditTenant)
+          .AddMethod(__Method_PostDynamicCreateRockstarVersion, serviceImpl.PostDynamicCreateRockstarVersion)
+          .AddMethod(__Method_PostDynamicCreateRockstarAdhocNonDefaults, serviceImpl.PostDynamicCreateRockstarAdhocNonDefaults)
+          .AddMethod(__Method_PostDynamicCreateRockstarAutoMap, serviceImpl.PostDynamicCreateRockstarAutoMap)
+          .AddMethod(__Method_PutDynamicUpdateRockstar, serviceImpl.PutDynamicUpdateRockstar)
+          .AddMethod(__Method_PatchDynamicUpdateRockstarAudit, serviceImpl.PatchDynamicUpdateRockstarAudit)
+          .AddMethod(__Method_DeleteDynamicDeleteRockstarAudit, serviceImpl.DeleteDynamicDeleteRockstarAudit)
+          .AddMethod(__Method_PatchDynamicUpdateRockstarVersion, serviceImpl.PatchDynamicUpdateRockstarVersion)
+          .AddMethod(__Method_PatchDynamicPatchRockstar, serviceImpl.PatchDynamicPatchRockstar)
+          .AddMethod(__Method_PutDynamicUpdateRockstarAdhocNonDefaults, serviceImpl.PutDynamicUpdateRockstarAdhocNonDefaults)
+          .AddMethod(__Method_DeleteDynamicDeleteRockstar, serviceImpl.DeleteDynamicDeleteRockstar)
+          .AddMethod(__Method_DeleteDynamicDeleteRockstarFilters, serviceImpl.DeleteDynamicDeleteRockstarFilters)
+          .AddMethod(__Method_PostDynamicCreateNamedRockstar, serviceImpl.PostDynamicCreateNamedRockstar)
+          .AddMethod(__Method_PutDynamicUpdateNamedRockstar, serviceImpl.PutDynamicUpdateNamedRockstar)
+          .AddMethod(__Method_PostDynamicCreateBooking, serviceImpl.PostDynamicCreateBooking)
+          .AddMethod(__Method_PatchDynamicUpdateBooking, serviceImpl.PatchDynamicUpdateBooking)
+          .AddMethod(__Method_DeleteDynamicDeleteBooking, serviceImpl.DeleteDynamicDeleteBooking)
+          .AddMethod(__Method_PostDynamicValidateCreateRockstar, serviceImpl.PostDynamicValidateCreateRockstar)
+          .AddMethod(__Method_PostDynamicNoAbstractValidator, serviceImpl.PostDynamicNoAbstractValidator)
+          .AddMethod(__Method_PostDynamicEmptyValidators, serviceImpl.PostDynamicEmptyValidators)
+          .AddMethod(__Method_PostDynamicTriggerAllValidators, serviceImpl.PostDynamicTriggerAllValidators)
+          .AddMethod(__Method_PostDynamicDynamicValidationRules, serviceImpl.PostDynamicDynamicValidationRules)
+          .AddMethod(__Method_PostDynamicCustomValidationErrors, serviceImpl.PostDynamicCustomValidationErrors)
+          .AddMethod(__Method_PostDynamicTestAuthValidators, serviceImpl.PostDynamicTestAuthValidators)
+          .AddMethod(__Method_PostDynamicTestMultiAuthValidators, serviceImpl.PostDynamicTestMultiAuthValidators)
+          .AddMethod(__Method_PostDynamicTestIsAdmin, serviceImpl.PostDynamicTestIsAdmin)
+          .AddMethod(__Method_PostDynamicTestDbCondition, serviceImpl.PostDynamicTestDbCondition)
+          .AddMethod(__Method_PostDynamicTestDbValidator, serviceImpl.PostDynamicTestDbValidator)
+          .AddMethod(__Method_PostDynamicOnlyValidatesRequest, serviceImpl.PostDynamicOnlyValidatesRequest)
+          .AddMethod(__Method_PostDynamicCreateBookmark, serviceImpl.PostDynamicCreateBookmark)
           .AddMethod(__Method_PostDynamicValidationRules, serviceImpl.PostDynamicValidationRules)
           .AddMethod(__Method_PostEmptyValidators, serviceImpl.PostEmptyValidators)
           .AddMethod(__Method_GetEndsWithSuffixRequest, serviceImpl.GetEndsWithSuffixRequest)
@@ -5780,7 +7058,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_PutEndsWithSuffixRequest, serviceImpl.PutEndsWithSuffixRequest)
           .AddMethod(__Method_DeleteEndsWithSuffixRequest, serviceImpl.DeleteEndsWithSuffixRequest)
           .AddMethod(__Method_PostGetAccessToken, serviceImpl.PostGetAccessToken)
-          .AddMethod(__Method_CallGetApiKeys, serviceImpl.CallGetApiKeys)
           .AddMethod(__Method_CallGetFile, serviceImpl.CallGetFile)
           .AddMethod(__Method_CallGetHello, serviceImpl.CallGetHello)
           .AddMethod(__Method_CallGetTodo, serviceImpl.CallGetTodo)
@@ -5804,6 +7081,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_GetQueryAdhoc, serviceImpl.GetQueryAdhoc)
           .AddMethod(__Method_GetQueryAdhocRockstars, serviceImpl.GetQueryAdhocRockstars)
           .AddMethod(__Method_GetQueryAllFields, serviceImpl.GetQueryAllFields)
+          .AddMethod(__Method_GetQueryBookings, serviceImpl.GetQueryBookings)
           .AddMethod(__Method_GetQueryBookmarks, serviceImpl.GetQueryBookmarks)
           .AddMethod(__Method_GetQueryCaseInsensitiveOrderBy, serviceImpl.GetQueryCaseInsensitiveOrderBy)
           .AddMethod(__Method_GetQueryChangeConnectionInfo, serviceImpl.GetQueryChangeConnectionInfo)
@@ -5848,9 +7126,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_DeleteRealDeleteAuditTenant, serviceImpl.DeleteRealDeleteAuditTenant)
           .AddMethod(__Method_DeleteRealDeleteAuditTenantGateway, serviceImpl.DeleteRealDeleteAuditTenantGateway)
           .AddMethod(__Method_DeleteRealDeleteAuditTenantMq, serviceImpl.DeleteRealDeleteAuditTenantMq)
-          .AddMethod(__Method_PostRegenerateApiKeys, serviceImpl.PostRegenerateApiKeys)
-          .AddMethod(__Method_PutRegister, serviceImpl.PutRegister)
-          .AddMethod(__Method_PostRegister, serviceImpl.PostRegister)
           .AddMethod(__Method_GetRequiresAuth, serviceImpl.GetRequiresAuth)
           .AddMethod(__Method_PostRequiresAuth, serviceImpl.PostRequiresAuth)
           .AddMethod(__Method_PutRequiresAuth, serviceImpl.PutRequiresAuth)
@@ -5873,6 +7148,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
           .AddMethod(__Method_PostTriggerAllValidators, serviceImpl.PostTriggerAllValidators)
           .AddMethod(__Method_PostTriggerValidators, serviceImpl.PostTriggerValidators)
           .AddMethod(__Method_PostUnAssignRoles, serviceImpl.PostUnAssignRoles)
+          .AddMethod(__Method_PatchUpdateBooking, serviceImpl.PatchUpdateBooking)
           .AddMethod(__Method_PutUpdateConnectionInfoRockstar, serviceImpl.PutUpdateConnectionInfoRockstar)
           .AddMethod(__Method_PutUpdateNamedRockstar, serviceImpl.PutUpdateNamedRockstar)
           .AddMethod(__Method_PutUpdateRockstar, serviceImpl.PutUpdateRockstar)
@@ -5901,10 +7177,10 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_OptionsAuthenticate, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.Authenticate, global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse>(serviceImpl.OptionsAuthenticate));
       serviceBinder.AddMethod(__Method_GetAuthenticate, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.Authenticate, global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse>(serviceImpl.GetAuthenticate));
       serviceBinder.AddMethod(__Method_PostAuthenticate, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.Authenticate, global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse>(serviceImpl.PostAuthenticate));
-      serviceBinder.AddMethod(__Method_DeleteAuthenticate, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.Authenticate, global::ServiceStack.Extensions.Tests.Protoc.AuthenticateResponse>(serviceImpl.DeleteAuthenticate));
       serviceBinder.AddMethod(__Method_GetChangeConnectionInfo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.ChangeConnectionInfo, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse>(serviceImpl.GetChangeConnectionInfo));
       serviceBinder.AddMethod(__Method_GetChangeDb, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.ChangeDb, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse>(serviceImpl.GetChangeDb));
       serviceBinder.AddMethod(__Method_PostConvertSessionToToken, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToToken, global::ServiceStack.Extensions.Tests.Protoc.ConvertSessionToTokenResponse>(serviceImpl.PostConvertSessionToToken));
+      serviceBinder.AddMethod(__Method_PostCreateBooking, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.CreateBooking, global::ServiceStack.Extensions.Tests.Protoc.IdResponse>(serviceImpl.PostCreateBooking));
       serviceBinder.AddMethod(__Method_PostCreateBookmark, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.CreateBookmark, global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse>(serviceImpl.PostCreateBookmark));
       serviceBinder.AddMethod(__Method_PostCreateConnectionInfoRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.CreateConnectionInfoRockstar, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PostCreateConnectionInfoRockstar));
       serviceBinder.AddMethod(__Method_PostCreateNamedRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.CreateNamedRockstar, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PostCreateNamedRockstar));
@@ -5925,34 +7201,26 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_PostCreateRockstarWithVoidReturn, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithVoidReturn, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.PostCreateRockstarWithVoidReturn));
       serviceBinder.AddMethod(__Method_PostCreateTodo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.CreateTodo, global::ServiceStack.Extensions.Tests.Protoc.CreateTodoResponse>(serviceImpl.PostCreateTodo));
       serviceBinder.AddMethod(__Method_PostCustomValidationErrors, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.CustomValidationErrors, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostCustomValidationErrors));
+      serviceBinder.AddMethod(__Method_CallDeleteBooking, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DeleteBooking, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.CallDeleteBooking));
       serviceBinder.AddMethod(__Method_CallDeleteRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstar, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.CallDeleteRockstar));
       serviceBinder.AddMethod(__Method_CallDeleteRockstarAudit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarAudit, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse>(serviceImpl.CallDeleteRockstarAudit));
       serviceBinder.AddMethod(__Method_CallDeleteRockstarFilters, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarFilters, global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse>(serviceImpl.CallDeleteRockstarFilters));
       serviceBinder.AddMethod(__Method_CallDeleteTodo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DeleteTodo, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.CallDeleteTodo));
       serviceBinder.AddMethod(__Method_CallDeleteTodos, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DeleteTodos, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.CallDeleteTodos));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryGetRockstarsDynamic, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryGetRockstarsDynamic));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryCustomRockstarsSchema, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema>(serviceImpl.GetDynamicQueryCustomRockstarsSchema));
-      serviceBinder.AddMethod(__Method_GetDynamicSearchMovies, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(serviceImpl.GetDynamicSearchMovies));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryMovies, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(serviceImpl.GetDynamicQueryMovies));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryUnknownRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryUnknownRockstars));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryRockstarsWithReferences, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference>(serviceImpl.GetDynamicQueryRockstarsWithReferences));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryAllFields, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields>(serviceImpl.GetDynamicQueryAllFields));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryTypeWithEnums, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum>(serviceImpl.GetDynamicQueryTypeWithEnums));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryAdhocRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryAdhocRockstars));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryAdhoc, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(serviceImpl.GetDynamicQueryAdhoc));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryChangeDb, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryChangeDb));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar>(serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelect));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse>(serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse));
-      serviceBinder.AddMethod(__Method_GetDynamicQueryFoos, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo>(serviceImpl.GetDynamicQueryFoos));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateConnectionInfoRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PostDynamicCreateConnectionInfoRockstar));
+      serviceBinder.AddMethod(__Method_PutDynamicUpdateConnectionInfoRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PutDynamicUpdateConnectionInfoRockstar));
       serviceBinder.AddMethod(__Method_GetDynamicQueryOverridedRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryOverridedRockstars));
       serviceBinder.AddMethod(__Method_GetDynamicQueryOverridedCustomRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar>(serviceImpl.GetDynamicQueryOverridedCustomRockstars));
       serviceBinder.AddMethod(__Method_GetDynamicQueryCaseInsensitiveOrderBy, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryCaseInsensitiveOrderBy));
       serviceBinder.AddMethod(__Method_GetDynamicStreamMovies, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(serviceImpl.GetDynamicStreamMovies));
       serviceBinder.AddMethod(__Method_GetDynamicQueryCustomRockstarsReferences, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference>(serviceImpl.GetDynamicQueryCustomRockstarsReferences));
       serviceBinder.AddMethod(__Method_GetDynamicQueryRockstarAlbumsCustomLeftJoin, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstar>(serviceImpl.GetDynamicQueryRockstarAlbumsCustomLeftJoin));
+      serviceBinder.AddMethod(__Method_GetDynamicChangeDb, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse>(serviceImpl.GetDynamicChangeDb));
+      serviceBinder.AddMethod(__Method_GetDynamicChangeConnectionInfo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.ChangeDbResponse>(serviceImpl.GetDynamicChangeConnectionInfo));
       serviceBinder.AddMethod(__Method_GetDynamicQueryChangeConnectionInfo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryChangeConnectionInfo));
       serviceBinder.AddMethod(__Method_GetDynamicQueryRockstarAudit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAuto>(serviceImpl.GetDynamicQueryRockstarAudit));
       serviceBinder.AddMethod(__Method_GetDynamicQueryRockstarAuditSubOr, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarAuto>(serviceImpl.GetDynamicQueryRockstarAuditSubOr));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryBookings, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking>(serviceImpl.GetDynamicQueryBookings));
       serviceBinder.AddMethod(__Method_GetDynamicQueryBookmarks, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark>(serviceImpl.GetDynamicQueryBookmarks));
       serviceBinder.AddMethod(__Method_GetDynamicQueryNamedRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_NamedRockstar>(serviceImpl.GetDynamicQueryNamedRockstars));
       serviceBinder.AddMethod(__Method_GetDynamicQueryRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryRockstars));
@@ -5976,6 +7244,60 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_GetDynamicQueryFieldsImplicitConventions, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryFieldsImplicitConventions));
       serviceBinder.AddMethod(__Method_GetDynamicQueryGetRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryGetRockstars));
       serviceBinder.AddMethod(__Method_GetDynamicQueryRockstarFilters, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryRockstarFilters));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryGetRockstarsDynamic, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryGetRockstarsDynamic));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryCustomRockstarsSchema, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomRockstarSchema>(serviceImpl.GetDynamicQueryCustomRockstarsSchema));
+      serviceBinder.AddMethod(__Method_GetDynamicSearchMovies, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(serviceImpl.GetDynamicSearchMovies));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryMovies, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Movie>(serviceImpl.GetDynamicQueryMovies));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryUnknownRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryUnknownRockstars));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryRockstarsWithReferences, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_RockstarReference>(serviceImpl.GetDynamicQueryRockstarsWithReferences));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryAllFields, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields>(serviceImpl.GetDynamicQueryAllFields));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryTypeWithEnums, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_TypeWithEnum>(serviceImpl.GetDynamicQueryTypeWithEnums));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryAdhocRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryAdhocRockstars));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryAdhoc, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(serviceImpl.GetDynamicQueryAdhoc));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryChangeDb, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetDynamicQueryChangeDb));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelect, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstar>(serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelect));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_CustomSelectRockstarResponse>(serviceImpl.GetDynamicQueryJoinedRockstarAlbumsCustomSelectResponse));
+      serviceBinder.AddMethod(__Method_GetDynamicQueryFoos, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Foo>(serviceImpl.GetDynamicQueryFoos));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarResponse>(serviceImpl.PostDynamicCreateRockstar));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarWithReturn, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PostDynamicCreateRockstarWithReturn));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarWithVoidReturn, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.PostDynamicCreateRockstarWithVoidReturn));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarWithAutoGuid, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateRockstarWithReturnGuidResponse>(serviceImpl.PostDynamicCreateRockstarWithAutoGuid));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarAudit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicCreateRockstarAudit));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarAuditTenant, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PostDynamicCreateRockstarAuditTenant));
+      serviceBinder.AddMethod(__Method_PutDynamicUpdateRockstarAuditTenant, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PutDynamicUpdateRockstarAuditTenant));
+      serviceBinder.AddMethod(__Method_PatchDynamicPatchRockstarAuditTenant, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PatchDynamicPatchRockstarAuditTenant));
+      serviceBinder.AddMethod(__Method_PutDynamicSoftDeleteAuditTenant, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PutDynamicSoftDeleteAuditTenant));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarAuditMqToken, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicCreateRockstarAuditMqToken));
+      serviceBinder.AddMethod(__Method_DeleteDynamicRealDeleteAuditTenant, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse>(serviceImpl.DeleteDynamicRealDeleteAuditTenant));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarVersion, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse>(serviceImpl.PostDynamicCreateRockstarVersion));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarAdhocNonDefaults, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PostDynamicCreateRockstarAdhocNonDefaults));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateRockstarAutoMap, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PostDynamicCreateRockstarAutoMap));
+      serviceBinder.AddMethod(__Method_PutDynamicUpdateRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.PutDynamicUpdateRockstar));
+      serviceBinder.AddMethod(__Method_PatchDynamicUpdateRockstarAudit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.PatchDynamicUpdateRockstarAudit));
+      serviceBinder.AddMethod(__Method_DeleteDynamicDeleteRockstarAudit, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse>(serviceImpl.DeleteDynamicDeleteRockstarAudit));
+      serviceBinder.AddMethod(__Method_PatchDynamicUpdateRockstarVersion, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndRowVersionResponse>(serviceImpl.PatchDynamicUpdateRockstarVersion));
+      serviceBinder.AddMethod(__Method_PatchDynamicPatchRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.PatchDynamicPatchRockstar));
+      serviceBinder.AddMethod(__Method_PutDynamicUpdateRockstarAdhocNonDefaults, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.PutDynamicUpdateRockstarAdhocNonDefaults));
+      serviceBinder.AddMethod(__Method_DeleteDynamicDeleteRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.DeleteDynamicDeleteRockstar));
+      serviceBinder.AddMethod(__Method_DeleteDynamicDeleteRockstarFilters, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.DeleteRockstarCountResponse>(serviceImpl.DeleteDynamicDeleteRockstarFilters));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateNamedRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PostDynamicCreateNamedRockstar));
+      serviceBinder.AddMethod(__Method_PutDynamicUpdateNamedRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PutDynamicUpdateNamedRockstar));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateBooking, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.IdResponse>(serviceImpl.PostDynamicCreateBooking));
+      serviceBinder.AddMethod(__Method_PatchDynamicUpdateBooking, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.IdResponse>(serviceImpl.PatchDynamicUpdateBooking));
+      serviceBinder.AddMethod(__Method_DeleteDynamicDeleteBooking, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.DeleteDynamicDeleteBooking));
+      serviceBinder.AddMethod(__Method_PostDynamicValidateCreateRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicValidateCreateRockstar));
+      serviceBinder.AddMethod(__Method_PostDynamicNoAbstractValidator, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicNoAbstractValidator));
+      serviceBinder.AddMethod(__Method_PostDynamicEmptyValidators, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicEmptyValidators));
+      serviceBinder.AddMethod(__Method_PostDynamicTriggerAllValidators, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicTriggerAllValidators));
+      serviceBinder.AddMethod(__Method_PostDynamicDynamicValidationRules, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicDynamicValidationRules));
+      serviceBinder.AddMethod(__Method_PostDynamicCustomValidationErrors, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicCustomValidationErrors));
+      serviceBinder.AddMethod(__Method_PostDynamicTestAuthValidators, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicTestAuthValidators));
+      serviceBinder.AddMethod(__Method_PostDynamicTestMultiAuthValidators, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicTestMultiAuthValidators));
+      serviceBinder.AddMethod(__Method_PostDynamicTestIsAdmin, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicTestIsAdmin));
+      serviceBinder.AddMethod(__Method_PostDynamicTestDbCondition, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicTestDbCondition));
+      serviceBinder.AddMethod(__Method_PostDynamicTestDbValidator, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicTestDbValidator));
+      serviceBinder.AddMethod(__Method_PostDynamicOnlyValidatesRequest, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicOnlyValidatesRequest));
+      serviceBinder.AddMethod(__Method_PostDynamicCreateBookmark, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicRequest, global::ServiceStack.Extensions.Tests.Protoc.CreateBookmarkResponse>(serviceImpl.PostDynamicCreateBookmark));
       serviceBinder.AddMethod(__Method_PostDynamicValidationRules, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.DynamicValidationRules, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostDynamicValidationRules));
       serviceBinder.AddMethod(__Method_PostEmptyValidators, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.EmptyValidators, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostEmptyValidators));
       serviceBinder.AddMethod(__Method_GetEndsWithSuffixRequest, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixRequest, global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixResponse>(serviceImpl.GetEndsWithSuffixRequest));
@@ -5983,7 +7305,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_PutEndsWithSuffixRequest, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixRequest, global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixResponse>(serviceImpl.PutEndsWithSuffixRequest));
       serviceBinder.AddMethod(__Method_DeleteEndsWithSuffixRequest, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixRequest, global::ServiceStack.Extensions.Tests.Protoc.EndsWithSuffixResponse>(serviceImpl.DeleteEndsWithSuffixRequest));
       serviceBinder.AddMethod(__Method_PostGetAccessToken, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.GetAccessToken, global::ServiceStack.Extensions.Tests.Protoc.GetAccessTokenResponse>(serviceImpl.PostGetAccessToken));
-      serviceBinder.AddMethod(__Method_CallGetApiKeys, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.GetApiKeys, global::ServiceStack.Extensions.Tests.Protoc.GetApiKeysResponse>(serviceImpl.CallGetApiKeys));
       serviceBinder.AddMethod(__Method_CallGetFile, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.GetFile, global::ServiceStack.Extensions.Tests.Protoc.FileContent>(serviceImpl.CallGetFile));
       serviceBinder.AddMethod(__Method_CallGetHello, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.GetHello, global::ServiceStack.Extensions.Tests.Protoc.HelloResponse>(serviceImpl.CallGetHello));
       serviceBinder.AddMethod(__Method_CallGetTodo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.GetTodo, global::ServiceStack.Extensions.Tests.Protoc.GetTodoResponse>(serviceImpl.CallGetTodo));
@@ -6007,6 +7328,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_GetQueryAdhoc, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryAdhoc, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Adhoc>(serviceImpl.GetQueryAdhoc));
       serviceBinder.AddMethod(__Method_GetQueryAdhocRockstars, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryAdhocRockstars, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetQueryAdhocRockstars));
       serviceBinder.AddMethod(__Method_GetQueryAllFields, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryAllFields, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_AllFields>(serviceImpl.GetQueryAllFields));
+      serviceBinder.AddMethod(__Method_GetQueryBookings, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryBookings, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Booking>(serviceImpl.GetQueryBookings));
       serviceBinder.AddMethod(__Method_GetQueryBookmarks, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryBookmarks, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Bookmark>(serviceImpl.GetQueryBookmarks));
       serviceBinder.AddMethod(__Method_GetQueryCaseInsensitiveOrderBy, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryCaseInsensitiveOrderBy, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetQueryCaseInsensitiveOrderBy));
       serviceBinder.AddMethod(__Method_GetQueryChangeConnectionInfo, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.QueryChangeConnectionInfo, global::ServiceStack.Extensions.Tests.Protoc.QueryResponse_Rockstar>(serviceImpl.GetQueryChangeConnectionInfo));
@@ -6051,9 +7373,6 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_DeleteRealDeleteAuditTenant, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenant, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse>(serviceImpl.DeleteRealDeleteAuditTenant));
       serviceBinder.AddMethod(__Method_DeleteRealDeleteAuditTenantGateway, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenantGateway, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndCountResponse>(serviceImpl.DeleteRealDeleteAuditTenantGateway));
       serviceBinder.AddMethod(__Method_DeleteRealDeleteAuditTenantMq, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.RealDeleteAuditTenantMq, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.DeleteRealDeleteAuditTenantMq));
-      serviceBinder.AddMethod(__Method_PostRegenerateApiKeys, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeys, global::ServiceStack.Extensions.Tests.Protoc.RegenerateApiKeysResponse>(serviceImpl.PostRegenerateApiKeys));
-      serviceBinder.AddMethod(__Method_PutRegister, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.Register, global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse>(serviceImpl.PutRegister));
-      serviceBinder.AddMethod(__Method_PostRegister, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.Register, global::ServiceStack.Extensions.Tests.Protoc.RegisterResponse>(serviceImpl.PostRegister));
       serviceBinder.AddMethod(__Method_GetRequiresAuth, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth, global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth>(serviceImpl.GetRequiresAuth));
       serviceBinder.AddMethod(__Method_PostRequiresAuth, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth, global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth>(serviceImpl.PostRequiresAuth));
       serviceBinder.AddMethod(__Method_PutRequiresAuth, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth, global::ServiceStack.Extensions.Tests.Protoc.RequiresAuth>(serviceImpl.PutRequiresAuth));
@@ -6076,6 +7395,7 @@ namespace ServiceStack.Extensions.Tests.Protoc {
       serviceBinder.AddMethod(__Method_PostTriggerAllValidators, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.TriggerAllValidators, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdResponse>(serviceImpl.PostTriggerAllValidators));
       serviceBinder.AddMethod(__Method_PostTriggerValidators, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.TriggerValidators, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.PostTriggerValidators));
       serviceBinder.AddMethod(__Method_PostUnAssignRoles, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.UnAssignRoles, global::ServiceStack.Extensions.Tests.Protoc.UnAssignRolesResponse>(serviceImpl.PostUnAssignRoles));
+      serviceBinder.AddMethod(__Method_PatchUpdateBooking, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.UpdateBooking, global::ServiceStack.Extensions.Tests.Protoc.IdResponse>(serviceImpl.PatchUpdateBooking));
       serviceBinder.AddMethod(__Method_PutUpdateConnectionInfoRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.UpdateConnectionInfoRockstar, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PutUpdateConnectionInfoRockstar));
       serviceBinder.AddMethod(__Method_PutUpdateNamedRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.UpdateNamedRockstar, global::ServiceStack.Extensions.Tests.Protoc.RockstarWithIdAndResultResponse>(serviceImpl.PutUpdateNamedRockstar));
       serviceBinder.AddMethod(__Method_PutUpdateRockstar, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::ServiceStack.Extensions.Tests.Protoc.UpdateRockstar, global::ServiceStack.Extensions.Tests.Protoc.EmptyResponse>(serviceImpl.PutUpdateRockstar));

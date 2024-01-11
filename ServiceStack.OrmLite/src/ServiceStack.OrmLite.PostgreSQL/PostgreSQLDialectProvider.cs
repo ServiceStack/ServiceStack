@@ -14,6 +14,7 @@ using Npgsql.TypeMapping;
 using NpgsqlTypes;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Logging;
 using ServiceStack.OrmLite.Converters;
 using ServiceStack.OrmLite.PostgreSQL.Converters;
 using ServiceStack.OrmLite.Support;
@@ -359,7 +360,7 @@ namespace ServiceStack.OrmLite.PostgreSQL
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(e);
+                            LogManager.GetLogger(GetType()).Error(e.Message, e);
                             throw;
                         }
                     }

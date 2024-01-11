@@ -39,6 +39,25 @@ namespace ServiceStack.Extensions.Tests.Protoc
             public override void Configure(Container container)
             {
                 RegisterService<GetFileService>();
+
+                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+                [
+                    new BasicAuthProvider(),
+                    new CredentialsAuthProvider(),
+                    new JwtAuthProvider
+                    {
+                        AuthKey = AuthKey,
+                        RequireSecureConnection = false,
+                        AllowInQueryString = true,
+                        AllowInFormData = true,
+                        IncludeJwtInConvertSessionToTokenResponse = true,
+                        UseTokenCookie = false,
+                    },
+                    new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false }
+                ]));
+
+                Plugins.Add(new RegistrationFeature());
+
                 Plugins.Add(new GrpcFeature(App) {
                     CreateDynamicService = GrpcConfig.AutoQueryOrDynamicAttribute // required by protoc AutoQuery Tests
                 });
@@ -48,24 +67,6 @@ namespace ServiceStack.Extensions.Tests.Protoc
 
                 container.Register<IAuthRepository>(new InMemoryAuthRepository());
                 container.Resolve<IAuthRepository>().InitSchema();
-
-                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                [
-                    new BasicAuthProvider(),
-                        new CredentialsAuthProvider(),
-                        new JwtAuthProvider
-                        {
-                            AuthKey = AuthKey,
-                            RequireSecureConnection = false,
-                            AllowInQueryString = true,
-                            AllowInFormData = true,
-                            IncludeJwtInConvertSessionToTokenResponse = true,
-                            UseTokenCookie = false,
-                        },
-                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false }
-                ]));
-
-                Plugins.Add(new RegistrationFeature());
 
                 GlobalRequestFilters.Add((req, res, dto) =>
                 {
@@ -167,6 +168,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
         private async Task<string> GetRefreshToken()
         {
             var authClient = GetClient();
+            
             var response = await authClient.PostAuthenticateAsync(new Authenticate
                 {
                     Provider = "credentials",
@@ -256,9 +258,9 @@ namespace ServiceStack.Extensions.Tests.Protoc
             });
             
             Assert.That(bearerToken, Is.Not.Null);
-
+            
             config.SessionId = null;
-
+            
             response = await authClient.PostHelloJwtAsync(new HelloJwt { Name = "from auth service" });
             Assert.That(response.Result, Is.EqualTo("Hello, from auth service"));
         }

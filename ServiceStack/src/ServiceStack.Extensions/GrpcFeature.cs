@@ -131,7 +131,11 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
 
     public List<Type> IncludeRequestTypes { get; } =
     [
-        typeof(GetAccessToken),
+        typeof(GetFile),
+        typeof(GetFileUpload),
+        typeof(StoreFileUpload),
+        typeof(ReplaceFileUpload),
+        typeof(DeleteFileUpload),
         typeof(ConvertSessionToToken),
     ];
         
@@ -384,9 +388,6 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
                 var requestType = op.RequestType;
                 var methodName = GrpcConfig.GetServiceName(action, requestType.Name);
                 
-                if (methodName == "ChangeConnectionInfo")
-                    Console.WriteLine("HERE ChangeConnectionInfo");
-                    
                 if (log.IsDebugEnabled)
                     log.DebugFormat("grpc {0}({1})", methodName, requestType.Name);
                 
@@ -431,14 +432,13 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
 
                     mi = GrpcServicesBaseType.GetMethod("ExecuteDynamic", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                     
-                    genericMi = mi.MakeGenericMethod(responseType);
+                    genericMi = mi.MakeGenericMethod(requestType,responseType);
                     
                     il.Emit(OpCodes.Nop);
                     il.Emit(OpCodes.Ldarg_0);
                     il.Emit(OpCodes.Ldstr, action);
                     il.Emit(OpCodes.Ldarg_1);
                     il.Emit(OpCodes.Ldarg_2);
-                    il.Emit(OpCodes.Ldtoken, requestType);
                     il.Emit(OpCodes.Callvirt, genericMi);
                     il.Emit(OpCodes.Ret);
                 }
