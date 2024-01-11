@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -471,6 +472,11 @@ public abstract class AuthProvider : IAuthProvider, IAuthPlugin
             return new HttpError(HttpStatusCode.BadRequest, parts[1], parts[1].SplitCamelCase());
             
         return failedResult;
+    }
+
+    public virtual void Configure(IServiceCollection services, AuthFeature feature)
+    {
+        
     }
 
     public virtual void Register(IAppHost appHost, AuthFeature feature)

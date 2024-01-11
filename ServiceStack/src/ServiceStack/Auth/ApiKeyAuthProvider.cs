@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -363,6 +364,12 @@ namespace ServiceStack.Auth
 
         public static string GetSessionKey(string apiKey) => "key:sess:" + apiKey;
 
+        public override void Configure(IServiceCollection services, AuthFeature feature)
+        {
+            base.Configure(services, feature);
+            services.RegisterServices(ServiceRoutes);
+        }
+
         public override void Register(IAppHost appHost, AuthFeature feature)
         {
             base.Register(appHost, feature);
@@ -372,8 +379,6 @@ namespace ServiceStack.Auth
                 if (InitSchema)
                     manageApiKeys.InitApiKeySchema();
             }
-
-            appHost.RegisterServices(ServiceRoutes);
 
             feature.AuthEvents.Add(new ApiKeyAuthEvents(this));
         }

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Logging;
@@ -433,6 +434,11 @@ public abstract class AuthProviderSync : IAuthProvider, IAuthPlugin
             }
         }
         return failedResult;
+    }
+
+    public virtual void Configure(IServiceCollection services, AuthFeature feature)
+    {
+        
     }
 
     public virtual void Register(IAppHost appHost, AuthFeature feature)

@@ -340,6 +340,7 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
         {
             configureService(services, this);
         }
+        AuthProviders.OfType<IAuthPlugin>().Each(x => x.Configure(services, this));
 
         var serviceLookup = ServiceRoutes.GroupBy(x => x.Key);
         foreach (var lookup in serviceLookup)

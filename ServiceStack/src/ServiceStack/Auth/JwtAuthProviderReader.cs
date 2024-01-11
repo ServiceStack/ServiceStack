@@ -6,6 +6,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
@@ -1064,6 +1065,12 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
         return null;
     }
 
+    public override void Configure(IServiceCollection services, AuthFeature feature)
+    {
+        base.Configure(services, feature);
+        services.RegisterServices(ServiceRoutes);
+    }
+
     public override void Register(IAppHost appHost, AuthFeature feature)
     {
         base.Register(appHost, feature);
@@ -1079,8 +1086,6 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
 
         KeyId ??= GetKeyId(null);
              
-        appHost.RegisterServices(ServiceRoutes);
-
         feature.AuthResponseDecorator = AuthenticateResponseDecorator;
         feature.RegisterResponseDecorator = RegisterResponseDecorator;
     }

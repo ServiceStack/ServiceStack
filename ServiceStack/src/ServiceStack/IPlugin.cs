@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Web;
 
 namespace ServiceStack;
@@ -102,6 +103,7 @@ public interface IPostInitPlugin
 /// </summary>
 public interface IAuthPlugin
 {
+    void Configure(IServiceCollection services, AuthFeature feature);
     void Register(IAppHost appHost, AuthFeature feature);
 }
 
