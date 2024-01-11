@@ -18,7 +18,7 @@ namespace ServiceStack.Auth;
 /// <summary>
 /// Enable access to protected Services using JWT Tokens
 /// </summary>
-public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
+public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
 {
     public override string Type => "Bearer";
     public static RsaKeyLengths UseRsaKeyLength = RsaKeyLengths.Bit2048;
@@ -265,7 +265,7 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest, IAuthPlugin
     /// <summary>
     /// Modify the registration of ConvertSessionToToken Service
     /// </summary>
-    public Dictionary<Type, string[]> ServiceRoutes { get; set; }
+    public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new();
 
     /// <summary>
     /// Allow JWT in ?ss-tok=jwt QueryString. (default false)

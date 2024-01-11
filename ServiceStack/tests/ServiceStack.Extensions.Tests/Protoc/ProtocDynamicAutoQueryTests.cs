@@ -54,7 +54,6 @@ public class ProtocDynamicAutoQueryTests
                         return true;
                     return GrpcConfig.AutoQueryOrDynamicAttribute(requestType, action);
                 }
-                    
             }
             .Init()
             .Start(TestsConfig.ListeningOn);
