@@ -11,15 +11,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.AI;
 
-public class AzureSpeechToText : ISpeechToText, IRequireVirtualFiles
+public class AzureSpeechToText(SpeechConfig config) : ISpeechToText, IRequireVirtualFiles
 {
-    SpeechConfig Config { get; }
+    SpeechConfig Config { get; } = config;
     public IVirtualFiles? VirtualFiles { get; set; }
-
-    public AzureSpeechToText(SpeechConfig config)
-    {
-        Config = config;
-    }
 
     public Task InitAsync(InitSpeechToText config, CancellationToken token = default) => Task.CompletedTask;
 
@@ -96,17 +91,10 @@ public class AzureSpeechToText : ISpeechToText, IRequireVirtualFiles
 /// <summary>
 /// Adapter class to the native stream api.
 /// </summary>
-public sealed class BinaryAudioStreamReader : PullAudioInputStreamCallback
+public sealed class BinaryAudioStreamReader(BinaryReader reader) : PullAudioInputStreamCallback
 {
-    private readonly System.IO.BinaryReader reader;
-
-    public BinaryAudioStreamReader(System.IO.BinaryReader reader)
-    {
-        this.reader = reader;
-    }
-
-    public BinaryAudioStreamReader(System.IO.Stream stream)
-        : this(new System.IO.BinaryReader(stream)) {}
+    public BinaryAudioStreamReader(Stream stream)
+        : this(new BinaryReader(stream)) {}
     public override int Read(byte[] dataBuffer, uint size)
     {
         return reader.Read(dataBuffer, 0, (int)size);
@@ -122,5 +110,5 @@ public sealed class BinaryAudioStreamReader : PullAudioInputStreamCallback
         disposed = true;
         base.Dispose(disposing);
     }
-    private bool disposed = false;
+    private bool disposed;
 }

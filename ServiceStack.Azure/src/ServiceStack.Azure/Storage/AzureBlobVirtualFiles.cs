@@ -7,158 +7,160 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using ServiceStack.VirtualPath;
 
-namespace ServiceStack.Azure.Storage
+namespace ServiceStack.Azure.Storage;
+
+public class AzureBlobVirtualFiles : AbstractVirtualPathProviderBase, IVirtualFiles
 {
-    public class AzureBlobVirtualFiles : AbstractVirtualPathProviderBase, IVirtualFiles
+    public CloudBlobContainer Container { get; }
+
+    private readonly AzureBlobVirtualDirectory rootDirectory;
+
+    public override IVirtualDirectory RootDirectory => rootDirectory;
+
+    public override string VirtualPathSeparator => "/";
+
+    public override string RealPathSeparator => "/";
+
+    public AzureBlobVirtualFiles(string connectionString, string containerName)
     {
-        public CloudBlobContainer Container { get; }
+        var storageAccount = CloudStorageAccount.Parse(connectionString);
 
-        private readonly AzureBlobVirtualDirectory rootDirectory;
+        //containerName  is the name of Azure Storage Blob container
+        Container = storageAccount.CreateCloudBlobClient().GetContainerReference(containerName);
+        Container.CreateIfNotExists();
+        rootDirectory = new AzureBlobVirtualDirectory(this, null);
+    }
 
-        public override IVirtualDirectory RootDirectory => rootDirectory;
+    public AzureBlobVirtualFiles(CloudBlobContainer container)
+    {
+        Container = container;
+        Container.CreateIfNotExists();
+        rootDirectory = new AzureBlobVirtualDirectory(this, null);
+    }
 
-        public override string VirtualPathSeparator => "/";
+    protected override void Initialize()
+    {
+    }
 
-        public override string RealPathSeparator => "/";
+    public void WriteFile(string filePath, string textContents)
+    {
+        var blob = Container.GetBlockBlobReference(SanitizePath(filePath));
+        blob.Properties.ContentType = MimeTypes.GetMimeType(filePath);
+        blob.UploadText(textContents);
+    }
 
-        public AzureBlobVirtualFiles(string connectionString, string containerName)
+    public void WriteFile(string filePath, Stream stream)
+    {
+        var blob = Container.GetBlockBlobReference(SanitizePath(filePath));
+
+        if (stream.Length > 1014 * 1024 * 100) // 100 mb
         {
-            var storageAccount = CloudStorageAccount.Parse(connectionString);
-
-            //containerName  is the name of Azure Storage Blob container
-            Container = storageAccount.CreateCloudBlobClient().GetContainerReference(containerName);
-            Container.CreateIfNotExists();
-            rootDirectory = new AzureBlobVirtualDirectory(this, null);
+            blob.ServiceClient.DefaultRequestOptions.SingleBlobUploadThresholdInBytes = 1014 * 1024 * 10;
+            blob.ServiceClient.DefaultRequestOptions.ParallelOperationThreadCount = Environment.ProcessorCount;
         }
 
-        public AzureBlobVirtualFiles(CloudBlobContainer container)
+        blob.Properties.ContentType = MimeTypes.GetMimeType(filePath);
+        blob.UploadFromStream(stream);
+    }
+
+    public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
+    {
+        this.CopyFrom(files, toPath);
+    }
+
+    public void AppendFile(string filePath, string textContents)
+    {
+        throw new NotSupportedException();
+    }
+
+    public void AppendFile(string filePath, Stream stream)
+    {
+        throw new NotSupportedException();
+    }
+
+    public void DeleteFile(string filePath)
+    {
+        var blob = Container.GetBlockBlobReference(SanitizePath(filePath));
+        blob.Delete();
+    }
+
+    public void DeleteFiles(IEnumerable<string> filePaths)
+    {
+        filePaths.Each(DeleteFile);
+    }
+
+    public void DeleteFolder(string dirPath)
+    {
+        if (string.IsNullOrEmpty(dirPath))
+            throw new ArgumentNullException(nameof(dirPath));
+        
+        dirPath = SanitizePath(dirPath)!;
+        // Delete based on a wildcard search of the directory
+        if (!dirPath.EndsWith("/")) dirPath += "/";
+        //directoryPath += "*";
+        foreach (var blob in Container.ListBlobs(dirPath, true))
         {
-            Container = container;
-            Container.CreateIfNotExists();
-            rootDirectory = new AzureBlobVirtualDirectory(this, null);
+            Container.GetBlockBlobReference(((CloudBlockBlob)blob).Name).DeleteIfExists();
         }
+    }
 
-        protected override void Initialize()
-        {
-        }
+    public override IVirtualFile? GetFile(string virtualPath)
+    {
+        var filePath = SanitizePath(virtualPath);
 
-        public void WriteFile(string filePath, string textContents)
-        {
-            var blob = Container.GetBlockBlobReference(SanitizePath(filePath));
-            blob.Properties.ContentType = MimeTypes.GetMimeType(filePath);
-            blob.UploadText(textContents);
-        }
+        var blob = Container.GetBlockBlobReference(filePath);
+        if (!blob.Exists())
+            return null;
 
-        public void WriteFile(string filePath, Stream stream)
-        {
-            var blob = Container.GetBlockBlobReference(SanitizePath(filePath));
+        return new AzureBlobVirtualFile(this, GetDirectory(GetDirPath(virtualPath))).Init(blob);
+    }
 
-            if (stream.Length > 1014 * 1024 * 100) // 100 mb
-            {
-                blob.ServiceClient.DefaultRequestOptions.SingleBlobUploadThresholdInBytes = 1014 * 1024 * 10;
-                blob.ServiceClient.DefaultRequestOptions.ParallelOperationThreadCount = Environment.ProcessorCount;
-            }
+    public override IVirtualDirectory GetDirectory(string? virtualPath)
+    {
+        return new AzureBlobVirtualDirectory(this, virtualPath);
+    }
 
-            blob.Properties.ContentType = MimeTypes.GetMimeType(filePath);
-            blob.UploadFromStream(stream);
-        }
+    public override bool DirectoryExists(string virtualPath)
+    {
+        var ret = ((AzureBlobVirtualDirectory)GetDirectory(virtualPath)).Exists();
+        return ret;
+    }
 
-        public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
-        {
-            this.CopyFrom(files, toPath);
-        }
+    public string? GetDirPath(string? filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+            return null;
 
-        public void AppendFile(string filePath, string textContents)
-        {
-            throw new NotSupportedException();
-        }
+        var lastDirPos = filePath.LastIndexOf(VirtualPathSeparator[0]);
+        return lastDirPos >= 0
+            ? filePath.Substring(0, lastDirPos)
+            : null;
+    }
 
-        public void AppendFile(string filePath, Stream stream)
-        {
-            throw new NotSupportedException();
-        }
+    public string? GetDirPath(CloudBlockBlob blob) => GetDirPath(blob.Parent?.Prefix);
 
-        public void DeleteFile(string filePath)
-        {
-            var blob = Container.GetBlockBlobReference(SanitizePath(filePath));
-            blob.Delete();
-        }
+    public IEnumerable<AzureBlobVirtualFile> EnumerateFiles(string? dirPath = null)
+    {
+        return Container.ListBlobs(dirPath == null ? null : dirPath + this.RealPathSeparator, useFlatBlobListing: true)
+            .OfType<CloudBlockBlob>()
+            .Select(q => new AzureBlobVirtualFile(this, new AzureBlobVirtualDirectory(this, GetDirPath(q))).Init(q));
+    }
 
-        public void DeleteFiles(IEnumerable<string> filePaths)
-        {
-            filePaths.Each(DeleteFile);
-        }
+    public IEnumerable<AzureBlobVirtualFile> GetImmediateFiles(string? fromDirPath)
+    {
+        var dir = new AzureBlobVirtualDirectory(this, fromDirPath);
 
-        public void DeleteFolder(string dirPath)
-        {
-            dirPath = SanitizePath(dirPath);
-            // Delete based on a wildcard search of the directory
-            if (!dirPath.EndsWith("/")) dirPath += "/";
-            //directoryPath += "*";
-            foreach (var blob in Container.ListBlobs(dirPath, true))
-            {
-                Container.GetBlockBlobReference(((CloudBlockBlob)blob).Name).DeleteIfExists();
-            }
-        }
+        return Container.ListBlobs(fromDirPath == null ? null : fromDirPath + this.RealPathSeparator)
+            .OfType<CloudBlockBlob>()
+            .Select(q => new AzureBlobVirtualFile(this, dir).Init(q as CloudBlockBlob));
+    }
 
-        public override IVirtualFile GetFile(string virtualPath)
-        {
-            var filePath = SanitizePath(virtualPath);
+    public override string? SanitizePath(string filePath)
+    {
+        var sanitizedPath = string.IsNullOrEmpty(filePath)
+            ? null
+            : (filePath[0] == VirtualPathSeparator[0] ? filePath.Substring(1) : filePath);
 
-            var blob = Container.GetBlockBlobReference(filePath);
-            if (!blob.Exists())
-                return null;
-
-            return new AzureBlobVirtualFile(this, GetDirectory(GetDirPath(virtualPath))).Init(blob);
-        }
-
-        public override IVirtualDirectory GetDirectory(string virtualPath)
-        {
-            return new AzureBlobVirtualDirectory(this, virtualPath);
-        }
-
-        public override bool DirectoryExists(string virtualPath)
-        {
-            var ret = ((AzureBlobVirtualDirectory)GetDirectory(virtualPath)).Exists();
-            return ret;
-        }
-
-        public string GetDirPath(string filePath)
-        {
-            if (string.IsNullOrEmpty(filePath))
-                return null;
-
-            var lastDirPos = filePath.LastIndexOf(VirtualPathSeparator[0]);
-            return lastDirPos >= 0
-                ? filePath.Substring(0, lastDirPos)
-                : null;
-        }
-
-        public string GetDirPath(CloudBlockBlob blob) => GetDirPath(blob.Parent?.Prefix);
-
-        public IEnumerable<AzureBlobVirtualFile> EnumerateFiles(string dirPath = null)
-        {
-            return Container.ListBlobs(dirPath == null ? null : dirPath + this.RealPathSeparator, useFlatBlobListing: true)
-                .OfType<CloudBlockBlob>()
-                .Select(q => new AzureBlobVirtualFile(this, new AzureBlobVirtualDirectory(this, GetDirPath(q))).Init(q));
-        }
-
-        public IEnumerable<AzureBlobVirtualFile> GetImmediateFiles(string fromDirPath)
-        {
-            var dir = new AzureBlobVirtualDirectory(this, fromDirPath);
-
-            return Container.ListBlobs(fromDirPath == null ? null : fromDirPath + this.RealPathSeparator)
-                .OfType<CloudBlockBlob>()
-                .Select(q => new AzureBlobVirtualFile(this, dir).Init(q as CloudBlockBlob));
-        }
-
-        public override string SanitizePath(string filePath)
-        {
-            var sanitizedPath = string.IsNullOrEmpty(filePath)
-                ? null
-                : (filePath[0] == VirtualPathSeparator[0] ? filePath.Substring(1) : filePath);
-
-            return sanitizedPath?.Replace('\\', VirtualPathSeparator[0]);
-        }
+        return sanitizedPath?.Replace('\\', VirtualPathSeparator[0]);
     }
 }
