@@ -34,24 +34,23 @@ public class HostConfig
         {
             WsdlServiceNamespace = DefaultWsdlNamespace,
             ApiVersion = "1.0",
-            EmbeddedResourceSources = new(),
+            EmbeddedResourceSources = [],
             EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
-            EmbeddedResourceTreatAsFiles = new(),
+            EmbeddedResourceTreatAsFiles = [],
             EnableAccessRestrictions = true,
             EnableAutoHtmlResponses = true,
             WebHostPhysicalPath = "~".MapServerPath(),
             HandlerFactoryPath = ServiceStackPath,
             MetadataRedirectPath = null,
             DefaultContentType = null,
-            PreferredContentTypes = new() {
-                MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv
-            },
+            PreferredContentTypes = [MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv],
             AllowJsonpRequests = true,
             AllowRouteContentTypeExtensions = true,
             BufferSyncSerializers = Env.IsNetCore3,
             DebugMode = false,
             StrictMode = Env.StrictMode,
-            DefaultDocuments = new() {
+            DefaultDocuments =
+            [
                 "default.htm",
                 "default.html",
                 "default.cshtml",
@@ -59,8 +58,8 @@ public class HostConfig
                 "index.htm",
                 "index.html",
                 "default.aspx",
-                "default.ashx",
-            },
+                "default.ashx"
+            ],
             GlobalResponseHeaders = new() {
                 { HttpHeaders.Vary, "Accept" },
                 { HttpHeaders.XPoweredBy, Env.ServerUserAgent },
@@ -99,13 +98,14 @@ public class HostConfig
                 "xls", "xla", "xlsx", "xltx", "doc", "dot", "docx", "dotx", "ppt", "pps", "ppa", "pptx", "potx", 
                 "wasm", "proto", "cer", "crt", "webmanifest", "mjs", "cjs", 
             },
-            CompressFilesWithExtensions = new(),
-            AllowFilePaths = new() {
+            CompressFilesWithExtensions = [],
+            AllowFilePaths =
+            [
                 "jspm_packages/**/*.json", //JSPM
-                ".well-known/**/*",        //LetsEncrypt
-            },
-            IgnorePathInfoPrefixes = new(),
-            ForbiddenPaths = new(),
+                ".well-known/**/*" //LetsEncrypt
+            ],
+            IgnorePathInfoPrefixes = [],
+            ForbiddenPaths = [],
             DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
             DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
             EnableFeatures = Feature.All,
@@ -118,15 +118,16 @@ public class HostConfig
                 { "image/png", TimeSpan.FromHours(1) },
                 { "image/jpeg", TimeSpan.FromHours(1) },
             },
-            AppendUtf8CharsetOnContentTypes = new() { MimeTypes.Json },
-            RouteNamingConventions = new() {
+            AppendUtf8CharsetOnContentTypes = [MimeTypes.Json],
+            RouteNamingConventions =
+            [
                 RouteNamingConvention.WithRequestDtoName,
                 RouteNamingConvention.WithMatchingAttributes,
                 RouteNamingConvention.WithMatchingPropertyNames
-            },
+            ],
             MapExceptionToStatusCode = new(),
             UseSaltedHash = false,
-            FallbackPasswordHashers = new(),
+            FallbackPasswordHashers = [],
             UseSameSiteCookies = null,
             UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true
             UseHttpOnlyCookies = true,
@@ -143,7 +144,7 @@ public class HostConfig
             RedirectToDefaultDocuments = false,
             RedirectDirectoriesToTrailingSlashes = true,
             StripApplicationVirtualPath = false,
-            ScanSkipPaths = new() {
+            ScanSkipPaths = [
                 "obj/",
                 "bin/",
                 "node_modules/",
@@ -151,9 +152,9 @@ public class HostConfig
                 "bower_components/",
                 "wwwroot_build/",
 #if !NETCORE 
-                    "wwwroot/", //Need to allow VirtualFiles access from ContentRoot Folder
+                "wwwroot/", //Need to allow VirtualFiles access from ContentRoot Folder
 #endif
-            },
+            ],
             RedirectPaths = new Dictionary<string, string>
             {
                 { "/metadata/", "/metadata" },
@@ -181,8 +182,8 @@ public class HostConfig
                 UserAuthName = Keywords.AuthSecret,
                 AuthProvider = Keywords.AuthSecret,
                 IsAuthenticated = true,
-                Roles = new() { Configuration.RoleNames.Admin },
-                Permissions = new(),
+                Roles = [Configuration.RoleNames.Admin],
+                Permissions = [],
                 UserAuthId = "0",
             },
 #if !NETCORE

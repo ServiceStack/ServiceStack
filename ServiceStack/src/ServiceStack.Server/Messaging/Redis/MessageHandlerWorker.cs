@@ -160,7 +160,7 @@ internal class MessageHandlerWorker(
     {
         try
         {
-            if (bgThread != null && bgThread.IsAlive)
+            if (bgThread is { IsAlive: true })
             {
                 //give it a small chance to die gracefully
                 if (!bgThread.Join(500))
@@ -212,7 +212,6 @@ internal class MessageHandlerWorker(
 
     public string GetStatus()
     {
-        return "[Worker: {0}, Status: {1}, ThreadStatus: {2}, LastMsgAt: {3}]"
-            .Fmt(QueueName, WorkerStatus.ToString(status), bgThread.ThreadState, LastMsgProcessed);
+        return $"[Worker: {QueueName}, Status: {WorkerStatus.ToString(status)}, ThreadStatus: {bgThread.ThreadState}, LastMsgAt: {LastMsgProcessed}]";
     }
 }

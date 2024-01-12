@@ -82,7 +82,7 @@ public class BackgroundMqService : IMessageService
     /// <summary>
     /// Subscribe to messages sent to .outq
     /// </summary>
-    public List<Action<string, IMessage>> OutHandlers { get; } = new List<Action<string, IMessage>>();
+    public List<Action<string, IMessage>> OutHandlers { get; } = [];
 
     /// <summary>
     /// The max size of the Out MQ Collection in each Type (default 100)
@@ -102,8 +102,7 @@ public class BackgroundMqService : IMessageService
         MessageFactory = new BackgroundMqMessageFactory(mqClient);
     }
 
-    private readonly Dictionary<Type, IMqCollection> collectionsMap
-        = new Dictionary<Type, IMqCollection>();
+    private readonly Dictionary<Type, IMqCollection> collectionsMap = new();
 
     private IMqWorker[] workers;
     private BlockingCollection<IMessage> unknownQueues;
