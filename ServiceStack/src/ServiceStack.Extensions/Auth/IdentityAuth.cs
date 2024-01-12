@@ -42,14 +42,26 @@ public static class IdentityAuth
         ApplicationAuthProvider = ctx.AuthApplication;
         configure(ctx);
 
-        return (services, authFeature) => {
+        return (services, authFeature) =>
+        {
+            services.AddSingleton<IIdentityAuthContext>(ctx);
+            
             var authProviders = new List<IAuthProvider>();
             if (ctx.EnableApplicationAuth)
             {
                 authProviders.Add(ctx.AuthApplication);
-                if (ctx.EnableCredentialsAuth) authProviders.Add(ctx.AuthCredentials);
+                services.AddSingleton<IIdentityApplicationAuthProvider>(ctx.AuthApplication);
+                if (ctx.EnableCredentialsAuth)
+                {
+                    authProviders.Add(ctx.AuthCredentials);
+                    services.AddSingleton<IIdentityCredentialsAuthProvider>(ctx.AuthCredentials);
+                }
             }
-            if (ctx.EnableJwtAuth) authProviders.Add(ctx.AuthJwt);
+            if (ctx.EnableJwtAuth)
+            {
+                authProviders.Add(ctx.AuthJwt);
+                services.AddSingleton<IIdentityJwtAuthProvider>(ctx.AuthJwt);
+            }
             
             authFeature.RegisterAuthProviders(authProviders.ToArray());
             authFeature.SessionFactory = ctx.SessionFactory;
@@ -73,9 +85,13 @@ public static class IdentityAuth
                 authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TKey>)] = ["/" + "register".Localize()];
                 services.AddSingleton<IValidator<Register>, IdentityRegistrationValidator<TUser, TKey>>();
             }
-            if (ctx.AuthJwt?.EnableRefreshToken == true)
+            if (ctx.AuthJwt.EnableRefreshToken)
             {
                 authFeature.ServiceRoutes[typeof(GetAccessTokenIdentityService)] = ["/" + "access-token".Localize()];
+            }
+            if (ctx.AuthJwt.IncludeConvertSessionToTokenService)
+            {
+                authFeature.ServiceRoutes[typeof(ConvertSessionToTokenService)] = ["/" + "session-to-token".Localize()];
             }
 
             authFeature.OnAfterInit.Add(feature =>
