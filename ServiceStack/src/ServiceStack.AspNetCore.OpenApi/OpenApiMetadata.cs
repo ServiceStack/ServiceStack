@@ -118,6 +118,11 @@ public class OpenApiMetadata
     
     public OpenApiSecurityScheme? SecurityDefinition { get; set; }
     public OpenApiSecurityRequirement? SecurityRequirement { get; set; }
+    
+    /// <summary>
+    /// Exclude showing Request DTO APIs in Open API metadata and Swagger UI
+    /// </summary>
+    public HashSet<Type> ExcludeRequestTypes { get; set; } = [];
 
     public void AddBasicAuth()
     {
@@ -133,6 +138,8 @@ public class OpenApiMetadata
 
     public OpenApiOperation AddOperation(OpenApiOperation op, Operation operation, string verb, string route)
     {
+        if (ExcludeRequestTypes.Contains(operation.RequestType))
+            return op;
         //Console.WriteLine($"AddOperation {verb} {route} {operation.RequestType.Name}...");
 
         // Response is handled by Endpoints Metadata
