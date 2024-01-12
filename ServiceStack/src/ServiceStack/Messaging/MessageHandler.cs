@@ -52,7 +52,7 @@ public class MessageHandler<T>
         this.processInExceptionFn = processInExceptionFn ?? DefaultInExceptionHandler;
         this.retryCount = retryCount;
         this.ReplyClientFactory = ClientFactory.Create;
-        this.ProcessQueueNames = new[] { QueueNames<T>.Priority, QueueNames<T>.In };
+        this.ProcessQueueNames = [QueueNames<T>.Priority, QueueNames<T>.In];
     }
 
     public Type MessageType => typeof(T);
@@ -157,6 +157,7 @@ public class MessageHandler<T>
                 var isError = responseStatus?.ErrorCode != null;
                 if (isError)
                 {
+                    Log.ErrorFormat("Failed to process MQ message {0}: {1} {2}", typeof(T).Name, responseStatus.ErrorCode, responseStatus.Message);
                     responseEx = new MessagingException(responseStatus, response);
                 }
             }
@@ -265,8 +266,7 @@ public class MessageHandler<T>
                 }
 
                 //Otherwise send to our trusty response Queue (inc if replyClient fails)
-                if (responseMessage == null)
-                    responseMessage = MessageFactory.Create(response);
+                responseMessage ??= MessageFactory.Create(response);
 
                 responseMessage.ReplyId = message.Id;
                 Diagnostics.ServiceStack.WriteMqRequestPublish(id, mqClient, responseMessage.ReplyId.ToString(), response);
