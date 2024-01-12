@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Funq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -160,7 +161,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         if (app == null)
             return base.GetWebRootPath();
 
-        return HostingEnvironment.WebRootPath;
+        return HostingEnvironment.WebRootPath 
+               ?? base.GetWebRootPath();
     }
 
     private IWebHostEnvironment? env;
@@ -776,6 +778,14 @@ public static class NetCoreAppHostExtensions
         if (exclude)
             builder.ExcludeFromDescription();
         return builder;
+    }
+
+    public static Task StartAsync(this WebApplication app, string url)
+    {
+        var addresses = ((IApplicationBuilder)app).ServerFeatures.Get<IServerAddressesFeature>()!.Addresses;
+        addresses.Clear();
+        addresses.Add(url);
+        return app.StartAsync();
     }
 #endif
 
