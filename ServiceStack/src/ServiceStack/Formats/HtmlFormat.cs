@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using ServiceStack.Auth;
 using ServiceStack.Serialization;
 using ServiceStack.Web;
 
@@ -151,6 +152,7 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
                 .Replace("${BaseUrl}", req.GetBaseUrl().WithTrailingSlash())
                 .Replace("${AuthRedirect}", req.ResolveAbsoluteUrl(HostContext.AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect))
                 .Replace("${AllowOrigins}", HostContext.AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";"))
+                .Replace("${NoProfileImgUrl}", req.TryResolve<IAuthMetadataProvider>()?.GetProfileUrl(null) ?? JwtClaimTypes.DefaultProfileUrl)
             ;
         return html;
     }

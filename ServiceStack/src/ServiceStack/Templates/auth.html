@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>Authenticated Session</title>
-<link rel="stylesheet" href="${BaseUrl}/css/bootstrap.css">
+<link rel="stylesheet" href="${BaseUrl}css/bootstrap.css">
 <style>
 body {
     margin: 0;
@@ -137,6 +137,7 @@ button {
 let BaseUrl = "${BaseUrl}"
 let LoginPath = "${AuthRedirect}"
 let AllowOrigins = ("${AllowOrigins}" || "https://localhost:5001").split(';')
+let NoProfileImgUrl = "${NoProfileImgUrl}"
 
 if (!Array.isArray) {
     Array.isArray = function(arg) {
@@ -214,15 +215,15 @@ if (error && error.errorcode) {
             '<i class="svg-chevron-right svg-lg mb-1" title="expand"></i>StackTrace</button>' +
             '<div class="stacktrace" style="display:none">' + error.stacktrace + '</div></div>' : '') +
         '</div>')
-    errorHtml += '<p class="ml-3 btn-group">' + btnLink(BaseUrl,'&lt; home')  + (LoginPath ? btnLink(BaseUrl + '/login','login &gt;') : '') + '</p>'
+    errorHtml += '<p class="ml-3 btn-group">' + btnLink(BaseUrl,'&lt; home')  + (LoginPath ? btnLink(BaseUrl + 'login','login &gt;') : '') + '</p>'
     $('#error').innerHTML = errorHtml
 } else {
     let name = normalized.displayname || normalized.username
     document.title = name + ' Session'
     sb.push('<table><tr><td class="text-center avatar">')
-    sb.push('<img src="' + (normalized.profileurl || BaseUrl + '/metadata/svg/male-color.svg') + '">')
+    sb.push('<img src="' + (normalized.profileurl || NoProfileImgUrl) + '">')
     sb.push('<h2>' + name + '</h2>')
-    sb.push('<p><a href="' + BaseUrl + '/auth/logout?continue=' + encodeURIComponent(BaseUrl + '/login') + '">sign out</a></p>')
+    sb.push('<p><a href="' + BaseUrl + 'auth/logout?continue=' + encodeURIComponent(LoginPath) + '">sign out</a></p>')
     sb.push('</td><td class="info"><table class="table">')
 
     let sbTokens = []
