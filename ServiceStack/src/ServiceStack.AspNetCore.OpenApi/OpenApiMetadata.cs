@@ -166,11 +166,15 @@ public class OpenApiMetadata
                     var inPath = route.Contains("{" + entry.Key + "}", StringComparison.OrdinalIgnoreCase);
                     if (inPath)
                     {
+                        var propNameUsed = route.Contains("{" + entry.Key + "}")
+                            ? entry.Key
+                            : TypeProperties.Get(operation.RequestType).GetPublicProperty(entry.Key)?.Name
+                              ?? throw new ArgumentException($"Could not find property '{entry.Key}' for route '{route}' in Request {operation.RequestType.Name}");
                         inPaths.Add(entry.Key);
                         OpenApiSchema? prop = entry.Value;
                         op.Parameters.Add(new OpenApiParameter
                         {
-                            Name = entry.Key,
+                            Name = propNameUsed,
                             In = ParameterLocation.Path,
                             Required = true,
                             Schema = prop,
