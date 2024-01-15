@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
-using ServiceStack.FluentValidation;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Internal;
 using ServiceStack.Logging;
@@ -157,21 +156,20 @@ public class ServerEventsFeature : IPlugin, IConfigureServices, Model.IHasString
 
     public void Configure(IServiceCollection services)
     {
-        if (services.Exists<IServerEvents>()) 
-            return;
-        
-        var broker = new MemoryServerEvents
+        if (!services.Exists<IServerEvents>())
         {
-            IdleTimeout = IdleTimeout,
-            HouseKeepingInterval = HouseKeepingInterval,
-            OnSubscribeAsync = OnSubscribeAsync,
-            OnUnsubscribeAsync = OnUnsubscribeAsync,
-            OnUpdateAsync = OnUpdateAsync,
-            NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
-            Serialize = Serialize,
-            OnError = OnError,
-        };
-        services.AddSingleton<IServerEvents>(broker);
+            services.AddSingleton<IServerEvents>(new MemoryServerEvents
+            {
+                IdleTimeout = IdleTimeout,
+                HouseKeepingInterval = HouseKeepingInterval,
+                OnSubscribeAsync = OnSubscribeAsync,
+                OnUnsubscribeAsync = OnUnsubscribeAsync,
+                OnUpdateAsync = OnUpdateAsync,
+                NotifyChannelOfSubscriptions = NotifyChannelOfSubscriptions,
+                Serialize = Serialize,
+                OnError = OnError,
+            });
+        }
         
         if (UnRegisterPath != null)
         {

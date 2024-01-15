@@ -11,7 +11,6 @@ using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
-using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -363,7 +362,7 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
             }
         }
 
-        if (IncludeAuthMetadataProvider && services.Exists<IAuthMetadataProvider>())
+        if (IncludeAuthMetadataProvider && !services.Exists<IAuthMetadataProvider>())
             services.AddSingleton<IAuthMetadataProvider, AuthMetadataProvider>();
     }
 
