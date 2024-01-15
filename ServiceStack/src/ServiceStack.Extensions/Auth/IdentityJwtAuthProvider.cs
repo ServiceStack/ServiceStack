@@ -663,8 +663,7 @@ public class ConvertSessionToTokenService(IIdentityJwtAuthProvider jwtAuthProvid
                     userTokens = await jwtAuthProvider.CreateBearerAndRefreshTokenAsync(Request, session.UserAuthName).ConfigAwait();
                 }
             }
-            if (userTokens == null)
-                userTokens = new(token, null);
+            userTokens ??= new(token, null);
         }
 
         var httpResult = new HttpResult(new ConvertSessionToTokenResponse()); 

@@ -2,6 +2,7 @@ using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using ServiceStack.IO;
 using ServiceStack.OrmLite;
 using ServiceStack.VirtualPath;
 using TalentBlazor;

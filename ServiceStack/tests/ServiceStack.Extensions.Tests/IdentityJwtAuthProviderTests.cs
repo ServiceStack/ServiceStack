@@ -26,7 +26,9 @@ using ServiceStack.Web;
 namespace ServiceStack.Extensions.Tests;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<ApplicationUser>(options) {}
+    : IdentityDbContext<ApplicationUser>(options)
+{
+}
 
 // Add profile data for application users by adding properties to the ApplicationUser class
 public class ApplicationUser : IdentityUser, IRequireRefreshToken
@@ -38,6 +40,7 @@ public class ApplicationUser : IdentityUser, IRequireRefreshToken
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiry { get; set; }
 }
+
 public class CustomUserSession : AuthUserSession
 {
     public override void PopulateFromClaims(IRequest httpReq, ClaimsPrincipal principal)
@@ -46,6 +49,7 @@ public class CustomUserSession : AuthUserSession
         ProfileUrl = principal.FindFirstValue(JwtClaimTypes.Picture);
     }
 }
+
 public class Roles
 {
     public const string Admin = nameof(Admin);
@@ -83,85 +87,85 @@ public class IdentityJwtAuthProviderTests
             AutoQueryAppHost.SeedDatabase(db);
         }
 
-    private async Task AddSeedUsers(IServiceProvider services)
-    {
-        //initializing custom roles 
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-        string[] allRoles = [Roles.Admin, Roles.Manager, Roles.Employee];
-
-        void assertResult(IdentityResult result)
+        private async Task AddSeedUsers(IServiceProvider services)
         {
-            if (!result.Succeeded)
-                throw new Exception(result.Errors.First().Description);
-        }
+            //initializing custom roles 
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+            string[] allRoles = [Roles.Admin, Roles.Manager, Roles.Employee];
 
-        async Task EnsureUserAsync(ApplicationUser user, string password, string[]? roles = null)
-        {
-            var existingUser = await userManager.FindByEmailAsync(user.Email!);
-            if (existingUser != null) return;
-
-            await userManager!.CreateAsync(user, password);
-            if (roles?.Length > 0)
+            void assertResult(IdentityResult result)
             {
-                var newUser = await userManager.FindByEmailAsync(user.Email!);
-                assertResult(await userManager.AddToRolesAsync(user, roles));
+                if (!result.Succeeded)
+                    throw new Exception(result.Errors.First().Description);
             }
-        }
 
-        foreach (var roleName in allRoles)
-        {
-            var roleExist = await roleManager.RoleExistsAsync(roleName);
-            if (!roleExist)
+            async Task EnsureUserAsync(ApplicationUser user, string password, string[]? roles = null)
             {
-                //Create the roles and seed them to the database
-                assertResult(await roleManager.CreateAsync(new IdentityRole(roleName)));
+                var existingUser = await userManager.FindByEmailAsync(user.Email!);
+                if (existingUser != null) return;
+
+                await userManager!.CreateAsync(user, password);
+                if (roles?.Length > 0)
+                {
+                    var newUser = await userManager.FindByEmailAsync(user.Email!);
+                    assertResult(await userManager.AddToRolesAsync(user, roles));
+                }
             }
+
+            foreach (var roleName in allRoles)
+            {
+                var roleExist = await roleManager.RoleExistsAsync(roleName);
+                if (!roleExist)
+                {
+                    //Create the roles and seed them to the database
+                    assertResult(await roleManager.CreateAsync(new IdentityRole(roleName)));
+                }
+            }
+
+            await EnsureUserAsync(new ApplicationUser
+            {
+                DisplayName = "Test User",
+                Email = "test@email.com",
+                UserName = "test@email.com",
+                FirstName = "Test",
+                LastName = "User",
+                EmailConfirmed = true,
+                ProfileUrl = "/img/profiles/user1.svg",
+            }, "p@55wOrd");
+
+            await EnsureUserAsync(new ApplicationUser
+            {
+                DisplayName = "Test Employee",
+                Email = "employee@email.com",
+                UserName = "employee@email.com",
+                FirstName = "Test",
+                LastName = "Employee",
+                EmailConfirmed = true,
+                ProfileUrl = "/img/profiles/user2.svg",
+            }, "p@55wOrd", [Roles.Employee]);
+
+            await EnsureUserAsync(new ApplicationUser
+            {
+                DisplayName = "Test Manager",
+                Email = "manager@email.com",
+                UserName = "manager@email.com",
+                FirstName = "Test",
+                LastName = "Manager",
+                EmailConfirmed = true,
+                ProfileUrl = "/img/profiles/user3.svg",
+            }, "p@55wOrd", [Roles.Manager, Roles.Employee]);
+
+            await EnsureUserAsync(new ApplicationUser
+            {
+                DisplayName = "Admin User",
+                Email = "admin@email.com",
+                UserName = "admin@email.com",
+                FirstName = "Admin",
+                LastName = "User",
+                EmailConfirmed = true,
+            }, "p@55wOrd", allRoles);
         }
-
-        await EnsureUserAsync(new ApplicationUser
-        {
-            DisplayName = "Test User",
-            Email = "test@email.com",
-            UserName = "test@email.com",
-            FirstName = "Test",
-            LastName = "User",
-            EmailConfirmed = true,
-            ProfileUrl = "/img/profiles/user1.svg",
-        }, "p@55wOrd");
-
-        await EnsureUserAsync(new ApplicationUser
-        {
-            DisplayName = "Test Employee",
-            Email = "employee@email.com",
-            UserName = "employee@email.com",
-            FirstName = "Test",
-            LastName = "Employee",
-            EmailConfirmed = true,
-            ProfileUrl = "/img/profiles/user2.svg",
-        }, "p@55wOrd", [Roles.Employee]);
-
-        await EnsureUserAsync(new ApplicationUser
-        {
-            DisplayName = "Test Manager",
-            Email = "manager@email.com",
-            UserName = "manager@email.com",
-            FirstName = "Test",
-            LastName = "Manager",
-            EmailConfirmed = true,
-            ProfileUrl = "/img/profiles/user3.svg",
-        }, "p@55wOrd", [Roles.Manager, Roles.Employee]);
-
-        await EnsureUserAsync(new ApplicationUser
-        {
-            DisplayName = "Admin User",
-            Email = "admin@email.com",
-            UserName = "admin@email.com",
-            FirstName = "Admin",
-            LastName = "User",
-            EmailConfirmed = true,
-        }, "p@55wOrd", allRoles);
-    }        
     }
 
     private ServiceStackHost? appHost = null;
@@ -177,7 +181,7 @@ public class IdentityJwtAuthProviderTests
         });
         var services = builder.Services;
         var config = builder.Configuration;
-        
+
         services.AddAuthentication(options =>
             {
                 options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -193,7 +197,8 @@ public class IdentityJwtAuthProviderTests
                     ValidateIssuerSigningKey = true,
                 };
             })
-            .AddScheme<AuthenticationSchemeOptions,BasicAuthenticationHandler<ApplicationUser>>(BasicAuthenticationHandler.Scheme, null)
+            .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler<ApplicationUser>>(
+                BasicAuthenticationHandler.Scheme, null)
             .AddIdentityCookies(options => options.DisableRedirectsForApis());
         services.AddAuthorization();
 
@@ -204,8 +209,8 @@ public class IdentityJwtAuthProviderTests
         var dbFactory = new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
         services.AddSingleton<IDbConnectionFactory>(dbFactory);
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(connectionString/*, b => b.MigrationsAssembly(nameof(MyApp))*/ ));
-        
+            options.UseSqlite(connectionString /*, b => b.MigrationsAssembly(nameof(MyApp))*/));
+
         services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -214,24 +219,25 @@ public class IdentityJwtAuthProviderTests
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-        
+
         ServiceStackHost.InitOptions.ScriptContext.ScriptMethods.AddRange([
             new DbScriptsAsync(),
-            new MyValidators(), 
+            new MyValidators(),
         ]);
 
-        services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {
+        services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options =>
+        {
             options.SessionFactory = () => new CustomUserSession();
             options.CredentialsAuth();
-            options.JwtAuth(x => {
-                x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90);
-            });
+            options.JwtAuth(x => { x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90); });
         })));
-        
+
         services.AddPlugin(AutoQueryAppHost.CreateAutoQueryFeature());
-        
-        services.AddServiceStack(typeof(MyServices).Assembly, c => {
-            c.AddSwagger(o => {
+
+        services.AddServiceStack(typeof(MyServices).Assembly, c =>
+        {
+            c.AddSwagger(o =>
+            {
                 o.AddJwtBearer();
                 //o.AddBasicAuth();
             });
@@ -245,11 +251,8 @@ public class IdentityJwtAuthProviderTests
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.MapAdditionalIdentityEndpoints();
-        app.UseServiceStack(new AppHost(), options =>
-        {
-            options.MapEndpoints();
-        });
-        
+        app.UseServiceStack(new AppHost(), options => { options.MapEndpoints(); });
+
         startTask = app.StartAsync(TestsConfig.ListeningOn);
     }
 
@@ -257,6 +260,7 @@ public class IdentityJwtAuthProviderTests
     public const string Password = "p@55wOrd";
 
     private static JsonApiClient GetClient() => new(TestsConfig.ListeningOn);
+
     protected virtual JsonApiClient GetClientWithBasicAuthCredentials()
     {
         var client = GetClient();
@@ -274,12 +278,12 @@ public class IdentityJwtAuthProviderTests
         Assert.That(response.Total, Is.EqualTo(TotalRockstars));
         Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
     }
-    
+
     [Test]
     public async Task Endpoints_Can_not_access_Secured_without_Auth()
     {
         var client = GetClient();
-            
+
         try
         {
             var request = new Secured { Name = "test" };
@@ -307,7 +311,6 @@ public class IdentityJwtAuthProviderTests
         response = await client.PostAsync(request);
         Assert.That(response.Result, Is.EqualTo("Hello, test"));
     }
-
 }
 
 #endif
