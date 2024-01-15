@@ -3,6 +3,11 @@ using ServiceStack.Host;
 #else
 using System.Web;
 #endif
+#if NET8_0_OR_GREATER
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -40,7 +45,7 @@ public class SvgFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
                     ValidateFn = ValidateFn,
                     Context = SharpPageHandler.NewContext(appHost),
                 }
-                : (IHttpHandler) new SvgFormatHandler {
+                : new SvgFormatHandler {
                     Id = req.QueryString["id"], 
                     Format = req.QueryString["format"], 
                     Fill = req.QueryString["fill"],
@@ -50,6 +55,32 @@ public class SvgFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
                     Fill = req.QueryString["fill"]
                 }
                 : null);
+        
+#if NET8_0_OR_GREATER
+        var host = (IAppHostNetCore)appHost;
+        host.MapEndpoints(routeBuilder =>
+        {
+            var tag = GetType().Name;
+            routeBuilder.MapGet(RoutePath + "/{**path}", httpContext => httpContext.ProcessRequestAsync(
+                httpContext.Request.Path.ToString() == RoutePath 
+                    ? string.IsNullOrEmpty(httpContext.Request.Query["id"]) || string.IsNullOrEmpty(httpContext.Request.Query["format"]) 
+                        ? new SharpPageHandler(HtmlTemplates.GetSvgTemplatePath()) {
+                            ValidateFn = ValidateFn,
+                            Context = SharpPageHandler.NewContext(appHost),
+                        }
+                        : new SvgFormatHandler {
+                            Id = httpContext.Request.Query["id"], 
+                            Format = httpContext.Request.Query["format"], 
+                            Fill = httpContext.Request.Query["fill"],
+                        }
+                    : new SvgFormatHandler(httpContext.Request.Path.ToString().Substring(RoutePath.Length+1)) {
+                        Fill = httpContext.Request.Query["fill"]
+                    })
+                )
+                .WithMetadata<string>(name:nameof(SvgFeature), tag:tag, contentType:MimeTypes.PlainText);
+        });
+#endif
+        
 
         var btnSvgCssFile = appHost.VirtualFileSources.GetFile("/css/buttons-svg.css");
         if (btnSvgCssFile != null)
