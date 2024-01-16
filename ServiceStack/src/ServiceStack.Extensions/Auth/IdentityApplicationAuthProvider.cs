@@ -66,6 +66,8 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         [ClaimTypes.HomePhone] = nameof(AuthUserSession.HomePhone),
         [ClaimTypes.MobilePhone] = nameof(AuthUserSession.MobilePhone),
         [ClaimTypes.Webpage] = nameof(AuthUserSession.Webpage),
+        [JwtClaimTypes.NickName] = nameof(AuthUserSession.DisplayName),
+        [JwtClaimTypes.Picture] = nameof(AuthUserSession.ProfileUrl),
     };
 
     /// <summary>
