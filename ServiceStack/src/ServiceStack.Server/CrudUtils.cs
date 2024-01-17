@@ -90,8 +90,9 @@ public interface IGenerateCrudServices
     /// Generate AutoQuery DTOs for specified RDBMS Tables
     /// </summary>
     /// <param name="feature"></param>
+    /// <param name="requestTypes"></param>
     /// <returns>New AutoQuery Request DTOs</returns>
-    List<Type> GenerateMissingServices(AutoQueryFeature feature);
+    List<Type> GenerateMissingServices(AutoQueryFeature feature, HashSet<Type> requestTypes);
     
     Action<List<TableSchema>> TableSchemasFilter { get; set; }
 

@@ -360,7 +360,8 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool IsVisible(IRequest httpReq, Operation operation)
     {
-        if (HostContext.Config is { EnableAccessRestrictions: false } 
+        var config = ServiceStackHost.Instance?.Config;
+        if (config == null || config is { EnableAccessRestrictions: false } 
             || operation.RequestType.ForceInclude())
             return true;
 
@@ -377,7 +378,8 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool IsVisible(IRequest httpReq, Type requestType)
     {
-        if (HostContext.Config is { EnableAccessRestrictions: false })
+        var config = ServiceStackHost.Instance?.Config;
+        if (config is null or { EnableAccessRestrictions: false })
             return true;
 
         var operation = HostContext.Metadata.GetOperation(requestType);
@@ -386,7 +388,8 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool IsVisible(IRequest httpReq, Format format, string operationName)
     {
-        if (HostContext.Config is { EnableAccessRestrictions: false })
+        var config = ServiceStackHost.Instance?.Config;
+        if (config is null or { EnableAccessRestrictions: false })
             return true;
 
         OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
@@ -417,7 +420,8 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool CanAccess(RequestAttributes reqAttrs, Format format, string operationName)
     {
-        if (HostContext.Config is { EnableAccessRestrictions: false })
+        var config = ServiceStackHost.Instance?.Config;
+        if (config is null or { EnableAccessRestrictions: false })
             return true;
 
         OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
@@ -441,7 +445,8 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool CanAccess(Format format, string operationName)
     {
-        if (HostContext.Config is { EnableAccessRestrictions: false })
+        var config = ServiceStackHost.Instance?.Config;
+        if (config is null or { EnableAccessRestrictions: false })
             return true;
 
         OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
@@ -984,8 +989,9 @@ public class XsdMetadata
 
     public List<string> GetReplyOperationNames(Format format, HashSet<Type> soapTypes)
     {
+        var config = ServiceStackHost.Instance?.Config;
         return Metadata.OperationsMap.Values
-            .Where(x => HostContext.Config != null
+            .Where(x => config != null
                         && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
             .Where(x => !x.ReturnsVoid)
             .Where(x => soapTypes.Contains(x.RequestType))
@@ -995,8 +1001,9 @@ public class XsdMetadata
 
     public List<string> GetOneWayOperationNames(Format format, HashSet<Type> soapTypes)
     {
+        var config = ServiceStackHost.Instance?.Config;
         return Metadata.OperationsMap.Values
-            .Where(x => HostContext.Config != null
+            .Where(x => config != null
                         && HostContext.MetadataPagesConfig.CanAccess(format, x.Name))
             .Where(x => x.ReturnsVoid)
             .Where(x => soapTypes.Contains(x.RequestType))

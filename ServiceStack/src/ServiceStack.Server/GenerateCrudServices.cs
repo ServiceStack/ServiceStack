@@ -27,6 +27,11 @@ namespace ServiceStack;
 public class GenerateCrudServices : IGenerateCrudServices
 {
     /// <summary>
+    /// Use specified DbFactory or from IOC
+    /// </summary>
+    public IDbConnectionFactory DbFactory { get; set; }
+    
+    /// <summary>
     /// List of AutoQuery Operations to generate
     /// </summary>
     public List<string> IncludeCrudOperations { get; set; } =
@@ -205,7 +210,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         return op.Request.Name;
     }
 
-    public List<Type> GenerateMissingServices(AutoQueryFeature feature)
+    public List<Type> GenerateMissingServices(AutoQueryFeature feature, HashSet<Type> requestTypes)
     {
         var types = new List<Type>();
         // return types;
@@ -219,9 +224,8 @@ public class GenerateCrudServices : IGenerateCrudServices
         var metadataTypes = GetMissingTypesToCreate(out var existingMetaTypesMap);
         var generatedTypes = new Dictionary<Tuple<string,string>, Type>();
 
-        var appHost = HostContext.AppHost;
         var dtoTypes = new HashSet<Type>();
-        foreach (var dtoType in appHost.Metadata.GetAllDtos())
+        foreach (var dtoType in requestTypes)
         {
             dtoTypes.Add(dtoType);
         }
@@ -239,7 +243,8 @@ public class GenerateCrudServices : IGenerateCrudServices
                     }
                     catch (Exception ex)
                     {
-                        appHost.NotifyStartupException(ex, type.Name, nameof(GenerateMissingServices));
+                        LogManager.GetLogger(GetType()).ErrorFormat("Error trying to AddReferencedTypes {0}: {1}", type.Name, ex.Message);
+                        throw;
                     }
                 }
                 else if (ServiceMetadata.IsDtoType(type))
@@ -268,7 +273,8 @@ public class GenerateCrudServices : IGenerateCrudServices
             }
             catch (Exception ex)
             {
-                appHost.NotifyStartupException(ex);
+                LogManager.GetLogger(GetType()).ErrorFormat("Error trying to Create Type {0}: {1}", metaType.Name, ex.Message);
+                throw;
             }
         }
 
@@ -758,13 +764,15 @@ public class GenerateCrudServices : IGenerateCrudServices
             existingExactTypesMap[key(type)] = type;
         }
 
+        var dbFactory = DbFactory ?? ServiceStackHost.Instance?.TryResolve<IDbConnectionFactory>()
+            ?? throw new NotSupportedException(nameof(GenerateCrudServices) + ".DbFactory is not configured");
         foreach (var genInstruction in CreateServices)
         {
             var requestDto = genInstruction.ConvertTo<CrudCodeGenTypes>();
             requestDto.Include = "new";
                 
             var req = new BasicRequest(requestDto);
-            var ret = ResolveMetadataTypes(requestDto, req, GenerateOperationsFilter);
+            var ret = ResolveMetadataTypes(dbFactory, requestDto, req, GenerateOperationsFilter);
                 
             foreach (var op in ret.Item1.Operations)
             {
@@ -899,7 +907,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext> generateOperationsFilter, 
         List<string> addQueryParamOptions=null)
     {
-        var ret = ResolveMetadataTypes(request, req, generateOperationsFilter);
+        var ret = ResolveMetadataTypes(req.TryResolve<IDbConnectionFactory>(), request, req, generateOperationsFilter);
         var crudMetadataTypes = ret.Item1;
         var typesConfig = ret.Item2;
             
@@ -923,7 +931,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     static Tuple<string, string> key(MetadataTypeName type) => new(type.Namespace, type.Name);
     static Tuple<string, string> keyNs(string ns, string name) => new(ns, name);
 
-    public static Tuple<MetadataTypes, MetadataTypesConfig> ResolveMetadataTypes(
+    public static Tuple<MetadataTypes, MetadataTypesConfig> ResolveMetadataTypes(IDbConnectionFactory dbFactory,
         CrudCodeGenTypes request, IRequest req, Action<AutoGenContext> generateOperationsFilter)
     {
         if (string.IsNullOrEmpty(request.Include))
@@ -933,7 +941,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 @"'Include' must be either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types", 
                 nameof(request.Include));
             
-        var metadata = req.Resolve<INativeTypesMetadata>();
+        //var metadata = req.Resolve<INativeTypesMetadata>();
         IGenerateCrudServices genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
 
         var excludeTables = genServices.ExcludeTables;
@@ -943,16 +951,16 @@ public class GenerateCrudServices : IGenerateCrudServices
             excludeTables.AddRange(request.ExcludeTables);
         }
 
-        var dbFactory = req.TryResolve<IDbConnectionFactory>();
         var results = request.NoCache == true 
             ? GetTableSchemas(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, excludeTables)
             : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, excludeTables).Tables;
             
         genServices.TableSchemasFilter?.Invoke(results);
 
-        var appHost = HostContext.AppHost;
-        request.BaseUrl ??= HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? appHost.GetBaseUrl(req);
-        var typesConfig = metadata.GetConfig(request);
+        var metadata = ServiceStackHost.GetOrCreateMetadata();
+        var nativeTypes = ServiceStackHost.GetRequiredPlugin<NativeTypesFeature>();
+        var typesConfig = nativeTypes.MetadataTypesConfig;
+        request.BaseUrl ??= nativeTypes.MetadataTypesConfig.BaseUrl ?? ServiceStackHost.Instance?.GetBaseUrl(req);
         if (request.MakePartial == null)
             typesConfig.MakePartial = false;
         if (request.MakeVirtual == null)
@@ -980,9 +988,10 @@ public class GenerateCrudServices : IGenerateCrudServices
             typesConfig.ExportAttributes = [..exportDbAttrs];
         else
             exportDbAttrs.Each(x => typesConfig.ExportAttributes.Add(x));
-            
-        var metadataTypes = metadata.GetMetadataTypes(req, typesConfig);
-        var serviceModelNs = appHost.GetType().Namespace + ".ServiceModel";
+
+        var nativeTypesMetadata = ServiceStackHost.GetOrCreateNativeTypesMetadata();
+        var metadataTypes = nativeTypesMetadata.GetMetadataTypes(req, typesConfig);
+        var serviceModelNs = ServiceStackHost.GetHostNamespace() + ".ServiceModel";
         var typesNs = serviceModelNs + ".Types";
 
         //Put NamedConnections Types in their own Namespace
@@ -1007,7 +1016,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         var allVerbs = crudVerbs.Values.Distinct().ToArray();
 
         var existingRoutes = new HashSet<Tuple<string,string>>();
-        foreach (var op in appHost.Metadata.Operations)
+        foreach (var op in metadata.Operations)
         {
             foreach (var route in op.Routes.Safe())
             {
@@ -1068,7 +1077,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
             
         // Also don't include Types in App's Implementation Assemblies
-        appHost.ServiceAssemblies.Each(x => appDlls.Add(x));
+        ServiceStackHost.TryGetServiceAssemblies().Each(x => appDlls.Add(x));
         appDlls = appDlls.Where(x => !x.IsDynamic).Distinct().ToList();
         var existingAppTypes = new HashSet<string>();
         var existingExactAppTypes = new HashSet<Tuple<string,string>>();

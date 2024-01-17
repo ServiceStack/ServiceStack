@@ -576,12 +576,17 @@ public static class NetCoreAppHostExtensions
     }
 
 #if NET8_0_OR_GREATER
-    public static void AddServiceStack(this IServiceCollection services, Assembly serviceAssembly, Action<ServiceStackServicesOptions>? configure = null) =>
+    public static void AddServiceStack(this IServiceCollection services, Assembly serviceAssembly, Action<ServiceStackServicesOptions>? configure = null)
+    {
+        ServiceStackHost.InitOptions.HostType ??= new System.Diagnostics.StackFrame(1).GetMethod()?.DeclaringType;
         services.AddServiceStack([serviceAssembly], configure);
-    
+    }
+
     public static void AddServiceStack(this IServiceCollection services, IEnumerable<Assembly>? serviceAssemblies, Action<ServiceStackServicesOptions>? configure = null)
     {
+        ServiceStackHost.InitOptions.HostType ??= new System.Diagnostics.StackFrame(1).GetMethod()?.DeclaringType;
         var options = ServiceStackHost.InitOptions;
+        
         options.UseServices(services);
         if (serviceAssemblies != null)
             options.ServiceAssemblies.AddRange(serviceAssemblies);

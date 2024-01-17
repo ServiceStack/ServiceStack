@@ -256,6 +256,9 @@ public class IdentityJwtAuthProviderTests
         startTask = app.StartAsync(TestsConfig.ListeningOn);
     }
 
+    [OneTimeTearDown]
+    public void TestFixtureTearDown() => appHost?.Dispose();
+
     public const string Username = "admin@email.com";
     public const string Password = "p@55wOrd";
 

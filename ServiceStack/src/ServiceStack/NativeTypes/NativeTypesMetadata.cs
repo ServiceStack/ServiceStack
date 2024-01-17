@@ -188,7 +188,8 @@ public class MetadataTypesGenerator
                 }
             }
 
-            var routeAttrs = HostContext.AppHost.GetRouteAttributes(operation.RequestType).ToList();
+            var routeAttrs = (HostContext.AppHost?.GetRouteAttributes(operation.RequestType)
+                ?? operation.RequestType.AllAttributes<RouteAttribute>()).ToList();
             if (routeAttrs.Count > 0)
             {
                 opType.Routes = routeAttrs.ConvertAll(x =>
@@ -421,7 +422,7 @@ public class MetadataTypesGenerator
             {
                 if (metaType.Properties != null)
                 {
-                    to.Properties ??= new List<MetadataPropertyType>();
+                    to.Properties ??= [];
                     foreach (var metaProp in metaType.Properties)
                     {
                         to.Properties.Add(metaProp);
@@ -590,9 +591,7 @@ public class MetadataTypesGenerator
             var innerTypes = type.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var innerType in innerTypes)
             {
-                if (metaType.InnerTypes == null)
-                    metaType.InnerTypes = new List<MetadataTypeName>();
-
+                metaType.InnerTypes ??= [];
                 metaType.InnerTypes.Add(new MetadataTypeName    
                 {
                     Type = innerType,
@@ -605,7 +604,7 @@ public class MetadataTypesGenerator
             }
         }
 
-        foreach (var configure in HostContext.AppHost.Metadata.ConfigureMetadataTypes)
+        foreach (var configure in HostContext.AppHost?.Metadata.ConfigureMetadataTypes ?? [])
         {
             configure(metaType);
         }
@@ -817,8 +816,9 @@ public class MetadataTypesGenerator
 
     public MetadataPropertyType ToProperty(PropertyInfo pi, object instance = null, Dictionary<string, object> ignoreValues = null)
     {
+        var config = ServiceStackHost.Instance?.Config;
         var property = pi.ToMetadataPropertyType(instance, ignoreValues,
-            treatNonNullableRefTypesAsRequired: HostContext.AppHost.Config.TreatNonNullableRefTypesAsRequired);
+            treatNonNullableRefTypesAsRequired: config?.TreatNonNullableRefTypesAsRequired ?? true);
 
         property.Attributes = ToAttributes(pi.GetCustomAttributes(false));
 

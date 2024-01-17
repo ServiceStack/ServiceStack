@@ -2014,6 +2014,73 @@ public abstract partial class ServiceStackHost
         return null;
     }
 
+    public static T TryGetPlugin<T>() where T : class, IPlugin
+    {
+        if (Instance != null)
+            return Instance.GetPlugin<T>();
+        return InitOptions.Plugins.FirstOrDefault(x => x is T) as T;
+    }
+
+    public static T GetRequiredPlugin<T>() where T : class, IPlugin
+    {
+        return TryGetPlugin<T>()
+            ?? throw new NotSupportedException($"{typeof(T).Name} plugin is not registered");
+    }
+
+    public static string GetHostNamespace()
+    {
+        var ns = Instance?.GetType().Namespace;
+        ns ??= InitOptions.HostType?.Namespace ?? "MyApp";
+        return ns;
+    }
+
+    public static ServiceMetadata GetOrCreateMetadata()
+    {
+        if (Instance != null)
+            return Instance.Metadata;
+        var to = new ServiceMetadata(InitOptions.Routes);
+
+        var serviceTypes = InitOptions.ResolveAssemblyServiceTypes()
+            .Where(ServiceController.IsServiceType);
+        
+        var registeredServices = new HashSet<Type>();
+        var processedReqs = new HashSet<Type>();
+
+        foreach (var serviceType in serviceTypes)
+        {
+            if (!registeredServices.Add(serviceType))
+                continue;
+
+            foreach (var mi in serviceType.GetActions())
+            {
+                var requestType = mi.GetParameters()[0].ParameterType;
+                if (!processedReqs.Add(requestType)) 
+                    continue;
+
+                var responseType = ServiceController.GetResponseType(mi, requestType);
+                to.Add(serviceType, requestType, responseType);
+            }
+        }
+        return to;
+    }
+
+    public static INativeTypesMetadata GetOrCreateNativeTypesMetadata()
+    {
+        if (Instance != null)
+            return Instance.TryResolve<INativeTypesMetadata>();
+
+        var feature = GetRequiredPlugin<NativeTypesFeature>();
+        return new NativeTypesMetadata(GetOrCreateMetadata(), feature.MetadataTypesConfig);
+    }
+
+    public static List<Assembly> TryGetServiceAssemblies()
+    {
+        if (Instance != null)
+            return Instance.ServiceAssemblies;
+        return InitOptions.ServiceAssemblies;
+    }
+    
+
     public virtual void OnApplicationStarted() {}
 
     public virtual void OnApplicationStopping()

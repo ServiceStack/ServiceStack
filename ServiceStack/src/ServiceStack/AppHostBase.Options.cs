@@ -203,7 +203,8 @@ public class ServiceStackServicesOptions
         // If AppHost has initialized use Metadata Operations
         if (ServiceStackHost.Instance != null)
         {
-            foreach (var entry in ServiceStackHost.Instance.Metadata.OperationsMap)
+            var metadata = ServiceStackHost.GetOrCreateMetadata();
+            foreach (var entry in metadata.OperationsMap)
             {
                 to[entry.Key] = entry.Value.ServiceType;
             }
@@ -224,6 +225,8 @@ public class ServiceStackServicesOptions
         }
         return to;
     }
+    
+    public Type? HostType { get; set; }
 }
 
 #if NET8_0_OR_GREATER

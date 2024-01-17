@@ -124,23 +124,8 @@ public class ServiceController : IServiceController
 
                 RegisterServiceExecutor(requestType, serviceType, serviceFactoryFn);
 
-                var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
-                var responseType = returnMarker != null ?
-                    returnMarker.GetGenericArguments()[0]
-                    : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
-                        mi.ReturnType
-#if NETCORE
-                        : Type.GetType(requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name);
-#else                                                  
-                        : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
-#endif
-                if (responseType == typeof(Task))
-                    responseType = null;
-                else if (responseType?.Name == "Task`1" && responseType.GetGenericArguments()[0] != typeof(object))
-                    responseType = responseType.GetGenericArguments()[0];
-                else if (responseType?.Name == "ValueTask`1" && responseType.GetGenericArguments()[0] != typeof(object))
-                    responseType = responseType.GetGenericArguments()[0];
-                    
+                var responseType = GetResponseType(mi, requestType);
+
                 RegisterRestPaths(requestType);
 
                 appHost.Metadata.Add(serviceType, requestType, responseType);
@@ -165,6 +150,27 @@ public class ServiceController : IServiceController
                         responseType != null ? "Reply" : "OneWay", serviceType.GetOperationName(), requestType.GetOperationName());
             }
         }
+    }
+
+    public static Type GetResponseType(ActionMethod mi, Type requestType)
+    {
+        var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+        var responseType = returnMarker != null ?
+            returnMarker.GetGenericArguments()[0]
+            : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
+                mi.ReturnType
+#if NETCORE
+                : Type.GetType(requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name);
+#else                                                  
+                        : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
+#endif
+        if (responseType == typeof(Task))
+            responseType = null;
+        else if (responseType?.Name == "Task`1" && responseType.GetGenericArguments()[0] != typeof(object))
+            responseType = responseType.GetGenericArguments()[0];
+        else if (responseType?.Name == "ValueTask`1" && responseType.GetGenericArguments()[0] != typeof(object))
+            responseType = responseType.GetGenericArguments()[0];
+        return responseType;
     }
 
     public static bool IsRequestType(Type type)

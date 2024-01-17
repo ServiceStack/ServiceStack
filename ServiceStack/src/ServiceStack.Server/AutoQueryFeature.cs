@@ -188,7 +188,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         ServiceStackHost.InitOptions.ExcludeServiceAssemblies.Add(GetType().Assembly);
         var scannedTypes = ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes(include:Crud.AnyAutoQueryType);
 
-        var crudServices = GenerateCrudServices?.GenerateMissingServices(this);
+        var crudServices = GenerateCrudServices?.GenerateMissingServices(this, scannedTypes);
         crudServices?.Each(x => scannedTypes.Add(x));
 
         var userRequestDtosMap = ServiceStackHost.InitOptions.ResolveRequestServiceTypesMap();
