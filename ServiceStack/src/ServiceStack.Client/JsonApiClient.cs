@@ -60,6 +60,8 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         JsConfig.InitStatics();
     }
 
+    public static JsonApiClient Create(string baseUrl) => new(baseUrl);
+
     public static Func<HttpMessageHandler>? GlobalHttpMessageHandlerFactory { get; set; }
     public static Action<JsonApiClient,HttpMessageHandler>? HttpMessageHandlerFilter { get; set; }
     public HttpMessageHandler? HttpMessageHandler { get; set; }

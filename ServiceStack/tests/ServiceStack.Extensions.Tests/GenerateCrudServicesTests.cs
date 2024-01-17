@@ -1,17 +1,12 @@
 #nullable enable
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using NUnit.Framework;
-using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Html;
 using ServiceStack.OrmLite;
@@ -65,13 +60,6 @@ public class GenerateCrudServicesTests
             new MyValidators(),
         ]);
 
-        // services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options =>
-        // {
-        //     options.SessionFactory = () => new CustomUserSession();
-        //     options.CredentialsAuth();
-        //     options.JwtAuth(x => { x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90); });
-        // })));
-
         var autoQuery = new AutoQueryFeature
         {
             MaxLimit = 100,
@@ -99,24 +87,6 @@ public class GenerateCrudServicesTests
                             .AddAttribute(new InputAttribute { Type = Input.Types.File })
                             .AddAttribute(new UploadToAttribute("employees"));
                     }
-
-                    /* Example adding attributes to generated Type
-                    switch (type.Name)
-                    {
-                        case "Order":
-                            type.Properties.Where(x => x.Name.EndsWith("Date")).Each(p =>
-                                p.AddAttribute(new IntlDateTime(DateStyle.Medium)));
-                            type.Properties.First(x => x.Name == "Freight")
-                                .AddAttribute(new IntlNumber { Currency = NumberCurrency.USD });
-                            break;
-                        case "OrderDetail":
-                            type.Properties.First(x => x.Name == "UnitPrice")
-                                .AddAttribute(new IntlNumber { Currency = NumberCurrency.USD });
-                            type.Properties.First(x => x.Name == "Discount")
-                                .AddAttribute(new IntlNumber(NumberStyle.Percent));
-                            break;
-                    }
-                    */
                 },
             },
         }; 
@@ -146,10 +116,84 @@ public class GenerateCrudServicesTests
     [OneTimeTearDown]
     public void TestFixtureTearDown() => appHost?.Dispose();
 
+    List<string> NorthwindTables =
+    [
+        "Employee",
+        "Category",
+        "Customer",
+        "Shipper",
+        "Supplier",
+        "Order",
+        "Product",
+        "OrderDetail",
+        "Region",
+        "Territory",
+        "EmployeeTerritory",
+    ];
+
     [Test]
-    public void Can_AutoGen_Northwind_services()
+    public void Endpoints_does_AutoGen_Northwind_services()
     {
-        appHost!.Metadata.GetOperationDtos().Select(x => x.Name).PrintDump();
+        using var db = appHost!.GetDbConnection();
+        var tableNames = db.GetTableNames();
+        // "tableNames:".Print();
+        // tableNames.PrintDump();
+
+        var expectedApis = NorthwindTables.SelectMany(x => 
+            new [] { $"Query{Words.Pluralize(x)}", $"Create{x}", $"Update{x}", $"Patch{x}", $"Delete{x}" }
+        ).ToList();
+        
+        // "\nexpectedApis:".Print();
+        // expectedApis.PrintDump();
+
+        var exclude = new []{ nameof(QueryCaseInsensitiveOrderBy) };
+        var apisWithTableNames = appHost!.Metadata.GetOperationDtos()
+            .Select(x => x.Name)
+            .Where(x => NorthwindTables.Any(table => x.Contains(table) || x.Contains(Words.Pluralize(table)))
+                && !exclude.Contains(x))
+            .ToList(); 
+        
+        // "\napis:".Print();
+        // apisWithTableNames.PrintDump();
+
+        Assert.That(apisWithTableNames, Is.EquivalentTo(expectedApis));
+    }
+
+    [Test]
+    public void Endpoints_does_generate_Swagger_endpoints_for_AutoGen_Services()
+    {
+        var url = TestsConfig.ListeningOn.CombineWith("/swagger/v1/swagger.json");
+        var json = url.GetJsonFromUrl();
+        // json.Print();
+
+        var expectedPaths = NorthwindTables.SelectMany(x => 
+            new [] { $"/api/Query{Words.Pluralize(x)}", $"/api/Create{x}", $"/api/Update{x}", $"/api/Patch{x}", $"/api/Delete{x}" }
+        ).ToList();
+
+        var obj = (Dictionary<string,object>)JSON.parse(json);
+        var paths = (Dictionary<string,object>)obj["paths"];
+        
+        var autogenPaths = paths.Keys.Where(x => expectedPaths.Any(x.StartsWith)).ToList();
+
+        Assert.That(autogenPaths, Is.EquivalentTo(expectedPaths));
+    }
+
+    record class PartialEmployee(int Id, string FirstName, string LastName);
+    
+    [Test]
+    public void Endpoints_can_call_AutoGen_QueryEmployees_Service()
+    {
+        var url = TestsConfig.ListeningOn.CombineWith("/api/QueryEmployees")
+            .AddQueryParam("Ids", "1,3,5")
+            .AddQueryParam("OrderBy", "Id");
+        
+        var json = url.GetJsonFromUrl();
+        var results = json.FromJson<QueryResponse<PartialEmployee>>().Results; 
+
+        Assert.That(results.Count, Is.EqualTo(3));
+        Assert.That(results[0], Is.EqualTo(new PartialEmployee(1, "Nancy", "Davolio")));
+        Assert.That(results[1], Is.EqualTo(new PartialEmployee(3, "Janet", "Leverling")));
+        Assert.That(results[2], Is.EqualTo(new PartialEmployee(5, "Steven", "Buchanan")));
     }
 }
 
