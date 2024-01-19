@@ -22,6 +22,8 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="Markdig" Version="0.33.*" />
     </ItemGroup>
 
@@ -53,6 +55,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+      <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.AspNetCore.OpenApi\ServiceStack.AspNetCore.OpenApi.csproj" />
       <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
       <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
       <ProjectReference Include="..\..\..\..\..\ServiceStack\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />

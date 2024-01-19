@@ -48,17 +48,8 @@ public class SmtpConfig
 /// <summary>
 /// Uses a configured SMTP client to send emails
 /// </summary>
-public class EmailServices : Service
+public class EmailServices(SmtpConfig Config, ILogger<EmailServices> Log) : Service
 {
-    public EmailServices(SmtpConfig config, ILogger<EmailServices> log)
-    {
-        Config = config;
-        Log = log;
-    }
-
-    public SmtpConfig Config { get; }
-    public ILogger<EmailServices> Log { get; }
-
     /* Uncomment to enable sending emails with SMTP
     public object Any(SendEmail request)
     {

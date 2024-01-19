@@ -12,19 +12,14 @@ public class ConfigureAutoQuery : IHostingStartup
             // Enable Audit History
             services.AddSingleton<ICrudEvents>(c =>
                 new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));
-        })
-        .ConfigureAppHost(appHost => {
-
-            // For TodosService
-            appHost.Plugins.Add(new AutoQueryDataFeature());
-
-            // For Bookings https://docs.servicestack.net/autoquery-crud-bookings
-            appHost.Plugins.Add(new AutoQueryFeature
+            services.AddPlugin(new AutoQueryDataFeature());
+            services.AddPlugin(new AutoQueryFeature
             {
                 MaxLimit = 1000,
                 //IncludeTotal = true,
             });
-
+        })
+        .ConfigureAppHost(appHost => {
             appHost.Resolve<ICrudEvents>().InitSchema();
         });
 }

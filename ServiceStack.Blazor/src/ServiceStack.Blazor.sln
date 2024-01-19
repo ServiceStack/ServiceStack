@@ -84,6 +84,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Mvc", "..\..\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gallery", "..\tests\UI.Gallery\Gallery\MyApp\Gallery.csproj", "{438123DC-331D-4828-B96E-82F552C76C52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Api.OpenApi", "..\..\ServiceStack\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj", "{9C7F4D0C-9878-4EE0-92A4-77F196C8C014}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.AspNetCore.OpenApi", "..\..\ServiceStack\src\ServiceStack.AspNetCore.OpenApi\ServiceStack.AspNetCore.OpenApi.csproj", "{EDFD262A-2423-407B-B412-B2C38B35A57B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -210,6 +214,14 @@ Global
 		{438123DC-331D-4828-B96E-82F552C76C52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{438123DC-331D-4828-B96E-82F552C76C52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{438123DC-331D-4828-B96E-82F552C76C52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C7F4D0C-9878-4EE0-92A4-77F196C8C014}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C7F4D0C-9878-4EE0-92A4-77F196C8C014}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C7F4D0C-9878-4EE0-92A4-77F196C8C014}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C7F4D0C-9878-4EE0-92A4-77F196C8C014}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDFD262A-2423-407B-B412-B2C38B35A57B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDFD262A-2423-407B-B412-B2C38B35A57B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDFD262A-2423-407B-B412-B2C38B35A57B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDFD262A-2423-407B-B412-B2C38B35A57B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -244,6 +256,8 @@ Global
 		{CB43C96B-6CAC-43B8-9D65-5E49A717C0C0} = {5EE0F35F-D9C1-46ED-ADDA-066C7D5ECA29}
 		{64EA83CF-1991-489C-BAA0-DFF034CC703F} = {5EE0F35F-D9C1-46ED-ADDA-066C7D5ECA29}
 		{438123DC-331D-4828-B96E-82F552C76C52} = {9F3A7376-C9F4-4D7C-B621-908C129088B4}
+		{9C7F4D0C-9878-4EE0-92A4-77F196C8C014} = {5EE0F35F-D9C1-46ED-ADDA-066C7D5ECA29}
+		{EDFD262A-2423-407B-B412-B2C38B35A57B} = {5EE0F35F-D9C1-46ED-ADDA-066C7D5ECA29}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3B375F33-2183-4974-AFDD-BC4605FAF5D6}

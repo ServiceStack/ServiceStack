@@ -15,9 +15,9 @@ public class ConfigureSsg : IHostingStartup
             services.AddSingleton(AppConfig.Instance);
             services.AddSingleton<MarkdownPages>();
             services.AddSingleton<MarkdownVideos>();
+            services.AddPlugin(new CleanUrlsFeature());
         })
         .ConfigureAppHost(
-            appHost => appHost.Plugins.Add(new CleanUrlsFeature()),
             afterPluginsLoaded: appHost =>
             {
                 var pages = appHost.Resolve<MarkdownPages>();

@@ -5,10 +5,8 @@ using MyApp.ServiceModel;
 
 namespace MyApp.ServiceInterface;
 
-public class TodosServices : Service
+public class TodosServices(IAutoQueryData AutoQuery) : Service
 {
-    public IAutoQueryData AutoQuery { get; set; }
-
     static readonly PocoDataSource<Todo> Todos = PocoDataSource.Create(new Todo[]
     {
         new () { Id = 1, Text = "Learn" },
