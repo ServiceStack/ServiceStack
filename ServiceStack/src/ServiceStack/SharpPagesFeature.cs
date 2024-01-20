@@ -93,7 +93,16 @@ public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHas
         ScanAssemblies = ServiceStackHost.TryGetServiceAssemblies();
 
         if (ServiceStackHost.Instance != null)
+        {
             this.Container = ServiceStackHost.Instance.Container;
+        }
+        else
+        {
+            if (ServiceStackHost.InitOptions.ScriptContext is not SharpPagesFeature)
+            {
+                ServiceStackHost.InitOptions.ScriptContext = this;
+            }
+        }
         
         this.InitForSharpPages();
         SkipExecutingFiltersIfError = true;

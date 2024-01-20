@@ -1039,7 +1039,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// If they don't have an ICacheClient configured use an In Memory one.
     /// </summary>
-    internal static readonly MemoryCacheClient DefaultCache = new();
+    public static MemoryCacheClient DefaultCache { get; } = new();
 
     /// <summary>
     /// Tries to resolve <see cref="ICacheClient"></see> through IoC container.
