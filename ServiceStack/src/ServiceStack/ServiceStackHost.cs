@@ -2079,7 +2079,6 @@ public abstract partial class ServiceStackHost
             return Instance.ServiceAssemblies;
         return InitOptions.ServiceAssemblies;
     }
-    
 
     public virtual void OnApplicationStarted() {}
 

@@ -59,10 +59,10 @@ public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHas
     /// </summary>
     public string MetadataDebugAdminRole { get; set; }
 
-    public List<string> IgnorePaths { get; set; } = new() {
+    public List<string> IgnorePaths { get; set; } = [
         "/Views/",
-        "/swagger-ui" // Swagger's handler needs to process index.html 
-    };
+        "/swagger-ui"
+    ];
 
     public ServiceStackScripts ServiceStackScripts => ScriptMethods.FirstOrDefault(x => x is ServiceStackScripts) as ServiceStackScripts;
 
@@ -71,6 +71,8 @@ public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHas
         get => PageFormats.First(x => x is HtmlPageFormat).Extension;
         set => PageFormats.First(x => x is HtmlPageFormat).Extension = value;
     }
+    
+    public Action<SharpPagesFeature> Configure { get; set; }
 
     public bool ExcludeProtectedFilters
     {
@@ -88,16 +90,22 @@ public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHas
 
     public SharpPagesFeature()
     {
-        var appHost = HostContext.AssertAppHost();
-        ScanAssemblies.AddRange(appHost.ServiceAssemblies);
-        ScanAssemblies = ScanAssemblies.Distinct().ToList();
+        ScanAssemblies = ServiceStackHost.TryGetServiceAssemblies();
 
-        this.InitForSharpPages(appHost);
+        if (ServiceStackHost.Instance != null)
+            this.Container = ServiceStackHost.Instance.Container;
+        
+        this.InitForSharpPages();
         SkipExecutingFiltersIfError = true;
     }
 
     public virtual void Register(IAppHost appHost)
     {
+        if (Container is SimpleContainer)
+            Container = appHost.GetContainer();
+        
+        Configure?.Invoke(this);
+        
         this.UseAppHost(appHost);
 
         appHost.Register(Pages);
