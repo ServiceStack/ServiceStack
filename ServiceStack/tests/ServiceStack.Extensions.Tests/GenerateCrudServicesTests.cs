@@ -31,8 +31,6 @@ public class GenerateCrudServicesTests
             
         }
     }
-    
-    private AppHostBase? appHost;
 
     public GenerateCrudServicesTests()
     {
@@ -107,17 +105,13 @@ public class GenerateCrudServicesTests
         app.UseSwaggerUI();
         app.UseHttpsRedirection();
         app.UseStaticFiles();
-        appHost = new AppHost();
-        app.UseServiceStack(appHost, options => { options.MapEndpoints(); });
+        app.UseServiceStack(new AppHost(), options => { options.MapEndpoints(); });
 
         app.StartAsync(TestsConfig.ListeningOn);
     }
 
     [OneTimeTearDown]
-    public void TestFixtureTearDown()
-    {
-        appHost.DisposeApp(); 
-    }
+    public void TestFixtureTearDown() => AppHostBase.DisposeApp();
 
     List<string> NorthwindTables =
     [
@@ -137,7 +131,7 @@ public class GenerateCrudServicesTests
     [Test]
     public void Endpoints_does_AutoGen_Northwind_services()
     {
-        using var db = appHost!.GetDbConnection();
+        using var db = HostContext.AppHost.GetDbConnection();
         var tableNames = db.GetTableNames();
         // "tableNames:".Print();
         // tableNames.PrintDump();
@@ -150,7 +144,7 @@ public class GenerateCrudServicesTests
         // expectedApis.PrintDump();
 
         var exclude = new []{ nameof(QueryCaseInsensitiveOrderBy) };
-        var apisWithTableNames = appHost!.Metadata.GetOperationDtos()
+        var apisWithTableNames = HostContext.AppHost.Metadata.GetOperationDtos()
             .Select(x => x.Name)
             .Where(x => NorthwindTables.Any(table => x.Contains(table) || x.Contains(Words.Pluralize(table)))
                 && !exclude.Contains(x))

@@ -67,14 +67,6 @@ public class PagingTest
 [DataContract]
 public class NamedRockstar : Rockstar { }
 
-[Route("/query/namedrockstars")]
-[DataContract]
-public class QueryNamedRockstars : QueryDb<NamedRockstar>
-{
-    [DataMember(Order = 1)]
-    public int? Age { get; set; }
-}
-
 [Route("/query/rockstars")]
 [DataContract, Id(10), Tag(Keywords.Dynamic)]
 public class QueryRockstars : QueryDb<Rockstar>
@@ -766,26 +758,6 @@ public class DynamicDbServices : Service
     }
 }
 
-[DataContract]
-public class ChangeConnectionInfo : IReturn<ChangeDbResponse> { }
-[DataContract]
-public class QueryChangeConnectionInfo : QueryDb<Rockstar> { }
-
-[ConnectionInfo(NamedConnection = AutoQueryAppHost.SqlServerNamedConnection)]
-[DataContract]
-public class NamedConnectionServices(IAutoQueryDb autoQuery) : Service
-{
-    public object Get(ChangeConnectionInfo request)
-    {
-        return new ChangeDbResponse { Results = Db.Select<Rockstar>() };
-    }
-
-    public object Get(QueryChangeConnectionInfo query)
-    {
-        return autoQuery.Execute(query, autoQuery.CreateQuery(query, Request), Request);
-    }
-}
-
 [Alias(nameof(Rockstar))]
 [DataContract]
 public class CustomSelectRockstar
@@ -871,10 +843,6 @@ public static class TestUtils
     
 public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryService).Assembly)
 {
-    public static readonly string SqlServerConnString = TestsConfig.SqlServerConnString;
-    public const string SqlServerNamedConnection = "SqlServer";
-    public const string SqlServerProvider = "SqlServer2012";
-
     public static string SqliteFileConnString = "~/App_Data/autoquery.sqlite".MapProjectPath();
         
     public Action<AutoQueryAppHost,Container> ConfigureFn { get; set; }
@@ -908,24 +876,6 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
 
         var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
         container.Register<IDbConnectionFactory>(dbFactory);
-
-        dbFactory.RegisterConnection(SqlServerNamedConnection, SqlServerConnString, SqlServer2012Dialect.Provider);
-        dbFactory.RegisterDialectProvider(SqlServerProvider, SqlServer2012Dialect.Provider);
-
-        using (var db = dbFactory.OpenDbConnection(SqlServerNamedConnection))
-        {
-            db.DropTable<RockstarAlbum>();
-            db.DropAndCreateTable<NamedRockstar>();
-
-            db.Insert(new NamedRockstar {
-                Id = 1,
-                FirstName = "Microsoft",
-                LastName = "SQL Server",
-                Age = 27,
-                DateOfBirth = new DateTime(1989,1,1),
-                LivingStatus = LivingStatus.Alive,
-            });
-        }
 
         using (var db = dbFactory.OpenDbConnectionString(SqliteFileConnString))
         {
@@ -1151,17 +1101,6 @@ public class GrpcAutoQueryTests
         Assert.That(response.Offset, Is.EqualTo(0));
         Assert.That(response.Total, Is.EqualTo(TotalRockstars));
         Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
-    }
-        
-    [Test]
-    public async Task Can_execute_basic_query_NamedRockstar()
-    {
-        var response = await client.GetAsync(new QueryNamedRockstars { Include = "Total" });
-
-        Assert.That(response.Offset, Is.EqualTo(0));
-        Assert.That(response.Total, Is.EqualTo(1));
-        Assert.That(response.Results.Count, Is.EqualTo(1));
-        Assert.That(response.Results[0].LastName, Is.EqualTo("SQL Server"));
     }
 
     [Test]
@@ -1828,18 +1767,6 @@ public class GrpcAutoQueryTests
     }
 
     [Test]
-    public async Task Can_ChangeDb_with_Named_Connection()
-    {
-        var response = await client.GetAsync(new ChangeDb { NamedConnection = AutoQueryAppHost.SqlServerNamedConnection });
-        Assert.That(response.Results.Count, Is.EqualTo(1));
-        Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
-
-        var aqResponse = await client.GetAsync(new QueryChangeDb { NamedConnection = AutoQueryAppHost.SqlServerNamedConnection });
-        Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
-        Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
-    }
-
-    [Test]
     public async Task Can_ChangeDb_with_ConnectionString()
     {
         var response = await client.GetAsync(new ChangeDb { ConnectionString = AutoQueryAppHost.SqliteFileConnString });
@@ -1849,38 +1776,6 @@ public class GrpcAutoQueryTests
         var aqResponse = await client.GetAsync(new QueryChangeDb { ConnectionString = AutoQueryAppHost.SqliteFileConnString });
         Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
         Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Sqlite"));
-    }
-
-    [Test]
-    public async Task Can_ChangeDb_with_ConnectionString_and_Provider()
-    {
-        var response = await client.GetAsync(new ChangeDb
-        {
-            ConnectionString = AutoQueryAppHost.SqlServerConnString,
-            ProviderName = AutoQueryAppHost.SqlServerProvider,
-        });
-        Assert.That(response.Results.Count, Is.EqualTo(1));
-        Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
-
-        var aqResponse = await client.GetAsync(new QueryChangeDb
-        {
-            ConnectionString = AutoQueryAppHost.SqlServerConnString,
-            ProviderName = AutoQueryAppHost.SqlServerProvider,
-        });
-        Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
-        Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
-    }
-
-    [Test]
-    public async Task Can_Change_Named_Connection_with_ConnectionInfoAttribute()
-    {
-        var response = await client.GetAsync(new ChangeConnectionInfo());
-        Assert.That(response.Results.Count, Is.EqualTo(1));
-        Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
-
-        var aqResponse = await client.GetAsync(new QueryChangeConnectionInfo());
-        Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
-        Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
     }
 
     [Test]

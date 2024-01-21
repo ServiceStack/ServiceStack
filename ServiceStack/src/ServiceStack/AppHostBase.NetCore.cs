@@ -515,13 +515,15 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
 
     public static IRequest? GetOrCreateRequest(HttpContext httpContext) => httpContext.GetOrCreateRequest();
 
-    public void DisposeWebApplication()
+    public static void DisposeApp()
     {
-        if (app is Microsoft.Extensions.Hosting.IHost webApp)
+        var appHost = (AppHostBase)Instance;
+        if (appHost.app is Microsoft.Extensions.Hosting.IHost webApp)
         {
             webApp.Dispose();
-            this.app = null;
+            appHost.app = null;
         }
+        appHost.Dispose();
     }
 
     protected override void Dispose(bool disposing)
@@ -857,12 +859,6 @@ public static class NetCoreAppHostExtensions
             return req;
         }
         return null;
-    }
-
-    public static void DisposeApp(this AppHostBase appHost)
-    {
-        appHost.DisposeWebApplication();
-        appHost.Dispose();
     }
     
 #if NET6_0_OR_GREATER
