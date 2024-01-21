@@ -524,10 +524,11 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
 
         Exception origException = null;
 
+        string bearerToken = null;
         string refreshToken = null;
         try
         {
-            var bearerToken = req.GetJwtToken();
+            bearerToken = req.GetJwtToken();
             if (bearerToken != null)
             {
                 if (await AuthenticateBearerTokenAsync(req, res, bearerToken))
@@ -537,6 +538,9 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
         catch (Exception e)
         {
             refreshToken = req.GetJwtRefreshToken();
+            Log.ErrorFormat("JWT BearerToken '{0}...' failed: {1}{2}", 
+                bearerToken.SafeSubstring(0,4), e.Message, refreshToken == null ? "" : ", trying Refresh Token...");
+            
             if (refreshToken == null)
                 throw;
                 
@@ -634,8 +638,11 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
                 }
             }
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Log.ErrorFormat("Could not create new BearerToken from RefreshToken '{0}...': {1}", 
+                refreshToken.SafeSubstring(0,4), e.Message);
+            
             if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.RefreshTokenCookie))
                 (res as IHttpResponse)?.Cookies.DeleteCookie(Keywords.RefreshTokenCookie);
             return false;

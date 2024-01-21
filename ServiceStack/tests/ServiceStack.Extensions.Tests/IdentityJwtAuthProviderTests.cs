@@ -168,8 +168,8 @@ public class IdentityJwtAuthProviderTests
         }
     }
 
-    private ServiceStackHost? appHost = null;
-    Task? startTask = null;
+    private WebApplication? app;
+    private AppHostBase? appHost;
 
     public IdentityJwtAuthProviderTests()
     {
@@ -243,7 +243,7 @@ public class IdentityJwtAuthProviderTests
             });
         });
 
-        var app = builder.Build();
+        app = builder.Build();
 
         app.UseAuthorization();
         app.UseSwagger();
@@ -251,13 +251,14 @@ public class IdentityJwtAuthProviderTests
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.MapAdditionalIdentityEndpoints();
-        app.UseServiceStack(new AppHost(), options => { options.MapEndpoints(); });
+        appHost = new AppHost();
+        app.UseServiceStack(appHost, options => { options.MapEndpoints(); });
 
-        startTask = app.StartAsync(TestsConfig.ListeningOn);
+        app.StartAsync(TestsConfig.ListeningOn);
     }
 
     [OneTimeTearDown]
-    public void TestFixtureTearDown() => appHost?.Dispose();
+    public void TestFixtureTearDown() => appHost.DisposeApp();
 
     public const string Username = "admin@email.com";
     public const string Password = "p@55wOrd";

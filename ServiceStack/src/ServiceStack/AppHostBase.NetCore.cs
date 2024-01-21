@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using Microsoft.AspNetCore.Builder;
@@ -514,6 +515,15 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
 
     public static IRequest? GetOrCreateRequest(HttpContext httpContext) => httpContext.GetOrCreateRequest();
 
+    public void DisposeWebApplication()
+    {
+        if (app is Microsoft.Extensions.Hosting.IHost webApp)
+        {
+            webApp.Dispose();
+            this.app = null;
+        }
+    }
+
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
@@ -785,12 +795,12 @@ public static class NetCoreAppHostExtensions
         return builder;
     }
 
-    public static Task StartAsync(this WebApplication app, string url)
+    public static Task StartAsync(this WebApplication app, string url, CancellationToken token=default)
     {
         var addresses = ((IApplicationBuilder)app).ServerFeatures.Get<IServerAddressesFeature>()!.Addresses;
         addresses.Clear();
         addresses.Add(url);
-        return app.StartAsync();
+        return app.StartAsync(token);
     }
 #endif
 
@@ -847,6 +857,12 @@ public static class NetCoreAppHostExtensions
             return req;
         }
         return null;
+    }
+
+    public static void DisposeApp(this AppHostBase appHost)
+    {
+        appHost.DisposeWebApplication();
+        appHost.Dispose();
     }
     
 #if NET6_0_OR_GREATER
