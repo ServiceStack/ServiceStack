@@ -1,30 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
-using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using ProtoBuf;
 using ProtoBuf.Grpc.Client;
-using ProtoBuf.Grpc.Configuration;
 using ProtoBuf.Grpc.Server;
-using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Model;
-using ServiceStack.Text;
 using ServiceStack.Validation;
 
 namespace ServiceStack.Extensions.Tests;
@@ -801,12 +793,12 @@ public class GrpcTests
         var client = GetClient();
 
         var request = new StreamFiles {
-            Paths = new List<string> {
+            Paths = [
                 "/js/ss-utils.js",
                 "/js/hot-loader.js",
                 "/js/not-exists.js",
-                "/js/hot-fileloader.js",
-            }
+                "/js/hot-fileloader.js"
+            ]
         };
 
         var files = new List<FileContent>();
@@ -839,7 +831,7 @@ message Foo {
       Bar Bar = 210304982;
    }
 }
-", schema);
+".NormalizeNewLines(), schema.NormalizeNewLines());
     }
  
     [Test]
@@ -858,7 +850,7 @@ message Foo {
       Bar Bar = 210304982;
    }
 }
-", schema);
+".NormalizeNewLines(), schema.NormalizeNewLines());
     }
  
     [Test]
@@ -878,7 +870,7 @@ message QueryFoos {
    map<string,string> Meta = 7;
    string X = 201;
 }
-", schema);
+".NormalizeNewLines(), schema.NormalizeNewLines());
     }
 
     [Test]
@@ -892,7 +884,7 @@ message CustomRequestDto {
    int32 PageName = 42;
    string Name = 105;
 }
-", schema);
+".NormalizeNewLines(), schema.NormalizeNewLines());
     }
 
     [DataContract]
