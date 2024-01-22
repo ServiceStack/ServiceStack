@@ -119,9 +119,9 @@ public static class IdentityAuth
         });
     }
 
-    public static Microsoft.EntityFrameworkCore.DbContext ResolveDbContext<TUser>(IResolver req) where TUser : class
+    public static Microsoft.EntityFrameworkCore.DbContext ResolveDbContext<TUser>(IServiceProvider services) where TUser : class
     {
-        var userStore = req.TryResolve<IUserStore<TUser>>() ?? throw new NotSupportedException("IUserStore<TUser> is not registered");
+        var userStore = services.GetRequiredService<IUserStore<TUser>>();
         var dbContextGetter = TypeProperties.Get(userStore.GetType()).GetPublicGetter(
             nameof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore.Context));
         if (dbContextGetter is null)

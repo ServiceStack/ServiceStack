@@ -860,7 +860,11 @@ public static class NetCoreAppHostExtensions
         }
         return null;
     }
-    
+
+    public static IServiceProvider GetServiceProvider(this IRequest? request) => 
+        request as IServiceProvider ?? ServiceStackHost.Instance.GetApplicationServices()
+        ?? throw new NotSupportedException("No IServiceProvider found");
+
 #if NET6_0_OR_GREATER
     public static T ConfigureAndResolve<T>(this IHostingStartup config, string? hostDir = null, bool setHostDir = true)
     {

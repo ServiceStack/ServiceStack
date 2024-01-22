@@ -2,6 +2,7 @@
 #if NET8_0_OR_GREATER
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -226,7 +227,11 @@ public class IdentityJwtAuthProviderTests
         {
             options.SessionFactory = () => new CustomUserSession();
             options.CredentialsAuth();
-            options.JwtAuth(x => { x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90); });
+            options.JwtAuth(x =>
+            {
+                x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90);
+                x.IncludeConvertSessionToTokenService = true;
+            });
         })));
 
         services.AddPlugin(AutoQueryAppHost.CreateAutoQueryFeature());
@@ -260,6 +265,37 @@ public class IdentityJwtAuthProviderTests
     public const string Password = "p@55wOrd";
 
     private static JsonApiClient GetClient() => new(TestsConfig.ListeningOn);
+
+    private async Task<string> CreateExpiredTokenAsync()
+    {
+        var jwtProvider = HostContext.AppHost.Resolve<IIdentityJwtAuthProvider>();
+        var userClaims = await jwtProvider.GetUserClaimsAsync(Username);
+        var jwt = jwtProvider.CreateJwtBearerToken(
+            userClaims, jwtProvider.Audience, DateTime.UtcNow.AddDays(-1));
+        return jwt;
+    }
+    
+    private async Task<string> GetRefreshTokenAsync()
+    {
+        var authClient = GetClient();
+        var response = await authClient.SendAsync(new Authenticate
+        {
+            provider = "credentials",
+            UserName = Username,
+            Password = Password,
+        });
+        return authClient.GetRefreshTokenCookie();
+    }
+
+    protected virtual async Task<JsonApiClient> GetClientWithRefreshToken(string? refreshToken = null, string? accessToken = null)
+    {
+        refreshToken ??= await GetRefreshTokenAsync();
+        var client = GetClient();
+        if (accessToken != null)
+            client.SetTokenCookie(accessToken);
+        client.SetRefreshTokenCookie(refreshToken);
+        return client;
+    }
 
     protected virtual JsonApiClient GetClientWithBasicAuthCredentials()
     {
@@ -309,6 +345,84 @@ public class IdentityJwtAuthProviderTests
         Assert.That(response.Result, Is.EqualTo("Hello, test"));
 
         response = await client.PostAsync(request);
+        Assert.That(response.Result, Is.EqualTo("Hello, test"));
+    }
+
+    [Test]
+    public async Task Endpoints_Can_ConvertSessionToToken()
+    {
+        var authClient = GetClient();
+        var authResponse = await authClient.SendAsync(new Authenticate
+        {
+            provider = "credentials",
+            UserName = Username,
+            Password = Password,
+            Meta = new() { [Keywords.Ignore] = "jwt" },
+        });
+        Assert.That(authResponse.UserName, Is.EqualTo(Username));
+        Assert.That(authResponse.BearerToken, Is.Null);
+        Assert.That(authClient.GetTokenCookie(), Is.Null);
+
+        var response = await authClient.SendAsync(new HelloJwt { Name = "from auth service" });
+        Assert.That(response.Result, Is.EqualTo("Hello, from auth service"));
+
+        await authClient.SendAsync(new ConvertSessionToToken());
+        Assert.That(authClient.GetTokenCookie(), Is.Not.Null);
+        
+        response = await authClient.SendAsync(new HelloJwt { Name = "from auth service" });
+        Assert.That(response.Result, Is.EqualTo("Hello, from auth service"));
+        
+        authClient.DeleteTokenCookies();
+        Assert.That(authClient.GetTokenCookie(), Is.Null);
+        var result = await authClient.ApiAsync(new HelloJwt { Name = "from auth service" });
+        Assert.That(result.Failed);
+    }
+
+    [Test]
+    public async Task Endpoints_Invalid_RefreshToken_throws_RefreshToken_Exception()
+    {
+        var client = await GetClientWithRefreshToken("Invalid.Refresh.Token");
+        try
+        {
+            var request = new Secured { Name = "test" };
+            var response = await client.SendAsync(request);
+            Assert.Fail("Should throw");
+        }
+        catch (WebServiceException ex)
+        {
+            Assert.That(ex.ErrorCode, Is.EqualTo(nameof(HttpStatusCode.Unauthorized)));
+            Assert.That(ex.ErrorMessage, Does.Contain("RefreshToken"));
+        }
+    }
+
+    [Test]
+    public async Task Endpoints_Can_Auto_reconnect_with_just_RefreshToken()
+    {
+        var client = await GetClientWithRefreshToken();
+        Assert.That(client.GetTokenCookie(), Is.Null);
+
+        var request = new Secured { Name = "test" };
+        var response = await client.SendAsync(request);
+        Assert.That(response.Result, Is.EqualTo("Hello, test"));
+        
+        Assert.That(client.GetTokenCookie(), Is.Not.Null);
+
+        response = await client.SendAsync(request);
+        Assert.That(response.Result, Is.EqualTo("Hello, test"));
+    }
+
+    [Test]
+    public async Task Endpoints_Can_Auto_reconnect_with_RefreshToken_after_expired_token()
+    {
+        var client = await GetClientWithRefreshToken(await GetRefreshTokenAsync(), await CreateExpiredTokenAsync());
+
+        var request = new Secured { Name = "test" };
+        var response = await client.SendAsync(request);
+        Assert.That(response.Result, Is.EqualTo("Hello, test"));
+        
+        Assert.That(client.GetTokenCookie(), Is.Not.Null);
+
+        response = await client.SendAsync(request);
         Assert.That(response.Result, Is.EqualTo("Hello, test"));
     }
 }

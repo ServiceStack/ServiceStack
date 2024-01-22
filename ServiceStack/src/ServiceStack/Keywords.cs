@@ -73,4 +73,5 @@ public static class Keywords
     public const string Allows = "allows";
     public const string Embed = "embed";
     public const string AccessTokenAuth = "accessTokenAuth";
+    public const string ResponseStatus = "__responsestatus";
 }
