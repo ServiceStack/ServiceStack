@@ -908,7 +908,7 @@ export const Redis = {
             routes.to(href({show:''}))
         }
 
-        const take = ref(server.plugins.requestLogs.defaultLimit)
+        const take = ref(server.plugins.requestLogs?.defaultLimit ?? 100)
         const canPrev = computed(() => routes.skip > 0)
         const canNext = computed(() => results.value.length >= take.value)
         function nextSkip(skip) {
