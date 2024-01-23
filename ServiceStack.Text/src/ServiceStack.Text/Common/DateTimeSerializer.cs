@@ -43,7 +43,7 @@ public static class DateTimeSerializer
     private const char XsdTimeSeparator = 'T';
     private static readonly int XsdTimeSeparatorIndex = XsdDateTimeFormat.IndexOf(XsdTimeSeparator);
     private const string XsdUtcSuffix = "Z";
-    private static readonly char[] DateTimeSeparators = { '-', '/' };
+    private static readonly char[] DateTimeSeparators = ['-', '/'];
     private static readonly Regex UtcOffsetInfoRegex = new("([+-](?:2[0-3]|[0-1][0-9]):[0-5][0-9])", RegexOptions.Compiled);
     public static Func<string, Exception, DateTime> OnParseErrorFn { get; set; }
 
@@ -77,15 +77,31 @@ public static class DateTimeSerializer
 
     public static DateTime ParseShortestXsdDateTime(string dateTimeStr)
     {
+        if (string.IsNullOrEmpty(dateTimeStr))
+            return DateTime.MinValue;
+
+        if (dateTimeStr.StartsWith(EscapedWcfJsonPrefix, StringComparison.Ordinal) || dateTimeStr.StartsWith(WcfJsonPrefix, StringComparison.Ordinal))
+            return ParseWcfJsonDate(dateTimeStr).Prepare();
+
+        var config = JsConfig.GetConfig();
+
+#if NET6_0_OR_GREATER
+        if (config.SystemJsonCompatible)
+        {
+            try
+            {
+                var value = System.Text.Json.JsonSerializer.Deserialize<DateTime>('"' + dateTimeStr + '"');
+                return value;
+            }
+            catch (Exception e)
+            {
+                Tracer.Instance.WriteWarning("Could not parse System.Text.Json DateTime '{0}': {1}", dateTimeStr, e);
+            }
+        }
+#endif
+
         try
         {
-            if (string.IsNullOrEmpty(dateTimeStr))
-                return DateTime.MinValue;
-
-            if (dateTimeStr.StartsWith(EscapedWcfJsonPrefix, StringComparison.Ordinal) || dateTimeStr.StartsWith(WcfJsonPrefix, StringComparison.Ordinal))
-                return ParseWcfJsonDate(dateTimeStr).Prepare();
-
-            var config = JsConfig.GetConfig();
             if (dateTimeStr.Length == DefaultDateTimeFormat.Length)
             {
                 var unspecifiedDate = DateTime.Parse(dateTimeStr, CultureInfo.InvariantCulture);
@@ -350,7 +366,24 @@ public static class DateTimeSerializer
 
     public static DateTimeOffset ParseDateTimeOffset(string dateTimeOffsetStr)
     {
-        if (string.IsNullOrEmpty(dateTimeOffsetStr)) return default(DateTimeOffset);
+        if (string.IsNullOrEmpty(dateTimeOffsetStr)) 
+            return default;
+        
+#if NET6_0_OR_GREATER
+        var config = JsConfig.GetConfig();
+        if (config.SystemJsonCompatible)
+        {
+            try
+            {
+                var value = System.Text.Json.JsonSerializer.Deserialize<DateTimeOffset>('"' + dateTimeOffsetStr + '"');
+                return value;
+            }
+            catch (Exception e)
+            {
+                Tracer.Instance.WriteError("Could not parse System.Text.Json DateTimeOffset '{0}': {1}", dateTimeOffsetStr, e);
+            }
+        }
+#endif
 
         // for interop, do not assume format based on config
         // format: prefer TimestampOffset, DCJSCompatible
