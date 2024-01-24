@@ -787,11 +787,6 @@ public abstract partial class ServiceStackHost
     public ScriptContext DefaultScriptContext { get; set; }
 
     /// <summary>
-    /// Customize ServiceStack.Text Config
-    /// </summary>
-    public Text.Config TextConfig { get; set; }
-    
-    /// <summary>
     /// Global #Script ScriptContext for AppHost. Returns SharpPagesFeature plugin or fallsback to DefaultScriptContext.
     /// </summary>
     public ScriptContext ScriptContext => scriptContext ??= (GetPlugin<SharpPagesFeature>() ?? DefaultScriptContext);
@@ -1212,13 +1207,8 @@ public abstract partial class ServiceStackHost
             config.HandlerFactoryPath = null;
         }
 
-        if (config.UseCamelCase && JsConfig.TextCase == TextCase.Default)
-        {
-            TextConfig ??= new();
-            TextConfig.TextCase = TextCase.CamelCase;
-        }
-        if (TextConfig != null)
-            ServiceStack.Text.Config.UnsafeInit(TextConfig);
+        if (config.TextConfig != null)
+            ServiceStack.Text.Config.UnsafeInit(config.TextConfig);
 
         if (config.EnableOptimizations)
         {

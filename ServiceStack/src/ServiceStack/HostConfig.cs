@@ -187,10 +187,9 @@ public class HostConfig
                 UserAuthId = "0",
             },
 #if !NETCORE
-                UseCamelCase = false,
                 ReturnsInnerException = true,
 #else
-            UseCamelCase = true,
+            TextConfig = new() { TextCase = TextCase.CamelCase },
             ReturnsInnerException = false,
 #endif
         };
@@ -277,7 +276,7 @@ public class HostConfig
         this.AdminAuthSecret = instance.AdminAuthSecret;
         this.AuthSecretSession = instance.AuthSecretSession;
         this.UseHttpsLinks = instance.UseHttpsLinks;
-        this.UseCamelCase = instance.UseCamelCase;
+        this.TextConfig = instance.TextConfig;
         this.UseJsObject = instance.UseJsObject;
         this.EnableOptimizations = instance.EnableOptimizations;
         this.TreatNonNullableRefTypesAsRequired = instance.TreatNonNullableRefTypesAsRequired;
@@ -417,7 +416,25 @@ public class HostConfig
 
     public bool UseHttpsLinks { get; set; }
 
-    public bool UseCamelCase { get; set; }
+    /// <summary>
+    /// Customize ServiceStack.Text Config
+    /// </summary>
+    public Text.Config TextConfig { get; set; }
+
+    [Obsolete("Use TextConfig = new() { TextCase = TextCase.CamelCase }")]
+    public bool UseCamelCase
+    {
+        get => TextConfig?.TextCase == TextCase.CamelCase;
+        set
+        {
+            if (value)
+            {
+                TextConfig ??= new();
+                TextConfig.TextCase = TextCase.CamelCase;
+            }
+        }
+    }
+    
     public bool UseJsObject { get; set; }
     public bool EnableOptimizations { get; set; }
     public bool TreatNonNullableRefTypesAsRequired { get; set; }

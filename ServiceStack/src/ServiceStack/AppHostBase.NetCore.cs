@@ -705,8 +705,8 @@ public static class NetCoreAppHostExtensions
 
         if (appHost.Options.UseSystemJson != UseSystemJson.Never)
         {
-            appHost.TextConfig ??= new();
-            appHost.TextConfig.SystemJsonCompatible = true;
+            appHost.Config.TextConfig ??= new();
+            appHost.Config.TextConfig.SystemJsonCompatible = true;
             ClientConfig.UseSystemJson = appHost.Options.UseSystemJson;
         }
 #endif
