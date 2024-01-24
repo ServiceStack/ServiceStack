@@ -14,6 +14,7 @@ public static class MimeTypes
     public const string Xml = "application/xml";
     public const string XmlText = "text/xml";
     public const string Json = "application/json";
+    public const string JsonUtf8Suffix = Json + Utf8Suffix;
     public const string ProblemJson = "application/problem+json";
     public const string JsonText = "text/json";
     public const string Jsv = "application/jsv";
@@ -104,6 +105,8 @@ public static class MimeTypes
     {
         if (contentType == null || matchesContentType == null)
             return false;
+        if (contentType == matchesContentType) // exact match
+            return true;
             
         int start = -1, matchStart = -1, matchEnd = -1;
 

@@ -92,6 +92,10 @@ public class ServiceMetadata(List<RestPath> restPaths)
             Notes = notes,
             LocodeCss = X.Map(requestType.FirstAttribute<LocodeCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
             ExplorerCss = X.Map(requestType.FirstAttribute<ExplorerCssAttribute>(), x => new ApiCss { Form = x.Form, Fieldset = x.Fieldset, Field = x.Field }),
+#if NET8_0_OR_GREATER
+            UseSystemJson = requestType.FirstAttribute<SystemJsonAttribute>()?.Use 
+                ?? ((ServiceStackHost.Instance as AppHostBase)?.Options.UseSystemJson ?? UseSystemJson.Never),
+#endif
         };
 
         var hasAuthValidateAttrs = validateReqAttrs.Any(x => x is IRequireAuthentication);
@@ -791,7 +795,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
             return resType.Response;
 
         var type = metadataTypes.Types.FirstOrDefault(x => x.Name == name
-                                                           && (@namespace == null || x.Namespace == @namespace));
+            && (@namespace == null || x.Namespace == @namespace));
 
         return type;
     }
@@ -884,6 +888,7 @@ public class Operation : ICloneable
     public List<IValidationRule>? RequestPropertyValidationRules { get; private set; }
     
 #if NET8_0_OR_GREATER
+    public UseSystemJson UseSystemJson { get; set; }
     public Microsoft.AspNetCore.Authorization.AuthorizeAttribute? Authorize { get; set; }
 #endif
 

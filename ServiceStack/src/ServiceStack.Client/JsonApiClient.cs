@@ -45,7 +45,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     public static string DefaultBasePath { get; set; } = "/api/";
     public const string DefaultHttpMethod = HttpMethods.Post;
     public static string DefaultUserAgent = "ServiceStack JsonApiClient " + Env.VersionString;
-
+    
     public JsonApiClient(HttpClient httpClient) : this(httpClient.BaseAddress?.ToString() ?? "/")
     {
         this.HttpClient = httpClient;
@@ -700,7 +700,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
                 }
                 else
                 {
-                    httpReq.Content = new StringContent(request.ToJson(), Encoding.UTF8, ContentType);
+                    httpReq.Content = new StringContent(ClientConfig.ToJson(request), Encoding.UTF8, ContentType);
                 }
 
                 var compressor = StreamCompressors.Get(RequestCompressionType);
@@ -750,7 +750,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
 
         var json = await ThrowIfErrorAsync(() => httpRes.Content.ReadAsStringAsync(token), httpRes, request, absoluteUrl).ConfigAwait();
-        var obj = json.FromJson<TResponse>();
+        var obj = ClientConfig.FromJson<TResponse>(json, request?.GetType());
         ResultsFilterResponse?.Invoke(httpRes, obj, httpMethod, absoluteUrl, request);
         return obj;
     }
@@ -777,7 +777,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         if (response == null)
         {
             var json = ThrowIfError(() => httpRes.Content.ReadAsString(), httpRes, request, absoluteUrl);
-            response = json.FromJson<TResponse>();
+            response = ClientConfig.FromJson<TResponse>(json, request?.GetType());
         }
 
         ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);

@@ -173,9 +173,7 @@ public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
         var queryString = httpReq.QueryString;
         var hasRequestBody = httpReq.ContentType != null && httpReq.ContentLength > 0;
 
-        if (!hasRequestBody
-            && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || 
-                httpMethod == HttpMethods.Options || httpMethod == HttpMethods.Head))
+        if (!hasRequestBody && httpMethod is HttpMethods.Get or HttpMethods.Delete or HttpMethods.Options or HttpMethods.Head)
         {
             return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType).InTask();
         }
@@ -214,18 +212,27 @@ public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
             {
                 //.NET Core HttpClient Zip Content-Length omission is reported as 0
                 var hasContentBody = httpReq.ContentLength > 0
-                                     || (HttpUtils.HasRequestBody(httpReq.Verb) && 
-                                         (httpReq.GetContentEncoding() != null
+                 || (HttpUtils.HasRequestBody(httpReq.Verb) && 
+                     (httpReq.GetContentEncoding() != null
 #if NETCORE
-                                          || GetStreamLengthSafe(httpReq.InputStream) > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
+                  || GetStreamLengthSafe(httpReq.InputStream) > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
 #endif
-                                         ));
+                     ));
 
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat($"CreateContentTypeRequest/hasContentBody:{hasContentBody}:{httpReq.Verb}:{contentType}:{httpReq.ContentLength}:{httpReq.GetContentEncoding()}");
 
                 if (hasContentBody)
                 {
+#if NET8_0_OR_GREATER
+                    var appHost = HostContext.AppHost;
+                    var op = appHost?.Metadata.GetOperation(requestType);
+                    if (op?.UseSystemJson != null && op.UseSystemJson.HasFlag(UseSystemJson.Request) && MimeTypes.MatchesContentType(contentType, MimeTypes.Json))
+                    {
+                        var instance = await System.Text.Json.JsonSerializer.DeserializeAsync(httpReq.InputStream, requestType, ClientConfig.SystemJsonOptions).ConfigAwait();
+                        return instance;
+                    }
+#endif
                     var deserializer = HostContext.ContentTypes.GetStreamDeserializerAsync(contentType);
                     if (deserializer != null)
                     {

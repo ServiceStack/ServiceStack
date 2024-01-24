@@ -12,16 +12,12 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ProtoBuf;
 using ProtoBuf.Grpc.Client;
-using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
-using ServiceStack.Model;
 using ServiceStack.OrmLite;
 using ServiceStack.Script;
 using ServiceStack.Text;
-using ServiceStack.Validation;
-using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests;
 
@@ -67,6 +63,9 @@ public class PagingTest
 [DataContract]
 public class NamedRockstar : Rockstar { }
 
+#if NET8_0_OR_GREATER
+// [SystemJson(UseSystemJson.Never)]
+#endif
 [Route("/query/rockstars")]
 [DataContract, Id(10), Tag(Keywords.Dynamic)]
 public class QueryRockstars : QueryDb<Rockstar>
@@ -1015,17 +1014,19 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
                 q.And(x => x.LastName.EndsWith("son"))
             );
 
-    public static Rockstar[] SeedRockstars = new[] {
+    public static Rockstar[] SeedRockstars =
+    [
         new Rockstar { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1942, 11, 27), DateDied = new DateTime(1970, 09, 18), },
         new Rockstar { Id = 2, FirstName = "Jim", LastName = "Morrison", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1943, 12, 08), DateDied = new DateTime(1971, 07, 03),  },
         new Rockstar { Id = 3, FirstName = "Kurt", LastName = "Cobain", Age = 27, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1967, 02, 20), DateDied = new DateTime(1994, 04, 05), },
         new Rockstar { Id = 4, FirstName = "Elvis", LastName = "Presley", Age = 42, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1935, 01, 08), DateDied = new DateTime(1977, 08, 16), },
         new Rockstar { Id = 5, FirstName = "David", LastName = "Grohl", Age = 44, LivingStatus = LivingStatus.Alive, DateOfBirth = new DateTime(1969, 01, 14), },
         new Rockstar { Id = 6, FirstName = "Eddie", LastName = "Vedder", Age = 48, LivingStatus = LivingStatus.Alive, DateOfBirth = new DateTime(1964, 12, 23), },
-        new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1958, 08, 29), DateDied = new DateTime(2009, 06, 05), },
-    };
+        new Rockstar { Id = 7, FirstName = "Michael", LastName = "Jackson", Age = 50, LivingStatus = LivingStatus.Dead, DateOfBirth = new DateTime(1958, 08, 29), DateDied = new DateTime(2009, 06, 05), }
+    ];
 
-    public static RockstarAlbum[] SeedAlbums = new[] {
+    public static RockstarAlbum[] SeedAlbums =
+    [
         new RockstarAlbum { Id = 1, RockstarId = 1, Name = "Electric Ladyland", Genre = "Funk" },
         new RockstarAlbum { Id = 2, RockstarId = 3, Name = "Bleach", Genre = "Grunge" },
         new RockstarAlbum { Id = 3, RockstarId = 3, Name = "Nevermind", Genre = "Grunge" },
@@ -1033,17 +1034,19 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
         new RockstarAlbum { Id = 5, RockstarId = 3, Name = "Incesticide", Genre = "Grunge" },
         new RockstarAlbum { Id = 6, RockstarId = 3, Name = "MTV Unplugged in New York", Genre = "Acoustic" },
         new RockstarAlbum { Id = 7, RockstarId = 5, Name = "Foo Fighters", Genre = "Grunge" },
-        new RockstarAlbum { Id = 8, RockstarId = 6, Name = "Into the Wild", Genre = "Folk" },
-    };
+        new RockstarAlbum { Id = 8, RockstarId = 6, Name = "Into the Wild", Genre = "Folk" }
+    ];
 
-    public static RockstarGenre[] SeedGenres = new[] {
+    public static RockstarGenre[] SeedGenres =
+    [
         new RockstarGenre { RockstarId = 1, Name = "Rock" },    
         new RockstarGenre { RockstarId = 3, Name = "Grunge" },    
         new RockstarGenre { RockstarId = 5, Name = "Alternative Rock" },    
-        new RockstarGenre { RockstarId = 6, Name = "Folk Rock" },    
-    };
+        new RockstarGenre { RockstarId = 6, Name = "Folk Rock" }
+    ];
 
-    public static Movie[] SeedMovies = new[] {
+    public static Movie[] SeedMovies =
+    [
         new Movie { ImdbId = "tt0111161", Title = "The Shawshank Redemption", Score = 9.2m, Director = "Frank Darabont", ReleaseDate = new DateTime(1995,2,17), TagLine = "Fear can hold you prisoner. Hope can set you free.", Genres = new List<string>{"Crime","Drama"}, Rating = "R", },
         new Movie { ImdbId = "tt0068646", Title = "The Godfather", Score = 9.2m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1972,3,24), TagLine = "An offer you can't refuse.", Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
         new Movie { ImdbId = "tt1375666", Title = "Inception", Score = 9.2m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2010,7,16), TagLine = "Your mind is the scene of the crime", Genres = new List<string>{"Action", "Mystery", "Sci-Fi", "Thriller"}, Rating = "PG-13", },
@@ -1053,8 +1056,8 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
         new Movie { ImdbId = "tt2294629", Title = "Frozen", Score = 7.8m, Director = "Chris Buck", ReleaseDate = new DateTime(2013,11,27), TagLine = "Fearless optimist Anna teams up with Kristoff in an epic journey, encountering Everest-like conditions, and a hilarious snowman named Olaf", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "PG", },
         new Movie { ImdbId = "tt1453405", Title = "Monsters University", Score = 7.4m, Director = "Dan Scanlon", ReleaseDate = new DateTime(2013,06,21), TagLine = "A look at the relationship between Mike and Sulley during their days at Monsters University -- when they weren't necessarily the best of friends.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
         new Movie { ImdbId = "tt0468569", Title = "The Dark Knight", Score = 9.0m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2008,07,18), TagLine = "When Batman, Gordon and Harvey Dent launch an assault on the mob, they let the clown out of the box, the Joker, bent on turning Gotham on itself and bringing any heroes down to his level.", Genres = new List<string>{"Action","Crime","Drama"}, Rating = "PG-13", },
-        new Movie { ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
-    };
+        new Movie { ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", }
+    ];
 
     public static PagingTest[] SeedPagingTest = 250.Times(i => new PagingTest { Id = i, Name = "Name" + i, Value = i % 2 }).ToArray();
 
@@ -1316,7 +1319,7 @@ public class GrpcAutoQueryTests
         response = await client.GetAsync(new QueryFieldRockstars { FirstName = "Jim" });
         Assert.That(response.Results.Count, Is.EqualTo(1));
 
-        response = await client.GetAsync(new QueryFieldRockstars { FirstNames = new[] { "Jim","Kurt" } });
+        response = await client.GetAsync(new QueryFieldRockstars { FirstNames = ["Jim","Kurt"] });
         Assert.That(response.Results.Count, Is.EqualTo(2));
 
         response = await client.GetAsync(new QueryFieldRockstars { FirstNameCaseInsensitive = "jim" });
@@ -1328,7 +1331,7 @@ public class GrpcAutoQueryTests
         response = await client.GetAsync(new QueryFieldRockstars { LastNameEndsWith = "son" });
         Assert.That(response.Results.Count, Is.EqualTo(2));
 
-        response = await client.GetAsync(new QueryFieldRockstars { FirstNameBetween = new[] {"A","F"} });
+        response = await client.GetAsync(new QueryFieldRockstars { FirstNameBetween = ["A","F"] });
         Assert.That(response.Results.Count, Is.EqualTo(3));
 
         response = await client.GetAsync(new QueryFieldRockstars
@@ -1448,7 +1451,7 @@ public class GrpcAutoQueryTests
     [Test]
     public async Task Can_execute_Explicit_conventions()
     {
-        var response = await client.GetAsync(new QueryRockstarsConventions { Ids = new[] {1, 2, 3} });
+        var response = await client.GetAsync(new QueryRockstarsConventions { Ids = [1, 2, 3] });
         Assert.That(response.Results.Count, Is.EqualTo(3));
 
         response = await client.GetAsync(new QueryRockstarsConventions { AgeOlderThan = 42 });
@@ -1482,16 +1485,16 @@ public class GrpcAutoQueryTests
         response = await client.GetAsync(new QueryGetRockstars());
         Assert.That(response.Results?.Count ?? 0, Is.EqualTo(0));
 
-        response = await client.GetAsync(new QueryGetRockstars { Ids = new[] { 1, 2, 3 } });
+        response = await client.GetAsync(new QueryGetRockstars { Ids = [1, 2, 3] });
         Assert.That(response.Results.Count, Is.EqualTo(3));
 
-        response = await client.GetAsync(new QueryGetRockstars { Ages = new[] { 42, 44 }.ToList() });
+        response = await client.GetAsync(new QueryGetRockstars { Ages = [42, 44] });
         Assert.That(response.Results.Count, Is.EqualTo(2));
 
-        response = await client.GetAsync(new QueryGetRockstars { FirstNames = new[] { "Jim", "Kurt" }.ToList() });
+        response = await client.GetAsync(new QueryGetRockstars { FirstNames = ["Jim", "Kurt"] });
         Assert.That(response.Results.Count, Is.EqualTo(2));
 
-        response = await client.GetAsync(new QueryGetRockstars { IdsBetween = new[] { 1, 3 } });
+        response = await client.GetAsync(new QueryGetRockstars { IdsBetween = [1, 3] });
         Assert.That(response.Results.Count, Is.EqualTo(3));
     }
 
@@ -1515,13 +1518,13 @@ public class GrpcAutoQueryTests
     [Test]
     public async Task Can_query_Movie_Ratings()
     {
-        var response = await client.GetAsync(new QueryMovies { Ratings = new[] {"G","PG-13"} });
+        var response = await client.GetAsync(new QueryMovies { Ratings = ["G","PG-13"] });
         Assert.That(response.Results.Count, Is.EqualTo(5));
 
         response = await client.GetAsync(new QueryMovies {
-            Ids = new[] { 1, 2 },
-            ImdbIds = new[] { "tt0071562", "tt0060196" },
-            Ratings = new[] { "G", "PG-13" }
+            Ids = [1, 2],
+            ImdbIds = ["tt0071562", "tt0060196"],
+            Ratings = ["G", "PG-13"]
         });
         Assert.That(response.Results.Count, Is.EqualTo(9));
     }
@@ -1812,7 +1815,7 @@ public class GrpcAutoQueryTests
         response = await client.GetAsync(new QueryRockstarAlbums
         {
             RockstarId = 3,
-            IdBetween = new[] { 2, 3 },
+            IdBetween = [2, 3],
             Include = "Total"
         });
         Assert.That(response.Results.Count, Is.EqualTo(2));
@@ -1822,7 +1825,7 @@ public class GrpcAutoQueryTests
         response = await client.GetAsync(new QueryRockstarAlbums
         {
             RockstarId = 3,
-            IdBetween = new[] { 2, 3 },
+            IdBetween = [2, 3],
             Name = "Nevermind",
             Include = "Total"
         });

@@ -524,6 +524,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             appHost.app = null;
         }
         appHost.Dispose();
+        ClientConfig.Reset();
     }
 
     protected override void Dispose(bool disposing)
@@ -700,6 +701,13 @@ public static class NetCoreAppHostExtensions
         foreach (var appOption in appOptions)
         {
             appOption.Configure(appHost.Options);
+        }
+
+        if (appHost.Options.UseSystemJson != UseSystemJson.Never)
+        {
+            appHost.TextConfig ??= new();
+            appHost.TextConfig.SystemJsonCompatible = true;
+            ClientConfig.UseSystemJson = appHost.Options.UseSystemJson;
         }
 #endif
         appHost.Bind(app);
