@@ -1172,7 +1172,7 @@ public partial class AutoQueryCrudTests
         }).Id.ToInt();
 
         var bookings = client.Get(new QueryBookings {
-            Ids = new []{ booking1Id, booking2Id }
+            Ids = [booking1Id, booking2Id]
         });
             
         // bookings.PrintDump();
@@ -1190,7 +1190,7 @@ public partial class AutoQueryCrudTests
             Notes = "Missed Flight",
         });
         var booking1 = client.Get(new QueryBookings {
-            Ids = new[] { booking1Id }
+            Ids = [booking1Id]
         }).Results[0];
         Assert.That(booking1.Cancelled, Is.True);
         Assert.That(booking1.Notes, Is.EqualTo("Missed Flight"));

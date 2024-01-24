@@ -427,11 +427,8 @@ public class HostConfig
         get => TextConfig?.TextCase == TextCase.CamelCase;
         set
         {
-            if (value)
-            {
-                TextConfig ??= new();
-                TextConfig.TextCase = TextCase.CamelCase;
-            }
+            TextConfig ??= new();
+            TextConfig.TextCase = value ? TextCase.CamelCase : TextCase.PascalCase;
         }
     }
     

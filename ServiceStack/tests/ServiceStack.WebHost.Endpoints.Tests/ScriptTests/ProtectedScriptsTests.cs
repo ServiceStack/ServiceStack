@@ -6,6 +6,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -50,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             {
                 SetConfig(new HostConfig
                 {
-                    UseCamelCase = false, //normalize with .NET Core
+                    UseCamelCase = false,
                 });
 
                 Plugins.Add(new SharpPagesFeature
@@ -62,7 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 });
             }
 
-            private readonly List<IVirtualPathProvider> virtualFiles = new List<IVirtualPathProvider> { new MemoryVirtualFiles() };
+            private readonly List<IVirtualPathProvider> virtualFiles = [new MemoryVirtualFiles()];
             public override List<IVirtualPathProvider> GetVirtualFileSources() => virtualFiles;
         }
 
