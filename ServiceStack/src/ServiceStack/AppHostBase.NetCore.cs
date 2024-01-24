@@ -186,6 +186,15 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             VirtualFiles ??= ApplicationServices.GetService<IVirtualFiles>()
                          ?? new FileSystemVirtualFiles(HostingEnvironment.ContentRootPath);
 
+#if NET8_0_OR_GREATER
+            if (Options.UseSystemJson != UseSystemJson.Never)
+            {
+                Config.TextConfig ??= new();
+                Config.TextConfig.SystemJsonCompatible = true;
+                ClientConfig.UseSystemJson = Options.UseSystemJson;
+            }
+#endif
+            
             RegisterLicenseFromAppSettings(AppSettings);
         }
     }
@@ -701,13 +710,6 @@ public static class NetCoreAppHostExtensions
         foreach (var appOption in appOptions)
         {
             appOption.Configure(appHost.Options);
-        }
-
-        if (appHost.Options.UseSystemJson != UseSystemJson.Never)
-        {
-            appHost.Config.TextConfig ??= new();
-            appHost.Config.TextConfig.SystemJsonCompatible = true;
-            ClientConfig.UseSystemJson = appHost.Options.UseSystemJson;
         }
 #endif
         appHost.Bind(app);
