@@ -37,6 +37,15 @@ public static class ClientConfig
     /// </summary>
     public static UseSystemJson UseSystemJson { get; set; } = UseSystemJson.Never;
 
+    /// <summary>
+    /// Config scope of ServiceStack.Text when System.Text.Json is enabled
+    /// </summary>
+    public static Text.Config SystemJsonTextConfig { get; set; } = new()
+    {
+        TextCase = TextCase.CamelCase,
+        SystemJsonCompatible = true
+    };
+
     public static System.Text.Json.JsonSerializerOptions DefaultSystemJsonOptions() => new()
     {
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -60,7 +69,7 @@ public static class ClientConfig
         {
             return System.Text.Json.JsonSerializer.Serialize(obj, SystemJsonOptions);
         }
-        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(new() { SystemJsonCompatible = true }) : null)
+        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(SystemJsonTextConfig) : null)
         {
             return obj.ToJson();
         }
@@ -77,7 +86,7 @@ public static class ClientConfig
         {
             return System.Text.Json.JsonSerializer.Deserialize<T>(json, SystemJsonOptions);
         }
-        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(new() { SystemJsonCompatible = true }) : null)
+        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(SystemJsonTextConfig) : null)
         {
             return json.FromJson<T>();
         }
