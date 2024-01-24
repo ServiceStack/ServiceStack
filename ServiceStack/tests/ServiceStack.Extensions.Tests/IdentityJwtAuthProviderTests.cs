@@ -63,6 +63,86 @@ public class IdentityJwtAuthProviderTests
     private static readonly int TotalRockstars = AutoQueryAppHost.SeedRockstars.Length;
     private static readonly int TotalAlbums = AutoQueryAppHost.SeedAlbums.Length;
 
+    public static async Task AddSeedUsers(IServiceProvider services)
+    {
+        //initializing custom roles 
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        string[] allRoles = [Roles.Admin, Roles.Manager, Roles.Employee];
+
+        void assertResult(IdentityResult result)
+        {
+            if (!result.Succeeded)
+                throw new Exception(result.Errors.First().Description);
+        }
+
+        async Task EnsureUserAsync(ApplicationUser user, string password, string[]? roles = null)
+        {
+            var existingUser = await userManager.FindByEmailAsync(user.Email!);
+            if (existingUser != null) return;
+
+            await userManager!.CreateAsync(user, password);
+            if (roles?.Length > 0)
+            {
+                var newUser = await userManager.FindByEmailAsync(user.Email!);
+                assertResult(await userManager.AddToRolesAsync(user, roles));
+            }
+        }
+
+        foreach (var roleName in allRoles)
+        {
+            var roleExist = await roleManager.RoleExistsAsync(roleName);
+            if (!roleExist)
+            {
+                //Create the roles and seed them to the database
+                assertResult(await roleManager.CreateAsync(new IdentityRole(roleName)));
+            }
+        }
+
+        await EnsureUserAsync(new ApplicationUser
+        {
+            DisplayName = "Test User",
+            Email = "test@email.com",
+            UserName = "test@email.com",
+            FirstName = "Test",
+            LastName = "User",
+            EmailConfirmed = true,
+            ProfileUrl = "/img/profiles/user1.svg",
+        }, "p@55wOrd");
+
+        await EnsureUserAsync(new ApplicationUser
+        {
+            DisplayName = "Test Employee",
+            Email = "employee@email.com",
+            UserName = "employee@email.com",
+            FirstName = "Test",
+            LastName = "Employee",
+            EmailConfirmed = true,
+            ProfileUrl = "/img/profiles/user2.svg",
+        }, "p@55wOrd", [Roles.Employee]);
+
+        await EnsureUserAsync(new ApplicationUser
+        {
+            DisplayName = "Test Manager",
+            Email = "manager@email.com",
+            UserName = "manager@email.com",
+            FirstName = "Test",
+            LastName = "Manager",
+            EmailConfirmed = true,
+            ProfileUrl = "/img/profiles/user3.svg",
+        }, "p@55wOrd", [Roles.Manager, Roles.Employee]);
+
+        await EnsureUserAsync(new ApplicationUser
+        {
+            DisplayName = "Admin User",
+            Email = "admin@email.com",
+            UserName = "admin@email.com",
+            FirstName = "Admin",
+            LastName = "User",
+            EmailConfirmed = true,
+        }, "p@55wOrd", allRoles);
+    }
+
     class AppHost() : AppHostBase(nameof(IdentityJwtAuthProviderTests), typeof(AutoQueryService).Assembly)
     {
         public override void Configure()
@@ -86,86 +166,6 @@ public class IdentityJwtAuthProviderTests
             log.LogInformation("Seeding Database...");
             using var db = GetDbConnection();
             AutoQueryAppHost.SeedDatabase(db);
-        }
-
-        private async Task AddSeedUsers(IServiceProvider services)
-        {
-            //initializing custom roles 
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-            string[] allRoles = [Roles.Admin, Roles.Manager, Roles.Employee];
-
-            void assertResult(IdentityResult result)
-            {
-                if (!result.Succeeded)
-                    throw new Exception(result.Errors.First().Description);
-            }
-
-            async Task EnsureUserAsync(ApplicationUser user, string password, string[]? roles = null)
-            {
-                var existingUser = await userManager.FindByEmailAsync(user.Email!);
-                if (existingUser != null) return;
-
-                await userManager!.CreateAsync(user, password);
-                if (roles?.Length > 0)
-                {
-                    var newUser = await userManager.FindByEmailAsync(user.Email!);
-                    assertResult(await userManager.AddToRolesAsync(user, roles));
-                }
-            }
-
-            foreach (var roleName in allRoles)
-            {
-                var roleExist = await roleManager.RoleExistsAsync(roleName);
-                if (!roleExist)
-                {
-                    //Create the roles and seed them to the database
-                    assertResult(await roleManager.CreateAsync(new IdentityRole(roleName)));
-                }
-            }
-
-            await EnsureUserAsync(new ApplicationUser
-            {
-                DisplayName = "Test User",
-                Email = "test@email.com",
-                UserName = "test@email.com",
-                FirstName = "Test",
-                LastName = "User",
-                EmailConfirmed = true,
-                ProfileUrl = "/img/profiles/user1.svg",
-            }, "p@55wOrd");
-
-            await EnsureUserAsync(new ApplicationUser
-            {
-                DisplayName = "Test Employee",
-                Email = "employee@email.com",
-                UserName = "employee@email.com",
-                FirstName = "Test",
-                LastName = "Employee",
-                EmailConfirmed = true,
-                ProfileUrl = "/img/profiles/user2.svg",
-            }, "p@55wOrd", [Roles.Employee]);
-
-            await EnsureUserAsync(new ApplicationUser
-            {
-                DisplayName = "Test Manager",
-                Email = "manager@email.com",
-                UserName = "manager@email.com",
-                FirstName = "Test",
-                LastName = "Manager",
-                EmailConfirmed = true,
-                ProfileUrl = "/img/profiles/user3.svg",
-            }, "p@55wOrd", [Roles.Manager, Roles.Employee]);
-
-            await EnsureUserAsync(new ApplicationUser
-            {
-                DisplayName = "Admin User",
-                Email = "admin@email.com",
-                UserName = "admin@email.com",
-                FirstName = "Admin",
-                LastName = "User",
-                EmailConfirmed = true,
-            }, "p@55wOrd", allRoles);
         }
     }
 
