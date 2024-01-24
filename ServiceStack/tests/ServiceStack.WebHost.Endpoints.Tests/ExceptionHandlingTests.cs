@@ -284,7 +284,7 @@ public class ExceptionHandlingTests
             Plugins.Add(new ProtoBufFormat());
 
             GlobalRequestFilters.Add((req, res, dto) => {
-                if (dto is UncatchedException || dto is UncatchedExceptionAsync)
+                if (dto is UncatchedException or UncatchedExceptionAsync)
                     throw new ArgumentException();
             });
 
@@ -297,10 +297,10 @@ public class ExceptionHandlingTests
 
             this.ServiceExceptionHandlers.Add((httpReq, request, ex) =>
             {
-                if (request is UncatchedException || request is UncatchedExceptionAsync)
+                if (request is UncatchedException or UncatchedExceptionAsync)
                     throw ex;
 
-                if (request is CaughtException || request is CaughtExceptionAsync)
+                if (request is CaughtException or CaughtExceptionAsync)
                     return DtoUtils.CreateErrorResponse(request, new ArgumentException("ExceptionCaught"));
 
                 return null;

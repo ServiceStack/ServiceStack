@@ -789,7 +789,7 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Customize ServiceStack.Text Config
     /// </summary>
-    public Text.Config TextConfig { get; set; } = new();
+    public Text.Config TextConfig { get; set; }
     
     /// <summary>
     /// Global #Script ScriptContext for AppHost. Returns SharpPagesFeature plugin or fallsback to DefaultScriptContext.
