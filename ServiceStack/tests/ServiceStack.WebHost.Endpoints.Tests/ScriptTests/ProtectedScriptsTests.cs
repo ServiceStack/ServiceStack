@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             {
                 SetConfig(new HostConfig
                 {
-                    UseCamelCase = false,
+                    TextConfig = new() { TextCase = TextCase.PascalCase },
                 });
 
                 Plugins.Add(new SharpPagesFeature

@@ -66,7 +66,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
                     new MyValidators(), 
                 });
 
-                SetConfig(new HostConfig{ UseCamelCase = true});
+                SetConfig(new HostConfig {
+                    TextConfig = new() { TextCase = TextCase.CamelCase }
+                });
                 var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
                 //var dbFactory = new OrmLiteConnectionFactory(Tests.Config.SqlServerConnString, SqlServerDialect.Provider);
                 container.Register<IDbConnectionFactory>(dbFactory);
