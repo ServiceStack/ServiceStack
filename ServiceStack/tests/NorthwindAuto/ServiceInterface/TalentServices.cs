@@ -21,7 +21,7 @@ public class TalentServices : Service
         var userId = this.GetSession().UserAuthId;
         return new JobApplicationEvent
         {
-            AppUserId = userId.ToInt(),
+            ApplicationUserId = userId,
             Status = status,
             Description = status.ToDescription(),
             EventDate = DateTime.UtcNow,
@@ -80,7 +80,7 @@ public class TalentServices : Service
     {
         var jobApp = Db.SingleById<JobApplication>(request.JobApplicationId);
         jobApp.JobOffer = request.ConvertTo<JobOffer>().WithAudit(Request);
-        jobApp.JobOffer.AppUserId = GetSession().UserAuthId.ToInt();
+        jobApp.JobOffer.ApplicationUserId = GetSession().UserAuthId;
         jobApp.Events ??= new();
         if (jobApp.ApplicationStatus != request.ApplicationStatus)
             jobApp.Events.Add(CreateEvent(request.ApplicationStatus));

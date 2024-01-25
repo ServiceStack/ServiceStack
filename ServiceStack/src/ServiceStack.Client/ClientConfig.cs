@@ -49,6 +49,7 @@ public static class ClientConfig
     public static System.Text.Json.JsonSerializerOptions DefaultSystemJsonOptions() => new()
     {
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
         Converters = {
             new SystemJson.JsonEnumMemberStringEnumConverter(),

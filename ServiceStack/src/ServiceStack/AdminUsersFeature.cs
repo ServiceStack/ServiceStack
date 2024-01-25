@@ -18,7 +18,8 @@ public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId
     /// <summary>
     /// Return only specified UserAuth Properties in AdminQueryUsers
     /// </summary>
-    public List<string> QueryUserAuthProperties { get; set; } = new() {
+    public List<string> QueryUserAuthProperties { get; set; } =
+    [
         nameof(UserAuth.Id),
         nameof(UserAuth.UserName),
         nameof(UserAuth.Email),
@@ -28,17 +29,18 @@ public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId
         nameof(UserAuth.Company),
         nameof(UserAuth.State),
         nameof(UserAuth.Country),
-        nameof(UserAuth.ModifiedDate),
-    };
+        nameof(UserAuth.ModifiedDate)
+    ];
 
     /// <summary>
     /// Specify different size media rules when a property should be visible, e.g:
     /// MediaRules.ExtraSmall.Show&lt;UserAuth&gt;(x => new { x.Id, x.Email, x.DisplayName })
     /// </summary>
-    public List<MediaRule> QueryMediaRules { get; set; } = new() {
+    public List<MediaRule> QueryMediaRules { get; set; } =
+    [
         MediaRules.ExtraSmall.Show<UserAuth>(x => new { x.Id, x.Email, x.DisplayName }),
-        MediaRules.Small.Show<UserAuth>(x => new { x.Company, x.CreatedDate }),
-    };
+        MediaRules.Small.Show<UserAuth>(x => new { x.Company, x.CreatedDate })
+    ];
 
     public List<List<InputInfo>> UserFormLayout
     {
@@ -48,27 +50,28 @@ public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId
     /// <summary>
     /// Which User fields can be updated
     /// </summary>
-    public List<InputInfo> FormLayout { get; set; } = new()
-    {
+    public List<InputInfo> FormLayout { get; set; } =
+    [
         Input.For<UserAuth>(x => x.Email, x => x.Type = Input.Types.Email),
         Input.For<UserAuth>(x => x.UserName),
-        Input.For<UserAuth>(x => x.FirstName,  c => c.FieldsPerRow(2)),
-        Input.For<UserAuth>(x => x.LastName,   c => c.FieldsPerRow(2)),
+        Input.For<UserAuth>(x => x.FirstName, c => c.FieldsPerRow(2)),
+        Input.For<UserAuth>(x => x.LastName, c => c.FieldsPerRow(2)),
         Input.For<UserAuth>(x => x.DisplayName),
         Input.For<UserAuth>(x => x.Company),
         Input.For<UserAuth>(x => x.Address),
         Input.For<UserAuth>(x => x.Address2),
-        Input.For<UserAuth>(x => x.City,       c => c.FieldsPerRow(2)),
-        Input.For<UserAuth>(x => x.State,      c => c.FieldsPerRow(2)),
-        Input.For<UserAuth>(x => x.Country,    c => c.FieldsPerRow(2)),
+        Input.For<UserAuth>(x => x.City, c => c.FieldsPerRow(2)),
+        Input.For<UserAuth>(x => x.State, c => c.FieldsPerRow(2)),
+        Input.For<UserAuth>(x => x.Country, c => c.FieldsPerRow(2)),
         Input.For<UserAuth>(x => x.PostalCode, c => c.FieldsPerRow(2)),
-        Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel),
-    };
+        Input.For<UserAuth>(x => x.PhoneNumber, x => x.Type = Input.Types.Tel)
+    ];
 
     /// <summary>
     /// Which UserAuth fields cannot be updated using UserAuthProperties dictionary
     /// </summary>
-    public List<string> RestrictedUserAuthProperties { get; set; } = new() {
+    public List<string> RestrictedUserAuthProperties { get; set; } =
+    [
         nameof(UserAuth.Id),
         nameof(UserAuth.Roles),
         nameof(UserAuth.Permissions),
@@ -76,8 +79,8 @@ public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId
         nameof(UserAuth.ModifiedDate),
         nameof(UserAuth.PasswordHash),
         nameof(UserAuth.Salt),
-        nameof(UserAuth.DigestHa1Hash),
-    };
+        nameof(UserAuth.DigestHa1Hash)
+    ];
 
     /// <summary>
     /// Invoked before user is created or updated.
@@ -178,7 +181,7 @@ public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId
 
                 var plugin = meta.Plugins.AdminUsers = new AdminUsersInfo {
                     AccessRole = AdminRole,
-                    Enabled = new List<string>(),
+                    Enabled = [],
                     UserAuth = metaGen.ToFlattenedType(userAuth.GetType()),
                     AllRoles = HostContext.Metadata.GetAllRoles(),
                     AllPermissions = HostContext.Metadata.GetAllPermissions(),

@@ -85,13 +85,17 @@ public static class IdentityAuth
                 authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TKey>)] = ["/" + "register".Localize()];
                 services.AddSingleton<IValidator<Register>, IdentityRegistrationValidator<TUser, TKey>>();
             }
-            if (ctx.AuthJwt.EnableRefreshToken)
+
+            if (ctx.EnableJwtAuth)
             {
-                authFeature.ServiceRoutes[typeof(GetAccessTokenIdentityService)] = ["/" + "access-token".Localize()];
-            }
-            if (ctx.AuthJwt.IncludeConvertSessionToTokenService)
-            {
-                authFeature.ServiceRoutes[typeof(ConvertSessionToTokenService)] = ["/" + "session-to-token".Localize()];
+                if (ctx.AuthJwt.EnableRefreshToken)
+                {
+                    authFeature.ServiceRoutes[typeof(GetAccessTokenIdentityService)] = ["/" + "access-token".Localize()];
+                }
+                if (ctx.AuthJwt.IncludeConvertSessionToTokenService)
+                {
+                    authFeature.ServiceRoutes[typeof(ConvertSessionToTokenService)] = ["/" + "session-to-token".Localize()];
+                }
             }
 
             authFeature.OnAfterInit.Add(feature =>

@@ -61,7 +61,7 @@ public class DataContractResolver : DefaultJsonTypeInfoResolver
             else if (propInfosToIgnore.Count > 0)
             {
                 var propsToRemove = jsonTypeInfo.Properties
-                    .Where(jsonPropertyInfo => propInfosToIgnore.Contains(jsonPropertyInfo.Name));
+                    .Where(jsonPropertyInfo => propInfosToIgnore.Contains(jsonPropertyInfo.Name)).ToList();
                 foreach (var jsonPropertyInfo in propsToRemove)
                 {
                     jsonTypeInfo.Properties.Remove(jsonPropertyInfo);

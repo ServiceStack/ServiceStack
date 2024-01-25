@@ -1,10 +1,12 @@
 using Chinook.ServiceModel.Types;
 using Microsoft.AspNetCore.Hosting;
+using MyApp.Data;
 using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Html;
+using ServiceStack.OrmLite;
 using TalentBlazor.ServiceModel;
 
 // In Configure.AppHost
@@ -15,19 +17,20 @@ namespace MyApp
     public class ConfigureAutoQuery : IHostingStartup
     {
         public void Configure(IWebHostBuilder builder) => builder
-            .ConfigureServices(services => {
+            .ConfigureServices((context,services) => {
                 // Enable Audit History
                 services.AddSingleton<ICrudEvents>(c =>
                     new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));
-            })
-            .ConfigureAppHost(appHost => {
+                
                 // For TodosService
-                appHost.Plugins.Add(new AutoQueryDataFeature());
+                services.AddPlugin(new AutoQueryDataFeature());
 
                 // For NorthwindAuto + Bookings
-                appHost.Plugins.Add(new AutoQueryFeature {
+                services.AddPlugin(new AutoQueryFeature {
                     MaxLimit = 100,
                     GenerateCrudServices = new GenerateCrudServices {
+                        DbFactory = new OrmLiteConnectionFactory(
+                            context.Configuration.GetConnectionString("DefaultConnection"), SqliteDialect.Provider),
                         AutoRegister = true,
                         ServiceFilter = (op, req) =>
                         {
@@ -74,7 +77,8 @@ namespace MyApp
                             nameof(Contact),nameof(PhoneScreen),nameof(Interview)),
                     },
                 });
-
+            })
+            .ConfigureAppHost(appHost => {
                 // Can use to configure both code-first + generated types
                 var dateFormat = new IntlDateTime(DateStyle.Medium).ToFormat();
                 var currency = new IntlNumber { Currency = NumberCurrency.USD }.ToFormat();
@@ -82,7 +86,7 @@ namespace MyApp
                 var icons = new Dictionary<string, ImageInfo>
                 {
                     [nameof(ApiKey)] = Svg.CreateImage(Svg.Body.Key),
-                    [nameof(AppUser)] = Svg.CreateImage(Svg.Body.User),
+                    [nameof(ApplicationUser)] = Svg.CreateImage(Svg.Body.User),
                     [nameof(CrudEvent)] = Svg.CreateImage(Svg.Body.History),
                     [nameof(UserAuthDetails)] = Svg.CreateImage(Svg.Body.UserDetails),
                     [nameof(UserAuthRole)] = Svg.CreateImage(Svg.Body.UserShield),

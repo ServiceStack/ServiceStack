@@ -1,3 +1,4 @@
+using System.Data;
 using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.Auth;
@@ -18,11 +19,8 @@ public class ConfigureDb : IHostingStartup
         .ConfigureServices((context, services) =>
         {
             var dbFactory = new OrmLiteConnectionFactory(
-                context.Configuration.GetConnectionString("DefaultConnection") ?? ":memory:",
+                context.Configuration.GetConnectionString("DefaultConnection"),
                 SqliteDialect.Provider);
-            // var dbFactory = new OrmLiteConnectionFactory(
-            //     "Server=localhost;Database=ServiceStackDb;UID=root;Password=test;SslMode=none",
-            //     MySqlDialect.Provider);
             
             services.AddSingleton<IDbConnectionFactory>(dbFactory);
             dbFactory.RegisterConnection("chinook", 
@@ -31,44 +29,8 @@ public class ConfigureDb : IHostingStartup
             // Add support for dynamically generated db rules
             services.AddSingleton<IValidationSource>(c => 
                 new OrmLiteValidationSource(c.Resolve<IDbConnectionFactory>(), HostContext.LocalCache));            
-        })
-        .ConfigureAppHost(appHost =>
-        {
-            // Create non-existing Table and add Seed Data Example
-            using var db = appHost.Resolve<IDbConnectionFactory>().Open();
-
-            appHost.AddVirtualFileSources.Add(new FileSystemMapping("profiles", AppHost.ProfilesDir));
-            db.DropTable<JobApplicationComment>();
-            db.DropTable<JobApplicationAttachment>();
-            db.DropTable<JobOffer>();
-            db.DropTable<Interview>();
-            db.DropTable<PhoneScreen>();
-            db.DropTable<JobApplicationEvent>();
-            db.DropTable<JobApplication>();
-            db.DropTable<Job>();
-            db.DropTable<Contact>();
-
-            ConfigureAuthRepository.RecreateUsers(appHost.Resolve<IAuthRepository>(), db);
             
-            db.SeedTalent(profilesDir:AppHost.ProfilesDir);
-            db.SeedAttachments(appHost, sourceDir:AppHost.TalentBlazorSeedDataDir);
-            
-            db.DropTable<FileSystemFile>();
-            db.DropTable<FileSystemItem>();
-            db.CreateTable<FileSystemItem>();
-            db.CreateTable<FileSystemFile>();
-            
-            db.DropTable<Todo>();
-            
-            if (db.CreateTableIfNotExists<Todo>()) 
-            {
-                db.Insert(new Todo { Text = "Learn" });
-                db.Insert(new Todo { Text = "AutoQuery" });
-            }
-            
-            appHost.Resolve<IValidationSource>().InitSchema();
-            
-            appHost.Plugins.Add(new AdminDatabaseFeature {
+            services.AddPlugin(new AdminDatabaseFeature {
                 QueryLimit = 100,
                 DatabasesFilter = dbs => {
                     foreach (var db in dbs) 
@@ -92,7 +54,45 @@ public class ConfigureDb : IHostingStartup
                 //     });
                 // },
             });
+        })
+        .ConfigureAppHost(appHost =>
+        {
+            // Create non-existing Table and add Seed Data Example
+            appHost.AddVirtualFileSources.Add(new FileSystemMapping("profiles", AppHost.ProfilesDir));
+            
+            appHost.Resolve<IValidationSource>().InitSchema();
         });
+
+    public static void SeedData(IDbConnection db)
+    {
+        //using var db = appHost.Resolve<IDbConnectionFactory>().Open();
+        db.DropTable<JobApplicationComment>();
+        db.DropTable<JobApplicationAttachment>();
+        db.DropTable<JobOffer>();
+        db.DropTable<Interview>();
+        db.DropTable<PhoneScreen>();
+        db.DropTable<JobApplicationEvent>();
+        db.DropTable<JobApplication>();
+        db.DropTable<Job>();
+        db.DropTable<Contact>();
+            
+        db.SeedTalent(profilesDir:AppHost.ProfilesDir);
+        db.SeedAttachments(sourceDir:AppHost.TalentBlazorSeedDataDir);
+            
+        db.DropTable<FileSystemFile>();
+        db.DropTable<FileSystemItem>();
+        db.CreateTable<FileSystemItem>();
+        db.CreateTable<FileSystemFile>();
+            
+        db.DropTable<Todo>();
+            
+        if (db.CreateTableIfNotExists<Todo>()) 
+        {
+            db.Insert(new Todo { Text = "Learn" });
+            db.Insert(new Todo { Text = "AutoQuery" });
+        }
+    }
+    
 }
 
 public static class ConfigureDbUtils
