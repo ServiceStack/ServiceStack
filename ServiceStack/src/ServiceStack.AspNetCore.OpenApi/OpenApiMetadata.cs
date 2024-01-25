@@ -867,6 +867,21 @@ public class OpenApiMetadata
                     schema.Required.Add(schemaPropertyName);
                 }
 
+                var uploadTo = prop.FirstAttribute<UploadToAttribute>();
+                if (uploadTo != null)
+                {
+                    schemaProperty.Reference = null;
+                    if (schemaProperty.Type != OpenApiType.Array)
+                    {
+                        schemaProperty.Type = "file";
+                    }
+                    schemaProperty.Items = new OpenApiSchema
+                    {
+                        Type = OpenApiType.String,
+                        Format = OpenApiTypeFormat.Binary,
+                    };
+                }
+
                 schemaProperty.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>()).ToOpenApiEnums();
 
                 SchemaPropertyFilter?.Invoke(schemaProperty);

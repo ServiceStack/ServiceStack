@@ -28,7 +28,7 @@ public class CreateFileSystemItem : ICreateDb<FileSystemItem>, IReturn<FileSyste
 {
     public FileAccessType? FileAccessType { get; set; }
     
-    [Input(Type = "file"), UploadTo("fs")]
+    [Input(Type = "file"), UploadTo("files")]
     public FileSystemFile File { get; set; }
 }
 
