@@ -14,6 +14,7 @@ namespace ServiceStack.Auth;
 
 public interface IIdentityApplicationAuthProvider
 {
+    Task PreAuthenticateAsync(IRequest req, IResponse res);
     void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
     Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
 }

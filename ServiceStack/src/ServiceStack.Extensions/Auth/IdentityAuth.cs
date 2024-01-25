@@ -36,7 +36,8 @@ public static class IdentityAuth
             () => new IdentityAuthSession(new ClaimsPrincipal()),
             new IdentityApplicationAuthProvider<TUser, TKey>(),
             new IdentityCredentialsAuthProvider<TUser, TKey>(),
-            new IdentityJwtAuthProvider<TUser, TKey>());
+            new IdentityJwtAuthProvider<TUser, TKey>(),
+            new IdentityBasicAuthProvider<TUser, TKey>());
 
         Config = ctx;
         ApplicationAuthProvider = ctx.AuthApplication;
@@ -55,6 +56,11 @@ public static class IdentityAuth
                 {
                     authProviders.Add(ctx.AuthCredentials);
                     services.AddSingleton<IIdentityCredentialsAuthProvider>(ctx.AuthCredentials);
+                }
+                if (ctx.EnableBasicAuth)
+                {
+                    authProviders.Add(ctx.AuthBasic);
+                    services.AddSingleton<IIdentityBasicAuthProvider>(ctx.AuthBasic);
                 }
             }
             if (ctx.EnableJwtAuth)
@@ -155,7 +161,8 @@ public class IdentityAuthContext<TUser, TKey>(
     Func<IAuthSession> sessionFactory,
     IdentityApplicationAuthProvider<TUser, TKey> authApplication,
     IdentityCredentialsAuthProvider<TUser, TKey> authCredentials,
-    IdentityJwtAuthProvider<TUser, TKey> authJwt)
+    IdentityJwtAuthProvider<TUser, TKey> authJwt,
+    IdentityBasicAuthProvider<TUser, TKey> authBasic)
     : IIdentityAuthContext
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
@@ -181,6 +188,11 @@ public class IdentityAuthContext<TUser, TKey>(
     public IdentityJwtAuthProvider<TUser, TKey> AuthJwt { get; set; } = authJwt;
 
     /// <summary>
+    /// Basic Auth Provider
+    /// </summary>
+    public IdentityBasicAuthProvider<TUser, TKey> AuthBasic { get; set; } = authBasic;
+
+    /// <summary>
     /// Enable Identity Cookie Application Auth (default true) 
     /// </summary>
     public bool EnableApplicationAuth { get; set; } = true;
@@ -194,6 +206,11 @@ public class IdentityAuthContext<TUser, TKey>(
     /// Enable Authentication via Identity Auth JWT
     /// </summary>
     public bool EnableJwtAuth { get; set; }
+    
+    /// <summary>
+    /// Enable Authentication via Basic Auth
+    /// </summary>
+    public bool EnableBasicAuth { get; set; }
 
     /// <summary>
     /// Where users should redirect to Sign In
@@ -265,6 +282,12 @@ public class IdentityAuthContext<TUser, TKey>(
     {
         EnableJwtAuth = true;
         configure?.Invoke(AuthJwt);
+    }
+
+    public void BasicAuth(Action<IdentityBasicAuthProvider<TUser,TKey>>? configure=null)
+    {
+        EnableBasicAuth = true;
+        configure?.Invoke(AuthBasic);
     }
 }
 

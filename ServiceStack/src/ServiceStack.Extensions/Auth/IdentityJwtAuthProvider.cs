@@ -43,13 +43,14 @@ public interface IIdentityJwtAuthProvider
 /// <summary>
 /// Converts an MVC JwtBearer Cookie into a ServiceStack Session
 /// </summary>
-public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
+public class IdentityJwtAuthProvider<TUser,TKey> : 
+    IdentityAuthProvider<TUser,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
 {
     public override string Type => "Bearer";
-    public const string Name = "identity";
-    public const string Realm = "/auth/identity";
+    public const string Name = AuthenticateService.JwtProvider;
+    public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
 
     /// <summary>
     /// Default Issuer to use if unspecified

@@ -15,6 +15,7 @@ public class ConfigureAuth : IHostingStartup
                 options.SessionFactory = () => new CustomUserSession();
                 options.CredentialsAuth();
                 options.JwtAuth();
+                options.BasicAuth();
             })));
         });
 }

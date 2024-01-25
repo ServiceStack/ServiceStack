@@ -27,8 +27,7 @@ services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
         };
     })
-    .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler<ApplicationUser>>(
-        BasicAuthenticationHandler.Scheme, null)
+    .AddBasicAuth<ApplicationUser>()
     .AddIdentityCookies(options => options.DisableRedirectsForApis());
 
 services.AddDataProtection()

@@ -87,6 +87,11 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
     public List<Action<AuthFeature>> OnAfterInit { get; set; } = [];
 
     /// <summary>
+    /// Invoked on AddToAppMetadata
+    /// </summary>
+    public List<Action<AppMetadata>> OnAppMetadata { get; set; } = [];
+
+    /// <summary>
     /// Invoked after User is Signed Out
     /// </summary>
     public List<Func<IRequest,Task>> OnLogoutAsync { get; set; } = [];
@@ -458,23 +463,28 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
                 }),
                 AuthProviders = AuthenticateService.GetAuthProviders()
                     .OrderBy(x => (x as AuthProvider)?.Sort ?? 0)
-                    .Map(x => new MetaAuthProvider {
-                        Type = x.Type,
-                        Name = x.Provider,
-                        Label = (x as AuthProvider)?.Label,
-                        Icon = (x as AuthProvider)?.Icon,
-                        NavItem = (x as AuthProvider)?.NavItem,
-                        FormLayout = (x as AuthProvider)?.FormLayout,
-                        Meta = x.Meta,
-                    }),
+                    .Map(ToMetaAuthProvider),
                 RoleLinks = uiFeature?.RoleLinks ?? new(),
             };
             if (meta.Plugins.Auth.HasAuthSecret == true && AdminAuthSecretInfo != null)
                 meta.Plugins.Auth.AuthProviders.Add(AdminAuthSecretInfo);
+            
+            OnAppMetadata.ForEach(fn => fn(meta));
         });
 
-        OnAfterInit.ForEach(x => x(this));
+        OnAfterInit.ForEach(fn => fn(this));
     }
+
+    public MetaAuthProvider ToMetaAuthProvider(IAuthProvider authProvider) => new()
+    {
+        Type = authProvider.Type,
+        Name = authProvider.Provider,
+        Label = (authProvider as AuthProvider)?.Label,
+        Icon = (authProvider as AuthProvider)?.Icon,
+        NavItem = (authProvider as AuthProvider)?.NavItem,
+        FormLayout = (authProvider as AuthProvider)?.FormLayout,
+        Meta = authProvider.Meta,
+    };
 
     public void AfterPluginsLoaded(IAppHost appHost)
     {
