@@ -129,15 +129,9 @@ public static class ServiceStackProviderExtensions
     }
 }
 
-public class ServiceStackProvider : IServiceStackProvider
+public class ServiceStackProvider(IHttpRequest request, IResolver resolver = null) : IServiceStackProvider
 {
-    public ServiceStackProvider(IHttpRequest request, IResolver resolver = null)
-    {
-        this.request = request;
-        this.resolver = resolver ?? Service.GlobalResolver ?? HostContext.AppHost;
-    }
-
-    private IResolver resolver;
+    private IResolver resolver = resolver ?? Service.GlobalResolver ?? HostContext.AppHost;
     public virtual void SetResolver(IResolver resolver)
     {
         this.resolver = resolver;
@@ -150,7 +144,6 @@ public class ServiceStackProvider : IServiceStackProvider
 
     public IAppSettings AppSettings => HostContext.AppSettings;
 
-    private readonly IHttpRequest request;
     public virtual IHttpRequest Request => request;
 
     public virtual IHttpResponse Response => (IHttpResponse)Request.Response;

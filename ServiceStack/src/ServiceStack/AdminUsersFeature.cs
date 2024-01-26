@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.NativeTypes;
 
-namespace ServiceStack.Admin;
+namespace ServiceStack;
 
 public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin, IAfterInitAppHost
 {
@@ -176,15 +177,15 @@ public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId
                     : new UserAuth();
 
                 var nativeTypesMeta = appHost.TryResolve<INativeTypesMetadata>() as NativeTypesMetadata 
-                                      ?? new NativeTypesMetadata(HostContext.AppHost.Metadata, new MetadataTypesConfig());
+                    ?? new NativeTypesMetadata(appHost.Metadata, new MetadataTypesConfig());
                 var metaGen = nativeTypesMeta.GetGenerator();
 
                 var plugin = meta.Plugins.AdminUsers = new AdminUsersInfo {
                     AccessRole = AdminRole,
                     Enabled = [],
                     UserAuth = metaGen.ToFlattenedType(userAuth.GetType()),
-                    AllRoles = HostContext.Metadata.GetAllRoles(),
-                    AllPermissions = HostContext.Metadata.GetAllPermissions(),
+                    AllRoles = appHost.Metadata.GetAllRoles(),
+                    AllPermissions = appHost.Metadata.GetAllPermissions(),
                     QueryUserAuthProperties = QueryUserAuthProperties,
                     QueryMediaRules = QueryMediaRules, 
                     FormLayout = FormLayout,
@@ -210,7 +211,7 @@ public class AdminUsersFeature : IPlugin, IConfigureServices, Model.IHasStringId
 
     public void AfterInit(IAppHost appHost)
     {
-        var authRepo = ((ServiceStackHost)appHost).GetAuthRepository();
+        var authRepo = ((ServiceStackHost)appHost).GetAuthRepositoryAsync();
         using (authRepo as IDisposable)
         {
             if (authRepo == null)

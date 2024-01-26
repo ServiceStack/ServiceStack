@@ -1097,8 +1097,10 @@ public abstract class ServiceStackCodePage : SharpCodePage, IRequiresRequest
         sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache);
 
     private IAuthRepository authRepository;
-
     public virtual IAuthRepository AuthRepository => authRepository ??= HostContext.AppHost.GetAuthRepository(Request);
+
+    private IAuthRepositoryAsync authRepositoryAsync;
+    public virtual IAuthRepositoryAsync AuthRepositoryAsync => authRepositoryAsync ??= HostContext.AppHost.GetAuthRepositoryAsync(Request);
 
     private IServiceGateway gateway;
     public virtual IServiceGateway Gateway => gateway ??= HostContext.AppHost.GetServiceGateway(Request);

@@ -385,6 +385,8 @@ public partial class ServiceStackScripts : ScriptMethods, IConfigureScriptContex
         ? value : StopExecution.Value;
 
     public IAuthRepository authRepo(ScriptScopeContext scope) => HostContext.AppHost.GetAuthRepository(scope.GetRequest());
+    
+    public IAuthRepositoryAsync authRepoAsync(ScriptScopeContext scope) => HostContext.AppHost.GetAuthRepositoryAsync(scope.GetRequest());
 
     public IUserAuth newUserAuth(IAuthRepository authRepo) =>
         authRepo is ICustomUserAuth c ? c.CreateUserAuth() : new UserAuth();
