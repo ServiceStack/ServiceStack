@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
+using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
@@ -16,6 +23,8 @@ public static class IdentityAuth
     public static string TokenCookie = Keywords.TokenCookie;
     public static string RefreshTokenCookie = Keywords.RefreshTokenCookie;
     public static IIdentityAuthContext? Config { get; private set; }
+    public static IIdentityAuthContextManager? Manager { get; private set; }
+    
     public static IIdentityApplicationAuthProvider? ApplicationAuthProvider { get; private set; }
     public static IIdentityApplicationAuthProvider AuthApplication => ApplicationAuthProvider
         ?? throw new Exception("IdentityAuth.AuthApplication is not configured");
@@ -40,6 +49,7 @@ public static class IdentityAuth
             new IdentityBasicAuthProvider<TUser, TKey>());
 
         Config = ctx;
+        Manager = new IdentityAuthContextManager<TUser,TKey>(ctx);
         ApplicationAuthProvider = ctx.AuthApplication;
         configure(ctx);
 
@@ -103,6 +113,14 @@ public static class IdentityAuth
                     authFeature.ServiceRoutes[typeof(ConvertSessionToTokenService)] = ["/" + "session-to-token".Localize()];
                 }
             }
+
+            authFeature.OnAppMetadata.Add(meta =>
+            {
+                meta.Plugins.Auth.IdentityAuth = new()
+                {
+                    HasRefreshToken = typeof(TUser).HasInterface(typeof(IRequireRefreshToken))
+                };
+            });
 
             authFeature.OnAfterInit.Add(feature =>
             {
@@ -242,10 +260,6 @@ public class IdentityAuthContext<TUser, TKey>(
     /// </summary>
     public bool IncludeAssignRoleServices { get; set; }
 
-    public List<string> AssignRolesToAdminUsers { get; set; } = [
-        RoleNames.Admin
-    ];
-
     /// <summary>
     /// Additional custom logic to convert an Identity User to a ServiceStack Session
     /// </summary>
@@ -256,6 +270,13 @@ public class IdentityAuthContext<TUser, TKey>(
     /// </summary>
     public Func<IAuthSession, TUser> SessionToUserConverter { get; set; } = DefaultSessionToUserConverter;
 
+#if NET8_0_OR_GREATER    
+    /// <summary>
+    /// Admin Users Feature
+    /// </summary>
+    public IdentityAdminUsersFeature<TUser, TKey>? AdminUsers { get; set; }
+#endif
+    
     public static TUser DefaultSessionToUserConverter(IAuthSession session)
     {
         var to = session.ConvertTo<TUser>();
@@ -288,6 +309,284 @@ public class IdentityAuthContext<TUser, TKey>(
     {
         EnableBasicAuth = true;
         configure?.Invoke(AuthBasic);
+    }
+
+#if NET8_0_OR_GREATER
+    public void AdminUsersFeature(Action<IdentityAdminUsersFeature<TUser, TKey>>? configure=null)
+    {
+        AdminUsers = new IdentityAdminUsersFeature<TUser, TKey>();
+        configure?.Invoke(AdminUsers);
+        ServiceStackHost.InitOptions.Plugins.AddIfNotExists(AdminUsers);
+    }
+#endif
+}
+
+public interface IIdentityAuthContextManager
+{
+}
+
+public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, TKey> context) : IIdentityAuthContextManager
+    where TKey : IEquatable<TKey>
+    where TUser : IdentityUser<TKey>, new()
+{
+    public IdentityAuthContext<TUser, TKey> Context => context;
+
+#if NET8_0_OR_GREATER
+    public async Task<List<TUser>> SearchUsersAsync(string query, string? orderBy = null, int? skip = null, int? take = null, IRequest? request = null)
+    {
+        List<TUser> QueryUsers(DbContext dbContext)
+        {
+            var feature = Context.AdminUsers!;
+            var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
+            var q = dbUsers.AsQueryable();
+            if (!string.IsNullOrEmpty(query))
+            {
+                q = feature.SearchUsersFilter(q, query);
+            }
+            if (skip != null)
+                q = q.Skip(skip.Value);
+            if (take != null)
+                q = q.Take(take.Value);
+            q = orderBy != null 
+                ? q.OrderBy(orderBy) 
+                : feature.DefaultOrderBy != null
+                    ? q.OrderBy(feature.DefaultOrderBy)
+                    : q.OrderBy(x => x.Id);
+            return q.ToList();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(scope.ServiceProvider);
+            return QueryUsers(dbContext);
+        }
+        else
+        {
+            var services = request.GetServiceProvider();
+            var dbContext = IdentityAuth.ResolveDbContext<TUser>(services);
+            return QueryUsers(dbContext);
+        }
+    }
+#endif
+
+    public async Task<IdentityResult> UpdateUserAsync(TUser user, IRequest? request = null)
+    {
+        async Task<IdentityResult> UpdateUser(UserManager<TUser> userManager)
+        {
+            return await userManager.UpdateAsync(user).ConfigAwait();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await UpdateUser(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await UpdateUser(userManager).ConfigAwait();
+        }
+    }
+
+    public async Task<IdentityResult> DeleteUserByIdAsync(string userId, IRequest? request = null)
+    {
+        async Task<IdentityResult> DeleteUser(UserManager<TUser> userManager)
+        {
+            var user = await userManager.FindByIdAsync(userId).ConfigAwait();
+            if (user == null)
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+            return await userManager.DeleteAsync(user).ConfigAwait();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await DeleteUser(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await DeleteUser(userManager).ConfigAwait();
+        }
+    }
+
+    public async Task<IdentityResult> LockUserAsync(TUser user, DateTimeOffset lockoutEnd, IRequest? request = null)
+    {
+        async Task<IdentityResult> LockUser(UserManager<TUser> userManager)
+        {
+            if (!user.LockoutEnabled)
+                await userManager.SetLockoutEnabledAsync(user, true).ConfigAwait();
+            return await userManager.SetLockoutEndDateAsync(user, lockoutEnd).ConfigAwait();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await LockUser(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await LockUser(userManager).ConfigAwait();
+        }
+    }
+
+    public async Task<IdentityResult> UnlockUserAsync(TUser user, IRequest? request = null)
+    {
+        async Task<IdentityResult> UnlockUser(UserManager<TUser> userManager)
+        {
+            if (!user.LockoutEnabled)
+                await userManager.SetLockoutEnabledAsync(user, false).ConfigAwait();
+            return await userManager.SetLockoutEndDateAsync(user, null).ConfigAwait();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await UnlockUser(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await UnlockUser(userManager).ConfigAwait();
+        }
+    }
+
+    public async Task<IdentityResult> ChangePasswordAsync(TUser user, string password, IRequest? request = null)
+    {
+        async Task<IdentityResult> ChangePassword(UserManager<TUser> userManager)
+        {
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            return await userManager.ResetPasswordAsync(user, token, password);
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await ChangePassword(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await ChangePassword(userManager).ConfigAwait();
+        }
+    }
+
+    public async Task<IdentityResult> AddRolesAsync(TUser user, IEnumerable<string> roles, IRequest? request = null)
+    {
+        async Task<IdentityResult> AddRoles(UserManager<TUser> userManager)
+        {
+            return await userManager.AddToRolesAsync(user, roles).ConfigAwait();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await AddRoles(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await AddRoles(userManager).ConfigAwait();
+        }
+    }
+
+    public async Task<IdentityResult> RemoveRolesAsync(TUser user, IEnumerable<string> roles, IRequest? request = null)
+    {
+        async Task<IdentityResult> RemoveRoles(UserManager<TUser> userManager)
+        {
+            return await userManager.RemoveFromRolesAsync(user, roles).ConfigAwait();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await RemoveRoles(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await RemoveRoles(userManager).ConfigAwait();
+        }
+    }
+
+    public Task<TUser?> FindUserByIdAsync(string userId, IRequest? request = null) =>
+        FindUserAsync(userManager => userManager.FindByIdAsync(userId), request);
+
+    public Task<TUser?> FindUserByNameAsync(string userName, IRequest? request = null) =>
+        FindUserAsync(userManager => userManager.FindByNameAsync(userName), request);
+
+    public async Task<TUser?> FindUserAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
+    {
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await findUser(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await findUser(userManager).ConfigAwait();
+        }
+    }
+
+    public Task<(TUser, List<string>)> GetUserAndRolesByIdAsync(string userId, IRequest? request = null) =>
+        GetUserAndRolesAsync(userManager => userManager.FindByIdAsync(userId), request);
+    
+    public Task<(TUser, List<string>)> GetUserAndRolesByNameAsync(string userName, IRequest? request = null) =>
+        GetUserAndRolesAsync(userManager => userManager.FindByNameAsync(userName), request);
+    
+    public async Task<(TUser, List<string>)> GetUserAndRolesAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
+    {
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            var user = await findUser(userManager).ConfigAwait();
+
+            if (user == null)
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+
+            var roles = (await userManager.GetRolesAsync(user).ConfigAwait()).ToList();
+            return (user, roles);
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            var user = await findUser(userManager).ConfigAwait();
+            
+            if (user == null)
+            {
+                var session = await request.GetSessionAsync().ConfigAwait();
+                if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
+                    user = context.SessionToUserConverter(session);
+            }
+
+            if (user == null)
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+
+            var roles = (await userManager.GetRolesAsync(user).ConfigAwait()).ToList();
+            return (user, roles);
+        }
     }
 }
 

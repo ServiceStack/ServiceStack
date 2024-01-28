@@ -1,9 +1,11 @@
 using Funq;
 using ServiceStack;
+using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
 using TalentBlazor.ServiceModel;
+using GetAccessTokenResponse = ServiceStack.GetAccessTokenResponse;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
 
@@ -90,7 +92,19 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
         //     DefaultPattern = "*.html;*.js;*.mjs;*.css"
         // });
 
-        Metadata.ForceInclude = [typeof(GetAccessToken)];
+        Metadata.ForceInclude = [
+            typeof(Authenticate),typeof(AuthenticateResponse),
+            typeof(GetAccessToken),typeof(GetAccessTokenResponse),
+            typeof(AdminDashboard),typeof(AdminDashboardResponse),
+            typeof(AdminDatabase),typeof(AdminDatabaseResponse),
+            typeof(AdminCreateUser),typeof(AdminDeleteUser),typeof(AdminDeleteUserResponse),typeof(AdminGetUser),typeof(AdminUserResponse),
+            typeof(AdminQueryUsers),typeof(AdminUpdateUser),typeof(AdminUserBase),typeof(AdminUsersResponse),
+            typeof(RequestLogs),typeof(RequestLogsResponse),
+            typeof(AdminProfiling),typeof(AdminProfilingResponse),
+            typeof(AdminRedis),typeof(AdminRedisResponse),
+            typeof(GetValidationRules),typeof(ModifyValidationRules),typeof(ValidationRule),typeof(ValidateRule),
+            typeof(GetValidationRulesResponse),
+        ];
 
         ScriptContext.Args[nameof(AppData)] = new AppData
         {

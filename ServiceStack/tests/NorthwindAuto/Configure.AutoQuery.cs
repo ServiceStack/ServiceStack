@@ -32,6 +32,7 @@ namespace MyApp
                         DbFactory = new OrmLiteConnectionFactory(
                             context.Configuration.GetConnectionString("DefaultConnection"), SqliteDialect.Provider),
                         AutoRegister = true,
+                        ExcludeTables = [nameof(ApplicationUser)],
                         ServiceFilter = (op, req) =>
                         {
                             op.Request.AddAttributeIfNotExists(new TagAttribute("Northwind"));

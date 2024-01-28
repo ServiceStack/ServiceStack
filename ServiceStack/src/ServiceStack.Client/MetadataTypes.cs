@@ -165,6 +165,7 @@ public class PluginInfo : IMeta
     public ProfilingInfo Profiling { get; set; }
     public FilesUploadInfo FilesUpload { get; set; }
     public AdminUsersInfo AdminUsers { get; set; }
+    public AdminIdentityUsersInfo AdminIdentityUsers { get; set; }
     public AdminRedisInfo AdminRedis { get; set; }
     public AdminDatabaseInfo AdminDatabase { get; set; }
     public Dictionary<string, string> Meta { get; set; }
@@ -243,9 +244,16 @@ public class AuthInfo : IMeta
     public bool? IncludesOAuthTokens { get; set; }
     public string HtmlRedirect { get; set; }
     public List<MetaAuthProvider> AuthProviders { get; set; }
+    public IdentityAuthInfo IdentityAuth { get; set; }
     
     public Dictionary<string, List<LinkInfo>> RoleLinks { get; set; }
     public Dictionary<string,string[]> ServiceRoutes { get; set; }
+    public Dictionary<string, string> Meta { get; set; }
+}
+
+public class IdentityAuthInfo : IMeta
+{
+    public bool? HasRefreshToken { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 
@@ -341,6 +349,23 @@ public class AdminUsersInfo : IMeta
     public List<string> AllRoles { get; set; }
     public List<string> AllPermissions { get; set; }
     public List<string> QueryUserAuthProperties { get; set; }
+    
+    public List<MediaRule> QueryMediaRules { get; set; }
+    
+    public List<InputInfo> FormLayout { get; set; }
+    public ApiCss Css { get; set; } 
+    public Dictionary<string, string> Meta { get; set; }
+}
+
+[Exclude(Feature.Soap | Feature.ApiExplorer)]
+public class AdminIdentityUsersInfo : IMeta
+{
+    public string AccessRole { get; set; }
+    public List<string> Enabled { get; set; }
+    public MetadataType IdentityUser { get; set; }
+    public List<string> AllRoles { get; set; }
+    public List<string> AllPermissions { get; set; }
+    public List<string> QueryIdentityUserProperties { get; set; }
     
     public List<MediaRule> QueryMediaRules { get; set; }
     

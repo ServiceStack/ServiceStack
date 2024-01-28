@@ -224,6 +224,7 @@ let store = {
         setBodyClass({ page: routes.admin })
     },
     get adminUsers() { return server.plugins.adminUsers },
+    get adminIdentityUsers() { return server.plugins.adminIdentityUsers },
     /** @param {string|any} id
      *  @return {LinkInfo} */
     adminLink(id) { return server.ui.adminLinks.find(x => x.id === id) },

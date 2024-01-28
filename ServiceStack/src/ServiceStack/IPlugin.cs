@@ -46,6 +46,7 @@ public static class Plugins
     public const string HotReload = "hotreload";
     public const string RedisErrorLogs = "redislogs";
     public const string AdminUsers = "adminusers";
+    public const string AdminIdentityUsers = "identityusers";
     public const string AdminRedis = "adminredis";
     public const string AdminDatabase = "admindb";
     public const string Ui = "ui";

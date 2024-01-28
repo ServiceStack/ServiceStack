@@ -26,6 +26,7 @@ namespace ServiceStack.Auth;
 /// <returns>Response DTO; non-null will short-circuit execution and return that response</returns>
 public delegate object ValidateFn(IServiceBase service, string httpMethod, object requestDto);
 public delegate Task<object> ValidateAsyncFn(IServiceBase service, string httpMethod, object requestDto);
+public delegate Task<object> ValidateRequestAsyncFn(IRequest service, object requestDto);
 
 [DefaultRequest(typeof(Authenticate))]
 [ErrorView(nameof(ServiceStack.Authenticate.ErrorView))]
