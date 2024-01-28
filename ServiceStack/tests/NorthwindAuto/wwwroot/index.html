@@ -18,6 +18,13 @@
         ul, li { margin: 0; padding: 0; }
         ul { list-style:none; }
     </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "@servicestack/client": "./js/servicestack-client.mjs"
+        }
+    }
+    </script>
 </head>
 <body>
 
@@ -93,14 +100,21 @@
     
     <h3>Example Code</h3>
     <div style="font-size:20px;line-height:26px">
-        <pre>&lt;script src="/js/servicestack-client.js"&gt;&lt;/script&gt;</pre>
-        <pre class="csharp">Object.assign(window, window['@servicestack/client']) //import
+        <pre>&lt;script type="importmap"&gt;
+{
+    "imports": {
+        "@servicestack/client": "./js/servicestack-client.mjs"
+    }
+}
+&lt;/script&gt;</pre>
+        <pre class="csharp">import { JsonApiClient } from "@servicestack/client"
+import { Hello } from "./dtos.mjs"
 
-var client = new JsonServiceClient()
-client.get(new Hello({ name: name }))
-    .then(function(r) {
-        console.log(r.result)
-    })
+const client = JsonApiClient.create()
+const api = await client.api(new Hello({ name }))
+if (api.succeeded) {
+    console.log(api.response.result)
+}
 </pre>
         
         <p>
@@ -109,29 +123,18 @@ client.get(new Hello({ name: name }))
         </p>
     </div>
 
-<script src="/js/servicestack-client.js"></script>
-<script>
-    Object.assign(window, window['@servicestack/client']); //import into global namespace
+<script type="module">
+import { $1, JsonApiClient } from "@servicestack/client"
+import { Hello } from "./mjs/dtos.mjs"
 
-    // generate typed dtos with https://docs.servicestack.net/typescript-add-servicestack-reference
-    var Hello = /** @class */ (function () {
-        function Hello(init) { Object.assign(this, init); }
-        Hello.prototype.createResponse = function () { return new HelloResponse(); };
-        Hello.prototype.getTypeName = function () { return 'Hello'; };
-        return Hello;
-    }());
-    var HelloResponse = /** @class */ (function () {
-        function HelloResponse(init) { Object.assign(this, init); }
-        return HelloResponse;
-    }());
+const client = JsonApiClient.create()
 
-    var client = new JsonServiceClient();
-    function callHello(val) {
-        client.get(new Hello({ name: val }))
-            .then(function(r) {
-                document.getElementById('result').innerHTML = r.result;
-            });
+globalThis.callHello = async function (val) {
+    const api = await client.api(new Hello({ name: val }))
+    if (api.succeeded) {
+        $1('#result').innerHTML = api.response.result;
     }
+}
 </script>
 
 
