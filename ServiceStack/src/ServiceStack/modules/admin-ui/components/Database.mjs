@@ -200,7 +200,7 @@ export const Database = {
                 <div class="absolute overflow-hidden">
                     <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
                         <div class="pointer-events-auto w-screen max-w-2xl">
-                            <form v-if="selected" class="flex h-full flex-col overflow-y-auto bg-white shadow-xl">
+                            <form class="flex h-full flex-col overflow-y-auto bg-white shadow-xl">
                                 <div class="flex-1">
                                     
                                     <!-- Header -->

@@ -186,11 +186,11 @@ public class HostConfig
                 Permissions = [],
                 UserAuthId = "0",
             },
-#if !NETCORE
-                ReturnsInnerException = true,
-#else
+#if NETCORE
             TextConfig = new() { TextCase = TextCase.CamelCase },
             ReturnsInnerException = false,
+#else
+            ReturnsInnerException = true,
 #endif
         };
 

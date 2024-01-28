@@ -60,7 +60,7 @@ public partial class AdminUsersService : Service
         {
             var user = await AuthRepositoryAsync.GetUserAuthByUserNameAsync(request.Query);
             return new AdminUsersResponse {
-                Results = new List<Dictionary<string, object>> { ToUserProps(user) }
+                Results = [ToUserProps(user)]
             };
         }
             
