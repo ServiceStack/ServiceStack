@@ -18,11 +18,24 @@ public static class DtoUtils
     public static ResponseStatus CreateResponseStatus(Exception ex, object request = null, bool debugMode = false)
     {
         var e = ex.UnwrapIfSingleException();
-        var responseStatus = (e is IResponseStatusConvertible customStatus ? customStatus.ToResponseStatus() : null) 
-            ?? ServiceStackHost.Instance?.CreateResponseStatus(e, request)
-            ?? ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
-            
-        return responseStatus == null ? null : PopulateResponseStatus(responseStatus, request, e, debugMode);
+        bool ranFilter = false;
+        var responseStatus = e is IResponseStatusConvertible customStatus ? customStatus.ToResponseStatus() : null;
+
+        var appHost = ServiceStackHost.Instance;
+        if (responseStatus == null && appHost != null)
+        {
+            responseStatus = appHost.CreateResponseStatus(e, request);
+            ranFilter = true;
+        }
+        responseStatus ??= ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
+
+        if (!ranFilter && appHost != null)
+        {
+            responseStatus = PopulateResponseStatus(responseStatus, request, e, debugMode);
+            appHost.OnExceptionTypeFilter(ex, responseStatus);
+        }
+
+        return responseStatus;
     }
 
     public static ResponseStatus PopulateResponseStatus(ResponseStatus responseStatus, object request, Exception e, bool debugMode = false)
@@ -201,8 +214,6 @@ public static class DtoUtils
         {
             var useEx = appHost.UseException(ex);
             var responseStatus = CreateResponseStatus(useEx, request, appHost.Config.DebugMode);
-
-            appHost.OnExceptionTypeFilter(useEx, responseStatus);
 
             if (appHost.Config.DebugMode || appHost.IsDebugLogEnabled)
                 appHost.OnLogError(appHost.GetType(), responseStatus.Message, useEx);

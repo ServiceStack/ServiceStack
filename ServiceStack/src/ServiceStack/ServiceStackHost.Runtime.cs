@@ -799,9 +799,7 @@ public abstract partial class ServiceStackHost
                 ? argEx.Message.Substring(0, paramMsgIndex).TrimEnd()
                 : argEx.Message;
 
-            if (responseStatus.Errors == null)
-                responseStatus.Errors = new List<ResponseError>();
-
+            responseStatus.Errors ??= [];
             responseStatus.Errors.Add(new ResponseError
             {
                 ErrorCode = ex.GetType().Name,
@@ -814,9 +812,7 @@ public abstract partial class ServiceStackHost
         var serializationEx = ex as SerializationException;
         if (serializationEx?.Data["errors"] is List<RequestBindingError> errors)
         {
-            if (responseStatus.Errors == null)
-                responseStatus.Errors = new List<ResponseError>();
-
+            responseStatus.Errors ??= [];
             responseStatus.Errors = errors.Select(e => new ResponseError
             {
                 ErrorCode = ex.GetType().Name,
