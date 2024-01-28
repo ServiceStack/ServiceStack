@@ -1,5 +1,5 @@
-﻿using RabbitMQ.Client;
-using RabbitMQ.Util;
+﻿using System;
+using RabbitMQ.Client;
 
 namespace ServiceStack.RabbitMq
 {
@@ -18,15 +18,17 @@ namespace ServiceStack.RabbitMq
 
         public SharedQueue<BasicGetResult> Queue => queue;
 
-        public override void OnCancel()
+        public override void OnCancel(params string[] consumerTags)
         {
             queue.Close();
             base.OnCancel();
         }
+        
+        
 
         public override void HandleBasicDeliver(
             string consumerTag, ulong deliveryTag, bool redelivered, string exchange,
-            string routingKey, IBasicProperties properties, byte[] body)
+            string routingKey, IBasicProperties properties, ReadOnlyMemory<byte> readOnlyMemory)
         {
             var msgResult = new BasicGetResult(
                 deliveryTag: deliveryTag,
@@ -34,8 +36,7 @@ namespace ServiceStack.RabbitMq
                 exchange: exchange,
                 routingKey: routingKey,
                 messageCount: 0, //Not available, received by RabbitMQ when declaring queue
-                basicProperties: properties,
-                body: body);
+                basicProperties: properties, readOnlyMemory);
 
             queue.Enqueue(msgResult);
         }

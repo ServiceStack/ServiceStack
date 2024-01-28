@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using NUnit.Framework;
 using RabbitMQ.Client;
@@ -121,7 +122,7 @@ namespace ServiceStack.Common.Tests.Messaging
                         return;
                     }
 
-                    var msg = basicGetMsg.Body.FromUtf8Bytes().FromJson<HelloRabbit>();
+                    var msg = Encoding.UTF8.GetString(basicGetMsg.Body.Span.ToArray()).FromJson<HelloRabbit>();
 
                     Thread.Sleep(1000);
 
@@ -137,7 +138,7 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IModel channel = connection.CreateModel())
             {
 #pragma warning disable CS0618
-                var consumer = new QueueingBasicConsumer(channel);
+                var consumer = new RabbitMqBasicConsumer(channel);
 #pragma warning restore CS0618
                 var consumerTag = channel.BasicConsume(QueueNames<HelloRabbit>.In, autoAck: false, consumer: consumer);
                 string recvMsg = null;
@@ -156,7 +157,7 @@ namespace ServiceStack.Common.Tests.Messaging
                         "Dequeued".Print();
 
                         var props = e.BasicProperties;
-                        recvMsg = e.Body.FromUtf8Bytes();
+                        recvMsg = Encoding.UTF8.GetString(e.Body.Span.ToArray());
                         // ... process the message
                         recvMsg.Print();
 
@@ -269,7 +270,7 @@ namespace ServiceStack.Common.Tests.Messaging
                     try
                     {
 #pragma warning disable CS0618
-                        var consumer = new QueueingBasicConsumer(channel);
+                        var consumer = new RabbitMqBasicConsumer(channel);
 #pragma warning restore CS0618
                         channel.BasicConsume(QueueNames<HelloRabbit>.In, autoAck: false, consumer: consumer);
 
@@ -278,7 +279,7 @@ namespace ServiceStack.Common.Tests.Messaging
                             try
                             {
                                 var e = consumer.Queue.Dequeue();
-                                recvMsg = e.Body.FromUtf8Bytes();
+                                recvMsg = Encoding.UTF8.GetString(e.Body.Span.ToArray());
                             }
                             catch (EndOfStreamException ex)
                             {

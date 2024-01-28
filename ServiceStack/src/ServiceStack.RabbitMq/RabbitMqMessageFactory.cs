@@ -37,7 +37,7 @@ namespace ServiceStack.RabbitMq
                 throw new ArgumentNullException(nameof(connectionString));
 
             ConnectionFactory = new ConnectionFactory {
-                RequestedHeartbeat = 10,
+                RequestedHeartbeat = TimeSpan.FromSeconds(10),
             };
 
             if (username != null)
