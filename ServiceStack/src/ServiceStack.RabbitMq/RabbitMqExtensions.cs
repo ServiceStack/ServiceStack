@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 using ServiceStack.Messaging;
@@ -218,7 +219,8 @@ namespace ServiceStack.RabbitMq
 
             if (string.IsNullOrEmpty(props.ContentType) || props.ContentType.MatchesContentType(MimeTypes.Json))
             {
-                var json = msgResult.Body.FromUtf8Bytes();
+                byte[] bodyBytes = msgResult.Body.Span.ToArray();
+                string json = Encoding.UTF8.GetString(bodyBytes); 
                 body = json.FromJson<T>();
             }
             else
@@ -227,7 +229,7 @@ namespace ServiceStack.RabbitMq
                 if (deserializer == null)
                     throw new NotSupportedException("Unknown Content-Type: " + props.ContentType);
             
-                var ms = MemoryStreamFactory.GetStream(msgResult.Body);
+                var ms = MemoryStreamFactory.GetStream(msgResult.Body.ToArray());
                 body = (T)deserializer(typeof(T), ms);
                 ms.Dispose();
             }
