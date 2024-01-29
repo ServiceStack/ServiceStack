@@ -277,7 +277,7 @@ public class ServiceStackOptions
     /// <summary>
     /// Customize System.Text.Json serialization options
     /// </summary>
-    public static System.Text.Json.JsonSerializerOptions SystemJsonOptions => ClientConfig.SystemJsonOptions;
+    public static System.Text.Json.JsonSerializerOptions SystemJsonOptions => Text.TextConfig.SystemJsonOptions;
 }
 
 #endif

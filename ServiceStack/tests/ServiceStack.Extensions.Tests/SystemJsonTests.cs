@@ -11,7 +11,7 @@ namespace ServiceStack.Extensions.Tests;
 
 public class SystemJsonTests
 {
-    JsonSerializerOptions Options = ClientConfig.DefaultSystemJsonOptions();
+    JsonSerializerOptions Options = TextConfig.DefaultSystemJsonOptions();
         
     public SystemJsonTests()
     {

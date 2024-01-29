@@ -96,10 +96,10 @@ public struct JsonTypeSerializer
     {
         var dateTime = (DateTime)oDateTime;
         var config = JsConfig.GetConfig();
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
         if (config.SystemJsonCompatible)
         {
-            var json = System.Text.Json.JsonSerializer.Serialize(dateTime);
+            var json = System.Text.Json.JsonSerializer.Serialize(dateTime, TextConfig.SystemJsonOptions);
             writer.Write(json);
             return;
         }
@@ -131,10 +131,10 @@ public struct JsonTypeSerializer
     public void WriteDateTimeOffset(TextWriter writer, object oDateTimeOffset)
     {
         var dateTimeOffset = (DateTimeOffset)oDateTimeOffset;
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
         if (JsConfig.SystemJsonCompatible)
         {
-            var json = System.Text.Json.JsonSerializer.Serialize(dateTimeOffset);
+            var json = System.Text.Json.JsonSerializer.Serialize(dateTimeOffset, TextConfig.SystemJsonOptions);
             writer.Write(json);
             return;
         }

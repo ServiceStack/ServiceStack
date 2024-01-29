@@ -36,30 +36,6 @@ public static class ClientConfig
     /// Use System.Text JSON for JsonApiClient
     /// </summary>
     public static UseSystemJson UseSystemJson { get; set; } = UseSystemJson.Never;
-
-    /// <summary>
-    /// Config scope of ServiceStack.Text when System.Text.Json is enabled
-    /// </summary>
-    public static Text.Config SystemJsonTextConfig { get; set; } = new()
-    {
-        TextCase = TextCase.CamelCase,
-        SystemJsonCompatible = true
-    };
-
-    public static System.Text.Json.JsonSerializerOptions DefaultSystemJsonOptions() => new()
-    {
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-        PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-        Converters = {
-            new SystemJson.JsonEnumMemberStringEnumConverter(),
-            new SystemJson.XsdTimeSpanJsonConverter(),
-            new SystemJson.XsdTimeOnlyJsonConverter(),
-        },
-        TypeInfoResolver = SystemJson.DataContractResolver.Instance,
-    };
-
-    public static System.Text.Json.JsonSerializerOptions SystemJsonOptions { get; set; } = DefaultSystemJsonOptions();
 #endif
 
     public static string ToJson<T>(T obj)
@@ -68,9 +44,9 @@ public static class ClientConfig
         var useSystemJson = typeof(T).FirstAttribute<SystemJsonAttribute>()?.Use ?? UseSystemJson;
         if (useSystemJson.HasFlag(UseSystemJson.Request))
         {
-            return System.Text.Json.JsonSerializer.Serialize(obj, SystemJsonOptions);
+            return System.Text.Json.JsonSerializer.Serialize(obj, TextConfig.SystemJsonOptions);
         }
-        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(SystemJsonTextConfig) : null)
+        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(TextConfig.SystemJsonTextConfig) : null)
         {
             return obj.ToJson();
         }
@@ -85,9 +61,9 @@ public static class ClientConfig
         var useSystemJson = (requestType ?? typeof(T)).FirstAttribute<SystemJsonAttribute>()?.Use ?? UseSystemJson;
         if (useSystemJson.HasFlag(UseSystemJson.Response))
         {
-            return System.Text.Json.JsonSerializer.Deserialize<T>(json, SystemJsonOptions);
+            return System.Text.Json.JsonSerializer.Deserialize<T>(json, TextConfig.SystemJsonOptions);
         }
-        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(SystemJsonTextConfig) : null)
+        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(TextConfig.SystemJsonTextConfig) : null)
         {
             return json.FromJson<T>();
         }
