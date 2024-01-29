@@ -102,6 +102,10 @@ public static class JsConfig
                 case "emitcamelcasenames":
                     scope.TextCase = boolValue ? TextCase.CamelCase : scope.TextCase;
                     break;
+                case "epcn":
+                case "emitpascalcasenames":
+                    scope.TextCase = boolValue ? TextCase.PascalCase : scope.TextCase;
+                    break;
                 case "elun":
                 case "emitlowercaseunderscorenames":
                     scope.TextCase = boolValue ? TextCase.SnakeCase : scope.TextCase;

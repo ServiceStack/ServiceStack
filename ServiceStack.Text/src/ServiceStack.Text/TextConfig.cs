@@ -31,6 +31,32 @@ public class TextConfig
     };
 
     public static System.Text.Json.JsonSerializerOptions SystemJsonOptions { get; set; } = DefaultSystemJsonOptions();
+
+    public static System.Text.Json.JsonSerializerOptions CustomSystemJsonOptions(System.Text.Json.JsonSerializerOptions systemJsonOptions, JsConfigScope jsScope)
+    {
+        var to = new System.Text.Json.JsonSerializerOptions(systemJsonOptions);
+        if (jsScope.TextCase != TextCase.Default)
+        {
+            to.PropertyNamingPolicy = jsScope.TextCase switch {
+                TextCase.CamelCase => System.Text.Json.JsonNamingPolicy.CamelCase,
+                TextCase.SnakeCase => System.Text.Json.JsonNamingPolicy.SnakeCaseLower,
+                _ => null
+            };
+        }
+        if (jsScope.ExcludeDefaultValues)
+        {
+            to.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault;
+        }
+        if (jsScope.IncludeNullValues)
+        {
+            to.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never;
+        }
+        if (jsScope.Indent)
+        {
+            to.WriteIndented = true;
+        }
+        return to;
+    }
 #endif
-    
+
 }

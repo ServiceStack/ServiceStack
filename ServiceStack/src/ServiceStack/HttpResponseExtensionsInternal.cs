@@ -285,13 +285,15 @@ public static class HttpResponseExtensionsInternal
 
                 var jsconfig = config.AllowJsConfig ? request.QueryString[Keywords.JsConfig] : null;
                 using (resultScope)
-                using (jsconfig != null ? JsConfig.CreateScope(jsconfig) : null)
                 {
-                    if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
+                    var jsScope = jsconfig != null ? JsConfig.CreateScope(jsconfig) : null;
+                    using (jsScope)
                     {
-                        await response.FlushAsync(token); //required for Compression
-                        return true;
-                    }
+                        if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
+                        {
+                            await response.FlushAsync(token); //required for Compression
+                            return true;
+                        }
 
 #if NETFX || NET472
                         //JsConfigScope uses ThreadStatic in .NET v4.5 so avoid async thread hops by writing sync to MemoryStream
@@ -299,78 +301,82 @@ public static class HttpResponseExtensionsInternal
                             response.UseBufferedStream = true;
 #endif
 
-                    if (await WriteToOutputStreamAsync(response, result, bodyPrefix, bodySuffix, token))
-                    {
-                        flushAsync = true;
-                        return true;
-                    }
+                        if (await WriteToOutputStreamAsync(response, result, bodyPrefix, bodySuffix, token))
+                        {
+                            flushAsync = true;
+                            return true;
+                        }
 
-                    if (httpResult != null)
-                        result = httpResult.Response;
+                        if (httpResult != null)
+                            result = httpResult.Response;
 
-                    ReadOnlyMemory<byte>? uf8Bytes = null;
-                    if (result is string responseText)
-                        uf8Bytes = MemoryProvider.Instance.ToUtf8(responseText.AsSpan());
-                    else if (result is ReadOnlyMemory<char> rom)
-                        uf8Bytes = MemoryProvider.Instance.ToUtf8(rom.Span);
+                        ReadOnlyMemory<byte>? uf8Bytes = null;
+                        if (result is string responseText)
+                            uf8Bytes = MemoryProvider.Instance.ToUtf8(responseText.AsSpan());
+                        else if (result is ReadOnlyMemory<char> rom)
+                            uf8Bytes = MemoryProvider.Instance.ToUtf8(rom.Span);
 
-                    if (uf8Bytes != null)
-                    {
-                        var len = (bodyPrefix?.Length).GetValueOrDefault() +
-                                  uf8Bytes.Value.Length +
-                                  (bodySuffix?.Length).GetValueOrDefault();
+                        if (uf8Bytes != null)
+                        {
+                            var len = (bodyPrefix?.Length).GetValueOrDefault() +
+                                      uf8Bytes.Value.Length +
+                                      (bodySuffix?.Length).GetValueOrDefault();
 
-                        response.SetContentLength(len);
-                            
-                        if (response.ContentType is null or MimeTypes.Html)
-                            response.ContentType = defaultContentType;
-                            
-                        //retain behavior with ASP.NET's response.Write(string)
-                        if (response.ContentType.IndexOf(';') == -1)
-                            response.ContentType += ContentFormat.Utf8Suffix;
+                            response.SetContentLength(len);
+                                
+                            if (response.ContentType is null or MimeTypes.Html)
+                                response.ContentType = defaultContentType;
+                                
+                            //retain behavior with ASP.NET's response.Write(string)
+                            if (response.ContentType.IndexOf(';') == -1)
+                                response.ContentType += ContentFormat.Utf8Suffix;
 
-                        if (bodyPrefix != null) 
+                            if (bodyPrefix != null) 
+                                await response.OutputStream.WriteAsync(bodyPrefix, token);
+
+                            await response.OutputStream.WriteAsync(uf8Bytes.Value, token);
+
+                            if (bodySuffix != null) 
+                                await response.OutputStream.WriteAsync(bodySuffix, token);
+
+                            return true;
+                        }
+
+                        if (defaultAction == null)
+                        {
+                            throw new ArgumentNullException(nameof(defaultAction),
+                                $@"As result '{(result != null ? result.GetType().GetOperationName() : "")}' is not a supported responseType, a defaultAction must be supplied");
+                        }
+
+                        if (bodyPrefix != null)
                             await response.OutputStream.WriteAsync(bodyPrefix, token);
 
-                        await response.OutputStream.WriteAsync(uf8Bytes.Value, token);
-
-                        if (bodySuffix != null) 
-                            await response.OutputStream.WriteAsync(bodySuffix, token);
-
-                        return true;
-                    }
-
-                    if (defaultAction == null)
-                    {
-                        throw new ArgumentNullException(nameof(defaultAction),
-                            $@"As result '{(result != null ? result.GetType().GetOperationName() : "")}' is not a supported responseType, a defaultAction must be supplied");
-                    }
-
-                    if (bodyPrefix != null)
-                        await response.OutputStream.WriteAsync(bodyPrefix, token);
-
-                    if (result != null)
-                    {
-                        bool handled = false;
-#if NET8_0_OR_GREATER
-                        var isJson = response.ContentType is MimeTypes.Json or MimeTypes.JsonUtf8Suffix;
-                        if (isJson && request.Dto is not null)
+                        if (result != null)
                         {
-                            var appHost = ServiceStackHost.Instance;
-                            var op = appHost?.Metadata.GetOperation(request.Dto.GetType());
-                            if (op?.UseSystemJson != null && op.UseSystemJson.HasFlag(UseSystemJson.Response))
+                            bool handled = false;
+#if NET8_0_OR_GREATER
+                            var isJson = response.ContentType is MimeTypes.Json or MimeTypes.JsonUtf8Suffix;
+                            if (isJson && request.Dto is not null)
                             {
-                                handled = true;
-                                await System.Text.Json.JsonSerializer.SerializeAsync(response.OutputStream, result, TextConfig.SystemJsonOptions, token).ConfigAwait();
+                                var appHost = ServiceStackHost.Instance;
+                                var op = appHost?.Metadata.GetOperation(request.Dto.GetType());
+                                if (op?.UseSystemJson != null && op.UseSystemJson.HasFlag(UseSystemJson.Response))
+                                {
+                                    handled = true;
+                                    var systemJsonOptions = jsScope != null
+                                        ? TextConfig.CustomSystemJsonOptions(TextConfig.SystemJsonOptions, jsScope)
+                                        : TextConfig.SystemJsonOptions;
+                                    await System.Text.Json.JsonSerializer.SerializeAsync(response.OutputStream, result, systemJsonOptions, token).ConfigAwait();
+                                }
                             }
-                        }
 #endif
-                        if (!handled)
-                            await defaultAction(request, result, response.OutputStream);
-                    }
+                            if (!handled)
+                                await defaultAction(request, result, response.OutputStream);
+                        }
 
-                    if (bodySuffix != null)
-                        await response.OutputStream.WriteAsync(bodySuffix, token);
+                        if (bodySuffix != null)
+                            await response.OutputStream.WriteAsync(bodySuffix, token);
+                    }
                 }
 
                 return false;
