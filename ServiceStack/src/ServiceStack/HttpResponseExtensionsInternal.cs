@@ -189,8 +189,7 @@ public static class HttpResponseExtensionsInternal
                     if (httpResult.ResultScope != null)
                         resultScope = httpResult.ResultScope();
 
-                    if (httpResult.RequestContext == null)
-                        httpResult.RequestContext = request;
+                    httpResult.RequestContext ??= request;
 
                     var paddingLength = bodyPrefix?.Length ?? 0;
                     if (bodySuffix != null)
@@ -267,7 +266,7 @@ public static class HttpResponseExtensionsInternal
 
                     //ContentType='text/html' is the default for a HttpResponse
                     //Do not override if another has been set
-                    if (response.ContentType == null || response.ContentType == MimeTypes.Html)
+                    if (response.ContentType is null or MimeTypes.Html)
                     {
                         response.ContentType = defaultContentType == (config.DefaultContentType ?? MimeTypes.Html) && result is byte[]
                             ? MimeTypes.Binary
@@ -323,7 +322,7 @@ public static class HttpResponseExtensionsInternal
 
                         response.SetContentLength(len);
                             
-                        if (response.ContentType == null || response.ContentType == MimeTypes.Html)
+                        if (response.ContentType is null or MimeTypes.Html)
                             response.ContentType = defaultContentType;
                             
                         //retain behavior with ASP.NET's response.Write(string)
@@ -351,7 +350,24 @@ public static class HttpResponseExtensionsInternal
                         await response.OutputStream.WriteAsync(bodyPrefix, token);
 
                     if (result != null)
-                        await defaultAction(request, result, response.OutputStream);
+                    {
+                        bool handled = false;
+#if NET8_0_OR_GREATER
+                        var isJson = response.ContentType is MimeTypes.Json or MimeTypes.JsonUtf8Suffix;
+                        if (isJson && request.Dto is not null)
+                        {
+                            var appHost = ServiceStackHost.Instance;
+                            var op = appHost?.Metadata.GetOperation(request.Dto.GetType());
+                            if (op?.UseSystemJson != null && op.UseSystemJson.HasFlag(UseSystemJson.Response))
+                            {
+                                handled = true;
+                                await System.Text.Json.JsonSerializer.SerializeAsync(response.OutputStream, result, ClientConfig.SystemJsonOptions, token).ConfigAwait();
+                            }
+                        }
+#endif
+                        if (!handled)
+                            await defaultAction(request, result, response.OutputStream);
+                    }
 
                     if (bodySuffix != null)
                         await response.OutputStream.WriteAsync(bodySuffix, token);

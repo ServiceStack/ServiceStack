@@ -600,10 +600,20 @@ public abstract class AdminUserBase : IMeta
     [DataMember(Order = 5)] public string Email { get; set; }
     [DataMember(Order = 6)] public string Password { get; set; }
     [DataMember(Order = 7)] public string ProfileUrl { get; set; }
-    [DataMember(Order = 8)] public Dictionary<string, string> UserAuthProperties { get; set; }
-    [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 8)] public string PhoneNumber { get; set; }
+    [DataMember(Order = 9)] public Dictionary<string, string> UserAuthProperties { get; set; }
+    [DataMember(Order = 10)] public Dictionary<string, string> Meta { get; set; }
 }
     
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
+public partial class AdminGetUser : IGet, IReturn<AdminUserResponse>
+{
+    [DataMember(Order = 10)] public string Id { get; set; }
+}
+
+#if NET8_0_OR_GREATER
+[SystemJson(UseSystemJson.Response)]
+#endif
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminCreateUser : AdminUserBase, IPost, IReturn<AdminUserResponse>
 {
@@ -611,22 +621,20 @@ public partial class AdminCreateUser : AdminUserBase, IPost, IReturn<AdminUserRe
     [DataMember(Order = 11)] public List<string> Permissions { get; set; }
 }
     
+#if NET8_0_OR_GREATER
+[SystemJson(UseSystemJson.Response)]
+#endif
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserResponse>
 {
     [DataMember(Order = 10)] public string Id { get; set; }
     [DataMember(Order = 11)] public bool? LockUser { get; set; }
     [DataMember(Order = 12)] public bool? UnlockUser { get; set; }
-    [DataMember(Order = 13)] public List<string> AddRoles { get; set; }
-    [DataMember(Order = 14)] public List<string> RemoveRoles { get; set; }
-    [DataMember(Order = 15)] public List<string> AddPermissions { get; set; }
-    [DataMember(Order = 16)] public List<string> RemovePermissions { get; set; }
-}
-    
-[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
-public partial class AdminGetUser : IGet, IReturn<AdminUserResponse>
-{
-    [DataMember(Order = 10)] public string Id { get; set; }
+    [DataMember(Order = 13)] public DateTimeOffset? LockUserUntil { get; set; }
+    [DataMember(Order = 14)] public List<string> AddRoles { get; set; }
+    [DataMember(Order = 15)] public List<string> RemoveRoles { get; set; }
+    [DataMember(Order = 16)] public List<string> AddPermissions { get; set; }
+    [DataMember(Order = 17)] public List<string> RemovePermissions { get; set; }
 }
     
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]

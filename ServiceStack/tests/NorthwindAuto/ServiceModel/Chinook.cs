@@ -27,7 +27,7 @@ namespace Chinook.ServiceModel
         public string Name { get; set; }
     }
 
-    [Route("/customers", "POST"), Tag(Tags.Store)]
+    [Route("/chinook/customers", "POST"), Tag(Tags.Store)]
     public class CreateChinookCustomer
         : IReturn<IdResponse>, IPost, ICreateDb<Customers>
     {
@@ -45,7 +45,7 @@ namespace Chinook.ServiceModel
         public long? SupportRepId { get; set; }
     }
 
-    [Route("/employees", "POST"), Tag(Tags.Store)]
+    [Route("/chinook/employees", "POST"), Tag(Tags.Store)]
     public class CreateChinookEmployee
         : IReturn<IdResponse>, IPost, ICreateDb<Employees>
     {
@@ -69,6 +69,7 @@ namespace Chinook.ServiceModel
     public class CreateGenres
         : IReturn<IdResponse>, IPost, ICreateDb<Genres>
     {
+        [ValidateNotEmpty]
         public string Name { get; set; }
     }
 
@@ -138,14 +139,14 @@ namespace Chinook.ServiceModel
         public long ArtistId { get; set; }
     }
 
-    [Route("/customers/{CustomerId}", "DELETE"), Tag(Tags.Store)]
+    [Route("/chinook/customers/{CustomerId}", "DELETE"), Tag(Tags.Store)]
     public class DeleteChinookCustomer
         : IReturn<IdResponse>, IDelete, IDeleteDb<Customers>
     {
         public long CustomerId { get; set; }
     }
 
-    [Route("/employees/{EmployeeId}", "DELETE"), Tag(Tags.Store)]
+    [Route("/chinook/employees/{EmployeeId}", "DELETE"), Tag(Tags.Store)]
     public class DeleteChinookEmployee
         : IReturn<IdResponse>, IDelete, IDeleteDb<Employees>
     {
@@ -211,7 +212,7 @@ namespace Chinook.ServiceModel
         public string Name { get; set; }
     }
 
-    [Route("/customers/{CustomerId}", "PATCH"), Tag(Tags.Store)]
+    [Route("/chinook/customers/{CustomerId}", "PATCH"), Tag(Tags.Store)]
     public class PatchChinookCustomer
         : IReturn<IdResponse>, IPatch, IPatchDb<Customers>
     {
@@ -230,7 +231,7 @@ namespace Chinook.ServiceModel
         public long? SupportRepId { get; set; }
     }
 
-    [Route("/employees/{EmployeeId}", "PATCH"), Tag(Tags.Store)]
+    [Route("/chinook/employees/{EmployeeId}", "PATCH"), Tag(Tags.Store)]
     public class PatchChinookEmployee
         : IReturn<IdResponse>, IPatch, IPatchDb<Employees>
     {
@@ -318,82 +319,72 @@ namespace Chinook.ServiceModel
 
     [Route("/albums", "GET"), Tag(Tags.Media)]
     [Route("/albums/{AlbumId}", "GET")]
-    public class QueryAlbums
-        : QueryDb<Albums>, IReturn<QueryResponse<Albums>>, IGet
+    public class QueryAlbums : QueryDb<Albums>
     {
         public long? AlbumId { get; set; }
     }
 
     [Route("/artists", "GET"), Tag(Tags.Media)]
     [Route("/artists/{ArtistId}", "GET")]
-    public class QueryArtists
-        : QueryDb<Artists>, IReturn<QueryResponse<Artists>>, IGet
+    public class QueryArtists : QueryDb<Artists>
     {
         public long? ArtistId { get; set; }
         public long[] ArtistIdBetween { get; set; }
         public string NameStartsWith { get; set; }
     }
 
-    [Route("/customers", "GET"), Tag(Tags.Store)]
-    [Route("/customers/{CustomerId}", "GET")]
-    public class QueryChinookCustomers
-        : QueryDb<Customers>, IReturn<QueryResponse<Customers>>, IGet
+    [Route("/chinook/customers", "GET"), Tag(Tags.Store)]
+    [Route("/chinook/customers/{CustomerId}", "GET")]
+    public class QueryChinookCustomers : QueryDb<Customers>
     {
         public long? CustomerId { get; set; }
     }
 
-    [Route("/employees", "GET"), Tag(Tags.Store)]
-    [Route("/employees/{EmployeeId}", "GET")]
-    public class QueryChinookEmployees
-        : QueryDb<Employees>, IReturn<QueryResponse<Employees>>, IGet
+    [Route("/chinook/employees", "GET"), Tag(Tags.Store)]
+    [Route("/chinook/employees/{EmployeeId}", "GET")]
+    public class QueryChinookEmployees : QueryDb<Employees>
     {
         public long? EmployeeId { get; set; }
     }
 
     [Route("/genres", "GET"), Tag(Tags.Media)]
     [Route("/genres/{GenreId}", "GET")]
-    public class QueryGenres
-        : QueryDb<Genres>, IReturn<QueryResponse<Genres>>, IGet
+    public class QueryGenres : QueryDb<Genres>
     {
         public long? GenreId { get; set; }
     }
 
     [Route("/invoiceitems", "GET"), Tag(Tags.Store)]
     [Route("/invoiceitems/{InvoiceLineId}", "GET")]
-    public class QueryInvoiceItems
-        : QueryDb<InvoiceItems>, IReturn<QueryResponse<InvoiceItems>>, IGet
+    public class QueryInvoiceItems : QueryDb<InvoiceItems>
     {
         public long? InvoiceLineId { get; set; }
     }
 
     [Route("/invoices", "GET"), Tag(Tags.Store)]
     [Route("/invoices/{InvoiceId}", "GET")]
-    public class QueryInvoices
-        : QueryDb<Invoices>, IReturn<QueryResponse<Invoices>>, IGet
+    public class QueryInvoices : QueryDb<Invoices>
     {
         public long? InvoiceId { get; set; }
     }
 
     [Route("/mediatypes", "GET"), Tag(Tags.Media)]
     [Route("/mediatypes/{MediaTypeId}", "GET")]
-    public class QueryMediaTypes
-        : QueryDb<MediaTypes>, IReturn<QueryResponse<MediaTypes>>, IGet
+    public class QueryMediaTypes : QueryDb<MediaTypes>
     {
         public long? MediaTypeId { get; set; }
     }
 
     [Route("/playlists", "GET"), Tag(Tags.Media)]
     [Route("/playlists/{PlaylistId}", "GET")]
-    public class QueryPlaylists
-        : QueryDb<Playlists>, IReturn<QueryResponse<Playlists>>, IGet
+    public class QueryPlaylists : QueryDb<Playlists>
     {
         public long? PlaylistId { get; set; }
     }
 
     [Route("/tracks", "GET"), Tag(Tags.Media)]
     [Route("/tracks/{TrackId}", "GET")]
-    public class QueryTracks
-        : QueryDb<Tracks>, IReturn<QueryResponse<Tracks>>, IGet
+    public class QueryTracks : QueryDb<Tracks>
     {
         public long? TrackId { get; set; }
         public string NameContains { get; set; }
@@ -416,7 +407,7 @@ namespace Chinook.ServiceModel
         public string Name { get; set; }
     }
 
-    [Route("/customers/{CustomerId}", "PUT"), Tag(Tags.Store)]
+    [Route("/chinook/customers/{CustomerId}", "PUT"), Tag(Tags.Store)]
     public class UpdateChinookCustomer
         : IReturn<IdResponse>, IPut, IUpdateDb<Customers>
     {
@@ -435,7 +426,7 @@ namespace Chinook.ServiceModel
         public long? SupportRepId { get; set; }
     }
 
-    [Route("/employees/{EmployeeId}", "PUT"), Tag(Tags.Store)]
+    [Route("/chinook/employees/{EmployeeId}", "PUT"), Tag(Tags.Store)]
     public class UpdateChinookEmployee
         : IReturn<IdResponse>, IPut, IUpdateDb<Employees>
     {

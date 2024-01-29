@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -30,13 +31,10 @@ public class GenerateCrudServicesTests
             
         }
     }
-    
-    private AppHostBase? appHost = null;
-    Task? startTask = null;
 
     public GenerateCrudServicesTests()
     {
-        var contentRootPath = "~/../../../../NorthwindAuto".MapServerPath();
+        var contentRootPath = "~/../../../".MapServerPath();
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             ContentRootPath = contentRootPath,
@@ -45,7 +43,7 @@ public class GenerateCrudServicesTests
         var services = builder.Services;
         var config = builder.Configuration;
 
-        var dbPath = contentRootPath.CombineWith("northwind.sqlite");
+        var dbPath = contentRootPath.CombineWith("App_Data/northwind.sqlite");
 
         var connectionString = $"DataSource={dbPath};Cache=Shared";
         var dbFactory = new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
@@ -107,14 +105,13 @@ public class GenerateCrudServicesTests
         app.UseSwaggerUI();
         app.UseHttpsRedirection();
         app.UseStaticFiles();
-        appHost = new AppHost();
-        app.UseServiceStack(appHost, options => { options.MapEndpoints(); });
+        app.UseServiceStack(new AppHost(), options => { options.MapEndpoints(); });
 
-        startTask = app.StartAsync(TestsConfig.ListeningOn);
+        app.StartAsync(TestsConfig.ListeningOn);
     }
 
     [OneTimeTearDown]
-    public void TestFixtureTearDown() => appHost?.Dispose();
+    public void TestFixtureTearDown() => AppHostBase.DisposeApp();
 
     List<string> NorthwindTables =
     [
@@ -134,7 +131,7 @@ public class GenerateCrudServicesTests
     [Test]
     public void Endpoints_does_AutoGen_Northwind_services()
     {
-        using var db = appHost!.GetDbConnection();
+        using var db = HostContext.AppHost.GetDbConnection();
         var tableNames = db.GetTableNames();
         // "tableNames:".Print();
         // tableNames.PrintDump();
@@ -147,7 +144,7 @@ public class GenerateCrudServicesTests
         // expectedApis.PrintDump();
 
         var exclude = new []{ nameof(QueryCaseInsensitiveOrderBy) };
-        var apisWithTableNames = appHost!.Metadata.GetOperationDtos()
+        var apisWithTableNames = HostContext.AppHost.Metadata.GetOperationDtos()
             .Select(x => x.Name)
             .Where(x => NorthwindTables.Any(table => x.Contains(table) || x.Contains(Words.Pluralize(table)))
                 && !exclude.Contains(x))

@@ -104,7 +104,7 @@ public class HttpResultTests : TestBase
     {
         var mockResponse = new MockHttpResponse();
 
-        var dto = new Poco();
+        var dto = new GetPoco();
         Assert.That(dto.ToJson(), Is.EqualTo("{}"));
 
         var httpResult = new HttpResult(dto)

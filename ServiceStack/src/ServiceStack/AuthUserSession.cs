@@ -17,8 +17,8 @@ public class AuthUserSession : IAuthSessionExtended, IMeta
 {
     public AuthUserSession()
     {
-        this.ProviderOAuthAccess = new List<IAuthTokens>();
-        this.Meta = new Dictionary<string, string>();
+        this.ProviderOAuthAccess = [];
+        this.Meta = new();
     }
 
     [DataMember(Order = 01)] public virtual string ReferrerUrl { get; set; }

@@ -121,16 +121,16 @@ public class Migration1001 : MigrationBase
             FirstName = "North",
             LastName = "West",
             Email = "north@west.com",
-            PhoneNumbers = new List<Phone>
-            {
+            PhoneNumbers =
+            [
                 new() { Kind = PhoneKind.Mobile, Number = "123-555-5555" },
-                new() { Kind = PhoneKind.Home,   Number = "555-555-5555", Ext = "123" },
-            },
-            GameItems = new List<PlayerGameItem>
-            {
-                new () { GameItemName = gameItem1.Name },
-                new () { GameItemName = gameItem1.Name },
-            },
+                new() { Kind = PhoneKind.Home, Number = "555-555-5555", Ext = "123" }
+            ],
+            GameItems =
+            [
+                new() { GameItemName = gameItem1.Name },
+                new() { GameItemName = gameItem1.Name }
+            ],
             Profile = new Profile
             {
                 Username = "north",
@@ -155,16 +155,16 @@ public class Migration1001 : MigrationBase
             FirstName = "South",
             LastName = "East",
             Email = "south@east.com",
-            PhoneNumbers = new List<Phone>
-            {
+            PhoneNumbers =
+            [
                 new() { Kind = PhoneKind.Mobile, Number = "456-666-6666" },
-                new() { Kind = PhoneKind.Work,   Number = "666-666-6666", Ext = "456" },
-            },
-            GameItems = new List<PlayerGameItem>
-            {
-                new () { GameItemName = gameItem2.Name },
-                new () { GameItemName = gameItem3.Name },
-            },
+                new() { Kind = PhoneKind.Work, Number = "666-666-6666", Ext = "456" }
+            ],
+            GameItems =
+            [
+                new() { GameItemName = gameItem2.Name },
+                new() { GameItemName = gameItem3.Name }
+            ],
             Profile = new Profile
             {
                 Username = "south",

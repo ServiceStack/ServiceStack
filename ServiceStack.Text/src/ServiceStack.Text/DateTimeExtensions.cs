@@ -23,7 +23,7 @@ public static class DateTimeExtensions
 {
     public const long UnixEpoch = 621355968000000000L;
     private static readonly DateTime UnixEpochDateTimeUtc = new(UnixEpoch, DateTimeKind.Utc);
-    private static readonly DateTime UnixEpochDateTimeUnspecified = new(UnixEpoch, DateTimeKind.Unspecified);
+    public static readonly DateTime UnixEpochDateTimeUnspecified = new(UnixEpoch, DateTimeKind.Unspecified);
     private static readonly DateTime MinDateTimeUtc = new(1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     public static DateTime FromUnixTime(this int unixTime)

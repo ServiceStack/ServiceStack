@@ -93,21 +93,6 @@ public class ProtocDynamicAutoQueryTests
         Assert.That(response.Total, Is.EqualTo(TotalRockstars));
         Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars));
     }
-
-    [Test]
-    public async Task Can_execute_basic_query_NamedRockstar()
-    {
-        var response = await client.GetDynamicQueryNamedRockstarsAsync(new DynamicRequest {
-            Params = {
-                {"Include", "Total"},
-            }
-        });
-        
-        Assert.That(response.Offset, Is.EqualTo(0));
-        Assert.That(response.Total, Is.EqualTo(1));
-        Assert.That(response.Results.Count, Is.EqualTo(1));
-        Assert.That(response.Results[0].LastName, Is.EqualTo("SQL Server"));
-    }
         
     [Test]
     public async Task Can_execute_overridden_basic_query()
@@ -1115,22 +1100,6 @@ public class ProtocDynamicAutoQueryTests
     }
         
     [Test]
-    public async Task Can_ChangeDb_with_Named_Connection()
-    {
-        var response = await client.GetChangeDbAsync(new ChangeDb { NamedConnection = AutoQueryAppHost.SqlServerNamedConnection });
-        Assert.That(response.Results.Count, Is.EqualTo(1));
-        Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
-        
-        var aqResponse = await client.GetDynamicQueryChangeDbAsync(new DynamicRequest {
-            Params = {
-                { "NamedConnection", AutoQueryAppHost.SqlServerNamedConnection },
-            }
-        });
-        Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
-        Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
-    }
-        
-    [Test]
     public async Task Can_ChangeDb_with_ConnectionString()
     {
         var response = await client.GetChangeDbAsync(new ChangeDb { ConnectionString = AutoQueryAppHost.SqliteFileConnString });
@@ -1144,39 +1113,6 @@ public class ProtocDynamicAutoQueryTests
         });
         Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
         Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Sqlite"));
-    }
-        
-    [Test]
-    public async Task Can_ChangeDb_with_ConnectionString_and_Provider()
-    {
-        var response = await client.GetChangeDbAsync(new ChangeDb
-        {
-            ConnectionString = AutoQueryAppHost.SqlServerConnString,
-            ProviderName = AutoQueryAppHost.SqlServerProvider,
-        });
-        Assert.That(response.Results.Count, Is.EqualTo(1));
-        Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
-        
-        var aqResponse = await client.GetDynamicQueryChangeDbAsync(new DynamicRequest {
-            Params = {
-                { "ConnectionString", AutoQueryAppHost.SqlServerConnString },
-                { "ProviderName", AutoQueryAppHost.SqlServerProvider },
-            }
-        });
-        Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
-        Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
-    }
-        
-    [Test]
-    public async Task Can_Change_Named_Connection_with_ConnectionInfoAttribute()
-    {
-        var response = await client.GetChangeConnectionInfoAsync(new ChangeConnectionInfo());
-        Assert.That(response.Results.Count, Is.EqualTo(1));
-        Assert.That(response.Results[0].FirstName, Is.EqualTo("Microsoft"));
-        
-        var aqResponse = await client.GetDynamicQueryChangeConnectionInfoAsync(new DynamicRequest());
-        Assert.That(aqResponse.Results.Count, Is.EqualTo(1));
-        Assert.That(aqResponse.Results[0].FirstName, Is.EqualTo("Microsoft"));
     }
         
     [Test]

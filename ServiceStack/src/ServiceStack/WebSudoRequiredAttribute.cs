@@ -31,10 +31,10 @@ public class WebSudoRequiredAttribute : AuthenticateAttribute
 
         var session = await req.GetSessionAsync();
 
-        var authRepo = HostContext.AppHost.GetAuthRepository(req);
+        var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
         using (authRepo as IDisposable)
         {
-            if (session != null && session.HasRole(RoleNames.Admin, authRepo)
+            if (session != null && await session.HasRoleAsync(RoleNames.Admin, authRepo)
                 || await this.HasWebSudoAsync(req, session as IWebSudoAuthSession))
                 return;
         }

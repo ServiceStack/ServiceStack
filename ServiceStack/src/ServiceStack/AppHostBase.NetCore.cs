@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using Microsoft.AspNetCore.Builder;
@@ -185,6 +186,15 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             VirtualFiles ??= ApplicationServices.GetService<IVirtualFiles>()
                          ?? new FileSystemVirtualFiles(HostingEnvironment.ContentRootPath);
 
+#if NET8_0_OR_GREATER
+            if (Options.UseSystemJson != UseSystemJson.Never)
+            {
+                Config.TextConfig ??= new();
+                Config.TextConfig.SystemJsonCompatible = true;
+                ClientConfig.UseSystemJson = Options.UseSystemJson;
+            }
+#endif
+            
             RegisterLicenseFromAppSettings(AppSettings);
         }
     }
@@ -296,6 +306,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                 : new NotFoundHttpHandler();
             return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
         }
+
+        var existingRoutes = new Dictionary<string, RestPath>();
         
         foreach (var entry in Metadata.OperationsMap)
         {
@@ -320,6 +332,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                             continue;
 
                         routeRule = $"[{verb}] {route.Path}";
+                        existingRoutes[route.Path] = route;
                         var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
                             HandleRequestAsync(requestType, httpContext));
                         
@@ -334,13 +347,25 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                     // Add /custom/path.{format} routes for GET requests
                     if (routeVerbs.Contains(HttpMethods.Get) && !route.Path.Contains('.') && !route.Path.Contains('*'))
                     {
-                        routeRule = $"[GET] {route.Path}.format";
-                        var pathBuilder = routeBuilder.MapMethods(route.Path + ".{format}", EndpointVerbs[HttpMethods.Get], 
-                            (string format, HttpResponse response, HttpContext httpContext) =>
-                                HandleRequestAsync(requestType, httpContext));
+                        var routePath = route.Path + ".{format}";
+                        if (existingRoutes.TryGetValue(routePath, out var prevRoute))
+                        {
+                            LogManager.GetLogger(GetType()).WarnFormat("Ignoring registering duplicate route: {0} for {1} and {2}", 
+                                routePath,
+                                route.RequestType.FullName,
+                                prevRoute.RequestType.FullName);
+                        }
+                        else
+                        {
+                            routeRule = $"[GET] {routePath}";
+                            existingRoutes[routePath] = route;
+                            var pathBuilder = routeBuilder.MapMethods(routePath, EndpointVerbs[HttpMethods.Get], 
+                                (string format, HttpResponse response, HttpContext httpContext) =>
+                                    HandleRequestAsync(requestType, httpContext));
                         
-                        ConfigureOperationEndpoint(pathBuilder, operation)
-                            .WithMetadata<string>(route.Path + ".format");
+                            ConfigureOperationEndpoint(pathBuilder, operation)
+                                .WithMetadata<string>(routePath);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -513,6 +538,18 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     public static IRequest? GetOrCreateRequest(IHttpContextAccessor httpContextAccessor) => httpContextAccessor.GetOrCreateRequest();
 
     public static IRequest? GetOrCreateRequest(HttpContext httpContext) => httpContext.GetOrCreateRequest();
+
+    public static void DisposeApp()
+    {
+        var appHost = (AppHostBase)Instance;
+        if (appHost.app is Microsoft.Extensions.Hosting.IHost webApp)
+        {
+            webApp.Dispose();
+            appHost.app = null;
+        }
+        appHost.Dispose();
+        ClientConfig.Reset();
+    }
 
     protected override void Dispose(bool disposing)
     {
@@ -785,12 +822,12 @@ public static class NetCoreAppHostExtensions
         return builder;
     }
 
-    public static Task StartAsync(this WebApplication app, string url)
+    public static Task StartAsync(this WebApplication app, string url, CancellationToken token=default)
     {
         var addresses = ((IApplicationBuilder)app).ServerFeatures.Get<IServerAddressesFeature>()!.Addresses;
         addresses.Clear();
         addresses.Add(url);
-        return app.StartAsync();
+        return app.StartAsync(token);
     }
 #endif
 
@@ -848,7 +885,11 @@ public static class NetCoreAppHostExtensions
         }
         return null;
     }
-    
+
+    public static IServiceProvider GetServiceProvider(this IRequest? request) => 
+        request as IServiceProvider ?? ServiceStackHost.Instance.GetApplicationServices()
+        ?? throw new NotSupportedException("No IServiceProvider found");
+
 #if NET6_0_OR_GREATER
     public static T ConfigureAndResolve<T>(this IHostingStartup config, string? hostDir = null, bool setHostDir = true)
     {

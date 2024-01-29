@@ -62,19 +62,22 @@ public class CredentialsAuthProvider : AuthProvider
     {
         Sort = -1;
         Label = Provider.ToPascalCase();
-        FormLayout = new() {
+        FormLayout =
+        [
             Input.For<Authenticate>(x => x.UserName, c =>
             {
                 c.Label = "Email address";
                 c.Required = true;
             }),
+
             Input.For<Authenticate>(x => x.Password, c =>
             {
                 c.Type = "Password";
                 c.Required = true;
             }),
-            Input.For<Authenticate>(x => x.RememberMe),
-        };
+
+            Input.For<Authenticate>(x => x.RememberMe)
+        ];
     }
         
     public virtual async Task<bool> TryAuthenticateAsync(IServiceBase authService, string userName, string password, CancellationToken token=default)

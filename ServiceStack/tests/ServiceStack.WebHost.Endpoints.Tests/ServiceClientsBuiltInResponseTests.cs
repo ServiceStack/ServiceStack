@@ -12,12 +12,12 @@ using ServiceStack.Web;
 namespace ServiceStack.WebHost.Endpoints.Tests;
 
 [Route("/poco/{Text}")]
-public class Poco : IReturn<PocoResponse>
+public class GetPoco : IReturn<GetPocoResponse>
 {
     public string Text { get; set; }
 }
 
-public class PocoResponse
+public class GetPocoResponse
 {
     public string Result { get; set; }
 }
@@ -61,9 +61,9 @@ public class StreamWriters : IReturn<Stream>
 
 public class BuiltInTypesService : Service
 {
-    public PocoResponse Any(Poco request)
+    public GetPocoResponse Any(GetPoco request)
     {
-        return new PocoResponse { Result = "Hello, " + (request.Text ?? "World!") };
+        return new GetPocoResponse { Result = "Hello, " + (request.Text ?? "World!") };
     }
 
     public void Any(Headers request)
@@ -100,26 +100,17 @@ public class BuiltInTypesService : Service
     }
 }
 
-public class StreamWriterResult : IStreamWriterAsync
+public class StreamWriterResult(byte[] result) : IStreamWriterAsync
 {
-    private byte[] result;
-
-    public StreamWriterResult(byte[] result)
-    {
-        this.result = result;
-    }
-
-    public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
+    public async Task WriteToAsync(Stream responseStream, CancellationToken token = new())
     {
         await responseStream.WriteAsync(result, token);
     }
 }
     
-    
-public class BuiltInTypesAppHost : AppHostHttpListenerBase
+public class BuiltInTypesAppHost()
+    : AppHostHttpListenerBase(nameof(BuiltInTypesAppHost), typeof(BuiltInTypesService).Assembly)
 {
-    public BuiltInTypesAppHost() : base(nameof(BuiltInTypesAppHost), typeof(BuiltInTypesService).Assembly) { }
-
     public string LastRequestBody { get; set; }
     public bool UseBufferedStream { get; set; }
     public bool EnableRequestBodyTracking { get; set; }
@@ -160,7 +151,7 @@ public class ServiceClientsBuiltInResponseTests
     [Test, TestCaseSource("RestClients")]
     public void Can_download_Poco_response(IRestClient client)
     {
-        PocoResponse response = client.Get(new Poco { Text = "Test" });
+        GetPocoResponse response = client.Get(new GetPoco { Text = "Test" });
 
         Assert.That(response.Result, Is.EqualTo("Hello, Test"));
     }

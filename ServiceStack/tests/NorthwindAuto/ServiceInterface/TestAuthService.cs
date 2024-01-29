@@ -1,3 +1,4 @@
+using MyApp.Data;
 using MyApp.ServiceModel;
 using ServiceStack;
 

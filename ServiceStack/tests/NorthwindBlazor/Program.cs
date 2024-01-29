@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -44,7 +43,7 @@ services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
         };
     })
-    //.AddScheme<AuthenticationSchemeOptions,BasicAuthenticationHandler<ApplicationUser>>(BasicAuthenticationHandler.Scheme, null)
+    //.AddBasicAuth<ApplicationUser>()
     .AddIdentityCookies(options => options.DisableRedirectsForApis());
 services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("App_Data"));

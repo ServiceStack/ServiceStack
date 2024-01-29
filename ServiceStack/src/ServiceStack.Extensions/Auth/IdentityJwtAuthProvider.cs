@@ -6,11 +6,13 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ServiceStack.Host;
@@ -25,25 +27,30 @@ public record UserJwtTokens(string BearerToken, IRequireRefreshToken? RefreshTok
 public interface IIdentityJwtAuthProvider
 {
     string? AuthenticationScheme { get; }
+    List<string> DeleteCookiesOnJwtCookies { get; }
     JwtBearerOptions? Options { get; }
     bool EnableRefreshToken { get; }
     bool RequireSecureConnection { get; }
+    string Audience { get; }
     TimeSpan ExpireTokensIn { get; }
-    Task<string> CreateBearerTokenAsync(IRequest req, string userName);
-    Task<UserJwtTokens> CreateBearerAndRefreshTokenAsync(IRequest req, string userName);
-    Task<string> CreateAccessTokenFromRefreshTokenAsync(string refreshToken, IRequest request);
+    Task<List<Claim>> GetUserClaimsAsync(string userName, IRequest? req = null);
+    string CreateJwtBearerToken(List<Claim> claims, string audience, DateTime expires);
+    Task<string> CreateBearerTokenAsync(string userName, IRequest? req = null);
+    Task<UserJwtTokens> CreateBearerAndRefreshTokenAsync(string userName, IRequest? req = null);
+    Task<string> CreateAccessTokenFromRefreshTokenAsync(string refreshToken, IRequest? req = null);
 }
 
 /// <summary>
 /// Converts an MVC JwtBearer Cookie into a ServiceStack Session
 /// </summary>
-public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
+public class IdentityJwtAuthProvider<TUser,TKey> : 
+    IdentityAuthProvider<TUser,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
 {
     public override string Type => "Bearer";
-    public const string Name = "identity";
-    public const string Realm = "/auth/identity";
+    public const string Name = AuthenticateService.JwtProvider;
+    public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
 
     /// <summary>
     /// Default Issuer to use if unspecified
@@ -59,6 +66,8 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     /// Which JWT Authentication Scheme configuration to use (default Bearer)
     /// </summary>
     public string AuthenticationScheme { get; }
+    
+    public AuthenticationScheme? Scheme { get; set; }
 
     /// <summary>
     /// The JWT Bearer Options to use (default populated from AuthenticationScheme JwtBearerOptions)
@@ -224,13 +233,21 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         base.Register(appHost, feature);
         var applicationServices = appHost.GetApplicationServices();
 
+        var schemeProvider = applicationServices.TryResolve<IAuthenticationSchemeProvider>();
+        if (schemeProvider != null)
+        {
+            Scheme = schemeProvider.GetSchemeAsync(AuthenticationScheme).Result;
+        }
+
         var optionsMonitor = applicationServices.Resolve<IOptionsMonitor<JwtBearerOptions>>();
         Options = optionsMonitor.Get(AuthenticationScheme);
-
+        
         var cookieOptions = applicationServices.TryResolve<IOptionsMonitor<CookiePolicyOptions>>()?.Get("");
         RequireSecureConnection = cookieOptions?.Secure != CookieSecurePolicy.None;
 
         var tokenParams = Options.TokenValidationParameters;
+        Options.Events ??= new();
+        Options.Events.OnMessageReceived = MessageReceivedAsync;
         tokenParams.ValidIssuer ??= DefaultIssuer;
         tokenParams.IssuerSigningKey ??= new SymmetricSecurityKey(AesUtils.CreateKey());
 
@@ -311,19 +328,87 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
     public Task PreAuthenticateAsync(IRequest req, IResponse res)
     {
         var token = req.GetJwtToken();
-        if (!string.IsNullOrEmpty(token))
+        if (!string.IsNullOrEmpty(token) && 
+            !(req.Items.TryGetValue(Keywords.Session, out var oSession) && oSession is IAuthSession { IsAuthenticated: true }))
         {
-            var principal = new JwtSecurityTokenHandler().ValidateToken(token,
-                Options!.TokenValidationParameters, out SecurityToken validatedToken);
+            List<Claim> claims;
+            var user = req.GetClaimsPrincipal();
+            if (user.IsAuthenticated())
+            {
+                claims = user.Claims.ToList();
+            }
+            else
+            {
+                var principal = new JwtSecurityTokenHandler().ValidateToken(token,
+                    Options!.TokenValidationParameters, out SecurityToken validatedToken);
 
-            var jwtToken = (JwtSecurityToken)validatedToken;
-            var claims = jwtToken.Claims.ToList();
-
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                claims = jwtToken.Claims.ToList();
+            }
             var session = CreateSessionFromClaims(req, claims);
             req.Items[Keywords.Session] = session;
         }
         return Task.CompletedTask;
-     }
+    }
+
+    public async Task MessageReceivedAsync(MessageReceivedContext ctx)
+    {
+        var auth = ctx.Request.Headers.Authorization.ToString();
+        ctx.Token = auth.StartsWith("Bearer ")
+            ? auth.Substring("Bearer ".Length)
+            : ctx.Request.Cookies.TryGetValue(Keywords.TokenCookie, out var cookieValue)
+                ? cookieValue
+                : null;
+
+        var refreshToken = ctx.Request.Cookies.TryGetValue(Keywords.RefreshTokenCookie, out cookieValue)
+            ? cookieValue
+            : null;
+
+        if (ctx.Token != null || refreshToken != null)
+        {
+            bool isValid = false;
+            if (ctx.Token != null)
+            {
+                try
+                {
+                    var principal = new JwtSecurityTokenHandler().ValidateToken(ctx.Token,
+                        Options!.TokenValidationParameters, out SecurityToken validatedToken);
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Log.ErrorFormat("JWT Identity BearerToken '{0}...' failed: {1}{2}", 
+                        ctx.Token.SafeSubstring(0,4), e.Message, refreshToken == null ? "" : ", trying Refresh Token...");
+                }
+            }
+
+            if (refreshToken != null)
+            {
+                var req = ctx.Request.ToRequest(GetType().Name);
+                try
+                {
+                    ctx.Token = await CreateAccessTokenFromRefreshTokenAsync(refreshToken, req).ConfigAwait();
+                    ctx.Response.Cookies.Append(Keywords.TokenCookie, ctx.Token, new CookieOptions {
+                        HttpOnly = true,
+                        Secure = RequireSecureConnection,
+                        Expires = DateTime.UtcNow.Add(ExpireTokensIn),
+                    });
+                }
+                catch (Exception refreshEx)
+                {
+                    var errorMsg = string.Format("Failed to create AccessToken from RefreshToken '{0}...': {1}", 
+                        refreshToken.SafeSubstring(0,4), refreshEx.Message);
+                    Log.WarnFormat(errorMsg);
+                    ctx.Fail(errorMsg);
+                    ctx.HttpContext.Items[Keywords.ResponseStatus] = new ResponseStatus
+                    {
+                        ErrorCode = nameof(HttpStatusCode.Unauthorized),
+                        Message = errorMsg,
+                    };
+                }
+            }
+        }
+    }
 
     public virtual IAuthSession CreateSessionFromClaims(IRequest req, List<Claim> claims)
     {
@@ -344,45 +429,27 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         return session;
     }
 
-    public async Task<(TUser, List<string>)> GetUserAndRolesAsync(IRequest request, string email)
-    {
-        var userManager = request.TryResolve<UserManager<TUser>>();
-        var user = await userManager.FindByEmailAsync(email);
-
-        if (user == null)
-        {
-            var session = await request.GetSessionAsync().ConfigAwait();
-            if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
-                user = Context.SessionToUserConverter(session);
-        }
-
-        if (user == null)
-            throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
-
-        var roles = (await userManager.GetRolesAsync(user)).ToList();
-        return (user, roles);
-    }
-
     public virtual async Task ExecuteAsync(AuthFilterContext authContext)
     {
         var session = authContext.Session;
         var authService = authContext.AuthService;
 
-        var shouldReturnTokens = authContext.DidAuthenticate;
+        var shouldIgnore = authContext.Request.Dto is IMeta meta && meta.Meta?.TryGetValue(Keywords.Ignore, out var ignore) == true && ignore == "jwt";
+        var shouldReturnTokens = authContext.DidAuthenticate && !shouldIgnore;
         if (shouldReturnTokens && authContext.AuthResponse.BearerToken == null && session.IsAuthenticated)
         {
             if (authService.Request.AllowConnection(RequireSecureConnection))
             {
                 var req = authContext.Request;
-                var (user, roles) = await GetUserAndRolesAsync(authService.Request, session.UserAuthName).ConfigAwait();
-                var bearerToken = CreateJwtBearerToken(req, user, roles);
+                var (user, roles) = await Manager.GetUserAndRolesByNameAsync(session.UserAuthName, authService.Request).ConfigAwait();
+                var bearerToken = CreateJwtBearerToken(user, roles, req);
 
                 authContext.Session.UserAuthId = authContext.AuthResponse.UserId = user.Id.ToString();
                 authContext.Session.Roles = roles.ToList();
                 authContext.UserSource = user;
 
                 authContext.AuthResponse.BearerToken = bearerToken; 
-                var userRefreshToken = await CreateRefreshTokenAsync(authService.Request, user).ConfigAwait();
+                var userRefreshToken = await CreateRefreshTokenAsync(user, authService.Request).ConfigAwait();
                 if (userRefreshToken != null)
                 {
                     authContext.AuthResponse.RefreshToken = userRefreshToken.RefreshToken;
@@ -392,39 +459,73 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         }
     }
 
-    public async Task<string> CreateBearerTokenAsync(IRequest req, string userName)
+    public async Task<List<Claim>> GetUserClaimsAsync(string userName, IRequest? req = null)
     {
-        var (user, roles) = await GetUserAndRolesAsync(req, userName).ConfigAwait();
-        var jwt = CreateJwtBearerToken(req, user, roles);
-        return jwt;
+        var (user, roles) = await Manager.GetUserAndRolesByNameAsync(userName, req).ConfigAwait();
+        var claims = CreateUserClaims(user, roles);
+        return claims;
     }
 
-    public async Task<UserJwtTokens> CreateBearerAndRefreshTokenAsync(IRequest req, string userName)
+    public async Task<string> CreateBearerTokenAsync(string userName, IRequest? req = null)
     {
-        var (user, roles) = await GetUserAndRolesAsync(req, userName).ConfigAwait();
-        var jwt = CreateJwtBearerToken(req, user, roles);
+        var (user, roles) = await Manager.GetUserAndRolesByNameAsync(userName, req).ConfigAwait();
+        return CreateJwtBearerToken(user, roles, req);
+    }
+
+    public async Task<UserJwtTokens> CreateBearerAndRefreshTokenAsync(string userName, IRequest? req = null)
+    {
+        var (user, roles) = await Manager.GetUserAndRolesByNameAsync(userName, req).ConfigAwait();
+        var jwt = CreateJwtBearerToken(user, roles, req);
         if (user is IRequireRefreshToken hasRefreshToken && EnableRefreshToken)
         {
             if (hasRefreshToken.RefreshToken == null || hasRefreshToken.RefreshTokenExpiry == null || hasRefreshToken.RefreshTokenExpiry < DateTime.UtcNow)
             {
-                hasRefreshToken = (await CreateRefreshTokenAsync(req, user).ConfigAwait())!;
+                hasRefreshToken = (await CreateRefreshTokenAsync(user, req).ConfigAwait())!;
             }
             return new(jwt, hasRefreshToken);
         }
         
         return new(jwt, null);
     }
-
-    public string CreateJwtBearerToken(IRequest req, TUser user, IEnumerable<string>? roles = null)
+    
+    public string CreateJwtBearerToken(TUser user, IEnumerable<string>? roles = null, IRequest? req = null)
     {
-        var claims = new List<Claim> {
+        var claims = CreateUserClaims(user, roles);
+
+        if (req != null)
+        {
+            var jti = ResolveJwtId?.Invoke(req);
+            if (jti != null)
+                claims.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
+
+            OnTokenCreated?.Invoke(req, user, claims);
+        }
+
+        return CreateJwtBearerToken(claims, Audience, DateTime.UtcNow.Add(ExpireTokensIn));
+    }
+
+    public string CreateJwtBearerToken(List<Claim> claims, string audience, DateTime expires)
+    {
+        var credentials = new SigningCredentials(TokenValidationParameters.IssuerSigningKey, HashAlgorithm);
+        var securityToken = new JwtSecurityToken(
+            issuer: TokenValidationParameters.ValidIssuer,
+            audience: audience,
+            expires: expires,
+            claims: claims,
+            signingCredentials: credentials
+        );
+
+        var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
+        return token;
+    }
+
+    public List<Claim> CreateUserClaims(TUser user, IEnumerable<string>? roles = null)
+    {
+        var claims = new List<Claim>
+        {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()!),
             new(JwtClaimTypes.PreferredUserName, user.UserName ?? throw new ArgumentNullException(nameof(user.UserName))),
         };
-
-        var jti = ResolveJwtId?.Invoke(req);
-        if (jti != null)
-            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
 
         if (NameClaimFieldNames.Count > 0 || MapIdentityUserToClaims.Count > 0)
         {
@@ -467,21 +568,9 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
             }
         }
 
-        OnTokenCreated?.Invoke(req, user, claims);
-
-        var credentials = new SigningCredentials(TokenValidationParameters.IssuerSigningKey, HashAlgorithm);
-        var securityToken = new JwtSecurityToken(
-            issuer: TokenValidationParameters.ValidIssuer,
-            audience: Audience,
-            expires: DateTime.UtcNow.Add(ExpireTokensIn),
-            claims: claims,
-            signingCredentials: credentials
-        );
-
-        var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
-        return token;
+        return claims;
     }
-    
+
     public Func<string> GenerateRefreshToken { get; set; } = DefaultGenerateRefreshToken;
 
     public static string DefaultGenerateRefreshToken()
@@ -500,7 +589,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         }
     }
 
-    protected virtual async Task<IRequireRefreshToken?> CreateRefreshTokenAsync(IRequest req, TUser user)
+    protected virtual async Task<IRequireRefreshToken?> CreateRefreshTokenAsync(TUser user, IRequest? req = null)
     {
 #if NET8_0_OR_GREATER
         if (!EnableRefreshToken)
@@ -511,15 +600,33 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
             requireRefreshToken.RefreshToken = GenerateRefreshToken();
             requireRefreshToken.RefreshTokenExpiry = DateTime.UtcNow.Add(ExpireRefreshTokensIn);
 
-            OnRefreshTokenCreated?.Invoke(req, user);
+            if (req != null)
+            {
+                OnRefreshTokenCreated?.Invoke(req, user);
+            }
 
-            await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(req);
-            var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
-            await dbUsers.Where(x => x.Id.Equals(user.Id))
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshToken, requireRefreshToken.RefreshToken)
-                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, requireRefreshToken.RefreshTokenExpiry)).ConfigAwait();
-            
+            async Task UpdateUser(DbContext dbContext)
+            {
+                var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
+                await dbUsers.Where(x => x.Id.Equals(user.Id))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(x => ((IRequireRefreshToken)x).RefreshToken, requireRefreshToken.RefreshToken)
+                        .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, requireRefreshToken.RefreshTokenExpiry)).ConfigAwait();
+            }
+
+            if (req == null)
+            {
+                var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+                using var scope = scopeFactory.CreateScope();
+                await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(scope.ServiceProvider);
+                await UpdateUser(dbContext).ConfigAwait();
+            }
+            else
+            {
+                await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(req.GetServiceProvider());
+                await UpdateUser(dbContext).ConfigAwait();
+            }
+
             return requireRefreshToken;
         }
 #else
@@ -534,7 +641,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
         var refreshToken = req.GetJwtRefreshToken();
         if (InvalidateRefreshTokenOnLogout && refreshToken != null)
         {
-            await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(req);
+            await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(req.GetServiceProvider());
             var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
 
             await dbUsers.Where(x => ((IRequireRefreshToken)x).RefreshToken!.Equals(refreshToken))
@@ -545,42 +652,65 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 #endif
     }
 
-    public async Task<string> CreateAccessTokenFromRefreshTokenAsync(string refreshToken, IRequest request)
+    public async Task<string> CreateAccessTokenFromRefreshTokenAsync(string refreshToken, IRequest? req = null)
     {
-        await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(request);
-        var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
-
-        var now = DateTime.UtcNow;
-
-        var user = await dbUsers
-            .Where(x => ((IRequireRefreshToken)x).RefreshToken == refreshToken)
-            .SingleOrDefaultAsync();
-
-        if (user == null)
-            throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
-
-        var hasRefreshToken = (IRequireRefreshToken)user;
-        if (hasRefreshToken.RefreshTokenExpiry == null || now > hasRefreshToken.RefreshTokenExpiry)
-            throw HttpError.Forbidden(ErrorMessages.RefreshTokenInvalid.Localize(request));
-        
-        if (user.LockoutEnd != null && user.LockoutEnd > DateTime.UtcNow)
-            throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(request));
-
-        var userManager = request.TryResolve<UserManager<TUser>>();
-        var roles = await userManager.GetRolesAsync(user);
-
-#if NET8_0_OR_GREATER        
-        if (ExtendRefreshTokenExpiryAfterUsage != null)
+        async Task<TUser> GetUser(DbSet<TUser> dbUsers)
         {
-            var updatedDate = DateTime.UtcNow.Add(ExtendRefreshTokenExpiryAfterUsage.Value);
-            await dbUsers.Where(x => ((IRequireRefreshToken)x).RefreshToken!.Equals(refreshToken))
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, updatedDate)).ConfigAwait();
-        }
-#endif
+            var now = DateTime.UtcNow;
+            var user = await dbUsers
+                .Where(x => ((IRequireRefreshToken)x).RefreshToken == refreshToken)
+                .SingleOrDefaultAsync();
+
+            if (user == null)
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(req));
+
+            var hasRefreshToken = (IRequireRefreshToken)user;
+            if (hasRefreshToken.RefreshTokenExpiry == null || now > hasRefreshToken.RefreshTokenExpiry)
+                throw HttpError.Forbidden(ErrorMessages.RefreshTokenInvalid.Localize(req));
         
-        var jwt = CreateJwtBearerToken(request, user, roles);
-        return jwt;
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTime.UtcNow)
+                throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(req));
+            return user;
+        }
+        
+        async Task UpdateRefreshTokenExpiry(DbSet<TUser> dbUsers)
+        {
+#if NET8_0_OR_GREATER
+            if (ExtendRefreshTokenExpiryAfterUsage != null)
+            {
+                var updatedDate = DateTime.UtcNow.Add(ExtendRefreshTokenExpiryAfterUsage.Value);
+                await dbUsers.Where(x => ((IRequireRefreshToken)x).RefreshToken!.Equals(refreshToken))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(x => ((IRequireRefreshToken)x).RefreshTokenExpiry, updatedDate)).ConfigAwait();
+            }
+#endif
+        }
+        
+        if (req == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(scope.ServiceProvider);
+            var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
+
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            var user = await GetUser(dbUsers).ConfigAwait();
+            var roles = await userManager.GetRolesAsync(user).ConfigAwait();
+            await UpdateRefreshTokenExpiry(dbUsers).ConfigAwait();
+            return CreateJwtBearerToken(user, roles, req);
+        }
+        else
+        {
+            var services = req.GetServiceProvider();
+            await using var dbContext = IdentityAuth.ResolveDbContext<TUser>(services);
+            var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
+
+            var userManager = services.GetRequiredService<UserManager<TUser>>();
+            var user = await GetUser(dbUsers).ConfigAwait();
+            var roles = await userManager.GetRolesAsync(user).ConfigAwait();
+            await UpdateRefreshTokenExpiry(dbUsers).ConfigAwait();
+            return CreateJwtBearerToken(user, roles, req);
+        }
     }
 
     public async Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token = default)
@@ -590,10 +720,10 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
         if (addJwtCookie || addRefreshCookie)
         {
-            var (user, roles) = await GetUserAndRolesAsync(authContext.Request, authContext.Session.UserAuthName).ConfigAwait();
+            var (user, roles) = await Manager.GetUserAndRolesByNameAsync(authContext.Session.UserAuthName, authContext.Request).ConfigAwait();
             if (addJwtCookie)
             {
-                var accessToken = CreateJwtBearerToken(authContext.Request, user, roles);
+                var accessToken = CreateJwtBearerToken(user, roles, authContext.Request);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
 
                 authContext.Result.AddCookie(authContext.Request,
@@ -607,7 +737,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TK
 
             if (addRefreshCookie)
             {
-                var userRefreshToken = await CreateRefreshTokenAsync(authContext.Request, user).ConfigAwait();
+                var userRefreshToken = await CreateRefreshTokenAsync(user, authContext.Request).ConfigAwait();
                 if (userRefreshToken?.RefreshTokenExpiry != null)
                 {
                     authContext.Result.AddCookie(authContext.Request,
@@ -640,6 +770,8 @@ public class ConvertSessionToTokenService(IIdentityJwtAuthProvider jwtAuthProvid
         if (Request.ResponseContentType.MatchesContentType(MimeTypes.Html))
             Request.ResponseContentType = MimeTypes.Json;
 
+        var httpResult = new HttpResult(new ConvertSessionToTokenResponse()); 
+
         var token = Request.GetJwtToken();
         IAuthSession? session = null;
         UserJwtTokens? userTokens = null;
@@ -653,20 +785,23 @@ public class ConvertSessionToTokenService(IIdentityJwtAuthProvider jwtAuthProvid
             session = await Request.GetSessionAsync().ConfigAwait();
 
             if (createFromSession)
-                token = await jwtAuthProvider.CreateBearerTokenAsync(Request, session.UserAuthName).ConfigAwait();
+                token = await jwtAuthProvider.CreateBearerTokenAsync(session.UserAuthName, Request).ConfigAwait();
 
             if (!request.PreserveSession)
             {
-                await Request.RemoveSessionAsync(session.Id).ConfigAwait();
+                if (session.Id != null)
+                    await Request.RemoveSessionAsync(session.Id).ConfigAwait();
+
+                jwtAuthProvider.DeleteCookiesOnJwtCookies.ForEach(name => httpResult.DeleteCookie(Request, name));
+                
                 if (jwtAuthProvider.EnableRefreshToken)
                 {
-                    userTokens = await jwtAuthProvider.CreateBearerAndRefreshTokenAsync(Request, session.UserAuthName).ConfigAwait();
+                    userTokens = await jwtAuthProvider.CreateBearerAndRefreshTokenAsync(session.UserAuthName, Request).ConfigAwait();
                 }
             }
             userTokens ??= new(token, null);
         }
 
-        var httpResult = new HttpResult(new ConvertSessionToTokenResponse()); 
         httpResult.AddCookie(Request,
             new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {
                 HttpOnly = true,

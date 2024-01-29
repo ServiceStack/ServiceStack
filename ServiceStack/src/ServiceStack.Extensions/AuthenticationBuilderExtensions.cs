@@ -17,6 +17,11 @@ public static class AuthenticationBuilderExtensions
                     && ctx.Response.StatusCode is StatusCodes.Status200OK or StatusCodes.Status302Found)
                 {
                     ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    if (ctx.HttpContext.Items.TryGetValue(Keywords.ResponseStatus, out var oStatus) && oStatus is ResponseStatus status)
+                    {
+                        var dto = new ErrorResponse { ResponseStatus = status };
+                        ctx.Response.WriteAsJsonAsync(dto);
+                    }
                 }
                 return Task.CompletedTask;
             };
@@ -26,6 +31,11 @@ public static class AuthenticationBuilderExtensions
                     && ctx.Response.StatusCode is StatusCodes.Status200OK or StatusCodes.Status302Found)
                 {
                     ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    if (ctx.HttpContext.Items.TryGetValue(Keywords.ResponseStatus, out var oStatus) && oStatus is ResponseStatus status)
+                    {
+                        var dto = new ErrorResponse { ResponseStatus = status };
+                        ctx.Response.WriteAsJsonAsync(dto);
+                    }
                 }
                 return Task.CompletedTask;
             };

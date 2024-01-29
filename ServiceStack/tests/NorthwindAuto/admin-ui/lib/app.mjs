@@ -240,6 +240,7 @@ let store = {
     },
 
     get adminUsers() { return server.plugins.adminUsers },
+    get adminIdentityUsers() { return server.plugins.adminIdentityUsers },
 
     /** @param {string|any} id
      *  @return {LinkInfo} */

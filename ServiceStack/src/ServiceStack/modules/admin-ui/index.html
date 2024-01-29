@@ -14,7 +14,6 @@ let DEBUG = false
 /*file:custom.css */
 </style>
 <!--shared:custom-head-->
-<script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script><!--safari-->
 <script type="importmap">
 {
     "imports": {
@@ -55,6 +54,7 @@ let DEBUG = false
                             <div class="py-4">
                                 <dashboard v-if="routes.admin === ''"></dashboard>
                                 <validation v-else-if="routes.admin === 'validation'"></validation>
+                                <identity-users v-else-if="routes.admin === 'users' && server.plugins.auth?.identityAuth"></identity-users>
                                 <users v-else-if="routes.admin === 'users'"></users>
                                 <logging v-else-if="routes.admin === 'logging'"></logging>
                                 <profiling v-else-if="routes.admin === 'profiling'"></profiling>

@@ -853,6 +853,18 @@ namespace ServiceStack.OrmLite.Firebird
             $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP {GetQuotedColumnName(column)};";
 
         public override string SqlConcat(IEnumerable<object> args) => string.Join(" || ", args);
+
+  	public override string ToTableNamesStatement(string schema)
+        {
+            var sql = "SELECT TRIM(RDB$RELATION_NAME) AS TABLE_NAME FROM RDB$RELATIONS WHERE RDB$SYSTEM_FLAG = 0 AND RDB$VIEW_BLR IS NULL";
+
+            if (!string.IsNullOrEmpty(schema))
+            {
+                sql += " AND TRIM(RDB$OWNER_NAME) = '{0}'".SqlFmt(this, schema);
+            }
+
+            return sql;
+        }
     }
 }
 

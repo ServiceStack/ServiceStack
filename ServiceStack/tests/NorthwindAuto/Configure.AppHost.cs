@@ -1,45 +1,59 @@
 using Funq;
 using ServiceStack;
-using ServiceStack.Data;
-using ServiceStack.OrmLite;
-using MyApp.ServiceInterface;
+using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
-using ServiceStack.Text;
-using ServiceStack.Web;
 using TalentBlazor.ServiceModel;
+using GetAccessTokenResponse = ServiceStack.GetAccessTokenResponse;
+
+[assembly: HostingStartup(typeof(MyApp.AppHost))]
 
 namespace MyApp;
 
-public class AppHost : AppHostBase
+public class AppHost() : AppHostBase("My App"), IHostingStartup
 {
     public static string TalentBlazorDir = "../../../../../netcore/TalentBlazor/TalentBlazor";
     public static string TalentBlazorSeedDataDir = TalentBlazorDir + "/Migrations/seed";
     public static string TalentBlazorWwwRootDir = TalentBlazorDir + "/wwwroot";
     public static string ProfilesDir = $"{TalentBlazorWwwRootDir}/profiles";
-        
-    public AppHost() : base("My App", typeof(MyServices).Assembly) { }
+
+    public void Configure(IWebHostBuilder builder) => builder
+        .ConfigureServices((context, services) => {
+            
+            var vfs = new FileSystemVirtualFiles(context.HostingEnvironment.ContentRootPath);
+            var uploadVfs = new FileSystemVirtualFiles(TalentBlazorWwwRootDir);
+            var appDataVfs = new FileSystemVirtualFiles(TalentBlazorSeedDataDir);
+            services.AddPlugin(new FilesUploadFeature(
+                new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages,
+                    resolvePath:ctx => $"/profiles/{ctx.FileName}"),
+            
+                new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages),
+            
+                new UploadLocation("files", vfs,
+                    resolvePath:ctx => $"/files/{ctx.FileName}"),
+            
+                new UploadLocation("users", uploadVfs, allowExtensions:FileExt.WebImages,
+                    resolvePath:ctx => $"/profiles/users/{ctx.UserAuthId}.{ctx.FileExtension}"),
+
+                new UploadLocation("applications", appDataVfs, maxFileCount: 3, maxFileBytes: 10_000_000,
+                    resolvePath: ctx => ctx.GetLocationPath((ctx.Dto is CreateJobApplication create
+                            ? $"job/{create.JobId}"
+                            : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
+                    readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)
+            ));
+            
+        });
 
     // Configure your AppHost with the necessary configuration and dependencies your App needs
-    public override void Configure(Container container)
+    public override void Configure()
     {
-        // JsConfig.Init(new ServiceStack.Text.Config {
-        //     IncludeNullValues = true,
-        //     TextCase = TextCase.PascalCase
-        // });
         SetConfig(new HostConfig
         {
             DebugMode = true,
             AdminAuthSecret = "secret",
-            // UseCamelCase = false,
         });
         
-        Plugins.Add(new CorsFeature(new[] {
-            "http://localhost:5173", //vite dev
-            "https://docs.servicestack.net"
-        }, allowCredentials:true));
-
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
 
         memFs.WriteFile("locode/custom.html", VirtualFiles.GetFile("custom/locode/custom.html"));
@@ -72,36 +86,25 @@ public class AppHost : AppHostBase
         });
             
         // Not needed in `dotnet watch` and in /wwwroot/modules/ui which can use _framework/aspnetcore-browser-refresh.js"
-        Plugins.AddIfDebug(new HotReloadFeature
-        {
-            VirtualFiles = VirtualFiles,
-            DefaultPattern = "*.html;*.js;*.mjs;*.css"
-        });
-        //Plugins.Add(new PostmanFeature());
+        // Plugins.AddIfDebug(new HotReloadFeature
+        // {
+        //     VirtualFiles = VirtualFiles,
+        //     DefaultPattern = "*.html;*.js;*.mjs;*.css"
+        // });
 
-        var uploadVfs = new FileSystemVirtualFiles(TalentBlazorWwwRootDir);
-        var appDataVfs = new FileSystemVirtualFiles(TalentBlazorSeedDataDir);
-        Plugins.Add(new FilesUploadFeature(
-            new UploadLocation("profiles", uploadVfs, allowExtensions:FileExt.WebImages,
-                resolvePath:ctx => $"/profiles/{ctx.FileName}"),
-            
-            new UploadLocation("game_items", appDataVfs, allowExtensions:FileExt.WebImages),
-            
-            new UploadLocation("files", GetVirtualFileSource<FileSystemVirtualFiles>(),
-                resolvePath:ctx => $"/files/{ctx.FileName}"),
-            
-            new UploadLocation("users", uploadVfs, allowExtensions:FileExt.WebImages,
-                resolvePath:ctx => $"/profiles/users/{ctx.UserAuthId}.{ctx.FileExtension}"),
-
-            new UploadLocation("applications", appDataVfs, maxFileCount: 3, maxFileBytes: 10_000_000,
-                resolvePath: ctx => ctx.GetLocationPath((ctx.Dto is CreateJobApplication create
-                    ? $"job/{create.JobId}"
-                    : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
-                readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)
-        ));
-
-        Metadata.ForceInclude = [typeof(GetAccessToken)];
-        Plugins.Add(new ServiceStack.Api.OpenApi.OpenApiFeature());
+        Metadata.ForceInclude = [
+            typeof(Authenticate),typeof(AuthenticateResponse),
+            typeof(GetAccessToken),typeof(GetAccessTokenResponse),
+            typeof(AdminDashboard),typeof(AdminDashboardResponse),
+            typeof(AdminDatabase),typeof(AdminDatabaseResponse),
+            typeof(AdminCreateUser),typeof(AdminDeleteUser),typeof(AdminDeleteUserResponse),typeof(AdminGetUser),typeof(AdminUserResponse),
+            typeof(AdminQueryUsers),typeof(AdminUpdateUser),typeof(AdminUserBase),typeof(AdminUsersResponse),
+            typeof(RequestLogs),typeof(RequestLogsResponse),
+            typeof(AdminProfiling),typeof(AdminProfilingResponse),
+            typeof(AdminRedis),typeof(AdminRedisResponse),
+            typeof(GetValidationRules),typeof(ModifyValidationRules),typeof(ValidationRule),typeof(ValidateRule),
+            typeof(GetValidationRulesResponse),
+        ];
 
         ScriptContext.Args[nameof(AppData)] = new AppData
         {
@@ -111,26 +114,12 @@ public class AppHost : AppHostBase
                 ["B"] = "Bravo",
                 ["C"] = "Charlie",
             },
-            AlphaKeyValuePairs = new()
-            {
-                new("A","Alpha"),
-                new("B","Bravo"),
-                new("C","Charlie"),
-            }, 
+            AlphaKeyValuePairs =
+            [
+                new("A", "Alpha"),
+                new("B", "Bravo"),
+                new("C", "Charlie")
+            ], 
         };
-    }
-
-    // public override string ResolveLocalizedString(string text, IRequest request = null) => 
-    //     text == null ? null : $"({text})";
-
-    public override string? GetCompressionType(IRequest request)
-    {
-        if (request.RequestPreferences.AcceptsDeflate && StreamCompressors.SupportsEncoding(CompressionTypes.Deflate))
-            return CompressionTypes.Deflate;
-
-        if (request.RequestPreferences.AcceptsGzip && StreamCompressors.SupportsEncoding(CompressionTypes.GZip))
-            return CompressionTypes.GZip;
-
-        return null;
     }
 }

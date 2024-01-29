@@ -49,7 +49,7 @@ public class PreProcessRequest : IPlugin, IHasStringId
                 if (string.IsNullOrEmpty(uploadedPath))
                     continue;
                 if (!uploadedPathsMap.TryGetValue(file.Name, out var uploadedPaths))
-                    uploadedPaths = uploadedPathsMap[file.Name] = new List<(string,IHttpFile)>();
+                    uploadedPaths = uploadedPathsMap[file.Name] = [];
                 uploadedPaths.Add((uploadedPath,file));
             }
 

@@ -1,9 +1,9 @@
 using ServiceStack;
 using ServiceStack.Redis;
 
-[assembly: HostingStartup(typeof(NorthwindAuto.ConfigureRedis))]
+[assembly: HostingStartup(typeof(MyApp.ConfigureRedis))]
 
-namespace NorthwindAuto;
+namespace MyApp;
 
 public class ConfigureRedis : IHostingStartup
 {
@@ -11,9 +11,8 @@ public class ConfigureRedis : IHostingStartup
         .ConfigureServices((context, services) => {
             services.AddSingleton<IRedisClientsManager>(
                 new RedisManagerPool(context.Configuration.GetConnectionString("Redis") ?? "localhost:6379"));
-        })
-        .ConfigureAppHost(appHost => {
-            appHost.Plugins.Add(new AdminRedisFeature {
+            
+            services.AddPlugin(new AdminRedisFeature {
                 ModifiableConnection = true
             });
         });

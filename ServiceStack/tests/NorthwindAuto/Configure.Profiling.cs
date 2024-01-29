@@ -13,60 +13,65 @@ public class ConfigureProfiling : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder)
     {
-        builder.ConfigureAppHost(
-            host => {
-                host.Plugins.AddIfDebug(new RequestLogsFeature {
-                    RequestLogger = new CsvRequestLogger(
-                        new FileSystemVirtualFiles(host.Config.WebHostPhysicalPath),
-                        "requestlogs/{year}-{month}/{year}-{month}-{day}.csv",
-                        "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv",
-                        TimeSpan.FromSeconds(1)
-                    ),
-                    EnableResponseTracking = true,
-                    EnableRequestBodyTracking = true,
-                    EnableErrorTracking = true
-                    // RequestLogFilter = (req, entry) => {
-                    //     entry.Meta = new() {
-                    //         ["RemoteIp"] = req.RemoteIp,
-                    //         ["Referrer"] = req.UrlReferrer?.ToString(),
-                    //         ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
-                    //     };
-                    // },
-                });
-                
-                host.Plugins.AddIfDebug(new ProfilingFeature {
-                    TagLabel = "Tenant",
-                    TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0,5),
-                    IncludeStackTrace = true,
-                    DiagnosticEntryFilter = (entry, evt) => {
-                        if (evt is RequestDiagnosticEvent requestEvent)
-                        {
-                            var req = requestEvent.Request;
-                            entry.Meta = new() {
-                                ["RemoteIp"] = req.RemoteIp,
-                                ["Referrer"] = req.UrlReferrer?.ToString(),
-                                ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
-                            };
-                        }
-                    },
-                });
-                host.Plugins.Add(new ServerEventsFeature());
-                
-                host.Container.Register<IMessageService>(c => new BackgroundMqService());
-                var mqServer = host.Container.Resolve<IMessageService>();
+        builder
+            .ConfigureServices((context, services) =>
+            {
+                if (context.HostingEnvironment.IsDevelopment())
+                {
+                    var vfs = new FileSystemVirtualFiles(context.HostingEnvironment.ContentRootPath);
+                    services.AddPlugin(new RequestLogsFeature
+                    {
+                        RequestLogger = new CsvRequestLogger(vfs,
+                            "requestlogs/{year}-{month}/{year}-{month}-{day}.csv",
+                            "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv",
+                            TimeSpan.FromSeconds(1)
+                        ),
+                        EnableResponseTracking = true,
+                        EnableRequestBodyTracking = true,
+                        EnableErrorTracking = true
+                        // RequestLogFilter = (req, entry) => {
+                        //     entry.Meta = new() {
+                        //         ["RemoteIp"] = req.RemoteIp,
+                        //         ["Referrer"] = req.UrlReferrer?.ToString(),
+                        //         ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
+                        //     };
+                        // },
+                    });
 
-                mqServer.RegisterHandler<ProfileGen>(host.ExecuteMessage);
-                mqServer.RegisterHandler<CreateMqBooking>(host.ExecuteMessage);
-            },
-            afterAppHostInit: host => {
-                // host.ServiceController.Execute(new ProfileGen());
-                host.Resolve<IMessageService>().Start();
-                // host.ExecuteMessage(Message.Create(new ProfileGen()));
-                // var messageProducer = host.GetMessageProducer();
-                // host.PublishMessage(messageProducer, new ProfileGen());
-                //
-                // var client = new JsonApiClient("https://chinook.locode.dev");
-                // var api = client.Api(new QueryAlbums { Take = 5 });
-            });
+                    services.AddPlugin(new ProfilingFeature
+                    {
+                        TagLabel = "Tenant",
+                        TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0, 5),
+                        IncludeStackTrace = true,
+                        DiagnosticEntryFilter = (entry, evt) =>
+                        {
+                            if (evt is RequestDiagnosticEvent requestEvent)
+                            {
+                                var req = requestEvent.Request;
+                                entry.Meta = new()
+                                {
+                                    ["RemoteIp"] = req.RemoteIp,
+                                    ["Referrer"] = req.UrlReferrer?.ToString(),
+                                    ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
+                                };
+                            }
+                        },
+                    });
+                }
+
+                services.AddPlugin(new ServerEventsFeature());
+
+                services.AddSingleton<IMessageService, BackgroundMqService>();
+            })
+            .ConfigureAppHost(
+                afterAppHostInit: host =>
+                {
+                    var mqServer = host.Container.Resolve<IMessageService>();
+
+                    mqServer.RegisterHandler<ProfileGen>(host.ExecuteMessage);
+                    mqServer.RegisterHandler<CreateMqBooking>(host.ExecuteMessage);
+
+                    host.Resolve<IMessageService>().Start();
+                });
     }
 }

@@ -8,125 +8,124 @@ using NUnit.Framework;
 using ProtoBuf.Grpc.Client;
 using ServiceStack.Text;
 
-namespace ServiceStack.Extensions.Tests
+namespace ServiceStack.Extensions.Tests;
+
+public class GrpcServerEventsTests
 {
-    public class GrpcServerEventsTests
+    public class AppHost : AppSelfHostBase
     {
-        public class AppHost : AppSelfHostBase
+        public AppHost() 
+            : base(nameof(GrpcServerEventsTests), typeof(MyServices).Assembly) { }
+
+        public override void Configure(Container container)
         {
-            public AppHost() 
-                : base(nameof(GrpcServerEventsTests), typeof(MyServices).Assembly) { }
-
-            public override void Configure(Container container)
-            {
-                Plugins.Add(new GrpcFeature(App));
-                Plugins.Add(new ServerEventsFeature());
-            }
-
-            public override void ConfigureKestrel(KestrelServerOptions options)
-            {
-                options.ListenLocalhost(TestsConfig.Port, listenOptions => {
-                    listenOptions.Protocols = HttpProtocols.Http2;
-                });
-            }
-
-            public override void Configure(IServiceCollection services) => services.AddServiceStackGrpc();
-
-            public override void Configure(IApplicationBuilder app) => app.UseRouting();
+            Plugins.Add(new GrpcFeature(App));
+            Plugins.Add(new ServerEventsFeature());
         }
 
-        private readonly ServiceStackHost appHost;
-        public GrpcServerEventsTests()
+        public override void ConfigureKestrel(KestrelServerOptions options)
         {
-            GrpcClientFactory.AllowUnencryptedHttp2 = true;
-            appHost = new AppHost()
-                .Init()
-                .Start(TestsConfig.ListeningOn);
+            options.ListenLocalhost(TestsConfig.Port, listenOptions => {
+                listenOptions.Protocols = HttpProtocols.Http2;
+            });
         }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown() => appHost.Dispose();
+        public override void Configure(IServiceCollection services) => services.AddServiceStackGrpc();
 
-        private static GrpcServiceClient GetClient() => new GrpcServiceClient(TestsConfig.BaseUri);
+        public override void Configure(IApplicationBuilder app) => app.UseRouting();
+    }
 
-        [Test]
-        public async Task Can_subscribe_to_ServerEvents()
+    private readonly ServiceStackHost appHost;
+    public GrpcServerEventsTests()
+    {
+        GrpcClientFactory.AllowUnencryptedHttp2 = true;
+        appHost = new AppHost()
+            .Init()
+            .Start(TestsConfig.ListeningOn);
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown() => appHost.Dispose();
+
+    private static GrpcServiceClient GetClient() => new GrpcServiceClient(TestsConfig.BaseUri);
+
+    [Test]
+    public async Task Can_subscribe_to_ServerEvents()
+    {
+        var client = GetClient();
+
+        void AssertMessage(StreamServerEventsResponse msg)
         {
-            var client = GetClient();
+            Assert.That(msg.EventId, Is.GreaterThan(0));
+            Assert.That(msg.Channels, Is.EqualTo(new[] { "home" }));
+            Assert.That(msg.Json, Is.Not.Null);
+            Assert.That(msg.Op, Is.EqualTo("cmd"));
+            Assert.That(msg.UserId, Is.EqualTo("-1"));
+            Assert.That(msg.DisplayName, Is.Not.Null);
+            Assert.That(msg.ProfileUrl, Is.Not.Null);
+            Assert.That(msg.IsAuthenticated, Is.False);
+        }
 
-            void AssertMessage(StreamServerEventsResponse msg)
+        var i = 0;
+        await foreach (var msg in client.StreamAsync(new StreamServerEvents { Channels = new[] { "home" } }))
+        {
+            if (i == 0)
             {
-                Assert.That(msg.EventId, Is.GreaterThan(0));
-                Assert.That(msg.Channels, Is.EqualTo(new[] { "home" }));
-                Assert.That(msg.Json, Is.Not.Null);
-                Assert.That(msg.Op, Is.EqualTo("cmd"));
-                Assert.That(msg.UserId, Is.EqualTo("-1"));
-                Assert.That(msg.DisplayName, Is.Not.Null);
-                Assert.That(msg.ProfileUrl, Is.Not.Null);
-                Assert.That(msg.IsAuthenticated, Is.False);
+                Assert.That(msg.Selector, Is.EqualTo("cmd.onConnect"));
+                Assert.That(msg.Id, Is.Not.Null);
+                Assert.That(msg.UnRegisterUrl, Is.Not.Null);
+                Assert.That(msg.UpdateSubscriberUrl, Is.Not.Null);
+                Assert.That(msg.HeartbeatUrl, Is.Not.Null);
+                Assert.That(msg.HeartbeatIntervalMs, Is.GreaterThan(0));
+                Assert.That(msg.IdleTimeoutMs, Is.GreaterThan(0));
+                AssertMessage(msg);
             }
-
-            var i = 0;
-            await foreach (var msg in client.StreamAsync(new StreamServerEvents { Channels = new[] { "home" } }))
+            else if (i == 1)
             {
-                if (i == 0)
-                {
-                    Assert.That(msg.Selector, Is.EqualTo("cmd.onConnect"));
-                    Assert.That(msg.Id, Is.Not.Null);
-                    Assert.That(msg.UnRegisterUrl, Is.Not.Null);
-                    Assert.That(msg.UpdateSubscriberUrl, Is.Not.Null);
-                    Assert.That(msg.HeartbeatUrl, Is.Not.Null);
-                    Assert.That(msg.HeartbeatIntervalMs, Is.GreaterThan(0));
-                    Assert.That(msg.IdleTimeoutMs, Is.GreaterThan(0));
-                    AssertMessage(msg);
-                }
-                else if (i == 1)
-                {
-                    Assert.That(msg.Selector, Is.EqualTo("cmd.onJoin"));
-                    AssertMessage(msg);
-                }
+                Assert.That(msg.Selector, Is.EqualTo("cmd.onJoin"));
+                AssertMessage(msg);
+            }
                 
-                $"\n\n{i}".Print();
-                msg.PrintDump();
+            $"\n\n{i}".Print();
+            msg.PrintDump();
 
-                if (++i == 2)
-                    break;
-            }
-            Assert.That(i, Is.EqualTo(2));
+            if (++i == 2)
+                break;
         }
+        Assert.That(i, Is.EqualTo(2));
+    }
 
-        [Test]
-        public async Task Does_receive_all_messages()
-        {
-            var client1 = GetClient();
-            var client2 = GetClient();
+    [Test]
+    public async Task Does_receive_all_messages()
+    {
+        var client1 = GetClient();
+        var client2 = GetClient();
 
 #pragma warning disable CS4014
-            Task.Factory.StartNew(async () => {
+        Task.Factory.StartNew(async () => {
 #pragma warning restore CS4014
-                await Task.Delay(500);
-                await client2.PostAsync(new PostChatToChannel {
-                    Channel = "send",
-                    From = nameof(client2),
-                    Message = "Hello from client2",
-                    Selector = "cmd.chat",
-                });
+            await Task.Delay(500);
+            await client2.PostAsync(new PostChatToChannel {
+                Channel = "send",
+                From = nameof(client2),
+                Message = "Hello from client2",
+                Selector = "cmd.chat",
             });
+        });
 
-            var responses = new List<StreamServerEventsResponse>();
-            await foreach (var msg in client1.StreamAsync(new StreamServerEvents { Channels = new[] { "send" } }))
-            {
-                responses.Add(msg);
+        var responses = new List<StreamServerEventsResponse>();
+        await foreach (var msg in client1.StreamAsync(new StreamServerEvents { Channels = new[] { "send" } }))
+        {
+            responses.Add(msg);
                 
-                if (msg.Selector == "cmd.chat")
-                    break;
-            }
-            
-            Assert.That(responses[0].Selector, Is.EqualTo("cmd.onConnect"));
-            Assert.That(responses[1].Selector, Is.EqualTo("cmd.onJoin"));
-            Assert.That(responses[2].Selector, Is.EqualTo("cmd.chat"));
-            var obj = (Dictionary<string, object>) JSON.parse(responses[2].Json);
-            Assert.That(obj["message"], Is.EqualTo("Hello from client2"));
+            if (msg.Selector == "cmd.chat")
+                break;
         }
+            
+        Assert.That(responses[0].Selector, Is.EqualTo("cmd.onConnect"));
+        Assert.That(responses[1].Selector, Is.EqualTo("cmd.onJoin"));
+        Assert.That(responses[2].Selector, Is.EqualTo("cmd.chat"));
+        var obj = (Dictionary<string, object>) JSON.parse(responses[2].Json);
+        Assert.That(obj["message"], Is.EqualTo("Hello from client2"));
     }
 }

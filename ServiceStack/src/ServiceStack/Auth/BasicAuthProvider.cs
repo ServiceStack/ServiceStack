@@ -1,9 +1,11 @@
 #pragma warning disable CS0618
 
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.Html;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -24,6 +26,13 @@ public class BasicAuthProvider : CredentialsAuthProvider, IAuthWithRequest
 
     public BasicAuthProvider(IAppSettings appSettings)
         : base(appSettings, Realm, Name) {}
+
+    protected override void Init()
+    {
+        base.Init();
+        Label = "Basic Auth";
+        FormLayout = FormLayout.Where(x => x.Id != nameof(Authenticate.RememberMe)).ToList();
+    }
 
     public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token = default)
     {

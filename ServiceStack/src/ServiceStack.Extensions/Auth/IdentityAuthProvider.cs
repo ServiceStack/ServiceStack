@@ -24,6 +24,9 @@ public abstract class IdentityAuthProvider<TUser,TKey> : IdentityAuthProvider
     public IdentityAuthContext<TUser, TKey> Context => IdentityAuth.Instance<TUser,TKey>()
         ?? throw new NotSupportedException("IdentityAuth is not configured");
 
+    public IdentityAuthContextManager<TUser, TKey> Manager => IdentityAuth.Manager as IdentityAuthContextManager<TUser, TKey>
+        ?? throw new NotSupportedException("IdentityAuth is not configured");
+
     public override async Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token = default)
     {
         var user = service.Request.GetClaimsPrincipal();

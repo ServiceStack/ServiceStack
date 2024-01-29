@@ -52,7 +52,8 @@ public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
         var session = authContext.Session;
         var authService = authContext.AuthService;
 
-        var shouldReturnTokens = authContext.DidAuthenticate;
+        var shouldIgnore = authContext.Request.Dto is IMeta meta && meta.Meta?.TryGetValue(Keywords.Ignore, out var ignore) == true && ignore == "jwt";
+        var shouldReturnTokens = authContext.DidAuthenticate && !shouldIgnore;
         if (shouldReturnTokens && SetBearerTokenOnAuthenticateResponse && authContext.AuthResponse.BearerToken == null && session.IsAuthenticated)
         {
             if (authService.Request.AllowConnection(RequireSecureConnection))
@@ -82,6 +83,9 @@ public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
 
     public async Task ResultFilterAsync(AuthResultContext authContext, CancellationToken token=default)
     {
+        var shouldIgnore = authContext.Request.Dto is IMeta meta && meta.Meta?.TryGetValue(Keywords.Ignore, out var ignore) == true && ignore == "jwt";
+        if (shouldIgnore) return;
+        
         if (UseTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.TokenCookie))
         {
             IEnumerable<string> roles = null, perms = null;

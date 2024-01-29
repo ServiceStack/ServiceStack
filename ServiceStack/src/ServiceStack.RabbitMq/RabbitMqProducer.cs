@@ -5,220 +5,219 @@ using RabbitMQ.Client.Exceptions;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 
-namespace ServiceStack.RabbitMq
+namespace ServiceStack.RabbitMq;
+
+public class RabbitMqProducer : IMessageProducer, IOneWayClient
 {
-    public class RabbitMqProducer : IMessageProducer, IOneWayClient
+    public static ILog Log = LogManager.GetLogger(typeof(RabbitMqProducer));
+    protected readonly RabbitMqMessageFactory msgFactory;
+    public int RetryCount { get; set; }
+    public Action OnPublishedCallback { get; set; }
+    public Action<string, IBasicProperties, IMessage> PublishMessageFilter { get; set; }
+    public Action<string, BasicGetResult> GetMessageFilter { get; set; }
+    //http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
+    //http://www.rabbitmq.com/amqp-0-9-1-reference.html
+    public ushort PrefetchCount { get; set; } = 20;
+
+    private IConnection connection;
+    public IConnection Connection
     {
-        public static ILog Log = LogManager.GetLogger(typeof(RabbitMqProducer));
-        protected readonly RabbitMqMessageFactory msgFactory;
-        public int RetryCount { get; set; }
-        public Action OnPublishedCallback { get; set; }
-        public Action<string, IBasicProperties, IMessage> PublishMessageFilter { get; set; }
-        public Action<string, BasicGetResult> GetMessageFilter { get; set; }
-        //http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
-        //http://www.rabbitmq.com/amqp-0-9-1-reference.html
-        public ushort PrefetchCount { get; set; } = 20;
-
-        private IConnection connection;
-        public IConnection Connection
+        get
         {
-            get
+            if (connection == null)
             {
-                if (connection == null)
-                {
-                    connection = msgFactory.ConnectionFactory.CreateConnection();
-                }
-                return connection;
+                connection = msgFactory.ConnectionFactory.CreateConnection();
+            }
+            return connection;
+        }
+    }
+
+    private IModel channel;
+    public IModel Channel
+    {
+        get
+        {
+            if (channel is not { IsOpen: true })
+            {
+                channel = Connection.OpenChannel();
+                //prefetch size is no supported by RabbitMQ
+                //http://www.rabbitmq.com/specification.html#method-status-basic.qos
+                channel.BasicQos(prefetchSize: 0, prefetchCount: PrefetchCount, global: false);
+            }
+            return channel;
+        }
+    }
+
+    public RabbitMqProducer(RabbitMqMessageFactory msgFactory)
+    {
+        this.msgFactory = msgFactory;
+    }
+
+    public virtual void Publish<T>(T messageBody)
+    {
+        if (messageBody is IMessage message)
+        {
+            Diagnostics.ServiceStack.Init(message);
+            Publish(message.ToInQueueName(), message);
+        }
+        else
+        {
+            Publish(new Message<T>(messageBody));
+        }
+    }
+
+    public virtual void Publish<T>(IMessage<T> message)
+    {
+        Publish(message.ToInQueueName(), message);
+    }
+
+    public virtual void Publish(string queueName, IMessage message)
+    {
+        Publish(queueName, message, QueueNames.Exchange);
+    }
+
+    public virtual void SendOneWay(object requestDto)
+    {
+        Publish(MessageFactory.Create(requestDto));
+    }
+
+    public virtual void SendOneWay(string queueName, object requestDto)
+    {
+        Publish(queueName, MessageFactory.Create(requestDto));
+    }
+
+    public virtual void SendAllOneWay(IEnumerable<object> requests)
+    {
+        if (requests == null) return;
+        foreach (var request in requests)
+        {
+            SendOneWay(request);
+        }
+    }
+
+    public virtual void Publish(string queueName, IMessage message, string exchange)
+    {
+        var props = Channel.CreateBasicProperties();
+        props.Persistent = true;
+        props.PopulateFromMessage(message);
+
+        if (message.Meta != null)
+        {
+            props.Headers = new Dictionary<string, object>();
+            foreach (var entry in message.Meta)
+            {
+                props.Headers[entry.Key] = entry.Value;
             }
         }
 
-        private IModel channel;
-        public IModel Channel
-        {
-            get
-            {
-                if (channel is not { IsOpen: true })
-                {
-                    channel = Connection.OpenChannel();
-                    //prefetch size is no supported by RabbitMQ
-                    //http://www.rabbitmq.com/specification.html#method-status-basic.qos
-                    channel.BasicQos(prefetchSize: 0, prefetchCount: PrefetchCount, global: false);
-                }
-                return channel;
-            }
-        }
+        PublishMessageFilter?.Invoke(queueName, props, message);
 
-        public RabbitMqProducer(RabbitMqMessageFactory msgFactory)
-        {
-            this.msgFactory = msgFactory;
-        }
+        var messageBytes = message.Body.ToJson().ToUtf8Bytes();
 
-        public virtual void Publish<T>(T messageBody)
+        PublishMessage(exchange ?? QueueNames.Exchange,
+            routingKey: queueName,
+            basicProperties: props, body: messageBytes);
+
+        OnPublishedCallback?.Invoke();
+    }
+
+    static HashSet<string> Queues = new HashSet<string>();
+
+    public virtual void PublishMessage(string exchange, string routingKey, IBasicProperties basicProperties, byte[] body)
+    {
+        try
         {
-            if (messageBody is IMessage message)
+            // In case of server named queues (client declared queue with channel.declare()), assume queue already exists
+            //(redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
+            if (routingKey.IsServerNamedQueue())
             {
-                Diagnostics.ServiceStack.Init(message);
-                Publish(message.ToInQueueName(), message);
+                Channel.BasicPublish("", routingKey, basicProperties, body);
             }
             else
             {
-                Publish(new Message<T>(messageBody));
-            }
-        }
-
-        public virtual void Publish<T>(IMessage<T> message)
-        {
-            Publish(message.ToInQueueName(), message);
-        }
-
-        public virtual void Publish(string queueName, IMessage message)
-        {
-            Publish(queueName, message, QueueNames.Exchange);
-        }
-
-        public virtual void SendOneWay(object requestDto)
-        {
-            Publish(MessageFactory.Create(requestDto));
-        }
-
-        public virtual void SendOneWay(string queueName, object requestDto)
-        {
-            Publish(queueName, MessageFactory.Create(requestDto));
-        }
-
-        public virtual void SendAllOneWay(IEnumerable<object> requests)
-        {
-            if (requests == null) return;
-            foreach (var request in requests)
-            {
-                SendOneWay(request);
-            }
-        }
-
-        public virtual void Publish(string queueName, IMessage message, string exchange)
-        {
-            var props = Channel.CreateBasicProperties();
-            props.Persistent = true;
-            props.PopulateFromMessage(message);
-
-            if (message.Meta != null)
-            {
-                props.Headers = new Dictionary<string, object>();
-                foreach (var entry in message.Meta)
+                if (!Queues.Contains(routingKey))
                 {
-                    props.Headers[entry.Key] = entry.Value;
+                    Channel.RegisterQueueByName(routingKey);
+                    Queues = new HashSet<string>(Queues) { routingKey };
                 }
+
+                Channel.BasicPublish(exchange, routingKey, basicProperties, body);
             }
 
-            PublishMessageFilter?.Invoke(queueName, props, message);
-
-            var messageBytes = message.Body.ToJson().ToUtf8Bytes();
-
-            PublishMessage(exchange ?? QueueNames.Exchange,
-                routingKey: queueName,
-                basicProperties: props, body: messageBytes);
-
-            OnPublishedCallback?.Invoke();
         }
-
-        static HashSet<string> Queues = new HashSet<string>();
-
-        public virtual void PublishMessage(string exchange, string routingKey, IBasicProperties basicProperties, byte[] body)
+        catch (OperationInterruptedException ex)
         {
-            try
+            if (ex.Is404())
             {
-                // In case of server named queues (client declared queue with channel.declare()), assume queue already exists
-                //(redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
+                // In case of server named queues (client declared queue with channel.declare()), assume queue already exists (redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
                 if (routingKey.IsServerNamedQueue())
                 {
                     Channel.BasicPublish("", routingKey, basicProperties, body);
                 }
                 else
                 {
-                    if (!Queues.Contains(routingKey))
-                    {
-                        Channel.RegisterQueueByName(routingKey);
-                        Queues = new HashSet<string>(Queues) { routingKey };
-                    }
+                    Channel.RegisterExchangeByName(exchange);
 
                     Channel.BasicPublish(exchange, routingKey, basicProperties, body);
                 }
-
             }
-            catch (OperationInterruptedException ex)
-            {
-                if (ex.Is404())
-                {
-                    // In case of server named queues (client declared queue with channel.declare()), assume queue already exists (redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
-                    if (routingKey.IsServerNamedQueue())
-                    {
-                        Channel.BasicPublish("", routingKey, basicProperties, body);
-                    }
-                    else
-                    {
-                        Channel.RegisterExchangeByName(exchange);
-
-                        Channel.BasicPublish(exchange, routingKey, basicProperties, body);
-                    }
-                }
-                throw;
-            }
+            throw;
         }
+    }
 
-        public virtual BasicGetResult GetMessage(string queueName, bool noAck)
+    public virtual BasicGetResult GetMessage(string queueName, bool noAck)
+    {
+        try
+        {
+            if (!Queues.Contains(queueName))
+            {
+                Channel.RegisterQueueByName(queueName);
+                Queues = new HashSet<string>(Queues) { queueName };
+            }
+
+            var basicMsg = Channel.BasicGet(queueName, autoAck: noAck);
+
+            GetMessageFilter?.Invoke(queueName, basicMsg);
+
+            return basicMsg;
+        }
+        catch (OperationInterruptedException ex)
+        {
+            if (ex.Is404())
+            {
+                Channel.RegisterQueueByName(queueName);
+
+                return Channel.BasicGet(queueName, autoAck: noAck);
+            }
+            throw;
+        }
+    }
+
+    public virtual void Dispose()
+    {
+        if (channel != null)
         {
             try
             {
-                if (!Queues.Contains(queueName))
-                {
-                    Channel.RegisterQueueByName(queueName);
-                    Queues = new HashSet<string>(Queues) { queueName };
-                }
-
-                var basicMsg = Channel.BasicGet(queueName, autoAck: noAck);
-
-                GetMessageFilter?.Invoke(queueName, basicMsg);
-
-                return basicMsg;
+                channel.Dispose();
             }
-            catch (OperationInterruptedException ex)
+            catch (Exception ex)
             {
-                if (ex.Is404())
-                {
-                    Channel.RegisterQueueByName(queueName);
-
-                    return Channel.BasicGet(queueName, autoAck: noAck);
-                }
-                throw;
+                Log.Error("Error trying to dispose RabbitMqProducer model", ex);
             }
+            channel = null;
         }
-
-        public virtual void Dispose()
+        if (connection != null)
         {
-            if (channel != null)
+            try
             {
-                try
-                {
-                    channel.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error trying to dispose RabbitMqProducer model", ex);
-                }
-                channel = null;
+                connection.Dispose();
             }
-            if (connection != null)
+            catch (Exception ex)
             {
-                try
-                {
-                    connection.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error trying to dispose RabbitMqProducer connection", ex);
-                }
-                connection = null;
+                Log.Error("Error trying to dispose RabbitMqProducer connection", ex);
             }
+            connection = null;
         }
     }
 }

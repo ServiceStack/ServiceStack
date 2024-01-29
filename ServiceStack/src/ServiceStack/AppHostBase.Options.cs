@@ -80,7 +80,7 @@ public class ServiceStackServicesOptions
         typeof(MemoryCacheClient),
         typeof(IMessageFactory),
     ];
-
+    
     internal bool ShouldAutoRegister<T>() => AutoRegister.Contains(typeof(T));
 
     public List<string> AllowedAuthenticationSchemes { get; } =
@@ -236,7 +236,7 @@ public class ServiceStackOptions
     /// <summary>
     /// Generate ASP.NET Core Endpoints for ServiceStack APIs
     /// </summary>
-    public void MapEndpoints(bool use = true, bool force = true, bool useSystemJson = true)
+    public void MapEndpoints(bool use = true, bool force = true, UseSystemJson useSystemJson = UseSystemJson.Always)
     {
         MapEndpointRouting = true;
         UseEndpointRouting = use;
@@ -255,11 +255,6 @@ public class ServiceStackOptions
     public bool UseEndpointRouting { get; set; }
 
     /// <summary>
-    /// Use System.Text JSON for ServiceStack APIs
-    /// </summary>
-    public bool UseSystemJson { get; set; }
-
-    /// <summary>
     /// The ASP.NET Core AuthenticationSchemes to use for protected ServiceStack APIs
     /// </summary>
     public string? AuthenticationSchemes { get; set; }
@@ -273,6 +268,16 @@ public class ServiceStackOptions
     /// Whether to disable ServiceStack Routing and use ASP.NET Core Endpoint Routing to handle all ServiceStack Requests
     /// </summary>
     public bool DisableServiceStackRouting { get; set; }
+    
+    /// <summary>
+    /// Use System.Text JSON for ServiceStack APIs
+    /// </summary>
+    public UseSystemJson UseSystemJson { get; set; }
+
+    /// <summary>
+    /// Customize System.Text.Json serialization options
+    /// </summary>
+    public static System.Text.Json.JsonSerializerOptions SystemJsonOptions => ClientConfig.SystemJsonOptions;
 }
 
 #endif

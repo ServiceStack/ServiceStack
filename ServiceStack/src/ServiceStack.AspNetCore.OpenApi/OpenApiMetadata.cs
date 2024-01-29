@@ -751,6 +751,8 @@ public class OpenApiMetadata
         return schemaType.Namespace != null && InlineSchemaTypesInNamespaces.Contains(schemaType.Namespace);
     }
 
+    List<string> RequiredValidators { get; } = ["NotNull", "NotEmpty"];
+                
     public OpenApiSchema? CreateSchema(Type schemaType, string? route=null, string? verb=null, HashSet<Type>? allTypes = null)
     {
         if (schemaType.ExcludesFeature(Feature.Metadata) || schemaType.ExcludesFeature(Feature.ApiExplorer)) 
@@ -845,6 +847,12 @@ public class OpenApiMetadata
                 schemaProperty.Description = prop.GetDescription() ?? apiDoc?.Description;
 
                 var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
+                var validateAttrs = prop.AllAttributes<ValidateAttribute>();
+
+                var isRequired = propAttr?.IsRequired == true
+                    || validateAttrs.Any(x => RequiredValidators.Contains(x.Validator))
+                    || (prop.PropertyType.IsNumericType() && validateAttrs.Any(attr => attr.Validator?.StartsWith("GreaterThan") == true));
+                
                 if (propAttr != null)
                 {
                     if (propAttr.DataType != null)
@@ -852,17 +860,31 @@ public class OpenApiMetadata
 
                     if (propAttr.Format != null)
                         schemaProperty.Format = propAttr.Format;
+                }
+                
+                if (isRequired)
+                {
+                    schema.Required.Add(schemaPropertyName);
+                }
 
-                    if (propAttr.IsRequired)
+                var uploadTo = prop.FirstAttribute<UploadToAttribute>();
+                if (uploadTo != null)
+                {
+                    schemaProperty.Reference = null;
+                    if (schemaProperty.Type != OpenApiType.Array)
                     {
-                        schema.Required.Add(schemaPropertyName);
+                        schemaProperty.Type = "file";
                     }
+                    schemaProperty.Items = new OpenApiSchema
+                    {
+                        Type = OpenApiType.String,
+                        Format = OpenApiTypeFormat.Binary,
+                    };
                 }
 
                 schemaProperty.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>()).ToOpenApiEnums();
 
                 SchemaPropertyFilter?.Invoke(schemaProperty);
-
                 schema.Properties[schemaPropertyName] = schemaProperty;
             }
         }

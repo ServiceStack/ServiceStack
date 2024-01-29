@@ -13,6 +13,16 @@ namespace ServiceStack;
 public static class BasicAuthenticationHandler
 {
     public const string Scheme = "basic";
+
+    public static AuthenticationBuilder AddBasicAuth<TUser>(this AuthenticationBuilder builder)
+        where TUser : IdentityUser, new() => builder.AddBasicAuth<TUser,string>();
+    
+    public static AuthenticationBuilder AddBasicAuth<TUser, TKey>(this AuthenticationBuilder builder)
+        where TKey : IEquatable<TKey>
+        where TUser : IdentityUser<TKey>, new()
+    {
+        return builder.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler<TUser, TKey>>(Scheme, null);
+    }
 }
 
 public class BasicAuthenticationHandler<TUser>

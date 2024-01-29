@@ -9,15 +9,10 @@ using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Json;
 
-public ref struct SpanIndex
+public readonly ref struct SpanIndex(ReadOnlySpan<char> value, int index)
 {
-    public ReadOnlySpan<char> Span { get; }
-    public int Index { get; }
-    public SpanIndex(ReadOnlySpan<char> value, int index)
-    {
-        Span = value;
-        Index = index;
-    }
+    public ReadOnlySpan<char> Span { get; } = value;
+    public int Index { get; } = index;
 }
 
 public struct JsonTypeSerializer
@@ -100,7 +95,17 @@ public struct JsonTypeSerializer
     public void WriteDateTime(TextWriter writer, object oDateTime)
     {
         var dateTime = (DateTime)oDateTime;
-        switch (JsConfig.DateHandler)
+        var config = JsConfig.GetConfig();
+#if NET6_0_OR_GREATER
+        if (config.SystemJsonCompatible)
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(dateTime);
+            writer.Write(json);
+            return;
+        }
+#endif
+            
+        switch (config.DateHandler)
         {
             case DateHandler.UnixTime:
                 writer.Write(dateTime.ToUnixTime());
@@ -125,8 +130,17 @@ public struct JsonTypeSerializer
 
     public void WriteDateTimeOffset(TextWriter writer, object oDateTimeOffset)
     {
+        var dateTimeOffset = (DateTimeOffset)oDateTimeOffset;
+#if NET6_0_OR_GREATER
+        if (JsConfig.SystemJsonCompatible)
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(dateTimeOffset);
+            writer.Write(json);
+            return;
+        }
+#endif
         writer.Write(JsWriter.QuoteString);
-        DateTimeSerializer.WriteWcfJsonDateTimeOffset(writer, (DateTimeOffset)oDateTimeOffset);
+        DateTimeSerializer.WriteWcfJsonDateTimeOffset(writer, dateTimeOffset);
         writer.Write(JsWriter.QuoteString);
     }
 
@@ -154,7 +168,10 @@ public struct JsonTypeSerializer
 
     public void WriteGuid(TextWriter writer, object oValue)
     {
-        WriteRawString(writer, ((Guid)oValue).ToString("N"));
+        var formatted = JsConfig.SystemJsonCompatible
+            ? ((Guid)oValue).ToString()
+            : ((Guid)oValue).ToString("N");
+        WriteRawString(writer, formatted);
     }
 
     public void WriteNullableGuid(TextWriter writer, object oValue)

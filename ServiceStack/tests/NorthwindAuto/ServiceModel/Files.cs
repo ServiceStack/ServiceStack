@@ -1,3 +1,4 @@
+using MyApp.Data;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using TalentBlazor.ServiceModel;
@@ -22,12 +23,12 @@ public class QueryFileSystemItems : QueryDb<FileSystemItem>
 public class QueryFileSystemFiles : QueryDb<FileSystemFile> {}
 
 [Tag("Files")]
-[AutoPopulate(nameof(FileSystemItem.AppUserId), Eval = "userAuthId")]
+[AutoPopulate(nameof(FileSystemItem.ApplicationUserId), Eval = "userAuthId")]
 public class CreateFileSystemItem : ICreateDb<FileSystemItem>, IReturn<FileSystemItem>, IFileItem
 {
     public FileAccessType? FileAccessType { get; set; }
     
-    [Input(Type = "file"), UploadTo("fs")]
+    [Input(Type = "file"), UploadTo("files")]
     public FileSystemFile File { get; set; }
 }
 
@@ -41,8 +42,8 @@ public class FileSystemItem : IFileItem
     [Reference] 
     public FileSystemFile File { get; set; }
 
-    [Ref(Model = nameof(AppUser), RefId = nameof(AppUser.Id), RefLabel = nameof(AppUser.DisplayName))]
-    public int AppUserId { get; set; }
+    [Ref(Model = nameof(ApplicationUser), RefId = nameof(ApplicationUser.Id), RefLabel = nameof(ApplicationUser.UserName))]
+    public string ApplicationUserId { get; set; }
 }
 
 public class FileSystemFile : IFile

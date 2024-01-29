@@ -1207,8 +1207,8 @@ public abstract partial class ServiceStackHost
             config.HandlerFactoryPath = null;
         }
 
-        if (config.UseCamelCase && JsConfig.TextCase == TextCase.Default)
-            ServiceStack.Text.Config.UnsafeInit(new Text.Config { TextCase = TextCase.CamelCase });
+        if (config.TextConfig != null)
+            ServiceStack.Text.Config.UnsafeInit(config.TextConfig);
 
         if (config.EnableOptimizations)
         {
@@ -2079,7 +2079,6 @@ public abstract partial class ServiceStackHost
             return Instance.ServiceAssemblies;
         return InitOptions.ServiceAssemblies;
     }
-    
 
     public virtual void OnApplicationStarted() {}
 

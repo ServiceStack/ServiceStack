@@ -4,6 +4,7 @@ using ServiceStack.Web;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -144,6 +145,12 @@ public class CsvRequestLogger : InMemoryRollingRequestLogger
     {
         if (ShouldSkip(request, requestDto))
             return;
+        
+        if (response is Task)
+        {
+            LogManager.GetLogger(GetType()).WarnFormat("Ignoring nested Task response returned from '{0}' API", requestDto?.GetType().Name ?? "null");
+            return;
+        }
 
         var requestType = requestDto?.GetType();
 

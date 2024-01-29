@@ -14,6 +14,7 @@ namespace ServiceStack.Auth;
 
 public interface IIdentityApplicationAuthProvider
 {
+    Task PreAuthenticateAsync(IRequest req, IResponse res);
     void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
     Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
 }
@@ -101,7 +102,7 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
     public virtual async Task PreAuthenticateAsync(IRequest req, IResponse res)
     {
         var claimsPrincipal = req.GetClaimsPrincipal();
-        if (claimsPrincipal.Identity?.IsAuthenticated != true)
+        if (claimsPrincipal?.Identity?.IsAuthenticated != true)
             return;
 
         var session = await req.GetSessionAsync().ConfigAwait();

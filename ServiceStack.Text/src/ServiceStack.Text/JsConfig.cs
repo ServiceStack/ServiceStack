@@ -45,8 +45,7 @@ public static class JsConfig
         if (string.IsNullOrEmpty(config))
             return scope;
 
-        if (scope == null)
-            scope = BeginScope();
+        scope ??= BeginScope();
 
         var items = config.Split(',');
         foreach (var item in items)
@@ -446,6 +445,12 @@ public static class JsConfig
         set => Config.AssertNotInit().ParsePrimitiveFn = value;
     }
 
+    public static bool SystemJsonCompatible
+    {
+        get => JsConfigScope.Current != null ? JsConfigScope.Current.SystemJsonCompatible : Config.Instance.SystemJsonCompatible;
+        set => Config.AssertNotInit().SystemJsonCompatible = value;
+    }
+
     public static DateHandler DateHandler
     {
         get => JsConfigScope.Current != null ? JsConfigScope.Current.DateHandler : Config.Instance.DateHandler;
@@ -694,22 +699,22 @@ public static class JsConfig
         Env.StrictMode = false;
         Config.Reset();
         AutoMappingUtils.Reset();
-        HasSerializeFn = new HashSet<Type>();
-        HasIncludeDefaultValue = new HashSet<Type>();
-        TreatValueAsRefTypes = new HashSet<Type> { typeof(KeyValuePair<,>) };
-        __uniqueTypes = new HashSet<Type>();
+        HasSerializeFn = [];
+        HasIncludeDefaultValue = [];
+        TreatValueAsRefTypes = [typeof(KeyValuePair<,>)];
+        __uniqueTypes = [];
 
         //Called when writing each string, too expensive to maintain as scoped config
         AllowRuntimeInterfaces = true;
         AllowRuntimeType = null;
-        AllowRuntimeTypeWithAttributesNamed = new HashSet<string>
-        {
+        AllowRuntimeTypeWithAttributesNamed =
+        [
             nameof(SerializableAttribute),
             nameof(DataContractAttribute),
-            nameof(RuntimeSerializableAttribute),
-        };
-        AllowRuntimeTypeWithInterfacesNamed = new HashSet<string>
-        {
+            nameof(RuntimeSerializableAttribute)
+        ];
+        AllowRuntimeTypeWithInterfacesNamed =
+        [
             "IConvertible",
             "ISerializable",
             "IRuntimeSerializable",
@@ -720,14 +725,15 @@ public static class JsConfig
             "IMeta",
             "IAuthTokens",
             "IHasResponseStatus",
-            "IHasId`1",
-        };
-        AllowRuntimeTypeInTypesWithNamespaces = new HashSet<string>
-        {
+            "IHasId`1"
+        ];
+        AllowRuntimeTypeInTypesWithNamespaces =
+        [
             "ServiceStack.Auth",
-            "ServiceStack.Messaging",
-        };
+            "ServiceStack.Messaging"
+        ];
         AllowRuntimeTypeInTypes = new();
+        SystemJsonCompatible = false;
         PlatformExtensions.ClearRuntimeAttributes();
         ReflectionExtensions.Reset();
         JsState.Reset();
