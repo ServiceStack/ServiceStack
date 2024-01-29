@@ -229,7 +229,7 @@ public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
                     var op = appHost?.Metadata.GetOperation(requestType);
                     if (op?.UseSystemJson != null && op.UseSystemJson.HasFlag(UseSystemJson.Request) && MimeTypes.MatchesContentType(contentType, MimeTypes.Json))
                     {
-                        var instance = await System.Text.Json.JsonSerializer.DeserializeAsync(httpReq.InputStream, requestType, ClientConfig.SystemJsonOptions).ConfigAwait();
+                        var instance = await System.Text.Json.JsonSerializer.DeserializeAsync(httpReq.InputStream, requestType, TextConfig.SystemJsonOptions).ConfigAwait();
                         return instance;
                     }
 #endif

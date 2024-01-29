@@ -361,7 +361,7 @@ public static class HttpResponseExtensionsInternal
                             if (op?.UseSystemJson != null && op.UseSystemJson.HasFlag(UseSystemJson.Response))
                             {
                                 handled = true;
-                                await System.Text.Json.JsonSerializer.SerializeAsync(response.OutputStream, result, ClientConfig.SystemJsonOptions, token).ConfigAwait();
+                                await System.Text.Json.JsonSerializer.SerializeAsync(response.OutputStream, result, TextConfig.SystemJsonOptions, token).ConfigAwait();
                             }
                         }
 #endif
