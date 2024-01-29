@@ -40,7 +40,7 @@ jobs:
           cp ../clear-github-packages.sh .
           chmod +x ./clear-github-packages.sh
           ./clear-github-packages.sh
-          echo "Clean complete"
+          echo "Clean complete!"
           
       - name: Push to GitHub
         working-directory: ./build/staging
