@@ -425,7 +425,7 @@ export const IdentityUsers = {
                             <a v-href="{ sort:sortBy(name), $on:search }" class="flex items-center">
                                 <div>{{humanify(name)}}</div>
                                 <svg v-if="name === request.orderBy || '-' + name === request.orderBy" 
-                                     :class="[name === request.orderBy ? '' : 'rotate-180','mr-2 text-gray-400 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 32 32" aria-hidden="true">
+                                     :class="[name === request.orderBy ? 'rotate-180' : '','mr-2 text-gray-400 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 32 32" aria-hidden="true">
                                     <path d="M24 12l-8 10l-8-10z" fill="currentColor"/>
                                 </svg>
                                 <svg v-else class="mr-2 text-gray-50 group-hover:text-gray-400 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 32 32" aria-hidden="true">
