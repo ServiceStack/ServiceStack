@@ -34,15 +34,14 @@ public class TextConfig
 
     public static System.Text.Json.JsonSerializerOptions CustomSystemJsonOptions(System.Text.Json.JsonSerializerOptions systemJsonOptions, JsConfigScope jsScope)
     {
-        var to = new System.Text.Json.JsonSerializerOptions(systemJsonOptions);
-        if (jsScope.TextCase != TextCase.Default)
+        var to = new System.Text.Json.JsonSerializerOptions(systemJsonOptions)
         {
-            to.PropertyNamingPolicy = jsScope.TextCase switch {
+            PropertyNamingPolicy = jsScope.TextCase switch {
                 TextCase.CamelCase => System.Text.Json.JsonNamingPolicy.CamelCase,
                 TextCase.SnakeCase => System.Text.Json.JsonNamingPolicy.SnakeCaseLower,
                 _ => null
-            };
-        }
+            }
+        };
         if (jsScope.ExcludeDefaultValues)
         {
             to.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault;
