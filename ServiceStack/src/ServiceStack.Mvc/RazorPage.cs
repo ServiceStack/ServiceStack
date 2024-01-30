@@ -35,7 +35,9 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
 {
     public static RazorPageConfig Config { get; set; } = new(); 
     
-    public virtual HttpContext? GetHttpContext() => base.HttpContext ?? base.ViewContext?.HttpContext;
+    public virtual HttpContext? GetHttpContext() => base.HttpContext 
+        ?? base.ViewContext?.HttpContext 
+        ?? HostContext.TryResolve<IHttpContextAccessor>()?.HttpContext;
 
     public override ViewContext ViewContext
     {
@@ -68,7 +70,7 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
     }
 
     public virtual IHttpRequest HttpRequest => TryGetHttpRequest() 
-        ?? AppHostBase.GetOrCreateRequest(HttpContext) as IHttpRequest
+        ?? AppHostBase.GetOrCreateRequest(HttpContext ?? GetHttpContext()) as IHttpRequest
         ?? new BasicHttpRequest();
 
     public IHttpResponse HttpResponse => (IHttpResponse)HttpRequest.Response;

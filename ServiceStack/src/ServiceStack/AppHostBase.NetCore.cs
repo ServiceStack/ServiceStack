@@ -536,7 +536,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     /// </summary>
     public static IRequest? GetOrCreateRequest(IHttpContextAccessor httpContextAccessor) => httpContextAccessor.GetOrCreateRequest();
 
-    public static IRequest? GetOrCreateRequest(HttpContext httpContext) => httpContext.GetOrCreateRequest();
+    public static IRequest? GetOrCreateRequest(HttpContext? httpContext) => httpContext.GetOrCreateRequest();
 
     public static void DisposeApp()
     {
