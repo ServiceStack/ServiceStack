@@ -189,8 +189,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
 #if NET8_0_OR_GREATER
             if (Options.UseSystemJson != UseSystemJson.Never)
             {
-                Config.TextConfig ??= new();
-                Config.TextConfig.SystemJsonCompatible = true;
+                ServiceStack.Text.Config.UnsafeInit(x => x.SystemJsonCompatible = true);
                 ClientConfig.UseSystemJson = Options.UseSystemJson;
             }
 #endif

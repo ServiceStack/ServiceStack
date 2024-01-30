@@ -89,6 +89,8 @@ public class Config
             instance = config;
     }
 
+    public static void UnsafeInit(Action<Config> configure) => configure(instance);
+
     internal static void Reset()
     {
         HasInit = false;

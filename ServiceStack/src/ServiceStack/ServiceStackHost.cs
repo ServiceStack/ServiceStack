@@ -1207,8 +1207,8 @@ public abstract partial class ServiceStackHost
             config.HandlerFactoryPath = null;
         }
 
-        if (config.TextConfig != null)
-            ServiceStack.Text.Config.UnsafeInit(config.TextConfig);
+        if (config.UseCamelCase)
+            ServiceStack.Text.Config.UnsafeInit(x => x.TextCase = TextCase.CamelCase);
 
         if (config.EnableOptimizations)
         {
