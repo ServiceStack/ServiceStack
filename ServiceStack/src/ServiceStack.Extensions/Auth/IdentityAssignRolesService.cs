@@ -8,13 +8,10 @@ using ServiceStack.Text;
 namespace ServiceStack.Auth;
 
 [DefaultRequest(typeof(AssignRoles))]
-public class IdentityAssignRolesService<TUser,TKey> : Service
+public class IdentityAssignRolesService<TUser, TKey>(UserManager<TUser> userManager) : Service
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>
 {
-    private readonly UserManager<TUser> userManager;
-    public IdentityAssignRolesService(UserManager<TUser> userManager) => this.userManager = userManager;
-
     public async Task<object> PostAsync(AssignRoles request)
     {
         if (!Request.IsInProcessRequest())
@@ -42,13 +39,10 @@ public class IdentityAssignRolesService<TUser,TKey> : Service
 }
 
 [DefaultRequest(typeof(UnAssignRoles))]
-public class IdentityUnAssignRolesService<TUser, TKey> : Service
+public class IdentityUnAssignRolesService<TUser, TKey>(UserManager<TUser> userManager) : Service
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>
 {
-    private readonly UserManager<TUser> userManager;
-    public IdentityUnAssignRolesService(UserManager<TUser> userManager) => this.userManager = userManager;
-
     public async Task<object> PostAsync(UnAssignRoles request)
     {
         if (!Request.IsInProcessRequest())

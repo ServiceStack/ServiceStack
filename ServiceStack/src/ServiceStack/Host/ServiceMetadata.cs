@@ -154,10 +154,26 @@ public class ServiceMetadata(List<RestPath> restPaths)
             this.OperationsResponseMap[responseType] = operation;
         }
 
+        HashSet<string> internalServiceNames =
+        [
+            "ServiceStack.Api.OpenApi.OpenApiService",
+            // ServiceStack.Server
+            "ServiceStack.GetCrudEventsService",
+            "ServiceStack.CheckCrudEventService",
+            "ServiceStack.CrudTablesService",
+            "ServiceStack.CrudCodeGenTypesService",
+            "ServiceStack.AdminDatabaseService",
+            // ServiceStack.Extensions
+            "ServiceStack.Auth.ConvertSessionToTokenService",
+            "ServiceStack.Auth.GetAccessTokenIdentityService",
+            "ServiceStack.Auth.IdentityAssignRolesService",
+            "ServiceStack.Auth.IdentityUnAssignRolesService",
+        ];
+
         //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
         var nonCoreServicesCount = OperationsMap.Values
             .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
-                        && x.ServiceType.FullName != "ServiceStack.Api.OpenApi.OpenApiService"
+                        && !internalServiceNames.Contains(x.ServiceType.FullName) 
                         && x.ServiceType.Name != "__AutoQueryServices"
                         && x.ServiceType.Name != "__AutoQueryDataServices");
 
