@@ -216,7 +216,7 @@ export const EditUser = {
       </SlideOver>
     `,
     props: ['id'],
-    emits: ['done'],
+    emits: ['done','save'],
     setup(props, { emit }) {
         const store = inject('store')
         const routes = inject('routes')
@@ -236,6 +236,7 @@ export const EditUser = {
         const formFields = ref()
 
         function done() { emit('done') }
+        function save() { emit('save') }
 
         function isDtoProp(id) { return dtoProps.indexOf(id) >= 0 }
 
@@ -285,7 +286,7 @@ export const EditUser = {
 
             requestDto.addRoles = roles.value.filter(x => origRoles.value.indexOf(x) < 0)
             requestDto.removeRoles = origRoles.value.filter(x => roles.value.indexOf(x) < 0)
-            await send(requestDto, done)
+            await send(requestDto, save)
         }
 
         function bind(response) {
@@ -410,7 +411,7 @@ export const IdentityUsers = {
         </div>
     </form>
   
-  <EditUser v-if="routes.edit" :id="routes.edit" @done="formSearch" />
+  <EditUser v-if="routes.edit" :id="routes.edit" @done="close" @save="formSearch" />
   <NewUser v-else-if="routes.new" @done="formSearch" />
 
   <Loading v-if="loading" />

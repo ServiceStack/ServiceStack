@@ -201,7 +201,7 @@ export const EditUser = {
       </SlideOver>
     `,
     props: ['id'],
-    emits: ['done'],
+    emits: ['done','save'],
     setup(props, { emit }) {
         const store = inject('store')
         const routes = inject('routes')
@@ -218,6 +218,7 @@ export const EditUser = {
         const api = ref(new ApiResult())
         const formFields = ref()
         function done() { emit('done') }
+        function save() { emit('save') }
         function isDtoProp(id) { return dtoProps.indexOf(id) >= 0 }
         function addRole() {
             roles.value.push(model.value.newRole)
@@ -261,7 +262,7 @@ export const EditUser = {
             })
             requestDto.addRoles = roles.value.filter(x => origRoles.value.indexOf(x) < 0)
             requestDto.removeRoles = origRoles.value.filter(x => roles.value.indexOf(x) < 0)
-            await send(requestDto, done)
+            await send(requestDto, save)
         }
         function bind(response) {
             const requestDto = init(new AdminUpdateUser(), dtoProps)
@@ -378,7 +379,7 @@ export const IdentityUsers = {
         </div>
     </form>
   
-  <EditUser v-if="routes.edit" :id="routes.edit" @done="formSearch" />
+  <EditUser v-if="routes.edit" :id="routes.edit" @done="close" @save="formSearch" />
   <NewUser v-else-if="routes.new" @done="formSearch" />
   <Loading v-if="loading" />
     <div v-else-if="results.length" class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -392,7 +393,7 @@ export const IdentityUsers = {
                             <a v-href="{ sort:sortBy(name), $on:search }" class="flex items-center">
                                 <div>{{humanify(name)}}</div>
                                 <svg v-if="name === request.orderBy || '-' + name === request.orderBy" 
-                                     :class="[name === request.orderBy ? '' : 'rotate-180','mr-2 text-gray-400 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 32 32" aria-hidden="true">
+                                     :class="[name === request.orderBy ? 'rotate-180' : '','mr-2 text-gray-400 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 32 32" aria-hidden="true">
                                     <path d="M24 12l-8 10l-8-10z" fill="currentColor"/>
                                 </svg>
                                 <svg v-else class="mr-2 text-gray-50 group-hover:text-gray-400 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 32 32" aria-hidden="true">
