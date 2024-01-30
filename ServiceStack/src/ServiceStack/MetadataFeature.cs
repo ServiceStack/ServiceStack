@@ -316,6 +316,22 @@ public static class MetadataUtils
         response.App.ServiceName ??= appHost.ServiceName;
         response.App.ApiVersion ??= config.ApiVersion;
         response.App.JsTextCase ??= $"{Text.JsConfig.TextCase}";
+        
+#if NET8_0_OR_GREATER        
+        if (appHost is AppHostBase host)
+        {
+            response.App.UseSystemJson = $"{host.Options.UseSystemJson}";
+            var endpointRouting = new List<string>();
+            if (host.Options.MapEndpointRouting)
+                endpointRouting.Add("map");
+            if (host.Options.UseEndpointRouting)
+                endpointRouting.Add("use");
+            if (host.Options.DisableServiceStackRouting)
+                endpointRouting.Add("force");
+            if (endpointRouting.Count > 0)
+                response.App.EndpointRouting = endpointRouting;
+        }
+#endif
 
         if (uiFeature?.PreserveAttributesNamed != null && view is "locode" or "explorer" or "admin-ui")
         {
