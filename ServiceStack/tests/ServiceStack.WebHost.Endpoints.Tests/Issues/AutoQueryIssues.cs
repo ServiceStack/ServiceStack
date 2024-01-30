@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
                 });
 
                 SetConfig(new HostConfig {
-                    TextConfig = new() { TextCase = TextCase.CamelCase }
+                    UseCamelCase = true,
                 });
                 var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
                 //var dbFactory = new OrmLiteConnectionFactory(Tests.Config.SqlServerConnString, SqlServerDialect.Provider);
@@ -75,16 +75,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
 
                 Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
 
-                using (var db = container.Resolve<IDbConnectionFactory>().Open())
-                {
-                    db.DropTable<Employee>();
-                    db.DropTable<Department>();
-                    db.CreateTable<Department>();
-                    db.CreateTable<Employee>();
+                using var db = container.Resolve<IDbConnectionFactory>().Open();
+                db.DropTable<Employee>();
+                db.DropTable<Department>();
+                db.CreateTable<Department>();
+                db.CreateTable<Employee>();
 
-                    db.InsertAll(SeedDepartments);
-                    db.InsertAll(SeedEmployees);
-                }
+                db.InsertAll(SeedDepartments);
+                db.InsertAll(SeedEmployees);
             }
         }
 

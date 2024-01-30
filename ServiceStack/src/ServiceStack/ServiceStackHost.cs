@@ -1207,8 +1207,12 @@ public abstract partial class ServiceStackHost
             config.HandlerFactoryPath = null;
         }
 
-        if (config.UseCamelCase)
-            ServiceStack.Text.Config.UnsafeInit(x => x.TextCase = TextCase.CamelCase);
+        if (JsConfig.TextCase == TextCase.Default)
+        {
+            ServiceStack.Text.Config.UnsafeInit(x => x.TextCase = config.UseCamelCase
+                ? TextCase.CamelCase
+                : TextCase.PascalCase);
+        }
 
         if (config.EnableOptimizations)
         {
