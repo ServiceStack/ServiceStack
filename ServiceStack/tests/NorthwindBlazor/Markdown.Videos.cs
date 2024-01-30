@@ -20,7 +20,7 @@ public class MarkdownVideos(ILogger<MarkdownVideos> log, IWebHostEnvironment env
     public void LoadFrom(string fromDirectory)
     {
         Groups.Clear();
-        var dirs = fs.GetDirectory(fromDirectory).GetDirectories().ToList();
+        var dirs = VirtualFiles.GetDirectory(fromDirectory).GetDirectories().ToList();
         log.LogInformation("Found {Count} video directories", dirs.Count);
 
         var pipeline = CreatePipeline();

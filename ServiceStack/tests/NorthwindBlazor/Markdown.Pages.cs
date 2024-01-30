@@ -30,7 +30,7 @@ public class MarkdownPages(ILogger<MarkdownPages> log, IWebHostEnvironment env, 
     {
         Sidebars.Clear();
         Pages.Clear();
-        var files = fs.GetDirectory(fromDirectory).GetAllFiles()
+        var files = VirtualFiles.GetDirectory(fromDirectory).GetAllFiles()
             .OrderBy(x => x.VirtualPath)
             .ToList();
         log.LogInformation("Found {Count} pages", files.Count);
@@ -115,7 +115,7 @@ public class MarkdownPages(ILogger<MarkdownPages> log, IWebHostEnvironment env, 
         
             foreach (var page in allPages.Where(x => x.Group == group).OrderBy(x => x.Order))
             {
-                menuItem.Children ??= new();
+                menuItem.Children ??= [];
                 var link = page.Slug!;
                 if (link.EndsWith("/index"))
                 {

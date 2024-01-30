@@ -95,6 +95,7 @@ public abstract class MarkdownPagesBase<T>(ILogger log, IWebHostEnvironment env,
     where T : MarkdownFileBase
 {
     public abstract string Id { get; }
+    public IVirtualFiles VirtualFiles => fs; 
 
     public virtual MarkdownPipeline CreatePipeline()
     {
@@ -484,11 +485,10 @@ public class IncludeContainerInlineRenderer : HtmlObjectRenderer<CustomContainer
     }
 }
 
-public class CustomContainerRenderers : HtmlObjectRenderer<CustomContainer>
+public class CustomContainerRenderers(ContainerExtensions extensions) : HtmlObjectRenderer<CustomContainer>
 {
-    public CustomContainerRenderers(ContainerExtensions extensions) => Extensions = extensions;
-    public ContainerExtensions Extensions { get; }
-    
+    public ContainerExtensions Extensions { get; } = extensions;
+
     protected override void Write(HtmlRenderer renderer, CustomContainer obj)
     {
         var useRenderer = obj.Info != null && Extensions.BlockContainers.TryGetValue(obj.Info, out var customRenderer)
@@ -498,11 +498,10 @@ public class CustomContainerRenderers : HtmlObjectRenderer<CustomContainer>
     }
 }
 
-public class CustomContainerInlineRenderers : HtmlObjectRenderer<CustomContainerInline>
+public class CustomContainerInlineRenderers(ContainerExtensions extensions) : HtmlObjectRenderer<CustomContainerInline>
 {
-    public CustomContainerInlineRenderers(ContainerExtensions extensions) => Extensions = extensions;
-    public ContainerExtensions Extensions { get; }
-    
+    public ContainerExtensions Extensions { get; } = extensions;
+
     protected override void Write(HtmlRenderer renderer, CustomContainerInline obj)
     {
         var firstWord = obj.FirstChild is LiteralInline literalInline
