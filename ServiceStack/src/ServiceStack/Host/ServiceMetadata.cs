@@ -173,9 +173,11 @@ public class ServiceMetadata(List<RestPath> restPaths)
         //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
         var nonCoreServicesCount = OperationsMap.Values
             .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
-                        && !internalServiceNames.Contains(x.ServiceType.FullName) 
-                        && x.ServiceType.Name != "__AutoQueryServices"
-                        && x.ServiceType.Name != "__AutoQueryDataServices");
+                && x.ServiceType.FullName != null
+                && !internalServiceNames.Contains(x.ServiceType.FullName)
+                && !x.ServiceType.FullName.StartsWith("ServiceStack.Auth.")
+                && x.ServiceType.Name != "__AutoQueryServices"
+                && x.ServiceType.Name != "__AutoQueryDataServices");
 
         LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, nonCoreServicesCount);
     }
