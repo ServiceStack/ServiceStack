@@ -1,7 +1,39 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using MyApp.Data;
+using MyApp.ServiceInterface;
+
 var builder = WebApplication.CreateBuilder(args);
 
+var services = builder.Services;
+var config = builder.Configuration;
+
 // Add services to the container.
-builder.Services.AddRazorPages();
+services.AddRazorPages();
+
+services.AddAuthentication(options => {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddScheme<AuthenticationSchemeOptions,BasicAuthenticationHandler<ApplicationUser>>(BasicAuthenticationHandler.Scheme, null)
+    .AddIdentityCookies(options => options.DisableRedirectsForApis());
+services.AddAuthorization();
+
+// $ 
+// $ dotnet ef database update
+var connectionString = config.GetConnectionString("DefaultConnection");
+services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(connectionString));
+        
+services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, AdditionalUserClaimsPrincipalFactory>();
+
+services.AddServiceStack(typeof(ContactServices).Assembly);
 
 var app = builder.Build();
 
@@ -16,14 +48,13 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseServiceStack(new AppHost());
-
-app.UseRouting();
-
 app.UseAuthorization();
 
-app.MapRazorPages();
-
 app.UseStatusCodePagesWithReExecute("/Error", "?status={0}");
+
+app.UseServiceStack(new AppHost(), options => {
+    options.MapEndpoints();
+});
+app.MapRazorPages();
 
 app.Run();

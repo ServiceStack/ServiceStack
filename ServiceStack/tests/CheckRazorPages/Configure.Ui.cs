@@ -1,6 +1,4 @@
-using ServiceStack;
 using ServiceStack.Mvc;
-using System.Net;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureUi))]
 
@@ -15,7 +13,7 @@ public class ConfigureUi : IHostingStartup
                 ForbiddenPartial = "~/Pages/Shared/Forbidden.cshtml", //Optional: Render partial in same page instead
             };
             
-            View.NavItems.AddRange(new List<NavItem> {
+            View.NavItems.AddRange([
                 new() { Href = "/",         Label = "Home",     Exact = true },
                 new() { Href = "/About",    Label = "About" },
                 new() { Href = "/Privacy",  Label = "Privacy" },
@@ -24,6 +22,6 @@ public class ConfigureUi : IHostingStartup
                 new() { Href = "/Profile",  Label = "Profile",  Show = When.IsAuthenticated },
                 new() { Href = "/Contacts", Label = "Contacts", Show = When.IsAuthenticated },
                 new() { Href = "/Admin",    Label = "Admin",    Show = When.HasRole("Admin") },
-            });
+            ]);
         });
 }

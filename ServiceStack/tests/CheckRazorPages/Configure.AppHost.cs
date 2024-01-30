@@ -1,32 +1,25 @@
 ﻿using Funq;
-using ServiceStack;
-using ServiceStack.Mvc;
 using MyApp.ServiceInterface;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
 
 namespace MyApp;
 
-public class AppHost : AppHostBase, IHostingStartup
+public class AppHost() : AppHostBase("MyApp", typeof(MyServices).Assembly), IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices(services => {
             // Configure ASP.NET Core IOC Dependencies
+            
+            // For TodosService
+            services.AddPlugin(new AutoQueryDataFeature());
         });
-
-    public AppHost() : base("MyApp", typeof(MyServices).Assembly) {}
 
     public override void Configure(Container container)
     {
         SetConfig(new HostConfig {
         });
-
-        // Allow return .html pages without extension  
-        Plugins.Add(new CleanUrlsFeature());
         
-        // For TodosService
-        Plugins.Add(new AutoQueryDataFeature());
-
         ScriptContext.Args[nameof(AppData)] = AppData.Instance;
     }
 }

@@ -7,18 +7,31 @@
         <RootNamespace>MyApp</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <Using Include="MyApp" />
-        <Using Include="ServiceStack" />
+        <Using Include="MyApp"/>
+        <Using Include="ServiceStack"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="App_Data\" />
     </ItemGroup>
 
 </Project>

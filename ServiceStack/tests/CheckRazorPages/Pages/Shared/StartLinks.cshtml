@@ -1,0 +1,22 @@
+@{
+    var links = new[] {
+        ("start", ".NET"),
+        ("start-netfx", ".NET Framework"),
+    };
+}
+
+<div class="color:#f00">base.HttpRequest.PathInfo: @base.HttpRequest.PathInfo</div>
+
+<div class="flex items-center justify-center -mt-24 pb-4">
+    @foreach (var link in links)
+    {
+        if (link.Item1 == base.HttpRequest.PathInfo?.TrimStart('/') == true)
+        {
+            <span class="mr-2 rounded bg-white/30 py-1 px-2 text-sm font-semibold text-white shadow-sm">@link.Item2</span>
+        }
+        else
+        {
+            <a href="@link.Item1" class="mr-2 rounded bg-white/10 py-1 px-2 text-sm font-semibold text-white shadow-sm hover:bg-white/20">@link.Item2</a>
+        }
+    }
+</div>
