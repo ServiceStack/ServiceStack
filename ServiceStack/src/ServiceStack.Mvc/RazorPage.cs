@@ -195,9 +195,10 @@ public abstract class RazorPage : Microsoft.AspNetCore.Mvc.RazorPages.Page, IDis
 
     public virtual TDependency TryResolve<TDependency>() => ServiceStackProvider.TryResolve<TDependency>();
 
-    public virtual TService ResolveService<TService>() => ServiceStackProvider.ResolveService<TService>();
+    public virtual TService ResolveService<TService>() where TService : class, IService => 
+        ServiceStackProvider.ResolveService<TService>();
 
-    public virtual object ForwardRequestToServiceStack(IRequest request = null) =>
+    public virtual object ForwardRequestToServiceStack(IRequest? request = null) =>
         ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 
     public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;

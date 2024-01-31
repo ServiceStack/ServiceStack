@@ -1285,7 +1285,8 @@ public abstract class ViewPage<T> : RazorPage<T>, IDisposable
 
     public virtual TDependency TryResolve<TDependency>() => ServiceStackProvider.TryResolve<TDependency>();
 
-    public virtual TService ResolveService<TService>() => ServiceStackProvider.ResolveService<TService>();
+    public virtual TService ResolveService<TService>() where TService : class, IService => 
+        ServiceStackProvider.ResolveService<TService>();
 
     public virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 

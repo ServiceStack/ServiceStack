@@ -65,7 +65,7 @@ namespace ServiceStack.Common.Tests.OAuth
                 return this;
             }
 
-            public T ResolveService<T>()
+            public T ResolveService<T>() where T : class, IService
             {
                 throw new NotImplementedException();
             }

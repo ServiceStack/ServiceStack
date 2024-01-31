@@ -249,7 +249,8 @@ public static class ServiceStackControllerExt
     public static ValueTask<IRedisClientAsync> GetRedisAsync(this ServiceStackController controller) => 
         controller.ServiceStackProvider.GetRedisAsync();
     public static T TryResolve<T>(this ServiceStackController controller) => controller.ServiceStackProvider.TryResolve<T>();
-    public static T ResolveService<T>(this ServiceStackController controller) => controller.ServiceStackProvider.ResolveService<T>();
+    public static T ResolveService<T>(this ServiceStackController controller) where T : class, IService => 
+        controller.ServiceStackProvider.ResolveService<T>();
 }
 
 #if !NETCORE
@@ -272,10 +273,8 @@ public class ServiceStackJsonResult : JsonResult
     }
 }
 #else
-public class ServiceStackJsonResult : JsonResult
+public class ServiceStackJsonResult(object value) : JsonResult(value)
 {
-    public ServiceStackJsonResult(object value) : base(value) {}
-
     public override Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context)
     {
         var response = context.HttpContext.Response;
