@@ -1518,7 +1518,7 @@ public static class AppMetadataUtils
 
     public static PropertyInfo[] GetInstancePublicProperties(this Type type)
     {
-        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance )
             .OnlySerializableProperties(type)
             .Where(t =>
                 t.GetIndexParameters().Length == 0 && // ignore indexed properties
