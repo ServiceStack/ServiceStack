@@ -140,7 +140,7 @@ public class ServiceStackPage : Page, IHasServiceStackProvider
 
     public virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
 
-    public virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
+    public virtual T ResolveService<T>() where T : class, IService => ServiceStackProvider.ResolveService<T>();
 
     public virtual object ForwardRequestToServiceStack(IRequest request = null) => 
         ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);

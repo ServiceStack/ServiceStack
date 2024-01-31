@@ -39,7 +39,7 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
     public T GetPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.GetPlugin<T>();
     public T AssertPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.AssertPlugin<T>();
 
-    public virtual T ResolveService<T>()
+    public virtual T ResolveService<T>() where T : class, IService
     {
         var service = TryResolve<T>();
         return HostContext.ResolveService(this.Request, service);
@@ -101,14 +101,14 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
     /// </summary>
     private ISession session;
     public virtual ISession SessionBag => session ??= TryResolve<ISession>() //Easier to mock
-                                                      ?? SessionFactory.GetOrCreateSession(Request, Response);
+        ?? SessionFactory.GetOrCreateSession(Request, Response);
 
     /// <summary>
     /// Dynamic Session Bag
     /// </summary>
     private ISessionAsync sessionAsync;
     public virtual ISessionAsync SessionBagAsync => sessionAsync ??= TryResolve<ISessionAsync>() //Easier to mock
-                                                                     ?? SessionFactory.GetOrCreateSessionAsync(Request, Response);
+        ?? SessionFactory.GetOrCreateSessionAsync(Request, Response);
 
     public virtual IAuthSession GetSession(bool reload = false)
     {

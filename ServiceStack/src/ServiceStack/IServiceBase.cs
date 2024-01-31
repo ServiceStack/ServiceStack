@@ -12,5 +12,5 @@ public interface IServiceBase : IRequiresRequest, IResolver
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    T ResolveService<T>();
+    T ResolveService<T>() where T : class, IService;
 }

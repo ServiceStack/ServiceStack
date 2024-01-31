@@ -47,7 +47,7 @@ public interface IServiceStackProvider : IDisposable
     void ClearSession();
     Task ClearSessionAsync(CancellationToken token=default);
     T TryResolve<T>();
-    T ResolveService<T>();
+    T ResolveService<T>() where T : class, IService;
 
     IServiceGateway Gateway { get; }
         
@@ -155,7 +155,7 @@ public class ServiceStackProvider(IHttpRequest request, IResolver resolver = nul
             : this.GetResolver().TryResolve<T>();
     }
 
-    public virtual T ResolveService<T>()
+    public virtual T ResolveService<T>() where T : class, IService
     {
         var service = TryResolve<T>();
         return HostContext.ResolveService(Request, service);

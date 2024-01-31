@@ -1066,7 +1066,7 @@ public abstract class ServiceStackCodePage : SharpCodePage, IRequiresRequest
             : this.GetResolver().TryResolve<T>();
     }
 
-    public virtual T ResolveService<T>()
+    public virtual T ResolveService<T>() where T : class, IService
     {
         var service = TryResolve<T>();
         return HostContext.ResolveService(this.Request, service);

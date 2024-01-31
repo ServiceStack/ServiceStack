@@ -273,7 +273,7 @@ public static class HostContext
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>
-        public static T ResolveService<T>(HttpContextBase httpCtx = null) where T : class, IRequiresRequest
+        public static T ResolveService<T>(HttpContextBase httpCtx = null) where T : class, IService
         {
             var httpReq = httpCtx != null ? httpCtx.ToRequest() : GetCurrentRequest();
             return ResolveService(httpReq, AssertAppHost().Container.Resolve<T>());
@@ -282,7 +282,7 @@ public static class HostContext
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a HttpListenerContext.
         /// </summary>
-        public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IRequiresRequest
+        public static T ResolveService<T>(HttpListenerContext httpCtx) where T : class, IService
         {
             return ResolveService(httpCtx.ToRequest(), AssertAppHost().Container.Resolve<T>());
         }
@@ -291,12 +291,12 @@ public static class HostContext
     /// <summary>
     /// Resolves and auto-wires a ServiceStack Service.
     /// </summary>
-    public static T ResolveService<T>(IRequest httpReq) where T : class, IRequiresRequest
+    public static T ResolveService<T>(IRequest httpReq) where T : class, IService
     {
         return ResolveService(httpReq, AssertAppHost().Container.Resolve<T>());
     }
 
-    public static T ResolveService<T>(IRequest httpReq, T service)
+    public static T ResolveService<T>(IRequest httpReq, T service) where T : class, IService
     {
         if (service is IRequiresRequest hasRequest)
         {
