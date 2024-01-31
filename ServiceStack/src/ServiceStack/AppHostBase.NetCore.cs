@@ -842,25 +842,17 @@ public static class NetCoreAppHostExtensions
         return req;
     }
 
-    public static T? TryResolve<T>(this IServiceProvider provider) => provider.GetService<T>();
-    public static T Resolve<T>(this IServiceProvider provider) where T : notnull => provider.GetRequiredService<T>();
-
     public static IHttpRequest ToRequest(this HttpRequest request, string? operationName = null) =>
         request.HttpContext.ToRequest();
 
-    public static T? TryResolveScoped<T>(this IRequest req) => ((IServiceProvider)req).GetService<T>();
-    public static object? TryResolveScoped(this IRequest req, Type type) => ((IServiceProvider)req).GetService(type);
-    public static T ResolveScoped<T>(this IRequest req) where T : notnull => ((IServiceProvider)req).GetRequiredService<T>();
-
-    public static object ResolveScoped(this IRequest req, Type type) =>
-        ((IServiceProvider)req).GetRequiredService(type);
-
-    public static IServiceScope CreateScope(this IRequest req) => ((IServiceProvider)req).CreateScope();
-
-    public static IEnumerable<object?> GetServices(this IRequest req, Type type) =>
-        ((IServiceProvider)req).GetServices(type);
-
-    public static IEnumerable<T> GetServices<T>(this IRequest req) => ((IServiceProvider)req).GetServices<T>();
+    [Obsolete("Use GetService")]
+    public static T? TryResolveScoped<T>(this IRequest req) => req.GetService<T>();
+    [Obsolete("Use GetService")]
+    public static object? TryResolveScoped(this IRequest req, Type type) => req.GetService(type);
+    [Obsolete("Use GetRequiredService")]
+    public static T ResolveScoped<T>(this IRequest req) where T : notnull => req.GetRequiredService<T>();
+    [Obsolete("Use GetRequiredService")]
+    public static object ResolveScoped(this IRequest req, Type type) => req.GetRequiredService(type);
 
     /// <summary>
     /// Creates an IRequest from IHttpContextAccessor if it's been registered as a singleton

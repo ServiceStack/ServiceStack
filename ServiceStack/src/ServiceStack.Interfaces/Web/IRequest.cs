@@ -13,7 +13,7 @@ namespace ServiceStack.Web;
 /// <summary>
 /// A thin wrapper around each host's Request e.g: ASP.NET, HttpListener, MQ, etc
 /// </summary>
-public interface IRequest : IResolver
+public interface IRequest : IResolver, IServiceProvider
 {
     /// <summary>
     /// The underlying ASP.NET or HttpListener HttpRequest

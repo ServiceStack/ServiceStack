@@ -233,16 +233,16 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
         base.Register(appHost, feature);
         var applicationServices = appHost.GetApplicationServices();
 
-        var schemeProvider = applicationServices.TryResolve<IAuthenticationSchemeProvider>();
+        var schemeProvider = applicationServices.GetService<IAuthenticationSchemeProvider>();
         if (schemeProvider != null)
         {
             Scheme = schemeProvider.GetSchemeAsync(AuthenticationScheme).Result;
         }
 
-        var optionsMonitor = applicationServices.Resolve<IOptionsMonitor<JwtBearerOptions>>();
+        var optionsMonitor = applicationServices.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>();
         Options = optionsMonitor.Get(AuthenticationScheme);
         
-        var cookieOptions = applicationServices.TryResolve<IOptionsMonitor<CookiePolicyOptions>>()?.Get("");
+        var cookieOptions = applicationServices.GetService<IOptionsMonitor<CookiePolicyOptions>>()?.Get("");
         RequireSecureConnection = cookieOptions?.Secure != CookieSecurePolicy.None;
 
         var tokenParams = Options.TokenValidationParameters;

@@ -28,7 +28,7 @@ public class ConfigureDb : IHostingStartup
             
             // Add support for dynamically generated db rules
             services.AddSingleton<IValidationSource>(c => 
-                new OrmLiteValidationSource(c.Resolve<IDbConnectionFactory>(), HostContext.LocalCache));            
+                new OrmLiteValidationSource(c.GetRequiredService<IDbConnectionFactory>(), HostContext.LocalCache));            
             
             services.AddPlugin(new AdminDatabaseFeature {
                 QueryLimit = 100,

@@ -9,151 +9,155 @@ using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.ServiceHost.Tests
+namespace ServiceStack.ServiceHost.Tests;
+
+[TestFixture]
+public class ServiceStackHandlerUrlTests
 {
-    [TestFixture]
-    public class ServiceStackHandlerUrlTests
+    public static string ResolvePath(string mode, string path)
     {
-        public static string ResolvePath(string mode, string path)
+        return HttpRequestExtensions.
+            GetPathInfo(path, mode, path.Split('/').First(x => x != ""));
+    }
+
+    public class MockUrlHttpRequest : IHttpRequest
+    {
+        public MockUrlHttpRequest() { }
+
+        public MockUrlHttpRequest(string mode, string path, string rawUrl)
         {
-            return HttpRequestExtensions.
-                GetPathInfo(path, mode, path.Split('/').First(x => x != ""));
+            this.PathInfo = ResolvePath(mode, path);
+            this.RawUrl = rawUrl;
+            AbsoluteUri = "http://localhost" + rawUrl;
         }
 
-        public class MockUrlHttpRequest : IHttpRequest
+        public object OriginalRequest => throw new NotImplementedException();
+
+        public IResponse Response { get; private set; }
+
+        public T TryResolve<T>()
         {
-            public MockUrlHttpRequest() { }
-
-            public MockUrlHttpRequest(string mode, string path, string rawUrl)
-            {
-                this.PathInfo = ResolvePath(mode, path);
-                this.RawUrl = rawUrl;
-                AbsoluteUri = "http://localhost" + rawUrl;
-            }
-
-            public object OriginalRequest
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public IResponse Response { get; private set; }
-
-            public T TryResolve<T>()
-            {
-                throw new NotImplementedException();
-            }
-
-            public string OperationName { get; set; }
-            public string Verb { get; private set; }
-            public RequestAttributes RequestAttributes { get; set; }
-            public IRequestPreferences RequestPreferences { get; private set; }
-            public object Dto { get; set; }
-            public string ContentType { get; private set; }
-            public IHttpResponse HttpResponse { get; private set; }
-            public string HttpMethod { get; private set; }
-            public string UserAgent { get; set; }
-            public bool IsLocal { get; set; }
-
-            public IDictionary<string, Cookie> Cookies { get; private set; }
-            public string ResponseContentType { get; set; }
-            public bool HasExplicitResponseContentType { get; private set; }
-            public Dictionary<string, object> Items { get; private set; }
-            public NameValueCollection Headers { get; private set; }
-            public NameValueCollection QueryString { get; private set; }
-            public NameValueCollection FormData { get; private set; }
-            public bool UseBufferedStream { get; set; }
-
-            public string GetRawBody() => throw new NotImplementedException();
-
-            public Task<string> GetRawBodyAsync() => throw new NotImplementedException(); 
-
-            public string RawUrl { get; private set; }
-            public string AbsoluteUri { get; set; }
-            public string UserHostAddress { get; private set; }
-            public Uri UrlReferrer { get; private set; }
-
-            public string RemoteIp { get; set; }
-            public string Authorization { get; set; }
-            public string XForwardedFor { get; set; }
-            public int? XForwardedPort { get; set; }
-            public string XForwardedProtocol { get; set; }
-            public string XRealIp { get; set; }
-            public string Accept { get; set; }
-            public bool IsSecureConnection => (RequestAttributes & RequestAttributes.Secure) == RequestAttributes.Secure;
-            public string[] AcceptTypes { get; private set; }
-            public string PathInfo { get; private set; }
-            public string OriginalPathInfo => PathInfo;
-            public Stream InputStream { get; private set; }
-            public long ContentLength { get; private set; }
-            public IHttpFile[] Files { get; private set; }
-
-            public string ApplicationFilePath { get; private set; }
+            throw new NotImplementedException();
+        }
+        public object GetService(Type serviceType)
+        {
+            throw new NotImplementedException();
         }
 
-        readonly List<MockUrlHttpRequest> allResults = new List<MockUrlHttpRequest> {
-            new MockUrlHttpRequest(null, "/handler.all35/json/metadata", "/handler.all35/json/metadata?op=Hello"),
-        };
+        public string OperationName { get; set; }
+        public string Verb { get; private set; }
+        public RequestAttributes RequestAttributes { get; set; }
+        public IRequestPreferences RequestPreferences { get; private set; }
+        public object Dto { get; set; }
+        public string ContentType { get; private set; }
+        public IHttpResponse HttpResponse { get; private set; }
+        public string HttpMethod { get; private set; }
+        public string UserAgent { get; set; }
+        public bool IsLocal { get; set; }
 
-        readonly List<MockUrlHttpRequest> apiResults = new List<MockUrlHttpRequest> {
-            new MockUrlHttpRequest(null, "/location.api.wildcard35/api/json/metadata", "/location.api.wildcard35/api/json/metadata?op=Hello"),
-        };
+        public IDictionary<string, Cookie> Cookies { get; private set; }
+        public string ResponseContentType { get; set; }
+        public bool HasExplicitResponseContentType { get; private set; }
+        public Dictionary<string, object> Items { get; private set; }
+        public NameValueCollection Headers { get; private set; }
+        public NameValueCollection QueryString { get; private set; }
+        public NameValueCollection FormData { get; private set; }
+        public bool UseBufferedStream { get; set; }
 
-        readonly List<MockUrlHttpRequest> serviceStacksResults = new List<MockUrlHttpRequest> {
-            new MockUrlHttpRequest(null, "/location.servicestack.wildcard35/servicestack/json/metadata", "/location.servicestack.wildcard35/servicestack/json/metadata?op=Hello"),
-        };
+        public string GetRawBody() => throw new NotImplementedException();
 
-        [Test]
-        public void Does_return_expected_absolute_and_path_urls()
-        {
-            var absolutePaths = allResults.ConvertAll(x => x.GetAbsolutePath());
-            var pathUrls = allResults.ConvertAll(x => x.GetPathUrl());
-            Assert.That(absolutePaths.All(x => x == "/handler.all35/json/metadata"));
-            Assert.That(pathUrls.All(x => x == "http://localhost/handler.all35/json/metadata"));
+        public Task<string> GetRawBodyAsync() => throw new NotImplementedException(); 
 
-            absolutePaths = apiResults.ConvertAll(x => x.GetAbsolutePath());
-            pathUrls = apiResults.ConvertAll(x => x.GetPathUrl());
-            Assert.That(absolutePaths.All(x => x == "/location.api.wildcard35/api/json/metadata"));
-            Assert.That(pathUrls.All(x => x == "http://localhost/location.api.wildcard35/api/json/metadata"));
+        public string RawUrl { get; private set; }
+        public string AbsoluteUri { get; set; }
+        public string UserHostAddress { get; private set; }
+        public Uri UrlReferrer { get; private set; }
 
-            absolutePaths = serviceStacksResults.ConvertAll(x => x.GetAbsolutePath());
-            pathUrls = serviceStacksResults.ConvertAll(x => x.GetPathUrl());
-            Assert.That(absolutePaths.All(x => x == "/location.servicestack.wildcard35/servicestack/json/metadata"));
-            Assert.That(pathUrls.All(x => x == "http://localhost/location.servicestack.wildcard35/servicestack/json/metadata"));
-        }
+        public string RemoteIp { get; set; }
+        public string Authorization { get; set; }
+        public string XForwardedFor { get; set; }
+        public int? XForwardedPort { get; set; }
+        public string XForwardedProtocol { get; set; }
+        public string XRealIp { get; set; }
+        public string Accept { get; set; }
+        public bool IsSecureConnection => (RequestAttributes & RequestAttributes.Secure) == RequestAttributes.Secure;
+        public string[] AcceptTypes { get; private set; }
+        public string PathInfo { get; private set; }
+        public string OriginalPathInfo => PathInfo;
+        public Stream InputStream { get; private set; }
+        public long ContentLength { get; private set; }
+        public IHttpFile[] Files { get; private set; }
 
-        [Test]
-        public void Does_return_expected_parent_absolute_and_path_urls()
-        {
-            var absolutePaths = allResults.ConvertAll(x => x.GetParentAbsolutePath());
-            var pathUrls = allResults.ConvertAll(x => x.GetParentPathUrl());
+        public string ApplicationFilePath { get; private set; }
+    }
 
-            Assert.That(absolutePaths.All(x => x == "/handler.all35/json"));
-            Assert.That(pathUrls.All(x => x == "http://localhost/handler.all35/json"));
+    readonly List<MockUrlHttpRequest> allResults =
+    [
+        new MockUrlHttpRequest(null, "/handler.all35/json/metadata", "/handler.all35/json/metadata?op=Hello")
+    ];
 
-            absolutePaths = apiResults.ConvertAll(x => x.GetParentAbsolutePath());
-            pathUrls = apiResults.ConvertAll(x => x.GetParentPathUrl());
-            Assert.That(absolutePaths.All(x => x == "/location.api.wildcard35/api/json"));
-            Assert.That(pathUrls.All(x => x == "http://localhost/location.api.wildcard35/api/json"));
+    readonly List<MockUrlHttpRequest> apiResults =
+    [
+        new MockUrlHttpRequest(null, "/location.api.wildcard35/api/json/metadata",
+            "/location.api.wildcard35/api/json/metadata?op=Hello")
+    ];
 
-            absolutePaths = serviceStacksResults.ConvertAll(x => x.GetParentAbsolutePath());
-            pathUrls = serviceStacksResults.ConvertAll(x => x.GetParentPathUrl());
-            Assert.That(absolutePaths.All(x => x == "/location.servicestack.wildcard35/servicestack/json"));
-            Assert.That(pathUrls.All(x => x == "http://localhost/location.servicestack.wildcard35/servicestack/json"));
-        }
+    readonly List<MockUrlHttpRequest> serviceStacksResults =
+    [
+        new MockUrlHttpRequest(null, "/location.servicestack.wildcard35/servicestack/json/metadata",
+            "/location.servicestack.wildcard35/servicestack/json/metadata?op=Hello")
+    ];
 
-        [Test]
-        public void Can_Get_UrlHostName()
-        {
-            var urls = new List<string> { "http://localhost/a", "https://localhost/a",
-                "http://localhost:81", "http://localhost:81/", "http://localhost" };
+    [Test]
+    public void Does_return_expected_absolute_and_path_urls()
+    {
+        var absolutePaths = allResults.ConvertAll(x => x.GetAbsolutePath());
+        var pathUrls = allResults.ConvertAll(x => x.GetPathUrl());
+        Assert.That(absolutePaths.All(x => x == "/handler.all35/json/metadata"));
+        Assert.That(pathUrls.All(x => x == "http://localhost/handler.all35/json/metadata"));
 
-            var httpReqs = urls.ConvertAll(x => new MockUrlHttpRequest { AbsoluteUri = x });
-            var hostNames = httpReqs.ConvertAll(x => x.GetUrlHostName());
+        absolutePaths = apiResults.ConvertAll(x => x.GetAbsolutePath());
+        pathUrls = apiResults.ConvertAll(x => x.GetPathUrl());
+        Assert.That(absolutePaths.All(x => x == "/location.api.wildcard35/api/json/metadata"));
+        Assert.That(pathUrls.All(x => x == "http://localhost/location.api.wildcard35/api/json/metadata"));
 
-            Console.WriteLine(hostNames.Dump());
+        absolutePaths = serviceStacksResults.ConvertAll(x => x.GetAbsolutePath());
+        pathUrls = serviceStacksResults.ConvertAll(x => x.GetPathUrl());
+        Assert.That(absolutePaths.All(x => x == "/location.servicestack.wildcard35/servicestack/json/metadata"));
+        Assert.That(pathUrls.All(x => x == "http://localhost/location.servicestack.wildcard35/servicestack/json/metadata"));
+    }
 
-            Assert.That(hostNames.All(x => x == "localhost"));
-        }
+    [Test]
+    public void Does_return_expected_parent_absolute_and_path_urls()
+    {
+        var absolutePaths = allResults.ConvertAll(x => x.GetParentAbsolutePath());
+        var pathUrls = allResults.ConvertAll(x => x.GetParentPathUrl());
 
+        Assert.That(absolutePaths.All(x => x == "/handler.all35/json"));
+        Assert.That(pathUrls.All(x => x == "http://localhost/handler.all35/json"));
+
+        absolutePaths = apiResults.ConvertAll(x => x.GetParentAbsolutePath());
+        pathUrls = apiResults.ConvertAll(x => x.GetParentPathUrl());
+        Assert.That(absolutePaths.All(x => x == "/location.api.wildcard35/api/json"));
+        Assert.That(pathUrls.All(x => x == "http://localhost/location.api.wildcard35/api/json"));
+
+        absolutePaths = serviceStacksResults.ConvertAll(x => x.GetParentAbsolutePath());
+        pathUrls = serviceStacksResults.ConvertAll(x => x.GetParentPathUrl());
+        Assert.That(absolutePaths.All(x => x == "/location.servicestack.wildcard35/servicestack/json"));
+        Assert.That(pathUrls.All(x => x == "http://localhost/location.servicestack.wildcard35/servicestack/json"));
+    }
+
+    [Test]
+    public void Can_Get_UrlHostName()
+    {
+        var urls = new List<string> { "http://localhost/a", "https://localhost/a",
+            "http://localhost:81", "http://localhost:81/", "http://localhost" };
+
+        var httpReqs = urls.ConvertAll(x => new MockUrlHttpRequest { AbsoluteUri = x });
+        var hostNames = httpReqs.ConvertAll(x => x.GetUrlHostName());
+
+        Console.WriteLine(hostNames.Dump());
+
+        Assert.That(hostNames.All(x => x == "localhost"));
     }
 }

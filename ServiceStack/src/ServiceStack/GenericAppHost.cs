@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using Funq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -13,7 +14,7 @@ public class GenericAppHost : ServiceStackHost
             serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
             {
 #if !NETCORE
-                    Assembly.GetExecutingAssembly()
+                Assembly.GetExecutingAssembly()
 #else
                 typeof(GenericAppHost).Assembly
 #endif
@@ -57,7 +58,7 @@ public static class GenericAppHostExtensions
         appHost.Host = host;
         appHost.Container.Adapter = new NetCore.NetCoreContainerAdapter(host.Services);
        
-        var logFactory = host.Services.Resolve<Microsoft.Extensions.Logging.ILoggerFactory>();
+        var logFactory = host.Services.GetService<Microsoft.Extensions.Logging.ILoggerFactory>();
         if (logFactory != null)
         {
             NetCore.NetCoreLogFactory.FallbackLoggerFactory = logFactory;

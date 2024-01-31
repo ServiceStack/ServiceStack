@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -255,6 +256,14 @@ public static class RequestExtensions
         return request is IHasResolver hasResolver 
             ? hasResolver.Resolver.TryResolve<T>() 
             : Service.GlobalResolver.TryResolve<T>();
+    }
+    internal static object TryResolveInternal(this IRequest request, Type type)
+    {
+        if (type == typeof(IRequest))
+            return request;
+        if (type == typeof(IResponse))
+            return request.Response;
+        return request.GetService(type);
     }
 
     public static IVirtualFile GetFile(this IRequest request) => request is IHasVirtualFiles vfs ? vfs.GetFile() : null;

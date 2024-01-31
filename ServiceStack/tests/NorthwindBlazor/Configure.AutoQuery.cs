@@ -12,7 +12,7 @@ public class ConfigureAutoQuery : IHostingStartup
             Console.WriteLine("ConfigureAutoQuery.ConfigureServices()");
             // Enable Audit History
             services.AddSingleton<ICrudEvents>(c =>
-                new OrmLiteCrudEvents(c.Resolve<IDbConnectionFactory>()));
+                new OrmLiteCrudEvents(c.GetRequiredService<IDbConnectionFactory>()));
 
             // For TodosService
             services.AddPlugin(new AutoQueryDataFeature());

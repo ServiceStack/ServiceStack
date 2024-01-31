@@ -1,7 +1,11 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -15,13 +19,13 @@ namespace ServiceStack;
 /// <summary>
 /// Generic + Useful IService base class
 /// </summary>
-public class Service : IService, IServiceBase, IDisposable, IServiceFilters
-    , IAsyncDisposable
+public class Service : IService, IServiceBase, IDisposable, IServiceFilters, IAsyncDisposable
 {
-    public static IResolver GlobalResolver { get; set; }
+    public static IResolver? GlobalResolver { get; set; }
 
-    private IResolver resolver;
-    public virtual IResolver GetResolver() => resolver ?? GlobalResolver;
+    private IResolver? resolver;
+    public virtual IResolver? GetResolver() => resolver ?? GlobalResolver
+        ?? ServiceStackHost.Instance.Container;
 
     public virtual Service SetResolver(IResolver resolver)
     {
@@ -29,33 +33,46 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
         return this;
     }
 
-    public virtual T TryResolve<T>()
+    public virtual T? TryResolve<T>()
     {
-        return this.GetResolver() == null
-            ? default(T)
-            : this.GetResolver().TryResolve<T>();
+        var r = this.GetResolver(); 
+        return r == null
+            ? default
+            : r.TryResolve<T>();
     }
 
-    public T GetPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.GetPlugin<T>();
+    public T? GetPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.GetPlugin<T>();
     public T AssertPlugin<T>() where T : class, IPlugin  => GetResolver()?.TryResolve<T>() ?? HostContext.AssertPlugin<T>();
 
+    /// <summary>
+    /// Resolve 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public virtual T? GetService<T>() => Request!.GetService<T>();
+    public virtual T GetRequiredService<T>() where T : notnull => Request!.GetRequiredService<T>();
+    public virtual IEnumerable<T> GetServices<T>() => Request!.GetServices<T>();
+
+    /// <summary>
+    /// Resolve ServiceStack Services
+    /// </summary>
     public virtual T ResolveService<T>() where T : class, IService
     {
         var service = TryResolve<T>();
-        return HostContext.ResolveService(this.Request, service);
+        return HostContext.ResolveService(this.Request, service)!;
     }
 
-    public IRequest Request { get; set; }
+    public IRequest? Request { get; set; }
 
-    protected virtual IResponse Response => Request?.Response;
+    protected virtual IResponse? Response => Request?.Response;
 
-    private ICacheClient cache;
+    private ICacheClient? cache;
     public virtual ICacheClient Cache => cache ??= HostContext.AppHost.GetCacheClient(Request);
 
-    private ICacheClientAsync cacheAsync;
+    private ICacheClientAsync? cacheAsync;
     public virtual ICacheClientAsync CacheAsync => cacheAsync ??= HostContext.AppHost.GetCacheClientAsync(Request);
 
-    private MemoryCacheClient localCache;
+    private MemoryCacheClient? localCache;
     /// <summary>
     /// Returns <see cref="MemoryCacheClient"></see>. cache is only persisted for this running app instance.
     /// </summary>
@@ -63,27 +80,27 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
 
     public virtual IDbConnection OpenDbConnection(string namedConnection) => HostContext.AppHost.GetDbConnection(namedConnection);
 
-    private IDbConnection db;
+    private IDbConnection? db;
     public virtual IDbConnection Db => db ??= HostContext.AppHost.GetDbConnection(Request);
 
-    private IRedisClient redis;
+    private IRedisClient? redis;
     public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
         
     public virtual ValueTask<IRedisClientAsync> GetRedisAsync() => HostContext.AppHost.GetRedisClientAsync(Request);
 
-    private IMessageProducer messageProducer;
+    private IMessageProducer? messageProducer;
     public virtual IMessageProducer MessageProducer => messageProducer ??= HostContext.AppHost.GetMessageProducer(Request);
 
-    private ISessionFactory sessionFactory;
+    private ISessionFactory? sessionFactory;
     public virtual ISessionFactory SessionFactory => sessionFactory ?? (sessionFactory = TryResolve<ISessionFactory>()) ?? new SessionFactory(Cache, CacheAsync);
 
-    private IAuthRepository authRepository;
+    private IAuthRepository? authRepository;
     public virtual IAuthRepository AuthRepository => authRepository ??= HostContext.AppHost.GetAuthRepository(Request);
 
-    private IAuthRepositoryAsync authRepositoryAsync;
+    private IAuthRepositoryAsync? authRepositoryAsync;
     public virtual IAuthRepositoryAsync AuthRepositoryAsync => authRepositoryAsync ??= HostContext.AppHost.GetAuthRepositoryAsync(Request);
 
-    private IServiceGateway gateway;
+    private IServiceGateway? gateway;
     public virtual IServiceGateway Gateway => gateway ??= HostContext.AppHost.GetServiceGateway(Request);
 
     /// <summary>
@@ -99,20 +116,20 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
     /// <summary>
     /// Dynamic Session Bag
     /// </summary>
-    private ISession session;
+    private ISession? session;
     public virtual ISession SessionBag => session ??= TryResolve<ISession>() //Easier to mock
         ?? SessionFactory.GetOrCreateSession(Request, Response);
 
     /// <summary>
     /// Dynamic Session Bag
     /// </summary>
-    private ISessionAsync sessionAsync;
+    private ISessionAsync? sessionAsync;
     public virtual ISessionAsync SessionBagAsync => sessionAsync ??= TryResolve<ISessionAsync>() //Easier to mock
         ?? SessionFactory.GetOrCreateSessionAsync(Request, Response);
 
     public virtual IAuthSession GetSession(bool reload = false)
     {
-        var req = this.Request;
+        var req = this.Request!;
         if (GetPlugin<SessionFeature>() != null)
         {
             if (req.GetSessionId() == null)
@@ -123,7 +140,7 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
 
     public virtual Task<IAuthSession> GetSessionAsync(bool reload = false, CancellationToken token=default)
     {
-        var req = this.Request;
+        var req = this.Request!;
         if (GetPlugin<SessionFeature>() != null)
         {
             if (req.GetSessionId() == null)
@@ -135,14 +152,14 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
     /// <summary>
     /// Typed UserSession
     /// </summary>
-    protected virtual TUserSession SessionAs<TUserSession>()
+    protected virtual TUserSession? SessionAs<TUserSession>()
     {
         if (HostContext.TestMode)
         {
             var mockSession = TryResolve<TUserSession>();
             if (Equals(mockSession, default(TUserSession)))
-                mockSession = TryResolve<IAuthSession>() is TUserSession 
-                    ? (TUserSession)TryResolve<IAuthSession>() 
+                mockSession = TryResolve<IAuthSession>() is TUserSession userSession 
+                    ? userSession 
                     : default;
 
             if (!Equals(mockSession, default(TUserSession)))
@@ -155,14 +172,14 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters
     /// <summary>
     /// Typed UserSession
     /// </summary>
-    protected virtual async Task<TUserSession> SessionAsAsync<TUserSession>()
+    protected virtual async Task<TUserSession?> SessionAsAsync<TUserSession>()
     {
         if (HostContext.TestMode)
         {
             var mockSession = TryResolve<TUserSession>();
             if (Equals(mockSession, default(TUserSession)))
-                mockSession = TryResolve<IAuthSession>() is TUserSession 
-                    ? (TUserSession)TryResolve<IAuthSession>() 
+                mockSession = TryResolve<IAuthSession>() is TUserSession userSession
+                    ? userSession
                     : default;
 
             if (!Equals(mockSession, default(TUserSession)))

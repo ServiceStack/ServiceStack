@@ -77,10 +77,8 @@ public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFi
 
     public IRequestPreferences RequestPreferences { get; private set; }
 
-    public T TryResolve<T>()
-    {
-        return this.TryResolveInternal<T>();
-    }
+    public T TryResolve<T>() => this.TryResolveInternal<T>();
+    public object GetService(Type serviceType) => this.TryResolveInternal(serviceType);
 
     public string OperationName { get; set; }
 

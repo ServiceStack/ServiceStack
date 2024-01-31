@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -213,7 +214,7 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
 
         var applicationServices = appHost.GetApplicationServices();
 
-        var appOptionsMonitor = applicationServices.TryResolve<IOptionsMonitor<CookieAuthenticationOptions>>();
+        var appOptionsMonitor = applicationServices.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
         Options = appOptionsMonitor.Get(AuthenticationScheme);
 
         authFeature.HtmlRedirect = Options.LoginPath;

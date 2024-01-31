@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Host;
 using ServiceStack.IO;
@@ -27,19 +28,14 @@ public class RenderStaticAttribute : Attribute
     }
 }
 
-public class RenderContext
+public class RenderContext(IServiceProvider services, IVirtualFile razorFile)
 {
-    public IServiceProvider Services { get; }
-    public IVirtualFile RazorFile { get; }
-    public RenderContext(IServiceProvider services, IVirtualFile razorFile)
-    {
-        Services = services;
-        RazorFile = razorFile;
-    }
-
-    public T Resolve<T>() => Services.Resolve<T>();
-    public T? TryResolve<T>() => Services.TryResolve<T>();
+    public IServiceProvider Services { get; } = services;
+    public IVirtualFile RazorFile { get; } = razorFile;
+    public T Resolve<T>() where T : notnull => Services.GetRequiredService<T>();
+    public T? TryResolve<T>() => Services.GetService<T>();
 }
+
 public interface IRenderStatic {}
 public interface IRenderStatic<T> : IRenderStatic where T : PageModel
 {
