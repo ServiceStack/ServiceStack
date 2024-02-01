@@ -172,14 +172,10 @@ public class ServerEventsFeature : IPlugin, IConfigureServices, Model.IHasString
         }
         
         if (UnRegisterPath != null)
-        {
             services.RegisterService(typeof(ServerEventsUnRegisterService), UnRegisterPath);
-        }
 
         if (SubscribersPath != null)
-        {
             services.RegisterService(typeof(ServerEventsSubscribersService), SubscribersPath);
-        }
     }
 
     public void Register(IAppHost appHost)

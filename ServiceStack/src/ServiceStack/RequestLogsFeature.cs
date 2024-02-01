@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -9,7 +10,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
+public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, IConfigureServices
 {
     public string Id { get; set; } = Plugins.RequestLogs;
     /// <summary>
@@ -141,8 +142,8 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
         this.LimitToServiceRequests = true;
             
         // Sync with ProfilingFeature
-        this.ExcludeRequestDtoTypes = new[]
-        {
+        this.ExcludeRequestDtoTypes =
+        [
             typeof(RequestLogs),
             typeof(HotReloadFiles),
             typeof(TypesCommonJs),
@@ -150,29 +151,28 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
             typeof(AdminDashboard),
             typeof(AdminProfiling),
             typeof(AdminRedis),
-            typeof(NativeTypesBase),
-        };
-        this.HideRequestBodyForRequestDtoTypes = new[] 
-        {
+            typeof(NativeTypesBase)
+        ];
+        this.HideRequestBodyForRequestDtoTypes =
+        [
             typeof(Authenticate), 
-            typeof(Register),
-        };
-        this.ExcludeResponseTypes = new[]
-        {
+            typeof(Register)
+        ];
+        this.ExcludeResponseTypes =
+        [
             typeof(AppMetadata),
             typeof(MetadataTypes),
             typeof(byte[]),
-            typeof(string),
-        };
+            typeof(string)
+        ];
     }
 
-    public void Register(IAppHost appHost)
+    private Type requestLoggerType = null;
+
+    public void Configure(IServiceCollection services)
     {
         if (!string.IsNullOrEmpty(AtRestPath))
-            appHost.RegisterService<RequestLogsService>(AtRestPath);
-
-        if (RegisterAllowRuntimeTypeInTypes != null)
-            JsConfig.AllowRuntimeTypeInTypes.Add(RegisterAllowRuntimeTypeInTypes);
+            services.RegisterService<RequestLogsService>(AtRestPath);
 
         var requestLogger = RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
         requestLogger.EnableSessionTracking = EnableSessionTracking;
@@ -182,7 +182,7 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
         requestLogger.RequestBodyTrackingFilter = RequestBodyTrackingFilter;
         requestLogger.LimitToServiceRequests = LimitToServiceRequests;
         requestLogger.SkipLogging = SkipLogging;
-        requestLogger.RequiredRoles = RequiredRoles ?? new []{ AccessRole };
+        requestLogger.RequiredRoles = RequiredRoles ?? [AccessRole];
         requestLogger.EnableErrorTracking = EnableErrorTracking;
         requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
         requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
@@ -190,8 +190,15 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
         requestLogger.RequestLogFilter = RequestLogFilter;
         requestLogger.IgnoreFilter = IgnoreFilter;
         requestLogger.CurrentDateFn = CurrentDateFn;
+        
+        services.AddSingleton(requestLogger);
+        requestLoggerType = requestLogger.GetType();
+    }
 
-        appHost.Register(requestLogger);
+    public void Register(IAppHost appHost)
+    {
+        if (RegisterAllowRuntimeTypeInTypes != null)
+            JsConfig.AllowRuntimeTypeInTypes.Add(RegisterAllowRuntimeTypeInTypes);
 
         if (EnableRequestBodyTracking)
         {
@@ -215,11 +222,11 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.RequestLogs = new RequestLogsInfo {
                 AccessRole = AccessRole,
-                RequiredRoles = RequiredRoles,
-                ServiceRoutes = new Dictionary<string, string[]> {
-                    { nameof(RequestLogsService), new[] {AtRestPath} },
+                RequiredRoles = RequiredRoles ?? [AccessRole],
+                ServiceRoutes = new() {
+                    { nameof(RequestLogsService), [AtRestPath] },
                 },
-                RequestLogger = requestLogger.GetType().Name,
+                RequestLogger = requestLoggerType?.Name,
                 DefaultLimit = DefaultLimit,
             };
         });

@@ -97,6 +97,9 @@ public static class ServiceCollectionExtensions
         ServiceStackHost.InitOptions.ServiceTypes.AddIfNotExists(serviceType);
     }
 
+    public static void RegisterService<T>(this IServiceCollection services, string route) where T : IService =>
+        services.RegisterService(typeof(T), route);
+    
     public static void RegisterService(this IServiceCollection services, Type serviceType, string route)
     {
         AssertServiceType(serviceType);

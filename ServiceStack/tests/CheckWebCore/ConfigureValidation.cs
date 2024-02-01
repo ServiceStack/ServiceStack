@@ -41,12 +41,12 @@ namespace CheckWebCore
             var validationSource = appHost.Resolve<IValidationSource>();
             validationSource.InitSchema();
 
-            validationSource.SaveValidationRulesAsync(new List<ValidationRule> {
+            validationSource.SaveValidationRulesAsync([
                 new() { Type = nameof(DynamicIsAuthenticated), Validator = nameof(ValidateScripts.IsAuthenticated) },
                 new() { Type = nameof(DynamicIsAdmin), Validator = nameof(ValidateScripts.IsAdmin) },
                 new() { Type = nameof(DynamicHasRole), Validator = "HasRole('TheRole')" },
-                new() { Type = nameof(DynamicHasPermissions), Validator = "HasPermissions(['Perm1','Perm2'])" },
-            });
+                new() { Type = nameof(DynamicHasPermissions), Validator = "HasPermissions(['Perm1','Perm2'])" }
+            ]);
         }
     }
 }

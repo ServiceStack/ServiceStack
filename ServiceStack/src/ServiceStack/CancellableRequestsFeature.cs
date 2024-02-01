@@ -22,7 +22,7 @@ public class CancellableRequestsFeature : IPlugin, IConfigureServices, Model.IHa
 
     public void Configure(IServiceCollection services)
     {
-        services.RegisterService(typeof(CancellableRequestService), AtPath);
+        services.RegisterService<CancellableRequestService>(AtPath);
     }
 
     public void Register(IAppHost appHost)
