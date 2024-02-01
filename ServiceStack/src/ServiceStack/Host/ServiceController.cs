@@ -53,7 +53,7 @@ public class ServiceController : IServiceController
 
     public ServiceController Init()
     {
-        typeFactory = new ContainerResolveCache(appHost.Container);
+        typeFactory = new ContainerResolveCache();
 
         this.Register(typeFactory);
 
@@ -426,9 +426,8 @@ public class ServiceController : IServiceController
                 .MakeGenericType(serviceType)
                 .GetMethod("Reset", BindingFlags.Public | BindingFlags.Static);
 
-            mi.Invoke(null, new object[] { });
-
-            serviceExecCache[serviceType] = requestTypes = new List<Type>();
+            mi.Invoke(null, Array.Empty<object>());
+            serviceExecCache[serviceType] = requestTypes = [];
         }
 
         if (!requestTypes.Contains(requestType))
@@ -438,7 +437,7 @@ public class ServiceController : IServiceController
                 .GetMethod("CreateServiceRunnersFor", BindingFlags.Public | BindingFlags.Static)
                 ?.MakeGenericMethod(requestType) ?? throw new Exception("ServiceExec.CreateServiceRunnersFor does not exist");
 
-            mi.Invoke(null, new object[] { });
+            mi.Invoke(null, Array.Empty<object>());
 
             requestTypes.Add(requestType);
         }

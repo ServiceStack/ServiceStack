@@ -153,7 +153,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 
             container.RegisterAutoWiredType(typeof(StoreCustomersService), typeof(GetCustomerService));
 
-            return new ContainerResolveCache(container);
+            return new ContainerResolveCache();
         }
 
         private static Container GetContainerWithDependencies()

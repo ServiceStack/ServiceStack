@@ -74,7 +74,7 @@ public static class ServiceStackProviderExtensions
             return true;
 
         var authSession = hasProvider.ServiceStackProvider.GetSession();
-        return authSession != null && authSession.IsAuthenticated;
+        return authSession is { IsAuthenticated: true };
     }
 
     public static bool HasAccess(
@@ -88,7 +88,7 @@ public static class ServiceStackProviderExtensions
             return true;
 
         var authSession = hasProvider.ServiceStackProvider.GetSession();
-        if (authSession == null || !authSession.IsAuthenticated)
+        if (authSession is not { IsAuthenticated: true })
             return false;
 
         var httpReq = hasProvider.ServiceStackProvider.Request;

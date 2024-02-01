@@ -1,21 +1,17 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Funq;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 
 namespace ServiceStack.Mvc;
 
-public class FunqValidatorFactory : ValidatorFactoryBase
+public class FunqValidatorFactory(Container? container = null) : ValidatorFactoryBase
 {
-	private readonly ContainerResolveCache funqBuilder;
+	private readonly ContainerResolveCache funqBuilder = new();
 
-	public FunqValidatorFactory(Container container=null)
+	public override IValidator? CreateInstance(Type validatorType)
 	{
-		this.funqBuilder = new ContainerResolveCache(container ?? HostContext.Container);
-	}
-
-	public override IValidator CreateInstance(Type validatorType)
-	{
-		return funqBuilder.CreateInstance(HostContext.Container, validatorType, true) as IValidator;
+		return funqBuilder.CreateInstance(container ?? HostContext.Container, validatorType, true) as IValidator;
 	}
 }

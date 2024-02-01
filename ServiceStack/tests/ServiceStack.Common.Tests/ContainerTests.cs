@@ -59,44 +59,40 @@ public class ContainerTests
     [Test]
     public void Can_use_NetCore_APIs_to_register_dependencies()
     {
-        using (var appHost = new BasicAppHost().Init())
-        {
-            var services = appHost.Container;
+        using var appHost = new BasicAppHost().Init();
+        var services = appHost.Container;
 
-            services.AddTransient<IFoo, Foo>();
-            services.AddSingleton<IBar>(c => new Bar { Name = "bar" });
+        services.AddTransient<IFoo, Foo>();
+        services.AddSingleton<IBar>(c => new Bar { Name = "bar" });
 
-            var bar = (Bar)services.GetService(typeof(IBar));
-            Assert.That(bar.Name, Is.EqualTo("bar"));
+        var bar = (Bar)services.GetService(typeof(IBar));
+        Assert.That(bar.Name, Is.EqualTo("bar"));
 
-            var foo = (Foo)services.GetService(typeof(IFoo));
-            Assert.That(foo.Id, Is.EqualTo(0));
-            Assert.That(ReferenceEquals(foo.Bar, bar));
+        var foo = (Foo)services.GetService(typeof(IFoo));
+        Assert.That(foo.Id, Is.EqualTo(0));
+        Assert.That(ReferenceEquals(foo.Bar, bar));
 
-            foo = (Foo)services.GetService(typeof(IFoo));
-            Assert.That(foo.Id, Is.EqualTo(1));
-            Assert.That(ReferenceEquals(foo.Bar, bar));
-        }
+        foo = (Foo)services.GetService(typeof(IFoo));
+        Assert.That(foo.Id, Is.EqualTo(1));
+        Assert.That(ReferenceEquals(foo.Bar, bar));
     }
 
     [Test]
     public void CreateInstance_throws_on_missing_dependency()
     {
-        using (var appHost = new BasicAppHost().Init())
-        {
-            var services = appHost.Container;
-            services.AddTransient<IFoo, Foo>();
+        using var appHost = new BasicAppHost().Init();
+        var services = appHost.Container;
+        services.AddTransient<IFoo, Foo>();
 
-            var typeFactory = new ContainerResolveCache(appHost.Container);
+        var typeFactory = new ContainerResolveCache();
 
-            var foo = typeFactory.CreateInstance(services, typeof(IFoo), tryResolve: true);
-            Assert.That(foo, Is.Not.Null);
+        var foo = typeFactory.CreateInstance(services, typeof(IFoo), tryResolve: true);
+        Assert.That(foo, Is.Not.Null);
 
-            var bar = typeFactory.CreateInstance(services, typeof(IBar), tryResolve: true);
-            Assert.That(bar, Is.Null);
+        var bar = typeFactory.CreateInstance(services, typeof(IBar), tryResolve: true);
+        Assert.That(bar, Is.Null);
 
-            Assert.Throws<ResolutionException>(() =>
-                typeFactory.CreateInstance(services, typeof(IBar), tryResolve: false));
-        }
+        Assert.Throws<ResolutionException>(() =>
+            typeFactory.CreateInstance(services, typeof(IBar), tryResolve: false));
     }
 }

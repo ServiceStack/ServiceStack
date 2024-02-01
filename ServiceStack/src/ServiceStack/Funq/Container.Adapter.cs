@@ -242,7 +242,7 @@ public partial class Container : IResolver, IContainer
                     [instanceType] = setters
                 };
             } while (!ReferenceEquals(
-                         Interlocked.CompareExchange(ref autoWireCache, newCache, snapshot), snapshot));
+                Interlocked.CompareExchange(ref autoWireCache, newCache, snapshot), snapshot));
         }
 
         foreach (var setter in setters)

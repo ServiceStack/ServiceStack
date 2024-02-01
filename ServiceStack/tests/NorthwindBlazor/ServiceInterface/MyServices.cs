@@ -1,5 +1,4 @@
-﻿using ServiceStack;
-using MyApp.ServiceModel;
+﻿using MyApp.ServiceModel;
 
 namespace MyApp.ServiceInterface;
 
