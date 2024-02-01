@@ -2119,6 +2119,7 @@ public abstract partial class ServiceStackHost
 
             HostContext.Reset();
             AuthenticateService.Reset();
+            ContainerResolveCache.Reset();
             JS.UnConfigure();
             JsConfig.Reset(); //Clears Runtime Attributes
             Validators.Reset();

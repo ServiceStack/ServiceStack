@@ -5,9 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Html;
 using ServiceStack.OrmLite;
@@ -53,6 +55,10 @@ public class GenerateCrudServicesTests
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+        
+        services.AddTransient<TestTransientDisposable>();
+        services.AddScoped<TestScopedDisposable>();
+        services.AddSingleton<TestSingletonDisposable>();
 
         ServiceStackHost.InitOptions.ScriptContext.ScriptMethods.AddRange([
             new MyValidators(),
@@ -191,6 +197,76 @@ public class GenerateCrudServicesTests
         Assert.That(results[0], Is.EqualTo(new PartialEmployee(1, "Nancy", "Davolio")));
         Assert.That(results[1], Is.EqualTo(new PartialEmployee(3, "Janet", "Leverling")));
         Assert.That(results[2], Is.EqualTo(new PartialEmployee(5, "Steven", "Buchanan")));
+    }
+
+    [Test]
+    public async Task Endpoints_does_dispose_of_property_injected_services()
+    {
+        TestTransientDisposable.IsDisposed = TestScopedDisposable.IsDisposed = TestSingletonDisposable.IsDisposed = false;
+        
+        var client = new JsonApiClient(TestsConfig.ListeningOn);
+        var response = await client.SendAsync(new TestIoc());
+
+        response.PrintDump();
+        Assert.That(response.Results, Is.EquivalentTo((string[])[
+            nameof(IAppSettings),
+            nameof(TestTransientDisposable),
+            nameof(TestScopedDisposable),
+            nameof(TestSingletonDisposable),
+        ]));
+        
+        Assert.That(TestTransientDisposable.IsDisposed);
+        Assert.That(TestScopedDisposable.IsDisposed);
+        Assert.That(TestSingletonDisposable.IsDisposed, Is.False);
+    }
+}
+
+public class TestTransientDisposable : IDisposable
+{
+    public static bool IsDisposed { get; set; }
+    public void Dispose() => IsDisposed = true;
+}
+
+public class TestScopedDisposable : IDisposable
+{
+    public static bool IsDisposed { get; set; }
+    public void Dispose() => IsDisposed = true;
+}
+
+public class TestSingletonDisposable : IDisposable
+{
+    public static bool IsDisposed { get; set; }
+    public void Dispose() => IsDisposed = true;
+}
+
+public class TestIoc : IReturn<StringsResponse> { }
+
+public class TestIocService : Service 
+{
+    [FromServices]
+    public IAppSettings? AppSettings { get; set; }
+    
+    [FromServices]
+    public TestTransientDisposable? TestTransientDisposable { get; set; }
+    
+    [FromServices]
+    public TestScopedDisposable? TestScopedDisposable { get; set; }
+    
+    [FromServices]
+    public TestSingletonDisposable? TestSingletonDisposable { get; set; }
+
+    public object Any(TestIoc request)
+    {
+        var to = new StringsResponse();
+        if (AppSettings != null)
+            to.Results.Add(nameof(IAppSettings));
+        if (TestTransientDisposable != null)
+            to.Results.Add(nameof(TestTransientDisposable));
+        if (TestScopedDisposable != null)
+            to.Results.Add(nameof(TestScopedDisposable));
+        if (TestSingletonDisposable != null)
+            to.Results.Add(nameof(TestSingletonDisposable));
+        return to;
     }
 }
 

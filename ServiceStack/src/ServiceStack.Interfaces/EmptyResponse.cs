@@ -26,8 +26,8 @@ public class IdResponse : IHasResponseStatus
 [DataContract]
 public class StringsResponse : IHasResponseStatus, IMeta
 {
-    [DataMember(Order = 1)]
-    public List<string> Results { get; set; }
+    [DataMember(Order = 1)] 
+    public List<string> Results { get; set; } = [];
 
     [DataMember(Order = 2)]
     public Dictionary<string, string> Meta { get; set; }
