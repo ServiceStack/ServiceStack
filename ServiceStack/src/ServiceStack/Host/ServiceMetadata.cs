@@ -124,7 +124,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
         {
             var policy = authAttrs.FirstOrDefault(x => x.Policy != null)?.Policy;
             var authSchemes = authAttrs.FirstOrDefault(x => x.AuthenticationSchemes != null)?.AuthenticationSchemes;
-            if (policy != null || authSchemes != null)
+            if (policy != null || authSchemes != null || operation.RequiredRoles.Count > 0)
             {
                 operation.RequiresAuthentication = true;
                 operation.Authorize = new()
