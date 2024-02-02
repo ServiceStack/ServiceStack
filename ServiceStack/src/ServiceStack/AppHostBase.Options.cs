@@ -90,6 +90,9 @@ public class ServiceStackServicesOptions
     
     internal HashSet<Type> ServicesRegistered = [];
 
+    /// <summary>
+    /// List of Plugins to Register
+    /// </summary>
     public List<IPlugin> Plugins { get; } = DefaultPlugins();
     internal HashSet<IPlugin> PluginsConfigured = [];
 
@@ -121,6 +124,9 @@ public class ServiceStackServicesOptions
         new VirtualFilesFeature(),
     ];
 
+    /// <summary>
+    /// Exclude Assemblies when Auto Registering ServiceStack Services
+    /// </summary>
     public List<Assembly> ExcludeServiceAssemblies { get; } = [
         typeof(Service).Assembly,
         typeof(Authenticate).Assembly,

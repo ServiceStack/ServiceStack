@@ -40,30 +40,38 @@ public class CustomItemsService : Service
     {
         return new Items
         {
-            Results = new List<Item> {
-                new Item {
+            Results =
+            [
+                new Item
+                {
                     Name = "bar item 1",
                     Description = "item 1 description"
                 },
-                new Item {
+
+                new Item
+                {
                     Name = "bar item 2",
                     Description = "item 2 description"
                 }
-            }
+            ]
         };
     }
 
     public List<Item> Get(GetNakedItems request)
     {
-        return new() {
-            new Item {
+        return
+        [
+            new Item
+            {
                 Name = "item 1",
                 Description = "item 1 description"
             },
-            new Item {
+
+            new Item
+            {
                 Name = "item 2",
                 Description = "item 2 description"
             }
-        };
+        ];
     }
 }

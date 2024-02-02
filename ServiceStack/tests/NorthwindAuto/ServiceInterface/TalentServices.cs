@@ -7,8 +7,6 @@ namespace TalentBlazor.ServiceInterface;
 
 public class TalentServices : Service
 {
-    public IAutoQueryDb AutoQuery { get; set; }
-
     public void Any(StoreContacts request) {}
     
     public object Any(GetContacts request) => new GetContactsResponse
