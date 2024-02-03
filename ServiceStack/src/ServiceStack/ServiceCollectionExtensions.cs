@@ -132,11 +132,32 @@ public static class ServiceCollectionExtensions
     }
 
 #if NET8_0_OR_GREATER
-    public static void ConfigureJsonOptions(this IServiceCollection services, Action<System.Text.Json.JsonSerializerOptions> configure)
+    public static IServiceCollection ConfigureJsonOptions(this IServiceCollection services, Action<System.Text.Json.JsonSerializerOptions>? configure = null)
     {
-        TextConfig.ConfigureSystemJsonOptions.Add(configure);
+        if (configure != null)
+        {
+            TextConfig.ConfigureSystemJsonOptions.Add(configure);
+        }
         TextConfig.SystemJsonOptions = TextConfig.CreateSystemJsonOptions();
+        return services;
     }
+
+    public static IServiceCollection ApplyToApiJsonOptions(this IServiceCollection services)
+    {
+        services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => {
+            TextConfig.ApplySystemJsonOptions(options.SerializerOptions);
+        });
+        return services;
+    }
+
+    public static IServiceCollection ApplyToMvcJsonOptions(this IServiceCollection services)
+    {
+        services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options => {
+            TextConfig.ApplySystemJsonOptions(options.JsonSerializerOptions);
+        });
+        return services;
+    }
+    
 #endif
     
 }

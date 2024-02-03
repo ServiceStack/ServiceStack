@@ -1,9 +1,7 @@
 using System.Net;
 using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -82,12 +80,10 @@ services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
 
 builder.Services.ConfigureJsonOptions(options => {
-    // options.PropertyNamingPolicy = JsonNamingPolicy.KebabCaseUpper;
-});
-
-builder.Services.Configure<JsonOptions>(options => {
-    TextConfig.ApplySystemJsonOptions(options.SerializerOptions);
-});
+    // options.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.KebabCaseUpper;
+})
+.ApplyToApiJsonOptions()
+.ApplyToMvcJsonOptions();
 
 // Register all services
 Console.WriteLine("services.AddServiceStack()");
