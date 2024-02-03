@@ -136,9 +136,8 @@ public static class ServiceCollectionExtensions
     {
         if (configure != null)
         {
-            TextConfig.ConfigureSystemJsonOptions.Add(configure);
+            TextConfig.ConfigureJsonOptions(configure);
         }
-        TextConfig.SystemJsonOptions = TextConfig.CreateSystemJsonOptions();
         return services;
     }
 

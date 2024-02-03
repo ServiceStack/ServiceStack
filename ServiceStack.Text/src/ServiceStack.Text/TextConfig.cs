@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -18,7 +20,13 @@ public class TextConfig
         SystemJsonCompatible = true
     };
 
-    public static List<Action<System.Text.Json.JsonSerializerOptions>> ConfigureSystemJsonOptions { get; } =
+    public static void ConfigureJsonOptions(Action<System.Text.Json.JsonSerializerOptions> configure)
+    {
+        SystemJsonOptionFilters.Add(configure);
+        SystemJsonOptions = CreateSystemJsonOptions();
+    }
+
+    public static List<Action<System.Text.Json.JsonSerializerOptions>> SystemJsonOptionFilters { get; } =
     [
         DefaultConfigureSystemJsonOptions,
     ];
@@ -36,7 +44,7 @@ public class TextConfig
 
     public static void ApplySystemJsonOptions(System.Text.Json.JsonSerializerOptions options)
     {
-        foreach (var configure in ConfigureSystemJsonOptions)
+        foreach (var configure in SystemJsonOptionFilters)
         {
             configure(options);
         }
