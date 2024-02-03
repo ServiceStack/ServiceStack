@@ -213,22 +213,23 @@ public class IdentityAuthContext<TUser, TKey>(
     /// <summary>
     /// Enable Identity Cookie Application Auth (default true) 
     /// </summary>
-    public bool EnableApplicationAuth { get; set; } = true;
+    internal bool EnableApplicationAuth { get; set; } = true;
 
     /// <summary>
     /// Enable Username/Password SignIn via ServiceStack's Authenticate API (/auth) 
     /// </summary>
+    [Obsolete("Use CredentialsAuth()")]
     public bool EnableCredentialsAuth { get; set; }
     
     /// <summary>
     /// Enable Authentication via Identity Auth JWT
     /// </summary>
-    public bool EnableJwtAuth { get; set; }
+    internal bool EnableJwtAuth { get; set; }
     
     /// <summary>
     /// Enable Authentication via Basic Auth
     /// </summary>
-    public bool EnableBasicAuth { get; set; }
+    internal bool EnableBasicAuth { get; set; }
 
     /// <summary>
     /// Where users should redirect to Sign In
@@ -274,7 +275,7 @@ public class IdentityAuthContext<TUser, TKey>(
     /// <summary>
     /// Admin Users Feature
     /// </summary>
-    public IdentityAdminUsersFeature<TUser, TKey>? AdminUsers { get; set; }
+    internal IdentityAdminUsersFeature<TUser, TKey>? AdminUsers { get; set; }
 #endif
     
     public static TUser DefaultSessionToUserConverter(IAuthSession session)
@@ -289,7 +290,9 @@ public class IdentityAuthContext<TUser, TKey>(
         return to;
     }
 
-    public void ApplicationAuth(Action<IdentityApplicationAuthProvider<TUser,TKey>>? configure=null) {
+    public void ApplicationAuth(Action<IdentityApplicationAuthProvider<TUser,TKey>>? configure=null)
+    {
+        EnableApplicationAuth = true;
         configure?.Invoke(AuthApplication);
     }
 
