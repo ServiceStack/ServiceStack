@@ -6,6 +6,7 @@ using System.Linq;
 using Funq;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host;
+using ServiceStack.Text;
 
 namespace ServiceStack;
 
@@ -129,5 +130,13 @@ public static class ServiceCollectionExtensions
         configure(HostContext.AssertAppHost().ScriptContext);
 #endif
     }
+
+#if NET8_0_OR_GREATER
+    public static void ConfigureJsonOptions(this IServiceCollection services, Action<System.Text.Json.JsonSerializerOptions> configure)
+    {
+        TextConfig.ConfigureSystemJsonOptions.Add(configure);
+        TextConfig.SystemJsonOptions = TextConfig.CreateSystemJsonOptions();
+    }
+#endif
     
 }

@@ -505,9 +505,9 @@ public enum EnumTypeFlags
 public enum EnumWithValues
 {
     None = 0,
-    [EnumMember(Value = "Member 1")]
+    [DataAnnotations.Description("Member 1")]
     Value1 = 1,
-    [DataAnnotations.Description("Member 2")]
+    [EnumMember(Value = "Member 2")]
     Value2 = 2,
 }
 

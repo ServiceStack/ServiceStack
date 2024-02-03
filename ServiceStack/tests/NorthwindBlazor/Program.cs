@@ -1,7 +1,9 @@
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +12,7 @@ using MyApp.Data;
 using MyApp.Components;
 using MyApp.Components.Account;
 using MyApp.ServiceInterface;
+using ServiceStack.Text;
 
 Console.WriteLine("Program.cs");
 var builder = WebApplication.CreateBuilder(args);
@@ -78,6 +81,14 @@ services.AddLocalStorage();
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
 
+builder.Services.ConfigureJsonOptions(options => {
+    // options.PropertyNamingPolicy = JsonNamingPolicy.KebabCaseUpper;
+});
+
+builder.Services.Configure<JsonOptions>(options => {
+    TextConfig.ApplySystemJsonOptions(options.SerializerOptions);
+});
+
 // Register all services
 Console.WriteLine("services.AddServiceStack()");
 services.AddServiceStack(typeof(MyServices).Assembly, c => {
@@ -114,6 +125,7 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+app.MapGet("/time", () => new { Time = DateTime.UtcNow.TimeOfDay, Code = HttpStatusCode.Accepted });
 
 Console.WriteLine("app.UseServiceStack()");
 app.UseServiceStack(new AppHost(), options =>

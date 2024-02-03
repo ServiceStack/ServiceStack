@@ -3,6 +3,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -16,6 +17,15 @@ public class DataContractResolver : DefaultJsonTypeInfoResolver
 {
     public static DataContractResolver Instance { get; } = new();
 
+    public Dictionary<JsonNamingPolicy, Func<string,string>> NamingPolicyConverters { get; } = new()
+    {
+        [JsonNamingPolicy.CamelCase] = s => s.ToCamelCase(),
+        [JsonNamingPolicy.SnakeCaseLower] = s => s.ToLowercaseUnderscore(),
+        [JsonNamingPolicy.SnakeCaseUpper] = s => s.ToUppercaseUnderscore(),
+        [JsonNamingPolicy.KebabCaseLower] = s => s.ToKebabCase(),
+        [JsonNamingPolicy.KebabCaseUpper] = s => s.ToKebabCase().ToUpper(),
+    };
+    
     public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
     {
         var jsonTypeInfo = base.GetTypeInfo(type, options);
@@ -36,12 +46,11 @@ public class DataContractResolver : DefaultJsonTypeInfoResolver
                         continue;
 
                     var attr = propInfo.GetCustomAttribute<DataMemberAttribute>();
-                    var name = options.PropertyNamingPolicy == JsonNamingPolicy.CamelCase 
-                        ? propInfo.Name.ToCamelCase()
-                        : (options.PropertyNamingPolicy == JsonNamingPolicy.SnakeCaseLower || options.PropertyNamingPolicy == JsonNamingPolicy.SnakeCaseUpper)
-                            ? propInfo.Name.ToLowercaseUnderscore()
-                            : propInfo.Name;
-                    
+                    var name = options.PropertyNamingPolicy != null && 
+                               NamingPolicyConverters.TryGetValue(options.PropertyNamingPolicy, out var converter)
+                        ? converter(propInfo.Name)
+                        : propInfo.Name;
+
                     if (attr?.Name != null)
                         name = attr.Name;
                     var jsonPropertyInfo = jsonTypeInfo.CreateJsonPropertyInfo(propInfo.PropertyType, name);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace ServiceStack.Text;
@@ -17,20 +18,38 @@ public class TextConfig
         SystemJsonCompatible = true
     };
 
-    public static System.Text.Json.JsonSerializerOptions DefaultSystemJsonOptions() => new()
+    public static List<Action<System.Text.Json.JsonSerializerOptions>> ConfigureSystemJsonOptions { get; } =
+    [
+        DefaultConfigureSystemJsonOptions,
+    ];
+    
+    public static void DefaultConfigureSystemJsonOptions(System.Text.Json.JsonSerializerOptions options)
     {
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-        PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-        Converters = {
-            new SystemJson.JsonEnumMemberStringEnumConverter(),
-            new SystemJson.XsdTimeSpanJsonConverter(),
-            new SystemJson.XsdTimeOnlyJsonConverter(),
-        },
-        TypeInfoResolver = SystemJson.DataContractResolver.Instance,
-    };
+        options.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.PropertyNameCaseInsensitive = true;
+        options.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.Converters.Add(new SystemJson.JsonEnumMemberStringEnumConverter());
+        options.Converters.Add(new SystemJson.XsdTimeSpanJsonConverter());
+        options.Converters.Add(new SystemJson.XsdTimeOnlyJsonConverter());
+        options.TypeInfoResolver = SystemJson.DataContractResolver.Instance;
+    }
 
-    public static System.Text.Json.JsonSerializerOptions SystemJsonOptions { get; set; } = DefaultSystemJsonOptions();
+    public static void ApplySystemJsonOptions(System.Text.Json.JsonSerializerOptions options)
+    {
+        foreach (var configure in ConfigureSystemJsonOptions)
+        {
+            configure(options);
+        }
+    }
+
+    public static System.Text.Json.JsonSerializerOptions CreateSystemJsonOptions()
+    {
+        var to = new System.Text.Json.JsonSerializerOptions();
+        ApplySystemJsonOptions(to);
+        return to;
+    }
+
+    public static System.Text.Json.JsonSerializerOptions SystemJsonOptions { get; set; } = CreateSystemJsonOptions();
 
     public static System.Text.Json.JsonSerializerOptions CustomSystemJsonOptions(System.Text.Json.JsonSerializerOptions systemJsonOptions, JsConfigScope jsScope)
     {

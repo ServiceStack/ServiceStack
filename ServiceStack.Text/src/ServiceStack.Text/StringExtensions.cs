@@ -776,6 +776,8 @@ public static class StringExtensions
         }
         return StringBuilderThreadStatic.ReturnAndFree(sb);
     }
+
+    public static string ToUppercaseUnderscore(this string value) => value.ToLowercaseUnderscore().ToUpper();
         
     public static string ToKebabCase(this string value) => value.ToLowercaseUnderscore().Replace("_","-");
 

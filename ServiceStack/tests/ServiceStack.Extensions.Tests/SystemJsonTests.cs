@@ -11,7 +11,7 @@ namespace ServiceStack.Extensions.Tests;
 
 public class SystemJsonTests
 {
-    JsonSerializerOptions Options = TextConfig.DefaultSystemJsonOptions();
+    JsonSerializerOptions Options = TextConfig.CreateSystemJsonOptions();
         
     public SystemJsonTests()
     {
@@ -203,7 +203,7 @@ public class SystemJsonTests
         };
 
         var json = System.Text.Json.JsonSerializer.Serialize(dto, Options);
-        
+
         var fromJson = System.Text.Json.JsonSerializer.Deserialize<HelloWithEnumList>(json, Options);
         assertEquals(fromJson, dto);
         
@@ -230,7 +230,7 @@ public class SystemJsonTests
         var dto = new HelloWithEnumMap
         {
             EnumProp = new() { [EnumType.Value2] = EnumType.Value2 },
-            EnumWithValues = new() { [EnumWithValues.Value2] = EnumWithValues.Value2 },
+            EnumWithValues = new() { [EnumWithValues.Value1] = EnumWithValues.Value2 },
             NullableEnumProp = null,
             EnumFlags = new() { [EnumFlags.Value2] = EnumFlags.Value2 },
             EnumStyle = new() { [EnumStyle.camelUPPER] = EnumStyle.camelUPPER },
