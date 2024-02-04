@@ -601,8 +601,13 @@ public abstract class AdminUserBase : IMeta
     [DataMember(Order = 6)] public string Password { get; set; }
     [DataMember(Order = 7)] public string ProfileUrl { get; set; }
     [DataMember(Order = 8)] public string PhoneNumber { get; set; }
-    [DataMember(Order = 9)] public Dictionary<string, string> UserAuthProperties { get; set; }
+    [DataMember(Order = 9)] public Dictionary<string, string> UserAuthProperties { get; set; } = [];
     [DataMember(Order = 10)] public Dictionary<string, string> Meta { get; set; }
+
+    public string GetUserProperty(string name) => 
+        UserAuthProperties.TryGetValue(name, out var value) ? value : null;
+    public T GetUserProperty<T>(string name) => 
+        UserAuthProperties.TryGetValue(name, out var value) ? value.ConvertTo<T>() : default;
 }
     
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]

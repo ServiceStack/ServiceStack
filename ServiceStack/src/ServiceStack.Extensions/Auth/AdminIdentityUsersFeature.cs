@@ -20,8 +20,9 @@ public interface IIdentityAdminUsersFeature
     List<string> QueryIdentityUserProperties { get; }
     List<string> HiddenIdentityUserProperties { get; }
 
-    ValidateRequestAsyncFn ValidateCreateUser { get; }
-    ValidateRequestAsyncFn ValidateUpdateUser { get; }
+    public Task<object?> ValidateCreateUser(IRequest service, AdminCreateUser requestDto);
+    public Task<object?> ValidateUpdateUser(IRequest service, AdminUpdateUser requestDto);
+    
     public Task BeforeCreateUserAsync(IRequest request, object user);
     public Task AfterCreateUserAsync(IRequest request, object user);
     public Task BeforeUpdateUserAsync(IRequest request, object user);
@@ -42,6 +43,23 @@ public interface IIdentityAdminUsersFeature
     public Task<object?> FindUserByIdAsync(IRequest request, string userId);
     Task<(object, List<string>)> GetUserAndRolesByIdAsync(IRequest request, string userId);
     Task DeleteUserByIdAsync(string requestId);
+}
+
+public static class IdentityAdminUsers
+{
+    public static Task<object?> ValidateCreateUserAsync(IRequest service, AdminCreateUser createUser)
+    {
+        if (string.IsNullOrEmpty(createUser.UserName))
+            throw new ArgumentNullException(nameof(AdminUserBase.UserName));
+        if (string.IsNullOrEmpty(createUser.Email))
+            throw new ArgumentNullException(nameof(AdminUserBase.Email));
+        if (string.IsNullOrEmpty(createUser.Password))
+            throw new ArgumentNullException(nameof(AdminUserBase.Password));
+        return Task.FromResult(null as object);
+    }
+
+    public static Task<object?> ValidateUpdateUserAsync(IRequest service, AdminUpdateUser updateUser) =>
+        Task.FromResult(null as object);
 }
 
 public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature, IPlugin, IConfigureServices,
@@ -83,7 +101,9 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
         await Manager.DeleteUserByIdAsync(requestId);
     }
 
-    public object NewUser() => new TUser { EmailConfirmed = true };
+    public Func<TUser> CreateUser { get; set; } = () => new TUser { EmailConfirmed = true }; 
+
+    public object NewUser() => CreateUser();
     
     public async Task<IdentityResult> UpdateUserAsync(IRequest request, object user)
     {
@@ -202,32 +222,34 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
     ];
 
     /// <summary>
-    /// Invoked before user is created or updated.
+    /// Invoked before user is created
     /// A non-null return (e.g. HttpResult/HttpError) invalidates the request and is used as the API Response instead
     /// </summary>
-    public ValidateRequestAsyncFn ValidateCreateUser { get; set; } = DefaultValidateCreateUserAsync;
+    public Func<IRequest,AdminCreateUser,Task<object?>> CreateUserValidation { get; set; } = IdentityAdminUsers.ValidateCreateUserAsync;
 
-    public ValidateRequestAsyncFn ValidateUpdateUser { get; } = DefaultValidateUpdateUser;
+    /// <summary>
+    /// Invoked before user is updated
+    /// A non-null return (e.g. HttpResult/HttpError) invalidates the request and is used as the API Response instead
+    /// </summary>
+    public Func<IRequest,AdminUpdateUser,Task<object?>>  UpdateUserValidation { get; } = IdentityAdminUsers.ValidateUpdateUserAsync;
 
-    public static Task<object?> DefaultValidateCreateUserAsync(IRequest service, object requestDto)
-    {
-        var createUser = (AdminCreateUser)requestDto;
-        if (string.IsNullOrEmpty(createUser.UserName))
-            throw new ArgumentNullException(nameof(AdminUserBase.UserName));
-        if (string.IsNullOrEmpty(createUser.Email))
-            throw new ArgumentNullException(nameof(AdminUserBase.Email));
-        if (string.IsNullOrEmpty(createUser.Password))
-            throw new ArgumentNullException(nameof(AdminUserBase.Password));
-        return Task.FromResult(null as object);
-    }
-
-    public static Task<object?> DefaultValidateUpdateUser(IRequest service, object requestDto) =>
-        Task.FromResult(null as object);
-    
+    /// <summary>
+    /// What Locking Date to use when Locking a User (default DateTimeOffset.MaxValue)
+    /// </summary>
     public Func<TUser, DateTimeOffset> ResolveLockoutDate { get; set; } = DefaultResolveLockoutDate;
-    
+        
     public static DateTimeOffset DefaultResolveLockoutDate(TUser user) => DateTimeOffset.MaxValue; 
 
+    public Task<object?> ValidateCreateUser(IRequest service, AdminCreateUser requestDto)
+    {
+        return CreateUserValidation(service, requestDto);
+    }
+
+    public Task<object?> ValidateUpdateUser(IRequest service, AdminUpdateUser requestDto)
+    {
+        return UpdateUserValidation(service, requestDto);
+    }
+    
     /// <summary>
     /// Invoked before a User is created
     /// </summary>
@@ -322,8 +344,6 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
 
         appHost.AddToAppMetadata(meta =>
         {
-            var host = (ServiceStackHost)appHost;
-
             var nativeTypesMeta = appHost.TryResolve<INativeTypesMetadata>() as NativeTypesMetadata
                 ?? new NativeTypesMetadata(HostContext.AppHost.Metadata, new MetadataTypesConfig());
             var metaGen = nativeTypesMeta.GetGenerator();
@@ -399,8 +419,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
     public async Task<object> Post(AdminCreateUser request)
     {
         await AssertRequiredRole();
-
-        await feature.ValidateCreateUser(Request, request).ConfigAwait();
+        await feature.ValidateCreateUser(Request!, request).ConfigAwait();
         
         var user = feature.NewUser();
         var props = request.UserAuthProperties ?? new();
@@ -426,7 +445,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
     public async Task<object> Put(AdminUpdateUser request)
     {
         await AssertRequiredRole();
-        await feature.ValidateUpdateUser(Request, request).ConfigAwait();
+        await feature.ValidateUpdateUser(Request!, request).ConfigAwait();
         
         var existingUser = await feature.FindUserByIdAsync(Request, request.Id).ConfigAwait();
         if (existingUser == null)

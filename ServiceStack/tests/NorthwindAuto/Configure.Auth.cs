@@ -20,22 +20,6 @@ public class ConfigureAuth : IHostingStartup
                 
                 options.AdminUsersFeature(feature =>
                 {
-                    feature.FormLayout =
-                    [
-                        Input.For<ApplicationUser>(x => x.UserName, c => c.FieldsPerRow(2)),
-                        Input.For<ApplicationUser>(x => x.Email, c => { 
-                            c.Type = Input.Types.Email;
-                            c.FieldsPerRow(2); 
-                        }),
-                        Input.For<ApplicationUser>(x => x.FirstName, c => c.FieldsPerRow(2)),
-                        Input.For<ApplicationUser>(x => x.LastName, c => c.FieldsPerRow(2)),
-                        Input.For<ApplicationUser>(x => x.DisplayName, c => c.FieldsPerRow(2)),
-                        Input.For<ApplicationUser>(x => x.PhoneNumber, c =>
-                        {
-                            c.Type = Input.Types.Tel;
-                            c.FieldsPerRow(2); 
-                        }),
-                    ];
                     feature.QueryIdentityUserProperties =
                     [
                         nameof(ApplicationUser.Id),
@@ -54,6 +38,22 @@ public class ConfigureAuth : IHostingStartup
                             x.NormalizedUserName!.Contains(queryUpper) ||
                             x.NormalizedEmail!.Contains(queryUpper));
                     };
+                    feature.FormLayout =
+                    [
+                        Input.For<ApplicationUser>(x => x.UserName, c => c.FieldsPerRow(2)),
+                        Input.For<ApplicationUser>(x => x.Email, c => { 
+                            c.Type = Input.Types.Email;
+                            c.FieldsPerRow(2); 
+                        }),
+                        Input.For<ApplicationUser>(x => x.FirstName, c => c.FieldsPerRow(2)),
+                        Input.For<ApplicationUser>(x => x.LastName, c => c.FieldsPerRow(2)),
+                        Input.For<ApplicationUser>(x => x.DisplayName, c => c.FieldsPerRow(2)),
+                        Input.For<ApplicationUser>(x => x.PhoneNumber, c =>
+                        {
+                            c.Type = Input.Types.Tel;
+                            c.FieldsPerRow(2); 
+                        }),
+                    ];
                 });
             })));
         });
