@@ -27,7 +27,7 @@ public class KernelTypeChat(Kernel kernel) : ITypeChat
         var chatCompletionService = Kernel.GetRequiredService<IChatCompletionService>();
         var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, new OpenAIPromptExecutionSettings {
             ModelId = ModelId,
-        }, cancellationToken: token);
+        }, kernel:Kernel, cancellationToken: token);
         return new TypeChatResponse { Result = result.Content! };
     }
 }
