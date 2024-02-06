@@ -188,7 +188,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
     public Action<IRequest, TUser, List<Claim>>? OnTokenCreated { get; set; }
 
     /// <summary>
-    /// Customize which claims are included in the JWT Refresh Token
+    /// Invoked after Refresh Token is created
     /// </summary>
     public Action<IRequest, TUser>? OnRefreshTokenCreated { get; set; }
 

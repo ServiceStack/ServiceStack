@@ -47,6 +47,7 @@ public class ConfigureAuth : IHostingStartup
                             throw new ArgumentNullException(nameof(AdminUserBase.DisplayName));
                         return null;
                     };
+                    feature.ResolveLockoutDate = user => DateTimeOffset.Now.AddDays(7);
                     feature.FormLayout =
                     [
                         Input.For<ApplicationUser>(x => x.UserName, c => c.FieldsPerRow(2)),

@@ -29,11 +29,7 @@ services.AddScoped<IdentityRedirectManager>();
 services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
 Console.WriteLine("services.AddAuthentication()");
-services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
+services.AddAuthentication()
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new()
