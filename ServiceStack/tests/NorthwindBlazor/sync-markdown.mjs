@@ -27,6 +27,25 @@ await copyTo([
     'Markdown.WhatsNew.cs',
     'MarkdownPagesBase.cs',
     'MarkdownTagHelper.cs',
+], '../../../../../NetCoreTemplates/razor-ssg/MyApp')
+
+await copyTo([
+    'Markdown.Meta.cs',
+    'Markdown.Pages.cs',
+    'Markdown.Videos.cs',
+    'Markdown.WhatsNew.cs',
+    'MarkdownPagesBase.cs',
+    'MarkdownTagHelper.cs',
+], '../../../../../NetCoreTemplates/razor-press/MyApp')
+
+await copyTo([
+    'Markdown.Blog.cs',
+    'Markdown.Meta.cs',
+    'Markdown.Pages.cs',
+    'Markdown.Videos.cs',
+    'Markdown.WhatsNew.cs',
+    'MarkdownPagesBase.cs',
+    'MarkdownTagHelper.cs',
 ], '../../../../../NetCoreTemplates/blazor-vue/MyApp')
 
 await copyTo([
@@ -34,3 +53,22 @@ await copyTo([
     'Markdown.Videos.cs',
     'MarkdownPagesBase.cs',
 ], '../../../../../NetCoreTemplates/blazor/MyApp')
+
+await copyTo([
+    'Markdown.Pages.cs',
+    'Markdown.Videos.cs',
+    'MarkdownPagesBase.cs',
+], '../../../../../NetCoreTemplates/blazor-wasm/MyApp')
+
+await copyTo([
+    'Markdown.Blog.cs',
+    'Markdown.Pages.cs',
+    'MarkdownPagesBase.cs',
+], '../../../../../NetCoreTemplates/razor/MyApp')
+
+
+await copyTo([
+    'Markdown.Blog.cs',
+    'Markdown.Pages.cs',
+    'MarkdownPagesBase.cs',
+], '../../../../../NetCoreTemplates/mvc/MyApp')
