@@ -1,13 +1,12 @@
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ServiceStack.AI;
 
-public class KernelTypeChat : ITypeChat
+public class KernelTypeChat(Kernel kernel) : ITypeChat
 {
-    public IKernel Kernel { get; }
-    public KernelTypeChat(IKernel kernel) => Kernel = kernel;
+    public Kernel Kernel { get; } = kernel;
 
     /// <summary>
     /// Service identifier.
@@ -25,11 +24,10 @@ public class KernelTypeChat : ITypeChat
     {
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(request.Prompt);
-        var chatCompletionService = Kernel.GetService<IChatCompletion>();
-        var result = await chatCompletionService.GenerateMessageAsync(chatHistory, new AIRequestSettings {
-            ServiceId = ServiceId,
+        var chatCompletionService = Kernel.GetRequiredService<IChatCompletionService>();
+        var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, new OpenAIPromptExecutionSettings {
             ModelId = ModelId,
         }, cancellationToken: token);
-        return new TypeChatResponse { Result = result };
+        return new TypeChatResponse { Result = result.Content! };
     }
 }
