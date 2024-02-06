@@ -37,15 +37,15 @@
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj"/>
         <ProjectReference Include="..\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj"/>
 
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.59.0"/>
-        <PackageReference Include="Grpc.Core.Api" Version="2.59.0"/>
-        <PackageReference Include="protobuf-net" Version="3.2.26"/>
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.60.0"/>
+        <PackageReference Include="Grpc.Core.Api" Version="2.60.0"/>
+        <PackageReference Include="protobuf-net" Version="3.2.30"/>
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.1.1"/>
 
         <PackageReference Include="System.Threading.Channels" Version="8.0.0"/>
 
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.1.2" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.1.2" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.3.1" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
     </ItemGroup>
 
 </Project>
