@@ -51,8 +51,7 @@ export function createClient(fn) {
         if (AppData.userName) c.userName = AppData.userName
         if (AppData.password) c.password = AppData.password
         let apiFmt = globalThis.Server.httpHandlers['ApiHandlers.Json']
-        if (apiFmt)
-            c.basePath = apiFmt.replace('/{Request}', '')
+        c.basePath = apiFmt ? apiFmt.replace('/{Request}', '') : null
         if (fn) fn(c)
     })
 }
