@@ -59,7 +59,7 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
     {
         var views = virtualFiles.GetDirectory("Views");
         if (views == null)
-            return new List<string> { "~/Views" };
+            return ["~/Views"];
 
         var files = views.GetAllMatchingFiles("*.cshtml");
         var folders = files.Map(x => x.VirtualPath.LastLeftPart("/"));

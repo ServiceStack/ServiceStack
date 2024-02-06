@@ -33,12 +33,12 @@ namespace ServiceStack.Razor
             this.LiveReloadFactory = CreateLiveReload;
             CompilerServices.IncludeAssemblies.Add(typeof(OrmLiteConfig).Assembly);
 
-            Deny = new List<Predicate<string>> {
+            Deny = [
                 DenyPathsWithLeading_,
                 DenyDirectAccessToViews
-            };
+            ];
 
-            LoadFromAssemblies = new List<Assembly>();
+            LoadFromAssemblies = [];
             LoadUnloadedAssemblies = true;
         }
 
