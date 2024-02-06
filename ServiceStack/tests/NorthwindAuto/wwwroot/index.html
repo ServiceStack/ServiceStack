@@ -107,10 +107,10 @@
     }
 }
 &lt;/script&gt;</pre>
-        <pre class="csharp">import { JsonApiClient } from "@servicestack/client"
+        <pre class="csharp">import { JsonServiceClient } from "@servicestack/client"
 import { Hello } from "./dtos.mjs"
 
-const client = JsonApiClient.create()
+const client = new JsonServiceClient()
 const api = await client.api(new Hello({ name }))
 if (api.succeeded) {
     console.log(api.response.result)
@@ -124,10 +124,10 @@ if (api.succeeded) {
     </div>
 
 <script type="module">
-import { $1, JsonApiClient } from "@servicestack/client"
+import { $1, JsonServiceClient } from "@servicestack/client"
 import { Hello } from "./mjs/dtos.mjs"
 
-const client = JsonApiClient.create()
+const client = new JsonServiceClient()
 
 globalThis.callHello = async function (val) {
     const api = await client.api(new Hello({ name: val }))
@@ -136,7 +136,6 @@ globalThis.callHello = async function (val) {
     }
 }
 </script>
-
 
 </body>
 </html>

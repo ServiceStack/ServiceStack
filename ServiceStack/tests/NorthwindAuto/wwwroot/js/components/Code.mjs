@@ -18,20 +18,20 @@ var api = await client.ApiAsync(new Hello {
 
 // Quickly inspect response
 api.Response.PrintDump();`,
-    typescript: `import { JsonApiClient, Inspect } from '@servicestack/client'
+    typescript: `import { JsonServiceClient, Inspect } from '@servicestack/client'
 import { Hello } from './dtos'
 
-const client = JsonApiClient.create('${BaseUrl}')
+const client = new JsonServiceClient('${BaseUrl}')
 
 const api = await client.api(new Hello({
     //...
 }))
 
 Inspect.printDump(api.response)`,
-    mjs: `import { JsonApiClient, Inspect } from '@servicestack/client'
+    mjs: `import { JsonServiceClient, Inspect } from '@servicestack/client'
 import { Hello } from './dtos.mjs'
 
-const client = JsonApiClient.create('${BaseUrl}')
+const client = new JsonServiceClient('${BaseUrl}')
 
 const api = await client.api(new Hello({
     //...
@@ -85,7 +85,7 @@ printdump(response)`,
 use ServiceStack\\Inspect;
 use dtos\\Hello;
 
-$client = JsonServiceClient::create('${BaseUrl}');
+$client = new JsonServiceClient('${BaseUrl}');
 
 /** @var {HelloResponse} $response */
 $response = $client->send(new Hello(
