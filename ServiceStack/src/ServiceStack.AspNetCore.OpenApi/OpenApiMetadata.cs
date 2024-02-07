@@ -63,6 +63,8 @@ public static class OpenApiSecurity
 
 public class OpenApiMetadata
 {
+    public static OpenApiMetadata Instance { get; } = new();
+    
     public List<Type> DocumentFilterTypes { get; set; } = [
         typeof(ServiceStackDocumentFilter),
     ];
