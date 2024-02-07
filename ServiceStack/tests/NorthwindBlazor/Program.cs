@@ -72,9 +72,6 @@ Console.WriteLine("services.AddBlazorServerIdentityApiClient()");
 services.AddBlazorServerIdentityApiClient(baseUrl);
 services.AddLocalStorage();
 
-services.AddEndpointsApiExplorer();
-services.AddSwaggerGen();
-
 builder.Services.ConfigureJsonOptions(options => {
     // options.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.KebabCaseUpper;
 })
@@ -83,12 +80,7 @@ builder.Services.ConfigureJsonOptions(options => {
 
 // Register all services
 Console.WriteLine("services.AddServiceStack()");
-services.AddServiceStack(typeof(MyServices).Assembly, c => {
-    c.AddSwagger(o => {
-        o.AddJwtBearer();
-        //o.AddBasicAuth();
-    });
-});
+services.AddServiceStack(typeof(MyServices).Assembly);
 
 Console.WriteLine("var app = builder.Build();");
 var app = builder.Build();
@@ -97,8 +89,6 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 else
 {
