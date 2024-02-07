@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Any;
@@ -31,6 +33,10 @@ public static class ServiceStackOpenApiExtensions
         options.Services!.AddSingleton(OpenApiMetadata.Instance);
         options.Services!.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
         options.Services!.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
+        
+        options.Services!.ConfigurePlugin<MetadataFeature>(feature => {
+            feature.AddPluginLink("/swagger/index.html", "Swagger UI");
+        });
     }
 
     public static void AddServiceStackSwagger(this IServiceCollection services, Action<OpenApiMetadata>? configure = null)
@@ -40,6 +46,20 @@ public static class ServiceStackOpenApiExtensions
         services.AddSingleton(OpenApiMetadata.Instance);
         services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
         services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
+        
+        services.ConfigurePlugin<MetadataFeature>(feature => {
+            feature.AddPluginLink("/swagger/index.html", "Swagger UI");
+        });
+    }
+        
+    public static AuthenticationBuilder AddBasicAuth<TUser>(this IServiceCollection services)
+        where TUser : IdentityUser, new() {
+        OpenApiMetadata.Instance.AddBasicAuth();
+        return new AuthenticationBuilder(services).AddBasicAuth<TUser,string>();
+    }
+
+    public static void AddJwtAuth(this IServiceCollection services) {
+        OpenApiMetadata.Instance.AddJwtBearer();
     }
 
     public static void AddBasicAuth(this SwaggerGenOptions options) =>

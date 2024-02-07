@@ -10,7 +10,6 @@ using MyApp.Data;
 using MyApp.Components;
 using MyApp.Components.Account;
 using MyApp.ServiceInterface;
-using ServiceStack.Text;
 
 Console.WriteLine("Program.cs");
 var builder = WebApplication.CreateBuilder(args);
@@ -29,7 +28,7 @@ services.AddScoped<IdentityRedirectManager>();
 services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
 Console.WriteLine("services.AddAuthentication()");
-services.AddAuthentication()
+services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new()
@@ -40,7 +39,6 @@ services.AddAuthentication()
             ValidateIssuerSigningKey = true,
         };
     })
-    //.AddBasicAuth<ApplicationUser>()
     .AddIdentityCookies(options => options.DisableRedirectsForApis());
 services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("App_Data"));

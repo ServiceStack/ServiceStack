@@ -124,6 +124,10 @@ public class ServiceStackServicesOptions
         new VirtualFilesFeature(),
     ];
 
+    public Dictionary<Type, List<Action<IPlugin>>> OnPreRegisterPlugins { get; set; } = new();
+
+    public Dictionary<Type, List<Action<IPlugin>>> OnPostRegisterPlugins { get; set; } = new();
+
     /// <summary>
     /// Exclude Assemblies when Auto Registering ServiceStack Services
     /// </summary>

@@ -37,6 +37,26 @@ public static class ConfigurePriority
 
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Register a callback to configure a plugin just before it's registered 
+    /// </summary>
+    public static void ConfigurePlugin<T>(this IServiceCollection services, Action<T> configure) where T : class, IPlugin
+    {
+        if (!ServiceStackHost.InitOptions.OnPreRegisterPlugins.TryGetValue(typeof(T), out var actions))
+            actions = ServiceStackHost.InitOptions.OnPreRegisterPlugins[typeof(T)] = new();
+        actions.Add(plugin => configure((T)plugin));
+    }
+
+    /// <summary>
+    /// Register a callback to configure a plugin just after it's registered 
+    /// </summary>
+    public static void PostConfigurePlugin<T>(this IServiceCollection services, Action<T> configure) where T : class, IPlugin
+    {
+        if (!ServiceStackHost.InitOptions.OnPostRegisterPlugins.TryGetValue(typeof(T), out var actions))
+            actions = ServiceStackHost.InitOptions.OnPostRegisterPlugins[typeof(T)] = new();
+        actions.Add(plugin => configure((T)plugin));
+    }
+
     public static bool Exists<TService>(this IServiceCollection services) => Exists(services, typeof(TService));
 
     public static bool Exists(this IServiceCollection services, Type serviceType)
