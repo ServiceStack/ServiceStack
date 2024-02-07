@@ -35,6 +35,15 @@ public static class ServiceStackOpenApiExtensions
         options.Services!.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
     }
 
+    public static void AddServiceStackSwagger(this IServiceCollection services, Action<OpenApiMetadata>? configure = null)
+    {
+        configure?.Invoke(OpenApiMetadata);
+
+        services.AddSingleton(OpenApiMetadata);
+        services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
+        services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
+    }
+
     public static void AddBasicAuth(this SwaggerGenOptions options) =>
         options.AddSecurityDefinition(OpenApiSecurity.BasicAuthScheme.Scheme, OpenApiSecurity.BasicAuthScheme);
 
