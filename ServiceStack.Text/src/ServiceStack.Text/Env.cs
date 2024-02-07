@@ -123,7 +123,7 @@ public static class Env
 
     public static string VersionString { get; set; }
 
-    public static decimal ServiceStackVersion = 8.11m;
+    public static decimal ServiceStackVersion = 8.12m;
 
     public static bool IsLinux { get; set; }
 
