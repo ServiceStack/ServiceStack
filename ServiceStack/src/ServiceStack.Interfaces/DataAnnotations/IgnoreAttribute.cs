@@ -27,3 +27,9 @@ public class IgnoreOnUpdateAttribute : AttributeBase { }
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public class IgnoreOnInsertAttribute : AttributeBase { }
+
+/// <summary>
+/// Ignore Auto Registering this Service in the IOC
+/// </summary>
+[AttributeUsage(AttributeTargets.Class)]
+public class IgnoreServicesAttribute : AttributeBase {}

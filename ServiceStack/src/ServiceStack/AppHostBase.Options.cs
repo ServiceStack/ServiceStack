@@ -98,7 +98,9 @@ public class ServiceStackServicesOptions
 
     internal HashSet<Type> GetAllServiceTypes()
     {
-        var to = ServiceAssemblies.SelectMany(x => x.GetTypes().Where(ServiceController.IsServiceType)).ToSet();
+        var to = ServiceAssemblies.SelectMany(assembly => assembly.GetTypes()
+            .Where(type => ServiceController.IsServiceType(type) && !type.GetCustomAttributes<DataAnnotations.IgnoreServicesAttribute>().Any())
+        ).ToSet();
         to.AddDistinctRange(ServiceTypes);
         to.AddDistinctRange(ServiceRoutes.Keys);
         return to;

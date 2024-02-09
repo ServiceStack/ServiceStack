@@ -439,6 +439,8 @@ public static class ValidationExtensions
                     var genericValidator = type.GetTypeWithGenericInterfaceOf(typeof(IValidator<>));
                     if (genericValidator != null && !type.IsAbstract && !type.IsGenericTypeDefinition)
                     {
+                        if (type.GetCustomAttributes<DataAnnotations.IgnoreServicesAttribute>().Any())
+                            continue;
                         ValidatorTypes.Add(type);
                     }
                 }
