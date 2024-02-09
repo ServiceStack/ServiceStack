@@ -163,7 +163,7 @@ public class TestIocService : Service
 }
 
 
-[DataAnnotations.IgnoreServices] // prevent auto registration
+[IgnoreServices] // prevent auto registration
 public sealed class TestValidationValidator : AbstractValidator<TestValidation>
 {
     public TestValidationValidator(bool isVaf) // Illegal constructor arg preventing auto registration
