@@ -64,7 +64,9 @@ public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser
     public IValidator<Register>? RegistrationValidator { get; set; }
 
     public IdentityAuthContext<TUser, TKey> AuthContext => IdentityAuth.Instance<TUser, TKey>()
-        ?? throw new Exception(nameof(IdentityAuth) + " not configured"); 
+        ?? throw new Exception(nameof(IdentityAuth) + " not configured");
+
+    protected UserManager<TUser> UserManager => userManager;
 
     protected TUser ToUser(Register request)
     {

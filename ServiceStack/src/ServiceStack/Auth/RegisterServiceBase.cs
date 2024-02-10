@@ -143,7 +143,7 @@ public abstract class RegisterServiceBase : Service
             if (authResponse is IHttpError)
                 throw (Exception) authResponse;
 
-            if (authResponse is IHttpResult httpResult && httpResult.Response is AuthenticateResponse dto)
+            if (authResponse is IHttpResult { Response: AuthenticateResponse dto } httpResult)
             {
                 // Return response inside original HttpResult Cookies
                 httpResult.Response = ToRegisterResponse(dto, session.UserAuthId);
