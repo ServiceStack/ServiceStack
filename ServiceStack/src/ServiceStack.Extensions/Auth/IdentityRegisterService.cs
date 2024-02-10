@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using ServiceStack.FluentValidation;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 
 namespace ServiceStack.Auth;
 
@@ -52,17 +53,14 @@ public class IdentityRegistrationValidator<TUser,TKey> : AbstractValidator<Regis
 /// <summary>
 /// Register Base class for IAuthRepository / IUserAuth users
 /// </summary>
-public abstract class IdentityRegisterServiceBase<TUser,TKey> : RegisterServiceBase
+public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser> userManager) : RegisterServiceBase
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>
 {
-    public IValidator<Register> RegistrationValidator { get; set; }
-
-    protected readonly UserManager<TUser> userManager;
-    public IdentityRegisterServiceBase(UserManager<TUser> userManager)
-    {
-        this.userManager = userManager;
-    }
+#if NET8_0_OR_GREATER
+    [Microsoft.AspNetCore.Mvc.FromServices]
+#endif
+    public IValidator<Register>? RegistrationValidator { get; set; }
 
     protected TUser ToUser(Register request)
     {
@@ -77,7 +75,9 @@ public abstract class IdentityRegisterServiceBase<TUser,TKey> : RegisterServiceB
 
     protected virtual async Task ValidateAndThrowAsync(Register request)
     {
-        var validator = RegistrationValidator ?? new RegistrationValidator();
+        var validator = RegistrationValidator 
+            ?? ValidatorCache.GetValidator(Request, typeof(Register)) as IValidator<Register>
+            ?? new IdentityRegistrationValidator<TUser, TKey>();
         await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
     }
 
