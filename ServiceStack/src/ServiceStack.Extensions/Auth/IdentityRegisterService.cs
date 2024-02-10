@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using ServiceStack.FluentValidation;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
@@ -78,6 +79,8 @@ public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser
         var validator = RegistrationValidator 
             ?? ValidatorCache.GetValidator(Request, typeof(Register)) as IValidator<Register>
             ?? new IdentityRegistrationValidator<TUser, TKey>();
+        if (validator is IRequiresRequest requiresRequest)
+            requiresRequest.Request ??= Request;
         await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
     }
 

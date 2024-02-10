@@ -253,9 +253,12 @@ public static class RequestExtensions
         if (typeof(T) == typeof(IResponse))
             return (T)request.Response;
 
-        return request is IHasResolver hasResolver 
+        var instance = request is IHasResolver hasResolver 
             ? hasResolver.Resolver.TryResolve<T>() 
             : Service.GlobalResolver.TryResolve<T>();
+        if (instance is IRequiresRequest requiresRequest)
+            requiresRequest.Request ??= request;
+        return instance;
     }
     internal static object TryResolveInternal(this IRequest request, Type type)
     {

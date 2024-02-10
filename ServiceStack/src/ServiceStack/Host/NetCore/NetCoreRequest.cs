@@ -51,6 +51,8 @@ public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, ISer
     public T TryResolve<T>()
     {
         var instance = context.RequestServices.GetService<T>();
+        if (instance is IRequiresRequest requiresRequest)
+            requiresRequest.Request ??= this;
         return instance ?? this.TryResolveInternal<T>();
     }
 

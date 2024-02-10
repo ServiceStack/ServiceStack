@@ -94,6 +94,8 @@ public abstract class RegisterUserAuthServiceBase : RegisterServiceBase
     protected virtual async Task ValidateAndThrowAsync(Register request)
     {
         var validator = RegistrationValidator ?? new RegistrationValidator();
+        if (validator is IRequiresRequest requiresRequest)
+            requiresRequest.Request ??= Request;
         await validator.ValidateAndThrowAsync(request, ApplyTo.Post).ConfigAwait();
     }
 
