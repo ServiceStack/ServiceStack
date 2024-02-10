@@ -87,9 +87,10 @@ public class RegisterResponse : IMeta, IHasResponseStatus, IHasSessionId, IHasBe
     [DataMember(Order = 7)] public DateTime? RefreshTokenExpiry { get; set; }
     [DataMember(Order = 8)] public List<string> Roles { get; set; } 
     [DataMember(Order = 9)] public List<string> Permissions { get; set; } 
+    [DataMember(Order = 10)] public string RedirectUrl { get; set; } 
 
-    [DataMember(Order = 10)] public ResponseStatus ResponseStatus { get; set; }
-    [DataMember(Order = 11)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 11)] public ResponseStatus ResponseStatus { get; set; }
+    [DataMember(Order = 12)] public Dictionary<string, string> Meta { get; set; }
 }
 
 [Tag(TagNames.Auth)]
