@@ -8,6 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth;
 
+[IgnoreServices]
 public class IdentityRegistrationValidator<TUser,TKey> : AbstractValidator<Register>
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>
