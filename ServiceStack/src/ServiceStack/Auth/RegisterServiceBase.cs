@@ -7,11 +7,13 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
+[IgnoreServices]
 public class FullRegistrationValidator : RegistrationValidator
 {
     public FullRegistrationValidator() { RuleSet(ApplyTo.Post, () => RuleFor(x => x.DisplayName).NotEmpty()); }
 }
 
+[IgnoreServices]
 public class RegistrationValidator : AbstractValidator<Register>
 {
     public RegistrationValidator()

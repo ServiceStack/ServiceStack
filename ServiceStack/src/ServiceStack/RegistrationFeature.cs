@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.Html;
+using ServiceStack.Validation;
 
 namespace ServiceStack;
 
@@ -17,13 +18,13 @@ public class RegistrationFeature : IPlugin, IConfigureServices, Model.IHasString
     /// <summary>
     /// UI Layout for User Registration
     /// </summary>
-    public List<InputInfo> FormLayout { get; set; } = new()
-    {
+    public List<InputInfo> FormLayout { get; set; } =
+    [
         Input.For<Register>(x => x.DisplayName, x => x.Help = "Your first and last name"),
         Input.For<Register>(x => x.Email, x => x.Type = Input.Types.Email),
         Input.For<Register>(x => x.Password, x => x.Type = Input.Types.Password),
-        Input.For<Register>(x => x.ConfirmPassword, x => x.Type = Input.Types.Password),
-    };
+        Input.For<Register>(x => x.ConfirmPassword, x => x.Type = Input.Types.Password)
+    ];
         
     public ValidateFn ValidateFn 
     {
@@ -41,7 +42,7 @@ public class RegistrationFeature : IPlugin, IConfigureServices, Model.IHasString
     {
         if (!services.Exists<IValidator<Register>>())
         {
-            services.AddSingleton<IValidator<Register>, RegistrationValidator>();
+            services.RegisterValidator(c => new RegistrationValidator());
         }
     }
 

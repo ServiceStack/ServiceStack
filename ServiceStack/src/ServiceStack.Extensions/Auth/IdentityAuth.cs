@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.FluentValidation;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
@@ -99,7 +100,7 @@ public static class IdentityAuth
             if (ctx.IncludeRegisterService)
             {
                 authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TKey>)] = ["/" + "register".Localize()];
-                services.AddSingleton<IValidator<Register>, IdentityRegistrationValidator<TUser, TKey>>();
+                services.RegisterValidator(c => new IdentityRegistrationValidator<TUser, TKey>());
             }
 
             if (ctx.EnableJwtAuth)
