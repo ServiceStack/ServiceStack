@@ -44,7 +44,7 @@ import 'package:servicestack/web_client.dart'
   if (dart.library.io) 'package:servicestack/client.dart';
 import 'package:servicestack/inspect.dart';
 
-var client = ClientFactory.create('${BaseUrl}');
+var client = ClientFactory.api('${BaseUrl}');
 
 var response = await client.send(Hello(
     //...
@@ -267,7 +267,7 @@ const Dart = {
       <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
     </p>
 
-    <CopyLine text="servicestack: ^2.0.2" />
+    <CopyLine text="servicestack: ^2.0.3" />
 
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
@@ -295,7 +295,7 @@ const Java = {
       <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
     </p>
 
-    <CopyLine text="implementation 'net.servicestack:client:1.0.49'" />
+    <CopyLine text="implementation 'net.servicestack:client:1.1.0'" />
 
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
@@ -323,7 +323,7 @@ const Kotlin = {
       <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
     </p>
 
-    <CopyLine text="implementation 'net.servicestack:client:1.0.49'" />
+    <CopyLine text="implementation 'net.servicestack:client:1.1.0'" />
 
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
@@ -351,7 +351,7 @@ const Python = {
         <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>requirements.txt</em>
     </p>
 
-    <CopyLine text="servicestack>=0.1.1" />
+    <CopyLine text="servicestack>=0.1.3" />
 
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
