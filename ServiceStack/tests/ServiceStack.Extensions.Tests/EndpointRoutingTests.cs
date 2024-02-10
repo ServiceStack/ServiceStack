@@ -83,6 +83,9 @@ public class EndpointRoutingTests
         app.StartAsync(TestsConfig.ListeningOn);
     }
  
+    [OneTimeTearDown]
+    public void TestFixtureTearDown() => AppHostBase.DisposeApp();
+
     [Test]
     public async Task Endpoints_does_dispose_of_property_injected_services()
     {
