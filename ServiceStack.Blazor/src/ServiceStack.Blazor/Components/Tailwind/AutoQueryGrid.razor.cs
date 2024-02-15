@@ -71,6 +71,7 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public Predicate<string>? DisableKeyBindings { get; set; }
     [Parameter] public EventCallback<Column<Model>> HeaderSelected { get; set; }
     [Parameter] public EventCallback<Model> RowSelected { get; set; }
+    [Parameter] public EventCallback<List<Model>> DataLoaded { get; set; }
     [Parameter] public ApiPrefs? Prefs { get; set; }
     [Parameter] public bool MonitorNavigationChanges { get; set; } = true;
     AutoCreateForm<Model>? AutoCreateForm { get; set; }
@@ -390,9 +391,14 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
         Api = await ApiAsync(requestWithReturn);
 
         log($"UpdateAsync: {request.GetType().Name}({lastQuery}) Succeeded: {Api.Succeeded}, Results: {Api.Response?.Results?.Count ?? 0}");
-        if (!Api.Succeeded)
+        if (!Api.Succeeded) 
+        {
             log("Api: " + Api.ErrorSummary ?? Api.Error?.ErrorCode);
-
+        }
+        else
+        {
+            await DataLoaded.InvokeAsync(Results);
+        }   
         StateHasChanged();
     }
 
