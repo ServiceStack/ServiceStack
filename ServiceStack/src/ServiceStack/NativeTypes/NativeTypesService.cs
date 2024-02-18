@@ -21,6 +21,9 @@ namespace ServiceStack.NativeTypes;
 [Route("/types")]
 public class TypeLinks : NativeTypesBase, IGet, IReturn<Dictionary<string, string>> { }
 
+#if NET8_0_OR_GREATER
+[SystemJson(UseSystemJson.Never)]
+#endif
 [ExcludeMetadata]
 [Route("/types/metadata")]
 public class TypesMetadata : NativeTypesBase, IGet, IReturn<MetadataTypes> { }
