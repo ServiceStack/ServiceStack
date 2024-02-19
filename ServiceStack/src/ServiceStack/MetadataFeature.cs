@@ -26,9 +26,11 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
 {
     public string Id { get; set; } = Plugins.Metadata;
     public string PluginLinksTitle { get; set; } = "Plugin Links:";
+    public string PluginLinksStyle { get; set; } = "font-size:16px;";
     public Dictionary<string, string> PluginLinks { get; set; } = new();
 
     public string DebugLinksTitle { get; set; } = "Debug Info:";
+    public string DebugLinksStyle { get; set; } = "";
     public Dictionary<string, string> DebugLinks { get; set; } = new()
     {
         ["operations/metadata"] = "Operations Metadata",

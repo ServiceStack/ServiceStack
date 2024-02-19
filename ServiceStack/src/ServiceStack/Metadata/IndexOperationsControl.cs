@@ -177,7 +177,7 @@ public class IndexOperationsControl
             {
                 Title = metadata.PluginLinksTitle,
                 ListItemsMap = ToAbsoluteUrls(metadata.PluginLinks),
-                ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
+                ListItemTemplate = "<li><a href=\"{0}\" style=\"" + metadata.PluginLinksStyle + "\">{1}</a></li>"
             }.ToString()
             : "";
 
@@ -186,7 +186,7 @@ public class IndexOperationsControl
             {
                 Title = metadata.DebugLinksTitle,
                 ListItemsMap = ToAbsoluteUrls(metadata.DebugLinks),
-                ListItemTemplate = @"<li><a href=""{0}"">{1}</a></li>"
+                ListItemTemplate = "<li><a href=\"{0}\" style=\"" + metadata.DebugLinksStyle + "\">{1}</a></li>"
             }.ToString()
             : "";
 
