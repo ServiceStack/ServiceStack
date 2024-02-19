@@ -45,7 +45,7 @@ public class AppHostListenerBaseTests
     public void Root_path_redirects_to_metadata_page()
     {
         var html = ListeningOn.GetStringFromUrl();
-        Assert.That(html.Contains("The following operations are supported."));
+        Assert.That(html.Contains("The following operations are available."));
     }
 
     [Test]

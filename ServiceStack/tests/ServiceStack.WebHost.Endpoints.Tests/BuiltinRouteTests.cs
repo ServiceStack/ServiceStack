@@ -49,7 +49,7 @@ public class BuiltinRouteTests
     public void Can_download_metadata_page()
     {
         var contents = "{0}/metadata".Fmt(Config.AbsoluteBaseUri).GetStringFromUrl();
-        Assert.That(contents, Does.Contain("The following operations are supported."));
+        Assert.That(contents, Does.Contain("The following operations are available."));
     }
 
     [Test]

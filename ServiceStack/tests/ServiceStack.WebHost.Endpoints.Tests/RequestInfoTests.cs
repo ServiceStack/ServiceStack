@@ -67,8 +67,8 @@ public partial class RequestInfoTests
     [Test]
     public void Does_return_expected_content()
     {
-        AssertHasContent("metadata", MimeTypes.Html, "The following operations are supported");
-        AssertHasContent("metadata/", MimeTypes.Html, "The following operations are supported");
+        AssertHasContent("metadata", MimeTypes.Html, "The following operations are available");
+        AssertHasContent("metadata/", MimeTypes.Html, "The following operations are available");
         AssertHasContent("dir", MimeTypes.Html, "<h1>dir/index.html</h1>");
         AssertHasContent("dir/", MimeTypes.Html, "<h1>dir/index.html</h1>");
         AssertHasContent("dir/sub", MimeTypes.Html, "<h1>dir/sub/index.html</h1>");
