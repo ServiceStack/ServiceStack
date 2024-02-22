@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <DebugType>full</DebugType>
     <AssemblyName>ServiceStack.Server.Tests</AssemblyName>
     <OutputType>Library</OutputType>
@@ -14,8 +14,8 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-        <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0;NET8_0_OR_GREATER</DefineConstants>
     </PropertyGroup>
   <ItemGroup>
     <Compile Remove="RawRequestTests.cs" />
@@ -60,10 +60,10 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <PackageReference Include="System.Linq.Async" Version="5.1.0" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0;NET8_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
