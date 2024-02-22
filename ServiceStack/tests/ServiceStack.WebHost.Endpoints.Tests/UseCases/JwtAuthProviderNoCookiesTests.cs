@@ -424,7 +424,8 @@ public abstract class JwtAuthProviderNoCookiesTests
         catch (WebException ex)
         {
             // TODO: try to replicate CI behavior locally
-            Assert.That(ex.Status, Is.EqualTo(HttpStatusCode.Unauthorized));
+            Assert.That(ex.Status, Is.EqualTo(WebExceptionStatus.ProtocolError));
+            Assert.That((HttpWebResponse)ex.Response, Is.EqualTo(HttpStatusCode.Unauthorized));
         }
     }
 
