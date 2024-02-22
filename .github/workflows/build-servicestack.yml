@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-servicestack:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     permissions:
       checks: write
       contents: read
@@ -39,9 +39,9 @@ jobs:
         ports:
           - 48303:5432
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.100'
           

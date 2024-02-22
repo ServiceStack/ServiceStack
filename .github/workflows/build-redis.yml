@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-redis:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     services:
       redis:
         image: redis
@@ -20,9 +20,9 @@ jobs:
         ports:
           - 6379:6379
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.100'
           

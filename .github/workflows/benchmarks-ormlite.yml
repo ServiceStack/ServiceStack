@@ -43,9 +43,9 @@ jobs:
           mysql -h 127.0.0.1 --password=p@55wOrd --user root -e "CREATE DATABASE IF NOT EXISTS test"
           sqlcmd -U sa -P p@55wOrd -Q "CREATE DATABASE test"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.100'
           

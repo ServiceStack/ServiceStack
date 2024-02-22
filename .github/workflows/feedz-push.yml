@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout the repo
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Setup .NET SDK
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.*'
 
