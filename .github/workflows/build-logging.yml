@@ -30,7 +30,7 @@ jobs:
           
 # net472 only package, need to upgrade if possible to run tests or use different runner.
 #      - name: Logging Tests
-#        run: dotnet test --framework net6.0 ./ServiceStack.Logging/tests/ServiceStack.Logging.Tests/ServiceStack.Logging.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+#        run: dotnet test --framework net8.0 ./ServiceStack.Logging/tests/ServiceStack.Logging.Tests/ServiceStack.Logging.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
 
 #      - name: Test Report

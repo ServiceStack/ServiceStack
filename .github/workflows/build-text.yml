@@ -26,7 +26,7 @@ jobs:
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
         
       - name: Text tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Text/tests/ServiceStack.Text.Tests/ServiceStack.Text.Tests.csproj  --logger 'trx;LogFileName=test-results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Text/tests/ServiceStack.Text.Tests/ServiceStack.Text.Tests.csproj  --logger 'trx;LogFileName=test-results.trx'
 
       - name: Text Tests Report
         uses: dorny/test-reporter@v1

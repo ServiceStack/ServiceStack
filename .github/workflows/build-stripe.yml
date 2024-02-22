@@ -26,7 +26,7 @@ jobs:
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
 
       - name: Stripe Tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Stripe/tests/ServiceStack.Stripe.Tests/ServiceStack.Stripe.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Stripe/tests/ServiceStack.Stripe.Tests/ServiceStack.Stripe.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1

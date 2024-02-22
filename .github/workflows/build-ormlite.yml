@@ -27,13 +27,13 @@ jobs:
         
       - name: Tests Setup
         working-directory: ServiceStack.OrmLite/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
+        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj        
 
       - name: Test Sqlite
         working-directory: ServiceStack.OrmLite/tests
         env:
           ORMLITE_DIALECT: Sqlite
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1

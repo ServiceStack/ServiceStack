@@ -47,7 +47,7 @@ jobs:
         run: dotnet build ./build.proj
 
       - name: Text tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Text/tests/ServiceStack.Text.Tests/ServiceStack.Text.Tests.csproj  --logger 'trx;LogFileName=test-results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Text/tests/ServiceStack.Text.Tests/ServiceStack.Text.Tests.csproj  --logger 'trx;LogFileName=test-results.trx'
 
       - name: Text Tests Report
         uses: dorny/test-reporter@v1
@@ -70,7 +70,7 @@ jobs:
 
       - name: Redis Test Without Integration
         working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
 
       - name: Redis Non-Integration Tests Report
         uses: dorny/test-reporter@v1
@@ -85,7 +85,7 @@ jobs:
       - name: Redis Test With Integration
         id: test_integration
         working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
 
       - name: Redis Integration Tests Report
         uses: dorny/test-reporter@v1
@@ -104,7 +104,7 @@ jobs:
         working-directory: ServiceStack.OrmLite/tests
         env:
           ORMLITE_DIALECT: Sqlite
-        run: dotnet test --framework net6.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.SqliteTests/ServiceStack.OrmLite.SqliteTests.csproj --logger 'trx;LogFileName=test-results.trx'
 
       - name: Test Sqlite Report
         uses: dorny/test-reporter@v1
@@ -120,7 +120,7 @@ jobs:
         run: dotnet build ./build.proj
 
       - name: Test ServiceStack.Common
-        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -132,7 +132,7 @@ jobs:
           reporter: dotnet-trx
 
       - name: Test ServiceStack.ServiceModels
-        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/ServiceStack.ServiceModel.Tests.csproj --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/ServiceStack.ServiceModel.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -147,7 +147,7 @@ jobs:
         env:
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-        run: dotnet test --framework net6.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -163,7 +163,7 @@ jobs:
         run: dotnet build ./build.proj
 
       - name: Aws Tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/ServiceStack.Aws.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Aws/tests/ServiceStack.Aws.Tests/ServiceStack.Aws.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -195,7 +195,7 @@ jobs:
         run: dotnet build ./build.proj
 
       - name: Stripe Tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Stripe/tests/ServiceStack.Stripe.Tests/ServiceStack.Stripe.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Stripe/tests/ServiceStack.Stripe.Tests/ServiceStack.Stripe.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1

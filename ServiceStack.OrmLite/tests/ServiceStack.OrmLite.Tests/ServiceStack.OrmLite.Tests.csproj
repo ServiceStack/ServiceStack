@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
-<!--    <TargetFramework>net6.0</TargetFramework>-->
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.OrmLite.Tests</AssemblyName>
     <OutputType>Library</OutputType>
@@ -34,9 +33,9 @@
     <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
   </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
+  
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0;NET8_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

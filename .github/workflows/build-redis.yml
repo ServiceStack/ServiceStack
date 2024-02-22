@@ -37,7 +37,7 @@ jobs:
         
       - name: Test Without Integration
         working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
 
       - name: Non-Integration Tests Report
         uses: dorny/test-reporter@v1
@@ -52,7 +52,7 @@ jobs:
       - name: Test With Integration
         id: test_integration
         working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net6.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
+        run: dotnet test --framework net8.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
 
       - name: Integration Tests Report
         uses: dorny/test-reporter@v1
