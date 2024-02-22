@@ -489,8 +489,7 @@ public class HtmlModule
         appHost.RawHttpHandlers.Add(handlerFn);
         
 #if NET8_0_OR_GREATER
-        var host = (IAppHostNetCore)appHost;
-        host.MapEndpoints(routeBuilder =>
+        (appHost as IAppHostNetCore).MapEndpoints(routeBuilder =>
         {
             routeBuilder.MapGet(BasePath + "/{*path}", httpContext => {
                     var req = httpContext.ToRequest();

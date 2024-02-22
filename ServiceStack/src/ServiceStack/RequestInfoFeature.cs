@@ -23,8 +23,7 @@ public class RequestInfoFeature : IPlugin, Model.IHasStringId
             feature => feature.AddDebugLink($"?{Keywords.Debug}={Keywords.RequestInfo}", "Request Info"));
         
 #if NET8_0_OR_GREATER
-        var host = (IAppHostNetCore)appHost;
-        host.MapEndpoints(routeBuilder =>
+        (appHost as IAppHostNetCore).MapEndpoints(routeBuilder =>
         {
             var handler = new RequestInfoHandler();
             routeBuilder.MapGet("/" + Keywords.RequestInfo, httpContext => httpContext.ProcessRequestAsync(handler))

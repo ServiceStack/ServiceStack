@@ -116,8 +116,7 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
         appHost.CatchAllHandlers.Add(GetHandler);
         
 #if NET8_0_OR_GREATER
-        var host = (IAppHostNetCore)appHost;
-        host.MapEndpoints(routeBuilder =>
+        (appHost as IAppHostNetCore).MapEndpoints(routeBuilder =>
         {
             var tag = GetType().Name;
             routeBuilder.MapGet("/metadata", httpContext => httpContext.ProcessRequestAsync(new IndexMetadataHandler()))

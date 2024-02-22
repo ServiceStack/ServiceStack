@@ -57,8 +57,7 @@ public class SvgFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
                 : null);
         
 #if NET8_0_OR_GREATER
-        var host = (IAppHostNetCore)appHost;
-        host.MapEndpoints(routeBuilder =>
+        (appHost as IAppHostNetCore).MapEndpoints(routeBuilder =>
         {
             var tag = GetType().Name;
             routeBuilder.MapGet(RoutePath + "/{**path}", httpContext => httpContext.ProcessRequestAsync(
@@ -81,7 +80,6 @@ public class SvgFeature : IPlugin, IPostInitPlugin, Model.IHasStringId
         });
 #endif
         
-
         var btnSvgCssFile = appHost.VirtualFileSources.GetFile("/css/buttons-svg.css");
         if (btnSvgCssFile != null)
         {

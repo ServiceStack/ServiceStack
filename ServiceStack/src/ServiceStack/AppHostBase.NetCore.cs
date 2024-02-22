@@ -748,9 +748,9 @@ public static class NetCoreAppHostExtensions
     }
     
 #if NET8_0_OR_GREATER
-    public static void MapEndpoints(this IAppHostNetCore appHost, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure)
+    public static void MapEndpoints(this IAppHostNetCore? appHost, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure)
     {
-        if (!appHost.Options.MapEndpointRouting)
+        if (appHost == null || !appHost.Options.MapEndpointRouting)
             return;
         
         configure((Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)appHost.App);
