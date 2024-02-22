@@ -235,9 +235,8 @@ public class MetadataTypesGenerator
                     return;
             }
 
-            if (!considered.Contains(t))
+            if (considered.Add(t))
             {
-                considered.Add(t);
                 queue.Enqueue(t);
             }
 
@@ -313,7 +312,7 @@ public class MetadataTypesGenerator
                 }
             }
 
-            var genericBaseTypeDef = type.BaseType != null && type.BaseType.IsGenericType
+            var genericBaseTypeDef = type.BaseType is { IsGenericType: true }
                 ? type.BaseType.GetGenericTypeDefinition()
                 : null;
 

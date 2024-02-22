@@ -270,10 +270,10 @@ public static class MetadataUtils
         var pluginsOnly = view?.StartsWith("plugins") == true; 
         var metadataTypes = new MetadataTypes
         {
-            Namespaces = new(),
-            Operations = new(),
             Config = new(),
-            Types = new(),
+            Namespaces = [],
+            Operations = [],
+            Types = [],
         };
             
         if (!pluginsOnly)
