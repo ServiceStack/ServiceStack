@@ -224,6 +224,7 @@ public class MetadataTypesGenerator
                                      || t == typeof(Enum) 
                                      || considered.Contains(t) 
                                      || skipTypes.Contains(t) 
+                                     || t.HasInterface(typeof(IService))
                                      || (ignoreNamespaces.Contains(t.Namespace) && !exportTypes.ContainsMatch(t));
 
         void registerTypeFn(Type t)
