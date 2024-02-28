@@ -267,7 +267,7 @@ const Dart = {
       <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
     </p>
 
-    <CopyLine text="servicestack: ^2.0.3" />
+    <CopyLine text="servicestack: ^3.0.0" />
 
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
