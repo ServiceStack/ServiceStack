@@ -83,7 +83,7 @@ public static class PathUtils
     {
         foreach (var path in paths)
         {
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
                 continue;
 
             if (sb.Length > 0 && sb[sb.Length - 1] != '/')
@@ -124,7 +124,7 @@ public static class PathUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)] //only trim/allocate if need to
     private static string TrimEndIf(this string path, char[] chars)
     {
-        if (string.IsNullOrEmpty(path) || chars == null || chars.Length == 0)
+        if (string.IsNullOrWhiteSpace(path) || chars == null || chars.Length == 0)
             return path;
                 
         var lastChar = path[path.Length - 1];
@@ -140,7 +140,7 @@ public static class PathUtils
     {
         if (path == null)
             path = "";
-        if (string.IsNullOrEmpty(withPath))
+        if (string.IsNullOrWhiteSpace(withPath))
             return path;
         var startPath = path.TrimEndIf(Slashes);
         return startPath + (withPath[0] == '/' ? withPath : "/" + withPath);

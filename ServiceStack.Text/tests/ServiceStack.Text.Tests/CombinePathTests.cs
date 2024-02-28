@@ -32,6 +32,13 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
+        public void Doesnt_combine_path_with_whitespace_or_forward_slash()
+        {
+            Assert.That("a".CombineWith(" "), Is.EqualTo("a"));
+            Assert.That("a".CombineWith("b/", " ", "/c"), Is.EqualTo("a/b/c"));
+        }
+
+        [Test]
         public void Can_resolve_paths()
         {
             Assert.That("/a/b/../".ResolvePaths(), Is.EqualTo("/a/"));
