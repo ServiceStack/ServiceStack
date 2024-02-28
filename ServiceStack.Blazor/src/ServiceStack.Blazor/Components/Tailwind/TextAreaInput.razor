@@ -7,7 +7,7 @@
     <label for=@Id class=@ClassNames(TextAreaInput.LabelClasses, LabelClass)>@UseLabel</label>
 }
     <div class="mt-1 relative rounded-md shadow-sm">
-        <textarea id=@Id name=@Id @bind="CurrentValue" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
+        <textarea id=@Id name=@Id @bind-value="CurrentValue" @bind-value:event="oninput" placeHolder=@UsePlaceholder @attributes="IncludeAttributes"
                   class=@ClassNames(TextAreaInput.InputBaseClasses, 
                   CssClass(TextAreaInput.InputValidClasses,TextAreaInput.InputInvalidClasses)) />
     @if (HasErrorField)
