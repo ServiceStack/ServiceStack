@@ -1,0 +1,233 @@
+﻿@page "/posts/{Slug:regex(^[-\\w]+$)}"
+@inject MarkdownBlog Blog
+@inject AppConfig AppConfig
+@using ServiceStack.IO
+
+@if (doc != null)
+{
+    <PageTitle>@doc.Title</PageTitle>
+
+    @if (docCss != null)
+    {
+        <link rel="stylesheet" href="posts/@(Slug).css">
+    }
+
+    <div class="container px-5 mb-32 mx-auto" data-component=@(docMjs != null ? $"posts/{Slug}.mjs" : "")>
+        @if (!string.IsNullOrEmpty(doc.Title))
+        {
+            var authorHref = Blog.GetAuthorLink(author?.Name);
+            var authorProfileUrl = Blog.GetAuthorProfileUrl(doc.Author);
+            <article class="mt-20">
+                <h1 class="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-tight md:leading-none mb-12 text-center md:text-left">
+                    @doc.Title
+                </h1>
+                <div class="flex justify-between">
+                    <div class="md:mb-12 flex items-center">
+                        @if (authorHref != null)
+                        {
+                            <a href="@authorHref"><img class="w-12 h-12 rounded-full mr-4 text-cyan-600" src="@authorProfileUrl"></a>
+                        }
+                        else
+                        {
+                            <img class="w-12 h-12 rounded-full mr-4 text-cyan-600" src="@authorProfileUrl">
+                        }
+                        <div class="flex flex-col">
+                            @if (authorHref != null)
+                            {
+                                <a class="text-xl font-semibold hover:underline" href="@authorHref">@author!.Name</a>
+                            }
+                            else if (author != null)
+                            {
+                                <span class="text-xl font-semibold">@author.Name</span>
+                            }
+                            <AuthorLinks Author=@author />
+                        </div>
+                    </div>
+                    <div class="mb-4 max-w-sm" data-mail="JoinMailingList" data-props="{ submitLabel:'Join our newsletter' }"></div>
+                </div>
+                <div class="mb-8 md:mb-16 sm:mx-0">
+                    <div class="sm:mx-0">
+                        <img src="@image" alt="@doc.Title Background" class="shadow-small">
+                    </div>
+                </div>
+                <div class="flex max-w-3xl mx-auto justify-between">
+                    <div>
+                        <div class="mb-4 flex flex-wrap">
+                            @foreach (var tag in doc.Tags)
+                            {
+                                <a href="@Blog.GetTagLink(tag)" class="mr-2 text-xs leading-5 font-semibold bg-slate-400/10 rounded-full py-1 px-3 flex items-center space-x-2 hover:bg-slate-400/20 dark:highlight-white/5">@tag</a>
+                            }
+                        </div>
+                        @if (doc.Date != null)
+                        {
+                            <div class="max-w-3xl mx-auto">
+                                <div class="mb-6 text-lg text-gray-500">
+                                    <time datetime="@Blog.GetDateTimestamp(doc.Date)">@Blog.GetDateLabel(doc.Date)</time>
+                                    <span class="px-1" aria-hidden="true">&middot;</span>
+                                    <span>@Blog.MinutesToRead(doc.WordCount) min read</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex flex-grow-0">
+                        <div data-post="PostVotes"></div>
+                    </div>
+                </div>
+                <div class="max-w-3xl mx-auto">
+                    <div id="post" class="prose lg:prose-xl max-w-none mb-32">
+                        @BlazorHtml.Raw(Blog.SanitizeVueTemplate(doc.Preview))
+                    </div>
+                </div>
+            </article>
+        }
+        else
+        {
+            <h2 class="py-8 text-center text-3xl font-bold text-gray-900 dark:text-gray-100 sm:text-4xl">
+                Post was not found
+            </h2>
+        }
+    </div>
+
+    @if (author != null && authorPosts.Count > 0)
+    {
+        <div class="bg-gray-50 py-20">
+            <div class="max-w-3xl mx-auto">
+                <div class="flex justify-between">
+                    <div>
+                        @if (authorHref != null)
+                        {
+                            <a href="@authorHref"><img class="w-20 h-20 rounded-full text-cyan-600" src="@authorProfileUrl"></a>
+                        }
+                        else
+                        {
+                            <img class="w-20 h-20 rounded-full text-cyan-600" src="@authorProfileUrl">
+                        }
+
+                        <div class="mt-2 font-medium text-2xl">
+                            Written by @doc.Author
+                        </div>
+                        <div class="text-gray-600">
+                            @author.Bio
+                        </div>
+                    </div>
+                    <div class="flex items-end">
+                        <AuthorLinks Author=@author />
+                    </div>
+                </div>
+
+                <div class="mt-4 border-t">
+                    <div class="py-8 text-lg text-gray-700 font-medium">
+                        More from @author.Name
+                    </div>
+                    <div class="grid grid-cols-2 gap-8">
+                        @foreach (var post in authorPosts)
+                        {
+                            <div>
+                                @* links to other posts requires force load otherwise post Vue App doesn't load *@
+                                <div class="flex flex-col overflow-hidden">
+                                    <div class="flex-shrink-0">
+                                        <a href="@Blog.GetPostLink(post)" data-enhance-nav="false">
+                                            <img class="h-48 w-full object-cover" src="@Blog.GetSplashImage(post)" alt="">
+                                        </a>
+                                    </div>
+                                    <div class="flex flex-1 flex-col justify-between bg-white dark:bg-black p-6">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-indigo-600 dark:text-indigo-300">
+                                                Article
+                                            </p>
+                                            <a href="@Blog.GetPostLink(post)" class="mt-2 block" data-enhance-nav="false">
+                                                <p class="text-xl font-semibold text-gray-900 dark:text-gray-50 whitespace-nowrap overflow-hidden text-ellipsis" title="@post.Title">
+                                                    @post.Title
+                                                </p>
+                                                <p class="mt-3 text-base text-gray-500">@post.Summary</p>
+                                            </a>
+                                        </div>
+                                        <div class="mt-6 flex items-center">
+                                            <div class="flex-shrink-0">
+                                                <a href="">
+                                                    <span class="sr-only">@post.Author</span>
+                                                    <img class="h-10 w-10 rounded-full" src="@Blog.GetAuthorProfileUrl(post.Author)" alt="@post.Title background">
+                                                </a>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-900">
+                                                    @if (authorHref != null)
+                                                    {
+                                                        <a href="@Blog.GetAuthorLink(post.Author!)" class="hover:underline">@post.Author</a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>@post.Author</span>
+                                                    }
+                                                </p>
+                                                <div class="flex space-x-1 text-sm text-gray-500">
+                                                    <time datetime="@Blog.GetDateTimestamp(post.Date)">@Blog.GetDateLabel(post.Date)</time>
+                                                    <span class="px-1" aria-hidden="true">&middot;</span>
+                                                    <span>@Blog.MinutesToRead(post.WordCount) min read</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="mt-3 mb-20 mx-auto max-w-fit">
+        @if (error != null)
+        {
+            <ErrorSummary Status=@error />
+        }
+        else
+        {
+            <Loading />
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public required string Slug { get; set; }
+
+    MarkdownFileInfo? doc;
+    ResponseStatus? error;
+    AuthorInfo? author;
+    string? image;
+    IVirtualFile? docMjs;
+    IVirtualFile? docCss;
+    List<MarkdownFileInfo> authorPosts;
+    string? authorHref;
+    string? authorProfileUrl;
+
+    void load()
+    {
+        doc = Blog.FindPostBySlug(Slug);
+        if (doc == null)
+        {
+            error = new() { Message = $"{Slug} was not found" };
+            return;
+        }
+        author = Blog.Authors.FirstOrDefault(x => x.Name == doc.Author);
+        authorHref = author != null ? Blog.GetAuthorLink(author.Name) : null;
+        authorProfileUrl = author != null ? Blog.GetAuthorProfileUrl(doc.Author) : null;
+        image = doc.Image ?? Blog.FallbackSplashUrl;
+
+        docMjs = Blog.VirtualFiles.GetFile($"/wwwroot/posts/{doc.Slug}.mjs");
+        docCss = Blog.VirtualFiles.GetFile($"/wwwroot/posts/{doc.Slug}.css");
+        authorPosts = Blog.VisiblePosts.Where(x => x.Author == doc.Author && x.Slug != doc.Slug)
+            .OrderByDescending(x => x.Date)
+            .Take(4)
+            .ToList();
+    }
+
+    protected override void OnInitialized() => load();
+
+    protected override void OnParametersSet() => load();
+}

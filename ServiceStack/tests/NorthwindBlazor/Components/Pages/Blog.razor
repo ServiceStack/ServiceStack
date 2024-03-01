@@ -1,0 +1,196 @@
+﻿@page "/blog"
+@inject MarkdownBlog Posts
+
+<PageTitle>MyApp Blog</PageTitle>
+
+<div class="container mx-auto px-5 mt-24 mb-24">
+    @if (primaryPost != null)
+    {
+        var authorHref = Posts.GetAuthorLink(primaryPost.Author);
+        <section>
+            <div class="mb-8 md:mb-16">
+                <div class="sm:mx-0">
+                    <a aria-label="@primaryPost.Title" href="@Posts.GetPostLink(primaryPost)">
+                        <img src="@primaryPost.Image" alt="Cover Image for @primaryPost.Title" class="shadow-sm hover:shadow-2xl transition-shadow duration-200">
+                    </a>
+                </div>
+            </div>
+            <div class="md:grid md:grid-cols-2 md:gap-x-16 lg:gap-x-8 mb-20 md:mb-28">
+                <div>
+                    <h3 class="mb-4 text-4xl lg:text-6xl leading-tight">
+                        <a class="hover:underline" href="@Posts.GetPostLink(primaryPost)">@primaryPost.Title</a>
+                    </h3>
+                    <div class="mb-4 md:mb-0 text-lg">
+                        <time datetime="@Posts.GetDateTimestamp(primaryPost.Date)">@Posts.GetDateLabel(primaryPost.Date)</time>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-lg leading-relaxed mb-4">@primaryPost.Summary</p>
+                    @if (authorHref != null)
+                    {
+                        <a class="flex items-center text-xl font-bold" href="@authorHref">
+                            <img src="@Posts.GetAuthorProfileUrl(primaryPost.Author)" class="w-12 h-12 rounded-full mr-4" alt="Author">
+                            <span>@primaryPost.Author</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="flex items-center text-xl font-bold">
+                            <img src="@Posts.GetAuthorProfileUrl(primaryPost.Author)" class="w-12 h-12 rounded-full mr-4" alt="Author">
+                            <span>@primaryPost.Author</span>
+                        </span>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+    @if (gridPosts.Count > 0)
+    {
+        <section>
+            <h2 class="mb-8 text-6xl md:text-7xl font-bold tracking-tighter leading-tight">More from the blog</h2>
+            <div class="mx-auto mt-12 grid max-w-lg gap-5 lg:max-w-none lg:grid-cols-3">
+                @foreach (var post in gridPosts)
+                {
+                    var authorHref = Posts.GetAuthorLink(post.Author);
+                    <div class="flex flex-col overflow-hidden rounded-lg shadow-lg">
+                        <div class="flex-shrink-0">
+                            <a href="@Posts.GetPostLink(post)">
+                                <img class="h-48 w-full object-cover" src="@Posts.GetSplashImage(post)" alt="">
+                            </a>
+                        </div>
+                        <div class="flex flex-1 flex-col justify-between bg-white dark:bg-black p-6">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-indigo-600 dark:text-indigo-300">
+                                    Article
+                                </p>
+                                <a href="@Posts.GetPostLink(post)" class="mt-2 block">
+                                    <p class="text-xl font-semibold text-gray-900 dark:text-gray-50">@post.Title</p>
+                                    <p class="mt-3 text-base text-gray-500">@post.Summary</p>
+                                </a>
+                            </div>
+                            <div class="mt-6 flex items-center">
+                                <div class="flex-shrink-0">
+                                    <span>
+                                        <span class="sr-only">@post.Author</span>
+                                        <img class="h-10 w-10 rounded-full" src="@Posts.GetAuthorProfileUrl(post.Author)" alt="@post.Title background">
+                                    </span>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">
+                                        @if (authorHref != null)
+                                        {
+                                            <a href="@Posts.GetAuthorLink(post.Author!)" class="hover:underline">@post.Author</a>
+                                        }
+                                        else
+                                        {
+                                            <span>@post.Author</span>
+                                        }
+                                    </p>
+                                    <div class="flex space-x-1 text-sm text-gray-500">
+                                        <time datetime="@Posts.GetDateTimestamp(post.Date)">@Posts.GetDateLabel(post.Date)</time>
+                                        <span class="px-1" aria-hidden="true">&middot;</span>
+                                        <span>@Posts.MinutesToRead(post.WordCount) min read</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    @if (remainingPosts.Count > 0)
+    {
+        <section class="mt-24 flex justify-center">
+            <div class="flex max-w-screen-lg">
+                <div class="w-2/3">
+                    @foreach (var post in remainingPosts)
+                    {
+                        var authorHref = Posts.GetAuthorLink(post.Author);
+                        <div class="border-b pb-4 mb-4">
+                            <div class="flex justify-between">
+                                <div class="w-3/4">
+                                    <a href="@Posts.GetPostLink(post)" class="mt-2 block">
+                                        <p class="text-xl font-semibold text-gray-900 dark:text-gray-50">@post.Title</p>
+                                        <p class="mt-3 text-base text-gray-500">@post.Summary</p>
+                                    </a>
+                                    <div class="mt-6 flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <span>
+                                                <span class="sr-only">@post.Author</span>
+                                                <img class="h-10 w-10 rounded-full" src="@Posts.GetAuthorProfileUrl(post.Author)" alt="@post.Title background">
+                                            </span>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">
+                                                @if (authorHref != null)
+                                                {
+                                                    <a href="@Posts.GetAuthorLink(post.Author!)" class="hover:underline">@post.Author</a>
+                                                }
+                                                else
+                                                {
+                                                    <span>@post.Author</span>
+                                                }
+                                            </p>
+                                            <div class="flex space-x-1 text-sm text-gray-500">
+                                                <time datetime="@Posts.GetDateTimestamp(post.Date)">@Posts.GetDateLabel(post.Date)</time>
+                                                <span class="px-1" aria-hidden="true">&middot;</span>
+                                                <span>@Posts.MinutesToRead(post.WordCount) min read</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="w-1/4">
+                                    <a href="@Posts.GetPostLink(post)" class="pt-4">
+                                        <img class="w-full object-cover max-h-[130px]" src="@Posts.GetSplashImage(post)" alt="">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (remainingPosts.Count >= 15)
+                    {
+                        <div class="mt-8 text-center">
+                            <a class="text-sm font-semibold hover:underline" href="@Posts.GetPostsLink()">view all posts</a>
+                        </div>
+                    }
+                </div>
+                <div class="w-1/3">
+                    <div class="pl-8">
+                        <div class="flex items-center">
+                            <img class="w-8 h-8 mr-1" src="img/logo.svg" alt="MyApp logo">
+                            <span class="hidden sm:block text-lg font-semibold">MyApp</span>
+                        </div>
+                        <div class="p-2">
+                            <p class="text-gray-500">I’m Spencer Sharp. I live in New York City, where I design the future.</p>
+                            <a href="about" class="text-sm font-medium text-gray-900 hover:underline">more information</a>
+                        </div>
+                        <div class="p-4">
+                            <FollowLinks />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    List<MarkdownFileInfo> posts = new();
+    MarkdownFileInfo? primaryPost;
+    List<MarkdownFileInfo> gridPosts = new();
+    List<MarkdownFileInfo> remainingPosts = new();
+
+    void load() {
+        posts = Posts.GetPosts();
+        primaryPost = posts.FirstOrDefault();
+        gridPosts = posts.Skip(1).Take(6).ToList();
+        remainingPosts = posts.Skip(7).Take(15).ToList();
+    }
+
+    protected override void OnInitialized() => load();
+
+    protected override void OnParametersSet() => load();
+}

@@ -1,9 +1,9 @@
 ---
 title: Create Beautiful UX optimized Blazor Apps with Auto Admin pages
 url: https://youtu.be/tt0ytzVVjEY
-tags: blazor,admin
+tags: [blazor,admin]
 date: 12-12-2022
-order: 2
+order: 4
 ---
 
 We walk through the process of creating admin screens using ServiceStack Blazor Components by looking at our Blazor Diffusion

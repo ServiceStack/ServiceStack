@@ -1,9 +1,9 @@
 ---
 title: Creating Beautiful Blazor Apps with Tailwind
 url: https://youtu.be/3gD_MMcYI-4
-tags: blazor,autoquery
+tags: [blazor,autoquery]
 date: 25-07-2022
-order: 4
+order: 6
 ---
 
 We tour the Blazor Web Assembly template that utilizes Tailwind CSS, 

@@ -1,9 +1,9 @@
 ---
 title: Universal Blazor API Components for Blazor Server and WASM
 url: https://youtu.be/66DgLHExC9E
-tags: blazor,server,wasm,components
+tags: [blazor,server,wasm,components]
 date: 04-01-2023
-order: 3
+order: 4
 ---
 
 We walk through the process of creating universal Blazor API components for Blazor Server 

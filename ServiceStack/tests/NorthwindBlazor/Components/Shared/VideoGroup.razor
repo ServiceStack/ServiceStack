@@ -1,0 +1,72 @@
+﻿@inject MarkdownVideos Videos
+
+<section>
+    <div class="@Background py-24 sm:py-32">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+            <div class="mx-auto max-w-5xl">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl">@Title</h2>
+                <p class="mt-2 text-lg leading-8 text-gray-600 dark:text-gray-400">
+                    @Summary
+                    @if (LearnMore != null)
+                    {
+                        <a href="@LearnMore" class="ml-2 text-sm font-semibold leading-6">Learn more <span aria-hidden="true">→</span></a>                
+                    }
+                </p>
+                <div class="mt-16 space-y-20 lg:mt-20 lg:space-y-20">
+                    @foreach (var video in videos)
+                    {
+                        var videoId = video.Url.LastRightPart('/');
+                        <article class="relative isolate flex flex-col gap-8 lg:flex-row">
+                            <div class="relative lg:w-1/2 lg:shrink-0">
+                                <lite-youtube width="560" height="315" videoid="@videoId" class="@Border"
+                                              style="margin-bottom:3px;background-image: url('https://img.youtube.com/vi/@videoId/maxresdefault.jpg')">
+                                </lite-youtube>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-x-4 text-xs">
+                                    <time datetime="2020-03-16" class="text-gray-500">@($"{video.Date!.Value:MMMM d, yyyy}")</time>
+                                    @foreach (var tag in video.Tags.Safe())
+                                    {
+                                        <span class="relative z-10 rounded-full bg-gray-50 dark:bg-gray-900 py-1.5 px-3 font-medium text-gray-600 dark:text-gray-300">@tag</span>
+                                    }
+                                </div>
+                                <div class="group relative max-w-xl">
+                                    <h3 class="mt-3 text-lg font-semibold leading-6 text-gray-900 dark:text-gray-50 group-hover:text-gray-600 dark:group-hover:text-gray-400">
+                                        <a href="@video.Url">
+                                            @video.Title
+                                        </a>
+                                    </h3>
+                                    <div class="mt-5 text-sm leading-6 text-gray-600 dark:text-gray-400">
+                                        <div class="prose">
+                                            @BlazorHtml.Raw(video.Preview)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter] public required string Group { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? Summary { get; set; }
+    [Parameter] public string? Border { get; set; }
+    [Parameter] public string? LearnMore { get; set; }
+
+    List<MarkdownFileInfo> videos = new();
+
+    void load()
+    {
+        videos = Videos.GetVideos(Group);
+    }
+
+    protected override void OnInitialized() => load();
+
+    protected override void OnParametersSet() => load();
+}

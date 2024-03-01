@@ -34,20 +34,34 @@ public class MarkdownTagHelper : TagHelper
         var include = output.Attributes["include"]?.Value?.ToString() ?? "";
         if (!string.IsNullOrEmpty(include))
         {
+            MarkdownFileBase? doc = null;
             if (include.EndsWith(".md"))
             {
-                var markdown = HostContext.Resolve<MarkdownPages>();
+                var includes = HostContext.TryResolve<MarkdownIncludes>();
+                var pages = HostContext.TryResolve<MarkdownPages>();
                 // default relative path to _includes/
                 include = include[0] != '/'
                     ? "_includes/" + include
                     : include.TrimStart('/');
-                var prefix = include.LeftPart('/');
-                var slug = include.LeftPart('.');
-                var allIncludes = markdown.GetVisiblePages(prefix, allDirectories: true);
-                var doc = allIncludes.FirstOrDefault(x => x.Slug == slug);
-                if (doc != null)
+                
+                doc = includes.Pages.FirstOrDefault(x => x.Path == include);
+                if (doc == null && pages != null)
+                {
+                    var prefix = include.LeftPart('/');
+                    var slug = include.LeftPart('.');
+                    var allIncludes = pages.GetVisiblePages(prefix, allDirectories: true);
+                    doc = allIncludes.FirstOrDefault(x => x.Slug == slug);
+                }
+
+                if (doc?.Preview != null)
                 {
                     renderer.WriteLine(doc.Preview!);
+                }
+                else
+                {
+                    var log = HostContext.Resolve<ILogger<IncludeContainerInlineRenderer>>();
+                    log.LogError("Could not find: {Include}", include);
+                    renderer.WriteLine($"Could not find: {include}");
                 }
             }
             else

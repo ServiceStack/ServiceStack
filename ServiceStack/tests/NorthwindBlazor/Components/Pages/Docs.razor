@@ -1,4 +1,4 @@
-@page "/{Slug:regex(^[a-z-_]+$)}"
+@page "/{Slug:regex(^[-\\w]+$)}"
 @inherits AppComponentBase
 @inject MarkdownPages Markdown
 

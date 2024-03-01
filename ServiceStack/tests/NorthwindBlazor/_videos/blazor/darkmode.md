@@ -1,9 +1,9 @@
 ---
 title: Beautiful Blazor Tailwind Components with Darkmode
 url: https://youtu.be/8nwpC_B4AC4
-tags: darkmode,blazor,components
+tags: [darkmode,blazor,components]
 date: 07-12-2022
-order: 5
+order: 7
 ---
 
 We walkthrough the ServiceStack Blazor Components support for Darkmode. 

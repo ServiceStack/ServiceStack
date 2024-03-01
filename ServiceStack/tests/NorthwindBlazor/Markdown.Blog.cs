@@ -5,6 +5,20 @@ using ServiceStack.IO;
 
 namespace MyApp;
 
+public class BlogConfig
+{
+    public static BlogConfig Instance { get; } = new();
+    public string LocalBaseUrl { get; set; }
+    public string PublicBaseUrl { get; set; }
+    public string? SiteTwitter { get; set; }
+    public List<AuthorInfo> Authors { get; set; } = new();
+    public string? BlogTitle { get; set; }
+    public string? BlogDescription { get; set; }
+    public string? BlogEmail { get; set; }
+    public string? CopyrightOwner { get; set; }
+    public string? BlogImageUrl { get; set; }
+}
+
 public class AuthorInfo
 {
     public string Name { get; set; }
@@ -28,6 +42,7 @@ public class MarkdownBlog(ILogger<MarkdownBlog> log, IWebHostEnvironment env, IV
     public string FallbackProfileUrl { get; set; } = Svg.ToDataUri(Svg.Create(Svg.Body.User, stroke:"none").Replace("fill='currentColor'","fill='#0891b2'"));
     public string FallbackSplashUrl { get; set; } = "https://source.unsplash.com/random/2000x1000/?stationary";
 
+    public BlogConfig Config { get; set; } = new();
     public List<AuthorInfo> Authors { get; set; } = [];
 
     public Dictionary<string, AuthorInfo> AuthorSlugMap { get; } = new();
@@ -135,6 +150,7 @@ public class MarkdownBlog(ILogger<MarkdownBlog> log, IWebHostEnvironment env, IV
 
     public void LoadFrom(string fromDirectory)
     {
+        Authors.Clear();
         Posts.Clear();
         var files = VirtualFiles.GetDirectory(fromDirectory).GetAllFiles().ToList();
         log.LogInformation("Found {Count} posts", files.Count);
@@ -143,17 +159,28 @@ public class MarkdownBlog(ILogger<MarkdownBlog> log, IWebHostEnvironment env, IV
 
         foreach (var file in files)
         {
-            try
+            if (file.Name == "config.json")
             {
-                var doc = Load(file.VirtualPath, pipeline);
-                if (doc == null)
-                    continue;
-
-                Posts.Add(doc);
+                Config = file.ReadAllText().FromJson<BlogConfig>();
             }
-            catch (Exception e)
+            else if (file.Name == "authors.json")
             {
-                log.LogError(e, "Couldn't load {VirtualPath}: {Message}", file.VirtualPath, e.Message);
+                Authors = file.ReadAllText().FromJson<List<AuthorInfo>>();
+            }
+            else if (file.Extension == "md")
+            {
+                try
+                {
+                    var doc = Load(file.VirtualPath, pipeline);
+                    if (doc == null)
+                        continue;
+
+                    Posts.Add(doc);
+                }
+                catch (Exception e)
+                {
+                    log.LogError(e, "Couldn't load {VirtualPath}: {Message}", file.VirtualPath, e.Message);
+                }
             }
         }
 

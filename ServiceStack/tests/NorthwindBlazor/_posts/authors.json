@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Lucy Bates",
+    "email": "lucy@email.org",
+    "bio": "Works in software design, company building, and the aerospace industry.",
+    "profileUrl": "img/profiles/user1.svg",
+    "twitterUrl": "https://twitter.com/lucy",
+    "threadsUrl": "https://threads.net/@lucy",
+    "gitHubUrl": "https://github.com/lucy"
+  },
+  {
+    "name": "Gayle Smith",
+    "email": "gayle@email.org",
+    "bio": "Gayle is an author, consultant, and founder focusing on improving tech.",
+    "profileUrl": "img/profiles/user2.svg",
+    "twitterUrl": "https://twitter.com/gayle",
+    "mastodonUrl": "https://mastodon.social/@gayle"
+  },
+  {
+    "name": "Brandon Foley",
+    "email": "brandon@email.org",
+    "bio": "I am a programmer at heart. I like to tinker with code and build generic coding structures.",
+    "profileUrl": "img/profiles/user3.svg",
+    "gitHubUrl": "https://github.com/brandon"
+  }
+]

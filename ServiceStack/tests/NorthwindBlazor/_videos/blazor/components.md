@@ -3,7 +3,7 @@ title: Rapidly Develop Beautiful Apps with Blazor Tailwind Components
 url: https://youtu.be/iKpQI2233nY
 tags: blazor,components,autoquery
 date: 11-10-2022
-order: 1
+order: 3
 ---
 
 The ServiceStack Blazor components for Blazor WASM and Server Rendered Apps are a powerful set of tools that enable 

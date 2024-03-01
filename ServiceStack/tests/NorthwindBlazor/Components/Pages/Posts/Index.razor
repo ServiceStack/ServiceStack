@@ -1,0 +1,52 @@
+﻿@page "/posts/"
+@inject MarkdownBlog Blog
+
+<div class="relative bg-gray-50 dark:bg-gray-900 px-6 pt-16 pb-20 lg:px-8 lg:pt-24 lg:pb-28">
+    <div class="absolute inset-0">
+        <div class="h-1/3 bg-white dark:bg-black sm:h-2/3"></div>
+    </div>
+    <div class="relative mx-auto max-w-7xl">
+        <BlogTitle Heading=@Blog.Config.BlogDescription />
+    </div>
+    <div class="relative my-4 mx-auto max-w-7xl">
+        <div class="flex flex-wrap justify-center">
+            @foreach (var tag in allTags.OrderByDescending(tag => tagCounts[tag]))
+            {
+                <a href="@Blog.GetTagLink(tag)" class="mr-2 mb-2 text-xs leading-5 font-semibold bg-slate-400/10 rounded-full py-1 px-3 flex items-center space-x-2 hover:bg-slate-400/20 dark:highlight-white/5">@tag</a>
+            }
+        </div>
+    </div>
+    <div class="relative mb-8 mx-auto max-w-7xl">
+        <div class="flex flex-wrap justify-center">
+            <b class="text-sm font-semibold">@thisYear</b>
+            @foreach (var year in allYears.Where(x => x != thisYear))
+            {
+                <a class="ml-3 text-sm text-indigo-700 font-semibold hover:underline" href="@Blog.GetYearLink(year)">@year</a>
+            }
+        </div>
+    </div>
+    <div class="relative mx-auto max-w-7xl">
+        <BlogPosts Posts=@allPosts.Where(x => x.Date.Value.Year == thisYear).ToList() />
+    </div>
+</div>
+
+@code {
+    List<MarkdownFileInfo> allPosts = new();
+    IEnumerable<string> allTags = [];
+    Dictionary<string, int> tagCounts = new();
+    IOrderedEnumerable<int> allYears => allPosts.Select(x => x.Date.Value.Year).Distinct().OrderByDescending(x => x);
+    int thisYear;
+
+    void load()
+    {
+        allPosts = Blog.GetPosts();
+        allTags = allPosts.SelectMany(x => x.Tags).Distinct();
+        tagCounts = new();
+        allTags.Each(tag => tagCounts[tag] = allPosts.Count(x => x.Tags.Safe().Contains(tag)));
+        thisYear = DateTime.UtcNow.Year;
+    }
+
+    protected override void OnInitialized() => load();
+
+    protected override void OnParametersSet() => load();
+}

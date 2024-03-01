@@ -1,0 +1,58 @@
+﻿@page "/posts/author/{Slug}"
+@inject MarkdownBlog Blog
+@inject AppConfig AppConfig
+
+@if (author != null)
+{
+    <PageTitle>@author.Name posts</PageTitle>
+
+    <div class="relative bg-gray-50 dark:bg-gray-900 px-6 pt-16 pb-20 lg:px-8 lg:pt-24 lg:pb-28">
+        <div class="absolute inset-0">
+            <div class="h-1/3 bg-white dark:bg-black sm:h-2/3"></div>
+        </div>
+        <div class="relative mx-auto max-w-7xl">
+            <BlogTitle Heading=@($"All posts written by <b>{author.Name}</b>") />
+        </div>
+        <div class="mt-12 relative mx-auto max-w-7xl">
+            <BlogPosts Posts=@Blog.GetPosts(author: author.Name) />
+
+            <div class="mt-8 text-center">
+                <a class="text-sm font-semibold hover:underline" href="@Blog.GetPostsLink()">view all posts</a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="mt-3 mb-20 mx-auto max-w-fit">
+    @if (error != null)
+    {
+        <ErrorSummary Status=@error />
+    }
+    else
+    {
+        <Loading />
+    }
+    </div>
+}
+
+@code {
+    [Parameter] public required string Slug { get; set; }
+
+    AuthorInfo? author;
+    ResponseStatus? error;
+
+    void load()
+    {
+        author = Blog.GetAuthorBySlug(Slug);
+        if (author == null)
+        {
+            error = new() { Message = $"Author '{Slug}' was not found" };
+            return;
+        }
+    }
+
+    protected override void OnInitialized() => load();
+
+    protected override void OnParametersSet() => load();
+}

@@ -1,0 +1,9 @@
+{
+  "localBaseUrl": "https://localhost:5001",
+  "publicBaseUrl": "https://blazor-vue.web-templates.io",
+  "siteTwitter": "@BlazorVue",
+  "blogTitle": "From the blog",
+  "blogDescription": "Learnings, recommendations & new features from ServiceStack engineers",
+  "blogEmail": "email@example.org (Blazor Vue)",
+  "blogImageUrl": "https://servicestack.net/img/logo.png"
+}
