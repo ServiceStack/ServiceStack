@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="Oracle.ManagedDataAccess" Version="21.10.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess" Version="21.13.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
