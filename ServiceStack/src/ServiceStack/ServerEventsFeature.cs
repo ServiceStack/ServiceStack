@@ -571,18 +571,16 @@ trigger.customEvent arg
 public class EventSubscription : SubscriptionInfo, IEventSubscription, IServiceStackAsyncDisposable
 {
     private static ILog Log = LogManager.GetLogger(typeof(EventSubscription));
-    public static string[] UnknownChannel = { "*" };
+    public static string[] UnknownChannel = ["*"];
 
     private long LastPulseAtTicks = DateTime.UtcNow.Ticks;
     public DateTime LastPulseAt
     {
-        get
-        {
+        get =>
             // assume gRPC connection is always active unless response is closed
-            return !response.IsClosed && (response is IWriteEvent || response is IWriteEventAsync)
+            !response.IsClosed && (response is IWriteEvent || response is IWriteEventAsync)
                 ? DateTime.UtcNow 
                 : new DateTime(Interlocked.Read(ref LastPulseAtTicks), DateTimeKind.Utc);
-        }
         set => Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks);
     }
 
