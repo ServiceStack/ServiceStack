@@ -1496,7 +1496,6 @@ public static class AppMetadataUtils
 
     public static List<MetadataPropertyType> GetAllProperties(this AppMetadata api, MetadataType metaType)
     {
-        //var metaType = api.GetType(forType);
         var to = new List<MetadataPropertyType>();
 
         while (metaType != null)
@@ -1506,10 +1505,7 @@ public static class AppMetadataUtils
                 if (to.Any(x => x.Name == prop.Name))
                     to.Add(prop);
             }
-            if (metaType.Inherits != null)
-            {
-                metaType = api.GetType(metaType.Inherits);
-            }
+            metaType = metaType.Inherits != null ? api.GetType(metaType.Inherits) : null;
         }
 
         return to;
