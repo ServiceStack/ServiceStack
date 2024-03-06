@@ -1502,7 +1502,7 @@ public static class AppMetadataUtils
         {
             foreach (var prop in metaType.Properties.OrEmpty())
             {
-                if (!to.Any(x => x.Name == prop.Name))
+                if (to.All(x => x.Name != prop.Name))
                     to.Add(prop);
             }
             metaType = metaType.Inherits != null ? api.GetType(metaType.Inherits) : null;
