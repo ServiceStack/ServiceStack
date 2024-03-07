@@ -140,12 +140,12 @@ namespace ServiceStack.Serialization
         {
             var errors = new List<RequestBindingError>();
 
-            if (instance == null)
-                instance = type.CreateInstance();
+            instance ??= type.CreateInstance();
 
             foreach (var key in nameValues.AllKeys)
             {
-                string value = nameValues[key];
+                if (key == null) continue; //.NET Framework NameValueCollection can contain null keys
+                var value = nameValues[key];
                 if (!string.IsNullOrEmpty(value))
                 {
                     instance = PopulateFromKeyValue(instance, key, value,
