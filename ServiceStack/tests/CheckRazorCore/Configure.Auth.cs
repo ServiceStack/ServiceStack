@@ -55,6 +55,9 @@ public class ConfigureAuth : IHostingStartup
             ]));
 
             appHost.Plugins.Add(new RegistrationFeature());
+            
+            appHost.Plugins.Add(new AdminUsersFeature());
+            appHost.ConfigurePlugin<PredefinedRoutesFeature>(feature => feature.JsonApiRoute = null);
 
             //override the default registration validation with your own custom implementation
             appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
