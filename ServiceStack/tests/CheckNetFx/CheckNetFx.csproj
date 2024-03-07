@@ -12,7 +12,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MyApp</RootNamespace>
-    <AssemblyName>MyApp</AssemblyName>
+    <AssemblyName>CheckNetFx</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
@@ -58,24 +58,6 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj">
-      <Project>{1d1726e6-af68-4c2b-a02c-264f70b69d36}</Project>
-      <Name>ServiceStack.Text</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{e36747f7-2821-4f41-ac84-55d1904f1888}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
-      <Project>{a5412707-5cde-4e9b-9433-2c0eb27699ce}</Project>
-      <Name>ServiceStack.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{1174159e-fcbe-4aa9-83f2-6f04f6bb855d}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="ServiceModel\Types\README.md" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -102,6 +84,28 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
       <Version>6.0.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{a7070566-eee2-46d3-b8bf-a2c79873d267}</Project>
+      <Name>ServiceStack.Text</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
+      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
+      <Name>ServiceStack.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
+      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
+      <Name>ServiceStack</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

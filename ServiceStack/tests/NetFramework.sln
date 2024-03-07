@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite", "..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.OrmLite.Sqlite", "..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj", "{C083F278-B856-4610-B3B4-7B64547CA4A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyApp", "CheckNetFx\MyApp.csproj", "{4389B305-B381-4B50-B1A8-BBB5259A0524}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckNetFx", "CheckNetFx\CheckNetFx.csproj", "{4389B305-B381-4B50-B1A8-BBB5259A0524}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
