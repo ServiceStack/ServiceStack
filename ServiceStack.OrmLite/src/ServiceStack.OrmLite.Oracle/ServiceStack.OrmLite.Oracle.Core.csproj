@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <PackageId>ServiceStack.OrmLite.Oracle.Core</PackageId>
     <AssemblyName>ServiceStack.OrmLite.Oracle</AssemblyName>
-    <PackageId>ServiceStack.OrmLite.Oracle</PackageId>
+    <RootNamespace>ServiceStack.OrmLite.Oracle</RootNamespace>
     <Title>OrmLite.Oracle - Fast, code-first, config-free POCO ORM</Title>
     <PackageDescription>
       Light, simple and fast convention-based code-first POCO ORM for Oracle RDBMS (Unofficial).
