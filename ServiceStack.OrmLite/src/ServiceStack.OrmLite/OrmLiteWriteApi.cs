@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -17,6 +17,85 @@ namespace ServiceStack.OrmLite
         public static string GetLastSql(this IDbConnection dbConn)
         {
             return dbConn is OrmLiteConnection ormLiteConn ? ormLiteConn.LastCommandText : null;
+        }
+
+        /// <summary>
+        /// Get the last SQL statement that was executed (include parameters).
+        /// </summary>
+        public static string GetMergedParamsLastSql(this IDbConnection dbConn)
+        {
+            if (dbConn is OrmLiteConnection ormLiteConn)
+            {
+                var dbCmd= ormLiteConn.LastCommand;
+                var commandText = dbCmd.CommandText;
+                var dialectProvider = ormLiteConn.GetDialectProvider();
+                foreach (IDataParameter parameter in dbCmd.Parameters)
+                {
+                    var type = GetTypeFromDbType(parameter.DbType);
+                    commandText= commandText.Replace(parameter.ParameterName, dialectProvider.GetQuotedValue(parameter.Value,type));
+                }
+
+                return commandText;
+            }
+            else
+            {
+                return null;
+            }
+
+            static Type GetTypeFromDbType(DbType dbType)
+            {
+                switch (dbType)
+                {
+                    case DbType.Binary:
+                        return typeof(byte[]);
+                    case DbType.Byte:
+                        return typeof(byte);
+                    case DbType.Boolean:
+                        return typeof(bool);
+                    case DbType.Currency:
+                        return typeof(decimal);
+                    case DbType.Date:
+                    case DbType.DateTime:
+                    case DbType.DateTime2:
+                    case DbType.DateTimeOffset:
+                        return typeof(DateTime);
+                    case DbType.Decimal:
+                        return typeof(decimal);
+                    case DbType.Double:
+                        return typeof(double);
+                    case DbType.Guid:
+                        return typeof(Guid);
+                    case DbType.Int16:
+                        return typeof(short);
+                    case DbType.Int32:
+                        return typeof(int);
+                    case DbType.Int64:
+                        return typeof(long);
+                    case DbType.SByte:
+                        return typeof(sbyte);
+                    case DbType.Single:
+                        return typeof(float);
+                    case DbType.String:
+                    case DbType.AnsiString:
+                    case DbType.AnsiStringFixedLength:
+                    case DbType.StringFixedLength:
+                    case DbType.Xml:
+                        return typeof(string);
+                    case DbType.Time:
+                        return typeof(TimeSpan);
+                    case DbType.UInt16:
+                        return typeof(ushort);
+                    case DbType.UInt32:
+                        return typeof(uint);
+                    case DbType.UInt64:
+                        return typeof(ulong);
+                    case DbType.VarNumeric:
+                        return typeof(decimal);
+                    case DbType.Object:
+                    default:
+                        return typeof(object);
+                }
+            }
         }
 
         public static string GetLastSqlAndParams(this IDbCommand dbCmd)
