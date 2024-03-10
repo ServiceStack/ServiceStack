@@ -166,6 +166,9 @@
     <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.SqlServer.Data/ServiceStack.OrmLite.SqlServer.Data.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="$(OrmLiteSrcDir)/ServiceStack.OrmLite.Oracle/ServiceStack.OrmLite.Oracle.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
 
     <!--
       ServiceStack.Redis
