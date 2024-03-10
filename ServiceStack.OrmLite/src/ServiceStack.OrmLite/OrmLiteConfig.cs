@@ -98,6 +98,14 @@ namespace ServiceStack.OrmLite
             }
         }
 
+        public static void SetLastCommand(this IDbConnection db, IDbCommand dbCmd)
+        {
+            if (db is OrmLiteConnection ormLiteConn)
+            {
+                ormLiteConn.LastCommand = dbCmd;
+            }
+        }
+
         private const string RequiresOrmLiteConnection = "{0} can only be set on a OrmLiteConnectionFactory connection, not a plain IDbConnection";
 
         /// <summary>

@@ -40,6 +40,7 @@ namespace ServiceStack.OrmLite
                 ? (ormLiteConn.CommandTimeout ?? OrmLiteConfig.CommandTimeout) 
                 : OrmLiteConfig.CommandTimeout;
 
+            ormLiteConn.SetLastCommand(dbCmd);
             ormLiteConn.SetLastCommandText(null);
 
             return ormLiteConn != null
@@ -53,6 +54,7 @@ namespace ServiceStack.OrmLite
 
             OrmLiteConfig.AfterExecFilter?.Invoke(dbCmd);
 
+            dbConn.SetLastCommand(dbCmd);
             dbConn.SetLastCommandText(dbCmd.CommandText);
 
             dbCmd.Dispose();
@@ -90,6 +92,7 @@ namespace ServiceStack.OrmLite
             var ret = filter(dbCmd);
             if (dbCmd != null)
             {
+                dbConn.SetLastCommand(dbCmd);
                 dbConn.SetLastCommandText(dbCmd.CommandText);
             }
             return ret;

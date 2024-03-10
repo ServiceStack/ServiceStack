@@ -22,6 +22,7 @@ namespace ServiceStack.OrmLite
 
         public IOrmLiteDialectProvider DialectProvider { get; set; }
         public string LastCommandText { get; set; }
+        public IDbCommand LastCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the wait time before terminating the attempt to execute a command and generating an error(in seconds).
