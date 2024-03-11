@@ -127,9 +127,9 @@ public static class DeserializeBuiltin<T>
                 return value => DateTimeSerializer.ParseNullableDateTimeOffset(value.ToString());
 #if NET6_0_OR_GREATER
                 if (typeof(T) == typeof(DateOnly?))
-                    return value => value.IsNullOrEmpty() ? default : DateOnly.FromDateTime(DateTimeSerializer.ParseShortestXsdDateTime(value.ToString()));
+                    return value => value.IsNullOrEmpty() ? (DateOnly?)null : DateOnly.FromDateTime(DateTimeSerializer.ParseShortestXsdDateTime(value.ToString()));
                 if (typeof(T) == typeof(TimeOnly?))
-                    return value => value.IsNullOrEmpty() ? default : TimeOnly.FromTimeSpan(DateTimeSerializer.ParseTimeSpan(value.ToString()));
+                    return value => value.IsNullOrEmpty() ? (TimeOnly?)null : TimeOnly.FromTimeSpan(DateTimeSerializer.ParseTimeSpan(value.ToString()));
 #endif
         }
 
