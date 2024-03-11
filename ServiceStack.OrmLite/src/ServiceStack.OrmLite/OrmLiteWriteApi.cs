@@ -26,13 +26,14 @@ namespace ServiceStack.OrmLite
         {
             if (dbConn is OrmLiteConnection ormLiteConn)
             {
-                var dbCmd= ormLiteConn.LastCommand;
+                var dbCmd = ormLiteConn.LastCommand;
+                if (dbCmd == null) return null;
                 var commandText = dbCmd.CommandText;
                 var dialectProvider = ormLiteConn.GetDialectProvider();
                 foreach (IDataParameter parameter in dbCmd.Parameters)
                 {
                     var type = GetTypeFromDbType(parameter.DbType);
-                    commandText= commandText.Replace(parameter.ParameterName, dialectProvider.GetQuotedValue(parameter.Value,type));
+                    commandText = commandText.Replace(parameter.ParameterName, dialectProvider.GetQuotedValue(parameter.Value, type));
                 }
 
                 return commandText;

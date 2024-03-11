@@ -40,7 +40,7 @@ namespace ServiceStack.OrmLite
                 ? (ormLiteConn.CommandTimeout ?? OrmLiteConfig.CommandTimeout) 
                 : OrmLiteConfig.CommandTimeout;
 
-            ormLiteConn.SetLastCommand(dbCmd);
+            ormLiteConn.SetLastCommand(null);
             ormLiteConn.SetLastCommandText(null);
 
             return ormLiteConn != null
