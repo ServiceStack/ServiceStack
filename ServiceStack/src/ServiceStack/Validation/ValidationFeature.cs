@@ -107,8 +107,10 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
                 }
             }
         }
+        
+        var existingDtoValidators = ValidationExtensions.RegisteredDtoValidators.CreateCopy();
 
-        foreach (var dtoType in ValidationExtensions.RegisteredDtoValidators)
+        foreach (var dtoType in existingDtoValidators)
         {
             Validators.RegisterPropertyRulesFor(services, dtoType, ImplicitlyValidateChildProperties);
         }
