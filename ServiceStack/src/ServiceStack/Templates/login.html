@@ -118,6 +118,20 @@ let BaseUrl = "${BaseUrl}";
 let qs = queryString(location.href);
 let CONTINUE = qs['continue'] || qs.ReturnUrl || qs.redirect || (BaseUrl + '/auth')
 
+function isValidUrl(url) {
+    try {
+        return url.indexOf(':') === -1 || new URL(url).origin === location.origin
+    } catch (_) {
+        return false
+    }
+}
+function redirect(url) {
+    if (!isValidUrl(url))
+        alert('Invalid Redirect URL: "' + url + '"')
+    else
+        location.href = url
+}
+
 function inIframe () {
     try {
         return window.self !== window.top
@@ -128,14 +142,14 @@ function inIframe () {
 
 bootstrapForm(document.querySelector('form'), {
     success: function (r) {
-        location.href = CONTINUE
+        redirect(CONTINUE)
     }
 })
 
 fetch(BaseUrl + '/auth.json')
     .then(function (r) {
         if (r.ok) {
-            location.href = CONTINUE
+            redirect(CONTINUE)
         }
     })
 
