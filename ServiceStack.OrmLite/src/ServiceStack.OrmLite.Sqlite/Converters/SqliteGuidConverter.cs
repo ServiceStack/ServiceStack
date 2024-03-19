@@ -63,9 +63,7 @@ namespace ServiceStack.OrmLite.Sqlite.Converters
 
         private static void Swap(byte[] array, int index1, int index2)
         {
-            var temp = array[index1];
-            array[index1] = array[index2];
-            array[index2] = temp;
+            (array[index1], array[index2]) = (array[index2], array[index1]);
         }        
         public override object GetValue(IDataReader reader, int columnIndex, object[] values)
         {
