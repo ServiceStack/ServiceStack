@@ -17,6 +17,7 @@ public static class ClaimUtils
         principal?.Identity?.IsAuthenticated == true ? principal : null;
     public static bool IsAdmin(this ClaimsPrincipal? principal) => principal?.IsInRole(Admin) == true;
 
+    public static string? GetUserName(this ClaimsPrincipal? principal) => principal?.Identity?.Name; 
     public static string? GetUserId(this ClaimsPrincipal? principal) => principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     public static string? GetDisplayName(this ClaimsPrincipal? principal) => 
         principal?.FindFirst(principal.Identities.FirstOrDefault()?.NameClaimType ?? ClaimTypes.Name)?.Value;
