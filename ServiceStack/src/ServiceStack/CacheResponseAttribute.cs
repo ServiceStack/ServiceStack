@@ -21,7 +21,7 @@ public class CacheResponseAttribute : RequestFilterAsyncAttribute
     /// <summary>
     /// MaxAge in seconds
     /// </summary>
-    public int MaxAge { get; set; }
+    public int MaxAge { get; set; } = -1;
 
     /// <summary>
     /// Cache-Control HTTP Headers
@@ -52,11 +52,6 @@ public class CacheResponseAttribute : RequestFilterAsyncAttribute
     /// Skip compression for this Cache Result
     /// </summary>
     public bool NoCompression { get; set; }
-
-    public CacheResponseAttribute()
-    {
-        MaxAge = -1;
-    }
 
     public override async Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
     {
