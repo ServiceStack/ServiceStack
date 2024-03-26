@@ -94,7 +94,10 @@ public static class Env
             }
             catch (Exception) {}
         }
-            
+#if NET6_0_OR_GREATER
+        if (OperatingSystem.IsIOS()) IsIOS = true;
+#endif
+        
         SupportsExpressions = true;
         SupportsEmit = !(IsUWP || IsIOS);
 
@@ -108,6 +111,14 @@ public static class Env
         __releaseDate = new DateTime(2001,01,01);
             
         UpdateServerUserAgent();
+    }
+
+    internal static bool IsAot()
+    {
+#if NET6_0_OR_GREATER
+        return OperatingSystem.IsIOS() || RuntimeFeature.IsDynamicCodeSupported;
+#endif
+        return false;
     }
 
     internal static void UpdateServerUserAgent()

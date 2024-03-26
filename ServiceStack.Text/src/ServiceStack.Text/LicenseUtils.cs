@@ -221,6 +221,12 @@ public static class LicenseUtils
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         try
         {
+            if (Env.IsAot())
+            {
+                __setActivatedLicense(new __ActivatedLicense(new LicenseKey { Type = LicenseType.Indie }));
+                return;
+            }
+
             if (IsFreeLicenseKey(licenseKeyText))
             {
                 ValidateFreeLicenseKey(licenseKeyText);
