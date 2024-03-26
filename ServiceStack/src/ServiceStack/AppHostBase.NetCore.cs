@@ -880,6 +880,18 @@ public static class NetCoreAppHostExtensions
     public static IServiceProvider GetServiceProvider(this IRequest? request) => 
         request as IServiceProvider ?? ServiceStackHost.Instance.GetApplicationServices()
         ?? throw new NotSupportedException("No IServiceProvider found");
+    
+    public static string? GetRemoteIp(this HttpContext? ctx)
+    {
+        var headers = ctx?.Request.Headers;
+        if (headers == null)
+            return null;
+        return string.IsNullOrEmpty(headers[HttpHeaders.XForwardedFor])
+            ? headers[HttpHeaders.XForwardedFor].ToString()
+            : string.IsNullOrEmpty(headers[HttpHeaders.XRealIp])
+                ? headers[HttpHeaders.XForwardedFor].ToString()
+                : ctx?.Connection.RemoteIpAddress?.ToString();
+    }
 
 #if NET6_0_OR_GREATER
     public static T ConfigureAndResolve<T>(this IHostingStartup config, string? hostDir = null, bool setHostDir = true)
