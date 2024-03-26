@@ -116,7 +116,7 @@ public static class Env
     internal static bool IsAot()
     {
 #if NET6_0_OR_GREATER
-        return OperatingSystem.IsIOS() || RuntimeFeature.IsDynamicCodeSupported;
+        return OperatingSystem.IsIOS() || !RuntimeFeature.IsDynamicCodeSupported;
 #endif
         return false;
     }

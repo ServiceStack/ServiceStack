@@ -233,7 +233,10 @@ public static class LicenseUtils
                 
             subId = licenseKeyText.LeftPart('-');
             if (!int.TryParse(subId, out var subIdInt))
-                throw new LicenseException("This license is invalid." + ContactDetails);
+            {
+                if (!licenseKeyText.StartsWith("TRIAL"))
+                    throw new LicenseException("This license is invalid." + ContactDetails);
+            }
                 
             if (Env.IsAot())
             {
