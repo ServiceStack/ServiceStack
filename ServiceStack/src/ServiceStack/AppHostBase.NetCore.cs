@@ -886,9 +886,9 @@ public static class NetCoreAppHostExtensions
         var headers = ctx?.Request.Headers;
         if (headers == null)
             return null;
-        return string.IsNullOrEmpty(headers[HttpHeaders.XForwardedFor])
+        return !string.IsNullOrEmpty(headers[HttpHeaders.XForwardedFor])
             ? headers[HttpHeaders.XForwardedFor].ToString()
-            : string.IsNullOrEmpty(headers[HttpHeaders.XRealIp])
+            : !string.IsNullOrEmpty(headers[HttpHeaders.XRealIp])
                 ? headers[HttpHeaders.XForwardedFor].ToString()
                 : ctx?.Connection.RemoteIpAddress?.ToString();
     }
