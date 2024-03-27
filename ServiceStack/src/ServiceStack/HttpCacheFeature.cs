@@ -127,8 +127,7 @@ public class HttpCacheFeature : IPlugin, Model.IHasStringId
             var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
             if (responseBytes != null || req.ResponseContentType.IsBinary())
             {
-                if (responseBytes == null)
-                    responseBytes = HostContext.ContentTypes.SerializeToBytes(req, dto);
+                responseBytes ??= HostContext.ContentTypes.SerializeToBytes(req, dto);
 
                 cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
 

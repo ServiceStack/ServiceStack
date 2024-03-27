@@ -83,11 +83,11 @@ public class InlineModelValidator : AbstractValidator<InlineModel>
 
 public class ListEntry
 {
-    public required string Prop1 { get; set; }
+    public string Prop1 { get; set; }
 
-    public required int Prop2 { get; set; }
+    public int Prop2 { get; set; }
 
-    public required ListEntryChild Child { get; set; }
+    public ListEntryChild Child { get; set; }
 }
 
 public class ListEntryValidator : AbstractValidator<ListEntry>
@@ -105,7 +105,7 @@ public class ListEntryValidator : AbstractValidator<ListEntry>
 public class ListEntryChild
 {
     [ValidateNotEmpty]
-    public required string ChildProp { get; set; }
+    public string ChildProp { get; set; }
 }
 
 public class CustomValidationService : Service
