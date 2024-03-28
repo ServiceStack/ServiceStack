@@ -188,6 +188,14 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
         });
     }
 
+    public virtual async Task DeleteFileAsync(string filePath)
+    {
+        await AmazonS3.DeleteObjectAsync(new DeleteObjectRequest {
+            BucketName = BucketName,
+            Key = SanitizePath(filePath),
+        }).ConfigAwait();
+    }
+
     public virtual void DeleteFiles(IEnumerable<string> filePaths)
     {
         var batches = filePaths
@@ -205,6 +213,26 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
             }
 
             AmazonS3.DeleteObjects(request);
+        }
+    }
+
+    public virtual async Task DeleteFilesAsync(IEnumerable<string> filePaths)
+    {
+        var batches = filePaths
+            .BatchesOf(MultiObjectLimit);
+
+        foreach (var batch in batches)
+        {
+            var request = new DeleteObjectsRequest {
+                BucketName = BucketName,
+            };
+
+            foreach (var filePath in batch)
+            {
+                request.AddKey(SanitizePath(filePath));
+            }
+
+            await AmazonS3.DeleteObjectsAsync(request).ConfigAwait();
         }
     }
 
