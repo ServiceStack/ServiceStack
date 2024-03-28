@@ -67,8 +67,37 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
             throw;
         }
     }
+    
+    public virtual async Task<IVirtualFile> GetFileAsync(string virtualPath)
+    {
+        if (string.IsNullOrEmpty(virtualPath))
+            return null;
 
-    protected S3VirtualDirectory GetParentDirectory(string dirPath)
+        var filePath = SanitizePath(virtualPath);
+        try
+        {
+            var response = await AmazonS3.GetObjectAsync(new GetObjectRequest
+            {
+                Key = filePath,
+                BucketName = BucketName,
+            }).ConfigAwait();
+
+            var dirPath = GetDirPath(filePath);
+            var dir = dirPath == null
+                ? RootDirectory
+                : GetParentDirectory(dirPath);
+            return new S3VirtualFile(this, dir).Init(response);
+        }
+        catch (AmazonS3Exception ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.NotFound)
+                return null;
+
+            throw;
+        }
+    }
+
+    public virtual S3VirtualDirectory GetParentDirectory(string dirPath)
     {
         if (string.IsNullOrEmpty(dirPath))
             return null;
