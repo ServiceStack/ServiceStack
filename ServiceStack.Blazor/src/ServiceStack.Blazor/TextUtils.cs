@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Html;
+using ServiceStack.Redis;
 using ServiceStack.Text;
 
 namespace ServiceStack.Blazor;
@@ -142,6 +143,12 @@ public static class TextUtils
 {
     public static CultureInfo UseCulture { get; set; } = CultureInfo.InvariantCulture;
 
+    public static Func<string, string> FormatHumanize { get; set; } = DefaultFormatHumanize;
+    public static string DefaultFormatHumanize(string text) => SplitCase(text).ToTitleCase();
+
+    public static Func<Type, string> FormatHumanizeType { get; set; } = DefaultFormatHumanizeType;
+    public static string DefaultFormatHumanizeType(Type type) => SplitCase(type.Name).ToTitleCase();
+
     public static Func<string, string> FormatString { get; set; } = DefaultFormatString;
     public static string DefaultFormatString(string value) => value.StartsWith("/Date(")
         ? FormatDate(ServiceStack.Text.Common.DateTimeSerializer.ParseShortestXsdDateTime(value))
@@ -165,7 +172,8 @@ public static class TextUtils
     };
 
     public static string SplitCase(string text) => text.SplitCamelCase().Replace('_', ' ').Replace("  ", " ");
-    public static string Humanize(string text) => SplitCase(text).ToTitleCase();
+    public static string Humanize(Type type) => FormatHumanizeType(type);
+    public static string Humanize(string text) => FormatHumanize(text);
     public static string TitleCase(string text) => text.ToTitleCase();
     public static string PascalCase(string text) => text.ToPascalCase();
     public static string CamelCase(string text) => text.ToCamelCase();

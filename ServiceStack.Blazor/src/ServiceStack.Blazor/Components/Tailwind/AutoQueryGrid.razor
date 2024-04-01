@@ -5,7 +5,7 @@
 @if (invalidAccess != null)
 {
     <div class="w-body md:w-body overflow-auto">
-        <EnsureAccess Title=@($"View {typeof(Model).Name}") HtmlMessage=@invalidAccess />
+        <EnsureAccess Title=@($"View {ModelTitle}") HtmlMessage=@invalidAccess />
     </div>
 }
 else
@@ -18,7 +18,7 @@ else
     {
         if (invalidCreateAccess != null)
         {
-            <EnsureAccess Title=@($"New {typeof(Model).Name}") HtmlMessage=@invalidCreateAccess Done="OnNewDone" />
+            <EnsureAccess Title=@($"New {ModelTitle}") HtmlMessage=@invalidCreateAccess Done="OnNewDone" />
         }
         else if (CreateForm != null)
         {
@@ -33,7 +33,7 @@ else
     {
         if (invalidUpdateAccess != null)
         {
-            <EnsureAccess Title=@($"Edit {typeof(Model).Name}") HtmlMessage=@invalidUpdateAccess Done="OnEditDone" />
+            <EnsureAccess Title=@($"Edit {ModelTitle}") HtmlMessage=@invalidUpdateAccess Done="OnEditDone" />
         }
         else if (EditForm != null)
         {
@@ -57,7 +57,7 @@ else
             <div class="flex mt-1">
             @if (ShowPreferences)
             {
-                <button type="button" class="pl-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
+                <button type="button" class="pl-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" title=@($"{ModelTitle} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor" /></g></svg>
                 </button>
             }
@@ -175,9 +175,9 @@ else
             @if (ShowNewItem && CreateOp != null)
             {
                 <div class="pl-2 mt-1">
-                    <button type="button" @onclick="OnShowNewItem" title=@($"New {typeof(Model).Name}") class=@ToolbarButtonClass>
+                    <button type="button" @onclick="OnShowNewItem" title=@NewButtonLabel class=@ToolbarButtonClass>
                         <svg class="w-5 h-5 mr-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"></path></svg>
-                        <span class="whitespace-nowrap">@($"New {typeof(Model).Name}")</span>
+                        <span class="whitespace-nowrap">@NewButtonLabel</span>
                     </button>
                 </div>
             }

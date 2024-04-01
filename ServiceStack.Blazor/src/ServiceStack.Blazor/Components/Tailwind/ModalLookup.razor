@@ -5,10 +5,10 @@
      <div class="pt-2 overflow-auto" style="min-height:620px">
         <div class="mt-3 pl-5 flex flex-wrap items-center">
             <h3 class="hidden sm:block text-xl leading-6 font-medium text-gray-900 dark:text-gray-50 mr-3">
-                Select <span class="hidden md:inline">@TextUtils.Humanize(typeof(Model).Name)</span>
+                Select <span class="hidden md:inline">@ModelTitle</span>
             </h3>
             <div class="flex pb-1 sm:pb-0">
-                <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title=@($"{typeof(Model).Name} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
+                <button type="button" class="pl-2 text-gray-700 hover:text-indigo-600" title=@($"{ModelTitle} Preferences") @onclick="_ => ShowQueryPrefs = !ShowQueryPrefs">
                     <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-width="1.5" fill="none"><path d="M9 3H3.6a.6.6 0 0 0-.6.6v16.8a.6.6 0 0 0 .6.6H9M9 3v18M9 3h6M9 21h6m0-18h5.4a.6.6 0 0 1 .6.6v16.8a.6.6 0 0 1-.6.6H15m0-18v18" stroke="currentColor" /></g></svg>
                 </button>
                 <button type="button" class=@ClassNames("pl-2", canFirst ? "text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400" : "text-gray-400 dark:text-gray-500")

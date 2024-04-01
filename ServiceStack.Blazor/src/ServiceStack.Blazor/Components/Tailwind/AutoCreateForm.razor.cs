@@ -13,7 +13,7 @@ namespace ServiceStack.Blazor.Components.Tailwind;
 public partial class AutoCreateForm<Model> : AutoFormBase<Model>
 {
     [Parameter] public Model? NewModel { get; set; }
-    protected override string Title => Heading ?? ApiType.GetDescription() ?? $"New {typeof(Model).Name}";
+    protected override string Title => Heading ?? ApiType.GetDescription() ?? $"New {TextUtils.Humanize(typeof(Model))}";
 
     protected override async Task OnParametersSetAsync()
     {

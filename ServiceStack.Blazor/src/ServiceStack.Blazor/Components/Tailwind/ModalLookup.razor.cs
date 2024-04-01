@@ -192,6 +192,7 @@ public partial class ModalLookup<Model> : ModalLookup
     List<Column<Model>> GetColumns() => DataGrid?.GetColumns() ?? TypeConstants<Column<Model>>.EmptyList;
     Dictionary<string, Column<Model>> ColumnsMap => DataGrid?.ColumnsMap ?? new();
     [Parameter] public string ToolbarButtonClass { get; set; } = CssUtils.Tailwind.ToolbarButtonClass;
+    [Parameter] public string ModelTitle { get; set; } = TextUtils.Humanize(typeof(Model));
 
     int Skip { get; set; } = 0;
     int Take => ApiPrefs.Take;

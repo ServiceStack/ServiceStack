@@ -15,7 +15,7 @@ public partial class AutoEditForm<Model> : AutoFormBase<Model>
     [Parameter, EditorRequired] public Model Edit { get; set; }
     [Parameter] public Type? DeleteApiType { get; set; }
 
-    protected override string Title => Heading ?? ApiType.GetDescription() ?? $"Edit {typeof(Model).Name} {MetadataType?.GetId(Edit)}";
+    protected override string Title => Heading ?? ApiType.GetDescription() ?? $"Edit {TextUtils.Humanize(typeof(Model))} {MetadataType?.GetId(Edit)}";
 
     IHasErrorStatus? deleteApi;
 

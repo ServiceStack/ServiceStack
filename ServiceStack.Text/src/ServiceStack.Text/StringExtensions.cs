@@ -855,6 +855,12 @@ public static class StringExtensions
         return ucWords[0].ToInvariantUpper() + ucWords.Substring(1);
     }
 
+    public static string SplitCase(this string camelCase)
+    {
+        var ucWords = camelCase.SplitCamelCase();
+        return ucWords[0].ToInvariantUpper() + ucWords.Substring(1);
+    }
+
     public static string ToHttps(this string url)
     {
         if (url == null)

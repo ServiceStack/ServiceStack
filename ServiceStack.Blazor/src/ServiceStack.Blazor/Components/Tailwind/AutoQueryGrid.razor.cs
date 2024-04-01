@@ -63,6 +63,8 @@ public partial class AutoQueryGrid<Model> : AuthBlazorComponentBase, IDisposable
     [Parameter] public string TableHeaderRowClass { get; set; } = CssDefaults.Grid.GetTableHeaderRowClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
     [Parameter] public string TableHeaderCellClass { get; set; } = CssDefaults.Grid.GetTableHeaderCellClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
     [Parameter] public string TableBodyClass { get; set; } = CssDefaults.Grid.GetTableBodyClass(BlazorConfig.Instance.AutoQueryGridDefaults.TableStyle);
+    [Parameter] public string ModelTitle { get; set; } = TextUtils.Humanize(typeof(Model));
+    [Parameter] public string NewButtonLabel { get; set; } = $"New {TextUtils.Humanize(typeof(Model))}";
 
 
     [Parameter] public List<Model> Items { get; set; } = new();
