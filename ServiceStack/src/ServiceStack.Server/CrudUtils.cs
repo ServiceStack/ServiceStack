@@ -222,7 +222,7 @@ public class CreateCrudServices : IMeta
     public Dictionary<string, string> Meta { get; set; }
 }
 
-public class CrudCodeGenTypes : NativeTypesBase, IMeta, IReturn<string>
+public class CrudCodeGenTypes : NativeTypesBase, IMeta, IGet, IReturn<string>
 {
     /// <summary>
     /// Either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types
@@ -286,7 +286,7 @@ public class CrudCodeGenTypes : NativeTypesBase, IMeta, IReturn<string>
     public Dictionary<string, string> Meta { get; set; }
 }
 
-public class CrudTables : IReturn<AutoCodeSchemaResponse>
+public class CrudTables : IGet, IReturn<AutoCodeSchemaResponse>
 {
     public string Schema { get; set; }
     public string NamedConnection { get; set; }
