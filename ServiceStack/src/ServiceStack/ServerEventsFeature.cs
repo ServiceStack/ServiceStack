@@ -33,6 +33,7 @@ public class ServerEventsFeature : IPlugin, IConfigureServices, Model.IHasString
     public string StreamPath { get; set; }
     public string HeartbeatPath { get; set; }
     public string SubscribersPath { get; set; }
+    public string UpdateSubscribersPath { get; set; }
     public string UnRegisterPath { get; set; }
 
     public TimeSpan IdleTimeout { get; set; }
@@ -96,6 +97,7 @@ public class ServerEventsFeature : IPlugin, IConfigureServices, Model.IHasString
         HeartbeatPath = "/event-heartbeat";
         UnRegisterPath = "/event-unregister";
         SubscribersPath = "/event-subscribers";
+        UpdateSubscribersPath = "/event-subscribers/{Id}";
 
         WriteEvent = (res, frame) =>
         {
@@ -176,6 +178,9 @@ public class ServerEventsFeature : IPlugin, IConfigureServices, Model.IHasString
 
         if (SubscribersPath != null)
             services.RegisterService<ServerEventsSubscribersService>(SubscribersPath);
+        
+        if (UpdateSubscribersPath != null)
+            services.RegisterService<UpdateEventSubscriberService>(UpdateSubscribersPath);
     }
 
     public void Register(IAppHost appHost)
@@ -511,7 +516,12 @@ public class ServerEventsUnRegisterService(IServerEvents serverEvents) : Service
 
         return subscription.Meta;
     }
+}
 
+[DefaultRequest(typeof(UpdateEventSubscriber))]
+[Restrict(VisibilityTo = RequestAttributes.None)]
+public class UpdateEventSubscriberService(IServerEvents serverEvents) : Service
+{
     public const string UpdateEventSubNotExists = nameof(UpdateEventSubNotExists);
     private const string UpdateEventInvalidAccess = nameof(UpdateEventInvalidAccess);
 

@@ -192,7 +192,7 @@ public class CancelRequestResponse : IHasResponseStatus, IMeta
 
 [ExcludeMetadata]
 [DataContract]
-[Route("/event-subscribers/{Id}", "POST")]
+[Route("/event-subscribers/{Id}")]
 public class UpdateEventSubscriber : IPost, IReturn<UpdateEventSubscriberResponse>
 {
     [DataMember(Order = 1)]
