@@ -46,4 +46,30 @@ public static class ClaimUtils
     public static string? GetPicture(this ClaimsPrincipal? principal) => 
         X.Map(principal?.FindFirst(Picture)?.Value, x => string.IsNullOrWhiteSpace(x) ? null : x)
         ?? JwtClaimTypes.DefaultProfileUrl;
+    
+    public static AuthenticateResponse? ToAuthenticateResponse(this ClaimsPrincipal? user, Action<AuthenticateResponse>? configure=null)
+    {
+        if (user?.Identity is not { IsAuthenticated: true })
+            return null;
+        
+        var sub = user.FindFirst(JwtClaimTypes.Subject)?.Value;
+        var id = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var to = new AuthenticateResponse
+        {
+            UserId = sub ?? id, // sub can override Id
+            UserName = user.GetUserName(),
+            DisplayName = user.GetDisplayName(),
+            ProfileUrl = user.GetPicture(),
+            Roles = [..user.GetRoles()],
+        };
+        if (sub != null && id != null)
+        {
+            to.Meta = new() {
+                ["Id"] = user.GetUserId(),
+            };
+        }
+        configure?.Invoke(to);
+        return to;
+    }
+    
 }
