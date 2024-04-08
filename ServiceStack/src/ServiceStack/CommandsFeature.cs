@@ -17,9 +17,29 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class CommandsFeature : IPlugin, IConfigureServices, Model.IHasStringId
+public static class CommandExtensions
+{
+    public static Task ExecuteCommandsAsync<T>(this IRequest? req, T requestDto) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(req);
+        ArgumentNullException.ThrowIfNull(requestDto);
+        
+        var services = req.TryResolve<IServiceProvider>();
+        if (services == null)
+            throw new NotSupportedException(nameof(IServiceProvider) + " not available");
+        var feature = HostContext.AssertPlugin<CommandsFeature>();
+        return feature.ExecuteCommandsAsync(services, requestDto);
+    }
+}
+
+public class CommandsFeature : IPlugin, IConfigureServices, ServiceStack.Model.IHasStringId
 {
     public string Id => "commands";
+
+    public const int DefaultCapacity = 250;
+    public int ResultsCapacity { get; set; } = DefaultCapacity;
+    public int FailuresCapacity { get; set; } = DefaultCapacity;
+    public int TimingsCapacity { get; set; } = 1000;
 
     /// <summary>
     /// Limit API access to users in role
@@ -33,9 +53,9 @@ public class CommandsFeature : IPlugin, IConfigureServices, Model.IHasStringId
     public List<(Type, ServiceLifetime)> RegisterTypes { get; set; } =
     [
         (typeof(IDbConnection), ServiceLifetime.Transient),
-        (typeof(Redis.IRedisClient), ServiceLifetime.Singleton),
-        (typeof(Redis.IRedisClientAsync), ServiceLifetime.Singleton),
-        (typeof(Messaging.IMessageProducer), ServiceLifetime.Singleton),
+        (typeof(ServiceStack.Redis.IRedisClient), ServiceLifetime.Singleton),
+        (typeof(ServiceStack.Redis.IRedisClientAsync), ServiceLifetime.Singleton),
+        (typeof(ServiceStack.Messaging.IMessageProducer), ServiceLifetime.Singleton),
     ];
 
     public void Configure(IServiceCollection services)
@@ -164,7 +184,6 @@ public class CommandsFeature : IPlugin, IConfigureServices, Model.IHasStringId
         }
     }
     
-    public const int DefaultCapacity = 250;
     public ConcurrentQueue<CommandResult> CommandResults { get; set; } = [];
     public ConcurrentQueue<CommandResult> CommandFailures { get; set; } = new();
     
@@ -172,15 +191,15 @@ public class CommandsFeature : IPlugin, IConfigureServices, Model.IHasStringId
 
     public void AddCommandResult(CommandResult result)
     {
-        var ms = result.Ms ?? 0;
+        var ms = (int)(result.Ms ?? 0);
         if (result.Error == null)
         {
             CommandResults.Enqueue(result);
-            while (CommandResults.Count > DefaultCapacity)
+            while (CommandResults.Count > ResultsCapacity)
                 CommandResults.TryDequeue(out _);
 
             CommandTotals.AddOrUpdate(result.Name, 
-                _ => new CommandSummary { Name = result.Name, Count = 1, TotalMs = ms, MinMs = ms > 0 ? ms : int.MinValue },
+                _ => new CommandSummary { Name = result.Name, Count = 1, TotalMs = ms, MinMs = ms > 0 ? ms : int.MinValue, Timings = new([ms]) },
                 (_, summary) => 
                 {
                     summary.Count++;
@@ -190,13 +209,16 @@ public class CommandsFeature : IPlugin, IConfigureServices, Model.IHasStringId
                     {
                         summary.MinMs = Math.Min(summary.MinMs, ms);
                     }
+                    summary.Timings.Enqueue(ms);
+                    while (summary.Timings.Count > TimingsCapacity)
+                        summary.Timings.TryDequeue(out var _);
                     return summary;
                 });
         }
         else
         {
             CommandFailures.Enqueue(result);
-            while (CommandFailures.Count > DefaultCapacity)
+            while (CommandFailures.Count > FailuresCapacity)
                 CommandFailures.TryDequeue(out _);
 
             CommandTotals.AddOrUpdate(result.Name, 
@@ -252,22 +274,6 @@ public class CommandsFeature : IPlugin, IConfigureServices, Model.IHasStringId
     }
 }
 
-public static class CommandExtensions
-{
-    public static Task ExecuteCommandsAsync<T>(this IRequest? req, T requestDto) where T : class
-    {
-        ArgumentNullException.ThrowIfNull(req);
-        ArgumentNullException.ThrowIfNull(requestDto);
-        
-        var services = req.TryResolve<IServiceProvider>();
-        if (services == null)
-            throw new NotSupportedException(nameof(IServiceProvider) + " not available");
-        var feature = HostContext.AssertPlugin<CommandsFeature>();
-        return feature.ExecuteCommandsAsync(services, requestDto);
-    }
-}
-
-
 public class CommandResult
 {
     public string Name { get; set; }
@@ -280,13 +286,14 @@ public class CommandResult
 public class CommandSummary
 {
     public string Name { get; set; }
-    public long Count { get; set; }
-    public long Failed { get; set; }
-    public long TotalMs { get; set; }
-    public long MinMs { get; set; }
-    public long MaxMs { get; set; }
+    public int Count { get; set; }
+    public int Failed { get; set; }
+    public int TotalMs { get; set; }
+    public int MinMs { get; set; }
+    public int MaxMs { get; set; }
     public int AverageMs => (int) Math.Floor(TotalMs / (double)Count);
     public string? LastError { get; set; }
+    public ConcurrentQueue<int> Timings { get; set; } = new();
 }
 
 [ExcludeMetadata]
