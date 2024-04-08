@@ -13,6 +13,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Messaging;
+using ServiceStack.Model;
+using ServiceStack.Redis;
 using ServiceStack.Web;
 
 namespace ServiceStack;
@@ -32,7 +35,7 @@ public static class CommandExtensions
     }
 }
 
-public class CommandsFeature : IPlugin, IConfigureServices, ServiceStack.Model.IHasStringId
+public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
 {
     public string Id => "commands";
 
@@ -53,14 +56,14 @@ public class CommandsFeature : IPlugin, IConfigureServices, ServiceStack.Model.I
     public List<(Type, ServiceLifetime)> RegisterTypes { get; set; } =
     [
         (typeof(IDbConnection), ServiceLifetime.Transient),
-        (typeof(ServiceStack.Redis.IRedisClient), ServiceLifetime.Singleton),
-        (typeof(ServiceStack.Redis.IRedisClientAsync), ServiceLifetime.Singleton),
-        (typeof(ServiceStack.Messaging.IMessageProducer), ServiceLifetime.Singleton),
+        (typeof(IRedisClient), ServiceLifetime.Singleton),
+        (typeof(IRedisClientAsync), ServiceLifetime.Singleton),
+        (typeof(IMessageProducer), ServiceLifetime.Singleton),
     ];
 
     public void Configure(IServiceCollection services)
     {
-        services.AddSingleton<ICommandExecutor>(c => new CommandExecutor(this, c));
+        services.AddTransient<ICommandExecutor>(c => new CommandExecutor(this, c));
 
         ServiceLifetime ToServiceLifetime(Lifetime lifetime) => lifetime switch {
             Lifetime.Scoped => ServiceLifetime.Scoped,
@@ -87,15 +90,15 @@ public class CommandsFeature : IPlugin, IConfigureServices, ServiceStack.Model.I
             {
                 services.Add(registerType.Item1, _ => HostContext.AppHost.GetDbConnection(), registerType.Item2);
             }
-            if (registerType.Item1 == typeof(ServiceStack.Redis.IRedisClient) && !services.Exists<ServiceStack.Redis.IRedisClient>())
+            if (registerType.Item1 == typeof(IRedisClient) && !services.Exists<IRedisClient>())
             {
                 services.Add(registerType.Item1, _ => HostContext.AppHost.GetRedisClient(), registerType.Item2);
             }
-            if (registerType.Item1 == typeof(ServiceStack.Redis.IRedisClientAsync) && !services.Exists<ServiceStack.Redis.IRedisClientAsync>())
+            if (registerType.Item1 == typeof(IRedisClientAsync) && !services.Exists<IRedisClientAsync>())
             {
                 services.Add(registerType.Item1, _ => HostContext.AppHost.GetRedisClientAsync(), registerType.Item2);
             }
-            if (registerType.Item1 == typeof(ServiceStack.Messaging.IMessageProducer) && !services.Exists<ServiceStack.Messaging.IMessageProducer>())
+            if (registerType.Item1 == typeof(IMessageProducer) && !services.Exists<IMessageProducer>())
             {
                 services.Add(registerType.Item1, _ => HostContext.AppHost.GetMessageProducer(), registerType.Item2);
             }
@@ -299,7 +302,6 @@ public class CommandSummary
 [ExcludeMetadata]
 public class ViewCommands : IGet, IReturn<ViewCommandsResponse>
 {
-    public bool? Clear { get; set; }
 }
 public class ViewCommandsResponse
 {
@@ -324,13 +326,8 @@ public class ViewCommandsService : Service
             LatestFailed = new(feature.CommandFailures),
             CommandTotals = new(feature.CommandTotals.Values)
         };
-        if (request.Clear == true)
-        {
-            feature.CommandResults.Clear();
-            feature.CommandFailures.Clear();
-            feature.CommandTotals.Clear();
-        }
         return to;
     }
 }
+
 #endif
