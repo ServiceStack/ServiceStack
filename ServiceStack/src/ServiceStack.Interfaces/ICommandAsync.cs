@@ -23,6 +23,10 @@ public class CommandAttribute(Type commandType, Lifetime lifetime = Lifetime.Tra
     public Lifetime Lifetime { get; } = lifetime;
 }
 
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public class CommandAttribute<T>(Lifetime lifetime = Lifetime.Transient) 
+    : CommandAttribute(typeof(T), lifetime) where T : IAsyncCommand;
+
 public enum Lifetime
 {
     /// <summary>
