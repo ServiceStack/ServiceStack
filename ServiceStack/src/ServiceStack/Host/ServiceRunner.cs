@@ -207,21 +207,21 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
 
     private void LogRequest(IRequest req, object requestDto, object response)
     {
-        var requestLogger = AppHost.TryResolve<IRequestLogger>();
-        if (requestLogger != null 
-            && !req.IsInProcessRequest()
-            && !req.Items.ContainsKey(Keywords.HasLogged))
+        if (req.IsInProcessRequest() || req.Items.ContainsKey(Keywords.HasLogged))
+            return;
+
+        try
         {
-            try
+            req.Items[Keywords.HasLogged] = true;
+            var logDto = !req.IsMultiRequest() ? requestDto : req.Dto;
+            if (logDto != null)
             {
-                req.Items[Keywords.HasLogged] = true;
-                var logDto = !req.IsMultiRequest() ? requestDto : req.Dto;
-                requestLogger.Log(req, logDto, response, req.GetElapsed());
+                HostContext.AppHost.OnLogRequest(req, logDto, response, req.GetElapsed());
             }
-            catch (Exception ex)
-            {
-                Log.ErrorStrict("Error while logging req: " + req.Dump(), ex);
-            }
+        }
+        catch (Exception ex)
+        {
+            Log.ErrorStrict("Error while logging req: " + req.Dump(), ex);
         }
     }
 

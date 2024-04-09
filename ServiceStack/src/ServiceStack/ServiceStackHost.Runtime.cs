@@ -920,10 +920,16 @@ public abstract partial class ServiceStackHost
     /// </summary>
     public virtual object OnAfterExecute(IRequest req, object requestDto, object response)
     {
-        if (req.Response.Dto == null)
-            req.Response.Dto = response;
-
+        req.Response.Dto ??= response;
         return response;
+    }
+
+    public virtual void OnLogRequest(IRequest req, object requestDto, object response, TimeSpan elapsed)
+    {
+        GetPlugin<RequestLogsFeature>()?.RequestLogger.Log(req, requestDto, response, elapsed);
+#if NET6_0_OR_GREATER        
+        GetPlugin<CommandsFeature>()?.AddRequest(requestDto, response, elapsed);
+#endif
     }
 
     /// <summary>

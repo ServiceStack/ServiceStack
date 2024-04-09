@@ -99,9 +99,9 @@ public static class HttpExtensions
         afterHeaders?.Invoke(httpRes);
 
         var req = httpRes.Request;
-        if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
+        if (req?.Dto != null && !req.Items.ContainsKey(Keywords.HasLogged))
         {
-            HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, httpRes.Dto, req.GetElapsed());
+            HostContext.AppHost.OnLogRequest(req, req.Dto, httpRes.Dto, req.GetElapsed());
         }
 
         if (!skipClose && !httpRes.IsClosed) 
@@ -128,9 +128,9 @@ public static class HttpExtensions
         }
 
         var req = httpRes.Request;
-        if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
+        if (req?.Dto != null && !req.Items.ContainsKey(Keywords.HasLogged))
         {
-            HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, httpRes.Dto, req.GetElapsed());
+            HostContext.AppHost.OnLogRequest(req, req.Dto, httpRes.Dto, req.GetElapsed());
         }
 
         if (!skipClose && !httpRes.IsClosed)

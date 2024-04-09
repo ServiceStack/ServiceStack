@@ -294,7 +294,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     {
         Task HandleRequestAsync(Type requestType, HttpContext httpContext)
         {
-            var req = httpContext.ToRequest();
+            var req = httpContext.ToRequest().AddTimingsIfNeeded(this);
             var restPath = RestHandler.FindMatchingRestPath(req, out var contentType);
             var handler = restPath != null
                 ? (HttpAsyncTaskHandler)new RestHandler {
@@ -303,6 +303,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                     ResponseContentType = contentType
                 }
                 : new NotFoundHttpHandler();
+            
             return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
         }
 
@@ -760,7 +761,7 @@ public static class NetCoreAppHostExtensions
     {
         if (handlerFactory == null)
             return Task.CompletedTask;
-        var req = httpContext.ToRequest();
+        var req = httpContext.ToRequest().AddTimingsIfNeeded();
         var handler = handlerFactory(req);
         if (handler == null)
             return Task.CompletedTask;
@@ -774,7 +775,7 @@ public static class NetCoreAppHostExtensions
     {
         if (handler == null)
             return Task.CompletedTask;
-        var req = httpContext.ToRequest();
+        var req = httpContext.ToRequest().AddTimingsIfNeeded();
         var res = (NetCoreResponse)req.Response;
         //res.KeepOpen = true; // Let ASP.NET Core close request
         configure?.Invoke(req);
@@ -892,6 +893,20 @@ public static class NetCoreAppHostExtensions
                 ? headers[HttpHeaders.XForwardedFor].ToString()
                 : ctx?.Connection.RemoteIpAddress?.ToString();
     }
+
+    public static IHttpRequest AddTimingsIfNeeded(this IHttpRequest req, ServiceStackHost? appHost=null)
+    {
+        appHost ??= HostContext.AppHost;
+        if (appHost == null) return req;
+        
+        var shouldProfile = appHost.ShouldProfileRequest(req);
+        if (shouldProfile || appHost.AddTimings)
+        {
+            req.SetItem(Keywords.RequestDuration, System.Diagnostics.Stopwatch.GetTimestamp());
+        }
+        return req;
+    }
+    
 
 #if NET6_0_OR_GREATER
     public static T ConfigureAndResolve<T>(this IHostingStartup config, string? hostDir = null, bool setHostDir = true)

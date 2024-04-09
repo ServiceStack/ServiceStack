@@ -121,7 +121,7 @@ public class HttpHandlerFactory : IHttpHandlerFactory
 
         var appHost = HostContext.AppHost;
         var shouldProfile = appHost.ShouldProfileRequest(httpReq);
-        if (appHost.Container.Exists<IRequestLogger>() || shouldProfile)
+        if (shouldProfile || appHost.AddTimings)
         {
             httpReq.SetItem(Keywords.RequestDuration, System.Diagnostics.Stopwatch.GetTimestamp());
         }

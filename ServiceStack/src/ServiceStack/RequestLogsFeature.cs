@@ -190,13 +190,17 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         requestLogger.RequestLogFilter = RequestLogFilter;
         requestLogger.IgnoreFilter = IgnoreFilter;
         requestLogger.CurrentDateFn = CurrentDateFn;
-        
+
+        RequestLogger ??= requestLogger;
         services.AddSingleton(requestLogger);
         requestLoggerType = requestLogger.GetType();
     }
 
     public void Register(IAppHost appHost)
     {
+        if (appHost is ServiceStackHost host)
+            host.AddTimings = true;
+        
         if (RegisterAllowRuntimeTypeInTypes != null)
             JsConfig.AllowRuntimeTypeInTypes.Add(RegisterAllowRuntimeTypeInTypes);
 

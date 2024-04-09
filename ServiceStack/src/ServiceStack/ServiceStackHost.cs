@@ -69,6 +69,11 @@ public abstract partial class ServiceStackHost
     public bool TestMode { get; set; }
 
     /// <summary>
+    /// Whether to add Timestamp to Request
+    /// </summary>
+    public bool AddTimings { get; set; }
+
+    /// <summary>
     /// The base path ServiceStack is hosted on
     /// </summary>
     public virtual string PathBase
