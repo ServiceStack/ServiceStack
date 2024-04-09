@@ -927,8 +927,11 @@ public abstract partial class ServiceStackHost
     public virtual void OnLogRequest(IRequest req, object requestDto, object response, TimeSpan elapsed)
     {
         GetPlugin<RequestLogsFeature>()?.RequestLogger.Log(req, requestDto, response, elapsed);
-#if NET6_0_OR_GREATER        
-        GetPlugin<CommandsFeature>()?.AddRequest(requestDto, response, elapsed);
+#if NET6_0_OR_GREATER
+        if (requestDto != null)
+        {
+            GetPlugin<CommandsFeature>()?.AddRequest(requestDto, response, elapsed);
+        }
 #endif
     }
 
