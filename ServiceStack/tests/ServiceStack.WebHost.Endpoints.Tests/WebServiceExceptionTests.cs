@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using NUnit.Framework;
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.ServiceModel;
 #endif
 

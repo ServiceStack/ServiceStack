@@ -42,7 +42,7 @@ public static class DtoUtils
     {
         if (debugMode)
         {
-#if !NETCORE
+#if NETFRAMEWORK
                 if (e is System.Web.HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
                 {
                     responseStatus.Errors ??= [];

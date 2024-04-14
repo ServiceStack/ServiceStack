@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-#if !NETCORE
+#if NETFRAMEWORK
 using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
@@ -19,7 +19,7 @@ public class RequestContext
 {
     public static readonly RequestContext Instance = new RequestContext();
 
-#if !NETCORE
+#if NETFRAMEWORK
     /// <summary>
     /// Tell ServiceStack to use ThreadStatic Items Collection for RequestScoped items.
     /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
@@ -59,7 +59,7 @@ public class RequestContext
 
     private IDictionary GetItems()
     {
-#if !NETCORE
+#if NETFRAMEWORK
             try
             {
                 if (UseThreadStatic)
@@ -86,7 +86,7 @@ public class RequestContext
 
     private IDictionary CreateItems(IDictionary items = null)
     {
-#if !NETCORE
+#if NETFRAMEWORK
             try
             {
                 if (UseThreadStatic)
@@ -119,7 +119,7 @@ public class RequestContext
 
     public void EndRequest()
     {
-#if !NETCORE
+#if NETFRAMEWORK
             if (UseThreadStatic)
                 Items = null;
             else

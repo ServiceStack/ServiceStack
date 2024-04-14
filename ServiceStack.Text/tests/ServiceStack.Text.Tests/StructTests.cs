@@ -13,7 +13,7 @@ namespace ServiceStack.Text.Tests
     [TestFixture]
     public class StructTests
     {
-#if !NETCORE
+#if NETFRAMEWORK
         [Serializable]
 #endif
         public class Foo
@@ -27,7 +27,7 @@ namespace ServiceStack.Text.Tests
 
         public interface IText { }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Serializable]
 #endif
         public struct Text
@@ -212,7 +212,7 @@ namespace ServiceStack.Text.Tests
             JsConfig.Reset();
         }
 
-#if !NETCORE 
+#if NETFRAMEWORK 
         [Serializable]
 #endif
         protected struct DangerousText1
@@ -223,7 +223,7 @@ namespace ServiceStack.Text.Tests
             }
         }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Serializable]
 #endif
         protected struct DangerousText2
@@ -294,7 +294,7 @@ namespace ServiceStack.Text.Tests
         }
 #endif
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Explicit("Ensure this test has proven to work, before adding it to the test suite")]
         [Test]
         [TestCase("en")]

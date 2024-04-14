@@ -105,7 +105,7 @@ namespace ServiceStack.Text.Tests
                 Licensing.RegisterLicense(envKey);
             }
 
-#if !NETCORE
+#if NETFRAMEWORK
             Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
 #endif
         }

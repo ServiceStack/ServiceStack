@@ -2081,7 +2081,7 @@ namespace ServiceStack
     {
         public static Stream ResponseStream(this WebResponse webRes)
         {
-#if NETCORE
+#if !NETFRAMEWORK
             return webRes.GetResponseStream().Decompress(webRes.Headers[HttpHeaders.ContentEncoding]);
 #else
             return webRes.GetResponseStream();

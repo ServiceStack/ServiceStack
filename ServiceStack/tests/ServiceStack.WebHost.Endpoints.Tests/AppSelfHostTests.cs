@@ -23,7 +23,7 @@ public class PerfServices : Service
 
     public object Any(SpinWait request)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         int i = request.Iterations.GetValueOrDefault(DefaultIterations);
         //SpinWait.SpinUntil(i-- > 0);
 #else

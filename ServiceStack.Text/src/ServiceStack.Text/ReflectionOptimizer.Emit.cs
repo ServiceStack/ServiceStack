@@ -1,4 +1,4 @@
-﻿#if NETFX || (NETCORE && !NETSTANDARD2_0)
+﻿#if !NETSTANDARD2_0
 
 using System;
 using System.Linq;
@@ -324,7 +324,7 @@ public static class DynamicProxy
     static DynamicProxy()
     {
         var assemblyName = new AssemblyName("DynImpl");
-#if NETCORE
+#if !NETFRAMEWORK
         DynamicAssembly = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
 #else
         DynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
@@ -348,7 +348,7 @@ public static class DynamicProxy
         foreach (var face in targetType.GetInterfaces())
             IncludeType(face, typeBuilder);
 
-#if NETCORE
+#if !NETFRAMEWORK
         return typeBuilder.CreateTypeInfo().AsType();
 #else
         return typeBuilder.CreateType();

@@ -13,7 +13,7 @@ public class GenericAppHost : ServiceStackHost
         : base(typeof (GenericAppHost).GetOperationName(),
             serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
             {
-#if !NETCORE
+#if NETFRAMEWORK
                 Assembly.GetExecutingAssembly()
 #else
                 typeof(GenericAppHost).Assembly
@@ -45,14 +45,14 @@ public class GenericAppHost : ServiceStackHost
         ConfigFilter?.Invoke(Config);
     }
     
-#if NETCORE
+#if !NETFRAMEWORK
     public Microsoft.Extensions.Hosting.IHost Host { get; set; }
 #endif    
 }
 
 public static class GenericAppHostExtensions
 {
-#if NETCORE
+#if !NETFRAMEWORK
     public static Microsoft.Extensions.Hosting.IHost UseServiceStack(this Microsoft.Extensions.Hosting.IHost host, GenericAppHost appHost)
     {
         appHost.Host = host;

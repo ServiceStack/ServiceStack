@@ -11,13 +11,6 @@
         <PackageTags>ServiceStack;gRPC;server;GrpcFeature</PackageTags>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
-    
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-        <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
-    </PropertyGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.26" />
@@ -41,8 +34,6 @@
         <PackageReference Include="Grpc.Core.Api" Version="2.61.0"/>
         <PackageReference Include="protobuf-net" Version="3.2.30"/>
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.1.1"/>
-
-        <PackageReference Include="System.Threading.Channels" Version="8.0.0"/>
 
         <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.4.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.4.0" />

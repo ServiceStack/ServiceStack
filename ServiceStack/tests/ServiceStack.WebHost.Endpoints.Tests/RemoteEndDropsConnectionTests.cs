@@ -90,7 +90,7 @@ public class RemoteEndDropsConnectionTests
 		var req = WebRequest.CreateHttp(url);
 #pragma warning restore CS0618, SYSLIB0014
 		//Set a short timeout so we'll give up before the request is processed
-#if !NETCORE			
+#if NETFRAMEWORK			
 			req.Timeout = 100;
 #endif
 		try

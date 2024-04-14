@@ -159,7 +159,7 @@ public class ServiceController : IServiceController
             returnMarker.GetGenericArguments()[0]
             : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
                 mi.ReturnType
-#if NETCORE
+#if !NETFRAMEWORK
                 : Type.GetType(requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name);
 #else                                                  
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
@@ -595,7 +595,7 @@ public class ServiceController : IServiceController
     public object ExecuteMessage(IMessage dto, IRequest req)
     {
         RequestContext.Instance.StartRequestContext();
-#if NETCORE
+#if !NETFRAMEWORK
             using var scope = req.StartScope();
 #endif
             
@@ -626,7 +626,7 @@ public class ServiceController : IServiceController
     public async Task<object> ExecuteMessageAsync(IMessage dto, IRequest req, CancellationToken token=default)
     {
         RequestContext.Instance.StartRequestContext();
-#if NETCORE
+#if !NETFRAMEWORK
             using var scope = req.StartScope();
 #endif
             

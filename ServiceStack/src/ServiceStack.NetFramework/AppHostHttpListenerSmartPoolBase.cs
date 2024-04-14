@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 
 using System;
 using System.Net;

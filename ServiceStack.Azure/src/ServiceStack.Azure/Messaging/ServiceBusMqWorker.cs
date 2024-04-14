@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-#if NETCORE
+#if !NETFRAMEWORK
 using Microsoft.Azure.ServiceBus;
 #else
 using Microsoft.ServiceBus.Messaging;
@@ -26,7 +26,7 @@ class ServiceBusMqWorker(
 
     private readonly QueueClient sbClient = sbClient;
 
-#if NETCORE
+#if !NETFRAMEWORK
     public Task HandleMessageAsync(Microsoft.Azure.ServiceBus.Message msg, CancellationToken token)
     {
         var strMessage = msg.Body.FromMessageBody();

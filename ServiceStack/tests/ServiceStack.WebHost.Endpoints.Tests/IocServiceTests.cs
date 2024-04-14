@@ -37,7 +37,7 @@ public class IocAppHost() : AppHostHttpListenerBase("IocApp Service", typeof(Ioc
     }
 }
 
-#if !NETCORE
+#if NETFRAMEWORK
     [Ignore("Causes dll conflicts in ASP.NET Host projects when run from this test project")]
     public class IocServiceAspNetTests : IocServiceTests
     {

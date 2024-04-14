@@ -261,7 +261,7 @@ public class StaticFileHandler : HttpAsyncTaskHandler
                     }
                 }
             }
-#if !NETCORE
+#if NETFRAMEWORK
             catch (System.Net.HttpListenerException ex)
             {
                 if (ex.ErrorCode == 1229)

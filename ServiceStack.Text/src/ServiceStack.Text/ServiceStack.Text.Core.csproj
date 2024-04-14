@@ -13,25 +13,12 @@
     <PackageTags>JSON;Text;Serializer;CSV;JSV;HTTP;Auto Mapping;Dump;Reflection;JS;Utils;Fast</PackageTags>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER</DefineConstants>
-  </PropertyGroup>
-  
-  <ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 </Project>

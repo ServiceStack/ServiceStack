@@ -186,7 +186,7 @@ namespace ServiceStack.OrmLite
         
         public static bool DisableColumnGuessFallback { get; set; }
         public static bool StripUpperInLike { get; set; } 
-#if NETCORE
+#if !NETFRAMEWORK
             = true;
 #endif
 

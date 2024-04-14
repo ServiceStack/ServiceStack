@@ -295,7 +295,7 @@ public static class HttpResponseExtensionsInternal
                             return true;
                         }
 
-#if NETFX || NET472
+#if NETFRAMEWORK
                         //JsConfigScope uses ThreadStatic in .NET v4.5 so avoid async thread hops by writing sync to MemoryStream
                         if (resultScope != null || jsconfig != null)
                             response.UseBufferedStream = true;
@@ -596,7 +596,7 @@ public static class HttpResponseExtensionsInternal
         return false;
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         public static void ApplyGlobalResponseHeaders(this HttpListenerResponse httpRes)
         {
             if (HostContext.Config == null) return;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using NUnit.Framework;
 using ServiceStack.Text;
-#if NETCORE
+#if !NETFRAMEWORK
 using HttpUtility = System.Net.WebUtility;
 #endif
 

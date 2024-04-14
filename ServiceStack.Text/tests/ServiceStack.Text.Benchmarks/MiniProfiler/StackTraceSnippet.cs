@@ -18,11 +18,8 @@ namespace StackExchange.Profiling.Helpers
         /// <returns>Space separated list of methods</returns>
         public static string Get()
         {
-#if !NETCOREAPP1_1
             var frames = new StackTrace().GetFrames();
-#else // TODO: Make this work in .NET Standard, true fix isn't until 2.0 via https://github.com/dotnet/corefx/pull/12527
-            StackFrame[] frames = null;
-#endif
+
             if (frames == null /*|| MiniProfiler.Settings.StackMaxLength <= 0*/)
             {
                 return string.Empty;

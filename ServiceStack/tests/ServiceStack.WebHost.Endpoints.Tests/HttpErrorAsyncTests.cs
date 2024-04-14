@@ -153,7 +153,7 @@ public abstract class HttpErrorAsyncTests
         catch (Exception ex) //JsonHttpClient
         {
             var innerEx = ex.UnwrapIfSingleException().InnerException;
-#if !NETCORE
+#if NETFRAMEWORK
             Assert.That(((WebException)innerEx).Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
 #else
                 Assert.That(innerEx.Message, Is.EqualTo("Couldn't resolve host name")

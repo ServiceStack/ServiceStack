@@ -196,7 +196,7 @@ public static class AppSettingsUtils
 
     public static string GetConnectionString(this IAppSettings appSettings, string name)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         return appSettings is NetCoreAppSettings config
             ? config.Configuration?.GetSection("ConnectionStrings")?[name]
             : appSettings.GetString("ConnectionStrings:" + name);

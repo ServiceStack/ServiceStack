@@ -8,32 +8,22 @@
     <PackageDescription>#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.</PackageDescription>
     <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Net.Requests" Version="4.3.0" />
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 </Project>

@@ -12,7 +12,7 @@ public class BasicAppHost : ServiceStackHost
         : base(typeof (BasicAppHost).GetOperationName(),
             serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
             {
-#if !NETCORE
+#if NETFRAMEWORK
                 Assembly.GetExecutingAssembly()
 #else
                 typeof(BasicAppHost).Assembly

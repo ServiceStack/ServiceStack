@@ -12,7 +12,7 @@ using ServiceStack.Web;
 namespace ServiceStack.Testing;
 
 public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
-#if NETCORE
+#if !NETFRAMEWORK
     , IHasServiceScope
 #endif    
 {
@@ -23,7 +23,7 @@ public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
         set => resolver = value;
     }
     
-#if NETCORE
+#if !NETFRAMEWORK
     public Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }
 #endif
 
@@ -58,7 +58,7 @@ public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
 
     public T TryResolve<T>()
     {
-#if NETCORE
+#if !NETFRAMEWORK
         if (ServiceScope != null)
         {
             var instance = ServiceScope.ServiceProvider.GetService(typeof(T));

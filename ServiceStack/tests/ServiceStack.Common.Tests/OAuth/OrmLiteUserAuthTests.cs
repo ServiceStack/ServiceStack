@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 using System.Data;
 using System.IO;
 using NUnit.Framework;

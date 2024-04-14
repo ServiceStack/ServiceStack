@@ -175,7 +175,7 @@ public static class AppHostExtensions
 
     public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)
     {
-#if !NETCORE
+#if NETFRAMEWORK
         var listener = (ServiceStack.Host.HttpListener.HttpListenerBase)appHost;
         listener.Start(urlBases);
 #endif

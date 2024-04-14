@@ -211,7 +211,7 @@ public class RequestInfoHandler : HttpAsyncTaskHandler
         var response = this.RequestInfo ?? GetRequestInfo(httpReq);
         response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
         response.DebugString = "";
-#if NETFX || NET472
+#if NETFRAMEWORK
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName

@@ -214,7 +214,7 @@ public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
                 var hasContentBody = httpReq.ContentLength > 0
                  || (HttpUtils.HasRequestBody(httpReq.Verb) && 
                      (httpReq.GetContentEncoding() != null
-#if NETCORE
+#if !NETFRAMEWORK
                   || GetStreamLengthSafe(httpReq.InputStream) > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
 #endif
                      ));

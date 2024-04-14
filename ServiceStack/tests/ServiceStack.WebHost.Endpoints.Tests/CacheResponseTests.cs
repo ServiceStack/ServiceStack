@@ -454,7 +454,7 @@ public class CacheResponseTests
         var webReq = WebRequest.CreateHttp(url);
 #pragma warning restore CS0618, SYSLIB0014
         webReq.Accept = MimeTypes.Json;
-#if !NETCORE            
+#if NETFRAMEWORK            
             webReq.AutomaticDecompression = DecompressionMethods.None;
 #endif
         var webRes = webReq.GetResponse();
@@ -470,13 +470,13 @@ public class CacheResponseTests
 #pragma warning restore CS0618, SYSLIB0014
         webReq.Accept = MimeTypes.Json;
         webReq.Headers[HttpHeaders.AcceptEncoding] = CompressionTypes.GZip;
-#if !NETCORE            
+#if NETFRAMEWORK            
             webReq.AutomaticDecompression = DecompressionMethods.GZip;
 #endif
         webRes = webReq.GetResponse();
         Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.Json));
         var responseGzip = webRes.GetResponseStream().ReadFully();
-#if !NETCORE
+#if NETFRAMEWORK
             response = responseGzip.FromUtf8Bytes().FromJson<ServerCacheOnly>();
 #else
         response = responseGzip.Decompress("gzip").FromJson<ServerCacheOnly>();

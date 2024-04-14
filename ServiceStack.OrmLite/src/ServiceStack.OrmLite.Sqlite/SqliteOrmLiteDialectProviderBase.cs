@@ -29,7 +29,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         base.RegisterConverter<Guid>(new SqliteGuidConverter());
         base.RegisterConverter<bool>(new SqliteBoolConverter());
         base.RegisterConverter<byte[]>(new SqliteByteArrayConverter());
-#if NETCORE            
+#if !NETFRAMEWORK            
             base.RegisterConverter<char>(new SqliteCharConverter());
 #endif
         this.Variables = new Dictionary<string, string>

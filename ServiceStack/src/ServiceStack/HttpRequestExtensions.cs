@@ -16,7 +16,7 @@ using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 #endif
@@ -117,7 +117,7 @@ public static class HttpRequestExtensions
 
     public static string GetUrlHostName(this IRequest httpReq)
     {
-#if !NETCORE
+#if NETFRAMEWORK
             if (httpReq is ServiceStack.Host.AspNet.AspNetRequest aspNetReq)
             {
                 return aspNetReq.UrlHostName;
@@ -383,7 +383,7 @@ public static class HttpRequestExtensions
         return pathInfo;
     }
 
-#if NETCORE
+#if !NETFRAMEWORK
     public static string GetLastPathInfo(this Microsoft.AspNetCore.Http.HttpRequest request)
     {
         var rawUrl = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request);
@@ -404,7 +404,7 @@ public static class HttpRequestExtensions
         return new Uri(request.AbsoluteUri).GetLeftAuthority() + endpointsPath;
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         //http://stackoverflow.com/a/757251/85785
         static readonly string[] VirtualPathPrefixes = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == null || System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == "/"
             ? TypeConstants.EmptyStringArray
@@ -748,7 +748,7 @@ public static class HttpRequestExtensions
     public static string GetRawUrl(this IRequest httpReq)
     {
         var appPath = HostContext.Config.HandlerFactoryPath;
-#if !NETCORE
+#if NETFRAMEWORK
             if (httpReq.OriginalRequest is HttpRequestBase aspReq && aspReq.ApplicationPath?.Length > 1)
                 appPath = aspReq.ApplicationPath.CombineWith(appPath);
 #endif
@@ -937,7 +937,7 @@ public static class HttpRequestExtensions
         return false;
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         public static System.Web.Routing.RequestContext ToRequestContext(this IRequest req) => 
             (req.OriginalRequest as HttpRequestBase)?.RequestContext;
         public static HttpContextBase ToHttpContextBase(this IRequest req) => req.ToRequestContext()?.HttpContext;
@@ -1099,7 +1099,7 @@ public static class HttpRequestExtensions
 
     public static ClaimsPrincipal GetClaimsPrincipal(this IRequest req)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         return req.GetOriginalRequest<Microsoft.AspNetCore.Http.HttpRequest>()?.HttpContext.User;
 #else
             return req.GetOriginalRequest<HttpRequestBase>()?.RequestContext.HttpContext.User is ClaimsPrincipal principal

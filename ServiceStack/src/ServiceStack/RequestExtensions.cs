@@ -219,7 +219,7 @@ public static class RequestExtensions
         return value;
     }
 
-#if NETFX || NET472
+#if NETFRAMEWORK
         public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
         {
             return new RequestBaseWrapper((IHttpRequest)httpReq);
@@ -288,7 +288,7 @@ public static class RequestExtensions
     {
         if (disposable == null)
             return;
-#if NETCORE
+#if !NETFRAMEWORK
         var netcoreReq = (Microsoft.AspNetCore.Http.HttpRequest) request.OriginalRequest;
         netcoreReq.HttpContext.Response.RegisterForDispose(disposable);
 #else

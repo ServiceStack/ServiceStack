@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Text.Tests.DynamicModels.DataModel
 {
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     public sealed class DataContainer : DataContainerBase

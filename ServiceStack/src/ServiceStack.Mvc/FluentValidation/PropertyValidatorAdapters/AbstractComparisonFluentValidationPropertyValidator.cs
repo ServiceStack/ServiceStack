@@ -1,5 +1,5 @@
 ﻿#pragma warning disable CS0618
-#if !NETCORE
+#if NETFRAMEWORK
 namespace ServiceStack.FluentValidation.Mvc {
     using System;
     using System.Collections.Generic;

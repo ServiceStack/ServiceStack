@@ -6,7 +6,7 @@ using System.Data;
 using System.Reflection;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
-#if NETCORE
+#if !NETFRAMEWORK
 using System.Globalization;
 #endif
 

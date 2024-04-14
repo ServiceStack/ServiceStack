@@ -135,7 +135,7 @@ public static class ServiceCollectionExtensions
     
     public static void AddPlugin<T>(this IServiceCollection services, T plugin) where T : IPlugin
     {
-#if NETCORE
+#if !NETFRAMEWORK
         ServiceStackHost.InitOptions.Plugins.AddIfNotExists(plugin);
 #else
         HostContext.AssertAppHost().Plugins.AddIfNotExists(plugin);
@@ -144,7 +144,7 @@ public static class ServiceCollectionExtensions
 
     public static void ConfigureScriptContext(this IServiceCollection services, Action<Script.ScriptContext> configure)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         configure(ServiceStackHost.InitOptions.ScriptContext);
 #else
         configure(HostContext.AssertAppHost().ScriptContext);

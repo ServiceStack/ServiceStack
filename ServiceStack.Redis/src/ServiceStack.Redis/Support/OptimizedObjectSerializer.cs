@@ -120,7 +120,7 @@ public class OptimizedObjectSerializer : ObjectSerializer
                 break;
 
             default:
-#if NETCORE
+#if !NETFRAMEWORK
         		    data = new byte[0];
                     length = 0;
 #else
@@ -229,7 +229,7 @@ public class OptimizedObjectSerializer : ObjectSerializer
             case TypeCode.Object:
                 using (var ms = new MemoryStream(data, offset, count))
                 {
-#if NETCORE
+#if !NETFRAMEWORK
 	            		return null;
 #else
                     return bf.Deserialize(ms);

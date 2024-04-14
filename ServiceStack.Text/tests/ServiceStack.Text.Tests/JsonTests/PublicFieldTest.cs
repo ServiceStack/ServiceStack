@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace ServiceStack.Text.Tests.JsonTests
 {
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     public class TypeWithPublicFields

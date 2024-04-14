@@ -31,14 +31,14 @@ public static class HttpResponseExtensions
 
         //IsWebDevServer = !Env.IsMono;
         //IsIis = !Env.IsMono;
-#if !NETCORE
+#if NETFRAMEWORK
             IsHttpListener = HttpContext.Current == null;
 #else
         IsNetCore = true;
 #endif
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         public static void CloseOutputStream(this HttpResponseBase response)
         {
             try
@@ -81,7 +81,7 @@ public static class HttpResponseExtensions
 
     public static void TransmitFile(this IResponse httpRes, string filePath)
     {
-#if !NETCORE
+#if NETFRAMEWORK
             if (httpRes is ServiceStack.Host.AspNet.AspNetResponse aspNetRes)
             {
                 aspNetRes.Response.TransmitFile(filePath);
@@ -99,7 +99,7 @@ public static class HttpResponseExtensions
 
     public static void WriteFile(this IResponse httpRes, string filePath)
     {
-#if !NETCORE
+#if NETFRAMEWORK
             if (httpRes is ServiceStack.Host.AspNet.AspNetResponse aspNetRes)
             {
                 aspNetRes.Response.WriteFile(filePath);
@@ -115,7 +115,7 @@ public static class HttpResponseExtensions
         httpRes.EndRequest();
     }
 
-#if NETCORE
+#if !NETFRAMEWORK
     public static Microsoft.AspNetCore.Http.HttpRequest AllowSyncIO(this Microsoft.AspNetCore.Http.HttpRequest req)
     {
         req.HttpContext.AllowSyncIO();
@@ -135,7 +135,7 @@ public static class HttpResponseExtensions
 
     public static IRequest AllowSyncIO(this IRequest req)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         (req as ServiceStack.Host.NetCore.NetCoreRequest)?.HttpContext.AllowSyncIO();
 #endif
         return req;
@@ -143,7 +143,7 @@ public static class HttpResponseExtensions
 
     public static IResponse AllowSyncIO(this IResponse res)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         (res as ServiceStack.Host.NetCore.NetCoreResponse)?.HttpContext.AllowSyncIO();
 #endif
         return res;
@@ -286,7 +286,7 @@ public static class HttpResponseExtensions
     [Obsolete("Use WriteAsync")]
     public static void Write(this IResponse response, string contents)
     {
-#if !NETCORE
+#if NETFRAMEWORK
             if (response is Host.AspNet.AspNetResponse aspRes)
             {
                 aspRes.Response.Write(contents);
