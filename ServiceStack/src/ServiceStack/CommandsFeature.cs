@@ -398,6 +398,12 @@ public class ViewCommandsService : Service
 
 public static class CommandExtensions
 {
+    public static Task ExecuteAsync<TCommand, TRequest>(this ICommandExecutor executor, TRequest request) where TCommand : IAsyncCommand<TRequest>
+    {
+        var command = executor.Command<TCommand>();
+        return executor.ExecuteAsync(command, request);
+    }
+
     public static Task ExecuteCommandsAsync<T>(this IRequest? req, T requestDto) where T : class
     {
         ArgumentNullException.ThrowIfNull(req);
