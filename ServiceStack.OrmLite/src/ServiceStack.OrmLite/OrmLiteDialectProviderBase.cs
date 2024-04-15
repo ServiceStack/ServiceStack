@@ -1828,6 +1828,8 @@ namespace ServiceStack.OrmLite
         public virtual string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
             $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
 
+        public virtual string ToDropConstraintStatement(string schema, string table, string constraintName) => null;
+
         public virtual string ToCreateIndexStatement<T>(Expression<Func<T, object>> field, string indexName = null, bool unique = false)
         {
             var sourceDef = ModelDefinition<T>.Definition;

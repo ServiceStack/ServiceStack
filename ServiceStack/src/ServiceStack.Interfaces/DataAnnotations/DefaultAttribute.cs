@@ -13,6 +13,7 @@ public class DefaultAttribute : AttributeBase
 
     public Type DefaultType { get; set; }
     public string DefaultValue { get; set; }
+    public string WithConstraint { get; set; }
 
     public bool OnUpdate { get; set; }
 

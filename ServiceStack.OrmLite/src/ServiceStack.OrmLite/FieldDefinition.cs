@@ -59,6 +59,7 @@ namespace ServiceStack.OrmLite
         public int? Scale { get; set; }  //  for decimal type
 
         public string DefaultValue { get; set; }
+        public string DefaultValueConstraint { get; set; }
 
         public string CheckConstraint { get; set; }
 
@@ -182,6 +183,7 @@ namespace ServiceStack.OrmLite
                 FieldLength = FieldLength,
                 Scale = Scale,
                 DefaultValue = DefaultValue,
+                DefaultValueConstraint = DefaultValueConstraint,
                 CheckConstraint = CheckConstraint,
                 IsUniqueConstraint = IsUniqueConstraint,
                 ForeignKey = ForeignKey,

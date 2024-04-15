@@ -336,11 +336,18 @@ namespace ServiceStack.OrmLite.SqlServer
             var defaultValue = GetDefaultValue(fieldDef);
             if (!string.IsNullOrEmpty(defaultValue))
             {
+                if (fieldDef.DefaultValueConstraint != null)
+                {
+                    sql.Append(" CONSTRAINT ").Append(GetQuotedName(fieldDef.DefaultValueConstraint));
+                }
                 sql.AppendFormat(DefaultValueFormat, defaultValue);
             }
 
             return StringBuilderCache.ReturnAndFree(sql);
         }
+
+        public override string ToDropConstraintStatement(string schema, string table, string constraintName) =>
+            $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP CONSTRAINT {GetQuotedName(constraintName)};";
 
         public override void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null)
         {

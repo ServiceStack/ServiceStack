@@ -293,6 +293,35 @@ public class DefaultValueTests(DialectContext context) : OrmLiteProvidersTestBas
         Assert.That(rows.All(x => x.DefaultInt == 1));
         Assert.That(rows.All(x => x.DefaultString == "String"));
     }
+    
+    public class TableV1
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+    [Alias(nameof(TableV1))]
+    public class TableV2
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        [Default(1, WithConstraint = "DF_Value")]
+        public int Value { get; set; }
+    }
+
+    [Test]
+    public void Can_add_default_value_with_named_constraint()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<TableV1>();
+        
+        db.AddColumn<TableV2>(c => c.Value);
+        
+        db.Insert(new TableV2 { Id = 1, Name = "A" });
+        var row = db.SingleById<TableV2>(1);
+        Assert.That(row.Value, Is.EqualTo(1));
+        
+        db.DropColumn<TableV2>(c => c.Value);
+    }
 }
     
 /// <summary>

@@ -120,6 +120,10 @@ namespace ServiceStack.OrmLite
         {
             var modelDef = ModelDefinition<T>.Definition;
             var fieldDef = modelDef.GetFieldDefinition(field);
+            if (fieldDef.DefaultValueConstraint != null)
+            {
+                dbConn.DropConstraint(typeof(T), fieldDef.DefaultValueConstraint);
+            }
             dbConn.DropColumn(typeof(T), fieldDef.FieldName);
         }
 
@@ -132,6 +136,16 @@ namespace ServiceStack.OrmLite
             dbConn.ExecuteSql(X.Map(dbConn.Dialect(), d => d.ToDropColumnStatement(null, table, column)));
         public static void DropColumn(this IDbConnection dbConn, string schema, string table, string column) => 
             dbConn.ExecuteSql(X.Map(dbConn.Dialect(), d => d.ToDropColumnStatement(schema, table, column)));
+        
+        public static void DropConstraint(this IDbConnection dbConn, Type modelType, string constraint)
+        {
+            // Many DBs don't support DROP CONSTRAINT
+            var sql = X.Map(dbConn.Dialect(), d => d.ToDropConstraintStatement(modelType, constraint));
+            if (!string.IsNullOrEmpty(sql))
+            {
+                dbConn.ExecuteSql(sql);
+            }
+        }
 
         public static void AddForeignKey<T, TForeign>(this IDbConnection dbConn,
             Expression<Func<T, object>> field,
@@ -198,6 +212,10 @@ namespace ServiceStack.OrmLite
                 var attr = attrs.FirstOrDefault();
                 if (attr is RemoveColumnAttribute)
                 {
+                    if (fieldDef.DefaultValueConstraint != null)
+                    {
+                        dbConn.DropConstraint(modelType, fieldDef.DefaultValueConstraint);
+                    }
                     dbConn.DropColumn(modelType, fieldDef.FieldName);
                 }
                 else if (attr is RenameColumnAttribute renameAttr)
@@ -228,6 +246,10 @@ namespace ServiceStack.OrmLite
                 var attr = attrs.FirstOrDefault();
                 if (attr is AddColumnAttribute or null)
                 {
+                    if (fieldDef.DefaultValueConstraint != null)
+                    {
+                        dbConn.DropConstraint(modelType, fieldDef.DefaultValueConstraint);
+                    }
                     dbConn.DropColumn(modelType, fieldDef.FieldName);
                 }
                 else if (attr is RenameColumnAttribute renameAttr)

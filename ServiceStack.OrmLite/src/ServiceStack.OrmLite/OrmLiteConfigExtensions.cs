@@ -200,6 +200,7 @@ internal static class OrmLiteConfigExtensions
                 ReturnOnInsert = propertyInfo.HasAttributeCached<ReturnOnInsertAttribute>(),
                 FieldLength = stringLengthAttr?.MaximumLength,
                 DefaultValue = defaultValueAttr?.DefaultValue,
+                DefaultValueConstraint = defaultValueAttr?.WithConstraint,
                 CheckConstraint = chkConstraintAttr?.Constraint,
                 IsUniqueConstraint = propertyInfo.HasAttributeCached<UniqueAttribute>(),
                 ForeignKey = fkAttr == null

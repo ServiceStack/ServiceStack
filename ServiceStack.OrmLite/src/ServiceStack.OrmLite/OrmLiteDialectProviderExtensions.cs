@@ -146,5 +146,7 @@ namespace ServiceStack.OrmLite
             X.Map(modelType.GetModelDefinition(), x => dialect.ToRenameColumnStatement(x.Schema, x.ModelName, oldColumnName, newColumnName));
         public static string ToDropColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, string columnName) =>
             X.Map(modelType.GetModelDefinition(), x => dialect.ToDropColumnStatement(x.Schema, x.ModelName, columnName));
+        public static string ToDropConstraintStatement(this IOrmLiteDialectProvider dialect, Type modelType, string constraintName) =>
+            X.Map(modelType.GetModelDefinition(), x => dialect.ToDropConstraintStatement(x.Schema, x.ModelName, constraintName));
     }
 }
