@@ -92,7 +92,7 @@ public class MultiAuthEvents : IAuthEvents, IAuthEventsAsync
 {
     public MultiAuthEvents(IEnumerable<IAuthEvents> authEvents=null)
     {
-        ChildEvents = new List<IAuthEvents>(authEvents ?? TypeConstants<IAuthEvents>.EmptyArray);
+        ChildEvents = [..authEvents ?? TypeConstants<IAuthEvents>.EmptyArray];
         ChildEventsAsync = ChildEvents.OfType<IAuthEventsAsync>().ToList();
     }
 
