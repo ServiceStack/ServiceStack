@@ -116,6 +116,21 @@ public class UniqueRequestTests
     }
 
     [Test]
+    public void Can_send_QueryParams_with_RequestBody_Api_Request()
+    {
+        var request = new Collections {
+            Names = ["A", "B", "C"],
+        };
+        var json = BaseUri.CombineWith("api/Collections")
+            .AddQueryParam("Ids", "4,5,6")
+            .PostJsonToUrl(request);
+
+        var response = json.FromJson<Collections>();
+        Assert.That(response.Ids, Is.EquivalentTo(new[]{ 4, 5, 6 }));
+        Assert.That(response.Names, Is.EquivalentTo(request.Names));
+    }
+
+    [Test]
     public void Can_handle_collections_with_HttpClient()
     {
         var url = BaseUri.CombineWith("collections")
