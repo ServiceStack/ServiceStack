@@ -84,12 +84,8 @@ public class TodoListTests
 {
 	private const string ListeningOn = "http://localhost:8082/";
 
-	public class TodoListAppHostHttpListener
-		: AppHostHttpListenerBase
+	public class TodoListAppHostHttpListener() : AppHostHttpListenerBase("TodoList Tests", typeof(TodoList).Assembly)
 	{
-		public TodoListAppHostHttpListener()
-			: base("TodoList Tests", typeof(TodoList).Assembly) { }
-
 		public override void Configure(Container container) {}
 	}
 

@@ -91,12 +91,27 @@ public class UniqueRequestTests
     {
         var client = new JsonServiceClient(BaseUri);
         var request = new Collections {
-            Ids = new[] {1, 2, 3}, 
-            Names = new List<string> {"A", "B", "C"},
+            Ids = [1, 2, 3], 
+            Names = ["A", "B", "C"],
         };
         var response = client.Get(request);
 
         Assert.That(response.Ids, Is.EquivalentTo(request.Ids));
+        Assert.That(response.Names, Is.EquivalentTo(request.Names));
+    }
+
+    [Test]
+    public void Can_send_QueryParams_with_RequestBody()
+    {
+        var request = new Collections {
+            Names = ["A", "B", "C"],
+        };
+        var json = BaseUri.CombineWith("collections")
+            .AddQueryParam("Ids", "4,5,6")
+            .PostJsonToUrl(request);
+
+        var response = json.FromJson<Collections>();
+        Assert.That(response.Ids, Is.EquivalentTo(new[]{ 4, 5, 6 }));
         Assert.That(response.Names, Is.EquivalentTo(request.Names));
     }
 

@@ -6,10 +6,9 @@ namespace ServiceStack.Serialization
 {
     public class KeyValueDataContractDeserializer
     {
-        public static KeyValueDataContractDeserializer Instance = new KeyValueDataContractDeserializer();
+        public static KeyValueDataContractDeserializer Instance = new();
 
-        readonly Dictionary<Type, StringMapTypeDeserializer> typeStringMapSerializerMap
-            = new Dictionary<Type, StringMapTypeDeserializer>();
+        readonly Dictionary<Type, StringMapTypeDeserializer> typeStringMapSerializerMap = new();
 
         public object Parse(IDictionary<string, string> keyValuePairs, Type returnType)
         {
