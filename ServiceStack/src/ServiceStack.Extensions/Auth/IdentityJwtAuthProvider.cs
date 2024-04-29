@@ -310,10 +310,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
             var principal = new JwtSecurityTokenHandler().ValidateToken(bearerToken,
                 Options!.TokenValidationParameters, out SecurityToken validatedToken);
 
-            var jwtToken = (JwtSecurityToken)validatedToken;
-            var claims = jwtToken.Claims.ToList();
-
-            var jwtSession = CreateSessionFromClaims(req, claims);
+            var jwtSession = CreateSessionFromClaims(req, principal);
             var to = jwtSession.ConvertTo<AuthenticateResponse>();
             to.UserId = jwtSession.UserAuthId;
             return (to as object).InTask();
@@ -331,21 +328,13 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
         if (!string.IsNullOrEmpty(token) && 
             !(req.Items.TryGetValue(Keywords.Session, out var oSession) && oSession is IAuthSession { IsAuthenticated: true }))
         {
-            List<Claim> claims;
             var user = req.GetClaimsPrincipal();
-            if (user.IsAuthenticated())
+            if (!user.IsAuthenticated())
             {
-                claims = user.Claims.ToList();
-            }
-            else
-            {
-                var principal = new JwtSecurityTokenHandler().ValidateToken(token,
+                user = new JwtSecurityTokenHandler().ValidateToken(token,
                     Options!.TokenValidationParameters, out SecurityToken validatedToken);
-
-                var jwtToken = (JwtSecurityToken)validatedToken;
-                claims = jwtToken.Claims.ToList();
             }
-            var session = CreateSessionFromClaims(req, claims);
+            var session = CreateSessionFromClaims(req, user);
             req.Items[Keywords.Session] = session;
         }
         return Task.CompletedTask;
@@ -410,8 +399,9 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
         }
     }
 
-    public virtual IAuthSession CreateSessionFromClaims(IRequest req, List<Claim> claims)
+    public virtual IAuthSession CreateSessionFromClaims(IRequest req, ClaimsPrincipal principal)
     {
+        var claims = principal.Claims.ToList();
         var sessionId = claims.FirstOrDefault(x => x.Type == "jid")?.Value ?? HostContext.AppHost.CreateSessionId();
         var session = SessionFeature.CreateNewSession(req, sessionId);
 
@@ -422,6 +412,8 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
         var claimMap = new List<KeyValuePair<string, string>>();
         claims.Each(x => claimMap.Add(new(x.Type, x.Value)));
         session.PopulateFromMap(claimMap);
+
+        (session as IAuthSessionExtended)?.PopulateFromClaims(req, principal);
 
         OnSessionCreated?.Invoke(session, claims, req);
 

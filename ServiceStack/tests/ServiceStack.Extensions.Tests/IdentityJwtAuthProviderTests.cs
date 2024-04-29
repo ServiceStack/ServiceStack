@@ -20,6 +20,7 @@ using Microsoft.IdentityModel.Tokens;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -56,6 +57,22 @@ public class Roles
     public const string Admin = nameof(Admin);
     public const string Manager = nameof(Manager);
     public const string Employee = nameof(Employee);
+}
+
+[ValidateIsAuthenticated]
+public class MqBearerToken : IHasBearerToken, IReturn<MqBearerToken>
+{
+    public int Id { get; set; }
+    public string? BearerToken { get; set; }
+}
+
+public class BackgroundAuthServices : Service
+{
+    public object Any(MqBearerToken request)
+    {
+        request.Id++;
+        return request;
+    }
 }
 
 public class IdentityJwtAuthProviderTests
@@ -166,6 +183,10 @@ public class IdentityJwtAuthProviderTests
             log.LogInformation("Seeding Database...");
             using var db = GetDbConnection();
             AutoQueryAppHost.SeedDatabase(db);
+
+            var mqService = Resolve<IMessageService>();
+            mqService.RegisterHandler<MqBearerToken>(ExecuteMessage);
+            mqService.Start();
         }
     }
 
@@ -245,6 +266,8 @@ public class IdentityJwtAuthProviderTests
             });
         });
 
+        services.AddSingleton<IMessageService>(c => new BackgroundMqService());
+
         var app = builder.Build();
 
         app.UseAuthorization();
@@ -275,6 +298,18 @@ public class IdentityJwtAuthProviderTests
         return jwt;
     }
     
+    private async Task<string> GetBearerTokenAsync()
+    {
+        var authClient = GetClient();
+        var response = await authClient.SendAsync(new Authenticate
+        {
+            provider = "credentials",
+            UserName = Username,
+            Password = Password,
+        });
+        return authClient.GetTokenCookie();
+    }
+
     private async Task<string> GetRefreshTokenAsync()
     {
         var authClient = GetClient();
@@ -424,6 +459,17 @@ public class IdentityJwtAuthProviderTests
 
         response = await client.SendAsync(request);
         Assert.That(response.Result, Is.EqualTo("Hello, test"));
+    }
+
+    [Test]
+    public async Task Can_authenticate_with_BearerToken_in_MQ()
+    {
+        var bearerToken = await GetBearerTokenAsync();
+
+        await ServiceStackHost.Instance.ExecuteMessageAsync(new Message<MqBearerToken>(new MqBearerToken
+        {
+            BearerToken = bearerToken,
+        }));
     }
 }
 
