@@ -409,11 +409,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
         session.AuthProvider = Name;
         session.FromToken = true;
 
-        var claimMap = new List<KeyValuePair<string, string>>();
-        claims.Each(x => claimMap.Add(new(x.Type, x.Value)));
-        session.PopulateFromMap(claimMap);
-
-        (session as IAuthSessionExtended)?.PopulateFromClaims(req, principal);
+        IdentityAuth.AuthApplication.PopulateSession(req, session, principal);
 
         OnSessionCreated?.Invoke(session, claims, req);
 
