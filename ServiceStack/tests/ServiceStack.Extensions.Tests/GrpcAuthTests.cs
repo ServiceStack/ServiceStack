@@ -75,7 +75,7 @@ public class RequiresAuth : IReturn<RequiresAuth>, IHasBearerToken
 [Authenticate]
 public class RequiresAuthService : Service
 {
-    public static ApiKey LastApiKey;
+    public static IApiKey LastApiKey;
 
     public object Any(RequiresAuth request)
     {
@@ -97,7 +97,7 @@ public class GrpcAuthTests
 
     public class AppHost() : AppSelfHostBase(nameof(GrpcTests), typeof(MyServices).Assembly)
     {
-        public static ApiKey LastApiKey;
+        public static IApiKey LastApiKey;
 
         public override void Configure(Container container)
         {

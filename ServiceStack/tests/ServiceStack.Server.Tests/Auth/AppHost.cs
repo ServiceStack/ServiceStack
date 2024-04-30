@@ -100,7 +100,7 @@ namespace ServiceStack.Server.Tests.Auth
         public override IDbConnection GetDbConnection(IRequest req = null)
         {
             var apiKey = req.GetApiKey();
-            return apiKey != null && apiKey.Environment == "test"
+            return apiKey is { Environment: "test" }
                 ? TryResolve<IDbConnectionFactory>().OpenDbConnection("testdb")
                 : base.GetDbConnection(req);
         }

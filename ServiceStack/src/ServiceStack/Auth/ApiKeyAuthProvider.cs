@@ -46,7 +46,7 @@ namespace ServiceStack.Auth
     /// <summary>
     /// The POCO Table used to persist API Keys
     /// </summary>
-    public class ApiKey : IMeta
+    public class ApiKey : IApiKey
     {
         public string Id { get; set; }
         public string UserAuthId { get; set; }
@@ -520,13 +520,13 @@ namespace ServiceStack
 {
     public static class ApiKeyAuthProviderExtensions
     {
-        public static ApiKey GetApiKey(this IRequest req)
+        public static IApiKey GetApiKey(this IRequest req)
         {
             if (req == null)
                 return null;
 
             return req.Items.TryGetValue(Keywords.ApiKey, out var oApiKey)
-                ? oApiKey as ApiKey
+                ? oApiKey as IApiKey
                 : null;
         }
 
@@ -561,10 +561,8 @@ namespace ServiceStack
         }
     }
 
-    public class ManageApiKeysAsyncWrapper : IManageApiKeysAsync
+    public class ManageApiKeysAsyncWrapper(IManageApiKeys manageApiKeys) : IManageApiKeysAsync
     {
-        private readonly IManageApiKeys manageApiKeys;
-        public ManageApiKeysAsyncWrapper(IManageApiKeys manageApiKeys) => this.manageApiKeys = manageApiKeys;
         public void InitApiKeySchema() => manageApiKeys.InitApiKeySchema();
 
         public Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token = default) => 
@@ -578,6 +576,5 @@ namespace ServiceStack
             manageApiKeys.StoreAll(apiKeys);
             return Task.CompletedTask;
         }
-        
     }
 }

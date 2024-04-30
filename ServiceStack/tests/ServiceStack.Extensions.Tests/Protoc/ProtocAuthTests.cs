@@ -32,7 +32,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
 
         public class AppHost : AppSelfHostBase
         {
-            public static ApiKey LastApiKey;
+            public static IApiKey LastApiKey;
             public AppHost() 
                 : base(nameof(ProtocTests), typeof(MyServices).Assembly) { }
 

@@ -264,3 +264,12 @@ public class ValidateExclusiveBetweenAttribute : ValidateAttribute
     public ValidateExclusiveBetweenAttribute(char from, char to) : base($"ExclusiveBetween(`{from}`,`{to}`)") { }
     public ValidateExclusiveBetweenAttribute(int from, int to) : base($"ExclusiveBetween({from},{to})") { }
 }
+
+/* ApiKeysFeature */
+public class ValidateAuthSecretAttribute() : ValidateRequestAttribute("AuthSecret()");
+
+public class ValidateApiKeyAttribute : ValidateRequestAttribute
+{
+    public ValidateApiKeyAttribute() : base("ApiKey()"){}
+    public ValidateApiKeyAttribute(string scope) : base("ApiKey(`" + scope + "`)"){}
+}

@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation.Internal;
+using ServiceStack.Host;
 using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -142,6 +143,19 @@ public class HasPermissionsValidator : TypeValidator, IAuthTypeValidator
             return;
 
         throw new HttpError(ResolveStatusCode(), ResolveErrorCode(), ResolveErrorMessage(request, dto));
+    }
+}
+
+public class AuthSecretValidator()
+    : TypeValidator(nameof(HttpStatusCode.Unauthorized), DefaultErrorMessage, 401), IAuthTypeValidator
+{
+    public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;
+    public static AuthSecretValidator Instance { get; } = new();
+
+    public override Task<bool> IsValidAsync(object dto, IRequest request)
+    {
+        var authSecret = request.GetAuthSecret();
+        return Task.FromResult(authSecret != null && authSecret == HostContext.AppHost.Config.AdminAuthSecret);
     }
 }
 

@@ -18,7 +18,7 @@ namespace ServiceStack.Server.Tests.Auth
     [Authenticate]
     public class RequiresAuthService : Service
     {
-        public static ApiKey LastApiKey;
+        public static IApiKey LastApiKey;
 
         public object Any(RequiresAuth request)
         {
@@ -35,7 +35,7 @@ namespace ServiceStack.Server.Tests.Auth
 
     public class RequiresAuthActionService : Service
     {
-        public static ApiKey LastApiKey;
+        public static IApiKey LastApiKey;
 
         [Authenticate]
         public object Any(RequiresAuthAction request)
@@ -50,7 +50,7 @@ namespace ServiceStack.Server.Tests.Auth
     {
         class AppHost : AppSelfHostBase
         {
-            public static ApiKey LastApiKey;
+            public static IApiKey LastApiKey;
 
             public AppHost() : base(nameof(ApiKeyAuthTests), typeof(AppHost).Assembly) { }
 

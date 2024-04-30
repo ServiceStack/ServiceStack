@@ -71,4 +71,6 @@ public class ValidateScripts : ScriptMethods
         DefaultMessage = "`'${Value}' scope is Required`"
     };
     public ITypeValidator IsAdmin() => new HasRolesValidator(RoleNames.Admin);
+    
+    public ITypeValidator AuthSecret() => AuthSecretValidator.Instance;
 }
