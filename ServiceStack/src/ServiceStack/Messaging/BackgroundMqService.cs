@@ -1,10 +1,13 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Messaging;
@@ -33,7 +36,7 @@ public class BackgroundMqService : IMessageService
     /// <summary>
     /// If you only want to enable priority queue handlers (and threads) for specific msg types
     /// </summary>
-    public string[] PriorityQueuesWhitelist { get; set; }
+    public string[]? PriorityQueuesWhitelist { get; set; }
 
     /// <summary>
     /// Create workers for priority queues
@@ -55,7 +58,7 @@ public class BackgroundMqService : IMessageService
     /// Opt-in to only publish responses on this white list. 
     /// Publishes all responses by default.
     /// </summary>
-    public string[] PublishResponsesWhitelist { get; set; }
+    public string[]? PublishResponsesWhitelist { get; set; }
 
     /// <summary>
     /// Don't publish any response messages
@@ -69,7 +72,7 @@ public class BackgroundMqService : IMessageService
     /// Opt-in to only publish .outq messages on this white list. 
     /// Publishes all responses by default.
     /// </summary>
-    public string[] PublishToOutqWhitelist { get; set; }
+    public string[]? PublishToOutqWhitelist { get; set; }
 
     /// <summary>
     /// Don't publish any messages to .outq
@@ -104,8 +107,8 @@ public class BackgroundMqService : IMessageService
 
     private readonly Dictionary<Type, IMqCollection> collectionsMap = new();
 
-    private IMqWorker[] workers;
-    private BlockingCollection<IMessage> unknownQueues;
+    private IMqWorker[]? workers;
+    private BlockingCollection<IMessage>? unknownQueues;
 
     public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn)
     {
@@ -124,7 +127,7 @@ public class BackgroundMqService : IMessageService
     }
 
     public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, 
-        Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
+        Action<IMessageHandler, IMessage<T>, Exception>? processExceptionEx, int noOfThreads)
     {
         if (collectionsMap.ContainsKey(typeof(T)))
             throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).Name);
@@ -135,7 +138,7 @@ public class BackgroundMqService : IMessageService
 
     protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(
         Func<IMessage<T>, object> processMessageFn,
-        Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
+        Action<IMessageHandler, IMessage<T>, Exception>? processExceptionEx)
     {
         return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx) {
             RequestFilter = this.RequestFilter,
@@ -235,7 +238,7 @@ public class BackgroundMqService : IMessageService
         return StringBuilderCache.ReturnAndFree(sb);
     }
 
-    public IMqCollection GetCollection(Type type)
+    public IMqCollection? GetCollection(Type type)
     {
         return collectionsMap.TryGetValue(type, out var collection)
             ? collection
@@ -299,7 +302,7 @@ public class BackgroundMqService : IMessageService
         OutHandlers.Each(x => x(queueName, message));
     }
 
-    public IMessage<T> Get<T>(string queueName, TimeSpan? timeout = null)
+    public IMessage<T>? Get<T>(string queueName, TimeSpan? timeout = null)
     {
         AssertNotDisposed();
 
@@ -315,7 +318,7 @@ public class BackgroundMqService : IMessageService
                 return (IMessage<T>)msg;
             }
         }
-        else
+        else if (unknownQueues != null)
         {
             var started = DateTime.UtcNow;
     
@@ -334,10 +337,14 @@ public class BackgroundMqService : IMessageService
                     return null;
             }
         }
+        else
+        {
+            Log.Error("unknownQueues is null");
+        }
         return null;
     }
 
-    public IMessage<T> TryGet<T>(string queueName)
+    public IMessage<T>? TryGet<T>(string queueName)
     {
         AssertNotDisposed();
             
@@ -390,7 +397,7 @@ public class BackgroundMqService : IMessageService
     {
         AssertNotDisposed();
             
-        IMqWorker[] captureWorkers = null;
+        IMqWorker[]? captureWorkers = null;
         if (workers != null)
         {
             lock (workers)
@@ -506,13 +513,13 @@ public class BackgroundMqCollection<T> : IMqCollection
             { QueueNames<T>.Dlq, new BlockingCollection<IMessage>() },
             { QueueNames<T>.Out, new BlockingCollection<IMessage>() },
         };
-        QueueNames = new[]
-        {
+        QueueNames =
+        [
             QueueNames<T>.In,
             QueueNames<T>.Priority,
             QueueNames<T>.Dlq,
-            QueueNames<T>.Out,
-        };
+            QueueNames<T>.Out
+        ];
     }
 
     public void Add(string queueName, IMessage message)
@@ -549,7 +556,7 @@ public class BackgroundMqCollection<T> : IMqCollection
         }
     }
 
-    public bool TryTake(string queueName, out IMessage message)
+    public bool TryTake(string queueName, out IMessage? message)
     {
         if (queueMap.TryGetValue(queueName, out var mq))
         {
@@ -568,7 +575,7 @@ public class BackgroundMqCollection<T> : IMqCollection
         return false;
     }
         
-    public bool TryTake(string queueName, out IMessage message, TimeSpan timeout)
+    public bool TryTake(string queueName, out IMessage? message, TimeSpan timeout)
     {
         if (queueMap.TryGetValue(queueName, out var mq))
         {
@@ -592,7 +599,7 @@ public class BackgroundMqCollection<T> : IMqCollection
         if (queueMap.TryGetValue(queueName, out var mq))
         {
             if (Log.IsDebugEnabled)
-                Log.Debug($"Clearing '{queueName}' of {mq.Count} item(s)");
+                Log.Debug($"MQ Clearing '{queueName}' of {mq.Count} item(s)");
 
             while (mq.TryTake(out _)){}
         }
@@ -601,7 +608,7 @@ public class BackgroundMqCollection<T> : IMqCollection
     public IMqWorker CreateWorker(string mqName)
     {
         if (Log.IsDebugEnabled)
-            Log.Debug("Creating BackgroundMqWorker for: " + mqName);
+            Log.Debug("MQ Creating BackgroundMqWorker for: " + mqName);
             
         var mq = queueMap[mqName];
         return new BackgroundMqWorker(mqName, mq, MqClient, HandlerFactory.CreateMessageHandler());
@@ -677,13 +684,14 @@ public class BackgroundMqCollection<T> : IMqCollection
 public class BackgroundMqWorker : IMqWorker
 {
     private static readonly ILog Log = LogManager.GetLogger(typeof(BackgroundMqWorker));
-    private Task bgTask;
-    private CancellationTokenSource cts;
+    private Task? bgTask;
+    private CancellationTokenSource? cts;
 
     private readonly BlockingCollection<IMessage> queue;
     private readonly BackgroundMqClient mqClient;
     private readonly IMessageHandler handler;
-        
+    public DateTime LastMessage { get; set; }
+
     public string QueueName { get; }
 
     public BackgroundMqWorker(string queueName, BlockingCollection<IMessage> queue, BackgroundMqClient mqClient, 
@@ -700,24 +708,31 @@ public class BackgroundMqWorker : IMqWorker
 
     private Task Run(object state)
     {
+        if (Log.IsDebugEnabled)
+            Log.Debug($"MQ Starting {QueueName} BackgroundMqWorker...");
+
         while (!cts.IsCancellationRequested)
         {
             foreach (var item in queue.GetConsumingEnumerable(cts.Token))
             {
                 try
                 {
+                    LastMessage = DateTime.UtcNow;
                     if (Log.IsDebugEnabled)
-                        Log.Debug($"[{QueueName}] ProcessMessage(): {item.Id}");
+                        Log.Debug($"MQ [{QueueName}] ProcessMessage(): {item.Id}");
                         
                     handler.ProcessMessage(mqClient, item);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"MQ {QueueName} failed to ProcessMessage with id {item.Id}: {ex.Message}", ex);
+                    Log.Error($"MQ [{QueueName}] failed to ProcessMessage with id {item.Id}: {ex.Message}", ex);
                 }
             }
         }
-            
+        
+        if (Log.IsDebugEnabled)
+            Log.Debug("MQ BackgroundMqWorker Stopped");
+        
         return TypeConstants.EmptyTask;
     }
 
@@ -728,36 +743,33 @@ public class BackgroundMqWorker : IMqWorker
 
     public void Stop()
     {
+        if (Log.IsDebugEnabled)
+            Log.Debug($"MQ Stopping {QueueName} BackgroundMqWorker...");
         cts.Cancel();
     }
 
     public void Dispose()
     {
+        if (Log.IsDebugEnabled)
+            Log.Debug($"MQ Disposing {QueueName} BackgroundMqWorker...");
+
         new IDisposable[]{ cts, bgTask }.Dispose();
         cts = null;
         bgTask = null;
     }
 }
     
-public class BackgroundMqMessageFactory : IMessageFactory
+public class BackgroundMqMessageFactory(BackgroundMqClient mqClient) : IMessageFactory
 {
-    private readonly BackgroundMqClient mqClient;
-    public BackgroundMqMessageFactory(BackgroundMqClient mqClient) => this.mqClient = mqClient;
     public IMessageQueueClient CreateMessageQueueClient() => mqClient;
     public IMessageProducer CreateMessageProducer() => mqClient;
     public void Dispose() {}
 }
 
-public class BackgroundMqClient : IMessageProducer, IMessageQueueClient, IOneWayClient
+public class BackgroundMqClient(BackgroundMqService mqService) 
+    : IMessageProducer, IMessageQueueClient, IOneWayClient
 {
     private static readonly ILog Log = LogManager.GetLogger(typeof(BackgroundMqClient));
-        
-    private readonly BackgroundMqService mqService;
-        
-    public BackgroundMqClient(BackgroundMqService mqService)
-    {
-        this.mqService = mqService;
-    }
 
     public void Publish<T>(T messageBody)
     {
@@ -787,12 +799,12 @@ public class BackgroundMqClient : IMessageProducer, IMessageQueueClient, IOneWay
         mqService.Notify(queueName, message);
     }
 
-    public IMessage<T> Get<T>(string queueName, TimeSpan? timeout = null)
+    public IMessage<T>? Get<T>(string queueName, TimeSpan? timeout = null)
     {
         return mqService.Get<T>(queueName, timeout);
     }
 
-    public IMessage<T> GetAsync<T>(string queueName)
+    public IMessage<T>? GetAsync<T>(string queueName)
     {
         return mqService.TryGet<T>(queueName);
     }
@@ -802,7 +814,7 @@ public class BackgroundMqClient : IMessageProducer, IMessageQueueClient, IOneWay
         //NOOP: message is removed at time of Get()
     }
 
-    public void Nak(IMessage message, bool requeue, Exception exception = null)
+    public void Nak(IMessage message, bool requeue, Exception? exception = null)
     {
         var queueName = requeue
             ? message.ToInQueueName()
@@ -831,9 +843,10 @@ public class BackgroundMqClient : IMessageProducer, IMessageQueueClient, IOneWay
         Publish(queueName, MessageFactory.Create(requestDto));
     }
 
-    public void SendAllOneWay(IEnumerable<object> requests)
+    public void SendAllOneWay(IEnumerable<object>? requests)
     {
-        if (requests == null) return;
+        if (requests == null) 
+            return;
         foreach (var request in requests)
         {
             SendOneWay(request);
