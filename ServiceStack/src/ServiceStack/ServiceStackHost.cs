@@ -1613,6 +1613,19 @@ public abstract partial class ServiceStackHost
     }
 
     /// <summary>
+    /// Gets request parameter string value by looking in the following order:
+    /// - QueryString[name]
+    /// - FormData[name]
+    /// - Cookies[name]
+    /// - Items[name]
+    /// </summary>
+    /// <returns>string value or null if it doesn't exist</returns>
+    public virtual string GetParam(IRequest httpReq, string name)
+    {
+        return ViewUtils.GetParam(httpReq, name);
+    }
+
+    /// <summary>
     /// Override to customize the BaseUrl to use for this IRequest 
     /// </summary>
     public virtual string GetBaseUrl(IRequest httpReq)

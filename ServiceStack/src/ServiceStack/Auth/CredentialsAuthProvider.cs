@@ -111,7 +111,7 @@ public class CredentialsAuthProvider : AuthProvider
             }
         }
 
-        return session != null && session.IsAuthenticated && !session.UserAuthName.IsNullOrEmpty();
+        return session is { IsAuthenticated: true } && !session.UserAuthName.IsNullOrEmpty();
     }
 
     public override async Task<object> AuthenticateAsync(IServiceBase authService, IAuthSession session, Authenticate request, CancellationToken token=default)
