@@ -307,7 +307,7 @@ namespace ServiceStack.OrmLite
             if (!string.IsNullOrEmpty(providerName))
                 return OrmLiteConnectionFactory.DialectProviders.TryGetValue(providerName, out var provider)
                     ? provider
-                    : throw new NotSupportedException($"Dialect provider is not registered '{provider}'");
+                    : throw new NotSupportedException($"Dialect provider is not registered '{providerName}'");
             
             if (!string.IsNullOrEmpty(namedConnection))
                 return OrmLiteConnectionFactory.NamedConnections.TryGetValue(namedConnection, out var namedFactory)
