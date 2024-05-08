@@ -239,7 +239,7 @@ public class ValidateLessThanOrEqualAttribute(int value) : ValidateAttribute($"L
 public class ValidateGreaterThanAttribute(int value) : ValidateAttribute($"GreaterThan({value})");
 public class ValidateGreaterThanOrEqualAttribute(int value) : ValidateAttribute($"GreaterThanOrEqual({value})");
 public class ValidateScalePrecisionAttribute(int scale, int precision) : ValidateAttribute($"ScalePrecision({scale},{precision})");
-public class ValidateRegularExpressionAttribute(string pattern) : ValidateAttribute($"RegularExpression(`{pattern}`)");
+public class ValidateRegularExpressionAttribute(string pattern) : ValidateAttribute($"RegularExpression(′{pattern}′)");
 public class ValidateEqualAttribute : ValidateAttribute
 {
     public ValidateEqualAttribute(string value) : base($"Equal(`{value}`)") { }

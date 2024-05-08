@@ -121,6 +121,16 @@ public class TriggerAllValidators
     public decimal ScalePrecision { get; set; }
 }
 
+public class ValidateRegex
+    : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
+{
+    [ValidateRegularExpression(@"^\+[1-9]\d{1,14}$")]
+    public string Phone { get; set; }
+
+    public DateTime DateOfBirth { get; set; } = DateTime.Today;
+    public LivingStatus LivingStatus { get; set; }
+}
+
 public class DynamicValidationRules
     : ICreateDb<RockstarAuto>, IReturn<RockstarWithIdResponse>
 {
