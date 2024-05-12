@@ -151,6 +151,8 @@ namespace ServiceStack.OrmLite.Tests
                     return Init(SqlServerDb.DefaultConnection, SqlServer2017Dialect.Provider);
                 case Dialect.SqlServer2019:
                     return Init(SqlServerDb.DefaultConnection, SqlServer2019Dialect.Provider);
+                case Dialect.SqlServer2022:
+                    return Init(SqlServerDb.DefaultConnection, SqlServer2022Dialect.Provider);
                 case Dialect.MySql:
                     return Init(MySqlDb.DefaultConnection, MySqlDialect.Provider);
                 case Dialect.MySqlConnector:

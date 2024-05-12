@@ -25,6 +25,7 @@ namespace ServiceStack.OrmLite.Tests
         SqlServer2016 = 1 << 4,
         SqlServer2017 = 1 << 5,
         SqlServer2019 = 1 << 6,
+        SqlServer2022 = 1 << 7,
         
         PostgreSql9 = 1 << 8,
         PostgreSql10 = 1 << 9,
@@ -41,7 +42,7 @@ namespace ServiceStack.OrmLite.Tests
         // any versions
         AnyPostgreSql = PostgreSql9 | PostgreSql10 | PostgreSql11,
         AnyMySql = MySql | MySqlConnector, 
-        AnySqlServer = SqlServer | SqlServer2012 | SqlServer2014 | SqlServer2016 | SqlServer2017 | SqlServer2019,
+        AnySqlServer = SqlServer | SqlServer2012 | SqlServer2014 | SqlServer2016 | SqlServer2017 | SqlServer2019 | SqlServer2022,
         AnyOracle = Oracle,
         
         // db groups
@@ -80,6 +81,7 @@ namespace ServiceStack.OrmLite.Tests
                 case Dialect.SqlServer2016:
                 case Dialect.SqlServer2017:
                 case Dialect.SqlServer2019:
+                case Dialect.SqlServer2022:
                     return SqlServerDb.VersionString(Dialect, Version); 
                 case Dialect.MySql:
                     return MySqlDb.VersionString(Version); 
@@ -104,7 +106,7 @@ namespace ServiceStack.OrmLite.Tests
     {
         public const int Memory = 1;
         public const int File = 100;
-        public static int[] Versions => TestConfig.EnvironmentVariableInto("SQLITE_VERSION", new[]{ Memory });
+        public static int[] Versions => TestConfig.EnvironmentVariableInto("SQLITE_VERSION", [Memory]);
         public static string DefaultConnection => MemoryConnection;
         public static string MemoryConnection => TestConfig.DialectConnections[Tuple.Create(Dialect.Sqlite, Memory)];
         public static string FileConnection => TestConfig.DialectConnections[Tuple.Create(Dialect.Sqlite, File)];
@@ -121,24 +123,29 @@ namespace ServiceStack.OrmLite.Tests
         public const int V2016 = 2016;
         public const int V2017 = 2017;
         public static int V2019 = 2019;
-        public static int[] Versions = TestConfig.EnvironmentVariableInto("MSSQL_VERSION", new[]{ V2012, V2014, V2016, V2017, V2019 });
+        public static int V2022 = 2022;
+        public static int[] Versions = TestConfig.EnvironmentVariableInto("MSSQL_VERSION", [
+            V2012, V2014, V2016, V2017, V2019, V2022
+        ]);
         public static int[] V2012Versions = Versions.Where(x => x == V2012).ToArray();
         public static int[] V2014Versions = Versions.Where(x => x == V2014).ToArray();
         public static int[] V2016Versions = Versions.Where(x => x == V2016).ToArray();
         public static int[] V2017Versions = Versions.Where(x => x == V2017).ToArray();
         public static int[] V2019Versions = Versions.Where(x => x == V2019).ToArray();
-
-        public static string DefaultConnection => TestConfig.DialectConnections[Tuple.Create(Dialect.SqlServer2019, V2019)];
+        public static int[] V2022Versions = Versions.Where(x => x == V2022).ToArray();
+        
+        public static string DefaultConnection => TestConfig.DialectConnections[Tuple.Create(Dialect.SqlServer2022, V2022)];
 
         public static string VersionString(Dialect dialect, int version) => "SQL Server " + version;
         
-        public static Dictionary<Dialect, int> CompatibilityLevels = new Dictionary<Dialect, int> 
+        public static Dictionary<Dialect, int> CompatibilityLevels = new()
         {
             [Dialect.SqlServer2012] = 110,
             [Dialect.SqlServer2014] = 120,
             [Dialect.SqlServer2016] = 130,
             [Dialect.SqlServer2017] = 140,
             [Dialect.SqlServer2019] = 150,
+            [Dialect.SqlServer2022] = 160,
         };
     }
     public static class MySqlDb
@@ -156,7 +163,7 @@ namespace ServiceStack.OrmLite.Tests
         {
             try
             {
-                Versions = TestConfig.EnvironmentVariableInto("MYSQL_VERSION", new[] { V5_5, V10_1, V10_2, V10_3, V10_4 });
+                Versions = TestConfig.EnvironmentVariableInto("MYSQL_VERSION", [V5_5, V10_1, V10_2, V10_3, V10_4]);
                 MySqlConnectorVersions = Versions.Where(x => x == V10_4).ToArray();
                 DefaultConnection = TestConfig.DialectConnections[Tuple.Create(Dialect.MySql, V10_4)];
             }
@@ -239,6 +246,7 @@ namespace ServiceStack.OrmLite.Tests
             [Dialect.SqlServer2016] = SqlServer2016Dialect.Provider,
             [Dialect.SqlServer2017] = SqlServer2017Dialect.Provider,
             [Dialect.SqlServer2019] = SqlServer2019Dialect.Provider,
+            [Dialect.SqlServer2022] = SqlServer2022Dialect.Provider,
             [Dialect.PostgreSql9] = PostgreSqlDialect.Provider,
             [Dialect.PostgreSql10] = PostgreSqlDialect.Provider,
             [Dialect.PostgreSql11] = PostgreSqlDialect.Provider,
@@ -266,30 +274,31 @@ namespace ServiceStack.OrmLite.Tests
             { 
                 return new Dictionary<Tuple<Dialect,int>, string> 
                 {
-                    [Tuple.Create(Dialect.Sqlite, SqliteDb.Memory)] = EnvironmentVariable(new[]{ "SQLITE_MEMORY_CONNECTION", "SQLITE_CONNECTION" }, ":memory:"),
-                    [Tuple.Create(Dialect.Sqlite, SqliteDb.File)] = EnvironmentVariable(new[]{ "SQLITE_FILE_CONNECTION", "SQLITE_CONNECTION" }, "~/App_Data/db.sqlite".MapAbsolutePath()),
+                    [Tuple.Create(Dialect.Sqlite, SqliteDb.Memory)] = EnvironmentVariable(["SQLITE_MEMORY_CONNECTION", "SQLITE_CONNECTION" ], ":memory:"),
+                    [Tuple.Create(Dialect.Sqlite, SqliteDb.File)] = EnvironmentVariable(["SQLITE_FILE_CONNECTION", "SQLITE_CONNECTION" ], "~/App_Data/db.sqlite".MapAbsolutePath()),
 
-                    [Tuple.Create(Dialect.SqlServer, SqlServerDb.V2012)] = EnvironmentVariable(new[]{ "MSSQL2012_CONNECTION", "MSSQL_CONNECTION" }, "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
-                    [Tuple.Create(Dialect.SqlServer2017, SqlServerDb.V2017)] = EnvironmentVariable(new[]{ "MSSQL2017_CONNECTION", "MSSQL_CONNECTION" }, "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
-                    [Tuple.Create(Dialect.SqlServer2019, SqlServerDb.V2019)] = EnvironmentVariable(new[]{ "MSSQL2019_CONNECTION", "MSSQL_CONNECTION" }, "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
+                    [Tuple.Create(Dialect.SqlServer, SqlServerDb.V2012)] = EnvironmentVariable(["MSSQL2012_CONNECTION", "MSSQL_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
+                    [Tuple.Create(Dialect.SqlServer2017, SqlServerDb.V2017)] = EnvironmentVariable(["MSSQL2017_CONNECTION", "MSSQL_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
+                    [Tuple.Create(Dialect.SqlServer2019, SqlServerDb.V2019)] = EnvironmentVariable(["MSSQL2019_CONNECTION", "MSSQL_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
+                    [Tuple.Create(Dialect.SqlServer2022, SqlServerDb.V2022)] = EnvironmentVariable(["MSSQL2022_CONNECTION", "MSSQL_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
 
-                    [Tuple.Create(Dialect.PostgreSql9, PostgreSqlDb.V9)]  = EnvironmentVariable(new[]{ "PGSQL9_CONNECTION",  "PGSQL_CONNECTION" }, "Server=localhost;Port=48301;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
-                    [Tuple.Create(Dialect.PostgreSql10, PostgreSqlDb.V10)] = EnvironmentVariable(new[]{ "PGSQL10_CONNECTION", "PGSQL_CONNECTION" }, "Server=localhost;Port=48302;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
-                    [Tuple.Create(Dialect.PostgreSql11, PostgreSqlDb.V11)] = EnvironmentVariable(new[]{ "PGSQL11_CONNECTION", "PGSQL_CONNECTION" }, "Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
+                    [Tuple.Create(Dialect.PostgreSql9, PostgreSqlDb.V9)]  = EnvironmentVariable(["PGSQL9_CONNECTION",  "PGSQL_CONNECTION"], "Server=localhost;Port=48301;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
+                    [Tuple.Create(Dialect.PostgreSql10, PostgreSqlDb.V10)] = EnvironmentVariable(["PGSQL10_CONNECTION", "PGSQL_CONNECTION"], "Server=localhost;Port=48302;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
+                    [Tuple.Create(Dialect.PostgreSql11, PostgreSqlDb.V11)] = EnvironmentVariable(["PGSQL11_CONNECTION", "PGSQL_CONNECTION"], "Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
                 
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V5_5)]  = EnvironmentVariable(new[]{ "MYSQL55_CONNECTION",  "MYSQL_CONNECTION" }, "Server=localhost;Port=48201;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_1)] = EnvironmentVariable(new[]{ "MYSQL101_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48202;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_2)] = EnvironmentVariable(new[]{ "MYSQL102_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48203;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_3)] = EnvironmentVariable(new[]{ "MYSQL103_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48204;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_4)] = EnvironmentVariable(new[]{ "MYSQL104_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V5_5)]  = EnvironmentVariable(["MYSQL55_CONNECTION",  "MYSQL_CONNECTION"], "Server=localhost;Port=48201;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_1)] = EnvironmentVariable(["MYSQL101_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48202;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_2)] = EnvironmentVariable(["MYSQL102_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48203;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_3)] = EnvironmentVariable(["MYSQL103_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48204;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                    [Tuple.Create(Dialect.MySql, MySqlDb.V10_4)] = EnvironmentVariable(["MYSQL104_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
 
-                    [Tuple.Create(Dialect.MySqlConnector, MySqlDb.V10_4)] = EnvironmentVariable(new[]{ "MYSQL104_CONNECTION", "MYSQL_CONNECTION" }, "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none"),
+                    [Tuple.Create(Dialect.MySqlConnector, MySqlDb.V10_4)] = EnvironmentVariable(["MYSQL104_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none"),
                 
-                    [Tuple.Create(Dialect.Oracle, OracleDb.V11)] = EnvironmentVariable(new[]{ "ORACLE11_CONNECTION", "ORACLE_CONNECTION" }, "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
+                    [Tuple.Create(Dialect.Oracle, OracleDb.V11)] = EnvironmentVariable(["ORACLE11_CONNECTION", "ORACLE_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
                 
-                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V3)] = EnvironmentVariable(new[]{ "FIREBIRD3_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=/firebird/data/test.gdb;DataSource=127.0.0.1;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;"),
+                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V3)] = EnvironmentVariable(["FIREBIRD3_CONNECTION", "FIREBIRD_CONNECTION"], @"User=SYSDBA;Password=masterkey;Database=/firebird/data/test.gdb;DataSource=127.0.0.1;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;"),
 
-                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V4)] = EnvironmentVariable(new[]{ "FIREBIRD4_CONNECTION", "FIREBIRD_CONNECTION" }, @"User=SYSDBA;Password=masterkey;Database=C:\tools\Firebird\data\test.fdb;DataSource=127.0.0.1;Dialect=3;charset=utf8;MinPoolSize=0;MaxPoolSize=100;"),
+                    [Tuple.Create(Dialect.Firebird, FirebirdDb.V4)] = EnvironmentVariable(["FIREBIRD4_CONNECTION", "FIREBIRD_CONNECTION"], @"User=SYSDBA;Password=masterkey;Database=C:\tools\Firebird\data\test.fdb;DataSource=127.0.0.1;Dialect=3;charset=utf8;MinPoolSize=0;MaxPoolSize=100;"),
                 };
             }
             catch (Exception e)
@@ -300,7 +309,7 @@ namespace ServiceStack.OrmLite.Tests
             }
         }
 
-        public static Dictionary<Dialect, int[]> DialectVersions = new Dictionary<Dialect, int[]> 
+        public static Dictionary<Dialect, int[]> DialectVersions = new()
         {
             [Dialect.Sqlite] = SqliteDb.Versions,
             [Dialect.SqlServer2012] = SqlServerDb.V2012Versions,
@@ -308,6 +317,7 @@ namespace ServiceStack.OrmLite.Tests
             [Dialect.SqlServer2016] = SqlServerDb.V2016Versions,
             [Dialect.SqlServer2017] = SqlServerDb.V2017Versions,
             [Dialect.SqlServer2019] = SqlServerDb.V2019Versions,
+            [Dialect.SqlServer2022] = SqlServerDb.V2022Versions,
             [Dialect.PostgreSql9] = PostgreSqlDb.V9Versions,
             [Dialect.PostgreSql10] = PostgreSqlDb.V10Versions,
             [Dialect.PostgreSql11] = PostgreSqlDb.V11Versions,
@@ -374,10 +384,8 @@ namespace ServiceStack.OrmLite.Tests
                     {
                         if (DialectConnections.TryGetValue(Tuple.Create(dialect, version), out var connString))
                         {
-                            using (var db = dbFactory.OpenDbConnectionString(connString + ";Timeout=10", dialect.ToString()))
-                            {
-                                InitPostgres(dialect, db);
-                            }
+                            using var db = dbFactory.OpenDbConnectionString(connString + ";Timeout=10", dialect.ToString());
+                            InitPostgres(dialect, db);
                         }
                     }
                 }
@@ -392,12 +400,10 @@ namespace ServiceStack.OrmLite.Tests
                 {
                     foreach (var version in DialectVersions[Dialect.MySqlConnector])
                     {
-                        using (var db = dbFactory.OpenDbConnectionString(
+                        using var db = dbFactory.OpenDbConnectionString(
                             DialectConnections[Tuple.Create(Dialect.MySqlConnector, version)] + ";Timeout=10",
-                            Dialect.MySqlConnector.ToString()))
-                        {
-                            InitMySqlConnector(Dialect.MySqlConnector, db);
-                        }
+                            Dialect.MySqlConnector.ToString());
+                        InitMySqlConnector(Dialect.MySqlConnector, db);
                     }
                 }
                 catch {}
@@ -411,10 +417,8 @@ namespace ServiceStack.OrmLite.Tests
                     {
                         if (DialectConnections.TryGetValue(Tuple.Create(dialect, version), out var connString))
                         {
-                            using (var db = dbFactory.OpenDbConnectionString(connString + ";Timeout=10", dialect.ToString()))
-                            {
-                                InitSqlServer(dialect, db);
-                            }
+                            using var db = dbFactory.OpenDbConnectionString(connString + ";Timeout=10", dialect.ToString());
+                            InitSqlServer(dialect, db);
                         }
                     }
                 }
@@ -423,6 +427,7 @@ namespace ServiceStack.OrmLite.Tests
                 SetupSqlServer(Dialect.SqlServer2016, SqlServerDb.V2016);
                 SetupSqlServer(Dialect.SqlServer2017, SqlServerDb.V2017);
                 SetupSqlServer(Dialect.SqlServer2019, SqlServerDb.V2019);
+                SetupSqlServer(Dialect.SqlServer2022, SqlServerDb.V2022);
             }
         }
         

@@ -1,31 +1,30 @@
 using NUnit.Framework;
 
-namespace ServiceStack.OrmLite.SqlServerTests
+namespace ServiceStack.OrmLite.SqlServerTests;
+
+public class TypeWithByteArrayFieldTests : OrmLiteTestBase
 {
-    public class TypeWithByteArrayFieldTests : OrmLiteTestBase
+    [Test]
+    public void CanInsertAndSelectByteArray()
     {
-        [Test]
-        public void CanInsertAndSelectByteArray()
+        var orig = new TypeWithByteArrayField { Id = 1, Content = [0, 17, 0, 17, 0, 7] };
+
+        using (var db = OpenDbConnection())
         {
-            var orig = new TypeWithByteArrayField { Id = 1, Content = new byte[] { 0, 17, 0, 17, 0, 7 } };
+            db.CreateTable<TypeWithByteArrayField>(true);
 
-            using (var db = OpenDbConnection())
-            {
-                db.CreateTable<TypeWithByteArrayField>(true);
+            db.Save(orig);
 
-                db.Save(orig);
+            var target = db.SingleById<TypeWithByteArrayField>(orig.Id);
 
-                var target = db.SingleById<TypeWithByteArrayField>(orig.Id);
-
-                Assert.AreEqual(orig.Id, target.Id);
-                Assert.AreEqual(orig.Content, target.Content);
-            }
+            Assert.AreEqual(orig.Id, target.Id);
+            Assert.AreEqual(orig.Content, target.Content);
         }
     }
+}
 
-    class TypeWithByteArrayField
-    {
-        public int Id { get; set; }
-        public byte[] Content { get; set; }
-    }
+class TypeWithByteArrayField
+{
+    public int Id { get; set; }
+    public byte[] Content { get; set; }
 }

@@ -7,93 +7,88 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Dapper;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.SqlServerTests
+namespace ServiceStack.OrmLite.SqlServerTests;
+
+public class InsertParam_GetLastInsertId : OrmLiteTestBase
 {
-    public class InsertParam_GetLastInsertId : OrmLiteTestBase
+    [Test]
+    public void Can_GetLastInsertedId_using_InsertParam()
     {
-        [Test]
-        public void Can_GetLastInsertedId_using_InsertParam()
+        var testObject = new SimpleType { Name = "test" };
+
+        //verify that "normal" Insert works as expected
+        using (var con = OpenDbConnection())
         {
-            var testObject = new SimpleType { Name = "test" };
+            con.CreateTable<SimpleType>(true);
 
-            //verify that "normal" Insert works as expected
-            using (var con = OpenDbConnection())
-            {
-                con.CreateTable<SimpleType>(true);
-
-                con.Save(testObject);
-                Assert.That(testObject.Id, Is.GreaterThan(0), "normal Insert");
-            }
-
-            //test with InsertParam
-            using (var con = OpenDbConnection())
-            {
-                con.CreateTable<SimpleType>(true);
-
-                var lastInsertId = con.Insert(testObject, selectIdentity: true);
-                Assert.That(lastInsertId, Is.GreaterThan(0), "with InsertParam");
-            }
+            con.Save(testObject);
+            Assert.That(testObject.Id, Is.GreaterThan(0), "normal Insert");
         }
 
-        public class ServerGuid
+        //test with InsertParam
+        using (var con = OpenDbConnection())
         {
-            [Default(typeof(Guid), "newid()")]
-            public Guid Id { get; set; }
+            con.CreateTable<SimpleType>(true);
 
-            public string Name { get; set; }
+            var lastInsertId = con.Insert(testObject, selectIdentity: true);
+            Assert.That(lastInsertId, Is.GreaterThan(0), "with InsertParam");
         }
+    }
 
-        [Test]
-        public void Can_retrieve_ServerGuid()
-        {
-            using (var db = OpenDbConnection())
-            using (var cmd = db.CreateCommand())
-            {
-                db.DropAndCreateTable<ServerGuid>();
+    public class ServerGuid
+    {
+        [Default(typeof(Guid), "newid()")]
+        public Guid Id { get; set; }
 
-                var obj = new ServerGuid { Name = "foo" };
+        public string Name { get; set; }
+    }
 
-                cmd.GetDialectProvider().PrepareParameterizedInsertStatement<ServerGuid>(cmd,
-                    insertFields: db.GetDialectProvider().GetNonDefaultValueInsertFields<ServerGuid>(obj));
+    [Test]
+    public void Can_retrieve_ServerGuid()
+    {
+        using var db = OpenDbConnection();
+        using var cmd = db.CreateCommand();
+        db.DropAndCreateTable<ServerGuid>();
 
-                cmd.CommandText = cmd.CommandText.Replace("VALUES", "OUTPUT inserted.Id VALUES");
+        var obj = new ServerGuid { Name = "foo" };
 
-                cmd.GetDialectProvider().SetParameterValues<ServerGuid>(cmd, obj);
+        cmd.GetDialectProvider().PrepareParameterizedInsertStatement<ServerGuid>(cmd,
+            insertFields: db.GetDialectProvider().GetNonDefaultValueInsertFields<ServerGuid>(obj));
 
-                var id = (Guid)cmd.ExecuteScalar();
+        cmd.CommandText = cmd.CommandText.Replace("VALUES", "OUTPUT inserted.Id VALUES");
 
-                Assert.That(id, Is.Not.EqualTo(default(Guid)));
+        cmd.GetDialectProvider().SetParameterValues<ServerGuid>(cmd, obj);
 
-                var insertedRow = db.SingleById<ServerGuid>(id);
+        var id = (Guid)cmd.ExecuteScalar();
 
-                Assert.That(insertedRow.Name, Is.EqualTo("foo"));
-            }
-        }
+        Assert.That(id, Is.Not.EqualTo(default(Guid)));
 
-        [PostCreateTable("DBCC CHECKIDENT (SeedTest, RESEED, 1000)")]
-        public class SeedTest
-        {
-            [AutoIncrement]
-            public int Id { get; set; }
+        var insertedRow = db.SingleById<ServerGuid>(id);
 
-            public string Name { get; set; }
-        }
+        Assert.That(insertedRow.Name, Is.EqualTo("foo"));
+    }
 
-        [Test]
-        public void Can_create_table_starting_from_specific_seed()
-        {
-            using (var db = OpenDbConnection())
-            {
-                db.DropAndCreateTable<SeedTest>();
+    [PostCreateTable("DBCC CHECKIDENT (SeedTest, RESEED, 1000)")]
+    public class SeedTest
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
 
-                //var modelDef = typeof(SeedTest).GetModelMetadata();
-                //var tableName = db.GetDialectProvider().GetQuotedTableName(modelDef);
-                //db.ExecuteSql($"DBCC CHECKIDENT ({tableName}, RESEED, 1000)");
+        public string Name { get; set; }
+    }
 
-                db.Insert(new SeedTest { Name = "foo" });
+    [Test]
+    public void Can_create_table_starting_from_specific_seed()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<SeedTest>();
 
-                Assert.That(db.Select<SeedTest>()[0].Id, Is.EqualTo(1000));
-            }
-        }
+        //var modelDef = typeof(SeedTest).GetModelMetadata();
+        //var tableName = db.GetDialectProvider().GetQuotedTableName(modelDef);
+        //db.ExecuteSql($"DBCC CHECKIDENT ({tableName}, RESEED, 1000)");
+
+        db.Insert(new SeedTest { Name = "foo" });
+
+        Assert.That(db.Select<SeedTest>()[0].Id, Is.EqualTo(1000));
     }
 }
