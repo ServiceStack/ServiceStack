@@ -86,7 +86,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         return useExistingNonWildcardEndpoint;
     }
     
-    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation)
+    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation, EndpointOptions options=default)
     {
         if (operation.ResponseType != null)
         {
@@ -103,7 +103,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         {
             builder.Produces(Config.Return204NoContentForEmptyResponse ? 204 : 200, responseType:null);
         }
-        if (operation.RequiresAuthentication)
+        if (options.RequireAuth && operation.RequiresAuthentication)
         {
             var authAttr = operation.Authorize ?? new Microsoft.AspNetCore.Authorization.AuthorizeAttribute();
             authAttr.AuthenticationSchemes ??= Options.AuthenticationSchemes;

@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Net;
 using System.Threading.Tasks;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
 using ServiceStack.Script;
@@ -26,10 +28,14 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema
 
     public class ApiKey : IApiKey
     {
+        [AutoIncrement]
+        public int Id { get; set; }
+        
         /// <summary>
         /// The API Key
         /// </summary>
-        public string Id { get; set; }
+        [Index(Unique = true)]
+        public string Key { get; set; }
 
         /// <summary>
         /// Name for the API Key
@@ -62,7 +68,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema
     
         public DateTime? CancelledDate { get; set; }
 
-        public List<string> Scopes { get; set; } = new();
+        public List<string> Scopes { get; set; } = [];
     
         public string? Notes { get; set; }
 
@@ -80,34 +86,49 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema
 
     public void Register(IAppHost appHost)
     {
-        appHost.GlobalRequestFiltersAsync.Add(RequestFilterAsync);
+        appHost.GlobalRequestFiltersAsync.Insert(0, RequestFilterAsync);
     }
 
     public async Task RequestFilterAsync(IRequest req, IResponse res, object requestDto)
     {
-        var apiKeyId = (HttpHeaderName != null ? req.GetHeader(HttpHeaderName) : null) ?? req.GetBearerToken();
-        if (string.IsNullOrEmpty(apiKeyId)) 
+        var apiKeyToken = (HttpHeaderName != null ? req.GetHeader(HttpHeaderName) : null) ?? req.GetBearerToken();
+        if (string.IsNullOrEmpty(apiKeyToken)) 
             return;
-        if (ApiKeyPrefix != null && !apiKeyId.StartsWith(ApiKeyPrefix))
+        var authSecret = HostContext.Config.AdminAuthSecret;
+        if (authSecret != null && authSecret == apiKeyToken)
+        {
+            req.Items[Keywords.Session] = HostContext.Config.AuthSecretSession;
             return;
-        if (CacheDuration != null && Cache.TryGetValue(apiKeyId, out var entry))
+        }
+        
+        if (ApiKeyPrefix != null && !apiKeyToken.StartsWith(ApiKeyPrefix))
+            return;
+        if (CacheDuration != null && Cache.TryGetValue(apiKeyToken, out var entry))
         {
             if (entry.dateTime + CacheDuration > DateTime.UtcNow)
             {
                 req.Items[Keywords.ApiKey] = entry.apiKey;
+                if (entry.apiKey.Scopes.Contains(RoleNames.Admin))
+                {
+                    req.Items[Keywords.Session] = HostContext.Config.AuthSecretSession;
+                }
                 return;
             }
-            Cache.TryRemove(apiKeyId, out _);
+            Cache.TryRemove(apiKeyToken, out _);
         }
 
         using var db = await req.TryResolve<IDbConnectionFactory>().OpenDbConnectionAsync();
-        var apiKey = await db.SingleByIdAsync<ApiKey>(apiKeyId);
+        var apiKey = await db.SingleAsync<ApiKey>(x => x.Key == apiKeyToken);
         if (apiKey != null)
         {
             req.Items[Keywords.ApiKey] = apiKey;
+            if (apiKey.Scopes.Contains(RoleNames.Admin))
+            {
+                req.Items[Keywords.Session] = HostContext.Config.AuthSecretSession;
+            }
             if (CacheDuration != null)
             {
-                Cache[apiKeyId] = (apiKey, DateTime.UtcNow);
+                Cache[apiKeyToken] = (apiKey, DateTime.UtcNow);
             }
         }
     }
@@ -130,10 +151,10 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema
     
     public void InitKey(ApiKey to)
     {
-        if (string.IsNullOrEmpty(to.Id))
-            to.Id = GenerateApiKey();
+        if (string.IsNullOrEmpty(to.Key))
+            to.Key = GenerateApiKey();
         if (string.IsNullOrEmpty(to.VisibleKey))
-            to.VisibleKey = to.Id[..(ApiKeyPrefix?.Length ?? 0)] + "***" + to.Id[^3..];
+            to.VisibleKey = to.Key[..(ApiKeyPrefix?.Length ?? 0)] + "***" + to.Key[^3..];
         if (string.IsNullOrEmpty(to.Name))
             to.Name = $"{DateTime.UtcNow.Year}-{DateTime.UtcNow.Month:00}";
         to.CreatedDate = DateTime.UtcNow;
@@ -161,7 +182,13 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema
 
 public static class ApiKeysExtensions
 {
-    public static string? GetApiKeyUser(this IRequest? req) => X.Map(req.GetApiKey() as ApiKeysFeature.ApiKey, x => x.UserName ?? x.UserId);
+    public static string? GetApiKeyId(this IRequest? req) =>
+        req.GetApiKey()?.Key;
+    
+    public static string? GetApiKeyUser(this IRequest? req) =>
+        req.GetApiKey() is ApiKeysFeature.ApiKey x 
+            ? x.UserName ?? x.UserId
+            : req.GetApiKey() is Auth.ApiKey y ? y.UserAuthId : null;
 }
 
 public class ApiKeysFeatureScriptMethods : ScriptMethods
@@ -175,7 +202,7 @@ public class ApiKeyValidator()
 {
     public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;
     public static ApiKeyValidator Instance { get; } = new();
-    ConcurrentDictionary<string, ApiKeysFeature.ApiKey> ValidApiKeys = new();
+    ConcurrentDictionary<string, ApiKeysFeature.ApiKey> validApiKeys = new();
 
     private string? Scope { get; }
     public ApiKeyValidator(string scope) : this()
@@ -195,20 +222,23 @@ public class ApiKeyValidator()
         var bearerToken = request.GetBearerToken();
         if (bearerToken != null)
         {
-            if (ValidApiKeys.TryGetValue(bearerToken, out var apiKey))
+            if (validApiKeys.TryGetValue(bearerToken, out var apiKey))
             {
                 request.Items[Keywords.ApiKey] = apiKey;
                 return true;
             }
             
             using var db = request.TryResolve<IDbConnectionFactory>().OpenDbConnection();
-            apiKey = await db.SingleByIdAsync<ApiKeysFeature.ApiKey>(bearerToken);
+            apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Key == bearerToken);
             if (apiKey != null)
             {
-                if (Scope != null && apiKey.Scopes?.Contains(Scope) != true)
-                    return false;
+                if (apiKey.Scopes.Contains(RoleNames.Admin))
+                    return true;
                 
-                ValidApiKeys[bearerToken] = apiKey;
+                if (Scope != null)
+                    return apiKey.Scopes.Contains(Scope);
+                
+                validApiKeys[bearerToken] = apiKey;
                 request.Items[Keywords.ApiKey] = apiKey;
                 return true;
             }
