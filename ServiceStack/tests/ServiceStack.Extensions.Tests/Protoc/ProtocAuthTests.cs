@@ -347,14 +347,14 @@ namespace ServiceStack.Extensions.Tests.Protoc
             var response = await client.PostRequiresAuthAsync(request);
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
-            Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
-            Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+            Assert.That(AppHost.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
+            Assert.That(RequiresAuthService.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
 
             client = GetClient(c => c.BearerToken = testKey.Id);
             var testResponse = await client.PostSecuredAsync(new Secured { Name = "test" });
             Assert.That(testResponse.Result, Is.EqualTo("Hello, test"));
 
-            Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(testKey.Id));
+            Assert.That(AppHost.LastApiKey.Key, Is.EqualTo(testKey.Id));
         }
 
         [Test]
@@ -369,8 +369,8 @@ namespace ServiceStack.Extensions.Tests.Protoc
             var response = await client.PostRequiresAuthAsync(request);
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
-            Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
-            Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+            Assert.That(AppHost.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
+            Assert.That(RequiresAuthService.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
         }
         
     }

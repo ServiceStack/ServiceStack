@@ -51,7 +51,7 @@ public class HasRolesValidator : TypeValidator, IAuthTypeValidator
 
     public string[] Roles { get; }
     public HasRolesValidator(string role) 
-        : this(new []{ role ?? throw new ArgumentNullException(nameof(role)) }) {}
+        : this([role ?? throw new ArgumentNullException(nameof(role))]) {}
     public HasRolesValidator(string[] roles)
         : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
     {
@@ -154,21 +154,15 @@ public class AuthSecretValidator()
 
     public override Task<bool> IsValidAsync(object dto, IRequest request)
     {
-        var authSecret = request.GetAuthSecret();
+        var authSecret = request.GetAuthSecret() ?? request.GetBearerToken();
         return Task.FromResult(authSecret != null && authSecret == HostContext.AppHost.Config.AdminAuthSecret);
     }
 }
 
-public class ScriptValidator : TypeValidator
+public class ScriptValidator(SharpPage code, string condition) : TypeValidator
 {
-    public SharpPage Code { get; }
-    public string Condition { get; }
-        
-    public ScriptValidator(SharpPage code, string condition)
-    {
-        Code = code ?? throw new ArgumentNullException(nameof(code));
-        Condition = condition ?? throw new ArgumentNullException(nameof(condition));
-    }
+    public SharpPage Code { get; } = code ?? throw new ArgumentNullException(nameof(code));
+    public string Condition { get; } = condition ?? throw new ArgumentNullException(nameof(condition));
 
     public override async Task<bool> IsValidAsync(object dto, IRequest request)
     {

@@ -48,6 +48,7 @@ namespace ServiceStack.Auth
     /// </summary>
     public class ApiKey : IApiKey
     {
+        string IApiKey.Key => Id;
         public string Id { get; set; }
         public string UserAuthId { get; set; }
 
