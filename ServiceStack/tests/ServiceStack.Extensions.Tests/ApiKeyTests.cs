@@ -118,6 +118,9 @@ public class ApiKeyTests
         app.StartAsync(TestsConfig.ListeningOn);
     }
 
+    [OneTimeTearDown]
+    public void TestFixtureTearDown() => AppHostBase.DisposeApp();
+
     [Test]
     public async Task Does_not_allow_access_to_Api_Secured_with_ApiKey()
     {
