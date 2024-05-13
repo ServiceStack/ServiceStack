@@ -121,6 +121,8 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
                         })
                         .WithMetadata<Dictionary<string, List<ApiDescription>>>();
                 }
+
+                var options = host.CreateEndpointOptions();
                 
                 // Map /api/{Request} routes
                 var apis = routeBuilder.MapGroup(apiPath);
@@ -135,7 +137,7 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
                     var builder = apis.MapMethods("/" + requestType.Name, verb, (HttpResponse response, HttpContext httpContext) => 
                         httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:requestType.Name));
 
-                    host.ConfigureOperationEndpoint(builder, operation);
+                    host.ConfigureOperationEndpoint(builder, operation, options);
                     
                     foreach (var handler in host.Options.RouteHandlerBuilders)
                     {

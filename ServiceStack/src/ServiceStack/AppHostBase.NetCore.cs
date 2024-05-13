@@ -309,10 +309,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         }
 
         var existingRoutes = new Dictionary<string, RestPath>();
-        var requireAuth = ApplicationServices.GetService<Microsoft.AspNetCore.Authentication.IAuthenticationService>() != null
-            || HasPlugin<AuthFeature>();
-        var options = new EndpointOptions(RequireAuth: requireAuth);
-        
+        var options = CreateEndpointOptions();
+
         foreach (var entry in Metadata.OperationsMap)
         {
             var requestType = entry.Key;
@@ -379,6 +377,14 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                 }
             }
         }
+    }
+
+    public EndpointOptions CreateEndpointOptions()
+    {
+        var requireAuth = ApplicationServices.GetService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>() != null
+            || HasPlugin<AuthFeature>();
+        var options = new EndpointOptions(RequireAuth: requireAuth);
+        return options;
     }
 #endif
 
@@ -582,6 +588,7 @@ public interface IAppHostNetCore : IAppHost, IRequireConfiguration
 #if NET8_0_OR_GREATER
     ServiceStackOptions Options { get; }
     Dictionary<string, string[]> EndpointVerbs { get; }
+    EndpointOptions CreateEndpointOptions();
     RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation, EndpointOptions options=default);
 #endif
 }

@@ -147,6 +147,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
             return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
         }
         
+        var options = CreateEndpointOptions();
         foreach (var entry in Metadata.OperationsMap)
         {
             var requestType = entry.Key;
@@ -173,7 +174,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
                         var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
                             HandleRequestAsync(requestType, httpContext));
                         
-                        ConfigureOperationEndpoint(pathBuilder, operation);
+                        ConfigureOperationEndpoint(pathBuilder, operation, options);
 
                         foreach (var handler in Options.RouteHandlerBuilders)
                         {
@@ -189,7 +190,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
                             (string format, HttpResponse response, HttpContext httpContext) =>
                                 HandleRequestAsync(requestType, httpContext));
                         
-                        ConfigureOperationEndpoint(pathBuilder, operation)
+                        ConfigureOperationEndpoint(pathBuilder, operation, options)
                             .WithMetadata<string>(route.Path + ".format");
                     }
                 }
@@ -200,6 +201,14 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
                 }
             }
         }
+    }
+
+    public EndpointOptions CreateEndpointOptions()
+    {
+        var requireAuth = ApplicationServices.GetService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>() != null
+            || HasPlugin<AuthFeature>();
+        var options = new EndpointOptions(RequireAuth: requireAuth);
+        return options;
     }
 #endif
 
