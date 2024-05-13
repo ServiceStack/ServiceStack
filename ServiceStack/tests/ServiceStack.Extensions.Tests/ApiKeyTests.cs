@@ -69,7 +69,7 @@ public class ApiKeyTests
     
     public static string[] AllKeys = [AnonKey, UserKey, ScopeKey, AltKey, AdminKey];
     
-    class AppHost() : AppHostBase(nameof(ApiKeyTests), typeof(ApiKeyServices).Assembly)
+    class AppHost() : AppHostBase(nameof(ApiKeyTests))
     {
         public override void Configure()
         {
@@ -109,6 +109,7 @@ public class ApiKeyTests
         
         var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
         services.AddSingleton<IDbConnectionFactory>(dbFactory);
+        services.AddServiceStack(typeof(ApiKeyServices).Assembly);
 
         var app = builder.Build();
         app.UseServiceStack(new AppHost(), options => {
@@ -139,7 +140,7 @@ public class ApiKeyTests
 
     [Test]
     [TestCaseSource(nameof(AllKeys))]
-    public async Task Does_protect_ApiKey_Service(string apiKey)
+    public async Task Does_allow_access_to_Api_Secured_with_ApiKey(string apiKey)
     {
         var client = new JsonApiClient(TestsConfig.ListeningOn)
         {
@@ -147,9 +148,11 @@ public class ApiKeyTests
         };
         
         var apiPublic = await client.ApiAsync(new HelloApiKey { Name = "World" });
+        apiPublic.ThrowIfError();
         Assert.That(apiPublic.Response.Result, Is.EqualTo("Hello, World!"));
         
         var apiSecure = await client.ApiAsync(new SecuredApiKey { Name = "Secured" });
+        apiSecure.ThrowIfError();
         Assert.That(apiSecure.Response.Result, Is.EqualTo("Hello, Secured!"));
     }
 

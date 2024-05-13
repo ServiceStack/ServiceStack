@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -15,10 +17,10 @@ public class AlwaysValidValidator : NoopPropertyValidator
    
 public class ValidateScripts : ScriptMethods
 {
-    public static HashSet<string> RequiredValidators { get; } = new() {
+    public static HashSet<string> RequiredValidators { get; } = [
         nameof(NotNull),
-        nameof(NotEmpty),
-    };
+        nameof(NotEmpty)
+    ];
         
     public static ValidateScripts Instance = new();
 
@@ -72,5 +74,11 @@ public class ValidateScripts : ScriptMethods
     };
     public ITypeValidator IsAdmin() => new HasRolesValidator(RoleNames.Admin);
     
-    public ITypeValidator AuthSecret() => AuthSecretValidator.Instance;
+    public ITypeValidator AuthSecret() => new AuthSecretValidator();
+
+    // Returns Lazy factory as needed before Container is ready when verifying Validator Script methods exist 
+    private Func<IApiKeySource> ResolveApiKeySource() => () => Context.Container.Resolve<IApiKeySource>();
+
+    public ITypeValidator ApiKey() => new ApiKeyValidator(ResolveApiKeySource());
+    public ITypeValidator ApiKey(string scope) => new ApiKeyValidator(ResolveApiKeySource()) { Scope = scope };
 }

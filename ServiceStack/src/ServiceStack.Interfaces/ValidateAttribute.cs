@@ -120,6 +120,13 @@ public class ValidateHasScopeAttribute(string scope) : ValidateRequestAttribute(
     public string Scope => scope;
 }
 
+/* ApiKeysFeature */
+public class ValidateAuthSecretAttribute() : ValidateRequestAttribute("AuthSecret()");
+public class ValidateApiKeyAttribute : ValidateRequestAttribute
+{
+    public ValidateApiKeyAttribute() : base("ApiKey"){}
+    public ValidateApiKeyAttribute(string scope) : base("ApiKey(′" + scope + "′)"){}
+}
     
 /// <summary>
 /// Validate property against registered Validator expression
@@ -263,13 +270,4 @@ public class ValidateExclusiveBetweenAttribute : ValidateAttribute
     public ValidateExclusiveBetweenAttribute(string from, string to) : base($"ExclusiveBetween(′{from}′,′{to}′)") { }
     public ValidateExclusiveBetweenAttribute(char from, char to) : base($"ExclusiveBetween(′{from}′,′{to}′)") { }
     public ValidateExclusiveBetweenAttribute(int from, int to) : base($"ExclusiveBetween({from},{to})") { }
-}
-
-/* ApiKeysFeature */
-public class ValidateAuthSecretAttribute() : ValidateRequestAttribute("AuthSecret()");
-
-public class ValidateApiKeyAttribute : ValidateRequestAttribute
-{
-    public ValidateApiKeyAttribute() : base("ApiKey()"){}
-    public ValidateApiKeyAttribute(string scope) : base("ApiKey(′" + scope + "′)"){}
 }

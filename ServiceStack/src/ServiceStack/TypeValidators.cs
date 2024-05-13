@@ -1,8 +1,12 @@
+#nullable enable
+
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
 using ServiceStack.Script;
@@ -27,18 +31,16 @@ public interface IHasTypeValidators
     
 public interface IAuthTypeValidator {}
 
-public class IsAuthenticatedValidator : TypeValidator, IAuthTypeValidator
+public class IsAuthenticatedValidator() : TypeValidator(nameof(HttpStatusCode.Unauthorized), DefaultErrorMessage, 401),
+    IAuthTypeValidator
 {
     public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;
     public static IsAuthenticatedValidator Instance { get; } = new();
     public string Provider { get; }
 
-    public IsAuthenticatedValidator()
-        : base(nameof(HttpStatusCode.Unauthorized), DefaultErrorMessage, 401) {}
-        
     public IsAuthenticatedValidator(string provider) : this() => Provider = provider;
 
-    public override async Task<bool> IsValidAsync(object dto, IRequest request)
+    public override async Task<bool> IsValidAsync(object dto, IRequest? request)
     {
         return request != null && await AuthenticateAttribute.AuthenticateAsync(request, requestDto:dto, 
             authProviders:AuthenticateService.GetAuthProviders(this.Provider)).ConfigAwait();
@@ -61,7 +63,7 @@ public class HasRolesValidator : TypeValidator, IAuthTypeValidator
         };
     }
 
-    public override async Task<bool> IsValidAsync(object dto, IRequest request)
+    public override async Task<bool> IsValidAsync(object dto, IRequest? request)
     {
         return request != null && await IsAuthenticatedValidator.Instance.IsValidAsync(dto, request).ConfigAwait() 
                                && await RequiredRoleAttribute.HasRequiredRolesAsync(request, Roles).ConfigAwait();
@@ -96,7 +98,7 @@ public class HasClaimValidator : TypeValidator, IAuthTypeValidator
         };
     }
 
-    public override async Task<bool> IsValidAsync(object dto, IRequest request)
+    public override async Task<bool> IsValidAsync(object dto, IRequest? request)
     {
         return request != null && await IsAuthenticatedValidator.Instance.IsValidAsync(dto, request).ConfigAwait() 
                                && RequiredClaimAttribute.HasClaim(request, Type, Value);
@@ -119,7 +121,7 @@ public class HasPermissionsValidator : TypeValidator, IAuthTypeValidator
 
     public string[] Permissions { get; }
     public HasPermissionsValidator(string permission) 
-        : this(new []{ permission ?? throw new ArgumentNullException(nameof(permission)) }) {}
+        : this([permission ?? throw new ArgumentNullException(nameof(permission))]) {}
     public HasPermissionsValidator(string[] permissions)
         : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
     {
@@ -129,10 +131,11 @@ public class HasPermissionsValidator : TypeValidator, IAuthTypeValidator
         };
     }
 
-    public override async Task<bool> IsValidAsync(object dto, IRequest request)
+    public override async Task<bool> IsValidAsync(object dto, IRequest? request)
     {
-        return request != null && await IsAuthenticatedValidator.Instance.IsValidAsync(dto, request).ConfigAwait() 
-                               && await RequiredPermissionAttribute.HasRequiredPermissionsAsync(request, Permissions).ConfigAwait();
+        return request != null 
+               && await IsAuthenticatedValidator.Instance.IsValidAsync(dto, request).ConfigAwait() 
+               && await RequiredPermissionAttribute.HasRequiredPermissionsAsync(request, Permissions).ConfigAwait();
     }
 
     public override async Task ThrowIfNotValidAsync(object dto, IRequest request)
@@ -159,6 +162,59 @@ public class AuthSecretValidator()
     }
 }
 
+public class ApiKeyValidator(Func<IApiKeySource> factory)
+    : TypeValidator(nameof(HttpStatusCode.Unauthorized), DefaultErrorMessage, 401), IAuthTypeValidator
+{
+    public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;
+    readonly ConcurrentDictionary<string, IApiKey> validApiKeys = new();
+
+    private string? scope;
+    public string? Scope
+    {
+        get => scope;
+        set
+        {
+            scope = value ?? throw new ArgumentNullException(nameof(Scope));
+            this.ContextArgs = new Dictionary<string, object> {
+                [nameof(Scope)] = value,
+            };
+        }
+    }
+
+    public override async Task<bool> IsValidAsync(object dto, IRequest request)
+    {
+        var authSecret = request.GetAuthSecret();
+        if (authSecret != null && authSecret == HostContext.AppHost.Config.AdminAuthSecret)
+            return true;
+        
+        var token = request.GetBearerToken();
+        if (token != null)
+        {
+            if (validApiKeys.TryGetValue(token, out var apiKey))
+            {
+                request.Items[Keywords.ApiKey] = apiKey;
+                return true;
+            }
+
+            var source = factory();
+            apiKey = await source.GetApiKeyAsync(token);
+            if (apiKey != null)
+            {
+                if (apiKey.HasScope(RoleNames.Admin))
+                    return true;
+                
+                if (Scope != null)
+                    return apiKey.HasScope(Scope);
+                
+                validApiKeys[token] = apiKey;
+                request.Items[Keywords.ApiKey] = apiKey;
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
 public class ScriptValidator(SharpPage code, string condition) : TypeValidator
 {
     public SharpPage Code { get; } = code ?? throw new ArgumentNullException(nameof(code));
@@ -178,22 +234,22 @@ public class ScriptValidator(SharpPage code, string condition) : TypeValidator
     
 public abstract class TypeValidator : ITypeValidator
 {
-    public string ErrorCode { get; set; }
-    public string Message { get; set; }
+    public string? ErrorCode { get; set; }
+    public string? Message { get; set; }
     public int? StatusCode { get; set; }
 
     public string DefaultErrorCode { get; set; } = "InvalidRequest";
-    public string DefaultMessage { get; set; } = "`The specified condition was not met for '${TypeName}'.`";
+    public string DefaultMessage { get; set; } = "`The specified condition was not met for '${TypeName}'`";
     public int? DefaultStatusCode { get; set; }
         
-    public Dictionary<string,object> ContextArgs { get; set; }
+    public Dictionary<string,object>? ContextArgs { get; set; }
 
-    protected TypeValidator(string errorCode=null, string message=null, int? statusCode = null)
+    protected TypeValidator(string? errorCode=null, string? message=null, int? statusCode = null)
     {
         if (!string.IsNullOrEmpty(errorCode))
-            DefaultErrorCode = errorCode;
+            DefaultErrorCode = errorCode!;
         if (!string.IsNullOrEmpty(message))
-            DefaultMessage = message;
+            DefaultMessage = message!;
         if (statusCode != null)
             DefaultStatusCode = statusCode;
     }
@@ -206,7 +262,7 @@ public abstract class TypeValidator : ITypeValidator
             ? Message.Localize(request)
             : Validators.ErrorCodeMessages.TryGetValue(errorCode, out var msg)
                 ? msg.Localize(request)
-                : (DefaultMessage ?? errorCode.SplitPascalCase()).Localize(request);
+                : DefaultMessage.Localize(request);
 
         string errorMsg = messageExpr;
         if (messageExpr.IndexOf('`') >= 0)
@@ -224,7 +280,7 @@ public abstract class TypeValidator : ITypeValidator
                     args[entry.Key] = entry.Value;
                 }
             }
-            errorMsg = (string) msgToken.Evaluate(JS.CreateScope(args)) ?? Message ?? DefaultMessage;
+            errorMsg = (string) msgToken.Evaluate(JS.CreateScope(args)) ?? Message ?? DefaultMessage!;
         }
 
         return errorMsg;

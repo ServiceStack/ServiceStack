@@ -1141,9 +1141,9 @@ public class PageResult : IPageResult, IStreamWriterAsync, IHasOptions, IDisposa
                                     : argsOnly 
                                         ? null
                                         : (invoker = GetFilterAsBinding(name, out var filter)) != null
-                                            ? InvokeFilter(invoker, filter, new object[0], name)
+                                            ? InvokeFilter(invoker, filter, Array.Empty<object>(), name)
                                             : (invoker = GetContextFilterAsBinding(name, out filter)) != null
-                                                ? InvokeFilter(invoker, filter, new object[] {scope}, name)
+                                                ? InvokeFilter(invoker, filter, [scope], name)
                                                 // ReSharper disable once ExpressionIsAlwaysNull
                                                 // ReSharper disable once ConditionalTernaryEqualBranch
 #pragma warning disable CS0665
