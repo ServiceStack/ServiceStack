@@ -293,7 +293,7 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
     public Task BeforeDeleteUserAsync(IRequest request, string userId) =>
         OnBeforeDeleteUser?.Invoke(request, userId) ?? Task.CompletedTask;
     public Task AfterDeleteUserAsync(IRequest request, string userId) =>
-        OnBeforeDeleteUser?.Invoke(request, userId) ?? Task.CompletedTask;
+        OnAfterDeleteUser?.Invoke(request, userId) ?? Task.CompletedTask;
 
     public IdentityAdminUsersFeature<TUser, TKey> RemoveFromUserForm(params string[] fieldNames) =>
         RemoveFromUserForm(input => fieldNames.Contains(input.Name));
