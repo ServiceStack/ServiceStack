@@ -813,7 +813,7 @@ public static class LicenseUtils
         }
     }
 
-    private static object CreateHashAlgorithm(string name)
+    public static object CreateHashAlgorithm(string name)
     {
         object halg = name switch {
             nameof(SHA256) => SHA256.Create(),
