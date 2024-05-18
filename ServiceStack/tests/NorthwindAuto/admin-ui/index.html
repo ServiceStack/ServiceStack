@@ -19,6 +19,8 @@ DEBUG = true /*debug*/
 {
     "imports": {
         "vue": "../js/vue.mjs",  
+        "color.js": "../js/color.js",
+        "chart.js": "../js/chart.js",
         "@servicestack/vue": "../js/servicestack-vue.mjs",
         "@servicestack/client": "../js/servicestack-client.mjs",
         "core": "../js/core.mjs",
@@ -64,6 +66,7 @@ DEBUG = true /*debug*/
                                 <profiling v-else-if="routes.admin === 'profiling'"></profiling>
                                 <redis v-else-if="routes.admin === 'redis'"></redis>
                                 <database v-else-if="routes.admin === 'database'"></database>
+                                <commands v-else-if="routes.admin === 'commands'"></commands>
                             </div>
                         </div>
                     </div>

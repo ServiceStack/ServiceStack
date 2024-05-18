@@ -335,6 +335,18 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         invokerCache[method] = fn;
         return fn;
     }
+
+    public void BeforePluginsLoaded(IAppHost appHost)
+    {
+        appHost.ConfigurePlugin<UiFeature>(feature => {
+            feature.AddAdminLink(AdminUiFeature.Database, new LinkInfo {
+                Id = "commands",
+                Label = "Commands",
+                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Command)),
+                Show = $"role:{AdminRole}",
+            });
+        });
+    }
 }
 
 public class CommandResult

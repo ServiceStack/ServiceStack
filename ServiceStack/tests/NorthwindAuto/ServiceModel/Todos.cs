@@ -20,8 +20,6 @@ public class QueryTodos : QueryDb<Todo>
     public string? TextContains { get; set; }
 }
 
-/*
-
 [Tag("todos")]
 [Route("/todos", "POST")]
 public class CreateTodo : ICreateDb<Todo>, IReturn<Todo>
@@ -56,5 +54,3 @@ public class DeleteTodo : IDeleteDb<Todo>, IReturnVoid
     public long Id { get; set; }
     public List<long> Ids { get; set; } = new();
 }
-
-*/
