@@ -49,6 +49,7 @@ public static class Plugins
     public const string AdminIdentityUsers = "identityusers";
     public const string AdminRedis = "adminredis";
     public const string AdminDatabase = "admindb";
+    public const string AdminCommands = "commands";
     public const string Ui = "ui";
     public const string FileUpload = "filesupload";
     public const string Profiling = "profiling";

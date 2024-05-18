@@ -17,15 +17,20 @@ public interface ICommandExecutor
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class CommandAttribute(Type commandType, Lifetime lifetime = Lifetime.Transient) : AttributeBase
+public class CommandAttribute(Type commandType) : AttributeBase
 {
     public Type CommandType { get; } = commandType;
-    public Lifetime Lifetime { get; } = lifetime;
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class CommandAttribute<T>(Lifetime lifetime = Lifetime.Transient) 
-    : CommandAttribute(typeof(T), lifetime) where T : IAsyncCommand;
+public class CommandAttribute<T>() : CommandAttribute(typeof(T)) where T : IAsyncCommand;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public class LifetimeAttribute(Lifetime lifetime = Lifetime.Transient)
+    : AttributeBase
+{
+    public Lifetime Lifetime => lifetime;
+}
 
 public enum Lifetime
 {
@@ -46,4 +51,24 @@ public enum Lifetime
     /// Specifies that a new instance of the service will be created every time it is requested.
     /// </summary>
     Transient,
+}
+
+public enum RetryStrategy
+{
+    /// <summary>
+    /// Specifies that the operation should be retried with a linear backoff strategy.
+    /// </summary>
+    LinearBackoff,
+
+    /// <summary>
+    /// Specifies that the operation should be retried with an exponential backoff strategy.
+    /// </summary>
+    ExponentialBackoff,
+}
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public class RetryAttribute(int times)
+    : AttributeBase
+{
+    public int Times => times;
 }

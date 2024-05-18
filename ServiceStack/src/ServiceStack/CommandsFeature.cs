@@ -21,14 +21,19 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
+public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreInitPlugin
 {
-    public string Id => "commands";
+    public string Id => Plugins.AdminCommands;
+    public string AdminRole { get; set; } = RoleNames.Admin;
 
     public const int DefaultCapacity = 250;
     public int ResultsCapacity { get; set; } = DefaultCapacity;
     public int FailuresCapacity { get; set; } = DefaultCapacity;
     public int TimingsCapacity { get; set; } = 1000;
+
+    public List<Func<IEnumerable<Type>>> TypeResolvers { get; set; } = [
+        ScanServiceAssemblies
+    ];
     
     /// <summary>
     /// Ignore commands or Request DTOs from being logged
@@ -54,26 +59,27 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
         (typeof(IMessageProducer), ServiceLifetime.Singleton),
     ];
 
+    static ServiceLifetime ToServiceLifetime(Lifetime lifetime) => lifetime switch {
+        Lifetime.Scoped => ServiceLifetime.Scoped,
+        Lifetime.Singleton => ServiceLifetime.Singleton,
+        _ => ServiceLifetime.Transient
+    };
+
     public void Configure(IServiceCollection services)
     {
         services.AddTransient<ICommandExecutor>(c => new CommandExecutor(this, c));
 
-        ServiceLifetime ToServiceLifetime(Lifetime lifetime) => lifetime switch {
-            Lifetime.Scoped => ServiceLifetime.Scoped,
-            Lifetime.Singleton => ServiceLifetime.Singleton,
-            _ => ServiceLifetime.Transient
-        };
-        
-        foreach (var requestType in ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes())
+        foreach (var typeResolver in TypeResolvers)
         {
-            var requestProps = TypeProperties.Get(requestType).PublicPropertyInfos;
-            foreach (var prop in requestProps)
+            var commandTypes = typeResolver();
+            foreach (var commandType in commandTypes)
             {
-                var commandAttr = prop.GetCustomAttribute<CommandAttribute>();
-                if (commandAttr == null)
+                if (services.Exists(commandType))
                     continue;
-
-                services.Add(commandAttr.CommandType, commandAttr.CommandType, ToServiceLifetime(commandAttr.Lifetime));
+                
+                var lifetimeAttr = commandType.FirstAttribute<LifetimeAttribute>();
+                var lifetime = ToServiceLifetime(lifetimeAttr?.Lifetime ?? Lifetime.Transient);
+                services.Add(commandType, commandType, lifetime);
             }
         }
 
@@ -98,6 +104,18 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
         }
 
         services.RegisterServices(ServiceRoutes);
+    }
+
+    public static IEnumerable<Type> ScanServiceAssemblies()
+    {
+        var assemblies = ServiceStackHost.InitOptions.ResolveAllServiceAssemblies();
+        foreach (var asm in assemblies)
+        {
+            foreach (var commandType in asm.GetTypes().Where(x => x.HasInterface(typeof(IAsyncCommand))))
+            {
+                yield return commandType;
+            }
+        }
     }
 
     private ILogger<CommandsFeature>? log;
@@ -147,13 +165,15 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
             var requestBody = requestDto.ToSafeJson();
             log!.LogError(e, "{Command}({Request}) failed: {Message}", commandType.Name, requestBody, e.Message);
 
+            var error = e.ToResponseStatus();
+            error.StackTrace ??= e.StackTrace;
             AddCommandResult(new()
             {
                 Name = commandType.Name,
                 Ms = sw.ElapsedMilliseconds,
                 At = DateTime.UtcNow,
                 Request = requestBody,
-                Error = e.ToResponseStatus(),
+                Error = error,
             });
         }
     }
@@ -209,7 +229,8 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
                     Name = result.Name, 
                     Count = 1, 
                     TotalMs = ms, 
-                    MinMs = ms > 0 ? ms : int.MinValue, 
+                    MinMs = ms,
+                    MaxMs = ms,
                     Timings = new([ms]),
                 },
                 (_, summary) => 
@@ -217,10 +238,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
                     summary.Count++;
                     summary.TotalMs += ms;
                     summary.MaxMs = Math.Max(summary.MaxMs, ms);
-                    if (ms > 0)
-                    {
-                        summary.MinMs = Math.Min(summary.MinMs, ms);
-                    }
+                    summary.MinMs = summary.MinMs < 0 ? ms : Math.Min(summary.MinMs, ms);
                     summary.Timings.Enqueue(ms);
                     while (summary.Timings.Count > TimingsCapacity)
                         summary.Timings.TryDequeue(out var _);
@@ -234,7 +252,8 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
                 CommandFailures.TryDequeue(out _);
 
             CommandTotals.AddOrUpdate(result.Name, 
-                _ => new CommandSummary { Name = result.Name, Failed = 1, Count = 0, TotalMs = 0, MinMs = int.MinValue, LastError = result.Error?.Message },
+                _ => new CommandSummary { Name = result.Name, Failed = 1, Count = 0, 
+                    TotalMs = 0, MinMs = -1, MaxMs = -1, LastError = result.Error?.Message },
                 (_, summary) =>
                 {
                     summary.Failed++;
@@ -353,10 +372,11 @@ public class CommandSummary
     public ConcurrentQueue<int> Timings { get; set; } = new();
 }
 
-[ExcludeMetadata]
 public class ViewCommands : IGet, IReturn<ViewCommandsResponse>
 {
     public List<string>? Include { get; set; }
+    public int? Skip { get; set; }
+    public int? Take { get; set; }
 }
 
 public class ViewCommandsResponse
@@ -378,9 +398,9 @@ public class ViewCommandsService : Service
 
         var to = new ViewCommandsResponse
         {
-            LatestCommands = new(feature.CommandResults),
-            LatestFailed = new(feature.CommandFailures),
-            CommandTotals = new(feature.CommandTotals.Values)
+            LatestCommands = [..feature.CommandResults],
+            LatestFailed = [..feature.CommandFailures],
+            CommandTotals = [..feature.CommandTotals.Values]
         };
 
         if (request.Include?.Contains(nameof(ResponseStatus.StackTrace)) != true)
@@ -391,6 +411,16 @@ public class ViewCommandsService : Service
                     c.Error.StackTrace = null;
             }));
         }
+        
+        if (request.Skip != null)
+        {
+            to.LatestCommands = to.LatestCommands.Skip(request.Skip.Value).ToList();
+            to.LatestFailed = to.LatestFailed.Skip(request.Skip.Value).ToList();
+        }
+
+        var take = request.Take ?? 50;
+        to.LatestCommands = to.LatestCommands.Take(take).ToList();
+        to.LatestFailed = to.LatestFailed.Take(take).ToList();
         
         return to;
     }
