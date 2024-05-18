@@ -1,8 +1,8 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2023-10-27 18:15:00
-Version: 6.111
+Date: 2024-05-18 20:25:32
+Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -30,12 +30,12 @@ export interface IReturnVoid
 
 export interface IHasSessionId
 {
-    sessionId: string;
+    sessionId?: string;
 }
 
 export interface IHasBearerToken
 {
-    bearerToken: string;
+    bearerToken?: string;
 }
 
 export interface IGet
@@ -52,6 +52,54 @@ export interface IPut
 
 export interface IDelete
 {
+}
+
+// @DataContract
+export class AdminUserBase
+{
+    // @DataMember(Order=1)
+    public userName: string;
+
+    // @DataMember(Order=2)
+    public firstName: string;
+
+    // @DataMember(Order=3)
+    public lastName: string;
+
+    // @DataMember(Order=4)
+    public displayName: string;
+
+    // @DataMember(Order=5)
+    public email: string;
+
+    // @DataMember(Order=6)
+    public password: string;
+
+    // @DataMember(Order=7)
+    public profileUrl: string;
+
+    // @DataMember(Order=8)
+    public phoneNumber: string;
+
+    // @DataMember(Order=9)
+    public userAuthProperties: { [index: string]: string; };
+
+    // @DataMember(Order=10)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<AdminUserBase>) { (Object as any).assign(this, init); }
+}
+
+export class RedisEndpointInfo
+{
+    public host: string;
+    public port: number;
+    public ssl?: boolean;
+    public db: number;
+    public username: string;
+    public password: string;
+
+    public constructor(init?: Partial<RedisEndpointInfo>) { (Object as any).assign(this, init); }
 }
 
 export class ValidateRule
@@ -82,136 +130,6 @@ export class ValidationRule extends ValidateRule
     public constructor(init?: Partial<ValidationRule>) { super(init); (Object as any).assign(this, init); }
 }
 
-// @DataContract
-export class AdminUserBase
-{
-    // @DataMember(Order=1)
-    public userName: string;
-
-    // @DataMember(Order=2)
-    public firstName: string;
-
-    // @DataMember(Order=3)
-    public lastName: string;
-
-    // @DataMember(Order=4)
-    public displayName: string;
-
-    // @DataMember(Order=5)
-    public email: string;
-
-    // @DataMember(Order=6)
-    public password: string;
-
-    // @DataMember(Order=7)
-    public profileUrl: string;
-
-    // @DataMember(Order=8)
-    public userAuthProperties: { [index: string]: string; };
-
-    // @DataMember(Order=9)
-    public meta: { [index: string]: string; };
-
-    public constructor(init?: Partial<AdminUserBase>) { (Object as any).assign(this, init); }
-}
-
-// @DataContract
-export class QueryBase
-{
-    // @DataMember(Order=1)
-    public skip?: number;
-
-    // @DataMember(Order=2)
-    public take?: number;
-
-    // @DataMember(Order=3)
-    public orderBy: string;
-
-    // @DataMember(Order=4)
-    public orderByDesc: string;
-
-    // @DataMember(Order=5)
-    public include: string;
-
-    // @DataMember(Order=6)
-    public fields: string;
-
-    // @DataMember(Order=7)
-    public meta: { [index: string]: string; };
-
-    public constructor(init?: Partial<QueryBase>) { (Object as any).assign(this, init); }
-}
-
-export class QueryDb<T> extends QueryBase
-{
-
-    public constructor(init?: Partial<QueryDb<T>>) { super(init); (Object as any).assign(this, init); }
-}
-
-// @DataContract
-export class CrudEvent
-{
-    // @DataMember(Order=1)
-    public id: number;
-
-    // @DataMember(Order=2)
-    public eventType: string;
-
-    // @DataMember(Order=3)
-    public model: string;
-
-    // @DataMember(Order=4)
-    public modelId: string;
-
-    // @DataMember(Order=5)
-    public eventDate: string;
-
-    // @DataMember(Order=6)
-    public rowsUpdated?: number;
-
-    // @DataMember(Order=7)
-    public requestType: string;
-
-    // @DataMember(Order=8)
-    // @StringLength(2147483647)
-    public requestBody: string;
-
-    // @DataMember(Order=9)
-    public userAuthId: string;
-
-    // @DataMember(Order=10)
-    public userAuthName: string;
-
-    // @DataMember(Order=11)
-    public remoteIp: string;
-
-    // @DataMember(Order=12)
-    public urn: string;
-
-    // @DataMember(Order=13)
-    public refId?: number;
-
-    // @DataMember(Order=14)
-    public refIdStr: string;
-
-    // @DataMember(Order=15)
-    public meta: { [index: string]: string; };
-
-    public constructor(init?: Partial<CrudEvent>) { (Object as any).assign(this, init); }
-}
-
-export class RedisEndpointInfo
-{
-    public host: string;
-    public port: number;
-    public ssl?: boolean;
-    public db: number;
-    public username: string;
-    public password: string;
-
-    public constructor(init?: Partial<RedisEndpointInfo>) { (Object as any).assign(this, init); }
-}
-
 export class AppInfo
 {
     public baseUrl: string;
@@ -228,6 +146,8 @@ export class AppInfo
     public backgroundImageUrl: string;
     public iconUrl: string;
     public jsTextCase: string;
+    public useSystemJson: string;
+    public endpointRouting?: string[];
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<AppInfo>) { (Object as any).assign(this, init); }
@@ -424,6 +344,14 @@ export class MetaAuthProvider
     public constructor(init?: Partial<MetaAuthProvider>) { (Object as any).assign(this, init); }
 }
 
+export class IdentityAuthInfo
+{
+    public hasRefreshToken?: boolean;
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<IdentityAuthInfo>) { (Object as any).assign(this, init); }
+}
+
 export class AuthInfo
 {
     public hasAuthSecret?: boolean;
@@ -432,6 +360,7 @@ export class AuthInfo
     public includesOAuthTokens?: boolean;
     public htmlRedirect: string;
     public authProviders: MetaAuthProvider[];
+    public identityAuth: IdentityAuthInfo;
     public roleLinks: { [index: string]: LinkInfo[]; };
     public serviceRoutes: { [index: string]: string[]; };
     public meta: { [index: string]: string; };
@@ -679,6 +608,22 @@ export class AdminUsersInfo
     public constructor(init?: Partial<AdminUsersInfo>) { (Object as any).assign(this, init); }
 }
 
+export class AdminIdentityUsersInfo
+{
+    public accessRole: string;
+    public enabled: string[];
+    public identityUser: MetadataType;
+    public allRoles: string[];
+    public allPermissions: string[];
+    public queryIdentityUserProperties: string[];
+    public queryMediaRules: MediaRule[];
+    public formLayout: InputInfo[];
+    public css: ApiCss;
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<AdminIdentityUsersInfo>) { (Object as any).assign(this, init); }
+}
+
 export class AdminRedisInfo
 {
     public queryLimit: number;
@@ -728,6 +673,7 @@ export class PluginInfo
     public profiling: ProfilingInfo;
     public filesUpload: FilesUploadInfo;
     public adminUsers: AdminUsersInfo;
+    public adminIdentityUsers: AdminIdentityUsersInfo;
     public adminRedis: AdminRedisInfo;
     public adminDatabase: AdminDatabaseInfo;
     public meta: { [index: string]: string; };
@@ -895,41 +841,6 @@ export class ResponseStatus
     public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
 }
 
-export class RequestLogEntry
-{
-    public id: number;
-    public traceId: string;
-    public operationName: string;
-    public dateTime: string;
-    public statusCode: number;
-    public statusDescription: string;
-    public httpMethod: string;
-    public absoluteUri: string;
-    public pathInfo: string;
-    // @StringLength(2147483647)
-    public requestBody: string;
-
-    public requestDto: Object;
-    public userAuthId: string;
-    public sessionId: string;
-    public ipAddress: string;
-    public forwardedFor: string;
-    public referer: string;
-    public headers: { [index: string]: string; };
-    public formData: { [index: string]: string; };
-    public items: { [index: string]: string; };
-    public responseHeaders: { [index: string]: string; };
-    public session: Object;
-    public responseDto: Object;
-    public errorResponse: Object;
-    public exceptionSource: string;
-    public exceptionData: any;
-    public requestDuration: string;
-    public meta: { [index: string]: string; };
-
-    public constructor(init?: Partial<RequestLogEntry>) { (Object as any).assign(this, init); }
-}
-
 export class DiagnosticEntry
 {
     public id: number;
@@ -976,6 +887,70 @@ export class RedisText
     public constructor(init?: Partial<RedisText>) { (Object as any).assign(this, init); }
 }
 
+export class RequestLogEntry
+{
+    public id: number;
+    public traceId: string;
+    public operationName: string;
+    public dateTime: string;
+    public statusCode: number;
+    public statusDescription: string;
+    public httpMethod: string;
+    public absoluteUri: string;
+    public pathInfo: string;
+    // @StringLength(2147483647)
+    public requestBody: string;
+
+    public requestDto: Object;
+    public userAuthId: string;
+    public sessionId: string;
+    public ipAddress: string;
+    public forwardedFor: string;
+    public referer: string;
+    public headers: { [index: string]: string; };
+    public formData: { [index: string]: string; };
+    public items: { [index: string]: string; };
+    public responseHeaders: { [index: string]: string; };
+    public session: Object;
+    public responseDto: Object;
+    public errorResponse: Object;
+    public exceptionSource: string;
+    public exceptionData: any;
+    public requestDuration: string;
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<RequestLogEntry>) { (Object as any).assign(this, init); }
+}
+
+export class CommandSummary
+{
+    public type: string;
+    public name: string;
+    public count: number;
+    public failed: number;
+    public totalMs: number;
+    public minMs: number;
+    public maxMs: number;
+    public averageMs: number;
+    public medianMs: number;
+    public lastError?: string;
+    public timings: ConcurrentQueue<number>;
+
+    public constructor(init?: Partial<CommandSummary>) { (Object as any).assign(this, init); }
+}
+
+export class CommandResult
+{
+    public type: string;
+    public name: string;
+    public ms?: number;
+    public at: string;
+    public request: string;
+    public error?: ResponseStatus;
+
+    public constructor(init?: Partial<CommandResult>) { (Object as any).assign(this, init); }
+}
+
 export class KeyValuePair<TKey, TValue>
 {
     public key: TKey;
@@ -1009,18 +984,6 @@ export class AdminDashboardResponse
 }
 
 // @DataContract
-export class GetValidationRulesResponse
-{
-    // @DataMember(Order=1)
-    public results: ValidationRule[];
-
-    // @DataMember(Order=2)
-    public responseStatus: ResponseStatus;
-
-    public constructor(init?: Partial<GetValidationRulesResponse>) { (Object as any).assign(this, init); }
-}
-
-// @DataContract
 export class AuthenticateResponse implements IHasSessionId, IHasBearerToken
 {
     // @DataMember(Order=1)
@@ -1045,18 +1008,21 @@ export class AuthenticateResponse implements IHasSessionId, IHasBearerToken
     public refreshToken: string;
 
     // @DataMember(Order=8)
-    public profileUrl: string;
+    public refreshTokenExpiry?: string;
 
     // @DataMember(Order=9)
-    public roles: string[];
+    public profileUrl: string;
 
     // @DataMember(Order=10)
-    public permissions: string[];
+    public roles: string[];
 
     // @DataMember(Order=11)
-    public responseStatus: ResponseStatus;
+    public permissions: string[];
 
     // @DataMember(Order=12)
+    public responseStatus: ResponseStatus;
+
+    // @DataMember(Order=13)
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<AuthenticateResponse>) { (Object as any).assign(this, init); }
@@ -1140,45 +1106,6 @@ export class AdminDeleteUserResponse
     public constructor(init?: Partial<AdminDeleteUserResponse>) { (Object as any).assign(this, init); }
 }
 
-// @DataContract
-export class QueryResponse<CrudEvent>
-{
-    // @DataMember(Order=1)
-    public offset: number;
-
-    // @DataMember(Order=2)
-    public total: number;
-
-    // @DataMember(Order=3)
-    public results: CrudEvent[];
-
-    // @DataMember(Order=4)
-    public meta: { [index: string]: string; };
-
-    // @DataMember(Order=5)
-    public responseStatus: ResponseStatus;
-
-    public constructor(init?: Partial<QueryResponse<CrudEvent>>) { (Object as any).assign(this, init); }
-}
-
-// @DataContract
-export class RequestLogsResponse
-{
-    // @DataMember(Order=1)
-    public results: RequestLogEntry[];
-
-    // @DataMember(Order=2)
-    public usage: { [index: string]: string; };
-
-    // @DataMember(Order=3)
-    public total: number;
-
-    // @DataMember(Order=4)
-    public responseStatus: ResponseStatus;
-
-    public constructor(init?: Partial<RequestLogsResponse>) { (Object as any).assign(this, init); }
-}
-
 export class AdminProfilingResponse
 {
     public results: DiagnosticEntry[];
@@ -1210,6 +1137,46 @@ export class AdminDatabaseResponse
     public constructor(init?: Partial<AdminDatabaseResponse>) { (Object as any).assign(this, init); }
 }
 
+// @DataContract
+export class RequestLogsResponse
+{
+    // @DataMember(Order=1)
+    public results: RequestLogEntry[];
+
+    // @DataMember(Order=2)
+    public usage: { [index: string]: string; };
+
+    // @DataMember(Order=3)
+    public total: number;
+
+    // @DataMember(Order=4)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<RequestLogsResponse>) { (Object as any).assign(this, init); }
+}
+
+export class ViewCommandsResponse
+{
+    public commandTotals: CommandSummary[];
+    public latestCommands: CommandResult[];
+    public latestFailed: CommandResult[];
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<ViewCommandsResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class GetValidationRulesResponse
+{
+    // @DataMember(Order=1)
+    public results: ValidationRule[];
+
+    // @DataMember(Order=2)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<GetValidationRulesResponse>) { (Object as any).assign(this, init); }
+}
+
 // @Route("/metadata/app")
 // @DataContract
 export class MetadataApp implements IReturn<AppMetadata>, IGet
@@ -1226,62 +1193,18 @@ export class MetadataApp implements IReturn<AppMetadata>, IGet
     public createResponse() { return new AppMetadata(); }
 }
 
-export class AdminDashboard implements IReturn<AdminDashboardResponse>
+export class AdminDashboard implements IReturn<AdminDashboardResponse>, IGet
 {
 
     public constructor(init?: Partial<AdminDashboard>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminDashboard'; }
-    public getMethod() { return 'POST'; }
+    public getMethod() { return 'GET'; }
     public createResponse() { return new AdminDashboardResponse(); }
 }
 
-// @Route("/validation/rules/{Type}")
-// @DataContract
-export class GetValidationRules implements IReturn<GetValidationRulesResponse>
-{
-    // @DataMember(Order=1)
-    public authSecret: string;
-
-    // @DataMember(Order=2)
-    public type: string;
-
-    public constructor(init?: Partial<GetValidationRules>) { (Object as any).assign(this, init); }
-    public getTypeName() { return 'GetValidationRules'; }
-    public getMethod() { return 'POST'; }
-    public createResponse() { return new GetValidationRulesResponse(); }
-}
-
-// @Route("/validation/rules")
-// @DataContract
-export class ModifyValidationRules implements IReturnVoid
-{
-    // @DataMember(Order=1)
-    public authSecret: string;
-
-    // @DataMember(Order=2)
-    public saveRules: ValidationRule[];
-
-    // @DataMember(Order=3)
-    public deleteRuleIds: number[];
-
-    // @DataMember(Order=4)
-    public suspendRuleIds: number[];
-
-    // @DataMember(Order=5)
-    public unsuspendRuleIds: number[];
-
-    // @DataMember(Order=6)
-    public clearCache?: boolean;
-
-    public constructor(init?: Partial<ModifyValidationRules>) { (Object as any).assign(this, init); }
-    public getTypeName() { return 'ModifyValidationRules'; }
-    public getMethod() { return 'POST'; }
-    public createResponse() {}
-}
-
 /** @description Sign In */
-// @Route("/auth", "OPTIONS,GET,POST,DELETE")
-// @Route("/auth/{provider}", "OPTIONS,GET,POST,DELETE")
+// @Route("/auth", "GET,POST")
+// @Route("/auth/{provider}", "GET,POST")
 // @Api(Description="Sign In")
 // @DataContract
 export class Authenticate implements IReturn<AuthenticateResponse>, IPost
@@ -1291,57 +1214,27 @@ export class Authenticate implements IReturn<AuthenticateResponse>, IPost
     public provider: string;
 
     // @DataMember(Order=2)
-    public state: string;
-
-    // @DataMember(Order=3)
-    public oauth_token: string;
-
-    // @DataMember(Order=4)
-    public oauth_verifier: string;
-
-    // @DataMember(Order=5)
     public userName: string;
 
-    // @DataMember(Order=6)
+    // @DataMember(Order=3)
     public password: string;
 
-    // @DataMember(Order=7)
+    // @DataMember(Order=4)
     public rememberMe?: boolean;
 
-    // @DataMember(Order=9)
-    public errorView: string;
-
-    // @DataMember(Order=10)
-    public nonce: string;
-
-    // @DataMember(Order=11)
-    public uri: string;
-
-    // @DataMember(Order=12)
-    public response: string;
-
-    // @DataMember(Order=13)
-    public qop: string;
-
-    // @DataMember(Order=14)
-    public nc: string;
-
-    // @DataMember(Order=15)
-    public cnonce: string;
-
-    // @DataMember(Order=17)
+    // @DataMember(Order=5)
     public accessToken: string;
 
-    // @DataMember(Order=18)
+    // @DataMember(Order=6)
     public accessTokenSecret: string;
 
-    // @DataMember(Order=19)
-    public scope: string;
-
-    // @DataMember(Order=20)
+    // @DataMember(Order=7)
     public returnUrl: string;
 
-    // @DataMember(Order=21)
+    // @DataMember(Order=8)
+    public errorView: string;
+
+    // @DataMember(Order=9)
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<Authenticate>) { (Object as any).assign(this, init); }
@@ -1455,15 +1348,18 @@ export class AdminUpdateUser extends AdminUserBase implements IReturn<AdminUserR
     public unlockUser?: boolean;
 
     // @DataMember(Order=13)
-    public addRoles: string[];
+    public lockUserUntil?: string;
 
     // @DataMember(Order=14)
-    public removeRoles: string[];
+    public addRoles: string[];
 
     // @DataMember(Order=15)
-    public addPermissions: string[];
+    public removeRoles: string[];
 
     // @DataMember(Order=16)
+    public addPermissions: string[];
+
+    // @DataMember(Order=17)
     public removePermissions: string[];
 
     public constructor(init?: Partial<AdminUpdateUser>) { super(init); (Object as any).assign(this, init); }
@@ -1484,23 +1380,57 @@ export class AdminDeleteUser implements IReturn<AdminDeleteUserResponse>, IDelet
     public createResponse() { return new AdminDeleteUserResponse(); }
 }
 
-// @Route("/crudevents/{Model}")
-// @DataContract
-export class GetCrudEvents extends QueryDb<CrudEvent> implements IReturn<QueryResponse<CrudEvent>>
+export class AdminProfiling implements IReturn<AdminProfilingResponse>
 {
-    // @DataMember(Order=1)
-    public authSecret: string;
+    public source?: string;
+    public eventType?: string;
+    public threadId?: number;
+    public traceId?: string;
+    public userAuthId?: string;
+    public sessionId?: string;
+    public tag?: string;
+    public skip: number;
+    public take?: number;
+    public orderBy?: string;
+    public withErrors?: boolean;
+    public pending?: boolean;
 
-    // @DataMember(Order=2)
-    public model: string;
+    public constructor(init?: Partial<AdminProfiling>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminProfiling'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new AdminProfilingResponse(); }
+}
 
-    // @DataMember(Order=3)
-    public modelId: string;
+export class AdminRedis implements IReturn<AdminRedisResponse>, IPost
+{
+    public db?: number;
+    public query?: string;
+    public reconnect?: RedisEndpointInfo;
+    public take?: number;
+    public position?: number;
+    public args?: string[];
 
-    public constructor(init?: Partial<GetCrudEvents>) { super(init); (Object as any).assign(this, init); }
-    public getTypeName() { return 'GetCrudEvents'; }
+    public constructor(init?: Partial<AdminRedis>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminRedis'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new AdminRedisResponse(); }
+}
+
+export class AdminDatabase implements IReturn<AdminDatabaseResponse>, IGet
+{
+    public db?: string;
+    public schema?: string;
+    public table?: string;
+    public fields?: string[];
+    public take?: number;
+    public skip?: number;
+    public orderBy?: string;
+    public include?: string;
+
+    public constructor(init?: Partial<AdminDatabase>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminDatabase'; }
     public getMethod() { return 'GET'; }
-    public createResponse() { return new QueryResponse<CrudEvent>(); }
+    public createResponse() { return new AdminDatabaseResponse(); }
 }
 
 // @Route("/requestlogs")
@@ -1579,57 +1509,61 @@ export class RequestLogs implements IReturn<RequestLogsResponse>
     public createResponse() { return new RequestLogsResponse(); }
 }
 
-export class AdminProfiling implements IReturn<AdminProfilingResponse>
+// @Route("/commands")
+export class ViewCommands implements IReturn<ViewCommandsResponse>, IGet
 {
-    public source?: string;
-    public eventType?: string;
-    public threadId?: number;
-    public traceId?: string;
-    public userAuthId?: string;
-    public sessionId?: string;
-    public tag?: string;
-    public skip: number;
-    public take?: number;
-    public orderBy?: string;
-    public withErrors?: boolean;
-    public pending?: boolean;
-
-    public constructor(init?: Partial<AdminProfiling>) { (Object as any).assign(this, init); }
-    public getTypeName() { return 'AdminProfiling'; }
-    public getMethod() { return 'POST'; }
-    public createResponse() { return new AdminProfilingResponse(); }
-}
-
-export class AdminRedis implements IReturn<AdminRedisResponse>, IPost
-{
-    public db?: number;
-    public query?: string;
-    public reconnect?: RedisEndpointInfo;
-    public take?: number;
-    public position?: number;
-    public args?: string[];
-
-    public constructor(init?: Partial<AdminRedis>) { (Object as any).assign(this, init); }
-    public getTypeName() { return 'AdminRedis'; }
-    public getMethod() { return 'POST'; }
-    public createResponse() { return new AdminRedisResponse(); }
-}
-
-export class AdminDatabase implements IReturn<AdminDatabaseResponse>, IGet
-{
-    public db?: string;
-    public schema?: string;
-    public table?: string;
-    public fields?: string[];
-    public take?: number;
+    public include?: string[];
     public skip?: number;
-    public orderBy?: string;
-    public include?: string;
+    public take?: number;
 
-    public constructor(init?: Partial<AdminDatabase>) { (Object as any).assign(this, init); }
-    public getTypeName() { return 'AdminDatabase'; }
+    public constructor(init?: Partial<ViewCommands>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'ViewCommands'; }
     public getMethod() { return 'GET'; }
-    public createResponse() { return new AdminDatabaseResponse(); }
+    public createResponse() { return new ViewCommandsResponse(); }
+}
+
+// @Route("/validation/rules/{Type}")
+// @DataContract
+export class GetValidationRules implements IReturn<GetValidationRulesResponse>, IGet
+{
+    // @DataMember(Order=1)
+    public authSecret: string;
+
+    // @DataMember(Order=2)
+    public type: string;
+
+    public constructor(init?: Partial<GetValidationRules>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'GetValidationRules'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new GetValidationRulesResponse(); }
+}
+
+// @Route("/validation/rules")
+// @DataContract
+export class ModifyValidationRules implements IReturnVoid
+{
+    // @DataMember(Order=1)
+    public authSecret: string;
+
+    // @DataMember(Order=2)
+    public saveRules: ValidationRule[];
+
+    // @DataMember(Order=3)
+    public deleteRuleIds: number[];
+
+    // @DataMember(Order=4)
+    public suspendRuleIds: number[];
+
+    // @DataMember(Order=5)
+    public unsuspendRuleIds: number[];
+
+    // @DataMember(Order=6)
+    public clearCache?: boolean;
+
+    public constructor(init?: Partial<ModifyValidationRules>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'ModifyValidationRules'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() {}
 }
 
 
