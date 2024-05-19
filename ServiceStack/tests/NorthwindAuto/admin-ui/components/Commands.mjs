@@ -79,7 +79,13 @@ export const Commands = {
                       selected-columns="name,count,failed,averageMs,medianMs,minMs,maxMs,lastError"
                       @header-selected="headerSelected"
                       @row-selected="rowSelected" :is-selected="row => routes.op === row.type + '.' + row.name"
-                />
+                >
+              <template #lastError="{ lastError }">
+                <div v-if="lastError" class="w-72 whitespace-nowrap overflow-ellipsis overflow-hidden" :title="altError(lastError)">
+                  <b>{{lastError.errorCode}}</b> {{lastError.message}}
+                </div>
+              </template>
+            </DataGrid>
           </div>
         </div>
 
@@ -142,19 +148,7 @@ export const Commands = {
                               </div>
                             </div>
                             <div class="p-2">
-                              <span class="relative z-0 inline-flex shadow-sm rounded-md">
-                                <a v-for="(tab,name) in {Pretty:'',Preview:'preview'}" v-href="{ body:tab }"
-                                     :class="[{ Pretty:'rounded-l-md',Raw:'-ml-px',Preview:'rounded-r-md -ml-px' }[name], routes.body === tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
-                                    {{name}}
-                                </a>
-                              </span>
-                              <div v-if="routes.body == ''" class="pt-2 icon-outer" style="min-height:2.5rem">
-                                <CopyIcon class="absolute right-4" :text="prettyJson(selectedError.error)" />
-                                <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="prettyJson(selectedError.error)"></code></pre>
-                              </div>
-                              <div v-else-if="routes.body === 'preview'" class="body-preview flex pt-2 overflow-x-auto">
-                                <HtmlFormat :value="selectedError.error" />
-                              </div>
+                              <ViewError :error="selectedError.error" />
                             </div>
                           </div>
                         </div>
@@ -387,16 +381,21 @@ export const Commands = {
             //console.log('rowSelected', row)
             createChart(selectedRow.value)
         }
+        
+        function altError(error) {
+            return [
+                error.errorCode, 
+                error.message,
+                error.stackTrace,
+                error.errors?.length > 0 ? '\n' + error.errors?.map(x => `  - ${x.errorCode}: ${x.message}`).join('\n') : null,
+            ].filter(x => !!x).join('\n')
+        }
 
         return { 
             routes, api, commandTotals, tabs, elChart, bottom, loadingMore, q, type, 
             refresh, headerSelected, rowSelected,
             selectedError, selectedClean, prettyJson, toggleError, rowSelectedError,
-            toDate,
-            time,
-            relativeTime,
-            relativeTimeFromDate,
-            relativeTimeFromMs,
+            toDate, time, altError,
         }
     }
 }

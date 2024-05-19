@@ -253,11 +253,11 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
 
             CommandTotals.AddOrUpdate(result.Name, 
                 _ => new CommandSummary { Name = result.Name, Failed = 1, Count = 0, 
-                    TotalMs = 0, MinMs = -1, MaxMs = -1, LastError = result.Error?.Message },
+                    TotalMs = 0, MinMs = -1, MaxMs = -1, LastError = result.Error },
                 (_, summary) =>
                 {
                     summary.Failed++;
-                    summary.LastError = result.Error?.Message;
+                    summary.LastError = result.Error;
                     return summary;
                 });
         }
@@ -380,7 +380,7 @@ public class CommandSummary
     public int MaxMs { get; set; }
     public double AverageMs => Count == 0 ? 0 : Math.Round(TotalMs / (double)Count, 2);
     public double MedianMs => Math.Round(Timings.Median(), 2);
-    public string? LastError { get; set; }
+    public ResponseStatus? LastError { get; set; }
     public ConcurrentQueue<int> Timings { get; set; } = new();
 }
 
