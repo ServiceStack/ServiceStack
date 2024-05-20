@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Threading.Tasks;
+using ServiceStack.Web;
 
 namespace ServiceStack;
 
@@ -14,6 +15,11 @@ public interface IApiKey : IMeta
     int? RefId { get; }
     string RefIdStr { get; }
     bool HasScope(string scope);
+}
+
+public interface IApiKeyResolver
+{
+    string? GetApiKeyToken(IRequest req);
 }
 
 public interface IApiKeySource

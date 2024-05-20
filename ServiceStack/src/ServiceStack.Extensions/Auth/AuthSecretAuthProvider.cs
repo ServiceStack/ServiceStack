@@ -6,9 +6,15 @@ using ServiceStack.Web;
 namespace ServiceStack.Auth;
 
 public class AuthSecretAuthProvider()
-    : AuthProvider(null, "/auth/" + Keywords.AuthSecret, Keywords.AuthSecret), IAuthWithRequest
+    : AuthProvider(null, "/auth/" + Keywords.AuthSecret, Keywords.AuthSecret), IAuthInit, IAuthWithRequest
 {
     public override string Type => Keywords.AuthSecret;
+
+    public void Init(AuthFeature feature)
+    {
+        feature.RegisterPlugins.RemoveAll(x => x is SessionFeature);
+        feature.IncludeAssignRoleServices = false;
+    }
 
     public override void Register(IAppHost appHost, AuthFeature feature)
     {

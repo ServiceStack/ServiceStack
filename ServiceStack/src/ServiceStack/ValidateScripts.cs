@@ -78,7 +78,8 @@ public class ValidateScripts : ScriptMethods
 
     // Returns Lazy factory as needed before Container is ready when verifying Validator Script methods exist 
     private Func<IApiKeySource> ResolveApiKeySource() => () => Context.Container.Resolve<IApiKeySource>();
+    private Func<IApiKeyResolver> ResolveApiKeyResolver() => () => Context.Container.Resolve<IApiKeyResolver>();
 
-    public ITypeValidator ApiKey() => new ApiKeyValidator(ResolveApiKeySource());
-    public ITypeValidator ApiKey(string scope) => new ApiKeyValidator(ResolveApiKeySource()) { Scope = scope };
+    public ITypeValidator ApiKey() => new ApiKeyValidator(ResolveApiKeySource(),ResolveApiKeyResolver());
+    public ITypeValidator ApiKey(string scope) => new ApiKeyValidator(ResolveApiKeySource(),ResolveApiKeyResolver()) { Scope = scope };
 }

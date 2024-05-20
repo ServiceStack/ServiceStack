@@ -50,6 +50,7 @@ public static class Plugins
     public const string AdminRedis = "adminredis";
     public const string AdminDatabase = "admindb";
     public const string AdminCommands = "commands";
+    public const string ApiKeys = "apikeys";
     public const string Ui = "ui";
     public const string FileUpload = "filesupload";
     public const string Profiling = "profiling";
@@ -107,6 +108,14 @@ public interface IAuthPlugin
 {
     void Configure(IServiceCollection services, AuthFeature feature);
     void Register(IAppHost appHost, AuthFeature feature);
+}
+
+/// <summary>
+/// Allow Auth Providers to initialize the AuthFeature plugin
+/// </summary>
+public interface IAuthInit
+{
+    void Init(AuthFeature feature);
 }
 
 public interface IMsgPackPlugin { }         //Marker for MsgPack plugin

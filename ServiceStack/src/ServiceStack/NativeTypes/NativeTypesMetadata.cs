@@ -146,6 +146,7 @@ public class MetadataTypesGenerator
                 DataModel = ToTypeName(operation.DataModelType),
                 ViewModel = ToTypeName(operation.ViewModelType),
                 RequiresAuth = operation.RequiresAuthentication.NullIfFalse(),
+                RequiresApiKey = operation.RequiresApiKey.NullIfFalse(),
                 RequiredRoles = operation.RequiredRoles.NullIfEmpty(),
                 RequiresAnyRole = operation.RequiresAnyRole.NullIfEmpty(),
                 RequiredPermissions = operation.RequiredPermissions.NullIfEmpty(),

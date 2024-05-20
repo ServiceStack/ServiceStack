@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
@@ -309,6 +310,8 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
         this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
 
         FormLayout[0].AllowableValues = [..authProviders.Where(x => x is not IAuthWithRequest).Select(x => x.Provider),"logout"];
+        
+        authProviders.OfType<IAuthInit>().ForEach(x => x.Init(this));
     }
 
     /// <summary>

@@ -67,6 +67,7 @@ DEBUG = true /*debug*/
                                 <redis v-else-if="routes.admin === 'redis'"></redis>
                                 <database v-else-if="routes.admin === 'database'"></database>
                                 <commands v-else-if="routes.admin === 'commands'"></commands>
+                                <api-keys v-else-if="routes.admin === 'apikeys'"></api-keys>
                             </div>
                         </div>
                     </div>
@@ -85,7 +86,19 @@ DEBUG = true /*debug*/
             </div>
         </div>
     </div>
-    <sign-in v-else-if="server.plugins.auth" title="Sign in to your account" :provider="routes.provider" @login="store.login($event)"></sign-in>
+    <div v-else-if="server.plugins.auth">
+        <sign-in title="Sign in to your account" :provider="routes.provider" @login="store.login($event)"></sign-in>
+        <div class="flex justify-center">
+            <a class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+               aria-expanded="false" aria-haspopup="true" v-href="{ dialog:'apikey' }">
+                <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></g></svg>
+            </a>
+        </div>
+    </div>
+    <api-key-dialog class="z-40" v-if="routes.dialog === 'apikey'" @done="updatedApiKey"></api-key-dialog>
+    <div v-if="apiKeyError" class="mt-4 flex justify-center">
+        <alert type="error" class="w-96">{{apiKeyError}}</alert>
+    </div>
 </div>
 </template>
 
@@ -117,14 +130,15 @@ setFavIcon(globalThis.Server.ui.brandIcon, globalThis.Server.app.baseUrl + '/met
 <script>
 /*files:js/*.js */
 </script>
-<!--components:Brand,CopyIcon-->
+<!--components:Brand,CopyIcon,ApiKeyDialog-->
 <!--module:components/*.mjs-->
 <!--file:custom.html-->
 
 <script type="module">
 import { ref, computed, nextTick, inject, onMounted } from "vue"
 import { $1, $$ } from "@servicestack/client"
-import { app } from "app"
+import { app, client } from "app"
+import { Authenticate } from "dtos"
 
 const App = {
     template: $1('#app-template'),
@@ -132,6 +146,7 @@ const App = {
         const store = inject('store')
         const routes = inject('routes')
         const server = inject('server')
+        const apiKeyError = ref('')
         
         const showSidebar = ref(true)
 
@@ -148,7 +163,16 @@ const App = {
             })
         })
         
-        return { store, routes, server, showSidebar }
+        async function updatedApiKey() {
+            routes.to({ dialog:'' })
+            const api = await client.api(new Authenticate())
+            store.auth = window.AUTH = api.response
+            apiKeyError.value = api.error
+                ? `Not a valid 'Admin' API Key`
+                : ''
+        }
+        
+        return { store, routes, server, showSidebar, apiKeyError, updatedApiKey }
     }
 }
 

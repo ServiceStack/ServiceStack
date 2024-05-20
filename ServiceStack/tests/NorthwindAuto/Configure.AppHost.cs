@@ -1,9 +1,12 @@
 using Funq;
+using Microsoft.OpenApi.Models;
 using ServiceStack;
 using ServiceStack.Admin;
+using ServiceStack.AspNetCore.OpenApi;
 using ServiceStack.Configuration;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using TalentBlazor.ServiceModel;
 using GetAccessTokenResponse = ServiceStack.GetAccessTokenResponse;
 
@@ -52,7 +55,7 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
         SetConfig(new HostConfig
         {
             DebugMode = true,
-            AdminAuthSecret = "secret",
+            AdminAuthSecret = "p@55wOrd",
         });
         
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();

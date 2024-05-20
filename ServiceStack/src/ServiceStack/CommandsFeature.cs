@@ -339,7 +339,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     public void BeforePluginsLoaded(IAppHost appHost)
     {
         appHost.ConfigurePlugin<UiFeature>(feature => {
-            feature.AddAdminLink(AdminUiFeature.Database, new LinkInfo {
+            feature.AddAdminLink(AdminUiFeature.Commands, new LinkInfo {
                 Id = "commands",
                 Label = "Commands",
                 Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Command)),

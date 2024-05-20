@@ -1,7 +1,10 @@
 using MyApp.Data;
 using ServiceStack;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
+using ServiceStack.Data;
 using ServiceStack.Html;
+using ServiceStack.OrmLite;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAuth))]
 
@@ -9,7 +12,28 @@ namespace MyApp;
 
 public class ConfigureAuth : IHostingStartup
 {
+    public static List<ApiKeysFeature.ApiKey> ApiKeys = [
+        new() { Key = "ak-4357089af5a446cab0fdc44830e03617", UserId = "CB923F42-AE84-4B77-B2A8-5C6E71F29DF4", UserName = "Admin", Scopes = [RoleNames.Admin] },
+        new() { Key = "ak-1359a079e98841a2a0c52419433d207f", UserId = "A8BBBFDB-1DA6-44E6-96D9-93995A7CBCEF", UserName = "System" },
+    ];
+
     public void Configure(IWebHostBuilder builder) => builder
+        .ConfigureServices(services => {
+            services.AddPlugin(new AuthFeature(new AuthSecretAuthProvider()));
+            services.AddPlugin(new ApiKeysFeature());
+        })
+        .ConfigureAppHost(appHost =>
+        {
+            var apiKeysFeature = appHost.GetPlugin<ApiKeysFeature>();
+            apiKeysFeature.InitSchema();
+            using var db = appHost.Resolve<IDbConnectionFactory>().Open();
+            if (db.Count<ApiKeysFeature.ApiKey>() == 0)
+            {
+                apiKeysFeature.InsertAll(db, ApiKeys);
+            }
+        });
+    
+    public void Configure2(IWebHostBuilder builder) => builder
         .ConfigureServices(services =>
         {
             services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {

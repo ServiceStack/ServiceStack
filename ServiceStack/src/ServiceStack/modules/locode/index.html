@@ -142,7 +142,9 @@ const App = {
                 // need to refresh to update when navigating to the same op/page 
                 if (args.op && args.op === lastOp) {
                     // console.log('route:nav', JSON.stringify(args))
-                    grid.value?.update()
+                    if (grid.value && typeof grid.value.update == 'function') {
+                        grid.value.update()
+                    } 
                 }
                 lastOp = args.op
             })

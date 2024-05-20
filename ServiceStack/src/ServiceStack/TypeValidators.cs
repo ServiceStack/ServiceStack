@@ -30,6 +30,7 @@ public interface IHasTypeValidators
 }
     
 public interface IAuthTypeValidator {}
+public interface IApiKeyValidator {}
 
 public class IsAuthenticatedValidator() : TypeValidator(nameof(HttpStatusCode.Unauthorized), DefaultErrorMessage, 401),
     IAuthTypeValidator
@@ -162,10 +163,10 @@ public class AuthSecretValidator()
     }
 }
 
-public class ApiKeyValidator(Func<IApiKeySource> factory)
-    : TypeValidator(nameof(HttpStatusCode.Unauthorized), DefaultErrorMessage, 401), IAuthTypeValidator
+public class ApiKeyValidator(Func<IApiKeySource> factory, Func<IApiKeyResolver> resolver)
+    : TypeValidator(nameof(HttpStatusCode.Unauthorized), DefaultErrorMessage, 401), IApiKeyValidator
 {
-    public static string DefaultErrorMessage { get; set; } = ErrorMessages.NotAuthenticated;
+    public static string DefaultErrorMessage { get; set; } = ErrorMessages.ApiKeyInvalid;
     readonly ConcurrentDictionary<string, IApiKey> validApiKeys = new();
 
     private string? scope;
@@ -187,7 +188,7 @@ public class ApiKeyValidator(Func<IApiKeySource> factory)
         if (authSecret != null && authSecret == HostContext.AppHost.Config.AdminAuthSecret)
             return true;
         
-        var token = request.GetBearerToken();
+        var token = resolver().GetApiKeyToken(request);
         if (token != null)
         {
             if (validApiKeys.TryGetValue(token, out var apiKey))

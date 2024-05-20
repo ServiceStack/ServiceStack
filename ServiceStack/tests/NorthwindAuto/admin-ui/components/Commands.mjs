@@ -1,12 +1,41 @@
-import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue"
+import { computed, inject, onMounted, onUnmounted, ref, watch, getCurrentInstance } from "vue"
 import { useClient, useFormatters, useMetadata, useUtils } from "@servicestack/vue"
-import { ApiResult, toDate } from "@servicestack/client"
+import { ApiResult, toDate, humanify } from "@servicestack/client"
 import { prettyJson } from "core"
 import { ViewCommands } from "dtos"
 import { Chart, registerables } from 'chart.js'
 Chart.register(...registerables)
 
+export const Column = {
+    template:/*html*/`
+        <div class="cursor-pointer flex items-center" @click="toggle()">
+          <span>{{ humanify(name) }}</span>
+          <svg class="w-4 h-4" v-if="routes.sort===name" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor" /></g></svg>
+          <svg class="w-4 h-4" v-else-if="routes.sort==='-'+name" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor" /></g></svg>
+        </div>
+    `,
+    props: {
+        name:String
+    },
+    setup(props) {
+        const routes = inject('routes')
+        const nameDesc = `-${props.name}`
+
+        function toggle() {
+            const sort = routes.sort === props.name 
+                ? nameDesc 
+                : routes.sort === nameDesc 
+                    ? ''
+                    : props.name
+            routes.to({ sort })
+        }
+        return { routes, toggle, humanify }
+    }
+}
+
+
 export const Commands = {
+    components: { Column },
     template:/*html*/`
     <section class="">
       <div>
@@ -80,6 +109,14 @@ export const Commands = {
                       @header-selected="headerSelected"
                       @row-selected="rowSelected" :is-selected="row => routes.op === row.type + '.' + row.name"
                 >
+              <template #name-header><Column name="name" /></template>
+              <template #count-header><Column name="count" /></template>
+              <template #failed-header><Column name="failed" /></template>
+              <template #averageMs-header><Column name="averageMs" /></template>
+              <template #medianMs-header><Column name="medianMs" /></template>
+              <template #minMs-header><Column name="minMs" /></template>
+              <template #maxMs-header><Column name="maxMs" /></template>
+              
               <template #lastError="{ lastError }">
                 <div v-if="lastError" class="w-72 whitespace-nowrap overflow-ellipsis overflow-hidden" :title="altError(lastError)">
                   <b>{{lastError.errorCode}}</b> {{lastError.message}}
@@ -184,15 +221,30 @@ export const Commands = {
         const q = ref(routes.q)
         const type = ref(routes.type ?? "ALL")
         const api = ref(new ApiResult())
-        const commandTotals = computed(() => {
-            let to = api.value?.response?.commandTotals ?? []
+        const commandTotals = ref([])
+        
+        function filterCommandTotals(results) {
+            let to = results
             if (q.value) {
                 to = to.filter(x => x.name.toLowerCase().includes(q.value.toLowerCase()))
             }
             if (type.value === 'API' || type.value === 'CMD') {
                 to = to.filter(x => x.type === type.value)
             }
+            if (routes.sort) {
+                to.sort((a,b) => {
+                    const desc = routes.sort.startsWith('-')
+                    const by = desc ? routes.sort.substring(1) : routes.sort
+                    const ret = a[by] > b[by] ? 1 : a[by] < b[by] ? -1 : 0
+                    return desc ? ret * -1 : ret
+                })
+            }
             return to
+        }
+        
+        watch(() => routes.sort, () => {
+            //console.log('routes.sort', routes.sort)
+            commandTotals.value = filterCommandTotals(api.value?.response?.commandTotals ?? [])
         })
 
         const tabs = { 'Summary':'', 'Errors':'errors', 'Latest':'latest', }
@@ -273,6 +325,7 @@ export const Commands = {
                 let i = 0
                 api.value.response?.latestFailed.forEach(x => x.id = `${++i}`)
             }
+            commandTotals.value = filterCommandTotals(api.value?.response?.commandTotals ?? [])
             createChart(selectedRow.value)
         }
 

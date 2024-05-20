@@ -20,7 +20,9 @@ public enum AdminUiFeature
     Profiling  = 1 << 3,
     Redis      = 1 << 4,
     Database   = 1 << 5,
-    All = Users | Validation | Logging | Profiling | Redis | Database,
+    Commands   = 1 << 6,
+    ApiKeys    = 1 << 7,
+    All = Users | Validation | Logging | Profiling | Redis | Database | Commands | ApiKeys,
 }
 
 public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitPlugin, IHasStringId
