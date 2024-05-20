@@ -17,9 +17,9 @@ namespace MyApp
         public void Configure(IServiceCollection services)
         {
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
-            dbFactory.RegisterConnection("pgsql", new OrmLiteConnectionFactory(
-                Environment.GetEnvironmentVariable("PGSQL_CONNECTION"),
-                PostgreSqlDialect.Provider));
+            // dbFactory.RegisterConnection("pgsql", new OrmLiteConnectionFactory(
+            //     Environment.GetEnvironmentVariable("PGSQL_CONNECTION"),
+            //     PostgreSqlDialect.Provider));
             services.AddSingleton<IDbConnectionFactory>(dbFactory);
         }
 
@@ -40,15 +40,15 @@ namespace MyApp
                 db.CreateBooking("Booking the 3rd", RoomType.Suite,  13, 130, null,     "employee@email.com");
             }
             
-            using var dbPgsql = appHost.Resolve<IDbConnectionFactory>().Open("pgsql");
-            if (dbPgsql.CreateTableIfNotExists<Table1>())
-            {
-                dbPgsql.Insert(new Table1 { Name = "Table1" });
-            }
-            if (dbPgsql.CreateTableIfNotExists<Table2>())
-            {
-                dbPgsql.Insert(new Table2 { Name = "Table2" });
-            }
+            // using var dbPgsql = appHost.Resolve<IDbConnectionFactory>().Open("pgsql");
+            // if (dbPgsql.CreateTableIfNotExists<Table1>())
+            // {
+            //     dbPgsql.Insert(new Table1 { Name = "Table1" });
+            // }
+            // if (dbPgsql.CreateTableIfNotExists<Table2>())
+            // {
+            //     dbPgsql.Insert(new Table2 { Name = "Table2" });
+            // }
         }
     }
 
