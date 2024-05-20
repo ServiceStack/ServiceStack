@@ -62,7 +62,7 @@ namespace ServiceStack.Api.OpenApi
                     } }
                 };
                 OperationSecurity = new Dictionary<string, List<string>> {
-                    { "Bearer", new List<string>() }
+                    { "Bearer", [] }
                 };
             }
         }
@@ -75,16 +75,16 @@ namespace ServiceStack.Api.OpenApi
                     { "basic", new OpenApiSecuritySchema { Type = "basic" } }
                 };
                 OperationSecurity = new Dictionary<string, List<string>> {
-                    { "basic", new List<string>() }
+                    { "basic", [] }
                 };
             }
         }
 
         public OpenApiFeature()
         {
-            Tags = new List<OpenApiTag>();
-            AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
-            InlineSchemaTypesInNamespaces = new List<string>();
+            Tags = [];
+            AnyRouteVerbs = [HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete];
+            InlineSchemaTypesInNamespaces = [];
         }
 
         public void BeforePluginsLoaded(IAppHost appHost)

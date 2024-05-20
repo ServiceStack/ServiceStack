@@ -717,10 +717,7 @@ namespace ServiceStack.Api.OpenApi
                 {
                     curPath = new OpenApiPath
                     {
-                        Parameters = new List<OpenApiParameter>
-                        {
-                            new() { Ref = "#/parameters/Accept" }
-                        }
+                        Parameters = [new() { Ref = "#/parameters/Accept" }]
                     };
                     apiPaths.Add(restPath.Path, curPath);
                 }
@@ -742,17 +739,15 @@ namespace ServiceStack.Api.OpenApi
                         OperationId = GetOperationName(requestType.Name, routePath, verb),
                         Parameters = ParseParameters(schemas, requestType, routePath, verb),
                         Responses = GetMethodResponseCodes(restPath, schemas, requestType),
-                        Consumes = new List<string> { MimeTypes.Json },
-                        Produces = new List<string> { MimeTypes.Json },
+                        Consumes = [MimeTypes.Json],
+                        Produces = [MimeTypes.Json],
                         Tags = userTags.Count > 0 ? userTags : GetTags(restPath.Path),
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
-                        Security = needAuth ? new List<Dictionary<string, List<string>>> {
-                            OperationSecurity
-                        } : null
+                        Security = needAuth ? [OperationSecurity] : null
                     };
 
                     if (HasFormData(verb, operation.Parameters))
-                        operation.Consumes = new List<string> { "application/x-www-form-urlencoded" };
+                        operation.Consumes = ["application/x-www-form-urlencoded"];
 
                     foreach (var tag in operation.Tags)
                     {
