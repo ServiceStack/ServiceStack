@@ -134,7 +134,7 @@ public class ApiKeyTests
         }
         catch (WebServiceException e)
         {
-            Assert.That(e.Message, Is.EqualTo("Not Authenticated"));
+            Assert.That(e.Message, Is.EqualTo("Invalid API Key"));
         }
     }
 
@@ -181,7 +181,7 @@ public class ApiKeyTests
             }
             catch (WebServiceException e)
             {
-                Assert.That(e.Message, Is.EqualTo("Not Authenticated"));
+                Assert.That(e.Message, Is.EqualTo("Invalid API Key"));
             }
         }
     }
