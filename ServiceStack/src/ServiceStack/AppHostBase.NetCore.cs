@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.NetCore;
@@ -275,7 +276,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         }
             
         if (operation.RequestType.ExcludesFeature(Feature.Metadata) || 
-            operation.RequestType.ExcludesFeature(Feature.ApiExplorer))
+            operation.RequestType.ExcludesFeature(Feature.ApiExplorer) || 
+            operation.RequestType.HasAttribute<ExcludeFromDescriptionAttribute>())
             builder.ExcludeFromDescription();
 
         return builder;

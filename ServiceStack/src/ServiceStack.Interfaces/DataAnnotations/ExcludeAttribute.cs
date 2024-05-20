@@ -16,3 +16,10 @@ public class ExcludeAttribute(Feature feature) : AttributeBase
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
 public class ExcludeMetadataAttribute() : ExcludeAttribute(Feature.Metadata | Feature.Soap);
+
+
+/// <summary>
+/// Exclude Description from being generated for API Endpoint, e.g. hiding it from OpenAPI
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+public class ExcludeFromDescriptionAttribute() : AttributeBase;
