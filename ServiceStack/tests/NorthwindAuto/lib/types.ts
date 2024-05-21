@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-05-18 20:25:32
+Date: 2024-05-21 12:10:17
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -368,6 +368,15 @@ export class AuthInfo
     public constructor(init?: Partial<AuthInfo>) { (Object as any).assign(this, init); }
 }
 
+export class ApiKeyInfo
+{
+    public label: string;
+    public httpHeader: string;
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<ApiKeyInfo>) { (Object as any).assign(this, init); }
+}
+
 export class AutoQueryConvention
 {
     public name: string;
@@ -666,6 +675,7 @@ export class PluginInfo
 {
     public loaded: string[];
     public auth: AuthInfo;
+    public apiKey: ApiKeyInfo;
     public autoQuery: AutoQueryInfo;
     public validation: ValidationInfo;
     public sharpPages: SharpPagesInfo;
@@ -772,6 +782,7 @@ export class MetadataOperationType
     public dataModel: MetadataTypeName;
     public viewModel: MetadataTypeName;
     public requiresAuth?: boolean;
+    public requiresApiKey?: boolean;
     public requiredRoles: string[];
     public requiresAnyRole: string[];
     public requiredPermissions: string[];
@@ -933,7 +944,7 @@ export class CommandSummary
     public maxMs: number;
     public averageMs: number;
     public medianMs: number;
-    public lastError?: string;
+    public lastError?: ResponseStatus;
     public timings: ConcurrentQueue<number>;
 
     public constructor(init?: Partial<CommandSummary>) { (Object as any).assign(this, init); }
