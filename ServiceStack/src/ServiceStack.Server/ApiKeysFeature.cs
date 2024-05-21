@@ -11,7 +11,6 @@ using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
-using ServiceStack.Html;
 using ServiceStack.OrmLite;
 using ServiceStack.Web;
 
@@ -29,7 +28,6 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public TimeSpan? DefaultExpiry { get; set; }
 
     public string Label { get; set; }
-    public List<InputInfo> FormLayout { get; set; }
     
     public class ApiKey : IApiKey
     {
@@ -90,13 +88,6 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public ApiKeysFeature()
     {
         Label = "API Key";
-        FormLayout = [
-            new InputInfo(nameof(IHasBearerToken.BearerToken), Input.Types.Text) {
-                Label = "API Key",
-                Placeholder = "",
-                Required = true,
-            }
-        ];
     }
 
     public string GenerateApiKey() => ApiKeyGenerator != null 
@@ -111,8 +102,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         {
             meta.Plugins.ApiKey = new()
             {
-                Label = Label,
-                FormLayout = FormLayout,
+                Label = Label.Localize(),
             };
         });
     }
