@@ -29,6 +29,14 @@ export let AppData = {
 }
 export const app = new App()
 /**
+ * @param {RequestInit} req
+ */
+function clientRequestFilter(req) {
+    if (store.apikey) {
+        req.headers.set('x-api-key', store.apikey)
+    }
+}
+/**
  * Create a new `JsonServiceStack` client instance configured with the authenticated user
  *
  * @remarks
@@ -41,6 +49,7 @@ export function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
         c.bearerToken = AppData.bearerToken
         c.enableAutoRefreshToken = false
+        c.requestFilter = clientRequestFilter
         if (AppData.authsecret) c.headers.set('authsecret', AppData.authsecret)
         if (AppData.userName) c.userName = AppData.userName
         if (AppData.password) c.password = AppData.password
@@ -72,7 +81,7 @@ export const breakpoints = useBreakpoints(app, {
  * @type {ExplorerRoutes & ExplorerRoutesExtend & Routes} */
 export let routes = usePageRoutes(app,{
     page:'op',
-    queryKeys:'tab,lang,provider,preview,body,doc,detailSrc,form,response'.split(','),
+    queryKeys:'tab,lang,provider,preview,body,doc,detailSrc,form,response,dialog'.split(','),
     handlers: {
         nav(state) { console.debug('nav', state) } /*debug*/
     },
@@ -146,6 +155,8 @@ let store = {
     auth: window.AUTH,
     /** @type {string} */
     baseUrl: BASE_URL,
+    
+    createClient,
     
     get plugins() { return globalThis.Server.plugins },
     /** @return {string} */
