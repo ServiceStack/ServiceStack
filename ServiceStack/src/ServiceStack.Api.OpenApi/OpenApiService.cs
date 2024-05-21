@@ -40,6 +40,7 @@ namespace ServiceStack.Api.OpenApi
         internal static Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
         internal static string[] AnyRouteVerbs { get; set; }
         internal static string[] InlineSchemaTypesInNamespaces { get; set; }
+        internal static Func<Type, bool> IgnoreRequest { get; set; }
         
         public static Dictionary<string, OpenApiSecuritySchema> SecurityDefinitions { get; set; }
         public static Dictionary<string, List<string>> OperationSecurity { get; set; }
@@ -489,6 +490,7 @@ namespace ServiceStack.Api.OpenApi
         
         private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
         {
+            if (IgnoreRequest(schemaType)) return;
             if (IsSwaggerScalarType(schemaType) || schemaType.ExcludesFeature(Feature.Metadata)) return;
 
             var schemaId = GetSchemaDefinitionRef(schemaType);
@@ -556,7 +558,7 @@ namespace ServiceStack.Api.OpenApi
                     var apiDoc = apiMembers
                         .Where(attr => string.IsNullOrEmpty(verb) || string.IsNullOrEmpty(attr.Verb) || (verb ?? "").Equals(attr.Verb))
                         .Where(attr => string.IsNullOrEmpty(route) || string.IsNullOrEmpty(attr.Route) || (route ?? "").StartsWith(attr.Route))
-                        .FirstOrDefault(attr => attr.ParameterType == "body" || attr.ParameterType == "model");
+                        .FirstOrDefault(attr => attr.ParameterType is "body" or "model");
 
                     if (apiMembers.Any(x => x.ExcludeInSchema))
                         continue;
@@ -576,7 +578,7 @@ namespace ServiceStack.Api.OpenApi
 
                         if (propAttr.IsRequired)
                         {
-                            schema.Required ??= new List<string>();
+                            schema.Required ??= [];
                             schema.Required.Add(schemaPropertyName);
                         }
                     }

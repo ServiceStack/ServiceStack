@@ -50,6 +50,8 @@ namespace ServiceStack.Api.OpenApi
 
         public Dictionary<string, List<string>> OperationSecurity { get; set; }
 
+        public Func<Type, bool> IgnoreRequest { get; set; } = _ => false;
+
         public bool UseBearerSecurity
         {
             set
@@ -124,6 +126,7 @@ namespace ServiceStack.Api.OpenApi
             OpenApiService.InlineSchemaTypesInNamespaces = InlineSchemaTypesInNamespaces.ToArray();
             OpenApiService.SecurityDefinitions = SecurityDefinitions;
             OpenApiService.OperationSecurity = OperationSecurity;
+            OpenApiService.IgnoreRequest = IgnoreRequest;
 
             appHost.RegisterService(typeof(OpenApiService), "/openapi");
 
