@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-05-18 20:25:32
+Date: 2024-05-21 12:10:17
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -411,6 +411,16 @@ export class AuthInfo {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
+export class ApiKeyInfo {
+    /** @param {{label?:string,httpHeader?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    label;
+    /** @type {string} */
+    httpHeader;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
 export class AutoQueryConvention {
     /** @param {{name?:string,value?:string,types?:string,valueType?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -816,12 +826,14 @@ export class AdminDatabaseInfo {
     meta;
 }
 export class PluginInfo {
-    /** @param {{loaded?:string[],auth?:AuthInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{loaded?:string[],auth?:AuthInfo,apiKey?:ApiKeyInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     loaded;
     /** @type {AuthInfo} */
     auth;
+    /** @type {ApiKeyInfo} */
+    apiKey;
     /** @type {AutoQueryInfo} */
     autoQuery;
     /** @type {ValidationInfo} */
@@ -972,7 +984,7 @@ export class ApiUiInfo {
     meta;
 }
 export class MetadataOperationType {
-    /** @param {{request?:MetadataType,response?:MetadataType,actions?:string[],returnsVoid?:boolean,method?:string,returnType?:MetadataTypeName,routes?:MetadataRoute[],dataModel?:MetadataTypeName,viewModel?:MetadataTypeName,requiresAuth?:boolean,requiredRoles?:string[],requiresAnyRole?:string[],requiredPermissions?:string[],requiresAnyPermission?:string[],tags?:string[],ui?:ApiUiInfo}} [init] */
+    /** @param {{request?:MetadataType,response?:MetadataType,actions?:string[],returnsVoid?:boolean,method?:string,returnType?:MetadataTypeName,routes?:MetadataRoute[],dataModel?:MetadataTypeName,viewModel?:MetadataTypeName,requiresAuth?:boolean,requiresApiKey?:boolean,requiredRoles?:string[],requiresAnyRole?:string[],requiredPermissions?:string[],requiresAnyPermission?:string[],tags?:string[],ui?:ApiUiInfo}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {MetadataType} */
     request;
@@ -994,6 +1006,8 @@ export class MetadataOperationType {
     viewModel;
     /** @type {?boolean} */
     requiresAuth;
+    /** @type {?boolean} */
+    requiresApiKey;
     /** @type {string[]} */
     requiredRoles;
     /** @type {string[]} */
@@ -1184,7 +1198,7 @@ export class RequestLogEntry {
     meta;
 }
 export class CommandSummary {
-    /** @param {{type?:string,name?:string,count?:number,failed?:number,totalMs?:number,minMs?:number,maxMs?:number,averageMs?:number,medianMs?:number,lastError?:string,timings?:ConcurrentQueue<number>}} [init] */
+    /** @param {{type?:string,name?:string,count?:number,failed?:number,totalMs?:number,minMs?:number,maxMs?:number,averageMs?:number,medianMs?:number,lastError?:ResponseStatus,timings?:ConcurrentQueue<number>}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     type;
@@ -1204,7 +1218,7 @@ export class CommandSummary {
     averageMs;
     /** @type {number} */
     medianMs;
-    /** @type {?string} */
+    /** @type {?ResponseStatus} */
     lastError;
     /** @type {ConcurrentQueue<number>} */
     timings;

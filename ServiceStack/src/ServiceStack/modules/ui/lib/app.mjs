@@ -33,7 +33,8 @@ export const app = new App()
  */
 function clientRequestFilter(req) {
     if (store.apikey) {
-        req.headers.set('x-api-key', store.apikey)
+        const httpHeader = store.plugins.apiKey?.httpHeader ?? 'x-api-key'
+        req.headers.set(httpHeader, store.apikey)
     }
 }
 /**

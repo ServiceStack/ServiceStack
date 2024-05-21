@@ -256,6 +256,7 @@ public class AuthInfo : IMeta
 public class ApiKeyInfo : IMeta
 {
     public string Label { get; set; }
+    public string HttpHeader { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 

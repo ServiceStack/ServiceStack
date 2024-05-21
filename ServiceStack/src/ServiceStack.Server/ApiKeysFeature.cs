@@ -22,7 +22,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public string AdminRole { get; set; } = RoleNames.Admin;
 
     public string? ApiKeyPrefix = "ak-";
-    public string? HttpHeaderName = "x-api-key";
+    public string? HttpHeader = "x-api-key";
     public TimeSpan? CacheDuration = TimeSpan.FromMinutes(10);
     public Func<string>? ApiKeyGenerator { get; set; }
     public TimeSpan? DefaultExpiry { get; set; }
@@ -103,6 +103,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
             meta.Plugins.ApiKey = new()
             {
                 Label = Label.Localize(),
+                HttpHeader = HttpHeader,
             };
         });
     }
@@ -153,7 +154,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
 
     public string? GetApiKeyToken(IRequest req)
     {
-        var to = (HttpHeaderName != null ? req.GetHeader(HttpHeaderName) : null) ?? req.GetBearerToken();
+        var to = (HttpHeader != null ? req.GetHeader(HttpHeader) : null) ?? req.GetBearerToken();
         if (string.IsNullOrEmpty(to)) 
             return null;
         return to;
