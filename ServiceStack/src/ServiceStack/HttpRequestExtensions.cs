@@ -1060,7 +1060,7 @@ public static class HttpRequestExtensions
             case nameof(req.ContentLength):
                 return req.ContentLength.ToString();
             default:
-                throw new NotSupportedException($"Unknown IHttpRequest property '{name}'");
+                throw new NotSupportedException("Unknown IHttpRequest property");
         }
     }
 

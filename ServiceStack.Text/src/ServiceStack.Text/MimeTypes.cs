@@ -68,7 +68,7 @@ public static class MimeTypes
         if (parts.Length == 1) return "." + parts[0].LeftPart('+').LeftPart(';');
         if (parts.Length == 2) return "." + parts[1].LeftPart('+').LeftPart(';');
 
-        throw new NotSupportedException("Unknown mimeType: " + mimeType);
+        throw new NotSupportedException("Unknown mimeType");
     }
         
     //Lower cases and trims left part of content-type prior ';'

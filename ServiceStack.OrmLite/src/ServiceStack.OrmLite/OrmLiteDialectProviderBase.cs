@@ -1193,13 +1193,13 @@ namespace ServiceStack.OrmLite
                     }
 
                     if (fieldDef == null)
-                        throw new ArgumentException($"Field Definition '{fieldName}' was not found");
+                        throw new ArgumentException("Field Definition was not found", fieldName);
                 }
 
                 if (fieldDef.AutoId && p.Value != null)
                 {
                     var existingId = fieldDef.GetValue(obj);
-                    if (existingId is Guid existingGuid && existingGuid != default(Guid))
+                    if (existingId is Guid existingGuid && existingGuid != default)
                     {
                         p.Value = existingGuid; // Use existing value if not default
                     }

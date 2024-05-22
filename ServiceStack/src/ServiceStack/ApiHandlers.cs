@@ -85,9 +85,9 @@ public static class ApiHandlers
         if (string.IsNullOrEmpty(apiPath))
             throw new ArgumentNullException(nameof(apiPath));
         if (apiPath[0] != '/')
-            throw new ArgumentException(apiPath + " must start with '/'");
+            throw new ArgumentException("must start with '/'", nameof(apiPath));
         if (!apiPath.EndsWith("/{Request}"))
-            throw new ArgumentException(apiPath + " must end with '/{Request}'");
+            throw new ArgumentException("must end with '/{Request}'", nameof(apiPath));
         var baseApiPath = apiPath.LastLeftPart('/');
         return baseApiPath;
     }

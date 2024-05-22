@@ -926,7 +926,7 @@ public static partial class HttpUtils
             throw new ArgumentNullException(nameof(fileName));
         var mimeType = MimeTypes.GetMimeType(fileName);
         if (mimeType == null)
-            throw new ArgumentException("Mime-type not found for file: " + fileName);
+            throw new ArgumentException("Mime-type not found for file", nameof(fileName));
 
         UploadFile(webRequest, fileStream, fileName, mimeType);
     }
@@ -938,7 +938,7 @@ public static partial class HttpUtils
             throw new ArgumentNullException(nameof(fileName));
         var mimeType = MimeTypes.GetMimeType(fileName);
         if (mimeType == null)
-            throw new ArgumentException("Mime-type not found for file: " + fileName);
+            throw new ArgumentException("Mime-type not found for file", nameof(fileName));
 
         await UploadFileAsync(webRequest, fileStream, fileName, mimeType, token: token).ConfigAwait();
     }

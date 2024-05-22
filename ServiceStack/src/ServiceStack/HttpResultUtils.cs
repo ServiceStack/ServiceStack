@@ -81,10 +81,10 @@ public static class HttpResultUtils
     {
         if (string.IsNullOrEmpty(rangeHeader) || rangeHeader.LeftPart('=') != "bytes" 
                                               || rangeHeader.IndexOf('-') == -1)
-            throw new HttpError(HttpStatusCode.RequestedRangeNotSatisfiable, $"Unsupported HTTP Range '{rangeHeader}'");
+            throw new HttpError(HttpStatusCode.RequestedRangeNotSatisfiable, "Unsupported HTTP Range");
             
         if (rangeHeader.IndexOf(',') >= 0)
-            throw new HttpError(HttpStatusCode.RequestedRangeNotSatisfiable, $"Multiple HTTP Ranges in '{rangeHeader}' is not supported");
+            throw new HttpError(HttpStatusCode.RequestedRangeNotSatisfiable, "Multiple HTTP Ranges is not supported");
 
         var bytesRange = rangeHeader.RightPart("=");
         var rangeStartStr = bytesRange.LeftPart("-");

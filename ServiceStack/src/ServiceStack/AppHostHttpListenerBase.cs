@@ -64,7 +64,7 @@ public abstract class AppHostHttpListenerBase
             return;
         }
 
-        throw new NotImplementedException($"Cannot execute handler: {handler} at PathInfo: {httpReq.PathInfo}");
+        throw new NotImplementedException($"Cannot execute handler: {handler?.GetType().Name ?? "null"} at PathInfo: {httpReq.PathInfo}");
     }
 
     public override void OnConfigLoad()
