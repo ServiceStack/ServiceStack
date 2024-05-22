@@ -196,6 +196,11 @@ export const EditUser = {
                 </div>
               </fieldset>
             </div>
+
+            <div class="mt-8 pt-4 border-t border-gray-900/10 px-4 sm:px-6">
+              <ManageUserApiKeys v-if="store.plugins?.apiKey" :user="request" />
+            </div>
+            
           </div>
         </form>
 
@@ -331,6 +336,7 @@ export const EditUser = {
         }
 
         return {
+            store,
             routes,
             request,
             exceptFields,

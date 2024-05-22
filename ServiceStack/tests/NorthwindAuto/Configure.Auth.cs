@@ -17,7 +17,7 @@ public class ConfigureAuth : IHostingStartup
         new() { Key = "ak-1359a079e98841a2a0c52419433d207f", UserId = "A8BBBFDB-1DA6-44E6-96D9-93995A7CBCEF", UserName = "System" },
     ];
 
-    public void Configure(IWebHostBuilder builder) => builder
+    public void ConfigureBasic(IWebHostBuilder builder) => builder
         .ConfigureServices(services => {
             services.AddPlugin(new AuthFeature(new AuthSecretAuthProvider()));
             services.AddPlugin(new ApiKeysFeature());
@@ -33,7 +33,7 @@ public class ConfigureAuth : IHostingStartup
             }
         });
     
-    public void Configure2(IWebHostBuilder builder) => builder
+    public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices(services =>
         {
             services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {
@@ -80,5 +80,29 @@ public class ConfigureAuth : IHostingStartup
                     ];
                 });
             })));
+
+            services.AddPlugin(new ApiKeysFeature
+            {
+                Scopes = [
+                    RoleNames.Admin,
+                    "todo:read",
+                    "todo:write",
+                    "bookings:read",
+                    "bookings:write",
+                ],
+                Features = [
+                    "Tracking",
+                ]
+            });
+        })
+        .ConfigureAppHost(appHost =>
+        {
+            var apiKeysFeature = appHost.GetPlugin<ApiKeysFeature>();
+            apiKeysFeature.InitSchema();
+            using var db = appHost.Resolve<IDbConnectionFactory>().Open();
+            if (db.Count<ApiKeysFeature.ApiKey>() == 0)
+            {
+                apiKeysFeature.InsertAll(db, ApiKeys);
+            }
         });
 }

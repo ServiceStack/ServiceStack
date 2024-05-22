@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-05-21 12:10:17
+Date: 2024-05-22 21:49:03
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -51,6 +51,10 @@ export interface IPut
 }
 
 export interface IDelete
+{
+}
+
+export interface IPatch
 {
 }
 
@@ -372,6 +376,7 @@ export class ApiKeyInfo
 {
     public label: string;
     public httpHeader: string;
+    public scopes: string[];
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<ApiKeyInfo>) { (Object as any).assign(this, init); }
@@ -898,6 +903,57 @@ export class RedisText
     public constructor(init?: Partial<RedisText>) { (Object as any).assign(this, init); }
 }
 
+// @DataContract
+export class PartialApiKey
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public userId: string;
+
+    // @DataMember(Order=3)
+    public userName: string;
+
+    // @DataMember(Order=4)
+    public visibleKey: string;
+
+    // @DataMember(Order=5)
+    public environment: string;
+
+    // @DataMember(Order=6)
+    public createdDate: string;
+
+    // @DataMember(Order=7)
+    public expiryDate?: string;
+
+    // @DataMember(Order=8)
+    public cancelledDate?: string;
+
+    // @DataMember(Order=9)
+    public lastUsedDate?: string;
+
+    // @DataMember(Order=10)
+    public scopes: string[];
+
+    // @DataMember(Order=11)
+    public features: string[];
+
+    // @DataMember(Order=12)
+    public notes: string;
+
+    // @DataMember(Order=13)
+    public refId?: number;
+
+    // @DataMember(Order=14)
+    public refIdStr: string;
+
+    // @DataMember(Order=15)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<PartialApiKey>) { (Object as any).assign(this, init); }
+}
+
 export class RequestLogEntry
 {
     public id: number;
@@ -1146,6 +1202,42 @@ export class AdminDatabaseResponse
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminDatabaseResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class AdminApiKeysResponse
+{
+    // @DataMember(Order=1)
+    public results: PartialApiKey[];
+
+    // @DataMember(Order=2)
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<AdminApiKeysResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class AdminApiKeyResponse
+{
+    // @DataMember(Order=1)
+    public apiKey: string;
+
+    // @DataMember(Order=2)
+    public result: PartialApiKey;
+
+    // @DataMember(Order=3)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminApiKeyResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class EmptyResponse
+{
+    // @DataMember(Order=1)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<EmptyResponse>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -1442,6 +1534,111 @@ export class AdminDatabase implements IReturn<AdminDatabaseResponse>, IGet
     public getTypeName() { return 'AdminDatabase'; }
     public getMethod() { return 'GET'; }
     public createResponse() { return new AdminDatabaseResponse(); }
+}
+
+// @DataContract
+export class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet
+{
+    // @DataMember(Order=1)
+    public id?: number;
+
+    // @DataMember(Order=2)
+    public userId: string;
+
+    // @DataMember(Order=3)
+    public userName: string;
+
+    // @DataMember(Order=4)
+    public orderBy: string;
+
+    // @DataMember(Order=5)
+    public skip?: number;
+
+    // @DataMember(Order=6)
+    public take?: number;
+
+    public constructor(init?: Partial<AdminQueryApiKeys>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminQueryApiKeys'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminApiKeysResponse(); }
+}
+
+// @DataContract
+export class AdminCreateApiKey implements IReturn<AdminApiKeyResponse>, IPost
+{
+    // @DataMember(Order=1)
+    public userId: string;
+
+    // @DataMember(Order=2)
+    public userName: string;
+
+    // @DataMember(Order=3)
+    public scopes: string[];
+
+    // @DataMember(Order=4)
+    public expiryDate?: string;
+
+    public constructor(init?: Partial<AdminCreateApiKey>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminCreateApiKey'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new AdminApiKeyResponse(); }
+}
+
+// @DataContract
+export class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public userId: string;
+
+    // @DataMember(Order=3)
+    public userName: string;
+
+    // @DataMember(Order=4)
+    public scopes: string[];
+
+    // @DataMember(Order=5)
+    public features: string[];
+
+    // @DataMember(Order=6)
+    public expiryDate?: string;
+
+    // @DataMember(Order=7)
+    public cancelledDate?: string;
+
+    // @DataMember(Order=8)
+    public lastUsedDate?: string;
+
+    // @DataMember(Order=9)
+    public notes: string;
+
+    // @DataMember(Order=10)
+    public refId?: number;
+
+    // @DataMember(Order=11)
+    public refIdStr: string;
+
+    // @DataMember(Order=12)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<AdminUpdateApiKey>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminUpdateApiKey'; }
+    public getMethod() { return 'PATCH'; }
+    public createResponse() { return new EmptyResponse(); }
+}
+
+// @DataContract
+export class AdminDeleteApiKey implements IReturn<EmptyResponse>, IDelete
+{
+    // @DataMember(Order=1)
+    public id?: number;
+
+    public constructor(init?: Partial<AdminDeleteApiKey>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminDeleteApiKey'; }
+    public getMethod() { return 'DELETE'; }
+    public createResponse() { return new EmptyResponse(); }
 }
 
 // @Route("/requestlogs")

@@ -257,6 +257,9 @@ public class ApiKeyInfo : IMeta
 {
     public string Label { get; set; }
     public string HttpHeader { get; set; }
+    public List<string> Scopes { get; set; }
+    public List<string> Features { get; set; }
+    public List<KeyValuePair<string, string>> ExpiresIn { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 

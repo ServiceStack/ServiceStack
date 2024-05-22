@@ -6,17 +6,19 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Html;
 using ServiceStack.OrmLite;
 using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Model.IHasStringId
+public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Model.IHasStringId, IPreInitPlugin
 {
     public string Id { get; set; } = Plugins.ApiKeys;
     public string AdminRole { get; set; } = RoleNames.Admin;
@@ -26,6 +28,27 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public TimeSpan? CacheDuration = TimeSpan.FromMinutes(10);
     public Func<string>? ApiKeyGenerator { get; set; }
     public TimeSpan? DefaultExpiry { get; set; }
+
+    public List<string> Scopes { get; set; } =
+    [
+        RoleNames.Admin
+    ];
+
+    public List<string> Features { get; set; } = [];
+    
+    public List<KeyValuePair<string, string>> ExpiresIn { get; set; } = new()
+    {
+        new("", "Never"),
+        new("1", "1 day"),
+        new("7", "7 days"),
+        new("30", "30 days"),
+        new("90", "90 days"),
+        new("180", "180 days"),
+        new("365", "365 days"),
+        new("730", "2 years"),
+        new("1825", "5 years"),
+        new("3650", "10 years"),
+    };
 
     public string Label { get; set; }
     
@@ -59,11 +82,6 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         /// What to show the User after they've created the API Key
         /// </summary>
         public string VisibleKey { get; set; }
-
-        /// <summary>
-        /// If supporting API Keys for multiple Environments
-        /// </summary>
-        public string? Environment { get; set; }
     
         public DateTime CreatedDate { get; set; }
     
@@ -71,8 +89,14 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     
         public DateTime? CancelledDate { get; set; }
 
+        public DateTime? LastUsedDate { get; set; }
+
         public List<string> Scopes { get; set; } = [];
-    
+
+        public List<string> Features { get; set; } = [];
+
+        public string? Environment { get; set; }
+
         public string? Notes { get; set; }
 
         //Custom Reference Data
@@ -80,6 +104,8 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         public string? RefIdStr { get; set; }
         
         public bool HasScope(string scope) => Scopes.Contains(scope);
+        public bool HasFeature(string feature) => Features.Contains(feature);
+
         public Dictionary<string, string>? Meta { get; set; }
     }
 
@@ -93,7 +119,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public string GenerateApiKey() => ApiKeyGenerator != null 
         ? ApiKeyGenerator()
         : (ApiKeyPrefix ?? "") + Guid.NewGuid().ToString("N");
-
+    
     public void Register(IAppHost appHost)
     {
         appHost.GlobalRequestFiltersAsync.Insert(0, RequestFilterAsync);
@@ -104,6 +130,9 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
             {
                 Label = Label.Localize(),
                 HttpHeader = HttpHeader,
+                Scopes = Scopes,
+                Features = Features,
+                ExpiresIn = ExpiresIn,
             };
         });
     }
@@ -205,8 +234,8 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     {
         services.AddSingleton<IApiKeySource, ApiKeysFeatureSource>();
         services.AddSingleton<IApiKeyResolver>(_ => new ApiKeyResolver(this));
+        services.RegisterService<AdminApiKeysService>();
     }
-
 
     public void BeforePluginsLoaded(IAppHost appHost)
     {
@@ -252,6 +281,59 @@ class ApiKeysFeatureSource(IDbConnectionFactory dbFactory) : IApiKeySource
         if (apiKey.ExpiryDate != null && apiKey.ExpiryDate > DateTime.UtcNow)
             throw HttpError.Unauthorized("API Key has expired");
         return apiKey;
+    }
+}
+
+public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
+{
+    public async Task<object> Get(AdminQueryApiKeys request)
+    {
+        using var db = dbFactory.OpenDbConnection();
+        var q = db.From<ApiKeysFeature.ApiKey>();
+        if (request.Id != null)
+            q.Where(x => x.Id == request.Id);
+        if (request.UserId != null)
+            q.Where(x => x.UserId == request.UserId);
+        if (request.UserName != null)
+            q.Where(x => x.UserName == request.UserName);
+        if (request.OrderBy != null)
+            q.OrderBy(request.OrderBy);
+        if (request.Skip != null)
+            q.Skip(request.Skip.Value);
+        if (request.Take != null)
+            q.Take(request.Take.Value);
+        
+        var results = await db.SelectAsync(q);
+        return new AdminApiKeysResponse
+        {
+            Results = results.ConvertAll(x => x.ConvertTo<PartialApiKey>())
+        };
+    }
+
+    public async Task<object> Any(AdminCreateApiKey request)
+    {
+        var feature = HostContext.AssertPlugin<ApiKeysFeature>();
+
+        var apiKey = request.ConvertTo<ApiKeysFeature.ApiKey>();
+        await feature.InsertAllAsync(Db, [apiKey]);
+        
+        return new AdminApiKeyResponse
+        {
+            Result = apiKey.Key
+        };
+    }
+
+    public async Task<object> Any(AdminUpdateApiKey request)
+    {
+        var updateModel = request.ConvertTo<ApiKeysFeature.ApiKey>();
+        await Db.UpdateNonDefaultsAsync(updateModel, x => x.Id == request.Id);
+        return new EmptyResponse();
+    }
+
+    public async Task<object> Any(AdminDeleteApiKey request)
+    {
+        await Db.DeleteByIdAsync<ApiKeysFeature.ApiKey>(request.Id);
+        return new EmptyResponse();
     }
 }
 

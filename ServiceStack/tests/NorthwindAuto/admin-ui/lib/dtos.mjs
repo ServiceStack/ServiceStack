@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-05-21 12:10:17
+Date: 2024-05-22 21:49:03
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -414,12 +414,14 @@ export class AuthInfo {
     meta;
 }
 export class ApiKeyInfo {
-    /** @param {{label?:string,httpHeader?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{label?:string,httpHeader?:string,scopes?:string[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     label;
     /** @type {string} */
     httpHeader;
+    /** @type {string[]} */
+    scopes;
     /** @type {{ [index: string]: string; }} */
     meta;
 }
@@ -1141,6 +1143,40 @@ export class RedisText {
     /** @type {RedisText[]} */
     children;
 }
+export class PartialApiKey {
+    /** @param {{id?:number,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string} */
+    visibleKey;
+    /** @type {string} */
+    environment;
+    /** @type {string} */
+    createdDate;
+    /** @type {?string} */
+    expiryDate;
+    /** @type {?string} */
+    cancelledDate;
+    /** @type {?string} */
+    lastUsedDate;
+    /** @type {string[]} */
+    scopes;
+    /** @type {string[]} */
+    features;
+    /** @type {string} */
+    notes;
+    /** @type {?number} */
+    refId;
+    /** @type {string} */
+    refIdStr;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
 export class RequestLogEntry {
     /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,requestBody?:string,requestDto?:Object,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },session?:Object,responseDto?:Object,errorResponse?:Object,exceptionSource?:string,exceptionData?:any,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1403,6 +1439,30 @@ export class AdminDatabaseResponse {
     /** @type {?ResponseStatus} */
     responseStatus;
 }
+export class AdminApiKeysResponse {
+    /** @param {{results?:PartialApiKey[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {PartialApiKey[]} */
+    results;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminApiKeyResponse {
+    /** @param {{apiKey?:string,result?:PartialApiKey,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    apiKey;
+    /** @type {PartialApiKey} */
+    result;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class EmptyResponse {
+    /** @param {{responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
 export class RequestLogsResponse {
     /** @param {{results?:RequestLogEntry[],usage?:{ [index: string]: string; },total?:number,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1648,6 +1708,80 @@ export class AdminDatabase {
     getTypeName() { return 'AdminDatabase' }
     getMethod() { return 'GET' }
     createResponse() { return new AdminDatabaseResponse() }
+}
+export class AdminQueryApiKeys {
+    /** @param {{id?:number,userId?:string,userName?:string,orderBy?:string,skip?:number,take?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string} */
+    orderBy;
+    /** @type {?number} */
+    skip;
+    /** @type {?number} */
+    take;
+    getTypeName() { return 'AdminQueryApiKeys' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminApiKeysResponse() }
+}
+export class AdminCreateApiKey {
+    /** @param {{userId?:string,userName?:string,scopes?:string[],expiryDate?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string[]} */
+    scopes;
+    /** @type {?string} */
+    expiryDate;
+    getTypeName() { return 'AdminCreateApiKey' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminApiKeyResponse() }
+}
+export class AdminUpdateApiKey {
+    /** @param {{id?:number,userId?:string,userName?:string,scopes?:string[],features?:string[],expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string[]} */
+    scopes;
+    /** @type {string[]} */
+    features;
+    /** @type {?string} */
+    expiryDate;
+    /** @type {?string} */
+    cancelledDate;
+    /** @type {?string} */
+    lastUsedDate;
+    /** @type {string} */
+    notes;
+    /** @type {?number} */
+    refId;
+    /** @type {string} */
+    refIdStr;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+    getTypeName() { return 'AdminUpdateApiKey' }
+    getMethod() { return 'PATCH' }
+    createResponse() { return new EmptyResponse() }
+}
+export class AdminDeleteApiKey {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    getTypeName() { return 'AdminDeleteApiKey' }
+    getMethod() { return 'DELETE' }
+    createResponse() { return new EmptyResponse() }
 }
 export class RequestLogs {
     /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string}} [init] */

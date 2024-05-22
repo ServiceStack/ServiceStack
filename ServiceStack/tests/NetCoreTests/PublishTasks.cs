@@ -208,7 +208,8 @@ public class PublishTasks
         public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService), typeof(TestService)) {}
         public override void Configure(Container container)
         {
-            Metadata.ForceInclude = new() {
+            Metadata.ForceInclude =
+            [
                 typeof(MetadataApp),
                 typeof(AppMetadata),
                 typeof(AdminQueryUsers),
@@ -224,11 +225,15 @@ public class PublishTasks
                 typeof(AdminProfiling),
                 typeof(AdminRedis),
                 typeof(AdminDatabase),
-            };
+                typeof(AdminQueryApiKeys),
+                typeof(AdminCreateApiKey),
+                typeof(AdminUpdateApiKey),
+                typeof(AdminDeleteApiKey),
+            ];
             
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(), new [] {
-                new CredentialsAuthProvider(AppSettings),
-            }));
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), [
+                new CredentialsAuthProvider(AppSettings)
+            ]));
             
             var dbFactory = new OrmLiteConnectionFactory(":memory:",
                 SqliteDialect.Provider);
@@ -249,6 +254,7 @@ public class PublishTasks
             Plugins.Add(new AdminRedisFeature());
             Plugins.Add(new AdminDatabaseFeature());
             Plugins.Add(new CommandsFeature());
+            Plugins.Add(new ApiKeysFeature());
         }
     }
 

@@ -21,7 +21,7 @@ public class QueryTodos : QueryDb<Todo>
     public string? TextContains { get; set; }
 }
 
-[ValidateApiKey]
+[ValidateApiKey("todo:write")]
 [Tag("todos")]
 [Route("/todos", "POST")]
 public class CreateTodo : ICreateDb<Todo>, IReturn<Todo>
@@ -31,7 +31,7 @@ public class CreateTodo : ICreateDb<Todo>, IReturn<Todo>
     public bool IsFinished { get; set; }
 }
 
-[ValidateApiKey]
+[ValidateApiKey("todo:write")]
 [Tag("todos")]
 [Route("/todos/{Id}", "PUT")]
 public class UpdateTodo : IUpdateDb<Todo>, IReturn<Todo>
@@ -42,7 +42,7 @@ public class UpdateTodo : IUpdateDb<Todo>, IReturn<Todo>
     public bool IsFinished { get; set; }
 }
 
-[ValidateApiKey]
+[ValidateApiKey("todo:write")]
 [Tag("todos")]
 [Route("/todos", "DELETE")]
 [Route("/todos/{Id}", "DELETE")]

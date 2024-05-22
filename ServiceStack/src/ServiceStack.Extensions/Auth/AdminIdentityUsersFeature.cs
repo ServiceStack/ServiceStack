@@ -334,7 +334,7 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
     public void Configure(IServiceCollection services)
     {
         services.AddSingleton<IIdentityAdminUsersFeature>(this);
-        services.RegisterService(typeof(AdminIdentityUsersService));
+        services.RegisterService<AdminIdentityUsersService>();
     }
 
     public void Register(IAppHost appHost)
