@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-05-22 21:49:03
+Date: 2024-05-23 11:43:19
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -414,7 +414,7 @@ export class AuthInfo {
     meta;
 }
 export class ApiKeyInfo {
-    /** @param {{label?:string,httpHeader?:string,scopes?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{label?:string,httpHeader?:string,scopes?:string[],features?:string[],expiresIn?:KeyValuePair<string,string>[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     label;
@@ -422,6 +422,10 @@ export class ApiKeyInfo {
     httpHeader;
     /** @type {string[]} */
     scopes;
+    /** @type {string[]} */
+    features;
+    /** @type {KeyValuePair<string,string>[]} */
+    expiresIn;
     /** @type {{ [index: string]: string; }} */
     meta;
 }
@@ -1144,10 +1148,12 @@ export class RedisText {
     children;
 }
 export class PartialApiKey {
-    /** @param {{id?:number,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
+    /** @type {string} */
+    name;
     /** @type {string} */
     userId;
     /** @type {string} */
@@ -1448,11 +1454,9 @@ export class AdminApiKeysResponse {
     responseStatus;
 }
 export class AdminApiKeyResponse {
-    /** @param {{apiKey?:string,result?:PartialApiKey,responseStatus?:ResponseStatus}} [init] */
+    /** @param {{result?:string,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
-    apiKey;
-    /** @type {PartialApiKey} */
     result;
     /** @type {ResponseStatus} */
     responseStatus;
@@ -1729,25 +1733,39 @@ export class AdminQueryApiKeys {
     createResponse() { return new AdminApiKeysResponse() }
 }
 export class AdminCreateApiKey {
-    /** @param {{userId?:string,userName?:string,scopes?:string[],expiryDate?:string}} [init] */
+    /** @param {{name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],expiryDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
     /** @type {string} */
     userId;
     /** @type {string} */
     userName;
     /** @type {string[]} */
     scopes;
+    /** @type {string[]} */
+    features;
     /** @type {?string} */
     expiryDate;
+    /** @type {string} */
+    notes;
+    /** @type {?number} */
+    refId;
+    /** @type {string} */
+    refIdStr;
+    /** @type {{ [index: string]: string; }} */
+    meta;
     getTypeName() { return 'AdminCreateApiKey' }
     getMethod() { return 'POST' }
     createResponse() { return new AdminApiKeyResponse() }
 }
 export class AdminUpdateApiKey {
-    /** @param {{id?:number,userId?:string,userName?:string,scopes?:string[],features?:string[],expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],expiryDate?:string,cancelledDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },reset?:string[]}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
+    /** @type {string} */
+    name;
     /** @type {string} */
     userId;
     /** @type {string} */
@@ -1760,8 +1778,6 @@ export class AdminUpdateApiKey {
     expiryDate;
     /** @type {?string} */
     cancelledDate;
-    /** @type {?string} */
-    lastUsedDate;
     /** @type {string} */
     notes;
     /** @type {?number} */
@@ -1770,6 +1786,8 @@ export class AdminUpdateApiKey {
     refIdStr;
     /** @type {{ [index: string]: string; }} */
     meta;
+    /** @type {string[]} */
+    reset;
     getTypeName() { return 'AdminUpdateApiKey' }
     getMethod() { return 'PATCH' }
     createResponse() { return new EmptyResponse() }

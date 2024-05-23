@@ -37,7 +37,6 @@ export const ApiKeyDialog = {
         
         const modelValue = ref(new Authenticate())
         const api = ref(new ApiResult())
-        const formLayout = computed(() => server.plugins.apiKey.formLayout)
         const errorSummary = computed(() => api.value.summaryMessage())
         
         async function submit() {
@@ -46,7 +45,7 @@ export const ApiKeyDialog = {
         }
         
         return {
-            store, apikey, routes, api, modelValue, errorSummary, formLayout, submit
+            store, apikey, routes, api, modelValue, errorSummary, submit
         }
     }
 }

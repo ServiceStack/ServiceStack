@@ -325,8 +325,23 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
 
     public async Task<object> Any(AdminUpdateApiKey request)
     {
-        var updateModel = request.ConvertTo<ApiKeysFeature.ApiKey>();
-        await Db.UpdateNonDefaultsAsync(updateModel, x => x.Id == request.Id);
+        var dict = request.ToObjectDictionary();
+        var updateModel = new Dictionary<string, object?>();
+        var reset = (request.Reset ?? []).ToSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in dict)
+        {
+            if (entry.Key == nameof(request.Reset)) continue;
+            if (entry.Value != null || reset.Contains(entry.Key))
+            {
+                updateModel[entry.Key] = entry.Value;
+            }
+        }
+
+        if (updateModel.Count > 0)
+        {
+            await Db.UpdateAsync<ApiKeysFeature.ApiKey>(updateModel, x => x.Id == request.Id);
+        }
+        
         return new EmptyResponse();
     }
 

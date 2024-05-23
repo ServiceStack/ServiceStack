@@ -735,6 +735,7 @@ public partial class AdminUpdateApiKey : IPatch, IReturn<EmptyResponse>
     [DataMember(Order = 10)] public int? RefId { get; set; }
     [DataMember(Order = 11)] public string RefIdStr { get; set; }
     [DataMember(Order = 12)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 13)] public List<string> Reset { get; set; }
 }
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminDeleteApiKey : IDelete, IReturn<EmptyResponse>

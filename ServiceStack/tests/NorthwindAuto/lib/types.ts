@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-05-22 21:49:03
+Date: 2024-05-23 11:43:19
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -377,6 +377,8 @@ export class ApiKeyInfo
     public label: string;
     public httpHeader: string;
     public scopes: string[];
+    public features: string[];
+    public expiresIn: KeyValuePair<string,string>[];
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<ApiKeyInfo>) { (Object as any).assign(this, init); }
@@ -910,45 +912,48 @@ export class PartialApiKey
     public id: number;
 
     // @DataMember(Order=2)
-    public userId: string;
+    public name: string;
 
     // @DataMember(Order=3)
-    public userName: string;
+    public userId: string;
 
     // @DataMember(Order=4)
-    public visibleKey: string;
+    public userName: string;
 
     // @DataMember(Order=5)
-    public environment: string;
+    public visibleKey: string;
 
     // @DataMember(Order=6)
-    public createdDate: string;
+    public environment: string;
 
     // @DataMember(Order=7)
-    public expiryDate?: string;
+    public createdDate: string;
 
     // @DataMember(Order=8)
-    public cancelledDate?: string;
+    public expiryDate?: string;
 
     // @DataMember(Order=9)
-    public lastUsedDate?: string;
+    public cancelledDate?: string;
 
     // @DataMember(Order=10)
-    public scopes: string[];
+    public lastUsedDate?: string;
 
     // @DataMember(Order=11)
-    public features: string[];
+    public scopes: string[];
 
     // @DataMember(Order=12)
-    public notes: string;
+    public features: string[];
 
     // @DataMember(Order=13)
-    public refId?: number;
+    public notes: string;
 
     // @DataMember(Order=14)
-    public refIdStr: string;
+    public refId?: number;
 
     // @DataMember(Order=15)
+    public refIdStr: string;
+
+    // @DataMember(Order=16)
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<PartialApiKey>) { (Object as any).assign(this, init); }
@@ -1220,12 +1225,9 @@ export class AdminApiKeysResponse
 export class AdminApiKeyResponse
 {
     // @DataMember(Order=1)
-    public apiKey: string;
+    public result: string;
 
     // @DataMember(Order=2)
-    public result: PartialApiKey;
-
-    // @DataMember(Order=3)
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<AdminApiKeyResponse>) { (Object as any).assign(this, init); }
@@ -1567,28 +1569,7 @@ export class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet
 export class AdminCreateApiKey implements IReturn<AdminApiKeyResponse>, IPost
 {
     // @DataMember(Order=1)
-    public userId: string;
-
-    // @DataMember(Order=2)
-    public userName: string;
-
-    // @DataMember(Order=3)
-    public scopes: string[];
-
-    // @DataMember(Order=4)
-    public expiryDate?: string;
-
-    public constructor(init?: Partial<AdminCreateApiKey>) { (Object as any).assign(this, init); }
-    public getTypeName() { return 'AdminCreateApiKey'; }
-    public getMethod() { return 'POST'; }
-    public createResponse() { return new AdminApiKeyResponse(); }
-}
-
-// @DataContract
-export class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
-{
-    // @DataMember(Order=1)
-    public id: number;
+    public name: string;
 
     // @DataMember(Order=2)
     public userId: string;
@@ -1606,10 +1587,50 @@ export class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
     public expiryDate?: string;
 
     // @DataMember(Order=7)
-    public cancelledDate?: string;
+    public notes: string;
 
     // @DataMember(Order=8)
-    public lastUsedDate?: string;
+    public refId?: number;
+
+    // @DataMember(Order=9)
+    public refIdStr: string;
+
+    // @DataMember(Order=10)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<AdminCreateApiKey>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminCreateApiKey'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new AdminApiKeyResponse(); }
+}
+
+// @DataContract
+export class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
+{
+    // @DataMember(Order=1)
+    // @Validate(Validator="GreaterThan(0)")
+    public id: number;
+
+    // @DataMember(Order=2)
+    public name: string;
+
+    // @DataMember(Order=3)
+    public userId: string;
+
+    // @DataMember(Order=4)
+    public userName: string;
+
+    // @DataMember(Order=5)
+    public scopes: string[];
+
+    // @DataMember(Order=6)
+    public features: string[];
+
+    // @DataMember(Order=7)
+    public expiryDate?: string;
+
+    // @DataMember(Order=8)
+    public cancelledDate?: string;
 
     // @DataMember(Order=9)
     public notes: string;
@@ -1623,6 +1644,9 @@ export class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
     // @DataMember(Order=12)
     public meta: { [index: string]: string; };
 
+    // @DataMember(Order=13)
+    public reset: string[];
+
     public constructor(init?: Partial<AdminUpdateApiKey>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminUpdateApiKey'; }
     public getMethod() { return 'PATCH'; }
@@ -1633,6 +1657,7 @@ export class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
 export class AdminDeleteApiKey implements IReturn<EmptyResponse>, IDelete
 {
     // @DataMember(Order=1)
+    // @Validate(Validator="GreaterThan(0)")
     public id?: number;
 
     public constructor(init?: Partial<AdminDeleteApiKey>) { (Object as any).assign(this, init); }

@@ -234,6 +234,7 @@ let store = {
     },
     get adminUsers() { return server.plugins.adminUsers },
     get adminIdentityUsers() { return server.plugins.adminIdentityUsers },
+    get plugins() { return server.plugins },
     /** @param {string|any} id
      *  @return {LinkInfo} */
     adminLink(id) { return server.ui.adminLinks.find(x => x.id === id) },

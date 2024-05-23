@@ -1029,7 +1029,7 @@ public partial class AutoQuery : IAutoCrudDb
         List<string> removeKeys = null;
         foreach (var removeDtoProp in meta.RemoveDtoProps)
         {
-            removeKeys ??= new List<string>();
+            removeKeys ??= [];
             removeKeys.Add(removeDtoProp);
         }
 

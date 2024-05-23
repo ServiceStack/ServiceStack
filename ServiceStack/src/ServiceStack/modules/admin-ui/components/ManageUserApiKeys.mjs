@@ -2,11 +2,9 @@ import { ref, computed, onMounted, inject } from "vue"
 import { ApiResult, toDate } from "@servicestack/client"
 import { useClient, useUtils, useFormatters, useMetadata, css } from "@servicestack/vue"
 import { AdminQueryApiKeys, AdminCreateApiKey, AdminUpdateApiKey, AdminDeleteApiKey } from "dtos"
-
 function arraysAreEqual(a, b) {
     return a.length === b.length && a.every((v, i) => v === b[i])
 }
-
 const CreateApiKeyForm = {
     template:`
       <div>
@@ -138,7 +136,6 @@ const CreateApiKeyForm = {
         return { server, request, expiresIn, scopes, features, api, errorSummary, submit, css, apiKey, done }
     }
 }
-
 const EditApiKeyForm = {
     template:`
         <div>
@@ -210,14 +207,12 @@ const EditApiKeyForm = {
         const client = useClient()
         const { dateInputFormat } = useUtils()
         const { formatDate } = useFormatters()
-
         let origValues = {}
         const request = ref(new AdminUpdateApiKey())
         const scopes = ref({})
         const features = ref({})
         const api = ref(new ApiResult())
         const errorSummary = computed(() => api.value.summaryMessage())
-
         async function submit(e) {
             e.preventDefault()
             
@@ -235,7 +230,6 @@ const EditApiKeyForm = {
                     request.value.features.push(k)
                 }
             })
-
             ;['name','expiryDate','scopes','features','notes'].forEach(k => {
                 const value = request.value[k]
                 const origValue = origValues[k]
@@ -252,20 +246,16 @@ const EditApiKeyForm = {
                     update.reset.push(k)
                 }
             })
-
             api.value = await client.api(update)
             done()
         }
-
         function done() {
             emit('done')
         }
-
         async function submitDelete() {
             const apiDelete = await client.api(new AdminDeleteApiKey({ id: props.id }))
             done()
         }
-
         async function submitDisable() {
             const apiDelete = await client.api(new AdminUpdateApiKey({
                 id: props.id,
@@ -273,7 +263,6 @@ const EditApiKeyForm = {
             }))
             done()
         }
-
         async function submitEnable() {
             const apiDelete = await client.api(new AdminUpdateApiKey({
                 id: props.id,
@@ -302,7 +291,6 @@ const EditApiKeyForm = {
             submit, submitDelete, submitDisable, submitEnable }
     }
 }
-
 const ManageUserApiKeys = {
     components: {
         CreateApiKeyForm,
@@ -348,7 +336,6 @@ const ManageUserApiKeys = {
         columns: Array,
     },
     setup(props) {
-
         const { formatDate } = useFormatters()
         const server = inject('server')
         const columns = props.columns ?? "name,visibleKey,createdDate,expiryDate".split(',')

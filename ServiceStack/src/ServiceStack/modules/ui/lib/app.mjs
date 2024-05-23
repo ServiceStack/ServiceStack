@@ -157,8 +157,6 @@ let store = {
     /** @type {string} */
     baseUrl: BASE_URL,
     
-    createClient,
-    
     get plugins() { return globalThis.Server.plugins },
     /** @return {string} */
     get useLang() { return routes.lang || 'csharp' },
