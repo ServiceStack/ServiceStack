@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-05-23 11:43:19
+Date: 2024-05-23 14:42:09
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1545,18 +1545,21 @@ export class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet
     public id?: number;
 
     // @DataMember(Order=2)
-    public userId: string;
+    public search: string;
 
     // @DataMember(Order=3)
-    public userName: string;
+    public userId: string;
 
     // @DataMember(Order=4)
-    public orderBy: string;
+    public userName: string;
 
     // @DataMember(Order=5)
-    public skip?: number;
+    public orderBy: string;
 
     // @DataMember(Order=6)
+    public skip?: number;
+
+    // @DataMember(Order=7)
     public take?: number;
 
     public constructor(init?: Partial<AdminQueryApiKeys>) { (Object as any).assign(this, init); }

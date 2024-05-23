@@ -319,13 +319,18 @@ const ManageUserApiKeys = {
                 {{formatDate(expiryDate)}}
               </template>
               <template #scopes="{scopes}">
-                <span v-if="scopes.length">
-                    {{scopes.length}} {{scopes.slice(0,2).join(', ') + (scopes.length > 2 ? '...' : '')}}
+                <span v-if="scopes.length" :title="scopes.join('\\n')">
+                    {{ scopes.length }} {{ scopes.slice(0, 2).join(', ') + (scopes.length > 2 ? '...' : '') }}
                 </span>
               </template>
               <template #features="{features}">
-                <span v-if="features.length">
-                    {{features.length}} {{features.slice(0,2).join(', ') + (features.length > 2 ? '...' : '')}}
+                <span v-if="features.length" :title="features.join('\\n')">
+                    {{ features.length }} {{ features.slice(0, 2).join(', ') + (features.length > 2 ? '...' : '') }}
+                </span>
+              </template>
+              <template #lastUsedDate="{lastUsedDate}">
+                <span v-if="lastUsedDate">
+                    {{relativeTime(lastUsedDate)}}
                 </span>
               </template>
             </DataGrid>
@@ -336,7 +341,7 @@ const ManageUserApiKeys = {
         columns: Array,
     },
     setup(props) {
-        const { formatDate } = useFormatters()
+        const { formatDate, relativeTime } = useFormatters()
         const server = inject('server')
         const columns = props.columns ?? "name,visibleKey,createdDate,expiryDate".split(',')
         if (server.plugins.apiKey.scopes.length) {
@@ -345,6 +350,7 @@ const ManageUserApiKeys = {
         if (server.plugins.apiKey.features.length) {
             columns.push('features')
         }
+        columns.push('lastUsedDate')
         
         const renderKey = ref(0)
         const api = new ref(new ApiResult())
@@ -359,7 +365,7 @@ const ManageUserApiKeys = {
                 console.error("No User Id or UserName found")
                 return
             }
-            const request = new AdminQueryApiKeys()
+            const request = new AdminQueryApiKeys({ orderBy:'-id' })
             if (id.value) {
                 request.userId = id.value
             }
@@ -377,6 +383,7 @@ const ManageUserApiKeys = {
         }
         
         function rowSelected(row) {
+            show.value = ''
             selected.value = selected.value === row.id ? null : row.id
             renderKey.value++
         }
@@ -385,6 +392,9 @@ const ManageUserApiKeys = {
             await refresh()
         })
         
-        return { renderKey, id, userName, columns, show, api, toggleDialog, done, formatDate, selected, rowSelected }
+        return { renderKey, id, userName, columns, show, api, toggleDialog, done, formatDate, relativeTime, selected, rowSelected }
     }
+}
+function install(app) {
+    app.components({ CreateApiKeyForm, EditApiKeyForm })
 }

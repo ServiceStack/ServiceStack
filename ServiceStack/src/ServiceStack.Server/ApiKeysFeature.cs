@@ -6,13 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
-using ServiceStack.Html;
 using ServiceStack.OrmLite;
 using ServiceStack.Web;
 
@@ -28,6 +26,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public TimeSpan? CacheDuration = TimeSpan.FromMinutes(10);
     public Func<string>? ApiKeyGenerator { get; set; }
     public TimeSpan? DefaultExpiry { get; set; }
+    public Dictionary<int, DateTime> LastUsedApiKeys { get; set; } = new();
 
     public List<string> Scopes { get; set; } =
     [
@@ -160,6 +159,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
                 {
                     req.Items[Keywords.Session] = HostContext.Config.AuthSecretSession;
                 }
+                RecordUsage(entry.apiKey);
                 return;
             }
             Cache.TryRemove(apiKeyToken, out _);
@@ -178,6 +178,15 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
             {
                 Cache[apiKeyToken] = (apiKey, DateTime.UtcNow);
             }
+            RecordUsage(apiKey);
+        }
+    }
+
+    public void RecordUsage(IApiKey apiKey)
+    {
+        if (apiKey is ApiKey x)
+        {
+            x.LastUsedDate = LastUsedApiKeys[x.Id] = DateTime.UtcNow;
         }
     }
 
@@ -232,7 +241,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
 
     public void Configure(IServiceCollection services)
     {
-        services.AddSingleton<IApiKeySource, ApiKeysFeatureSource>();
+        services.AddSingleton<IApiKeySource>(c => new ApiKeysFeatureSource(this, c.GetRequiredService<IDbConnectionFactory>()));
         services.AddSingleton<IApiKeyResolver>(_ => new ApiKeyResolver(this));
         services.RegisterService<AdminApiKeysService>();
     }
@@ -268,7 +277,7 @@ class ApiKeyResolver(ApiKeysFeature feature) : IApiKeyResolver
         return feature.GetApiKeyToken(req);
     }
 }
-class ApiKeysFeatureSource(IDbConnectionFactory dbFactory) : IApiKeySource
+class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory dbFactory) : IApiKeySource
 {
     public async Task<IApiKey?> GetApiKeyAsync(string key)
     {
@@ -277,9 +286,10 @@ class ApiKeysFeatureSource(IDbConnectionFactory dbFactory) : IApiKeySource
         if (apiKey == null) 
             return null;
         if (apiKey.CancelledDate != null)
-            throw HttpError.Unauthorized("API Key has been cancelled");
-        if (apiKey.ExpiryDate != null && apiKey.ExpiryDate > DateTime.UtcNow)
-            throw HttpError.Unauthorized("API Key has expired");
+            throw HttpError.Unauthorized(ErrorMessages.ApiKeyHasBeenCancelled.Localize());
+        if (apiKey.ExpiryDate != null && apiKey.ExpiryDate < DateTime.UtcNow)
+            throw HttpError.Unauthorized(ErrorMessages.ApiKeyHasExpired.Localize());
+        feature.RecordUsage(apiKey);
         return apiKey;
     }
 }
@@ -292,6 +302,12 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
         var q = db.From<ApiKeysFeature.ApiKey>();
         if (request.Id != null)
             q.Where(x => x.Id == request.Id);
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            var search = request.Search.ToLower();
+            q.Where(x => x.Name.ToLower().Contains(search) || x.Notes.ToLower().Contains(search) || 
+                         x.UserName.ToLower().Contains(search) || x.UserId.ToLower().Contains(search));
+        }
         if (request.UserId != null)
             q.Where(x => x.UserId == request.UserId);
         if (request.UserName != null)
@@ -304,9 +320,16 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
             q.Take(request.Take.Value);
         
         var results = await db.SelectAsync(q);
+        var partialResults = results.ConvertAll(x => x.ConvertTo<PartialApiKey>());
+        var feature = HostContext.AssertPlugin<ApiKeysFeature>();
+        foreach (var result in partialResults)
+        {
+            if (feature.LastUsedApiKeys.TryGetValue(result.Id, out var lastUsed))
+                result.LastUsedDate = lastUsed;
+        }
         return new AdminApiKeysResponse
         {
-            Results = results.ConvertAll(x => x.ConvertTo<PartialApiKey>())
+            Results = partialResults
         };
     }
 

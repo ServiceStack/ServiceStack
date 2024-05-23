@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-05-23 11:43:19
+Date: 2024-05-23 14:42:10
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1714,10 +1714,12 @@ export class AdminDatabase {
     createResponse() { return new AdminDatabaseResponse() }
 }
 export class AdminQueryApiKeys {
-    /** @param {{id?:number,userId?:string,userName?:string,orderBy?:string,skip?:number,take?:number}} [init] */
+    /** @param {{id?:number,search?:string,userId?:string,userName?:string,orderBy?:string,skip?:number,take?:number}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?number} */
     id;
+    /** @type {string} */
+    search;
     /** @type {string} */
     userId;
     /** @type {string} */
