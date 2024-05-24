@@ -357,6 +357,41 @@ public static class ExecUtils
         return (int)Math.Min((1L << retries) * baseDelay, maxBackOffMs);
     }
 
+    public static class StaticRandom
+    {
+#if NET6_0_OR_GREATER
+        public static int Next(int maxValue) => Random.Shared.Next(maxValue);
+#else
+        static int seed = Environment.TickCount;
+        static readonly ThreadLocal<Random> random = new(() => new Random(Interlocked.Increment(ref seed)));
+        public static int Next(int maxValue)
+        {
+            return random.Value.Next(maxValue);
+        }
+#endif
+    }
+    
+    /// <summary>
+    /// Calculates delay for retrying an operation as per the retryPolicy
+    /// </summary>
+    /// <param name="retryAttempt"></param>
+    /// <param name="retry"></param>
+    /// <returns></returns>
+    public static int CalculateRetryDelayMs(int retryAttempt, RetryPolicy retry)
+    {
+        var delayMs = !retry.DelayFirst && retryAttempt == 1
+            ? 0
+            : retry.Behavior switch {
+                RetryBehavior.LinearBackoff => retryAttempt * retry.DelayMs,
+                RetryBehavior.ExponentialBackoff => 
+                    (int)Math.Min((1L << retryAttempt) * retry.DelayMs, retry.MaxDelayMs),
+                RetryBehavior.FullJitterBackoff => 
+                    StaticRandom.Next((int)Math.Min((1L << retryAttempt) * retry.DelayMs, retry.MaxDelayMs)),
+                _ => retry.DelayMs
+            };
+        return Math.Min(delayMs, retry.MaxDelayMs);
+    }
+
     /// <summary>
     /// Calculate back-off logic for obtaining an in memory lock 
     /// </summary>

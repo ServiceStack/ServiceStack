@@ -38,7 +38,7 @@ export const Commands = {
         </div>
         <div v-else-if="routes.tab === 'errors'" class="flex">
           <DataGrid :items="api.response.latestFailed"
-                    selected-columns="type,name,ms,at,error"
+                    selected-columns="type,name,ms,at,attempt,error"
                     @row-selected="rowSelectedError" :is-selected="row => routes.show === row.id"
             />           
         </div>
@@ -76,7 +76,7 @@ export const Commands = {
           
           <div class="flex">
             <DataGrid :items="commandTotals"
-                      selected-columns="name,count,failed,averageMs,medianMs,minMs,maxMs,lastError"
+                      selected-columns="name,count,failed,averageMs,medianMs,minMs,maxMs,retries,lastError"
                       @header-selected="headerSelected"
                       @row-selected="rowSelected" :is-selected="row => routes.op === row.type + '.' + row.name"
                 >
@@ -87,6 +87,7 @@ export const Commands = {
               <template #medianMs-header><SortableColumn name="medianMs" /></template>
               <template #minMs-header><SortableColumn name="minMs" /></template>
               <template #maxMs-header><SortableColumn name="maxMs" /></template>
+              <template #retries-header><SortableColumn name="retries" /></template>
               
               <template #lastError="{ lastError }">
                 <div v-if="lastError" class="w-72 whitespace-nowrap overflow-ellipsis overflow-hidden" :title="altError(lastError)">

@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Configuration;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Messaging;
 using ServiceStack.Model;
 using ServiceStack.Redis;
 using ServiceStack.Web;
 
 namespace ServiceStack;
+
 
 public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreInitPlugin
 {
@@ -30,6 +30,8 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     public int ResultsCapacity { get; set; } = DefaultCapacity;
     public int FailuresCapacity { get; set; } = DefaultCapacity;
     public int TimingsCapacity { get; set; } = 1000;
+    public RetryPolicy DefaultRetryPolicy { get; set; } = new(
+        Times:3, Behavior:RetryBehavior.FullJitterBackoff, DelayMs:100, MaxDelayMs:60_000, DelayFirst:false);
 
     public List<Func<IEnumerable<Type>>> TypeResolvers { get; set; } = [
         ScanServiceAssemblies
@@ -118,14 +120,14 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         }
     }
 
-    private ILogger<CommandsFeature>? log;
+    public ILogger<CommandsFeature>? Log { get; set; }
 
     public void Register(IAppHost appHost)
     {
         if (appHost is ServiceStackHost host)
             host.AddTimings = true;
         
-        log = appHost.GetApplicationServices().GetRequiredService<ILogger<CommandsFeature>>();
+        Log ??= appHost.GetApplicationServices().GetRequiredService<ILogger<CommandsFeature>>();
     }
 
     class CommandExecutor(CommandsFeature feature, IServiceProvider services) : ICommandExecutor
@@ -144,37 +146,71 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         ArgumentNullException.ThrowIfNull(request);
         return ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request);
     }
+    
+    public RetryPolicy? GetRetryPolicy(Type commandType)
+    {
+        var retryAttr = commandType.FirstAttribute<RetryAttribute>();
+        if (retryAttr != null)
+        {
+            return new(
+                Times:retryAttr.Times > 0 ? retryAttr.Times : DefaultRetryPolicy.Times,
+                Behavior:retryAttr.Behavior == RetryBehavior.Default ? DefaultRetryPolicy.Behavior : retryAttr.Behavior,
+                DelayMs:retryAttr.DelayMs > 0 ? retryAttr.DelayMs : DefaultRetryPolicy.DelayMs,
+                MaxDelayMs:retryAttr.MaxDelayMs > 0 ? retryAttr.MaxDelayMs : DefaultRetryPolicy.MaxDelayMs,
+                DelayFirst:retryAttr.DelayFirst
+            );
+        }
+        return null;
+    }
 
     public async Task ExecuteCommandAsync(Type commandType, Func<object,Task> execFn, object requestDto)
     {
+        var result = new CommandResult { Type = CommandType.Command, Name = commandType.Name, At = DateTime.UtcNow };
+        RetryPolicy? retryPolicy = null;
+        var retries = 0;
         var sw = Stopwatch.StartNew();
-        try
+        while (true)
         {
-            await execFn(requestDto);
-            log!.LogDebug("{Command} took {ElapsedMilliseconds}ms to execute", commandType.Name, sw.ElapsedMilliseconds);
-
-            AddCommandResult(new()
+            try
             {
-                Name = commandType.Name,
-                Ms = sw.ElapsedMilliseconds,
-                At = DateTime.UtcNow,
-            });
-        }
-        catch (Exception e)
-        {
-            var requestBody = requestDto.ToSafeJson();
-            log!.LogError(e, "{Command}({Request}) failed: {Message}", commandType.Name, requestBody, e.Message);
+                await execFn(requestDto);
+                Log!.LogDebug("{Command} took {ElapsedMilliseconds}ms to execute", commandType.Name, sw.ElapsedMilliseconds);
 
-            var error = e.ToResponseStatus();
-            error.StackTrace ??= e.StackTrace;
-            AddCommandResult(new()
+                result.Ms = sw.ElapsedMilliseconds;
+                if (retries > 0)
+                    result.Retries = retries;
+                AddCommandResult(result);
+                return;
+            }
+            catch (Exception e)
             {
-                Name = commandType.Name,
-                Ms = sw.ElapsedMilliseconds,
-                At = DateTime.UtcNow,
-                Request = requestBody,
-                Error = error,
-            });
+                var attempt = retries + 1;
+                var requestBody = requestDto.ToSafeJson();
+                Log!.LogError(e, "{Command}({Request}) x{Attempt} failed: {Message}", 
+                    commandType.Name, requestBody, attempt, e.Message);
+
+                var errorResult = result.Clone();
+                errorResult.Request = requestBody;
+                errorResult.Attempt = attempt;
+                errorResult.Error = e.ToResponseStatus();
+                errorResult.Error.StackTrace ??= e.StackTrace;
+                AddCommandResult(errorResult);
+
+                // Only try commands annotated with [Retry]
+                retryPolicy ??= GetRetryPolicy(commandType);
+                if (retryPolicy == null)
+                    return;
+
+                var retry = retryPolicy.Value;
+                if (++retries > retry.Times)
+                    return;
+
+                var delayMs = ExecUtils.CalculateRetryDelayMs(attempt, retry);
+                if (delayMs > 0)
+                {
+                    await Task.Delay(delayMs);
+                }
+            }
         }
     }
 
@@ -226,8 +262,10 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 _ => new CommandSummary
                 {
                     Type = result.Type,
-                    Name = result.Name, 
-                    Count = 1, 
+                    Name = result.Name,
+                    Count = 1,
+                    Failed = 0,
+                    Retries = 0,
                     TotalMs = ms, 
                     MinMs = ms,
                     MaxMs = ms,
@@ -236,6 +274,8 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 (_, summary) => 
                 {
                     summary.Count++;
+                    if (result.Retries != null)
+                        summary.Retries += result.Retries.Value;
                     summary.TotalMs += ms;
                     summary.MaxMs = Math.Max(summary.MaxMs, ms);
                     summary.MinMs = summary.MinMs < 0 ? ms : Math.Min(summary.MinMs, ms);
@@ -252,11 +292,13 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 CommandFailures.TryDequeue(out _);
 
             CommandTotals.AddOrUpdate(result.Name, 
-                _ => new CommandSummary { Name = result.Name, Failed = 1, Count = 0, 
+                _ => new CommandSummary { Name = result.Name, Failed = 1, Retries = result.Retries.GetValueOrDefault(0), Count = 0, 
                     TotalMs = 0, MinMs = -1, MaxMs = -1, LastError = result.Error },
                 (_, summary) =>
                 {
                     summary.Failed++;
+                    if (result.Retries != null)
+                        summary.Retries += result.Retries.Value;
                     summary.LastError = result.Error;
                     return summary;
                 });
@@ -275,7 +317,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         {
             AddCommandResult(new()
             {
-                Type = "API",
+                Type = CommandType.Api,
                 Name = name,
                 Ms = ms,
                 At = DateTime.UtcNow,
@@ -285,7 +327,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         {
             AddCommandResult(new()
             {
-                Type = "API",
+                Type = CommandType.Api,
                 Name = name,
                 Ms = ms,
                 At = DateTime.UtcNow,
@@ -349,13 +391,21 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     }
 }
 
+public static class CommandType
+{
+    public const string Command = "CMD";
+    public const string Api = "API";
+}
+
 public class CommandResult
 {
-    public string Type { get; set; } = "CMD";
+    public string Type { get; set; } = CommandType.Command;
     public string Name { get; set; }
     public long? Ms { get; set; }
     public DateTime At { get; set; }
     public string Request { get; set; }
+    public int? Retries { get; set; }
+    public int Attempt { get; set; }
     public ResponseStatus? Error { get; set; }
 
     public CommandResult Clone(Action<CommandResult>? configure = null) => X.Apply(new CommandResult
@@ -371,10 +421,11 @@ public class CommandResult
 
 public class CommandSummary
 {
-    public string Type { get; set; } = "CMD";
+    public string Type { get; set; } = CommandType.Command;
     public string Name { get; set; }
     public int Count { get; set; }
     public int Failed { get; set; }
+    public int Retries { get; set; }
     public int TotalMs { get; set; }
     public int MinMs { get; set; }
     public int MaxMs { get; set; }

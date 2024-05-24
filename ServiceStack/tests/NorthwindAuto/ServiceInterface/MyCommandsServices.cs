@@ -20,6 +20,7 @@ public class MyCommands
     public ThrowException? ThrowNotSupportedException { get; set; }
 }
 
+[Retry]
 public class AddTodoCommand(IDbConnection db) : IAsyncCommand<CreateTodo>
 {
     public async Task ExecuteAsync(CreateTodo request)
@@ -28,6 +29,64 @@ public class AddTodoCommand(IDbConnection db) : IAsyncCommand<CreateTodo>
         await db.InsertAsync(newTodo);
     }
 }
+
+public class FailedRequest {}
+
+public class FailNoRetryCommand : IAsyncCommand<FailedRequest>
+{
+    public int Attempts { get; set; }
+    public Task ExecuteAsync(FailedRequest request)
+    {
+        if (Attempts++ < 3)
+            throw new Exception($"{Attempts} Attempt Failed");
+        return Task.CompletedTask;
+    }
+}
+
+[Retry]
+public class FailDefaultRetryCommand : IAsyncCommand<FailedRequest>
+{
+    public int Attempts { get; set; }
+    public Task ExecuteAsync(FailedRequest request)
+    {
+        if (Attempts++ < 3)
+            throw new Exception($"{Attempts} Attempt Failed");
+        return Task.CompletedTask;
+    }
+}
+
+[Retry(Times = 1)]
+public class FailTimes1Command : IAsyncCommand<FailedRequest>
+{
+    public int Attempts { get; set; }
+    public Task ExecuteAsync(FailedRequest request)
+    {
+        if (Attempts++ < 3)
+            throw new Exception($"{Attempts} Attempt Failed");
+        return Task.CompletedTask;
+    }
+}
+
+[Retry(Times = 4)]
+public class FailTimes4Command : IAsyncCommand<FailedRequest>
+{
+    public int Attempts { get; set; }
+    public Task ExecuteAsync(FailedRequest request)
+    {
+        if (Attempts++ < 3)
+            throw new Exception($"{Attempts} Attempt Failed");
+        return Task.CompletedTask;
+    }
+}
+
+public class FailedCommandTests
+{
+    public bool? FailNoRetryCommand { get; set; }
+    public bool? FailDefaultRetryCommand { get; set; }
+    public bool? FailTimes1Command { get; set; }
+    public bool? FailTimes4Command { get; set; }
+}
+
 
 public record ThrowException(string Type, string Message, string? Param=null);
 
@@ -62,5 +121,17 @@ public class MyCommandsServices(ICommandExecutor executor) : Service
         await Request.ExecuteCommandsAsync(commands);
 
         return new EmptyResponse();
+    }
+
+    public async Task Any(FailedCommandTests request)
+    {
+        if (request.FailNoRetryCommand != null)
+            await executor.ExecuteAsync(executor.Command<FailNoRetryCommand>(), new FailedRequest());
+        if (request.FailDefaultRetryCommand != null)
+            await executor.ExecuteAsync(executor.Command<FailDefaultRetryCommand>(), new FailedRequest());
+        if (request.FailTimes1Command != null)
+            await executor.ExecuteAsync(executor.Command<FailTimes1Command>(), new FailedRequest());
+        if (request.FailTimes4Command != null)
+            await executor.ExecuteAsync(executor.Command<FailTimes4Command>(), new FailedRequest());
     }
 }

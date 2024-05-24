@@ -53,10 +53,20 @@ public enum Lifetime
     Transient,
 }
 
-public enum RetryStrategy
+public enum RetryBehavior
 {
     /// <summary>
-    /// Specifies that the operation should be retried with a linear backoff strategy.
+    /// Use the default retry behavior.
+    /// </summary>
+    Default,
+    
+    /// <summary>
+    /// Always retry the operation after the same delay.
+    /// </summary>
+    Standard,
+    
+    /// <summary>
+    /// Specifies that the operation should be retried with a linear backoff delay strategy.
     /// </summary>
     LinearBackoff,
 
@@ -64,11 +74,55 @@ public enum RetryStrategy
     /// Specifies that the operation should be retried with an exponential backoff strategy.
     /// </summary>
     ExponentialBackoff,
+
+    /// <summary>
+    /// Specifies that the operation should be retried with a full jittered exponential backoff strategy.
+    /// </summary>
+    FullJitterBackoff,
 }
 
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class RetryAttribute(int times)
+/// <summary>
+/// Specifies that the operation should be retried if it fails.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class RetryAttribute
     : AttributeBase
 {
-    public int Times => times;
+    /// <summary>
+    /// How many times to retry the operation.
+    /// </summary>
+    public int Times { get; set; } = -1;
+    /// <summary>
+    /// The retry behavior to use.
+    /// </summary>
+    public RetryBehavior Behavior { get; set; } = RetryBehavior.Default;
+    /// <summary>
+    /// The initial delay in milliseconds.
+    /// </summary>
+    public int DelayMs { get; set; } = -1;
+    /// <summary>
+    /// The maximum delay in milliseconds.
+    /// </summary>
+    public int MaxDelayMs { get; set; } = -1;
+    /// <summary>
+    /// Whether to delay the first retry.
+    /// </summary>
+    public bool DelayFirst { get; set; } = false;
 }
+
+/// <summary>
+/// The Retry policy to use for the operation 
+/// </summary>
+/// <param name="Times">How many times to retry the operation</param>
+/// <param name="Behavior">The retry behavior to use</param>
+/// <param name="DelayMs">The initial delay in milliseconds</param>
+/// <param name="MaxDelayMs">The maximum delay in milliseconds</param>
+/// <param name="DelayFirst">Whether to delay the first retry</param>
+public record struct RetryPolicy
+(
+    int Times,
+    RetryBehavior Behavior,
+    int DelayMs,
+    int MaxDelayMs,
+    bool DelayFirst
+);
