@@ -213,10 +213,13 @@ export const Commands = {
             return to
         }
         
-        watch(() => routes.sort, () => {
-            //console.log('routes.sort', routes.sort)
+        function update() {
             commandTotals.value = filterCommandTotals(api.value?.response?.commandTotals ?? [])
-        })
+        }
+
+        watch(() => routes.sort, update)
+        watch(() => routes.type, update)
+        watch(() => routes.q, update)
 
         const tabs = { 'Summary':'', 'Errors':'errors', 'Latest':'latest', }
 
