@@ -255,12 +255,10 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
             var request = new DeleteObjectsRequest {
                 BucketName = BucketName,
             };
-
             foreach (var filePath in batch)
             {
                 request.AddKey(SanitizePath(filePath));
             }
-
             await AmazonS3.DeleteObjectsAsync(request).ConfigAwait();
         }
     }
