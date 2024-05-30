@@ -159,6 +159,7 @@ public class PluginInfo : IMeta
     public List<string> Loaded { get; set; }
     public AuthInfo Auth { get; set; }
     public ApiKeyInfo ApiKey { get; set; }
+    public CommandsInfo Commands { get; set; }
     public AutoQueryInfo AutoQuery { get; set; }
     public ValidationInfo Validation { get; set; }
     public SharpPagesInfo SharpPages { get; set; }
@@ -249,17 +250,6 @@ public class AuthInfo : IMeta
     
     public Dictionary<string, List<LinkInfo>> RoleLinks { get; set; }
     public Dictionary<string,string[]> ServiceRoutes { get; set; }
-    public Dictionary<string, string> Meta { get; set; }
-}
-
-[Exclude(Feature.Soap | Feature.ApiExplorer)]
-public class ApiKeyInfo : IMeta
-{
-    public string Label { get; set; }
-    public string HttpHeader { get; set; }
-    public List<string> Scopes { get; set; }
-    public List<string> Features { get; set; }
-    public List<KeyValuePair<string, string>> ExpiresIn { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 
@@ -429,6 +419,33 @@ public class SchemaInfo
     public string Alias { get; set; }
     public string Name { get; set; }
     public List<string> Tables { get; set; }
+}
+
+[Exclude(Feature.Soap | Feature.ApiExplorer)]
+public class ApiKeyInfo : IMeta
+{
+    public string Label { get; set; }
+    public string HttpHeader { get; set; }
+    public List<string> Scopes { get; set; }
+    public List<string> Features { get; set; }
+    public List<KeyValuePair<string, string>> ExpiresIn { get; set; }
+    public Dictionary<string, string> Meta { get; set; }
+}
+
+[Exclude(Feature.Soap | Feature.ApiExplorer)]
+public class CommandsInfo : IMeta
+{
+    public List<CommandInfo> Commands { get; set; } = new();
+    public Dictionary<string, string> Meta { get; set; }
+}
+
+public class CommandInfo
+{
+    [IgnoreDataMember]
+    public Type Type { get; set; }
+    public string Name { get; set; }
+    public string Tag { get; set; }
+    public MetadataType Request { get; set; }
 }
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]

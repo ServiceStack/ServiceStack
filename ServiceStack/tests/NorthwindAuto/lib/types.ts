@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-05-23 14:42:09
+Date: 2024-05-30 14:58:38
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -384,6 +384,128 @@ export class ApiKeyInfo
     public constructor(init?: Partial<ApiKeyInfo>) { (Object as any).assign(this, init); }
 }
 
+export class MetadataTypeName
+{
+    public name: string;
+    public namespace: string;
+    public genericArgs: string[];
+
+    public constructor(init?: Partial<MetadataTypeName>) { (Object as any).assign(this, init); }
+}
+
+export class MetadataDataContract
+{
+    public name: string;
+    public namespace: string;
+
+    public constructor(init?: Partial<MetadataDataContract>) { (Object as any).assign(this, init); }
+}
+
+export class MetadataDataMember
+{
+    public name: string;
+    public order?: number;
+    public isRequired?: boolean;
+    public emitDefaultValue?: boolean;
+
+    public constructor(init?: Partial<MetadataDataMember>) { (Object as any).assign(this, init); }
+}
+
+export class MetadataAttribute
+{
+    public name: string;
+    public constructorArgs: MetadataPropertyType[];
+    public args: MetadataPropertyType[];
+
+    public constructor(init?: Partial<MetadataAttribute>) { (Object as any).assign(this, init); }
+}
+
+export class RefInfo
+{
+    public model: string;
+    public selfId: string;
+    public refId: string;
+    public refLabel: string;
+    public queryApi: string;
+
+    public constructor(init?: Partial<RefInfo>) { (Object as any).assign(this, init); }
+}
+
+export class MetadataPropertyType
+{
+    public name: string;
+    public type: string;
+    public namespace: string;
+    public isValueType?: boolean;
+    public isEnum?: boolean;
+    public isPrimaryKey?: boolean;
+    public genericArgs: string[];
+    public value: string;
+    public description: string;
+    public dataMember: MetadataDataMember;
+    public readOnly?: boolean;
+    public paramType: string;
+    public displayType: string;
+    public isRequired?: boolean;
+    public allowableValues: string[];
+    public allowableMin?: number;
+    public allowableMax?: number;
+    public attributes: MetadataAttribute[];
+    public uploadTo: string;
+    public input: InputInfo;
+    public format: FormatInfo;
+    public ref: RefInfo;
+
+    public constructor(init?: Partial<MetadataPropertyType>) { (Object as any).assign(this, init); }
+}
+
+export class MetadataType
+{
+    public name: string;
+    public namespace: string;
+    public genericArgs: string[];
+    public inherits: MetadataTypeName;
+    public implements: MetadataTypeName[];
+    public displayType: string;
+    public description: string;
+    public notes: string;
+    public icon: ImageInfo;
+    public isNested?: boolean;
+    public isEnum?: boolean;
+    public isEnumInt?: boolean;
+    public isInterface?: boolean;
+    public isAbstract?: boolean;
+    public isGenericTypeDef?: boolean;
+    public dataContract: MetadataDataContract;
+    public properties: MetadataPropertyType[];
+    public attributes: MetadataAttribute[];
+    public innerTypes: MetadataTypeName[];
+    public enumNames: string[];
+    public enumValues: string[];
+    public enumMemberValues: string[];
+    public enumDescriptions: string[];
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<MetadataType>) { (Object as any).assign(this, init); }
+}
+
+export class CommandInfo
+{
+    public name: string;
+    public tag: string;
+    public request: MetadataType;
+
+    public constructor(init?: Partial<CommandInfo>) { (Object as any).assign(this, init); }
+}
+
+export class CommandsInfo
+{
+    public commands: CommandInfo[];
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<CommandsInfo>) { (Object as any).assign(this, init); }
+}
+
 export class AutoQueryConvention
 {
     public name: string;
@@ -493,111 +615,6 @@ export class FilesUploadInfo
     public constructor(init?: Partial<FilesUploadInfo>) { (Object as any).assign(this, init); }
 }
 
-export class MetadataTypeName
-{
-    public name: string;
-    public namespace: string;
-    public genericArgs: string[];
-
-    public constructor(init?: Partial<MetadataTypeName>) { (Object as any).assign(this, init); }
-}
-
-export class MetadataDataContract
-{
-    public name: string;
-    public namespace: string;
-
-    public constructor(init?: Partial<MetadataDataContract>) { (Object as any).assign(this, init); }
-}
-
-export class MetadataDataMember
-{
-    public name: string;
-    public order?: number;
-    public isRequired?: boolean;
-    public emitDefaultValue?: boolean;
-
-    public constructor(init?: Partial<MetadataDataMember>) { (Object as any).assign(this, init); }
-}
-
-export class MetadataAttribute
-{
-    public name: string;
-    public constructorArgs: MetadataPropertyType[];
-    public args: MetadataPropertyType[];
-
-    public constructor(init?: Partial<MetadataAttribute>) { (Object as any).assign(this, init); }
-}
-
-export class RefInfo
-{
-    public model: string;
-    public selfId: string;
-    public refId: string;
-    public refLabel: string;
-    public queryApi: string;
-
-    public constructor(init?: Partial<RefInfo>) { (Object as any).assign(this, init); }
-}
-
-export class MetadataPropertyType
-{
-    public name: string;
-    public type: string;
-    public namespace: string;
-    public isValueType?: boolean;
-    public isEnum?: boolean;
-    public isPrimaryKey?: boolean;
-    public genericArgs: string[];
-    public value: string;
-    public description: string;
-    public dataMember: MetadataDataMember;
-    public readOnly?: boolean;
-    public paramType: string;
-    public displayType: string;
-    public isRequired?: boolean;
-    public allowableValues: string[];
-    public allowableMin?: number;
-    public allowableMax?: number;
-    public attributes: MetadataAttribute[];
-    public uploadTo: string;
-    public input: InputInfo;
-    public format: FormatInfo;
-    public ref: RefInfo;
-
-    public constructor(init?: Partial<MetadataPropertyType>) { (Object as any).assign(this, init); }
-}
-
-export class MetadataType
-{
-    public name: string;
-    public namespace: string;
-    public genericArgs: string[];
-    public inherits: MetadataTypeName;
-    public implements: MetadataTypeName[];
-    public displayType: string;
-    public description: string;
-    public notes: string;
-    public icon: ImageInfo;
-    public isNested?: boolean;
-    public isEnum?: boolean;
-    public isEnumInt?: boolean;
-    public isInterface?: boolean;
-    public isAbstract?: boolean;
-    public isGenericTypeDef?: boolean;
-    public dataContract: MetadataDataContract;
-    public properties: MetadataPropertyType[];
-    public attributes: MetadataAttribute[];
-    public innerTypes: MetadataTypeName[];
-    public enumNames: string[];
-    public enumValues: string[];
-    public enumMemberValues: string[];
-    public enumDescriptions: string[];
-    public meta: { [index: string]: string; };
-
-    public constructor(init?: Partial<MetadataType>) { (Object as any).assign(this, init); }
-}
-
 export class MediaRule
 {
     public size: string;
@@ -683,6 +700,7 @@ export class PluginInfo
     public loaded: string[];
     public auth: AuthInfo;
     public apiKey: ApiKeyInfo;
+    public commands: CommandsInfo;
     public autoQuery: AutoQueryInfo;
     public validation: ValidationInfo;
     public sharpPages: SharpPagesInfo;
@@ -905,6 +923,38 @@ export class RedisText
     public constructor(init?: Partial<RedisText>) { (Object as any).assign(this, init); }
 }
 
+export class CommandSummary
+{
+    public type: string;
+    public name: string;
+    public count: number;
+    public failed: number;
+    public retries: number;
+    public totalMs: number;
+    public minMs: number;
+    public maxMs: number;
+    public averageMs: number;
+    public medianMs: number;
+    public lastError?: ResponseStatus;
+    public timings: ConcurrentQueue<number>;
+
+    public constructor(init?: Partial<CommandSummary>) { (Object as any).assign(this, init); }
+}
+
+export class CommandResult
+{
+    public type: string;
+    public name: string;
+    public ms?: number;
+    public at: string;
+    public request: string;
+    public retries?: number;
+    public attempt: number;
+    public error?: ResponseStatus;
+
+    public constructor(init?: Partial<CommandResult>) { (Object as any).assign(this, init); }
+}
+
 // @DataContract
 export class PartialApiKey
 {
@@ -992,35 +1042,6 @@ export class RequestLogEntry
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<RequestLogEntry>) { (Object as any).assign(this, init); }
-}
-
-export class CommandSummary
-{
-    public type: string;
-    public name: string;
-    public count: number;
-    public failed: number;
-    public totalMs: number;
-    public minMs: number;
-    public maxMs: number;
-    public averageMs: number;
-    public medianMs: number;
-    public lastError?: ResponseStatus;
-    public timings: ConcurrentQueue<number>;
-
-    public constructor(init?: Partial<CommandSummary>) { (Object as any).assign(this, init); }
-}
-
-export class CommandResult
-{
-    public type: string;
-    public name: string;
-    public ms?: number;
-    public at: string;
-    public request: string;
-    public error?: ResponseStatus;
-
-    public constructor(init?: Partial<CommandResult>) { (Object as any).assign(this, init); }
 }
 
 export class KeyValuePair<TKey, TValue>
@@ -1209,6 +1230,25 @@ export class AdminDatabaseResponse
     public constructor(init?: Partial<AdminDatabaseResponse>) { (Object as any).assign(this, init); }
 }
 
+export class ViewCommandsResponse
+{
+    public commandTotals: CommandSummary[];
+    public latestCommands: CommandResult[];
+    public latestFailed: CommandResult[];
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<ViewCommandsResponse>) { (Object as any).assign(this, init); }
+}
+
+export class ExecuteCommandResponse
+{
+    public commandResult?: CommandResult;
+    public result?: string;
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<ExecuteCommandResponse>) { (Object as any).assign(this, init); }
+}
+
 // @DataContract
 export class AdminApiKeysResponse
 {
@@ -1216,7 +1256,7 @@ export class AdminApiKeysResponse
     public results: PartialApiKey[];
 
     // @DataMember(Order=2)
-    public responseStatus?: ResponseStatus;
+    public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<AdminApiKeysResponse>) { (Object as any).assign(this, init); }
 }
@@ -1258,16 +1298,6 @@ export class RequestLogsResponse
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<RequestLogsResponse>) { (Object as any).assign(this, init); }
-}
-
-export class ViewCommandsResponse
-{
-    public commandTotals: CommandSummary[];
-    public latestCommands: CommandResult[];
-    public latestFailed: CommandResult[];
-    public responseStatus?: ResponseStatus;
-
-    public constructor(init?: Partial<ViewCommandsResponse>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -1538,6 +1568,29 @@ export class AdminDatabase implements IReturn<AdminDatabaseResponse>, IGet
     public createResponse() { return new AdminDatabaseResponse(); }
 }
 
+export class ViewCommands implements IReturn<ViewCommandsResponse>, IGet
+{
+    public include?: string[];
+    public skip?: number;
+    public take?: number;
+
+    public constructor(init?: Partial<ViewCommands>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'ViewCommands'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new ViewCommandsResponse(); }
+}
+
+export class ExecuteCommand implements IReturn<ExecuteCommandResponse>, IPost
+{
+    public command: string;
+    public requestJson?: string;
+
+    public constructor(init?: Partial<ExecuteCommand>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'ExecuteCommand'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new ExecuteCommandResponse(); }
+}
+
 // @DataContract
 export class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet
 {
@@ -1743,19 +1796,6 @@ export class RequestLogs implements IReturn<RequestLogsResponse>
     public getTypeName() { return 'RequestLogs'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new RequestLogsResponse(); }
-}
-
-// @Route("/commands")
-export class ViewCommands implements IReturn<ViewCommandsResponse>, IGet
-{
-    public include?: string[];
-    public skip?: number;
-    public take?: number;
-
-    public constructor(init?: Partial<ViewCommands>) { (Object as any).assign(this, init); }
-    public getTypeName() { return 'ViewCommands'; }
-    public getMethod() { return 'GET'; }
-    public createResponse() { return new ViewCommandsResponse(); }
 }
 
 // @Route("/validation/rules/{Type}")

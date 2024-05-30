@@ -229,6 +229,9 @@ public class PublishTasks
                 typeof(AdminCreateApiKey),
                 typeof(AdminUpdateApiKey),
                 typeof(AdminDeleteApiKey),
+                typeof(RequestLogsInfo),
+                typeof(ViewCommands),
+                typeof(ExecuteCommand),
             ];
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), [

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-05-23 14:42:10
+Date: 2024-05-30 14:58:38
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -427,152 +427,6 @@ export class ApiKeyInfo {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
-export class AutoQueryConvention {
-    /** @param {{name?:string,value?:string,types?:string,valueType?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    name;
-    /** @type {string} */
-    value;
-    /** @type {string} */
-    types;
-    /** @type {string} */
-    valueType;
-}
-export class AutoQueryInfo {
-    /** @param {{maxLimit?:number,untypedQueries?:boolean,rawSqlFilters?:boolean,autoQueryViewer?:boolean,async?:boolean,orderByPrimaryKey?:boolean,crudEvents?:boolean,crudEventsServices?:boolean,accessRole?:string,namedConnection?:string,viewerConventions?:AutoQueryConvention[],meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?number} */
-    maxLimit;
-    /** @type {?boolean} */
-    untypedQueries;
-    /** @type {?boolean} */
-    rawSqlFilters;
-    /** @type {?boolean} */
-    autoQueryViewer;
-    /** @type {?boolean} */
-    async;
-    /** @type {?boolean} */
-    orderByPrimaryKey;
-    /** @type {?boolean} */
-    crudEvents;
-    /** @type {?boolean} */
-    crudEventsServices;
-    /** @type {string} */
-    accessRole;
-    /** @type {string} */
-    namedConnection;
-    /** @type {AutoQueryConvention[]} */
-    viewerConventions;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class ScriptMethodType {
-    /** @param {{name?:string,paramNames?:string[],paramTypes?:string[],returnType?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    name;
-    /** @type {string[]} */
-    paramNames;
-    /** @type {string[]} */
-    paramTypes;
-    /** @type {string} */
-    returnType;
-}
-export class ValidationInfo {
-    /** @param {{hasValidationSource?:boolean,hasValidationSourceAdmin?:boolean,serviceRoutes?:{ [index: string]: string[]; },typeValidators?:ScriptMethodType[],propertyValidators?:ScriptMethodType[],accessRole?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?boolean} */
-    hasValidationSource;
-    /** @type {?boolean} */
-    hasValidationSourceAdmin;
-    /** @type {{ [index: string]: string[]; }} */
-    serviceRoutes;
-    /** @type {ScriptMethodType[]} */
-    typeValidators;
-    /** @type {ScriptMethodType[]} */
-    propertyValidators;
-    /** @type {string} */
-    accessRole;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class SharpPagesInfo {
-    /** @param {{apiPath?:string,scriptAdminRole?:string,metadataDebugAdminRole?:string,metadataDebug?:boolean,spaFallback?:boolean,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    apiPath;
-    /** @type {string} */
-    scriptAdminRole;
-    /** @type {string} */
-    metadataDebugAdminRole;
-    /** @type {?boolean} */
-    metadataDebug;
-    /** @type {?boolean} */
-    spaFallback;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class RequestLogsInfo {
-    /** @param {{accessRole?:string,requiredRoles?:string[],requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    accessRole;
-    /** @type {string[]} */
-    requiredRoles;
-    /** @type {string} */
-    requestLogger;
-    /** @type {number} */
-    defaultLimit;
-    /** @type {{ [index: string]: string[]; }} */
-    serviceRoutes;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class ProfilingInfo {
-    /** @param {{accessRole?:string,defaultLimit?:number,summaryFields?:string[],tagLabel?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    accessRole;
-    /** @type {number} */
-    defaultLimit;
-    /** @type {string[]} */
-    summaryFields;
-    /** @type {?string} */
-    tagLabel;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class FilesUploadLocation {
-    /** @param {{name?:string,readAccessRole?:string,writeAccessRole?:string,allowExtensions?:string[],allowOperations?:string,maxFileCount?:number,minFileBytes?:number,maxFileBytes?:number}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    name;
-    /** @type {string} */
-    readAccessRole;
-    /** @type {string} */
-    writeAccessRole;
-    /** @type {string[]} */
-    allowExtensions;
-    /** @type {string} */
-    allowOperations;
-    /** @type {?number} */
-    maxFileCount;
-    /** @type {?number} */
-    minFileBytes;
-    /** @type {?number} */
-    maxFileBytes;
-}
-export class FilesUploadInfo {
-    /** @param {{basePath?:string,locations?:FilesUploadLocation[],meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    basePath;
-    /** @type {FilesUploadLocation[]} */
-    locations;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
 export class MetadataTypeName {
     /** @param {{name?:string,namespace?:string,genericArgs?:string[]}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -727,6 +581,170 @@ export class MetadataType {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
+export class CommandInfo {
+    /** @param {{name?:string,tag?:string,request?:MetadataType}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    tag;
+    /** @type {MetadataType} */
+    request;
+}
+export class CommandsInfo {
+    /** @param {{commands?:CommandInfo[],meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {CommandInfo[]} */
+    commands;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class AutoQueryConvention {
+    /** @param {{name?:string,value?:string,types?:string,valueType?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    value;
+    /** @type {string} */
+    types;
+    /** @type {string} */
+    valueType;
+}
+export class AutoQueryInfo {
+    /** @param {{maxLimit?:number,untypedQueries?:boolean,rawSqlFilters?:boolean,autoQueryViewer?:boolean,async?:boolean,orderByPrimaryKey?:boolean,crudEvents?:boolean,crudEventsServices?:boolean,accessRole?:string,namedConnection?:string,viewerConventions?:AutoQueryConvention[],meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    maxLimit;
+    /** @type {?boolean} */
+    untypedQueries;
+    /** @type {?boolean} */
+    rawSqlFilters;
+    /** @type {?boolean} */
+    autoQueryViewer;
+    /** @type {?boolean} */
+    async;
+    /** @type {?boolean} */
+    orderByPrimaryKey;
+    /** @type {?boolean} */
+    crudEvents;
+    /** @type {?boolean} */
+    crudEventsServices;
+    /** @type {string} */
+    accessRole;
+    /** @type {string} */
+    namedConnection;
+    /** @type {AutoQueryConvention[]} */
+    viewerConventions;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class ScriptMethodType {
+    /** @param {{name?:string,paramNames?:string[],paramTypes?:string[],returnType?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string[]} */
+    paramNames;
+    /** @type {string[]} */
+    paramTypes;
+    /** @type {string} */
+    returnType;
+}
+export class ValidationInfo {
+    /** @param {{hasValidationSource?:boolean,hasValidationSourceAdmin?:boolean,serviceRoutes?:{ [index: string]: string[]; },typeValidators?:ScriptMethodType[],propertyValidators?:ScriptMethodType[],accessRole?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?boolean} */
+    hasValidationSource;
+    /** @type {?boolean} */
+    hasValidationSourceAdmin;
+    /** @type {{ [index: string]: string[]; }} */
+    serviceRoutes;
+    /** @type {ScriptMethodType[]} */
+    typeValidators;
+    /** @type {ScriptMethodType[]} */
+    propertyValidators;
+    /** @type {string} */
+    accessRole;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class SharpPagesInfo {
+    /** @param {{apiPath?:string,scriptAdminRole?:string,metadataDebugAdminRole?:string,metadataDebug?:boolean,spaFallback?:boolean,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    apiPath;
+    /** @type {string} */
+    scriptAdminRole;
+    /** @type {string} */
+    metadataDebugAdminRole;
+    /** @type {?boolean} */
+    metadataDebug;
+    /** @type {?boolean} */
+    spaFallback;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class RequestLogsInfo {
+    /** @param {{accessRole?:string,requiredRoles?:string[],requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    accessRole;
+    /** @type {string[]} */
+    requiredRoles;
+    /** @type {string} */
+    requestLogger;
+    /** @type {number} */
+    defaultLimit;
+    /** @type {{ [index: string]: string[]; }} */
+    serviceRoutes;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class ProfilingInfo {
+    /** @param {{accessRole?:string,defaultLimit?:number,summaryFields?:string[],tagLabel?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    accessRole;
+    /** @type {number} */
+    defaultLimit;
+    /** @type {string[]} */
+    summaryFields;
+    /** @type {?string} */
+    tagLabel;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class FilesUploadLocation {
+    /** @param {{name?:string,readAccessRole?:string,writeAccessRole?:string,allowExtensions?:string[],allowOperations?:string,maxFileCount?:number,minFileBytes?:number,maxFileBytes?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    readAccessRole;
+    /** @type {string} */
+    writeAccessRole;
+    /** @type {string[]} */
+    allowExtensions;
+    /** @type {string} */
+    allowOperations;
+    /** @type {?number} */
+    maxFileCount;
+    /** @type {?number} */
+    minFileBytes;
+    /** @type {?number} */
+    maxFileBytes;
+}
+export class FilesUploadInfo {
+    /** @param {{basePath?:string,locations?:FilesUploadLocation[],meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    basePath;
+    /** @type {FilesUploadLocation[]} */
+    locations;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
 export class MediaRule {
     /** @param {{size?:string,rule?:string,applyTo?:string[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -832,7 +850,7 @@ export class AdminDatabaseInfo {
     meta;
 }
 export class PluginInfo {
-    /** @param {{loaded?:string[],auth?:AuthInfo,apiKey?:ApiKeyInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{loaded?:string[],auth?:AuthInfo,apiKey?:ApiKeyInfo,commands?:CommandsInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     loaded;
@@ -840,6 +858,8 @@ export class PluginInfo {
     auth;
     /** @type {ApiKeyInfo} */
     apiKey;
+    /** @type {CommandsInfo} */
+    commands;
     /** @type {AutoQueryInfo} */
     autoQuery;
     /** @type {ValidationInfo} */
@@ -1145,6 +1165,54 @@ export class RedisText {
     /** @type {RedisText[]} */
     children;
 }
+export class CommandSummary {
+    /** @param {{type?:string,name?:string,count?:number,failed?:number,retries?:number,totalMs?:number,minMs?:number,maxMs?:number,averageMs?:number,medianMs?:number,lastError?:ResponseStatus,timings?:ConcurrentQueue<number>}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    type;
+    /** @type {string} */
+    name;
+    /** @type {number} */
+    count;
+    /** @type {number} */
+    failed;
+    /** @type {number} */
+    retries;
+    /** @type {number} */
+    totalMs;
+    /** @type {number} */
+    minMs;
+    /** @type {number} */
+    maxMs;
+    /** @type {number} */
+    averageMs;
+    /** @type {number} */
+    medianMs;
+    /** @type {?ResponseStatus} */
+    lastError;
+    /** @type {ConcurrentQueue<number>} */
+    timings;
+}
+export class CommandResult {
+    /** @param {{type?:string,name?:string,ms?:number,at?:string,request?:string,retries?:number,attempt?:number,error?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    type;
+    /** @type {string} */
+    name;
+    /** @type {?number} */
+    ms;
+    /** @type {string} */
+    at;
+    /** @type {string} */
+    request;
+    /** @type {?number} */
+    retries;
+    /** @type {number} */
+    attempt;
+    /** @type {?ResponseStatus} */
+    error;
+}
 export class PartialApiKey {
     /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1238,48 +1306,6 @@ export class RequestLogEntry {
     requestDuration;
     /** @type {{ [index: string]: string; }} */
     meta;
-}
-export class CommandSummary {
-    /** @param {{type?:string,name?:string,count?:number,failed?:number,totalMs?:number,minMs?:number,maxMs?:number,averageMs?:number,medianMs?:number,lastError?:ResponseStatus,timings?:ConcurrentQueue<number>}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    type;
-    /** @type {string} */
-    name;
-    /** @type {number} */
-    count;
-    /** @type {number} */
-    failed;
-    /** @type {number} */
-    totalMs;
-    /** @type {number} */
-    minMs;
-    /** @type {number} */
-    maxMs;
-    /** @type {number} */
-    averageMs;
-    /** @type {number} */
-    medianMs;
-    /** @type {?ResponseStatus} */
-    lastError;
-    /** @type {ConcurrentQueue<number>} */
-    timings;
-}
-export class CommandResult {
-    /** @param {{type?:string,name?:string,ms?:number,at?:string,request?:string,error?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    type;
-    /** @type {string} */
-    name;
-    /** @type {?number} */
-    ms;
-    /** @type {string} */
-    at;
-    /** @type {string} */
-    request;
-    /** @type {?ResponseStatus} */
-    error;
 }
 /** @typedef TKey {any} */
 /** @typedef  TValue {any} */
@@ -1443,12 +1469,34 @@ export class AdminDatabaseResponse {
     /** @type {?ResponseStatus} */
     responseStatus;
 }
+export class ViewCommandsResponse {
+    /** @param {{commandTotals?:CommandSummary[],latestCommands?:CommandResult[],latestFailed?:CommandResult[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {CommandSummary[]} */
+    commandTotals;
+    /** @type {CommandResult[]} */
+    latestCommands;
+    /** @type {CommandResult[]} */
+    latestFailed;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class ExecuteCommandResponse {
+    /** @param {{commandResult?:CommandResult,result?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?CommandResult} */
+    commandResult;
+    /** @type {?string} */
+    result;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
 export class AdminApiKeysResponse {
     /** @param {{results?:PartialApiKey[],responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {PartialApiKey[]} */
     results;
-    /** @type {?ResponseStatus} */
+    /** @type {ResponseStatus} */
     responseStatus;
 }
 export class AdminApiKeyResponse {
@@ -1475,18 +1523,6 @@ export class RequestLogsResponse {
     /** @type {number} */
     total;
     /** @type {ResponseStatus} */
-    responseStatus;
-}
-export class ViewCommandsResponse {
-    /** @param {{commandTotals?:CommandSummary[],latestCommands?:CommandResult[],latestFailed?:CommandResult[],responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {CommandSummary[]} */
-    commandTotals;
-    /** @type {CommandResult[]} */
-    latestCommands;
-    /** @type {CommandResult[]} */
-    latestFailed;
-    /** @type {?ResponseStatus} */
     responseStatus;
 }
 export class GetValidationRulesResponse {
@@ -1711,6 +1747,30 @@ export class AdminDatabase {
     getMethod() { return 'GET' }
     createResponse() { return new AdminDatabaseResponse() }
 }
+export class ViewCommands {
+    /** @param {{include?:string[],skip?:number,take?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string[]} */
+    include;
+    /** @type {?number} */
+    skip;
+    /** @type {?number} */
+    take;
+    getTypeName() { return 'ViewCommands' }
+    getMethod() { return 'GET' }
+    createResponse() { return new ViewCommandsResponse() }
+}
+export class ExecuteCommand {
+    /** @param {{command?:string,requestJson?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    command;
+    /** @type {?string} */
+    requestJson;
+    getTypeName() { return 'ExecuteCommand' }
+    getMethod() { return 'POST' }
+    createResponse() { return new ExecuteCommandResponse() }
+}
 export class AdminQueryApiKeys {
     /** @param {{id?:number,search?:string,userId?:string,userName?:string,orderBy?:string,skip?:number,take?:number}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1851,19 +1911,6 @@ export class RequestLogs {
     getTypeName() { return 'RequestLogs' }
     getMethod() { return 'POST' }
     createResponse() { return new RequestLogsResponse() }
-}
-export class ViewCommands {
-    /** @param {{include?:string[],skip?:number,take?:number}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?string[]} */
-    include;
-    /** @type {?number} */
-    skip;
-    /** @type {?number} */
-    take;
-    getTypeName() { return 'ViewCommands' }
-    getMethod() { return 'GET' }
-    createResponse() { return new ViewCommandsResponse() }
 }
 export class GetValidationRules {
     /** @param {{authSecret?:string,type?:string}} [init] */

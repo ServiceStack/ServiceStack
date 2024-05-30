@@ -10,6 +10,11 @@ public interface IAsyncCommand<in T> : IAsyncCommand
 }
 public interface IAsyncCommand { }
 
+public interface IHasResult<T>
+{
+    T Result { get; set; }
+}
+
 public interface ICommandExecutor
 {
     TCommand Command<TCommand>() where TCommand : IAsyncCommand;

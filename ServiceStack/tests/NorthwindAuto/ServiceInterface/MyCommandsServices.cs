@@ -21,17 +21,22 @@ public class MyCommands
 }
 
 [Retry]
-public class AddTodoCommand(IDbConnection db) : IAsyncCommand<CreateTodo>
+[Tag("Todo")]
+public class AddTodoCommand(IDbConnection db) : IAsyncCommand<CreateTodo>, IHasResult<Todo>
 {
+    public Todo Result { get; set; }
+    
     public async Task ExecuteAsync(CreateTodo request)
     {
         var newTodo = request.ConvertTo<Todo>();
         await db.InsertAsync(newTodo);
+        Result = newTodo;
     }
 }
 
 public class FailedRequest {}
 
+[Tag("Fail")]
 public class FailNoRetryCommand : IAsyncCommand<FailedRequest>
 {
     public int Attempts { get; set; }
@@ -44,6 +49,7 @@ public class FailNoRetryCommand : IAsyncCommand<FailedRequest>
 }
 
 [Retry]
+[Tag("Fail")]
 public class FailDefaultRetryCommand : IAsyncCommand<FailedRequest>
 {
     public int Attempts { get; set; }
@@ -56,6 +62,7 @@ public class FailDefaultRetryCommand : IAsyncCommand<FailedRequest>
 }
 
 [Retry(Times = 1)]
+[Tag("Fail")]
 public class FailTimes1Command : IAsyncCommand<FailedRequest>
 {
     public int Attempts { get; set; }
@@ -68,6 +75,7 @@ public class FailTimes1Command : IAsyncCommand<FailedRequest>
 }
 
 [Retry(Times = 4)]
+[Tag("Fail")]
 public class FailTimes4Command : IAsyncCommand<FailedRequest>
 {
     public int Attempts { get; set; }

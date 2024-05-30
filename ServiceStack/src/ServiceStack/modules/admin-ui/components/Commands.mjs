@@ -2,7 +2,7 @@ import { computed, inject, onMounted, onUnmounted, ref, watch, getCurrentInstanc
 import { useClient, useFormatters, useMetadata, useUtils } from "@servicestack/vue"
 import { ApiResult, toDate, humanify } from "@servicestack/client"
 import { prettyJson } from "core"
-import { ViewCommands } from "dtos"
+import { ViewCommands, ExecuteCommand } from "dtos"
 import { Chart, registerables } from 'chart.js'
 Chart.register(...registerables)
 export const Commands = {
@@ -13,14 +13,14 @@ export const Commands = {
           <label for="redis-tabs" class="sr-only">Select a tab</label>
           <select id="redis-tabs"
                   class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                  @change="routes.to({ tab: $event.target.value })">
+                  @change="routes.to({ tab: $event.target.value, type:'' })">
             <option v-for="(tab,name) in tabs" :selected="routes.tab === tab" :value="tab">{{ name }}</option>
           </select>
         </div>
         <div class="hidden sm:block">
           <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-              <a v-for="(tab,name) in tabs" v-href="{ tab, op:'', show:'', body:'' }"
+              <a v-for="(tab,name) in tabs" v-href="{ tab, op:'', show:'', body:'', type:'' }"
                  :class="[routes.tab === tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm']">
                 {{ name }}
               </a>
@@ -31,7 +31,74 @@ export const Commands = {
       <ErrorSummary :status="api.error" />
         
       <div v-if="api.response">
-        <div v-if="routes.tab === 'latest'" class="flex">
+        <div v-if="routes.tab === 'explore'" class="flex">
+          <div class="w-64 mt-2">
+            <div class="relative">
+              <svg class="absolute ml-2.5 mt-2.5 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path>
+              </svg>
+              <input type="search" placeholder="Filter..." v-model="q" class="border rounded-full overflow-hidden flex w-full px-4 py-1 pl-8 border-gray-200">
+            </div>
+            <nav class="w-64 space-y-1 bg-white pb-4 md:pb-scroll" aria-label="Sidebar">
+              <div v-for="nav in filteredNav" class="space-y-1">
+                <button v-if="nav.tag" type="button" @click.prevent="toggleNav(nav.tag)"
+                        class="bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pr-2 py-2 text-left text-sm font-medium">
+                  <svg :class="[nav.expanded ? 'text-gray-400 rotate-90' : 'text-gray-300','mr-2 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
+                  </svg>
+                  {{nav.tag}}
+                </button>
+                <div v-if="nav.expanded" class="space-y-1">
+                  <a v-for="op in nav.commands" v-href="{ op:op.name, type:'' }"
+                     :class="[op.name === routes.op ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
+                        'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
+                    <span class="nav-item flex-grow">{{op.name}}</span>
+                  </a>
+                </div>
+              </div>
+            </nav>
+          </div>
+          <div v-if="routes.op" class="flex-grow p-4">
+            <form ref="elForm" @submit.prevent="submitForm($event.target)" autocomplete="off"
+                class="shadow sm:rounded-md max-w-screen-md">
+              <input type="submit" class="hidden">
+              <AutoFormFields v-if="formLayout.length" :type="routes.op"
+                              :metaType="metaType" :formLayout="formLayout" v-model="model"
+                              class="sm:m-4 max-w-4xl" />
+              <div class="mt-4 px-4 py-3 bg-gray-50 dark:bg-gray-900 sm:px-6 flex flex-wrap justify-between">
+                <div>
+                  <FormLoading v-if="false" />
+                </div>
+                <div class="flex justify-end">
+                  <PrimaryButton class="ml-4">Submit</PrimaryButton>
+                </div>
+              </div>
+            </form>
+            <div v-if="commandApi.response || commandApi.error" class="mt-2 p-2">
+                <ErrorSummary v-if="commandApi.error ?? commandApi.response?.commandResult?.error" :status="commandApi.error ?? commandApi.response?.commandResult?.error" />
+                <div v-else>
+                    <div v-if="commandApi.response?.commandResult" class="mb-4">
+                      <p>Completed in <b>{{commandApi.response?.commandResult.ms}}ms</b></p>
+                    </div>
+                    <span class="relative z-0 inline-flex shadow-sm rounded-md">
+                        <a v-for="(tab,name) in {Pretty:'',Preview:'preview'}" @click="routes.body = tab"
+                        :class="[{ Pretty:'rounded-l-md',Preview:'rounded-r-md -ml-px' }[name], routes.body === tab ? 'z-10 outline-none ring-1 ring-indigo-500 border-indigo-500' : '', 'cursor-pointer relative inline-flex items-center px-4 py-1 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50']">
+                        {{name}}
+                        </a>
+                    </span>
+                    <div v-if="routes.body === ''" class="pt-2">
+                        <CopyIcon v-if="commandJson" :text="commandJson" class="absolute right-4" />
+                        <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="commandJson"></code></pre>
+                    </div>
+                    <div v-else-if="routes.body === 'preview'" class="body-preview flex pt-2 overflow-x-auto">
+                        <HtmlFormat :value="JSON.parse(commandJson)" :fieldAttrs="fieldAttrs" />
+                    </div>
+                </div>
+            </div>
+        </div>
+          
+        </div>
+        <div v-else-if="routes.tab === 'latest'" class="flex">
           <DataGrid :items="api.response.latestCommands" />
         </div>
         <div v-else-if="routes.tab === 'errors'" class="flex">
@@ -177,6 +244,7 @@ export const Commands = {
             relativeTimeFromDate,
             relativeTimeFromMs,
         } = useFormatters()
+        const { createFormLayout } = useMetadata()
         let take = 50
         const bottom = ref()
         const loadingMore = ref(false)
@@ -187,6 +255,56 @@ export const Commands = {
         const api = ref(new ApiResult())
         const commandTotals = ref([])
         
+        const commandApi = ref(new ApiResult())
+        const commandJson = computed(() => {
+            try {
+                const result = commandApi.value?.response?.result 
+                const json = JSON.parse(result)
+                return JSON.stringify(json, null, 4)
+            } catch (e) {
+                return null
+            }
+        })
+        function fieldAttrs(id) {
+            let useId = id.replace(/\s+/g,'').toLowerCase()
+            return useId === 'stacktrace'
+                ? { 'class': 'whitespace-pre overflow-x-auto' }
+                : {}
+        }
+        const model = ref({})
+        const commandInfos = server.plugins.commands.commands
+        const navs = ref(Array.from(new Set(commandInfos.map(x => x.tag ?? 'other')))
+            .map(x => ({
+                tag: x,
+                expanded: true,
+                commands: commandInfos.filter(c => c.tag === x || (x === 'other' && !c.tag))
+            })))
+        
+        const filteredNav = computed(() => navs.value.map(x => ({
+            ...x,
+            commands: x.commands.filter(c => c.name.toLowerCase().includes(q.value.toLowerCase()))
+        })).filter(x => x.commands.length > 0))
+        function toggleNav(tag) {
+            const nav = navs.value.find(x => x.tag === tag)
+            if (nav) nav.expanded = !nav.expanded
+        }
+        
+        function getFormLayout(metaType) {
+            return !metaType
+                ? null
+                : metaType.formLayout ?? createFormLayout(metaType)
+        }
+        const metaType = computed(() => commandInfos.find(x => x.name === routes.op)?.request)
+        const formLayout = computed(() => metaType.value 
+            ? getFormLayout(metaType.value) 
+            : null)
+        
+        async function submitForm(e) {
+            commandApi.value = await client.api(new ExecuteCommand({
+                command: routes.op,
+                requestJson: JSON.stringify(model.value)
+            }))
+        }
         function filterCommandTotals(results) {
             let to = results
             if (q.value) {
@@ -207,12 +325,15 @@ export const Commands = {
         }
         
         function update() {
+            commandApi.value = new ApiResult()
             commandTotals.value = filterCommandTotals(api.value?.response?.commandTotals ?? [])
         }
         watch(() => routes.sort, update)
         watch(() => routes.type, update)
         watch(() => routes.q, update)
-        const tabs = { 'Summary':'', 'Errors':'errors', 'Latest':'latest', }
+        watch(() => routes.op, update)
+        watch(() => routes.tab, refresh)
+        const tabs = { 'Summary':'', 'Explore':'explore', 'Latest':'latest', 'Errors':'errors', }
         const elChart = ref()
         
         const selectedRow = computed(() => 
@@ -404,6 +525,8 @@ export const Commands = {
             refresh, headerSelected, rowSelected,
             selectedError, selectedClean, prettyJson, toggleError, rowSelectedError,
             toDate, time, altError,
+            filteredNav, toggleNav,
+            model, metaType, formLayout, commandApi, commandJson, submitForm, fieldAttrs,
         }
     }
 }
