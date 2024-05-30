@@ -19,7 +19,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Fix Northwind.dll")]
 #endif
         public void Can_create_csv_from_Customers()
@@ -31,7 +31,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Fix Northwind.dll")]
 #endif
         public void Can_create_csv_from_Customers_pipe_separator()
@@ -44,7 +44,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Fix Northwind.dll")]
 #endif
         public void Can_create_csv_from_Customers_pipe_delimiter()
@@ -57,7 +57,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Fix Northwind.dll")]
 #endif
         public void Can_create_csv_from_Customers_pipe_row_separator()
@@ -70,7 +70,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Fix Northwind.dll")]
 #endif
         public void Can_create_csv_from_Categories()
@@ -88,7 +88,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Fix Northwind.dll")]
 #endif
         public void Can_create_csv_from_Categories_pipe_separator()
@@ -107,7 +107,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Fix Northwind.dll")]
 #endif
         public void Can_create_csv_from_Categories_pipe_delimiter()
@@ -126,7 +126,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Fix Northwind.dll")]
 #endif
         public void Can_create_csv_from_Categories_long_delimiter()

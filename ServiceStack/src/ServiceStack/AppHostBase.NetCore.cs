@@ -1,5 +1,5 @@
 ﻿#nullable enable
-#if NETCORE
+#if !NETFRAMEWORK
 
 
 using System;

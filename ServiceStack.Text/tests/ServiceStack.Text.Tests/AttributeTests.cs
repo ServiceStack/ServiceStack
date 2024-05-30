@@ -36,7 +36,7 @@ namespace ServiceStack.Text.Tests
         public void Does_get_Multiple_RouteDefault_Attributes()
         {
             // AllAttributes<T>() makes this call to get attrs
-#if NETCORE
+#if !NETFRAMEWORK
             var referenceGeneric =
                 typeof(DefaultWithMultipleAttributes).GetTypeInfo().GetCustomAttributes(typeof(RouteDefaultAttribute), true)
                     .OfType<RouteDefaultAttribute>();
@@ -49,7 +49,7 @@ namespace ServiceStack.Text.Tests
             Assert.That(referenceGeneric.Count(), Is.EqualTo(4));
 
             // AllAttributes() makes this call to get attrs
-#if NETCORE
+#if !NETFRAMEWORK
             var reference =
                 typeof(DefaultWithMultipleAttributes).GetTypeInfo().GetCustomAttributes(typeof(RouteDefaultAttribute), true);
 #else

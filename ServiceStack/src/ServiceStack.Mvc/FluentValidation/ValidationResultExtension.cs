@@ -1,4 +1,4 @@
-#if !NETCORE
+#if NETFRAMEWORK
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
 // 

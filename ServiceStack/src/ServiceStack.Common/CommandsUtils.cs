@@ -4,10 +4,7 @@ using System.Threading;
 using ServiceStack.Commands;
 using ServiceStack.Support;
 
-#if NETFX_CORE
-using Windows.System.Threading;
-#endif
-#if NETCORE
+#if !NETFRAMEWORK
 using System.Threading.Tasks;
 #endif
 
@@ -30,10 +27,8 @@ public class CommandsUtils
             var waitHandle = new AutoResetEvent(false);
             waitHandles.Add(waitHandle);
             var commandResultsHandler = new CommandResultsHandler<T>(results, command, waitHandle);
-#if NETCORE
+#if !NETFRAMEWORK
             Task.Run(() => ExecuteCommandList(commandResultsHandler));
-#elif NETFX_CORE
-            ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandResultsHandler)));
 #else
             ThreadPool.QueueUserWorkItem(ExecuteCommandList, commandResultsHandler);
 #endif
@@ -47,7 +42,7 @@ public class CommandsUtils
         // throws an exception if there are no wait handles
         if (waitHandles != null && waitHandles.Length > 0)
         {
-#if !SL5 && !IOS && !XBOX && !NETCORE
+#if !SL5 && !IOS && !XBOX && NETFRAMEWORK
             if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
             {
                 // WaitAll for multiple handles on an STA thread is not supported.
@@ -89,7 +84,7 @@ public class CommandsUtils
     {
         foreach (ICommandExec command in commands)
         {
-#if NETCORE
+#if !NETFRAMEWORK
             Task.Run(() => ExecuteCommandExec(command));
 #elif NETFX_CORE
             ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandExec(command)));
@@ -112,10 +107,8 @@ public class CommandsUtils
             var waitHandle = new AutoResetEvent(false);
             waitHandles.Add(waitHandle);
             var commandExecsHandler = new CommandExecsHandler(command, waitHandle);
-#if NETCORE
+#if !NETFRAMEWORK
             Task.Run(() => ExecuteCommandList(commandExecsHandler));
-#elif NETFX_CORE
-            ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandExecsHandler)));
 #else
             ThreadPool.QueueUserWorkItem(ExecuteCommandList, commandExecsHandler);
 #endif

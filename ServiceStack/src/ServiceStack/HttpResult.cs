@@ -491,7 +491,7 @@ public enum CacheControl : long
 
 public static class HttpResultExtensions
 {
-#if !NETCORE
+#if NETFRAMEWORK
         public static System.Net.Cookie ToCookie(this HttpCookie httpCookie)
         {
             var to = new System.Net.Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path)

@@ -28,7 +28,7 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Runtime.CompilerServices;
-#if NETFX
+#if NETFRAMEWORK
 using System.Web;
 #endif
 
@@ -874,7 +874,7 @@ public abstract partial class ServiceStackHost
         return session;
     }
 
-#if NETCORE
+#if !NETFRAMEWORK
     /// <summary>
     /// Modify Cookie options
     /// </summary>
@@ -1411,7 +1411,7 @@ public abstract partial class ServiceStackHost
         [System.Runtime.CompilerServices.CallerLineNumber] long line = 0,
         [System.Runtime.CompilerServices.CallerMemberName] string member = "")
     {
-#if NETFX
+#if NETFRAMEWORK
             if (!Log.IsDebugEnabled) return;
             if (HttpContext.Current == null && req is ServiceStack.Host.AspNet.AspNetRequest aspReq)
             {

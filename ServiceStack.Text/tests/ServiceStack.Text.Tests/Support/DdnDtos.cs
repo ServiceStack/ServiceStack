@@ -24,7 +24,7 @@ namespace ServiceStack.Text.Tests.Support
         public ArrayOfPost Posts { get; set; }
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     [DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
@@ -158,7 +158,7 @@ namespace ServiceStack.Text.Tests.Support
         }
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     [CollectionDataContract(Namespace = "http://schemas.ddnglobal.com/types/", ItemName = "String")]
@@ -173,7 +173,7 @@ namespace ServiceStack.Text.Tests.Support
         //public ArrayOfString(params string[] ids) : base(ids) { }
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     [DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
@@ -220,7 +220,7 @@ namespace ServiceStack.Text.Tests.Support
         public DateTime ActivationDate { get; set; }
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     [CollectionDataContract(Namespace = "http://schemas.ddnglobal.com/types/", ItemName = "Post")]
@@ -232,7 +232,7 @@ namespace ServiceStack.Text.Tests.Support
         public static ArrayOfPost New(params Post[] ids) { return new ArrayOfPost(ids); }
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     [DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
@@ -479,7 +479,7 @@ namespace ServiceStack.Text.Tests.Support
 
     [DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
     public class GetContentStatsResponse
-#if !NETCORE
+#if NETFRAMEWORK
         : IExtensibleDataObject
 #endif
     {
@@ -516,7 +516,7 @@ namespace ServiceStack.Text.Tests.Support
             get;
             set;
         }
-#if !NETCORE
+#if NETFRAMEWORK
         public ExtensionDataObject ExtensionData
         {
             get;
@@ -687,7 +687,7 @@ namespace ServiceStack.Text.Tests.Support
     }
 
     [DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     public class ImageAsset

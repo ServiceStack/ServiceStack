@@ -1,4 +1,4 @@
-﻿#if NETFX || NET472
+﻿#if NETFRAMEWORK
 
 using System;
 using System.Collections.Specialized;

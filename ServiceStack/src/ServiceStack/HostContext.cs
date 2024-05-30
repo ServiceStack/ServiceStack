@@ -40,7 +40,7 @@ public static class HostContext
                     
         return ServiceStackHost.Instance;
     }
-#if !NETCORE
+#if NETFRAMEWORK
         public static bool IsAspNetHost => ServiceStackHost.Instance is AppHostBase;
         public static bool IsHttpListenerHost => ServiceStackHost.Instance is Host.HttpListener.HttpListenerBase;
         public static bool IsNetCore => false;
@@ -269,7 +269,7 @@ public static class HostContext
         await AssertAppHost().HandleResponseException(httpReq, httpRes, operationName, ex).ConfigAwait();
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>

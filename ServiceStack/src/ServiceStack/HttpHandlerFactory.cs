@@ -31,7 +31,7 @@ public class HttpHandlerFactory : IHttpHandlerFactory
         try
         {
             var isIntegratedPipeline = false;
-#if !NETCORE
+#if NETFRAMEWORK
                 //MONO doesn't implement this property
                 var pi = typeof(HttpRuntime).GetProperty("UsingIntegratedPipeline");
                 if (pi != null)
@@ -149,7 +149,7 @@ public class HttpHandlerFactory : IHttpHandlerFactory
         return handler;
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         // Entry point for ASP.NET
         public IHttpHandler GetHandler(HttpContext ctx, string requestType, string url, string pathTranslated) => 
             InitHandler(GetHandlerInternal(ctx, requestType, url, pathTranslated, out var httpReq), httpReq);

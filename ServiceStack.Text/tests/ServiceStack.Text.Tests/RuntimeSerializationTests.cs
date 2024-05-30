@@ -40,7 +40,7 @@ namespace ServiceStack.Text.Tests
 
     public class RequestDto : IReturn<RequestDto> {}
 
-#if NETFX
+#if NETFRAMEWORK
     [Serializable]
     public class SerialiazableType { }
 #endif

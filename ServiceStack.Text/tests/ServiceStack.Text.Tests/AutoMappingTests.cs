@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
-#if !NETCORE
+#if NETFRAMEWORK
 using System.Web.Script.Serialization;
 #endif
 using NUnit.Framework;
@@ -663,7 +663,7 @@ public class AutoMappingTests
         Assert.That(dto.Ignored, Is.EqualTo(10));
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
     public class IgnoredModel
     {
         public int Id { get; set; }

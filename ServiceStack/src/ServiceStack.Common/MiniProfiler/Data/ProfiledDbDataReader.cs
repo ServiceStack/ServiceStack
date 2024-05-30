@@ -137,7 +137,7 @@ namespace ServiceStack.MiniProfiler.Data
             return reader.GetOrdinal(name);
         }
 
-#if !NETCORE
+#if NETFRAMEWORK
         public override DataTable GetSchemaTable()
         {
             return reader.GetSchemaTable();

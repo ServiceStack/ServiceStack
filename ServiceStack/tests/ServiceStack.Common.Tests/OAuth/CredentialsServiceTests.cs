@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 using System.Reflection;
 using System.Threading.Tasks;
 using Funq;

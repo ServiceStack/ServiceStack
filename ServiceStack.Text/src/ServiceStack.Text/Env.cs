@@ -17,7 +17,7 @@ public static class Env
         if (PclExport.Instance == null)
             throw new ArgumentException("PclExport.Instance needs to be initialized");
 
-#if NETCORE
+#if !NETFRAMEWORK
             IsNetStandard = true;
             try
             {
@@ -34,7 +34,7 @@ public static class Env
             IsUnix = IsOSX || IsLinux;
             HasMultiplePlatformTargets = true;
             IsUWP = IsRunningAsUwp();
-#elif NETFX
+#elif NETFRAMEWORK
         IsNetFramework = true;
         switch (Environment.OSVersion.Platform)
         {
@@ -64,7 +64,7 @@ public static class Env
         SupportsDynamic = true;
 #endif
 
-#if NETCORE
+#if !NETFRAMEWORK
             IsNetStandard = false;
             IsNetCore = true;
             SupportsDynamic = true;
@@ -234,7 +234,7 @@ public static class Env
         set => referenceAssemblyPath = value;
     }
 
-#if NETCORE
+#if !NETFRAMEWORK
         private static bool IsRunningAsUwp()
         {
             try
@@ -335,7 +335,7 @@ public static class Env
     /// Only .ConfigAwait(false) in .NET Core as loses HttpContext.Current in NETFX/ASP.NET
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NETCORE
+#if !NETFRAMEWORK
         public static ConfiguredTaskAwaitable ConfigAwaitNetCore(this Task task) => task.ConfigureAwait(false);
 #else
     public static Task ConfigAwaitNetCore(this Task task) => task;
@@ -345,13 +345,13 @@ public static class Env
     /// Only .ConfigAwait(false) in .NET Core as loses HttpContext.Current in NETFX/ASP.NET
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NETCORE
+#if !NETFRAMEWORK
         public static ConfiguredTaskAwaitable<T> ConfigAwaitNetCore<T>(this Task<T> task) => task.ConfigureAwait(false);
 #else
     public static Task<T> ConfigAwaitNetCore<T>(this Task<T> task) => task;
 #endif
 
-#if NETCORE
+#if !NETFRAMEWORK
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ConfiguredValueTaskAwaitable ConfigAwait(this ValueTask task) => 
             task.ConfigureAwait(ContinueOnCapturedContext);

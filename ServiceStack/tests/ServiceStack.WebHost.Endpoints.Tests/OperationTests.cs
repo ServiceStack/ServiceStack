@@ -32,7 +32,7 @@ public class OperationTests : IService
     {
         appHost = new OperationTestsAppHost();
         appHost.Init();
-#if NETCORE
+#if !NETFRAMEWORK
         appHost.Start(Config.ListeningOn);
 #endif
 
@@ -112,7 +112,7 @@ public class CultureSwitch : IDisposable
 
     public CultureSwitch(string culture)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         _currentCulture = CultureInfo.CurrentCulture;
         CultureInfo.CurrentCulture = new CultureInfo(culture);
 #else
@@ -125,7 +125,7 @@ public class CultureSwitch : IDisposable
 
     public void Dispose()
     {
-#if NETCORE
+#if !NETFRAMEWORK
         CultureInfo.CurrentCulture = _currentCulture;
 #else
             Thread.CurrentThread.CurrentCulture = _currentCulture;

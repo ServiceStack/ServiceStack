@@ -1,7 +1,7 @@
 ﻿
 
 using System.Threading.Tasks;
-#if NETCORE
+#if !NETFRAMEWORK
 using System;
 using System.Collections.Generic;
 using System.IO;

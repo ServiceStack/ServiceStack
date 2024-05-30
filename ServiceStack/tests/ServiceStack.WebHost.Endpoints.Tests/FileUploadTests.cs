@@ -89,7 +89,7 @@ public class FileUploadTests
         Assert.That(response.ContentType.StartsWith(contentType));
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void Can_POST_upload_file()
         {

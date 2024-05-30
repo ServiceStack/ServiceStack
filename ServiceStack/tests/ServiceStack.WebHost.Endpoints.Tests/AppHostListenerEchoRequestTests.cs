@@ -4,7 +4,7 @@ using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Host.Handlers;
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.Host.HttpListener;
 #endif
 using ServiceStack.Text;
@@ -18,7 +18,7 @@ public class AppHostListenerEchoRequestTests
     {
         public override void Configure(Container container) { }
 
-#if !NETCORE
+#if NETFRAMEWORK
         public override ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
         {
             var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None)

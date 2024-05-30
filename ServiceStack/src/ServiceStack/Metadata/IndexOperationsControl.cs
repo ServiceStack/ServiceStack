@@ -138,7 +138,7 @@ public class IndexOperationsControl
                              : "");
             
 
-#if !NETCORE
+#if NETFRAMEWORK
         var xsdsPart = new ListTemplate
         {
             Title = "XSDS:",

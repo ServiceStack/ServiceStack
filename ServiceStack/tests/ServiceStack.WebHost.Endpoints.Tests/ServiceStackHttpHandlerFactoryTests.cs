@@ -22,7 +22,7 @@ public class ServiceStackHttpHandlerFactoryTests
             ConfigureAppHost = host =>
             {
                 host.Plugins.Add(new PredefinedRoutesFeature());
-#if !NETCORE
+#if NETFRAMEWORK
                 host.Plugins.Add(new SoapFormat());
 #endif
                 host.CatchAllHandlers.Add(new PredefinedRoutesFeature().GetHandler);
@@ -40,7 +40,7 @@ public class ServiceStackHttpHandlerFactoryTests
     readonly Dictionary<string, Type> pathInfoMap = new()
     {
         {"Metadata", typeof(IndexMetadataHandler)},
-#if !NETCORE
+#if NETFRAMEWORK
         {"Soap11", typeof(Soap11MessageReplyHttpHandler)},
         {"Soap12", typeof(Soap12MessageReplyHttpHandler)},
 #endif
@@ -57,7 +57,7 @@ public class ServiceStackHttpHandlerFactoryTests
         {"Jsv/OneWay", typeof(JsvOneWayHandler)},
         {"Jsv/Metadata", typeof(JsvMetadataHandler)},
 
-#if !NETCORE
+#if NETFRAMEWORK
 		{"Soap11/Wsdl", typeof(Soap11WsdlMetadataHandler)},
 		{"Soap11/Metadata", typeof(Soap11MetadataHandler)},
 

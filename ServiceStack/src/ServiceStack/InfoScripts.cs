@@ -53,7 +53,7 @@ public class InfoScripts : ScriptMethods
     public string[] envLogicalDrives() => Environment.GetLogicalDrives();
     public char envPathSeparator() => Path.PathSeparator;
 
-#if NETCORE
+#if !NETFRAMEWORK
     public string envFrameworkDescription() => System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
     public string envOSDescription() => System.Runtime.InteropServices.RuntimeInformation.OSDescription;
     public System.Runtime.InteropServices.Architecture envOSArchitecture() => System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
