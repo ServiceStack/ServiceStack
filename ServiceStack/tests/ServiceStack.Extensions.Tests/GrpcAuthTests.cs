@@ -75,7 +75,7 @@ public class RequiresAuth : IReturn<RequiresAuth>, IHasBearerToken
 [Authenticate]
 public class RequiresAuthService : Service
 {
-    public static ApiKey LastApiKey;
+    public static IApiKey LastApiKey;
 
     public object Any(RequiresAuth request)
     {
@@ -97,7 +97,7 @@ public class GrpcAuthTests
 
     public class AppHost() : AppSelfHostBase(nameof(GrpcTests), typeof(MyServices).Assembly)
     {
-        public static ApiKey LastApiKey;
+        public static IApiKey LastApiKey;
 
         public override void Configure(Container container)
         {
@@ -364,14 +364,14 @@ public class GrpcAuthTests
         var response = await client.SendAsync(request);
         Assert.That(response.Name, Is.EqualTo(request.Name));
 
-        Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
-        Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+        Assert.That(AppHost.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
+        Assert.That(RequiresAuthService.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
 
         client.BearerToken = testKey.Id;
         var testResponse = await client.SendAsync(new Secured { Name = "test" });
         Assert.That(testResponse.Result, Is.EqualTo("Hello, test"));
 
-        Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(testKey.Id));
+        Assert.That(AppHost.LastApiKey.Key, Is.EqualTo(testKey.Id));
     }
 
     [Test]
@@ -386,7 +386,7 @@ public class GrpcAuthTests
         var response = await client.SendAsync(request);
         Assert.That(response.Name, Is.EqualTo(request.Name));
 
-        Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
-        Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+        Assert.That(AppHost.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
+        Assert.That(RequiresAuthService.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
     }
 }

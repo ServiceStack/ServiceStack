@@ -71,7 +71,7 @@ public partial class ServiceStackScripts : ScriptMethods, IConfigureScriptContex
     {
         var requestType = appHost.Metadata.GetOperationType(requestName);
         if (requestType == null)
-            throw new ArgumentException("Request DTO not found: " + requestName);
+            throw new ArgumentException("Request DTO not found", nameof(requestName));
             
         return requestType;
     }
@@ -144,7 +144,7 @@ public partial class ServiceStackScripts : ScriptMethods, IConfigureScriptContex
 
         var requestType = appHost.Metadata.GetOperationType(requestName);
         if (requestType == null)
-            throw new ArgumentException("Request DTO not found: " + requestName);
+            throw new ArgumentException("Request DTO not found", nameof(requestName));
 
         var requestDto = dto.GetType() == requestType
             ? dto
@@ -194,7 +194,7 @@ public partial class ServiceStackScripts : ScriptMethods, IConfigureScriptContex
 
             var requestType = appHost.Metadata.GetOperationType(requestName);
             if (requestType == null)
-                throw new ArgumentException("Request DTO not found: " + requestName);
+                throw new ArgumentException("Request DTO not found", nameof(requestName));
 
             if (requestType.HasInterface(typeof(IQueryDb)))
             {
@@ -217,7 +217,7 @@ public partial class ServiceStackScripts : ScriptMethods, IConfigureScriptContex
                     : dto.ConvertTo(requestType);
                 
             if (!(requestDto is IQueryData aqDto))
-                throw new ArgumentException("Request DTO is not an AutoQuery Data DTO: " + requestName);
+                throw new ArgumentException("Request DTO is not an AutoQuery Data DTO", nameof(requestName));
                                 
             var reqParams = objDictionary?.ToStringDictionary() ?? TypeConstants.EmptyStringDictionary;
                 

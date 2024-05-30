@@ -96,7 +96,7 @@ namespace ServiceStack.OrmLite.Tests
         public DialectFeatures(Dialect dialect)
         {
             // Tag dialects with supported features and use to toggle in tests
-            RowOffset = (Dialect.SqlServer2012 | Dialect.SqlServer2014 | Dialect.SqlServer2016 | Dialect.SqlServer2017).HasFlag(dialect);
+            RowOffset = (Dialect.SqlServer2012 | Dialect.SqlServer2014 | Dialect.SqlServer2016 | Dialect.SqlServer2017 | Dialect.SqlServer2019 | Dialect.SqlServer2022).HasFlag(dialect);
             SchemaSupport = !(Dialect.Sqlite | Dialect.AnyPostgreSql).HasFlag(dialect);
         }
     }
@@ -104,7 +104,7 @@ namespace ServiceStack.OrmLite.Tests
     [SetUpFixture]
     public class OrmLiteFixtureSetup
     {
-        public static TestLogFactory LogFactoryInstance => new TestLogFactory();
+        public static TestLogFactory LogFactoryInstance => new();
         
         [OneTimeSetUp]
         public void RunBeforeAnyTests()
@@ -188,6 +188,8 @@ namespace ServiceStack.OrmLite.Tests
             AddTestDataVersions(Dialect.SqlServer2014, SqlServerDb.V2014Versions);
             AddTestDataVersions(Dialect.SqlServer2016, SqlServerDb.V2016Versions);
             AddTestDataVersions(Dialect.SqlServer2017, SqlServerDb.V2017Versions);
+            AddTestDataVersions(Dialect.SqlServer2019, SqlServerDb.V2019Versions);
+            AddTestDataVersions(Dialect.SqlServer2022, SqlServerDb.V2022Versions);
             AddTestDataVersions(Dialect.PostgreSql9, PostgreSqlDb.V9Versions);
             AddTestDataVersions(Dialect.PostgreSql10, PostgreSqlDb.V10Versions);
             AddTestDataVersions(Dialect.PostgreSql11, PostgreSqlDb.V11Versions);

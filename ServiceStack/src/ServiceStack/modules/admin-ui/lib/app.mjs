@@ -39,6 +39,15 @@ export let AppData = {
 export const app = new App()
 const server = globalThis.Server
 /**
+ * @param {RequestInit} req
+ */
+function clientRequestFilter(req) {
+    if (store.apikey) {
+        const httpHeader = store.plugins.apiKey?.httpHeader ?? 'x-api-key' 
+        req.headers.set(httpHeader, store.apikey)
+    }
+}
+/**
  * Create a new `JsonServiceStack` client instance configured with the authenticated user
  *
  * @remarks
@@ -51,6 +60,7 @@ export function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
         c.bearerToken = AppData.bearerToken
         c.enableAutoRefreshToken = false
+        c.requestFilter = clientRequestFilter
         if (AppData.authsecret) c.headers.set('authsecret', AppData.authsecret)
         if (AppData.userName) c.userName = AppData.userName
         if (AppData.password) c.password = AppData.password
@@ -87,7 +97,7 @@ export let routes = usePageRoutes(app, {
     page:'admin',
     queryKeys: ('tab,provider,db,schema,table,q,page,sort,new,edit,op,skip,' +
         'show,orderBy,operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,' +
-        'source,threadId,eventType,traceId,userId,tag,body').split(','),
+        'source,threadId,eventType,traceId,userId,tag,body,type,dialog').split(','),
     handlers: {
         nav(state) { console.debug('nav', state) } /*debug*/
     },
@@ -224,6 +234,7 @@ let store = {
     },
     get adminUsers() { return server.plugins.adminUsers },
     get adminIdentityUsers() { return server.plugins.adminIdentityUsers },
+    get plugins() { return server.plugins },
     /** @param {string|any} id
      *  @return {LinkInfo} */
     adminLink(id) { return server.ui.adminLinks.find(x => x.id === id) },

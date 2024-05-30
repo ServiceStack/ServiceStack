@@ -10,6 +10,11 @@ public interface IAsyncCommand<in T> : IAsyncCommand
 }
 public interface IAsyncCommand { }
 
+public interface IHasResult<T>
+{
+    T Result { get; set; }
+}
+
 public interface ICommandExecutor
 {
     TCommand Command<TCommand>() where TCommand : IAsyncCommand;
@@ -17,15 +22,20 @@ public interface ICommandExecutor
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class CommandAttribute(Type commandType, Lifetime lifetime = Lifetime.Transient) : AttributeBase
+public class CommandAttribute(Type commandType) : AttributeBase
 {
     public Type CommandType { get; } = commandType;
-    public Lifetime Lifetime { get; } = lifetime;
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class CommandAttribute<T>(Lifetime lifetime = Lifetime.Transient) 
-    : CommandAttribute(typeof(T), lifetime) where T : IAsyncCommand;
+public class CommandAttribute<T>() : CommandAttribute(typeof(T)) where T : IAsyncCommand;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public class LifetimeAttribute(Lifetime lifetime = Lifetime.Transient)
+    : AttributeBase
+{
+    public Lifetime Lifetime => lifetime;
+}
 
 public enum Lifetime
 {
@@ -47,3 +57,77 @@ public enum Lifetime
     /// </summary>
     Transient,
 }
+
+public enum RetryBehavior
+{
+    /// <summary>
+    /// Use the default retry behavior.
+    /// </summary>
+    Default,
+    
+    /// <summary>
+    /// Always retry the operation after the same delay.
+    /// </summary>
+    Standard,
+    
+    /// <summary>
+    /// Specifies that the operation should be retried with a linear backoff delay strategy.
+    /// </summary>
+    LinearBackoff,
+
+    /// <summary>
+    /// Specifies that the operation should be retried with an exponential backoff strategy.
+    /// </summary>
+    ExponentialBackoff,
+
+    /// <summary>
+    /// Specifies that the operation should be retried with a full jittered exponential backoff strategy.
+    /// </summary>
+    FullJitterBackoff,
+}
+
+/// <summary>
+/// Specifies that the operation should be retried if it fails.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class RetryAttribute
+    : AttributeBase
+{
+    /// <summary>
+    /// How many times to retry the operation.
+    /// </summary>
+    public int Times { get; set; } = -1;
+    /// <summary>
+    /// The retry behavior to use.
+    /// </summary>
+    public RetryBehavior Behavior { get; set; } = RetryBehavior.Default;
+    /// <summary>
+    /// The initial delay in milliseconds.
+    /// </summary>
+    public int DelayMs { get; set; } = -1;
+    /// <summary>
+    /// The maximum delay in milliseconds.
+    /// </summary>
+    public int MaxDelayMs { get; set; } = -1;
+    /// <summary>
+    /// Whether to delay the first retry.
+    /// </summary>
+    public bool DelayFirst { get; set; } = false;
+}
+
+/// <summary>
+/// The Retry policy to use for the operation 
+/// </summary>
+/// <param name="Times">How many times to retry the operation</param>
+/// <param name="Behavior">The retry behavior to use</param>
+/// <param name="DelayMs">The initial delay in milliseconds</param>
+/// <param name="MaxDelayMs">The maximum delay in milliseconds</param>
+/// <param name="DelayFirst">Whether to delay the first retry</param>
+public record struct RetryPolicy
+(
+    int Times,
+    RetryBehavior Behavior,
+    int DelayMs,
+    int MaxDelayMs,
+    bool DelayFirst
+);

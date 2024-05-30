@@ -18,7 +18,7 @@ namespace ServiceStack.Server.Tests.Auth
     [Authenticate]
     public class RequiresAuthService : Service
     {
-        public static ApiKey LastApiKey;
+        public static IApiKey LastApiKey;
 
         public object Any(RequiresAuth request)
         {
@@ -35,7 +35,7 @@ namespace ServiceStack.Server.Tests.Auth
 
     public class RequiresAuthActionService : Service
     {
-        public static ApiKey LastApiKey;
+        public static IApiKey LastApiKey;
 
         [Authenticate]
         public object Any(RequiresAuthAction request)
@@ -50,7 +50,7 @@ namespace ServiceStack.Server.Tests.Auth
     {
         class AppHost : AppSelfHostBase
         {
-            public static ApiKey LastApiKey;
+            public static IApiKey LastApiKey;
 
             public AppHost() : base(nameof(ApiKeyAuthTests), typeof(AppHost).Assembly) { }
 
@@ -64,9 +64,9 @@ namespace ServiceStack.Server.Tests.Auth
                 container.Resolve<IAuthRepository>().InitSchema();
 
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                    new IAuthProvider[] {
-                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
-                    })
+                [
+                    new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false }
+                ])
                 {
                     IncludeRegistrationService = true,
                 });
@@ -130,8 +130,8 @@ namespace ServiceStack.Server.Tests.Auth
             var response = client.Send(request);
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
-            Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
-            Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+            Assert.That(AppHost.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
+            Assert.That(RequiresAuthService.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
         }
 
         [Test]
@@ -148,7 +148,7 @@ namespace ServiceStack.Server.Tests.Auth
             var response = client.Send(request);
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
-            Assert.That(RequiresAuthActionService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+            Assert.That(RequiresAuthActionService.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
         }
 
         [Test]
@@ -163,8 +163,8 @@ namespace ServiceStack.Server.Tests.Auth
             var response = client.Send(request);
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
-            Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
-            Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+            Assert.That(AppHost.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
+            Assert.That(RequiresAuthService.LastApiKey!.Key, Is.EqualTo(liveKey.Id));
         }
 
         [Test]

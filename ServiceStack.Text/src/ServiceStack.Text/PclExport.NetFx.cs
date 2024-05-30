@@ -567,30 +567,20 @@ namespace ServiceStack.Text.FastMember
         /// </summary>
         public static ObjectAccessor Create(object target)
         {
-            if (target == null) throw new ArgumentNullException("target");
+            if (target == null) throw new ArgumentNullException(nameof(target));
             //IDynamicMetaObjectProvider dlr = target as IDynamicMetaObjectProvider;
             //if (dlr != null) return new DynamicWrapper(dlr); // use the DLR
             return new TypeAccessorWrapper(target, TypeAccessor.Create(target.GetType()));
         }
 
-        sealed class TypeAccessorWrapper : ObjectAccessor
+        sealed class TypeAccessorWrapper(object target, TypeAccessor accessor) : ObjectAccessor
         {
-            private readonly object target;
-            private readonly TypeAccessor accessor;
-            public TypeAccessorWrapper(object target, TypeAccessor accessor)
-            {
-                this.target = target;
-                this.accessor = accessor;
-            }
             public override object this[string name]
             {
-                get { return accessor[target, name.ToUpperInvariant()]; }
-                set { accessor[target, name.ToUpperInvariant()] = value; }
+                get => accessor[target, name.ToUpperInvariant()];
+                set => accessor[target, name.ToUpperInvariant()] = value;
             }
-            public override object Target
-            {
-                get { return target; }
-            }
+            public override object Target => target;
         }
 
         //sealed class DynamicWrapper : ObjectAccessor

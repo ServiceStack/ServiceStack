@@ -40,7 +40,7 @@ public class CancellableRequestService : Service
 
         using var cancellableReq = base.Request.GetCancellableRequest(request.Tag);
         if (cancellableReq == null)
-            throw HttpError.NotFound($"Request with Tag '{request.Tag}' does not exist");
+            throw HttpError.NotFound($"Request with Tag does not exist");
 
         cancellableReq.TokenSource.Cancel();
 

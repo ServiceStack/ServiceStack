@@ -57,7 +57,7 @@ public class DigestAuthFunctions
         if (double.TryParse(TimeStamp, NumberStyles.Float, CultureInfo.InvariantCulture, out nonceTimeStampDouble))
             return DateTime.MinValue.AddMilliseconds(nonceTimeStampDouble);
 
-        throw new ArgumentException($"The given nonce time stamp {TimeStamp} was not valid");
+        throw new ArgumentException("The given nonce time stamp was not valid");
     }
 
     public string ConvertToHexString(IEnumerable<byte> hash)

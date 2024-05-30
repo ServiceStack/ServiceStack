@@ -120,6 +120,13 @@ public class ValidateHasScopeAttribute(string scope) : ValidateRequestAttribute(
     public string Scope => scope;
 }
 
+/* ApiKeysFeature */
+public class ValidateAuthSecretAttribute() : ValidateRequestAttribute("AuthSecret()");
+public class ValidateApiKeyAttribute : ValidateRequestAttribute
+{
+    public ValidateApiKeyAttribute() : base("ApiKey"){}
+    public ValidateApiKeyAttribute(string scope) : base("ApiKey(′" + scope + "′)"){}
+}
     
 /// <summary>
 /// Validate property against registered Validator expression
@@ -239,28 +246,28 @@ public class ValidateLessThanOrEqualAttribute(int value) : ValidateAttribute($"L
 public class ValidateGreaterThanAttribute(int value) : ValidateAttribute($"GreaterThan({value})");
 public class ValidateGreaterThanOrEqualAttribute(int value) : ValidateAttribute($"GreaterThanOrEqual({value})");
 public class ValidateScalePrecisionAttribute(int scale, int precision) : ValidateAttribute($"ScalePrecision({scale},{precision})");
-public class ValidateRegularExpressionAttribute(string pattern) : ValidateAttribute($"RegularExpression(`{pattern}`)");
+public class ValidateRegularExpressionAttribute(string pattern) : ValidateAttribute($"RegularExpression(′{pattern}′)");
 public class ValidateEqualAttribute : ValidateAttribute
 {
-    public ValidateEqualAttribute(string value) : base($"Equal(`{value}`)") { }
+    public ValidateEqualAttribute(string value) : base($"Equal(′{value}′)") { }
     public ValidateEqualAttribute(int value) : base($"Equal({value})") { }
     public ValidateEqualAttribute(bool value) : base($"Equal({value.ToString().ToLower()})") { }
 }
 public class ValidateNotEqualAttribute : ValidateAttribute
 {
-    public ValidateNotEqualAttribute(string value) : base($"NotEqual(`{value}`)") { }
+    public ValidateNotEqualAttribute(string value) : base($"NotEqual(′{value}′)") { }
     public ValidateNotEqualAttribute(int value) : base($"NotEqual({value})") { }
     public ValidateNotEqualAttribute(bool value) : base($"NotEqual({value.ToString().ToLower()})") { }
 }
 public class ValidateInclusiveBetweenAttribute : ValidateAttribute
 {
-    public ValidateInclusiveBetweenAttribute(string from, string to) : base($"InclusiveBetween(`{from}`,`{to}`)") { }
-    public ValidateInclusiveBetweenAttribute(char from, char to) : base($"InclusiveBetween(`{from}`,`{to}`)") { }
+    public ValidateInclusiveBetweenAttribute(string from, string to) : base($"InclusiveBetween(′{from}′,′{to}′)") { }
+    public ValidateInclusiveBetweenAttribute(char from, char to) : base($"InclusiveBetween(′{from}′,′{to}′)") { }
     public ValidateInclusiveBetweenAttribute(int from, int to) : base($"InclusiveBetween({from},{to})") { }
 }
 public class ValidateExclusiveBetweenAttribute : ValidateAttribute
 {
-    public ValidateExclusiveBetweenAttribute(string from, string to) : base($"ExclusiveBetween(`{from}`,`{to}`)") { }
-    public ValidateExclusiveBetweenAttribute(char from, char to) : base($"ExclusiveBetween(`{from}`,`{to}`)") { }
+    public ValidateExclusiveBetweenAttribute(string from, string to) : base($"ExclusiveBetween(′{from}′,′{to}′)") { }
+    public ValidateExclusiveBetweenAttribute(char from, char to) : base($"ExclusiveBetween(′{from}′,′{to}′)") { }
     public ValidateExclusiveBetweenAttribute(int from, int to) : base($"ExclusiveBetween({from},{to})") { }
 }

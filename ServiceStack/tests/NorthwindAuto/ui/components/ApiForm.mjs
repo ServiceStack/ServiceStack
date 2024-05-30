@@ -1,4 +1,4 @@
-import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from "vue"
+import { computed, inject, provide, nextTick, onMounted, onUnmounted, ref, watch } from "vue"
 import { prettyJson } from "core"
 import { ApiResult, HttpMethods, parseCookie, map, humanify, humanize } from "@servicestack/client"
 import { useMetadata, useClient, useUtils, css } from "@servicestack/vue"
@@ -98,7 +98,11 @@ export const ApiForm = {
         </nav>
         <div class="w-body md:w-body fixed top-sub-nav h-sub-nav overflow-auto md:pb-scroll">
           <Alert v-if="store.invalidAccess()" class="pt-4 px-4" v-html="store.invalidAccess()" />
-          <AutoForm v-if="showAutoForm && routes.form===''" :type="routes.op" v-model="state.model" class="sm:m-4 max-w-4xl"
+          <Alert v-else-if="store.op.requiresApiKey && !store.apikey" class="pt-4 px-4">
+            This API Requires an <a v-href="{ dialog:'apikey' }" target="_blank" class="underline">API Key</a>
+          </Alert>
+          <AutoForm v-if="showAutoForm && routes.form===''" :type="routes.op" v-model="state.model" 
+                    class="sm:m-4 max-w-4xl"
                     @success="state.apiResult.response=$event" @error="state.apiResult.error=$event" />
           <div v-if="routes.form==='json'" class="sm:p-4">
         
@@ -288,6 +292,7 @@ export const ApiForm = {
 
         function update() {
             state.value = OP_STATE[routes.op] || (OP_STATE[routes.op] = createState(store.op))
+            client.error = null
             // Force reloading of AutoForm
             showAutoForm.value = false
             nextTick(() => showAutoForm.value = true)
@@ -301,7 +306,7 @@ export const ApiForm = {
         onUnmounted(() => app.unsubscribe(sub))
 
         return {
-            store, routes, server, login,
+            store, routes, server, client, login,
             tabs,
             state,
             apiLoading,

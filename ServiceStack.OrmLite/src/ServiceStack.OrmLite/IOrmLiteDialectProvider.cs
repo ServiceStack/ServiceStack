@@ -254,6 +254,7 @@ public interface IOrmLiteDialectProvider
     string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn);
     string ToRenameColumnStatement(string schema, string table, string oldColumn, string newColumn);
     string ToDropColumnStatement(string schema, string table, string column);
+    string ToDropConstraintStatement(string schema, string table, string constraint);
         
     string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
         Expression<Func<TForeign, object>> foreignField,

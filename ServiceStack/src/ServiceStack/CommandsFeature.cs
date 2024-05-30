@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -21,19 +22,29 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
+public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreInitPlugin
 {
-    public string Id => "commands";
+    public string Id => Plugins.AdminCommands;
+    public string AdminRole { get; set; } = RoleNames.Admin;
 
     public const int DefaultCapacity = 250;
     public int ResultsCapacity { get; set; } = DefaultCapacity;
     public int FailuresCapacity { get; set; } = DefaultCapacity;
     public int TimingsCapacity { get; set; } = 1000;
+    public RetryPolicy DefaultRetryPolicy { get; set; } = new(
+        Times:3, Behavior:RetryBehavior.FullJitterBackoff, DelayMs:100, MaxDelayMs:60_000, DelayFirst:false);
+
+    public List<Func<IEnumerable<Type>>> TypeResolvers { get; set; } = [
+        ScanServiceAssemblies
+    ];
     
     /// <summary>
     /// Ignore commands or Request DTOs from being logged
     /// </summary>
-    public List<string> Ignore { get; set; } = [nameof(ViewCommands)];
+    public List<string> Ignore { get; set; } = [
+        nameof(ViewCommands),
+        nameof(ExecuteCommand),
+    ];
     
     public Func<CommandResult,bool>? ShouldIgnore { get; set; }
 
@@ -42,9 +53,11 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
     /// </summary>
     public string AccessRole { get; set; } = RoleNames.Admin;
 
-    public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new() {
-        [typeof(ViewCommandsService)] = ["/" + "commands".Localize()],
-    };
+    public List<Type> RegisterServices { get; set; } = [
+        typeof(CommandsService),
+    ];
+
+    public List<CommandInfo> CommandInfos { get; set; } = [];
 
     public List<(Type, ServiceLifetime)> RegisterTypes { get; set; } =
     [
@@ -54,26 +67,53 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
         (typeof(IMessageProducer), ServiceLifetime.Singleton),
     ];
 
+    static ServiceLifetime ToServiceLifetime(Lifetime lifetime) => lifetime switch {
+        Lifetime.Scoped => ServiceLifetime.Scoped,
+        Lifetime.Singleton => ServiceLifetime.Singleton,
+        _ => ServiceLifetime.Transient
+    };
+    
+    public Type GetRequestType(Type commandType)
+    {
+        var executeMethod = commandType.GetMethods()
+            .FirstOrDefault(x => x.Name == "ExecuteAsync" && x.GetParameters().Length == 1);
+        if (executeMethod == null)
+            throw new NotSupportedException("ExecuteAsync method not found on " + commandType.Name);
+        return executeMethod.GetParameters()[0].ParameterType;
+    }
+
     public void Configure(IServiceCollection services)
     {
         services.AddTransient<ICommandExecutor>(c => new CommandExecutor(this, c));
 
-        ServiceLifetime ToServiceLifetime(Lifetime lifetime) => lifetime switch {
-            Lifetime.Scoped => ServiceLifetime.Scoped,
-            Lifetime.Singleton => ServiceLifetime.Singleton,
-            _ => ServiceLifetime.Transient
-        };
-        
-        foreach (var requestType in ServiceStackHost.InitOptions.ResolveAssemblyRequestTypes())
+        foreach (var typeResolver in TypeResolvers)
         {
-            var requestProps = TypeProperties.Get(requestType).PublicPropertyInfos;
-            foreach (var prop in requestProps)
+            var commandTypes = typeResolver();
+            foreach (var commandType in commandTypes)
             {
-                var commandAttr = prop.GetCustomAttribute<CommandAttribute>();
-                if (commandAttr == null)
+                var asyncCommand = commandType.IsOrHasGenericInterfaceTypeOf(typeof(IAsyncCommand<>));
+                if (!asyncCommand)
                     continue;
 
-                services.Add(commandAttr.CommandType, commandAttr.CommandType, ToServiceLifetime(commandAttr.Lifetime));
+                if (CommandInfos.All(x => x.Name != commandType.Name))
+                {
+                    var requestType = GetRequestType(commandType);
+                    var info = new CommandInfo
+                    {
+                        Type = commandType,
+                        Name = commandType.Name,
+                        Tag = commandType.GetCustomAttribute<TagAttribute>()?.Name,
+                        Request = requestType.ToMetadataType(),
+                    };
+                    CommandInfos.Add(info);
+                }
+                
+                if (services.Exists(commandType))
+                    continue;
+                
+                var lifetimeAttr = commandType.FirstAttribute<LifetimeAttribute>();
+                var lifetime = ToServiceLifetime(lifetimeAttr?.Lifetime ?? Lifetime.Transient);
+                services.Add(commandType, commandType, lifetime);
             }
         }
 
@@ -97,17 +137,40 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
             }
         }
 
-        services.RegisterServices(ServiceRoutes);
+        foreach (var serviceType in RegisterServices)
+        {
+            services.RegisterService(serviceType);
+        }
     }
 
-    private ILogger<CommandsFeature>? log;
+    public static IEnumerable<Type> ScanServiceAssemblies()
+    {
+        var assemblies = ServiceStackHost.InitOptions.ResolveAllServiceAssemblies();
+        foreach (var asm in assemblies)
+        {
+            foreach (var commandType in asm.GetTypes().Where(x => x.HasInterface(typeof(IAsyncCommand))))
+            {
+                yield return commandType;
+            }
+        }
+    }
+
+    public ILogger<CommandsFeature>? Log { get; set; }
 
     public void Register(IAppHost appHost)
     {
         if (appHost is ServiceStackHost host)
             host.AddTimings = true;
         
-        log = appHost.GetApplicationServices().GetRequiredService<ILogger<CommandsFeature>>();
+        Log ??= appHost.GetApplicationServices().GetRequiredService<ILogger<CommandsFeature>>();
+        
+        appHost.AddToAppMetadata(meta =>
+        {
+            meta.Plugins.Commands = new()
+            {
+                Commands = CommandInfos,
+            };
+        });
     }
 
     class CommandExecutor(CommandsFeature feature, IServiceProvider services) : ICommandExecutor
@@ -126,35 +189,71 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
         ArgumentNullException.ThrowIfNull(request);
         return ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request);
     }
-
-    public async Task ExecuteCommandAsync(Type commandType, Func<object,Task> execFn, object requestDto)
+    
+    public RetryPolicy? GetRetryPolicy(Type commandType)
     {
-        var sw = Stopwatch.StartNew();
-        try
+        var retryAttr = commandType.FirstAttribute<RetryAttribute>();
+        if (retryAttr != null)
         {
-            await execFn(requestDto);
-            log!.LogDebug("{Command} took {ElapsedMilliseconds}ms to execute", commandType.Name, sw.ElapsedMilliseconds);
-
-            AddCommandResult(new()
-            {
-                Name = commandType.Name,
-                Ms = sw.ElapsedMilliseconds,
-                At = DateTime.UtcNow,
-            });
+            return new(
+                Times:retryAttr.Times > 0 ? retryAttr.Times : DefaultRetryPolicy.Times,
+                Behavior:retryAttr.Behavior == RetryBehavior.Default ? DefaultRetryPolicy.Behavior : retryAttr.Behavior,
+                DelayMs:retryAttr.DelayMs > 0 ? retryAttr.DelayMs : DefaultRetryPolicy.DelayMs,
+                MaxDelayMs:retryAttr.MaxDelayMs > 0 ? retryAttr.MaxDelayMs : DefaultRetryPolicy.MaxDelayMs,
+                DelayFirst:retryAttr.DelayFirst
+            );
         }
-        catch (Exception e)
-        {
-            var requestBody = requestDto.ToSafeJson();
-            log!.LogError(e, "{Command}({Request}) failed: {Message}", commandType.Name, requestBody, e.Message);
+        return null;
+    }
 
-            AddCommandResult(new()
+    public async Task<CommandResult> ExecuteCommandAsync(Type commandType, Func<object,Task> execFn, object requestDto)
+    {
+        var result = new CommandResult { Type = CommandType.Command, Name = commandType.Name, At = DateTime.UtcNow };
+        RetryPolicy? retryPolicy = null;
+        var retries = 0;
+        var sw = Stopwatch.StartNew();
+        while (true)
+        {
+            try
             {
-                Name = commandType.Name,
-                Ms = sw.ElapsedMilliseconds,
-                At = DateTime.UtcNow,
-                Request = requestBody,
-                Error = e.ToResponseStatus(),
-            });
+                await execFn(requestDto);
+                Log!.LogDebug("{Command} took {ElapsedMilliseconds}ms to execute", commandType.Name, sw.ElapsedMilliseconds);
+
+                result.Ms = sw.ElapsedMilliseconds;
+                if (retries > 0)
+                    result.Retries = retries;
+                AddCommandResult(result);
+                return result;
+            }
+            catch (Exception e)
+            {
+                var attempt = retries + 1;
+                var requestBody = requestDto.ToSafeJson();
+                Log!.LogError(e, "{Command}({Request}) x{Attempt} failed: {Message}", 
+                    commandType.Name, requestBody, attempt, e.Message);
+
+                var errorResult = result.Clone();
+                errorResult.Request = requestBody;
+                errorResult.Attempt = attempt;
+                errorResult.Error = e.ToResponseStatus();
+                errorResult.Error.StackTrace ??= e.StackTrace;
+                AddCommandResult(errorResult);
+
+                // Only try commands annotated with [Retry]
+                retryPolicy ??= GetRetryPolicy(commandType);
+                if (retryPolicy == null)
+                    return errorResult;
+
+                var retry = retryPolicy.Value;
+                if (++retries > retry.Times)
+                    return errorResult;
+
+                var delayMs = ExecUtils.CalculateRetryDelayMs(attempt, retry);
+                if (delayMs > 0)
+                {
+                    await Task.Delay(delayMs);
+                }
+            }
         }
     }
 
@@ -170,19 +269,25 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
                 continue;
 
             var oCommand = services.GetRequiredService(commandType);
-            var method = commandType.GetMethod("ExecuteAsync")
-                ?? throw new NotSupportedException("ExecuteAsync method not found on " + commandType.Name);
-                
-            async Task Exec(object commandArg)
-            {
-                var methodInvoker = GetInvoker(method);
-                await methodInvoker(oCommand, commandArg);
-            }
-
-            await ExecuteCommandAsync(commandType, Exec, requestProp);
+            await ExecuteCommandAsync(oCommand, requestProp);
         }
     }
-    
+
+    public async Task<CommandResult> ExecuteCommandAsync(object oCommand, object commandRequest)
+    {
+        var commandType = oCommand.GetType();
+        var method = commandType.GetMethod("ExecuteAsync")
+            ?? throw new NotSupportedException("ExecuteAsync method not found on " + commandType.Name);
+                
+        async Task Exec(object commandArg)
+        {
+            var methodInvoker = GetInvoker(method);
+            await methodInvoker(oCommand, commandArg);
+        }
+
+        return await ExecuteCommandAsync(commandType, Exec, commandRequest);
+    }
+
     public ConcurrentQueue<CommandResult> CommandResults { get; set; } = [];
     public ConcurrentQueue<CommandResult> CommandFailures { get; set; } = new();
     
@@ -206,21 +311,23 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
                 _ => new CommandSummary
                 {
                     Type = result.Type,
-                    Name = result.Name, 
-                    Count = 1, 
+                    Name = result.Name,
+                    Count = 1,
+                    Failed = 0,
+                    Retries = 0,
                     TotalMs = ms, 
-                    MinMs = ms > 0 ? ms : int.MinValue, 
+                    MinMs = ms,
+                    MaxMs = ms,
                     Timings = new([ms]),
                 },
                 (_, summary) => 
                 {
                     summary.Count++;
+                    if (result.Retries != null)
+                        summary.Retries += result.Retries.Value;
                     summary.TotalMs += ms;
                     summary.MaxMs = Math.Max(summary.MaxMs, ms);
-                    if (ms > 0)
-                    {
-                        summary.MinMs = Math.Min(summary.MinMs, ms);
-                    }
+                    summary.MinMs = summary.MinMs < 0 ? ms : Math.Min(summary.MinMs, ms);
                     summary.Timings.Enqueue(ms);
                     while (summary.Timings.Count > TimingsCapacity)
                         summary.Timings.TryDequeue(out var _);
@@ -234,11 +341,14 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
                 CommandFailures.TryDequeue(out _);
 
             CommandTotals.AddOrUpdate(result.Name, 
-                _ => new CommandSummary { Name = result.Name, Failed = 1, Count = 0, TotalMs = 0, MinMs = int.MinValue, LastError = result.Error?.Message },
+                _ => new CommandSummary { Name = result.Name, Failed = 1, Retries = result.Retries.GetValueOrDefault(0), Count = 0, 
+                    TotalMs = 0, MinMs = -1, MaxMs = -1, LastError = result.Error },
                 (_, summary) =>
                 {
                     summary.Failed++;
-                    summary.LastError = result.Error?.Message;
+                    if (result.Retries != null)
+                        summary.Retries += result.Retries.Value;
+                    summary.LastError = result.Error;
                     return summary;
                 });
         }
@@ -256,7 +366,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
         {
             AddCommandResult(new()
             {
-                Type = "API",
+                Type = CommandType.Api,
                 Name = name,
                 Ms = ms,
                 At = DateTime.UtcNow,
@@ -266,7 +376,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
         {
             AddCommandResult(new()
             {
-                Type = "API",
+                Type = CommandType.Api,
                 Name = name,
                 Ms = ms,
                 At = DateTime.UtcNow,
@@ -316,15 +426,35 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId
         invokerCache[method] = fn;
         return fn;
     }
+
+    public void BeforePluginsLoaded(IAppHost appHost)
+    {
+        appHost.ConfigurePlugin<UiFeature>(feature => {
+            feature.AddAdminLink(AdminUiFeature.Commands, new LinkInfo {
+                Id = "commands",
+                Label = "Commands",
+                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Command)),
+                Show = $"role:{AdminRole}",
+            });
+        });
+    }
+}
+
+public static class CommandType
+{
+    public const string Command = "CMD";
+    public const string Api = "API";
 }
 
 public class CommandResult
 {
-    public string Type { get; set; } = "CMD";
+    public string Type { get; set; } = CommandType.Command;
     public string Name { get; set; }
     public long? Ms { get; set; }
     public DateTime At { get; set; }
     public string Request { get; set; }
+    public int? Retries { get; set; }
+    public int Attempt { get; set; }
     public ResponseStatus? Error { get; set; }
 
     public CommandResult Clone(Action<CommandResult>? configure = null) => X.Apply(new CommandResult
@@ -340,16 +470,17 @@ public class CommandResult
 
 public class CommandSummary
 {
-    public string Type { get; set; } = "CMD";
+    public string Type { get; set; } = CommandType.Command;
     public string Name { get; set; }
     public int Count { get; set; }
     public int Failed { get; set; }
+    public int Retries { get; set; }
     public int TotalMs { get; set; }
     public int MinMs { get; set; }
     public int MaxMs { get; set; }
     public double AverageMs => Count == 0 ? 0 : Math.Round(TotalMs / (double)Count, 2);
     public double MedianMs => Math.Round(Timings.Median(), 2);
-    public string? LastError { get; set; }
+    public ResponseStatus? LastError { get; set; }
     public ConcurrentQueue<int> Timings { get; set; } = new();
 }
 
@@ -357,8 +488,9 @@ public class CommandSummary
 public class ViewCommands : IGet, IReturn<ViewCommandsResponse>
 {
     public List<string>? Include { get; set; }
+    public int? Skip { get; set; }
+    public int? Take { get; set; }
 }
-
 public class ViewCommandsResponse
 {
     public List<CommandSummary> CommandTotals { get; set; }
@@ -367,8 +499,21 @@ public class ViewCommandsResponse
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
-[DefaultRequest(typeof(ViewCommands))]
-public class ViewCommandsService : Service
+[ExcludeMetadata]
+public class ExecuteCommand : IPost, IReturn<ExecuteCommandResponse>
+{
+    public string Command { get; set; }
+    public string? RequestJson { get; set; }
+}
+public class ExecuteCommandResponse
+{
+    public CommandResult? CommandResult { get; set; }
+    public string? Result { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
+}
+    
+[Restrict(VisibilityTo = RequestAttributes.Localhost)]
+public class CommandsService(ILogger<CommandsService> log) : Service
 {
     public async Task<object> Any(ViewCommands request)
     {
@@ -378,9 +523,9 @@ public class ViewCommandsService : Service
 
         var to = new ViewCommandsResponse
         {
-            LatestCommands = new(feature.CommandResults),
-            LatestFailed = new(feature.CommandFailures),
-            CommandTotals = new(feature.CommandTotals.Values)
+            LatestCommands = [..feature.CommandResults.OrderByDescending(x => x.At)],
+            LatestFailed = [..feature.CommandFailures.OrderByDescending(x => x.At)],
+            CommandTotals = [..feature.CommandTotals.Values]
         };
 
         if (request.Include?.Contains(nameof(ResponseStatus.StackTrace)) != true)
@@ -392,24 +537,89 @@ public class ViewCommandsService : Service
             }));
         }
         
+        if (request.Skip != null)
+        {
+            to.LatestCommands = to.LatestCommands.Skip(request.Skip.Value).ToList();
+            to.LatestFailed = to.LatestFailed.Skip(request.Skip.Value).ToList();
+        }
+
+        var take = request.Take ?? 50;
+        to.LatestCommands = to.LatestCommands.Take(take).ToList();
+        to.LatestFailed = to.LatestFailed.Take(take).ToList();
+        
+        return to;
+    }
+
+    public async Task<object> Any(ExecuteCommand request)
+    {
+        var feature = HostContext.AssertPlugin<CommandsFeature>();
+        if (!HostContext.DebugMode)
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+
+        var commandInfo = feature.CommandInfos.FirstOrDefault(x => x.Name == request.Command);
+        if (commandInfo == null)
+            throw HttpError.NotFound("Command does not exist");
+
+        var commandType = commandInfo.Type;
+        var requestType = commandInfo.Request.Type;
+        var commandRequest = string.IsNullOrEmpty(request.RequestJson)
+            ? requestType.CreateInstance()
+            : Text.JsonSerializer.DeserializeFromString(request.RequestJson, requestType);
+        var services = Request.GetServiceProvider();
+        var command = services.GetRequiredService(commandType);
+        var commandResult = await feature.ExecuteCommandAsync(command, commandRequest);
+
+        var resultProp = commandType.GetProperty("Result", BindingFlags.Instance | BindingFlags.Public);
+        var resultAccessor = TypeProperties.Get(commandType).GetAccessor("Result");
+        var result = resultProp != null
+            ? resultAccessor.PublicGetter(command)
+            : null;
+        string? resultString = null;
+
+        try
+        {
+            resultString = result switch
+            {
+                null => null,
+                string s => s,
+                StringBuilder sb => sb.ToString(),
+                _ => result.ToSafeJson(),
+            };
+        }
+        catch (Exception e)
+        {
+            log.LogWarning("Couldn't serialize {CommandType} result {ResultType}: {Message}",
+                commandType.Name, resultProp?.PropertyType.Name ?? "null", e.Message);
+        }
+
+        var to = new ExecuteCommandResponse
+        {
+            CommandResult = commandResult,
+            Result = resultString,
+        };
+        
         return to;
     }
 }
 
 public static class CommandExtensions
 {
+    public static Task ExecuteAsync<TCommand, TRequest>(this ICommandExecutor executor, TRequest request) where TCommand : IAsyncCommand<TRequest>
+    {
+        var command = executor.Command<TCommand>();
+        return executor.ExecuteAsync(command, request);
+    }
+
     public static Task ExecuteCommandsAsync<T>(this IRequest? req, T requestDto) where T : class
     {
         ArgumentNullException.ThrowIfNull(req);
         ArgumentNullException.ThrowIfNull(requestDto);
         
-        var services = req.TryResolve<IServiceProvider>();
-        if (services == null)
-            throw new NotSupportedException(nameof(IServiceProvider) + " not available");
+        var services = req.GetServiceProvider();
         var feature = HostContext.AssertPlugin<CommandsFeature>();
         return feature.ExecuteCommandsAsync(services, requestDto);
     }
-    
+
     public static double Median(this IEnumerable<int> nums)
     {
         var array = nums.ToArray();

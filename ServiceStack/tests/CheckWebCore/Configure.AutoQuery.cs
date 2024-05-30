@@ -33,7 +33,7 @@ public class ConfigureAutoQuery : IConfigureAppHost, IConfigureServices // : IHo
                 CreateServices =
                 [
                     new CreateCrudServices(),
-                    new CreateCrudServices { NamedConnection = "pgsql", Schema = "acme" }
+                    // new CreateCrudServices { NamedConnection = "pgsql", Schema = "acme" }
                 ],
                 ServiceFilter = (op, req) =>
                 {

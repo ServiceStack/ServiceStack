@@ -19,6 +19,7 @@ const SidebarNav = {
                     <Icon :image="getIcon({op})" class="w-5 h-5 mr-1" />
                     <span class="nav-item flex-grow mb-0.5">{{store.config.sidebar.label(op)}}</span>
                     <span v-if="op.requiresAuth" class="svg-lock w-5 h-5"></span>
+                    <span v-else-if="op.requiresApiKey" class="svg-key w-5 h-5"></span>
                 </a>
             </div>
         </div>

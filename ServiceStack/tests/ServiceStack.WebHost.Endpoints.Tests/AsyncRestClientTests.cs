@@ -74,7 +74,7 @@ public abstract class AsyncRestClientTests
             Director = "Edward Zwick",
             ReleaseDate = new DateTime(2007, 1, 26),
             TagLine = "A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.",
-            Genres = new List<string> { "Adventure", "Drama", "Thriller" },
+            Genres = ["Adventure", "Drama", "Thriller"],
         };
 
         var response = await asyncClient.PostAsync<MovieResponse>("all-movies", newMovie);

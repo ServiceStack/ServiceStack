@@ -86,7 +86,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         return useExistingNonWildcardEndpoint;
     }
     
-    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation)
+    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation, EndpointOptions options=default)
     {
         if (operation.ResponseType != null)
         {
@@ -103,7 +103,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         {
             builder.Produces(Config.Return204NoContentForEmptyResponse ? 204 : 200, responseType:null);
         }
-        if (operation.RequiresAuthentication)
+        if (options.RequireAuth && operation.RequiresAuthentication)
         {
             var authAttr = operation.Authorize ?? new Microsoft.AspNetCore.Authorization.AuthorizeAttribute();
             authAttr.AuthenticationSchemes ??= Options.AuthenticationSchemes;
@@ -147,6 +147,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
             return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
         }
         
+        var options = CreateEndpointOptions();
         foreach (var entry in Metadata.OperationsMap)
         {
             var requestType = entry.Key;
@@ -173,7 +174,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
                         var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
                             HandleRequestAsync(requestType, httpContext));
                         
-                        ConfigureOperationEndpoint(pathBuilder, operation);
+                        ConfigureOperationEndpoint(pathBuilder, operation, options);
 
                         foreach (var handler in Options.RouteHandlerBuilders)
                         {
@@ -189,7 +190,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
                             (string format, HttpResponse response, HttpContext httpContext) =>
                                 HandleRequestAsync(requestType, httpContext));
                         
-                        ConfigureOperationEndpoint(pathBuilder, operation)
+                        ConfigureOperationEndpoint(pathBuilder, operation, options)
                             .WithMetadata<string>(route.Path + ".format");
                     }
                 }
@@ -200,6 +201,14 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
                 }
             }
         }
+    }
+
+    public EndpointOptions CreateEndpointOptions()
+    {
+        var requireAuth = ApplicationServices.GetService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>() != null
+            || HasPlugin<AuthFeature>();
+        var options = new EndpointOptions(RequireAuth: requireAuth);
+        return options;
     }
 #endif
 

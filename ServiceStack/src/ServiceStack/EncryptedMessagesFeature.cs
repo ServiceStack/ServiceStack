@@ -153,7 +153,7 @@ public class EncryptedMessagesFeature : IPlugin, IConfigureServices, Model.IHasS
 
                 var requestType = appHost.Metadata.GetOperationType(operationName);
                 if (requestType == null)
-                    throw new ArgumentException("Unknown Operation: " + operationName);
+                    throw new ArgumentException("Unknown Operation", nameof(operationName));
 
                 var request = JsonSerializer.DeserializeFromString(requestJson, requestType);
 

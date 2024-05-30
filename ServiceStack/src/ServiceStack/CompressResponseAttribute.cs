@@ -29,7 +29,7 @@ public class CompressResponseAttribute : ResponseFilterAsyncAttribute
                   ?? (object) concreteResult?.ResponseText;
         }
 
-        if (src == null || src is IPartialWriter || src is IPartialWriterAsync || src is IStreamWriter || src is IStreamWriterAsync)
+        if (src is null or IPartialWriter or IPartialWriterAsync or IStreamWriter or IStreamWriterAsync)
             return;
 
         var encoding = req.GetCompressionType();

@@ -272,7 +272,7 @@ public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
     protected static void AssertOperationExists(string operationName, Type type)
     {
         if (type == null)
-            throw new NotImplementedException($"The operation '{operationName}' does not exist for this service");
+            throw new NotImplementedException("The operation does not exist for this service");
     }
 
     protected bool AssertAccess(IHttpRequest httpReq, IHttpResponse httpRes, Feature feature, string operationName)

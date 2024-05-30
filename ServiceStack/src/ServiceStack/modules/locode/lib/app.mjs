@@ -29,6 +29,15 @@ export let AppData = {
 }
 export const app = new App()
 /**
+ * @param {RequestInit} req
+ */
+function clientRequestFilter(req) {
+    if (store.apikey) {
+        const httpHeader = store.plugins.apiKey?.httpHeader ?? 'x-api-key'
+        req.headers.set(httpHeader, store.apikey)
+    }
+}
+/**
  * Create a new `JsonServiceStack` client instance configured with the authenticated user
  *
  * @remarks
@@ -41,6 +50,7 @@ export function createClient(fn) {
     return new JsonServiceClient(BASE_URL).apply(c => {
         c.bearerToken = AppData.bearerToken
         c.enableAutoRefreshToken = false
+        c.requestFilter = clientRequestFilter
         if (AppData.authsecret) c.headers.set('authsecret', AppData.authsecret)
         if (AppData.userName) c.userName = AppData.userName
         if (AppData.password) c.password = AppData.password
@@ -70,7 +80,7 @@ export const breakpoints = useBreakpoints(app, {
 })
 export const routes = usePageRoutes(app, {
     page: 'op',
-    queryKeys: 'tab,provider,preview,body,doc,skip,new,edit'.split(','),
+    queryKeys: 'tab,provider,preview,body,doc,skip,new,edit,dialog'.split(','),
     handlers: {
         nav(state) {
             console.debug('nav', state) /*debug*/

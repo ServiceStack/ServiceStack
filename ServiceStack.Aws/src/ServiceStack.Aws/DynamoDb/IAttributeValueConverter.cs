@@ -8,55 +8,54 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
 
-namespace ServiceStack.Aws.DynamoDb
+namespace ServiceStack.Aws.DynamoDb;
+
+public interface IAttributeValueConverter
 {
-    public interface IAttributeValueConverter
+    AttributeValue ToAttributeValue(object value, Type type);
+    object FromAttributeValue(AttributeValue attrValue, Type type);
+}
+
+public class DateTimeConverter : IAttributeValueConverter
+{
+    public virtual AttributeValue ToAttributeValue(object value, Type type)
     {
-        AttributeValue ToAttributeValue(object value, Type type);
-        object FromAttributeValue(AttributeValue attrValue, Type type);
+        var iso8601Date = ((DateTime)value).ToString("o", CultureInfo.InvariantCulture);
+        return new AttributeValue { S = iso8601Date };
     }
 
-    public class DateTimeConverter : IAttributeValueConverter
+    public virtual object FromAttributeValue(AttributeValue attrValue, Type type)
     {
-        public virtual AttributeValue ToAttributeValue(object value, Type type)
-        {
-            var iso8601Date = ((DateTime)value).ToString("o", CultureInfo.InvariantCulture);
-            return new AttributeValue { S = iso8601Date };
-        }
+        var iso8601String = attrValue.S;
+        var date = iso8601String == null
+            ? null
+            : DateTimeSerializer.ParseManual(iso8601String, DateTimeKind.Utc);
 
-        public virtual object FromAttributeValue(AttributeValue attrValue, Type type)
-        {
-            var iso8601String = attrValue.S;
-            var date = iso8601String == null
-                ? null
-                : DateTimeSerializer.ParseManual(iso8601String, DateTimeKind.Utc);
+        return date;
+    }
+}
 
-            return date;
-        }
+public class EnumConverter : IAttributeValueConverter
+{
+    public AttributeValue ToAttributeValue(object value, Type type)
+    {
+        var treatAsInt = JsConfig.TreatEnumAsInteger
+                         || type.HasAttribute<EnumAsIntAttribute>()
+                         || type.HasAttribute<FlagsAttribute>();
+
+        return treatAsInt
+            ? new AttributeValue { N = ((int)value).ToString() }
+            : new AttributeValue(value.ToString());
     }
 
-    public class EnumConverter : IAttributeValueConverter
+    public object FromAttributeValue(AttributeValue attrValue, Type type)
     {
-        public AttributeValue ToAttributeValue(object value, Type type)
-        {
-            var treatAsInt = JsConfig.TreatEnumAsInteger
-                || type.HasAttribute<EnumAsIntAttribute>()
-                || type.HasAttribute<FlagsAttribute>();
+        if (attrValue.S != null)
+            return Enum.Parse(Nullable.GetUnderlyingType(type) ?? type, attrValue.S);
 
-            return treatAsInt
-                ? new AttributeValue { N = ((int)value).ToString() }
-                : new AttributeValue(value.ToString());
-        }
+        if (attrValue.N != null)
+            return Enum.ToObject(type, int.Parse(attrValue.N));
 
-        public object FromAttributeValue(AttributeValue attrValue, Type type)
-        {
-            if (attrValue.S != null)
-                return Enum.Parse(Nullable.GetUnderlyingType(type) ?? type, attrValue.S);
-
-            if (attrValue.N != null)
-                return Enum.ToObject(type, int.Parse(attrValue.N));
-
-            return type.GetDefaultValue();
-        }
+        return type.GetDefaultValue();
     }
 }

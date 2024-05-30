@@ -889,6 +889,7 @@ public class Operation : ICloneable
     public List<IRequestFilterBase>? RequestFilterAttributes { get; set; }
     public List<IResponseFilterBase>? ResponseFilterAttributes { get; set; }
     public bool RequiresAuthentication { get; set; }
+    public bool RequiresApiKey { get; set; }
     public List<string> RequiredRoles { get; set; } = [];
     public List<string> RequiresAnyRole { get; set; } = [];
     public List<string> RequiredPermissions { get; set; } = [];
@@ -921,14 +922,14 @@ public class Operation : ICloneable
         Routes = Routes?.ToList(),
         RequestFilterAttributes = RequestFilterAttributes,
         RequiresAuthentication = RequiresAuthentication,
-        RequiredRoles = RequiredRoles?.ToList(),
-        RequiresAnyRole = RequiresAnyRole?.ToList(),
-        RequiredPermissions = RequiredPermissions?.ToList(),
-        RequiresAnyPermission = RequiresAnyPermission?.ToList(),
+        RequiredRoles = RequiredRoles?.ToList() ?? [],
+        RequiresAnyRole = RequiresAnyRole?.ToList() ?? [],
+        RequiredPermissions = RequiredPermissions?.ToList() ?? [],
+        RequiresAnyPermission = RequiresAnyPermission?.ToList() ?? [],
         RequestTypeValidationRules = RequestTypeValidationRules?.ToList(),
         RequestPropertyValidationRules = RequestPropertyValidationRules?.ToList(),
         RequestPropertyAttributes = RequestPropertyAttributes,
-        Tags = Tags?.ToList(),
+        Tags = Tags?.ToList() ?? [],
         Description = Description,
         Notes = Notes,
         LocodeCss = LocodeCss,
@@ -961,6 +962,11 @@ public class Operation : ICloneable
                 RequiredPermissions ??= [];
                 validator.Permissions.Each(x => RequiredPermissions.AddIfNotExists(x));
             }
+        }
+        var apiKeyValidators = typeValidators.OfType<IApiKeyValidator>().ToList();
+        if (apiKeyValidators.Count > 0)
+        {
+            RequiresApiKey = true;
         }
     }
 

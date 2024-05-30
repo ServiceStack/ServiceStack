@@ -292,4 +292,6 @@ public class ServiceStackOptions
     public static System.Text.Json.JsonSerializerOptions SystemJsonOptions => Text.TextConfig.SystemJsonOptions;
 }
 
+public record struct EndpointOptions(bool RequireAuth=true);
+
 #endif

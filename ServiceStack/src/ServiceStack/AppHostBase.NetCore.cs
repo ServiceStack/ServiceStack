@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Host.NetCore;
@@ -245,7 +246,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         return useExistingNonWildcardEndpoint;
     }
     
-    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation)
+    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, 
+        Operation operation, EndpointOptions options=default)
     {
         if (operation.ResponseType != null)
         {
@@ -262,7 +264,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         {
             builder.Produces(Config.Return204NoContentForEmptyResponse ? 204 : 200, responseType:null);
         }
-        if (operation.RequiresAuthentication)
+        if (options.RequireAuth && operation.RequiresAuthentication)
         {
             var authAttr = operation.Authorize ?? new Microsoft.AspNetCore.Authorization.AuthorizeAttribute();
             authAttr.AuthenticationSchemes ??= Options.AuthenticationSchemes;
@@ -274,7 +276,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         }
             
         if (operation.RequestType.ExcludesFeature(Feature.Metadata) || 
-            operation.RequestType.ExcludesFeature(Feature.ApiExplorer))
+            operation.RequestType.ExcludesFeature(Feature.ApiExplorer) || 
+            operation.RequestType.HasAttribute<ExcludeFromDescriptionAttribute>())
             builder.ExcludeFromDescription();
 
         return builder;
@@ -308,7 +311,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         }
 
         var existingRoutes = new Dictionary<string, RestPath>();
-        
+        var options = CreateEndpointOptions();
+
         foreach (var entry in Metadata.OperationsMap)
         {
             var requestType = entry.Key;
@@ -336,7 +340,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                         var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
                             HandleRequestAsync(requestType, httpContext));
                         
-                        ConfigureOperationEndpoint(pathBuilder, operation);
+                        ConfigureOperationEndpoint(pathBuilder, operation, options);
 
                         foreach (var handler in Options.RouteHandlerBuilders)
                         {
@@ -363,7 +367,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                                 (string format, HttpResponse response, HttpContext httpContext) =>
                                     HandleRequestAsync(requestType, httpContext));
                         
-                            ConfigureOperationEndpoint(pathBuilder, operation)
+                            ConfigureOperationEndpoint(pathBuilder, operation, options)
                                 .WithMetadata<string>(routePath);
                         }
                     }
@@ -375,6 +379,14 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                 }
             }
         }
+    }
+
+    public EndpointOptions CreateEndpointOptions()
+    {
+        var requireAuth = ApplicationServices.GetService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>() != null
+            || HasPlugin<AuthFeature>();
+        var options = new EndpointOptions(RequireAuth: requireAuth);
+        return options;
     }
 #endif
 
@@ -578,7 +590,8 @@ public interface IAppHostNetCore : IAppHost, IRequireConfiguration
 #if NET8_0_OR_GREATER
     ServiceStackOptions Options { get; }
     Dictionary<string, string[]> EndpointVerbs { get; }
-    RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation);
+    EndpointOptions CreateEndpointOptions();
+    RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation, EndpointOptions options=default);
 #endif
 }
 

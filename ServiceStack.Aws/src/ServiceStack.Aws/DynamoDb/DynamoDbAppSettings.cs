@@ -7,98 +7,97 @@ using System.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 
-namespace ServiceStack.Aws.DynamoDb
+namespace ServiceStack.Aws.DynamoDb;
+
+public class ConfigSetting
 {
-    public class ConfigSetting
+    public string Id { get; set; }
+    public string Value { get; set; }
+}
+
+public class DynamoDbAppSettings : AppSettingsBase, IRequiresSchema, IClearable
+{
+    private DynamoDbSettings DbSettings => (DynamoDbSettings)base.settings;
+
+    public IPocoDynamo Db => DbSettings.Db;
+
+    private readonly DynamoMetadataType metadata;
+
+    public DynamoDbAppSettings(IPocoDynamo db, bool initSchema = false)
+        : base(new DynamoDbSettings(db))
     {
-        public string Id { get; set; }
-        public string Value { get; set; }
+        Db.RegisterTable<ConfigSetting>();
+        this.metadata = db.GetTableMetadata<ConfigSetting>();
+
+        if (initSchema)
+            InitSchema();
     }
 
-    public class DynamoDbAppSettings : AppSettingsBase, IRequiresSchema, IClearable
+    class DynamoDbSettings : ISettingsWriter
     {
-        private DynamoDbSettings DbSettings => (DynamoDbSettings)base.settings;
+        public readonly IPocoDynamo Db;
 
-        public IPocoDynamo Db => DbSettings.Db;
-
-        private readonly DynamoMetadataType metadata;
-
-        public DynamoDbAppSettings(IPocoDynamo db, bool initSchema = false)
-            : base(new DynamoDbSettings(db))
+        public DynamoDbSettings(IPocoDynamo db)
         {
-            Db.RegisterTable<ConfigSetting>();
-            this.metadata = db.GetTableMetadata<ConfigSetting>();
-
-            if (initSchema)
-                InitSchema();
+            this.Db = db;
         }
 
-        class DynamoDbSettings : ISettingsWriter
+        public string Get(string key)
         {
-            public readonly IPocoDynamo Db;
-
-            public DynamoDbSettings(IPocoDynamo db)
-            {
-                this.Db = db;
-            }
-
-            public string Get(string key)
-            {
-                var config = Db.GetItem<ConfigSetting>(key);
-                return config?.Value;
-            }
-
-            public List<string> GetAllKeys()
-            {
-                return Db.FromScan<ConfigSetting>().ExecColumn(x => x.Id).ToList();
-            }
-
-            public void Set<T>(string key, T value)
-            {
-                var textValue = value is string
-                    ? (string)(object)value
-                    : value.ToJsv();
-
-                Db.PutItem(new ConfigSetting { Id = key, Value = textValue });
-            }
-
-            public bool Exists(string key)
-            {
-                return Get(key) != null;
-            }
+            var config = Db.GetItem<ConfigSetting>(key);
+            return config?.Value;
         }
 
-        public T GetOrCreate<T>(string key, Func<T> createFn)
+        public List<string> GetAllKeys()
         {
-            if (!DbSettings.Exists(key))
-            {
-                var value = createFn();
-                DbSettings.Set(key, value);
-                return value;
-            }
-
-            return base.Get(key, default(T));
+            return Db.FromScan<ConfigSetting>().ExecColumn(x => x.Id).ToList();
         }
 
-        public override string GetString(string name)
+        public void Set<T>(string key, T value)
         {
-            return base.GetNullableString(name);
+            var textValue = value is string
+                ? (string)(object)value
+                : value.ToJsv();
+
+            Db.PutItem(new ConfigSetting { Id = key, Value = textValue });
         }
 
-        public override void Set<T>(string key, T value)
+        public bool Exists(string key)
         {
+            return Get(key) != null;
+        }
+    }
+
+    public T GetOrCreate<T>(string key, Func<T> createFn)
+    {
+        if (!DbSettings.Exists(key))
+        {
+            var value = createFn();
             DbSettings.Set(key, value);
+            return value;
         }
 
-        public void InitSchema()
-        {
-            Db.InitSchema();
-        }
+        return base.Get(key, default(T));
+    }
 
-        public void Clear()
-        {
-            var q = Db.FromScan<ConfigSetting>().ExecColumn(x => x.Id);
-            Db.DeleteItems<ConfigSetting>(q);
-        }
+    public override string GetString(string name)
+    {
+        return base.GetNullableString(name);
+    }
+
+    public override void Set<T>(string key, T value)
+    {
+        DbSettings.Set(key, value);
+    }
+
+    public void InitSchema()
+    {
+        Db.InitSchema();
+    }
+
+    public void Clear()
+    {
+        var q = Db.FromScan<ConfigSetting>().ExecColumn(x => x.Id);
+        Db.DeleteItems<ConfigSetting>(q);
     }
 }

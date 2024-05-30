@@ -518,7 +518,10 @@ public abstract partial class ServiceStackHost
         typeof(AdminProfilingService),
         typeof(AdminRedisService),
         typeof(Validation.GetValidationRulesService),
-        typeof(Validation.ModifyValidationRulesService)
+        typeof(Validation.ModifyValidationRulesService),
+#if NET6_0_OR_GREATER
+        typeof(CommandsService),
+#endif
     ];
 
     /// <summary>
@@ -1610,6 +1613,19 @@ public abstract partial class ServiceStackHost
     public virtual bool UseHttps(IRequest httpReq)
     {
         return Config.UseHttpsLinks || httpReq.GetHeader(HttpHeaders.XForwardedProtocol) == "https";
+    }
+
+    /// <summary>
+    /// Gets request parameter string value by looking in the following order:
+    /// - QueryString[name]
+    /// - FormData[name]
+    /// - Cookies[name]
+    /// - Items[name]
+    /// </summary>
+    /// <returns>string value or null if it doesn't exist</returns>
+    public virtual string GetParam(IRequest httpReq, string name)
+    {
+        return ViewUtils.GetParam(httpReq, name);
     }
 
     /// <summary>

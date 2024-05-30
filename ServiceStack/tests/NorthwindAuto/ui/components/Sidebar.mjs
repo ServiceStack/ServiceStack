@@ -19,6 +19,7 @@ const SidebarNav = {
                     'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
                   <span class="nav-item flex-grow">{{op.request.name}}</span>
                   <span v-if="op.requiresAuth" class="svg-lock w-5 h-5"></span>
+                  <span v-else-if="op.requiresApiKey" class="svg-key w-5 h-5"></span>
                 </a>
               </div>
         </div>

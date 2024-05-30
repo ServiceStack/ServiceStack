@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Serialization;
 using ServiceStack.Web;
 using ServiceStack.Text;
 
@@ -33,6 +34,29 @@ public class GenericHandler : ServiceStackHandlerBase, IRequestHttpHandler
                          ?? (await DeserializeHttpRequestAsync(requestType, req, HandlerContentType).ConfigAwaitNetCore()
                              ?? requestType.CreateInstance());
 
+        // Override Default Request DTO Properties with any QueryString Params
+        if (req.QueryString.Count > 0 && HttpUtils.HasRequestBody(req.Verb))
+        {
+            var typeSerializer = KeyValueDataContractDeserializer.Instance.GetOrAddStringMapTypeDeserializer(requestType);
+            foreach (var key in req.QueryString.AllKeys)
+            {
+                if (key == null) continue; //.NET Framework NameValueCollection can contain null keys
+                var value = req.QueryString[key];
+                if (string.IsNullOrEmpty(value)) continue;
+                
+                var propSerializer = typeSerializer.GetPropertySerializer(key);
+                if (propSerializer is { PropertyGetFn: not null, PropertySetFn: not null, PropertyParseStringFn: not null })
+                {
+                    var dtoValue = propSerializer.PropertyGetFn(requestDto);
+                    if (dtoValue == null || dtoValue.Equals(propSerializer.PropertyType.GetDefaultValue()))
+                    {
+                        var qsValue = propSerializer.PropertyParseStringFn(value);
+                        propSerializer.PropertySetFn(requestDto, qsValue);
+                    }
+                }
+            }
+        }
+        
         HostContext.AppHost.OnAfterAwait(req);
         var ret = await appHost.ApplyRequestConvertersAsync(req, requestDto).ConfigAwaitNetCore();
         HostContext.AppHost.OnAfterAwait(req);

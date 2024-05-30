@@ -245,7 +245,7 @@ public class CacheResponseTests
                 {
                     UserAuthId = "1",
                     UserAuthName = "test",
-                    Roles = new List<string> { roleHeader }
+                    Roles = [roleHeader]
                 };
             });
 

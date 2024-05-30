@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -266,6 +267,14 @@ public partial class AutoQueryCrudTests
             ex.AssertTriggerValidators();
             Console.WriteLine(ex);
         }
+    }
+
+    [Test]
+    public void Does_Validate_Regex()
+    {
+        var response = client.Post(new ValidateRegex {
+            Phone = "+1234567",
+        });
     }
 
     [Test]

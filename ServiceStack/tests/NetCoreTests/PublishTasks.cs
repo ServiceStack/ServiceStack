@@ -51,6 +51,8 @@ public class PublishTasks
             ["servicestack-client.mjs"] = "../../../../servicestack-client/dist/servicestack-client.min.mjs",
             ["servicestack-vue.mjs"] = "../../../../servicestack-vue/dist/servicestack-vue.min.mjs",
             ["vue.mjs"] = "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js",
+            ["chart.js"] = "https://cdn.jsdelivr.net/npm/chart.js/+esm",
+            ["color.js"] = "https://cdn.jsdelivr.net/npm/@kurkle/color/+esm",
         };
 
         var jsDir = "../../src/ServiceStack/js";
@@ -62,6 +64,12 @@ public class PublishTasks
             {
                 $"GET {jsFile.Value}".Print();
                 var js = jsFile.Value.GetStringFromUrl();
+
+                if (jsFile.Key == "chart.js")
+                {
+                    js = js.Replace("/npm/@kurkle/color@0.3.2/+esm", "color.js");
+                }
+                
                 File.WriteAllText(toFile, js);
             }
             else
@@ -200,7 +208,8 @@ public class PublishTasks
         public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService), typeof(TestService)) {}
         public override void Configure(Container container)
         {
-            Metadata.ForceInclude = new() {
+            Metadata.ForceInclude =
+            [
                 typeof(MetadataApp),
                 typeof(AppMetadata),
                 typeof(AdminQueryUsers),
@@ -216,11 +225,18 @@ public class PublishTasks
                 typeof(AdminProfiling),
                 typeof(AdminRedis),
                 typeof(AdminDatabase),
-            };
+                typeof(AdminQueryApiKeys),
+                typeof(AdminCreateApiKey),
+                typeof(AdminUpdateApiKey),
+                typeof(AdminDeleteApiKey),
+                typeof(RequestLogsInfo),
+                typeof(ViewCommands),
+                typeof(ExecuteCommand),
+            ];
             
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(), new [] {
-                new CredentialsAuthProvider(AppSettings),
-            }));
+            Plugins.Add(new AuthFeature(() => new AuthUserSession(), [
+                new CredentialsAuthProvider(AppSettings)
+            ]));
             
             var dbFactory = new OrmLiteConnectionFactory(":memory:",
                 SqliteDialect.Provider);
@@ -240,6 +256,8 @@ public class PublishTasks
             Plugins.Add(new ProfilingFeature());
             Plugins.Add(new AdminRedisFeature());
             Plugins.Add(new AdminDatabaseFeature());
+            Plugins.Add(new CommandsFeature());
+            Plugins.Add(new ApiKeysFeature());
         }
     }
 
@@ -293,7 +311,7 @@ public class PublishTasks
         var distFs = new FileSystemVirtualFiles("dist");
 
         var typesFile = typesFs.GetFile("lib/types.d.ts");
-        memFs.WriteFile("0_" + typesFile.Name, typesFile);
+        await memFs.WriteFileAsync("0_" + typesFile.Name, typesFile);
         memFs.TransformAndCopy("shared", typesFs, distFs);
 
         memFs.Clear();

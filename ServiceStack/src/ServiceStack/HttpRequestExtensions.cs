@@ -50,22 +50,12 @@ public static class HttpRequestExtensions
     /// - Items[name]
     /// </summary>
     /// <returns>string value or null if it doesn't exist</returns>
-    public static string GetParam(this IRequest httpReq, string name)
+    public static string GetParam(this IRequest req, string name)
     {
-        string value;
-        if ((value = httpReq.Headers[HttpHeaders.XParamOverridePrefix + name]) != null) return value;
-        if ((value = httpReq.QueryString[name]) != null) return value;
-        if ((value = httpReq.FormData[name]) != null) return value;
-
-        //IIS will assign null to params without a name: .../?some_value can be retrieved as req.Params[null]
-        //TryGetValue is not happy with null dictionary keys, so we should bail out here
-        if (string.IsNullOrEmpty(name)) return null;
-
-        if (httpReq.Cookies.TryGetValue(name, out var cookie)) return cookie.Value;
-
-        if (httpReq.Items.TryGetValue(name, out var oValue)) return oValue.ToString();
-
-        return null;
+        var appHost = HostContext.AppHost;
+        return appHost != null 
+            ? appHost.GetParam(req, name) 
+            : ViewUtils.GetParam(req, name);
     }
 
     public static string GetQueryStringOrForm(this IRequest httpReq, string name) =>
@@ -277,7 +267,7 @@ public static class HttpRequestExtensions
         if (ex is HttpError httpEx) return httpEx.Status;
         if (ex is NotImplementedException || ex is NotSupportedException) return (int)HttpStatusCode.MethodNotAllowed;
         if (ex is FileNotFoundException) return (int)HttpStatusCode.NotFound;
-        if (ex is ArgumentException || ex is SerializationException || ex is FormatException) return (int)HttpStatusCode.BadRequest;
+        if (ex is ArgumentException or SerializationException or FormatException) return (int)HttpStatusCode.BadRequest;
         if (ex is AuthenticationException) return (int)HttpStatusCode.Unauthorized;
         if (ex is UnauthorizedAccessException) return (int)HttpStatusCode.Forbidden;
         if (ex is OptimisticConcurrencyException) return (int)HttpStatusCode.Conflict;
@@ -1070,7 +1060,7 @@ public static class HttpRequestExtensions
             case nameof(req.ContentLength):
                 return req.ContentLength.ToString();
             default:
-                throw new NotSupportedException($"Unknown IHttpRequest property '{name}'");
+                throw new NotSupportedException("Unknown IHttpRequest property");
         }
     }
 

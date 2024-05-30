@@ -52,8 +52,8 @@ public static class LangGeneratorExtensions
             "swift" => Generate(new Swift.SwiftGenerator(typesConfig)),
             "vbnet" => Generate(new VbNet.VbNetGenerator(typesConfig)),
             "fsharp" => Generate(new FSharp.FSharpGenerator(typesConfig)),
-            _ => throw new NotSupportedException($"Unknown language '{lang}', Supported languages: " +
-                                                 $"csharp, typescript, dart, java, kotlin, python, php, swift, vbnet, fsharp")
+            _ => throw new NotSupportedException($"Unknown language, Supported languages: " +
+                                                 $"csharp, mjs, typescript, dart, java, kotlin, python, php, swift, vbnet, fsharp")
         };
         return src;
     }

@@ -4,172 +4,171 @@ using System.Linq.Expressions;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 
-namespace ServiceStack.Aws.DynamoDb
-{
-    public class UpdateExpression : UpdateItemRequest
-    {
-        protected IPocoDynamo Db { get; set; }
+namespace ServiceStack.Aws.DynamoDb;
 
-        protected DynamoMetadataType Table { get; set; }
+public class UpdateExpression : UpdateItemRequest
+{
+    protected IPocoDynamo Db { get; set; }
+
+    protected DynamoMetadataType Table { get; set; }
+}
+
+public class UpdateExpression<T> : UpdateExpression
+{
+    public UpdateExpression(IPocoDynamo db)
+        : this(db, db.GetTableMetadata(typeof(T)), null, null) { }
+
+    public UpdateExpression(IPocoDynamo db, DynamoMetadataType table, object hash, object range = null)
+    {
+        this.Db = db;
+        this.Table = table;
+        this.TableName = this.Table.Name;
+        this.Key = db.Converters.ToAttributeKeyValue(db, table, hash, range);
+        this.ReturnValues = ReturnValue.NONE;
     }
 
-    public class UpdateExpression<T> : UpdateExpression
+    public UpdateExpression<T> AddConditionExpression(string conditionExpr)
     {
-        public UpdateExpression(IPocoDynamo db)
-            : this(db, db.GetTableMetadata(typeof(T)), null, null) { }
+        if (this.ConditionExpression == null)
+            this.ConditionExpression = conditionExpr;
+        else
+            this.ConditionExpression += " AND " + conditionExpr;
 
-        public UpdateExpression(IPocoDynamo db, DynamoMetadataType table, object hash, object range = null)
+        return this;
+    }
+
+    public UpdateExpression<T> Condition(Expression<Func<T, bool>> conditionExpression)
+    {
+        var q = PocoDynamoExpression.Create(typeof(T), conditionExpression, paramPrefix: "p");
+        return Condition(q.FilterExpression, q.Params, q.Aliases);
+    }
+
+    public UpdateExpression<T> Condition(string conditionExpression, Dictionary<string, object> args = null, Dictionary<string, string> aliases = null)
+    {
+        AddConditionExpression(conditionExpression);
+
+        if (args != null)
         {
-            this.Db = db;
-            this.Table = table;
-            this.TableName = this.Table.Name;
-            this.Key = db.Converters.ToAttributeKeyValue(db, table, hash, range);
-            this.ReturnValues = ReturnValue.NONE;
+            Db.ToExpressionAttributeValues(args).Each(x =>
+                this.ExpressionAttributeValues[x.Key] = x.Value);
         }
-
-        public UpdateExpression<T> AddConditionExpression(string conditionExpr)
+        if (aliases != null)
         {
-            if (this.ConditionExpression == null)
-                this.ConditionExpression = conditionExpr;
-            else
-                this.ConditionExpression += " AND " + conditionExpr;
-
-            return this;
-        }
-
-        public UpdateExpression<T> Condition(Expression<Func<T, bool>> conditionExpression)
-        {
-            var q = PocoDynamoExpression.Create(typeof(T), conditionExpression, paramPrefix: "p");
-            return Condition(q.FilterExpression, q.Params, q.Aliases);
-        }
-
-        public UpdateExpression<T> Condition(string conditionExpression, Dictionary<string, object> args = null, Dictionary<string, string> aliases = null)
-        {
-            AddConditionExpression(conditionExpression);
-
-            if (args != null)
+            foreach (var entry in aliases)
             {
-                Db.ToExpressionAttributeValues(args).Each(x =>
-                    this.ExpressionAttributeValues[x.Key] = x.Value);
+                this.ExpressionAttributeNames[entry.Key] = entry.Value;
             }
-            if (aliases != null)
-            {
-                foreach (var entry in aliases)
-                {
-                    this.ExpressionAttributeNames[entry.Key] = entry.Value;
-                }
-            }
-
-            return this;
         }
 
-        public UpdateExpression<T> Set(Expression<Func<T>> fn)
+        return this;
+    }
+
+    public UpdateExpression<T> Set(Expression<Func<T>> fn)
+    {
+        var args = fn.AssignedValues();
+
+        if (args != null)
         {
-            var args = fn.AssignedValues();
+            var hasExpr = UpdateExpression != null
+                          && UpdateExpression.IndexOf("SET", StringComparison.OrdinalIgnoreCase) >= 0;
 
-            if (args != null)
+            foreach (var entry in args)
             {
-                var hasExpr = UpdateExpression != null
-                    && UpdateExpression.IndexOf("SET", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (UpdateExpression == null)
+                    UpdateExpression = "SET ";
+                else if (!hasExpr)
+                    UpdateExpression += " SET ";
+                else
+                    UpdateExpression += ",";
 
-                foreach (var entry in args)
-                {
-                    if (UpdateExpression == null)
-                        UpdateExpression = "SET ";
-                    else if (!hasExpr)
-                        UpdateExpression += " SET ";
-                    else
-                        UpdateExpression += ",";
+                hasExpr = true;
 
-                    hasExpr = true;
-
-                    var param = ":" + entry.Key;
-                    this.UpdateExpression += GetMemberName(entry.Key) + " = " + param;
-                    this.ExpressionAttributeValues[param] = Db.ToAttributeValue(entry.Value);
-                }
+                var param = ":" + entry.Key;
+                this.UpdateExpression += GetMemberName(entry.Key) + " = " + param;
+                this.ExpressionAttributeValues[param] = Db.ToAttributeValue(entry.Value);
             }
-
-            return this;
         }
 
-        public UpdateExpression<T> Add(Expression<Func<T>> fn)
+        return this;
+    }
+
+    public UpdateExpression<T> Add(Expression<Func<T>> fn)
+    {
+        var args = fn.AssignedValues();
+
+        if (args != null)
         {
-            var args = fn.AssignedValues();
+            var hasExpr = UpdateExpression != null
+                          && UpdateExpression.IndexOf("ADD", StringComparison.OrdinalIgnoreCase) >= 0;
 
-            if (args != null)
+            foreach (var entry in args)
             {
-                var hasExpr = UpdateExpression != null
-                    && UpdateExpression.IndexOf("ADD", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (UpdateExpression == null)
+                    UpdateExpression = "ADD ";
+                else if (!hasExpr)
+                    UpdateExpression += " ADD ";
+                else
+                    UpdateExpression += ",";
 
-                foreach (var entry in args)
-                {
-                    if (UpdateExpression == null)
-                        UpdateExpression = "ADD ";
-                    else if (!hasExpr)
-                        UpdateExpression += " ADD ";
-                    else
-                        UpdateExpression += ",";
+                hasExpr = true;
 
-                    hasExpr = true;
-
-                    var param = ":" + entry.Key;
-                    this.UpdateExpression += GetMemberName(entry.Key) + " " + param;
-                    this.ExpressionAttributeValues[param] = Db.ToAttributeValue(entry.Value);
-                }
+                var param = ":" + entry.Key;
+                this.UpdateExpression += GetMemberName(entry.Key) + " " + param;
+                this.ExpressionAttributeValues[param] = Db.ToAttributeValue(entry.Value);
             }
-
-            return this;
         }
 
-        public UpdateExpression<T> Remove(Func<T, object> fields)
+        return this;
+    }
+
+    public UpdateExpression<T> Remove(Func<T, object> fields)
+    {
+        var args = fields.ToObjectKeys().ToArraySafe();
+
+        if (args != null)
         {
-            var args = fields.ToObjectKeys().ToArraySafe();
+            var hasExpr = UpdateExpression != null
+                          && UpdateExpression.IndexOf("REMOVE", StringComparison.OrdinalIgnoreCase) >= 0;
 
-            if (args != null)
+            foreach (var arg in args)
             {
-                var hasExpr = UpdateExpression != null
-                    && UpdateExpression.IndexOf("REMOVE", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (UpdateExpression == null)
+                    UpdateExpression = "REMOVE ";
+                else if (!hasExpr)
+                    UpdateExpression += " REMOVE ";
+                else
+                    UpdateExpression += ",";
 
-                foreach (var arg in args)
-                {
-                    if (UpdateExpression == null)
-                        UpdateExpression = "REMOVE ";
-                    else if (!hasExpr)
-                        UpdateExpression += " REMOVE ";
-                    else
-                        UpdateExpression += ",";
+                hasExpr = true;
 
-                    hasExpr = true;
-
-                    this.UpdateExpression += GetMemberName(arg);
-                }
+                this.UpdateExpression += GetMemberName(arg);
             }
-
-            return this;
         }
 
-        public string GetMemberName(string memberName)
+        return this;
+    }
+
+    public string GetMemberName(string memberName)
+    {
+        if (DynamoConfig.IsReservedWord(memberName))
         {
-            if (DynamoConfig.IsReservedWord(memberName))
+            var alias = "#" + memberName.Substring(0, 2).ToUpper();
+            bool aliasExists = false;
+            foreach (var entry in ExpressionAttributeNames)
             {
-                var alias = "#" + memberName.Substring(0, 2).ToUpper();
-                bool aliasExists = false;
-                foreach (var entry in ExpressionAttributeNames)
-                {
-                    if (entry.Value == memberName)
-                        return entry.Key;
-                    if (entry.Key == alias)
-                        aliasExists = true;
-                }
-
-                if (aliasExists)
-                    alias += ExpressionAttributeNames.Count;
-
-                ExpressionAttributeNames[alias] = memberName;
-                return alias;
+                if (entry.Value == memberName)
+                    return entry.Key;
+                if (entry.Key == alias)
+                    aliasExists = true;
             }
 
-            return memberName;
+            if (aliasExists)
+                alias += ExpressionAttributeNames.Count;
+
+            ExpressionAttributeNames[alias] = memberName;
+            return alias;
         }
+
+        return memberName;
     }
 }

@@ -58,7 +58,13 @@ DEBUG = true /*debug*/
                     <div v-if="routes.uiHref()" class="flex items-center">
                         <a title="View in API Explorer" :href="routes.uiHref({ tab:'details' })"
                            class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 32"><g fill="currentColor"><path d="M27.464 2.314a.501.501 0 0 0-.698-.257L14.86 8.339a.499.499 0 0 0-.233.621l.245.641l-6.873 3.769a.5.5 0 0 0-.222.63l.228.549l-7.299 3.488a.5.5 0 0 0-.246.643l1.498 3.61a.5.5 0 0 0 .629.28l7.625-2.701l.228.549a.5.5 0 0 0 .601.289l7.276-2.097l.218.569a.497.497 0 0 0 .612.299l13-4a.498.498 0 0 0 .317-.663l-5-12.501zM2.7 21.469l-1.134-2.734l6.823-3.261l1.439 3.47L2.7 21.469zm8.491-1.846l-.238-.574l-1.843-4.445l-.238-.573l6.336-3.475l2.374 6.134l.375.981l-6.766 1.952zm8.109-1.238l-.203-.531c-.003-.011-.001-.024-.006-.035l-.618-1.597l-2.754-7.206l11.023-5.815l4.592 11.48L19.3 18.385z"/><path d="M28.964.314a.5.5 0 0 0-.929.371l6 15a.502.502 0 0 0 .651.279a.501.501 0 0 0 .279-.65l-6.001-15z"/><path d="M18 21h-3c-1.14 0-2 .86-2 2v1.315l-5.879 6.859a.5.5 0 1 0 .758.651L13.73 25H16v6.5a.5.5 0 0 0 1 0V25h2.27l5.85 6.825a.497.497 0 0 0 .705.054a.5.5 0 0 0 .054-.705L20 24.315v-1.24C20 21.912 19.122 21 18 21zm1 3h-5v-1c0-.589.411-1 1-1h3c.57 0 1 .462 1 1.075V24z"/></g></svg>
+                            <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 14 14"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.34 4.814L.72 6.134m.88 2.412l3.619-1.319M4.12 4.211l1.318 3.62L13.5 5.575L11.741.75zm1.377 9.039l2.5-6.135l2.5 6.135M.5 5.53l1.319 3.62"/></svg>
+                        </a>
+                    </div>
+                    <div v-if="store.plugins.apiKey" class="ml-2 flex items-center">
+                        <a class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                           aria-expanded="false" aria-haspopup="true" v-href="{ dialog:'apikey' }">
+                            <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></g></svg>
                         </a>
                     </div>
                     <auth-nav v-if="store.plugins.auth" :auth="store.auth" :logout="store.logout"></auth-nav>
@@ -71,19 +77,24 @@ DEBUG = true /*debug*/
                             </h1>
                         </div>
                         <div class="pt-2 sm:mx-2 lg:mx-4">
-                            <component v-if="store.pageComponentFor(store.opDataModel)" :key="`${store.opDataModel}Grid`" :is="store.pageComponentFor(store.opDataModel)" :type="store.opDataModel"></component>
-                            <auto-query-grid v-else :key="store.opDataModel" ref="grid" :type="store.opDataModel">
-                                <template #formfooter="{ form, type, apis, model, id }">
-                                    <audit-events v-if="form === 'edit' && canAccessCrudEvents" class="mt-4" :key="id" :type="type" :id="id"></audit-events>
-                                </template>
-                                <template v-if="app.component(`New${store.opDataModel}`)" #createform="{ type, configure, done, save }">
-                                    <component :is="app.component(`New${store.opDataModel}`)" :type="type" :configure="configure" @save="save" @done="done" />
-                                </template>
-                                <template v-if="app.component(`Edit${store.opDataModel}`)" #editform="{ model, type, deleteType, configure, done, save }">
-                                    <component :is="app.component(`Edit${store.opDataModel}`)" :model="model" :type="type" :deleteType="deleteType" 
-                                               :configure="configure" @save="save" @done="done" />
-                                </template>
-                            </auto-query-grid>
+                            <alert v-if="store.op.requiresApiKey && !store.apikey" class="pt-4 px-4">
+                                This API Requires an <a v-href="{ dialog:'apikey' }" target="_blank" class="underline">API Key</a>
+                            </alert>
+                            <div v-else>
+                                <component v-if="store.pageComponentFor(store.opDataModel)" :key="`${store.opDataModel}Grid`" :is="store.pageComponentFor(store.opDataModel)" :type="store.opDataModel"></component>
+                                <auto-query-grid v-else :key="store.opDataModel" ref="grid" :type="store.opDataModel">
+                                    <template #formfooter="{ form, type, apis, model, id }">
+                                        <audit-events v-if="form === 'edit' && canAccessCrudEvents" class="mt-4" :key="id" :type="type" :id="id"></audit-events>
+                                    </template>
+                                    <template v-if="app.component(`New${store.opDataModel}`)" #createform="{ type, configure, done, save }">
+                                        <component :is="app.component(`New${store.opDataModel}`)" :type="type" :configure="configure" @save="save" @done="done" />
+                                    </template>
+                                    <template v-if="app.component(`Edit${store.opDataModel}`)" #editform="{ model, type, deleteType, configure, done, save }">
+                                        <component :is="app.component(`Edit${store.opDataModel}`)" :model="model" :type="type" :deleteType="deleteType"
+                                                   :configure="configure" @save="save" @done="done" />
+                                    </template>
+                                </auto-query-grid>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -91,6 +102,7 @@ DEBUG = true /*debug*/
             </div>
         </main>
     </div>
+    <api-key-dialog v-if="routes.dialog === 'apikey'" class="z-40" :title="store.plugins.apiKey?.label" @done="routes.to({ dialog:'' })"></api-key-dialog>
 </div>
 </template>
 
@@ -131,7 +143,7 @@ window.config = {
 <script>
 /*files:js/*.js */
 </script>
-<!--components:Brand-->
+<!--components:Brand,ApiKeyDialog-->
 <!--module:components/*.mjs-->
 <!--file:custom.html-->
 

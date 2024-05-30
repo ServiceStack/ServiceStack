@@ -746,7 +746,15 @@ public static class ViewUtils
         return value is "true" or "True" or "t" or "on" or "1";
     }
 
-    public static string GetParam(IRequest req, string name) //sync with IRequest.GetParam()
+    /// <summary>
+    /// Gets request parameter string value by looking in the following order:
+    /// - QueryString[name]
+    /// - FormData[name]
+    /// - Cookies[name]
+    /// - Items[name]
+    /// </summary>
+    /// <returns>string value or null if it doesn't exist</returns>
+    public static string GetParam(IRequest req, string name)
     {
         string value;
         if ((value = req.Headers[HttpHeaders.XParamOverridePrefix + name]) != null) return value;
