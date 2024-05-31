@@ -502,4 +502,16 @@ internal static class BufferedExtensions
         buffer.SetLength(buffer.Position = 0); //reset
     }
 
+    public static T AddTimingsIfNeeded<T>(this T req, ServiceStackHost appHost=null) where T : IRequest
+    {
+        appHost ??= HostContext.AppHost;
+        if (appHost == null) return req;
+        
+        var shouldProfile = appHost.ShouldProfileRequest(req);
+        if (shouldProfile || appHost.AddTimings)
+        {
+            req.SetItem(Keywords.RequestDuration, Stopwatch.GetTimestamp());
+        }
+        return req;
+    }
 }
