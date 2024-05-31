@@ -66,8 +66,7 @@ public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
         var soapFeature = requestAttributes.ToSoapFeature();
         appHost.AssertFeatures(soapFeature);
 
-        if (httpReq == null)
-            httpReq = HostContext.GetCurrentRequest();
+        httpReq ??= HostContext.GetCurrentRequest();
 
         if (httpRes == null && httpReq != null)
             httpRes = httpReq.Response;
