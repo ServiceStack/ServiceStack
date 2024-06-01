@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-05-31 18:56:15
+Date: 2024-06-02 00:36:50
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -40,7 +40,7 @@ export class ResponseStatus {
     meta;
 }
 export class PartialApiKey {
-    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },active?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -74,6 +74,8 @@ export class PartialApiKey {
     refIdStr;
     /** @type {{ [index: string]: string; }} */
     meta;
+    /** @type {boolean} */
+    active;
 }
 export class UserApiKeysResponse {
     /** @param {{results?:PartialApiKey[],responseStatus?:ResponseStatus}} [init] */

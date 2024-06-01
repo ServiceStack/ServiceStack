@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-05-30 14:58:38
+Date: 2024-06-02 02:35:51
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1005,6 +1005,9 @@ export class PartialApiKey
 
     // @DataMember(Order=16)
     public meta: { [index: string]: string; };
+
+    // @DataMember(Order=17)
+    public active: boolean;
 
     public constructor(init?: Partial<PartialApiKey>) { (Object as any).assign(this, init); }
 }

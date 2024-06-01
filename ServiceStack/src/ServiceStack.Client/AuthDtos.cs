@@ -817,6 +817,7 @@ public class PartialApiKey : IMeta
     [DataMember(Order = 14)] public int? RefId { get; set; }
     [DataMember(Order = 15)] public string RefIdStr { get; set; }
     [DataMember(Order = 16)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 17)] public bool Active { get; set; }
 }
 
 /// <summary>

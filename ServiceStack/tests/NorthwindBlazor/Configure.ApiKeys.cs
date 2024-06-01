@@ -14,11 +14,18 @@ public class ConfigureApiKeys : IHostingStartup
         {
             services.AddPlugin(new ApiKeysFeature
             {
+                Features = [
+                    "Tracking"
+                ],
+                
                 // Optional: Limit scope of API Key access
-                Scopes = [
+                UserScopes = [
+                    "todo:read",
+                    "todo:write",
                 ],
                 // Optional: Tag API Keys with additional features
-                Features = [
+                UserFeatures = [
+                    "User Tracking",
                 ],
             });
         })

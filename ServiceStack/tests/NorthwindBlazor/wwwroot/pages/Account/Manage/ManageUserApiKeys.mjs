@@ -108,8 +108,6 @@ const CreateApiKeyForm = {
       </div>
     `,
     props: {
-        userId: String,
-        userName: String,
         refId: Number,
         refIdStr: String,
         info: Object,
@@ -118,8 +116,6 @@ const CreateApiKeyForm = {
     setup(props, { emit }) {
         const client = useClient()
         const request = ref(new CreateUserApiKey({
-            userId: props.userId,
-            userName: props.userName,
             refId: props.refId,
             refIdStr: props.refIdStr,
         }))
@@ -318,7 +314,9 @@ const EditApiKeyForm = {
                 for (const feature of request.value.features) {
                     features.value[feature] = true
                 }
-                request.value.expiryDate = dateInputFormat(toDate(request.value.expiryDate))
+                request.value.expiryDate = request.value.expiryDate
+                    ? dateInputFormat(toDate(request.value.expiryDate))
+                    : null
                 origValues = { ...request.value }
             }
         })
@@ -338,12 +336,13 @@ const ManageUserApiKeys = {
           <SecondaryButton @click="toggleDialog('CreateApiKeyForm')">
             Create API Key
           </SecondaryButton>
-          <CreateApiKeyForm v-if="show==='CreateApiKeyForm'" :info="info" :userId="id" :userName="userName" @done="done" class="mt-2" :key="renderKey" />
+          <CreateApiKeyForm v-if="show==='CreateApiKeyForm'" :info="info" @done="done" class="mt-2" :key="renderKey" />
           <EditApiKeyForm v-else-if="selected" :info="info" :id="selected" @done="done" class="mt-2" :key="renderKey+1" />
         </div>
-        <div class="w-full px-1 -ml-1">
+        <div class="w-full overflow-auto px-1 -ml-1">
             <DataGrid v-if="api.response?.results?.length" :items="api.response.results"
-                      @row-selected="rowSelected" :is-selected="row => selected === row.id"
+                      @rowSelected="rowSelected" :isSelected="row => selected === row.id"
+                      :rowClass="(row,i) => !row.active ? 'cursor-pointer hover:bg-yellow-50 bg-red-100' : css.grid.getTableRowClass('stripedRows', i, selected === row.id, true)"
                       :headerTitles="{visibleKey:'Secret Key',createdDate:'Created',expiryDate:'Expires'}"
                       :selectedColumns="columns">
               <template #createdDate="{createdDate}">
@@ -379,32 +378,16 @@ const ManageUserApiKeys = {
 
         const { formatDate, relativeTime } = useFormatters()
         const columns = props.columns ?? "name,visibleKey,createdDate,expiryDate".split(',')
-        console.log('info', props.info)
-        if (props.info.scopes.length) {
-            columns.push('scopes')
-        }
-        if (props.info.features.length) {
-            columns.push('features')
-        }
         columns.push('lastUsedDate')
         
         const renderKey = ref(0)
         const api = new ref(new ApiResult())
         const client = useClient()
-        const id = computed(() => props.user.id || props.user.Id)
-        const userName = computed(() => props.user.userName || props.user.UserName)
         const show = ref('')
         const selected = ref()
         
         async function refresh() {
-            if (!id.value && !userName.value) {
-                console.error("No User Id or UserName found")
-                return
-            }
             const request = new QueryUserApiKeys({ orderBy:'-id' })
-            if (id.value) {
-                request.userId = id.value
-            }
             api.value = await client.api(request)
         }
         
@@ -428,7 +411,7 @@ const ManageUserApiKeys = {
             await refresh()
         })
         
-        return { renderKey, id, userName, columns, show, api, toggleDialog, done, formatDate, relativeTime, selected, rowSelected }
+        return { css, renderKey, columns, show, api, toggleDialog, done, formatDate, relativeTime, selected, rowSelected }
     }
 }
 

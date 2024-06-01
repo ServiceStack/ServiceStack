@@ -135,7 +135,7 @@ const CreateApiKeyForm = {
             emit('done')
         }
         
-        return { server, request, expiresIn, scopes, features, api, errorSummary, submit, css, apiKey, done }
+        return { css, server, request, expiresIn, scopes, features, api, errorSummary, submit, apiKey, done }
     }
 }
 
@@ -293,12 +293,14 @@ const EditApiKeyForm = {
                 for (const feature of request.value.features) {
                     features.value[feature] = true
                 }
-                request.value.expiryDate = dateInputFormat(toDate(request.value.expiryDate))
+                request.value.expiryDate = request.value.expiryDate 
+                    ? dateInputFormat(toDate(request.value.expiryDate)) 
+                    : null
                 origValues = { ...request.value }
             }
         })
         
-        return { server, css, request, scopes, features, errorSummary, formatDate,
+        return { css, server, request, scopes, features, errorSummary, formatDate,
             submit, submitDelete, submitDisable, submitEnable }
     }
 }
@@ -319,9 +321,10 @@ const ManageUserApiKeys = {
           <CreateApiKeyForm v-if="show==='CreateApiKeyForm'" :userId="id" :userName="userName" @done="done" class="mt-2" :key="renderKey" />
           <EditApiKeyForm v-else-if="selected" :id="selected" @done="done" class="mt-2" :key="renderKey" />
         </div>
-        <div class="w-full overflow-scroll px-1 -ml-1">
+        <div class="w-full overflow-auto px-1 -ml-1">
             <DataGrid v-if="api.response?.results?.length" :items="api.response.results"
-                      @row-selected="rowSelected" :is-selected="row => selected === row.id"
+                      @rowSelected="rowSelected" :isSelected="row => selected === row.id"
+                      :rowClass="(row,i) => !row.active ? 'cursor-pointer hover:bg-yellow-50 bg-red-100' : css.grid.getTableRowClass('stripedRows', i, selected === row.id, true)"
                       :headerTitles="{visibleKey:'Secret Key',createdDate:'Created',expiryDate:'Expires'}"
                       :selectedColumns="columns">
               <template #createdDate="{createdDate}">
@@ -405,7 +408,7 @@ const ManageUserApiKeys = {
             await refresh()
         })
         
-        return { renderKey, id, userName, columns, show, api, toggleDialog, done, formatDate, relativeTime, selected, rowSelected }
+        return { css, renderKey, id, userName, columns, show, api, toggleDialog, done, formatDate, relativeTime, selected, rowSelected }
     }
 }
 

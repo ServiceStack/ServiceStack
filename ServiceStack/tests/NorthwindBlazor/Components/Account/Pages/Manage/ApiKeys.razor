@@ -1,36 +1,17 @@
 ﻿@page "/Account/Manage/ApiKeys"
 
-@using MyApp.Data
-
-@inject IdentityUserAccessor UserAccessor
-@inject NavigationManager NavigationManager
-
 <PageTitle>Manage API Keys</PageTitle>
 
-<Heading3>Manage API Keys</Heading3>
-
 <div>
-    <StatusMessage Message="@message" />
-
+    <Heading3>Manage API Keys</Heading3>
     <div data-component="pages/Account/Manage/ManageUserApiKeys.mjs" data-props="@ToProps()"></div>
-    
 </div>
 
 @code {
-    private string? message;
-    private ApplicationUser user = default!;
-
-    public MarkupString ToProps() => BlazorHtml.RawJson(new
-    {
-        user = new { user.Id, user.UserName },
+    public MarkupString ToProps() => BlazorHtml.RawJson(new {
         info = HostContext.AppHost.GetPlugin<ApiKeysFeature>()?.GetApiKeyInfo(),
     });
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
-
-    protected override async Task OnInitializedAsync()
-    {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-    }
 }
