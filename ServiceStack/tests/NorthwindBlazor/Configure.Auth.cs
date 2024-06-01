@@ -12,10 +12,12 @@ public class ConfigureAuth : IHostingStartup
         .ConfigureServices(services =>
         {
             Console.WriteLine("ConfigureAuth.ConfigureServices()");
-            services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {
+            services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options =>
+            {
                 options.SessionFactory = () => new CustomUserSession();
                 options.CredentialsAuth();
-                options.JwtAuth(x => {
+                options.JwtAuth(x =>
+                {
                     x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90);
                 });
                 options.AdminUsersFeature(feature =>
@@ -51,9 +53,10 @@ public class ConfigureAuth : IHostingStartup
                     feature.FormLayout =
                     [
                         Input.For<ApplicationUser>(x => x.UserName, c => c.FieldsPerRow(2)),
-                        Input.For<ApplicationUser>(x => x.Email, c => { 
+                        Input.For<ApplicationUser>(x => x.Email, c =>
+                        {
                             c.Type = Input.Types.Email;
-                            c.FieldsPerRow(2); 
+                            c.FieldsPerRow(2);
                         }),
                         Input.For<ApplicationUser>(x => x.FirstName, c => c.FieldsPerRow(2)),
                         Input.For<ApplicationUser>(x => x.LastName, c => c.FieldsPerRow(2)),
@@ -61,7 +64,7 @@ public class ConfigureAuth : IHostingStartup
                         Input.For<ApplicationUser>(x => x.PhoneNumber, c =>
                         {
                             c.Type = Input.Types.Tel;
-                            c.FieldsPerRow(2); 
+                            c.FieldsPerRow(2);
                         }),
                     ];
                 });

@@ -33,6 +33,13 @@
         <NavLink class="@ManageNavPages.PersonalDataNavClass(NavigationManager)" 
                  id="personal-data" href="@ManageNavPages.PersonalData">Personal data</NavLink>
     </li>
+    @if (HostContext.AppHost.HasPlugin<ApiKeysFeature>())
+    {
+        <li>
+            <NavLink class="@ManageNavPages.PageNavClass(NavigationManager, "Account/Manage/ApiKeys")" 
+                     id="api-keys" href="Account/Manage/ApiKeys">API Keys</NavLink>
+        </li>
+    }
 </ul>
 
 @code {
