@@ -58,7 +58,7 @@ DEBUG = true /*debug*/
                         </div>
                         <div class="mx-auto px-4 sm:px-6 md:px-8">
                             <div class="py-4">
-                                <dashboard v-if="routes.admin === ''"></dashboard>
+                                <dashboard v-if="(routes.admin ?? '') === ''"></dashboard>
                                 <validation v-else-if="routes.admin === 'validation'"></validation>
                                 <identity-users v-else-if="routes.admin === 'users' && server?.plugins.auth?.identityAuth"></identity-users>
                                 <users v-else-if="routes.admin === 'users'"></users>
