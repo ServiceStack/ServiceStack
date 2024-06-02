@@ -341,8 +341,17 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 CommandFailures.TryDequeue(out _);
 
             CommandTotals.AddOrUpdate(result.Name, 
-                _ => new CommandSummary { Name = result.Name, Failed = 1, Retries = result.Retries.GetValueOrDefault(0), Count = 0, 
-                    TotalMs = 0, MinMs = -1, MaxMs = -1, LastError = result.Error },
+                _ => new CommandSummary {
+                    Type = result.Type,
+                    Name = result.Name, 
+                    Failed = 1, 
+                    Retries = result.Retries.GetValueOrDefault(0), 
+                    Count = 0, 
+                    TotalMs = 0, 
+                    MinMs = -1, 
+                    MaxMs = -1, 
+                    LastError = result.Error 
+                },
                 (_, summary) =>
                 {
                     summary.Failed++;
