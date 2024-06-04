@@ -57,6 +57,7 @@ const CreateApiKeyForm = {
           </div>
         </ModalDialog>
         <form v-else @submit="submit" :class="css.card.panelClass">
+          <input type="submit" class="hidden">
           <div class="bg-white dark:bg-black relative">
             <CloseButton class="sm:block" @close="$emit('done')" />
             <div class="">
@@ -164,6 +165,7 @@ const EditApiKeyForm = {
     template:`
         <div>
           <form @submit="submit" :class="css.card.panelClass">
+            <input type="submit" class="hidden">
             <div class="bg-white dark:bg-black relative">
               <CloseButton class="sm:block" @close="$emit('done')" />
               <div class="">
