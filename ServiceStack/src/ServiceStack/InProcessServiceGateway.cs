@@ -134,13 +134,8 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
             request = convertRequest.Convert(request);
 
         var appHost = HostContext.AppHost;
-        var filterResult = await appHost.ApplyGatewayRequestFiltersAsync(req, request);
-        if (!filterResult && !req.Response.IsClosed) 
+        if (!await appHost.ApplyGatewayRequestFiltersAsync(req, request)) 
             return default;
-        
-        // If req.Response is closed, assume populating the response is handled by the filter
-        if (req.Response.IsClosed)
-            return await ConvertToResponseAsync<TResponse>(req.Response).ConfigAwait();
 
         if (request is object[] requestDtos)
         {
