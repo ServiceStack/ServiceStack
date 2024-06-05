@@ -14,6 +14,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack;
@@ -296,6 +297,12 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         apiKeys.ForEach(InitKey);
         await db.InsertAllAsync(apiKeys);
     }
+    
+    public ApiKey? GetApiKey(IDbConnection db, string key) => db.Single<ApiKey>(x => x.Key == key);
+    public async Task<ApiKey?> GetApiKeyAsync(IDbConnection db, string key) => await db.SingleAsync<ApiKey>(x => x.Key == key).ConfigAwait();
+
+    public ApiKey? GetApiKeyById(IDbConnection db, int id) => db.SingleById<ApiKey>(id);
+    public async Task<ApiKey?> GetApiKeyByIdAsync(IDbConnection db, int id) => await db.SingleByIdAsync<ApiKey>(id).ConfigAwait();
 
     public void Configure(IServiceCollection services)
     {
