@@ -844,9 +844,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public List<string> GetAllPermissions()
     {
-        var to = new List<string> {
-        };
-
+        var to = new List<string>();
         foreach (var op in OperationsMap.Values)
         {
             op.RequiredPermissions.Each(x => to.AddIfNotExists(x));
@@ -922,6 +920,7 @@ public class Operation : ICloneable
         Routes = Routes?.ToList(),
         RequestFilterAttributes = RequestFilterAttributes,
         RequiresAuthentication = RequiresAuthentication,
+        RequiresApiKey = RequiresApiKey, 
         RequiredRoles = RequiredRoles?.ToList() ?? [],
         RequiresAnyRole = RequiresAnyRole?.ToList() ?? [],
         RequiredPermissions = RequiredPermissions?.ToList() ?? [],

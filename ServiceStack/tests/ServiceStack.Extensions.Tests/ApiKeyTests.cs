@@ -18,6 +18,12 @@ public class SecuredApiKey : IReturn<HelloResponse>
     public string Name { get; set; }
 }
 
+[ValidateApiKey]
+public class RestrictedApiKey : IReturn<HelloResponse>
+{
+    public string Name { get; set; }
+}
+
 [ValidateApiKey(ApiKeyTests.TheScope)]
 public class ScopedApiKey : IReturn<HelloResponse>
 {
@@ -44,6 +50,9 @@ public class ApiKeyServices : Service
     public object Any(SecuredApiKey request) => 
         new HelloResponse { Result = $"Hello, {request.Name}!" };
 
+    public object Any(RestrictedApiKey request) => 
+        new HelloResponse { Result = $"Hello, {request.Name}!" };
+
     public object Any(ScopedApiKey request) => 
         new HelloResponse { Result = $"Hello, {request.Name}!" };
 
@@ -64,6 +73,7 @@ public class ApiKeyTests
     public const string ScopeKey = "ak-0CC6FFF739304FC180FE8F778B7A360B";
     public const string AltKey = "ak-7B1CB47BDD6B4742914AEBE5E7D4D591";
     public const string AdminKey = "ak-CCEE28F476C2413191D62F57803297E4";
+    public const string RestrictedKey = "ak-4E155BB187734A87BAADB15D69F7604F";
 
     public const string AuthSecret = "zsecret";
     
@@ -85,6 +95,7 @@ public class ApiKeyTests
                 new() { Key = ScopeKey, UserId = "37AF1EF4-6E67-4171-B526-B830275CE9AE", UserName = "apiscope", Scopes = [TheScope] },
                 new() { Key = AltKey, UserId = "F4889349-367F-4918-A9F5-D96005F74C33", UserName = "altscope", Scopes = [AltScope] },
                 new() { Key = AdminKey, UserId = "40E566F2-DD08-4432-9D9C-528B3B0CCBEE", UserName = "admin", Scopes = [Roles.Admin] },
+                new() { Key = RestrictedKey, UserId = "9FDC4B8B-04AA-42AD-80AD-803FF8530EFB", UserName = "restricted", RestrictTo = [nameof(RestrictedApiKey)] },
             ]);
             
             SetConfig(new() {
@@ -123,7 +134,7 @@ public class ApiKeyTests
     public void TestFixtureTearDown() => AppHostBase.DisposeApp();
 
     [Test]
-    public async Task Does_not_allow_access_to_Api_Secured_with_ApiKey()
+    public async Task Does_not_allow_access_to_Api_Secured_without_ApiKey()
     {
         var client = new JsonApiClient(TestsConfig.ListeningOn);
         try
@@ -234,5 +245,23 @@ public class ApiKeyTests
         var apiAuthSecret = await client.ApiAsync(new AdminApiKey { Name = "Admin" });
         apiAuthSecret.ThrowIfError();
         Assert.That(apiAuthSecret.Response.Result, Is.EqualTo("Hello, Admin!"));
+    }
+
+    [Test]
+    public async Task Only_allows_Restricted_Key_to_call_RestrictedApiKey()
+    {
+        var client = new JsonApiClient(TestsConfig.ListeningOn);
+        var apiAnon = await client.ApiAsync(new RestrictedApiKey { Name = "Restricted" });
+        Assert.Throws<WebServiceException>(() => apiAnon.ThrowIfError());
+        
+        client = new JsonApiClient(TestsConfig.ListeningOn) {
+            BearerToken = RestrictedKey
+        };
+        var api = await client.ApiAsync(new RestrictedApiKey { Name = "Restricted" });
+        api.ThrowIfError();
+        Assert.That(api.Response.Result, Is.EqualTo("Hello, Restricted!"));
+        
+        var apiSecured = await client.ApiAsync(new SecuredApiKey { Name = "Restricted" });
+        Assert.Throws<WebServiceException>(() => apiSecured.ThrowIfError());
     }
 }

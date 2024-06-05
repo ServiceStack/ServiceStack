@@ -5,6 +5,7 @@ namespace MyApp.ServiceModel;
 
 [Tag("todos")]
 [Route("/todos", "GET")]
+[ValidateApiKey]
 public class QueryTodos : QueryData<Todo>
 {
     public int? Id { get; set; }
@@ -14,6 +15,7 @@ public class QueryTodos : QueryData<Todo>
 
 [Tag("todos")]
 [Route("/todos", "POST")]
+[ValidateApiKey]
 public class CreateTodo : IPost, IReturn<Todo>
 {
     [ValidateNotEmpty]
@@ -22,6 +24,7 @@ public class CreateTodo : IPost, IReturn<Todo>
 
 [Tag("todos")]
 [Route("/todos/{Id}", "PUT")]
+[ValidateApiKey]
 public class UpdateTodo : IPut, IReturn<Todo>
 {
     public long Id { get; set; }
@@ -32,6 +35,7 @@ public class UpdateTodo : IPut, IReturn<Todo>
 
 [Tag("todos")]
 [Route("/todos", "DELETE")]
+[ValidateApiKey]
 public class DeleteTodos : IDelete, IReturnVoid
 {
     public List<long> Ids { get; set; }

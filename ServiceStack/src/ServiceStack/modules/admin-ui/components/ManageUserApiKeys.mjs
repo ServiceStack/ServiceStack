@@ -3,6 +3,7 @@ import { ApiResult, toDate } from "@servicestack/client"
 import { useClient, useUtils, useFormatters, useMetadata, css } from "@servicestack/vue"
 import { AdminQueryApiKeys, AdminCreateApiKey, AdminUpdateApiKey, AdminDeleteApiKey } from "dtos"
 function arraysAreEqual(a, b) {
+    if (!a || !b) return false
     return a.length === b.length && a.every((v, i) => v === b[i])
 }
 const CreateApiKeyForm = {
@@ -43,6 +44,9 @@ const CreateApiKeyForm = {
                       </div>
                       <div class="col-span-6 sm:col-span-3">
                         <SelectInput id="expiresIn" v-model="expiresIn" :entries="server.plugins.apiKey.expiresIn" />
+                      </div>
+                      <div class="col-span-6">
+                        <TagInput id="restrictTo" label="Restrict to APIs" v-model="request.restrictTo" :allowableValues="apiKeyApis" />
                       </div>
                       <div v-if="server.plugins.apiKey.scopes.length" class="col-span-6">
                         <div class="mb-2">
@@ -102,6 +106,8 @@ const CreateApiKeyForm = {
         const features = ref({})
         const api = ref(new ApiResult())
         const errorSummary = computed(() => api.value.summaryMessage())
+        const apiKeyApis = computed(() => 
+            server.api.operations.filter(x => x.requiresApiKey).map(x => x.request.name))
         
         async function submit(e) {
             e.preventDefault()
@@ -133,7 +139,8 @@ const CreateApiKeyForm = {
             emit('done')
         }
         
-        return { css, server, request, expiresIn, scopes, features, api, errorSummary, submit, apiKey, done }
+        return { css, server, request, expiresIn, scopes, features, api, errorSummary, apiKeyApis, apiKey, 
+            submit, done }
     }
 }
 const EditApiKeyForm = {
@@ -153,6 +160,9 @@ const EditApiKeyForm = {
                         </div>
                         <div class="col-span-6 sm:col-span-3">
                           <TextInput id="expiryDate" type="date" v-model="request.expiryDate" />
+                        </div>
+                        <div class="col-span-6">
+                          <TagInput id="restrictTo" label="Restrict to APIs" v-model="request.restrictTo" :allowableValues="apiKeyApis" />
                         </div>
                         <div v-if="server.plugins.apiKey.scopes.length" class="col-span-6">
                           <div class="mb-2">
@@ -213,6 +223,8 @@ const EditApiKeyForm = {
         const features = ref({})
         const api = ref(new ApiResult())
         const errorSummary = computed(() => api.value.summaryMessage())
+        const apiKeyApis = computed(() =>
+            server.api.operations.filter(x => x.requiresApiKey).map(x => x.request.name))
         async function submit(e) {
             e.preventDefault()
             
@@ -230,16 +242,21 @@ const EditApiKeyForm = {
                     request.value.features.push(k)
                 }
             })
-            ;['name','expiryDate','scopes','features','notes'].forEach(k => {
+            ;['name','expiryDate','scopes','features','restrictTo','notes'].forEach(k => {
                 const value = request.value[k]
                 const origValue = origValues[k]
                 if (value === origValue) return
                 if (Array.isArray(value)) {
                     if (!origValue || !arraysAreEqual(value, origValue)) {
-                        update[k] = value
+                        if (value.length === 0) {
+                            update.reset ??= []
+                            update.reset.push(k)
+                        } else {
+                            update[k] = value
+                        }
                     }
                 }
-                if (value) {
+                else if (value) {
                     update[k] = value
                 } else {
                     update.reset ??= []
@@ -285,11 +302,11 @@ const EditApiKeyForm = {
                 request.value.expiryDate = request.value.expiryDate 
                     ? dateInputFormat(toDate(request.value.expiryDate)) 
                     : null
-                origValues = { ...request.value }
+                origValues = { ...result }
             }
         })
         
-        return { css, server, request, scopes, features, errorSummary, formatDate,
+        return { css, server, request, scopes, features, errorSummary, formatDate, apiKeyApis,
             submit, submitDelete, submitDisable, submitEnable }
     }
 }

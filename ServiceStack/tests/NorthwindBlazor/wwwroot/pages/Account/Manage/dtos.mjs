@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-06-02 00:36:50
+Date: 2024-06-06 02:20:36
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -40,7 +40,7 @@ export class ResponseStatus {
     meta;
 }
 export class PartialApiKey {
-    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },active?:boolean}} [init] */
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],restrictTo?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },active?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -66,6 +66,8 @@ export class PartialApiKey {
     scopes;
     /** @type {string[]} */
     features;
+    /** @type {string[]} */
+    restrictTo;
     /** @type {string} */
     notes;
     /** @type {?number} */
@@ -117,7 +119,7 @@ export class QueryUserApiKeys {
     createResponse() { return new UserApiKeysResponse() }
 }
 export class CreateUserApiKey {
-    /** @param {{name?:string,scopes?:string[],features?:string[],expiryDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{name?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -125,6 +127,8 @@ export class CreateUserApiKey {
     scopes;
     /** @type {string[]} */
     features;
+    /** @type {string[]} */
+    restrictTo;
     /** @type {?string} */
     expiryDate;
     /** @type {string} */
@@ -140,7 +144,7 @@ export class CreateUserApiKey {
     createResponse() { return new UserApiKeyResponse() }
 }
 export class UpdateUserApiKey {
-    /** @param {{id?:number,name?:string,scopes?:string[],features?:string[],expiryDate?:string,cancelledDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },reset?:string[]}} [init] */
+    /** @param {{id?:number,name?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,cancelledDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },reset?:string[]}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -150,6 +154,8 @@ export class UpdateUserApiKey {
     scopes;
     /** @type {string[]} */
     features;
+    /** @type {string[]} */
+    restrictTo;
     /** @type {?string} */
     expiryDate;
     /** @type {?string} */

@@ -117,6 +117,11 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
 
         public List<string> Features { get; set; } = [];
 
+        /// <summary>
+        /// Restricted to only access specific APIs
+        /// </summary>
+        public List<string> RestrictTo { get; set; } = [];
+
         public string? Environment { get; set; }
 
         public string? Notes { get; set; }
@@ -127,6 +132,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         
         public bool HasScope(string scope) => Scopes.Contains(scope);
         public bool HasFeature(string feature) => Features.Contains(feature);
+        public bool CanAccess(Type requestType) => RestrictTo.IsEmpty() || RestrictTo.Contains(requestType.Name);
 
         public Dictionary<string, string>? Meta { get; set; }
     }
@@ -168,12 +174,20 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
             Scopes = UserScopes,
             Features = UserFeatures,
             ExpiresIn = ExpiresIn,
+            RequestTypes = HostContext.Metadata.Operations
+                .Where(x => x.RequiresApiKey)
+                .Select(x => x.RequestType.Name)
+                .OrderBy(x => x)
+                .ToList(),
         };
     }
 
     public PartialApiKey ToPartialApiKey(ApiKey apiKey)
     {
         var to = apiKey.ConvertTo<PartialApiKey>();
+        to.Scopes ??= [];
+        to.Features ??= [];
+        to.RestrictTo ??= [];
         to.Active = apiKey.CancelledDate == null && (apiKey.ExpiryDate == null || apiKey.ExpiryDate > DateTime.UtcNow);
         return to;
     }
@@ -422,8 +436,13 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
         foreach (var entry in dict)
         {
             if (entry.Key == nameof(request.Reset)) continue;
-            if (entry.Value != null || reset.Contains(entry.Key))
+            if (reset.Contains(entry.Key))
             {
+                updateModel[entry.Key] = null;
+            }
+            else if (entry.Value != null)
+            {
+                if (entry.Value is List<string> { Count: 0 }) continue;
                 updateModel[entry.Key] = entry.Value;
             }
         }
@@ -524,8 +543,13 @@ public class UserApiKeysService(IDbConnectionFactory dbFactory) : Service
         foreach (var entry in dict)
         {
             if (entry.Key == nameof(request.Reset)) continue;
-            if (entry.Value != null || reset.Contains(entry.Key))
+            if (reset.Contains(entry.Key))
             {
+                updateModel[entry.Key] = null;
+            }
+            else if (entry.Value != null)
+            {
+                if (entry.Value is List<string> { Count: 0 }) continue;
                 updateModel[entry.Key] = entry.Value;
             }
         }

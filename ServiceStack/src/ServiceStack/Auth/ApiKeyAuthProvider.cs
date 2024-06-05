@@ -66,6 +66,7 @@ namespace ServiceStack.Auth
         public Dictionary<string, string> Meta { get; set; }
         public bool HasScope(string scope) => false;
         public bool HasFeature(string feature) => false;
+        public bool CanAccess(Type requestType) => false;
     }
 
     public delegate string CreateApiKeyDelegate(string environment, string keyType, int keySizeBytes);
