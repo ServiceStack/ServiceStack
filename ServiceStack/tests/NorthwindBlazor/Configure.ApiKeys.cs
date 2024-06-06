@@ -45,14 +45,9 @@ public class ConfigureApiKeys : IHostingStartup
             // Optional, create API Key for specified Users
             if (apiKeysFeature.ApiKeyCount(db) == 0)
             {
-                var createApiKeysFor = new [] { "admin@email.com", "manager@email.com" };
-                var users = db.Select<ApplicationUser>(x => createApiKeysFor.Contains(x.UserName));
-                // Example using EF
-                // var scopeFactory = appHost.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
-                // using var scope = scopeFactory.CreateScope();
-                // using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                // var users = dbContext.Users.Where(x => createApiKeysFor.Contains(x.UserName));
-                
+                string[] createApiKeysFor = ["admin@email.com", "manager@email.com"];
+                var users = IdentityUsers.GetByUserNames(db, createApiKeysFor);
+
                 foreach (var user in users)
                 {
                     List<string> scopes = user.UserName == "admin@email.com"

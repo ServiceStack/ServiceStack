@@ -471,6 +471,62 @@ public class IdentityJwtAuthProviderTests
             BearerToken = bearerToken,
         }));
     }
+
+    [Test]
+    public void Can_use_IdentityUsers_to_query_AspNetUsers()
+    {
+        using var db = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IDbConnectionFactory>().Open();
+        string[] userNames = ["manager@email.com", "admin@email.com"];
+        
+        var users = IdentityUsers.GetByUserNames(db, userNames);
+        Assert.That(users.Count, Is.EqualTo(2));
+        
+        var userIds = users.Map(x => x.Id);
+        var emails = users.Map(x => x.Email!);
+        
+        Assert.That(userIds.All(x => x != null));
+        Assert.That(emails.All(x => x != null));
+
+        var user = IdentityUsers.GetByUserId(db, userIds[0]);
+        Assert.That(user!.Email!.EndsWith("@email.com"));
+
+        user = IdentityUsers.GetByEmail(db, emails[0]);
+        Assert.That(user!.Email!.EndsWith("@email.com"));
+        
+        users = IdentityUsers.GetByUserIds(db, userIds);
+        Assert.That(users.Count, Is.EqualTo(2));
+        
+        users = IdentityUsers.GetByEmails(db, emails);
+        Assert.That(users.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Can_use_IdentityUsers_to_query_AspNetUsers_Async()
+    {
+        using var db = await ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IDbConnectionFactory>().OpenAsync();
+        string[] userNames = ["manager@email.com", "admin@email.com"];
+        
+        var users = await IdentityUsers.GetByUserNamesAsync(db, userNames);
+        Assert.That(users.Count, Is.EqualTo(2));
+        
+        var userIds = users.Map(x => x.Id);
+        var emails = users.Map(x => x.Email!);
+        
+        Assert.That(userIds.All(x => x != null));
+        Assert.That(emails.All(x => x != null));
+
+        var user = await IdentityUsers.GetByUserIdAsync(db, userIds[0]);
+        Assert.That(user!.Email!.EndsWith("@email.com"));
+
+        user = await IdentityUsers.GetByEmailAsync(db, emails[0]);
+        Assert.That(user!.Email!.EndsWith("@email.com"));
+        
+        users = await IdentityUsers.GetByUserIdsAsync(db, userIds);
+        Assert.That(users.Count, Is.EqualTo(2));
+        
+        users = await IdentityUsers.GetByEmailsAsync(db, emails);
+        Assert.That(users.Count, Is.EqualTo(2));
+    }
 }
 
 #endif

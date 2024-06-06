@@ -676,11 +676,12 @@ public class ServiceMetadata(List<RestPath> restPaths)
         }
     }
 
-    public static bool IsDtoType(Type? type) => type != null &&
-                                                type.Namespace?.StartsWith("System") == false &&
-                                                type.IsClass && type != typeof(string) &&
-                                                !type.IsArray &&
-                                                !type.HasInterface(typeof(IService));
+    public static bool IsDtoType(Type? type) => 
+        type != null &&
+        type.Namespace?.StartsWith("System") == false &&
+        type.IsClass && type != typeof(string) &&
+        !type.IsArray &&
+        !type.HasInterface(typeof(IService));
 
     public List<MetadataType> GetMetadataTypesForOperation(IRequest httpReq, Operation op)
     {
@@ -866,7 +867,6 @@ public class ServiceMetadata(List<RestPath> restPaths)
                 : dto.ConvertTo(requestType);
         return requestDto;
     }
-        
 }
 
 public class Operation : ICloneable
