@@ -14,7 +14,9 @@ namespace ServiceStack;
 
 public static class IdentityUsers
 {
-    static readonly string[] ColumnNames = [
+    public static string TableName { get; set; } = "AspNetUsers";
+    
+    public static string[] ColumnNames { get; set; } = [
         nameof(IdentityUser.Id),
         nameof(IdentityUser.UserName),
         nameof(IdentityUser.NormalizedUserName),
@@ -35,7 +37,7 @@ public static class IdentityUsers
     private static string GetSelectFromAspNetUsersSql(IOrmLiteDialectProvider dialect)
     {
         var sqlColumns = string.Join(',', ColumnNames.Select(dialect.GetQuotedName));
-        var sqlSelect = $"SELECT {sqlColumns} FROM {dialect.GetQuotedName("AspNetUsers")}";
+        var sqlSelect = $"SELECT {sqlColumns} FROM {dialect.GetQuotedName(TableName)}";
         return sqlSelect;
     }
 

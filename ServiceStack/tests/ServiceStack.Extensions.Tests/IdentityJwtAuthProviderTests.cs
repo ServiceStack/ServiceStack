@@ -477,6 +477,8 @@ public class IdentityJwtAuthProviderTests
     {
         using var db = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IDbConnectionFactory>().Open();
         string[] userNames = ["manager@email.com", "admin@email.com"];
+
+        Assert.That(db.TableExists(IdentityUsers.TableName));
         
         var users = IdentityUsers.GetByUserNames(db, userNames);
         Assert.That(users.Count, Is.EqualTo(2));
@@ -506,6 +508,8 @@ public class IdentityJwtAuthProviderTests
         using var db = await ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IDbConnectionFactory>().OpenAsync();
         string[] userNames = ["manager@email.com", "admin@email.com"];
         
+        Assert.That(await db.TableExistsAsync(IdentityUsers.TableName));
+
         var users = await IdentityUsers.GetByUserNamesAsync(db, userNames);
         Assert.That(users.Count, Is.EqualTo(2));
         
