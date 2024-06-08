@@ -208,7 +208,7 @@ const EditApiKeyForm = {
                           <TextareaInput id="notes" v-model="request.notes" placeholder="Optional Notes about this API Key" class="h-24" />
                         </div>
                       </div>
-                      <div class="col-span-6">
+                      <div class="mt-2 col-span-6">
                         <div v-if="request.cancelledDate" class="flex items-center">
                             <div class="text-red-500">Disabled on {{formatDate(request.cancelledDate)}}</div>
                             <SecondaryButton @click="submitEnable" class="ml-4">Enable API Key</SecondaryButton>
