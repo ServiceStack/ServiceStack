@@ -50,6 +50,11 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public List<string> Features { get; set; } = [];
 
     /// <summary>
+    /// Hide 'RestrictTo' field from User API Key UI
+    /// </summary>
+    public List<string> Hide { get; set; } = [];
+
+    /// <summary>
     /// Available Scopes Users can assign to their own API Keys
     /// </summary>
     public List<string> UserScopes { get; set; } = [];
@@ -58,6 +63,11 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     /// Available Features Users can assign to their own API Keys
     /// </summary>
     public List<string> UserFeatures { get; set; } = [];
+
+    /// <summary>
+    /// Hide 'RestrictTo' field from User API Key UI
+    /// </summary>
+    public List<string> UserHide { get; set; } = [];
     
     public List<KeyValuePair<string, string>> ExpiresIn { get; set; } = [
         new("", "Never"),
@@ -161,6 +171,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
                 Scopes = Scopes,
                 Features = Features,
                 ExpiresIn = ExpiresIn,
+                Hide = Hide,
             };
         });
     }
@@ -174,6 +185,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
             Scopes = UserScopes,
             Features = UserFeatures,
             ExpiresIn = ExpiresIn,
+            Hide = UserHide,
             RequestTypes = HostContext.Metadata.Operations
                 .Where(x => x.RequiresApiKey)
                 .Select(x => x.RequestType.Name)

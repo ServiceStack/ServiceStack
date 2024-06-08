@@ -27,6 +27,7 @@ public class ConfigureApiKeys : IHostingStartup
                 UserFeatures = [
                     "User Tracking",
                 ],
+                UserHide = [nameof(ApiKeysFeature.ApiKey.RestrictTo)],
             });
         })
         .ConfigureAppHost(appHost =>

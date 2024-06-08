@@ -45,7 +45,7 @@ const CreateApiKeyForm = {
                       <div class="col-span-6 sm:col-span-3">
                         <SelectInput id="expiresIn" v-model="expiresIn" :entries="server.plugins.apiKey.expiresIn" />
                       </div>
-                      <div class="col-span-6">
+                      <div v-if="!server.plugins.apiKey.hide.includes('RestrictTo')" class="col-span-6">
                         <TagInput id="restrictTo" label="Restrict to APIs" v-model="request.restrictTo" :allowableValues="apiKeyApis" />
                       </div>
                       <div v-if="server.plugins.apiKey.scopes.length" class="col-span-6">
@@ -64,7 +64,7 @@ const CreateApiKeyForm = {
                           <CheckboxInput v-for="feature in server.plugins.apiKey.features" :id="feature" :label="feature" v-model="features[feature]" />
                         </div>
                       </div>
-                      <div class="col-span-6">
+                      <div v-if="!server.plugins.apiKey.hide.includes('Notes')" class="col-span-6">
                         <TextareaInput id="notes" v-model="request.notes" placeholder="Optional Notes about this API Key" class="h-24" />
                       </div>
                     </div>
@@ -161,7 +161,7 @@ const EditApiKeyForm = {
                         <div class="col-span-6 sm:col-span-3">
                           <TextInput id="expiryDate" type="date" v-model="request.expiryDate" />
                         </div>
-                        <div class="col-span-6">
+                        <div v-if="!server.plugins.apiKey.hide.includes('RestrictTo')" class="col-span-6">
                           <TagInput id="restrictTo" label="Restrict to APIs" v-model="request.restrictTo" :allowableValues="apiKeyApis" />
                         </div>
                         <div v-if="server.plugins.apiKey.scopes.length" class="col-span-6">
@@ -180,11 +180,11 @@ const EditApiKeyForm = {
                             <CheckboxInput v-for="feature in server.plugins.apiKey.features" :id="feature" :label="feature" v-model="features[feature]" />
                           </div>
                         </div>
-                        <div class="col-span-6">
+                        <div v-if="!server.plugins.apiKey.hide.includes('Notes')" class="col-span-6">
                           <TextareaInput id="notes" v-model="request.notes" placeholder="Optional Notes about this API Key" class="h-24" />
                         </div>
                       </div>
-                      <div class="col-span-6">
+                      <div class="mt-2 col-span-6">
                         <div v-if="request.cancelledDate" class="flex items-center">
                             <div class="text-red-500">Disabled on {{formatDate(request.cancelledDate)}}</div>
                             <SecondaryButton @click="submitEnable" class="ml-4">Enable API Key</SecondaryButton>

@@ -430,6 +430,7 @@ public class ApiKeyInfo : IMeta
     public List<string> Features { get; set; }
     public List<string> RequestTypes { get; set; }
     public List<KeyValuePair<string, string>> ExpiresIn { get; set; }
+    public List<string> Hide { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 
