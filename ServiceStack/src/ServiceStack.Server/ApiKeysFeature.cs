@@ -25,7 +25,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public string AdminRole { get; set; } = RoleNames.Admin;
 
     public string? ApiKeyPrefix = "ak-";
-    public string? HttpHeader = "x-api-key";
+    public string? HttpHeader = HttpHeaders.XApiKey;
     public TimeSpan? CacheDuration = TimeSpan.FromMinutes(10);
     public Func<string>? ApiKeyGenerator { get; set; }
     public TimeSpan? DefaultExpiry { get; set; }
