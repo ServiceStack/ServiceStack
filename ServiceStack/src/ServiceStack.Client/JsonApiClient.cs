@@ -210,8 +210,8 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         Headers[name] = value;
     }
 
-    public void DeleteHeader(string name) => Headers?.Remove(name);
-    public void ClearHeaders() => Headers?.Clear();
+    public void DeleteHeader(string name) => Headers.Remove(name);
+    public void ClearHeaders() => Headers.Clear();
 
     private int activeAsyncRequests;
     
