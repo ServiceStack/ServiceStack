@@ -53,9 +53,6 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
     public JsonApiClient(string baseUri)
     {
-        this.Format = "json";
-        this.Headers = new NameValueCollection();
-        this.CookieContainer = new CookieContainer();
         SetBaseUri(this.BaseUri = baseUri);
         JsConfig.InitStatics();
     }
@@ -67,7 +64,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     public HttpMessageHandler? HttpMessageHandler { get; set; }
 
     public HttpClient? HttpClient { get; set; }
-    public CookieContainer? CookieContainer { get; set; }
+    public CookieContainer CookieContainer { get; set; } = new();
 
     public ResultsFilterHttpDelegate? ResultsFilter { get; set; }
     public ResultsFilterHttpResponseDelegate? ResultsFilterResponse { get; set; }
@@ -75,7 +72,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
     public string BaseUri { get; set; }
 
-    public string? Format { get; private set; }
+    public string Format { get; private set; } = "json";
     public string? RequestCompressionType { get; set; }
     public string? ContentType = MimeTypes.Json;
 
@@ -102,7 +99,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     /// <summary>
     /// Gets the collection of headers to be added to outgoing requests.
     /// </summary>
-    public NameValueCollection? Headers { get; private set; }
+    public NameValueCollection Headers { get; private set; } = [];
 
     public Action<HttpRequestMessage>? RequestFilter { get; set; }
     public static Action<HttpRequestMessage>? GlobalRequestFilter { get; set; }
@@ -122,7 +119,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
     /// <summary>
     /// Replace the Base reply/oneway paths to use a different prefix
-    /// </summary>
+    /// </summary>  
     public string UseBasePath
     {
         set
@@ -210,7 +207,6 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
     public void AddHeader(string name, string value)
     {
-        Headers ??= new NameValueCollection();
         Headers[name] = value;
     }
 

@@ -29,7 +29,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     public HttpMessageHandler HttpMessageHandler { get; set; }
 
     public HttpClient HttpClient { get; set; }
-    public CookieContainer CookieContainer { get; set; }
+    public CookieContainer CookieContainer { get; set; } = new();
 
     public ResultsFilterHttpDelegate ResultsFilter { get; set; }
     public ResultsFilterHttpResponseDelegate ResultsFilterResponse { get; set; }
@@ -40,7 +40,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
 
     public string BaseUri { get; set; }
 
-    public string Format { get; private set; }
+    public string Format { get; private set; } = "json";
     public string RequestCompressionType { get; set; }
     public string ContentType = MimeTypes.Json;
 
@@ -67,7 +67,7 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
     /// <summary>
     /// Gets the collection of headers to be added to outgoing requests.
     /// </summary>
-    public NameValueCollection Headers { get; private set; }
+    public NameValueCollection Headers { get; private set; } = [];
 
     public JsonHttpClient SetBaseUri(string baseUri)
     {
@@ -125,10 +125,6 @@ public class JsonHttpClient : IServiceClient, IJsonServiceClient, IHasCookieCont
 
     public JsonHttpClient()
     {
-        this.Format = "json";
-        this.Headers = new NameValueCollection();
-        this.CookieContainer = new CookieContainer();
-
         JsConfig.InitStatics();
     }
 
