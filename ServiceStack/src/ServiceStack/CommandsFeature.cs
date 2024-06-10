@@ -18,6 +18,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Messaging;
 using ServiceStack.Model;
 using ServiceStack.Redis;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack;
@@ -181,13 +182,25 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         {
             return feature.ExecuteCommandAsync(command, request);
         }
+
+        public async Task<TResult> ExecuteWithResultAsync<TRequest, TResult>(IAsyncCommand<TRequest, TResult> command, TRequest request)
+        {
+            return await feature.ExecuteCommandWithResultAsync(command, request).ConfigAwait();
+        }
     }
 
-    public Task ExecuteCommandAsync<TCommand, TRequest>(TCommand command, TRequest request) 
+    public async Task ExecuteCommandAsync<TCommand, TRequest>(TCommand command, TRequest request) 
         where TCommand : IAsyncCommand<TRequest> 
     {
         ArgumentNullException.ThrowIfNull(request);
-        return ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request);
+        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request).ConfigAwait();
+    }
+    
+    public async Task<TResult> ExecuteCommandWithResultAsync<TRequest, TResult>(IAsyncCommand<TRequest, TResult> command, TRequest request) 
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request).ConfigAwait();
+        return command.Result;
     }
     
     public RetryPolicy? GetRetryPolicy(Type commandType)

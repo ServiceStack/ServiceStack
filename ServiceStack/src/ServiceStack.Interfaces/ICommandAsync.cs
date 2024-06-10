@@ -20,6 +20,7 @@ public interface ICommandExecutor
 {
     TCommand Command<TCommand>() where TCommand : IAsyncCommand;
     Task ExecuteAsync<TRequest>(IAsyncCommand<TRequest> command, TRequest request);
+    Task<TResult> ExecuteWithResultAsync<TRequest, TResult>(IAsyncCommand<TRequest, TResult> command, TRequest request);
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]

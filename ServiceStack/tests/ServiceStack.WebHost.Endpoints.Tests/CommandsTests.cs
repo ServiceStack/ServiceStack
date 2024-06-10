@@ -1,4 +1,6 @@
 #if NET6_0_OR_GREATER    
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -80,6 +82,22 @@ public class CommandsTests
         var commandResults = feature.CommandFailures.ToList();
         Assert.That(commandResults.Map(x => x.Attempt), Is.EquivalentTo(new[]{ 1, 2, 3, 4, 5 }));
     }
+
+    [Test]
+    public async Task Can_execute_command_with_Result()
+    {
+        var feature = CreateCommandsFeature();
+        var command = new AddContactCommand();
+        var result = await feature.ExecuteCommandWithResultAsync(command, new CreateContact
+        {
+            FirstName = "First",
+            LastName = "Last",
+        });
+        
+        Assert.That(result!.Id, Is.EqualTo(1));
+        Assert.That(result.FirstName, Is.EqualTo("First"));
+        Assert.That(result.LastName, Is.EqualTo("Last"));
+    }
 }
 
 public class FailedRequest {}
@@ -128,6 +146,18 @@ public class FailTimes4Command : IAsyncCommand<FailedRequest>
         if (Attempts++ < 5)
             throw new Exception($"{Attempts} Attempt Failed");
         return Task.CompletedTask;
+    }
+}
+
+public class AddContactCommand : IAsyncCommand<CreateContact,Contact?>
+{
+    public Contact? Result { get; private set; }
+    
+    public async Task ExecuteAsync(CreateContact request)
+    {
+        var newContact = request.ConvertTo<Contact>();
+        newContact.Id = 1;
+        Result = newContact;
     }
 }
 

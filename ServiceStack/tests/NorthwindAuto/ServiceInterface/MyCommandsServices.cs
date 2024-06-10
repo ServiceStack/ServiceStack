@@ -24,12 +24,12 @@ public class MyCommands
 [Tag("Todo")]
 public class AddTodoCommand(IDbConnection db) : IAsyncCommand<CreateTodo,Todo?>
 {
-    public Todo? Result { get; set; }
+    public Todo? Result { get; private set; }
     
     public async Task ExecuteAsync(CreateTodo request)
     {
         var newTodo = request.ConvertTo<Todo>();
-        await db.InsertAsync(newTodo);
+        newTodo.Id = await db.InsertAsync(newTodo, selectIdentity:true);
         Result = newTodo;
     }
 }
