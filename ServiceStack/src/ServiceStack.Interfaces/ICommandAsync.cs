@@ -10,11 +10,11 @@ public interface IAsyncCommand<in T> : IAsyncCommand
 }
 public interface IAsyncCommand { }
 
-public interface IHasResult<T>
+public interface IHasResult<out T>
 {
-    T Result { get; set; }
+    T Result { get; }
 }
-public interface IAsyncCommand<in TRequest, TResult> : IAsyncCommand<TRequest>, IHasResult<TResult> { }
+public interface IAsyncCommand<in TRequest, out TResult> : IAsyncCommand<TRequest>, IHasResult<TResult> { }
 
 public interface ICommandExecutor
 {
