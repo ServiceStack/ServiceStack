@@ -22,9 +22,9 @@ public class MyCommands
 
 [Retry]
 [Tag("Todo")]
-public class AddTodoCommand(IDbConnection db) : IAsyncCommand<CreateTodo>, IHasResult<Todo>
+public class AddTodoCommand(IDbConnection db) : IAsyncCommand<CreateTodo,Todo?>
 {
-    public Todo Result { get; set; }
+    public Todo? Result { get; set; }
     
     public async Task ExecuteAsync(CreateTodo request)
     {

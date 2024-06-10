@@ -14,6 +14,7 @@ public interface IHasResult<T>
 {
     T Result { get; set; }
 }
+public interface IAsyncCommand<in TRequest, TResult> : IAsyncCommand<TRequest>, IHasResult<TResult> { }
 
 public interface ICommandExecutor
 {
