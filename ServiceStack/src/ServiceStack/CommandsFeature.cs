@@ -284,6 +284,10 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 if (SkipRetryingExceptionTypes.Contains(e.GetType()))
                     return errorResult;
 
+                // Handle WebServiceException
+                if (e.InnerException != null && SkipRetryingExceptionTypes.Contains(e.InnerException.GetType()))
+                    return errorResult;
+
                 var retry = retryPolicy.Value;
                 if (++retries > retry.Times)
                     return errorResult;
