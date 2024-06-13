@@ -32,7 +32,7 @@ public static class ValidationFilters
 
         using (validator as IDisposable)
         {
-            if (validator is IHasTypeValidators hasTypeValidators && hasTypeValidators.TypeValidators.Count > 0)
+            if (validator is IHasTypeValidators { TypeValidators.Count: > 0 } hasTypeValidators)
             {
                 foreach (var scriptValidator in hasTypeValidators.TypeValidators)
                 {
@@ -85,8 +85,7 @@ public static class ValidationFilters
                     var responseStatus = errorResponse.GetResponseStatus();
                     if (responseStatus != null)
                     {
-                        if (responseStatus.Meta == null)
-                            responseStatus.Meta = new Dictionary<string, string>();
+                        responseStatus.Meta ??= new Dictionary<string, string>();
                         responseStatus.Meta[Keywords.AutoBatchIndex] = autoBatchIndex;
                     }
                 }
@@ -113,7 +112,7 @@ public static class ValidationFilters
 
     public static async Task ResponseFilterAsync(IRequest req, IResponse res, object requestDto)
     {
-        if (!(requestDto is IHasResponseStatus response))
+        if (requestDto is not IHasResponseStatus response)
             return;
 
         var validator = ValidatorCache.GetValidator(req, req.Dto.GetType());

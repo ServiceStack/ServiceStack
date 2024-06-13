@@ -15,10 +15,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using ServiceStack.FluentValidation;
+using ServiceStack.Host;
 using ServiceStack.Messaging;
 using ServiceStack.Model;
 using ServiceStack.Redis;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack;
@@ -34,6 +37,15 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     public int TimingsCapacity { get; set; } = 1000;
     public RetryPolicy DefaultRetryPolicy { get; set; } = new(
         Times:3, Behavior:RetryBehavior.FullJitterBackoff, DelayMs:100, MaxDelayMs:60_000, DelayFirst:false);
+    
+    public Func<Exception, bool> SkipRetryingExceptions { get; set; } = ex => false;
+
+    public List<Type> SkipRetryingExceptionTypes { get; set; } = [
+        typeof(ArgumentException),
+        typeof(ArgumentNullException),
+        typeof(ValidationException),
+        typeof(ValidationError),
+    ];
 
     public List<Func<IEnumerable<Type>>> TypeResolvers { get; set; } = [
         ScanServiceAssemblies
@@ -156,13 +168,16 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         }
     }
 
+    public ValidationFeature? ValidationFeature { get; set; }
+
     public ILogger<CommandsFeature>? Log { get; set; }
 
     public void Register(IAppHost appHost)
     {
         if (appHost is ServiceStackHost host)
             host.AddTimings = true;
-        
+
+        ValidationFeature ??= appHost.GetPlugin<ValidationFeature>();
         Log ??= appHost.GetApplicationServices().GetRequiredService<ILogger<CommandsFeature>>();
         
         appHost.AddToAppMetadata(meta =>
@@ -225,10 +240,16 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         RetryPolicy? retryPolicy = null;
         var retries = 0;
         var sw = Stopwatch.StartNew();
+        
         while (true)
         {
             try
             {
+                if (ValidationFeature != null)
+                {
+                    await ValidationFeature.ValidateRequestAsync(requestDto, new BasicHttpRequest());
+                }
+        
                 await execFn(requestDto);
                 Log!.LogDebug("{Command} took {ElapsedMilliseconds}ms to execute", commandType.Name, sw.ElapsedMilliseconds);
 
@@ -255,6 +276,12 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 // Only try commands annotated with [Retry]
                 retryPolicy ??= GetRetryPolicy(commandType);
                 if (retryPolicy == null)
+                    return errorResult;
+
+                if (SkipRetryingExceptions(e))
+                    return errorResult;
+                
+                if (SkipRetryingExceptionTypes.Contains(e.GetType()))
                     return errorResult;
 
                 var retry = retryPolicy.Value;
@@ -587,6 +614,7 @@ public class CommandsService(ILogger<CommandsService> log) : Service
         var commandRequest = string.IsNullOrEmpty(request.RequestJson)
             ? requestType.CreateInstance()
             : Text.JsonSerializer.DeserializeFromString(request.RequestJson, requestType);
+
         var services = Request.GetServiceProvider();
         var command = services.GetRequiredService(commandType);
         var commandResult = await feature.ExecuteCommandAsync(command, commandRequest);

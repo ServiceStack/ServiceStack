@@ -32,7 +32,7 @@ public class CommandAttribute(Type commandType) : AttributeBase
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class CommandAttribute<T>() : CommandAttribute(typeof(T)) where T : IAsyncCommand;
 
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public class LifetimeAttribute(Lifetime lifetime = Lifetime.Transient)
     : AttributeBase
 {
