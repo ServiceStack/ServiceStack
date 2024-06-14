@@ -127,13 +127,13 @@ public static class DeserializeType<TSerializer>
 
             var type = JsConfig.TypeFinder(typeName);
 
-            JsWriter.AssertAllowedRuntimeType(type);
-
             if (type == null)
             {
                 Tracer.Instance.WriteWarning("Could not find type: " + typeName);
                 return null;
             }
+
+            JsWriter.AssertAllowedRuntimeType(type);
 
             return ReflectionOptimizer.Instance.UseType(type);
         }
