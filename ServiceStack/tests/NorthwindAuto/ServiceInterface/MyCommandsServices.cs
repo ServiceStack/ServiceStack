@@ -35,6 +35,33 @@ public class AddTodoCommand(ILogger<AddTodoCommand> log, IDbConnection db) : IAs
     }
 }
 
+[Tag("Todo")]
+public class UpdateTodoCommand : IAsyncCommand<CreateTodo>
+{
+    public async Task ExecuteAsync(CreateTodo request) {}
+}
+[Tag("Todo")]
+public class DeleteTodoCommand : IAsyncCommand<CreateTodo>
+{
+    public async Task ExecuteAsync(CreateTodo request) {}
+}
+
+[Tag("Bookings")]
+public class AddBookingCommand : IAsyncCommand<CreateTodo>
+{
+    public async Task ExecuteAsync(CreateTodo request) {}
+}
+[Tag("Bookings")]
+public class UpdateBookingCommand : IAsyncCommand<CreateTodo>
+{
+    public async Task ExecuteAsync(CreateTodo request) {}
+}
+[Tag("Bookings")]
+public class DeleteBookingCommand : IAsyncCommand<CreateTodo>
+{
+    public async Task ExecuteAsync(CreateTodo request) {}
+}
+
 [Lifetime(Lifetime.Scoped)]
 public class AddOneWayTodoCommand(ILogger<AddTodoCommand> log, IDbConnection db) : IAsyncCommand<CreateTodo>
 {
