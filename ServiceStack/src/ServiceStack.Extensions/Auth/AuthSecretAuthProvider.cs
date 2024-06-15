@@ -5,10 +5,12 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
-public class AuthSecretAuthProvider()
+public class AuthSecretAuthProvider(string? authSecret=null)
     : AuthProvider(null, "/auth/" + Keywords.AuthSecret, Keywords.AuthSecret), IAuthInit, IAuthWithRequest
 {
     public override string Type => Keywords.AuthSecret;
+
+    public string? AuthSecret { get; set; } = authSecret;
 
     public void Init(AuthFeature feature)
     {
@@ -21,6 +23,7 @@ public class AuthSecretAuthProvider()
         Label = feature.AdminAuthSecretInfo.Label;
         FormLayout = feature.AdminAuthSecretInfo.FormLayout;
         feature.AdminAuthSecretInfo.FormLayout = null;
+        appHost.Config.AdminAuthSecret ??= AuthSecret;
     }
 
     public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate? request = null)
