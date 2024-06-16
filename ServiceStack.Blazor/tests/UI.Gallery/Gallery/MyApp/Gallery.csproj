@@ -23,7 +23,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
         <PackageReference Include="Markdig" Version="0.33.*" />
     </ItemGroup>
 

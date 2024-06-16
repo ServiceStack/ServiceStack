@@ -17,9 +17,9 @@
         <PackageReference Include="Markdig" Version="0.35.0" />
         <PackageReference Include="Blazor.Extensions.Logging" Version="2.0.4" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.6" PrivateAssets="all" />
         <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
         <PackageReference Include="System.Memory" Version="4.5.5" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
