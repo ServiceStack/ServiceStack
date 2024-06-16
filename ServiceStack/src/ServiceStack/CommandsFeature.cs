@@ -236,7 +236,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
 
     public async Task<CommandResult> ExecuteCommandAsync(Type commandType, Func<object,Task> execFn, object requestDto)
     {
-        var result = new CommandResult { Type = CommandType.Command, Name = commandType.Name, At = DateTime.UtcNow };
+        var result = new CommandResult { Type = CommandResult.Command, Name = commandType.Name, At = DateTime.UtcNow };
         RetryPolicy? retryPolicy = null;
         var retries = 0;
         var sw = Stopwatch.StartNew();
@@ -419,7 +419,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         {
             AddCommandResult(new()
             {
-                Type = CommandType.Api,
+                Type = CommandResult.Api,
                 Name = name,
                 Ms = ms,
                 At = DateTime.UtcNow,
@@ -429,7 +429,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         {
             AddCommandResult(new()
             {
-                Type = CommandType.Api,
+                Type = CommandResult.Api,
                 Name = name,
                 Ms = ms,
                 At = DateTime.UtcNow,
@@ -493,15 +493,12 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     }
 }
 
-public static class CommandType
+public class CommandResult
 {
     public const string Command = "CMD";
     public const string Api = "API";
-}
 
-public class CommandResult
-{
-    public string Type { get; set; } = CommandType.Command;
+    public string Type { get; set; } = Command;
     public string Name { get; set; }
     public long? Ms { get; set; }
     public DateTime At { get; set; }
@@ -523,7 +520,7 @@ public class CommandResult
 
 public class CommandSummary
 {
-    public string Type { get; set; } = CommandType.Command;
+    public string Type { get; set; } = CommandResult.Command;
     public string Name { get; set; }
     public int Count { get; set; }
     public int Failed { get; set; }
