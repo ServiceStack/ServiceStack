@@ -29,7 +29,11 @@ namespace ServiceStack;
 public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreInitPlugin
 {
     public string Id => Plugins.AdminCommands;
-    public string AdminRole { get; set; } = RoleNames.Admin;
+
+    /// <summary>
+    /// Limit API access to users in role
+    /// </summary>
+    public string AccessRole { get; set; } = RoleNames.Admin;
 
     public const int DefaultCapacity = 250;
     public int ResultsCapacity { get; set; } = DefaultCapacity;
@@ -60,11 +64,6 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     ];
     
     public Func<CommandResult,bool>? ShouldIgnore { get; set; }
-
-    /// <summary>
-    /// Limit API access to users in role
-    /// </summary>
-    public string AccessRole { get; set; } = RoleNames.Admin;
 
     public List<Type> RegisterServices { get; set; } = [
         typeof(CommandsService),
@@ -487,7 +486,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 Id = "commands",
                 Label = "Commands",
                 Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Command)),
-                Show = $"role:{AdminRole}",
+                Show = $"role:{AccessRole}",
             });
         });
     }
