@@ -32,7 +32,7 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 
-    // [TestFixture, Ignore("Can cause CI to hang")]
+    [TestFixture, Ignore("Can cause CI to hang")]
     public class RabbitMqServerAppHostTests : MqServerAppHostTests
     {
         public RabbitMqServerAppHostTests()
