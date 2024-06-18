@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using RabbitMQ.Client;
 
 namespace ServiceStack.RabbitMq;
@@ -28,13 +29,16 @@ public class RabbitMqBasicConsumer : DefaultBasicConsumer
         string consumerTag, ulong deliveryTag, bool redelivered, string exchange,
         string routingKey, IBasicProperties properties, ReadOnlyMemory<byte> readOnlyMemory)
     {
+        // ReadOnlyMemory<byte> not accessible after handler completes https://www.rabbitmq.com/client-libraries/dotnet-api-guide#consuming-memory-safety
+        var copy = readOnlyMemory.ToArray();
+        
         var msgResult = new BasicGetResult(
             deliveryTag: deliveryTag,
             redelivered: redelivered,
             exchange: exchange,
             routingKey: routingKey,
             messageCount: 0, //Not available, received by RabbitMQ when declaring queue
-            basicProperties: properties, readOnlyMemory);
+            basicProperties: properties, copy);
 
         queue.Enqueue(msgResult);
     }
