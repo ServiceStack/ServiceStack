@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Threading;
 using RabbitMQ.Client;
@@ -56,7 +57,7 @@ public class RabbitMqWorker : IDisposable
         return new RabbitMqWorker(mqFactory, messageHandler, QueueName, errorHandler, AutoReconnect);
     }
 
-    public IMessageQueueClient MqClient => mqClient ?? (mqClient = mqFactory.CreateMessageQueueClient());
+    public IMessageQueueClient MqClient => mqClient ??= mqFactory.CreateMessageQueueClient();
 
     private IModel GetChannel()
     {
@@ -222,8 +223,7 @@ public class RabbitMqWorker : IDisposable
             }
             catch (Exception ex)
             {
-                if (!(ex is OperationInterruptedException
-                      || ex is EndOfStreamException))
+                if (ex is not (OperationInterruptedException or EndOfStreamException))
                     throw;
 
                 // The consumer was cancelled, the model closed, or the connection went away.

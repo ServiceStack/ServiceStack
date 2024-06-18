@@ -112,8 +112,7 @@ public abstract class HttpListenerBase : ServiceStackHost
 
         foreach (var urlBase in urlBases)
         {
-            if (HostContext.Config.HandlerFactoryPath == null)
-                HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(urlBase);
+            HostContext.Config.HandlerFactoryPath ??= ListenerRequest.GetHandlerPathIfAny(urlBase);
 
             Listener.Prefixes.Add(urlBase);
         }
