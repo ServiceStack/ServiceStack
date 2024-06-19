@@ -1,84 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{9982317F-831C-478B-9CC3-57F888BCD97A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Check.ServiceInterface</RootNamespace>
-    <AssemblyName>Check.ServiceInterface</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyTitle>Check.ServiceInterface</AssemblyTitle>
+    <Product>Check.ServiceInterface</Product>
+    <Copyright>Copyright ©  2014</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
-    <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Threading" />
     <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AnnotationsService.cs" />
-    <Compile Include="AnonTypeService.cs" />
-    <Compile Include="AutoQueryDataServices.cs" />
-    <Compile Include="AutoQueryServices.cs" />
-    <Compile Include="BuiltInDtosService.cs" />
-    <Compile Include="ChangeRequestService.cs" />
-    <Compile Include="CompressedServices.cs" />
-    <Compile Include="Configure.NativeTypes.cs" />
-    <Compile Include="CustomRoutesService.cs" />
-    <Compile Include="DiscoverTypesService.cs" />
-    <Compile Include="ErrorServices.cs" />
-    <Compile Include="FallbackRouteService.cs" />
-    <Compile Include="IssueServices.cs" />
-    <Compile Include="JwtServices.cs" />
-    <Compile Include="MetadataTestService.cs" />
-    <Compile Include="NamedConnectionService.cs" />
-    <Compile Include="NativeTypeIssuesService.cs" />
-    <Compile Include="NativeTypesTestService.cs" />
-    <Compile Include="EchoesService.cs" />
-    <Compile Include="ErrorsService.cs" />
-    <Compile Include="MetadataDtoIssue.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReturnDataService.cs" />
-    <Compile Include="ReturnGenericListServices.cs" />
-    <Compile Include="RouteMatchService.cs" />
-    <Compile Include="SwaggerServices.cs" />
-    <Compile Include="TechStacksService.cs" />
-    <Compile Include="TestErrorService.cs" />
-    <Compile Include="TestMinifierServices.cs" />
-    <Compile Include="TestProfilerService.cs" />
-    <Compile Include="VirtualPathServices.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
@@ -92,21 +35,10 @@
     <ProjectReference Include="..\Check.ServiceModel\Check.ServiceModel.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
