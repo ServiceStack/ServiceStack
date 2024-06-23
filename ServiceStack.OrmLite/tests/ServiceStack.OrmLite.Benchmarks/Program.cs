@@ -63,12 +63,12 @@ public class BulkInserts
             PostgreSqlDialect.Provider);
 
         dbFactory.RegisterConnection($"{Database.MySql}", Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ??
-            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true",
+            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true;SslMode=None;AllowPublicKeyRetrieval=true",
             MySqlDialect.Provider);
         MySqlDialect.Instance.AllowLoadLocalInfile = true;
 
         dbFactory.RegisterConnection($"{Database.MySqlConnector}", Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ??
-            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true",
+            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true;SslMode=None;AllowPublicKeyRetrieval=true",
             MySqlConnectorDialect.Provider);
 
         dbFactory.RegisterConnection($"{Database.SqlServer}", Environment.GetEnvironmentVariable("MSSQL_CONNECTION") ??

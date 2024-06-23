@@ -25,7 +25,7 @@ public class OrmLiteTestBase
         Console.WriteLine(text);
     }
 
-    // public static string GetConnectionString() => "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;";
+    // public static string GetConnectionString() => "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;";
     public static string GetConnectionString() => "Server=localhost;Database=test;User Id=test;Password=test;MultipleActiveResultSets=True;";
     public virtual IDbConnection OpenDbConnection(string connString = null, IOrmLiteDialectProvider dialectProvider = null)
     {
