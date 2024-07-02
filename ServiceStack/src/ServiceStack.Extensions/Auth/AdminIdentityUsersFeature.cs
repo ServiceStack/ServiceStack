@@ -141,6 +141,8 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
         var typedUser = (TUser)user;
         var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
         var result = await userManager.CreateAsync(typedUser, password).ConfigAwait();
+        if (result.Succeeded == false)
+            return result;
         if (roles is { Count: > 0 })
             await userManager.AddToRolesAsync(typedUser, roles).ConfigAwait();
         
