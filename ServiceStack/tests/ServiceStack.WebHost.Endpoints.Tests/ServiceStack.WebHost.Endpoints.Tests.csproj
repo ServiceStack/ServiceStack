@@ -74,6 +74,10 @@
     <Content Update="App_Data\customers.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Remove="App_Data\customers.json" />
+    <Content Include="App_Data\customers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Update="TestExistingDir\default.html">
