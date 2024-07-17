@@ -806,24 +806,45 @@ public abstract partial class ServiceStackHost
                 FieldName = argEx.ParamName,
                 Message = errorMsg,
             });
-            return;
+        }
+        else
+        {
+            var serializationEx = ex as SerializationException;
+            if (serializationEx?.Data["errors"] is List<RequestBindingError> errors)
+            {
+                responseStatus.Errors ??= [];
+                responseStatus.Errors = errors.Select(e => new ResponseError
+                {
+                    ErrorCode = ex.GetType().Name,
+                    FieldName = e.PropertyName,
+                    Message = e.PropertyValueString != null 
+                        ? $"'{e.PropertyValueString}' is an Invalid value for '{e.PropertyName}'"
+                        : $"Invalid Value for '{e.PropertyName}'"
+                }).ToList();
+            }
         }
 
-        var serializationEx = ex as SerializationException;
-        if (serializationEx?.Data["errors"] is List<RequestBindingError> errors)
+        responseStatus.Message = SanitizeString(responseStatus.Message);
+        foreach (var error in responseStatus.Errors.Safe())
         {
-            responseStatus.Errors ??= [];
-            responseStatus.Errors = errors.Select(e => new ResponseError
-            {
-                ErrorCode = ex.GetType().Name,
-                FieldName = e.PropertyName,
-                Message = e.PropertyValueString != null 
-                    ? $"'{e.PropertyValueString}' is an Invalid value for '{e.PropertyName}'"
-                    : $"Invalid Value for '{e.PropertyName}'"
-            }).ToList();
+            error.Message = SanitizeString(error.Message);
         }
     }
 
+    /// <summary>
+    /// Sanitize strings against XSS returned in API Responses 
+    /// </summary>
+    public virtual string SanitizeString(string message)
+    {
+        if (string.IsNullOrEmpty(message)) return message;
+        // guard against XSS https://stackoverflow.com/q/78741326/85785
+        if (message.Contains("<script", StringComparison.OrdinalIgnoreCase))
+        {
+            return message.HtmlEncodeLite();
+        }
+        return message;
+    }
+    
     /// <summary>
     /// Override to intercept when Sessions using sync APIs are saved
     /// </summary>
