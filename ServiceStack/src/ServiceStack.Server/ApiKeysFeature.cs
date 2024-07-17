@@ -407,7 +407,7 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
         if (request.UserName != null)
             q.Where(x => x.UserName == request.UserName);
         if (request.OrderBy != null)
-            q.OrderBy(request.OrderBy);
+            q.OrderByFields(request.OrderBy);
         if (request.Skip != null)
             q.Skip(request.Skip.Value);
         if (request.Take != null)
@@ -500,7 +500,7 @@ public class UserApiKeysService(IDbConnectionFactory dbFactory) : Service
             q.Where(x => x.Name.ToLower().Contains(search) || x.Notes.ToLower().Contains(search));
         }
         if (request.OrderBy != null)
-            q.OrderBy(request.OrderBy);
+            q.OrderByFields(request.OrderBy);
         if (request.Skip != null)
             q.Skip(request.Skip.Value);
         if (request.Take != null)
