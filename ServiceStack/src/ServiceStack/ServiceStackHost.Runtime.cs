@@ -838,7 +838,7 @@ public abstract partial class ServiceStackHost
     {
         if (string.IsNullOrEmpty(message)) return message;
         // guard against XSS https://stackoverflow.com/q/78741326/85785
-        if (message.Contains("<script", StringComparison.OrdinalIgnoreCase))
+        if (message.IndexOf("<script", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             return message.HtmlEncodeLite();
         }
