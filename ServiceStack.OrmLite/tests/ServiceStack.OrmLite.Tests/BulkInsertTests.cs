@@ -15,7 +15,7 @@ public class BulkInsertTests : OrmLiteTestBase
     public async Task Can_BulkInsert_CSV_Rockstars_MySql()
     {
         var dbFactory = new OrmLiteConnectionFactory(
-            "Server=localhost;Database=test;UID=root;Password=test;SslMode=none;AllowLoadLocalInfile=true", 
+            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true;SslMode=None;AllowPublicKeyRetrieval=true", 
             MySqlDialect.Provider);
         MySqlDialect.Instance.AllowLoadLocalInfile = true;
         

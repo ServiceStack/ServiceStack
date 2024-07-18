@@ -907,20 +907,6 @@ public static class NetCoreAppHostExtensions
                 : ctx?.Connection.RemoteIpAddress?.ToString();
     }
 
-    public static IHttpRequest AddTimingsIfNeeded(this IHttpRequest req, ServiceStackHost? appHost=null)
-    {
-        appHost ??= HostContext.AppHost;
-        if (appHost == null) return req;
-        
-        var shouldProfile = appHost.ShouldProfileRequest(req);
-        if (shouldProfile || appHost.AddTimings)
-        {
-            req.SetItem(Keywords.RequestDuration, System.Diagnostics.Stopwatch.GetTimestamp());
-        }
-        return req;
-    }
-    
-
 #if NET6_0_OR_GREATER
     public static T ConfigureAndResolve<T>(this IHostingStartup config, string? hostDir = null, bool setHostDir = true)
     {

@@ -676,11 +676,12 @@ public class ServiceMetadata(List<RestPath> restPaths)
         }
     }
 
-    public static bool IsDtoType(Type? type) => type != null &&
-                                                type.Namespace?.StartsWith("System") == false &&
-                                                type.IsClass && type != typeof(string) &&
-                                                !type.IsArray &&
-                                                !type.HasInterface(typeof(IService));
+    public static bool IsDtoType(Type? type) => 
+        type != null &&
+        type.Namespace?.StartsWith("System") == false &&
+        type.IsClass && type != typeof(string) &&
+        !type.IsArray &&
+        !type.HasInterface(typeof(IService));
 
     public List<MetadataType> GetMetadataTypesForOperation(IRequest httpReq, Operation op)
     {
@@ -844,9 +845,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public List<string> GetAllPermissions()
     {
-        var to = new List<string> {
-        };
-
+        var to = new List<string>();
         foreach (var op in OperationsMap.Values)
         {
             op.RequiredPermissions.Each(x => to.AddIfNotExists(x));
@@ -868,7 +867,6 @@ public class ServiceMetadata(List<RestPath> restPaths)
                 : dto.ConvertTo(requestType);
         return requestDto;
     }
-        
 }
 
 public class Operation : ICloneable
@@ -922,6 +920,7 @@ public class Operation : ICloneable
         Routes = Routes?.ToList(),
         RequestFilterAttributes = RequestFilterAttributes,
         RequiresAuthentication = RequiresAuthentication,
+        RequiresApiKey = RequiresApiKey, 
         RequiredRoles = RequiredRoles?.ToList() ?? [],
         RequiresAnyRole = RequiresAnyRole?.ToList() ?? [],
         RequiredPermissions = RequiredPermissions?.ToList() ?? [],

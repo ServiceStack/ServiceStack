@@ -203,6 +203,9 @@ public class ApiKeyValidator(Func<IApiKeySource> factory, Func<IApiKeyResolver> 
             {
                 if (apiKey.HasScope(RoleNames.Admin))
                     return true;
+
+                if (!apiKey.CanAccess(dto.GetType()))
+                    return false;
                 
                 if (Scope != null)
                     return apiKey.HasScope(Scope);

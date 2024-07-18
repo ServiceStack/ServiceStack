@@ -598,9 +598,9 @@ public class ServiceController : IServiceController
 #if !NETFRAMEWORK
             using var scope = req.StartScope();
 #endif
-            
+        req.AddTimingsIfNeeded(appHost);
         req.PopulateFromRequestIfHasSessionId(dto.Body);
-
+        
         req.Dto = appHost.ApplyRequestConvertersAsync(req, dto.Body).GetAwaiter().GetResult();
         if (appHost.ApplyMessageRequestFilters(req, req.Response, dto.Body))
             return req.Response.Dto;
@@ -629,7 +629,7 @@ public class ServiceController : IServiceController
 #if !NETFRAMEWORK
             using var scope = req.StartScope();
 #endif
-            
+        req.AddTimingsIfNeeded(appHost);
         req.PopulateFromRequestIfHasSessionId(dto.Body);
 
         req.Dto = await appHost.ApplyRequestConvertersAsync(req, dto.Body).ConfigAwait();

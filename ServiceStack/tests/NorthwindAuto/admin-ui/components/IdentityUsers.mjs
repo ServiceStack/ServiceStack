@@ -270,7 +270,7 @@ export const EditUser = {
         }
 
         async function deleteUser() {
-            await send(new AdminDeleteUser({ id:props.id }), done)
+            await send(new AdminDeleteUser({ id:props.id }), save)
         }
         async function lockUser() {
             await send(new AdminUpdateUser({ id:props.id, lockUser:true }), response => bind(response))

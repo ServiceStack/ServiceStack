@@ -20,7 +20,13 @@ public class ConfigureAuth : IHostingStartup
     public void ConfigureBasic(IWebHostBuilder builder) => builder
         .ConfigureServices(services => {
             services.AddPlugin(new AuthFeature(new AuthSecretAuthProvider()));
-            services.AddPlugin(new ApiKeysFeature());
+            services.AddPlugin(new ApiKeysFeature
+            {
+                // Hide = [
+                //     nameof(ApiKeysFeature.ApiKey.RestrictTo),
+                //     nameof(ApiKeysFeature.ApiKey.Notes),
+                // ],
+            });
         })
         .ConfigureAppHost(appHost =>
         {
@@ -92,7 +98,11 @@ public class ConfigureAuth : IHostingStartup
                 ],
                 Features = [
                     "Tracking",
-                ]
+                ],
+                // Hide = [
+                //     nameof(ApiKeysFeature.ApiKey.RestrictTo),
+                //     nameof(ApiKeysFeature.ApiKey.Notes),
+                // ],
             });
         })
         .ConfigureAppHost(appHost =>

@@ -203,8 +203,7 @@ public static class RabbitMqExtensions
 
         if (message.Error != null)
         {
-            if (props.Headers == null)
-                props.Headers = new Dictionary<string, object>();
+            props.Headers ??= new Dictionary<string, object>();
             props.Headers["Error"] = message.Error.ToJson();
         }
     }

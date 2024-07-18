@@ -18,7 +18,7 @@
         <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.5" />
+        <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.6" />
         <PackageReference Include="SQLitePCLRaw.bundle_cil" Version="2.0.5-pre20210119130047" />
     </ItemGroup>
 

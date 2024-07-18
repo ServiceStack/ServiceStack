@@ -7,9 +7,9 @@ const SidebarNav = {
           <Brand class="flex items-center flex-shrink-0 px-4" :icon="server.ui.brandIcon" :name="server.app.serviceName" />
           <nav class="mt-5 flex-1 px-2 bg-white space-y-1" aria-label="Sidebar">
             <a v-for="({id,label,icon}) in store.adminLinks" v-href="{ admin:id, $clear:true }"
-               :class="[routes.admin === id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900', 
+               :class="[(routes.admin ?? '') === id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900', 
                             'group flex items-center px-2 py-2 text-base font-medium rounded-md']">
-              <Icon :image="icon" :class="[routes.admin === id ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500', 'mr-3 h-6 w-6']" />
+              <Icon :image="icon" :class="[(routes.admin ?? '') === id ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500', 'mr-3 h-6 w-6']" />
               {{ label }}
             </a>
           </nav>

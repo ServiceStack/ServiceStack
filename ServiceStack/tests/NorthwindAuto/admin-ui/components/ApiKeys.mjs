@@ -1,5 +1,5 @@
 import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue"
-import { useClient, useFormatters } from "@servicestack/vue";
+import { useClient, useFormatters, css } from "@servicestack/vue";
 import { ApiResult, apiValueFmt, humanify, mapGet } from "@servicestack/client"
 import { AdminQueryApiKeys } from "dtos"
 
@@ -53,6 +53,7 @@ export const ApiKeys = {
         <div class="w-full overflow-scroll px-1 -ml-1">
           <DataGrid v-if="results.length" :items="results"
                     @row-selected="rowSelected" :is-selected="row => routes.edit === row.id"
+                    :rowClass="(row,i) => !row.active ? 'cursor-pointer hover:bg-yellow-50 bg-red-100' : css.grid.getTableRowClass('stripedRows', i, selected === row.id, true)"
                     :selectedColumns="columns">
 
             <template #id-header><SortableColumn name="id" /></template>
@@ -185,6 +186,7 @@ export const ApiKeys = {
         }
 
         return {
+            css,
             client,
             store,
             server,

@@ -54,13 +54,13 @@ DEBUG = true /*debug*/
                 <main class="flex-1 overflow-auto">
                     <div class="py-6">
                         <div class="mx-auto px-4 sm:px-6 md:px-8">
-                            <h1 class="text-2xl font-semibold text-gray-900">{{store.link.label}}</h1>
+                            <h1 class="text-2xl font-semibold text-gray-900">{{store.link?.label}}</h1>
                         </div>
                         <div class="mx-auto px-4 sm:px-6 md:px-8">
                             <div class="py-4">
-                                <dashboard v-if="routes.admin === ''"></dashboard>
+                                <dashboard v-if="(routes.admin ?? '') === ''"></dashboard>
                                 <validation v-else-if="routes.admin === 'validation'"></validation>
-                                <identity-users v-else-if="routes.admin === 'users' && server.plugins.auth?.identityAuth"></identity-users>
+                                <identity-users v-else-if="routes.admin === 'users' && server?.plugins.auth?.identityAuth"></identity-users>
                                 <users v-else-if="routes.admin === 'users'"></users>
                                 <logging v-else-if="routes.admin === 'logging'"></logging>
                                 <profiling v-else-if="routes.admin === 'profiling'"></profiling>
@@ -95,7 +95,7 @@ DEBUG = true /*debug*/
             </a>
         </div>
     </div>
-    <api-key-dialog v-if="routes.dialog === 'apikey'" class="z-40" :title="server.plugins.apiKey?.label" @done="updatedApiKey"></api-key-dialog>
+    <api-key-dialog v-if="routes.dialog === 'apikey'" class="z-40" :title="server?.plugins?.apiKey?.label" @done="updatedApiKey"></api-key-dialog>
     <div v-if="apiKeyError" class="mt-4 flex justify-center">
         <alert type="error" class="w-96">{{apiKeyError}}</alert>
     </div>

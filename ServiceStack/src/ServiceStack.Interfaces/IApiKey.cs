@@ -16,6 +16,7 @@ public interface IApiKey : IMeta
     string RefIdStr { get; }
     bool HasScope(string scope);
     bool HasFeature(string feature);
+    bool CanAccess(Type requestType);
 }
 
 public interface IApiKeyResolver

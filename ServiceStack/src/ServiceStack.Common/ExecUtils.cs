@@ -379,17 +379,20 @@ public static class ExecUtils
     /// <returns></returns>
     public static int CalculateRetryDelayMs(int retryAttempt, RetryPolicy retry)
     {
+        var retryDelayMs = retry.DelayMs < 0 ? BaseDelayMs : retry.DelayMs;
+        var retryMaxDelayMs = retry.MaxDelayMs < 0 ? MaxBackOffMs : retry.MaxDelayMs;
+        
         var delayMs = !retry.DelayFirst && retryAttempt == 1
             ? 0
             : retry.Behavior switch {
-                RetryBehavior.LinearBackoff => retryAttempt * retry.DelayMs,
+                RetryBehavior.LinearBackoff => retryAttempt * retryDelayMs,
                 RetryBehavior.ExponentialBackoff => 
-                    (int)Math.Min((1L << retryAttempt) * retry.DelayMs, retry.MaxDelayMs),
+                    (int)Math.Min((1L << retryAttempt) * retryDelayMs, retryMaxDelayMs),
                 RetryBehavior.FullJitterBackoff => 
-                    StaticRandom.Next((int)Math.Min((1L << retryAttempt) * retry.DelayMs, retry.MaxDelayMs)),
-                _ => retry.DelayMs
+                    StaticRandom.Next((int)Math.Min((1L << retryAttempt) * retryDelayMs, retryMaxDelayMs)),
+                _ => retryDelayMs
             };
-        return Math.Min(delayMs, retry.MaxDelayMs);
+        return Math.Min(delayMs, retryMaxDelayMs);
     }
 
     /// <summary>

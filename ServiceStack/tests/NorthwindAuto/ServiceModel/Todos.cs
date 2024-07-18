@@ -3,6 +3,17 @@ using ServiceStack.DataAnnotations;
 
 namespace MyApp.ServiceModel;
 
+public class Scopes
+{
+    public const string TodoRead = "todo:read";
+    public const string TodoWrite = "todo:write";
+}
+public class Features
+{
+    public const string Paid = nameof(Paid);
+    public const string Tracking = nameof(Tracking);
+}
+
 public class Todo
 {
     [AutoIncrement]

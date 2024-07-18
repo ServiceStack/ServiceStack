@@ -1,0 +1,17 @@
+﻿@page "/Account/Manage/ApiKeys"
+
+<PageTitle>Manage API Keys</PageTitle>
+
+<div>
+    <Heading3>Manage API Keys</Heading3>
+    <div data-component="pages/Account/Manage/ManageUserApiKeys.mjs" data-props="@ToProps()"></div>
+</div>
+
+@code {
+    public MarkupString ToProps() => BlazorHtml.RawJson(new {
+        info = HostContext.AppHost.GetPlugin<ApiKeysFeature>()?.GetApiKeyInfo(),
+    });
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+}

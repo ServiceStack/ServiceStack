@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-05-30 14:58:38
+Date: 2024-06-05 18:45:26
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -378,6 +378,7 @@ export class ApiKeyInfo
     public httpHeader: string;
     public scopes: string[];
     public features: string[];
+    public requestTypes: string[];
     public expiresIn: KeyValuePair<string,string>[];
     public meta: { [index: string]: string; };
 
@@ -995,16 +996,22 @@ export class PartialApiKey
     public features: string[];
 
     // @DataMember(Order=13)
-    public notes: string;
+    public restrictTo: string[];
 
     // @DataMember(Order=14)
-    public refId?: number;
+    public notes: string;
 
     // @DataMember(Order=15)
-    public refIdStr: string;
+    public refId?: number;
 
     // @DataMember(Order=16)
+    public refIdStr: string;
+
+    // @DataMember(Order=17)
     public meta: { [index: string]: string; };
+
+    // @DataMember(Order=18)
+    public active: boolean;
 
     public constructor(init?: Partial<PartialApiKey>) { (Object as any).assign(this, init); }
 }
@@ -1640,18 +1647,21 @@ export class AdminCreateApiKey implements IReturn<AdminApiKeyResponse>, IPost
     public features: string[];
 
     // @DataMember(Order=6)
-    public expiryDate?: string;
+    public restrictTo: string[];
 
     // @DataMember(Order=7)
-    public notes: string;
+    public expiryDate?: string;
 
     // @DataMember(Order=8)
-    public refId?: number;
+    public notes: string;
 
     // @DataMember(Order=9)
-    public refIdStr: string;
+    public refId?: number;
 
     // @DataMember(Order=10)
+    public refIdStr: string;
+
+    // @DataMember(Order=11)
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<AdminCreateApiKey>) { (Object as any).assign(this, init); }
@@ -1683,24 +1693,27 @@ export class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
     public features: string[];
 
     // @DataMember(Order=7)
-    public expiryDate?: string;
+    public restrictTo: string[];
 
     // @DataMember(Order=8)
-    public cancelledDate?: string;
+    public expiryDate?: string;
 
     // @DataMember(Order=9)
-    public notes: string;
+    public cancelledDate?: string;
 
     // @DataMember(Order=10)
-    public refId?: number;
+    public notes: string;
 
     // @DataMember(Order=11)
-    public refIdStr: string;
+    public refId?: number;
 
     // @DataMember(Order=12)
-    public meta: { [index: string]: string; };
+    public refIdStr: string;
 
     // @DataMember(Order=13)
+    public meta: { [index: string]: string; };
+
+    // @DataMember(Order=14)
     public reset: string[];
 
     public constructor(init?: Partial<AdminUpdateApiKey>) { (Object as any).assign(this, init); }

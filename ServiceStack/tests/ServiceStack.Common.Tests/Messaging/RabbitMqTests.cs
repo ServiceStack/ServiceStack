@@ -18,7 +18,7 @@ public class HelloRabbit
     public string Name { get; set; }
 }
 
-[TestFixture, Ignore("Integration Test")]
+// [TestFixture, Ignore("Integration Test")]
 public class RabbitMqTests
 {
     private readonly ConnectionFactory mqFactory = new()
@@ -349,27 +349,25 @@ public class RabbitMqTests
             QueueNames.ExchangeTopic,
         };
 
-        using (IConnection connection = mqFactory.CreateConnection())
-        using (IModel channel = connection.CreateModel())
-        {
-            exchangeNames.Each(x => channel.ExchangeDelete(x));
+        using IConnection connection = mqFactory.CreateConnection();
+        using IModel channel = connection.CreateModel();
+        exchangeNames.Each(x => channel.ExchangeDelete(x));
 
-            channel.DeleteQueue<AlwaysThrows>();
-            channel.DeleteQueue<Hello>();
-            channel.DeleteQueue<HelloRabbit>();
-            channel.DeleteQueue<HelloResponse>();
-            channel.DeleteQueue<Incr>();
-            channel.DeleteQueue<AnyTestMq>();
-            channel.DeleteQueue<AnyTestMqResponse>();
-            channel.DeleteQueue<PostTestMq>();
-            channel.DeleteQueue<PostTestMqResponse>();
-            channel.DeleteQueue<ValidateTestMq>();
-            channel.DeleteQueue<ValidateTestMqResponse>();
-            channel.DeleteQueue<ThrowGenericError>();
-            channel.DeleteQueue<Reverse>();
-            channel.DeleteQueue<Rot13>();
-            channel.DeleteQueue<Wait>();
-        }
+        channel.DeleteQueue<AlwaysThrows>();
+        channel.DeleteQueue<Hello>();
+        channel.DeleteQueue<HelloRabbit>();
+        channel.DeleteQueue<HelloResponse>();
+        channel.DeleteQueue<Incr>();
+        channel.DeleteQueue<AnyTestMq>();
+        channel.DeleteQueue<AnyTestMqResponse>();
+        channel.DeleteQueue<PostTestMq>();
+        channel.DeleteQueue<PostTestMqResponse>();
+        channel.DeleteQueue<ValidateTestMq>();
+        channel.DeleteQueue<ValidateTestMqResponse>();
+        channel.DeleteQueue<ThrowGenericError>();
+        channel.DeleteQueue<Reverse>();
+        channel.DeleteQueue<Rot13>();
+        channel.DeleteQueue<Wait>();
     }
 }
 

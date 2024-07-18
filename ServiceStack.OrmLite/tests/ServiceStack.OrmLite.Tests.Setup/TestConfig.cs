@@ -277,10 +277,10 @@ namespace ServiceStack.OrmLite.Tests
                     [Tuple.Create(Dialect.Sqlite, SqliteDb.Memory)] = EnvironmentVariable(["SQLITE_MEMORY_CONNECTION", "SQLITE_CONNECTION" ], ":memory:"),
                     [Tuple.Create(Dialect.Sqlite, SqliteDb.File)] = EnvironmentVariable(["SQLITE_FILE_CONNECTION", "SQLITE_CONNECTION" ], "~/App_Data/db.sqlite".MapAbsolutePath()),
 
-                    [Tuple.Create(Dialect.SqlServer, SqlServerDb.V2012)] = EnvironmentVariable(["MSSQL2012_CONNECTION", "MSSQL_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
-                    [Tuple.Create(Dialect.SqlServer2017, SqlServerDb.V2017)] = EnvironmentVariable(["MSSQL2017_CONNECTION", "MSSQL_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
-                    [Tuple.Create(Dialect.SqlServer2019, SqlServerDb.V2019)] = EnvironmentVariable(["MSSQL2019_CONNECTION", "MSSQL_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
-                    [Tuple.Create(Dialect.SqlServer2022, SqlServerDb.V2022)] = EnvironmentVariable(["MSSQL2022_CONNECTION", "MSSQL_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
+                    [Tuple.Create(Dialect.SqlServer, SqlServerDb.V2012)] = EnvironmentVariable(["MSSQL2012_CONNECTION", "MSSQL_CONNECTION"], "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;"),
+                    [Tuple.Create(Dialect.SqlServer2017, SqlServerDb.V2017)] = EnvironmentVariable(["MSSQL2017_CONNECTION", "MSSQL_CONNECTION"], "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;"),
+                    [Tuple.Create(Dialect.SqlServer2019, SqlServerDb.V2019)] = EnvironmentVariable(["MSSQL2019_CONNECTION", "MSSQL_CONNECTION"], "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;"),
+                    [Tuple.Create(Dialect.SqlServer2022, SqlServerDb.V2022)] = EnvironmentVariable(["MSSQL2022_CONNECTION", "MSSQL_CONNECTION"], "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;"),
 
                     [Tuple.Create(Dialect.PostgreSql9, PostgreSqlDb.V9)]  = EnvironmentVariable(["PGSQL9_CONNECTION",  "PGSQL_CONNECTION"], "Server=localhost;Port=48301;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
                     [Tuple.Create(Dialect.PostgreSql10, PostgreSqlDb.V10)] = EnvironmentVariable(["PGSQL10_CONNECTION", "PGSQL_CONNECTION"], "Server=localhost;Port=48302;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
@@ -294,7 +294,7 @@ namespace ServiceStack.OrmLite.Tests
 
                     [Tuple.Create(Dialect.MySqlConnector, MySqlDb.V10_4)] = EnvironmentVariable(["MYSQL104_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none"),
                 
-                    [Tuple.Create(Dialect.Oracle, OracleDb.V11)] = EnvironmentVariable(["ORACLE11_CONNECTION", "ORACLE_CONNECTION"], "Data Source=tcp:localhost,48501\\SQLExpress;Initial Catalog=master;User Id=sa;Password=Test!tesT;Connect Timeout=120;MultipleActiveResultSets=True;"),
+                    [Tuple.Create(Dialect.Oracle, OracleDb.V11)] = EnvironmentVariable(["ORACLE11_CONNECTION", "ORACLE_CONNECTION"], ""),
                 
                     [Tuple.Create(Dialect.Firebird, FirebirdDb.V3)] = EnvironmentVariable(["FIREBIRD3_CONNECTION", "FIREBIRD_CONNECTION"], @"User=SYSDBA;Password=masterkey;Database=/firebird/data/test.gdb;DataSource=127.0.0.1;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;"),
 

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-05-30 14:58:38
+Date: 2024-06-05 18:45:26
 Version: 8.23
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -414,7 +414,7 @@ export class AuthInfo {
     meta;
 }
 export class ApiKeyInfo {
-    /** @param {{label?:string,httpHeader?:string,scopes?:string[],features?:string[],expiresIn?:KeyValuePair<string,string>[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{label?:string,httpHeader?:string,scopes?:string[],features?:string[],requestTypes?:string[],expiresIn?:KeyValuePair<string,string>[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     label;
@@ -424,6 +424,8 @@ export class ApiKeyInfo {
     scopes;
     /** @type {string[]} */
     features;
+    /** @type {string[]} */
+    requestTypes;
     /** @type {KeyValuePair<string,string>[]} */
     expiresIn;
     /** @type {{ [index: string]: string; }} */
@@ -1216,7 +1218,7 @@ export class CommandResult {
     error;
 }
 export class PartialApiKey {
-    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],restrictTo?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },active?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1242,6 +1244,8 @@ export class PartialApiKey {
     scopes;
     /** @type {string[]} */
     features;
+    /** @type {string[]} */
+    restrictTo;
     /** @type {string} */
     notes;
     /** @type {?number} */
@@ -1250,6 +1254,8 @@ export class PartialApiKey {
     refIdStr;
     /** @type {{ [index: string]: string; }} */
     meta;
+    /** @type {boolean} */
+    active;
 }
 export class RequestLogEntry {
     /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,requestBody?:string,requestDto?:Object,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },session?:Object,responseDto?:Object,errorResponse?:Object,exceptionSource?:string,exceptionData?:any,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
@@ -1795,7 +1801,7 @@ export class AdminQueryApiKeys {
     createResponse() { return new AdminApiKeysResponse() }
 }
 export class AdminCreateApiKey {
-    /** @param {{name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],expiryDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -1807,6 +1813,8 @@ export class AdminCreateApiKey {
     scopes;
     /** @type {string[]} */
     features;
+    /** @type {string[]} */
+    restrictTo;
     /** @type {?string} */
     expiryDate;
     /** @type {string} */
@@ -1822,7 +1830,7 @@ export class AdminCreateApiKey {
     createResponse() { return new AdminApiKeyResponse() }
 }
 export class AdminUpdateApiKey {
-    /** @param {{id?:number,name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],expiryDate?:string,cancelledDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },reset?:string[]}} [init] */
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,cancelledDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },reset?:string[]}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1836,6 +1844,8 @@ export class AdminUpdateApiKey {
     scopes;
     /** @type {string[]} */
     features;
+    /** @type {string[]} */
+    restrictTo;
     /** @type {?string} */
     expiryDate;
     /** @type {?string} */

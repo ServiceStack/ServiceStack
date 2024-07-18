@@ -69,9 +69,12 @@ public partial class RedisClient
 
     private static byte[] ToBytes<T>(T value)
     {
-        var bytesValue = value as byte[];
-        if (bytesValue == null && (numericTypes.ContainsKey(typeof(T)) || !Equals(value, default(T))))
-            bytesValue = value.ToJson().ToUtf8Bytes();
+        if (value is not byte[] bytesValue)
+        {
+            return numericTypes.ContainsKey(typeof(T)) || !Equals(value, default(T)) 
+                ? value.ToJson().ToUtf8Bytes() 
+                : TypeConstants.EmptyByteArray;
+        }
         return bytesValue;
     }
 
