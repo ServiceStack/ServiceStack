@@ -913,7 +913,42 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(row.Status, Is.EqualTo(orig.Status));
         Assert.That(row.NStatus, Is.EqualTo(orig.NStatus));
     }
+
+    [Test]
+    public async Task Can_UpdateNonDefaults_Async()
+    {
+        using var db = await OpenDbConnectionAsync();
+        db.DropAndCreateTable<DefaultValue>();
+        AssertDefaultValueFieldTypeDefaultValues();
+
+        var orig = new DefaultValue {
+            Id = 1,
+            Bool = false,
+            NBool = null,
+            Int = 0,
+            NInt = null,
+            String = null,
+            Status = Status.Active,
+            NStatus = null,
+        };
+        await db.InsertAsync(orig);
+        var row = await db.SingleByIdAsync<DefaultValue>(1);
+        AssertDefaultValues(row, orig);
+
+        OrmLiteUtils.PrintSql();
         
+        var updated = new DefaultValue
+        {
+            Status = Status.Unknown,   // Default = Status.Unknown 
+            NStatus = Status.Unknown,  // Default = null
+        };
+        await db.UpdateNonDefaultsAsync(updated, x => x.Id == orig.Id);
+        
+        row = await db.SingleByIdAsync<DefaultValue>(1);
+        
+        Assert.That(row.Status, Is.EqualTo(Status.Active)); // Does not update default value
+        Assert.That(row.NStatus, Is.EqualTo(Status.Unknown)); // Did update non-default value
+    }
 }
 
 [CompositeIndex("FirstName", "LastName")]
