@@ -761,6 +761,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             Int = 2,
             NInt = 0,
             String = "A",
+            Status = Status.Archived,
+            NStatus = Status.Unknown,
         };
         db.Insert(orig);
         var row = db.SingleById<DefaultValue>(1);
@@ -773,6 +775,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             [nameof(DefaultValue.Int)] = 0,
             [nameof(DefaultValue.NInt)] = null,
             [nameof(DefaultValue.String)] = null,
+            [nameof(DefaultValue.Status)] = Status.Unknown,
+            [nameof(DefaultValue.NStatus)] = null,
         });
             
         row = db.SingleById<DefaultValue>(1);
@@ -783,6 +787,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             Int = 0,
             NInt = null,
             String = null,
+            Status = Status.Unknown,
+            NStatus = null,
         });
 
         db.UpdateOnly<DefaultValue>(new Dictionary<string, object> {
@@ -792,6 +798,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             [nameof(DefaultValue.Int)] = 1,
             [nameof(DefaultValue.NInt)] = 0,
             [nameof(DefaultValue.String)] = "",
+            [nameof(DefaultValue.Status)] = Status.Archived,
+            [nameof(DefaultValue.NStatus)] = Status.Unknown,
         });
             
         row = db.SingleById<DefaultValue>(1);
@@ -802,6 +810,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             Int = 1,
             NInt = 0,
             String = "",
+            Status = Status.Archived,
+            NStatus = Status.Unknown,
         });
     }
 
@@ -819,6 +829,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             Int = 2,
             NInt = 0,
             String = "A",
+            Status = Status.Archived,
+            NStatus = Status.Unknown,
         };
         await db.InsertAsync(orig);
         var row = await db.SingleByIdAsync<DefaultValue>(1);
@@ -831,6 +843,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             [nameof(DefaultValue.Int)] = 0,
             [nameof(DefaultValue.NInt)] = null,
             [nameof(DefaultValue.String)] = null,
+            [nameof(DefaultValue.Status)] = Status.Unknown,
+            [nameof(DefaultValue.NStatus)] = null,
         });
             
         row = await db.SingleByIdAsync<DefaultValue>(1);
@@ -841,6 +855,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             Int = 0,
             NInt = null,
             String = null,
+            Status = Status.Unknown,
+            NStatus = null,
         });
 
         await db.UpdateOnlyAsync<DefaultValue>(new Dictionary<string, object> {
@@ -850,6 +866,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             [nameof(DefaultValue.Int)] = 1,
             [nameof(DefaultValue.NInt)] = 0,
             [nameof(DefaultValue.String)] = "",
+            [nameof(DefaultValue.Status)] = Status.Archived,
+            [nameof(DefaultValue.NStatus)] = Status.Unknown,
         });
             
         row = db.SingleById<DefaultValue>(1);
@@ -860,6 +878,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             Int = 1,
             NInt = 0,
             String = "",
+            Status = Status.Archived,
+            NStatus = Status.Unknown,
         });
     }
 
@@ -876,6 +896,10 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
             Is.EqualTo(default(bool?)));
         Assert.That(modelDef.GetFieldDefinition(nameof(DefaultValue.String)).FieldTypeDefaultValue,
             Is.EqualTo(default(string)));
+        Assert.That(modelDef.GetFieldDefinition(nameof(DefaultValue.Status)).FieldTypeDefaultValue,
+            Is.EqualTo(default(Status)));
+        Assert.That(modelDef.GetFieldDefinition(nameof(DefaultValue.NStatus)).FieldTypeDefaultValue,
+            Is.EqualTo(default(Status?)));
     }
 
     private void AssertDefaultValues(DefaultValue row, DefaultValue orig)
@@ -886,6 +910,8 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(row.Int, Is.EqualTo(orig.Int));
         Assert.That(row.NInt, Is.EqualTo(orig.NInt));
         Assert.That(row.String, Is.EqualTo(orig.String));
+        Assert.That(row.Status, Is.EqualTo(orig.Status));
+        Assert.That(row.NStatus, Is.EqualTo(orig.NStatus));
     }
         
 }
@@ -915,4 +941,15 @@ public class DefaultValue
     public bool Bool { get; set; }
     public bool? NBool { get; set; }
     public string String { get; set; }
+
+    public Status Status { get; set; }
+    public Status? NStatus { get; set; }
+}
+
+public enum Status
+{
+    Unknown,
+    Active,
+    Archived,
+    Disabled,
 }

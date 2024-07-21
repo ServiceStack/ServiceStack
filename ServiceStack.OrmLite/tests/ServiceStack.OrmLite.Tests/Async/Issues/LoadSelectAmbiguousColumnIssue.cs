@@ -79,6 +79,7 @@ public class AsyncProjectTaskStatus : IHasId<int>
     public string Description { get; set; }
 }
     
+
 [TestFixtureOrmLite]
 public class LoadSelectAmbiguousColumnIssue(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
