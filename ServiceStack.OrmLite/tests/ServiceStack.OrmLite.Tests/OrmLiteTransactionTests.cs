@@ -10,10 +10,8 @@ using ServiceStack.Text;
 namespace ServiceStack.OrmLite.Tests;
 
 [TestFixtureOrmLite]
-public class OrmLiteTransactionTests : OrmLiteProvidersTestBase
+public class OrmLiteTransactionTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public OrmLiteTransactionTests(DialectContext context) : base(context) {}
-
     [Test]
     public void Transaction_commit_persists_data_to_the_db()
     {

@@ -3,56 +3,53 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.Tests
+namespace ServiceStack.OrmLite.Tests;
+
+[TestFixtureOrmLiteDialects(Dialect.AnySqlServer)]
+[Ignore("Required DB with MigrateSqlServerTypes table")]
+public class AdoNetDataAccessTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    [TestFixtureOrmLiteDialects(Dialect.AnySqlServer)]
-    [Ignore("Required DB with MigrateSqlServerTypes table")]
-    public class AdoNetDataAccessTests : OrmLiteProvidersTestBase
+    /*
+    CREATE TABLE [dbo].[MigrateSqlServerTypes](
+        [Id] [int] IDENTITY(1,1) NOT NULL,
+        [SqlServerTime] [time](7) NULL,
+        [OrmLiteTimeSpan] [bigint] NULL,
+    )
+    */
+
+    public class MigrateSqlServerTypes
     {
-        public AdoNetDataAccessTests(DialectContext context) : base(context) {}
+        public int Id { get; set; }
+        public TimeSpan OrmLiteTimeSpan { get; set; }
+    }
 
-        /*
-        CREATE TABLE [dbo].[MigrateSqlServerTypes](
-            [Id] [int] IDENTITY(1,1) NOT NULL,
-            [SqlServerTime] [time](7) NULL,
-            [OrmLiteTimeSpan] [bigint] NULL,
-        )
-        */
+    [Test]
+    [Ignore("Needs review - MONOREPO")]
+    public void Can_read_from_existing_database()
+    {
+        using var db = OpenDbConnection();
+        var map = new Dictionary<int, TimeSpan>();
 
-        public class MigrateSqlServerTypes
+        using (var dbCmd = db.CreateCommand())
         {
-            public int Id { get; set; }
-            public TimeSpan OrmLiteTimeSpan { get; set; }
-        }
+            dbCmd.CommandText = "SELECT * FROM MigrateSqlServerTypes";
 
-        [Test]
-        [Ignore("Needs review - MONOREPO")]
-        public void Can_read_from_existing_database()
-        {
-            using var db = OpenDbConnection();
-            var map = new Dictionary<int, TimeSpan>();
-
-            using (var dbCmd = db.CreateCommand())
+            using (var reader = dbCmd.ExecuteReader())
             {
-                dbCmd.CommandText = "SELECT * FROM MigrateSqlServerTypes";
-
-                using (var reader = dbCmd.ExecuteReader())
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        var id = reader.GetInt32(0);
-                        var sqlTime = (TimeSpan)reader.GetValue(1);
-                        map[id] = sqlTime;
-                    }
+                    var id = reader.GetInt32(0);
+                    var sqlTime = (TimeSpan)reader.GetValue(1);
+                    map[id] = sqlTime;
                 }
             }
-
-            foreach (var entry in map)
-            {
-                db.Update(new MigrateSqlServerTypes { Id = entry.Key, OrmLiteTimeSpan = entry.Value });
-            }
-
-            db.Select<MigrateSqlServerTypes>().PrintDump();
         }
+
+        foreach (var entry in map)
+        {
+            db.Update(new MigrateSqlServerTypes { Id = entry.Key, OrmLiteTimeSpan = entry.Value });
+        }
+
+        db.Select<MigrateSqlServerTypes>().PrintDump();
     }
 }

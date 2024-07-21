@@ -13,10 +13,8 @@ public class ComputedTest
 
 
 [TestFixtureOrmLite]
-public class ComputedTests : OrmLiteProvidersTestBase
+public class ComputedTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public ComputedTests(DialectContext context) : base(context) {}
-
     [Test]
     public void Does_not_select_computed_property()
     {

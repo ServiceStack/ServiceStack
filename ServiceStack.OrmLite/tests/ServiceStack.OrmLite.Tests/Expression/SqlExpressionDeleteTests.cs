@@ -1,43 +1,40 @@
 ﻿using NUnit.Framework;
 using ServiceStack.OrmLite.Tests.Shared;
 
-namespace ServiceStack.OrmLite.Tests.Expression
+namespace ServiceStack.OrmLite.Tests.Expression;
+
+class PersonJoin
 {
-    class PersonJoin
-    {
-        public int Id { get; set; }
-        public int PersonId { get; set; }
-    }
+    public int Id { get; set; }
+    public int PersonId { get; set; }
+}
 
-    [TestFixtureOrmLite]
-    public class SqlExpressionDeleteTests : OrmLiteProvidersTestBase
+[TestFixtureOrmLite]
+public class SqlExpressionDeleteTests(DialectContext context) : OrmLiteProvidersTestBase(context)
+{
+    [Test]
+    public void Can_delete_entity_with_join_expression()
     {
-        public SqlExpressionDeleteTests(DialectContext context) : base(context) {}
-
-        [Test]
-        public void Can_delete_entity_with_join_expression()
+        using (var db = OpenDbConnection())
         {
-            using (var db = OpenDbConnection())
-            {
-                db.DropAndCreateTable<Person>();
-                db.DropAndCreateTable<PersonJoin>();
+            db.DropAndCreateTable<Person>();
+            db.DropAndCreateTable<PersonJoin>();
 
-                db.Insert(new Person { Id = 1, FirstName = "Foo" });
-                db.Insert(new PersonJoin { Id = 1, PersonId = 1 });
-                db.Insert(new PersonJoin { Id = 2, PersonId = 1 });
+            db.Insert(new Person { Id = 1, FirstName = "Foo" });
+            db.Insert(new PersonJoin { Id = 1, PersonId = 1 });
+            db.Insert(new PersonJoin { Id = 2, PersonId = 1 });
 
-                var q = db.From<Person>()
-                    .Join<PersonJoin>((x, y) => x.Id == y.PersonId)
-                    .Where<PersonJoin>(x => x.Id == 2);
+            var q = db.From<Person>()
+                .Join<PersonJoin>((x, y) => x.Id == y.PersonId)
+                .Where<PersonJoin>(x => x.Id == 2);
 
-                var record = db.Single(q);
+            var record = db.Single(q);
 
-                Assert.That(record.Id, Is.EqualTo(1));
+            Assert.That(record.Id, Is.EqualTo(1));
 
-                db.Delete(q);
+            db.Delete(q);
 
-                Assert.That(db.Select<Person>().Count, Is.EqualTo(0));
-            }
+            Assert.That(db.Select<Person>().Count, Is.EqualTo(0));
         }
     }
 }

@@ -9,852 +9,848 @@ using ServiceStack.OrmLite.Tests.UseCase;
 using ServiceStack.Text;
 using DescriptionAttribute = ServiceStack.DataAnnotations.DescriptionAttribute;
 
-namespace ServiceStack.OrmLite.Tests
+namespace ServiceStack.OrmLite.Tests;
+
+/// <summary>
+/// Example of adding reference types to a POCO that:
+///   - Doesn't persist as complex type blob in OrmLite.
+///   - Doesn't impact other queries using the POCO.
+///   - Can save and load references independently from itself.
+///   - Loaded references are serialized in Text serializers.
+/// </summary>
+public class Customer
 {
-    /// <summary>
-    /// Example of adding reference types to a POCO that:
-    ///   - Doesn't persist as complex type blob in OrmLite.
-    ///   - Doesn't impact other queries using the POCO.
-    ///   - Can save and load references independently from itself.
-    ///   - Loaded references are serialized in Text serializers.
-    /// </summary>
-    public class Customer
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string Name { get; set; }
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
 
-        [Reference]
-        public CustomerAddress PrimaryAddress { get; set; }
+    [Reference]
+    public CustomerAddress PrimaryAddress { get; set; }
 
-        [Reference]
-        public List<Order> Orders { get; set; }
-    }
+    [Reference]
+    public List<Order> Orders { get; set; }
+}
 
-    public class CustomerAddress
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public int CustomerId { get; set; }
-        public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Country { get; set; }
-    }
+public class CustomerAddress
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public int CustomerId { get; set; }
+    public string AddressLine1 { get; set; }
+    public string AddressLine2 { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string Country { get; set; }
+}
 
-    public class Order
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public int CustomerId { get; set; }
-        public string LineItem { get; set; }
-        public int Qty { get; set; }
-        public decimal Cost { get; set; }
-    }
+public class Order
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public int CustomerId { get; set; }
+    public string LineItem { get; set; }
+    public int Qty { get; set; }
+    public decimal Cost { get; set; }
+}
 
-    public class Country
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string CountryName { get; set; }
-        public string CountryCode { get; set; }
-    }
+public class Country
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string CountryName { get; set; }
+    public string CountryCode { get; set; }
+}
 
-    /// <summary>
-    /// Test POCOs using table aliases and an alias on the foreign key reference
-    /// </summary>
-    [Alias("Q_Customer")]
-    public class AliasedCustomer
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string Name { get; set; }
+/// <summary>
+/// Test POCOs using table aliases and an alias on the foreign key reference
+/// </summary>
+[Alias("Q_Customer")]
+public class AliasedCustomer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
 
-        [Reference]
-        public AliasedCustomerAddress PrimaryAddress { get; set; }
-    }
+    [Reference]
+    public AliasedCustomerAddress PrimaryAddress { get; set; }
+}
 
-    [Alias("Q_CustomerAddress")]
-    public class AliasedCustomerAddress
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        [Alias("Q_CustomerId")]
-        public int AliasedCustId { get; set; }
-        public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Country { get; set; }
-    }
+[Alias("Q_CustomerAddress")]
+public class AliasedCustomerAddress
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    [Alias("Q_CustomerId")]
+    public int AliasedCustId { get; set; }
+    public string AddressLine1 { get; set; }
+    public string AddressLine2 { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string Country { get; set; }
+}
 
-    /// <summary>
-    /// Test POCOs using table aliases and old form foreign key reference which was aliased name
-    /// </summary>
-    [Alias("QO_Customer")]
-    public class OldAliasedCustomer
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string Name { get; set; }
+/// <summary>
+/// Test POCOs using table aliases and old form foreign key reference which was aliased name
+/// </summary>
+[Alias("QO_Customer")]
+public class OldAliasedCustomer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
 
-        [Reference]
-        public OldAliasedCustomerAddress PrimaryAddress { get; set; }
-    }
+    [Reference]
+    public OldAliasedCustomerAddress PrimaryAddress { get; set; }
+}
 
-    [Alias("QO_CustomerAddress")]
-    public class OldAliasedCustomerAddress
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public int QO_CustomerId { get; set; }
-        public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Country { get; set; }
-    }
+[Alias("QO_CustomerAddress")]
+public class OldAliasedCustomerAddress
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public int QO_CustomerId { get; set; }
+    public string AddressLine1 { get; set; }
+    public string AddressLine2 { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string Country { get; set; }
+}
 
-    [Alias("FooCustomer")]
-    public class MismatchAliasCustomer
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string Name { get; set; }
+[Alias("FooCustomer")]
+public class MismatchAliasCustomer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
 
-        [Reference]
-        public MismatchAliasAddress PrimaryAddress { get; set; }
-    }
+    [Reference]
+    public MismatchAliasAddress PrimaryAddress { get; set; }
+}
 
-    [Alias("BarCustomerAddress")]
-    public class MismatchAliasAddress
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        [Alias("BarCustomerId")]
-        public int MismatchAliasCustomerId { get; set; }
-        public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Country { get; set; }
-    }
+[Alias("BarCustomerAddress")]
+public class MismatchAliasAddress
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    [Alias("BarCustomerId")]
+    public int MismatchAliasCustomerId { get; set; }
+    public string AddressLine1 { get; set; }
+    public string AddressLine2 { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string Country { get; set; }
+}
 
-    public class SelfCustomer
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string Name { get; set; }
+public class SelfCustomer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
 
-        public int? SelfCustomerAddressId { get; set; }
+    public int? SelfCustomerAddressId { get; set; }
 
-        [Reference]
-        public SelfCustomerAddress PrimaryAddress { get; set; }
-    }
+    [Reference]
+    public SelfCustomerAddress PrimaryAddress { get; set; }
+}
 
-    public class SelfCustomerAddress
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Country { get; set; }
-    }
+public class SelfCustomerAddress
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string AddressLine1 { get; set; }
+    public string AddressLine2 { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string Country { get; set; }
+}
 
-    public class MultiSelfCustomer
-    {
-        [AutoIncrement]
-        public int Id { get; set; }
-        public string Name { get; set; }
+public class MultiSelfCustomer
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public string Name { get; set; }
 
-        [References(typeof(SelfCustomerAddress))]
-        public int? HomeAddressId { get; set; }
+    [References(typeof(SelfCustomerAddress))]
+    public int? HomeAddressId { get; set; }
 
-        [References(typeof(SelfCustomerAddress))]
-        public int? WorkAddressId { get; set; }
+    [References(typeof(SelfCustomerAddress))]
+    public int? WorkAddressId { get; set; }
 
-        [Reference]
-        public SelfCustomerAddress HomeAddress { get; set; }
+    [Reference]
+    public SelfCustomerAddress HomeAddress { get; set; }
 
-        [Reference]
-        public SelfCustomerAddress WorkAddress { get; set; }
-    }
+    [Reference]
+    public SelfCustomerAddress WorkAddress { get; set; }
+}
     
-    public class JobApplication
+public class JobApplication
+{
+    [AutoIncrement] public int Id { get; set; }
+
+    [References(typeof(Customer))] public int CustomerId { get; set; }
+
+    [Reference] public Customer Applicant { get; set; }
+
+    public DateTime AppliedDate { get; set; }
+
+    [Reference, Ref(Model = nameof(PhoneScreen), RefId = nameof(Id))]
+    public PhoneScreen PhoneScreen { get; set; }
+
+    public JobApplicationStatus ApplicationStatus { get; set; }
+}
+public class PhoneScreen
+{
+    [AutoIncrement] public int Id { get; set; }
+
+    [References(typeof(JobApplication))] 
+    public int JobApplicationId { get; set; }
+    public string Notes { get; set; }
+
+    [ReferenceField(typeof(JobApplication), nameof(JobApplicationId))]
+    public JobApplicationStatus? ApplicationStatus { get; set; }
+}
+public enum JobApplicationStatus
+{
+    [Description("Application was received")]
+    Applied,
+    [Description("Advanced to phone screening")]
+    PhoneScreening,
+    [Description("Completed phone screening")]
+    PhoneScreeningCompleted,
+    [Description("Advanced to interview")]
+    Interview,
+    [Description("Interview was completed")]
+    InterviewCompleted,
+    [Description("Advanced to offer")]
+    Offer,
+    [Description("Application was denied")]
+    Disqualified
+}
+
+[TestFixtureOrmLite]
+public class LoadReferencesTests(DialectContext context) : OrmLiteProvidersTestBase(context)
+{
+    private IDbConnection db;
+
+    [OneTimeSetUp]
+    public new void TestFixtureSetUp()
     {
-        [AutoIncrement] public int Id { get; set; }
+        db = base.OpenDbConnection();
+        CustomerOrdersUseCase.DropTables(db); //Has conflicting 'Order' table
 
-        [References(typeof(Customer))] public int CustomerId { get; set; }
+        db.DropAndCreateTable<Order>();
+        db.DropAndCreateTable<Customer>();
+        db.DropAndCreateTable<CustomerAddress>();
+        db.DropAndCreateTable<Country>();
+        db.DropAndCreateTable<AliasedCustomer>();
+        db.DropAndCreateTable<AliasedCustomerAddress>();
+        db.DropAndCreateTable<OldAliasedCustomer>();
+        db.DropAndCreateTable<OldAliasedCustomerAddress>();
+        db.DropAndCreateTable<MismatchAliasCustomer>();
+        db.DropAndCreateTable<MismatchAliasAddress>();
 
-        [Reference] public Customer Applicant { get; set; }
+        db.DropTable<SelfCustomer>();
+        db.DropTable<MultiSelfCustomer>();
+        db.DropTable<SelfCustomerAddress>();
 
-        public DateTime AppliedDate { get; set; }
+        db.CreateTable<SelfCustomerAddress>();
+        db.CreateTable<MultiSelfCustomer>();
+        db.CreateTable<SelfCustomer>();
 
-        [Reference, Ref(Model = nameof(PhoneScreen), RefId = nameof(Id))]
-        public PhoneScreen PhoneScreen { get; set; }
-
-        public JobApplicationStatus ApplicationStatus { get; set; }
+        db.CreateTable<JobApplication>();
+        db.CreateTable<PhoneScreen>();
     }
-    public class PhoneScreen
-    {
-        [AutoIncrement] public int Id { get; set; }
 
-        [References(typeof(JobApplication))] 
-        public int JobApplicationId { get; set; }
-        public string Notes { get; set; }
-
-        [ReferenceField(typeof(JobApplication), nameof(JobApplicationId))]
-        public JobApplicationStatus? ApplicationStatus { get; set; }
-    }
-    public enum JobApplicationStatus
+    [SetUp]
+    public void SetUp()
     {
-        [Description("Application was received")]
-        Applied,
-        [Description("Advanced to phone screening")]
-        PhoneScreening,
-        [Description("Completed phone screening")]
-        PhoneScreeningCompleted,
-        [Description("Advanced to interview")]
-        Interview,
-        [Description("Interview was completed")]
-        InterviewCompleted,
-        [Description("Advanced to offer")]
-        Offer,
-        [Description("Application was denied")]
-        Disqualified
+        DeleteFromTables();
     }
 
-    [TestFixtureOrmLite]
-    public class LoadReferencesTests : OrmLiteProvidersTestBase
+    private void DeleteFromTables()
     {
-        public LoadReferencesTests(DialectContext context) : base(context) {}
+        db.DeleteAll<PhoneScreen>();
+        db.DeleteAll<JobApplication>();
+        db.DeleteAll<Order>();
+        db.DeleteAll<CustomerAddress>();
+        db.DeleteAll<Customer>();
+        db.DeleteAll<MultiSelfCustomer>();
+        db.DeleteAll<SelfCustomerAddress>();
+        db.DeleteAll<SelfCustomer>();
+    }
 
-        private IDbConnection db;
+    [OneTimeTearDown]
+    public new void TestFixtureTearDown()
+    {
+        db.Dispose();
+    }
 
-        [OneTimeSetUp]
-        public new void TestFixtureSetUp()
+    [Test]
+    public void Does_not_include_complex_reference_type_in_sql()
+    {
+        db.Select<Customer>();
+        Assert.That(db.GetLastSql().NormalizeSql(),
+            Is.EqualTo("select id, name from customer"));
+    }
+
+    [Test]
+    public void Can_Save_and_Load_References()
+    {
+        var customer = CreateCustomer();
+        db.Save(customer);
+
+        Assert.That(customer.Id, Is.GreaterThan(0));
+        Assert.That(customer.PrimaryAddress.CustomerId, Is.EqualTo(0));
+
+        db.SaveReferences(customer, customer.PrimaryAddress);
+        Assert.That(customer.PrimaryAddress.CustomerId, Is.EqualTo(customer.Id));
+
+        db.SaveReferences(customer, customer.Orders);
+        Assert.That(customer.Orders.All(x => x.CustomerId == customer.Id));
+
+        var dbCustomer = db.LoadSingleById<Customer>(customer.Id);
+
+        dbCustomer.PrintDump();
+
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+        Assert.That(dbCustomer.Orders.Count, Is.EqualTo(2));
+    }
+
+    private static Customer CreateCustomer()
+    {
+        var customer = new Customer
         {
-            db = base.OpenDbConnection();
-            CustomerOrdersUseCase.DropTables(db); //Has conflicting 'Order' table
-
-            db.DropAndCreateTable<Order>();
-            db.DropAndCreateTable<Customer>();
-            db.DropAndCreateTable<CustomerAddress>();
-            db.DropAndCreateTable<Country>();
-            db.DropAndCreateTable<AliasedCustomer>();
-            db.DropAndCreateTable<AliasedCustomerAddress>();
-            db.DropAndCreateTable<OldAliasedCustomer>();
-            db.DropAndCreateTable<OldAliasedCustomerAddress>();
-            db.DropAndCreateTable<MismatchAliasCustomer>();
-            db.DropAndCreateTable<MismatchAliasAddress>();
-
-            db.DropTable<SelfCustomer>();
-            db.DropTable<MultiSelfCustomer>();
-            db.DropTable<SelfCustomerAddress>();
-
-            db.CreateTable<SelfCustomerAddress>();
-            db.CreateTable<MultiSelfCustomer>();
-            db.CreateTable<SelfCustomer>();
-
-            db.CreateTable<JobApplication>();
-            db.CreateTable<PhoneScreen>();
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            DeleteFromTables();
-        }
-
-        private void DeleteFromTables()
-        {
-            db.DeleteAll<PhoneScreen>();
-            db.DeleteAll<JobApplication>();
-            db.DeleteAll<Order>();
-            db.DeleteAll<CustomerAddress>();
-            db.DeleteAll<Customer>();
-            db.DeleteAll<MultiSelfCustomer>();
-            db.DeleteAll<SelfCustomerAddress>();
-            db.DeleteAll<SelfCustomer>();
-        }
-
-        [OneTimeTearDown]
-        public new void TestFixtureTearDown()
-        {
-            db.Dispose();
-        }
-
-        [Test]
-        public void Does_not_include_complex_reference_type_in_sql()
-        {
-            db.Select<Customer>();
-            Assert.That(db.GetLastSql().NormalizeSql(),
-                Is.EqualTo("select id, name from customer"));
-        }
-
-        [Test]
-        public void Can_Save_and_Load_References()
-        {
-            var customer = CreateCustomer();
-            db.Save(customer);
-
-            Assert.That(customer.Id, Is.GreaterThan(0));
-            Assert.That(customer.PrimaryAddress.CustomerId, Is.EqualTo(0));
-
-            db.SaveReferences(customer, customer.PrimaryAddress);
-            Assert.That(customer.PrimaryAddress.CustomerId, Is.EqualTo(customer.Id));
-
-            db.SaveReferences(customer, customer.Orders);
-            Assert.That(customer.Orders.All(x => x.CustomerId == customer.Id));
-
-            var dbCustomer = db.LoadSingleById<Customer>(customer.Id);
-
-            dbCustomer.PrintDump();
-
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-            Assert.That(dbCustomer.Orders.Count, Is.EqualTo(2));
-        }
-
-        private static Customer CreateCustomer()
-        {
-            var customer = new Customer
+            Name = "Customer 1",
+            PrimaryAddress = new CustomerAddress
             {
-                Name = "Customer 1",
-                PrimaryAddress = new CustomerAddress
-                {
-                    AddressLine1 = "1 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
-                },
-                Orders = new[]
-                {
-                    new Order { LineItem = "Line 1", Qty = 1, Cost = 1.99m },
-                    new Order { LineItem = "Line 2", Qty = 2, Cost = 2.99m },
-                }.ToList(),
-            };
-            return customer;
-        }
-
-        [Test]
-        public void Can_Save_and_Load_Aliased_References()
-        {
-            var customer = new AliasedCustomer
+                AddressLine1 = "1 Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+            Orders = new[]
             {
-                Name = "Customer 1",
-                PrimaryAddress = new AliasedCustomerAddress
-                {
-                    AddressLine1 = "1 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
-                },
-            };
+                new Order { LineItem = "Line 1", Qty = 1, Cost = 1.99m },
+                new Order { LineItem = "Line 2", Qty = 2, Cost = 2.99m },
+            }.ToList(),
+        };
+        return customer;
+    }
 
-            db.Save(customer);
-
-            Assert.That(customer.Id, Is.GreaterThan(0));
-            Assert.That(customer.PrimaryAddress.AliasedCustId, Is.EqualTo(0));
-
-            db.SaveReferences(customer, customer.PrimaryAddress);
-            Assert.That(customer.PrimaryAddress.AliasedCustId, Is.EqualTo(customer.Id));
-
-            var dbCustomer = db.LoadSingleById<AliasedCustomer>(customer.Id);
-
-            dbCustomer.PrintDump();
-
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-        }
-
-        [Test]
-        public void Can_Save_and_Load_Old_Aliased_References()
+    [Test]
+    public void Can_Save_and_Load_Aliased_References()
+    {
+        var customer = new AliasedCustomer
         {
-            var customer = new OldAliasedCustomer
+            Name = "Customer 1",
+            PrimaryAddress = new AliasedCustomerAddress
             {
-                Name = "Customer 1",
-                PrimaryAddress = new OldAliasedCustomerAddress
-                {
-                    AddressLine1 = "1 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
-                },
-            };
+                AddressLine1 = "1 Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+        };
 
-            db.Save(customer);
+        db.Save(customer);
 
-            Assert.That(customer.Id, Is.GreaterThan(0));
-            Assert.That(customer.PrimaryAddress.QO_CustomerId, Is.EqualTo(0));
+        Assert.That(customer.Id, Is.GreaterThan(0));
+        Assert.That(customer.PrimaryAddress.AliasedCustId, Is.EqualTo(0));
 
-            db.SaveReferences(customer, customer.PrimaryAddress);
-            Assert.That(customer.PrimaryAddress.QO_CustomerId, Is.EqualTo(customer.Id));
+        db.SaveReferences(customer, customer.PrimaryAddress);
+        Assert.That(customer.PrimaryAddress.AliasedCustId, Is.EqualTo(customer.Id));
 
-            var dbCustomer = db.LoadSingleById<OldAliasedCustomer>(customer.Id);
+        var dbCustomer = db.LoadSingleById<AliasedCustomer>(customer.Id);
 
-            dbCustomer.PrintDump();
+        dbCustomer.PrintDump();
 
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-        }
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+    }
 
-        [Test]
-        public void Can_Save_and_Load_MismatchedAlias_References_using_code_conventions()
+    [Test]
+    public void Can_Save_and_Load_Old_Aliased_References()
+    {
+        var customer = new OldAliasedCustomer
         {
-            var customer = new MismatchAliasCustomer
+            Name = "Customer 1",
+            PrimaryAddress = new OldAliasedCustomerAddress
             {
-                Name = "Customer 1",
-                PrimaryAddress = new MismatchAliasAddress
-                {
-                    AddressLine1 = "1 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
-                },
-            };
+                AddressLine1 = "1 Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+        };
 
-            db.Save(customer);
+        db.Save(customer);
 
-            Assert.That(customer.Id, Is.GreaterThan(0));
-            Assert.That(customer.PrimaryAddress.MismatchAliasCustomerId, Is.EqualTo(0));
+        Assert.That(customer.Id, Is.GreaterThan(0));
+        Assert.That(customer.PrimaryAddress.QO_CustomerId, Is.EqualTo(0));
 
-            db.SaveReferences(customer, customer.PrimaryAddress);
-            Assert.That(customer.PrimaryAddress.MismatchAliasCustomerId, Is.EqualTo(customer.Id));
+        db.SaveReferences(customer, customer.PrimaryAddress);
+        Assert.That(customer.PrimaryAddress.QO_CustomerId, Is.EqualTo(customer.Id));
 
-            var dbCustomer = db.LoadSingleById<MismatchAliasCustomer>(customer.Id);
+        var dbCustomer = db.LoadSingleById<OldAliasedCustomer>(customer.Id);
 
-            dbCustomer.PrintDump();
+        dbCustomer.PrintDump();
 
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-        }
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+    }
 
-        private Customer AddCustomerWithOrders()
+    [Test]
+    public void Can_Save_and_Load_MismatchedAlias_References_using_code_conventions()
+    {
+        var customer = new MismatchAliasCustomer
         {
-            var customer = GetCustomerWithOrders();
-
-            db.Save(customer, references: true);
-
-            return customer;
-        }
-
-        public static Customer GetCustomerWithOrders(string id = "1")
-        {
-            var customer = new Customer
+            Name = "Customer 1",
+            PrimaryAddress = new MismatchAliasAddress
             {
-                Name = "Customer " + id,
-                PrimaryAddress = new CustomerAddress
-                {
-                    AddressLine1 = id + " Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
-                },
-                Orders = new[]
-                    {
-                        new Order {LineItem = "Line 1", Qty = 1, Cost = 1.99m},
-                        new Order {LineItem = "Line 2", Qty = 2, Cost = 2.99m},
-                    }.ToList(),
-            };
-            return customer;
-        }
+                AddressLine1 = "1 Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+        };
 
-        [Test]
-        public void Can_SaveAllReferences_then_Load_them()
+        db.Save(customer);
+
+        Assert.That(customer.Id, Is.GreaterThan(0));
+        Assert.That(customer.PrimaryAddress.MismatchAliasCustomerId, Is.EqualTo(0));
+
+        db.SaveReferences(customer, customer.PrimaryAddress);
+        Assert.That(customer.PrimaryAddress.MismatchAliasCustomerId, Is.EqualTo(customer.Id));
+
+        var dbCustomer = db.LoadSingleById<MismatchAliasCustomer>(customer.Id);
+
+        dbCustomer.PrintDump();
+
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+    }
+
+    private Customer AddCustomerWithOrders()
+    {
+        var customer = GetCustomerWithOrders();
+
+        db.Save(customer, references: true);
+
+        return customer;
+    }
+
+    public static Customer GetCustomerWithOrders(string id = "1")
+    {
+        var customer = new Customer
         {
-            var customer = AddCustomerWithOrders();
-
-            Assert.That(customer.Id, Is.GreaterThan(0));
-            Assert.That(customer.PrimaryAddress.CustomerId, Is.EqualTo(customer.Id));
-            Assert.That(customer.Orders.All(x => x.CustomerId == customer.Id));
-
-            var dbCustomer = db.LoadSingleById<Customer>(customer.Id);
-
-            dbCustomer.PrintDump();
-
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-            Assert.That(dbCustomer.Orders.Count, Is.EqualTo(2));
-        }
-
-        [Test]
-        public void Can_save_and_load_with_null_references()
-        {
-            var customer = new Customer
+            Name = "Customer " + id,
+            PrimaryAddress = new CustomerAddress
             {
-                Name = "Customer 1",
-                PrimaryAddress = null,
-                Orders = null,
-            };
-
-            db.Save(customer, references: true);
-
-            Assert.That(customer.Id, Is.GreaterThan(0));
-
-            var dbCustomer = db.LoadSingleById<Customer>(customer.Id);
-            Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
-
-            var dbCustomers = db.LoadSelect<Customer>(q => q.Id == customer.Id);
-            Assert.That(dbCustomers.Count, Is.EqualTo(1));
-            Assert.That(dbCustomers[0].Name, Is.EqualTo("Customer 1"));
-        }
-
-        [Test]
-        public void Can_save_and_load_self_references_with_null_references()
-        {
-            var customer = new SelfCustomer
+                AddressLine1 = id + " Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+            Orders = new[]
             {
-                Name = "Customer 1",
-                PrimaryAddress = null,
-            };
+                new Order {LineItem = "Line 1", Qty = 1, Cost = 1.99m},
+                new Order {LineItem = "Line 2", Qty = 2, Cost = 2.99m},
+            }.ToList(),
+        };
+        return customer;
+    }
 
-            db.Save(customer, references: true);
+    [Test]
+    public void Can_SaveAllReferences_then_Load_them()
+    {
+        var customer = AddCustomerWithOrders();
 
-            Assert.That(customer.Id, Is.GreaterThan(0));
+        Assert.That(customer.Id, Is.GreaterThan(0));
+        Assert.That(customer.PrimaryAddress.CustomerId, Is.EqualTo(customer.Id));
+        Assert.That(customer.Orders.All(x => x.CustomerId == customer.Id));
 
-            var dbCustomer = db.LoadSingleById<SelfCustomer>(customer.Id);
-            Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
+        var dbCustomer = db.LoadSingleById<Customer>(customer.Id);
 
-            var dbCustomers = db.LoadSelect<SelfCustomer>(q => q.Id == customer.Id);
-            Assert.That(dbCustomers.Count, Is.EqualTo(1));
-            Assert.That(dbCustomers[0].Name, Is.EqualTo("Customer 1"));
-        }
+        dbCustomer.PrintDump();
 
-        [Test]
-        public void Can_FirstMatchingField_in_JOIN_tables()
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+        Assert.That(dbCustomer.Orders.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void Can_save_and_load_with_null_references()
+    {
+        var customer = new Customer
         {
-            var q = db.From<Customer>()
-                      .Join<CustomerAddress>();
+            Name = "Customer 1",
+            PrimaryAddress = null,
+            Orders = null,
+        };
 
-            Assert.That(q.FirstMatchingField("Id"), Is.Not.Null);
-            Assert.That(q.FirstMatchingField("AddressLine1"), Is.Not.Null);
-            Assert.That(q.FirstMatchingField("CustomerId").Item1.Name, Is.EqualTo("CustomerAddress"));
-            Assert.That(q.FirstMatchingField("CustomerAddressCity"), Is.Not.Null);
-            Assert.That(q.FirstMatchingField("Unknown"), Is.Null);
-        }
+        db.Save(customer, references: true);
 
-        [Test]
-        public void Can_FirstMatchingField_in_JOIN_tables_with_Aliases()
+        Assert.That(customer.Id, Is.GreaterThan(0));
+
+        var dbCustomer = db.LoadSingleById<Customer>(customer.Id);
+        Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
+
+        var dbCustomers = db.LoadSelect<Customer>(q => q.Id == customer.Id);
+        Assert.That(dbCustomers.Count, Is.EqualTo(1));
+        Assert.That(dbCustomers[0].Name, Is.EqualTo("Customer 1"));
+    }
+
+    [Test]
+    public void Can_save_and_load_self_references_with_null_references()
+    {
+        var customer = new SelfCustomer
         {
-            var q = db.From<AliasedCustomer>()
-                      .Join<AliasedCustomerAddress>();
+            Name = "Customer 1",
+            PrimaryAddress = null,
+        };
 
-            Assert.That(q.FirstMatchingField("Id"), Is.Not.Null);
-            Assert.That(q.FirstMatchingField("AddressLine1"), Is.Not.Null);
-            Assert.That(q.FirstMatchingField("Q_CustomerId").Item1.Name, Is.EqualTo("AliasedCustomerAddress"));
-            Assert.That(q.FirstMatchingField("AliasedCustId").Item1.Name, Is.EqualTo("AliasedCustomerAddress"));
-            Assert.That(q.FirstMatchingField("Q_CustomerAddressCity"), Is.Not.Null);
-            Assert.That(q.FirstMatchingField("Unknown"), Is.Null);
-        }
+        db.Save(customer, references: true);
 
-        [Test]
-        public void Can_Save_and_Load_Self_References()
+        Assert.That(customer.Id, Is.GreaterThan(0));
+
+        var dbCustomer = db.LoadSingleById<SelfCustomer>(customer.Id);
+        Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
+
+        var dbCustomers = db.LoadSelect<SelfCustomer>(q => q.Id == customer.Id);
+        Assert.That(dbCustomers.Count, Is.EqualTo(1));
+        Assert.That(dbCustomers[0].Name, Is.EqualTo("Customer 1"));
+    }
+
+    [Test]
+    public void Can_FirstMatchingField_in_JOIN_tables()
+    {
+        var q = db.From<Customer>()
+            .Join<CustomerAddress>();
+
+        Assert.That(q.FirstMatchingField("Id"), Is.Not.Null);
+        Assert.That(q.FirstMatchingField("AddressLine1"), Is.Not.Null);
+        Assert.That(q.FirstMatchingField("CustomerId").Item1.Name, Is.EqualTo("CustomerAddress"));
+        Assert.That(q.FirstMatchingField("CustomerAddressCity"), Is.Not.Null);
+        Assert.That(q.FirstMatchingField("Unknown"), Is.Null);
+    }
+
+    [Test]
+    public void Can_FirstMatchingField_in_JOIN_tables_with_Aliases()
+    {
+        var q = db.From<AliasedCustomer>()
+            .Join<AliasedCustomerAddress>();
+
+        Assert.That(q.FirstMatchingField("Id"), Is.Not.Null);
+        Assert.That(q.FirstMatchingField("AddressLine1"), Is.Not.Null);
+        Assert.That(q.FirstMatchingField("Q_CustomerId").Item1.Name, Is.EqualTo("AliasedCustomerAddress"));
+        Assert.That(q.FirstMatchingField("AliasedCustId").Item1.Name, Is.EqualTo("AliasedCustomerAddress"));
+        Assert.That(q.FirstMatchingField("Q_CustomerAddressCity"), Is.Not.Null);
+        Assert.That(q.FirstMatchingField("Unknown"), Is.Null);
+    }
+
+    [Test]
+    public void Can_Save_and_Load_Self_References()
+    {
+        var customer = new SelfCustomer
         {
-            var customer = new SelfCustomer
+            Name = "Customer 1",
+            PrimaryAddress = new SelfCustomerAddress
+            {
+                AddressLine1 = "1 Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+        };
+
+        db.Save(new SelfCustomer { Name = "Dummy Incrementer" });
+
+        db.Save(customer);
+
+        Assert.That(customer.Id, Is.GreaterThan(0));
+        Assert.That(customer.SelfCustomerAddressId, Is.Null);
+
+        db.SaveReferences(customer, customer.PrimaryAddress);
+        Assert.That(customer.SelfCustomerAddressId, Is.EqualTo(customer.PrimaryAddress.Id));
+
+        var dbCustomer = db.LoadSingleById<SelfCustomer>(customer.Id);
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+
+        customer = new SelfCustomer
+        {
+            Name = "Customer 2",
+            PrimaryAddress = new SelfCustomerAddress
+            {
+                AddressLine1 = "2 Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+        };
+
+        db.Save(customer, references: true);
+        Assert.That(customer.SelfCustomerAddressId, Is.EqualTo(customer.PrimaryAddress.Id));
+
+        dbCustomer = db.LoadSingleById<SelfCustomer>(customer.Id);
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+    }
+
+    [Test]
+    public void Can_load_list_of_self_references()
+    {
+        var customers = new[]
+        {
+            new SelfCustomer
             {
                 Name = "Customer 1",
                 PrimaryAddress = new SelfCustomerAddress
                 {
-                    AddressLine1 = "1 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
+                    AddressLine1 = "1 Australia Street",
                     Country = "Australia"
                 },
-            };
-
-            db.Save(new SelfCustomer { Name = "Dummy Incrementer" });
-
-            db.Save(customer);
-
-            Assert.That(customer.Id, Is.GreaterThan(0));
-            Assert.That(customer.SelfCustomerAddressId, Is.Null);
-
-            db.SaveReferences(customer, customer.PrimaryAddress);
-            Assert.That(customer.SelfCustomerAddressId, Is.EqualTo(customer.PrimaryAddress.Id));
-
-            var dbCustomer = db.LoadSingleById<SelfCustomer>(customer.Id);
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-
-            customer = new SelfCustomer
+            },
+            new SelfCustomer
             {
                 Name = "Customer 2",
                 PrimaryAddress = new SelfCustomerAddress
                 {
-                    AddressLine1 = "2 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
+                    AddressLine1 = "2 Prospect Park",
+                    Country = "USA"
                 },
-            };
+            },
+        };
 
-            db.Save(customer, references: true);
-            Assert.That(customer.SelfCustomerAddressId, Is.EqualTo(customer.PrimaryAddress.Id));
+        db.Save(new SelfCustomer { Name = "Dummy Incrementer" });
 
-            dbCustomer = db.LoadSingleById<SelfCustomer>(customer.Id);
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-        }
+        customers.Each(x =>
+            db.Save(x, references: true));
 
-        [Test]
-        public void Can_load_list_of_self_references()
-        {
-            var customers = new[]
-            {
-                new SelfCustomer
-                {
-                    Name = "Customer 1",
-                    PrimaryAddress = new SelfCustomerAddress
-                    {
-                        AddressLine1 = "1 Australia Street",
-                        Country = "Australia"
-                    },
-                },
-                new SelfCustomer
-                {
-                    Name = "Customer 2",
-                    PrimaryAddress = new SelfCustomerAddress
-                    {
-                        AddressLine1 = "2 Prospect Park",
-                        Country = "USA"
-                    },
-                },
-            };
+        var results = db.LoadSelect<SelfCustomer>(q => q.SelfCustomerAddressId != null);
+        Assert.That(results.Count, Is.EqualTo(2));
+        Assert.That(results.All(x => x.PrimaryAddress != null));
 
-            db.Save(new SelfCustomer { Name = "Dummy Incrementer" });
+        var customer1 = results.First(x => x.Name == "Customer 1");
+        Assert.That(customer1.PrimaryAddress.Country, Is.EqualTo("Australia"));
 
-            customers.Each(x =>
-                db.Save(x, references: true));
+        var customer2 = results.First(x => x.Name == "Customer 2");
+        Assert.That(customer2.PrimaryAddress.Country, Is.EqualTo("USA"));
 
-            var results = db.LoadSelect<SelfCustomer>(q => q.SelfCustomerAddressId != null);
-            Assert.That(results.Count, Is.EqualTo(2));
-            Assert.That(results.All(x => x.PrimaryAddress != null));
-
-            var customer1 = results.First(x => x.Name == "Customer 1");
-            Assert.That(customer1.PrimaryAddress.Country, Is.EqualTo("Australia"));
-
-            var customer2 = results.First(x => x.Name == "Customer 2");
-            Assert.That(customer2.PrimaryAddress.Country, Is.EqualTo("USA"));
-
-            results = db.LoadSelect<SelfCustomer>(q => q.Name == "Customer 1");
-            Assert.That(results.Count, Is.EqualTo(1));
-            Assert.That(results[0].PrimaryAddress.Country, Is.EqualTo("Australia"));
-        }
-
-        [Test]
-        public void Can_support_multiple_self_references()
-        {
-            var customers = new[]
-            {
-                new MultiSelfCustomer
-                {
-                    Name = "Customer 1",
-                    HomeAddress = new SelfCustomerAddress
-                    {
-                        AddressLine1 = "1 Home Street",
-                        Country = "Australia"
-                    },
-                    WorkAddress = new SelfCustomerAddress
-                    {
-                        AddressLine1 = "1 Work Street",
-                        Country = "Australia"
-                    },
-                },
-                new MultiSelfCustomer
-                {
-                    Name = "Customer 2",
-                    HomeAddress = new SelfCustomerAddress
-                    {
-                        AddressLine1 = "2 Home Park",
-                        Country = "USA"
-                    },
-                    WorkAddress = new SelfCustomerAddress
-                    {
-                        AddressLine1 = "2 Work Park",
-                        Country = "UK"
-                    },
-                },
-            };
-
-            customers.Each(x =>
-                db.Save(x, references: true));
-
-            var results = db.LoadSelect<MultiSelfCustomer>(q =>
-                q.HomeAddressId != null &&
-                q.WorkAddressId != null);
-
-            results.PrintDump();
-
-            Assert.That(results.Count, Is.EqualTo(2));
-            Assert.That(results[0].HomeAddress.AddressLine1, Does.Contain("Home"));
-            Assert.That(results[0].WorkAddress.AddressLine1, Does.Contain("Work"));
-            Assert.That(results[1].HomeAddress.AddressLine1, Does.Contain("Home"));
-            Assert.That(results[1].WorkAddress.AddressLine1, Does.Contain("Work"));
-
-            var ukAddress = db.Single<SelfCustomerAddress>(q => q.Country == "UK");
-            ukAddress.PrintDump();
-            Assert.That(ukAddress.AddressLine1, Is.EqualTo("2 Work Park"));
-        }
-
-        [Test]
-        public void Can_load_only_included_references()
-        {
-            var customer = new Customer
-            {
-                Name = "Customer 1",
-                PrimaryAddress = new CustomerAddress
-                {
-                    AddressLine1 = "1 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
-                },
-                Orders = new[] {
-                    new Order { LineItem = "Line 1", Qty = 1, Cost = 1.99m },
-                    new Order { LineItem = "Line 2", Qty = 2, Cost = 2.99m },
-                }.ToList(),
-            };
-
-            db.Save(customer, references: true);
-            Assert.That(customer.Id, Is.GreaterThan(0));
-
-            var dbCustomers = db.LoadSelect<Customer>(x => x.Id == customer.Id, include: x => x.PrimaryAddress);
-            Assert.That(dbCustomers.Count, Is.EqualTo(1));
-            Assert.That(dbCustomers[0].Name, Is.EqualTo("Customer 1"));
-            Assert.That(dbCustomers[0].Orders, Is.Null);
-            Assert.That(dbCustomers[0].PrimaryAddress, Is.Not.Null);
-
-            dbCustomers = db.LoadSelect<Customer>(q => q.Id == customer.Id, include: new[] { "primaryaddress" });
-            Assert.That(dbCustomers.Count, Is.EqualTo(1));
-            Assert.That(dbCustomers[0].Name, Is.EqualTo("Customer 1"));
-            Assert.That(dbCustomers[0].Orders, Is.Null);
-            Assert.That(dbCustomers[0].PrimaryAddress, Is.Not.Null);
-
-            // Test LoadSingleById
-            var dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: new[] { "PrimaryAddress" });
-            Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
-            Assert.That(dbCustomer.Orders, Is.Null);
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-
-            dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: new[] { "primaryaddress" });
-            Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
-            Assert.That(dbCustomer.Orders, Is.Null);
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-
-            dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: x => new { x.PrimaryAddress });
-            Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
-            Assert.That(dbCustomer.Orders, Is.Null);
-            Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
-
-            dbCustomers = db.LoadSelect<Customer>(q => q.Id == customer.Id, include: new string[0]);
-            Assert.That(dbCustomers.All(x => x.Orders == null));
-            Assert.That(dbCustomers.All(x => x.PrimaryAddress == null));
-
-            dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: new string[0]);
-            Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
-            Assert.That(dbCustomer.Orders, Is.Null);
-            Assert.That(dbCustomer.PrimaryAddress, Is.Null);
-
-            // Invalid field name
-            dbCustomers = db.LoadSelect<Customer>(q => q.Id == customer.Id, include: new[] { "InvalidOption1", "InvalidOption2" });
-            Assert.That(dbCustomers.All(x => x.Orders == null));
-            Assert.That(dbCustomers.All(x => x.PrimaryAddress == null));
-
-            dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: new[] { "InvalidOption1", "InvalidOption2" });
-            Assert.That(dbCustomer.Orders, Is.Null);
-            Assert.That(dbCustomer.PrimaryAddress, Is.Null);
-        }
-
-        [Test]
-        public void Can_load_included_references_via_sql_in_expression()
-        {
-            var customer = new Customer
-            {
-                Name = "Customer 1",
-                PrimaryAddress = new CustomerAddress
-                {
-                    AddressLine1 = "1 Humpty Street",
-                    City = "Humpty Doo",
-                    State = "Northern Territory",
-                    Country = "Australia"
-                },
-                Orders = new[] {
-                    new Order { LineItem = "Line 1", Qty = 1, Cost = 1.99m },
-                    new Order { LineItem = "Line 2", Qty = 2, Cost = 2.99m },
-                }.ToList(),
-            };
-
-            db.Save(customer, references: true);
-
-            var customersSubFilter = db.From<Customer>().Select(c => c.Id);
-            var orderQuery = db.From<Order>().Where(q => Sql.In(q.CustomerId, customersSubFilter));
-            var dbOrders = db.Select(orderQuery);
-            Assert.That(dbOrders.Count, Is.EqualTo(2));
-
-            // Negative case
-            customersSubFilter = db.From<Customer>().Select(c => c.Id).Where(c => c.Id == -1);
-            orderQuery = db.From<Order>().Where(q => Sql.In(q.CustomerId, customersSubFilter));
-
-            dbOrders = db.Select(orderQuery);
-            Assert.That(dbOrders.Count, Is.EqualTo(0));
-
-            //Test merge subselect params
-            orderQuery = db.From<Order>().Where(q => q.CustomerId >= 1 && Sql.In(q.CustomerId, customersSubFilter));
-
-            Assert.That(orderQuery.Params.Count, Is.EqualTo(2));
-            Assert.That(orderQuery.Params[0].Value, Is.EqualTo(1));
-            Assert.That(orderQuery.Params[0].ParameterName, Does.EndWith("0"));
-            Assert.That(orderQuery.Params[1].Value, Is.EqualTo(-1));
-            Assert.That(orderQuery.Params[1].ParameterName, Does.EndWith("1"));
-
-            dbOrders = db.Select(orderQuery);
-            Assert.That(dbOrders.Count, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void Does_populate_ReferenceField_ApplicationStatus()
-        {
-            var customer = CreateCustomer();
-            db.Save(customer);
-
-            var jobAppId = (int) db.Insert(new JobApplication {
-                AppliedDate = DateTime.UtcNow,
-                CustomerId = customer.Id,
-                ApplicationStatus = JobApplicationStatus.PhoneScreening,
-            }, selectIdentity:true);
-        
-            var phoneScreenId = db.Insert(new PhoneScreen {
-                JobApplicationId = jobAppId,
-                Notes = JobApplicationStatus.PhoneScreening.ToDescription()
-            }, selectIdentity:true);
-
-            var results = db.LoadSelect<PhoneScreen>(x => x.JobApplicationId == jobAppId);
-            Assert.That(results[0].ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
-
-            var single = db.LoadSingleById<PhoneScreen>(phoneScreenId);
-            Assert.That(single.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
-        }
-
-        [Test]
-        public async Task Does_populate_ReferenceField_ApplicationStatus_Async()
-        {
-            var customer = CreateCustomer();
-            await db.SaveAsync(customer);
-
-            var jobAppId = (int) await db.InsertAsync(new JobApplication {
-                AppliedDate = DateTime.UtcNow,
-                CustomerId = customer.Id,
-                ApplicationStatus = JobApplicationStatus.PhoneScreening,
-            }, selectIdentity:true);
-        
-            var phoneScreenId = await db.InsertAsync(new PhoneScreen {
-                JobApplicationId = jobAppId,
-                Notes = JobApplicationStatus.PhoneScreening.ToDescription()
-            }, selectIdentity:true);
-
-            var results = await db.LoadSelectAsync<PhoneScreen>(x => x.JobApplicationId == jobAppId);
-            Assert.That(results[0].ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
-
-            var single = await db.LoadSingleByIdAsync<PhoneScreen>(phoneScreenId);
-            Assert.That(single.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
-        }
+        results = db.LoadSelect<SelfCustomer>(q => q.Name == "Customer 1");
+        Assert.That(results.Count, Is.EqualTo(1));
+        Assert.That(results[0].PrimaryAddress.Country, Is.EqualTo("Australia"));
     }
 
+    [Test]
+    public void Can_support_multiple_self_references()
+    {
+        var customers = new[]
+        {
+            new MultiSelfCustomer
+            {
+                Name = "Customer 1",
+                HomeAddress = new SelfCustomerAddress
+                {
+                    AddressLine1 = "1 Home Street",
+                    Country = "Australia"
+                },
+                WorkAddress = new SelfCustomerAddress
+                {
+                    AddressLine1 = "1 Work Street",
+                    Country = "Australia"
+                },
+            },
+            new MultiSelfCustomer
+            {
+                Name = "Customer 2",
+                HomeAddress = new SelfCustomerAddress
+                {
+                    AddressLine1 = "2 Home Park",
+                    Country = "USA"
+                },
+                WorkAddress = new SelfCustomerAddress
+                {
+                    AddressLine1 = "2 Work Park",
+                    Country = "UK"
+                },
+            },
+        };
+
+        customers.Each(x =>
+            db.Save(x, references: true));
+
+        var results = db.LoadSelect<MultiSelfCustomer>(q =>
+            q.HomeAddressId != null &&
+            q.WorkAddressId != null);
+
+        results.PrintDump();
+
+        Assert.That(results.Count, Is.EqualTo(2));
+        Assert.That(results[0].HomeAddress.AddressLine1, Does.Contain("Home"));
+        Assert.That(results[0].WorkAddress.AddressLine1, Does.Contain("Work"));
+        Assert.That(results[1].HomeAddress.AddressLine1, Does.Contain("Home"));
+        Assert.That(results[1].WorkAddress.AddressLine1, Does.Contain("Work"));
+
+        var ukAddress = db.Single<SelfCustomerAddress>(q => q.Country == "UK");
+        ukAddress.PrintDump();
+        Assert.That(ukAddress.AddressLine1, Is.EqualTo("2 Work Park"));
+    }
+
+    [Test]
+    public void Can_load_only_included_references()
+    {
+        var customer = new Customer
+        {
+            Name = "Customer 1",
+            PrimaryAddress = new CustomerAddress
+            {
+                AddressLine1 = "1 Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+            Orders = new[] {
+                new Order { LineItem = "Line 1", Qty = 1, Cost = 1.99m },
+                new Order { LineItem = "Line 2", Qty = 2, Cost = 2.99m },
+            }.ToList(),
+        };
+
+        db.Save(customer, references: true);
+        Assert.That(customer.Id, Is.GreaterThan(0));
+
+        var dbCustomers = db.LoadSelect<Customer>(x => x.Id == customer.Id, include: x => x.PrimaryAddress);
+        Assert.That(dbCustomers.Count, Is.EqualTo(1));
+        Assert.That(dbCustomers[0].Name, Is.EqualTo("Customer 1"));
+        Assert.That(dbCustomers[0].Orders, Is.Null);
+        Assert.That(dbCustomers[0].PrimaryAddress, Is.Not.Null);
+
+        dbCustomers = db.LoadSelect<Customer>(q => q.Id == customer.Id, include: new[] { "primaryaddress" });
+        Assert.That(dbCustomers.Count, Is.EqualTo(1));
+        Assert.That(dbCustomers[0].Name, Is.EqualTo("Customer 1"));
+        Assert.That(dbCustomers[0].Orders, Is.Null);
+        Assert.That(dbCustomers[0].PrimaryAddress, Is.Not.Null);
+
+        // Test LoadSingleById
+        var dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: new[] { "PrimaryAddress" });
+        Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
+        Assert.That(dbCustomer.Orders, Is.Null);
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+
+        dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: new[] { "primaryaddress" });
+        Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
+        Assert.That(dbCustomer.Orders, Is.Null);
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+
+        dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: x => new { x.PrimaryAddress });
+        Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
+        Assert.That(dbCustomer.Orders, Is.Null);
+        Assert.That(dbCustomer.PrimaryAddress, Is.Not.Null);
+
+        dbCustomers = db.LoadSelect<Customer>(q => q.Id == customer.Id, include: new string[0]);
+        Assert.That(dbCustomers.All(x => x.Orders == null));
+        Assert.That(dbCustomers.All(x => x.PrimaryAddress == null));
+
+        dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: new string[0]);
+        Assert.That(dbCustomer.Name, Is.EqualTo("Customer 1"));
+        Assert.That(dbCustomer.Orders, Is.Null);
+        Assert.That(dbCustomer.PrimaryAddress, Is.Null);
+
+        // Invalid field name
+        dbCustomers = db.LoadSelect<Customer>(q => q.Id == customer.Id, include: new[] { "InvalidOption1", "InvalidOption2" });
+        Assert.That(dbCustomers.All(x => x.Orders == null));
+        Assert.That(dbCustomers.All(x => x.PrimaryAddress == null));
+
+        dbCustomer = db.LoadSingleById<Customer>(customer.Id, include: new[] { "InvalidOption1", "InvalidOption2" });
+        Assert.That(dbCustomer.Orders, Is.Null);
+        Assert.That(dbCustomer.PrimaryAddress, Is.Null);
+    }
+
+    [Test]
+    public void Can_load_included_references_via_sql_in_expression()
+    {
+        var customer = new Customer
+        {
+            Name = "Customer 1",
+            PrimaryAddress = new CustomerAddress
+            {
+                AddressLine1 = "1 Humpty Street",
+                City = "Humpty Doo",
+                State = "Northern Territory",
+                Country = "Australia"
+            },
+            Orders = new[] {
+                new Order { LineItem = "Line 1", Qty = 1, Cost = 1.99m },
+                new Order { LineItem = "Line 2", Qty = 2, Cost = 2.99m },
+            }.ToList(),
+        };
+
+        db.Save(customer, references: true);
+
+        var customersSubFilter = db.From<Customer>().Select(c => c.Id);
+        var orderQuery = db.From<Order>().Where(q => Sql.In(q.CustomerId, customersSubFilter));
+        var dbOrders = db.Select(orderQuery);
+        Assert.That(dbOrders.Count, Is.EqualTo(2));
+
+        // Negative case
+        customersSubFilter = db.From<Customer>().Select(c => c.Id).Where(c => c.Id == -1);
+        orderQuery = db.From<Order>().Where(q => Sql.In(q.CustomerId, customersSubFilter));
+
+        dbOrders = db.Select(orderQuery);
+        Assert.That(dbOrders.Count, Is.EqualTo(0));
+
+        //Test merge subselect params
+        orderQuery = db.From<Order>().Where(q => q.CustomerId >= 1 && Sql.In(q.CustomerId, customersSubFilter));
+
+        Assert.That(orderQuery.Params.Count, Is.EqualTo(2));
+        Assert.That(orderQuery.Params[0].Value, Is.EqualTo(1));
+        Assert.That(orderQuery.Params[0].ParameterName, Does.EndWith("0"));
+        Assert.That(orderQuery.Params[1].Value, Is.EqualTo(-1));
+        Assert.That(orderQuery.Params[1].ParameterName, Does.EndWith("1"));
+
+        dbOrders = db.Select(orderQuery);
+        Assert.That(dbOrders.Count, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void Does_populate_ReferenceField_ApplicationStatus()
+    {
+        var customer = CreateCustomer();
+        db.Save(customer);
+
+        var jobAppId = (int) db.Insert(new JobApplication {
+            AppliedDate = DateTime.UtcNow,
+            CustomerId = customer.Id,
+            ApplicationStatus = JobApplicationStatus.PhoneScreening,
+        }, selectIdentity:true);
+        
+        var phoneScreenId = db.Insert(new PhoneScreen {
+            JobApplicationId = jobAppId,
+            Notes = JobApplicationStatus.PhoneScreening.ToDescription()
+        }, selectIdentity:true);
+
+        var results = db.LoadSelect<PhoneScreen>(x => x.JobApplicationId == jobAppId);
+        Assert.That(results[0].ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+
+        var single = db.LoadSingleById<PhoneScreen>(phoneScreenId);
+        Assert.That(single.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+    }
+
+    [Test]
+    public async Task Does_populate_ReferenceField_ApplicationStatus_Async()
+    {
+        var customer = CreateCustomer();
+        await db.SaveAsync(customer);
+
+        var jobAppId = (int) await db.InsertAsync(new JobApplication {
+            AppliedDate = DateTime.UtcNow,
+            CustomerId = customer.Id,
+            ApplicationStatus = JobApplicationStatus.PhoneScreening,
+        }, selectIdentity:true);
+        
+        var phoneScreenId = await db.InsertAsync(new PhoneScreen {
+            JobApplicationId = jobAppId,
+            Notes = JobApplicationStatus.PhoneScreening.ToDescription()
+        }, selectIdentity:true);
+
+        var results = await db.LoadSelectAsync<PhoneScreen>(x => x.JobApplicationId == jobAppId);
+        Assert.That(results[0].ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+
+        var single = await db.LoadSingleByIdAsync<PhoneScreen>(phoneScreenId);
+        Assert.That(single.ApplicationStatus, Is.EqualTo(JobApplicationStatus.PhoneScreening));
+    }
 }

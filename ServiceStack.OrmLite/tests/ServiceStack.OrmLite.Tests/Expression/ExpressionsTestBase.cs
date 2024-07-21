@@ -3,24 +3,22 @@ using System.Data;
 using System.Linq;
 using NUnit.Framework;
 
-namespace ServiceStack.OrmLite.Tests.Expression
+namespace ServiceStack.OrmLite.Tests.Expression;
+
+[NonParallelizable]
+public abstract class ExpressionsTestBase(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    [NonParallelizable]
-    public abstract class ExpressionsTestBase : OrmLiteProvidersTestBase
+    [SetUp]
+    public void Setup()
     {
-        public ExpressionsTestBase(DialectContext context) : base(context) {}
+        using (var db = OpenDbConnection())
+            db.CreateTable<TestType>(true);
 
-        [SetUp]
-        public void Setup()
-        {
-            using (var db = OpenDbConnection())
-                db.CreateTable<TestType>(true);
+        db = OpenDbConnection();
+    }
 
-            db = OpenDbConnection();
-        }
-
-        //Avoid painful refactor to change all tests to use a using pattern
-        private IDbConnection db;
+    //Avoid painful refactor to change all tests to use a using pattern
+    private IDbConnection db;
 
 //        public override IDbConnection OpenDbConnection()
 //        {
@@ -37,65 +35,64 @@ namespace ServiceStack.OrmLite.Tests.Expression
 //            return db ?? (db = base.OpenDbConnection());
 //        }
 
-        [TearDown]
-        public void TearDown()
+    [TearDown]
+    public void TearDown()
+    {
+        if (db == null)
+            return;
+        db.Dispose();
+        db = null;
+    }
+
+    public T GetValue<T>(T item)
+    {
+        return item;
+    }
+
+    protected void Init(int numberOfRandomObjects)
+    {
+        Init(numberOfRandomObjects, null);
+    }
+
+    protected void Init(int numberOfRandomObjects, params TestType[] obj)
+    {
+        Init(null, numberOfRandomObjects, obj);
+    }
+
+    protected void Init(IDbConnection db, int numberOfRandomObjects, params TestType[] obj)
+    {
+        obj ??= Array.Empty<TestType>();
+
+        var con = db ?? OpenDbConnection();
+        foreach (var t in obj)
         {
-            if (db == null)
-                return;
-            db.Dispose();
-            db = null;
+            con.Insert(t);
         }
 
-        public T GetValue<T>(T item)
+        var random = new Random((int)(DateTime.UtcNow.Ticks ^ (DateTime.UtcNow.Ticks >> 4)));
+        for (var i = 0; i < numberOfRandomObjects; i++)
         {
-            return item;
-        }
+            TestType o = null;
 
-        protected void Init(int numberOfRandomObjects)
-        {
-            Init(numberOfRandomObjects, null);
-        }
-
-        protected void Init(int numberOfRandomObjects, params TestType[] obj)
-        {
-            Init(null, numberOfRandomObjects, obj);
-        }
-
-        protected void Init(IDbConnection db, int numberOfRandomObjects, params TestType[] obj)
-        {
-            obj ??= Array.Empty<TestType>();
-
-            var con = db ?? OpenDbConnection();
-            foreach (var t in obj)
+            while (o == null)
             {
-                con.Insert(t);
-            }
+                int intVal = random.Next();
 
-            var random = new Random((int)(DateTime.UtcNow.Ticks ^ (DateTime.UtcNow.Ticks >> 4)));
-            for (var i = 0; i < numberOfRandomObjects; i++)
-            {
-                TestType o = null;
-
-                while (o == null)
+                o = new TestType
                 {
-                    int intVal = random.Next();
+                    BoolColumn = random.Next() % 2 == 0,
+                    IntColumn = intVal,
+                    StringColumn = Guid.NewGuid().ToString()
+                };
 
-                    o = new TestType
-                    {
-                        BoolColumn = random.Next() % 2 == 0,
-                        IntColumn = intVal,
-                        StringColumn = Guid.NewGuid().ToString()
-                    };
-
-                    if (obj.Any(x => x.IntColumn == intVal))
-                        o = null;
-                }
-
-                con.Insert(o);
+                if (obj.Any(x => x.IntColumn == intVal))
+                    o = null;
             }
 
-            if (db == null)
-                con.Dispose();
+            con.Insert(o);
         }
+
+        if (db == null)
+            con.Dispose();
     }
 }

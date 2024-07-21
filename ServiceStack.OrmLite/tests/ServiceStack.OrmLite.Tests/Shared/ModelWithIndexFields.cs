@@ -1,20 +1,19 @@
 using ServiceStack.DataAnnotations;
 
-namespace ServiceStack.Common.Tests.Models
+namespace ServiceStack.Common.Tests.Models;
+
+public class ModelWithIndexFields
 {
-    public class ModelWithIndexFields
-    {
-        public string Id { get; set; }
+    public string Id { get; set; }
 
-        [Index]
-        public string Name { get; set; }
+    [Index]
+    public string Name { get; set; }
 
-        public string AlbumId { get; set; }
+    public string AlbumId { get; set; }
 
-        [Index(true)]
-        public string UniqueName { get; set; }
+    [Index(true)]
+    public string UniqueName { get; set; }
         
-        [Index(Name = "altname")]
-        public string Custom { get; set; }
-    }
+    [Index(Name = "altname")]
+    public string Custom { get; set; }
 }

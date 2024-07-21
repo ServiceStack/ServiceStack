@@ -7,113 +7,110 @@ using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.Tests
+namespace ServiceStack.OrmLite.Tests;
+
+[Ignore("Run manually")]
+[TestFixtureOrmLite]
+public class FreeLicenseUsageTests(DialectContext context) : LicenseUsageTests(context)
 {
-    [Ignore("Run manually")]
-    [TestFixtureOrmLite]
-    public class FreeLicenseUsageTests : LicenseUsageTests
+    [SetUp]
+    public void SetUp()
     {
-        public FreeLicenseUsageTests(DialectContext context) : base(context) {}
+        OrmLiteConfig.ClearCache();
+        LicenseUtils.RemoveLicense();
+        JsConfig.Reset();
+    }
 
-        [SetUp]
-        public void SetUp()
-        {
-            OrmLiteConfig.ClearCache();
-            LicenseUtils.RemoveLicense();
-            JsConfig.Reset();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
+    [TearDown]
+    public void TearDown()
+    {
 #if NETCORE
-            Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
+        Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
 #else            
             Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
 #endif
-        }
-
-        [Ignore(""), Test]
-        public void Allows_creation_of_10_tables()
-        {
-            Create10Tables();
-            Create10Tables();
-        }
-
-        [Ignore(""), Test]
-        public void Throws_on_creation_of_11_tables()
-        {
-            Create10Tables();
-            Create10Tables();
-
-            Assert.Throws<LicenseException>(() => 
-                db.DropAndCreateTable<T11>());
-        }
     }
 
-    [Ignore("Run manually")]
-    [TestFixtureOrmLite]
-    public class RegisteredLicenseUsageTests : LicenseUsageTests
+    [Ignore(""), Test]
+    public void Allows_creation_of_10_tables()
     {
-        public RegisteredLicenseUsageTests(DialectContext context) : base(context) {}
+        Create10Tables();
+        Create10Tables();
+    }
 
-        [Test]
-        public void Allows_creation_of_11_tables()
-        {
+    [Ignore(""), Test]
+    public void Throws_on_creation_of_11_tables()
+    {
+        Create10Tables();
+        Create10Tables();
+
+        Assert.Throws<LicenseException>(() => 
+            db.DropAndCreateTable<T11>());
+    }
+}
+
+[Ignore("Run manually")]
+[TestFixtureOrmLite]
+public class RegisteredLicenseUsageTests : LicenseUsageTests
+{
+    public RegisteredLicenseUsageTests(DialectContext context) : base(context) {}
+
+    [Test]
+    public void Allows_creation_of_11_tables()
+    {
 #if NETCORE
-            Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
+        Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
 #else            
             Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
 #endif
-            Create10Tables();
-            Create10Tables();
+        Create10Tables();
+        Create10Tables();
 
-            db.DropAndCreateTable<T11>();
-        }
+        db.DropAndCreateTable<T11>();
     }
+}
     
-    class T01 { public int Id { get; set; } }
-    class T02 { public int Id { get; set; } }
-    class T03 { public int Id { get; set; } }
-    class T04 { public int Id { get; set; } }
-    class T05 { public int Id { get; set; } }
-    class T06 { public int Id { get; set; } }
-    class T07 { public int Id { get; set; } }
-    class T08 { public int Id { get; set; } }
-    class T09 { public int Id { get; set; } }
-    class T10 { public int Id { get; set; } }
-    class T11 { public int Id { get; set; } }
+class T01 { public int Id { get; set; } }
+class T02 { public int Id { get; set; } }
+class T03 { public int Id { get; set; } }
+class T04 { public int Id { get; set; } }
+class T05 { public int Id { get; set; } }
+class T06 { public int Id { get; set; } }
+class T07 { public int Id { get; set; } }
+class T08 { public int Id { get; set; } }
+class T09 { public int Id { get; set; } }
+class T10 { public int Id { get; set; } }
+class T11 { public int Id { get; set; } }
 
-    public abstract class LicenseUsageTests : OrmLiteProvidersTestBase
+public abstract class LicenseUsageTests : OrmLiteProvidersTestBase
+{
+    protected LicenseUsageTests(DialectContext context) : base(context) {}
+
+    protected IDbConnection db;
+
+    [OneTimeSetUp]
+    public void TestFixtureSetUp()
     {
-        protected LicenseUsageTests(DialectContext context) : base(context) {}
+        db = base.OpenDbConnection();
+    }
 
-        protected IDbConnection db;
+    [OneTimeTearDown]
+    public new void TestFixtureTearDown()
+    {
+        db.Dispose();
+    }
 
-        [OneTimeSetUp]
-        public void TestFixtureSetUp()
-        {
-            db = base.OpenDbConnection();
-        }
-
-        [OneTimeTearDown]
-        public new void TestFixtureTearDown()
-        {
-            db.Dispose();
-        }
-
-        protected void Create10Tables()
-        {
-            db.DropAndCreateTable<T01>();
-            db.DropAndCreateTable<T02>();
-            db.DropAndCreateTable<T03>();
-            db.DropAndCreateTable<T04>();
-            db.DropAndCreateTable<T05>();
-            db.DropAndCreateTable<T06>();
-            db.DropAndCreateTable<T07>();
-            db.DropAndCreateTable<T08>();
-            db.DropAndCreateTable<T09>();
-            db.DropAndCreateTable<T10>();
-        }
+    protected void Create10Tables()
+    {
+        db.DropAndCreateTable<T01>();
+        db.DropAndCreateTable<T02>();
+        db.DropAndCreateTable<T03>();
+        db.DropAndCreateTable<T04>();
+        db.DropAndCreateTable<T05>();
+        db.DropAndCreateTable<T06>();
+        db.DropAndCreateTable<T07>();
+        db.DropAndCreateTable<T08>();
+        db.DropAndCreateTable<T09>();
+        db.DropAndCreateTable<T10>();
     }
 }

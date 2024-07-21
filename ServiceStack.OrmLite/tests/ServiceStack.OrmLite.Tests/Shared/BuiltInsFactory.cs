@@ -1,54 +1,54 @@
 using System;
 using NUnit.Framework;
 
-namespace ServiceStack.Common.Tests.Models
+namespace ServiceStack.Common.Tests.Models;
+
+public class BuiltInsFactory
+    : ModelFactoryBase<string>
 {
-    public class BuiltInsFactory
-        : ModelFactoryBase<string>
+    readonly string[] StringValues =
+    [
+        "one", "two", "three", "four",
+        "five", "six", "seven"
+    ];
+
+    public override void AssertIsEqual(string actual, string expected)
     {
-        readonly string[] StringValues = new[] {
-            "one", "two", "three", "four",
-            "five", "six", "seven"
-        };
-
-        public override void AssertIsEqual(string actual, string expected)
-        {
-            Assert.That(actual, Is.EqualTo(expected));
-        }
-
-        public override string CreateInstance(int i)
-        {
-            return i < StringValues.Length
-                ? StringValues[i]
-                : i.ToString();
-        }
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
-    public class IntFactory
-        : ModelFactoryBase<int>
+    public override string CreateInstance(int i)
     {
-        public override void AssertIsEqual(int actual, int expected)
-        {
-            Assert.That(actual, Is.EqualTo(expected));
-        }
+        return i < StringValues.Length
+            ? StringValues[i]
+            : i.ToString();
+    }
+}
 
-        public override int CreateInstance(int i)
-        {
-            return i;
-        }
+public class IntFactory
+    : ModelFactoryBase<int>
+{
+    public override void AssertIsEqual(int actual, int expected)
+    {
+        Assert.That(actual, Is.EqualTo(expected));
     }
 
-    public class DateTimeFactory
-        : ModelFactoryBase<DateTime>
+    public override int CreateInstance(int i)
     {
-        public override void AssertIsEqual(DateTime actual, DateTime expected)
-        {
-            Assert.That(actual, Is.EqualTo(expected));
-        }
+        return i;
+    }
+}
 
-        public override DateTime CreateInstance(int i)
-        {
-            return new DateTime(i, DateTimeKind.Utc);
-        }
+public class DateTimeFactory
+    : ModelFactoryBase<DateTime>
+{
+    public override void AssertIsEqual(DateTime actual, DateTime expected)
+    {
+        Assert.That(actual, Is.EqualTo(expected));
+    }
+
+    public override DateTime CreateInstance(int i)
+    {
+        return new DateTime(i, DateTimeKind.Utc);
     }
 }

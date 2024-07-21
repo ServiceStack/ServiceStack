@@ -36,10 +36,8 @@ public class LetterStat
 }
 
 [TestFixtureOrmLite]
-public class SqlExpressionTests : ExpressionsTestBase
+public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(context)
 {
-    public SqlExpressionTests(DialectContext context) : base(context) {}
-
     private int letterFrequencyMaxId;
     private int letterFrequencyMinId;
     private int letterFrequencySumId;

@@ -3,8 +3,7 @@ namespace ServiceStack.Common.Tests.Models
     public class ModelWithFieldsOfNullableTypesFactory
         : ModelFactoryBase<ModelWithFieldsOfNullableTypes>
     {
-        public static ModelWithFieldsOfNullableTypesFactory Instance
-            = new ModelWithFieldsOfNullableTypesFactory();
+        public static ModelWithFieldsOfNullableTypesFactory Instance = new();
 
         public override void AssertIsEqual(
             ModelWithFieldsOfNullableTypes actual, ModelWithFieldsOfNullableTypes expected)

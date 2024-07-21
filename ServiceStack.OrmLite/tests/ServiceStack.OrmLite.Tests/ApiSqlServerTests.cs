@@ -6,10 +6,8 @@ using ServiceStack.OrmLite.Tests.Shared;
 namespace ServiceStack.OrmLite.Tests;
 
 [TestFixtureOrmLiteDialects(Dialect.AnySqlServer)]
-public class ApiSqlServerTests : OrmLiteProvidersTestBase
+public class ApiSqlServerTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public ApiSqlServerTests(DialectContext context) : base(context) {}
-        
     [Test]
     [Ignore("Needs review - MONOREPO")]
     public void API_SqlServer_Examples()
