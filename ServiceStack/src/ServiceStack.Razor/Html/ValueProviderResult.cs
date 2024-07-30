@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace ServiceStack.Html
 {
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
 	public class ValueProviderResult

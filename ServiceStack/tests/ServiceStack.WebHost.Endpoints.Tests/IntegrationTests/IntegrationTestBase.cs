@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
             public override void Configure(Container container)
             {
-#if !NETCORE
+#if NETFRAMEWORK
                 Plugins.Add(new SoapFormat());
 #endif
                 container.Register<IAppSettings>(new AppSettings());

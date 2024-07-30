@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using NUnit.Framework;
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.Host.HttpListener;
 #endif
 using ServiceStack.Logging;
@@ -182,7 +182,7 @@ public class AppHostListenerBaseTests
     {
         const int clientCount = 500;
         var threads = new List<Thread>(clientCount);
-#if !NETCORE
+#if NETFRAMEWORK
             ThreadPool.SetMinThreads(500, 50);
             ThreadPool.SetMaxThreads(1000, 50);
 #endif           
@@ -212,7 +212,7 @@ public class AppHostListenerBaseTests
         Trace.TraceInformation("Elapsed time for " + clientCount + " requests : " + sw.Elapsed);
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void Can_infer_handler_path_from_listener_uris()
         {
@@ -242,7 +242,7 @@ public class AppHostListenerBaseTests
         for (int i = 0; i < 100; i++)
         {
             localAppHost.Start(GetBaseAddressWithFreePort());
-#if !NETCORE                
+#if NETFRAMEWORK                
                 localAppHost.Stop();
 #endif
         }

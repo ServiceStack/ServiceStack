@@ -60,7 +60,7 @@ public static class HttpExtensions
         return httpRes.EndHttpHandlerRequestAsync(skipHeaders: skipHeaders, afterHeaders:afterHeaders);
     }
         
-#if !NETCORE
+#if NETFRAMEWORK
         /// <summary>
         /// End a ServiceStack Request
         /// </summary>

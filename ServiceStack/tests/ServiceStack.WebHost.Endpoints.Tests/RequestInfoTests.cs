@@ -18,7 +18,7 @@ public partial class RequestInfoTests
     {
         public override void Configure(Container container)
         {
-#if NETCORE
+#if !NETFRAMEWORK
             var useProjectPath = MapProjectPath("~/"); // .NET Core accurately reports the ContentPath from where it's run
 #else
             var useProjectPath = MapProjectPath("~/../");

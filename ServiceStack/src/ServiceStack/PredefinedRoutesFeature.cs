@@ -4,7 +4,7 @@ using System.Linq;
 using ServiceStack.Host.Handlers;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.Web;
-#if NETFX
+#if NETFRAMEWORK
 using System.Web;
 #else
 using ServiceStack.Host;

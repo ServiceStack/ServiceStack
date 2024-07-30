@@ -27,11 +27,11 @@ public abstract class PclExport
     }
 
     public static PclExport Instance =
-#if NETFX
+#if NETFRAMEWORK
       new NetFxPclExport()
 #elif NETSTANDARD2_0
       new NetStandardPclExport()
-#elif NETCORE || NET6_0_OR_GREATER
+#elif NET6_0_OR_GREATER
       new Net6PclExport()
 #endif
     ;

@@ -12,7 +12,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Web;
 
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.Host.AspNet;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -95,7 +95,7 @@ public abstract class ServiceStackController : Controller, IHasServiceStackProvi
             action = "Unauthorized"
         }));
 
-#if !NETCORE
+#if NETFRAMEWORK
     public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
 
     protected virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
@@ -161,7 +161,7 @@ public abstract class ServiceStackController : Controller, IHasServiceStackProvi
     private IServiceStackProvider serviceStackProvider;
     public virtual IServiceStackProvider ServiceStackProvider => 
         serviceStackProvider ??=  
-#if !NETCORE
+#if NETFRAMEWORK
         new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name));
 #else
         new ServiceStackProvider(new NetCoreRequest(base.HttpContext, GetType().Name));
@@ -253,7 +253,7 @@ public static class ServiceStackControllerExt
         controller.ServiceStackProvider.ResolveService<T>();
 }
 
-#if !NETCORE
+#if NETFRAMEWORK
 public class ServiceStackJsonResult : JsonResult
 {
     public override void ExecuteResult(ControllerContext context)

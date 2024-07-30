@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests;
 
 public static class NetCoreExtensions
 {
-#if NETCORE
+#if !NETFRAMEWORK
     public static HttpWebResponse GetResponse(this HttpWebRequest request)
     {
         return (HttpWebResponse)PclExport.Instance.GetResponse(request);
@@ -42,7 +42,7 @@ public static class NetCoreExtensions
 #endif
     public static void SetUserAgent(this HttpWebRequest request, string userAgent)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         request.Headers[HttpRequestHeader.UserAgent] = userAgent;
 #else
         request.UserAgent = userAgent;
@@ -51,7 +51,7 @@ public static class NetCoreExtensions
 
     public static void SetContentLength(this HttpWebRequest request, int contentLength)
     {
-#if NETCORE
+#if !NETFRAMEWORK
         request.Headers[HttpRequestHeader.ContentLength] = contentLength.ToString();
 #else
         request.ContentLength = contentLength;

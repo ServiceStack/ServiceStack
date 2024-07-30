@@ -6,13 +6,6 @@ using System.Text;
 using ServiceStack.Text;
 using ServiceStack.Logging;
 
-#if NETFX_CORE
-using System.Net.Http.Headers;
-using Windows.Security.Cryptography;
-using Windows.Security.Cryptography.Core;
-using Windows.Storage.Streams;
-#endif
-
 namespace ServiceStack
 {
     public class TokenException : AuthenticationException
@@ -241,7 +234,7 @@ namespace ServiceStack
 
         public static string GetResponseDtoName(Type requestType)
         {
-#if NETCORE
+#if !NETFRAMEWORK
             return requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name;
 #else        
             return requestType.FullName + ResponseDtoSuffix;
@@ -272,7 +265,7 @@ namespace ServiceStack
                 return typeof (ErrorResponse);
 
             //If a conventionally-named Response type exists use that regardless if it has ResponseStatus or not
-#if NETCORE
+#if !NETFRAMEWORK
             var responseDtoType = Type.GetType(GetResponseDtoName(requestType));
 #else                        
             var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(requestType));

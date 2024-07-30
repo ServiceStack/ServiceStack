@@ -116,7 +116,7 @@ public class RabbitMqWorker : IDisposable
         }
         catch (Exception ex)
         {
-#if !NETCORE
+#if NETFRAMEWORK
             //Ignore handling rare, but expected exceptions from KillBgThreadIfExists()
             if (ex is ThreadInterruptedException || ex is ThreadAbortException)
             {

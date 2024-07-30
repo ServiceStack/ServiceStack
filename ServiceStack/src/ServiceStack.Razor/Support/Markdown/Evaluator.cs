@@ -36,7 +36,7 @@ namespace ServiceStack.Support.Markdown
 	    private static ILog Log = LogManager.GetLogger(typeof (Evaluator));
 
 		const string StaticMethodName = "__tmp";
-#if !NETCORE
+#if NETFRAMEWORK
 		Assembly compiledAssembly;
 #endif
 		Type compiledType = null;
@@ -102,7 +102,7 @@ namespace ServiceStack.Support.Markdown
 
         private static void FindNamespaceInLoadedAssemblies(string assemblyNamespace)
         {
-#if !NETCORE
+#if NETFRAMEWORK
             var assemblies = from assembly in AppDomain.CurrentDomain.GetAssemblies()
                              from type in assembly.GetTypes()
                              where type.Namespace == assemblyNamespace
@@ -212,7 +212,7 @@ namespace ServiceStack.Support.Markdown
 
 		private static readonly bool IsVersion4AndUp = Type.GetType("System.Collections.Concurrent.Partitioner") != null;
         
-#if NETCORE
+#if !NETFRAMEWORK
 		private void ConstructEvaluator(IEnumerable<EvaluatorItem> items) {}
 #else
 		private static void AddAssembly(System.CodeDom.Compiler.CompilerParameters cp, string location)

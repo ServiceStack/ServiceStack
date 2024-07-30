@@ -1,7 +1,7 @@
 ﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !NETCORE
+#if NETFRAMEWORK
 using System.Web;
 #endif
 
@@ -1256,7 +1256,7 @@ public abstract partial class ServiceStackHost
 
         if (!Container.Exists<ICacheClient>())
         {
-#if NETCORE
+#if !NETFRAMEWORK
             if (Env.StrictMode && !Container.Exists<ICacheClientAsync>() && Container.Exists<ValueTask<ICacheClientAsync>>())
             {
                 throw new Exception("Invalid attempt to register `ValueTask<ICacheClientAsync>`. Register ICacheClient or ICacheClientAsync instead to use async Cache Client");

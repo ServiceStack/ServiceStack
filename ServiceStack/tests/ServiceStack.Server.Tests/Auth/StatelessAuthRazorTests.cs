@@ -5,7 +5,7 @@ using ServiceStack.Data;
 
 namespace ServiceStack.Server.Tests.Auth
 {
-#if NETCORE
+#if !NETFRAMEWORK
     [Ignore("Not working on .NET Core")]
 #endif
     public class OrmLiteStatelessAuthRazorTests : StatelessAuthRazorTests

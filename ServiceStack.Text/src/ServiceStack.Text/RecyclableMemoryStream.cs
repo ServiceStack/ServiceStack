@@ -66,7 +66,7 @@ public static class MemoryStreamFactory
     }
 }
     
-#if !NETCORE
+#if NETFRAMEWORK
     public enum EventLevel
     {
         LogAlways = 0,
@@ -1039,7 +1039,7 @@ public partial class RecyclableMemoryStreamManager
         return GetStream(Guid.NewGuid(), tag, buffer, offset, count);
     }
 
-#if NETCORE && !NETSTANDARD2_0
+#if NET6_0_OR_GREATER
     /// <summary>
     /// Retrieve a new MemoryStream object with the given tag and with contents copied from the provided
     /// buffer. The provided buffer is not wrapped or used after construction.
@@ -1548,11 +1548,7 @@ public sealed class RecyclableMemoryStream : MemoryStream
     /// <remarks>IMPORTANT: Doing a Write() after calling GetBuffer() invalidates the buffer. The old buffer is held onto
     /// until Dispose is called, but the next time GetBuffer() is called, a new buffer from the pool will be required.</remarks>
     /// <exception cref="ObjectDisposedException">Object has been disposed</exception>
-#if NETSTANDARD1_4
-        public byte[] GetBuffer()
-#else
     public override byte[] GetBuffer()
-#endif
     {
         this.CheckDisposed();
 
@@ -1687,7 +1683,7 @@ public sealed class RecyclableMemoryStream : MemoryStream
         return amountRead;
     }
 
-#if !NETSTANDARD2_0 && NETCORE
+#if NET6_0_OR_GREATER
     /// <summary>
     /// Reads from the current position into the provided buffer
     /// </summary>
@@ -1790,7 +1786,7 @@ public sealed class RecyclableMemoryStream : MemoryStream
         this.length = Math.Max(this.position, this.length);
     }
 
-#if !NETSTANDARD2_0 && NETCORE
+#if NET6_0_OR_GREATER
     /// <summary>
     /// Writes the buffer to the stream
     /// </summary>
@@ -2107,7 +2103,7 @@ public sealed class RecyclableMemoryStream : MemoryStream
         return amountToCopy;
     }
 
-#if NETCORE
+#if !NETFRAMEWORK
     private int InternalRead(Span<byte> buffer, int fromPosition)
     {
         if (this.length - fromPosition <= 0)

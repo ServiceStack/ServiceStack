@@ -4,7 +4,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Text;
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.MiniProfiler.UI;
 #endif
 

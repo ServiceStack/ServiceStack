@@ -4,10 +4,7 @@ using System.Linq;
 using System.Threading;
 using ServiceStack.Support;
 
-#if NETFX_CORE
-using Windows.System.Threading;
-#endif
-#if NETCORE
+#if !NETFRAMEWORK
 using System.Threading.Tasks;
 #endif
 
@@ -35,10 +32,8 @@ public static class ActionExecExtensions
             var waitHandle = new AutoResetEvent(false);
             waitHandles.Add(waitHandle);
             var commandExecsHandler = new ActionExecHandler(action, waitHandle);
-#if NETCORE
+#if !NETFRAMEWORK
             Task.Run(() => commandExecsHandler.Execute());
-#elif NETFX_CORE
-            ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => commandExecsHandler.Execute()));
 #else
             ThreadPool.QueueUserWorkItem(x => ((ActionExecHandler)x).Execute(), commandExecsHandler);
 #endif
@@ -81,7 +76,7 @@ public static class ActionExecExtensions
         if (waitHandles.Length == 0)
             return true;
 
-#if NETCORE
+#if !NETFRAMEWORK
         return WaitHandle.WaitAll(waitHandles, timeOutMs);
 #else
         if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)

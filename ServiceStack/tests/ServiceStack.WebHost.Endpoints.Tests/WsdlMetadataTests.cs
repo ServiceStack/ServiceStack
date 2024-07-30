@@ -1,4 +1,4 @@
-#if !NETCORE
+#if NETFRAMEWORK
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Metadata;

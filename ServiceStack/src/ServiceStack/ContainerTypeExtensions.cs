@@ -6,7 +6,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-#if NETCORE        
+#if !NETFRAMEWORK        
 public interface IHasServiceScope : IServiceProvider
 {
     Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }

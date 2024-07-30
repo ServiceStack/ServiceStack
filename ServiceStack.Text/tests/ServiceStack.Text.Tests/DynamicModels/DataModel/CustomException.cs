@@ -17,7 +17,7 @@ namespace ServiceStack.Text.Tests.DynamicModels.DataModel
         public CustomException(string message, Exception innerException) : base(message, innerException)
         {
         }
-#if !NETCORE
+#if NETFRAMEWORK
         protected CustomException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }

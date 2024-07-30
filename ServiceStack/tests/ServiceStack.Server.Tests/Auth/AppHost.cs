@@ -12,7 +12,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Web;
 
-#if NETCORE
+#if !NETFRAMEWORK
 using Microsoft.Extensions.DependencyInjection;
 #endif
 
@@ -32,7 +32,7 @@ namespace ServiceStack.Server.Tests.Auth
 
         public Action<Container> Use;
 
-#if NETCORE
+#if !NETFRAMEWORK
         public override void Configure(Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
             services.AddMvc();
@@ -50,7 +50,7 @@ namespace ServiceStack.Server.Tests.Auth
                 WebHostPhysicalPath = Path.GetFullPath("../../../"),
             });
 
-#if NETCORE
+#if !NETFRAMEWORK
             Plugins.Add(new Mvc.RazorFormat());
 #else
             Plugins.Add(new Razor.RazorFormat());

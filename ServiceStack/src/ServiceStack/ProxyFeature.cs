@@ -141,7 +141,7 @@ public class ProxyFeatureHandler : HttpAsyncTaskHandler
 
         PclExport.Instance.SetUserAgent(webReq, httpReq.UserAgent);
 
-#if NETFX || NET472
+#if NETFRAMEWORK
             webReq.Referer = httpReq.UrlReferrer?.ToString();
             webReq.ServicePoint.Expect100Continue = false;
 

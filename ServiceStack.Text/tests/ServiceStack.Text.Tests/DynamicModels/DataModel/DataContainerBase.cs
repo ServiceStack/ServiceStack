@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ServiceStack.Text.Tests.DynamicModels.DataModel
 {
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     public abstract class DataContainerBase

@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 using NUnit.Framework;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests

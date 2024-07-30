@@ -9,7 +9,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
-#if NETCORE
+#if !NETFRAMEWORK
     using Microsoft.Extensions.Configuration;
 
     public class NetCoreAppSettingsMemoryCollectionTest : AppSettingsTest
@@ -472,7 +472,7 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
         }
 
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
         [Ignore("Attribute value already has its new lines collapsed")]
 #endif
         public void Get_Returns_ObjectWithLineFeed()

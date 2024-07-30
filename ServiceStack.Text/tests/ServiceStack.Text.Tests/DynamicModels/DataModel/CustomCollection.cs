@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ServiceStack.Text.Tests.DynamicModels.DataModel
 {
-#if !NETCORE
+#if NETFRAMEWORK
     [Serializable]
 #endif
     public class CustomCollection : Collection<CustomCollectionItem>

@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -283,7 +283,7 @@ namespace ServiceStack.Html
 		// selects the v3.5 (legacy) or v4 HTML encoder
 		private static HtmlEncoder GetHtmlEncoder()
 		{
-#if !NETCORE
+#if NETFRAMEWORK
             return TypeHelpers.CreateDelegate<HtmlEncoder>(TypeHelpers.SystemWebAssembly, "System.Web.HttpUtility", "HtmlEncode", null)
                 ?? EncodeLegacy;
 #else

@@ -1141,7 +1141,7 @@ public class AuthTests
         {
             client.Send<SecureResponse>(request);
         } 
-#if NETCORE
+#if !NETFRAMEWORK
         catch (WebServiceException ex)
         {
             //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
@@ -1174,7 +1174,7 @@ public class AuthTests
         {
             client.Send<SecureResponse>(request);
         }
-#if NETCORE
+#if !NETFRAMEWORK
         catch (WebServiceException ex)
         {
             //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
@@ -1217,7 +1217,7 @@ public class AuthTests
         {
             client.Get(request);
         }
-#if NETCORE
+#if !NETFRAMEWORK
         catch (WebServiceException ex)
         {
             //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
@@ -1261,7 +1261,7 @@ public class AuthTests
                 RememberMe = true,
             });
         }
-#if NETCORE
+#if !NETFRAMEWORK
         catch (WebServiceException ex)
         {
             //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception

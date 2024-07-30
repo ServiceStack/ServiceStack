@@ -81,7 +81,7 @@ public static class IntExtensions
         var asyncResults = new List<IAsyncResult>(times);
         for (var i = 0; i < times; i++)
         {
-#if NETCORE
+#if !NETFRAMEWORK
             asyncResults.Add(Task.Run(() => actionFn(i)));
 #else                
                 asyncResults.Add(actionFn.BeginInvoke(i, null, null));
@@ -95,7 +95,7 @@ public static class IntExtensions
         var asyncResults = new List<IAsyncResult>(times);
         for (var i = 0; i < times; i++)
         {
-#if NETCORE
+#if !NETFRAMEWORK
             asyncResults.Add(Task.Run(actionFn));
 #else                
                 asyncResults.Add(actionFn.BeginInvoke(null, null));

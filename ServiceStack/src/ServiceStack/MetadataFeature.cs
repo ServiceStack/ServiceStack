@@ -1,4 +1,4 @@
-﻿#if !NETCORE        
+﻿#if NETFRAMEWORK        
 using System.Web;
 #endif
 
@@ -180,7 +180,7 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
         }
 
         var pathAction = pathParts[1].ToLowerInvariant();
-#if !NETCORE
+#if NETFRAMEWORK
             if (pathAction == "wsdl")
             {
                 if (pathController == "soap11")
@@ -202,7 +202,7 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
 
             case "jsv":
                 return new JsvMetadataHandler();
-#if !NETCORE
+#if NETFRAMEWORK
                 case "soap11":
                     return new Soap11MetadataHandler();
 
