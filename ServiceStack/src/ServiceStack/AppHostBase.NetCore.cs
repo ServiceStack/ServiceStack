@@ -685,6 +685,11 @@ public static class NetCoreAppHostExtensions
         {
             services.AddSingleton<IMessageFactory>(c => c.GetRequiredService<IMessageService>().MessageFactory);
         }
+        //required when services.AddMvc().AddControllersAsServices(); https://github.com/ServiceStack/Discuss/discussions/126
+        if (options.ShouldAutoRegister<ServiceController>())
+        {
+            services.AddSingleton<ServiceController>(c => HostContext.ServiceController);
+        }
     }
 #endif
 
