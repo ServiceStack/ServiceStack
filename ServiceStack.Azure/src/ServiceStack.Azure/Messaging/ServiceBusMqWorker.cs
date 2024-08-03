@@ -16,15 +16,27 @@ using Microsoft.ServiceBus.Messaging;
 
 namespace ServiceStack.Azure.Messaging;
 
-class ServiceBusMqWorker(
-    ServiceBusMqMessageFactory mqMessageFactory,
-    IMessageQueueClient mqClient,
-    string queueName,
-    QueueClient sbClient)
+class ServiceBusMqWorker
 {
     private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBusMqWorker));
 
-    private readonly QueueClient sbClient = sbClient;
+    public IMessageHandler MessageHandler { get; }
+    public IMessageQueueClient MqClient { get; }
+    public string QueueName { get; }
+    public QueueClient Client { get; }
+
+    public ServiceBusMqWorker(IMessageHandler messageHandler,
+        IMessageQueueClient mqClient,
+        string queueName,
+        QueueClient sbClient)
+    {
+        MessageHandler = messageHandler;
+        MqClient = mqClient;
+        QueueName = queueName;
+        Client = sbClient;
+    }
+
+    public IMessageHandlerStats GetStats() => MessageHandler.GetStats();
 
 #if NETCORE
     public Task HandleMessageAsync(Microsoft.Azure.ServiceBus.Message msg, CancellationToken token)
@@ -36,15 +48,11 @@ class ServiceBusMqWorker(
             iMessage.Meta = new Dictionary<string, string>
             {
                 [ServiceBusMqClient.LockTokenMeta] = msg.SystemProperties.LockToken,
-                [ServiceBusMqClient.QueueNameMeta] = queueName
+                [ServiceBusMqClient.QueueNameMeta] = QueueName
             };
         }
 
-        Type msgType = iMessage.GetType().GetGenericArguments()[0];
-        var messageHandlerFactory = mqMessageFactory.handlerMap[msgType];
-        var messageHandler = messageHandlerFactory.CreateMessageHandler();
-
-        messageHandler.ProcessMessage(mqClient, iMessage);
+        MessageHandler.ProcessMessage(MqClient, iMessage);
         return Task.CompletedTask;
     }
 #else
@@ -59,14 +67,10 @@ class ServiceBusMqWorker(
                 iMessage.Meta = new Dictionary<string, string>
                 {
                     [ServiceBusMqClient.LockTokenMeta] = msg.LockToken.ToString(),
-                    [ServiceBusMqClient.QueueNameMeta] = queueName
+                    [ServiceBusMqClient.QueueNameMeta] = QueueName
                 };
             }
-            Type msgType = iMessage.GetType().GetGenericArguments()[0];
-            var messageHandlerFactory = mqMessageFactory.handlerMap[msgType];
-            var messageHandler = messageHandlerFactory.CreateMessageHandler();
-
-            messageHandler.ProcessMessage(mqClient, iMessage);
+            MessageHandler.ProcessMessage(MqClient, iMessage);
         }
         catch (Exception)
         {

@@ -3,6 +3,9 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
+using ServiceStack.Text;
 
 #if NETCORE
 using Microsoft.Azure.ServiceBus;
@@ -17,6 +20,12 @@ namespace ServiceStack.Azure.Messaging;
 
 public class ServiceBusMqMessageFactory : IMessageFactory
 {
+    private long timesStarted;
+    private long doOperation = WorkerOperation.NoOp;
+    private long noOfErrors = 0;
+    private int noOfContinuousErrors = 0;
+    private string lastExMsg = null;
+
 #if NETCORE
     public Action<Microsoft.Azure.ServiceBus.Message,IMessage> PublishMessageFilter { get; set; }
 #else
@@ -62,12 +71,21 @@ public class ServiceBusMqMessageFactory : IMessageFactory
         return new ServiceBusMqClient(this);
     }
 
+    public IMessageHandler GetMessageHandler(Type msgType)
+    {
+        var messageHandlerFactory = handlerMap[msgType];
+        var messageHandler = messageHandlerFactory.CreateMessageHandler();
+        return messageHandler;
+    }
+    
     public void Dispose()
     {
+        this.status = WorkerStatus.Disposed;
     }
 
     protected internal void StartQueues(Dictionary<Type, IMessageHandlerFactory> handlerMap, Dictionary<Type, int> handlerThreadCountMap)
     {
+        this.status = WorkerStatus.Starting;
         // Create queues for each registered type
         this.handlerMap = handlerMap;
 
@@ -98,18 +116,22 @@ public class ServiceBusMqMessageFactory : IMessageFactory
             }
 
             var mqNames = new QueueNames(type);
-            AddQueueHandler(mqNames.In, handlerThreadCountMap[type]);
-            AddQueueHandler(mqNames.Priority, handlerThreadCountMap[type]);
+            AddQueueHandler(type, mqNames.In, handlerThreadCountMap[type]);
+            AddQueueHandler(type, mqNames.Priority, handlerThreadCountMap[type]);
         }
+        this.status = WorkerStatus.Started;
     }
 
-    private void AddQueueHandler(string queueName, int threadCount=1)
+    List<ServiceBusMqWorker> workers = new();
+    private void AddQueueHandler(Type queueType, string queueName, int threadCount=1)
     {
         queueName = queueName.SafeQueueName()!;
 
 #if NETCORE
         var sbClient = new QueueClient(address, queueName, ReceiveMode.PeekLock);
-        var sbWorker = new ServiceBusMqWorker(this, CreateMessageQueueClient(), queueName, sbClient);
+        var messageHandler = this.GetMessageHandler(queueType);
+        var sbWorker = new ServiceBusMqWorker(messageHandler, CreateMessageQueueClient(), queueName, sbClient);
+        workers.Add(sbWorker);
         sbClient.RegisterMessageHandler(sbWorker.HandleMessageAsync,
             new MessageHandlerOptions(
                 (eventArgs) => Task.CompletedTask)
@@ -129,7 +151,9 @@ public class ServiceBusMqMessageFactory : IMessageFactory
             MaxConcurrentCalls = threadCount
         };
 
-        var sbWorker = new ServiceBusMqWorker(this, CreateMessageQueueClient(), queueName, sbClient);
+        var messageHandler = this.GetMessageHandler(queueType);
+        var sbWorker = new ServiceBusMqWorker(messageHandler, CreateMessageQueueClient(), queueName, sbClient);
+        workers.Add(sbWorker);
         sbClient.OnMessage(sbWorker.HandleMessage, options);
 #endif
         sbClients.GetOrAdd(queueName, sbClient);
@@ -137,12 +161,14 @@ public class ServiceBusMqMessageFactory : IMessageFactory
 
     protected internal void StopQueues()
     {
+        this.status = WorkerStatus.Stopping;
 #if NETCORE
         sbClients.Each(async kvp => await kvp.Value.CloseAsync());
 #else
         sbClients.Each(kvp => kvp.Value.Close());
 #endif
         sbClients.Clear();
+        this.status = WorkerStatus.Stopped;
     }
 
     protected internal QueueClient GetOrCreateClient(string queueName)
@@ -179,5 +205,43 @@ public class ServiceBusMqMessageFactory : IMessageFactory
 #endif
         sbClient = sbClients.GetOrAdd(queueName, sbClient);
         return sbClient;
+    }
+
+    public IMessageHandlerStats GetStats()
+    {
+        lock (workers)
+        {
+            var total = new MessageHandlerStats("All Handlers");
+            workers.ForEach(x => total.Add(x.GetStats()));
+            return total;
+        }
+    }
+
+    int status = 0;
+    public string GetStatus() => WorkerStatus.ToString(status);
+    
+    public string GetStatsDescription()
+    {
+        lock (workers)
+        {
+            var sb = StringBuilderCache.Allocate()
+                .Append("#MQ SERVER STATS:\n");
+            sb.AppendLine("===============");
+            sb.AppendLine("Current Status: " + GetStatus());
+            sb.AppendLine("Listening On: " + string.Join(", ", workers.Select(x => x.QueueName).ToArray()));
+            sb.AppendLine("Times Started: " + Interlocked.CompareExchange(ref timesStarted, 0, 0));
+            sb.AppendLine("Num of Errors: " + Interlocked.CompareExchange(ref noOfErrors, 0, 0));
+            sb.AppendLine("Num of Continuous Errors: " + Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0));
+            sb.AppendLine("Last ErrorMsg: " + lastExMsg);
+            sb.AppendLine("===============");
+
+            foreach (var worker in workers)
+            {
+                sb.AppendLine(worker.MessageHandler.GetStats().ToString());
+                sb.AppendLine("---------------\n");
+            }
+
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
     }
 }
