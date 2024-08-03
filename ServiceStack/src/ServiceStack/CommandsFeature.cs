@@ -617,6 +617,7 @@ public class CommandsService(ILogger<CommandsService> log) : Service
 
         var services = Request.GetServiceProvider();
         var command = services.GetRequiredService(commandType);
+        
         var commandResult = await feature.ExecuteCommandAsync(command, commandRequest);
 
         var resultProp = commandType.GetProperty("Result", BindingFlags.Instance | BindingFlags.Public);
