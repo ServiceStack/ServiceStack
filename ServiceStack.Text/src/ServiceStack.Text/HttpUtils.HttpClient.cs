@@ -1180,7 +1180,7 @@ public static partial class HttpUtils
                     var key = kvp.LeftPart(':').UrlDecode();
                     var val = kvp.RightPart(':').UrlDecode();
                     var env = val.StartsWith('$') 
-                        ? Environment.GetEnvironmentVariable(val)
+                        ? Environment.GetEnvironmentVariable(val[1..])
                         : null;
                     if (!string.IsNullOrEmpty(env))
                         val = env;
@@ -1194,7 +1194,7 @@ public static partial class HttpUtils
             else
             {
                 var env = auth.StartsWith('$') 
-                    ? Environment.GetEnvironmentVariable(auth)
+                    ? Environment.GetEnvironmentVariable(auth[1..])
                     : null;
                 if (!string.IsNullOrEmpty(env))
                     auth = env;
