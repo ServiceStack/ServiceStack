@@ -1155,6 +1155,59 @@ public static partial class HttpUtils
         var bytes = httpRes.Content.ReadAsStream().ReadFully();
         fs.Write(bytes);
     }
+
+    public static HttpRequestMessage ToHttpRequestMessage(string url)
+    {
+        var method = "POST";
+        if (url.IndexOf(' ') >= 0)
+        {
+            method = url.LeftPart(' ');
+            url = url.RightPart(' ');
+        }
+        var headers = new Dictionary<string, string>
+        {
+            [HttpHeaders.Accept] = MimeTypes.Json
+        };
+        if (url.IndexOf('@') >= 0)
+        {
+            var auth = url.LeftPart('@');
+            url = url.RightPart('@');
+            if (auth.IndexOf(':') >= 0)
+            {
+                if (auth.StartsWith("http."))
+                {
+                    var kvp = auth.RightPart('.');
+                    var key = kvp.LeftPart(':').UrlDecode();
+                    var val = kvp.RightPart(':').UrlDecode();
+                    var env = val.StartsWith('$') 
+                        ? Environment.GetEnvironmentVariable(val)
+                        : null;
+                    if (!string.IsNullOrEmpty(env))
+                        val = env;
+                    headers[key] = val;
+                }
+                else
+                {
+                    headers["Authorization"] = $"Basic {Convert.ToBase64String(auth.UrlDecode().ToUtf8Bytes())}";
+                }
+            }
+            else
+            {
+                var env = auth.StartsWith('$') 
+                    ? Environment.GetEnvironmentVariable(auth)
+                    : null;
+                if (!string.IsNullOrEmpty(env))
+                    auth = env;
+                headers["Authorization"] = $"Bearer {auth}";
+            }
+        }
+        var msg = new HttpRequestMessage(new(method), url);
+        foreach (var header in headers)
+        {
+            msg.WithHeader(header.Key, header.Value);
+        }
+        return msg;
+    }
 }
 
 public static class HttpClientExt
