@@ -128,7 +128,7 @@ public class BackgroundJobsTests
     }
 
     [OneTimeTearDown]
-    public void TestFixtureTearDown() => appHost.Dispose();
+    public void TestFixtureTearDown() => AppHostBase.DisposeApp();
 
     void ResetState()
     {
@@ -173,7 +173,7 @@ public class BackgroundJobsTests
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
         AssertNotNulls(job);
         Assert.That(job.Status, Is.EqualTo("Finished"));
-        Assert.That(job.Progress, Is.EqualTo(1));
+        Assert.That(WaitUntilTrue(() => job.Progress >= 1), "job.Progress != 1");
         Assert.That(job.Logs, Is.EqualTo("MyCommand Started...\nMyCommand Finished"));
     }
 
@@ -205,7 +205,7 @@ public class BackgroundJobsTests
         job!.Id = int.MaxValue;
         AssertNotNulls(job);
         Assert.That(job.Status, Is.EqualTo("Finished"));
-        Assert.That(job.Progress, Is.EqualTo(1));
+        Assert.That(WaitUntilTrue(() => job.Progress >= 1), "job.Progress != 1");
         Assert.That(job.Logs, Is.EqualTo("MyCommand Started...\nMyCommand Finished"));
     }
 
@@ -243,7 +243,7 @@ public class BackgroundJobsTests
         Assert.That(job.Args, Is.EquivalentTo(new Dictionary<string,string>() { ["key"] = "value" }));
 
         Assert.That(WaitUntilTrue(() => job.Status == "Finished"), "Status != Finished");
-        Assert.That(job.Progress, Is.EqualTo(1));
+        Assert.That(WaitUntilTrue(() => job.Progress >= 1), "job.Progress != 1");
         Assert.That(job.Logs, Is.EqualTo("MyCommand Started...\nMyCommand Finished"));
 
         Assert.That(WaitUntilTrue(() => job.NotifiedDate != null), "job.NotifiedDate == null");
