@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -20,6 +21,8 @@ public interface IBackgroundJobs : IDisposable
     void Tick();
     Dictionary<string, int> GetWorkerQueueCounts();
     List<WorkerStats> GetWorkerStats();
+    IDbConnection OpenJobsDb();
+    IDbConnection OpenJobsMonthDb(DateTime createdDate);
 }
 
 public class BackgroundJobRef(long id, string refId, string requestId)
