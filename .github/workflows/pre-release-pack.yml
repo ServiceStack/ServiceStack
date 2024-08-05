@@ -45,7 +45,8 @@ jobs:
       - name: Check number of packages
         if: env.number_of_packages < 73
         run: |
-          echo "Less packages produced than expected, failing."
+          echo "${{ env.number_of_packages }} less packages produced than expected (>=73), failing."
+          ls -1
           exit 1
 
       - uses: actions/upload-artifact@v2
