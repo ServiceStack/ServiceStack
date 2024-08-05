@@ -1156,6 +1156,21 @@ public static partial class HttpUtils
         fs.Write(bytes);
     }
 
+    /// <summary>
+    /// By default, the method is set to "POST".
+    /// If the input URL contains a space, the text before the space is treated as the HTTP method
+    ///  - PUT https://api.example.com
+    /// If the auth part contains a colon :, it's treated as Basic Auth.
+    ///  - username:password@https://api.example.com
+    /// If name starts with 'http.' sends a HTTP Header
+    ///  - http.X-API-Key:myApiKey@https://api.example.com
+    /// Otherwise used as Bearer Token:
+    ///  - myToken123@https://api.example.com
+    /// Bearer Token or HTTP Headers starting with '$' is substituted with Environment Variable if exists
+    ///  - $API_TOKEN@https://api.example.com
+    /// </summary>
+    /// <param name="url"></param>
+    /// <returns></returns>
     public static HttpRequestMessage ToHttpRequestMessage(string url)
     {
         var method = "POST";
@@ -1164,10 +1179,7 @@ public static partial class HttpUtils
             method = url.LeftPart(' ');
             url = url.RightPart(' ');
         }
-        var headers = new Dictionary<string, string>
-        {
-            [HttpHeaders.Accept] = MimeTypes.Json
-        };
+        var headers = new Dictionary<string, string>();
         if (url.IndexOf('@') >= 0)
         {
             var auth = url.LeftPart('@');

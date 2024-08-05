@@ -39,6 +39,7 @@ public static class HttpExt
     {
         var msg = HttpUtils.ToHttpRequestMessage(url);
         var json = ClientConfig.ToJson(body);
+        msg.WithHeader(HttpHeaders.Accept, MimeTypes.Json);
         msg.Content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, MimeTypes.Json);
         return msg;
     }
