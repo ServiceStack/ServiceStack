@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <PackageId>ServiceStack.Jobs</PackageId>
+        <AssemblyName>ServiceStack.Jobs</AssemblyName>
+        <TargetFramework>net8.0</TargetFramework>
+        <Title>ServiceStack Background Jobs, Workers and Loggers</Title>
+        <PackageDescription>
+            Background Job Feature and Workers
+        </PackageDescription>
+        <PackageTags>scheduling;tasks;jobs;triggers;scheduler;threading;ServiceStack</PackageTags>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+      <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+      <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+    </ItemGroup>
+</Project>

@@ -144,6 +144,11 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
+    <!-- ServiceStack.Jobs -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Jobs/ServiceStack.Jobs.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
     <!-- ServiceStack.Desktop -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Desktop/ServiceStack.Desktop.csproj"
              Targets="Build;Pack"
