@@ -8,6 +8,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Admin;
 
+[Icon(Svg = SvgIcons.Logs)]
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public class RequestLogs : IReturn<RequestLogsResponse>
 {
@@ -38,12 +39,7 @@ public class RequestLogs : IReturn<RequestLogsResponse>
 [DataContract]
 public class RequestLogsResponse
 {
-    public RequestLogsResponse()
-    {
-        this.Results = new List<RequestLogEntry>();
-    }
-
-    [DataMember(Order=1)] public List<RequestLogEntry> Results { get; set; }
+    [DataMember(Order=1)] public List<RequestLogEntry> Results { get; set; } = [];
     [DataMember(Order=2)] public Dictionary<string, string> Usage { get; set; }
     [DataMember(Order=3)] public int Total { get; set; }
     [DataMember(Order=4)] public ResponseStatus ResponseStatus { get; set; }

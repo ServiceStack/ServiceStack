@@ -6,6 +6,7 @@ using ServiceStack.DataAnnotations;
 namespace ServiceStack.Jobs;
 
 // App DB
+[Icon(Svg = SvgIcons.Tasks)]
 public class BackgroundJob : IMeta
 {
     [AutoIncrement] public long Id { get; set; }
@@ -62,7 +63,7 @@ public class BackgroundJob : IMeta
     [Ignore] public Action<Exception>? OnFailed { get; set; }
 }
 
-
+[Icon(Svg = SvgIcons.Stats)]
 public class JobSummary
 {
     public long Id { get; set; }
@@ -99,5 +100,8 @@ public enum BackgroundJobState
 }
 
 // Month DB
+[Icon(Svg = SvgIcons.Completed)]
 public class CompletedJob : BackgroundJob {}
+
+[Icon(Svg = SvgIcons.Failed)]
 public class FailedJob : BackgroundJob {}
