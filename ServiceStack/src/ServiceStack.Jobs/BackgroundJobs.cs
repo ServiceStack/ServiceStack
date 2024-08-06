@@ -186,7 +186,9 @@ public class BackgroundJobs : IBackgroundJobs
                 using var db = feature.OpenJobsDb();
                 if (shouldRetry)
                 {
-                    job.State = BackgroundJobState.Failed;
+                    job.State = ex is TaskCanceledException
+                        ? BackgroundJobState.Cancelled
+                        : BackgroundJobState.Failed;
 
                     db.UpdateOnly(() => new BackgroundJob {
                         State = job.State,
