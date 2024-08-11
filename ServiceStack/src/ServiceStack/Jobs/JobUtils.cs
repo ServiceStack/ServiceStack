@@ -60,7 +60,7 @@ public static class JobUtils
         to.Command = from.Command;
         to.Request = from.Request;
         to.RequestBody = from.RequestBody;
-        to.RequestUserId = from.RequestUserId;
+        to.UserId = from.UserId;
         to.Response = from.Response;
         to.ResponseBody = from.ResponseBody;
         to.State = from.State;

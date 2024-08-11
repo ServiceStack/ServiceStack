@@ -31,7 +31,7 @@ public class BackgroundJob : IMeta
     //[Exclude]
     public string RequestBody { get; set; }
 
-    public string? RequestUserId { get; set; } // IdentityAuth ApplicationUser.Id
+    public string? UserId { get; set; } // IdentityAuth ApplicationUser.Id
     public string Response { get; set; }
 
     //[Exclude]
@@ -77,14 +77,13 @@ public class JobSummary
     public virtual string RequestType { get; set; } // API or CMD
     public virtual string Request { get; set; }
     public virtual string Response { get; set; }
-    public virtual string? RequestUserId { get; set; }
+    public virtual string? UserId { get; set; }
     public virtual string? Callback { get; set; }
     public virtual DateTime? StartedDate { get; set; }
     public virtual DateTime? CompletedDate { get; set; }
-    public virtual BackgroundJobState Status { get; set; }
+    public virtual BackgroundJobState State { get; set; }
     public virtual int DurationMs { get; set; }
-    public virtual int? RetryLimit { get; set; }
-    public virtual int Retries { get; set; }
+    public virtual int Attempts { get; set; }
     public virtual string? ErrorCode { get; set; }
     public virtual string? ErrorMessage { get; set; }
 }

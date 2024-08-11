@@ -190,6 +190,7 @@ public class BackgroundJobs : IBackgroundJobs
                         ? BackgroundJobState.Cancelled
                         : BackgroundJobState.Failed;
 
+                    using var trans = db.OpenTransaction();
                     db.UpdateOnly(() => new BackgroundJob {
                         State = job.State,
                         Error = job.Error,
@@ -198,10 +199,11 @@ public class BackgroundJobs : IBackgroundJobs
                     }, where: x => x.Id == job.Id);
 
                     db.UpdateOnly(() => new JobSummary {
-                        Status = job.State,
+                        State = job.State,
                         ErrorMessage = job.Error.Message,
                         ErrorCode = job.ErrorCode,
                     }, where: x => x.Id == job.Id);
+                    trans.Commit();
 
                     using var dbMonth = feature.OpenJobsMonthDb(job.CreatedDate);
                     var failedJob = job.PopulateJob(new FailedJob());
@@ -289,6 +291,7 @@ public class BackgroundJobs : IBackgroundJobs
 
         lock (dbWrites)
         {
+            using var trans = db.OpenTransaction();
             db.UpdateOnly(() => new BackgroundJob {
                 Progress = job.Progress,
                 CompletedDate = job.CompletedDate,
@@ -301,9 +304,11 @@ public class BackgroundJobs : IBackgroundJobs
             db.UpdateOnly(() => new JobSummary {
                 CompletedDate = job.CompletedDate,
                 DurationMs = job.DurationMs,
-                Status = job.State,                
+                State = job.State,                
                 Response = job.Response,
+                Attempts = job.Attempts,
             }, where: x => x.Id == job.Id);
+            trans.Commit();
         }
 
         if (job.Callback != null)
