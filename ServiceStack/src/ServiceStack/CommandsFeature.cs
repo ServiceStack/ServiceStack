@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -268,6 +269,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 var errorResult = result.Clone();
                 errorResult.Request = requestBody;
                 errorResult.Attempt = attempt;
+                errorResult.Exception = e;
                 errorResult.Error = e.ToResponseStatus();
                 errorResult.Error.StackTrace ??= e.StackTrace;
                 AddCommandResult(errorResult);
@@ -505,6 +507,9 @@ public class CommandResult
     public int? Retries { get; set; }
     public int Attempt { get; set; }
     public ResponseStatus? Error { get; set; }
+    
+    [IgnoreDataMember]
+    public Exception? Exception { get; set; }
 
     public CommandResult Clone(Action<CommandResult>? configure = null) => X.Apply(new CommandResult
     {
