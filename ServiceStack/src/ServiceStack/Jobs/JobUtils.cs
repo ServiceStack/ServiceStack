@@ -44,7 +44,7 @@ public static class JobUtils
         };
     }
 
-    public static T PopulateJob<T>(this BackgroundJob from, T to) where T : BackgroundJob
+    public static T PopulateJob<T>(this BackgroundJobBase from, T to) where T : BackgroundJobBase
     {
         to.Id = from.Id;
         to.ParentId = from.ParentId;
@@ -80,9 +80,6 @@ public static class JobUtils
         to.Error = from.Error;
         to.Args = from.Args;
         to.Meta = from.Meta;
-        to.Transient = from.Transient;
-        to.OnSuccess = from.OnSuccess;
-        to.OnFailed = from.OnFailed;
         return to;
     }
 

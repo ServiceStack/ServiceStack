@@ -5,11 +5,9 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Jobs;
 
-// App DB
-[Icon(Svg = SvgIcons.Tasks)]
-public class BackgroundJob : IMeta
+public abstract class BackgroundJobBase : IMeta
 {
-    [AutoIncrement] public long Id { get; set; }
+    public abstract long Id { get; set; }
     public long? ParentId { get; set; }
 
     [Index(Unique = true)] public string? RefId { get; set; } // Unique Guid
@@ -56,7 +54,14 @@ public class BackgroundJob : IMeta
     public ResponseStatus? Error { get; set; }
     public Dictionary<string, string>? Args { get; set; }
     //[Exclude]
-    public Dictionary<string, string>? Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }    
+}
+
+// App DB
+[Icon(Svg = SvgIcons.Tasks)]
+public class BackgroundJob : BackgroundJobBase
+{
+    [AutoIncrement] public override long Id { get; set; }
 
     [Ignore] public bool Transient { get; set; }
     [Ignore] public Action<object>? OnSuccess { get; set; }
@@ -100,7 +105,13 @@ public enum BackgroundJobState
 
 // Month DB
 [Icon(Svg = SvgIcons.Completed)]
-public class CompletedJob : BackgroundJob {}
+public class CompletedJob : BackgroundJobBase
+{
+    public override long Id { get; set; }
+}
 
 [Icon(Svg = SvgIcons.Failed)]
-public class FailedJob : BackgroundJob {}
+public class FailedJob : BackgroundJobBase
+{
+    public override long Id { get; set; }
+}

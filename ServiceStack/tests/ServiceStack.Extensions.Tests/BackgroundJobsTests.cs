@@ -222,7 +222,7 @@ public class BackgroundJobsTests
         var job = MyJobCommand.LastRequest.GetBackgroundJob();
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
         AssertNotNulls(job);
-        Assert.That(job.Status, Is.EqualTo("Finished"));
+        Assert.That(ExecUtils.WaitUntilTrue(() => job.Status == "Finished"), "Status != Finished");
         Assert.That(ExecUtils.WaitUntilTrue(() => job.Progress >= 1), "job.Progress != 1");
         Assert.That(job.Logs, Is.EqualTo("MyCommand Started...\nMyCommand Finished"));
     }
@@ -305,8 +305,7 @@ public class BackgroundJobsTests
         Assert.That(job.ResponseBody, Is.EqualTo(ClientConfig.ToJson(MyJobCallback.LastMyResponse)));
 
         using var db = feature.OpenJobsDb();
-        var dbJob = db.SingleById<BackgroundJob>(job.Id);
-        Assert.That(dbJob, Is.Null);
+        Assert.That(ExecUtils.WaitUntilTrue(() => db.SingleById<BackgroundJob>(job.Id) == null), "job != null");
         var dbJobSummary = db.SingleById<JobSummary>(job.Id);
         Assert.That(dbJobSummary, Is.Not.Null);
         Assert.That(dbJobSummary.CompletedDate, Is.Not.Null);
@@ -349,11 +348,12 @@ public class BackgroundJobsTests
     }
 
     [Test]
-    public void Does_retry_and_fail_AlwaysFailCommand()
+    public async Task Does_retry_and_fail_AlwaysFailCommand()
     {
         ResetState();
+        var timeout = TimeSpan.FromMinutes(1);
         var jobRef = feature.Jobs.EnqueueCommand<AlwaysFailCommand>(new AlwaysFail { Id = 1 });
-        Assert.That(ExecUtils.WaitUntilTrue(() => AlwaysFailCommand.Count >= 3, TimeSpan.FromMinutes(2)), "AlwaysFailCommand.Count < 3");
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => AlwaysFailCommand.Count >= 3, timeout), "AlwaysFailCommand.Count < 3");
         Assert.That(AlwaysFailCommand.Count, Is.EqualTo(3));
 
         using var db = feature.OpenJobsDb();
@@ -361,10 +361,10 @@ public class BackgroundJobsTests
         using var monthDb = feature.OpenJobsMonthDb(DateTime.UtcNow);
 
         FailedJob? failedJob = null;
-        Assert.That(ExecUtils.WaitUntilTrue(() => {
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => {
             failedJob = monthDb.SingleById<FailedJob>(jobRef.Id);
             return failedJob != null;
-        }), "failedJob == null");
+        }, timeout), "failedJob == null");
         Assert.That(failedJob!.RefId, Is.EqualTo(jobRef.RefId));
         Assert.That(failedJob.Command, Is.EqualTo(nameof(AlwaysFailCommand)));
         Assert.That(failedJob.Request, Is.EqualTo(nameof(AlwaysFail)));

@@ -180,6 +180,14 @@ public class BackgroundJobs : IBackgroundJobs
         return FailJobAsync(job, new TaskCanceledException("Job was cancelled"));
     }
 
+    public Task FailJobAsync(BackgroundJob job, Exception ex) => FailJobAsync(job, ex, ShouldRetry(job, ex));
+
+    private bool ShouldRetry(BackgroundJob job, Exception ex)
+    {
+        var retryLimit = job.RetryLimit ?? feature.DefaultRetryLimit;
+        return job.Attempts <= retryLimit && feature.ShouldRetry(job, ex);
+    }
+
     public Task FailJobAsync(BackgroundJob job, Exception ex, bool shouldRetry) => 
         FailJobAsync(job, ex.ToResponseStatus(), shouldRetry);
 
@@ -193,35 +201,43 @@ public class BackgroundJobs : IBackgroundJobs
         {
             lock (dbWrites)
             {
-                if (shouldRetry)
+                if (!shouldRetry)
                 {
                     job.State = error.ErrorCode == nameof(TaskCanceledException)
                         ? BackgroundJobState.Cancelled
                         : BackgroundJobState.Failed;
 
-                    using var dbMonth = feature.OpenJobsMonthDb(job.CreatedDate);
-                    var failedJob = job.PopulateJob(new FailedJob());
-                    dbMonth.Insert(failedJob);
+                    try
+                    {
+                        using var dbMonth = feature.OpenJobsMonthDb(job.CreatedDate);
+                        var failedJob = job.PopulateJob(new FailedJob());
+                        dbMonth.Insert(failedJob);
 
-                    using var db = feature.OpenJobsDb();
-                    using var trans = db.OpenTransaction();
-                    db.UpdateOnly(() => new BackgroundJob {
-                        State = job.State,
-                        Error = job.Error,
-                        ErrorCode = job.ErrorCode,
-                        LastActivityDate = job.LastActivityDate,
-                        Attempts = job.Attempts,
-                    }, where: x => x.Id == job.Id);
+                        using var db = feature.OpenJobsDb();
+                        using var trans = db.OpenTransaction();
+                        db.UpdateOnly(() => new BackgroundJob {
+                            State = job.State,
+                            Error = job.Error,
+                            ErrorCode = job.ErrorCode,
+                            LastActivityDate = job.LastActivityDate,
+                            Attempts = job.Attempts,
+                        }, where: x => x.Id == job.Id);
 
-                    db.UpdateOnly(() => new JobSummary {
-                        State = job.State,
-                        ErrorMessage = job.Error.Message,
-                        ErrorCode = job.ErrorCode,
-                        Attempts = job.Attempts,
-                    }, where: x => x.Id == job.Id);
+                        db.UpdateOnly(() => new JobSummary {
+                            State = job.State,
+                            ErrorMessage = job.Error.Message,
+                            ErrorCode = job.ErrorCode,
+                            Attempts = job.Attempts,
+                        }, where: x => x.Id == job.Id);
 
-                    db.DeleteById<BackgroundJob>(job.Id);
-                    trans.Commit();
+                        db.DeleteById<BackgroundJob>(job.Id);
+                        trans.Commit();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
                 }
                 else
                 {
@@ -244,14 +260,6 @@ public class BackgroundJobs : IBackgroundJobs
         }
 
         return Task.CompletedTask;
-    }
-
-    public Task FailJobAsync(BackgroundJob job, Exception ex) => FailJobAsync(job, ex, ShouldRetry(job, ex));
-
-    private bool ShouldRetry(BackgroundJob job, Exception ex)
-    {
-        var retryLimit = job.RetryLimit ?? feature.DefaultRetryLimit;
-        return job.Attempts > retryLimit && feature.ShouldRetry(job, ex);
     }
 
     // Runs on BG Thread
