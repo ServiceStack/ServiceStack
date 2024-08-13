@@ -17,7 +17,7 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
     public IAppHostNetCore AppHost { get; set; } = null!;
     public CommandsFeature CommandsFeature { get; set; } = null!;
     public IBackgroundJobs Jobs { get; set; } = null!;
-    public int DefaultRetryLimit { get; set; } = 3;
+    public int DefaultRetryLimit { get; set; } = 2;
     public int DefaultTimeoutSecs { get; set; } = 5 * 60; // 5 mins
     public Func<BackgroundJob,Exception,bool> ShouldRetry { get; set; } = (_,ex) => ex is not TaskCanceledException;
 

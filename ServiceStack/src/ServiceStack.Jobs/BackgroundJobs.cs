@@ -129,7 +129,14 @@ public class BackgroundJobs : IBackgroundJobs
                     requiresRequest.Request = reqCtx;
                 }
                 var commandResult = await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto);
-
+                if (commandResult.Exception != null)
+                {
+                    var onFailed = job.OnFailed;
+                    onFailed?.Invoke(commandResult.Exception);
+                    await FailJobAsync(job, commandResult.Exception);
+                    return;
+                }
+                
                 var resultProp = commandInfo.Type.GetProperty("Result", BindingFlags.Instance | BindingFlags.Public);
                 var resultAccessor = TypeProperties.Get(commandInfo.Type).GetAccessor("Result");
                 response = resultProp != null
@@ -173,42 +180,48 @@ public class BackgroundJobs : IBackgroundJobs
         return FailJobAsync(job, new TaskCanceledException("Job was cancelled"));
     }
 
-    public Task FailJobAsync(BackgroundJob job, Exception ex, bool shouldRetry)
+    public Task FailJobAsync(BackgroundJob job, Exception ex, bool shouldRetry) => 
+        FailJobAsync(job, ex.ToResponseStatus(), shouldRetry);
+
+    public Task FailJobAsync(BackgroundJob job, ResponseStatus error, bool shouldRetry)
     {
-        job.Error = ex.ToResponseStatus();
-        job.ErrorCode = job.Error.ErrorCode;
+        job.Error = error;
+        job.ErrorCode = error.ErrorCode;
         job.LastActivityDate = DateTime.UtcNow;
         
         if (!job.Transient)
         {
             lock (dbWrites)
             {
-                using var db = feature.OpenJobsDb();
                 if (shouldRetry)
                 {
-                    job.State = ex is TaskCanceledException
+                    job.State = error.ErrorCode == nameof(TaskCanceledException)
                         ? BackgroundJobState.Cancelled
                         : BackgroundJobState.Failed;
 
+                    using var dbMonth = feature.OpenJobsMonthDb(job.CreatedDate);
+                    var failedJob = job.PopulateJob(new FailedJob());
+                    dbMonth.Insert(failedJob);
+
+                    using var db = feature.OpenJobsDb();
                     using var trans = db.OpenTransaction();
                     db.UpdateOnly(() => new BackgroundJob {
                         State = job.State,
                         Error = job.Error,
                         ErrorCode = job.ErrorCode,
                         LastActivityDate = job.LastActivityDate,
+                        Attempts = job.Attempts,
                     }, where: x => x.Id == job.Id);
 
                     db.UpdateOnly(() => new JobSummary {
                         State = job.State,
                         ErrorMessage = job.Error.Message,
                         ErrorCode = job.ErrorCode,
+                        Attempts = job.Attempts,
                     }, where: x => x.Id == job.Id);
-                    trans.Commit();
 
-                    using var dbMonth = feature.OpenJobsMonthDb(job.CreatedDate);
-                    var failedJob = job.PopulateJob(new FailedJob());
-                    dbMonth.Insert(failedJob);
                     db.DeleteById<BackgroundJob>(job.Id);
+                    trans.Commit();
                 }
                 else
                 {
@@ -216,6 +229,7 @@ public class BackgroundJobs : IBackgroundJobs
                     job.StartedDate = null;
                     job.Attempts += 1;
                     job.State = BackgroundJobState.Queued;
+                    using var db = feature.OpenJobsDb();
                     db.UpdateOnly(() => new BackgroundJob {
                         RequestId = job.RequestId,
                         StartedDate = job.StartedDate,
@@ -232,11 +246,12 @@ public class BackgroundJobs : IBackgroundJobs
         return Task.CompletedTask;
     }
 
-    public Task FailJobAsync(BackgroundJob job, Exception ex)
+    public Task FailJobAsync(BackgroundJob job, Exception ex) => FailJobAsync(job, ex, ShouldRetry(job, ex));
+
+    private bool ShouldRetry(BackgroundJob job, Exception ex)
     {
         var retryLimit = job.RetryLimit ?? feature.DefaultRetryLimit;
-        var shouldRetry = job.Attempts > retryLimit && feature.ShouldRetry(job,ex);
-        return FailJobAsync(job, ex, shouldRetry);
+        return job.Attempts > retryLimit && feature.ShouldRetry(job, ex);
     }
 
     // Runs on BG Thread

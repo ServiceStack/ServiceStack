@@ -15,6 +15,7 @@ public interface IBackgroundJobs : IDisposable
     Task ExecuteJobAsync(BackgroundJob job);
     Task CancelJobAsync(BackgroundJob job);
     Task FailJobAsync(BackgroundJob job, Exception ex);
+    Task FailJobAsync(BackgroundJob job, ResponseStatus error, bool shouldRetry);
     Task CompleteJobAsync(BackgroundJob job, object? response=null);
     void UpdateJobStatus(BackgroundJobStatusUpdate status);
     void Start();
