@@ -7,54 +7,54 @@ namespace ServiceStack.Jobs;
 
 public abstract class BackgroundJobBase : IMeta
 {
-    public abstract long Id { get; set; }
-    public long? ParentId { get; set; }
+    public virtual long Id { get; set; }
+    public virtual long? ParentId { get; set; }
 
-    [Index(Unique = true)] public string? RefId { get; set; } // Unique Guid
-    public string? Worker { get; set; } // Logical Thread or BG Thread if null
-    public string? Tag { get; set; }
-    public string? Callback { get; set; } //CreateOpenAiChat or CreateOpenAiChatTask
-    public DateTime? RunAfter { get; set; }
-    public DateTime CreatedDate { get; set; }
-    public string? CreatedBy { get; set; }
-    public string? RequestId { get; set; }
+    [Index(Unique = true)] public virtual string? RefId { get; set; } // Unique Guid
+    public virtual string? Worker { get; set; } // Logical Thread or BG Thread if null
+    public virtual string? Tag { get; set; }
+    public virtual string? Callback { get; set; } //CreateOpenAiChat or CreateOpenAiChatTask
+    public virtual DateTime? RunAfter { get; set; }
+    public virtual DateTime CreatedDate { get; set; }
+    public virtual string? CreatedBy { get; set; }
+    public virtual string? RequestId { get; set; }
 
-    public string RequestType { get; set; } // API or CMD
+    public virtual string RequestType { get; set; } // API or CMD
 
-    public string? Command { get; set; }
+    public virtual string? Command { get; set; }
     //CreateOpenAiChatTaskCommand
-    public string Request { get; set; } //CreateOpenAiChat or CreateOpenAiChatTask
+    public virtual string Request { get; set; } //CreateOpenAiChat or CreateOpenAiChatTask
 
     //OpenAiChatTask
     //[Exclude]
-    public string RequestBody { get; set; }
+    public virtual string RequestBody { get; set; }
 
-    public string? UserId { get; set; } // IdentityAuth ApplicationUser.Id
-    public string Response { get; set; }
+    public virtual string? UserId { get; set; } // IdentityAuth ApplicationUser.Id
+    public virtual string Response { get; set; }
 
     //[Exclude]
-    public string ResponseBody { get; set; }
-    public BackgroundJobState State { get; set; }
+    public virtual string ResponseBody { get; set; }
+    public virtual BackgroundJobState State { get; set; }
 
-    [Index] public DateTime? StartedDate { get; set; }
-    public DateTime? CompletedDate { get; set; }
-    public DateTime? NotifiedDate { get; set; }
-    public int DurationMs { get; set; }
-    public int? TimeoutSecs { get; set; }
-    public int? RetryLimit { get; set; }
-    public int Attempts { get; set; }
-    public double? Progress { get; set; } // 0-1
-    public string? Status { get; set; }   // e.g. Downloaded 2/10
-    public string? Logs { get; set; }     // Append recorded logs
-    public DateTime? LastActivityDate { get; set; }
-    public string? ReplyTo { get; set; }
+    [Index] public virtual DateTime? StartedDate { get; set; }
+    public virtual DateTime? CompletedDate { get; set; }
+    public virtual DateTime? NotifiedDate { get; set; }
+    public virtual int DurationMs { get; set; }
+    public virtual int? TimeoutSecs { get; set; }
+    public virtual int? RetryLimit { get; set; }
+    public virtual int Attempts { get; set; }
+    public virtual double? Progress { get; set; } // 0-1
+    public virtual string? Status { get; set; }   // e.g. Downloaded 2/10
+    public virtual string? Logs { get; set; }     // Append recorded logs
+    public virtual DateTime? LastActivityDate { get; set; }
+    public virtual string? ReplyTo { get; set; }
 
-    public string? ErrorCode { get; set; }
+    public virtual string? ErrorCode { get; set; }
 
-    public ResponseStatus? Error { get; set; }
-    public Dictionary<string, string>? Args { get; set; }
+    public virtual ResponseStatus? Error { get; set; }
+    public virtual Dictionary<string, string>? Args { get; set; }
     //[Exclude]
-    public Dictionary<string, string>? Meta { get; set; }    
+    public virtual Dictionary<string, string>? Meta { get; set; }    
 }
 
 // App DB
@@ -105,13 +105,7 @@ public enum BackgroundJobState
 
 // Month DB
 [Icon(Svg = SvgIcons.Completed)]
-public class CompletedJob : BackgroundJobBase
-{
-    public override long Id { get; set; }
-}
+public class CompletedJob : BackgroundJobBase {}
 
 [Icon(Svg = SvgIcons.Failed)]
-public class FailedJob : BackgroundJobBase
-{
-    public override long Id { get; set; }
-}
+public class FailedJob : BackgroundJobBase {}
