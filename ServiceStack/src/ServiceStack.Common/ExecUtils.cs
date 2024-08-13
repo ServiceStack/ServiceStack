@@ -180,6 +180,40 @@ public static class ExecUtils
         return false;
     }
 
+    public static async Task<bool> WaitUntilTrueAsync(Func<bool> action, TimeSpan? timeOut = null)
+    {
+        timeOut ??= TimeSpan.FromMilliseconds(MaxBackOffMs);
+        var num = 0;
+        var utcNow = DateTime.UtcNow;
+        while (DateTime.UtcNow - utcNow < timeOut.Value)
+        {
+            num++;
+            if (action())
+            {
+                return true;
+            }
+            await DelayBackOffMultiplierAsync(num);
+        }
+        return false;
+    }
+
+    public static async Task<bool> WaitUntilTrueAsync(Func<Task<bool>> action, TimeSpan? timeOut = null)
+    {
+        timeOut ??= TimeSpan.FromMilliseconds(MaxBackOffMs);
+        var num = 0;
+        var utcNow = DateTime.UtcNow;
+        while (DateTime.UtcNow - utcNow < timeOut.Value)
+        {
+            num++;
+            if (await action())
+            {
+                return true;
+            }
+            await DelayBackOffMultiplierAsync(num);
+        }
+        return false;
+    }
+
     public static void RetryOnException(Action action, TimeSpan? timeOut)
     {
         var i = 0;
