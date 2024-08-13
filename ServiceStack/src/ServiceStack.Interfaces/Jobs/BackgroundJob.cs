@@ -71,11 +71,11 @@ public class BackgroundJob : BackgroundJobBase
 [Icon(Svg = SvgIcons.Stats)]
 public class JobSummary
 {
-    public long Id { get; set; }
-    public long? ParentId { get; set; }
+    public virtual long Id { get; set; }
+    public virtual long? ParentId { get; set; }
     [Index(Unique = true)] public virtual string? RefId { get; set; }
-    public string? Worker { get; set; }
-    public string? Tag { get; set; }
+    public virtual string? Worker { get; set; }
+    public virtual string? Tag { get; set; }
     public virtual DateTime CreatedDate { get; set; }
     public virtual string? CreatedBy { get; set; }
     public virtual string? RequestId { get; set; }
