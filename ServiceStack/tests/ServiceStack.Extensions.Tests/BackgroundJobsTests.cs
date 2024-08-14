@@ -67,13 +67,13 @@ public class JobServices : Service
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
-    public static MyRequest? LastCommandRequest { get; set; }
- 
+    public static List<MyRequest> Requests { get; set; } = new();
+
     public object Any(MyRequest request)
     {
         Interlocked.Increment(ref Count);
         LastRequest = Request;
-        LastCommandRequest = request;
+        Requests.Add(request);
         return new MyResponse { Result = $"Hello {request.Id}" };
     }
 }
@@ -226,7 +226,7 @@ public class BackgroundJobsTests
         MyJobCallback.LastMyResponse = null;
         JobServices.Count = 0;
         JobServices.LastRequest = null;
-        JobServices.LastCommandRequest = null;
+        JobServices.Requests.Clear();
         AlwaysFailCommand.Count = 0;
         AlwaysFailCommand.LastRequest = null;
         AlwaysFailCommand.LastCommandRequest = null;
@@ -277,7 +277,7 @@ public class BackgroundJobsTests
         feature.Jobs.EnqueueApi(new MyRequest { Id = 2 });
         
         Assert.That(ExecUtils.WaitUntilTrue(() => JobServices.LastRequest != null), "LastRequest == null");
-        Assert.That(JobServices.LastCommandRequest, Is.Not.Null);
+        Assert.That(JobServices.Requests.Count, Is.GreaterThan(0));
         var job = JobServices.LastRequest.GetBackgroundJob();
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Api));
         AssertNotNulls(job);
@@ -421,15 +421,23 @@ public class BackgroundJobsTests
     {
         ResetState();
         var now = DateTime.UtcNow;
-        var jobRef1 = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() {
-            RunAfter = now.AddSeconds(2),
-        });
-        
-        var jobRef2 = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 2 });
+        var cmdRef1 = feature.Jobs.ScheduleCommand<MyJobCommand>(new MyRequest { Id = 1 }, now.AddSeconds(1));
+        var cmdRef2 = feature.Jobs.ScheduleCommand<MyJobCommand>(new MyRequest { Id = 2 }, TimeSpan.FromSeconds(1));
+        var cmdRef3 = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 3 });
 
-        Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.Requests.Count == 2), "Count != 2");
-        Assert.That(MyJobCommand.Requests[0].Id, Is.EqualTo(2));
-        Assert.That(MyJobCommand.Requests[1].Id, Is.EqualTo(1));
+        var apiRef1 = feature.Jobs.ScheduleApi(new MyRequest { Id = 1 }, now.AddSeconds(1));
+        var apiRef2 = feature.Jobs.ScheduleApi(new MyRequest { Id = 2 }, TimeSpan.FromSeconds(1));
+        var apiRef3 = feature.Jobs.EnqueueApi(new MyRequest { Id = 3 });
+
+        Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.Requests.Count == 3), "Count != 3");
+        Assert.That(MyJobCommand.Requests[0].Id, Is.EqualTo(3));
+        Assert.That(MyJobCommand.Requests[1].Id, Is.EqualTo(1).Or.EqualTo(2));
+        Assert.That(MyJobCommand.Requests[2].Id, Is.EqualTo(2).Or.EqualTo(1));
+        
+        Assert.That(ExecUtils.WaitUntilTrue(() => JobServices.Requests.Count == 3), "Count != 3");
+        Assert.That(JobServices.Requests[0].Id, Is.EqualTo(3));
+        Assert.That(JobServices.Requests[1].Id, Is.EqualTo(1).Or.EqualTo(2));
+        Assert.That(JobServices.Requests[2].Id, Is.EqualTo(2).Or.EqualTo(1));
     }
 
     [Test]

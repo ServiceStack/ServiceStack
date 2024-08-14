@@ -314,7 +314,7 @@ public class BackgroundJobs : IBackgroundJobs
                     if (commandResult.Exception != null)
                         continue;
                     break;
-                } while (i++ < feature.DefaultRetryLimit);
+                } while (i++ < feature.DefaultRetryLimit && feature.ShouldRetry(job, commandResult.Exception));
 
                 if (commandResult.Exception != null)
                 {
@@ -412,6 +412,7 @@ public class BackgroundJobs : IBackgroundJobs
         if (dispatchJobs.Count > 0)
         {
             log.LogInformation("JOBS Queued {Count} Jobs dependent on {JobId}", dispatchJobs.Count, job.Id);
+            var orderedJobs = dispatchJobs.OrderBy(x => x.RunAfter ?? x.CreatedDate).ThenBy(x => x.Id);
             foreach (var dependentJob in dispatchJobs)
             {
                 dependentJob.ParentJob = completedJob;
@@ -587,9 +588,10 @@ public class BackgroundJobs : IBackgroundJobs
             var requeudJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
             if (requeudJobs.Count > 0)
             {
-                log.LogInformation("JOBS Requeueing {Count} Jobs ({ScheduledCount} Scheduled, {DependentCount} Dependent, {TimedOutCount} Expired)",
+                log.LogInformation("JOBS Queueing {Count} Jobs ({ScheduledCount} Scheduled, {DependentCount} Dependent, {TimedOutCount} Expired)",
                     requeudJobs.Count, scheduledJobIds.Count, dependentJobIds.Count, expiredJobIds.Count);
-                foreach (var job in requeudJobs)
+                var orderedJobs = requeudJobs.OrderBy(x => x.RunAfter ?? x.CreatedDate).ThenBy(x => x.Id);
+                foreach (var job in orderedJobs)
                 {
                     if (job.DependsOn != null && completedJobsMap.TryGetValue(job.DependsOn.Value, out var completedJob))
                     {

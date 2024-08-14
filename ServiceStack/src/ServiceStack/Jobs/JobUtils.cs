@@ -7,12 +7,45 @@ namespace ServiceStack.Jobs;
 
 public static class JobUtils
 {
-    public static BackgroundJobRef EnqueueApi<T>(this IBackgroundJobs jobs, T request, BackgroundJobOptions? options = null) where T : class =>
+    public static BackgroundJobRef EnqueueApi<T>(this IBackgroundJobs jobs, T request, BackgroundJobOptions? options = null) 
+        where T : class =>
         jobs.EnqueueApi(request.GetType().Name, request, options);
 
     public static BackgroundJobRef EnqueueCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand =>
         jobs.EnqueueCommand(typeof(TCommand).Name, request, options);
+
+    public static BackgroundJobRef ScheduleApi<T>(this IBackgroundJobs jobs, T request, DateTime at, BackgroundJobOptions? options = null) 
+        where T : class
+    {
+        options ??= new();
+        options.RunAfter = at;
+        return jobs.EnqueueApi(request, options);
+    }
+
+    public static BackgroundJobRef ScheduleApi<T>(this IBackgroundJobs jobs, T request, TimeSpan after, BackgroundJobOptions? options = null) 
+        where T : class
+    {
+        options ??= new();
+        options.RunAfter = DateTime.UtcNow.Add(after);
+        return jobs.EnqueueApi(request, options);
+    }
+
+    public static BackgroundJobRef ScheduleCommand<TCommand>(this IBackgroundJobs jobs, object request, DateTime at, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand
+    {
+        options ??= new();
+        options.RunAfter = at;
+        return jobs.EnqueueCommand(typeof(TCommand).Name, request, options);
+    }
+
+    public static BackgroundJobRef ScheduleCommand<TCommand>(this IBackgroundJobs jobs, object request, TimeSpan after, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand
+    {
+        options ??= new();
+        options.RunAfter = DateTime.UtcNow.Add(after);
+        return jobs.EnqueueCommand(typeof(TCommand).Name, request, options);
+    }
 
     public static BackgroundJob ExecuteTransientCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand =>
