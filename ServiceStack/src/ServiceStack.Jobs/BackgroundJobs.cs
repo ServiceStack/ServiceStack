@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Reflection;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Host;
 using ServiceStack.Messaging;
@@ -17,12 +18,14 @@ public class BackgroundJobs : IBackgroundJobs
     private static readonly object dbWrites = new();
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
+    readonly IServiceProvider services;
     
-    public BackgroundJobs(ILogger<BackgroundJobs> log, BackgroundsJobFeature feature, IDbConnectionFactory dbFactory)
+    public BackgroundJobs(ILogger<BackgroundJobs> log, BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IServiceProvider services)
     {
         // Need to store local references to these dependencies otherwise wont exist on BG Thread callbacks
         this.log = log;
         this.feature = feature;
+        this.services = services;
 
         var dialect = dbFactory.GetDialectProvider();
         this.Table = dialect.GetTableName(typeof(BackgroundJob));
@@ -102,7 +105,7 @@ public class BackgroundJobs : IBackgroundJobs
         return job;
     }
 
-    BasicRequest CreateRequestContext(Type requestType, BackgroundJob job)
+    async Task<BasicRequest> CreateRequestContextAsync(Type requestType, BackgroundJob job)
     {
         var request = string.IsNullOrEmpty(job.RequestBody)
             ? requestType.CreateInstance()
@@ -110,6 +113,20 @@ public class BackgroundJobs : IBackgroundJobs
         var msg = MessageFactory.Create(request);
         var reqCtx = new BasicRequest(request);
         reqCtx.Items[nameof(BackgroundJob)] = job;
+        if (job.UserId != null)
+        {
+            var manager = services.GetRequiredService<IIdentityAuthContextManager>();
+            var authCtx = services.GetRequiredService<IIdentityAuthContext>();
+            var user = await manager.CreateClaimsPrincipalAsync(job.UserId);
+            reqCtx.Items[Keywords.ClaimsPrincipal] = user;
+            var authProvider = services.GetService<IIdentityApplicationAuthProvider>();
+            if (authProvider != null)
+            {
+                var session = authCtx.SessionFactory();
+                await authProvider.PopulateSessionAsync(reqCtx, session, user);
+                reqCtx.Items[Keywords.Session] = session;
+            }
+        }
         return reqCtx;
     }
 
@@ -152,7 +169,7 @@ public class BackgroundJobs : IBackgroundJobs
                 var command = feature.Services.GetRequiredService(commandInfo.Type);
                 var requestType = commandInfo.Request.Type;
 
-                var reqCtx = CreateRequestContext(requestType, job);
+                var reqCtx = await CreateRequestContextAsync(requestType, job);
                 if (command is IRequiresRequest requiresRequest)
                 {
                     requiresRequest.Request = reqCtx;
@@ -177,7 +194,7 @@ public class BackgroundJobs : IBackgroundJobs
                 var metadata = feature.AppHost.Metadata;
                 var requestType = metadata.GetRequestType(job.Request)
                     ?? throw new NotSupportedException($"API Request Type for '{job.Request}' not found.");
-                var reqCtx = CreateRequestContext(requestType, job);
+                var reqCtx = await CreateRequestContextAsync(requestType, job);
                 await feature.AppHost.ServiceController.ExecuteMessageAsync(reqCtx.Message, reqCtx, cts.Token);
 
                 response = reqCtx.Response.Dto;

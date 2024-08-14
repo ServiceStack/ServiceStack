@@ -80,6 +80,10 @@ public class BackgroundJobOptions
     /// </summary>
     public long? DependsOn { get; set; }
     /// <summary>
+    /// The ASP .NET Identity Auth User Id to populate the IRequest Context ClaimsPrincipal and User Session
+    /// </summary>
+    public string? UserId { get; set; }
+    /// <summary>
     /// Maintain a reference to a callback URL
     /// </summary>
     public string? ReplyTo { get; set; }

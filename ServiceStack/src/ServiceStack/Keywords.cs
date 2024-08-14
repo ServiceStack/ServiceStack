@@ -69,6 +69,7 @@ public static class Keywords
     public const string RequestActivity = "__activity";
     public const string TraceId = nameof(TraceId);
     public const string FileName = nameof(FileName);
+    public const string ClaimsPrincipal = nameof(ClaimsPrincipal);
         
     public const string Allows = "allows";
     public const string Embed = "embed";

@@ -2,14 +2,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.IO;
 using ServiceStack.Jobs;
@@ -182,8 +186,35 @@ public class BackgroundJobsTests
 
         var config = builder.Configuration;
 
-        var dbFactory = new OrmLiteConnectionFactory("DataSource=App_Data/app.db;Cache=Shared", SqliteDialect.Provider);
+        // Configure Auth
+        var dbPath = contentRootPath.CombineWith("App_Data/app.db");
+        if (File.Exists(dbPath))
+            File.Delete(dbPath);
+        var connectionString = $"DataSource={dbPath};Cache=Shared";
+        var dbFactory = new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
         services.AddSingleton<IDbConnectionFactory>(dbFactory);
+        services.AddAuthentication(options => {
+            options.DefaultScheme = IdentityConstants.ApplicationScheme;
+            options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+        });
+        services.AddAuthorization();
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlite(connectionString /*, b => b.MigrationsAssembly(nameof(MyApp))*/));
+        services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddSignInManager()
+            .AddDefaultTokenProviders();
+        services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options =>
+        {
+            options.SessionFactory = () => new CustomUserSession();
+            options.CredentialsAuth();
+            options.JwtAuth(x =>
+            {
+                x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90);
+                x.IncludeConvertSessionToTokenService = true;
+            });
+        })));
 
         services.AddPlugin(new CommandsFeature());
         services.AddPlugin(feature);
@@ -195,6 +226,7 @@ public class BackgroundJobsTests
         var app = builder.Build();
 
         app.UseServiceStack(appHost, options => { options.MapEndpoints(); });
+        app.UseAuthorization();
         app.StartAsync($"http://localhost:20000");        
     }
 
@@ -204,6 +236,7 @@ public class BackgroundJobsTests
     {
         public override void Configure()
         {
+            IdentityJwtAuthProviderTests.CreateIdentityUsers(ApplicationServices);
         }
 
         public override void OnAfterInit()
@@ -474,5 +507,37 @@ public class BackgroundJobsTests
         Assert.That(summary.State, Is.EqualTo(BackgroundJobState.Failed));
         Assert.That(summary.ErrorCode, Is.EqualTo(nameof(Exception)));
         Assert.That(summary.ErrorMessage, Is.EqualTo("Always Fails: 3"));
+    }
+
+    [Test]
+    public void Does_execute_job_with_User_Context()
+    {
+        ResetState();
+
+        using var db = feature.DbFactory.OpenDbConnection();
+        var testUser = IdentityUsers.GetByUserName(db, "manager@email.com")!;
+        
+        feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() {
+            UserId = testUser.Id 
+        });
+        
+        Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");
+        Assert.That(MyJobCommand.Requests.Count, Is.GreaterThan(0));
+
+        var job = MyJobCommand.LastRequest.GetBackgroundJob();
+        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
+        AssertNotNulls(job);
+
+        var user = MyJobCommand.LastRequest.GetClaimsPrincipal();
+        Assert.That(user, Is.Not.Null);
+        Assert.That(user.GetUserId(), Is.EqualTo(testUser.Id));
+        Assert.That(user.GetUserName(), Is.EqualTo(testUser.UserName));
+        Assert.That(user.GetRoles(), Is.EquivalentTo(new[] { "Manager", "Employee" }));
+        
+        var session = MyJobCommand.LastRequest.GetSession();
+        Assert.That(session.IsAuthenticated);
+        Assert.That(session.UserAuthId, Is.EqualTo(testUser.Id));
+        Assert.That(session.UserAuthName, Is.EqualTo(testUser.UserName));
+        Assert.That(session.Roles, Is.EquivalentTo(new[] { "Manager", "Employee" }));
     }
 }

@@ -64,6 +64,7 @@ public static class JobUtils
             Callback = options?.Callback,
             RunAfter = options?.RunAfter,
             DependsOn = options?.DependsOn,
+            UserId = options?.UserId,
             CreatedDate = DateTime.UtcNow,
             CreatedBy = options?.CreatedBy,
             RequestType = requestType,

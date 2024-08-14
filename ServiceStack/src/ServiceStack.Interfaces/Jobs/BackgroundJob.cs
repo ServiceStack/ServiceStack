@@ -58,7 +58,7 @@ public abstract class BackgroundJobBase : IMeta
     public virtual string RequestBody { get; set; }
 
     /// <summary>
-    /// The ASP .NET Identity Auth User Id
+    /// The ASP .NET Identity Auth User Id to populate the IRequest Context ClaimsPrincipal and User Session
     /// </summary>
     public virtual string? UserId { get; set; }
     
