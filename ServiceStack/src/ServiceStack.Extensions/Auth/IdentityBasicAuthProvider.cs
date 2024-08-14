@@ -9,10 +9,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
-public interface IIdentityBasicAuthProvider
-{
-}
-
 public class IdentityBasicAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IAuthWithRequest, IIdentityBasicAuthProvider
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
