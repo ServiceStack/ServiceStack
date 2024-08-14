@@ -22,7 +22,6 @@ public static class JobUtils
     {
         return new BackgroundJob
         {
-            RequestId = Guid.NewGuid().ToString("N"),
             State = BackgroundJobState.Queued,
             Attempts = 1,
             RefId = options?.RefId ?? Guid.NewGuid().ToString("N"),
@@ -31,6 +30,7 @@ public static class JobUtils
             Tag = options?.Tag,
             Callback = options?.Callback,
             RunAfter = options?.RunAfter,
+            DependsOn = options?.DependsOn,
             CreatedDate = DateTime.UtcNow,
             CreatedBy = options?.CreatedBy,
             RequestType = requestType,
@@ -88,15 +88,23 @@ public static class JobUtils
         return new JobSummary {
             Id = from.Id,
             ParentId = from.ParentId,
-            Tag = from.Tag,
             RefId = from.RefId,
-            RequestId = from.RequestId,
-            Request = from.Request,
-            RequestType = from.RequestType,
             Worker = from.Worker,
-            Callback = from.Callback,
-            CreatedBy = from.CreatedBy,
+            Tag = from.Tag,
             CreatedDate = from.CreatedDate,
+            CreatedBy = from.CreatedBy,
+            RequestType = from.RequestType,
+            Request = from.Request,
+            Response = from.Response,
+            UserId = from.UserId,
+            Callback = from.Callback,
+            StartedDate = from.StartedDate,
+            CompletedDate = from.CompletedDate,
+            State = from.State,
+            DurationMs = from.DurationMs,
+            Attempts = from.Attempts,
+            ErrorMessage = from.Error?.Message,
+            ErrorCode = from.ErrorCode,
         };
     }
 

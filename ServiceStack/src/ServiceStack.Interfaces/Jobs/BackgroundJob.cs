@@ -9,36 +9,90 @@ public abstract class BackgroundJobBase : IMeta
 {
     public virtual long Id { get; set; }
     public virtual long? ParentId { get; set; }
-
-    [Index(Unique = true)] public virtual string? RefId { get; set; } // Unique Guid
-    public virtual string? Worker { get; set; } // Logical Thread or BG Thread if null
+    /// <summary>
+    /// Unique user-specified or system generated GUID for Job
+    /// </summary>
+    [Index(Unique = true)] public virtual string? RefId { get; set; }
+    /// <summary>
+    /// Named Worker Thread to execute Job ob  
+    /// </summary>
+    public virtual string? Worker { get; set; }
+    /// <summary>
+    /// Associate Job with a tag group
+    /// </summary>
     public virtual string? Tag { get; set; }
-    public virtual string? Callback { get; set; } //CreateOpenAiChat or CreateOpenAiChatTask
+    /// <summary>
+    /// Command to Execute after successful completion of Job
+    /// </summary>
+    public virtual string? Callback { get; set; }
+    /// <summary>
+    /// Only execute job after successful completion of Parent Job
+    /// </summary>
+    public virtual long? DependsOn { get; set; }
+    /// <summary>
+    /// Only run Job after date
+    /// </summary>
     public virtual DateTime? RunAfter { get; set; }
     public virtual DateTime CreatedDate { get; set; }
     public virtual string? CreatedBy { get; set; }
+    /// <summary>
+    /// Batch Id for marking dispatched jobs
+    /// </summary>
     public virtual string? RequestId { get; set; }
-
-    public virtual string RequestType { get; set; } // API or CMD
-
+    /// <summary>
+    /// API or CMD
+    /// </summary>
+    public virtual string RequestType { get; set; }
+    /// <summary>
+    /// The Command to Execute
+    /// </summary>
     public virtual string? Command { get; set; }
-    //CreateOpenAiChatTaskCommand
-    public virtual string Request { get; set; } //CreateOpenAiChat or CreateOpenAiChatTask
+    /// <summary>
+    /// The Request DTO or Command Argument
+    /// </summary>
+    public virtual string Request { get; set; }
 
-    //OpenAiChatTask
-    //[Exclude]
+    /// <summary>
+    /// JSON Body of Request
+    /// </summary>
     public virtual string RequestBody { get; set; }
 
-    public virtual string? UserId { get; set; } // IdentityAuth ApplicationUser.Id
+    /// <summary>
+    /// The ASP .NET Identity Auth User Id
+    /// </summary>
+    public virtual string? UserId { get; set; }
+    
+    /// <summary>
+    /// The Response DTO Name
+    /// </summary>
     public virtual string Response { get; set; }
 
-    //[Exclude]
+    /// <summary>
+    /// The Response DTO JSON Body
+    /// </summary>
     public virtual string ResponseBody { get; set; }
+    /// <summary>
+    /// The state the Job is in
+    /// </summary>
     public virtual BackgroundJobState State { get; set; }
 
+    /// <summary>
+    /// The day the Job was started
+    /// </summary>
     [Index] public virtual DateTime? StartedDate { get; set; }
+    
+    /// <summary>
+    /// When the Job was completed
+    /// </summary>
     public virtual DateTime? CompletedDate { get; set; }
+    
+    /// <summary>
+    /// When the Job with Callback was notified
+    /// </summary>
     public virtual DateTime? NotifiedDate { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
     public virtual int DurationMs { get; set; }
     public virtual int? TimeoutSecs { get; set; }
     public virtual int? RetryLimit { get; set; }
@@ -48,7 +102,6 @@ public abstract class BackgroundJobBase : IMeta
     public virtual string? Logs { get; set; }     // Append recorded logs
     public virtual DateTime? LastActivityDate { get; set; }
     public virtual string? ReplyTo { get; set; }
-
     public virtual string? ErrorCode { get; set; }
 
     public virtual ResponseStatus? Error { get; set; }
@@ -64,6 +117,7 @@ public class BackgroundJob : BackgroundJobBase
     [AutoIncrement] public override long Id { get; set; }
 
     [Ignore] public bool Transient { get; set; }
+    [Ignore] public CompletedJob? ParentJob { get; set; }
     [Ignore] public Action<object>? OnSuccess { get; set; }
     [Ignore] public Action<Exception>? OnFailed { get; set; }
 }
@@ -78,7 +132,6 @@ public class JobSummary
     public virtual string? Tag { get; set; }
     public virtual DateTime CreatedDate { get; set; }
     public virtual string? CreatedBy { get; set; }
-    public virtual string? RequestId { get; set; }
     public virtual string RequestType { get; set; } // API or CMD
     public virtual string Request { get; set; }
     public virtual string Response { get; set; }

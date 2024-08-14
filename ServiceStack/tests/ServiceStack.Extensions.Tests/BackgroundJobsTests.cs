@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -31,7 +32,7 @@ class MyJobCommand(IBackgroundJobs jobs) : IAsyncCommand<MyRequest,MyResponse>, 
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
-    public static MyRequest? LastCommandRequest { get; set; }
+    public static List<MyRequest> Requests { get; set; } = new();
     public IRequest? Request { get; set; }
 
     public MyResponse? Result { get; set; }
@@ -41,7 +42,7 @@ class MyJobCommand(IBackgroundJobs jobs) : IAsyncCommand<MyRequest,MyResponse>, 
         jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyCommand Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
-        LastCommandRequest = request;
+        Requests.Add(request);
         Result = new MyResponse { Result = $"Hello {request.Id}" };
         jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyCommand Finished");
     }
@@ -95,6 +96,44 @@ public class AlwaysFailCommand : IAsyncCommand<AlwaysFail>
         LastRequest = Request;
         LastCommandRequest = request;
         throw new Exception("Always Fails: " + Count);
+    }
+}
+
+public class DependentJob
+{
+    public long Id { get; set; }
+}
+public class DependentJobResult
+{
+    public required long Id { get; set; }
+    public CompletedJob? ParentJob { get; set; }
+}
+
+public class DependentJobCommand : IAsyncCommand<DependentJob,DependentJobResult>, IRequiresRequest
+{
+    public static long Count;
+    public static IRequest? LastRequest { get; set; }
+    public static DependentJob? LastCommandRequest { get; set; }
+    public IRequest? Request { get; set; }
+
+    public DependentJobResult Result { get; set; }
+
+    public async Task ExecuteAsync(DependentJob request)
+    {
+        Interlocked.Increment(ref Count);
+        LastRequest = Request;
+        LastCommandRequest = request;
+        var job = Request.AssertBackgroundJob();
+        Result = new() { Id = request.Id, ParentJob = job.ParentJob };
+    }
+}
+
+public class DependentJobCallbackCommand : IAsyncCommand<DependentJobResult>
+{
+    public static List<DependentJobResult> Results { get; set; } = new();
+    public async Task ExecuteAsync(DependentJobResult request)
+    {
+        Results.Add(request);
     }
 }
 
@@ -181,7 +220,7 @@ public class BackgroundJobsTests
     {
         MyJobCommand.Count = 0;
         MyJobCommand.LastRequest = null;
-        MyJobCommand.LastCommandRequest = null;
+        MyJobCommand.Requests.Clear();
         MyJobCallback.Count = 0;
         MyJobCallback.LastRequest = null;
         MyJobCallback.LastMyResponse = null;
@@ -191,6 +230,10 @@ public class BackgroundJobsTests
         AlwaysFailCommand.Count = 0;
         AlwaysFailCommand.LastRequest = null;
         AlwaysFailCommand.LastCommandRequest = null;
+        DependentJobCommand.Count = 0;
+        DependentJobCommand.LastRequest = null;
+        DependentJobCommand.LastCommandRequest = null;
+        DependentJobCallbackCommand.Results.Clear();
 
         using var db = feature.OpenJobsDb();
         db.DeleteAllAsync<BackgroundJob>();
@@ -218,7 +261,7 @@ public class BackgroundJobsTests
         feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 });
         
         Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");
-        Assert.That(MyJobCommand.LastCommandRequest, Is.Not.Null);
+        Assert.That(MyJobCommand.Requests.Count, Is.GreaterThan(0));
         var job = MyJobCommand.LastRequest.GetBackgroundJob();
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
         AssertNotNulls(job);
@@ -248,7 +291,7 @@ public class BackgroundJobsTests
         Assert.That(job.Worker, Is.EqualTo("app.db"));
         
         Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");
-        Assert.That(MyJobCommand.LastCommandRequest, Is.Not.Null);
+        Assert.That(MyJobCommand.Requests.Count, Is.GreaterThan(0));
         job = MyJobCommand.LastRequest.GetBackgroundJob();
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
         Assert.That(job.Id, Is.EqualTo(0));
@@ -278,7 +321,7 @@ public class BackgroundJobsTests
         Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");
         
         Assert.That(MyJobCommand.LastRequest, Is.Not.Null);
-        Assert.That(MyJobCommand.LastCommandRequest, Is.Not.Null);
+        Assert.That(MyJobCommand.Requests.Count, Is.GreaterThan(0));
         var job = MyJobCommand.LastRequest.GetBackgroundJob();
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
         AssertNotNulls(job!);
@@ -345,6 +388,48 @@ public class BackgroundJobsTests
         Assert.That(MyJobCommand.Count, Is.EqualTo(10));
         ExecUtils.WaitUntilTrue(() => MyJobCallback.Count >= 10);
         Assert.That(MyJobCallback.Count, Is.EqualTo(10));
+    }
+
+    [Test]
+    public void Does_execute_dependent_Jobs()
+    {
+        ResetState();
+        var jobRef = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 });
+
+        var depJob1 = feature.Jobs.EnqueueCommand<DependentJobCommand>(
+            new DependentJob { Id = 1 }, new() {
+                DependsOn = jobRef.Id,
+                Callback = nameof(DependentJobCallbackCommand),
+            });
+        
+        Thread.Sleep(2000);
+        
+        var depJob2 = feature.Jobs.EnqueueCommand<DependentJobCommand>(
+            new DependentJob { Id = 2 }, new() {
+                DependsOn = jobRef.Id,
+                Callback = nameof(DependentJobCallbackCommand),
+            });
+     
+        Assert.That(ExecUtils.WaitUntilTrue(() => DependentJobCallbackCommand.Results.Count == 2), "Count != 2");
+        Assert.That(DependentJobCallbackCommand.Results.Map(x => x.Id), 
+            Is.EquivalentTo(new[] { 1, 2 }));
+        Assert.That(DependentJobCallbackCommand.Results.All(x => x.ParentJob!.Id == jobRef.Id));
+    }
+
+    [Test]
+    public void Does_execute_RunAfter_Jobs()
+    {
+        ResetState();
+        var now = DateTime.UtcNow;
+        var jobRef1 = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() {
+            RunAfter = now.AddSeconds(2),
+        });
+        
+        var jobRef2 = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 2 });
+
+        Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.Requests.Count == 2), "Count != 2");
+        Assert.That(MyJobCommand.Requests[0].Id, Is.EqualTo(2));
+        Assert.That(MyJobCommand.Requests[1].Id, Is.EqualTo(1));
     }
 
     [Test]

@@ -26,17 +26,14 @@ public interface IBackgroundJobs : IDisposable
     IDbConnection OpenJobsMonthDb(DateTime createdDate);
 }
 
-public class BackgroundJobRef(long id, string refId, string requestId)
+public class BackgroundJobRef(long id, string refId)
 {
     public long Id { get; } = id;
     public string RefId { get; } = refId;
-    public string RequestId { get; } = requestId;
-
-    public void Deconstruct(out long id, out string refId, out string requestId)
+    public void Deconstruct(out long id, out string refId)
     {
         id = this.Id;
         refId = this.RefId;
-        requestId = this.RequestId;
     }
 }
 
@@ -58,15 +55,41 @@ public class BackgroundJobStatusUpdate(BackgroundJob job, double? progress=null,
 
 public class BackgroundJobOptions
 {
+    /// <summary>
+    /// Specify a user-defined UUID for the Job
+    /// </summary>
     public string? RefId { get; set; }
+    /// <summary>
+    /// Maintain a Reference to a parent Job
+    /// </summary>
     public long? ParentId { get; set; }
-    public string? Worker { get; set; } // named or null for Queue BG Thread
-
-    //public int? NoOfThreads { get; set; } // v1 ignore
+    /// <summary>
+    /// Named Worker Thread to execute Job ob  
+    /// </summary>
+    public string? Worker { get; set; }
+    /// <summary>
+    /// Only run Job after date
+    /// </summary>
     public DateTime? RunAfter { get; set; }
+    /// <summary>
+    /// Command to Execute after successful completion of Job
+    /// </summary>
     public string? Callback { get; set; }
+    /// <summary>
+    /// Only execute job after successful completion of Parent Job
+    /// </summary>
+    public long? DependsOn { get; set; }
+    /// <summary>
+    /// Maintain a reference to a callback URL
+    /// </summary>
     public string? ReplyTo { get; set; }
+    /// <summary>
+    /// Associate Job with a tag group
+    /// </summary>
     public string? Tag { get; set; }
+    /// <summary>
+    /// Associate Job with a tag group
+    /// </summary>
     public string? CreatedBy { get; set; }
     public int? TimeoutSecs { get; set; }
     public Dictionary<string, string>? Args { get; set; } //= Provider

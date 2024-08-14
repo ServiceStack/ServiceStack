@@ -67,6 +67,17 @@ public static class ListExtensions
         }
     }
 
+    public static void AddDistinctRanges<T>(this HashSet<T> set, params IEnumerable<T>[] collections)
+    {
+        foreach (var collection in collections)
+        {
+            foreach (var item in collection)
+            {
+                set.Add(item);
+            }
+        }
+    }
+
     public static T[] NewArray<T>(this T[] array, T with = null, T without = null) where T : class
     {
         var to = new List<T>(array);
