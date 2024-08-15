@@ -70,6 +70,7 @@ public static class JobUtils
             RequestType = requestType,
             Request = arg.GetType().Name,
             RequestBody = ClientConfig.ToJson(arg),
+            RetryLimit = options?.RetryLimit,
             TimeoutSecs = options?.TimeoutSecs,
             ReplyTo = options?.ReplyTo,
             Args = options?.Args,
@@ -163,5 +164,16 @@ public static class JobUtils
     public static void UpdateBackgroundJobStatus(this IBackgroundJobs jobs, BackgroundJob job, double? progress=null, string? status=null, string? log=null)
     {
         jobs.UpdateJobStatus(new(job, progress:progress, status:status, log:log));
+    }
+
+    public static object? CreateRequest(this IBackgroundJobs jobs, JobResult? result)
+    {
+        var job = result?.Job;
+        return job != null ? jobs.CreateRequest(job) : null;
+    }
+    public static object? CreateResponse(this IBackgroundJobs jobs, JobResult? result)
+    {
+        var job = result?.Job;
+        return job != null ? jobs.CreateResponse(job) : null;
     }
 }

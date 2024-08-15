@@ -95,6 +95,12 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         return executeMethod.GetParameters()[0].ParameterType;
     }
 
+    public Type? GetResponseType(Type commandType)
+    {
+        var genericDef = commandType.GetTypeWithGenericTypeDefinitionOf(typeof(IHasResult<>));
+        return genericDef?.FirstGenericArg();
+    }
+
     public void Configure(IServiceCollection services)
     {
         services.AddTransient<ICommandExecutor>(c => new CommandExecutor(this, c));
@@ -117,6 +123,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                         Name = commandType.Name,
                         Tag = commandType.GetCustomAttribute<TagAttribute>()?.Name,
                         Request = requestType.ToMetadataType(),
+                        Response = GetResponseType(commandType).ToMetadataType(),
                     };
                     CommandInfos.Add(info);
                 }
@@ -479,6 +486,14 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         fn = GetInvokerToCache(method);
         invokerCache[method] = fn;
         return fn;
+    }
+
+    public object? GetCommandResult(IAsyncCommand command)
+    {
+        var commandType = command.GetType();
+        var resultAccessor = TypeProperties.Get(commandType).GetAccessor("Result");
+        var ret = resultAccessor?.PublicGetter(command);
+        return ret;
     }
 
     public void BeforePluginsLoaded(IAppHost appHost)

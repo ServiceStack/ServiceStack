@@ -448,6 +448,7 @@ public class CommandInfo
     public string Name { get; set; }
     public string Tag { get; set; }
     public MetadataType Request { get; set; }
+    public MetadataType Response { get; set; }
 }
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]
@@ -1471,6 +1472,8 @@ public static class AppMetadataUtils
 
     public static MetadataType ToMetadataType(this Type type)
     {
+        if (type == null)
+            return null;
         var ret = new MetadataType
         {
             Type = type,

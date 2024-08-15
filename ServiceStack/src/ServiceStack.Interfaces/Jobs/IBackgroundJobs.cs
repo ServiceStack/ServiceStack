@@ -24,6 +24,10 @@ public interface IBackgroundJobs
     List<WorkerStats> GetWorkerStats();
     IDbConnection OpenJobsDb();
     IDbConnection OpenJobsMonthDb(DateTime createdDate);
+    JobResult? GetJob(long jobId);
+    Task<JobResult?> GetJobAsync(long jobId);
+    object CreateRequest(BackgroundJobBase job);
+    object? CreateResponse(BackgroundJobBase job);
 }
 
 public class BackgroundJobRef(long id, string refId)
@@ -84,6 +88,10 @@ public class BackgroundJobOptions
     /// </summary>
     public string? UserId { get; set; }
     /// <summary>
+    /// How many times to attempt to retry Job on failure, default 2 (BackgroundsJobFeature.DefaultRetryLimit)
+    /// </summary>
+    public virtual int? RetryLimit { get; set; }
+    /// <summary>
     /// Maintain a reference to a callback URL
     /// </summary>
     public string? ReplyTo { get; set; }
@@ -97,7 +105,7 @@ public class BackgroundJobOptions
     public string? CreatedBy { get; set; }
     public int? TimeoutSecs { get; set; }
     public Dictionary<string, string>? Args { get; set; } //= Provider
-    public Action<object>? OnSuccess { get; set; }
+    public Action<object?>? OnSuccess { get; set; }
     public Action<Exception>? OnFailed { get; set; }
 }
 

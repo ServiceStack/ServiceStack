@@ -554,7 +554,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
         if (dtoTypesMap == null)
         {
             var typesMap = new Dictionary<string, Type>();
-            duplicateTypeNames = new HashSet<string>();
+            duplicateTypeNames = [];
 
             foreach (var dto in GetAllDtos())
             {

@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Jobs;
@@ -65,12 +66,12 @@ public abstract class BackgroundJobBase : IMeta
     /// <summary>
     /// The Response DTO Name
     /// </summary>
-    public virtual string Response { get; set; }
+    public virtual string? Response { get; set; }
 
     /// <summary>
     /// The Response DTO JSON Body
     /// </summary>
-    public virtual string ResponseBody { get; set; }
+    public virtual string? ResponseBody { get; set; }
     /// <summary>
     /// The state the Job is in
     /// </summary>
@@ -90,13 +91,14 @@ public abstract class BackgroundJobBase : IMeta
     /// When the Job with Callback was notified
     /// </summary>
     public virtual DateTime? NotifiedDate { get; set; }
+    
     /// <summary>
-    /// 
+    /// How many times to attempt to retry Job on failure, default 2 (BackgroundsJobFeature.DefaultRetryLimit)
     /// </summary>
-    public virtual int DurationMs { get; set; }
-    public virtual int? TimeoutSecs { get; set; }
     public virtual int? RetryLimit { get; set; }
     public virtual int Attempts { get; set; }
+    public virtual int DurationMs { get; set; }
+    public virtual int? TimeoutSecs { get; set; }
     public virtual double? Progress { get; set; } // 0-1
     public virtual string? Status { get; set; }   // e.g. Downloaded 2/10
     public virtual string? Logs { get; set; }     // Append recorded logs
@@ -118,7 +120,7 @@ public class BackgroundJob : BackgroundJobBase
 
     [Ignore] public bool Transient { get; set; }
     [Ignore] public CompletedJob? ParentJob { get; set; }
-    [Ignore] public Action<object>? OnSuccess { get; set; }
+    [Ignore] public Action<object?>? OnSuccess { get; set; }
     [Ignore] public Action<Exception>? OnFailed { get; set; }
 }
 
@@ -134,7 +136,7 @@ public class JobSummary
     public virtual string? CreatedBy { get; set; }
     public virtual string RequestType { get; set; } // API or CMD
     public virtual string Request { get; set; }
-    public virtual string Response { get; set; }
+    public virtual string? Response { get; set; }
     public virtual string? UserId { get; set; }
     public virtual string? Callback { get; set; }
     public virtual DateTime? StartedDate { get; set; }
@@ -162,3 +164,13 @@ public class CompletedJob : BackgroundJobBase {}
 
 [Icon(Svg = SvgIcons.Failed)]
 public class FailedJob : BackgroundJobBase {}
+
+public class JobResult
+{
+    public JobSummary Summary { get; set; } = null!;
+    public BackgroundJob? Queued { get; set; }
+    public CompletedJob? Completed { get; set; }
+    public FailedJob? Failed { get; set; }
+    [IgnoreDataMember] public BackgroundJobBase? Job => 
+        (BackgroundJobBase?)Queued ?? (BackgroundJobBase?)Completed ?? Failed;
+}

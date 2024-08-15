@@ -170,6 +170,28 @@ class MyScopedCommand(IBackgroundJobs jobs, UserManager<ApplicationUser> userMan
     }
 }
 
+public class JobScopedServices(IBackgroundJobs jobs, UserManager<ApplicationUser> userManager) : Service
+{
+    public static long Count;
+    public static IRequest? LastRequest { get; set; }
+    public static List<ScopedRequest> Requests { get; set; } = new();
+    public static ClaimsPrincipal? LastUser { get; set; }
+    public static IAuthSession? LastSession { get; set; }
+    public static ApplicationUser? LastResult { get; set; }
+
+    public async Task<object?> Any(ScopedRequest request)
+    {
+        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyScopedCommand Started...");
+        Interlocked.Increment(ref Count);
+        LastRequest = Request;
+        LastUser = Request.GetClaimsPrincipal();
+        LastSession = await Request.GetSessionAsync();
+        Requests.Add(request);
+        LastResult = await userManager.FindByIdAsync(request.UserId);;
+        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyScopedCommand Finished");
+        return LastResult;
+    }
+}
 public class JobsHostedService(ILogger<JobsHostedService> log, IBackgroundJobs jobs) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -282,16 +304,20 @@ public class BackgroundJobsTests
         MyJobCallback.Count = 0;
         MyJobCallback.LastRequest = null;
         MyJobCallback.LastMyResponse = null;
+        
         JobServices.Count = 0;
         JobServices.LastRequest = null;
         JobServices.Requests.Clear();
+        
         AlwaysFailCommand.Count = 0;
         AlwaysFailCommand.LastRequest = null;
         AlwaysFailCommand.LastCommandRequest = null;
+        
         DependentJobCommand.Count = 0;
         DependentJobCommand.LastRequest = null;
         DependentJobCommand.LastCommandRequest = null;
         DependentJobCallbackCommand.Results.Clear();
+        
         MyScopedCommand.Count = 0;
         MyScopedCommand.LastRequest = null;
         MyScopedCommand.LastUser = null;
@@ -299,6 +325,13 @@ public class BackgroundJobsTests
         MyScopedCommand.LastResult = null;
         MyScopedCommand.Requests.Clear();
         
+        JobScopedServices.Count = 0;
+        JobScopedServices.LastRequest = null;
+        JobScopedServices.LastUser = null;
+        JobScopedServices.LastSession = null;
+        JobScopedServices.LastResult = null;
+        JobScopedServices.Requests.Clear();
+
         using var db = feature.OpenJobsDb();
         db.DeleteAllAsync<BackgroundJob>();
         db.DeleteAllAsync<JobSummary>();
@@ -509,7 +542,14 @@ public class BackgroundJobsTests
     {
         ResetState();
         var timeout = TimeSpan.FromMinutes(1);
-        var jobRef = feature.Jobs.EnqueueCommand<AlwaysFailCommand>(new AlwaysFail { Id = 1 });
+        var callbackCount = 0;
+        Exception? callbackEx = null;
+        var jobRef = feature.Jobs.EnqueueCommand<AlwaysFailCommand>(new AlwaysFail { Id = 1 }, new() {
+            OnFailed = ex => {
+                callbackCount++;
+                callbackEx = ex;
+            }
+        });
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => AlwaysFailCommand.Count >= 3, timeout), "AlwaysFailCommand.Count < 3");
         Assert.That(AlwaysFailCommand.Count, Is.EqualTo(3));
 
@@ -538,20 +578,30 @@ public class BackgroundJobsTests
         Assert.That(summary.State, Is.EqualTo(BackgroundJobState.Failed));
         Assert.That(summary.ErrorCode, Is.EqualTo(nameof(Exception)));
         Assert.That(summary.ErrorMessage, Is.EqualTo("Always Fails: 3"));
+        
+        Assert.That(callbackCount, Is.EqualTo(1));
+        // Only first exception is executed
+        Assert.That(callbackEx!.Message, Is.EqualTo("Always Fails: 1"));
     }
 
     [Test]
-    public void Does_execute_job_with_User_Context()
+    public void Does_execute_job_with_User_Context_Command()
     {
         ResetState();
         
         using var db = feature.DbFactory.OpenDbConnection();
         var testUser = IdentityUsers.GetByUserName(db, "manager@email.com")!;
-        
-        feature.Jobs.EnqueueCommand<MyScopedCommand>(new ScopedRequest { UserId = testUser.Id }, new() {
-            UserId = testUser.Id 
+        ApplicationUser? callbackResponse = null;
+
+        var jobRef = feature.Jobs.EnqueueCommand<MyScopedCommand>(new ScopedRequest { UserId = testUser.Id }, new() {
+            UserId = testUser.Id,
+            OnSuccess = res => callbackResponse = (ApplicationUser)res,
         });
-        
+
+        var jobResult = feature.Jobs.GetJob(jobRef.Id);
+        Assert.That(jobResult?.Summary, Is.Not.Null);
+        Assert.That(jobResult!.Queued, Is.Not.Null);
+
         Assert.That(ExecUtils.WaitUntilTrue(() => MyScopedCommand.LastRequest != null), "LastRequest == null");
         Assert.That(MyScopedCommand.Requests.Count, Is.GreaterThan(0));
 
@@ -575,5 +625,86 @@ public class BackgroundJobsTests
         var user = MyScopedCommand.LastResult!;
         Assert.That(user.Id, Is.EqualTo(testUser.Id));
         Assert.That(user.UserName, Is.EqualTo(testUser.UserName));
+        Assert.That(user, Is.EqualTo(callbackResponse));
+
+        Assert.That(ExecUtils.WaitUntilTrue(() =>
+        {
+            jobResult = feature.Jobs.GetJob(jobRef.Id);
+            return jobResult?.Completed != null;
+        }), "jobResult.Completed == null");
+        Assert.That(jobResult!.Summary, Is.Not.Null);
+        Assert.That(jobResult!.Completed, Is.Not.Null);
+        
+        var request = feature.Jobs.CreateRequest(jobResult) as ScopedRequest;
+        Assert.That(request, Is.Not.Null);
+        Assert.That(request!.UserId, Is.EqualTo(testUser.Id));
+
+        var response = feature.Jobs.CreateResponse(jobResult) as ApplicationUser;
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Id, Is.EqualTo(testUser.Id));
+        Assert.That(response.UserName, Is.EqualTo(testUser.UserName));
+    }
+
+    [Test]
+    public void Does_execute_job_with_User_Context_Api()
+    {
+        ResetState();
+        
+        using var db = feature.DbFactory.OpenDbConnection();
+        var testUser = IdentityUsers.GetByUserName(db, "manager@email.com")!;
+        ApplicationUser? callbackResponse = null;
+        
+        var jobRef = feature.Jobs.EnqueueApi(new ScopedRequest { UserId = testUser.Id }, new() {
+            UserId = testUser.Id,
+            OnSuccess = res => callbackResponse = (ApplicationUser)res,
+        });
+
+        var jobResult = feature.Jobs.GetJob(jobRef.Id);
+        Assert.That(jobResult?.Summary, Is.Not.Null);
+        Assert.That(jobResult!.Queued, Is.Not.Null);
+        
+        Assert.That(ExecUtils.WaitUntilTrue(() => JobScopedServices.LastRequest != null), "LastRequest == null");
+        Assert.That(JobScopedServices.Requests.Count, Is.GreaterThan(0));
+
+        var job = JobScopedServices.LastRequest.GetBackgroundJob();
+        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Api));
+        Assert.That(job.Request, Is.EqualTo(nameof(ScopedRequest)));
+        
+        Assert.That(ExecUtils.WaitUntilTrue(() => JobScopedServices.LastResult != null), "LastResult == null");
+
+        var principal = JobScopedServices.LastUser!;
+        Assert.That(principal, Is.Not.Null);
+        Assert.That(principal.GetUserId(), Is.EqualTo(testUser.Id));
+        Assert.That(principal.GetUserName(), Is.EqualTo(testUser.UserName));
+        Assert.That(principal.GetRoles(), Is.EquivalentTo(new[] { "Manager", "Employee" }));
+        
+        var session = JobScopedServices.LastSession!;
+        Assert.That(session, Is.Not.Null);
+        Assert.That(session.IsAuthenticated);
+        Assert.That(session.UserAuthId, Is.EqualTo(testUser.Id));
+        Assert.That(session.UserAuthName, Is.EqualTo(testUser.UserName));
+        Assert.That(session.Roles, Is.EquivalentTo(new[] { "Manager", "Employee" }));
+
+        var user = JobScopedServices.LastResult!;
+        Assert.That(user.Id, Is.EqualTo(testUser.Id));
+        Assert.That(user.UserName, Is.EqualTo(testUser.UserName));
+        Assert.That(user, Is.EqualTo(callbackResponse));
+
+        Assert.That(ExecUtils.WaitUntilTrue(() =>
+        {
+            jobResult = feature.Jobs.GetJob(jobRef.Id);
+            return jobResult?.Completed != null;
+        }), "jobResult.Completed == null");
+        Assert.That(jobResult!.Summary, Is.Not.Null);
+        Assert.That(jobResult!.Completed, Is.Not.Null);
+        
+        var request = feature.Jobs.CreateRequest(jobResult) as ScopedRequest;
+        Assert.That(request, Is.Not.Null);
+        Assert.That(request!.UserId, Is.EqualTo(testUser.Id));
+
+        var response = feature.Jobs.CreateResponse(jobResult) as ApplicationUser;
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Id, Is.EqualTo(testUser.Id));
+        Assert.That(response.UserName, Is.EqualTo(testUser.UserName));
     }
 }
