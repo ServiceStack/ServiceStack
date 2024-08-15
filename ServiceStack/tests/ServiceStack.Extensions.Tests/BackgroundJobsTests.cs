@@ -23,7 +23,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests;
 
-public class MyRequest 
+public class MyRequest : IReturn<MyResponse>
 {
     public int Id { get; set; }
 }
@@ -141,26 +141,33 @@ public class DependentJobCallbackCommand : IAsyncCommand<DependentJobResult>
     }
 }
 
-public class JobsHostedService(IBackgroundJobs jobs) : IHostedService, IDisposable
+public class JobsHostedService(ILogger<JobsHostedService> log, IBackgroundJobs jobs) : BackgroundService
 {
-    private Timer? timer;
-    public Task StartAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
-        return Task.CompletedTask;
-    }
-    private void DoWork(object? state)
-    {
-        jobs.Tick();
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        var tick = 0;
+        var errors = 0;
+        while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+        {
+            try
+            {
+                tick++;
+                await jobs.TickAsync();
+            }
+            catch (Exception e)
+            {
+                errors++;
+                log.LogError(e, "JOBS {Errors}/{Tick} Error in JobsHostedService: {Message}", errors, tick, e.Message);
+            }
+        }
     }
 
-    public Task StopAsync(CancellationToken stoppingToken)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        timer?.Change(Timeout.Infinite, 0);
         jobs.Dispose();
-        return Task.CompletedTask;
+        await base.StopAsync(cancellationToken);
     }
-    public void Dispose() => timer?.Dispose();
 }
 
 public class BackgroundJobsTests
@@ -513,7 +520,7 @@ public class BackgroundJobsTests
     public void Does_execute_job_with_User_Context()
     {
         ResetState();
-
+        
         using var db = feature.DbFactory.OpenDbConnection();
         var testUser = IdentityUsers.GetByUserName(db, "manager@email.com")!;
         

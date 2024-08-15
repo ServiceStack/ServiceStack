@@ -692,7 +692,7 @@ public class BackgroundJobs : IBackgroundJobs
 
     private long ticks = 0;
 
-    public void Tick()
+    public Task TickAsync()
     {
         Interlocked.Increment(ref ticks);
         if (log.IsEnabled(LogLevel.Debug))
@@ -700,6 +700,7 @@ public class BackgroundJobs : IBackgroundJobs
 
         DispatchPendingJobs();
         PerformDbUpdates();
+        return Task.CompletedTask;
     }
 
     public void EnqueueJob(BackgroundJob job)

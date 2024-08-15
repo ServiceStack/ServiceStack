@@ -19,7 +19,7 @@ public interface IBackgroundJobs : IDisposable
     Task CompleteJobAsync(BackgroundJob job, object? response=null);
     void UpdateJobStatus(BackgroundJobStatusUpdate status);
     void Start();
-    void Tick();
+    Task TickAsync();
     Dictionary<string, int> GetWorkerQueueCounts();
     List<WorkerStats> GetWorkerStats();
     IDbConnection OpenJobsDb();
