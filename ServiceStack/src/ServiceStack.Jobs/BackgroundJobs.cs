@@ -195,7 +195,7 @@ public class BackgroundJobs : IBackgroundJobs
                 var requestType = metadata.GetRequestType(job.Request)
                     ?? throw new NotSupportedException($"API Request Type for '{job.Request}' not found.");
                 var reqCtx = await CreateRequestContextAsync(requestType, job);
-                await feature.AppHost.ServiceController.ExecuteMessageAsync(reqCtx.Message, reqCtx, cts.Token);
+                await feature.AppHost.ServiceController.ExecuteMessageAsync(reqCtx.Message, reqCtx, ct);
 
                 response = reqCtx.Response.Dto;
                 var onSuccess = job.OnSuccess;
@@ -394,7 +394,7 @@ public class BackgroundJobs : IBackgroundJobs
 
         if (job.Callback != null)
         {
-            _ = Task.Factory.StartNew(() => NotifyCompletionAsync(job, response), cts.Token);
+            _ = Task.Factory.StartNew(() => NotifyCompletionAsync(job, response), ct);
         }
         else
         {
@@ -439,9 +439,7 @@ public class BackgroundJobs : IBackgroundJobs
     }
 
     // Worker Manager
-    private Task? bgTask;
-    private CancellationTokenSource cts = new();
-    private readonly BlockingCollection<BackgroundJob> queue = new();
+    private CancellationToken ct = new();
     public BackgroundJob? LastJob { get; set; }
 
     public Dictionary<string, int> GetWorkerQueueCounts()
@@ -465,28 +463,27 @@ public class BackgroundJobs : IBackgroundJobs
         if (job.Worker != null)
         {
             var worker = workers.GetOrAdd(job.Worker, 
-                _ => new BackgroundJobsWorker(this, cts.Token) { Name = job.Worker });
+                _ => new BackgroundJobsWorker(this, ct) { Name = job.Worker });
             worker.Enqueue(job);
         }
         else
         {
             // Otherwise invoke a new worker immediately
-            new BackgroundJobsWorker(this, cts.Token).Enqueue(job);
+            new BackgroundJobsWorker(this, ct).Enqueue(job);
         }
     }
 
-    public void Start()
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
-        LoadJobQueue();
-        cts = new CancellationTokenSource();
-        bgTask = Task.Factory.StartNew(Run, null, TaskCreationOptions.LongRunning);
+        ct = stoppingToken;
         log.LogInformation("JOBS Starting...");
+        await LoadJobQueueAsync();
     }
 
     /// <summary>
     /// On App Startup, requeue any incomplete jobs and notify any completed jobs
     /// </summary>
-    private void LoadJobQueue()
+    private async Task LoadJobQueueAsync()
     {
         using var db = feature.OpenJobsDb();
         var requestId = Guid.NewGuid().ToString("N");
@@ -501,8 +498,8 @@ public class BackgroundJobs : IBackgroundJobs
                           && x.DependsOn == null && (x.RunAfter == null || DateTime.UtcNow > x.RunAfter));
         }
 
-        var dispatchJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
-        var notifyJobs = db.Select<BackgroundJob>(x => x.CompletedDate != null);
+        var dispatchJobs = await db.SelectAsync<BackgroundJob>(x => x.RequestId == requestId, token: ct);
+        var notifyJobs = await db.SelectAsync<BackgroundJob>(x => x.CompletedDate != null, token: ct);
 
         if (dispatchJobs.Count > 0)
         {
@@ -520,7 +517,7 @@ public class BackgroundJobs : IBackgroundJobs
                 {
                     await NotifyCompletionAsync(job);
                 }
-            }, cts.Token);
+            }, ct);
         }
     }
 
@@ -703,50 +700,6 @@ public class BackgroundJobs : IBackgroundJobs
         return Task.CompletedTask;
     }
 
-    public void EnqueueJob(BackgroundJob job)
-    {
-        queue.Add(job);
-    }
-
-    private Task Run(object? state)
-    {
-        while (!cts!.IsCancellationRequested)
-        {
-            foreach (var item in queue.GetConsumingEnumerable(cts.Token))
-            {
-                try
-                {
-                    LastJob = item;
-                    if (log.IsEnabled(LogLevel.Debug))
-                    {
-                        log.LogDebug("JOBS [{RequestType} {Request} on {Worker}] Processing Job: {Id}",
-                            item.Worker ?? "ANY", item.RequestType, item.Request, item.Id);
-                    }
-
-                    DispatchToWorker(item);
-                }
-                catch (TaskCanceledException)
-                {
-                    log.LogInformation("JOBS Cancelled");
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(ex, "JOBS [{RequestType} {Request} on {Worker}] Failed to Process Job: {Id}",
-                        item.Worker ?? "ANY", item.RequestType, item.Request, item.Id);
-                }
-            }
-        }
-        
-        log.LogInformation("JOBS Stopped");
-        return TypeConstants.EmptyTask;
-    }
-
-    public void Stop()
-    {
-        log.LogInformation("JOBS Stopping...");
-        cts.Cancel();
-    }
-
     private CommandInfo AssertCommand(string? command)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -754,13 +707,5 @@ public class BackgroundJobs : IBackgroundJobs
         if (commandInfo == null) 
             throw new InvalidOperationException($"Command '{command}' not found.");
         return commandInfo;
-    }
-
-    public void Dispose()
-    {
-        log.LogInformation("JOBS Disposing...");
-        cts.Cancel();
-        new IDisposable?[]{ cts, bgTask }.Dispose();
-        bgTask = null;
     }
 }

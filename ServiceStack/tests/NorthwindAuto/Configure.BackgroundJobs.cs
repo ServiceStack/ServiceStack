@@ -12,30 +12,30 @@ public class ConfigureBackgroundJobs : IHostingStartup
             services.AddPlugin(new CommandsFeature());
             services.AddPlugin(new BackgroundsJobFeature());
             services.AddHostedService<JobsHostedService>();
-        })
-        .ConfigureAppHost(afterAppHostInit: appHost => {
-            appHost.GetPlugin<BackgroundsJobFeature>().Start();
         });
 }
 
-public class JobsHostedService(IBackgroundJobs jobs) : IHostedService, IDisposable
+public class JobsHostedService(ILogger<JobsHostedService> log, IBackgroundJobs jobs) : BackgroundService
 {
-    private Timer? timer;
-    public Task StartAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
-        return Task.CompletedTask;
+        await jobs.StartAsync(stoppingToken);
+        
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
+        var tick = 0;
+        var errors = 0;
+        while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+        {
+            try
+            {
+                tick++;
+                await jobs.TickAsync();
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "JOBS {Errors}/{Tick} Error in JobsHostedService: {Message}", 
+                    ++errors, tick, e.Message);
+            }
+        }
     }
-    private void DoWork(object? state)
-    {
-        jobs.Tick();
-    }
-
-    public Task StopAsync(CancellationToken stoppingToken)
-    {
-        timer?.Change(Timeout.Infinite, 0);
-        jobs.Dispose();
-        return Task.CompletedTask;
-    }
-    public void Dispose() => timer?.Dispose();
 }

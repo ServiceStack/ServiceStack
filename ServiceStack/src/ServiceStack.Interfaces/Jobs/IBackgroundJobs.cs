@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ServiceStack.Jobs;
 
-public interface IBackgroundJobs : IDisposable
+public interface IBackgroundJobs
 {
     BackgroundJobRef EnqueueApi(string requestDto, object request, BackgroundJobOptions? options = null);
     BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null);
@@ -18,7 +18,7 @@ public interface IBackgroundJobs : IDisposable
     Task FailJobAsync(BackgroundJob job, ResponseStatus error, bool shouldRetry);
     Task CompleteJobAsync(BackgroundJob job, object? response=null);
     void UpdateJobStatus(BackgroundJobStatusUpdate status);
-    void Start();
+    Task StartAsync(System.Threading.CancellationToken stoppingToken);
     Task TickAsync();
     Dictionary<string, int> GetWorkerQueueCounts();
     List<WorkerStats> GetWorkerStats();

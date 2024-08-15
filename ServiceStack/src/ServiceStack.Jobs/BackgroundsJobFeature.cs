@@ -92,10 +92,4 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
     }
 
     public IServiceProvider Services => AppHost!.App.ApplicationServices;
-
-    public void Start() 
-    {
-        var jobs = Services.GetRequiredService<IBackgroundJobs>();
-        jobs.Start();
-    }
 }

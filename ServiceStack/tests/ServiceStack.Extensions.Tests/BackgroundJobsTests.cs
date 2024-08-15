@@ -145,7 +145,9 @@ public class JobsHostedService(ILogger<JobsHostedService> log, IBackgroundJobs j
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        await jobs.StartAsync(stoppingToken);
+        
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
         var tick = 0;
         var errors = 0;
         while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
@@ -157,19 +159,12 @@ public class JobsHostedService(ILogger<JobsHostedService> log, IBackgroundJobs j
             }
             catch (Exception e)
             {
-                errors++;
-                log.LogError(e, "JOBS {Errors}/{Tick} Error in JobsHostedService: {Message}", errors, tick, e.Message);
+                log.LogError(e, "JOBS {Errors}/{Tick} Error in JobsHostedService: {Message}", 
+                    ++errors, tick, e.Message);
             }
         }
     }
-
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        jobs.Dispose();
-        await base.StopAsync(cancellationToken);
-    }
 }
-
 public class BackgroundJobsTests
 {
     public BackgroundJobsTests()
@@ -244,12 +239,6 @@ public class BackgroundJobsTests
         public override void Configure()
         {
             IdentityJwtAuthProviderTests.CreateIdentityUsers(ApplicationServices);
-        }
-
-        public override void OnAfterInit()
-        {
-            base.OnAfterInit();
-            GetPlugin<BackgroundsJobFeature>().Start();
         }
     }
 
