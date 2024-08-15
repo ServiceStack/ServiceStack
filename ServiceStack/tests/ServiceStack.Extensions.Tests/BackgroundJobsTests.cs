@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -141,6 +142,34 @@ public class DependentJobCallbackCommand : IAsyncCommand<DependentJobResult>
     }
 }
 
+public class ScopedRequest : IReturn<ApplicationUser>
+{
+    public string UserId { get; set; }
+}
+class MyScopedCommand(IBackgroundJobs jobs, UserManager<ApplicationUser> userManager) : IAsyncCommand<ScopedRequest,ApplicationUser>, IRequiresRequest
+{
+    public static long Count;
+    public static IRequest? LastRequest { get; set; }
+    public static List<ScopedRequest> Requests { get; set; } = new();
+    public IRequest? Request { get; set; }
+    public static ClaimsPrincipal? LastUser { get; set; }
+    public static IAuthSession? LastSession { get; set; }
+    public static ApplicationUser? LastResult { get; set; }
+    public ApplicationUser? Result { get; set; }
+
+    public async Task ExecuteAsync(ScopedRequest request)
+    {
+        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyScopedCommand Started...");
+        Interlocked.Increment(ref Count);
+        LastRequest = Request;
+        LastUser = Request.GetClaimsPrincipal();
+        LastSession = await Request.GetSessionAsync();
+        Requests.Add(request);
+        Result = LastResult = await userManager.FindByIdAsync(request.UserId);;
+        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyScopedCommand Finished");
+    }
+}
+
 public class JobsHostedService(ILogger<JobsHostedService> log, IBackgroundJobs jobs) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -263,7 +292,13 @@ public class BackgroundJobsTests
         DependentJobCommand.LastRequest = null;
         DependentJobCommand.LastCommandRequest = null;
         DependentJobCallbackCommand.Results.Clear();
-
+        MyScopedCommand.Count = 0;
+        MyScopedCommand.LastRequest = null;
+        MyScopedCommand.LastUser = null;
+        MyScopedCommand.LastSession = null;
+        MyScopedCommand.LastResult = null;
+        MyScopedCommand.Requests.Clear();
+        
         using var db = feature.OpenJobsDb();
         db.DeleteAllAsync<BackgroundJob>();
         db.DeleteAllAsync<JobSummary>();
@@ -513,27 +548,32 @@ public class BackgroundJobsTests
         using var db = feature.DbFactory.OpenDbConnection();
         var testUser = IdentityUsers.GetByUserName(db, "manager@email.com")!;
         
-        feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() {
+        feature.Jobs.EnqueueCommand<MyScopedCommand>(new ScopedRequest { UserId = testUser.Id }, new() {
             UserId = testUser.Id 
         });
         
-        Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");
-        Assert.That(MyJobCommand.Requests.Count, Is.GreaterThan(0));
+        Assert.That(ExecUtils.WaitUntilTrue(() => MyScopedCommand.LastRequest != null), "LastRequest == null");
+        Assert.That(MyScopedCommand.Requests.Count, Is.GreaterThan(0));
 
-        var job = MyJobCommand.LastRequest.GetBackgroundJob();
+        var job = MyScopedCommand.LastRequest.GetBackgroundJob();
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
-        AssertNotNulls(job);
+        Assert.That(job.Request, Is.EqualTo(nameof(ScopedRequest)));
 
-        var user = MyJobCommand.LastRequest.GetClaimsPrincipal();
-        Assert.That(user, Is.Not.Null);
-        Assert.That(user.GetUserId(), Is.EqualTo(testUser.Id));
-        Assert.That(user.GetUserName(), Is.EqualTo(testUser.UserName));
-        Assert.That(user.GetRoles(), Is.EquivalentTo(new[] { "Manager", "Employee" }));
+        var principal = MyScopedCommand.LastUser!;
+        Assert.That(principal, Is.Not.Null);
+        Assert.That(principal.GetUserId(), Is.EqualTo(testUser.Id));
+        Assert.That(principal.GetUserName(), Is.EqualTo(testUser.UserName));
+        Assert.That(principal.GetRoles(), Is.EquivalentTo(new[] { "Manager", "Employee" }));
         
-        var session = MyJobCommand.LastRequest.GetSession();
+        var session = MyScopedCommand.LastSession!;
+        Assert.That(session, Is.Not.Null);
         Assert.That(session.IsAuthenticated);
         Assert.That(session.UserAuthId, Is.EqualTo(testUser.Id));
         Assert.That(session.UserAuthName, Is.EqualTo(testUser.UserName));
         Assert.That(session.Roles, Is.EquivalentTo(new[] { "Manager", "Employee" }));
+
+        var user = MyScopedCommand.LastResult!;
+        Assert.That(user.Id, Is.EqualTo(testUser.Id));
+        Assert.That(user.UserName, Is.EqualTo(testUser.UserName));
     }
 }

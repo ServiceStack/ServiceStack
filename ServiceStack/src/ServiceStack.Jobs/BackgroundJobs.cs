@@ -18,14 +18,14 @@ public class BackgroundJobs : IBackgroundJobs
     private static readonly object dbWrites = new();
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
-    readonly IServiceProvider services;
+    readonly IServiceScopeFactory scopeFactory;
     
-    public BackgroundJobs(ILogger<BackgroundJobs> log, BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IServiceProvider services)
+    public BackgroundJobs(ILogger<BackgroundJobs> log, BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IServiceScopeFactory scopeFactory)
     {
         // Need to store local references to these dependencies otherwise wont exist on BG Thread callbacks
         this.log = log;
         this.feature = feature;
-        this.services = services;
+        this.scopeFactory = scopeFactory;
 
         var dialect = dbFactory.GetDialectProvider();
         this.Table = dialect.GetTableName(typeof(BackgroundJob));
@@ -105,19 +105,25 @@ public class BackgroundJobs : IBackgroundJobs
         return job;
     }
 
-    async Task<BasicRequest> CreateRequestContextAsync(Type requestType, BackgroundJob job)
+    async Task<BasicRequest> CreateRequestContextAsync(IServiceScope scope, Type requestType, BackgroundJob job)
     {
         var request = string.IsNullOrEmpty(job.RequestBody)
             ? requestType.CreateInstance()
             : JsonSerializer.DeserializeFromString(job.RequestBody, requestType);
         var msg = MessageFactory.Create(request);
-        var reqCtx = new BasicRequest(request);
-        reqCtx.Items[nameof(BackgroundJob)] = job;
+        var reqCtx = new BasicRequest(request)
+        {
+            ServiceScope = scope,
+            Items = {
+                [nameof(BackgroundJob)] = job
+            }
+        };
         if (job.UserId != null)
         {
+            var services = scope.ServiceProvider;
             var manager = services.GetRequiredService<IIdentityAuthContextManager>();
             var authCtx = services.GetRequiredService<IIdentityAuthContext>();
-            var user = await manager.CreateClaimsPrincipalAsync(job.UserId);
+            var user = await manager.CreateClaimsPrincipalAsync(job.UserId, reqCtx);
             reqCtx.Items[Keywords.ClaimsPrincipal] = user;
             var authProvider = services.GetService<IIdentityApplicationAuthProvider>();
             if (authProvider != null)
@@ -135,6 +141,9 @@ public class BackgroundJobs : IBackgroundJobs
     {
         try
         {
+            using var scope = scopeFactory.CreateScope();
+            var services = scope.ServiceProvider;
+            
             if (log.IsEnabled(LogLevel.Debug))
             {
                 log.LogDebug("JOBS {Ticks}: [{RequestType} {Request} on {Worker}] Executing Job: {Id}",
@@ -166,10 +175,10 @@ public class BackgroundJobs : IBackgroundJobs
             if (job.RequestType == CommandResult.Command)
             {
                 var commandInfo = AssertCommand(job.Command);
-                var command = feature.Services.GetRequiredService(commandInfo.Type);
+                var command = services.GetRequiredService(commandInfo.Type);
                 var requestType = commandInfo.Request.Type;
 
-                var reqCtx = await CreateRequestContextAsync(requestType, job);
+                var reqCtx = await CreateRequestContextAsync(scope, requestType, job);
                 if (command is IRequiresRequest requiresRequest)
                 {
                     requiresRequest.Request = reqCtx;
@@ -194,7 +203,7 @@ public class BackgroundJobs : IBackgroundJobs
                 var metadata = feature.AppHost.Metadata;
                 var requestType = metadata.GetRequestType(job.Request)
                     ?? throw new NotSupportedException($"API Request Type for '{job.Request}' not found.");
-                var reqCtx = await CreateRequestContextAsync(requestType, job);
+                var reqCtx = await CreateRequestContextAsync(scope, requestType, job);
                 await feature.AppHost.ServiceController.ExecuteMessageAsync(reqCtx.Message, reqCtx, ct);
 
                 response = reqCtx.Response.Dto;
@@ -310,8 +319,11 @@ public class BackgroundJobs : IBackgroundJobs
         {
             try
             {
+                using var scope = scopeFactory.CreateScope();
+                var services = scope.ServiceProvider;
+
                 var commandInfo = AssertCommand(job.Callback);
-                var command = feature.Services.GetRequiredService(commandInfo.Type);
+                var command = services.GetRequiredService(commandInfo.Type);
                 var requestType = commandInfo.Request.Type;
 
                 response ??= requestType.CreateInstance();
