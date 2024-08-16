@@ -3,6 +3,7 @@
 using System;
 using System.Data;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace ServiceStack.Jobs;
@@ -105,7 +106,10 @@ public class BackgroundJobOptions
     public string? CreatedBy { get; set; }
     public int? TimeoutSecs { get; set; }
     public Dictionary<string, string>? Args { get; set; } //= Provider
+
+    [IgnoreDataMember]
     public Action<object?>? OnSuccess { get; set; }
+    [IgnoreDataMember]
     public Action<Exception>? OnFailed { get; set; }
 }
 

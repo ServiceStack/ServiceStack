@@ -13,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Jobs;
 
-public class BackgroundJobs : IBackgroundJobs
+public partial class BackgroundJobs : IBackgroundJobs
 {
     private static readonly object dbWrites = new();
     readonly ILogger<BackgroundJobs> log;
@@ -586,8 +586,9 @@ public class BackgroundJobs : IBackgroundJobs
                 RequestId = requestId,
                 StartedDate = null,
                 State = BackgroundJobState.Queued,
+                LastActivityDate = DateTime.UtcNow,
             }, where:x => x.CompletedDate == null 
-                          && x.DependsOn == null && (x.RunAfter == null || DateTime.UtcNow > x.RunAfter));
+                && x.DependsOn == null && (x.RunAfter == null || DateTime.UtcNow > x.RunAfter));
         }
 
         var dispatchJobs = await db.SelectAsync<BackgroundJob>(x => x.RequestId == requestId, token: ct);
@@ -670,6 +671,7 @@ public class BackgroundJobs : IBackgroundJobs
             {
                 requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
                     RequestId = requestId,
+                    LastActivityDate = DateTime.UtcNow,
                 }, where:x => expiredJobIds.Contains(x.Id));
             }
 
@@ -678,6 +680,7 @@ public class BackgroundJobs : IBackgroundJobs
             {
                 requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
                     RequestId = requestId,
+                    LastActivityDate = DateTime.UtcNow,
                 }, where:x => allIds.Contains(x.Id) && x.RequestId == null);
             }
         }
