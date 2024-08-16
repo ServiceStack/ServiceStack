@@ -579,7 +579,26 @@ public partial class BackgroundJobs : IBackgroundJobs
     {
         using var db = feature.OpenJobsDb();
         var requestId = Guid.NewGuid().ToString("N");
+        var now = DateTime.UtcNow;
 
+        var completedJobs = await db.SelectAsync<BackgroundJob>(x => x.CompletedDate != null, token: ct);
+        if (completedJobs.Count > 0)
+        {
+            foreach (var completedJob in completedJobs)
+            {
+                try
+                {
+                    var response = CreateResponse(completedJob);
+                    await CompleteJobAsync(completedJob, response);
+                }
+                catch (Exception e)
+                {
+                    log.LogError("Failed to complete job on Startup: {Id}", completedJob.Id);
+                    await FailJobAsync(completedJob, e, shouldRetry: false);
+                }
+            }
+        }
+        
         lock (dbWrites)
         {
             db.UpdateOnly(() => new BackgroundJob {
@@ -587,13 +606,10 @@ public partial class BackgroundJobs : IBackgroundJobs
                 StartedDate = null,
                 State = BackgroundJobState.Queued,
                 LastActivityDate = DateTime.UtcNow,
-            }, where:x => x.CompletedDate == null 
-                && x.DependsOn == null && (x.RunAfter == null || DateTime.UtcNow > x.RunAfter));
+            }, where:x => x.DependsOn == null && (x.RunAfter == null || now > x.RunAfter));
         }
 
         var dispatchJobs = await db.SelectAsync<BackgroundJob>(x => x.RequestId == requestId, token: ct);
-        var notifyJobs = await db.SelectAsync<BackgroundJob>(x => x.CompletedDate != null, token: ct);
-
         if (dispatchJobs.Count > 0)
         {
             log.LogInformation("JOBS Queued {Count} Incomplete Jobs", dispatchJobs.Count);
@@ -602,27 +618,21 @@ public partial class BackgroundJobs : IBackgroundJobs
                 DispatchToWorker(job);
             }
         }
-        if (notifyJobs.Count > 0)
-        {
-            log.LogInformation("JOBS Notifying {Count} Jobs", notifyJobs.Count);
-            _ = Task.Factory.StartNew(async () => {
-                foreach (var job in notifyJobs)
-                {
-                    await NotifyCompletionAsync(job);
-                }
-            }, ct);
-        }
+
+        // Execute any queued dependent jobs
+        await DispatchPendingJobsAsync();
     }
 
-    public void DispatchPendingJobs()
+    public async Task DispatchPendingJobsAsync()
     {
         using var db = feature.OpenJobsDb();
         var expiredJobIds = new List<long>();
         var dependentJobIds = new List<long>();
         var scheduledJobIds = new List<long>();
-        var pendingJobs = db.Select(db.From<BackgroundJob>()
-            .Where(x => x.CompletedDate == null));
+        var pendingJobs = await db.SelectAsync(db.From<BackgroundJob>()
+            .Where(x => x.CompletedDate == null), token: ct);
 
+        var now = DateTime.UtcNow;
         var completedJobsMap = new Dictionary<long, CompletedJob>();
         if (pendingJobs.Count >= 0)
         {
@@ -637,11 +647,11 @@ public partial class BackgroundJobs : IBackgroundJobs
                 }
                 if (job.RequestId != null)
                     continue;
-                if (job.RunAfter == null || DateTime.UtcNow > job.RunAfter)
+                if (job.RunAfter == null || now > job.RunAfter)
                 {
                     if (job.DependsOn != null)
                     {
-                        var dependsOnSummary = GetJob(job.DependsOn.Value);
+                        var dependsOnSummary = await GetJobAsync(job.DependsOn.Value);
                         if (dependsOnSummary?.Completed != null)
                         {
                             completedJobsMap[job.DependsOn.Value] = job.ParentJob = dependsOnSummary.Completed;
@@ -671,7 +681,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             {
                 requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
                     RequestId = requestId,
-                    LastActivityDate = DateTime.UtcNow,
+                    LastActivityDate = now,
                 }, where:x => expiredJobIds.Contains(x.Id));
             }
 
@@ -680,14 +690,14 @@ public partial class BackgroundJobs : IBackgroundJobs
             {
                 requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
                     RequestId = requestId,
-                    LastActivityDate = DateTime.UtcNow,
+                    LastActivityDate = now,
                 }, where:x => allIds.Contains(x.Id) && x.RequestId == null);
             }
         }
         
         if (requeudJobsCount > 0)
         {
-            var requeudJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
+            var requeudJobs = await db.SelectAsync<BackgroundJob>(x => x.RequestId == requestId, token: ct);
             if (requeudJobs.Count > 0)
             {
                 log.LogInformation("JOBS Queueing {Count} Jobs ({ScheduledCount} Scheduled, {DependentCount} Dependent, {TimedOutCount} Expired)",
@@ -706,7 +716,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
-    public static ConcurrentQueue<BackgroundJobStatusUpdate> updates = new();
+    static ConcurrentQueue<BackgroundJobStatusUpdate> updates = new();
     public void UpdateJobStatus(BackgroundJobStatusUpdate status)
     {
         updates.Enqueue(status);
@@ -777,15 +787,14 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     private long ticks = 0;
 
-    public Task TickAsync()
+    public async Task TickAsync()
     {
         Interlocked.Increment(ref ticks);
         if (log.IsEnabled(LogLevel.Debug))
             log.LogDebug("JOBS Tick {Ticks}", ticks);
 
-        DispatchPendingJobs();
+        await DispatchPendingJobsAsync();
         PerformDbUpdates();
-        return Task.CompletedTask;
     }
 
     private CommandInfo AssertCommand(string? command)

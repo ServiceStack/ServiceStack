@@ -120,8 +120,8 @@ public class BackgroundJob : BackgroundJobBase
 
     [Ignore] public bool Transient { get; set; }
     [Ignore] public CompletedJob? ParentJob { get; set; }
-    [Ignore] public Action<object?>? OnSuccess { get; set; }
-    [Ignore] public Action<Exception>? OnFailed { get; set; }
+    [Ignore, IgnoreDataMember] public Action<object?>? OnSuccess { get; set; }
+    [Ignore, IgnoreDataMember] public Action<Exception>? OnFailed { get; set; }
 }
 
 [Icon(Svg = SvgIcons.Stats)]
