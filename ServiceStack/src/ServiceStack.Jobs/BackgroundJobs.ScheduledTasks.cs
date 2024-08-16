@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System.Runtime.Serialization;
-using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using Cronos;
 
@@ -33,7 +31,16 @@ public partial class BackgroundJobs
         using var db = feature.OpenJobsDb();
         lock (dbWrites)
         {
-            var updated = db.Update(task, where:x => x.Name == task.Name);
+            var updated = db.UpdateOnly(() => new ScheduledTask
+            {
+                Interval = task.Interval,
+                CronExpression = task.CronExpression,
+                RequestType = task.RequestType,
+                Command = task.Command,
+                Request = task.Request,
+                RequestBody = task.RequestBody,
+                Options = task.Options,
+            }, where:x => x.Name == task.Name);
             if (updated == 0)
                 task.Id = db.Insert(task, selectIdentity:true);
         }
