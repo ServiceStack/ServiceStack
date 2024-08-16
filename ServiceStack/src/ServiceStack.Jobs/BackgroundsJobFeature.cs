@@ -83,6 +83,7 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
         using var db = OpenJobsDb();
         db.CreateTableIfNotExists<BackgroundJob>();
         db.CreateTableIfNotExists<JobSummary>();
+        db.CreateTableIfNotExists<ScheduledTask>();
     }
     public void InitMonthDbSchema(DateTime createdDate)
     {

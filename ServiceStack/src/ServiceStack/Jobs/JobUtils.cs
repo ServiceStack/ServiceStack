@@ -7,10 +7,6 @@ namespace ServiceStack.Jobs;
 
 public static class JobUtils
 {
-    public static BackgroundJobRef EnqueueApi<T>(this IBackgroundJobs jobs, T request, BackgroundJobOptions? options = null) 
-        where T : class =>
-        jobs.EnqueueApi(request.GetType().Name, request, options);
-
     public static BackgroundJobRef EnqueueCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand =>
         jobs.EnqueueCommand(typeof(TCommand).Name, request, options);
@@ -50,6 +46,10 @@ public static class JobUtils
     public static BackgroundJob ExecuteTransientCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand =>
         jobs.ExecuteTransientCommand(typeof(TCommand).Name, request, options);
+    
+    public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, string taskName, Schedule schedule, object request, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand =>
+        jobs.RecurringCommand(taskName, schedule, typeof(TCommand).Name, request, options);
 
     public static BackgroundJob ToBackgroundJob(this BackgroundJobOptions? options, string requestType, object arg)
     {

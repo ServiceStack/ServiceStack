@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Data;
-using System.Reflection;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Host;
@@ -37,9 +36,9 @@ public partial class BackgroundJobs : IBackgroundJobs
         );
     }
 
-    public BackgroundJobRef EnqueueApi(string requestDto, object request, BackgroundJobOptions? options = null)
+    public BackgroundJobRef EnqueueApi(object requestDto, BackgroundJobOptions? options = null)
     {
-        var job = options.ToBackgroundJob(CommandResult.Api, request);
+        var job = options.ToBackgroundJob(CommandResult.Api, requestDto);
         return RecordAndDispatchJob(job);
     }
 
@@ -114,6 +113,29 @@ public partial class BackgroundJobs : IBackgroundJobs
         var request = string.IsNullOrEmpty(job.RequestBody)
             ? requestType.CreateInstance()
             : DeserializeFromJson(job.RequestBody, requestType);
+        return request;
+    }
+
+    public object CreateRequestForCommand(string command, string argType, string? argJson)
+    {
+        var requestType = AssertCommand(command).Request?.Type ?? feature.AppHost.Metadata.FindDtoType(argType);
+        if (requestType == null)
+            throw new NotSupportedException($"Request Type for '{argType}' not found.");
+        var request = string.IsNullOrEmpty(argJson)
+            ? requestType.CreateInstance()
+            : DeserializeFromJson(argJson, requestType);
+        return request;
+    }
+
+    public object CreateRequestForApi(string requestType, string? requestJson)
+    {
+        var type = feature.AppHost.Metadata.GetRequestType(requestType) 
+                   ?? feature.AppHost.Metadata.FindDtoType(requestType);
+        if (type == null)
+            throw new NotSupportedException($"Request Type for '{requestType}' not found.");
+        var request = string.IsNullOrEmpty(requestJson)
+            ? type.CreateInstance()
+            : DeserializeFromJson(requestJson, type);
         return request;
     }
     
@@ -570,6 +592,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         ct = stoppingToken;
         log.LogInformation("JOBS Starting...");
         await LoadJobQueueAsync();
+        await LoadScheduledTasksAsync();
     }
 
     /// <summary>
@@ -795,6 +818,7 @@ public partial class BackgroundJobs : IBackgroundJobs
 
         await DispatchPendingJobsAsync();
         PerformDbUpdates();
+        ExecuteDueScheduledTasks();
     }
 
     private CommandInfo AssertCommand(string? command)

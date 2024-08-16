@@ -10,7 +10,7 @@ namespace ServiceStack.Jobs;
 
 public interface IBackgroundJobs
 {
-    BackgroundJobRef EnqueueApi(string requestDto, object request, BackgroundJobOptions? options = null);
+    BackgroundJobRef EnqueueApi(object requestDto, BackgroundJobOptions? options = null);
     BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null);
     BackgroundJob ExecuteTransientCommand(string commandName, object arg, BackgroundJobOptions? options = null);
     Task ExecuteJobAsync(BackgroundJob job);
@@ -29,6 +29,9 @@ public interface IBackgroundJobs
     Task<JobResult?> GetJobAsync(long jobId);
     object CreateRequest(BackgroundJobBase job);
     object? CreateResponse(BackgroundJobBase job);
+
+    void RecurringApi(string taskName, Schedule schedule, object requestDto, BackgroundJobOptions? options = null);
+    void RecurringCommand(string taskName, Schedule schedule, string commandName, object arg, BackgroundJobOptions? options = null);
 }
 
 public class BackgroundJobRef(long id, string refId)

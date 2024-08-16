@@ -68,7 +68,7 @@ class MyJobCallback(IBackgroundJobs jobs) : IAsyncCommand<MyResponse>, IRequires
     }
 }
 
-public class JobServices : Service
+public class JobServices(IBackgroundJobs jobs) : Service
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
@@ -76,9 +76,11 @@ public class JobServices : Service
 
     public object Any(MyRequest request)
     {
+        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "My API Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         Requests.Add(request);
+        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "My API Finished");
         return new MyResponse { Result = $"Hello {request.Id}" };
     }
 }
@@ -335,6 +337,7 @@ public class BackgroundJobsTests
         using var db = feature.OpenJobsDb();
         db.DeleteAllAsync<BackgroundJob>();
         db.DeleteAllAsync<JobSummary>();
+        db.DeleteAllAsync<ScheduledTask>();
         using var monthDb = feature.OpenJobsMonthDb(DateTime.UtcNow);
         monthDb.DeleteAllAsync<CompletedJob>();
         monthDb.DeleteAllAsync<FailedJob>();
@@ -706,5 +709,110 @@ public class BackgroundJobsTests
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Id, Is.EqualTo(testUser.Id));
         Assert.That(response.UserName, Is.EqualTo(testUser.UserName));
+    }
+
+
+    [Test]
+    public async Task Can_Schedule_Reoccurring_Command()
+    {
+        ResetState();
+
+        using var db = feature.Jobs.OpenJobsDb();
+        var taskName = "My Command Every Minute";
+        var options = new BackgroundJobOptions { Tag = "test" };
+        var startedAt = DateTime.UtcNow;
+
+        ScheduledTask AssertTask(ScheduledTask task, MyRequest request)
+        {
+            Assert.That(task.Id, Is.GreaterThan(0));
+            Assert.That(task.Name, Is.EqualTo(taskName));
+            Assert.That(task.RequestType, Is.EqualTo(CommandResult.Command));
+            Assert.That(task.Request, Is.EqualTo(nameof(MyRequest)));
+            Assert.That(task.RequestBody, Is.EqualTo(ClientConfig.ToJson(request)));
+            Assert.That(task.Interval, Is.Null);
+            Assert.That(task.CronExpression, Is.EqualTo("* * * * *"));
+            return task;
+        }
+
+        feature.Jobs.RecurringCommand<MyJobCommand>(taskName, Schedule.EveryMinute, 
+            new MyRequest { Id = 1 }, options);
+
+        var tasks = await db.SelectAsync<ScheduledTask>();
+        Assert.That(tasks.Count, Is.EqualTo(1));
+        var task = AssertTask(tasks[0], new MyRequest { Id = 1 });
+        Assert.That(task.Options, Is.Not.Null);
+        
+        feature.Jobs.RecurringCommand<MyJobCommand>(taskName, Schedule.EveryMinute, 
+            new MyRequest { Id = 2 });
+        tasks = await db.SelectAsync<ScheduledTask>();
+        Assert.That(tasks.Count, Is.EqualTo(1));
+        task = AssertTask(tasks[0], new MyRequest { Id = 2 });
+        Assert.That(task.Options, Is.Null);
+
+        // First Scheduled Task should execute immediately
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => MyJobCommand.LastRequest != null), "LastRequest == null");
+        Assert.That(MyJobCommand.Requests.Count, Is.EqualTo(1));
+        var job = MyJobCommand.LastRequest.GetBackgroundJob();
+        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
+        AssertNotNulls(job);
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Status == "Finished"), "Status != Finished");
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Progress >= 1), "job.Progress != 1");
+        Assert.That(job.Logs, Is.EqualTo("MyCommand Started...\nMyCommand Finished"));
+        
+        task = await db.SingleAsync<ScheduledTask>(x => x.Name == taskName);
+        Assert.That(task.LastRun, Is.GreaterThan(startedAt));
+        Assert.That(task.LastJobId, Is.EqualTo(job.Id));
+    }
+
+    [Test]
+    public async Task Can_Schedule_Reoccurring_Api()
+    {
+        ResetState();
+
+        using var db = feature.Jobs.OpenJobsDb();
+        var taskName = "My API Every Minute";
+        var options = new BackgroundJobOptions { Tag = "test" };
+        var startedAt = DateTime.UtcNow;
+
+        ScheduledTask AssertTask(ScheduledTask task, MyRequest request)
+        {
+            Assert.That(task.Id, Is.GreaterThan(0));
+            Assert.That(task.Name, Is.EqualTo(taskName));
+            Assert.That(task.RequestType, Is.EqualTo(CommandResult.Api));
+            Assert.That(task.Request, Is.EqualTo(nameof(MyRequest)));
+            Assert.That(task.RequestBody, Is.EqualTo(ClientConfig.ToJson(request)));
+            Assert.That(task.Interval, Is.EqualTo(TimeSpan.FromSeconds(1)));
+            Assert.That(task.CronExpression, Is.Null);
+            return task;
+        }
+
+        feature.Jobs.RecurringApi(taskName, Schedule.Interval(TimeSpan.FromSeconds(1)), 
+            new MyRequest { Id = 1 }, options);
+
+        var tasks = await db.SelectAsync<ScheduledTask>();
+        Assert.That(tasks.Count, Is.EqualTo(1));
+        var task = AssertTask(tasks[0], new MyRequest { Id = 1 });
+        Assert.That(task.Options, Is.Not.Null);
+        
+        feature.Jobs.RecurringApi(taskName, Schedule.Interval(TimeSpan.FromSeconds(1)), 
+            new MyRequest { Id = 2 });
+        tasks = await db.SelectAsync<ScheduledTask>();
+        Assert.That(tasks.Count, Is.EqualTo(1));
+        task = AssertTask(tasks[0], new MyRequest { Id = 2 });
+        Assert.That(task.Options, Is.Null);
+
+        // First Scheduled Task should execute immediately
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => JobServices.LastRequest != null), "LastRequest == null");
+        Assert.That(JobServices.Requests.Count, Is.EqualTo(1));
+        var job = JobServices.LastRequest.GetBackgroundJob();
+        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Api));
+        AssertNotNulls(job);
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Status == "Finished"), "Status != Finished");
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Progress >= 1), "job.Progress != 1");
+        Assert.That(job.Logs, Is.EqualTo("My API Started...\nMy API Finished"));
+        
+        task = await db.SingleAsync<ScheduledTask>(x => x.Name == taskName);
+        Assert.That(task.LastRun, Is.GreaterThan(startedAt));
+        Assert.That(task.LastJobId, Is.EqualTo(job.Id));
     }
 }

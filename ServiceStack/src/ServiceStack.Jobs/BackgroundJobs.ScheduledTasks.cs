@@ -1,0 +1,135 @@
+using System.Collections.Concurrent;
+using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
+using ServiceStack.OrmLite;
+using Cronos;
+
+namespace ServiceStack.Jobs;
+
+public partial class BackgroundJobs
+{
+    private ConcurrentDictionary<string, ScheduledTask> namedScheduledTasks = new();
+    private ConcurrentDictionary<string, CronExpression> cronExpressions = new();
+
+    /// <summary>
+    /// On Startup load all scheduled tasks into memory
+    /// </summary>
+    async Task LoadScheduledTasksAsync()
+    {
+        using var db = feature.OpenJobsDb();
+        var tasks = await db.SelectAsync<ScheduledTask>(token: ct);
+        foreach (var task in tasks)
+        {
+            namedScheduledTasks[task.Name] = task;
+            if (task.CronExpression != null && !cronExpressions.ContainsKey(task.CronExpression))
+            {
+                cronExpressions[task.CronExpression] = CronExpression.Parse(task.CronExpression);
+            }
+        }
+    }
+    
+    private void CreateOrUpdate(ScheduledTask task)
+    {
+        using var db = feature.OpenJobsDb();
+        lock (dbWrites)
+        {
+            var updated = db.Update(task, where:x => x.Name == task.Name);
+            if (updated == 0)
+                task.Id = db.Insert(task, selectIdentity:true);
+        }
+        namedScheduledTasks[task.Name] = task;
+    }
+
+    public void RecurringCommand(string taskName, Schedule schedule, string commandName, object arg, BackgroundJobOptions? options = null)
+    {
+        var task = namedScheduledTasks.GetOrAdd(taskName, _ => new ScheduledTask {
+            Name = taskName
+        });
+        var (interval, cronExpression) = schedule;
+        task.Interval = interval;
+        task.CronExpression = cronExpression;
+        task.RequestType = CommandResult.Command;
+        task.Command = commandName;
+        task.Request = arg.GetType().Name;
+        task.RequestBody = ClientConfig.ToJson(arg);
+        task.Options = options;
+        
+        CreateRequestForCommand(task.Command!, task.Request, task.RequestBody); // Ensure Request DTO can be recreated
+        
+        CreateOrUpdate(task);
+    }
+
+    public void RecurringApi(string taskName, Schedule schedule, object requestDto, BackgroundJobOptions? options = null)
+    {
+        var task = namedScheduledTasks.GetOrAdd(taskName, _ => new ScheduledTask {
+            Name = taskName
+        });
+        var (interval, cronExpression) = schedule;
+        task.Interval = interval;
+        task.CronExpression = cronExpression;
+        task.RequestType = CommandResult.Api;
+        task.Command = null;
+        task.Request = requestDto.GetType().Name;
+        task.RequestBody = ClientConfig.ToJson(requestDto);
+        task.Options = options;
+
+        if (feature.AppHost.Metadata.GetServiceTypeByRequest(requestDto.GetType()) == null)
+            throw new NotSupportedException("Service not found for request type: " + requestDto.GetType().Name);
+        CreateRequestForApi(task.Request, task.RequestBody); // Ensure Request DTO can be recreated
+        
+        CreateOrUpdate(task);
+    }
+
+    void ExecuteDueScheduledTasks()
+    {
+        var scheduledTasks = namedScheduledTasks.Values.ToList();
+        foreach (var task in scheduledTasks)
+        {
+            var lastRun = task.LastRun ?? DateTime.UtcNow.AddYears(-1);
+            if (task.Interval != null)
+            {
+                if (task.LastRun == null || lastRun - task.LastRun >= task.Interval)
+                {
+                    EnqueueNewJobForScheduledTask(task);
+                }
+            }
+            else if (task.CronExpression != null)
+            {
+                var cron = cronExpressions.GetOrAdd(task.CronExpression, CronExpression.Parse);
+                if (cron.GetNextOccurrence(lastRun) <= DateTime.UtcNow)
+                {
+                    EnqueueNewJobForScheduledTask(task);
+                }
+            }
+        }
+    }
+
+    private void EnqueueNewJobForScheduledTask(ScheduledTask task)
+    {
+        BackgroundJobRef? jobRef;
+        if (task.RequestType == CommandResult.Command)
+        {
+            var request = CreateRequestForCommand(task.Command!, task.Request, task.RequestBody);
+            jobRef = EnqueueCommand(task.Command!, request, task.Options);
+        }
+        else if (task.RequestType == CommandResult.Api)
+        {
+            var request = CreateRequestForApi(task.Request, task.RequestBody);
+            jobRef = EnqueueApi(request, task.Options);
+        }
+        else throw new NotSupportedException("Unsupported RequestType: " + task.RequestType);
+
+        task.LastRun = DateTime.UtcNow;
+        task.LastJobId = jobRef.Id;
+        using var db = feature.OpenJobsDb();
+        lock (dbWrites)
+        {
+            db.UpdateOnly(() => new ScheduledTask
+            {
+                LastRun = task.LastRun,
+                LastJobId = task.LastJobId,
+            }, where: x => x.Id == task.Id);
+        }
+    }
+}
+
