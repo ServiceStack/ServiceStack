@@ -148,6 +148,7 @@ public static class JobUtils
             CreatedDate = from.CreatedDate,
             CreatedBy = from.CreatedBy,
             RequestType = from.RequestType,
+            Command = from.Command,
             Request = from.Request,
             Response = from.Response,
             UserId = from.UserId,

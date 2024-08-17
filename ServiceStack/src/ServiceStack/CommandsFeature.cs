@@ -75,7 +75,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     
     public CommandInfo? GetCommandInfo(string commandName) => CommandInfoMap.GetValueOrDefault(commandName);
     public CommandInfo AssertCommandInfo(string commandName) => GetCommandInfo(commandName)
-        ?? throw HttpError.NotFound("Command does not exist"); 
+        ?? throw HttpError.NotFound($"Command {commandName.SafeVarName()} does not exist"); 
 
     public List<(Type, ServiceLifetime)> RegisterTypes { get; set; } =
     [
