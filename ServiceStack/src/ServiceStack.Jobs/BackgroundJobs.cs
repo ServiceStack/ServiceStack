@@ -465,27 +465,30 @@ public partial class BackgroundJobs : IBackgroundJobs
             job.ResponseBody = ClientConfig.ToJson(response);
         }
 
-        lock (dbWrites)
+        if (!job.Transient)
         {
-            using var trans = db.OpenTransaction();
-            db.UpdateOnly(() => new BackgroundJob {
-                Progress = job.Progress,
-                CompletedDate = job.CompletedDate,
-                DurationMs = job.DurationMs,
-                State = job.State,
-                Response = job.Response,
-                ResponseBody = job.ResponseBody,
-                LastActivityDate = job.LastActivityDate,
-            }, where: x => x.Id == job.Id);
+            lock (dbWrites)
+            {
+                using var trans = db.OpenTransaction();
+                db.UpdateOnly(() => new BackgroundJob {
+                    Progress = job.Progress,
+                    CompletedDate = job.CompletedDate,
+                    DurationMs = job.DurationMs,
+                    State = job.State,
+                    Response = job.Response,
+                    ResponseBody = job.ResponseBody,
+                    LastActivityDate = job.LastActivityDate,
+                }, where: x => x.Id == job.Id);
 
-            db.UpdateOnly(() => new JobSummary {
-                CompletedDate = job.CompletedDate,
-                DurationMs = job.DurationMs,
-                State = job.State,                
-                Response = job.Response,
-                Attempts = job.Attempts,
-            }, where: x => x.Id == job.Id);
-            trans.Commit();
+                db.UpdateOnly(() => new JobSummary {
+                    CompletedDate = job.CompletedDate,
+                    DurationMs = job.DurationMs,
+                    State = job.State,                
+                    Response = job.Response,
+                    Attempts = job.Attempts,
+                }, where: x => x.Id == job.Id);
+                trans.Commit();
+            }
         }
 
         if (job.Callback != null)
