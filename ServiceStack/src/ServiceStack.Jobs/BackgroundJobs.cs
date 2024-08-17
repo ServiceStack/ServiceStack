@@ -39,6 +39,17 @@ public partial class BackgroundJobs : IBackgroundJobs
     public BackgroundJobRef EnqueueApi(object requestDto, BackgroundJobOptions? options = null)
     {
         var job = options.ToBackgroundJob(CommandResult.Api, requestDto);
+        var requestType = requestDto.GetType();
+        var serviceType = feature.AppHost.Metadata.GetServiceTypeByRequest(requestType);
+        if (serviceType == null)
+            throw new InvalidOperationException($"API for '{requestType.Name}' not found.");
+        var workerAttr = requestType.FirstAttribute<WorkerAttribute>() ?? serviceType.FirstAttribute<WorkerAttribute>();;
+        if (workerAttr != null)
+        {
+            options ??= new();
+            options.Worker = workerAttr.Name;
+        }
+            
         return RecordAndDispatchJob(job);
     }
 
@@ -46,6 +57,13 @@ public partial class BackgroundJobs : IBackgroundJobs
     {
         var job = options.ToBackgroundJob(CommandResult.Command, arg);
         job.Command = commandName;
+        var commandInfo = AssertCommand(job.Command);
+        var workerAttr = commandInfo.Type.FirstAttribute<WorkerAttribute>();
+        if (workerAttr != null)
+        {
+            options ??= new();
+            options.Worker = workerAttr.Name;
+        }
         return RecordAndDispatchJob(job);
     }
 
