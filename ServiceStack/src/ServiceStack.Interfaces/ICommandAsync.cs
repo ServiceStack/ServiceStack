@@ -4,6 +4,13 @@ using System.Threading.Tasks;
 
 namespace ServiceStack;
 
+public class NoArgs { }
+public abstract class AsyncCommand : IAsyncCommand<NoArgs>
+{
+    public Task ExecuteAsync(NoArgs request) => ExecuteAsync();
+    protected abstract Task ExecuteAsync();
+}
+
 public interface IAsyncCommand<in T> : IAsyncCommand
 {
     Task ExecuteAsync(T request);
