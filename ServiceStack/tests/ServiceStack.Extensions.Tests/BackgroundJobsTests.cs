@@ -867,8 +867,7 @@ public class BackgroundJobsTests
         var task = AssertTask(tasks[0], new MyRequest { Id = 1 });
         Assert.That(task.Options, Is.Not.Null);
         
-        feature.Jobs.RecurringApi(taskName, Schedule.Interval(TimeSpan.FromSeconds(1)), 
-            new MyRequest { Id = 2 });
+        feature.Jobs.RecurringApi(taskName, Schedule.Interval(TimeSpan.FromSeconds(1)), new MyRequest { Id = 2 });
         tasks = await db.SelectAsync<ScheduledTask>();
         Assert.That(tasks.Count, Is.EqualTo(1));
         task = AssertTask(tasks[0], new MyRequest { Id = 2 });

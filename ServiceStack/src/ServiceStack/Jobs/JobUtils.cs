@@ -58,11 +58,18 @@ public static class JobUtils
     public static BackgroundJob RunCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand => jobs.RunCommand(typeof(TCommand).Name, request, options);
     
+    public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, Schedule schedule, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand<NoArgs> => jobs.RecurringCommand(typeof(TCommand).Name, schedule, typeof(TCommand).Name, NoArgs.Value, options);
     public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, string taskName, Schedule schedule, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand<NoArgs> => jobs.RecurringCommand(taskName, schedule, typeof(TCommand).Name, NoArgs.Value, options);
+    public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, Schedule schedule, object request, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand => jobs.RecurringCommand(typeof(TCommand).Name, schedule, typeof(TCommand).Name, request, options);
     public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, string taskName, Schedule schedule, object request, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand => jobs.RecurringCommand(taskName, schedule, typeof(TCommand).Name, request, options);
 
+    public static void RecurringApi(this IBackgroundJobs jobs, Schedule schedule, object requestDto, BackgroundJobOptions? options = null) =>
+        jobs.RecurringApi(requestDto.GetType().Name, schedule, requestDto, options);
+    
     public static BackgroundJob ToBackgroundJob(this BackgroundJobOptions? options, string requestType, object arg)
     {
         return new BackgroundJob
