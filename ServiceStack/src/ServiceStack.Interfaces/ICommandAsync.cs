@@ -1,15 +1,9 @@
 #nullable enable
 using System;
 using System.Threading.Tasks;
+using ServiceStack.Web;
 
 namespace ServiceStack;
-
-public class NoArgs { }
-public abstract class AsyncCommand : IAsyncCommand<NoArgs>
-{
-    public Task ExecuteAsync(NoArgs request) => ExecuteAsync();
-    protected abstract Task ExecuteAsync();
-}
 
 public interface IAsyncCommand<in T> : IAsyncCommand
 {
@@ -22,6 +16,78 @@ public interface IHasResult<out T>
     T Result { get; }
 }
 public interface IAsyncCommand<in TRequest, out TResult> : IAsyncCommand<TRequest>, IHasResult<TResult> { }
+
+
+public class NoArgs
+{
+    public static NoArgs Value { get; } = new();
+}
+
+public abstract class AsyncCommand : AsyncCommand<NoArgs>
+{
+    protected override Task RunAsync(NoArgs request) => RunAsync();
+    protected abstract Task RunAsync();
+}
+public abstract class SyncCommand : SyncCommand<NoArgs>
+{
+    protected override void Run(NoArgs request) => Run();
+    protected abstract void Run();
+}
+public abstract class AsyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public Task ExecuteAsync(TArgs request) => RunAsync(request);
+    protected abstract Task RunAsync(TArgs request);
+}
+public abstract class SyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public Task ExecuteAsync(TArgs request)
+    {
+        Run(request);
+        return Task.CompletedTask;
+    }
+    protected abstract void Run(TArgs request);
+}
+public abstract class AsyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public TResult Result { get; protected set; }
+    public async Task ExecuteAsync(NoArgs request) => Result = await RunAsync().ConfigureAwait(false);
+    protected abstract Task<TResult> RunAsync();
+}
+public abstract class SyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public TResult Result { get; protected set; }
+    public Task ExecuteAsync(NoArgs request)
+    {
+        Result = Run();
+        return Task.CompletedTask;
+    }
+    protected abstract TResult Run();
+}
+public abstract class AsyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public TResult Result { get; protected set; }
+
+    public async Task ExecuteAsync(TArgs request) => Result = await RunAsync(request).ConfigureAwait(false);
+
+    protected abstract Task<TResult> RunAsync(TArgs request);
+}
+public abstract class SyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public TResult Result { get; protected set; }
+    public Task ExecuteAsync(TArgs request)
+    {
+        Result = Run(request);
+        return Task.CompletedTask;
+    }
+    protected abstract TResult Run(TArgs request);
+}
+
 
 public interface ICommandExecutor
 {

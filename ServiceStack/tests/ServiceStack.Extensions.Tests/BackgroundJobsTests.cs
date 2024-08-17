@@ -19,7 +19,6 @@ using ServiceStack.Data;
 using ServiceStack.IO;
 using ServiceStack.Jobs;
 using ServiceStack.OrmLite;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests;
@@ -33,34 +32,42 @@ public class MyResponse
     public required string Result { get; set; }
 }
 
-class MyJobCommand(IBackgroundJobs jobs) : IAsyncCommand<MyRequest,MyResponse>, IRequiresRequest
+class MyJobCommand(IBackgroundJobs jobs) : AsyncCommandWithResult<MyRequest,MyResponse>
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
     public static List<MyRequest> Requests { get; set; } = new();
-    public IRequest? Request { get; set; }
 
-    public MyResponse? Result { get; set; }
-
-    public async Task ExecuteAsync(MyRequest request)
+    protected override Task<MyResponse> RunAsync(MyRequest request)
     {
         jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyCommand Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         Requests.Add(request);
-        Result = new MyResponse { Result = $"Hello {request.Id}" };
+        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyCommand Finished");
+        return new MyResponse { Result = $"Hello {request.Id}" }.InTask();
+    }
+}
+
+class MySyncCommand(IBackgroundJobs jobs) : SyncCommand
+{
+    public static long Count;
+    public static IRequest? LastRequest { get; set; }
+    protected override void Run()
+    {
+        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyCommand Started...");
+        Interlocked.Increment(ref Count);
+        LastRequest = Request;
         jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyCommand Finished");
     }
 }
 
-class MyJobCallback(IBackgroundJobs jobs) : IAsyncCommand<MyResponse>, IRequiresRequest
+class MyJobCallback(IBackgroundJobs jobs) : SyncCommand<MyResponse>
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
     public static MyResponse? LastMyResponse { get; set; }
-    public IRequest? Request { get; set; }
-
-    public async Task ExecuteAsync(MyResponse request)
+    protected override void Run(MyResponse request)
     {
         Interlocked.Increment(ref Count);
         LastRequest = Request;
@@ -85,23 +92,14 @@ public class JobServices(IBackgroundJobs jobs) : Service
     }
 }
 
-public class AlwaysFail
-{
-    public int Id { get; set; }
-}
-
-public class AlwaysFailCommand : IAsyncCommand<AlwaysFail>
+public class AlwaysFailCommand : SyncCommand
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
-    public static AlwaysFail? LastCommandRequest { get; set; }
-    public IRequest? Request { get; set; }
-
-    public Task ExecuteAsync(AlwaysFail request)
+    protected override void Run()
     {
-        Interlocked.Increment(ref Count);
         LastRequest = Request;
-        LastCommandRequest = request;
+        Interlocked.Increment(ref Count);
         throw new Exception("Always Fails: " + Count);
     }
 }
@@ -116,50 +114,40 @@ public class DependentJobResult
     public CompletedJob? ParentJob { get; set; }
 }
 
-public class DependentJobCommand : IAsyncCommand<DependentJob,DependentJobResult>, IRequiresRequest
+public class DependentJobCommand : SyncCommandWithResult<DependentJob,DependentJobResult>
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
     public static DependentJob? LastCommandRequest { get; set; }
-    public IRequest? Request { get; set; }
-
-    public DependentJobResult Result { get; set; }
-
-    public async Task ExecuteAsync(DependentJob request)
+    protected override DependentJobResult Run(DependentJob request)
     {
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         LastCommandRequest = request;
         var job = Request.AssertBackgroundJob();
-        Result = new() { Id = request.Id, ParentJob = job.ParentJob };
+        return new() { Id = request.Id, ParentJob = job.ParentJob };
     }
 }
 
-public class DependentJobCallbackCommand : IAsyncCommand<DependentJobResult>
+public class DependentJobCallbackCommand : SyncCommand<DependentJobResult>
 {
     public static List<DependentJobResult> Results { get; set; } = new();
-    public async Task ExecuteAsync(DependentJobResult request)
-    {
-        Results.Add(request);
-    }
+    protected override void Run(DependentJobResult request) => Results.Add(request);
 }
 
 public class ScopedRequest : IReturn<ApplicationUser>
 {
     public string UserId { get; set; }
 }
-class MyScopedCommand(IBackgroundJobs jobs, UserManager<ApplicationUser> userManager) : IAsyncCommand<ScopedRequest,ApplicationUser>, IRequiresRequest
+class MyScopedCommand(IBackgroundJobs jobs, UserManager<ApplicationUser> userManager) : AsyncCommandWithResult<ScopedRequest,ApplicationUser?>
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
     public static List<ScopedRequest> Requests { get; set; } = new();
-    public IRequest? Request { get; set; }
     public static ClaimsPrincipal? LastUser { get; set; }
     public static IAuthSession? LastSession { get; set; }
     public static ApplicationUser? LastResult { get; set; }
-    public ApplicationUser? Result { get; set; }
-
-    public async Task ExecuteAsync(ScopedRequest request)
+    protected override async Task<ApplicationUser?> RunAsync(ScopedRequest request)
     {
         jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyScopedCommand Started...");
         Interlocked.Increment(ref Count);
@@ -167,8 +155,8 @@ class MyScopedCommand(IBackgroundJobs jobs, UserManager<ApplicationUser> userMan
         LastUser = Request.GetClaimsPrincipal();
         LastSession = await Request.GetSessionAsync();
         Requests.Add(request);
-        Result = LastResult = await userManager.FindByIdAsync(request.UserId);;
         jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyScopedCommand Finished");
+        return LastResult = await userManager.FindByIdAsync(request.UserId);
     }
 }
 
@@ -310,10 +298,9 @@ public class BackgroundJobsTests
         JobServices.Count = 0;
         JobServices.LastRequest = null;
         JobServices.Requests.Clear();
-        
+
+        MySyncCommand.Count = 0;
         AlwaysFailCommand.Count = 0;
-        AlwaysFailCommand.LastRequest = null;
-        AlwaysFailCommand.LastCommandRequest = null;
         
         DependentJobCommand.Count = 0;
         DependentJobCommand.LastRequest = null;
@@ -349,7 +336,7 @@ public class BackgroundJobsTests
         Assert.That(job.Id, Is.GreaterThan(0));
         Assert.That(job.CreatedDate, Is.Not.Null);
         Assert.That(job.RequestId, Is.Not.Null);
-        Assert.That(job.Request, Is.EqualTo(nameof(MyRequest)));
+        Assert.That(job.Request, Is.EqualTo(nameof(MyRequest)).Or.EqualTo(nameof(NoArgs)));
         Assert.That(job.RequestBody, Is.Not.Null);
         Assert.That(job.LastActivityDate, Is.Not.Null);
     }
@@ -547,7 +534,7 @@ public class BackgroundJobsTests
         var timeout = TimeSpan.FromMinutes(1);
         var callbackCount = 0;
         Exception? callbackEx = null;
-        var jobRef = feature.Jobs.EnqueueCommand<AlwaysFailCommand>(new AlwaysFail { Id = 1 }, new() {
+        var jobRef = feature.Jobs.EnqueueCommand<AlwaysFailCommand>(new() {
             OnFailed = ex => {
                 callbackCount++;
                 callbackEx = ex;
@@ -567,8 +554,8 @@ public class BackgroundJobsTests
         }, timeout), "failedJob == null");
         Assert.That(failedJob!.RefId, Is.EqualTo(jobRef.RefId));
         Assert.That(failedJob.Command, Is.EqualTo(nameof(AlwaysFailCommand)));
-        Assert.That(failedJob.Request, Is.EqualTo(nameof(AlwaysFail)));
-        Assert.That(failedJob.RequestBody, Is.EqualTo("{\"id\":1}"));
+        Assert.That(failedJob.Request, Is.EqualTo(nameof(NoArgs)));
+        Assert.That(failedJob.RequestBody, Is.EqualTo("{}"));
         Assert.That(failedJob.Attempts, Is.EqualTo(3));
         Assert.That(failedJob.State, Is.EqualTo(BackgroundJobState.Failed));
         Assert.That(failedJob.ErrorCode, Is.EqualTo(nameof(Exception)));
@@ -576,7 +563,7 @@ public class BackgroundJobsTests
 
         var summary = db.SingleById<JobSummary>(jobRef.Id);
         Assert.That(summary!.RefId, Is.EqualTo(jobRef.RefId));
-        Assert.That(summary.Request, Is.EqualTo(nameof(AlwaysFail)));
+        Assert.That(summary.Request, Is.EqualTo(nameof(NoArgs)));
         Assert.That(summary.Attempts, Is.EqualTo(3));
         Assert.That(summary.State, Is.EqualTo(BackgroundJobState.Failed));
         Assert.That(summary.ErrorCode, Is.EqualTo(nameof(Exception)));
@@ -722,37 +709,34 @@ public class BackgroundJobsTests
         var options = new BackgroundJobOptions { Tag = "test" };
         var startedAt = DateTime.UtcNow;
 
-        ScheduledTask AssertTask(ScheduledTask task, MyRequest request)
+        ScheduledTask AssertTask(ScheduledTask task)
         {
             Assert.That(task.Id, Is.GreaterThan(0));
             Assert.That(task.Name, Is.EqualTo(taskName));
             Assert.That(task.RequestType, Is.EqualTo(CommandResult.Command));
-            Assert.That(task.Request, Is.EqualTo(nameof(MyRequest)));
-            Assert.That(task.RequestBody, Is.EqualTo(ClientConfig.ToJson(request)));
+            Assert.That(task.Request, Is.EqualTo(nameof(NoArgs)));
+            Assert.That(task.RequestBody, Is.EqualTo("{}"));
             Assert.That(task.Interval, Is.Null);
             Assert.That(task.CronExpression, Is.EqualTo("* * * * *"));
             return task;
         }
 
-        feature.Jobs.RecurringCommand<MyJobCommand>(taskName, Schedule.EveryMinute, 
-            new MyRequest { Id = 1 }, options);
+        feature.Jobs.RecurringCommand<MySyncCommand>(taskName, Schedule.EveryMinute, options);
 
         var tasks = await db.SelectAsync<ScheduledTask>();
         Assert.That(tasks.Count, Is.EqualTo(1));
-        var task = AssertTask(tasks[0], new MyRequest { Id = 1 });
+        var task = AssertTask(tasks[0]);
         Assert.That(task.Options, Is.Not.Null);
         
-        feature.Jobs.RecurringCommand<MyJobCommand>(taskName, Schedule.EveryMinute, 
-            new MyRequest { Id = 2 });
+        feature.Jobs.RecurringCommand<MySyncCommand>(taskName, Schedule.EveryMinute);
         tasks = await db.SelectAsync<ScheduledTask>();
         Assert.That(tasks.Count, Is.EqualTo(1));
-        task = AssertTask(tasks[0], new MyRequest { Id = 2 });
+        task = AssertTask(tasks[0]);
         Assert.That(task.Options, Is.Null);
 
         // First Scheduled Task should execute immediately
-        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => MyJobCommand.LastRequest != null), "LastRequest == null");
-        Assert.That(MyJobCommand.Requests.Count, Is.EqualTo(1));
-        var job = MyJobCommand.LastRequest.GetBackgroundJob();
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => MySyncCommand.Count == 1), "Count != 1");
+        var job = MySyncCommand.LastRequest.GetBackgroundJob();
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
         AssertNotNulls(job);
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Status == "Finished"), "Status != Finished");

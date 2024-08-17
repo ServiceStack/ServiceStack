@@ -7,6 +7,10 @@ namespace ServiceStack.Jobs;
 
 public static class JobUtils
 {
+    public static BackgroundJobRef EnqueueCommand<TCommand>(this IBackgroundJobs jobs, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand<NoArgs> =>
+        jobs.EnqueueCommand(typeof(TCommand).Name, NoArgs.Value, options);
+
     public static BackgroundJobRef EnqueueCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand =>
         jobs.EnqueueCommand(typeof(TCommand).Name, request, options);
@@ -27,6 +31,9 @@ public static class JobUtils
         return jobs.EnqueueApi(request, options);
     }
 
+    public static BackgroundJobRef ScheduleCommand<TCommand>(this IBackgroundJobs jobs, DateTime at, BackgroundJobOptions? options = null)
+        where TCommand : IAsyncCommand<NoArgs> => jobs.ScheduleCommand<TCommand>(NoArgs.Value, at, options);
+
     public static BackgroundJobRef ScheduleCommand<TCommand>(this IBackgroundJobs jobs, object request, DateTime at, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand
     {
@@ -34,6 +41,9 @@ public static class JobUtils
         options.RunAfter = at;
         return jobs.EnqueueCommand(typeof(TCommand).Name, request, options);
     }
+
+    public static BackgroundJobRef ScheduleCommand<TCommand>(this IBackgroundJobs jobs, TimeSpan after, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand<NoArgs> => jobs.ScheduleCommand<TCommand>(NoArgs.Value, after, options);
 
     public static BackgroundJobRef ScheduleCommand<TCommand>(this IBackgroundJobs jobs, object request, TimeSpan after, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand
@@ -43,13 +53,15 @@ public static class JobUtils
         return jobs.EnqueueCommand(typeof(TCommand).Name, request, options);
     }
 
+    public static BackgroundJob ExecuteTransientCommand<TCommand>(this IBackgroundJobs jobs, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand<NoArgs> => jobs.ExecuteTransientCommand(typeof(TCommand).Name, NoArgs.Value, options);
     public static BackgroundJob ExecuteTransientCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
-        where TCommand : IAsyncCommand =>
-        jobs.ExecuteTransientCommand(typeof(TCommand).Name, request, options);
+        where TCommand : IAsyncCommand => jobs.ExecuteTransientCommand(typeof(TCommand).Name, request, options);
     
+    public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, string taskName, Schedule schedule, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand<NoArgs> => jobs.RecurringCommand(taskName, schedule, typeof(TCommand).Name, NoArgs.Value, options);
     public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, string taskName, Schedule schedule, object request, BackgroundJobOptions? options = null) 
-        where TCommand : IAsyncCommand =>
-        jobs.RecurringCommand(taskName, schedule, typeof(TCommand).Name, request, options);
+        where TCommand : IAsyncCommand => jobs.RecurringCommand(taskName, schedule, typeof(TCommand).Name, request, options);
 
     public static BackgroundJob ToBackgroundJob(this BackgroundJobOptions? options, string requestType, object arg)
     {
