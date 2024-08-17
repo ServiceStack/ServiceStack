@@ -371,10 +371,10 @@ public class BackgroundJobsTests
     }
 
     [Test]
-    public void Does_execute_Transient_Command()
+    public void Does_Run_Transient_Command()
     {
         ResetState();
-        var job = feature.Jobs.ExecuteTransientCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() { Worker = "app.db" });
+        var job = feature.Jobs.RunCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() { Worker = "app.db" });
         Assert.That(job.Worker, Is.EqualTo("app.db"));
         
         Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");

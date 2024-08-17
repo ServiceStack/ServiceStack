@@ -107,7 +107,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         return new(job.Id, job.RefId!);
     }
 
-    public BackgroundJob ExecuteTransientCommand(string commandName, object arg, BackgroundJobOptions? options = null)
+    public BackgroundJob RunCommand(string commandName, object arg, BackgroundJobOptions? options = null)
     {
         var commandInfo = AssertCommand(commandName);
         var workerAttr = commandInfo.Type.FirstAttribute<WorkerAttribute>();

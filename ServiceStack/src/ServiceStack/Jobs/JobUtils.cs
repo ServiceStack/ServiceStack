@@ -53,10 +53,10 @@ public static class JobUtils
         return jobs.EnqueueCommand(typeof(TCommand).Name, request, options);
     }
 
-    public static BackgroundJob ExecuteTransientCommand<TCommand>(this IBackgroundJobs jobs, BackgroundJobOptions? options = null) 
-        where TCommand : IAsyncCommand<NoArgs> => jobs.ExecuteTransientCommand(typeof(TCommand).Name, NoArgs.Value, options);
-    public static BackgroundJob ExecuteTransientCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
-        where TCommand : IAsyncCommand => jobs.ExecuteTransientCommand(typeof(TCommand).Name, request, options);
+    public static BackgroundJob RunCommand<TCommand>(this IBackgroundJobs jobs, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand<NoArgs> => jobs.RunCommand(typeof(TCommand).Name, NoArgs.Value, options);
+    public static BackgroundJob RunCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand => jobs.RunCommand(typeof(TCommand).Name, request, options);
     
     public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, string taskName, Schedule schedule, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand<NoArgs> => jobs.RecurringCommand(taskName, schedule, typeof(TCommand).Name, NoArgs.Value, options);

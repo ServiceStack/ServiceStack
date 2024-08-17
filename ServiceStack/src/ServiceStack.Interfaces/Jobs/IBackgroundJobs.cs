@@ -12,7 +12,7 @@ public interface IBackgroundJobs
 {
     BackgroundJobRef EnqueueApi(object requestDto, BackgroundJobOptions? options = null);
     BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null);
-    BackgroundJob ExecuteTransientCommand(string commandName, object arg, BackgroundJobOptions? options = null);
+    BackgroundJob RunCommand(string commandName, object arg, BackgroundJobOptions? options = null);
     Task ExecuteJobAsync(BackgroundJob job);
     Task CancelJobAsync(BackgroundJob job);
     Task FailJobAsync(BackgroundJob job, Exception ex);
