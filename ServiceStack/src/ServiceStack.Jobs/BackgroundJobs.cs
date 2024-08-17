@@ -245,9 +245,9 @@ public partial class BackgroundJobs : IBackgroundJobs
 
                 var reqCtx = await CreateRequestContextAsync(scope, request, job);
                 if (command is IRequiresRequest requiresRequest)
-                {
                     requiresRequest.Request = reqCtx;
-                }
+                if (command is IRequiresCancellationToken hasToken)
+                    hasToken.Token = ct;
                 var commandResult = await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto);
                 if (commandResult.Exception != null)
                 {
@@ -388,9 +388,9 @@ public partial class BackgroundJobs : IBackgroundJobs
                 var reqCtx = new BasicRequest(response);
                 reqCtx.SetBackgroundJob(job);
                 if (command is IRequiresRequest requiresRequest)
-                {
                     requiresRequest.Request = reqCtx;
-                }
+                if (command is IRequiresCancellationToken hasToken)
+                    hasToken.Token = ct;
 
                 CommandResult? commandResult = null;
                 var i = 0;

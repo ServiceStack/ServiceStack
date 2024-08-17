@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
@@ -14,6 +15,11 @@ public interface IAsyncCommand { }
 public interface IHasResult<out T>
 {
     T Result { get; }
+}
+
+public interface IRequiresCancellationToken
+{
+    public CancellationToken Token { get; set; }
 }
 public interface IAsyncCommand<in TRequest, out TResult> : IAsyncCommand<TRequest>, IHasResult<TResult> { }
 
@@ -33,8 +39,9 @@ public abstract class SyncCommand : SyncCommand<NoArgs>
     protected override void Run(NoArgs request) => Run();
     protected abstract void Run();
 }
-public abstract class AsyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest
+public abstract class AsyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest, IRequiresCancellationToken
 {
+    public CancellationToken Token { get; set; } = default;
     public IRequest Request { get; set; }
     public Task ExecuteAsync(TArgs request) => RunAsync(request);
     protected abstract Task RunAsync(TArgs request);
@@ -49,8 +56,9 @@ public abstract class SyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresReques
     }
     protected abstract void Run(TArgs request);
 }
-public abstract class AsyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest
+public abstract class AsyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest, IRequiresCancellationToken
 {
+    public CancellationToken Token { get; set; } = default;
     public IRequest Request { get; set; }
     public TResult Result { get; protected set; }
     public async Task ExecuteAsync(NoArgs request) => Result = await RunAsync().ConfigureAwait(false);
@@ -67,8 +75,9 @@ public abstract class SyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TRe
     }
     protected abstract TResult Run();
 }
-public abstract class AsyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest
+public abstract class AsyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest, IRequiresCancellationToken
 {
+    public CancellationToken Token { get; set; } = default;
     public IRequest Request { get; set; }
     public TResult Result { get; protected set; }
 
