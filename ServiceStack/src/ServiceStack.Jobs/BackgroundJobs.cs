@@ -286,8 +286,19 @@ public partial class BackgroundJobs : IBackgroundJobs
             else if (job.RequestType == CommandResult.Api)
             {
                 var reqCtx = await CreateRequestContextAsync(scope, request, job);
-                await feature.AppHost.ServiceController.ExecuteMessageAsync(reqCtx.Message, reqCtx, ct);
-                response = reqCtx.Response.Dto;
+                response = await feature.AppHost.ServiceController.ExecuteMessageAsync(reqCtx.Message, reqCtx, ct);
+                if (response is Exception e)
+                {
+                    await FailJobAsync(job, e);
+                    return;
+                }
+                if (response is IHttpError httpError)
+                {
+                    var errorStatus = httpError.Response.GetResponseStatus()
+                        ?? ResponseStatusUtils.CreateResponseStatus(httpError.ErrorCode, httpError.Message, null);
+                    await FailJobAsync(job, errorStatus, shouldRetry:false);
+                    return;
+                }
             }
             else throw new NotSupportedException($"Unsupported Job Request Type: '{job.RequestType}'");
 

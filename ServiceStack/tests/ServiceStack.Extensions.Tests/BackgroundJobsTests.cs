@@ -19,6 +19,7 @@ using ServiceStack.Data;
 using ServiceStack.IO;
 using ServiceStack.Jobs;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests;
@@ -90,7 +91,15 @@ public class JobServices(IBackgroundJobs jobs) : Service
         jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "My API Finished");
         return new MyResponse { Result = $"Hello {request.Id}" };
     }
+
+    public object Any(AlwaysFails request)
+    {
+        Interlocked.Increment(ref Count);
+        throw new Exception("Always Fails: " + Count);
+    }
 }
+
+public class AlwaysFails : IReturn<EmptyResponse> {}
 
 public class AlwaysFailCommand : SyncCommand
 {
@@ -361,20 +370,43 @@ public class BackgroundJobsTests
     public void Does_execute_MyRequest_Api()
     {
         ResetState();
-        feature.Jobs.EnqueueApi(new MyRequest { Id = 2 });
+        var jobRef = feature.Jobs.EnqueueApi(new MyRequest { Id = 2 });
         
         Assert.That(ExecUtils.WaitUntilTrue(() => JobServices.LastRequest != null), "LastRequest == null");
         Assert.That(JobServices.Requests.Count, Is.GreaterThan(0));
         var job = JobServices.LastRequest.GetBackgroundJob();
         Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Api));
         AssertNotNulls(job);
+
+        JobResult? jobResult = null;
+        Assert.That(ExecUtils.WaitUntilTrue(() =>
+        {
+            jobResult = feature.Jobs.GetJob(jobRef.Id);
+            return jobResult?.Completed != null;
+        }), "jobResult.Completed == null");
+        Assert.That(jobResult!.Summary, Is.Not.Null);
+        Assert.That(jobResult!.Completed, Is.Not.Null);
+        
+        var request = feature.Jobs.CreateRequest(jobResult) as MyRequest;
+        Assert.That(request, Is.Not.Null);
+        Assert.That(request!.Id, Is.EqualTo(2));
+
+        var response = feature.Jobs.CreateResponse(jobResult) as MyResponse;
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response!.Result, Is.EqualTo($"Hello 2"));
     }
 
     [Test]
     public void Does_Run_Transient_Command()
     {
         ResetState();
-        var job = feature.Jobs.RunCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() { Worker = "app.db" });
+        List<MyResponse> responses = new();
+        List<Exception> errors = new();
+        var job = feature.Jobs.RunCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() {
+            Worker = "app.db",
+            OnSuccess = r => responses.Add((MyResponse)r!),
+            OnFailed = e => errors.Add(e),
+        });
         Assert.That(job.Worker, Is.EqualTo("app.db"));
         
         Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");
@@ -387,6 +419,16 @@ public class BackgroundJobsTests
         Assert.That(job.Status, Is.EqualTo("Finished"));
         Assert.That(ExecUtils.WaitUntilTrue(() => job.Progress >= 1), "job.Progress != 1");
         Assert.That(job.Logs, Is.EqualTo("MyCommand Started...\nMyCommand Finished"));
+        Assert.That(responses.Count, Is.EqualTo(1));
+        Assert.That(errors.Count, Is.EqualTo(0));
+
+        job = feature.Jobs.RunCommand<AlwaysFailCommand>(new()
+        {
+            Worker = "app.db",
+            OnSuccess = r => responses.Add((MyResponse)r!),
+            OnFailed = e => errors.Add(e),
+        });
+        Assert.That(ExecUtils.WaitUntilTrue(() => errors.Count == 1), "errors.Count != 1");
     }
 
     [Test]
@@ -564,6 +606,53 @@ public class BackgroundJobsTests
         var summary = db.SingleById<JobSummary>(jobRef.Id);
         Assert.That(summary!.RefId, Is.EqualTo(jobRef.RefId));
         Assert.That(summary.Request, Is.EqualTo(nameof(NoArgs)));
+        Assert.That(summary.Attempts, Is.EqualTo(3));
+        Assert.That(summary.State, Is.EqualTo(BackgroundJobState.Failed));
+        Assert.That(summary.ErrorCode, Is.EqualTo(nameof(Exception)));
+        Assert.That(summary.ErrorMessage, Is.EqualTo("Always Fails: 3"));
+        
+        Assert.That(callbackCount, Is.EqualTo(1));
+        // Only first exception is executed
+        Assert.That(callbackEx!.Message, Is.EqualTo("Always Fails: 1"));
+    }
+
+    [Test]
+    public async Task Does_retry_and_fail_AlwaysFails_Api()
+    {
+        ResetState();
+        var timeout = TimeSpan.FromMinutes(1);
+        var callbackCount = 0;
+        Exception? callbackEx = null;
+        var jobRef = feature.Jobs.EnqueueApi(new AlwaysFails(), new() {
+            OnFailed = ex => {
+                callbackCount++;
+                callbackEx = ex;
+            }
+        });
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => JobServices.Count >= 3, timeout), "JobServices.Count < 3");
+        Assert.That(JobServices.Count, Is.EqualTo(3));
+
+        using var db = feature.OpenJobsDb();
+        
+        using var monthDb = feature.OpenJobsMonthDb(DateTime.UtcNow);
+
+        FailedJob? failedJob = null;
+        Assert.That(await ExecUtils.WaitUntilTrueAsync(() => {
+            failedJob = monthDb.SingleById<FailedJob>(jobRef.Id);
+            return failedJob != null;
+        }, timeout), "failedJob == null");
+        Assert.That(failedJob!.RefId, Is.EqualTo(jobRef.RefId));
+        Assert.That(failedJob.Command, Is.Null);
+        Assert.That(failedJob.Request, Is.EqualTo(nameof(AlwaysFails)));
+        Assert.That(failedJob.RequestBody, Is.EqualTo("{}"));
+        Assert.That(failedJob.Attempts, Is.EqualTo(3));
+        Assert.That(failedJob.State, Is.EqualTo(BackgroundJobState.Failed));
+        Assert.That(failedJob.ErrorCode, Is.EqualTo(nameof(Exception)));
+        Assert.That(failedJob.Error!.Message, Is.EqualTo("Always Fails: 3"));
+
+        var summary = db.SingleById<JobSummary>(jobRef.Id);
+        Assert.That(summary!.RefId, Is.EqualTo(jobRef.RefId));
+        Assert.That(summary.Request, Is.EqualTo(nameof(AlwaysFails)));
         Assert.That(summary.Attempts, Is.EqualTo(3));
         Assert.That(summary.State, Is.EqualTo(BackgroundJobState.Failed));
         Assert.That(summary.ErrorCode, Is.EqualTo(nameof(Exception)));
