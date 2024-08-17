@@ -38,7 +38,6 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     public BackgroundJobRef EnqueueApi(object requestDto, BackgroundJobOptions? options = null)
     {
-        var job = options.ToBackgroundJob(CommandResult.Api, requestDto);
         var requestType = requestDto.GetType();
         var serviceType = feature.AppHost.Metadata.GetServiceTypeByRequest(requestType);
         if (serviceType == null)
@@ -50,20 +49,22 @@ public partial class BackgroundJobs : IBackgroundJobs
             options.Worker = workerAttr.Name;
         }
             
+        var job = options.ToBackgroundJob(CommandResult.Api, requestDto);
         return RecordAndDispatchJob(job);
     }
 
     public BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null)
     {
-        var job = options.ToBackgroundJob(CommandResult.Command, arg);
-        job.Command = commandName;
-        var commandInfo = AssertCommand(job.Command);
+        var commandInfo = AssertCommand(commandName);
         var workerAttr = commandInfo.Type.FirstAttribute<WorkerAttribute>();
         if (workerAttr != null)
         {
             options ??= new();
             options.Worker = workerAttr.Name;
         }
+
+        var job = options.ToBackgroundJob(CommandResult.Command, arg);
+        job.Command = commandName;
         return RecordAndDispatchJob(job);
     }
 
@@ -108,10 +109,18 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     public BackgroundJob ExecuteTransientCommand(string commandName, object arg, BackgroundJobOptions? options = null)
     {
+        var commandInfo = AssertCommand(commandName);
+        var workerAttr = commandInfo.Type.FirstAttribute<WorkerAttribute>();
+        if (workerAttr != null)
+        {
+            options ??= new();
+            options.Worker = workerAttr.Name;
+        }
         var job = options.ToBackgroundJob(CommandResult.Command, arg);
         job.RequestId = Guid.NewGuid().ToString("N");
         job.Command = commandName;
         job.Transient = true;
+        
         DispatchToWorker(job);
         return job;
     }
@@ -842,9 +851,6 @@ public partial class BackgroundJobs : IBackgroundJobs
     private CommandInfo AssertCommand(string? command)
     {
         ArgumentNullException.ThrowIfNull(command);
-        var commandInfo = feature.CommandsFeature.CommandInfos.FirstOrDefault(x => x.Name == command);
-        if (commandInfo == null) 
-            throw new InvalidOperationException($"Command '{command}' not found.");
-        return commandInfo;
+        return feature.CommandsFeature.AssertCommandInfo(command);
     }
 }

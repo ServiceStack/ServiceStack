@@ -71,6 +71,11 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     ];
 
     public List<CommandInfo> CommandInfos { get; set; } = [];
+    public Dictionary<string,CommandInfo> CommandInfoMap { get; set; } = new();
+    
+    public CommandInfo? GetCommandInfo(string commandName) => CommandInfoMap.GetValueOrDefault(commandName);
+    public CommandInfo AssertCommandInfo(string commandName) => GetCommandInfo(commandName)
+        ?? throw HttpError.NotFound("Command does not exist"); 
 
     public List<(Type, ServiceLifetime)> RegisterTypes { get; set; } =
     [
@@ -126,6 +131,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                         Response = GetResponseType(commandType).ToMetadataType(),
                     };
                     CommandInfos.Add(info);
+                    CommandInfoMap[info.Name] = info;
                 }
                 
                 if (services.Exists(commandType))
@@ -625,10 +631,7 @@ public class CommandsService(ILogger<CommandsService> log) : Service
         if (!HostContext.DebugMode)
             await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
 
-        var commandInfo = feature.CommandInfos.FirstOrDefault(x => x.Name == request.Command);
-        if (commandInfo == null)
-            throw HttpError.NotFound("Command does not exist");
-
+        var commandInfo = feature.AssertCommandInfo(request.Command);
         var commandType = commandInfo.Type;
         var requestType = commandInfo.Request.Type;
         var commandRequest = string.IsNullOrEmpty(request.RequestJson)
