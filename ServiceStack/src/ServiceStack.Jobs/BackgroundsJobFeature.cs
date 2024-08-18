@@ -59,7 +59,7 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
         }
     }
 
-    public static string DefaultDbMonthFile(DateTime createdDate) => $"jobs-{createdDate.Year}-{createdDate.Month:00}.db";
+    public static string DefaultDbMonthFile(DateTime createdDate) => $"jobs_{createdDate.Year}-{createdDate.Month:00}.db";
 
     public IDbConnection DefaultResolveAppDb(IDbConnectionFactory dbFactory) =>
         dbFactory.OpenDbConnection(DbFile);
