@@ -653,6 +653,11 @@ public static class NetCoreAppHostExtensions
         ServiceStackHost.GlobalAfterConfigureServices.ForEach(fn => fn(services));
         ServiceStackHost.GlobalAfterConfigureServices.Clear();
 
+        if (options.AutoRegister.Contains(typeof(HttpUtils)))
+        {
+            services.AddHttpClient(nameof(HttpUtils))
+                .ConfigurePrimaryHttpMessageHandler(() => HttpUtils.HttpClientHandlerFactory());
+        }
         if (options.ShouldAutoRegister<IAppSettings>() && !services.Exists<IAppSettings>())
         {
             services.AddSingleton<IAppSettings, NetCoreAppSettings>();
