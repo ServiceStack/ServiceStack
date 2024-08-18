@@ -19,7 +19,6 @@ using ServiceStack.Data;
 using ServiceStack.IO;
 using ServiceStack.Jobs;
 using ServiceStack.OrmLite;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests;
@@ -133,7 +132,7 @@ public class DependentJobCommand : SyncCommandWithResult<DependentJob,DependentJ
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         LastCommandRequest = request;
-        var job = Request.AssertBackgroundJob();
+        var job = Request.GetBackgroundJob();
         return new() { Id = request.Id, ParentJob = job.ParentJob };
     }
 }
@@ -375,7 +374,7 @@ public class BackgroundJobsTests
         Assert.That(ExecUtils.WaitUntilTrue(() => JobServices.LastRequest != null), "LastRequest == null");
         Assert.That(JobServices.Requests.Count, Is.GreaterThan(0));
         var job = JobServices.LastRequest.GetBackgroundJob();
-        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Api));
+        Assert.That(job.RequestType, Is.EqualTo(CommandResult.Api));
         AssertNotNulls(job);
 
         JobResult? jobResult = null;
@@ -412,9 +411,9 @@ public class BackgroundJobsTests
         Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");
         Assert.That(MyJobCommand.Requests.Count, Is.GreaterThan(0));
         job = MyJobCommand.LastRequest.GetBackgroundJob();
-        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
+        Assert.That(job.RequestType, Is.EqualTo(CommandResult.Command));
         Assert.That(job.Id, Is.EqualTo(0));
-        job!.Id = int.MaxValue;
+        job.Id = int.MaxValue;
         AssertNotNulls(job);
         Assert.That(job.Status, Is.EqualTo("Finished"));
         Assert.That(ExecUtils.WaitUntilTrue(() => job.Progress >= 1), "job.Progress != 1");
@@ -685,7 +684,7 @@ public class BackgroundJobsTests
         Assert.That(MyScopedCommand.Requests.Count, Is.GreaterThan(0));
 
         var job = MyScopedCommand.LastRequest.GetBackgroundJob();
-        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
+        Assert.That(job.RequestType, Is.EqualTo(CommandResult.Command));
         Assert.That(job.Request, Is.EqualTo(nameof(ScopedRequest)));
 
         var principal = MyScopedCommand.LastUser!;
@@ -746,7 +745,7 @@ public class BackgroundJobsTests
         Assert.That(JobScopedServices.Requests.Count, Is.GreaterThan(0));
 
         var job = JobScopedServices.LastRequest.GetBackgroundJob();
-        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Api));
+        Assert.That(job.RequestType, Is.EqualTo(CommandResult.Api));
         Assert.That(job.Request, Is.EqualTo(nameof(ScopedRequest)));
         
         Assert.That(ExecUtils.WaitUntilTrue(() => JobScopedServices.LastResult != null), "LastResult == null");
@@ -826,7 +825,7 @@ public class BackgroundJobsTests
         // First Scheduled Task should execute immediately
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => MySyncCommand.Count == 1), "Count != 1");
         var job = MySyncCommand.LastRequest.GetBackgroundJob();
-        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Command));
+        Assert.That(job.RequestType, Is.EqualTo(CommandResult.Command));
         AssertNotNulls(job);
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Status == "Finished"), "Status != Finished");
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Progress >= 1), "job.Progress != 1");
@@ -877,7 +876,7 @@ public class BackgroundJobsTests
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => JobServices.LastRequest != null), "LastRequest == null");
         Assert.That(JobServices.Requests.Count, Is.EqualTo(1));
         var job = JobServices.LastRequest.GetBackgroundJob();
-        Assert.That(job!.RequestType, Is.EqualTo(CommandResult.Api));
+        Assert.That(job.RequestType, Is.EqualTo(CommandResult.Api));
         AssertNotNulls(job);
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Status == "Finished"), "Status != Finished");
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => job.Progress >= 1), "job.Progress != 1");

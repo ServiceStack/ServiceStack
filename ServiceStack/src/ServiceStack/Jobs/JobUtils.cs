@@ -168,10 +168,10 @@ public static class JobUtils
         req.Items[nameof(BackgroundJob)] = job;
     }
 
-    public static BackgroundJob AssertBackgroundJob(this IRequest? req) => req.GetBackgroundJob()
+    public static BackgroundJob GetBackgroundJob(this IRequest? req) => req.TryGetBackgroundJob()
         ?? throw new Exception("BackgroundJob not found");
 
-    public static BackgroundJob? GetBackgroundJob(this IRequest? req)
+    public static BackgroundJob? TryGetBackgroundJob(this IRequest? req)
     {
         return req?.Items.TryGetValue(nameof(BackgroundJob), out var oJob) == true
             ? oJob as BackgroundJob
@@ -179,7 +179,7 @@ public static class JobUtils
     }
 
     public static void UpdateBackgroundJobStatus(this IBackgroundJobs jobs, IRequest? req, double? progress=null, string? status=null, string? log=null)
-        => jobs.UpdateJobStatus(new(GetBackgroundJob(req) ?? throw new Exception("Background Job not found"), 
+        => jobs.UpdateJobStatus(new(GetBackgroundJob(req), 
             progress: progress, status: status, log: log));
     public static void UpdateBackgroundJobStatus(this IBackgroundJobs jobs, BackgroundJob job, double? progress=null, string? status=null, string? log=null)
     {
