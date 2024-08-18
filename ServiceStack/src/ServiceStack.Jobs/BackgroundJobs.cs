@@ -143,7 +143,6 @@ public partial class BackgroundJobs : IBackgroundJobs
         };
         
         var job = RunCommand(commandName, arg, options);
-        
         return tcs.Task;
     }
 
