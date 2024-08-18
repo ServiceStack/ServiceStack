@@ -27,6 +27,12 @@ public static class HttpExt
     }
 
 #if NET6_0_OR_GREATER
+    public static async Task<string> SendJsonCallbackAsync<T>(this System.Net.Http.IHttpClientFactory clientFactory, string url, T body)
+    {
+        using var client = clientFactory.CreateClient(string.Empty);
+        return await client.SendJsonCallbackAsync(url, body);
+    }
+
     public static async Task<string> SendJsonCallbackAsync<T>(this System.Net.Http.HttpClient client, string url, T body)
     {
         var msg = ToJsonHttpRequestMessage(url, body);
