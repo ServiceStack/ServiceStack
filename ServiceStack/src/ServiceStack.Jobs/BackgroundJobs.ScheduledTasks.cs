@@ -117,17 +117,25 @@ public partial class BackgroundJobs
         if (task.RequestType == CommandResult.Command)
         {
             var request = CreateRequestForCommand(task.Command!, task.Request, task.RequestBody);
-            jobRef = EnqueueCommand(task.Command!, request, task.Options);
+            if (task.Options?.RunCommand == true)
+            {
+                RunCommand(task.Command!, request, task.Options);
+            }
+            else
+            {
+                jobRef = EnqueueCommand(task.Command!, request, task.Options);
+                task.LastJobId = jobRef.Id;
+            }
         }
         else if (task.RequestType == CommandResult.Api)
         {
             var request = CreateRequestForApi(task.Request, task.RequestBody);
             jobRef = EnqueueApi(request, task.Options);
+            task.LastJobId = jobRef.Id;
         }
         else throw new NotSupportedException("Unsupported RequestType: " + task.RequestType);
 
         task.LastRun = DateTime.UtcNow;
-        task.LastJobId = jobRef.Id;
         using var db = feature.OpenJobsDb();
         lock (dbWrites)
         {

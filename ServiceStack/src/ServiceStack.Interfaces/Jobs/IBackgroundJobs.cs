@@ -103,13 +103,14 @@ public class BackgroundJobOptions
     /// Associate Job with a tag group
     /// </summary>
     public string? Tag { get; set; }
-    /// <summary>
-    /// Associate Job with a tag group
-    /// </summary>
     public string? CreatedBy { get; set; }
     public int? TimeoutSecs { get; set; }
     public Dictionary<string, string>? Args { get; set; } //= Provider
 
+    /// <summary>
+    /// Whether command should be run and not persisted
+    /// </summary>
+    public bool? RunCommand { get; set; }
     [IgnoreDataMember]
     public Action<object?>? OnSuccess { get; set; }
     [IgnoreDataMember]
