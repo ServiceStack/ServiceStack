@@ -102,6 +102,7 @@ public static class JobUtils
             OnSuccess = options?.OnSuccess,
             OnFailed = options?.OnFailed,
             Token = options?.Token,
+            LastActivityDate = DateTime.UtcNow,
         };
     }
 
