@@ -26,6 +26,8 @@ namespace ServiceStack.Extensions.Tests;
 public class MyRequest : IReturn<MyResponse>
 {
     public int Id { get; set; }
+    public int? WaitMs { get; set; }
+    public string? Throw { get; set; }
 }
 public class MyResponse
 {
@@ -38,14 +40,30 @@ class MyJobCommand(IBackgroundJobs jobs) : AsyncCommandWithResult<MyRequest,MyRe
     public static IRequest? LastRequest { get; set; }
     public static List<MyRequest> Requests { get; set; } = new();
 
-    protected override Task<MyResponse> RunAsync(MyRequest request)
+    protected override async Task<MyResponse> RunAsync(MyRequest request)
     {
         jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyCommand Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         Requests.Add(request);
+        if (request.WaitMs != null)
+        {
+            var wait = TimeSpan.FromMilliseconds(request.WaitMs.Value);
+            var startedAt = DateTime.UtcNow;
+            var i = 0;
+            while (DateTime.UtcNow - startedAt < wait)
+            {
+                Token.ThrowIfCancellationRequested();
+                var waited = DateTime.UtcNow - startedAt;
+                var progress = waited.TotalMilliseconds / wait.TotalMilliseconds;
+                jobs.UpdateBackgroundJobStatus(Request,progress, "Waiting", $"MyCommand {i++} Waited {waited:g}...");
+                await Task.Delay(ExecUtils.CalculateFullJitterBackOffDelay(++i), Token);
+            }
+        }
+        if (request.Throw != null)
+            throw new Exception(request.Throw);
         jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyCommand Finished");
-        return new MyResponse { Result = $"Hello {request.Id}" }.InTask();
+        return new MyResponse { Result = $"Hello {request.Id}" };
     }
 }
 
@@ -402,11 +420,11 @@ public class BackgroundJobsTests
         List<MyResponse> responses = new();
         List<Exception> errors = new();
         var job = feature.Jobs.RunCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() {
-            Worker = "app.db",
+            Worker = Workers.AppDb,
             OnSuccess = r => responses.Add((MyResponse)r!),
             OnFailed = e => errors.Add(e),
         });
-        Assert.That(job.Worker, Is.EqualTo("app.db"));
+        Assert.That(job.Worker, Is.EqualTo(Workers.AppDb));
         
         Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");
         Assert.That(MyJobCommand.Requests.Count, Is.GreaterThan(0));
@@ -423,11 +441,74 @@ public class BackgroundJobsTests
 
         job = feature.Jobs.RunCommand<AlwaysFailCommand>(new()
         {
-            Worker = "app.db",
+            Worker = Workers.AppDb,
             OnSuccess = r => responses.Add((MyResponse)r!),
             OnFailed = e => errors.Add(e),
         });
         Assert.That(ExecUtils.WaitUntilTrue(() => errors.Count == 1), "errors.Count != 1");
+    }
+
+    [Test]
+    public async Task Does_Run_Transient_Command_with_Async_callback()
+    {
+        ResetState();
+        List<MyResponse> responses = new();
+        List<Exception> errors = new();
+        var response = await feature.Jobs.RunCommandAsync<MyJobCommand>(new MyRequest { Id = 1 }, new() {
+            Worker = Workers.AppDb,
+            OnSuccess = r => responses.Add((MyResponse)r!),
+            OnFailed = e => errors.Add(e),
+        });
+        
+        var myResponse = response as MyResponse;
+        Assert.That(myResponse, Is.Not.Null);
+        Assert.That(myResponse!.Result, Is.EqualTo("Hello 1"));
+        Assert.That(responses.Count, Is.EqualTo(1));
+        Assert.That(errors.Count, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task Does_Run_Transient_Command_with_Async_callback_Exception()
+    {
+        ResetState();
+        List<MyResponse> responses = new();
+        List<Exception> errors = new();
+        try
+        {
+            await feature.Jobs.RunCommandAsync<MyJobCommand>(new MyRequest { Throw = "Throw 1" }, new() {
+                Worker = Workers.AppDb,
+                OnSuccess = r => responses.Add((MyResponse)r!),
+                OnFailed = e => errors.Add(e),
+            });
+            Assert.Fail("Should throw");
+        }
+        catch (Exception e)
+        {
+            Assert.That(e.Message, Is.EqualTo("Throw 1"));
+        }
+        Assert.That(responses.Count, Is.EqualTo(0));
+        Assert.That(errors.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Does_Run_Transient_Command_with_Async_callback_Timeout()
+    {
+        ResetState();
+        List<MyResponse> responses = new();
+        List<Exception> errors = new();
+        try
+        {
+            await feature.Jobs.RunCommandAsync<MyJobCommand>(new MyRequest { WaitMs = 2000 }, new() {
+                Worker = Workers.AppDb,
+                OnSuccess = r => responses.Add((MyResponse)r!),
+                OnFailed = e => errors.Add(e),
+                TimeoutSecs = 1,
+            });
+            Assert.Fail("Should throw");
+        }
+        catch (TaskCanceledException) {}
+        Assert.That(responses.Count, Is.EqualTo(0));
+        Assert.That(errors.Count, Is.EqualTo(1));
     }
 
     [Test]

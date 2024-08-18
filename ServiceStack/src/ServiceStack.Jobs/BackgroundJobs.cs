@@ -125,6 +125,28 @@ public partial class BackgroundJobs : IBackgroundJobs
         return job;
     }
 
+    public Task<object?> RunCommandAsync(string commandName, object arg, BackgroundJobOptions? options = null)
+    {
+        var tcs = new TaskCompletionSource<object?>();
+        options ??= new();
+        var origOnSuccess = options?.OnSuccess;
+        var origOnFailed = options?.OnFailed;
+        options.OnSuccess = r =>
+        {
+            origOnSuccess?.Invoke(r);
+            tcs.SetResult(r);
+        };
+        options.OnFailed = e =>
+        {
+            origOnFailed?.Invoke(e);
+            tcs.SetException(e);
+        };
+        
+        var job = RunCommand(commandName, arg, options);
+        
+        return tcs.Task;
+    }
+
     public object CreateRequest(BackgroundJobBase job)
     {
         var requestType = job.RequestType switch {
@@ -200,14 +222,15 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
-    async Task<BasicRequest> CreateRequestContextAsync(IServiceScope scope, object request, BackgroundJob job)
+    async Task<BasicRequest> CreateRequestContextAsync(IServiceScope scope, object request, BackgroundJob job, CancellationToken token)
     {
         var msg = MessageFactory.Create(request);
         var reqCtx = new BasicRequest(request)
         {
             ServiceScope = scope,
             Items = {
-                [nameof(BackgroundJob)] = job
+                [nameof(BackgroundJob)] = job,
+                [nameof(CancellationToken)] = token,
             }
         };
         if (job.UserId != null)
@@ -231,11 +254,16 @@ public partial class BackgroundJobs : IBackgroundJobs
     // Executed on BackgroundJobsWorker Thread
     public async Task ExecuteJobAsync(BackgroundJob job)
     {
+        using var linkedCts = job.Token != null
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct, job.Token.Value)
+            : CancellationTokenSource.CreateLinkedTokenSource(ct);
+        linkedCts.CancelAfter(TimeSpan.FromSeconds(job.TimeoutSecs ?? feature.DefaultTimeoutSecs));
+
         try
         {
             using var scope = scopeFactory.CreateScope();
             var services = scope.ServiceProvider;
-            
+
             if (log.IsEnabled(LogLevel.Debug))
             {
                 log.LogDebug("JOBS {Ticks}: [{RequestType} {Request} on {Worker}] Executing Job: {Id}",
@@ -252,13 +280,14 @@ public partial class BackgroundJobs : IBackgroundJobs
                 lock (dbWrites)
                 {
                     using var db = feature.OpenJobsDb();
-                    db.UpdateOnly(() => new BackgroundJob {
+                    db.UpdateOnly(() => new BackgroundJob
+                    {
                         StartedDate = job.StartedDate,
                         State = job.State,
                     }, where: x => x.Id == job.Id);
                 }
             }
-            
+
             // Execute Command
             if (job.RequestType == null || job.Request == null)
                 throw new ArgumentNullException(nameof(job.Request), "Job Request is not set");
@@ -270,33 +299,35 @@ public partial class BackgroundJobs : IBackgroundJobs
                 var commandInfo = AssertCommand(job.Command);
                 var command = (IAsyncCommand)services.GetRequiredService(commandInfo.Type);
 
-                var reqCtx = await CreateRequestContextAsync(scope, request, job);
+                var reqCtx = await CreateRequestContextAsync(scope, request, job, linkedCts.Token);
                 if (command is IRequiresRequest requiresRequest)
                     requiresRequest.Request = reqCtx;
-                if (command is IRequiresCancellationToken hasToken)
-                    hasToken.Token = ct;
-                var commandResult = await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto);
+                var commandResult =
+                    await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto, linkedCts.Token);
                 if (commandResult.Exception != null)
                 {
                     await FailJobAsync(job, commandResult.Exception);
                     return;
                 }
+
                 response = feature.CommandsFeature.GetCommandResult(command);
             }
             else if (job.RequestType == CommandResult.Api)
             {
-                var reqCtx = await CreateRequestContextAsync(scope, request, job);
-                response = await feature.AppHost.ServiceController.ExecuteMessageAsync(reqCtx.Message, reqCtx, ct);
+                var reqCtx = await CreateRequestContextAsync(scope, request, job, linkedCts.Token);
+                response = await feature.AppHost.ServiceController.ExecuteMessageAsync(reqCtx.Message, reqCtx,
+                    linkedCts.Token);
                 if (response is Exception e)
                 {
                     await FailJobAsync(job, e);
                     return;
                 }
+
                 if (response is IHttpError httpError)
                 {
                     var errorStatus = httpError.Response.GetResponseStatus()
                         ?? ResponseStatusUtils.CreateResponseStatus(httpError.ErrorCode, httpError.Message, null);
-                    await FailJobAsync(job, errorStatus, shouldRetry:false);
+                    await FailJobAsync(job, errorStatus, shouldRetry: false);
                     return;
                 }
             }
@@ -425,10 +456,9 @@ public partial class BackgroundJobs : IBackgroundJobs
                 var msg = MessageFactory.Create(response);
                 var reqCtx = new BasicRequest(response);
                 reqCtx.SetBackgroundJob(job);
+                reqCtx.SetCancellationToken(ct);
                 if (command is IRequiresRequest requiresRequest)
                     requiresRequest.Request = reqCtx;
-                if (command is IRequiresCancellationToken hasToken)
-                    hasToken.Token = ct;
 
                 CommandResult? commandResult = null;
                 var i = 0;
@@ -588,25 +618,26 @@ public partial class BackgroundJobs : IBackgroundJobs
         return to;
     }
 
-    public async Task<JobResult?> GetJobAsync(long jobId)
+    public async Task<JobResult?> GetJobAsync(long jobId, CancellationToken token=default)
     {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, token);
         using var db = OpenJobsDb(); 
-        var summary = await db.SingleByIdAsync<JobSummary>(jobId, token: ct);
+        var summary = await db.SingleByIdAsync<JobSummary>(jobId, token: linkedCts.Token);
         if (summary == null)
             return null;
 
         var to = new JobResult
         {
             Summary = summary,
-            Queued = await db.SingleByIdAsync<BackgroundJob>(jobId, token: ct)
+            Queued = await db.SingleByIdAsync<BackgroundJob>(jobId, token: linkedCts.Token)
         };
 
         if (to.Queued == null)
         {
             using var dbMonth = feature.OpenJobsMonthDb(summary.CreatedDate);
-            to.Completed = await dbMonth.SingleByIdAsync<CompletedJob>(jobId, token: ct);
+            to.Completed = await dbMonth.SingleByIdAsync<CompletedJob>(jobId, token: linkedCts.Token);
             if (to.Completed == null)
-                to.Failed = await dbMonth.SingleByIdAsync<FailedJob>(jobId, token: ct);
+                to.Failed = await dbMonth.SingleByIdAsync<FailedJob>(jobId, token: linkedCts.Token);
         }
 
         return to;

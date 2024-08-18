@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Threading;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Jobs;
@@ -122,6 +123,7 @@ public class BackgroundJob : BackgroundJobBase
     [Ignore] public CompletedJob? ParentJob { get; set; }
     [Ignore, IgnoreDataMember] public Action<object?>? OnSuccess { get; set; }
     [Ignore, IgnoreDataMember] public Action<Exception>? OnFailed { get; set; }
+    [Ignore, IgnoreDataMember] public CancellationToken? Token { get; set; }
 }
 
 [Icon(Svg = SvgIcons.Stats)]

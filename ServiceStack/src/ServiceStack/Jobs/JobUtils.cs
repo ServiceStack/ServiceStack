@@ -1,6 +1,8 @@
 #nullable enable
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Jobs;
@@ -55,8 +57,12 @@ public static class JobUtils
 
     public static BackgroundJob RunCommand<TCommand>(this IBackgroundJobs jobs, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand<NoArgs> => jobs.RunCommand(typeof(TCommand).Name, NoArgs.Value, options);
+    public static Task<object?> RunCommandAsync<TCommand>(this IBackgroundJobs jobs, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand<NoArgs> => jobs.RunCommandAsync(typeof(TCommand).Name, NoArgs.Value, options);
     public static BackgroundJob RunCommand<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand => jobs.RunCommand(typeof(TCommand).Name, request, options);
+    public static Task<object?> RunCommandAsync<TCommand>(this IBackgroundJobs jobs, object request, BackgroundJobOptions? options = null) 
+        where TCommand : IAsyncCommand => jobs.RunCommandAsync(typeof(TCommand).Name, request, options);
     
     public static void RecurringCommand<TCommand>(this IBackgroundJobs jobs, Schedule schedule, BackgroundJobOptions? options = null) 
         where TCommand : IAsyncCommand<NoArgs> => jobs.RecurringCommand(typeof(TCommand).Name, schedule, typeof(TCommand).Name, NoArgs.Value, options);
@@ -95,6 +101,7 @@ public static class JobUtils
             Args = options?.Args,
             OnSuccess = options?.OnSuccess,
             OnFailed = options?.OnFailed,
+            Token = options?.Token,
         };
     }
 
@@ -163,14 +170,17 @@ public static class JobUtils
         };
     }
 
-    public static void SetBackgroundJob(this IRequest req, BackgroundJob job)
-    {
-        req.Items[nameof(BackgroundJob)] = job;
-    }
+    public static void SetCancellationToken(this IRequest req, CancellationToken token) => req.Items[nameof(CancellationToken)] = token;
+
+    public static CancellationToken GetCancellationToken(this IRequest? req) =>
+        req?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
+            ? (CancellationToken)oToken
+            : default;
 
     public static BackgroundJob GetBackgroundJob(this IRequest? req) => req.TryGetBackgroundJob()
         ?? throw new Exception("BackgroundJob not found");
 
+    public static void SetBackgroundJob(this IRequest req, BackgroundJob job) => req.Items[nameof(BackgroundJob)] = job;
     public static BackgroundJob? TryGetBackgroundJob(this IRequest? req)
     {
         return req?.Items.TryGetValue(nameof(BackgroundJob), out var oJob) == true

@@ -39,9 +39,12 @@ public abstract class SyncCommand : SyncCommand<NoArgs>
     protected override void Run(NoArgs request) => Run();
     protected abstract void Run();
 }
-public abstract class AsyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest, IRequiresCancellationToken
+public abstract class AsyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest
 {
-    public CancellationToken Token { get; set; } = default;
+    private CancellationToken? token;
+    public CancellationToken Token => token ??= Request.Items.TryGetValue(nameof(CancellationToken), out var oToken)
+        ? (CancellationToken)oToken
+        : default;
     public IRequest Request { get; set; }
     public Task ExecuteAsync(TArgs request) => RunAsync(request);
     protected abstract Task RunAsync(TArgs request);
@@ -56,9 +59,12 @@ public abstract class SyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresReques
     }
     protected abstract void Run(TArgs request);
 }
-public abstract class AsyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest, IRequiresCancellationToken
+public abstract class AsyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest
 {
-    public CancellationToken Token { get; set; } = default;
+    private CancellationToken? token;
+    public CancellationToken Token => token ??= Request.Items.TryGetValue(nameof(CancellationToken), out var oToken)
+        ? (CancellationToken)oToken
+        : default;
     public IRequest Request { get; set; }
     public TResult Result { get; protected set; }
     public async Task ExecuteAsync(NoArgs request) => Result = await RunAsync().ConfigureAwait(false);
@@ -75,9 +81,12 @@ public abstract class SyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TRe
     }
     protected abstract TResult Run();
 }
-public abstract class AsyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest, IRequiresCancellationToken
+public abstract class AsyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest
 {
-    public CancellationToken Token { get; set; } = default;
+    private CancellationToken? token;
+    public CancellationToken Token => token ??= Request.Items.TryGetValue(nameof(CancellationToken), out var oToken)
+        ? (CancellationToken)oToken
+        : default;
     public IRequest Request { get; set; }
     public TResult Result { get; protected set; }
 
