@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServiceStack;
@@ -30,18 +31,18 @@ public static class HttpExt
     
     public static System.Net.Http.HttpClient HttpUtilsClient(this System.Net.Http.IHttpClientFactory clientFactory) =>
         clientFactory.CreateClient(nameof(HttpUtils));
-    public static async Task<string> SendJsonCallbackAsync<T>(this System.Net.Http.IHttpClientFactory clientFactory, string url, T body)
+    public static async Task<string> SendJsonCallbackAsync<T>(this System.Net.Http.IHttpClientFactory clientFactory, string url, T body, CancellationToken token=default)
     {
         using var client = clientFactory.HttpUtilsClient();
-        return await client.SendJsonCallbackAsync(url, body);
+        return await client.SendJsonCallbackAsync(url, body, token: token);
     }
 
-    public static async Task<string> SendJsonCallbackAsync<T>(this System.Net.Http.HttpClient client, string url, T body)
+    public static async Task<string> SendJsonCallbackAsync<T>(this System.Net.Http.HttpClient client, string url, T body, CancellationToken token=default)
     {
         var msg = ToJsonHttpRequestMessage(url, body);
-        var response = await client.SendAsync(msg);
+        var response = await client.SendAsync(msg, token);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        return await response.Content.ReadAsStringAsync(token);
     }
 
     public static System.Net.Http.HttpRequestMessage ToJsonHttpRequestMessage<T>(string url, T body)
