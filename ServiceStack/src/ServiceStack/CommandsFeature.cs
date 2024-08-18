@@ -342,6 +342,15 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 
         async Task Exec(object commandArg)
         {
+            if (oCommand is IRequiresRequest hasRequest)
+            {
+                hasRequest.Request ??= new BasicRequest(commandArg)
+                {
+                    Items = {
+                        [nameof(CancellationToken)] = token,
+                    }
+                };
+            }
             var methodInvoker = GetInvoker(method);
             await methodInvoker(oCommand, commandArg);
         }
