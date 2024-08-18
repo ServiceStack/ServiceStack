@@ -40,7 +40,7 @@ class MyJobCommand(IBackgroundJobs jobs) : AsyncCommandWithResult<MyRequest,MyRe
     public static IRequest? LastRequest { get; set; }
     public static List<MyRequest> Requests { get; set; } = new();
 
-    protected override async Task<MyResponse> RunAsync(MyRequest request)
+    protected override async Task<MyResponse> RunAsync(MyRequest request, CancellationToken token)
     {
         jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyCommand Started...");
         Interlocked.Increment(ref Count);
@@ -53,11 +53,11 @@ class MyJobCommand(IBackgroundJobs jobs) : AsyncCommandWithResult<MyRequest,MyRe
             var i = 0;
             while (DateTime.UtcNow - startedAt < wait)
             {
-                Token.ThrowIfCancellationRequested();
+                token.ThrowIfCancellationRequested();
                 var waited = DateTime.UtcNow - startedAt;
                 var progress = waited.TotalMilliseconds / wait.TotalMilliseconds;
                 jobs.UpdateBackgroundJobStatus(Request,progress, "Waiting", $"MyCommand {i++} Waited {waited:g}...");
-                await Task.Delay(ExecUtils.CalculateFullJitterBackOffDelay(++i), Token);
+                await Task.Delay(ExecUtils.CalculateFullJitterBackOffDelay(++i), token);
             }
         }
         if (request.Throw != null)
@@ -173,13 +173,13 @@ class MyScopedCommand(IBackgroundJobs jobs, UserManager<ApplicationUser> userMan
     public static ClaimsPrincipal? LastUser { get; set; }
     public static IAuthSession? LastSession { get; set; }
     public static ApplicationUser? LastResult { get; set; }
-    protected override async Task<ApplicationUser?> RunAsync(ScopedRequest request)
+    protected override async Task<ApplicationUser?> RunAsync(ScopedRequest request, CancellationToken token)
     {
         jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyScopedCommand Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         LastUser = Request.GetClaimsPrincipal();
-        LastSession = await Request.GetSessionAsync();
+        LastSession = await Request.GetSessionAsync(token: token);
         Requests.Add(request);
         jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyScopedCommand Finished");
         return LastResult = await userManager.FindByIdAsync(request.UserId);
