@@ -12,10 +12,10 @@ public partial class BackgroundJobs
     /// <summary>
     /// On Startup load all scheduled tasks into memory
     /// </summary>
-    async Task LoadScheduledTasksAsync()
+    void LoadScheduledTasks()
     {
         using var db = feature.OpenJobsDb();
-        var tasks = await db.SelectAsync<ScheduledTask>(token: ct);
+        var tasks = db.Select<ScheduledTask>();
         foreach (var task in tasks)
         {
             namedScheduledTasks[task.Name] = task;

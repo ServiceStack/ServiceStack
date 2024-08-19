@@ -16,10 +16,10 @@ public interface IBackgroundJobs
     BackgroundJob RunCommand(string commandName, object arg, BackgroundJobOptions? options = null);
     Task<object?> RunCommandAsync(string commandName, object arg, BackgroundJobOptions? options = null);
     Task ExecuteJobAsync(BackgroundJob job);
-    Task CancelJobAsync(BackgroundJob job);
-    Task FailJobAsync(BackgroundJob job, Exception ex);
-    Task FailJobAsync(BackgroundJob job, ResponseStatus error, bool shouldRetry);
-    Task CompleteJobAsync(BackgroundJob job, object? response=null);
+    void CancelJob(BackgroundJob job);
+    void FailJob(BackgroundJob job, Exception ex);
+    void FailJob(BackgroundJob job, ResponseStatus error, bool shouldRetry);
+    void CompleteJob(BackgroundJob job, object? response = null);
     void UpdateJobStatus(BackgroundJobStatusUpdate status);
     Task StartAsync(CancellationToken stoppingToken);
     Task TickAsync();

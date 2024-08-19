@@ -306,7 +306,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                     await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto, linkedCts.Token);
                 if (commandResult.Exception != null)
                 {
-                    await FailJobAsync(job, commandResult.Exception);
+                    FailJob(job, commandResult.Exception);
                     return;
                 }
 
@@ -319,7 +319,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                     linkedCts.Token);
                 if (response is Exception e)
                 {
-                    await FailJobAsync(job, e);
+                    FailJob(job, e);
                     return;
                 }
 
@@ -327,7 +327,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                 {
                     var errorStatus = httpError.Response.GetResponseStatus()
                         ?? ResponseStatusUtils.CreateResponseStatus(httpError.ErrorCode, httpError.Message, null);
-                    await FailJobAsync(job, errorStatus, shouldRetry: false);
+                    FailJob(job, errorStatus, shouldRetry: false);
                     return;
                 }
             }
@@ -337,27 +337,26 @@ public partial class BackgroundJobs : IBackgroundJobs
             onSuccess?.Invoke(response);
 
             PerformDbUpdates();
-
-            await CompleteJobAsync(job, response);
+            CompleteJob(job, response);
         }
         catch (TaskCanceledException tex)
         {
-            await FailJobAsync(job, tex);
+            FailJob(job, tex);
         }
         catch (Exception ex)
         {
-            await FailJobAsync(job, ex);
+            FailJob(job, ex);
         }
     }
 
-    public Task CancelJobAsync(BackgroundJob job)
+    public void CancelJob(BackgroundJob job)
     {
-        return FailJobAsync(job, new TaskCanceledException("Job was cancelled"), shouldRetry:false);
+        FailJob(job, new TaskCanceledException("Job was cancelled"), shouldRetry:false);
     }
 
-    public async Task FailJobAsync(BackgroundJob job, Exception ex)
+    public void FailJob(BackgroundJob job, Exception ex)
     {
-        await FailJobAsync(job, ex, ShouldRetry(job, ex));
+        FailJob(job, ex, ShouldRetry(job, ex));
         // Callbacks are only available from the BackgroundJobOptions executed immediately
         var onFailed = job.OnFailed;
         onFailed?.Invoke(ex);
@@ -369,10 +368,10 @@ public partial class BackgroundJobs : IBackgroundJobs
         return job.Attempts <= retryLimit && feature.ShouldRetry(job, ex);
     }
 
-    public Task FailJobAsync(BackgroundJob job, Exception ex, bool shouldRetry) => 
-        FailJobAsync(job, ex.ToResponseStatus(), shouldRetry);
+    public void FailJob(BackgroundJob job, Exception ex, bool shouldRetry) => 
+        FailJob(job, ex.ToResponseStatus(), shouldRetry);
 
-    public Task FailJobAsync(BackgroundJob job, ResponseStatus error, bool shouldRetry)
+    public void FailJob(BackgroundJob job, ResponseStatus error, bool shouldRetry)
     {
         job.Error = error;
         job.ErrorCode = error.ErrorCode;
@@ -436,8 +435,6 @@ public partial class BackgroundJobs : IBackgroundJobs
                 }
             }
         }
-
-        return Task.CompletedTask;
     }
 
     // Runs on BG Thread
@@ -466,7 +463,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                 var i = 0;
                 do
                 {
-                    commandResult = await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto);
+                    commandResult = await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto, ct);
                     if (commandResult.Exception != null)
                         continue;
                     break;
@@ -474,7 +471,7 @@ public partial class BackgroundJobs : IBackgroundJobs
 
                 if (commandResult.Exception != null)
                 {
-                    _ = FailJobAsync(job, commandResult.Exception, shouldRetry:false);
+                    FailJob(job, commandResult.Exception, shouldRetry:false);
                     return;
                 }
                 
@@ -483,14 +480,14 @@ public partial class BackgroundJobs : IBackgroundJobs
             }
             catch (Exception ex)
             {
-                _ = FailJobAsync(job, ex, shouldRetry:false);
+                FailJob(job, ex, shouldRetry:false);
                 return;
             }
         }
         ArchiveJob(job);
     }
 
-    public Task CompleteJobAsync(BackgroundJob job, object? response=null)
+    public void CompleteJob(BackgroundJob job, object? response=null)
     {
         using var db = feature.OpenJobsDb();
 
@@ -542,7 +539,6 @@ public partial class BackgroundJobs : IBackgroundJobs
         {
             ArchiveJob(job);
         }
-        return Task.CompletedTask;
     }
 
     public void ArchiveJob(BackgroundJob job)
@@ -661,24 +657,25 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
-    public async Task StartAsync(CancellationToken stoppingToken)
+    public Task StartAsync(CancellationToken stoppingToken)
     {
         ct = stoppingToken;
         log.LogInformation("JOBS Starting...");
-        await LoadJobQueueAsync();
-        await LoadScheduledTasksAsync();
+        LoadJobQueue();
+        LoadScheduledTasks();
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// On App Startup, requeue any incomplete jobs and notify any completed jobs
     /// </summary>
-    private async Task LoadJobQueueAsync()
+    private void LoadJobQueue()
     {
         using var db = feature.OpenJobsDb();
         var requestId = Guid.NewGuid().ToString("N");
         var now = DateTime.UtcNow;
 
-        var completedJobs = await db.SelectAsync<BackgroundJob>(x => x.CompletedDate != null, token: ct);
+        var completedJobs = db.Select<BackgroundJob>(x => x.CompletedDate != null);
         if (completedJobs.Count > 0)
         {
             foreach (var completedJob in completedJobs)
@@ -686,12 +683,12 @@ public partial class BackgroundJobs : IBackgroundJobs
                 try
                 {
                     var response = CreateResponse(completedJob);
-                    await CompleteJobAsync(completedJob, response);
+                    CompleteJob(completedJob, response);
                 }
                 catch (Exception e)
                 {
                     log.LogError("Failed to complete job on Startup: {Id}", completedJob.Id);
-                    await FailJobAsync(completedJob, e, shouldRetry: false);
+                    FailJob(completedJob, e, shouldRetry: false);
                 }
             }
         }
@@ -706,7 +703,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             }, where:x => x.DependsOn == null && (x.RunAfter == null || now > x.RunAfter));
         }
 
-        var dispatchJobs = await db.SelectAsync<BackgroundJob>(x => x.RequestId == requestId, token: ct);
+        var dispatchJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
         if (dispatchJobs.Count > 0)
         {
             log.LogInformation("JOBS Queued {Count} Incomplete Jobs", dispatchJobs.Count);
@@ -717,17 +714,17 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
 
         // Execute any queued dependent jobs
-        await DispatchPendingJobsAsync();
+        DispatchPendingJobs();
     }
 
-    public async Task DispatchPendingJobsAsync()
+    public void DispatchPendingJobs()
     {
         using var db = feature.OpenJobsDb();
         var expiredJobIds = new List<long>();
         var dependentJobIds = new List<long>();
         var scheduledJobIds = new List<long>();
-        var pendingJobs = await db.SelectAsync(db.From<BackgroundJob>()
-            .Where(x => x.CompletedDate == null), token: ct);
+        var pendingJobs = db.Select(db.From<BackgroundJob>()
+            .Where(x => x.CompletedDate == null));
 
         var now = DateTime.UtcNow;
         var completedJobsMap = new Dictionary<long, CompletedJob>();
@@ -748,7 +745,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                 {
                     if (job.DependsOn != null)
                     {
-                        var dependsOnSummary = await GetJobAsync(job.DependsOn.Value);
+                        var dependsOnSummary = GetJob(job.DependsOn.Value);
                         if (dependsOnSummary?.Completed != null)
                         {
                             completedJobsMap[job.DependsOn.Value] = job.ParentJob = dependsOnSummary.Completed;
@@ -794,7 +791,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         
         if (requeudJobsCount > 0)
         {
-            var requeudJobs = await db.SelectAsync<BackgroundJob>(x => x.RequestId == requestId, token: ct);
+            var requeudJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
             if (requeudJobs.Count > 0)
             {
                 log.LogInformation("JOBS Queueing {Count} Jobs ({ScheduledCount} Scheduled, {DependentCount} Dependent, {TimedOutCount} Expired)",
@@ -882,7 +879,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (log.IsEnabled(LogLevel.Debug))
             log.LogDebug("JOBS Tick {Ticks}", ticks);
 
-        await DispatchPendingJobsAsync();
+        DispatchPendingJobs();
         PerformDbUpdates();
         ExecuteDueScheduledTasks();
     }
