@@ -53,6 +53,11 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
     public bool EnableAutoQueryViewer { get; set; } = true;
     public bool EnableAsync { get; set; } = true;
     public bool OrderByPrimaryKeyOnPagedQuery { get; set; } = true;
+    /// <summary>
+    /// Use DB Thread locks for DB Write operations.
+    /// This is useful when using SQLite which only allows 1 concurrent writer
+    /// </summary>
+    public bool UseDatabaseWriteLocks { get; set; }
     public string UseNamedConnection { get; set; }
     /// <summary>
     /// Whether to create implicit AutoQuery UI references based on field naming conventions
@@ -177,6 +182,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
             StartsWithConventions = StartsWithConventions,
             EndsWithConventions = EndsWithConventions,
             UseNamedConnection = UseNamedConnection,
+            UseDatabaseWriteLocks = UseDatabaseWriteLocks,
         });
 
         //CRUD Services
@@ -788,6 +794,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
     public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
 
     public string UseNamedConnection { get; set; }
+    public bool UseDatabaseWriteLocks { get; set; }
     public QueryFilterDelegate GlobalQueryFilter { get; set; }
     public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
     public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
@@ -1070,7 +1077,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
                 [requestDtoType] = instance
             };
         } while (!ReferenceEquals(
-                     Interlocked.CompareExchange(ref genericAutoQueryCache, newCache, snapshot), snapshot));
+            Interlocked.CompareExchange(ref genericAutoQueryCache, newCache, snapshot), snapshot));
 
         return instance;
     }

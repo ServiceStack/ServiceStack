@@ -431,6 +431,25 @@ public partial class AutoQuery : IAutoCrudDb
         Keywords.RowVersion,
     };
 
+    public object GetDbLock<From>(IRequest req = null) => GetDbLock(typeof(From), req);
+    public object GetDbLock(Type fromType, IRequest req = null) => !UseDatabaseWriteLocks 
+        ? null 
+        : Locks.GetDbLock(GetDbNamedConnection(fromType, req));
+
+    T DbExec<T>(IDbConnection db, object useLock, Func<IDbConnection, T> fn)
+    {
+        // When UseDatabaseWriteLocks=true to prevent concurrent writes (e.g for SQLite)
+        // Primary DB Connection uses Locks.AppDb whilst Named Connections uses Locks.NamedConnections
+        if (useLock != null)
+        {
+            lock (useLock)
+            {
+                return fn(db);
+            }
+        }
+        return fn(db);
+    }
+    
     public object Create<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null)
     {
         //TODO: Allow Create to use Default Values
@@ -467,7 +486,8 @@ public partial class AutoQuery : IAutoCrudDb
                         throw new ArgumentException(ErrorMessages.PrimaryKeyRequired, pkField.Name);
                 }
 
-                var autoIntId = db.Insert<Table>(dtoValues, selectIdentity:selectIdentity);
+                var autoIntId = DbExec(db, GetDbLock<Table>(req), d => 
+                    d.Insert<Table>(dtoValues, selectIdentity:selectIdentity));
                 return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
             });
 
@@ -480,6 +500,9 @@ public partial class AutoQuery : IAutoCrudDb
         //TODO: Allow Create to use Default Values
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
+        if (!db.GetDialectProvider().SupportsAsync)
+            return Create(dto, req, db);
+        
         using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
         var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
@@ -589,8 +612,8 @@ public partial class AutoQuery : IAutoCrudDb
                         
                     // Should only update a Single Row
                     var rowsUpdated = GetAutoFilterExpressions(ctx, dtoValues, out var expr, out var exprParams) 
-                        ? ctx.Db.UpdateOnly<Table>(dtoValues, expr, exprParams.ToArray())
-                        : ctx.Db.UpdateOnly<Table>(dtoValues);
+                        ? DbExec(ctx.Db, GetDbLock<Table>(req), d => d.UpdateOnly<Table>(dtoValues, expr, exprParams.ToArray()))
+                        : DbExec(ctx.Db, GetDbLock<Table>(req), d => d.UpdateOnly<Table>(dtoValues));
 
                     if (rowsUpdated != 1)
                         throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
@@ -612,6 +635,9 @@ public partial class AutoQuery : IAutoCrudDb
         var skipDefaults = operation == AutoCrudOperation.Patch;
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
+        if (!db.GetDialectProvider().SupportsAsync)
+            return UpdateInternal<Table>(req, dto, operation, db);
+        
         using (Profiler.Current.Step("AutoQuery.Update"))
         {
             var ctx = CrudContext.Create<Table>(req,db,dto,operation);
@@ -684,9 +710,11 @@ public partial class AutoQuery : IAutoCrudDb
                     ? oId
                     : null;
                 var q = DeleteInternal<Table>(ctx, dtoValues);
-                if (q != null)
-                    return new ExecValue(idValue, ctx.Db.Delete(q));
-                return new ExecValue(idValue, ctx.Db.Delete<Table>(dtoValues));
+                
+                return DbExec(ctx.Db, GetDbLock<Table>(req), d =>
+                    q != null 
+                        ? new ExecValue(idValue, d.Delete(q)) 
+                        : new ExecValue(idValue, d.Delete<Table>(dtoValues)));
             });
             
         feature.OnAfterDelete?.Invoke(ctx);
@@ -697,6 +725,9 @@ public partial class AutoQuery : IAutoCrudDb
     {
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
+        if (!db.GetDialectProvider().SupportsAsync)
+            return Delete(dto, req, db);
+        
         using var profiler = Profiler.Current.Step("AutoQuery.Delete");
 
         var meta = AutoCrudMetadata.Create(dto.GetType());
@@ -715,9 +746,9 @@ public partial class AutoQuery : IAutoCrudDb
                     ? oId
                     : null;
                 var q = DeleteInternal<Table>(ctx, dtoValues);
-                if (q != null)
-                    return new ExecValue(idValue, await ctx.Db.DeleteAsync(q).ConfigAwait());
-                return new ExecValue(idValue, await ctx.Db.DeleteAsync<Table>(dtoValues).ConfigAwait());
+                return q != null 
+                    ? new ExecValue(idValue, await ctx.Db.DeleteAsync(q).ConfigAwait()) 
+                    : new ExecValue(idValue, await ctx.Db.DeleteAsync<Table>(dtoValues).ConfigAwait());
             }).ConfigAwait();
             
         if (feature.OnAfterDeleteAsync != null)
@@ -767,7 +798,7 @@ public partial class AutoQuery : IAutoCrudDb
         var row = dto.ConvertTo<Table>();
         var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
             ctx => {
-                ctx.Db.Save(row);
+                DbExec(ctx.Db, GetDbLock<Table>(req), d => d.Save(row));
                 return SaveInternal(dto, ctx);
             }); 
                 
@@ -778,6 +809,8 @@ public partial class AutoQuery : IAutoCrudDb
     {
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
+        if (!db.GetDialectProvider().SupportsAsync)
+            return Save(dto, req, db);
         using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
         var row = dto.ConvertTo<Table>();
