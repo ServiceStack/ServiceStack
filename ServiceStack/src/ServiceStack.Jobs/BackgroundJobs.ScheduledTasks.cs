@@ -86,6 +86,16 @@ public partial class BackgroundJobs
         
         CreateOrUpdate(task);
     }
+    
+    public void DeleteRecurringTask(string taskName)
+    {
+        namedScheduledTasks.Remove(taskName, _);
+        using var db = OpenJobsDb();
+        lock (dbWrites)
+        {
+            db.Delete<ScheduledTask>(x => x.Name == taskName);
+        }
+    }
 
     void ExecuteDueScheduledTasks()
     {
