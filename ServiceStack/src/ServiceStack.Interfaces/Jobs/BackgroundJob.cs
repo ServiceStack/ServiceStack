@@ -120,7 +120,7 @@ public class BackgroundJob : BackgroundJobBase
     [AutoIncrement] public override long Id { get; set; }
 
     [Ignore, IgnoreDataMember] public bool Transient { get; set; }
-    [Ignore] public CompletedJob? ParentJob { get; set; }
+    [Ignore, IgnoreDataMember] public CompletedJob? ParentJob { get; set; }
     [Ignore, IgnoreDataMember] public Action<object?>? OnSuccess { get; set; }
     [Ignore, IgnoreDataMember] public Action<Exception>? OnFailed { get; set; }
     [Ignore, IgnoreDataMember] public CancellationToken? Token { get; set; }
