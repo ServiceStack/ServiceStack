@@ -614,7 +614,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         };
         if (to.Queued == null)
         {
-            using var dbMonth = feature.OpenJobsMonthDb(summary.CreatedDate);
+            using var dbMonth = OpenJobsMonthDb(summary.CreatedDate);
             to.Completed = dbMonth.SingleById<CompletedJob>(jobId);
             if (to.Completed == null)
                 to.Failed = dbMonth.SingleById<FailedJob>(jobId);
@@ -636,7 +636,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         };
         if (to.Queued == null)
         {
-            using var dbMonth = feature.OpenJobsMonthDb(summary.CreatedDate);
+            using var dbMonth = OpenJobsMonthDb(summary.CreatedDate);
             to.Completed = dbMonth.Single<CompletedJob>(x => x.RefId == refId);
             if (to.Completed == null)
                 to.Failed = dbMonth.Single<FailedJob>(x => x.RefId == refId);
@@ -644,30 +644,6 @@ public partial class BackgroundJobs : IBackgroundJobs
         return to;
     }
 
-    public async Task<JobResult?> GetJobAsync(long jobId, CancellationToken token=default)
-    {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, token);
-        using var db = OpenJobsDb(); 
-        var summary = await db.SingleByIdAsync<JobSummary>(jobId, token: linkedCts.Token);
-        if (summary == null)
-            return null;
-
-        var to = new JobResult
-        {
-            Summary = summary,
-            Queued = await db.SingleByIdAsync<BackgroundJob>(jobId, token: linkedCts.Token)
-        };
-
-        if (to.Queued == null)
-        {
-            using var dbMonth = feature.OpenJobsMonthDb(summary.CreatedDate);
-            to.Completed = await dbMonth.SingleByIdAsync<CompletedJob>(jobId, token: linkedCts.Token);
-            if (to.Completed == null)
-                to.Failed = await dbMonth.SingleByIdAsync<FailedJob>(jobId, token: linkedCts.Token);
-        }
-
-        return to;
-    }
     ConcurrentDictionary<string, BackgroundJobsWorker> workers = new();
     public void DispatchToWorker(BackgroundJob job)
     {
