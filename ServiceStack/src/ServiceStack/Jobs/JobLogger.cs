@@ -10,7 +10,7 @@ public struct JobLogger(IBackgroundJobs jobs, BackgroundJob job, ILogger? logger
 {
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => logger?.BeginScope(state);
 
-    public bool IsEnabled(LogLevel logLevel) => logger.IsEnabled(logLevel);
+    public bool IsEnabled(LogLevel logLevel) => logger?.IsEnabled(logLevel) == true;
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
