@@ -838,17 +838,8 @@ public partial class BackgroundJobs : IBackgroundJobs
                 var dbParams = new Dictionary<string,object?>();
                 var fieldUpdates = new List<string>();
 
-                if (update.Status != null)
-                {
-                    job.Status = update.Status;
-                }
                 if (update.Log != null)
                 {
-                    if (job.Status == null)
-                    {
-                        // Update with last line of log
-                        job.Status = update.Log.IndexOf('\n') >= 0 ? update.Log!.LastRightPart('\n') : update.Log;
-                    }
                     job.Logs = job.Logs != null
                         ? job.Logs + "\n" + update.Log
                         : update.Log;
@@ -856,8 +847,9 @@ public partial class BackgroundJobs : IBackgroundJobs
                     fieldUpdates.Add($"Logs = CASE WHEN {columns.Logs} IS NOT NULL THEN {columns.Logs} || char(10) || @log ELSE @log END");
                     dbParams["log"] = update.Log;
                 }
-                if (update.Log != null || update.Status != null)
+                if (update.Status != null)
                 {
+                    job.Status = update.Status;
                     dbParams["status"] = job.Status;
                     fieldUpdates.Add($"{columns.Status} = @status");
                 }

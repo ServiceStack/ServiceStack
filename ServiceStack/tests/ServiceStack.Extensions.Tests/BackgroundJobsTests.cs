@@ -34,7 +34,7 @@ public class MyResponse
     public required string Result { get; set; }
 }
 
-class MyJobCommand(IBackgroundJobs jobs) : AsyncCommandWithResult<MyRequest,MyResponse>
+class MyJobCommand(ILogger<MyJobCommand> logger, IBackgroundJobs jobs) : AsyncCommandWithResult<MyRequest,MyResponse>
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
@@ -42,7 +42,8 @@ class MyJobCommand(IBackgroundJobs jobs) : AsyncCommandWithResult<MyRequest,MyRe
 
     protected override async Task<MyResponse> RunAsync(MyRequest request, CancellationToken token)
     {
-        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyCommand Started...");
+        var log = Request.CreateJobLogger(jobs, logger);
+        log.UpdateStatus(0.1, "Started", "MyCommand Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         Requests.Add(request);
@@ -51,32 +52,34 @@ class MyJobCommand(IBackgroundJobs jobs) : AsyncCommandWithResult<MyRequest,MyRe
             var wait = TimeSpan.FromMilliseconds(request.WaitMs.Value);
             var startedAt = DateTime.UtcNow;
             var i = 0;
+            log.UpdateStatus("Waiting");
             while (DateTime.UtcNow - startedAt < wait)
             {
                 token.ThrowIfCancellationRequested();
                 var waited = DateTime.UtcNow - startedAt;
-                var progress = waited.TotalMilliseconds / wait.TotalMilliseconds;
-                jobs.UpdateBackgroundJobStatus(Request,progress, "Waiting", $"MyCommand {i++} Waited {waited:g}...");
+                log.UpdateProgress(waited.TotalMilliseconds / wait.TotalMilliseconds);
+                log.LogInformation("MyCommand {Count} Waited {Waited:g}...", i++, waited);
                 await Task.Delay(ExecUtils.CalculateFullJitterBackOffDelay(++i), token);
             }
         }
         if (request.Throw != null)
             throw new Exception(request.Throw);
-        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyCommand Finished");
+        log.UpdateStatus(0.9, "Finished", "MyCommand Finished");
         return new MyResponse { Result = $"Hello {request.Id}" };
     }
 }
 
-class MySyncCommand(IBackgroundJobs jobs) : SyncCommand
+class MySyncCommand(ILogger<MySyncCommand> logger, IBackgroundJobs jobs) : SyncCommand
 {
     public static long Count;
     public static IRequest? LastRequest { get; set; }
     protected override void Run()
     {
-        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyCommand Started...");
+        var log = Request.CreateJobLogger(jobs, logger);
+        log.UpdateStatus(0.1, "Started", "MyCommand Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
-        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyCommand Finished");
+        log.UpdateStatus(0.9, "Finished", "MyCommand Finished");
     }
 }
 
@@ -101,11 +104,12 @@ public class JobServices(IBackgroundJobs jobs) : Service
 
     public object Any(MyRequest request)
     {
-        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "My API Started...");
+        var log = Request!.CreateJobLogger(jobs);
+        log.UpdateStatus(0.1, "Started", "My API Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         Requests.Add(request);
-        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "My API Finished");
+        log.UpdateStatus(0.9, "Finished", "My API Finished");
         return new MyResponse { Result = $"Hello {request.Id}" };
     }
 
@@ -175,13 +179,14 @@ class MyScopedCommand(IBackgroundJobs jobs, UserManager<ApplicationUser> userMan
     public static ApplicationUser? LastResult { get; set; }
     protected override async Task<ApplicationUser?> RunAsync(ScopedRequest request, CancellationToken token)
     {
-        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyScopedCommand Started...");
+        var log = Request.CreateJobLogger(jobs);
+        log.UpdateStatus(0.1, "Started", "MyScopedCommand Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         LastUser = Request.GetClaimsPrincipal();
         LastSession = await Request.GetSessionAsync(token: token);
         Requests.Add(request);
-        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyScopedCommand Finished");
+        log.UpdateStatus(0.9, "Finished", "MyScopedCommand Finished");
         return LastResult = await userManager.FindByIdAsync(request.UserId);
     }
 }
@@ -197,14 +202,15 @@ public class JobScopedServices(IBackgroundJobs jobs, UserManager<ApplicationUser
 
     public async Task<object?> Any(ScopedRequest request)
     {
-        jobs.UpdateBackgroundJobStatus(Request, 0.1, "Started", "MyScopedCommand Started...");
+        var log = Request!.CreateJobLogger(jobs);
+        log.UpdateStatus(0.1, "Started", "MyScopedCommand Started...");
         Interlocked.Increment(ref Count);
         LastRequest = Request;
         LastUser = Request.GetClaimsPrincipal();
         LastSession = await Request.GetSessionAsync();
         Requests.Add(request);
         LastResult = await userManager.FindByIdAsync(request.UserId);;
-        jobs.UpdateBackgroundJobStatus(Request, 0.9, "Finished", "MyScopedCommand Finished");
+        log.UpdateStatus(0.9, "Finished", "MyScopedCommand Finished");
         return LastResult;
     }
 }

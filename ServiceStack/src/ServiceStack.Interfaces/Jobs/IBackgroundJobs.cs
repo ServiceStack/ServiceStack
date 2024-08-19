@@ -21,7 +21,7 @@ public interface IBackgroundJobs
     Task FailJobAsync(BackgroundJob job, ResponseStatus error, bool shouldRetry);
     Task CompleteJobAsync(BackgroundJob job, object? response=null);
     void UpdateJobStatus(BackgroundJobStatusUpdate status);
-    Task StartAsync(System.Threading.CancellationToken stoppingToken);
+    Task StartAsync(CancellationToken stoppingToken);
     Task TickAsync();
     Dictionary<string, int> GetWorkerQueueCounts();
     List<WorkerStats> GetWorkerStats();
@@ -47,7 +47,7 @@ public class BackgroundJobRef(long id, string refId)
     }
 }
 
-public class BackgroundJobStatusUpdate(BackgroundJob job, double? progress=null, string? status=null, string? log=null)
+public struct BackgroundJobStatusUpdate(BackgroundJob job, double? progress=null, string? status=null, string? log=null)
 {
     public BackgroundJob Job { get; } = job;
     public double? Progress { get; } = progress;

@@ -1,8 +1,10 @@
+#if NET8_0_OR_GREATER
 #nullable enable
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Jobs;
@@ -189,13 +191,11 @@ public static class JobUtils
             : null;
     }
 
-    public static void UpdateBackgroundJobStatus(this IBackgroundJobs jobs, IRequest? req, double? progress=null, string? status=null, string? log=null)
+    public static void UpdateJobStatus(this IBackgroundJobs jobs, IRequest? req, double? progress=null, string? status=null, string? log=null)
         => jobs.UpdateJobStatus(new(GetBackgroundJob(req), 
             progress: progress, status: status, log: log));
-    public static void UpdateBackgroundJobStatus(this IBackgroundJobs jobs, BackgroundJob job, double? progress=null, string? status=null, string? log=null)
-    {
+    public static void UpdateJobStatus(this IBackgroundJobs jobs, BackgroundJob job, double? progress=null, string? status=null, string? log=null) => 
         jobs.UpdateJobStatus(new(job, progress:progress, status:status, log:log));
-    }
 
     public static object? CreateRequest(this IBackgroundJobs jobs, JobResult? result)
     {
@@ -207,4 +207,7 @@ public static class JobUtils
         var job = result?.Job;
         return job != null ? jobs.CreateResponse(job) : null;
     }
+    public static JobLogger CreateJobLogger(this IRequest req, IBackgroundJobs jobs, ILogger log=null) =>
+        new(jobs, req.GetBackgroundJob(), log);
 }
+#endif
