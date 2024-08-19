@@ -89,7 +89,7 @@ public partial class BackgroundJobs
     
     public void DeleteRecurringTask(string taskName)
     {
-        namedScheduledTasks.Remove(taskName, _);
+        namedScheduledTasks.Remove(taskName, out _);
         using var db = OpenJobsDb();
         lock (dbWrites)
         {
