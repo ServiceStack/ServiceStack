@@ -191,12 +191,6 @@ public static class JobUtils
             : null;
     }
 
-    public static void UpdateJobStatus(this IBackgroundJobs jobs, IRequest? req, double? progress=null, string? status=null, string? log=null)
-        => jobs.UpdateJobStatus(new(GetBackgroundJob(req), 
-            progress: progress, status: status, log: log));
-    public static void UpdateJobStatus(this IBackgroundJobs jobs, BackgroundJob job, double? progress=null, string? status=null, string? log=null) => 
-        jobs.UpdateJobStatus(new(job, progress:progress, status:status, log:log));
-
     public static object? CreateRequest(this IBackgroundJobs jobs, JobResult? result)
     {
         var job = result?.Job;
