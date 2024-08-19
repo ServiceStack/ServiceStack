@@ -28,7 +28,7 @@ public interface IBackgroundJobs
     IDbConnection OpenJobsDb();
     IDbConnection OpenJobsMonthDb(DateTime createdDate);
     JobResult? GetJob(long jobId);
-    Task<JobResult?> GetJobAsync(long jobId, CancellationToken token=default);
+    JobResult? GetJobByRefId(string refId);
     object CreateRequest(BackgroundJobBase job);
     object? CreateResponse(BackgroundJobBase job);
 

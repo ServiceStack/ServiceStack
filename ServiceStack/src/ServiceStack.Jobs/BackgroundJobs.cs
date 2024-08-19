@@ -622,6 +622,28 @@ public partial class BackgroundJobs : IBackgroundJobs
         return to;
     }
 
+    public JobResult? GetJobByRefId(string refId)
+    {
+        using var db = OpenJobsDb(); 
+        var summary = db.Single<JobSummary>(x => x.RefId == refId);
+        if (summary == null)
+            return null;
+
+        var to = new JobResult
+        {
+            Summary = summary,
+            Queued = db.Single<BackgroundJob>(x => x.RefId == refId),
+        };
+        if (to.Queued == null)
+        {
+            using var dbMonth = feature.OpenJobsMonthDb(summary.CreatedDate);
+            to.Completed = dbMonth.Single<CompletedJob>(x => x.RefId == refId);
+            if (to.Completed == null)
+                to.Failed = dbMonth.Single<FailedJob>(x => x.RefId == refId);
+        }
+        return to;
+    }
+
     public async Task<JobResult?> GetJobAsync(long jobId, CancellationToken token=default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, token);
