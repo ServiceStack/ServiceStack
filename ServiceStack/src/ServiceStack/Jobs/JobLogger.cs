@@ -23,15 +23,11 @@ public struct JobLogger(IBackgroundJobs jobs, BackgroundJob job, ILogger? logger
     }
 
     public void UpdateProgress(double progress) => jobs.UpdateJobStatus(new(job, progress));
-
-    public void UpdateStatus(double? progress = null, string? status = null, string? log = null)
-    {
+    public void UpdateStatus(double? progress = null, string? status = null, string? log = null) =>
         jobs.UpdateJobStatus(new(job, progress, status, log));
-    }
-    public void UpdateStatus(string? status = null, string? log = null)
-    {
+    public void UpdateStatus(string? status = null, string? log = null) =>
         jobs.UpdateJobStatus(new(job, progress:null, status, log));
-    }
+    public void UpdateLog(string log) => jobs.UpdateJobStatus(new(job, progress:null, null, log));
 }
 
 #endif
