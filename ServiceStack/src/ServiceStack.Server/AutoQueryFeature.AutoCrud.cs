@@ -463,7 +463,7 @@ public partial class AutoQuery : IAutoCrudDb
 
         ctx.Response = ExecAndReturnResponse<Table>(ctx,
             ctx => {
-                var dtoValues = CreateDtoValues(req, dto);
+                var dtoValues = CreateDtoValues(ctx.Request, ctx.Dto);
                 var pkField = ctx.ModelDef.PrimaryKey;
                 var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null || ctx.Events != null;
 
@@ -512,7 +512,7 @@ public partial class AutoQuery : IAutoCrudDb
             
         ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx,
             async ctx => {
-                var dtoValues = await CreateDtoValuesAsync(ctx.Request, ctx.Dto).ConfigAwait();
+                var dtoValues = CreateDtoValues(ctx.Request, ctx.Dto);
                 var pkField = ctx.ModelDef.PrimaryKey;
                 var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null || ctx.Events != null;
 
@@ -656,7 +656,7 @@ public partial class AutoQuery : IAutoCrudDb
                 
             ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx, 
                 async ctx => {
-                    var dtoValues = await CreateDtoValuesAsync(req, dto, skipDefaults).ConfigAwait();
+                    var dtoValues = CreateDtoValues(req, dto, skipDefaults);
                     var pkField = ctx.ModelDef?.PrimaryKey;
                     if (pkField == null)
                         throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
@@ -705,7 +705,7 @@ public partial class AutoQuery : IAutoCrudDb
 
         ctx.Response = ExecAndReturnResponse<Table>(ctx,
             ctx => {
-                var dtoValues = CreateDtoValues(ctx.Request, ctx.Dto, skipDefaults:true);
+                var dtoValues = CreateDtoValues(req, dto, skipDefaults:true);
                 var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
                     ? oId
                     : null;
@@ -741,7 +741,7 @@ public partial class AutoQuery : IAutoCrudDb
             
         ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx,
             async ctx => {
-                var dtoValues = await CreateDtoValuesAsync(req, dto, skipDefaults:true).ConfigAwait();
+                var dtoValues = CreateDtoValues(req, dto, skipDefaults:true);
                 var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
                     ? oId
                     : null;
@@ -881,7 +881,12 @@ public partial class AutoQuery : IAutoCrudDb
             context.CountProp.PublicSetter(response, context.RowsUpdated.ConvertTo(context.CountProp.PropertyInfo.PropertyType));
         }
 
-        if (context.ResultProp != null && context.Id != null)
+        if (idValue != null && context.ResponseType == typeof(Table))
+        {
+            var result = context.Db.SingleById<Table>(idValue);
+            response = result.ConvertTo(context.ResponseType);
+        }
+        else if (context.ResultProp != null && context.Id != null)
         {
             var result = context.Db.SingleById<Table>(context.Id);
             context.ResultProp.PublicSetter(response, result.ConvertTo(context.ResultProp.PropertyInfo.PropertyType));
@@ -1037,13 +1042,6 @@ public partial class AutoQuery : IAutoCrudDb
         var meta = AutoCrudMetadata.Create(dto.GetType());
         var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
         return dtoValues;
-    }
-
-    public Task<Dictionary<string, object>> CreateDtoValuesAsync(IRequest req, object dto, bool skipDefaults = false)
-    {
-        var meta = AutoCrudMetadata.Create(dto.GetType());
-        var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
-        return Task.FromResult(dtoValues);
     }
         
     private Dictionary<string, object> ResolveDtoValues(AutoCrudMetadata meta, IRequest req, object dto, bool skipDefaults=false)
