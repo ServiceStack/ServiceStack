@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 
 namespace ServiceStack;
 
@@ -14,6 +15,40 @@ public static class Workers
     public const string AppDb = "app.db";
     public const string JobsDb = "jobs.db";
     public const string RequestsDb = "requests.db";
+}
+
+/// <summary>
+/// Maintain Locks 
+/// </summary>
+public static class Locks
+{
+    public static readonly object AppDb = new();
+    public static readonly object JobsDb = new();
+    public static readonly object RequestsDb = new();
+    public static Dictionary<string, object> Workers { get; } = new()
+    {
+        [ServiceStack.Workers.AppDb] = AppDb,
+        [ServiceStack.Workers.JobsDb] = JobsDb,
+        [ServiceStack.Workers.RequestsDb] = RequestsDb,
+    };
+    public static Dictionary<string, object> NamedConnections { get; } = new();
+
+    public static object? TryGetLock(string worker)
+    {
+        return Workers.TryGetValue(worker, out var oLock)
+            ? oLock
+            : null;
+
+    }
+    
+    public static object GetDbLock(string? namedConnection=null)
+    {
+        return namedConnection != null
+            ? NamedConnections.TryGetValue(namedConnection, out var oLock) 
+                ? oLock 
+                : throw new ArgumentException("Named Connection does not exist", nameof(namedConnection))
+            : AppDb;
+    }
 }
 
 /// <summary>

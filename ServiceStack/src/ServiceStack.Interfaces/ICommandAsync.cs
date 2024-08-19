@@ -53,7 +53,23 @@ public abstract class SyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresReques
     public IRequest Request { get; set; }
     public Task ExecuteAsync(TArgs request)
     {
-        Run(request);
+        var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true
+            ? oJob as Jobs.BackgroundJob
+            : null;
+        var useLock = job?.Worker != null
+            ? Locks.TryGetLock(job.Worker)
+            : null;
+        if (useLock != null)
+        {
+            lock (useLock)
+            {
+                Run(request);
+            }
+        }
+        else
+        {
+            Run(request);
+        }
         return Task.CompletedTask;
     }
     protected abstract void Run(TArgs request);
@@ -74,7 +90,23 @@ public abstract class SyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TRe
     public TResult Result { get; protected set; }
     public Task ExecuteAsync(NoArgs request)
     {
-        Result = Run();
+        var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true
+            ? oJob as Jobs.BackgroundJob
+            : null;
+        var useLock = job?.Worker != null
+            ? Locks.TryGetLock(job.Worker)
+            : null;
+        if (useLock != null)
+        {
+            lock (useLock)
+            {
+                Result = Run();
+            }
+        }
+        else
+        {
+            Result = Run();
+        }
         return Task.CompletedTask;
     }
     protected abstract TResult Run();
@@ -95,7 +127,23 @@ public abstract class SyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs
     public TResult Result { get; protected set; }
     public Task ExecuteAsync(TArgs request)
     {
-        Result = Run(request);
+        var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true
+            ? oJob as Jobs.BackgroundJob
+            : null;
+        var useLock = job?.Worker != null
+            ? Locks.TryGetLock(job.Worker)
+            : null;
+        if (useLock != null)
+        {
+            lock (useLock)
+            {
+                Result = Run(request);
+            }
+        }
+        else
+        {
+            Result = Run(request);
+        }
         return Task.CompletedTask;
     }
     protected abstract TResult Run(TArgs request);

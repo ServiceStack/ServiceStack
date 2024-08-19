@@ -14,7 +14,7 @@ namespace ServiceStack.Jobs;
 
 public partial class BackgroundJobs : IBackgroundJobs
 {
-    private static readonly object dbWrites = new();
+    private static readonly object dbWrites = Locks.JobsDb;
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
     readonly IServiceScopeFactory scopeFactory;
