@@ -218,6 +218,11 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         }
     }
 
+    public async Task ExecuteCommandAsync<TCommand>(TCommand command) 
+        where TCommand : IAsyncCommand<NoArgs> 
+    {
+        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((NoArgs)dto), NoArgs.Value).ConfigAwait();
+    }
     public async Task ExecuteCommandAsync<TCommand, TRequest>(TCommand command, TRequest request) 
         where TCommand : IAsyncCommand<TRequest> 
     {
@@ -262,9 +267,10 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
             {
                 if (ValidationFeature != null)
                 {
-                    await ValidationFeature.ValidateRequestAsync(requestDto, new BasicHttpRequest(), token);
+                    var reqCtx = new BasicHttpRequest();
+                    await ValidationFeature.ValidateRequestAsync(requestDto, reqCtx, token);
                 }
-        
+
                 await execFn(requestDto);
                 Log!.LogDebug("{Command} took {ElapsedMilliseconds}ms to execute", commandType.Name, sw.ElapsedMilliseconds);
 
@@ -344,7 +350,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         {
             if (oCommand is IRequiresRequest hasRequest)
             {
-                hasRequest.Request ??= new BasicRequest(commandArg)
+                hasRequest.Request ??= new BasicHttpRequest(commandArg)
                 {
                     Items = {
                         [nameof(CancellationToken)] = token,

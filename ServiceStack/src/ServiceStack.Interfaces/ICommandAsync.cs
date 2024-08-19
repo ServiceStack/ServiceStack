@@ -41,7 +41,7 @@ public abstract class SyncCommand : SyncCommand<NoArgs>
 }
 public abstract class AsyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest, IHasCancellationToken
 {
-    public CancellationToken Token => Request.Items.TryGetValue(nameof(CancellationToken), out var oToken)
+    public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
         ? (CancellationToken)oToken
         : default;
     public IRequest Request { get; set; }
@@ -60,7 +60,7 @@ public abstract class SyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresReques
 }
 public abstract class AsyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest, IHasCancellationToken
 {
-    public CancellationToken Token => Request.Items.TryGetValue(nameof(CancellationToken), out var oToken)
+    public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
         ? (CancellationToken)oToken
         : default;
     public IRequest Request { get; set; }
@@ -81,7 +81,7 @@ public abstract class SyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TRe
 }
 public abstract class AsyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest, IHasCancellationToken
 {
-    public CancellationToken Token => Request.Items.TryGetValue(nameof(CancellationToken), out var oToken)
+    public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
         ? (CancellationToken)oToken
         : default;
     public IRequest Request { get; set; }
