@@ -141,7 +141,6 @@ namespace ServiceStack.OrmLite.Support
         }
     }
 
-#if ASYNC
     internal class LoadReferencesAsync<T> : LoadReferences<T>
     {
         public LoadReferencesAsync(IDbCommand dbCmd, T instance)
@@ -188,7 +187,5 @@ namespace ServiceStack.OrmLite.Support
             var refFieldValue = fieldRef.RefFieldDef.GetValue(result);
             fieldDef.SetValue(instance, refFieldValue);
         }
-        
     }
-#endif
 }

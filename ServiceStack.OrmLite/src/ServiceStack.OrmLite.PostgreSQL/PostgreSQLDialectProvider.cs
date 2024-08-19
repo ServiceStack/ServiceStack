@@ -924,7 +924,7 @@ namespace ServiceStack.OrmLite.PostgreSQL
 
         protected DbDataReader Unwrap(IDataReader reader) => (DbDataReader)reader;
 
-#if ASYNC
+        public override bool SupportsAsync => true;
         public override Task OpenAsync(IDbConnection db, CancellationToken token = default)
         {
             return Unwrap(db).OpenAsync(token);
@@ -998,6 +998,5 @@ namespace ServiceStack.OrmLite.PostgreSQL
                 reader.Dispose();
             }
         }
-#endif
     }
 }

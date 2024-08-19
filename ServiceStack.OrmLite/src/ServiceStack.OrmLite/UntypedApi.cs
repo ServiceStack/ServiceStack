@@ -71,7 +71,6 @@ namespace ServiceStack.OrmLite
             return Exec(dbCmd => dbCmd.Save((T)obj));
         }
 
-#if ASYNC
         public Task<int> SaveAllAsync(IEnumerable objs, CancellationToken token)
         {
             return Exec(dbCmd => dbCmd.SaveAllAsync((IEnumerable<T>)objs, token));
@@ -81,17 +80,6 @@ namespace ServiceStack.OrmLite
         {
             return Exec(dbCmd => dbCmd.SaveAsync((T)obj, token));
         }
-#else
-        public Task<int> SaveAllAsync(IEnumerable objs, CancellationToken token)
-        {
-            throw new NotImplementedException(OrmLiteUtils.AsyncRequiresNet45Error);
-        }
-
-        public Task<bool> SaveAsync(object obj, CancellationToken token)
-        {
-            throw new NotImplementedException(OrmLiteUtils.AsyncRequiresNet45Error);
-        }
-#endif
 
         public void InsertAll(IEnumerable objs)
         {

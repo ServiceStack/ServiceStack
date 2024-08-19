@@ -1,4 +1,3 @@
-#if ASYNC
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -260,5 +259,3 @@ internal static class WriteExpressionCommandExtensionsAsync
         return dbCmd.ExecuteSqlAsync(sql, q.Params, commandFilter, token);
     }
 }
-
-#endif
