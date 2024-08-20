@@ -23,6 +23,7 @@ public abstract class BackgroundJobBase : IMeta
     /// Associate Job with a tag group
     /// </summary>
     public virtual string? Tag { get; set; }
+    public virtual string? BatchId { get; set; }
     /// <summary>
     /// Command to Execute after successful completion of Job
     /// </summary>
@@ -134,6 +135,7 @@ public class JobSummary
     [Index(Unique = true)] public virtual string? RefId { get; set; }
     public virtual string? Worker { get; set; }
     public virtual string? Tag { get; set; }
+    public virtual string? BatchId { get; set; }
     public virtual DateTime CreatedDate { get; set; }
     public virtual string? CreatedBy { get; set; }
     public virtual string RequestType { get; set; } // API or CMD

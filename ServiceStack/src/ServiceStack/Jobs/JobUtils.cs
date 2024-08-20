@@ -88,6 +88,7 @@ public static class JobUtils
             ParentId = options?.ParentId,
             Worker = options?.Worker,
             Tag = options?.Tag,
+            BatchId = options?.BatchId,
             Callback = options?.Callback,
             RunAfter = options?.RunAfter,
             DependsOn = options?.DependsOn,
@@ -115,6 +116,7 @@ public static class JobUtils
         to.RefId = from.RefId;
         to.Worker = from.Worker;
         to.Tag = from.Tag;
+        to.BatchId = from.BatchId;
         to.Callback = from.Callback;
         to.RunAfter = from.RunAfter;
         to.CreatedDate = from.CreatedDate;
@@ -155,6 +157,7 @@ public static class JobUtils
             RefId = from.RefId,
             Worker = from.Worker,
             Tag = from.Tag,
+            BatchId = from.BatchId,
             CreatedDate = from.CreatedDate,
             CreatedBy = from.CreatedBy,
             RequestType = from.RequestType,

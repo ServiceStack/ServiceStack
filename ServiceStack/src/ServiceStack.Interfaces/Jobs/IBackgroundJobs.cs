@@ -106,6 +106,7 @@ public class BackgroundJobOptions
     /// Associate Job with a tag group
     /// </summary>
     public string? Tag { get; set; }
+    public virtual string? BatchId { get; set; }
     public string? CreatedBy { get; set; }
     public int? TimeoutSecs { get; set; }
     public Dictionary<string, string>? Args { get; set; } //= Provider
