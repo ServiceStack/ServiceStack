@@ -221,19 +221,22 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
     public async Task ExecuteCommandAsync<TCommand>(TCommand command) 
         where TCommand : IAsyncCommand<NoArgs> 
     {
-        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((NoArgs)dto), NoArgs.Value).ConfigAwait();
+        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((NoArgs)dto), NoArgs.Value, 
+            (command as IRequiresRequest)?.Request).ConfigAwait();
     }
     public async Task ExecuteCommandAsync<TCommand, TRequest>(TCommand command, TRequest request) 
         where TCommand : IAsyncCommand<TRequest> 
     {
         ArgumentNullException.ThrowIfNull(request);
-        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request).ConfigAwait();
+        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request,
+            (command as IRequiresRequest)?.Request).ConfigAwait();
     }
     
     public async Task<TResult> ExecuteCommandWithResultAsync<TRequest, TResult>(IAsyncCommand<TRequest, TResult> command, TRequest request) 
     {
         ArgumentNullException.ThrowIfNull(request);
-        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request).ConfigAwait();
+        await ExecuteCommandAsync(command.GetType(), dto => command.ExecuteAsync((TRequest)dto), request,
+            (command as IRequiresRequest)?.Request).ConfigAwait();
         return command.Result;
     }
     
@@ -253,7 +256,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         return null;
     }
 
-    public async Task<CommandResult> ExecuteCommandAsync(Type commandType, Func<object,Task> execFn, object requestDto, CancellationToken token=default)
+    public async Task<CommandResult> ExecuteCommandAsync(Type commandType, Func<object,Task> execFn, object requestDto, IRequest? reqCtx = null, CancellationToken token=default)
     {
         var result = new CommandResult { Type = CommandResult.Command, Name = commandType.Name, At = DateTime.UtcNow };
         RetryPolicy? retryPolicy = null;
@@ -267,7 +270,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
             {
                 if (ValidationFeature != null)
                 {
-                    var reqCtx = new BasicHttpRequest();
+                    reqCtx ??= CreateRequestContext(requestDto, token);
                     await ValidationFeature.ValidateRequestAsync(requestDto, reqCtx, token);
                 }
 
@@ -345,23 +348,33 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         var commandType = oCommand.GetType();
         var method = commandType.GetMethod("ExecuteAsync")
             ?? throw new NotSupportedException("ExecuteAsync method not found on " + commandType.Name);
-                
+
+        var reqCtx = (oCommand as IRequiresRequest)?.Request
+            ?? CreateRequestContext(commandRequest, token);
+        if (oCommand is IRequiresRequest { Request: null } hasRequest)
+        {
+            hasRequest.Request = reqCtx;
+        }
+        
         async Task Exec(object commandArg)
         {
-            if (oCommand is IRequiresRequest hasRequest)
-            {
-                hasRequest.Request ??= new BasicHttpRequest(commandArg)
-                {
-                    Items = {
-                        [nameof(CancellationToken)] = token,
-                    }
-                };
-            }
             var methodInvoker = GetInvoker(method);
             await methodInvoker(oCommand, commandArg);
         }
 
-        return await ExecuteCommandAsync(commandType, Exec, commandRequest, token);
+        return await ExecuteCommandAsync(commandType, Exec, commandRequest, reqCtx, token);
+    }
+
+    IRequest CreateRequestContext(object requestDto, CancellationToken token)
+    {
+        var msg = MessageFactory.Create(requestDto);
+        var reqCtx = new BasicHttpRequest(msg)
+        {
+            Items = {
+                [nameof(CancellationToken)] = token,
+            }
+        };
+        return reqCtx;
     }
 
     public ConcurrentQueue<CommandResult> CommandResults { get; set; } = [];
