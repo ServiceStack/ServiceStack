@@ -414,6 +414,31 @@ public partial class BackgroundJobs : IBackgroundJobs
                     }, where: x => x.Id == job.Id);
 
                     db.DeleteById<BackgroundJob>(job.Id);
+
+                    // Cancel any Dependent Jobs as well
+                    var dependentJobs = db.Select<BackgroundJob>(x => x.DependsOn == job.Id);
+                    if (dependentJobs.Count > 0)
+                    {
+                        foreach (var dependentJob in dependentJobs)
+                        {
+                            var depFailedJob = dependentJob.PopulateJob(new FailedJob());
+                            depFailedJob.State = BackgroundJobState.Cancelled;
+                            depFailedJob.ErrorCode = nameof(TaskCanceledException);
+                            depFailedJob.LastActivityDate = job.LastActivityDate;
+                            depFailedJob.Error = new() {
+                                ErrorCode = depFailedJob.ErrorCode,
+                                Message = "Parent Job failed"
+                            };
+                            dbMonth.Insert(depFailedJob);
+                            db.UpdateOnly(() => new JobSummary {
+                                State = depFailedJob.State,
+                                ErrorMessage = depFailedJob.Error.Message,
+                                ErrorCode = depFailedJob.ErrorCode,
+                            }, where: x => x.Id == depFailedJob.Id);
+                            db.DeleteById<BackgroundJob>(depFailedJob.Id);
+                        }
+                    }
+                    
                     trans.Commit();
                 }
                 else
