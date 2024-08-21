@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Data;
+using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -31,6 +32,8 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
     {
         services.AddSingleton(this);
         services.AddSingleton<IBackgroundJobs,BackgroundJobs>();
+        if (!services.Exists<IUserResolver>())
+            services.AddSingleton<IUserResolver, UserResolver>();
     }
 
     public void Register(IAppHost appHost)

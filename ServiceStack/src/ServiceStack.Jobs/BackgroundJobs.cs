@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Data;
+using System.Security.Claims;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Host;
@@ -17,13 +18,16 @@ public partial class BackgroundJobs : IBackgroundJobs
     private static readonly object dbWrites = Locks.JobsDb;
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
+    readonly IUserResolver userResolver;
     readonly IServiceScopeFactory scopeFactory;
     
-    public BackgroundJobs(ILogger<BackgroundJobs> log, BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IServiceScopeFactory scopeFactory)
+    public BackgroundJobs(ILogger<BackgroundJobs> log, 
+        BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IUserResolver userResolver, IServiceScopeFactory scopeFactory)
     {
-        // Need to store local references to these dependencies otherwise wont exist on BG Thread callbacks
+        // Need to store local references to these dependencies otherwise won't exist on BG Thread callbacks
         this.log = log;
         this.feature = feature;
+        this.userResolver = userResolver;
         this.scopeFactory = scopeFactory;
 
         var dialect = dbFactory.GetDialectProvider();
@@ -238,19 +242,13 @@ public partial class BackgroundJobs : IBackgroundJobs
         };
         if (job.UserId != null)
         {
-            var services = scope.ServiceProvider;
-            var manager = services.GetService<IIdentityAuthContextManager>()
-                ?? feature.Services.GetRequiredService<IIdentityAuthContextManager>();
-            var authCtx = services.GetService<IIdentityAuthContext>()
-                ?? feature.Services.GetRequiredService<IIdentityAuthContext>();
-            var user = await manager.CreateClaimsPrincipalAsync(job.UserId, reqCtx);
+            var user = await userResolver.CreateClaimsPrincipal(reqCtx, job.UserId);
+            if (user == null)
+                throw HttpError.NotFound("User not found");
             reqCtx.Items[Keywords.ClaimsPrincipal] = user;
-            var authProvider = services.GetService<IIdentityApplicationAuthProvider>()
-                ?? feature.Services.GetService<IIdentityApplicationAuthProvider>();
-            if (authProvider != null)
+            var session = await userResolver.CreateAuthSession(reqCtx, user);
+            if (session != null)
             {
-                var session = authCtx.SessionFactory();
-                await authProvider.PopulateSessionAsync(reqCtx, session, user);
                 reqCtx.Items[Keywords.Session] = session;
             }
         }
