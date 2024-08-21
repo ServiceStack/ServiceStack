@@ -376,7 +376,9 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
 #if NETCORE
         // IUserResolver is registered in IdentityAuth when using ASP .NET IdentityAuth 
         if (!services.Exists<IUserResolver>())
-            services.AddSingleton<IUserResolver>(c => new ServiceStackAuthUserResolver(this));
+            services.AddSingleton<IUserResolver>(c => new ServiceStackAuthUserResolver(
+                AuthProviders.FirstOrDefault(x => x is NetCoreIdentityAuthProvider) as NetCoreIdentityAuthProvider
+                ?? new NetCoreIdentityAuthProvider(HostContext.AppSettings)));
 #endif
     }
 

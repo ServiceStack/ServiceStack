@@ -3,7 +3,6 @@
 #nullable enable
 
 using System;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
-public class IdentityAuthUserResolver(IIdentityAuthContextManager manager, IIdentityAuthContext authCtx) : IUserResolver
+public class IdentityAuthUserResolver(IIdentityAuthContextManager manager, IIdentityAuthContext authCtx, IServiceProvider services) : IUserResolver
 {
     public async Task<ClaimsPrincipal?> CreateClaimsPrincipalAsync(IRequest req, string userId, CancellationToken token=default)
     {
@@ -24,7 +23,7 @@ public class IdentityAuthUserResolver(IIdentityAuthContextManager manager, IIden
     public async Task<IAuthSession?> CreateAuthSessionAsync(IRequest req, ClaimsPrincipal user, CancellationToken token=default)
     {
         var authProvider = req.GetService<IIdentityApplicationAuthProvider>()
-            ?? HostContext.AppHost.GetApplicationServices().GetService<IIdentityApplicationAuthProvider>();
+            ?? services.GetService<IIdentityApplicationAuthProvider>();
         if (authProvider != null)
         {
             var session = authCtx.SessionFactory();
@@ -35,21 +34,13 @@ public class IdentityAuthUserResolver(IIdentityAuthContextManager manager, IIden
     }
 }
 
-public class ServiceStackAuthUserResolver(AuthFeature feature) : IUserResolver
+public class ServiceStackAuthUserResolver(NetCoreIdentityAuthProvider authProvider) : IUserResolver
 {
-    private NetCoreIdentityAuthProvider GetAuthProvider()
-    {
-        return feature.AuthProviders
-               .FirstOrDefault(x => x is NetCoreIdentityAuthProvider) as NetCoreIdentityAuthProvider
-           ?? new NetCoreIdentityAuthProvider(HostContext.AppSettings);
-    }
-
     public async Task<ClaimsPrincipal?> CreateClaimsPrincipalAsync(IRequest req, string userId, CancellationToken token=default)
     {
         var session = await CreateSessionFromUserIdAsync(req, userId, token);
         if (session != null)
         {
-            var authProvider = GetAuthProvider();
             var principal = await authProvider.ConvertSessionToPrincipalAsync(req, session, token).ConfigAwait();
             return principal;
         }
@@ -75,7 +66,6 @@ public class ServiceStackAuthUserResolver(AuthFeature feature) : IUserResolver
 
     public async Task<IAuthSession?> CreateAuthSessionAsync(IRequest req, ClaimsPrincipal user, CancellationToken token=default)
     {
-        var authProvider = GetAuthProvider();
         var session = await authProvider.ConvertPrincipalToSessionAsync(req, user, token);
         return session;
     }
