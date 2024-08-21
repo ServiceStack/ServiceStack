@@ -117,6 +117,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             options.Worker = workerAttr.Name;
         }
         var job = options.ToBackgroundJob(CommandResult.Command, arg);
+        job.TransientRequest = arg;
         job.RequestId = Guid.NewGuid().ToString("N");
         job.Command = commandName;
         job.Transient = true;
@@ -148,6 +149,9 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     public object CreateRequest(BackgroundJobBase job)
     {
+        if (job is BackgroundJob { TransientRequest: not null } b)
+            return b.TransientRequest;
+        
         var requestType = job.RequestType switch {
             CommandResult.Command => AssertCommand(job.Command).Request?.Type,
             CommandResult.Api => feature.AppHost.Metadata.GetRequestType(job.Request),
@@ -220,7 +224,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             return JsonSerializer.DeserializeFromString(json, type);
         }
     }
-
+    
     async Task<BasicRequest> CreateRequestContextAsync(IServiceScope scope, object request, BackgroundJob job, CancellationToken token)
     {
         var msg = MessageFactory.Create(request);
