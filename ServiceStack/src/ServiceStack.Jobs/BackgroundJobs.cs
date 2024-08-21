@@ -18,16 +18,14 @@ public partial class BackgroundJobs : IBackgroundJobs
     private static readonly object dbWrites = Locks.JobsDb;
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
-    readonly IServiceProvider services;
     readonly IServiceScopeFactory scopeFactory;
     
     public BackgroundJobs(ILogger<BackgroundJobs> log, 
-        BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IServiceProvider services, IServiceScopeFactory scopeFactory)
+        BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IServiceScopeFactory scopeFactory)
     {
         // Need to store local references to these dependencies otherwise won't exist on BG Thread callbacks
         this.log = log;
         this.feature = feature;
-        this.services = services;
         this.scopeFactory = scopeFactory;
 
         var dialect = dbFactory.GetDialectProvider();
@@ -243,7 +241,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (job.UserId != null)
         {
             var userResolver = scope.ServiceProvider.GetService<IUserResolver>()
-                ?? services.GetRequiredService<IUserResolver>();
+                ?? feature.Services.GetRequiredService<IUserResolver>();
             var user = await userResolver.CreateClaimsPrincipalAsync(reqCtx, job.UserId, token);
             if (user == null)
                 throw HttpError.NotFound("User not found");
