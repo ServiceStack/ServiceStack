@@ -235,11 +235,14 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (job.UserId != null)
         {
             var services = scope.ServiceProvider;
-            var manager = services.GetRequiredService<IIdentityAuthContextManager>();
-            var authCtx = services.GetRequiredService<IIdentityAuthContext>();
+            var manager = services.GetService<IIdentityAuthContextManager>()
+                ?? feature.Services.GetRequiredService<IIdentityAuthContextManager>();
+            var authCtx = services.GetService<IIdentityAuthContext>()
+                ?? feature.Services.GetRequiredService<IIdentityAuthContext>();
             var user = await manager.CreateClaimsPrincipalAsync(job.UserId, reqCtx);
             reqCtx.Items[Keywords.ClaimsPrincipal] = user;
-            var authProvider = services.GetService<IIdentityApplicationAuthProvider>();
+            var authProvider = services.GetService<IIdentityApplicationAuthProvider>()
+                ?? feature.Services.GetService<IIdentityApplicationAuthProvider>();
             if (authProvider != null)
             {
                 var session = authCtx.SessionFactory();
