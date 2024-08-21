@@ -372,6 +372,12 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
 
         if (IncludeAuthMetadataProvider && !services.Exists<IAuthMetadataProvider>())
             services.AddSingleton<IAuthMetadataProvider, AuthMetadataProvider>();
+
+#if NETCORE
+        // IUserResolver is registered in IdentityAuth when using ASP .NET IdentityAuth 
+        if (!services.Exists<IUserResolver>())
+            services.AddSingleton<IUserResolver>(c => new ServiceStackAuthUserResolver(this));
+#endif
     }
 
     public void Register(IAppHost appHost)

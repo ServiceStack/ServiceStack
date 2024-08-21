@@ -244,11 +244,11 @@ public partial class BackgroundJobs : IBackgroundJobs
         {
             var userResolver = scope.ServiceProvider.GetService<IUserResolver>()
                 ?? services.GetRequiredService<IUserResolver>();
-            var user = await userResolver.CreateClaimsPrincipal(reqCtx, job.UserId);
+            var user = await userResolver.CreateClaimsPrincipalAsync(reqCtx, job.UserId, token);
             if (user == null)
                 throw HttpError.NotFound("User not found");
             reqCtx.Items[Keywords.ClaimsPrincipal] = user;
-            var session = await userResolver.CreateAuthSession(reqCtx, user);
+            var session = await userResolver.CreateAuthSessionAsync(reqCtx, user, token);
             if (session != null)
             {
                 reqCtx.Items[Keywords.Session] = session;

@@ -126,6 +126,12 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
         if (session.IsAuthenticated) // if existing Session exists use it instead
             return;
 
+        session = await ConvertPrincipalToSessionAsync(req, claimsPrincipal).ConfigAwait();
+        req.Items[Keywords.Session] = session;
+    }
+
+    public async Task<IAuthSession> ConvertPrincipalToSessionAsync(IRequest req, ClaimsPrincipal claimsPrincipal, CancellationToken token=default)
+    {
         string source; 
         string sessionId;
         Claim idClaim = null;
@@ -156,7 +162,7 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
             else throw new NotSupportedException($"Claim '{IdClaimType}' is required");
         }
 
-        session = SessionFeature.CreateNewSession(req, sessionId);
+        var session = SessionFeature.CreateNewSession(req, sessionId);
         session.IsAuthenticated = true;
         var meta = (session as IMeta)?.Meta;            
         var extended = session as IAuthSessionExtended;
@@ -165,8 +171,8 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
         
         var authMethodClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.AuthenticationMethod);            
         session.AuthProvider = authMethodClaim?.Value 
-            ?? claimsPrincipal.Identity?.AuthenticationType
-            ?? Name;
+                               ?? claimsPrincipal.Identity?.AuthenticationType
+                               ?? Name;
 
         var sessionValues = new Dictionary<string,string>();
         
@@ -174,22 +180,22 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
         {
             if (claim.Type == RoleClaimType)
             {
-                session.Roles ??= new List<string>();
+                session.Roles ??= [];
                 session.Roles.Add(claim.Value);
             }
             if (claim.Type == PermissionClaimType)
             {
-                session.Permissions ??= new List<string>();
+                session.Permissions ??= [];
                 session.Permissions.Add(claim.Value);
             }
             else if (extended != null && claim.Type == "aud")
             {
-                extended.Audiences ??= new List<string>();
+                extended.Audiences ??= [];
                 extended.Audiences.Add(claim.Value);
             }
             else if (extended != null && claim.Type == "scope")
             {
-                extended.Scopes ??= new List<string>();
+                extended.Scopes ??= [];
                 extended.Scopes.Add(claim.Value);
             }                        
             else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
@@ -213,10 +219,9 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
 
         if (PopulateSessionFilterAsync != null)
             await PopulateSessionFilterAsync(session, claimsPrincipal, req);
-
-        req.Items[Keywords.Session] = session;
+        return session;
     }
-    
+
     public HashSet<string> IgnoreAutoSignInForExtensions { get; set; } = new() {
         "js", "css", "png", "jpg", "jpeg", "gif", "svg", "ico"
     };
@@ -256,8 +261,14 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
 
             return;
         }
-        
+
         var session = await req.GetSessionAsync().ConfigAwait();
+        var principal = await ConvertSessionToPrincipalAsync(req, session).ConfigAwait();
+        req.HttpContext.User = principal;
+    }
+
+    public async Task<ClaimsPrincipal> ConvertSessionToPrincipalAsync(IRequest req, IAuthSession session, CancellationToken token=default)
+    {
         if (session.IsAuthenticated)
         {
             var claims = session.ConvertSessionToClaims(
@@ -269,7 +280,7 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
             {
                 await using (authRepo as IAsyncDisposable)
                 {
-                    var roles = await authRepo.GetRolesAsync(session.UserAuthId.ToInt()).ConfigAwait();
+                    var roles = await authRepo.GetRolesAsync(session.UserAuthId.ToInt(), token: token).ConfigAwait();
                     foreach (var role in roles)
                     {
                         claims.Add(new Claim(RoleClaimType, role, Issuer));
@@ -285,13 +296,11 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
                 }
             }
             
-            var principal = CreateClaimsPrincipal != null
+            return CreateClaimsPrincipal != null
                 ? CreateClaimsPrincipal(claims, session, req)
                 : new ClaimsPrincipal(new ClaimsIdentity(claims, AuthenticationType));
-
-            req.HttpContext.User = principal;
         }
-        else if (HostContext.HasValidAuthSecret(req))
+        if (HostContext.HasValidAuthSecret(req))
         {
             var claims = new List<Claim> {
                 new(ClaimTypes.NameIdentifier, nameof(HostConfig.AdminAuthSecret), ClaimValueTypes.String, Issuer),
@@ -305,12 +314,11 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
                 claims.Add(new Claim(RoleClaimType, adminRole, ClaimValueTypes.String, Issuer));
             }
 
-            var principal = CreateClaimsPrincipal != null
+            return CreateClaimsPrincipal != null
                 ? CreateClaimsPrincipal(claims, session, req)
                 : new ClaimsPrincipal(new ClaimsIdentity(claims, AuthenticationType));
-
-            req.HttpContext.User = principal;
         }
+        return null;
     }
 
     public override void Register(IAppHost appHost, AuthFeature authFeature)

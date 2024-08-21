@@ -32,8 +32,6 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
     {
         services.AddSingleton(this);
         services.AddSingleton<IBackgroundJobs,BackgroundJobs>();
-        if (!services.Exists<IUserResolver>())
-            services.AddSingleton<IUserResolver, UserResolver>();
     }
 
     public void Register(IAppHost appHost)
