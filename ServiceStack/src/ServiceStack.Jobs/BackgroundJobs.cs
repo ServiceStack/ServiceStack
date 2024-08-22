@@ -398,7 +398,23 @@ public partial class BackgroundJobs : IBackgroundJobs
 
                     using var dbMonth = feature.OpenJobsMonthDb(job.CreatedDate);
                     var failedJob = job.PopulateJob(new FailedJob());
-                    dbMonth.Insert(failedJob);
+                    try
+                    {
+                        dbMonth.Insert(failedJob);
+                    }
+                    catch (Exception e)
+                    {
+                        var existingJob = dbMonth.SingleById<FailedJob>(failedJob.Id);
+                        if (existingJob != null)
+                        {
+                            log.LogWarning("Existing FailedJob {Id} already exists, updating instead", failedJob.Id);
+                            dbMonth.Update(failedJob);
+                        }
+                        else
+                        {
+                            log.LogError(e, "Failed to Insert FailedJob {Id}: {Message}", failedJob.Id, e.Message);
+                        }
+                    }
 
                     using var db = feature.OpenJobsDb();
                     using var trans = db.OpenTransaction();
@@ -584,9 +600,25 @@ public partial class BackgroundJobs : IBackgroundJobs
         lock (dbWrites)
         {
             using var dbMonth = feature.OpenJobsMonthDb(job.CreatedDate);
-            dbMonth.Insert(completedJob);
+            try
+            {
+                dbMonth.Insert(completedJob);
+            }
+            catch (Exception e)
+            {
+                var existingJob = dbMonth.SingleById<CompletedJob>(completedJob.Id);
+                if (existingJob != null)
+                {
+                    log.LogWarning("Existing CompletedJob {Id} already exists, updating instead", completedJob.Id);
+                    dbMonth.Update(completedJob);
+                }
+                else
+                {
+                    log.LogError(e, "Failed to Insert CompletedJob {Id}: {Message}", completedJob.Id, e.Message);
+                }
+            }
             db.DeleteById<BackgroundJob>(job.Id);
-
+            
             // Execute any jobs depending on this job
             db.UpdateOnly(() => new BackgroundJob {
                 RequestId = requestId,
