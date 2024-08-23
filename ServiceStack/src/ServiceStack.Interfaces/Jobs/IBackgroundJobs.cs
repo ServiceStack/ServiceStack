@@ -17,6 +17,7 @@ public interface IBackgroundJobs
     Task<object?> RunCommandAsync(string commandName, object arg, BackgroundJobOptions? options = null);
     Task ExecuteJobAsync(BackgroundJob job);
     void CancelJob(BackgroundJob job);
+    void CancelWorker(string worker);
     void FailJob(BackgroundJob job, Exception ex);
     void FailJob(BackgroundJob job, ResponseStatus error, bool shouldRetry);
     void CompleteJob(BackgroundJob job, object? response = null);
@@ -131,4 +132,5 @@ public class WorkerStats
     public long Completed { get; set; }
     public long Retries { get; set; }
     public long Failed { get; set; }
+    public TimeSpan? RunningTime { get; set; }
 }
