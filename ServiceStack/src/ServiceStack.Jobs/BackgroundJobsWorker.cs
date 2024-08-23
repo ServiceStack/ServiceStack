@@ -88,6 +88,10 @@ public class BackgroundJobsWorker : IDisposable
                         Interlocked.Increment(ref failed);
                         throw;
                     }
+                    finally
+                    {
+                        lastRunStarted = null;
+                    }
                 }
             }
         }
