@@ -711,13 +711,13 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (job.Worker != null)
         {
             var worker = workers.GetOrAdd(job.Worker, 
-                _ => new BackgroundJobsWorker(this, ct, transient:false) { Name = job.Worker });
+                _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = job.Worker });
             worker.Enqueue(job);
         }
         else
         {
             // Otherwise invoke a new worker immediately
-            new BackgroundJobsWorker(this, ct, transient:true).Enqueue(job);
+            new BackgroundJobsWorker(this, ct, transient:true, feature.DefaultTimeoutSecs).Enqueue(job);
         }
     }
 
@@ -729,7 +729,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             
             // Transfer jobs to new Worker before disposing
             var newWorker = workers.GetOrAdd(worker, 
-                _ => new BackgroundJobsWorker(this, ct, transient:false) { Name = worker });
+                _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = worker });
             while (bgWorker.Queue.TryDequeue(out var job))
             {
                 newWorker.Enqueue(job);

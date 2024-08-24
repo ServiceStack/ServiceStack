@@ -25,14 +25,15 @@ public class BackgroundJobsWorker : IDisposable
     private readonly bool transient;
     private bool cancelled;
     private bool disposed;
-    private int timeoutMs = 5 * 60 * 1000;
+    private int defaultTimeOutSecs;
 
-    public BackgroundJobsWorker(IBackgroundJobs jobs, CancellationToken ct, bool transient)
+    public BackgroundJobsWorker(IBackgroundJobs jobs, CancellationToken ct, bool transient, int defaultTimeOutSecs)
     {
         this.jobs = jobs;
         workerCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         this.ct = workerCts.Token;
         this.transient = transient;
+        this.defaultTimeOutSecs = defaultTimeOutSecs;
     }
 
     public WorkerStats GetStats() => new()
@@ -81,7 +82,7 @@ public class BackgroundJobsWorker : IDisposable
                     try
                     {
                         if (job.TimeoutSecs != null)
-                            timeoutMs = job.TimeoutSecs.Value * 1000;
+                            defaultTimeOutSecs = job.TimeoutSecs.Value;
                         
                         if (job.Attempts > 1)
                             Interlocked.Increment(ref retries);
@@ -126,10 +127,11 @@ public class BackgroundJobsWorker : IDisposable
             if (disposing)
             {
                 // Dispose managed resources
-                workerCts.Cancel();
+                var timeoutMs = defaultTimeOutSecs * 1000;
+                workerCts.CancelAfter(timeoutMs);
                 try
                 {
-                    bgTask?.Wait(timeoutMs); // Wait for the task to complete
+                    bgTask?.Wait(defaultTimeOutSecs); // Wait for the task to complete
                 }
                 catch (Exception e)
                 {
@@ -139,7 +141,8 @@ public class BackgroundJobsWorker : IDisposable
                 finally
                 {
                     workerCts.Dispose();
-                    bgTask?.Dispose();
+                    // No longer required to dispose of tasks
+                    // bgTask?.Dispose();
                 }
             }
             // No unmanaged resources to clean up
