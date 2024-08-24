@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using ServiceStack.Logging;
 
 namespace ServiceStack.Jobs;
 
@@ -6,6 +7,7 @@ public class BackgroundJobsWorker : IDisposable
 {
     public string? Name { get; set; }
     public ConcurrentQueue<BackgroundJob> Queue { get; } = new();
+    public Task? BackgroundTask => bgTask; 
     private Task? bgTask;
     private long running = 0;
     public bool Running => Interlocked.Read(ref running) == 1;
@@ -22,6 +24,8 @@ public class BackgroundJobsWorker : IDisposable
     private readonly CancellationTokenSource workerCts;
     private readonly bool transient;
     private bool cancelled;
+    private bool disposed;
+    private int timeoutMs = 5 * 60 * 1000;
 
     public BackgroundJobsWorker(IBackgroundJobs jobs, CancellationToken ct, bool transient)
     {
@@ -76,6 +80,9 @@ public class BackgroundJobsWorker : IDisposable
                 {
                     try
                     {
+                        if (job.TimeoutSecs != null)
+                            timeoutMs = job.TimeoutSecs.Value * 1000;
+                        
                         if (job.Attempts > 1)
                             Interlocked.Increment(ref retries);
 
@@ -99,14 +106,44 @@ public class BackgroundJobsWorker : IDisposable
         {
             Interlocked.Decrement(ref running);
         }
-        
-        if (transient)
-            Dispose();
+    }
+
+    ~BackgroundJobsWorker()
+    {
+        Dispose(false);
     }
 
     public void Dispose()
     {
-        workerCts.Dispose();
-        bgTask?.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposed)
+        {
+            if (disposing)
+            {
+                // Dispose managed resources
+                workerCts.Cancel();
+                try
+                {
+                    bgTask?.Wait(timeoutMs); // Wait for the task to complete
+                }
+                catch (Exception e)
+                {
+                    LogManager.GetLogger(GetType())
+                        .Error($"BackgroundJobsWorker dispose error: {e.Message}", e);
+                }
+                finally
+                {
+                    workerCts.Dispose();
+                    bgTask?.Dispose();
+                }
+            }
+            // No unmanaged resources to clean up
+            disposed = true;
+        }
     }
 }
