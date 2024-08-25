@@ -414,7 +414,7 @@ public class UploadLocation
 {
     public UploadLocation(string name, 
         IVirtualFiles virtualFiles, Func<FilesUploadContext,string>? resolvePath = null, 
-        string readAccessRole = RoleNames.AllowAnyUser, string writeAccessRole = RoleNames.AllowAnyUser,
+        string? readAccessRole = null, string? writeAccessRole = null,
         RequireApiKey? requireApiKey = null,
         string[]? allowExtensions = null, FilesUploadOperation allowOperations = FilesUploadOperation.All, 
         int? maxFileCount = null, long? minFileBytes = null, long? maxFileBytes = null,
@@ -425,8 +425,8 @@ public class UploadLocation
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
         this.VirtualFiles = virtualFiles ?? throw new ArgumentNullException(nameof(virtualFiles));
         this.ResolvePath = resolvePath ?? (ctx => ctx.GetLocationPath($"{DateTime.UtcNow:yyyy/MM/dd}/{ctx.FileName}"));
-        this.ReadAccessRole = readAccessRole ?? throw new ArgumentNullException(nameof(readAccessRole));
-        this.WriteAccessRole = writeAccessRole ?? throw new ArgumentNullException(nameof(writeAccessRole));
+        this.ReadAccessRole = readAccessRole ?? (requireApiKey != null ? RoleNames.AllowAnon : RoleNames.AllowAnyUser);
+        this.WriteAccessRole = writeAccessRole ?? (requireApiKey != null ? RoleNames.AllowAnon : RoleNames.AllowAnyUser);
         this.RequireApiKey = requireApiKey;
         this.AllowExtensions = allowExtensions?.ToSet(StringComparer.OrdinalIgnoreCase);
         this.AllowOperations = allowOperations;
