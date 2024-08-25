@@ -428,8 +428,8 @@ public class UploadLocation
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
         this.VirtualFiles = virtualFiles ?? throw new ArgumentNullException(nameof(virtualFiles));
         this.ResolvePath = resolvePath ?? (ctx => ctx.GetLocationPath($"{DateTime.UtcNow:yyyy/MM/dd}/{ctx.FileName}"));
-        this.ReadAccessRole = readAccessRole ?? (requireApiKey != null ? RoleNames.AllowAnon : RoleNames.AllowAnyUser);
-        this.WriteAccessRole = writeAccessRole ?? (requireApiKey != null ? RoleNames.AllowAnon : RoleNames.AllowAnyUser);
+        this.ReadAccessRole = readAccessRole ?? RoleNames.AllowAnyUser;
+        this.WriteAccessRole = writeAccessRole ?? RoleNames.AllowAnyUser;
         this.RequireApiKey = requireApiKey;
         this.AllowExtensions = allowExtensions?.ToSet(StringComparer.OrdinalIgnoreCase);
         this.AllowOperations = allowOperations;
