@@ -473,11 +473,14 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         typeof(StreamFiles), // gRPC Server Stream
         typeof(StreamServerEvents), // gRPC Server Stream
         typeof(AuditBase),
+        typeof(BackgroundJobBase),
+        typeof(BackgroundJobOptions),
         typeof(BackgroundJob),
         typeof(JobSummary),
         typeof(ScheduledTask),
         typeof(CompletedJob),
         typeof(FailedJob),
+        typeof(WorkerStats),
     ];
 
     public MetadataTypes ResolveMetadataTypes(MetadataTypesConfig typesConfig) =>
