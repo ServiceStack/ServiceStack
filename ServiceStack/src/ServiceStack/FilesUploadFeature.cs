@@ -193,7 +193,8 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
 
     public async Task ReplaceFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath, CancellationToken token=default)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey, token);
+        if (location.WriteAccessRole != RoleNames.AllowAnon)
+            await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey, token);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Update))
             throw HttpError.Forbidden(Errors.NoUpdateAccess.Localize(req));
         if (req.Files.Length != 1)
@@ -214,7 +215,8 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
 
     public async Task<bool> DeleteFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey);
+        if (location.WriteAccessRole != RoleNames.AllowAnon)
+            await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Delete))
             throw HttpError.Forbidden(Errors.NoDeleteAccess.Localize(req));
         
