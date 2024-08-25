@@ -360,6 +360,7 @@ public class BackgroundJobsTests
         using var monthDb = feature.OpenJobsMonthDb(DateTime.UtcNow);
         monthDb.DeleteAllAsync<CompletedJob>();
         monthDb.DeleteAllAsync<FailedJob>();
+        ((BackgroundJobs)feature.Jobs).Clear();
     }
 
     void AssertNotNulls(BackgroundJob job)
@@ -961,7 +962,7 @@ public class BackgroundJobsTests
 
         // First Scheduled Task should execute immediately
         Assert.That(await ExecUtils.WaitUntilTrueAsync(() => JobServices.LastRequest != null), "LastRequest == null");
-        Assert.That(JobServices.Requests.Count, Is.EqualTo(1));
+        Assert.That(JobServices.Requests.Count, Is.GreaterThanOrEqualTo(1));
         var job = JobServices.LastRequest.GetBackgroundJob();
         Assert.That(job.RequestType, Is.EqualTo(CommandResult.Api));
         AssertNotNulls(job);

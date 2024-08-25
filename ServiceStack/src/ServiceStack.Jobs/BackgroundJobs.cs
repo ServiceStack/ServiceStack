@@ -20,6 +20,12 @@ public partial class BackgroundJobs : IBackgroundJobs
     readonly BackgroundsJobFeature feature;
     private IServiceProvider services;
     readonly IServiceScopeFactory scopeFactory;
+    ConcurrentDictionary<string, BackgroundJobsWorker> workers = new();
+    static ConcurrentQueue<BackgroundJobStatusUpdate> updates = new();
+    string Table;
+    Columns columns;
+    private long ticks = 0;
+
     
     public BackgroundJobs(ILogger<BackgroundJobs> log, 
         BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IServiceProvider services, IServiceScopeFactory scopeFactory)
@@ -704,7 +710,6 @@ public partial class BackgroundJobs : IBackgroundJobs
         return to;
     }
 
-    ConcurrentDictionary<string, BackgroundJobsWorker> workers = new();
     public void DispatchToWorker(BackgroundJob job)
     {
         // If job.Thread is specified, use a dedicated worker for that thread
@@ -892,14 +897,11 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
-    static ConcurrentQueue<BackgroundJobStatusUpdate> updates = new();
     public void UpdateJobStatus(BackgroundJobStatusUpdate status)
     {
         updates.Enqueue(status);
     }
 
-    string Table;
-    Columns columns;
     record class Columns(string Logs, string Status, string Progress, string Id);
 
     private void PerformDbUpdates()
@@ -953,9 +955,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
-    private long ticks = 0;
-
-    public async Task TickAsync()
+    public Task TickAsync()
     {
         Interlocked.Increment(ref ticks);
         if (log.IsEnabled(LogLevel.Debug))
@@ -964,11 +964,19 @@ public partial class BackgroundJobs : IBackgroundJobs
         DispatchPendingJobs();
         PerformDbUpdates();
         ExecuteDueScheduledTasks();
+        return Task.CompletedTask;
     }
 
     private CommandInfo AssertCommand(string? command)
     {
         ArgumentNullException.ThrowIfNull(command);
         return feature.CommandsFeature.AssertCommandInfo(command);
+    }
+
+    public void Clear()
+    {
+        workers.Clear();
+        updates.Clear();
+        ClearScheduledTasks();
     }
 }

@@ -156,5 +156,11 @@ public partial class BackgroundJobs
             }, where: x => x.Id == task.Id);
         }
     }
+
+    public void ClearScheduledTasks()
+    {
+        namedScheduledTasks.Clear();
+        cronExpressions.Clear();
+    }
 }
 
