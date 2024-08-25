@@ -105,7 +105,7 @@ public partial class BackgroundJobs
             var lastRun = task.LastRun ?? DateTime.UtcNow.AddYears(-1);
             if (task.Interval != null)
             {
-                if (task.LastRun == null || lastRun - task.LastRun >= task.Interval)
+                if (task.LastRun == null || DateTime.UtcNow - lastRun >= task.Interval)
                 {
                     EnqueueNewJobForScheduledTask(task);
                 }
