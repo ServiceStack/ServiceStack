@@ -454,15 +454,18 @@ public static class RequestUtils
     {
         if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
         {
-            await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
             if (requireApiKey != null)
             {
-                 var apiKeyValidator = new ApiKeyValidator(req.GetRequiredService<IApiKeySource>, req.GetRequiredService<IApiKeyResolver>);
+                var apiKeyValidator = new ApiKeyValidator(req.GetRequiredService<IApiKeySource>, req.GetRequiredService<IApiKeyResolver>);
                 if (requireApiKey.Scope != null)
                     apiKeyValidator.Scope = requireApiKey.Scope;
                 if (!await apiKeyValidator.IsValidAsync(req.Dto, req))
                     throw new HttpError(403, nameof(HttpStatusCode.Forbidden),
                         ErrorMessages.ApiKeyInvalid.Localize(req));
+            }
+            else
+            {
+                await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
             }
         }
     }

@@ -181,7 +181,8 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
 
     public async Task<IVirtualFile?> GetFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.ReadAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey);
+        if (location.ReadAccessRole != RoleNames.AllowAnon)
+            await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.ReadAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Read))
             throw HttpError.NotFound(Errors.NoReadAccess.Localize(req));
 
