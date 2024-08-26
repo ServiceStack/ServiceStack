@@ -20,6 +20,11 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
     public IBackgroundJobs Jobs { get; set; } = null!;
     public int DefaultRetryLimit { get; set; } = 2;
     public int DefaultTimeoutSecs { get; set; } = 5 * 60; // 5 mins
+    public TimeSpan DefaultTimeout
+    {
+        get => TimeSpan.FromSeconds(DefaultTimeoutSecs);
+        set => DefaultTimeoutSecs = (int)value.TotalSeconds;
+    }
     public Func<BackgroundJob,Exception,bool> ShouldRetry { get; set; } = (_,ex) => ex is not TaskCanceledException;
 
     public BackgroundsJobFeature()
