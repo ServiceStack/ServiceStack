@@ -19,7 +19,7 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
     public CommandsFeature CommandsFeature { get; set; } = null!;
     public IBackgroundJobs Jobs { get; set; } = null!;
     public int DefaultRetryLimit { get; set; } = 2;
-    public int DefaultTimeoutSecs { get; set; } = 5 * 60; // 5 mins
+    public int DefaultTimeoutSecs { get; set; } = 10 * 60; // 10 mins
     public TimeSpan DefaultTimeout
     {
         get => TimeSpan.FromSeconds(DefaultTimeoutSecs);
