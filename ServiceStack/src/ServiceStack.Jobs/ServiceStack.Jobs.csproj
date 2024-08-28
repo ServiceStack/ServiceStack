@@ -16,6 +16,7 @@
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
         <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+        <ProjectReference Include="..\ServiceStack.Server\ServiceStack.Server.csproj" />
         <PackageReference Include="Cronos" Version="0.8.4" />
     </ItemGroup>
 </Project>

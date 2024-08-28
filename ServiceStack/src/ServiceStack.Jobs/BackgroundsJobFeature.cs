@@ -1,23 +1,33 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Data;
-using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack.Jobs;
 
-public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchema
+public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServices, IRequiresSchema, IPreInitPlugin
 {
+    public string Id => Plugins.BackgroundJobs;
+    /// <summary>
+    /// Limit API access to users in role
+    /// </summary>
+    public string AccessRole { get; set; } = RoleNames.Admin;
+
     public string DbDir { get; set; } = "App_Data/jobs";
     public string DbFile { get; set; } = "jobs.db";
     public Func<DateTime, string> DbMonthFile { get; set; } = DefaultDbMonthFile;
     public Func<IDbConnectionFactory, IDbConnection> ResolveAppDb { get; set; }
     public Func<IDbConnectionFactory, DateTime, IDbConnection> ResolveMonthDb { get; set; }
     public bool AutoInitSchema { get; set; } = true;
+    public bool EnableAdmin { get; set; } = false;
     public IDbConnectionFactory DbFactory { get; set; } = null!;
     public IAppHostNetCore AppHost { get; set; } = null!;
     public CommandsFeature CommandsFeature { get; set; } = null!;
     public IBackgroundJobs Jobs { get; set; } = null!;
+    public AutoQueryFeature? AutoQueryFeature { get; set; }
+    
+    public IAutoQueryDb? AutoQuery { get; set; }
     public int DefaultRetryLimit { get; set; } = 2;
     public int DefaultTimeoutSecs { get; set; } = 10 * 60; // 10 mins
     public TimeSpan DefaultTimeout
@@ -37,6 +47,19 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
     {
         services.AddSingleton(this);
         services.AddSingleton<IBackgroundJobs,BackgroundJobs>();
+
+        if (EnableAdmin)
+        {
+            // Background Jobs Admin UI requires AutoQuery functionality
+            ServiceStackHost.GlobalAfterConfigureServices.Add(c =>
+            {
+                if (!c.Exists<IAutoQueryDb>())
+                {
+                    AutoQueryFeature ??= new();
+                    c.AddSingleton<IAutoQueryDb>(AutoQueryFeature.CreateAutoQueryDb());
+                }
+            });
+        }
     }
 
     public void Register(IAppHost appHost)
@@ -45,7 +68,6 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
             ?? throw new Exception($"{nameof(CommandsFeature)} is required to use {nameof(BackgroundsJobFeature)}");
         Jobs ??= appHost.TryResolve<IBackgroundJobs>() 
             ?? throw new Exception($"{nameof(IBackgroundJobs)} is not registered");
-
         DbFactory ??= appHost.TryResolve<IDbConnectionFactory>() 
             ?? new OrmLiteConnectionFactory("Data Source=:memory:", SqliteDialect.Provider);
 
@@ -62,6 +84,22 @@ public class BackgroundsJobFeature : IPlugin, IConfigureServices, IRequiresSchem
         {
             InitSchema();
             InitMonthDbSchema(DateTime.UtcNow);
+        }
+    }
+    
+    public void BeforePluginsLoaded(IAppHost appHost)
+    {
+        if (EnableAdmin)
+        {
+            appHost.ConfigurePlugin<UiFeature>(feature =>
+            {
+                feature.AddAdminLink(AdminUiFeature.BackgroundJobs, new LinkInfo {
+                    Id = "backgroundjobs",
+                    Label = "Background Jobs",
+                    Icon = Svg.ImageSvg(SvgIcons.Tasks),
+                    Show = $"role:{AccessRole}",
+                });
+            });
         }
     }
 

@@ -13,16 +13,17 @@ namespace ServiceStack;
 [Flags]
 public enum AdminUiFeature
 {
-    None       = 0,
-    Users      = 1 << 0,
-    Validation = 1 << 1,
-    Logging    = 1 << 2,
-    Profiling  = 1 << 3,
-    Redis      = 1 << 4,
-    Database   = 1 << 5,
-    Commands   = 1 << 6,
-    ApiKeys    = 1 << 7,
-    All = Users | Validation | Logging | Profiling | Redis | Database | Commands | ApiKeys,
+    None           = 0,
+    Users          = 1 << 0,
+    Validation     = 1 << 1,
+    Logging        = 1 << 2,
+    Profiling      = 1 << 3,
+    Redis          = 1 << 4,
+    Database       = 1 << 5,
+    Commands       = 1 << 6,
+    ApiKeys        = 1 << 7,
+    BackgroundJobs = 1 << 8,
+    All = Users | Validation | Logging | Profiling | Redis | Database | Commands | ApiKeys | BackgroundJobs,
 }
 
 public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitPlugin, IHasStringId
