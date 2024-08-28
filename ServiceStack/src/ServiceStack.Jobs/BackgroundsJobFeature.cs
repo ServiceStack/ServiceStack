@@ -55,7 +55,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
             {
                 if (!c.Exists<IAutoQueryDb>())
                 {
-                    AutoQueryFeature ??= new();
+                    AutoQueryFeature ??= new() { MaxLimit = 1000 };
                     c.AddSingleton<IAutoQueryDb>(AutoQueryFeature.CreateAutoQueryDb());
                 }
             });

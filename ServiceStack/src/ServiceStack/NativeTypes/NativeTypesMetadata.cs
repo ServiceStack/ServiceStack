@@ -106,10 +106,10 @@ public class MetadataTypesGenerator
             Config = config,
         };
 
-        var skipTypes = config.IgnoreTypes ?? new HashSet<Type>();
+        var skipTypes = config.IgnoreTypes ?? [];
         var opTypes = new HashSet<Type>();
         var ignoreNamespaces = config.IgnoreTypesInNamespaces ?? new List<string>();
-        var exportTypes = config.ExportTypes ?? new HashSet<Type>();
+        var exportTypes = config.ExportTypes ?? [];
 
         var exportTags = config.ExportTags ?? TypeConstants<string>.EmptyList;
 

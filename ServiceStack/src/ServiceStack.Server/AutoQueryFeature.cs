@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.Configuration;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
 using ServiceStack.Data;
@@ -166,6 +167,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
     }
 
     public AutoQuery CreateAutoQueryDb() => new() {
+        Feature = this,
         IgnoreProperties = IgnoreProperties,
         IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
         MaxLimit = MaxLimit,
@@ -552,6 +554,8 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
 /// </summary>
 public interface IAutoQueryDb : IAutoCrudDb
 {
+    string AccessRole { get; }
+    
     /// <summary>
     /// Resolve the source Type for this Request DTO 
     /// </summary>
@@ -782,6 +786,8 @@ public interface IAutoQueryOptions
 
 public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 {
+    public AutoQueryFeature Feature { get; set; }  
+    public string AccessRole => Feature?.AccessRole ?? RoleNames.Admin;
     public int? MaxLimit { get; set; }
     public bool IncludeTotal { get; set; }
     public bool EnableUntypedQueries { get; set; }
@@ -827,6 +833,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
         var genericType = typeof(TypedQuery<,>).MakeGenericType(dtoType, fromType);
         defaultValue = genericType.CreateInstance<ITypedQuery>();
+        defaultValue.Init(Feature);
 
         Dictionary<Type, ITypedQuery> snapshot, newCache;
         do
@@ -837,7 +844,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
             };
 
         } while (!ReferenceEquals(
-                     Interlocked.CompareExchange(ref TypedQueries, newCache, snapshot), snapshot));
+            Interlocked.CompareExchange(ref TypedQueries, newCache, snapshot), snapshot));
 
         return defaultValue;
     }
@@ -1133,6 +1140,7 @@ internal class GenericAutoQueryDb<From, Into> : GenericAutoQueryDb
 
 public interface ITypedQuery
 {
+    void Init(AutoQueryFeature feature);
     ISqlExpression CreateQuery(IDbConnection db);
 
     ISqlExpression AddToQuery(
@@ -1280,7 +1288,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
 {
     static readonly Dictionary<string, GetMemberDelegate> PropertyGetters = new();
     static readonly Dictionary<string, QueryDbFieldAttribute> QueryFieldMap = new();
-    static readonly AutoCrudMetadata Meta;
+    static AutoCrudMetadata Meta;
 
     static TypedQuery()
     {
@@ -1293,12 +1301,11 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
             if (queryAttr != null)
                 QueryFieldMap[pi.Name] = queryAttr.Init();
         }
+    }
 
-        Meta = AutoCrudMetadata.Create(typeof(QueryModel));
-        // AutoFilters = meta.AutoFilters?.ToArray() ?? TypeConstants<AutoFilterAttribute>.EmptyArray;
-        // PopulateAttrs = meta.PopulateAttrs?.ToArray() ?? TypeConstants<AutoPopulateAttribute>.EmptyArray;
-        // MapAttrs = meta.MapAttrs;
-        // AutoFiltersDbFields = meta.AutoFiltersDbFields?.ToArray() ?? TypeConstants<QueryDbFieldAttribute>.EmptyArray;
+    public void Init(AutoQueryFeature feature)
+    {
+        Meta ??= AutoCrudMetadata.Create(typeof(QueryModel), feature);
     }
 
     public ISqlExpression CreateQuery(IDbConnection db) => db.From<From>();
