@@ -165,26 +165,26 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         ResponseFilters = [IncludeAggregates];
     }
 
+    public AutoQuery CreateAutoQueryDb() => new() {
+        IgnoreProperties = IgnoreProperties,
+        IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
+        MaxLimit = MaxLimit,
+        IncludeTotal = IncludeTotal,
+        EnableUntypedQueries = EnableUntypedQueries,
+        EnableSqlFilters = EnableRawSqlFilters,
+        OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
+        GlobalQueryFilter = GlobalQueryFilter,
+        QueryFilters = QueryFilters,
+        ResponseFilters = ResponseFilters,
+        StartsWithConventions = StartsWithConventions,
+        EndsWithConventions = EndsWithConventions,
+        UseNamedConnection = UseNamedConnection,
+        UseDatabaseWriteLocks = UseDatabaseWriteLocks,
+    };
+
     public void Configure(IServiceCollection services)
     {
-        services.AddSingleton<IAutoQueryDb>(c => new AutoQuery
-        {
-            IgnoreProperties = IgnoreProperties,
-            IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
-            MaxLimit = MaxLimit,
-            IncludeTotal = IncludeTotal,
-            EnableUntypedQueries = EnableUntypedQueries,
-            EnableSqlFilters = EnableRawSqlFilters,
-            OrderByPrimaryKeyOnLimitQuery = OrderByPrimaryKeyOnPagedQuery,
-            GlobalQueryFilter = GlobalQueryFilter,
-            QueryFilters = QueryFilters,
-            ResponseFilters = ResponseFilters,
-            StartsWithConventions = StartsWithConventions,
-            EndsWithConventions = EndsWithConventions,
-            UseNamedConnection = UseNamedConnection,
-            UseDatabaseWriteLocks = UseDatabaseWriteLocks,
-        });
-
+        services.AddSingleton<IAutoQueryDb>(c => CreateAutoQueryDb());
         //CRUD Services
         GenerateCrudServices?.Configure(services);
     }
@@ -1278,12 +1278,8 @@ internal struct ExprResult
 
 public class TypedQuery<QueryModel, From> : ITypedQuery
 {
-    static readonly Dictionary<string, GetMemberDelegate> PropertyGetters =
-        new Dictionary<string, GetMemberDelegate>();
-
-    static readonly Dictionary<string, QueryDbFieldAttribute> QueryFieldMap =
-        new Dictionary<string, QueryDbFieldAttribute>();
-
+    static readonly Dictionary<string, GetMemberDelegate> PropertyGetters = new();
+    static readonly Dictionary<string, QueryDbFieldAttribute> QueryFieldMap = new();
     static readonly AutoCrudMetadata Meta;
 
     static TypedQuery()
