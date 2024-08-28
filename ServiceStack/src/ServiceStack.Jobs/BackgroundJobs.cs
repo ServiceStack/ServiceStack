@@ -20,6 +20,8 @@ public partial class BackgroundJobs : IBackgroundJobs
     readonly BackgroundsJobFeature feature;
     private IServiceProvider services;
     readonly IServiceScopeFactory scopeFactory;
+    private ConcurrentDictionary<string, int> lastCommandDurations = new();
+    private ConcurrentDictionary<string, int> lastApiDurations = new();
     ConcurrentDictionary<string, BackgroundJobsWorker> workers = new();
     static ConcurrentQueue<BackgroundJobStatusUpdate> updates = new();
     string Table;
@@ -221,6 +223,16 @@ public partial class BackgroundJobs : IBackgroundJobs
             : DeserializeFromJson(job.ResponseBody, responseType);
         return response;
     }
+
+    public int? GetCommandEstimatedDurationMs(string commandType) =>
+        lastCommandDurations.TryGetValue(commandType, out var lastDuration) 
+            ? lastDuration 
+            : null;
+    
+    public int? GetApiEstimatedDurationMs(string requestType) =>
+        lastApiDurations.TryGetValue(requestType, out var lastDuration) 
+            ? lastDuration 
+            : null;
 
     object DeserializeFromJson(string json, Type type)
     {
@@ -585,6 +597,11 @@ public partial class BackgroundJobs : IBackgroundJobs
             }
         }
 
+        if (job is { RequestType: CommandResult.Command, Command: not null, DurationMs: > 0 })
+            lastCommandDurations[job.Command] = job.DurationMs;
+        else if (job is { RequestType: CommandResult.Api, DurationMs: > 0 })
+            lastApiDurations[job.Request] = job.DurationMs;
+
         if (job.Callback != null)
         {
             _ = Task.Factory.StartNew(() => NotifyCompletionAsync(job, response), ct);
@@ -761,6 +778,30 @@ public partial class BackgroundJobs : IBackgroundJobs
         using var db = feature.OpenJobsDb();
         var requestId = Guid.NewGuid().ToString("N");
         var now = DateTime.UtcNow;
+
+        var commandDurations = db.Dictionary<string, int>(
+            db.From<JobSummary>()
+                .Where(j => Sql.In(j.Id,
+                    db.From<JobSummary>()
+                        .Where(x => x.State == BackgroundJobState.Completed
+                                    && x.DurationMs > 0
+                                    && x.RequestType == CommandResult.Command)
+                        .GroupBy(x => x.Command)
+                        .Select(x => x.Id)))
+                .Select(x => new { x.Command, x.DurationMs }));
+        lastCommandDurations = new(commandDurations);
+        
+        var apiDurations = db.Dictionary<string, int>(
+            db.From<JobSummary>()
+                .Where(j => Sql.In(j.Id,
+                    db.From<JobSummary>()
+                        .Where(x => x.State == BackgroundJobState.Completed
+                                    && x.DurationMs > 0
+                                    && x.RequestType == CommandResult.Api)
+                        .GroupBy(x => x.Command)
+                        .Select(x => x.Id)))
+                .Select(x => new { x.Request, x.DurationMs }));
+        lastApiDurations = new(apiDurations);
 
         var completedJobs = db.Select<BackgroundJob>(x => x.CompletedDate != null);
         if (completedJobs.Count > 0)

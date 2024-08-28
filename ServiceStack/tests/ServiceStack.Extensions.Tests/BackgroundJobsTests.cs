@@ -19,6 +19,7 @@ using ServiceStack.Data;
 using ServiceStack.IO;
 using ServiceStack.Jobs;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests;
