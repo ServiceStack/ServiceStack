@@ -9,11 +9,6 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Auth;
 
-public interface IIdentityCredentialsAuthProvider
-{
-    bool LockoutOnFailure { get; set; }
-}
-
 /// <summary>
 /// Implements /auth/credentials authenticating against ASP.NET Identity IdentityUser
 /// </summary>

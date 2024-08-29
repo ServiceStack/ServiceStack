@@ -1022,51 +1022,32 @@ public static class HttpRequestExtensions
 
     public static string GetRequestValue(this IHttpRequest req, string name)
     {
-        switch (name)
+        return name switch
         {
-            case nameof(req.PathInfo):
-                return req.PathInfo;
-            case nameof(req.HttpMethod):
-            case nameof(req.Verb):
-                return req.HttpMethod;
-            case nameof(req.ContentType):
-                return req.ContentType;
-            case nameof(req.RawUrl):
-                return req.RawUrl;
-            case nameof(req.AbsoluteUri):
-                return req.AbsoluteUri;
-            case nameof(req.UserAgent):
-                return req.UserAgent;
-            case nameof(req.Accept):
-                return req.Accept;
-            case nameof(req.IsLocal):
-                return req.IsLocal.ToString();
-            case nameof(req.IsSecureConnection):
-                return req.IsSecureConnection.ToString();
-            case nameof(req.UserHostAddress):
-                return req.UserHostAddress;
-            case nameof(req.RemoteIp):
-                return req.RemoteIp;
-            case nameof(req.XRealIp):
-                return req.XRealIp;
-            case nameof(req.XForwardedFor):
-                return req.XForwardedFor;
-            case nameof(req.XForwardedPort):
-                return req.XForwardedPort.ToString();
-            case nameof(req.XForwardedProtocol):
-                return req.XForwardedProtocol;
-            case nameof(req.UrlReferrer):
-                return req.UrlReferrer.ToString();
-            case nameof(req.ContentLength):
-                return req.ContentLength.ToString();
-            default:
-                throw new NotSupportedException("Unknown IHttpRequest property");
-        }
+            nameof(req.PathInfo) => req.PathInfo,
+            nameof(req.HttpMethod) or nameof(req.Verb) => req.HttpMethod,
+            nameof(req.ContentType) => req.ContentType,
+            nameof(req.RawUrl) => req.RawUrl,
+            nameof(req.AbsoluteUri) => req.AbsoluteUri,
+            nameof(req.UserAgent) => req.UserAgent,
+            nameof(req.Accept) => req.Accept,
+            nameof(req.IsLocal) => req.IsLocal.ToString(),
+            nameof(req.IsSecureConnection) => req.IsSecureConnection.ToString(),
+            nameof(req.UserHostAddress) => req.UserHostAddress,
+            nameof(req.RemoteIp) => req.RemoteIp,
+            nameof(req.XRealIp) => req.XRealIp,
+            nameof(req.XForwardedFor) => req.XForwardedFor,
+            nameof(req.XForwardedPort) => req.XForwardedPort.ToString(),
+            nameof(req.XForwardedProtocol) => req.XForwardedProtocol,
+            nameof(req.UrlReferrer) => req.UrlReferrer.ToString(),
+            nameof(req.ContentLength) => req.ContentLength.ToString(),
+            _ => throw new NotSupportedException("Unknown IHttpRequest property")
+        };
     }
 
     public static void EachRequest<T>(this IRequest httpReq, Action<T> action)
     {
-        if (!(httpReq.Dto is IEnumerable<T> requests))
+        if (httpReq.Dto is not IEnumerable<T> requests)
             return;
 
         requests.Each((i, dto) =>
@@ -1090,11 +1071,12 @@ public static class HttpRequestExtensions
     public static ClaimsPrincipal GetClaimsPrincipal(this IRequest req)
     {
 #if !NETFRAMEWORK
-        return req.GetOriginalRequest<Microsoft.AspNetCore.Http.HttpRequest>()?.HttpContext.User;
+        return req.GetOriginalRequest<Microsoft.AspNetCore.Http.HttpRequest>()?.HttpContext.User
+            ?? req.GetItem(Keywords.ClaimsPrincipal) as ClaimsPrincipal;
 #else
             return req.GetOriginalRequest<HttpRequestBase>()?.RequestContext.HttpContext.User is ClaimsPrincipal principal
                 ? principal
-                : null;
+                : req.GetItem(Keywords.ClaimsPrincipal) as ClaimsPrincipal;
 #endif
     }
 

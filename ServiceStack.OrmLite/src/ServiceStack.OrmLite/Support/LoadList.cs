@@ -235,7 +235,6 @@ namespace ServiceStack.OrmLite.Support
         }
     }
 
-#if ASYNC
     internal class LoadListAsync<Into, From> : LoadList<Into, From>
     {
         public LoadListAsync(IDbCommand dbCmd, SqlExpression<From> expr) : base(dbCmd, expr) { }
@@ -281,5 +280,4 @@ namespace ServiceStack.OrmLite.Support
             SetFieldReferenceChildResults(fieldDef, fieldRef, childResults);
         }
     }
-#endif
 }

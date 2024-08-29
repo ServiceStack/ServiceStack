@@ -267,6 +267,7 @@ public interface IOrmLiteDialectProvider
     string ToCreateIndexStatement<T>(Expression<Func<T,object>> field, string indexName=null, bool unique=false);
 
     //Async
+    bool SupportsAsync { get; }
     Task OpenAsync(IDbConnection db, CancellationToken token = default);
     Task<IDataReader> ExecuteReaderAsync(IDbCommand cmd, CancellationToken token = default);
     Task<int> ExecuteNonQueryAsync(IDbCommand cmd, CancellationToken token = default);

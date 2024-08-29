@@ -79,6 +79,8 @@ public class ServiceStackServicesOptions
         typeof(ICacheClientAsync),
         typeof(MemoryCacheClient),
         typeof(IMessageFactory),
+        typeof(ServiceController),
+        typeof(HttpUtils),
     ];
     
     internal bool ShouldAutoRegister<T>() => AutoRegister.Contains(typeof(T));

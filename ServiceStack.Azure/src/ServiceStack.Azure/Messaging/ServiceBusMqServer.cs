@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 #if !NETFRAMEWORK
 using Microsoft.Azure.ServiceBus.Management;
 #else
@@ -51,7 +53,7 @@ public class ServiceBusMqServer : IMessageService
         
 #if !NETFRAMEWORK
     /// <summary>
-    /// Exposes the <see cref="Microsoft.Azure.ServicBus.Management.ManagementClient"/> which can be used to perform
+    /// Exposes the <see cref="Microsoft.Azure.ServiceBus.Management.ManagementClient"/> which can be used to perform
     /// management operations on ServiceBus entities.
     /// </summary>
     public ManagementClient ManagementClient => messageFactory!.managementClient;
@@ -63,7 +65,7 @@ public class ServiceBusMqServer : IMessageService
     public NamespaceManager NamespaceManager => messageFactory.namespaceManager;
 #endif
 
-    private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap = new Dictionary<Type, IMessageHandlerFactory>();
+    private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap = new();
 
     protected internal Dictionary<Type, IMessageHandlerFactory> HandlerMap => handlerMap;
 
@@ -123,17 +125,17 @@ public class ServiceBusMqServer : IMessageService
 
     public IMessageHandlerStats GetStats()
     {
-        throw new NotImplementedException();
-    }
-
-    public string GetStatsDescription()
-    {
-        throw new NotImplementedException();
+        return ServiceBusMessageFactory.GetStats();
     }
 
     public string GetStatus()
     {
-        throw new NotImplementedException();
+        return ServiceBusMessageFactory.GetStatus();
+    }
+
+    public string GetStatsDescription()
+    {
+        return ServiceBusMessageFactory.GetStatsDescription();
     }
 
     public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn)
@@ -176,14 +178,16 @@ public class ServiceBusMqServer : IMessageService
         };
     }
 
+    private ServiceBusMqMessageFactory ServiceBusMessageFactory => (ServiceBusMqMessageFactory)MessageFactory;
+
     public void Start()
     {
         // Create the queues (if they don't exist) and start the listeners
-        ((ServiceBusMqMessageFactory)MessageFactory).StartQueues(this.handlerMap, this.handlerThreadCountMap);
+        ServiceBusMessageFactory.StartQueues(this.handlerMap, this.handlerThreadCountMap);
     }
 
     public void Stop()
     {
-        ((ServiceBusMqMessageFactory)MessageFactory).StopQueues();
+        ServiceBusMessageFactory.StopQueues();
     }
 }

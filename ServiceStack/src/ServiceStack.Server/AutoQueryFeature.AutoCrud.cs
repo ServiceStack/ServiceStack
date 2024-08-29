@@ -116,8 +116,7 @@ public partial class GetCrudEventsService(IAutoQueryDb autoQuery, IDbConnectionF
     public async Task<object> Any(GetCrudEvents request)
     {
         var appHost = HostContext.AppHost;
-        var feature = appHost.AssertPlugin<AutoQueryFeature>();
-        await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole:feature.AccessRole, authSecret:request.AuthSecret);
+        await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole:autoQuery.AccessRole, authSecret:request.AuthSecret);
 
         if (string.IsNullOrEmpty(request.Model))
             throw new ArgumentNullException(nameof(request.Model));
@@ -144,13 +143,12 @@ public partial class GetCrudEventsService(IAutoQueryDb autoQuery, IDbConnectionF
 }
 
 [DefaultRequest(typeof(CheckCrudEvents))]
-public partial class CheckCrudEventService(IDbConnectionFactory dbFactory) : Service
+public partial class CheckCrudEventService(IAutoQueryDb autoQuery, IDbConnectionFactory dbFactory) : Service
 {
     public async Task<object> Any(CheckCrudEvents request)
     {
         var appHost = HostContext.AppHost;
-        var feature = appHost.AssertPlugin<AutoQueryFeature>();
-        await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole:feature.AccessRole, authSecret:request.AuthSecret);
+        await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole:autoQuery.AccessRole, authSecret:request.AuthSecret);
 
         if (string.IsNullOrEmpty(request.Model))
             throw new ArgumentNullException(nameof(request.Model));
@@ -267,7 +265,7 @@ public class AutoCrudMetadata
 
     static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = new();
 
-    internal static AutoCrudMetadata Create(Type dtoType)
+    internal static AutoCrudMetadata Create(Type dtoType, AutoQueryFeature feature)
     {
         if (cache.TryGetValue(dtoType, out var to))
             return to;
@@ -359,8 +357,7 @@ public class AutoCrudMetadata
             }
         }
 
-        var feature = HostContext.AssertPlugin<AutoQueryFeature>();
-        foreach (var fn in feature.AutoCrudMetadataFilters)
+        foreach (var fn in feature?.AutoCrudMetadataFilters.Safe())
         {
             fn(to);
         }
@@ -431,6 +428,25 @@ public partial class AutoQuery : IAutoCrudDb
         Keywords.RowVersion,
     };
 
+    public object GetDbLock<From>(IRequest req = null) => GetDbLock(typeof(From), req);
+    public object GetDbLock(Type fromType, IRequest req = null) => !UseDatabaseWriteLocks 
+        ? null 
+        : Locks.GetDbLock(GetDbNamedConnection(fromType, req));
+
+    T DbExec<T>(IDbConnection db, object useLock, Func<IDbConnection, T> fn)
+    {
+        // When UseDatabaseWriteLocks=true to prevent concurrent writes (e.g for SQLite)
+        // Primary DB Connection uses Locks.AppDb whilst Named Connections uses Locks.NamedConnections
+        if (useLock != null)
+        {
+            lock (useLock)
+            {
+                return fn(db);
+            }
+        }
+        return fn(db);
+    }
+    
     public object Create<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null)
     {
         //TODO: Allow Create to use Default Values
@@ -439,12 +455,11 @@ public partial class AutoQuery : IAutoCrudDb
         using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
         var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
-        var feature = HostContext.GetPlugin<AutoQueryFeature>();
-        feature.OnBeforeCreate?.Invoke(ctx);
+        Feature.OnBeforeCreate?.Invoke(ctx);
 
         ctx.Response = ExecAndReturnResponse<Table>(ctx,
             ctx => {
-                var dtoValues = CreateDtoValues(req, dto);
+                var dtoValues = CreateDtoValues(ctx.Request, ctx.Dto);
                 var pkField = ctx.ModelDef.PrimaryKey;
                 var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null || ctx.Events != null;
 
@@ -467,11 +482,12 @@ public partial class AutoQuery : IAutoCrudDb
                         throw new ArgumentException(ErrorMessages.PrimaryKeyRequired, pkField.Name);
                 }
 
-                var autoIntId = db.Insert<Table>(dtoValues, selectIdentity:selectIdentity);
+                var autoIntId = DbExec(db, GetDbLock<Table>(req), d => 
+                    d.Insert<Table>(dtoValues, selectIdentity:selectIdentity));
                 return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
             });
 
-        feature.OnAfterCreate?.Invoke(ctx);
+        Feature.OnAfterCreate?.Invoke(ctx);
         return ctx.Response;
     }
 
@@ -480,16 +496,18 @@ public partial class AutoQuery : IAutoCrudDb
         //TODO: Allow Create to use Default Values
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
+        if (!db.GetDialectProvider().SupportsAsync)
+            return Create(dto, req, db);
+        
         using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
         var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
-        var feature = HostContext.GetPlugin<AutoQueryFeature>();
-        if (feature.OnBeforeCreateAsync != null)
-            await feature.OnBeforeCreateAsync(ctx);
+        if (Feature.OnBeforeCreateAsync != null)
+            await Feature.OnBeforeCreateAsync(ctx);
             
         ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx,
             async ctx => {
-                var dtoValues = await CreateDtoValuesAsync(ctx.Request, ctx.Dto).ConfigAwait();
+                var dtoValues = CreateDtoValues(ctx.Request, ctx.Dto);
                 var pkField = ctx.ModelDef.PrimaryKey;
                 var selectIdentity = ctx.IdProp != null || ctx.ResultProp != null || ctx.Events != null;
 
@@ -516,8 +534,8 @@ public partial class AutoQuery : IAutoCrudDb
                 return CreateInternal(dtoValues, pkField, selectIdentity, autoIntId);
             }).ConfigAwait();
 
-        if (feature.OnAfterCreateAsync != null)
-            await feature.OnAfterCreateAsync(ctx);
+        if (Feature.OnAfterCreateAsync != null)
+            await Feature.OnAfterCreateAsync(ctx);
         return ctx.Response;
     }
 
@@ -572,11 +590,10 @@ public partial class AutoQuery : IAutoCrudDb
         {
             var ctx = CrudContext.Create<Table>(req,db,dto,operation);
                 
-            var feature = HostContext.GetPlugin<AutoQueryFeature>();
             if (skipDefaults)
-                feature.OnBeforePatch?.Invoke(ctx);
+                Feature.OnBeforePatch?.Invoke(ctx);
             else
-                feature.OnBeforeUpdate?.Invoke(ctx);
+                Feature.OnBeforeUpdate?.Invoke(ctx);
 
             ctx.Response = ExecAndReturnResponse<Table>(ctx,
                 ctx => {
@@ -589,8 +606,8 @@ public partial class AutoQuery : IAutoCrudDb
                         
                     // Should only update a Single Row
                     var rowsUpdated = GetAutoFilterExpressions(ctx, dtoValues, out var expr, out var exprParams) 
-                        ? ctx.Db.UpdateOnly<Table>(dtoValues, expr, exprParams.ToArray())
-                        : ctx.Db.UpdateOnly<Table>(dtoValues);
+                        ? DbExec(ctx.Db, GetDbLock<Table>(req), d => d.UpdateOnly<Table>(dtoValues, expr, exprParams.ToArray()))
+                        : DbExec(ctx.Db, GetDbLock<Table>(req), d => d.UpdateOnly<Table>(dtoValues));
 
                     if (rowsUpdated != 1)
                         throw new OptimisticConcurrencyException($"{rowsUpdated} rows were updated by '{dto.GetType().Name}'");
@@ -599,9 +616,9 @@ public partial class AutoQuery : IAutoCrudDb
                 }); //TODO: UpdateOnly
 
             if (skipDefaults)
-                feature.OnAfterPatch?.Invoke(ctx);
+                Feature.OnAfterPatch?.Invoke(ctx);
             else
-                feature.OnAfterUpdate?.Invoke(ctx);
+                Feature.OnAfterUpdate?.Invoke(ctx);
 
             return ctx.Response;
         }
@@ -612,25 +629,27 @@ public partial class AutoQuery : IAutoCrudDb
         var skipDefaults = operation == AutoCrudOperation.Patch;
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
+        if (!db.GetDialectProvider().SupportsAsync)
+            return UpdateInternal<Table>(req, dto, operation, db);
+        
         using (Profiler.Current.Step("AutoQuery.Update"))
         {
             var ctx = CrudContext.Create<Table>(req,db,dto,operation);
-                
-            var feature = HostContext.GetPlugin<AutoQueryFeature>();
+
             if (skipDefaults)
             {
-                if (feature.OnBeforePatchAsync != null) 
-                    await feature.OnBeforePatchAsync(ctx);
+                if (Feature.OnBeforePatchAsync != null) 
+                    await Feature.OnBeforePatchAsync(ctx);
             }
             else
             {
-                if (feature.OnBeforeUpdateAsync != null) 
-                    await feature.OnBeforeUpdateAsync(ctx);
+                if (Feature.OnBeforeUpdateAsync != null) 
+                    await Feature.OnBeforeUpdateAsync(ctx);
             }
                 
             ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx, 
                 async ctx => {
-                    var dtoValues = await CreateDtoValuesAsync(req, dto, skipDefaults).ConfigAwait();
+                    var dtoValues = CreateDtoValues(req, dto, skipDefaults);
                     var pkField = ctx.ModelDef?.PrimaryKey;
                     if (pkField == null)
                         throw new NotSupportedException($"Table '{typeof(Table).Name}' does not have a primary key");
@@ -650,13 +669,13 @@ public partial class AutoQuery : IAutoCrudDb
 
             if (skipDefaults)
             {
-                if (feature.OnAfterPatchAsync != null) 
-                    await feature.OnAfterPatchAsync(ctx);
+                if (Feature.OnAfterPatchAsync != null) 
+                    await Feature.OnAfterPatchAsync(ctx);
             }
             else
             {
-                if (feature.OnAfterUpdateAsync != null) 
-                    await feature.OnAfterUpdateAsync(ctx);
+                if (Feature.OnAfterUpdateAsync != null) 
+                    await Feature.OnAfterUpdateAsync(ctx);
             }
 
             return ctx.Response;
@@ -669,27 +688,28 @@ public partial class AutoQuery : IAutoCrudDb
         db ??= newDb;
         using var profiler = Profiler.Current.Step("AutoQuery.Delete");
 
-        var meta = AutoCrudMetadata.Create(dto.GetType());
+        var meta = AutoCrudMetadata.Create(dto.GetType(), Feature);
         if (meta.SoftDelete)
             return PartialUpdate<Table>(dto, req, db);
 
         var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete);
-        var feature = HostContext.GetPlugin<AutoQueryFeature>();
-        feature.OnBeforeDelete?.Invoke(ctx);
+        Feature.OnBeforeDelete?.Invoke(ctx);
 
         ctx.Response = ExecAndReturnResponse<Table>(ctx,
             ctx => {
-                var dtoValues = CreateDtoValues(ctx.Request, ctx.Dto, skipDefaults:true);
+                var dtoValues = CreateDtoValues(req, dto, skipDefaults:true);
                 var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
                     ? oId
                     : null;
                 var q = DeleteInternal<Table>(ctx, dtoValues);
-                if (q != null)
-                    return new ExecValue(idValue, ctx.Db.Delete(q));
-                return new ExecValue(idValue, ctx.Db.Delete<Table>(dtoValues));
+                
+                return DbExec(ctx.Db, GetDbLock<Table>(req), d =>
+                    q != null 
+                        ? new ExecValue(idValue, d.Delete(q)) 
+                        : new ExecValue(idValue, d.Delete<Table>(dtoValues)));
             });
             
-        feature.OnAfterDelete?.Invoke(ctx);
+        Feature.OnAfterDelete?.Invoke(ctx);
         return ctx.Response;
     }
 
@@ -697,31 +717,33 @@ public partial class AutoQuery : IAutoCrudDb
     {
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
+        if (!db.GetDialectProvider().SupportsAsync)
+            return Delete(dto, req, db);
+        
         using var profiler = Profiler.Current.Step("AutoQuery.Delete");
 
-        var meta = AutoCrudMetadata.Create(dto.GetType());
+        var meta = AutoCrudMetadata.Create(dto.GetType(), Feature);
         if (meta.SoftDelete)
             return await UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch, db).ConfigAwait();
 
         var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete);
-        var feature = HostContext.GetPlugin<AutoQueryFeature>();
-        if (feature.OnBeforeDeleteAsync != null)
-            await feature.OnBeforeDeleteAsync(ctx);
+        if (Feature.OnBeforeDeleteAsync != null)
+            await Feature.OnBeforeDeleteAsync(ctx);
             
         ctx.Response = await ExecAndReturnResponseAsync<Table>(ctx,
             async ctx => {
-                var dtoValues = await CreateDtoValuesAsync(req, dto, skipDefaults:true).ConfigAwait();
+                var dtoValues = CreateDtoValues(req, dto, skipDefaults:true);
                 var idValue = ctx.ModelDef.PrimaryKey != null && dtoValues.TryGetValue(ctx.ModelDef.PrimaryKey.Name, out var oId)
                     ? oId
                     : null;
                 var q = DeleteInternal<Table>(ctx, dtoValues);
-                if (q != null)
-                    return new ExecValue(idValue, await ctx.Db.DeleteAsync(q).ConfigAwait());
-                return new ExecValue(idValue, await ctx.Db.DeleteAsync<Table>(dtoValues).ConfigAwait());
+                return q != null 
+                    ? new ExecValue(idValue, await ctx.Db.DeleteAsync(q).ConfigAwait()) 
+                    : new ExecValue(idValue, await ctx.Db.DeleteAsync<Table>(dtoValues).ConfigAwait());
             }).ConfigAwait();
             
-        if (feature.OnAfterDeleteAsync != null)
-            await feature.OnAfterDeleteAsync(ctx);
+        if (Feature.OnAfterDeleteAsync != null)
+            await Feature.OnAfterDeleteAsync(ctx);
 
         return ctx.Response;
     }
@@ -767,7 +789,7 @@ public partial class AutoQuery : IAutoCrudDb
         var row = dto.ConvertTo<Table>();
         var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
             ctx => {
-                ctx.Db.Save(row);
+                DbExec(ctx.Db, GetDbLock<Table>(req), d => d.Save(row));
                 return SaveInternal(dto, ctx);
             }); 
                 
@@ -778,6 +800,8 @@ public partial class AutoQuery : IAutoCrudDb
     {
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
+        if (!db.GetDialectProvider().SupportsAsync)
+            return Save(dto, req, db);
         using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
         var row = dto.ConvertTo<Table>();
@@ -848,7 +872,12 @@ public partial class AutoQuery : IAutoCrudDb
             context.CountProp.PublicSetter(response, context.RowsUpdated.ConvertTo(context.CountProp.PropertyInfo.PropertyType));
         }
 
-        if (context.ResultProp != null && context.Id != null)
+        if (idValue != null && context.ResponseType == typeof(Table))
+        {
+            var result = context.Db.SingleById<Table>(idValue);
+            response = result.ConvertTo(context.ResponseType);
+        }
+        else if (context.ResultProp != null && context.Id != null)
         {
             var result = context.Db.SingleById<Table>(context.Id);
             context.ResultProp.PublicSetter(response, result.ConvertTo(context.ResultProp.PropertyInfo.PropertyType));
@@ -938,7 +967,7 @@ public partial class AutoQuery : IAutoCrudDb
 
     internal bool GetAutoFilterExpressions(CrudContext ctx, Dictionary<string, object> dtoValues, out string expr, out List<object> exprParams)
     {
-        var meta = AutoCrudMetadata.Create(ctx.RequestType);
+        var meta = AutoCrudMetadata.Create(ctx.RequestType, Feature);
         if (meta.AutoFilters.Count > 0)
         {
             var dialectProvider = ctx.Db.GetDialectProvider();
@@ -1001,16 +1030,9 @@ public partial class AutoQuery : IAutoCrudDb
 
     public Dictionary<string, object> CreateDtoValues(IRequest req, object dto, bool skipDefaults = false)
     {
-        var meta = AutoCrudMetadata.Create(dto.GetType());
+        var meta = AutoCrudMetadata.Create(dto.GetType(), Feature);
         var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
         return dtoValues;
-    }
-
-    public Task<Dictionary<string, object>> CreateDtoValuesAsync(IRequest req, object dto, bool skipDefaults = false)
-    {
-        var meta = AutoCrudMetadata.Create(dto.GetType());
-        var dtoValues = ResolveDtoValues(meta, req, dto, skipDefaults);
-        return Task.FromResult(dtoValues);
     }
         
     private Dictionary<string, object> ResolveDtoValues(AutoCrudMetadata meta, IRequest req, object dto, bool skipDefaults=false)

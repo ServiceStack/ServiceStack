@@ -11,5 +11,3 @@ cp ../ServiceStack.Redis/NuGet/*.* ./staging/
 cp ../ServiceStack.Stripe/NuGet/*.* ./staging/
 cp ../ServiceStack.Text/NuGet/*.* ./staging/
 cp ../ServiceStack.Core/NuGet/*.* ./staging/
-
-

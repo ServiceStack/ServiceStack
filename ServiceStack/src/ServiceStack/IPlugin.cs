@@ -55,6 +55,7 @@ public static class Plugins
     public const string FileUpload = "filesupload";
     public const string Profiling = "profiling";
     public const string RunAsAdmin = "runasadmin";
+    public const string BackgroundJobs = "backgroundjobs";
 
     public static void AddToAppMetadata(this IAppHost appHost, Action<AppMetadata> fn)
     {

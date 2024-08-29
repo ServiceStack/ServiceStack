@@ -11,10 +11,8 @@ using ServiceStack.Text;
 namespace ServiceStack.OrmLite.Tests;
 
 [TestFixtureOrmLite]
-public class ConverterTests : OrmLiteProvidersTestBase
+public class ConverterTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public ConverterTests(DialectContext context) : base(context) {}
-   
     private struct TestStruct {}
 
     [Test]

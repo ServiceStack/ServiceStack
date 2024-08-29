@@ -603,7 +603,8 @@ namespace ServiceStack.OrmLite.MySql
             return (DbDataReader)reader;
         }
 
-#if ASYNC
+        public override bool SupportsAsync => true;
+
         public override Task OpenAsync(IDbConnection db, CancellationToken token = default)
         {
             return Unwrap(db).OpenAsync(token);
@@ -677,7 +678,6 @@ namespace ServiceStack.OrmLite.MySql
                 reader.Dispose();
             }
         }
-#endif
 
     }
 }

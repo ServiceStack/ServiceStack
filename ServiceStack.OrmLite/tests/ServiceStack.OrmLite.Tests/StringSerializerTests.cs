@@ -3,165 +3,162 @@ using NUnit.Framework;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.Tests
+namespace ServiceStack.OrmLite.Tests;
+
+public class ModelWithComplexType
 {
-    public class ModelWithComplexType
+    public int Id { get; set; }
+    public ComplexType ComplexType { get; set; }
+}
+
+public class ComplexType
+{
+    public int Id { get; set; }
+    public ComplexSubType SubType { get; set; }
+}
+
+public class ComplexSubType
+{
+    public string Name { get; set; }
+}
+
+[TestFixtureOrmLite]
+public class StringSerializerTests(DialectContext context) : OrmLiteProvidersTestBase(context)
+{
+    private static void InsertModelWithComplexType(IDbConnection db)
     {
-        public int Id { get; set; }
-        public ComplexType ComplexType { get; set; }
+        db.DropAndCreateTable<ModelWithComplexType>();
+
+        db.Insert(new ModelWithComplexType {
+            Id = 1,
+            ComplexType = new ComplexType { Id = 2, SubType = new ComplexSubType { Name = "Sub" } }
+        });
     }
 
-    public class ComplexType
+    public string TestSql
     {
-        public int Id { get; set; }
-        public ComplexSubType SubType { get; set; }
+        get { return "SELECT {0} from {1}".Fmt("ComplexType".SqlColumn(DialectProvider), "ModelWithComplexType".SqlTable(DialectProvider)); }
     }
 
-    public class ComplexSubType
+    [Test]
+    public void Serializes_complex_types_with_JSV_by_default_except_uses_JSON_for_PostgreSQL()
     {
-        public string Name { get; set; }
-    }
-
-    [TestFixtureOrmLite]
-    public class StringSerializerTests : OrmLiteProvidersTestBase
-    {
-        public StringSerializerTests(DialectContext context) : base(context) {}
-
-        private static void InsertModelWithComplexType(IDbConnection db)
+        using (var db = OpenDbConnection())
         {
-            db.DropAndCreateTable<ModelWithComplexType>();
+            InsertModelWithComplexType(db);
 
-            db.Insert(new ModelWithComplexType {
-                Id = 1,
-                ComplexType = new ComplexType { Id = 2, SubType = new ComplexSubType { Name = "Sub" } }
-            });
-        }
+            var str = db.SqlScalar<string>(TestSql);
 
-        public string TestSql
-        {
-            get { return "SELECT {0} from {1}".Fmt("ComplexType".SqlColumn(DialectProvider), "ModelWithComplexType".SqlTable(DialectProvider)); }
-        }
-
-        [Test]
-        public void Serializes_complex_types_with_JSV_by_default_except_uses_JSON_for_PostgreSQL()
-        {
-            using (var db = OpenDbConnection())
-            {
-                InsertModelWithComplexType(db);
-
-                var str = db.SqlScalar<string>(TestSql);
-
-                Assert.That(str, 
-                    Is.EqualTo("{\"Id\":2,\"SubType\":{\"Name\":\"Sub\"}}"). // PostgreSqlDialect
+            Assert.That(str, 
+                Is.EqualTo("{\"Id\":2,\"SubType\":{\"Name\":\"Sub\"}}"). // PostgreSqlDialect
                     Or.EqualTo("{Id:2,SubType:{Name:Sub}}"));
 
-                var data = db.SingleById<ModelWithComplexType>(1);
-                Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
-            }
+            var data = db.SingleById<ModelWithComplexType>(1);
+            Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
         }
+    }
 
-        [Test]
-        public void Can_use_JSV_StringSerializer()
+    [Test]
+    public void Can_use_JSV_StringSerializer()
+    {
+        using (var db = OpenDbConnection())
         {
-            using (var db = OpenDbConnection())
-            {
-                var hold = DialectProvider.StringSerializer;
-                DialectProvider.StringSerializer = new JsvStringSerializer();
+            var hold = DialectProvider.StringSerializer;
+            DialectProvider.StringSerializer = new JsvStringSerializer();
 
-                InsertModelWithComplexType(db);
+            InsertModelWithComplexType(db);
 
-                var str = db.SqlScalar<string>(TestSql);
-                Assert.That(str, Is.EqualTo("{Id:2,SubType:{Name:Sub}}"));
+            var str = db.SqlScalar<string>(TestSql);
+            Assert.That(str, Is.EqualTo("{Id:2,SubType:{Name:Sub}}"));
 
-                var data = db.SingleById<ModelWithComplexType>(1);
-                Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
+            var data = db.SingleById<ModelWithComplexType>(1);
+            Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
 
-                DialectProvider.StringSerializer = hold;
-            }
+            DialectProvider.StringSerializer = hold;
         }
+    }
 
-        [Test]
-        public void Can_use_JSON_StringSerializer()
+    [Test]
+    public void Can_use_JSON_StringSerializer()
+    {
+        using (var db = OpenDbConnection())
         {
-            using (var db = OpenDbConnection())
-            {
-                var hold = DialectProvider.StringSerializer;
-                DialectProvider.StringSerializer = new JsonStringSerializer();
+            var hold = DialectProvider.StringSerializer;
+            DialectProvider.StringSerializer = new JsonStringSerializer();
 
-                InsertModelWithComplexType(db);
+            InsertModelWithComplexType(db);
 
-                var str = db.SqlScalar<string>(TestSql);
-                Assert.That(str, Is.EqualTo("{\"Id\":2,\"SubType\":{\"Name\":\"Sub\"}}"));
+            var str = db.SqlScalar<string>(TestSql);
+            Assert.That(str, Is.EqualTo("{\"Id\":2,\"SubType\":{\"Name\":\"Sub\"}}"));
 
-                var data = db.SingleById<ModelWithComplexType>(1);
-                Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
+            var data = db.SingleById<ModelWithComplexType>(1);
+            Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
 
-                DialectProvider.StringSerializer = hold;
-            }
+            DialectProvider.StringSerializer = hold;
         }
+    }
 
-        [Test]
-        public void Can_use_JSON_DataContract_StringSerializer()
+    [Test]
+    public void Can_use_JSON_DataContract_StringSerializer()
+    {
+        using (var db = OpenDbConnection())
         {
-            using (var db = OpenDbConnection())
-            {
-                var hold = DialectProvider.StringSerializer;
-                DialectProvider.StringSerializer = new JsonDataContractSerializer();
+            var hold = DialectProvider.StringSerializer;
+            DialectProvider.StringSerializer = new JsonDataContractSerializer();
 
-                InsertModelWithComplexType(db);
+            InsertModelWithComplexType(db);
 
-                var str = db.SqlScalar<string>(TestSql);
-                Assert.That(str, Is.EqualTo("{\"Id\":2,\"SubType\":{\"Name\":\"Sub\"}}"));
+            var str = db.SqlScalar<string>(TestSql);
+            Assert.That(str, Is.EqualTo("{\"Id\":2,\"SubType\":{\"Name\":\"Sub\"}}"));
 
-                var data = db.SingleById<ModelWithComplexType>(1);
-                Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
+            var data = db.SingleById<ModelWithComplexType>(1);
+            Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
 
-                DialectProvider.StringSerializer = hold;
-            }
+            DialectProvider.StringSerializer = hold;
         }
+    }
 
-        [Test]
-        public void Can_use_Xml_DataContract_StringSerializer()
+    [Test]
+    public void Can_use_Xml_DataContract_StringSerializer()
+    {
+        using (var db = OpenDbConnection())
         {
-            using (var db = OpenDbConnection())
-            {
-                var hold = DialectProvider.StringSerializer;
-                DialectProvider.StringSerializer = new DataContractSerializer();
+            var hold = DialectProvider.StringSerializer;
+            DialectProvider.StringSerializer = new DataContractSerializer();
 
-                InsertModelWithComplexType(db);
+            InsertModelWithComplexType(db);
 
-                var str = db.SqlScalar<string>(TestSql);
-                Assert.That(str, Is.EqualTo("<ComplexType xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.datacontract.org/2004/07/ServiceStack.OrmLite.Tests\"><Id>2</Id><SubType><Name>Sub</Name></SubType></ComplexType>")   //.NET
-                                .Or.EqualTo("<ComplexType xmlns=\"http://schemas.datacontract.org/2004/07/ServiceStack.OrmLite.Tests\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>2</Id><SubType><Name>Sub</Name></SubType></ComplexType>")); //.NET Core
+            var str = db.SqlScalar<string>(TestSql);
+            Assert.That(str, Is.EqualTo("<ComplexType xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.datacontract.org/2004/07/ServiceStack.OrmLite.Tests\"><Id>2</Id><SubType><Name>Sub</Name></SubType></ComplexType>")   //.NET
+                .Or.EqualTo("<ComplexType xmlns=\"http://schemas.datacontract.org/2004/07/ServiceStack.OrmLite.Tests\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"><Id>2</Id><SubType><Name>Sub</Name></SubType></ComplexType>")); //.NET Core
 
-                var data = db.SingleById<ModelWithComplexType>(1);
-                Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
+            var data = db.SingleById<ModelWithComplexType>(1);
+            Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
 
-                DialectProvider.StringSerializer = hold;
-            }
+            DialectProvider.StringSerializer = hold;
         }
+    }
 
-        [Test]
-        public void Can_use_XmlSerializer_StringSerializer()
+    [Test]
+    public void Can_use_XmlSerializer_StringSerializer()
+    {
+        using (var db = OpenDbConnection())
         {
-            using (var db = OpenDbConnection())
-            {
-                var hold = DialectProvider.StringSerializer;
-                DialectProvider.StringSerializer = new XmlSerializableSerializer();
+            var hold = DialectProvider.StringSerializer;
+            DialectProvider.StringSerializer = new XmlSerializableSerializer();
 
-                InsertModelWithComplexType(db);
+            InsertModelWithComplexType(db);
 
-                var str = db.SqlScalar<string>(TestSql);
-                Assert.That(str, Contains.Substring("<?xml version=\"1.0\" encoding=\"utf-8\"?><ComplexType "));
-                Assert.That(str, Contains.Substring("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""));
-                Assert.That(str, Contains.Substring("xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""));
-                Assert.That(str, Contains.Substring("<Id>2</Id><SubType><Name>Sub</Name></SubType></ComplexType>"));
+            var str = db.SqlScalar<string>(TestSql);
+            Assert.That(str, Contains.Substring("<?xml version=\"1.0\" encoding=\"utf-8\"?><ComplexType "));
+            Assert.That(str, Contains.Substring("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""));
+            Assert.That(str, Contains.Substring("xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""));
+            Assert.That(str, Contains.Substring("<Id>2</Id><SubType><Name>Sub</Name></SubType></ComplexType>"));
 
-                var data = db.SingleById<ModelWithComplexType>(1);
-                Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
+            var data = db.SingleById<ModelWithComplexType>(1);
+            Assert.That(data.ComplexType.SubType.Name, Is.EqualTo("Sub"));
 
-                DialectProvider.StringSerializer = hold;
-            }
+            DialectProvider.StringSerializer = hold;
         }
     }
 }

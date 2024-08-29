@@ -23,9 +23,9 @@ public static class ClaimUtils
         principal?.FindFirst(principal.Identities.FirstOrDefault()?.NameClaimType ?? ClaimTypes.Name)?.Value;
     public static string? GetEmail(this ClaimsPrincipal principal) => principal.FindFirst(ClaimTypes.Email)?.Value;
     public static string[] GetRoles(this ClaimsPrincipal? principal) => principal?.Claims.Where(x => x.Type == ClaimTypes.Role)
-        .Select(x => x.Value).ToArray() ?? Array.Empty<string>();
+        .Select(x => x.Value).ToArray() ?? [];
     public static string[] GetPermissions(this ClaimsPrincipal? principal) => principal?.Claims.Where(x => x.Type == PermissionType)
-        .Select(x => x.Value).ToArray() ?? Array.Empty<string>();
+        .Select(x => x.Value).ToArray() ?? [];
 
     public static bool HasRole(this ClaimsPrincipal? principal, string roleName) => principal?.IsInRole(roleName) == true;
     public static bool HasAllRoles(this ClaimsPrincipal? principal, params string[] roleNames) => principal?.GetRoles()

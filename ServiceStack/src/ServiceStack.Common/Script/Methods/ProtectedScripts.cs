@@ -1760,5 +1760,5 @@ public class DirectoryScripts : IOScript
                 LogManager.GetLogger(typeof(DirectoryScripts)).Error(ex.Message, ex);
             }
         }
-    }        
+    }
 }

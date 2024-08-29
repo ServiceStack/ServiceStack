@@ -111,7 +111,7 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
 
     public async Task<string?> UploadFileAsync(UploadLocation location, IRequest req, IAuthSession session, IHttpFile file, CancellationToken token=default)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), token: token);
+        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey, token: token);
         var feature = HostContext.AppHost.AssertPlugin<FilesUploadFeature>();
         var ctx = new FilesUploadContext(feature, location, req, file);
         if (location.TransformFileAsync != null)
@@ -181,7 +181,8 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
 
     public async Task<IVirtualFile?> GetFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.ReadAccessRole, authSecret:req.GetAuthSecret());
+        if (location.ReadAccessRole != RoleNames.AllowAnon)
+            await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.ReadAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Read))
             throw HttpError.NotFound(Errors.NoReadAccess.Localize(req));
 
@@ -192,7 +193,8 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
 
     public async Task ReplaceFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath, CancellationToken token=default)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), token);
+        if (location.WriteAccessRole != RoleNames.AllowAnon)
+            await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey, token);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Update))
             throw HttpError.Forbidden(Errors.NoUpdateAccess.Localize(req));
         if (req.Files.Length != 1)
@@ -213,7 +215,8 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
 
     public async Task<bool> DeleteFileAsync(UploadLocation location, IRequest req, IAuthSession session, string vfsPath)
     {
-        await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret());
+        if (location.WriteAccessRole != RoleNames.AllowAnon)
+            await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey);
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Delete))
             throw HttpError.Forbidden(Errors.NoDeleteAccess.Localize(req));
         
@@ -405,12 +408,17 @@ public readonly struct FilesUploadContext(
 
     public string GetLocationPath(string relativePath) => Feature.BasePath.CombineWith(Location.Name, relativePath);
 }
+public class RequireApiKey(string? scope = null)
+{
+    public string? Scope { get; set; } = scope;
+}
 
 public class UploadLocation
 {
     public UploadLocation(string name, 
         IVirtualFiles virtualFiles, Func<FilesUploadContext,string>? resolvePath = null, 
-        string readAccessRole = RoleNames.AllowAnyUser, string writeAccessRole = RoleNames.AllowAnyUser, 
+        string? readAccessRole = null, string? writeAccessRole = null,
+        RequireApiKey? requireApiKey = null,
         string[]? allowExtensions = null, FilesUploadOperation allowOperations = FilesUploadOperation.All, 
         int? maxFileCount = null, long? minFileBytes = null, long? maxFileBytes = null,
         Action<IRequest,IHttpFile>? validateUpload = null, Action<IRequest,IVirtualFile>? validateDownload = null,
@@ -420,8 +428,9 @@ public class UploadLocation
         this.Name = name ?? throw new ArgumentNullException(nameof(name));
         this.VirtualFiles = virtualFiles ?? throw new ArgumentNullException(nameof(virtualFiles));
         this.ResolvePath = resolvePath ?? (ctx => ctx.GetLocationPath($"{DateTime.UtcNow:yyyy/MM/dd}/{ctx.FileName}"));
-        this.ReadAccessRole = readAccessRole ?? throw new ArgumentNullException(nameof(readAccessRole));
-        this.WriteAccessRole = writeAccessRole ?? throw new ArgumentNullException(nameof(writeAccessRole));
+        this.ReadAccessRole = readAccessRole ?? RoleNames.AllowAnyUser;
+        this.WriteAccessRole = writeAccessRole ?? RoleNames.AllowAnyUser;
+        this.RequireApiKey = requireApiKey;
         this.AllowExtensions = allowExtensions?.ToSet(StringComparer.OrdinalIgnoreCase);
         this.AllowOperations = allowOperations;
         this.MaxFileCount = maxFileCount;
@@ -437,6 +446,7 @@ public class UploadLocation
     public IVirtualFiles VirtualFiles { get; set; }
     public string ReadAccessRole { get; set; }
     public string WriteAccessRole { get; set; }
+    public RequireApiKey? RequireApiKey { get; set; }
     public HashSet<string>? AllowExtensions { get; set; }
     public FilesUploadOperation AllowOperations { get; set; }
     public int? MaxFileCount { get; set; }

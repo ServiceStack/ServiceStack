@@ -1,6 +1,8 @@
 #nullable enable
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Web;
 
 namespace ServiceStack;
 
@@ -14,7 +16,139 @@ public interface IHasResult<out T>
 {
     T Result { get; }
 }
+
+public interface IHasCancellationToken
+{
+    public CancellationToken Token { get; }
+}
 public interface IAsyncCommand<in TRequest, out TResult> : IAsyncCommand<TRequest>, IHasResult<TResult> { }
+
+
+public class NoArgs
+{
+    public static NoArgs Value { get; } = new();
+}
+
+public abstract class AsyncCommand : AsyncCommand<NoArgs>
+{
+    protected override Task RunAsync(NoArgs request, CancellationToken token) => RunAsync(token);
+    protected abstract Task RunAsync(CancellationToken token);
+}
+public abstract class SyncCommand : SyncCommand<NoArgs>
+{
+    protected override void Run(NoArgs request) => Run();
+    protected abstract void Run();
+}
+public abstract class AsyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest, IHasCancellationToken
+{
+    public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
+        ? (CancellationToken)oToken
+        : default;
+    public IRequest Request { get; set; }
+    public async Task ExecuteAsync(TArgs request) => await RunAsync(request,Token).ConfigureAwait(false);
+    protected abstract Task RunAsync(TArgs request, CancellationToken token);
+}
+public abstract class SyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public Task ExecuteAsync(TArgs request)
+    {
+        var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true
+            ? oJob as Jobs.BackgroundJob
+            : null;
+        var useLock = job?.Worker != null
+            ? Locks.TryGetLock(job.Worker)
+            : null;
+        if (useLock != null)
+        {
+            lock (useLock)
+            {
+                Run(request);
+            }
+        }
+        else
+        {
+            Run(request);
+        }
+        return Task.CompletedTask;
+    }
+    protected abstract void Run(TArgs request);
+}
+public abstract class AsyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest, IHasCancellationToken
+{
+    public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
+        ? (CancellationToken)oToken
+        : default;
+    public IRequest Request { get; set; }
+    public TResult Result { get; protected set; }
+    public async Task ExecuteAsync(NoArgs request) => Result = await RunAsync(Token).ConfigureAwait(false);
+    protected abstract Task<TResult> RunAsync(CancellationToken token);
+}
+public abstract class SyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public TResult Result { get; protected set; }
+    public Task ExecuteAsync(NoArgs request)
+    {
+        var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true
+            ? oJob as Jobs.BackgroundJob
+            : null;
+        var useLock = job?.Worker != null
+            ? Locks.TryGetLock(job.Worker)
+            : null;
+        if (useLock != null)
+        {
+            lock (useLock)
+            {
+                Result = Run();
+            }
+        }
+        else
+        {
+            Result = Run();
+        }
+        return Task.CompletedTask;
+    }
+    protected abstract TResult Run();
+}
+public abstract class AsyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest, IHasCancellationToken
+{
+    public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
+        ? (CancellationToken)oToken
+        : default;
+    public IRequest Request { get; set; }
+    public TResult Result { get; protected set; }
+    public async Task ExecuteAsync(TArgs request) => Result = await RunAsync(request,Token).ConfigureAwait(false);
+    protected abstract Task<TResult> RunAsync(TArgs request, CancellationToken token);
+}
+public abstract class SyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest
+{
+    public IRequest Request { get; set; }
+    public TResult Result { get; protected set; }
+    public Task ExecuteAsync(TArgs request)
+    {
+        var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true
+            ? oJob as Jobs.BackgroundJob
+            : null;
+        var useLock = job?.Worker != null
+            ? Locks.TryGetLock(job.Worker)
+            : null;
+        if (useLock != null)
+        {
+            lock (useLock)
+            {
+                Result = Run(request);
+            }
+        }
+        else
+        {
+            Result = Run(request);
+        }
+        return Task.CompletedTask;
+    }
+    protected abstract TResult Run(TArgs request);
+}
+
 
 public interface ICommandExecutor
 {

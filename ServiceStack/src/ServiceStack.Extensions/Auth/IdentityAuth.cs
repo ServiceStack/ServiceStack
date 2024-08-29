@@ -56,8 +56,10 @@ public static class IdentityAuth
 
         return (services, authFeature) =>
         {
+            services.AddSingleton<IIdentityAuthContextManager>(Manager);
             services.AddSingleton<IIdentityAuthContext>(ctx);
-            
+            services.AddSingleton<IUserResolver,IdentityAuthUserResolver>();
+
             var authProviders = new List<IAuthProvider>();
             if (ctx.EnableApplicationAuth)
             {
@@ -166,11 +168,6 @@ public static class IdentityAuth
             nameof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<IdentityUser>.Users))(dbContext);
         return dbUsers;
     }
-}
-
-public interface IIdentityAuthContext
-{
-    Func<IAuthSession> SessionFactory { get; }
 }
 
 /// <summary>
@@ -325,16 +322,35 @@ public class IdentityAuthContext<TUser, TKey>(
 #endif
 }
 
-public interface IIdentityAuthContextManager
-{
-}
-
 public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, TKey> context) : IIdentityAuthContextManager
     where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
 {
     public IdentityAuthContext<TUser, TKey> Context => context;
 
+    public async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(string userId, IRequest? request = null)
+    {
+        var (user,roles) = await GetUserAndRolesByIdAsync(userId, request).ConfigAwait();
+
+        // Get the claims for the user
+        var claims = await GetClaimsAsync(user, request).ConfigAwait();
+
+        // Add default claims if needed
+        claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()!));
+        claims.Add(new Claim(ClaimTypes.Name, user.UserName!));
+        claims.Add(new Claim(ClaimTypes.Email, user.Email!));
+
+        // Get the user roles and add them as claims
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        var claimsIdentity = new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme);
+
+        return new ClaimsPrincipal(claimsIdentity);
+    }
+    
 #if NET8_0_OR_GREATER
     public async Task<List<TUser>> SearchUsersAsync(string query, string? orderBy = null, int? skip = null, int? take = null, IRequest? request = null)
     {
@@ -549,6 +565,34 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         {
             var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
             return await findUser(userManager).ConfigAwait();
+        }
+    }
+
+    public Task<IList<Claim>> GetClaimsByIdAsync(string userId, IRequest? request = null) =>
+        GetClaimsAsync(async userManager => await GetClaimsAsync(await userManager.FindByIdAsync(userId)).ConfigAwait(), request);
+
+    public Task<IList<Claim>> GetClaimsByNameAsync(string userName, IRequest? request = null) =>
+        GetClaimsAsync(async userManager => await GetClaimsAsync(await userManager.FindByNameAsync(userName)).ConfigAwait(), request);
+
+    public Task<IList<Claim>> GetClaimsAsync(TUser? user, IRequest? request = null) =>
+        GetClaimsAsync(async userManager => {
+            if (user == null) return [];
+            return await userManager.GetClaimsAsync(user).ConfigAwait();
+        }, request);
+
+    public async Task<IList<Claim>> GetClaimsAsync(Func<UserManager<TUser>, Task<IList<Claim>>> getClaims, IRequest? request = null)
+    {
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await getClaims(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await getClaims(userManager).ConfigAwait();
         }
     }
 

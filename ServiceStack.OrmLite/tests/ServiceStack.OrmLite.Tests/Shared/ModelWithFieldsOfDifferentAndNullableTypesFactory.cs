@@ -1,20 +1,18 @@
-namespace ServiceStack.Common.Tests.Models
+namespace ServiceStack.Common.Tests.Models;
+
+public class ModelWithFieldsOfDifferentAndNullableTypesFactory
+    : ModelFactoryBase<ModelWithFieldsOfDifferentAndNullableTypes>
 {
-    public class ModelWithFieldsOfDifferentAndNullableTypesFactory
-        : ModelFactoryBase<ModelWithFieldsOfDifferentAndNullableTypes>
+    public static ModelWithFieldsOfDifferentAndNullableTypesFactory Instance = new();
+
+    public override void AssertIsEqual(
+        ModelWithFieldsOfDifferentAndNullableTypes actual, ModelWithFieldsOfDifferentAndNullableTypes expected)
     {
-        public static ModelWithFieldsOfDifferentAndNullableTypesFactory Instance
-            = new ModelWithFieldsOfDifferentAndNullableTypesFactory();
+        ModelWithFieldsOfDifferentAndNullableTypes.AssertIsEqual(actual, expected);
+    }
 
-        public override void AssertIsEqual(
-            ModelWithFieldsOfDifferentAndNullableTypes actual, ModelWithFieldsOfDifferentAndNullableTypes expected)
-        {
-            ModelWithFieldsOfDifferentAndNullableTypes.AssertIsEqual(actual, expected);
-        }
-
-        public override ModelWithFieldsOfDifferentAndNullableTypes CreateInstance(int i)
-        {
-            return ModelWithFieldsOfDifferentAndNullableTypes.CreateConstant(i);
-        }
+    public override ModelWithFieldsOfDifferentAndNullableTypes CreateInstance(int i)
+    {
+        return ModelWithFieldsOfDifferentAndNullableTypes.CreateConstant(i);
     }
 }

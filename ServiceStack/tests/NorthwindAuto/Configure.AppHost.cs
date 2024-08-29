@@ -46,7 +46,6 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
                     readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)
             ));
 
-            services.AddPlugin(new CommandsFeature());
         });
 
     // Configure your AppHost with the necessary configuration and dependencies your App needs

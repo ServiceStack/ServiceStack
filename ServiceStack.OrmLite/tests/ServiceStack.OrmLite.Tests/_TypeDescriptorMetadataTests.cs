@@ -9,10 +9,8 @@ namespace ServiceStack.OrmLite.Tests;
 
 // Needs to be run first
 [TestFixtureOrmLite]
-public class _TypeDescriptorMetadataTests : OrmLiteProvidersTestBase
+public class _TypeDescriptorMetadataTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public _TypeDescriptorMetadataTests(DialectContext context) : base(context) {}
-
     [Test]
     public void Can_add_AutoIncrement_Id_at_runtime()
     {

@@ -1,157 +1,154 @@
 ﻿using NUnit.Framework;
 
-namespace ServiceStack.OrmLite.Tests.Expression
+namespace ServiceStack.OrmLite.Tests.Expression;
+
+[TestFixtureOrmLite]
+public class LogicalExpressionsTest(DialectContext context) : ExpressionsTestBase(context)
 {
-    [TestFixtureOrmLite]
-    public class LogicalExpressionsTest : ExpressionsTestBase
+    [Test]
+    public void Can_select_logical_and_variable_expression()
     {
-        public LogicalExpressionsTest(DialectContext context) : base(context) {}
+        // ReSharper disable ConvertToConstant.Local
+        var a = true;
+        var b = false;
+        // ReSharper restore ConvertToConstant.Local
 
-        [Test]
-        public void Can_select_logical_and_variable_expression()
+        var expected = new TestType
         {
-            // ReSharper disable ConvertToConstant.Local
-            var a = true;
-            var b = false;
-            // ReSharper restore ConvertToConstant.Local
+            IntColumn = 12,
+            BoolColumn = false,
+            StringColumn = "test"
+        };
 
-            var expected = new TestType
-            {
-                IntColumn = 12,
-                BoolColumn = false,
-                StringColumn = "test"
-            };
+        Init(10, expected);
 
-            Init(10, expected);
-
-            using (var db = OpenDbConnection())
-            {
-                var actual = db.Select<TestType>(q => q.BoolColumn == (a & b));
-
-                Assert.IsNotNull(actual);
-                Assert.Greater(actual.Count, 0);
-                CollectionAssert.Contains(actual, expected);
-            }
-        }
-
-        [Test]
-        public void Can_select_logical_or_variable_expression()
+        using (var db = OpenDbConnection())
         {
-            // ReSharper disable ConvertToConstant.Local
-            var a = true;
-            var b = false;
-            // ReSharper restore ConvertToConstant.Local
+            var actual = db.Select<TestType>(q => q.BoolColumn == (a & b));
 
-            var expected = new TestType
-            {
-                IntColumn = 12,
-                BoolColumn = true,
-                StringColumn = "test"
-            };
-
-            Init(10, expected);
-
-            using (var db = OpenDbConnection())
-            {
-                var actual = db.Select<TestType>(q => q.BoolColumn == (a | b));
-
-                Assert.IsNotNull(actual);
-                Assert.Greater(actual.Count, 0);
-                CollectionAssert.Contains(actual, expected);
-            }
+            Assert.IsNotNull(actual);
+            Assert.Greater(actual.Count, 0);
+            CollectionAssert.Contains(actual, expected);
         }
+    }
 
-        [Test]
-        public void Can_select_logical_xor_variable_expression()
+    [Test]
+    public void Can_select_logical_or_variable_expression()
+    {
+        // ReSharper disable ConvertToConstant.Local
+        var a = true;
+        var b = false;
+        // ReSharper restore ConvertToConstant.Local
+
+        var expected = new TestType
         {
-            // ReSharper disable ConvertToConstant.Local
-            var a = true;
-            var b = false;
-            // ReSharper restore ConvertToConstant.Local
+            IntColumn = 12,
+            BoolColumn = true,
+            StringColumn = "test"
+        };
 
-            var expected = new TestType
-            {
-                IntColumn = 12,
-                BoolColumn = true,
-                StringColumn = "test"
-            };
+        Init(10, expected);
 
-            Init(10, expected);
-
-            using (var db = OpenDbConnection())
-            {
-                var actual = db.Select<TestType>(q => q.BoolColumn == (a ^ b));
-
-                Assert.IsNotNull(actual);
-                Assert.Greater(actual.Count, 0);
-                CollectionAssert.Contains(actual, expected);
-            }
-        }
-
-        [Test]
-        public void Can_select_logical_and_method_expression()
+        using (var db = OpenDbConnection())
         {
-            var expected = new TestType
-            {
-                IntColumn = 12,
-                BoolColumn = false,
-                StringColumn = "test"
-            };
+            var actual = db.Select<TestType>(q => q.BoolColumn == (a | b));
 
-            Init(10, expected);
-
-            using (var db = OpenDbConnection())
-            {
-                var actual = db.Select<TestType>(q => q.BoolColumn == (GetValue(true) & GetValue(false)));
-
-                Assert.IsNotNull(actual);
-                Assert.Greater(actual.Count, 0);
-                CollectionAssert.Contains(actual, expected);
-            }
+            Assert.IsNotNull(actual);
+            Assert.Greater(actual.Count, 0);
+            CollectionAssert.Contains(actual, expected);
         }
+    }
 
-        [Test]
-        public void Can_select_logical_or_method_expression()
+    [Test]
+    public void Can_select_logical_xor_variable_expression()
+    {
+        // ReSharper disable ConvertToConstant.Local
+        var a = true;
+        var b = false;
+        // ReSharper restore ConvertToConstant.Local
+
+        var expected = new TestType
         {
-            var expected = new TestType()
-            {
-                IntColumn = 12,
-                BoolColumn = true,
-                StringColumn = "test"
-            };
+            IntColumn = 12,
+            BoolColumn = true,
+            StringColumn = "test"
+        };
 
-            Init(10, expected);
+        Init(10, expected);
 
-            using (var db = OpenDbConnection())
-            {
-                var actual = db.Select<TestType>(q => q.BoolColumn == (GetValue(true) | GetValue(false)));
-
-                Assert.IsNotNull(actual);
-                Assert.Greater(actual.Count, 0);
-                CollectionAssert.Contains(actual, expected);
-            }
-        }
-
-        [Test]
-        public void Can_select_logical_xor_method_expression()
+        using (var db = OpenDbConnection())
         {
-            var expected = new TestType
-            {
-                IntColumn = 12,
-                BoolColumn = true,
-                StringColumn = "test"
-            };
+            var actual = db.Select<TestType>(q => q.BoolColumn == (a ^ b));
 
-            Init(10, expected);
-
-            using (var db = OpenDbConnection())
-            {
-                var actual = db.Select<TestType>(q => q.BoolColumn == (GetValue(true) ^ GetValue(false)));
-
-                Assert.IsNotNull(actual);
-                Assert.Greater(actual.Count, 0);
-                CollectionAssert.Contains(actual, expected);
-            }
+            Assert.IsNotNull(actual);
+            Assert.Greater(actual.Count, 0);
+            CollectionAssert.Contains(actual, expected);
         }
-   }
+    }
+
+    [Test]
+    public void Can_select_logical_and_method_expression()
+    {
+        var expected = new TestType
+        {
+            IntColumn = 12,
+            BoolColumn = false,
+            StringColumn = "test"
+        };
+
+        Init(10, expected);
+
+        using (var db = OpenDbConnection())
+        {
+            var actual = db.Select<TestType>(q => q.BoolColumn == (GetValue(true) & GetValue(false)));
+
+            Assert.IsNotNull(actual);
+            Assert.Greater(actual.Count, 0);
+            CollectionAssert.Contains(actual, expected);
+        }
+    }
+
+    [Test]
+    public void Can_select_logical_or_method_expression()
+    {
+        var expected = new TestType()
+        {
+            IntColumn = 12,
+            BoolColumn = true,
+            StringColumn = "test"
+        };
+
+        Init(10, expected);
+
+        using (var db = OpenDbConnection())
+        {
+            var actual = db.Select<TestType>(q => q.BoolColumn == (GetValue(true) | GetValue(false)));
+
+            Assert.IsNotNull(actual);
+            Assert.Greater(actual.Count, 0);
+            CollectionAssert.Contains(actual, expected);
+        }
+    }
+
+    [Test]
+    public void Can_select_logical_xor_method_expression()
+    {
+        var expected = new TestType
+        {
+            IntColumn = 12,
+            BoolColumn = true,
+            StringColumn = "test"
+        };
+
+        Init(10, expected);
+
+        using (var db = OpenDbConnection())
+        {
+            var actual = db.Select<TestType>(q => q.BoolColumn == (GetValue(true) ^ GetValue(false)));
+
+            Assert.IsNotNull(actual);
+            Assert.Greater(actual.Count, 0);
+            CollectionAssert.Contains(actual, expected);
+        }
+    }
 }

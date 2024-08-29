@@ -22,24 +22,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
-public record UserJwtTokens(string BearerToken, IRequireRefreshToken? RefreshToken);
-
-public interface IIdentityJwtAuthProvider
-{
-    string? AuthenticationScheme { get; }
-    List<string> DeleteCookiesOnJwtCookies { get; }
-    JwtBearerOptions? Options { get; }
-    bool EnableRefreshToken { get; }
-    bool RequireSecureConnection { get; }
-    string Audience { get; }
-    TimeSpan ExpireTokensIn { get; }
-    Task<List<Claim>> GetUserClaimsAsync(string userName, IRequest? req = null);
-    string CreateJwtBearerToken(List<Claim> claims, string audience, DateTime expires);
-    Task<string> CreateBearerTokenAsync(string userName, IRequest? req = null);
-    Task<UserJwtTokens> CreateBearerAndRefreshTokenAsync(string userName, IRequest? req = null);
-    Task<string> CreateAccessTokenFromRefreshTokenAsync(string refreshToken, IRequest? req = null);
-}
-
 /// <summary>
 /// Converts an MVC JwtBearer Cookie into a ServiceStack Session
 /// </summary>

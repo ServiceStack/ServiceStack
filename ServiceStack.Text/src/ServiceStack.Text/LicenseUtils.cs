@@ -178,19 +178,27 @@ public static class LicenseUtils
                                        "See https://servicestack.net to upgrade to a valid license.").Trace();
     }
 
-    private static readonly int[] revokedSubs = { 4018, 4019, 4041, 4331, 4581 };
+    private static readonly int[] revokedSubs = [4018, 4019, 4041, 4331, 4581];
 
     private class __ActivatedLicense
     {
         internal readonly LicenseKey LicenseKey;
         internal __ActivatedLicense(LicenseKey licenseKey) => LicenseKey = licenseKey;
+
+        internal static __ActivatedLicense __get => __activatedLicense;
+        private static __ActivatedLicense __activatedLicense;
+        internal static void __setActivatedLicense(__ActivatedLicense licence)
+        {
+            __activatedLicense = licence;
+            Env.UpdateServerUserAgent();
+        }
     }
 
     public static string LicenseWarningMessage { get; private set; }
         
     private static string GetLicenseWarningMessage()
     {
-        var key = __activatedLicense?.LicenseKey;
+        var key = __ActivatedLicense.__get?.LicenseKey;
         if (key == null)
             return null;
 
@@ -204,19 +212,29 @@ public static class LicenseUtils
         return null;
     }
 
-    private static __ActivatedLicense __activatedLicense;
-
-    private static void __setActivatedLicense(__ActivatedLicense licence)
-    {
-        __activatedLicense = licence;
-        Env.UpdateServerUserAgent();
-    }
 
     public static void RegisterLicense(string licenseKeyText)
     {
+        void ValidateLicenseKey(LicenseKey key)
+        {
+            var releaseDate = Env.GetReleaseDate();
+            if (releaseDate > key.Expiry)
+                throw new LicenseException($"This license has expired on {key.Expiry:d} and is not valid for use with this release."
+                                           + ContactDetails).Trace();
+
+            if (key.Type == LicenseType.Trial && DateTime.UtcNow > key.Expiry)
+                throw new LicenseException($"This trial license has expired on {key.Expiry:d}." + ContactDetails).Trace();
+
+            __ActivatedLicense.__setActivatedLicense(new __ActivatedLicense(key));
+
+            LicenseWarningMessage = GetLicenseWarningMessage();
+            if (LicenseWarningMessage != null)
+                Console.WriteLine(LicenseWarningMessage);
+        }
+
         JsConfig.InitStatics();
 
-        if (__activatedLicense != null) //Skip multiple license registrations. Use RemoveLicense() to reset.
+        if (__ActivatedLicense.__get != null) //Skip multiple license registrations. Use RemoveLicense() to reset.
             return;
 
         string subId = null;
@@ -243,7 +261,7 @@ public static class LicenseUtils
                 
             if (Env.IsAot())
             {
-                __setActivatedLicense(new __ActivatedLicense(new LicenseKey { Type = LicenseType.Indie }));
+                __ActivatedLicense.__setActivatedLicense(new __ActivatedLicense(new LicenseKey { Type = LicenseType.Indie }));
                 return;
             }
 
@@ -256,7 +274,7 @@ public static class LicenseUtils
         catch (PlatformNotSupportedException pex)
         {
             // Allow usage in environments like dotnet script
-            __setActivatedLicense(new __ActivatedLicense(new LicenseKey { Type = LicenseType.Indie }));
+            __ActivatedLicense.__setActivatedLicense(new __ActivatedLicense(new LicenseKey { Type = LicenseType.Indie }));
         }
         catch (Exception ex)
         {
@@ -300,23 +318,6 @@ public static class LicenseUtils
             Thread.CurrentThread.CurrentCulture = hold;
         }
     }
-
-    private static void ValidateLicenseKey(LicenseKey key)
-    {
-        var releaseDate = Env.GetReleaseDate();
-        if (releaseDate > key.Expiry)
-            throw new LicenseException($"This license has expired on {key.Expiry:d} and is not valid for use with this release."
-                                       + ContactDetails).Trace();
-
-        if (key.Type == LicenseType.Trial && DateTime.UtcNow > key.Expiry)
-            throw new LicenseException($"This trial license has expired on {key.Expiry:d}." + ContactDetails).Trace();
-
-        __setActivatedLicense(new __ActivatedLicense(key));
-
-        LicenseWarningMessage = GetLicenseWarningMessage();
-        if (LicenseWarningMessage != null)
-            Console.WriteLine(LicenseWarningMessage);
-    }
         
     private const string IndividualPrefix = "Individual (c) ";
     private const string OpenSourcePrefix = "OSS ";
@@ -354,12 +355,12 @@ public static class LicenseUtils
             throw new LicenseException($"This license has expired on {key.Expiry:d} and is not valid for use with this release.\n"
                                        + "Check https://servicestack.net/free for eligible renewals.").Trace();
 
-        __setActivatedLicense(new __ActivatedLicense(key));
+        __ActivatedLicense.__setActivatedLicense(new __ActivatedLicense(key));
     }
 
-    internal static string Info => __activatedLicense?.LicenseKey == null
+    internal static string Info => __ActivatedLicense.__get?.LicenseKey == null
         ? "NO"
-        : __activatedLicense.LicenseKey.Type switch {
+        : __ActivatedLicense.__get.LicenseKey.Type switch {
             LicenseType.Free => "FR",
             LicenseType.FreeIndividual => "FI",
             LicenseType.FreeOpenSource => "FO",
@@ -476,12 +477,12 @@ public static class LicenseUtils
 
     public static void RemoveLicense()
     {
-        __setActivatedLicense(null);
+        __ActivatedLicense.__setActivatedLicense(null);
     }
 
     public static LicenseFeature ActivatedLicenseFeatures()
     {
-        return __activatedLicense?.LicenseKey.GetLicensedFeatures() ?? LicenseFeature.None;
+        return __ActivatedLicense.__get?.LicenseKey.GetLicensedFeatures() ?? LicenseFeature.None;
     }
 
     public static void ApprovedUsage(int allowedUsage, int actualUsage, string message)

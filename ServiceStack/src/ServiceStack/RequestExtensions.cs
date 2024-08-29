@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -449,11 +450,23 @@ public static class RequestUtils
         }
     }
 
-    public static async Task AssertAccessRoleAsync(IRequest req, string accessRole=null, string authSecret=null, CancellationToken token=default)
+    public static async Task AssertAccessRoleAsync(IRequest req, string accessRole=null, string authSecret=null, RequireApiKey requireApiKey=null, CancellationToken token=default)
     {
         if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
         {
-            await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
+            if (requireApiKey != null)
+            {
+                var apiKeyValidator = new ApiKeyValidator(req.GetRequiredService<IApiKeySource>, req.GetRequiredService<IApiKeyResolver>);
+                if (requireApiKey.Scope != null)
+                    apiKeyValidator.Scope = requireApiKey.Scope;
+                if (!await apiKeyValidator.IsValidAsync(req.Dto, req))
+                    throw new HttpError(403, nameof(HttpStatusCode.Forbidden),
+                        ErrorMessages.ApiKeyInvalid.Localize(req));
+            }
+            else
+            {
+                await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
+            }
         }
     }
 }

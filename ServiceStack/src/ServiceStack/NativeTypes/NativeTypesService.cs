@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Jobs;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
@@ -472,6 +473,14 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         typeof(StreamFiles), // gRPC Server Stream
         typeof(StreamServerEvents), // gRPC Server Stream
         typeof(AuditBase),
+        typeof(BackgroundJobBase),
+        typeof(BackgroundJobOptions),
+        typeof(BackgroundJob),
+        typeof(JobSummary),
+        typeof(ScheduledTask),
+        typeof(CompletedJob),
+        typeof(FailedJob),
+        typeof(WorkerStats),
     ];
 
     public MetadataTypes ResolveMetadataTypes(MetadataTypesConfig typesConfig) =>

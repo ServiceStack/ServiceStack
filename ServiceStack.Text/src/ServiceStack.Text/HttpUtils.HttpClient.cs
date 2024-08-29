@@ -1155,6 +1155,71 @@ public static partial class HttpUtils
         var bytes = httpRes.Content.ReadAsStream().ReadFully();
         fs.Write(bytes);
     }
+
+    /// <summary>
+    /// By default, the method is set to "POST".
+    /// If the input URL contains a space, the text before the space is treated as the HTTP method
+    ///  - PUT https://api.example.com
+    /// If the auth part contains a colon :, it's treated as Basic Auth.
+    ///  - username:password@https://api.example.com
+    /// If name starts with 'http.' sends a HTTP Header
+    ///  - http.X-API-Key:myApiKey@https://api.example.com
+    /// Otherwise used as Bearer Token:
+    ///  - myToken123@https://api.example.com
+    /// Bearer Token or HTTP Headers starting with '$' is substituted with Environment Variable if exists
+    ///  - $API_TOKEN@https://api.example.com
+    /// </summary>
+    /// <param name="url"></param>
+    /// <returns></returns>
+    public static HttpRequestMessage ToHttpRequestMessage(string url)
+    {
+        var method = "POST";
+        if (url.IndexOf(' ') >= 0)
+        {
+            method = url.LeftPart(' ');
+            url = url.RightPart(' ');
+        }
+        var headers = new Dictionary<string, string>();
+        if (url.IndexOf('@') >= 0)
+        {
+            var auth = url.LeftPart('@');
+            url = url.RightPart('@');
+            if (auth.IndexOf(':') >= 0)
+            {
+                if (auth.StartsWith("http."))
+                {
+                    var kvp = auth.RightPart('.');
+                    var key = kvp.LeftPart(':').UrlDecode();
+                    var val = kvp.RightPart(':').UrlDecode();
+                    var env = val.StartsWith('$') 
+                        ? Environment.GetEnvironmentVariable(val[1..])
+                        : null;
+                    if (!string.IsNullOrEmpty(env))
+                        val = env;
+                    headers[key] = val;
+                }
+                else
+                {
+                    headers["Authorization"] = $"Basic {Convert.ToBase64String(auth.UrlDecode().ToUtf8Bytes())}";
+                }
+            }
+            else
+            {
+                var env = auth.StartsWith('$') 
+                    ? Environment.GetEnvironmentVariable(auth[1..])
+                    : null;
+                if (!string.IsNullOrEmpty(env))
+                    auth = env;
+                headers["Authorization"] = $"Bearer {auth}";
+            }
+        }
+        var msg = new HttpRequestMessage(new(method), url);
+        foreach (var header in headers)
+        {
+            msg.WithHeader(header.Key, header.Value);
+        }
+        return msg;
+    }
 }
 
 public static class HttpClientExt

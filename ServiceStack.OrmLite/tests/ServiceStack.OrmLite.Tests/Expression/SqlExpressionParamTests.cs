@@ -1,31 +1,28 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.Tests.Expression
+namespace ServiceStack.OrmLite.Tests.Expression;
+
+[TestFixtureOrmLite]
+public class SqlExpressionParamTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    [TestFixtureOrmLite]
-    public class SqlExpressionParamTests : OrmLiteProvidersTestBase
+    [Test]
+    public void Can_add_DbParam_to_SqlExpression()
     {
-        public SqlExpressionParamTests(DialectContext context) : base(context) {}
-
-        [Test]
-        public void Can_add_DbParam_to_SqlExpression()
+        using (var db = OpenDbConnection())
         {
-            using (var db = OpenDbConnection())
-            {
-                SqlExpressionTests.InitLetters(db);
+            SqlExpressionTests.InitLetters(db);
 
-                var q = db.From<LetterFrequency>()
-                    .UnsafeWhere("Letter = {0}".Fmt(DialectProvider.GetParam("p1")));
+            var q = db.From<LetterFrequency>()
+                .UnsafeWhere("Letter = {0}".Fmt(DialectProvider.GetParam("p1")));
 
-                q.Params.Add(q.CreateParam("p1", "B"));
+            q.Params.Add(q.CreateParam("p1", "B"));
 
-                var results = db.Select(q);
+            var results = db.Select(q);
 
-                results.PrintDump();
+            results.PrintDump();
 
-                Assert.That(results.Count, Is.EqualTo(2));
-            }
-        } 
-    }
+            Assert.That(results.Count, Is.EqualTo(2));
+        }
+    } 
 }

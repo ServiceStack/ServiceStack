@@ -214,6 +214,7 @@ namespace ServiceStack.OrmLite
         public virtual void RegisterConnection(string namedConnection, OrmLiteConnectionFactory connectionFactory)
         {
             NamedConnections[namedConnection] = connectionFactory;
+            Locks.NamedConnections[namedConnection] = new object();
         }
     }
 

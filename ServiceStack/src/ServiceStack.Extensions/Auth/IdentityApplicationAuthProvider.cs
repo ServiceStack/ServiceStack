@@ -13,13 +13,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
-public interface IIdentityApplicationAuthProvider
-{
-    Task PreAuthenticateAsync(IRequest req, IResponse res);
-    void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
-    Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
-}
-
 /// <summary>
 /// Handles converting from Application Cookie ClaimsPrincipal into a ServiceStack Session
 /// </summary>

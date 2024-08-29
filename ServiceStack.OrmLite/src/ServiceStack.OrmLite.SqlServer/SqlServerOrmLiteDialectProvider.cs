@@ -788,7 +788,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
         protected DbDataReader Unwrap(IDataReader reader) => (DbDataReader)reader;
 
-#if ASYNC
+        public override bool SupportsAsync => true;
         public override Task OpenAsync(IDbConnection db, CancellationToken token = default)
             => Unwrap(db).OpenAsync(token);
 
@@ -852,8 +852,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 reader.Dispose();
             }
         }
-#endif
-
+        
         public override void InitConnection(IDbConnection dbConn)
         {
             if (dbConn is OrmLiteConnection ormLiteConn && dbConn.ToDbConnection() is SqlConnection sqlConn)

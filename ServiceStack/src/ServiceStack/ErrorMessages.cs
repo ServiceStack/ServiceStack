@@ -18,7 +18,7 @@ public static class ErrorMessages
     public static string ApiKeyDoesNotExist = "API Key does not exist";
     public static string ApiKeyHasBeenCancelled = "API Key has been cancelled";
     public static string ApiKeyHasExpired = "API Key has expired";
-    public static string ApiKeyIsInvalid = "API Key is Invalid";
+    public static string ApiKeyInvalid = "Invalid API Key";
     public static string UserForApiKeyDoesNotExist = "User for API Key does not exist";
     public static string JwtRequiresSecureConnection = "Sending JWT over insecure connection forbidden when RequireSecureConnection=true";
     public static string TokenInvalidated = "Token has been invalidated";
@@ -31,7 +31,6 @@ public static class ErrorMessages
     public static string InvalidAccessToken = "AccessToken is Invalid";
     public static string SessionIdEmpty = "Session not set. Is Session being set in RequestFilters?";
     public static string Requires2FA = "Session not set. Is Session being set in RequestFilters?";
-    public static string ApiKeyInvalid = "Invalid API Key";
 
     public static string AccessDenied = "Access Denied";
     public static string InvalidRole = "Invalid Role";

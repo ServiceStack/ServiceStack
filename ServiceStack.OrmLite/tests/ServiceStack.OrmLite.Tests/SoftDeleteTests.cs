@@ -6,190 +6,187 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Tests.UseCase;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.Tests
+namespace ServiceStack.OrmLite.Tests;
+
+public class Vendor : ISoftDelete
 {
-    public class Vendor : ISoftDelete
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public bool IsDeleted { get; set; }
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public bool IsDeleted { get; set; }
 
-        [Reference]
-        public List<Product> Products { get; set; }
+    [Reference]
+    public List<Product> Products { get; set; }
+}
+
+public class Product : ISoftDelete
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public bool IsDeleted { get; set; }
+
+    [ForeignKey(typeof(Vendor))]
+    public Guid VendorId { get; set; }
+}
+
+[TestFixtureOrmLite]
+public class SoftDeleteTests(DialectContext context) : OrmLiteProvidersTestBase(context)
+{
+    private static void InitData(IDbConnection db)
+    {
+        db.DropTable<Product>();
+        db.DropTable<Vendor>();
+        db.CreateTable<Vendor>();
+        db.CreateTable<Product>();
+
+        db.Save(new Vendor
+        {
+            Id = Guid.NewGuid(),
+            Name = "Active Vendor",
+            Products = new List<Product>
+            {
+                new Product {Id = Guid.NewGuid(), Name = "Active Product"},
+                new Product {Id = Guid.NewGuid(), Name = "Retired Product", IsDeleted = true},
+            }
+        }, references:true);
+
+        db.Save(new Vendor
+        {
+            Id = Guid.NewGuid(),
+            Name = "Retired Vendor",
+            IsDeleted = true,
+            Products = new List<Product>
+            {
+                new Product {Id = Guid.NewGuid(), Name = "Active Product"},
+                new Product {Id = Guid.NewGuid(), Name = "Retired Product", IsDeleted = true},
+            }
+        }, references: true);
     }
 
-    public class Product : ISoftDelete
+    [Test]
+    public void Can_filter_deleted_products_reference_data()
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public bool IsDeleted { get; set; }
+        using (var db = OpenDbConnection())
+        {
+            InitData(db);
 
-        [ForeignKey(typeof(Vendor))]
-        public Guid VendorId { get; set; }
+            var vendors = db.LoadSelect<Vendor>(x => !x.IsDeleted);
+
+            Assert.That(vendors.Count, Is.EqualTo(1));
+            Assert.That(vendors[0].Name, Is.EqualTo("Active Vendor"));
+            Assert.That(vendors[0].Products.Count, Is.EqualTo(2));
+        }
     }
 
-    [TestFixtureOrmLite]
-    public class SoftDeleteTests : OrmLiteProvidersTestBase
+    [Test]
+    public void Can_get_active_products_using_merge()
     {
-        public SoftDeleteTests(DialectContext context) : base(context) {}
-
-        private static void InitData(IDbConnection db)
+        using (var db = OpenDbConnection())
         {
-            db.DropTable<Product>();
-            db.DropTable<Vendor>();
-            db.CreateTable<Vendor>();
-            db.CreateTable<Product>();
+            InitData(db);
 
-            db.Save(new Vendor
-            {
-                Id = Guid.NewGuid(),
-                Name = "Active Vendor",
-                Products = new List<Product>
-                {
-                    new Product {Id = Guid.NewGuid(), Name = "Active Product"},
-                    new Product {Id = Guid.NewGuid(), Name = "Retired Product", IsDeleted = true},
-                }
-            }, references:true);
+            var vendors = db.Select<Vendor>(x => !x.IsDeleted);
+            var products = db.Select(db.From<Product>().Join<Vendor>()
+                .Where(p => !p.IsDeleted)
+                .And<Vendor>(v => !v.IsDeleted));
 
-            db.Save(new Vendor
-            {
-                Id = Guid.NewGuid(),
-                Name = "Retired Vendor",
-                IsDeleted = true,
-                Products = new List<Product>
-                {
-                    new Product {Id = Guid.NewGuid(), Name = "Active Product"},
-                    new Product {Id = Guid.NewGuid(), Name = "Retired Product", IsDeleted = true},
-                }
-            }, references: true);
+            var merged = vendors.Merge(products);
+
+            Assert.That(merged.Count, Is.EqualTo(1));
+            Assert.That(merged[0].Name, Is.EqualTo("Active Vendor"));
+            Assert.That(merged[0].Products.Count, Is.EqualTo(1));
+            Assert.That(merged[0].Products[0].Name, Is.EqualTo("Active Product"));
         }
+    }
 
-        [Test]
-        public void Can_filter_deleted_products_reference_data()
+    [Test]
+    public void Can_get_active_products_using_SoftDelete_SqlExpression()
+    {
+        OrmLiteConfig.SqlExpressionSelectFilter = q =>
         {
-            using (var db = OpenDbConnection())
+            if (q.ModelDef.ModelType.HasInterface(typeof(ISoftDelete)))
             {
-                InitData(db);
-
-                var vendors = db.LoadSelect<Vendor>(x => !x.IsDeleted);
-
-                Assert.That(vendors.Count, Is.EqualTo(1));
-                Assert.That(vendors[0].Name, Is.EqualTo("Active Vendor"));
-                Assert.That(vendors[0].Products.Count, Is.EqualTo(2));
+                q.Where<ISoftDelete>(x => !x.IsDeleted);
             }
+        };
+
+        using (var db = OpenDbConnection())
+        {
+            InitData(db);
+
+            var vendors = db.LoadSelect<Vendor>();
+
+            Assert.That(vendors.Count, Is.EqualTo(1));
+            Assert.That(vendors[0].Name, Is.EqualTo("Active Vendor"));
         }
 
-        [Test]
-        public void Can_get_active_products_using_merge()
+        OrmLiteConfig.SqlExpressionSelectFilter = null;
+    }
+
+    [Test]
+    public void Can_get_active_vendor_and_active_references_using_SoftDelete_ref_filter()
+    {
+        OrmLiteConfig.SqlExpressionSelectFilter = q =>
         {
-            using (var db = OpenDbConnection())
+            if (q.ModelDef.ModelType.HasInterface(typeof(ISoftDelete)))
             {
-                InitData(db);
-
-                var vendors = db.Select<Vendor>(x => !x.IsDeleted);
-                var products = db.Select(db.From<Product>().Join<Vendor>()
-                    .Where(p => !p.IsDeleted)
-                    .And<Vendor>(v => !v.IsDeleted));
-
-                var merged = vendors.Merge(products);
-
-                Assert.That(merged.Count, Is.EqualTo(1));
-                Assert.That(merged[0].Name, Is.EqualTo("Active Vendor"));
-                Assert.That(merged[0].Products.Count, Is.EqualTo(1));
-                Assert.That(merged[0].Products[0].Name, Is.EqualTo("Active Product"));
+                q.Where<ISoftDelete>(x => !x.IsDeleted);
             }
-        }
+        };
 
-        [Test]
-        public void Can_get_active_products_using_SoftDelete_SqlExpression()
+        OrmLiteConfig.LoadReferenceSelectFilter = (type, sql) =>
         {
-            OrmLiteConfig.SqlExpressionSelectFilter = q =>
+            var meta = type.GetModelMetadata();
+            if (type.HasInterface(typeof(ISoftDelete)))
             {
-                if (q.ModelDef.ModelType.HasInterface(typeof(ISoftDelete)))
-                {
-                    q.Where<ISoftDelete>(x => !x.IsDeleted);
-                }
-            };
-
-            using (var db = OpenDbConnection())
-            {
-                InitData(db);
-
-                var vendors = db.LoadSelect<Vendor>();
-
-                Assert.That(vendors.Count, Is.EqualTo(1));
-                Assert.That(vendors[0].Name, Is.EqualTo("Active Vendor"));
+                var sqlFalse = DialectProvider.SqlBool(false);
+                sql += $" AND ({meta.ModelName.SqlTable(DialectProvider)}.{"IsDeleted".SqlColumn(DialectProvider)} = {sqlFalse})";
             }
 
-            OrmLiteConfig.SqlExpressionSelectFilter = null;
+            return sql;
+        };
+
+        using (var db = OpenDbConnection())
+        {
+            InitData(db);
+
+            var vendors = db.LoadSelect<Vendor>();
+
+            Assert.That(vendors.Count, Is.EqualTo(1));
+            Assert.That(vendors[0].Name, Is.EqualTo("Active Vendor"));
+            Assert.That(vendors[0].Products.Count, Is.EqualTo(1));
         }
 
-        [Test]
-        public void Can_get_active_vendor_and_active_references_using_SoftDelete_ref_filter()
+        OrmLiteConfig.SqlExpressionSelectFilter = null;
+        OrmLiteConfig.LoadReferenceSelectFilter = null;
+    }
+
+    [Test]
+    public void Can_get_single_vendor_and__load_active_references_using_soft_delete_ref_filter()
+    {
+        OrmLiteConfig.LoadReferenceSelectFilter = (type, sql) =>
         {
-            OrmLiteConfig.SqlExpressionSelectFilter = q =>
+            var meta = type.GetModelMetadata();
+            if (type.HasInterface(typeof(ISoftDelete)))
             {
-                if (q.ModelDef.ModelType.HasInterface(typeof(ISoftDelete)))
-                {
-                    q.Where<ISoftDelete>(x => !x.IsDeleted);
-                }
-            };
-
-            OrmLiteConfig.LoadReferenceSelectFilter = (type, sql) =>
-            {
-                var meta = type.GetModelMetadata();
-                if (type.HasInterface(typeof(ISoftDelete)))
-                {
-                    var sqlFalse = DialectProvider.SqlBool(false);
-                    sql += $" AND ({meta.ModelName.SqlTable(DialectProvider)}.{"IsDeleted".SqlColumn(DialectProvider)} = {sqlFalse})";
-                }
-
-                return sql;
-            };
-
-            using (var db = OpenDbConnection())
-            {
-                InitData(db);
-
-                var vendors = db.LoadSelect<Vendor>();
-
-                Assert.That(vendors.Count, Is.EqualTo(1));
-                Assert.That(vendors[0].Name, Is.EqualTo("Active Vendor"));
-                Assert.That(vendors[0].Products.Count, Is.EqualTo(1));
+                var sqlFalse = DialectProvider.SqlBool(false);
+                sql += $" AND ({meta.ModelName.SqlTable(DialectProvider)}.{"IsDeleted".SqlColumn(DialectProvider)} = {sqlFalse})";
             }
 
-            OrmLiteConfig.SqlExpressionSelectFilter = null;
-            OrmLiteConfig.LoadReferenceSelectFilter = null;
-        }
+            return sql;
+        };
 
-        [Test]
-        public void Can_get_single_vendor_and__load_active_references_using_soft_delete_ref_filter()
+        using (var db = OpenDbConnection())
         {
-            OrmLiteConfig.LoadReferenceSelectFilter = (type, sql) =>
-            {
-                var meta = type.GetModelMetadata();
-                if (type.HasInterface(typeof(ISoftDelete)))
-                {
-                    var sqlFalse = DialectProvider.SqlBool(false);
-                    sql += $" AND ({meta.ModelName.SqlTable(DialectProvider)}.{"IsDeleted".SqlColumn(DialectProvider)} = {sqlFalse})";
-                }
-
-                return sql;
-            };
-
-            using (var db = OpenDbConnection())
-            {
-                InitData(db);
+            InitData(db);
                 
 
-                var vendor = db.Single<Vendor>(v=>v.Name == "Active Vendor");
-                db.LoadReferences(vendor);
+            var vendor = db.Single<Vendor>(v=>v.Name == "Active Vendor");
+            db.LoadReferences(vendor);
                 
-                Assert.That(vendor.Name, Is.EqualTo("Active Vendor"));
-                Assert.That(vendor.Products.Count, Is.EqualTo(1));
-            }
-
-            OrmLiteConfig.LoadReferenceSelectFilter = null;
+            Assert.That(vendor.Name, Is.EqualTo("Active Vendor"));
+            Assert.That(vendor.Products.Count, Is.EqualTo(1));
         }
+
+        OrmLiteConfig.LoadReferenceSelectFilter = null;
     }
 }

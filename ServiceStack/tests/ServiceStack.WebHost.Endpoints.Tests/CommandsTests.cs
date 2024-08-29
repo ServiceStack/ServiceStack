@@ -3,9 +3,13 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
+using ServiceStack.FluentValidation;
+using ServiceStack.Testing;
+using ServiceStack.Validation;
 
 namespace ServiceStack.WebHost.Endpoints.Tests;
 
@@ -33,7 +37,7 @@ public class CommandsTests
     {
         var feature = new CommandsFeature
         {
-            Log = NullLogger<CommandsFeature>.Instance
+            Log = NullLogger<CommandsFeature>.Instance,
         };
         return feature;
     }
@@ -98,6 +102,105 @@ public class CommandsTests
         Assert.That(result.FirstName, Is.EqualTo("First"));
         Assert.That(result.LastName, Is.EqualTo("Last"));
     }
+
+    class CreateContactValidator : AbstractValidator<CreateContact>
+    {
+        public CreateContactValidator()
+        {
+            RuleFor(x => x.FirstName).NotEmpty();
+            RuleFor(x => x.LastName).NotEmpty();
+        }
+    }
+
+    [Test]
+    public async Task Does_execute_Validators()
+    {
+        using var appHost = new BasicAppHost
+        {
+            ConfigureAppHost = appHost =>
+            {
+                appHost.Register<IValidator<CreateContact>>(new CreateContactValidator());
+                appHost.Plugins.Add(new ValidationFeature());
+                appHost.Plugins.Add(new CommandsFeature {
+                    Log = NullLogger<CommandsFeature>.Instance,
+                });
+            }
+        }.Init();
+        
+        var command = new AddContactCommand();
+        var feature = appHost.AssertPlugin<CommandsFeature>();
+        var result = await feature.ExecuteCommandWithResultAsync(command, new CreateContact());
+        
+        Assert.That(result, Is.Null);
+        Assert.That(feature.CommandFailures.Count, Is.EqualTo(1));
+        Assert.That(feature.CommandFailures.First().Error!.ErrorCode, Is.EqualTo("NotEmpty"));
+    }
+
+    [Test]
+    public async Task Can_execute_commands_with_builtin_base_classes()
+    {
+        void AssertCount(int count)
+        {
+            Assert.That(MyAsyncCommand.Count, Is.EqualTo(count));
+            Assert.That(MySyncCommand.Count, Is.EqualTo(count));
+            Assert.That(MyAsyncCommandArg.Count, Is.EqualTo(count));
+            Assert.That(MySyncCommandArg.Count, Is.EqualTo(count));
+            Assert.That(MyAsyncCommandArgResult.Count, Is.EqualTo(count));
+            Assert.That(MySyncCommandArgResult.Count, Is.EqualTo(count));
+        }
+        MyAsyncCommand.Count = MySyncCommand.Count = MyAsyncCommandArg.Count = MySyncCommandArg.Count = 
+            MyAsyncCommandArgResult.Count = MySyncCommandArgResult.Count = 0;
+        
+        var feature = CreateCommandsFeature();
+        await feature.ExecuteCommandAsync(new MyAsyncCommand());
+        await feature.ExecuteCommandAsync(new MySyncCommand());
+        await feature.ExecuteCommandAsync(new MyAsyncCommandArg(), new Arg());
+        await feature.ExecuteCommandAsync(new MySyncCommandArg(), new Arg());
+        await feature.ExecuteCommandWithResultAsync(new MyAsyncCommandArgResult(), new Arg());
+        await feature.ExecuteCommandWithResultAsync(new MySyncCommandArgResult(), new Arg());
+        
+        AssertCount(1);
+    }
+}
+
+public class MyAsyncCommand : AsyncCommand
+{
+    public static int Count;
+    protected override async Task RunAsync(CancellationToken token) => Count++;
+}
+public class MySyncCommand : SyncCommand
+{
+    public static int Count;
+    protected override void Run() => Count++;
+}
+public class Arg {}
+public class MyAsyncCommandArg : AsyncCommand<Arg>
+{
+    public static int Count;
+    protected override async Task RunAsync(Arg request, CancellationToken token) => Count++;
+}
+public class MySyncCommandArg : SyncCommand<Arg>
+{
+    public static int Count;
+    protected override void Run(Arg request) => Count++;
+}
+public class MyAsyncCommandArgResult : AsyncCommandWithResult<Arg,Arg>
+{
+    public static int Count;
+    protected override async Task<Arg> RunAsync(Arg request, CancellationToken token)
+    {
+        Count++;
+        return request;
+    }
+}
+public class MySyncCommandArgResult : SyncCommandWithResult<Arg,Arg>
+{
+    public static int Count;
+    protected override Arg Run(Arg request)
+    {
+        Count++;
+        return request;
+    }
 }
 
 public class FailedRequest {}
@@ -160,5 +263,4 @@ public class AddContactCommand : IAsyncCommand<CreateContact,Contact?>
         Result = newContact;
     }
 }
-
 #endif

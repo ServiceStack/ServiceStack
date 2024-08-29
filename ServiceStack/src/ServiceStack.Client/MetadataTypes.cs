@@ -115,17 +115,10 @@ public class MetadataTypesConfig
 [Exclude(Feature.Soap | Feature.ApiExplorer)]
 public class MetadataTypes
 {
-    public MetadataTypes()
-    {
-        Types = new List<MetadataType>();
-        Operations = new List<MetadataOperationType>();
-        Namespaces = new List<string>();
-    }
-
     public MetadataTypesConfig Config { get; set; }
-    public List<string> Namespaces { get; set; }
-    public List<MetadataType> Types { get; set; }
-    public List<MetadataOperationType> Operations { get; set; }
+    public List<string> Namespaces { get; set; } = [];
+    public List<MetadataType> Types { get; set; } = [];
+    public List<MetadataOperationType> Operations { get; set; } = [];
 }
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]
@@ -448,6 +441,7 @@ public class CommandInfo
     public string Name { get; set; }
     public string Tag { get; set; }
     public MetadataType Request { get; set; }
+    public MetadataType Response { get; set; }
 }
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]
@@ -1471,6 +1465,8 @@ public static class AppMetadataUtils
 
     public static MetadataType ToMetadataType(this Type type)
     {
+        if (type == null)
+            return null;
         var ret = new MetadataType
         {
             Type = type,

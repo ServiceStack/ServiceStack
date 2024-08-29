@@ -62,105 +62,100 @@ public class NetCoreLogFactory : ILogFactory
     }
 }
 
-public class NetCoreLog : ILog, ILogTrace
+public class NetCoreLog(ILogger logger) : ILog, ILogTrace
 {
-    public ILogger Log { get; }
+    public ILogger Log { get; } = logger;
 
-    public NetCoreLog(ILogger logger)
-    {
-        this.Log = logger;
-    }
+    public virtual bool IsTraceEnabled => false;
 
-    public bool IsTraceEnabled => throw new NotImplementedException();
-
-    public void Trace(object message)
+    public virtual void Trace(object message)
     {
         Log.LogTrace(message.ToString());
     }
 
-    public void Trace(object message, Exception exception)
+    public virtual void Trace(object message, Exception exception)
     {
         Log.LogTrace(default(EventId), exception, message.ToString());
     }
 
-    public void TraceFormat(string format, params object[] args)
+    public virtual void TraceFormat(string format, params object[] args)
     {
         Log.LogTrace(format, args);
     }
 
-    public bool IsDebugEnabled => Log.IsEnabled(LogLevel.Debug);
+    public virtual bool IsDebugEnabled => Log.IsEnabled(LogLevel.Debug);
 
-    public void Debug(object message)
+    public virtual void Debug(object message)
     {        
         Log.LogDebug(message.ToString());
     }
 
-    public void Debug(object message, Exception exception)
+    public virtual void Debug(object message, Exception exception)
     {
         Log.LogDebug(default(EventId), exception, message.ToString());
     }
 
-    public void DebugFormat(string format, params object[] args)
+    public virtual void DebugFormat(string format, params object[] args)
     {
         Log.LogDebug(format, args);
     }
 
-    public void Error(object message)
+    public virtual void Error(object message)
     {
         Log.LogError(message.ToString());
     }
 
-    public void Error(object message, Exception exception)
+    public virtual void Error(object message, Exception exception)
     {
         Log.LogError(default(EventId), exception, message.ToString());
     }
 
-    public void ErrorFormat(string format, params object[] args)
+    public virtual void ErrorFormat(string format, params object[] args)
     {
         Log.LogError(format, args);
     }
 
-    public void Fatal(object message)
+    public virtual void Fatal(object message)
     {
         Log.LogCritical(message.ToString());
     }
 
-    public void Fatal(object message, Exception exception)
+    public virtual void Fatal(object message, Exception exception)
     {
         Log.LogCritical(default(EventId), exception, message.ToString());
     }
 
-    public void FatalFormat(string format, params object[] args)
+    public virtual void FatalFormat(string format, params object[] args)
     {
         Log.LogCritical(format, args);
     }
 
-    public void Info(object message)
+    public virtual void Info(object message)
     {
         Log.LogInformation(message.ToString());
     }
 
-    public void Info(object message, Exception exception)
+    public virtual void Info(object message, Exception exception)
     {
         Log.LogInformation(default(EventId), exception, message.ToString());
     }
 
-    public void InfoFormat(string format, params object[] args)
+    public virtual void InfoFormat(string format, params object[] args)
     {
         Log.LogInformation(format, args);
     }
 
-    public void Warn(object message)
+    public virtual void Warn(object message)
     {
         Log.LogWarning(message.ToString());
     }
 
-    public void Warn(object message, Exception exception)
+    public virtual void Warn(object message, Exception exception)
     {
         Log.LogWarning(default(EventId), exception, message.ToString());
     }
 
-    public void WarnFormat(string format, params object[] args)
+    public virtual void WarnFormat(string format, params object[] args)
     {
         Log.LogWarning(format, args);
     }

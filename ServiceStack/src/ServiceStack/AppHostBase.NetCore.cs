@@ -653,6 +653,11 @@ public static class NetCoreAppHostExtensions
         ServiceStackHost.GlobalAfterConfigureServices.ForEach(fn => fn(services));
         ServiceStackHost.GlobalAfterConfigureServices.Clear();
 
+        if (options.AutoRegister.Contains(typeof(HttpUtils)))
+        {
+            services.AddHttpClient(nameof(HttpUtils))
+                .ConfigurePrimaryHttpMessageHandler(() => HttpUtils.HttpClientHandlerFactory());
+        }
         if (options.ShouldAutoRegister<IAppSettings>() && !services.Exists<IAppSettings>())
         {
             services.AddSingleton<IAppSettings, NetCoreAppSettings>();
@@ -684,6 +689,11 @@ public static class NetCoreAppHostExtensions
         if (options.ShouldAutoRegister<IMessageFactory>() && !services.Exists<IMessageFactory>() && !services.Exists<IMessageService>())
         {
             services.AddSingleton<IMessageFactory>(c => c.GetRequiredService<IMessageService>().MessageFactory);
+        }
+        //required when services.AddMvc().AddControllersAsServices(); https://github.com/ServiceStack/Discuss/discussions/126
+        if (options.ShouldAutoRegister<ServiceController>())
+        {
+            services.AddSingleton<ServiceController>(c => HostContext.ServiceController);
         }
     }
 #endif

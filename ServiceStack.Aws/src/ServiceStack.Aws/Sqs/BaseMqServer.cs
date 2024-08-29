@@ -9,7 +9,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Aws.Sqs
 {
-    // The majority of the code here was lifted/massaged from the existing MQ Server implmentations
+    // The majority of the code here was lifted/massaged from the existing MQ Server implementations
     public abstract class BaseMqServer<TWorker> : IMessageService
         where TWorker : class, IMqWorker<TWorker>
     {

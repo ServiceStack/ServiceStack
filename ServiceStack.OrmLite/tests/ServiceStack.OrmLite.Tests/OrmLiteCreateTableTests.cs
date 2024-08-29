@@ -10,10 +10,8 @@ namespace ServiceStack.OrmLite.Tests;
 using ServiceStack.DataAnnotations;
 
 [TestFixtureOrmLite]
-public class OrmLiteCreateTableTests : OrmLiteProvidersTestBase
+public class OrmLiteCreateTableTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public OrmLiteCreateTableTests(DialectContext context) : base(context) {}
-
     [Test]
     public void Does_table_Exists()
     {

@@ -76,4 +76,23 @@ public static class ClientConfig
         return json.FromJson<T>();
 #endif
     }
+
+    public static object FromJson(Type type, string json)
+    {
+#if NET8_0_OR_GREATER
+        var useSystemJson = (type
+            .GetCustomAttributes(typeof(SystemJsonAttribute), true)
+            .FirstOrDefault() as SystemJsonAttribute)?.Use ?? UseSystemJson;
+        if (useSystemJson.HasFlag(UseSystemJson.Response))
+        {
+            return System.Text.Json.JsonSerializer.Deserialize(json, type, TextConfig.SystemJsonOptions);
+        }
+        using (UseSystemJson != UseSystemJson.Never ? JsConfig.With(TextConfig.SystemJsonTextConfig) : null)
+        {
+            return JsonSerializer.DeserializeFromString(json, type);
+        }
+#else
+        return JsonSerializer.DeserializeFromString(json, type);
+#endif
+    }
 }

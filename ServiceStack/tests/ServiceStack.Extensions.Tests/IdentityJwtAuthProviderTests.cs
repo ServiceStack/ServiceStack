@@ -160,25 +160,30 @@ public class IdentityJwtAuthProviderTests
         }, "p@55wOrd", allRoles);
     }
 
+    public static void CreateIdentityUsers(IServiceProvider services)
+    {
+        var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
+        using var scope = scopeFactory.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.EnsureCreated();
+        //dbContext.Database.Migrate(); // runs migrations twice
+
+        // Only seed users if DB was just created
+        if (!dbContext.Users.Any())
+        {
+            AddSeedUsers(scope.ServiceProvider).Wait();
+        }
+    }
+
     class AppHost() : AppHostBase(nameof(IdentityJwtAuthProviderTests), typeof(AutoQueryService).Assembly)
     {
+        
         public override void Configure()
         {
             var log = ApplicationServices.GetRequiredService<ILogger<IdentityJwtAuthProviderTests>>();
             log.LogInformation("IdentityJwtAuthProviderTests.Configure()");
 
-            var scopeFactory = ApplicationServices.GetRequiredService<IServiceScopeFactory>();
-            using var scope = scopeFactory.CreateScope();
-            using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            dbContext.Database.EnsureCreated();
-            //dbContext.Database.Migrate(); // runs migrations twice
-
-            // Only seed users if DB was just created
-            if (!dbContext.Users.Any())
-            {
-                log.LogInformation("Adding Seed Users...");
-                AddSeedUsers(scope.ServiceProvider).Wait();
-            }
+            CreateIdentityUsers(ApplicationServices);
 
             log.LogInformation("Seeding Database...");
             using var db = GetDbConnection();
