@@ -275,14 +275,22 @@ public partial class BackgroundJobs : IBackgroundJobs
         return reqCtx;
     }
 
+    private readonly ConcurrentDictionary<long, CancellationTokenSource> cancellationSources = new();
+    private readonly ConcurrentDictionary<long, DateTime> cancelJobIds = new();
+    
     // Executed on BackgroundJobsWorker Thread
     public async Task ExecuteJobAsync(BackgroundJob job)
     {
+        if (cancelJobIds.TryRemove(job.Id, out _))
+        {
+            FailJob(job, new TaskCanceledException("Job was cancelled"));
+        }
+        
         using var linkedCts = job.Token != null
             ? CancellationTokenSource.CreateLinkedTokenSource(ct, job.Token.Value)
             : CancellationTokenSource.CreateLinkedTokenSource(ct);
         linkedCts.CancelAfter(TimeSpan.FromSeconds(job.TimeoutSecs ?? feature.DefaultTimeoutSecs));
-
+        cancellationSources[job.Id] = linkedCts;
         try
         {
             using var scope = scopeFactory.CreateScope();
@@ -351,7 +359,8 @@ public partial class BackgroundJobs : IBackgroundJobs
                 if (response is IHttpError httpError)
                 {
                     var errorStatus = httpError.Response.GetResponseStatus()
-                        ?? ResponseStatusUtils.CreateResponseStatus(httpError.ErrorCode, httpError.Message, null);
+                                      ?? ResponseStatusUtils.CreateResponseStatus(httpError.ErrorCode,
+                                          httpError.Message, null);
                     FailJob(job, errorStatus, shouldRetry: false);
                     return;
                 }
@@ -372,11 +381,39 @@ public partial class BackgroundJobs : IBackgroundJobs
         {
             FailJob(job, ex);
         }
+        finally
+        {
+            cancellationSources.Remove(job.Id, out _);
+            cancelJobIds.Remove(job.Id, out _);
+        }
     }
 
-    public void CancelJob(BackgroundJob job)
+    public void CancelJob(long jobId)
     {
-        FailJob(job, new TaskCanceledException("Job was cancelled"), shouldRetry:false);
+        if (cancellationSources.TryGetValue(jobId, out var cts))
+        {
+            cts.Cancel();
+        }
+        else
+        {
+            using var db = OpenJobsDb();
+            var error = new TaskCanceledException("Job was cancelled").ToResponseStatus();
+            var updatedQueuedJob = db.UpdateOnly(() => new BackgroundJob {
+                State = BackgroundJobState.Cancelled,
+                Error = error,
+                ErrorCode = error.ErrorCode,
+                LastActivityDate = DateTime.UtcNow,
+            }, where: x => x.Id == jobId);
+            if (updatedQueuedJob > 0)
+            {
+                cancelJobIds[jobId] = DateTime.UtcNow;
+                db.UpdateOnly(() => new JobSummary {
+                    State = BackgroundJobState.Cancelled,
+                    ErrorCode = error.ErrorCode,
+                    ErrorMessage = error.Message,
+                }, where: x => x.Id == jobId);
+            }
+        }
     }
 
     public void FailJob(BackgroundJob job, Exception ex)
