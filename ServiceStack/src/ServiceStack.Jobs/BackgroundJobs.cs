@@ -388,32 +388,32 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
-    public void CancelJob(long jobId)
+    public bool CancelJob(long jobId)
     {
         if (cancellationSources.TryGetValue(jobId, out var cts))
         {
             cts.Cancel();
+            return true;
         }
-        else
+        using var db = OpenJobsDb();
+        var error = new TaskCanceledException("Job was cancelled").ToResponseStatus();
+        var updatedQueuedJob = db.UpdateOnly(() => new BackgroundJob {
+            State = BackgroundJobState.Cancelled,
+            Error = error,
+            ErrorCode = error.ErrorCode,
+            LastActivityDate = DateTime.UtcNow,
+        }, where: x => x.Id == jobId);
+        if (updatedQueuedJob > 0)
         {
-            using var db = OpenJobsDb();
-            var error = new TaskCanceledException("Job was cancelled").ToResponseStatus();
-            var updatedQueuedJob = db.UpdateOnly(() => new BackgroundJob {
+            cancelJobIds[jobId] = DateTime.UtcNow;
+            db.UpdateOnly(() => new JobSummary {
                 State = BackgroundJobState.Cancelled,
-                Error = error,
                 ErrorCode = error.ErrorCode,
-                LastActivityDate = DateTime.UtcNow,
+                ErrorMessage = error.Message,
             }, where: x => x.Id == jobId);
-            if (updatedQueuedJob > 0)
-            {
-                cancelJobIds[jobId] = DateTime.UtcNow;
-                db.UpdateOnly(() => new JobSummary {
-                    State = BackgroundJobState.Cancelled,
-                    ErrorCode = error.ErrorCode,
-                    ErrorMessage = error.Message,
-                }, where: x => x.Id == jobId);
-            }
+            return true;
         }
+        return false;
     }
 
     public void FailJob(BackgroundJob job, Exception ex)

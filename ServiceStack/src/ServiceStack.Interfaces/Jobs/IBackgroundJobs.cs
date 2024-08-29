@@ -16,7 +16,7 @@ public interface IBackgroundJobs
     BackgroundJob RunCommand(string commandName, object arg, BackgroundJobOptions? options = null);
     Task<object?> RunCommandAsync(string commandName, object arg, BackgroundJobOptions? options = null);
     Task ExecuteJobAsync(BackgroundJob job);
-    void CancelJob(long jobId);
+    bool CancelJob(long jobId);
     void CancelWorker(string worker);
     void FailJob(BackgroundJob job, Exception ex);
     void FailJob(BackgroundJob job, ResponseStatus error, bool shouldRetry);
