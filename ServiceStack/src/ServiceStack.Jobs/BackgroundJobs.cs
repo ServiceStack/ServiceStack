@@ -44,7 +44,11 @@ public partial class BackgroundJobs : IBackgroundJobs
             Logs:dialect.GetQuotedColumnName(nameof(BackgroundJob.Logs)),
             Status:dialect.GetQuotedColumnName(nameof(BackgroundJob.Status)),
             Progress:dialect.GetQuotedColumnName(nameof(BackgroundJob.Progress)),
-            Id:dialect.GetQuotedColumnName(nameof(BackgroundJob.Id))
+            Id:dialect.GetQuotedColumnName(nameof(BackgroundJob.Id)),
+            Request:dialect.GetQuotedColumnName(nameof(BackgroundJob.Request)),
+            Command:dialect.GetQuotedColumnName(nameof(BackgroundJob.Command)),
+            Worker:dialect.GetQuotedColumnName(nameof(BackgroundJob.Worker)),
+            DurationMs:dialect.GetQuotedColumnName(nameof(BackgroundJob.DurationMs))
         );
     }
 
@@ -224,15 +228,41 @@ public partial class BackgroundJobs : IBackgroundJobs
         return response;
     }
 
-    public int? GetCommandEstimatedDurationMs(string commandType) =>
-        lastCommandDurations.TryGetValue(commandType, out var lastDuration) 
-            ? lastDuration 
-            : null;
-    
-    public int? GetApiEstimatedDurationMs(string requestType) =>
-        lastApiDurations.TryGetValue(requestType, out var lastDuration) 
-            ? lastDuration 
-            : null;
+    public int? GetCommandEstimatedDurationMs(string commandType, string? worker=null)
+    {
+        if (worker != null && lastCommandDurations.TryGetValue($"{commandType}.{worker}", out var lastDuration))
+            return lastDuration;
+        if (lastCommandDurations.TryGetValue(commandType, out lastDuration))
+            return lastDuration;
+
+        // Return best matching duration
+        var prefix = commandType + ".";
+        var keys = lastCommandDurations.Keys.Where(x => x == commandType || x.StartsWith(prefix)).ToList();
+        foreach (var key in keys)
+        {
+            if (lastCommandDurations.TryGetValue(key, out lastDuration))
+                return lastDuration;
+        }
+        return null;
+    }
+
+    public int? GetApiEstimatedDurationMs(string requestType, string? worker=null)
+    {
+        if (worker != null && lastApiDurations.TryGetValue($"{requestType}.{worker}", out var lastDuration))
+            return lastDuration;
+        if (lastApiDurations.TryGetValue(requestType, out lastDuration))
+            return lastDuration;
+
+        // Return best matching duration
+        var prefix = requestType + ".";
+        var keys = lastApiDurations.Keys.Where(x => x == requestType || x.StartsWith(prefix)).ToList();
+        foreach (var key in keys)
+        {
+            if (lastApiDurations.TryGetValue(key, out lastDuration))
+                return lastDuration;
+        }
+        return null;
+    }
 
     object DeserializeFromJson(string json, Type type)
     {
@@ -635,9 +665,9 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
 
         if (job is { RequestType: CommandResult.Command, Command: not null, DurationMs: > 0 })
-            lastCommandDurations[job.Command] = job.DurationMs;
+            lastCommandDurations[job.Worker != null ? $"{job.Command}.{job.Worker}" : job.Command] = job.DurationMs;
         else if (job is { RequestType: CommandResult.Api, DurationMs: > 0 })
-            lastApiDurations[job.Request] = job.DurationMs;
+            lastApiDurations[job.Worker != null ? $"{job.Request}.{job.Worker}" : job.Request] = job.DurationMs;
 
         if (job.Callback != null)
         {
@@ -823,9 +853,12 @@ public partial class BackgroundJobs : IBackgroundJobs
                         .Where(x => x.State == BackgroundJobState.Completed
                                     && x.DurationMs > 0
                                     && x.RequestType == CommandResult.Command)
-                        .GroupBy(x => x.Command)
+                        .GroupBy(x => new { x.Command, x.Worker })
                         .Select(x => x.Id)))
-                .Select(x => new { x.Command, x.DurationMs }));
+                .Select(x => new {
+                    Command = Sql.Custom($"IIF({columns.Worker} is null, {columns.Command}, {columns.Command} || '.' || {columns.Worker}) AS Command, {columns.DurationMs}"), 
+                    x.DurationMs
+                }));
         lastCommandDurations = new(commandDurations);
         
         var apiDurations = db.Dictionary<string, int>(
@@ -835,9 +868,12 @@ public partial class BackgroundJobs : IBackgroundJobs
                         .Where(x => x.State == BackgroundJobState.Completed
                                     && x.DurationMs > 0
                                     && x.RequestType == CommandResult.Api)
-                        .GroupBy(x => x.Command)
+                        .GroupBy(x => new { x.Command, x.Worker })
                         .Select(x => x.Id)))
-                .Select(x => new { x.Request, x.DurationMs }));
+                .Select(x => new {
+                    Request = Sql.Custom($"IIF({columns.Worker} is null, {columns.Request}, {columns.Request} || '.' || {columns.Worker}) AS Request, {columns.DurationMs}"), 
+                    x.DurationMs
+                }));
         lastApiDurations = new(apiDurations);
 
         var completedJobs = db.Select<BackgroundJob>(x => x.CompletedDate != null);
@@ -980,7 +1016,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         updates.Enqueue(status);
     }
 
-    record class Columns(string Logs, string Status, string Progress, string Id);
+    record class Columns(string Logs, string Status, string Progress, string Id, string Request, string Command, string Worker, string DurationMs);
 
     private void PerformDbUpdates()
     {

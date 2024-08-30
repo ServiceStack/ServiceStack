@@ -379,6 +379,8 @@ public class BackgroundJobsTests
     public void Does_execute_MyCommand()
     {
         ResetState();
+        OrmLiteUtils.PrintSql();
+        feature.Jobs.StartAsync(default);
         feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 });
         
         Assert.That(ExecUtils.WaitUntilTrue(() => MyJobCommand.LastRequest != null), "LastRequest == null");

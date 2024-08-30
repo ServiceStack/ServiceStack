@@ -36,8 +36,8 @@ public interface IBackgroundJobs
     void RecurringApi(string taskName, Schedule schedule, object requestDto, BackgroundJobOptions? options = null);
     void RecurringCommand(string taskName, Schedule schedule, string commandName, object arg, BackgroundJobOptions? options = null);
     void DeleteRecurringTask(string taskName);
-    int? GetCommandEstimatedDurationMs(string commandType);
-    int? GetApiEstimatedDurationMs(string requestType);
+    int? GetCommandEstimatedDurationMs(string commandType, string? worker=null);
+    int? GetApiEstimatedDurationMs(string requestType, string? worker=null);
 }
 
 public class BackgroundJobRef(long id, string refId)
