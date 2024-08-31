@@ -18,6 +18,7 @@ public interface IBackgroundJobs
     Task ExecuteJobAsync(BackgroundJob job);
     bool CancelJob(long jobId);
     void CancelWorker(string worker);
+    void RequeueFailedJob(long jobId);
     void FailJob(BackgroundJob job, Exception ex);
     void FailJob(BackgroundJob job, ResponseStatus error, bool shouldRetry);
     void CompleteJob(BackgroundJob job, object? response = null);
