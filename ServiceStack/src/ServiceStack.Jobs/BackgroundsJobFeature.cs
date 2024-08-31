@@ -83,7 +83,8 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         if (AutoInitSchema)
         {
             InitSchema();
-            InitMonthDbSchema(DateTime.UtcNow);
+            using var monthDb = OpenJobsMonthDb(DateTime.UtcNow);
+            InitMonthDbSchema(monthDb);
         }
     }
     
@@ -115,6 +116,9 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         {
             var dataSource = AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
             dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", SqliteDialect.Provider);
+            var db = dbFactory.OpenDbConnection(monthDb);
+            InitMonthDbSchema(db);
+            return db;
         }
         return dbFactory.OpenDbConnection(monthDb);
     }
@@ -125,13 +129,18 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     public void InitSchema()
     {
         using var db = OpenJobsDb();
+        InitSchema(db);
+    }
+
+    public void InitSchema(IDbConnection db)
+    {
         db.CreateTableIfNotExists<BackgroundJob>();
         db.CreateTableIfNotExists<JobSummary>();
         db.CreateTableIfNotExists<ScheduledTask>();
     }
-    public void InitMonthDbSchema(DateTime createdDate)
+    
+    public void InitMonthDbSchema(IDbConnection db)
     {
-        using var db = OpenJobsMonthDb(createdDate);
         db.CreateTableIfNotExists<CompletedJob>();
         db.CreateTableIfNotExists<FailedJob>();
     }

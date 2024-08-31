@@ -446,6 +446,45 @@ public partial class BackgroundJobs : IBackgroundJobs
         return false;
     }
 
+    public void RequeueFailedJob(long jobId)
+    {
+        using var db = OpenJobsDb();
+        var jobSummary = db.SingleById<JobSummary>(jobId);
+        if (jobSummary == null)
+            throw HttpError.NotFound("Job not found");
+
+        using var monthDb = OpenJobsMonthDb(jobSummary.CreatedDate);
+        var failedJob = monthDb.SingleById<FailedJob>(jobId);
+        if (failedJob == null)
+            throw HttpError.NotFound("Job not found");
+
+        var jobMetadata = typeof(BackgroundJob).GetModelMetadata();
+        try
+        {
+            jobMetadata.PrimaryKey.AutoIncrement = false;
+            var requeueJob = failedJob.PopulateJob(new BackgroundJob());
+            requeueJob.State = BackgroundJobState.Queued;
+            requeueJob.RequestId = null;
+            requeueJob.Response = null;
+            requeueJob.ResponseBody = null;
+            requeueJob.Logs = null;
+            requeueJob.Error = null;
+            requeueJob.ErrorCode = null;
+            requeueJob.Attempts = 0;
+            requeueJob.DurationMs = 0;
+            requeueJob.StartedDate = requeueJob.LastActivityDate = DateTime.UtcNow;
+            lock (dbWrites)
+            {
+                db.Insert(requeueJob);
+                monthDb.DeleteById<FailedJob>(failedJob.Id);
+            }
+        }
+        finally
+        {
+            jobMetadata.PrimaryKey.AutoIncrement = true;
+        }
+    }
+
     public void FailJob(BackgroundJob job, Exception ex)
     {
         FailJob(job, ex, ShouldRetry(job, ex));
