@@ -28,7 +28,7 @@ namespace ServiceStack.AuthWeb.Tests
         public override void Configure(Container container)
         {
             Plugins.Add(new RequestLogsFeature {
-                RequiredRoles = new[] { RoleNames.AllowAnon }
+                AccessRole = RoleNames.AllowAnon
             });
 
             Plugins.Add(new RazorFormat());

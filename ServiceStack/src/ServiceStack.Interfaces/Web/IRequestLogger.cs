@@ -44,11 +44,6 @@ public interface IRequestLogger
     bool LimitToServiceRequests { get; set; }
 
     /// <summary>
-    /// Limit access to /requestlogs service to role
-    /// </summary>
-    string[] RequiredRoles { get; set; }
-
-    /// <summary>
     /// Don't log matching requests
     /// </summary>
     Func<IRequest, bool> SkipLogging { get; set; }

@@ -49,36 +49,36 @@ public class RequestLogsResponse
 public class RequestLogsService(IRequestLogger requestLogger) : Service
 {
     private static readonly Dictionary<string, string> Usage = new() {
-        {"int BeforeSecs",      "Requests before elapsed time"},
-        {"int AfterSecs",       "Requests after elapsed time"},
-        {"string IpAddress",    "Requests matching Ip Address"},
-        {"string ForwardedFor", "Requests matching Forwarded Ip Address"},
-        {"string UserAuthId",   "Requests matching UserAuthId"},
-        {"string SessionId",    "Requests matching SessionId"},
-        {"string Referer",      "Requests matching Http Referer"},
-        {"string PathInfo",     "Requests matching PathInfo"},
-        {"int BeforeId",        "Requests before RequestLog Id"},
-        {"int AfterId",         "Requests after RequestLog Id"},
-        {"bool WithErrors",     "Requests with errors"},
+         {"int BeforeSecs",              "Requests before elapsed time"},
+        {"int AfterSecs",               "Requests after elapsed time"},
+        {"string IpAddress",            "Requests matching Ip Address"},
+        {"string ForwardedFor",         "Requests matching Forwarded Ip Address"},
+        {"string UserAuthId",           "Requests matching UserAuthId"},
+        {"string SessionId",            "Requests matching SessionId"},
+        {"string Referer",              "Requests matching Http Referer"},
+        {"string PathInfo",             "Requests matching PathInfo"},
+        {"int BeforeId",                "Requests before RequestLog Id"},
+        {"int AfterId",                 "Requests after RequestLog Id"},
+        {"bool WithErrors",             "Requests with errors"},
         {"bool EnableSessionTracking",  "Turn On/Off Session Tracking"},
         {"bool EnableResponseTracking", "Turn On/Off Tracking of Responses"},
         {"bool EnableErrorTracking",    "Turn On/Off Tracking of Errors"},
         {"TimeSpan DurationLongerThan", "Requests with a duration longer than"},
-        {"TimeSpan DurationLessThan", "Requests with a duration less than"},
-        {"int Skip",            "Skip past N results"},
-        {"int Take",            "Only look at last N results"},
-        {"string OrderBy",      "Order results by specified fields, e.g. SessionId,-Id"},
+        {"TimeSpan DurationLessThan",   "Requests with a duration less than"},
+        {"int Skip",                    "Skip past N results"},
+        {"int Take",                    "Only look at last N results"},
+        {"string OrderBy",              "Order results by specified fields, e.g. SessionId,-Id"},
     };
 
     public async Task<object> Any(RequestLogs request)
     {
+        var feature = AssertPlugin<RequestLogsFeature>();
         if (!HostContext.DebugMode)
-            await RequiredRoleAttribute.AssertRequiredRolesAsync(Request, requestLogger.RequiredRoles);
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
 
         if (request.EnableSessionTracking.HasValue)
             requestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
 
-        var feature = GetPlugin<RequestLogsFeature>();
         var defaultLimit = feature?.DefaultLimit ?? 100;
 
         var now = DateTime.UtcNow;

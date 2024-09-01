@@ -59,12 +59,6 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
     public int? Capacity { get; set; }
 
     /// <summary>
-    /// Limit access to /requestlogs service to these roles
-    /// </summary>
-    [Obsolete("Use AccessRole")]
-    public string[] RequiredRoles { get; set; }
-        
-    /// <summary>
     /// Limit API access to users in role
     /// </summary>
     public string AccessRole { get; set; } = RoleNames.Admin;
@@ -182,7 +176,6 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         requestLogger.RequestBodyTrackingFilter = RequestBodyTrackingFilter;
         requestLogger.LimitToServiceRequests = LimitToServiceRequests;
         requestLogger.SkipLogging = SkipLogging;
-        requestLogger.RequiredRoles = RequiredRoles ?? [AccessRole];
         requestLogger.EnableErrorTracking = EnableErrorTracking;
         requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
         requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
@@ -226,7 +219,6 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.RequestLogs = new RequestLogsInfo {
                 AccessRole = AccessRole,
-                RequiredRoles = RequiredRoles ?? [AccessRole],
                 ServiceRoutes = new() {
                     { nameof(RequestLogsService), [AtRestPath] },
                 },
@@ -240,7 +232,7 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
     {
         appHost.ConfigurePlugin<UiFeature>(feature =>
         {
-            var role = RequiredRoles?.Length > 0 ? RequiredRoles[0] : AccessRole; 
+            var role = AccessRole; 
             feature.AddAdminLink(AdminUiFeature.Logging, new LinkInfo {
                 Id = "logging",
                 Label = "Logging",

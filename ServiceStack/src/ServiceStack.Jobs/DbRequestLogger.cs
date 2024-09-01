@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using ServiceStack.Configuration;
+using ServiceStack.Host;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.Host;
+namespace ServiceStack.Jobs;
 
-public class InMemoryRollingRequestLogger : IRequestLogger
+public class DbRequestLogger : IRequestLogger
 {
     internal static long requestId = 0;
-
     public const int DefaultCapacity = 1000;
     protected readonly ConcurrentQueue<RequestLogEntry> logEntries = new();
     protected readonly int capacity;
@@ -21,7 +21,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
     public Func<IRequest, bool> RequestBodyTrackingFilter { get; set; }
 
     public bool EnableResponseTracking { get; set; }
-    public Func<IRequest, bool> ResponseTrackingFilter { get; set; }
+    public Func<IRequest, bool>? ResponseTrackingFilter { get; set; }
 
     public bool EnableErrorTracking { get; set; }
 
@@ -29,26 +29,19 @@ public class InMemoryRollingRequestLogger : IRequestLogger
 
     public Func<IRequest, bool> SkipLogging { get; set; }
         
-    public Type[] ExcludeRequestDtoTypes { get; set; }
+    public Type[]? ExcludeRequestDtoTypes { get; set; }
 
-    public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
+    public Type[]? HideRequestBodyForRequestDtoTypes { get; set; }
         
-    public Type[] ExcludeResponseTypes { get; set; }
+    public Type[]? ExcludeResponseTypes { get; set; }
 
-    public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
+    public Action<IRequest, RequestLogEntry>? RequestLogFilter { get; set; }
 
-    public Func<object,bool> IgnoreFilter { get; set; } 
+    public Func<object,bool>? IgnoreFilter { get; set; } 
 
     public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
 
-    protected InMemoryRollingRequestLogger() {}
-
-    public InMemoryRollingRequestLogger(int? capacity = DefaultCapacity)
-    {
-        this.capacity = capacity.GetValueOrDefault(DefaultCapacity);
-    }
-
-    public virtual bool ShouldSkip(IRequest req, object requestDto)
+    public virtual bool ShouldSkip(IRequest req, object? requestDto)
     {
         var dto = requestDto ?? req.Dto;
         if (LimitToServiceRequests && dto == null)
@@ -82,7 +75,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
                 entry.ErrorResponse = null;
             if (entry.ExceptionData != null)
             {
-                List<object> keysToRemove = null;
+                List<object>? keysToRemove = null;
                 foreach (var key in entry.ExceptionData.Keys)
                 {
                     var val = entry.ExceptionData[key];
@@ -102,7 +95,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
             logEntries.TryDequeue(out _);
     }
 
-    protected RequestLogEntry CreateEntry(IRequest request, object requestDto, object response, TimeSpan requestDuration, Type requestType)
+    protected RequestLogEntry CreateEntry(IRequest request, object requestDto, object response, TimeSpan requestDuration, Type? requestType)
     {
         var entry = new RequestLogEntry
         {
@@ -147,15 +140,11 @@ public class InMemoryRollingRequestLogger : IRequestLogger
             var enableRequestBodyTracking = RequestBodyTrackingFilter?.Invoke(request);
             if (enableRequestBodyTracking ?? EnableRequestBodyTracking && request.CanReadRequestBody())
             {
-#if NETCORE
-                    // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
-                    if (!request.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
-                    {
-                        entry.RequestBody = request.GetRawBody();
-                    }
-#else
-                entry.RequestBody = request.GetRawBody();
-#endif
+                // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
+                if (!request.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
+                {
+                    entry.RequestBody = request.GetRawBody();
+                }
             }
         }
 
@@ -201,7 +190,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
         return entry;
     }
 
-    protected bool ExcludeRequestType(Type requestType)
+    protected bool ExcludeRequestType(Type? requestType)
     {
         return ExcludeRequestDtoTypes != null
                && requestType != null
@@ -227,11 +216,11 @@ public class InMemoryRollingRequestLogger : IRequestLogger
             : new List<RequestLogEntry>(logEntries);
     }
 
-    public static object ToSerializableErrorResponse(object response)
+    public static object? ToSerializableErrorResponse(object response)
     {
         if (response is IHttpResult errorResult)
             return errorResult.Response;
-        else if (response is ErrorResponse errorResponse)
+        if (response is ErrorResponse errorResponse)
             return errorResponse.GetResponseDto();
 
         var ex = response as Exception;
