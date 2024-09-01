@@ -206,12 +206,14 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         var missingQueryRequestTypes = scannedTypes
             .Where(x => x.HasInterface(typeof(IQueryDb)) 
                         && !userRequestDtosMap.ContainsKey(x)
-                        && !IgnoreGeneratingServicesFor.Contains(x))
+                        && !IgnoreGeneratingServicesFor.Contains(x)
+                        && x.GetCustomAttribute<ExplicitAutoQuery>() == null)
             .ToList();
         var missingCrudRequestTypes = scannedTypes
             .Where(x => x.HasInterface(typeof(ICrud))
                         && !userRequestDtosMap.ContainsKey(x)
-                        && !IgnoreGeneratingServicesFor.Contains(x))
+                        && !IgnoreGeneratingServicesFor.Contains(x)
+                        && x.GetCustomAttribute<ExplicitAutoQuery>() == null)
             .ToList();
 
         if (FilterAutoQueryRequestTypes != null)

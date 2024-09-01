@@ -1,8 +1,8 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-06-05 18:45:26
-Version: 8.23
+Date: 2024-09-01 13:46:12
+Version: 8.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -104,6 +104,214 @@ export class RedisEndpointInfo
     public password: string;
 
     public constructor(init?: Partial<RedisEndpointInfo>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class QueryBase
+{
+    // @DataMember(Order=1)
+    public skip?: number;
+
+    // @DataMember(Order=2)
+    public take?: number;
+
+    // @DataMember(Order=3)
+    public orderBy: string;
+
+    // @DataMember(Order=4)
+    public orderByDesc: string;
+
+    // @DataMember(Order=5)
+    public include: string;
+
+    // @DataMember(Order=6)
+    public fields: string;
+
+    // @DataMember(Order=7)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<QueryBase>) { (Object as any).assign(this, init); }
+}
+
+export class QueryDb<T> extends QueryBase
+{
+
+    public constructor(init?: Partial<QueryDb<T>>) { super(init); (Object as any).assign(this, init); }
+}
+
+export enum BackgroundJobState
+{
+    Queued = 'Queued',
+    Started = 'Started',
+    Executed = 'Executed',
+    Completed = 'Completed',
+    Failed = 'Failed',
+    Cancelled = 'Cancelled',
+}
+
+// @DataContract
+export class ResponseError
+{
+    // @DataMember(Order=1)
+    public errorCode: string;
+
+    // @DataMember(Order=2)
+    public fieldName: string;
+
+    // @DataMember(Order=3)
+    public message: string;
+
+    // @DataMember(Order=4)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<ResponseError>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class ResponseStatus
+{
+    // @DataMember(Order=1)
+    public errorCode: string;
+
+    // @DataMember(Order=2)
+    public message: string;
+
+    // @DataMember(Order=3)
+    public stackTrace: string;
+
+    // @DataMember(Order=4)
+    public errors: ResponseError[];
+
+    // @DataMember(Order=5)
+    public meta: { [index: string]: string; };
+
+    public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
+}
+
+export class BackgroundJobBase
+{
+    public id: number;
+    public parentId?: number;
+    public refId?: string;
+    public worker?: string;
+    public tag?: string;
+    public batchId?: string;
+    public callback?: string;
+    public dependsOn?: number;
+    public runAfter?: string;
+    public createdDate: string;
+    public createdBy?: string;
+    public requestId?: string;
+    public requestType: string;
+    public command?: string;
+    public request: string;
+    public requestBody: string;
+    public userId?: string;
+    public response?: string;
+    public responseBody?: string;
+    public state: BackgroundJobState;
+    public startedDate?: string;
+    public completedDate?: string;
+    public notifiedDate?: string;
+    public retryLimit?: number;
+    public attempts: number;
+    public durationMs: number;
+    public timeoutSecs?: number;
+    public progress?: number;
+    public status?: string;
+    public logs?: string;
+    public lastActivityDate?: string;
+    public replyTo?: string;
+    public errorCode?: string;
+    public error?: ResponseStatus;
+    public args?: { [index: string]: string; };
+    public meta?: { [index: string]: string; };
+
+    public constructor(init?: Partial<BackgroundJobBase>) { (Object as any).assign(this, init); }
+}
+
+export class BackgroundJob extends BackgroundJobBase
+{
+    public id: number;
+
+    public constructor(init?: Partial<BackgroundJob>) { super(init); (Object as any).assign(this, init); }
+}
+
+export class JobSummary
+{
+    public id: number;
+    public parentId?: number;
+    public refId?: string;
+    public worker?: string;
+    public tag?: string;
+    public batchId?: string;
+    public createdDate: string;
+    public createdBy?: string;
+    public requestType: string;
+    public command?: string;
+    public request: string;
+    public response?: string;
+    public userId?: string;
+    public callback?: string;
+    public startedDate?: string;
+    public completedDate?: string;
+    public state: BackgroundJobState;
+    public durationMs: number;
+    public attempts: number;
+    public errorCode?: string;
+    public errorMessage?: string;
+
+    public constructor(init?: Partial<JobSummary>) { (Object as any).assign(this, init); }
+}
+
+export class BackgroundJobOptions
+{
+    public refId?: string;
+    public parentId?: number;
+    public worker?: string;
+    public runAfter?: string;
+    public callback?: string;
+    public dependsOn?: number;
+    public userId?: string;
+    public retryLimit?: number;
+    public replyTo?: string;
+    public tag?: string;
+    public batchId?: string;
+    public createdBy?: string;
+    public timeoutSecs?: number;
+    public args?: { [index: string]: string; };
+    public runCommand?: boolean;
+
+    public constructor(init?: Partial<BackgroundJobOptions>) { (Object as any).assign(this, init); }
+}
+
+export class ScheduledTask
+{
+    public id: number;
+    public name: string;
+    public interval?: string;
+    public cronExpression?: string;
+    public requestType: string;
+    public command?: string;
+    public request: string;
+    public requestBody: string;
+    public options?: BackgroundJobOptions;
+    public lastRun?: string;
+    public lastJobId?: number;
+
+    public constructor(init?: Partial<ScheduledTask>) { (Object as any).assign(this, init); }
+}
+
+export class CompletedJob extends BackgroundJobBase
+{
+
+    public constructor(init?: Partial<CompletedJob>) { super(init); (Object as any).assign(this, init); }
+}
+
+export class FailedJob extends BackgroundJobBase
+{
+
+    public constructor(init?: Partial<FailedJob>) { super(init); (Object as any).assign(this, init); }
 }
 
 export class ValidateRule
@@ -380,6 +588,7 @@ export class ApiKeyInfo
     public features: string[];
     public requestTypes: string[];
     public expiresIn: KeyValuePair<string,string>[];
+    public hide: string[];
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<ApiKeyInfo>) { (Object as any).assign(this, init); }
@@ -495,6 +704,7 @@ export class CommandInfo
     public name: string;
     public tag: string;
     public request: MetadataType;
+    public response: MetadataType;
 
     public constructor(init?: Partial<CommandInfo>) { (Object as any).assign(this, init); }
 }
@@ -839,45 +1049,6 @@ export class ServerStats
     public constructor(init?: Partial<ServerStats>) { (Object as any).assign(this, init); }
 }
 
-// @DataContract
-export class ResponseError
-{
-    // @DataMember(Order=1)
-    public errorCode: string;
-
-    // @DataMember(Order=2)
-    public fieldName: string;
-
-    // @DataMember(Order=3)
-    public message: string;
-
-    // @DataMember(Order=4)
-    public meta: { [index: string]: string; };
-
-    public constructor(init?: Partial<ResponseError>) { (Object as any).assign(this, init); }
-}
-
-// @DataContract
-export class ResponseStatus
-{
-    // @DataMember(Order=1)
-    public errorCode: string;
-
-    // @DataMember(Order=2)
-    public message: string;
-
-    // @DataMember(Order=3)
-    public stackTrace: string;
-
-    // @DataMember(Order=4)
-    public errors: ResponseError[];
-
-    // @DataMember(Order=5)
-    public meta: { [index: string]: string; };
-
-    public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
-}
-
 export class DiagnosticEntry
 {
     public id: number;
@@ -1014,6 +1185,29 @@ export class PartialApiKey
     public active: boolean;
 
     public constructor(init?: Partial<PartialApiKey>) { (Object as any).assign(this, init); }
+}
+
+export class JobStatSummary
+{
+    public name: string;
+    public total: number;
+    public completed: number;
+    public retries: number;
+    public failed: number;
+    public cancelled: number;
+
+    public constructor(init?: Partial<JobStatSummary>) { (Object as any).assign(this, init); }
+}
+
+export class HourSummary
+{
+    public hour: string;
+    public total: number;
+    public completed: number;
+    public failed: number;
+    public cancelled: number;
+
+    public constructor(init?: Partial<HourSummary>) { (Object as any).assign(this, init); }
 }
 
 export class RequestLogEntry
@@ -1287,6 +1481,89 @@ export class EmptyResponse
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<EmptyResponse>) { (Object as any).assign(this, init); }
+}
+
+export class AdminJobDashboardResponse
+{
+    public commands: JobStatSummary[];
+    public apis: JobStatSummary[];
+    public workers: JobStatSummary[];
+    public today: HourSummary[];
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<AdminJobDashboardResponse>) { (Object as any).assign(this, init); }
+}
+
+export class AdminJobInfoResponse
+{
+    public monthDbs: string[];
+    public tableCounts: { [index: string]: number; };
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<AdminJobInfoResponse>) { (Object as any).assign(this, init); }
+}
+
+export class AdminGetJobResponse
+{
+    public result: JobSummary;
+    public queued?: BackgroundJob;
+    public completed?: CompletedJob;
+    public failed?: FailedJob;
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<AdminGetJobResponse>) { (Object as any).assign(this, init); }
+}
+
+export class AdminGetJobProgressResponse
+{
+    public state: BackgroundJobState;
+    public progress?: number;
+    public status?: string;
+    public logs?: string;
+    public durationMs?: number;
+    public error?: ResponseStatus;
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<AdminGetJobProgressResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class QueryResponse<BackgroundJob>
+{
+    // @DataMember(Order=1)
+    public offset: number;
+
+    // @DataMember(Order=2)
+    public total: number;
+
+    // @DataMember(Order=3)
+    public results: BackgroundJob[];
+
+    // @DataMember(Order=4)
+    public meta: { [index: string]: string; };
+
+    // @DataMember(Order=5)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<QueryResponse<BackgroundJob>>) { (Object as any).assign(this, init); }
+}
+
+export class AdminRequeueFailedJobsJobsResponse
+{
+    public results: number[];
+    public errors: { [index: number]: string; };
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<AdminRequeueFailedJobsJobsResponse>) { (Object as any).assign(this, init); }
+}
+
+export class AdminCancelJobsResponse
+{
+    public results: number[];
+    public errors: { [index: number]: string; };
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<AdminCancelJobsResponse>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -1733,6 +2010,123 @@ export class AdminDeleteApiKey implements IReturn<EmptyResponse>, IDelete
     public getTypeName() { return 'AdminDeleteApiKey'; }
     public getMethod() { return 'DELETE'; }
     public createResponse() { return new EmptyResponse(); }
+}
+
+export class AdminJobDashboard implements IReturn<AdminJobDashboardResponse>, IGet
+{
+    public from?: string;
+    public to?: string;
+
+    public constructor(init?: Partial<AdminJobDashboard>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminJobDashboard'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminJobDashboardResponse(); }
+}
+
+export class AdminJobInfo implements IReturn<AdminJobInfoResponse>, IGet
+{
+    public month?: string;
+
+    public constructor(init?: Partial<AdminJobInfo>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminJobInfo'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminJobInfoResponse(); }
+}
+
+export class AdminGetJob implements IReturn<AdminGetJobResponse>, IGet
+{
+    public id?: number;
+    public refId?: string;
+
+    public constructor(init?: Partial<AdminGetJob>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminGetJob'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminGetJobResponse(); }
+}
+
+export class AdminGetJobProgress implements IReturn<AdminGetJobProgressResponse>, IGet
+{
+    // @Validate(Validator="GreaterThan(0)")
+    public id: number;
+
+    public logStart?: number;
+
+    public constructor(init?: Partial<AdminGetJobProgress>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminGetJobProgress'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminGetJobProgressResponse(); }
+}
+
+export class AdminQueryBackgroundJobs extends QueryDb<BackgroundJob> implements IReturn<QueryResponse<BackgroundJob>>
+{
+    public id?: number;
+    public refId?: string;
+
+    public constructor(init?: Partial<AdminQueryBackgroundJobs>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminQueryBackgroundJobs'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<BackgroundJob>(); }
+}
+
+export class AdminQueryJobSummary extends QueryDb<JobSummary> implements IReturn<QueryResponse<JobSummary>>
+{
+    public id?: number;
+    public refId?: string;
+
+    public constructor(init?: Partial<AdminQueryJobSummary>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminQueryJobSummary'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<JobSummary>(); }
+}
+
+export class AdminQueryScheduledTasks extends QueryDb<ScheduledTask> implements IReturn<QueryResponse<ScheduledTask>>
+{
+
+    public constructor(init?: Partial<AdminQueryScheduledTasks>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminQueryScheduledTasks'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<ScheduledTask>(); }
+}
+
+export class AdminQueryCompletedJobs extends QueryDb<CompletedJob> implements IReturn<QueryResponse<CompletedJob>>
+{
+    public month?: string;
+
+    public constructor(init?: Partial<AdminQueryCompletedJobs>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminQueryCompletedJobs'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<CompletedJob>(); }
+}
+
+export class AdminQueryFailedJobs extends QueryDb<FailedJob> implements IReturn<QueryResponse<FailedJob>>
+{
+    public month?: string;
+
+    public constructor(init?: Partial<AdminQueryFailedJobs>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminQueryFailedJobs'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<FailedJob>(); }
+}
+
+export class AdminRequeueFailedJobs implements IReturn<AdminRequeueFailedJobsJobsResponse>
+{
+    // @Validate(Validator="GreaterThan(0)")
+    public ids?: number[];
+
+    public constructor(init?: Partial<AdminRequeueFailedJobs>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminRequeueFailedJobs'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new AdminRequeueFailedJobsJobsResponse(); }
+}
+
+export class AdminCancelJobs implements IReturn<AdminCancelJobsResponse>, IGet
+{
+    public ids?: number[];
+
+    public constructor(init?: Partial<AdminCancelJobs>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminCancelJobs'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminCancelJobsResponse(); }
 }
 
 // @Route("/requestlogs")

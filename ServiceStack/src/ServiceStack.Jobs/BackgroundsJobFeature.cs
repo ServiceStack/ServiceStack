@@ -20,7 +20,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     public Func<IDbConnectionFactory, IDbConnection> ResolveAppDb { get; set; }
     public Func<IDbConnectionFactory, DateTime, IDbConnection> ResolveMonthDb { get; set; }
     public bool AutoInitSchema { get; set; } = true;
-    public bool EnableAdmin { get; set; } = false;
+    public bool EnableAdmin { get; set; } = true;
     public IDbConnectionFactory DbFactory { get; set; } = null!;
     public IAppHostNetCore AppHost { get; set; } = null!;
     public CommandsFeature CommandsFeature { get; set; } = null!;
@@ -50,6 +50,8 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
 
         if (EnableAdmin)
         {
+            services.RegisterService<AdminJobServices>();
+
             // Background Jobs Admin UI requires AutoQuery functionality
             ServiceStackHost.GlobalAfterConfigureServices.Add(c =>
             {

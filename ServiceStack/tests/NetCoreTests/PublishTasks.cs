@@ -11,8 +11,11 @@ using ServiceStack;
 using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
+using ServiceStack.Jobs;
 using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
 using ServiceStack.Testing;
@@ -205,7 +208,7 @@ public class PublishTasks
 
     class AppHost : AppSelfHostBase
     {
-        public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService), typeof(TestService)) {}
+        public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService), typeof(UiServices)) {}
         public override void Configure(Container container)
         {
             Metadata.ForceInclude =
@@ -232,6 +235,19 @@ public class PublishTasks
                 typeof(RequestLogsInfo),
                 typeof(ViewCommands),
                 typeof(ExecuteCommand),
+                typeof(AdminJobInfo),
+                typeof(AdminGetJob),
+                typeof(AdminGetJobProgress),
+                typeof(AdminCancelJobs),
+                typeof(AdminRequeueFailedJobs),
+                typeof(AdminJobDashboard),
+                
+                typeof(AdminQueryBackgroundJobs),
+                typeof(AdminQueryJobSummary),
+                typeof(AdminQueryScheduledTasks),
+                typeof(AdminQueryCompletedJobs),
+                typeof(AdminQueryFailedJobs),
+                ..UiServices.AutoQueryTypes
             ];
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), [
@@ -258,6 +274,7 @@ public class PublishTasks
             Plugins.Add(new AdminDatabaseFeature());
             Plugins.Add(new CommandsFeature());
             Plugins.Add(new ApiKeysFeature());
+            Plugins.Add(new BackgroundsJobFeature { EnableAdmin = true });
         }
     }
 
@@ -278,6 +295,11 @@ public class PublishTasks
         File.WriteAllText(Path.GetFullPath("./lib/types.ts"), sb.ToString());
         
         File.WriteAllText(Path.GetFullPath("./admin-ui/lib/dtos.mjs"), mjs);
+        
+        var metadata = baseUrl.CombineWith("/api/AdminMetadataTypes").GetStringFromUrl();
+
+        var metadataJs = $"export default {metadata}";
+        File.WriteAllText(Path.GetFullPath("./admin-ui/lib/metadata.mjs"), metadataJs);
     }
 
     [Test]
@@ -328,8 +350,52 @@ public class PublishTasks
     }
 }
 
-public class TestService : Service
+[ExcludeMetadata, Tag(TagNames.Admin)]
+public class AdminMetadataTypes : IGet, IReturn<MetadataTypes> {}
+
+
+public class UiServices : Service
 {
+    public static Type[] AutoQueryTypes =
+    [
+        typeof(AdminQueryBackgroundJobs),
+        typeof(AdminQueryJobSummary),
+        typeof(AdminQueryScheduledTasks),
+        typeof(AdminQueryCompletedJobs),
+        typeof(AdminQueryFailedJobs),
+    ];
+    
+    // Generate app metadata.js required for all AutoQuery APIs in built-in UIs
+    public object Any(AdminMetadataTypes request)
+    {
+        var meta = new ServiceMetadata([]);
+        Type[] requestTypes = AutoQueryTypes;
+        foreach (var requestType in requestTypes)
+        {
+            var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+            var responseType = returnMarker?.GetGenericArguments()[0];
+            meta.Add(typeof(AdminJobServices), requestType, responseType);
+        }
+
+        var config = new MetadataTypesConfig
+        {
+            AddNamespaces = [],
+            DefaultNamespaces = [],
+            DefaultImports = [],
+            IncludeTypes = [],
+            ExcludeTypes = [],
+            ExportTags = [],
+            TreatTypesAsStrings = [],
+            IgnoreTypes = [],
+            ExportTypes = [],
+            ExportAttributes = [],
+            IgnoreTypesInNamespaces = [],
+        };
+        var generator = new MetadataTypesGenerator(meta, config);
+        var to = generator.GetMetadataTypes(Request);
+        to.Config = null;
+        return to;
+    }
 }
 
 

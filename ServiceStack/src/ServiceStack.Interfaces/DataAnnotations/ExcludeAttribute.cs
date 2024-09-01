@@ -23,3 +23,9 @@ public class ExcludeMetadataAttribute() : ExcludeAttribute(Feature.Metadata | Fe
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
 public class ExcludeFromDescriptionAttribute() : AttributeBase;
+
+/// <summary>
+/// Exclude Auto Registering Explicit API in AutoQuery
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+public class ExplicitAutoQuery() : AttributeBase;

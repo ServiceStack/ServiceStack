@@ -67,6 +67,7 @@ DEBUG = true /*debug*/
                                 <redis v-else-if="routes.admin === 'redis'"></redis>
                                 <database v-else-if="routes.admin === 'database'"></database>
                                 <commands v-else-if="routes.admin === 'commands'"></commands>
+                                <background-jobs v-else-if="routes.admin === 'backgroundjobs'"></background-jobs>
                                 <api-keys v-else-if="routes.admin === 'apikeys'"></api-keys>
                             </div>
                         </div>
@@ -136,10 +137,14 @@ setFavIcon(globalThis.Server.ui.brandIcon, globalThis.Server.app.baseUrl + '/met
 
 <script type="module">
 import { ref, computed, nextTick, inject, onMounted } from "vue"
-import { $1, $$ } from "@servicestack/client"
+import { $1, $$, setQueryString } from "@servicestack/client"
 import { app, client } from "app"
 import { Authenticate } from "dtos"
+import metadata from "./lib/metadata.mjs"
+import { useUtils,useConfig,useMetadata } from "@servicestack/vue"
+const { pushState } = useUtils()
 
+window.client = client
 const App = {
     template: $1('#app-template'),
     setup(props) {
@@ -175,9 +180,52 @@ const App = {
         return { store, routes, server, showSidebar, apiKeyError, updatedApiKey }
     }
 }
-
 app.build(App).mount('#app')
+
 app.start()
+
+function configureMetadata(api) {
+    function typeOf(name, namespace) {
+        if (!api || !name) return null
+        let type = api.types.find(x => x.name.toLowerCase() === name.toLowerCase() && (!namespace || x.namespace == namespace))
+        if (type) return type
+        let requestOp = apiOf(name)
+        if (requestOp) return requestOp.request
+        let responseOp = api.operations.find(x => x.response && (x.response.name.toLowerCase() === name.toLowerCase() && (!namespace || x.response.namespace == namespace)))
+        if (responseOp) return responseOp.response
+        return null
+    }
+    function apiOf(name) {
+        if (!api) return null
+        let requestOp = api.operations.find(x => x.request.name.toLowerCase() === name.toLowerCase())
+        return requestOp
+    }
+    
+    const {setConfig} = useConfig()
+    const {Apis} = useMetadata()
+    setConfig({
+        apisResolver: (type, metaTypes) => {
+            const apis = new Apis();
+            metaTypes = api
+            metaTypes?.operations.forEach(op => {
+                console.log('op', op.request.name, op.dataModel?.name)
+                if (op.dataModel?.name === type) {
+                    console.log('adding ', op)
+                    apis.add(op)
+                }
+            })
+            console.log('apis', apis, apis.AnyQuery)
+            return apis
+        },
+        apiResolver: (name) => {
+            return apiOf(name)
+        },
+        typeResolver: (name, namespace) => {
+            return typeOf(name, namespace)
+        }
+    })
+}
+configureMetadata(metadata)
 </script>
 <script>
 /*vfs[]:/js/highlight.js*/
