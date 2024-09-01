@@ -244,10 +244,8 @@ const JobDialog = {
                     {{job.command ?? job.request}} Job {{job.id}}
                 </h2>
             </template>
-            <div class="flex justify-between pt-2 px-3">
-            </div>
-            <div class="flex justify-between">
-                <ErrorSummary :status="errorStatus" />
+            <ErrorSummary :status="errorStatus" />
+            <div class="mt-2 flex justify-between">
                 <div>
                     <JobState class="pl-2" :state="job.state" />
                     <HtmlFormat :value="basic" class="py-2 not-prose" />
@@ -330,7 +328,7 @@ const JobDialog = {
                 <h2 class="font-medium">Logs</h2>
               </div>
             </div>
-            <div v-if="job.logs" class="flex overflow-auto">
+            <div v-if="logs" class="flex overflow-auto">
               <div class="pt-2 px-2 relative w-full">
                 <pre class="text-sm rounded py-2 px-3 bg-gray-800 text-gray-100">{{ logs }}</pre>                
               </div>
@@ -386,7 +384,7 @@ const JobDialog = {
                         const job = r.completed ?? r.failed ?? r.queued ?? r.result
                         if (job?.state === 'Queued' || job?.state === 'Started') {
                             loading.value = false
-                            logs.value = job.logs
+                            logs.value = job.logs || ''
                             emit('updated', job)
                             return
                         }
@@ -426,15 +424,20 @@ const JobDialog = {
         let updateTimer = null
         async function update() {
             if (isRunning(props.job.state)) {
-                if (!logs.value) logs.value = props.job.logs ?? ''
+                if (!logs.value) logs.value = props.job.logs || ''
                 const api = await client.api(new AdminGetJobProgress({ 
                     id: props.job.id,
                     logStart: logs.value.length
                 }))
                 if (api.response) {
-                    logs.value += api.response.logs ?? ''
-                    duration.value = formatMs(api.response.durationMs ?? 0)
-                    // console.log('logs', api.response)
+                    const newLogs = logs.value + (api.response.logs || '')
+                    const newDuration = formatMs(api.response.durationMs ?? 0) 
+                    
+                    nextTick(() => {
+                        logs.value = newLogs
+                        duration.value = newDuration
+                    })
+
                     if (!isRunning(api.response.state)) {
                         const apiRefresh = await client.api(new AdminGetJob({ id: props.job.id }))
                         const r = apiRefresh.response

@@ -88,7 +88,6 @@ public class AdminQueryFailedJobs : QueryDb<FailedJob>
 [ExcludeMetadata, Tag(TagNames.Jobs)]
 public class AdminRequeueFailedJobs : IReturn<AdminRequeueFailedJobsJobsResponse>
 {
-    [ValidateGreaterThan(0)]
     [Input(Type = "tag"), FieldCss(Field = "col-span-12")]
     public List<long>? Ids { get; set; }
 }

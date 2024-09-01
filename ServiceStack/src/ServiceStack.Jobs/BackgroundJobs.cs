@@ -458,30 +458,31 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (failedJob == null)
             throw HttpError.NotFound("Job not found");
 
-        var jobMetadata = typeof(BackgroundJob).GetModelMetadata();
-        try
+         var requeueJob = failedJob.PopulateJob(new BackgroundJob());
+        requeueJob.State = BackgroundJobState.Queued;
+        requeueJob.RequestId = null;
+        requeueJob.Response = null;
+        requeueJob.ResponseBody = null;
+        requeueJob.Logs = null;
+        requeueJob.Error = null;
+        requeueJob.ErrorCode = null;
+        requeueJob.Attempts = 0;
+        requeueJob.DurationMs = 0;
+        requeueJob.StartedDate = requeueJob.LastActivityDate = DateTime.UtcNow;
+
+        lock (dbWrites)
         {
-            jobMetadata.PrimaryKey.AutoIncrement = false;
-            var requeueJob = failedJob.PopulateJob(new BackgroundJob());
-            requeueJob.State = BackgroundJobState.Queued;
-            requeueJob.RequestId = null;
-            requeueJob.Response = null;
-            requeueJob.ResponseBody = null;
-            requeueJob.Logs = null;
-            requeueJob.Error = null;
-            requeueJob.ErrorCode = null;
-            requeueJob.Attempts = 0;
-            requeueJob.DurationMs = 0;
-            requeueJob.StartedDate = requeueJob.LastActivityDate = DateTime.UtcNow;
-            lock (dbWrites)
+            var jobMetadata = typeof(BackgroundJob).GetModelMetadata();
+            try
             {
+                jobMetadata.PrimaryKey.AutoIncrement = false;
                 db.Insert(requeueJob);
                 monthDb.DeleteById<FailedJob>(failedJob.Id);
             }
-        }
-        finally
-        {
-            jobMetadata.PrimaryKey.AutoIncrement = true;
+            finally
+            {
+                jobMetadata.PrimaryKey.AutoIncrement = true;
+            }
         }
     }
 
