@@ -532,7 +532,7 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
 
     private object ReadHttpContent(System.Net.Http.HttpContent? content)
     {
-        content.LoadIntoBufferAsync().Wait(); //TODO find better way to buffer HttpContent so doesn't fail when reread from client
+        content?.LoadIntoBufferAsync().Wait(); //TODO find better way to buffer HttpContent so doesn't fail when reread from client
         
         var requestBody = content?.ReadAsString();
         if (requestBody == null) 
