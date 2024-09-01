@@ -1,6 +1,6 @@
 /* Options:
-Date: 2024-06-05 18:45:26
-Version: 8.23
+Date: 2024-09-01 13:46:12
+Version: 8.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 //AddServiceStackTypes: True
@@ -50,6 +50,261 @@ export class RedisEndpointInfo {
     username;
     /** @type {string} */
     password;
+}
+export class QueryBase {
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    skip;
+    /** @type {?number} */
+    take;
+    /** @type {string} */
+    orderBy;
+    /** @type {string} */
+    orderByDesc;
+    /** @type {string} */
+    include;
+    /** @type {string} */
+    fields;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+/** @typedef T {any} */
+export class QueryDb extends QueryBase {
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+}
+/** @typedef {'Queued'|'Started'|'Executed'|'Completed'|'Failed'|'Cancelled'} */
+export var BackgroundJobState;
+(function (BackgroundJobState) {
+    BackgroundJobState["Queued"] = "Queued"
+    BackgroundJobState["Started"] = "Started"
+    BackgroundJobState["Executed"] = "Executed"
+    BackgroundJobState["Completed"] = "Completed"
+    BackgroundJobState["Failed"] = "Failed"
+    BackgroundJobState["Cancelled"] = "Cancelled"
+})(BackgroundJobState || (BackgroundJobState = {}));
+export class ResponseError {
+    /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    errorCode;
+    /** @type {string} */
+    fieldName;
+    /** @type {string} */
+    message;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class ResponseStatus {
+    /** @param {{errorCode?:string,message?:string,stackTrace?:string,errors?:ResponseError[],meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    errorCode;
+    /** @type {string} */
+    message;
+    /** @type {string} */
+    stackTrace;
+    /** @type {ResponseError[]} */
+    errors;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+}
+export class BackgroundJobBase {
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    parentId;
+    /** @type {?string} */
+    refId;
+    /** @type {?string} */
+    worker;
+    /** @type {?string} */
+    tag;
+    /** @type {?string} */
+    batchId;
+    /** @type {?string} */
+    callback;
+    /** @type {?number} */
+    dependsOn;
+    /** @type {?string} */
+    runAfter;
+    /** @type {string} */
+    createdDate;
+    /** @type {?string} */
+    createdBy;
+    /** @type {?string} */
+    requestId;
+    /** @type {string} */
+    requestType;
+    /** @type {?string} */
+    command;
+    /** @type {string} */
+    request;
+    /** @type {string} */
+    requestBody;
+    /** @type {?string} */
+    userId;
+    /** @type {?string} */
+    response;
+    /** @type {?string} */
+    responseBody;
+    /** @type {BackgroundJobState} */
+    state;
+    /** @type {?string} */
+    startedDate;
+    /** @type {?string} */
+    completedDate;
+    /** @type {?string} */
+    notifiedDate;
+    /** @type {?number} */
+    retryLimit;
+    /** @type {number} */
+    attempts;
+    /** @type {number} */
+    durationMs;
+    /** @type {?number} */
+    timeoutSecs;
+    /** @type {?number} */
+    progress;
+    /** @type {?string} */
+    status;
+    /** @type {?string} */
+    logs;
+    /** @type {?string} */
+    lastActivityDate;
+    /** @type {?string} */
+    replyTo;
+    /** @type {?string} */
+    errorCode;
+    /** @type {?ResponseStatus} */
+    error;
+    /** @type {?{ [index: string]: string; }} */
+    args;
+    /** @type {?{ [index: string]: string; }} */
+    meta;
+}
+export class BackgroundJob extends BackgroundJobBase {
+    /** @param {{id?:number,id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {number} */
+    id;
+}
+export class JobSummary {
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,createdDate?:string,createdBy?:string,requestType?:string,command?:string,request?:string,response?:string,userId?:string,callback?:string,startedDate?:string,completedDate?:string,state?:BackgroundJobState,durationMs?:number,attempts?:number,errorCode?:string,errorMessage?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    parentId;
+    /** @type {?string} */
+    refId;
+    /** @type {?string} */
+    worker;
+    /** @type {?string} */
+    tag;
+    /** @type {?string} */
+    batchId;
+    /** @type {string} */
+    createdDate;
+    /** @type {?string} */
+    createdBy;
+    /** @type {string} */
+    requestType;
+    /** @type {?string} */
+    command;
+    /** @type {string} */
+    request;
+    /** @type {?string} */
+    response;
+    /** @type {?string} */
+    userId;
+    /** @type {?string} */
+    callback;
+    /** @type {?string} */
+    startedDate;
+    /** @type {?string} */
+    completedDate;
+    /** @type {BackgroundJobState} */
+    state;
+    /** @type {number} */
+    durationMs;
+    /** @type {number} */
+    attempts;
+    /** @type {?string} */
+    errorCode;
+    /** @type {?string} */
+    errorMessage;
+}
+export class BackgroundJobOptions {
+    /** @param {{refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number,args?:{ [index: string]: string; },runCommand?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    refId;
+    /** @type {?number} */
+    parentId;
+    /** @type {?string} */
+    worker;
+    /** @type {?string} */
+    runAfter;
+    /** @type {?string} */
+    callback;
+    /** @type {?number} */
+    dependsOn;
+    /** @type {?string} */
+    userId;
+    /** @type {?number} */
+    retryLimit;
+    /** @type {?string} */
+    replyTo;
+    /** @type {?string} */
+    tag;
+    /** @type {?string} */
+    batchId;
+    /** @type {?string} */
+    createdBy;
+    /** @type {?number} */
+    timeoutSecs;
+    /** @type {?{ [index: string]: string; }} */
+    args;
+    /** @type {?boolean} */
+    runCommand;
+}
+export class ScheduledTask {
+    /** @param {{id?:number,name?:string,interval?:string,cronExpression?:string,requestType?:string,command?:string,request?:string,requestBody?:string,options?:BackgroundJobOptions,lastRun?:string,lastJobId?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    name;
+    /** @type {?string} */
+    interval;
+    /** @type {?string} */
+    cronExpression;
+    /** @type {string} */
+    requestType;
+    /** @type {?string} */
+    command;
+    /** @type {string} */
+    request;
+    /** @type {string} */
+    requestBody;
+    /** @type {?BackgroundJobOptions} */
+    options;
+    /** @type {?string} */
+    lastRun;
+    /** @type {?number} */
+    lastJobId;
+}
+export class CompletedJob extends BackgroundJobBase {
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+}
+export class FailedJob extends BackgroundJobBase {
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
 }
 export class ValidateRule {
     /** @param {{validator?:string,condition?:string,errorCode?:string,message?:string}} [init] */
@@ -412,7 +667,7 @@ export class AuthInfo {
     meta;
 }
 export class ApiKeyInfo {
-    /** @param {{label?:string,httpHeader?:string,scopes?:string[],features?:string[],requestTypes?:string[],expiresIn?:KeyValuePair<string,string>[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{label?:string,httpHeader?:string,scopes?:string[],features?:string[],requestTypes?:string[],expiresIn?:KeyValuePair<string,string>[],hide?:string[],meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     label;
@@ -426,6 +681,8 @@ export class ApiKeyInfo {
     requestTypes;
     /** @type {KeyValuePair<string,string>[]} */
     expiresIn;
+    /** @type {string[]} */
+    hide;
     /** @type {{ [index: string]: string; }} */
     meta;
 }
@@ -584,7 +841,7 @@ export class MetadataType {
     meta;
 }
 export class CommandInfo {
-    /** @param {{name?:string,tag?:string,request?:MetadataType}} [init] */
+    /** @param {{name?:string,tag?:string,request?:MetadataType,response?:MetadataType}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -592,6 +849,8 @@ export class CommandInfo {
     tag;
     /** @type {MetadataType} */
     request;
+    /** @type {MetadataType} */
+    response;
 }
 export class CommandsInfo {
     /** @param {{commands?:CommandInfo[],meta?:{ [index: string]: string; }}} [init] */
@@ -1073,32 +1332,6 @@ export class ServerStats {
     /** @type {{ [index: string]: number; }} */
     mqWorkers;
 }
-export class ResponseError {
-    /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    errorCode;
-    /** @type {string} */
-    fieldName;
-    /** @type {string} */
-    message;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
-export class ResponseStatus {
-    /** @param {{errorCode?:string,message?:string,stackTrace?:string,errors?:ResponseError[],meta?:{ [index: string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    errorCode;
-    /** @type {string} */
-    message;
-    /** @type {string} */
-    stackTrace;
-    /** @type {ResponseError[]} */
-    errors;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-}
 export class DiagnosticEntry {
     /** @param {{id?:number,traceId?:string,source?:string,eventType?:string,message?:string,operation?:string,threadId?:number,error?:ResponseStatus,commandType?:string,command?:string,userAuthId?:string,sessionId?:string,arg?:string,args?:string[],argLengths?:number[],namedArgs?:{ [index: string]: Object; },duration?:string,timestamp?:number,date?:string,tag?:string,stackTrace?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1254,6 +1487,36 @@ export class PartialApiKey {
     meta;
     /** @type {boolean} */
     active;
+}
+export class JobStatSummary {
+    /** @param {{name?:string,total?:number,completed?:number,retries?:number,failed?:number,cancelled?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {number} */
+    total;
+    /** @type {number} */
+    completed;
+    /** @type {number} */
+    retries;
+    /** @type {number} */
+    failed;
+    /** @type {number} */
+    cancelled;
+}
+export class HourSummary {
+    /** @param {{hour?:string,total?:number,completed?:number,failed?:number,cancelled?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    hour;
+    /** @type {number} */
+    total;
+    /** @type {number} */
+    completed;
+    /** @type {number} */
+    failed;
+    /** @type {number} */
+    cancelled;
 }
 export class RequestLogEntry {
     /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,requestBody?:string,requestDto?:Object,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },session?:Object,responseDto?:Object,errorResponse?:Object,exceptionSource?:string,exceptionData?:any,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
@@ -1517,6 +1780,97 @@ export class EmptyResponse {
     /** @param {{responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class AdminJobDashboardResponse {
+    /** @param {{commands?:JobStatSummary[],apis?:JobStatSummary[],workers?:JobStatSummary[],today?:HourSummary[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {JobStatSummary[]} */
+    commands;
+    /** @type {JobStatSummary[]} */
+    apis;
+    /** @type {JobStatSummary[]} */
+    workers;
+    /** @type {HourSummary[]} */
+    today;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminJobInfoResponse {
+    /** @param {{monthDbs?:string[],tableCounts?:{ [index: string]: number; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string[]} */
+    monthDbs;
+    /** @type {{ [index: string]: number; }} */
+    tableCounts;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetJobResponse {
+    /** @param {{result?:JobSummary,queued?:BackgroundJob,completed?:CompletedJob,failed?:FailedJob,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {JobSummary} */
+    result;
+    /** @type {?BackgroundJob} */
+    queued;
+    /** @type {?CompletedJob} */
+    completed;
+    /** @type {?FailedJob} */
+    failed;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetJobProgressResponse {
+    /** @param {{state?:BackgroundJobState,progress?:number,status?:string,logs?:string,durationMs?:number,error?:ResponseStatus,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {BackgroundJobState} */
+    state;
+    /** @type {?number} */
+    progress;
+    /** @type {?string} */
+    status;
+    /** @type {?string} */
+    logs;
+    /** @type {?number} */
+    durationMs;
+    /** @type {?ResponseStatus} */
+    error;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+/** @typedef T {any} */
+export class QueryResponse {
+    /** @param {{offset?:number,total?:number,results?:T[],meta?:{ [index: string]: string; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    offset;
+    /** @type {number} */
+    total;
+    /** @type {T[]} */
+    results;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class AdminRequeueFailedJobsJobsResponse {
+    /** @param {{results?:number[],errors?:{ [index: number]: string; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number[]} */
+    results;
+    /** @type {{ [index: number]: string; }} */
+    errors;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminCancelJobsResponse {
+    /** @param {{results?:number[],errors?:{ [index: number]: string; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number[]} */
+    results;
+    /** @type {{ [index: number]: string; }} */
+    errors;
+    /** @type {?ResponseStatus} */
     responseStatus;
 }
 export class RequestLogsResponse {
@@ -1870,6 +2224,113 @@ export class AdminDeleteApiKey {
     getTypeName() { return 'AdminDeleteApiKey' }
     getMethod() { return 'DELETE' }
     createResponse() { return new EmptyResponse() }
+}
+export class AdminJobDashboard {
+    /** @param {{from?:string,to?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    from;
+    /** @type {?string} */
+    to;
+    getTypeName() { return 'AdminJobDashboard' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminJobDashboardResponse() }
+}
+export class AdminJobInfo {
+    /** @param {{month?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'AdminJobInfo' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminJobInfoResponse() }
+}
+export class AdminGetJob {
+    /** @param {{id?:number,refId?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    /** @type {?string} */
+    refId;
+    getTypeName() { return 'AdminGetJob' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetJobResponse() }
+}
+export class AdminGetJobProgress {
+    /** @param {{id?:number,logStart?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    logStart;
+    getTypeName() { return 'AdminGetJobProgress' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetJobProgressResponse() }
+}
+export class AdminQueryBackgroundJobs extends QueryDb {
+    /** @param {{id?:number,refId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    /** @type {?string} */
+    refId;
+    getTypeName() { return 'AdminQueryBackgroundJobs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminQueryJobSummary extends QueryDb {
+    /** @param {{id?:number,refId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    /** @type {?string} */
+    refId;
+    getTypeName() { return 'AdminQueryJobSummary' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminQueryScheduledTasks extends QueryDb {
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    getTypeName() { return 'AdminQueryScheduledTasks' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminQueryCompletedJobs extends QueryDb {
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'AdminQueryCompletedJobs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminQueryFailedJobs extends QueryDb {
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'AdminQueryFailedJobs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class AdminRequeueFailedJobs {
+    /** @param {{ids?:number[]}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number[]} */
+    ids;
+    getTypeName() { return 'AdminRequeueFailedJobs' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminRequeueFailedJobsJobsResponse() }
+}
+export class AdminCancelJobs {
+    /** @param {{ids?:number[]}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number[]} */
+    ids;
+    getTypeName() { return 'AdminCancelJobs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminCancelJobsResponse() }
 }
 export class RequestLogs {
     /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string}} [init] */
