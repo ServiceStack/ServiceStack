@@ -49,7 +49,7 @@ public class RequestLogsResponse
 public class RequestLogsService(IRequestLogger requestLogger) : Service
 {
     private static readonly Dictionary<string, string> Usage = new() {
-         {"int BeforeSecs",              "Requests before elapsed time"},
+        {"int BeforeSecs",              "Requests before elapsed time"},
         {"int AfterSecs",               "Requests after elapsed time"},
         {"string IpAddress",            "Requests matching Ip Address"},
         {"string ForwardedFor",         "Requests matching Forwarded Ip Address"},

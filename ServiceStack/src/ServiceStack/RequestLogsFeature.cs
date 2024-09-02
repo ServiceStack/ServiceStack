@@ -97,7 +97,7 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
     /// <summary>
     /// Ignore logging and serializing these Request DTOs
     /// </summary>
-    public List<Type> IgnoreTypes { get; set; } = new();
+    public List<Type> IgnoreTypes { get; set; } = [];
         
     /// <summary>
     /// Use custom Ignore Request DTO predicate
@@ -226,6 +226,11 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
                 DefaultLimit = DefaultLimit,
             };
         });
+
+        if (RequestLogger is IRequireRegistration requireRegistration)
+        {
+            requireRegistration.Register(appHost);
+        }
     }
 
     public void BeforePluginsLoaded(IAppHost appHost)

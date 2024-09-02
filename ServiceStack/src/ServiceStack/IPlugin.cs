@@ -102,6 +102,11 @@ public interface IPostInitPlugin
     void AfterPluginsLoaded(IAppHost appHost);
 }
 
+public interface IRequireRegistration
+{
+    void Register(IAppHost appHost);
+}
+
 /// <summary>
 /// Callback for AuthProviders to register callbacks with AuthFeature
 /// </summary>

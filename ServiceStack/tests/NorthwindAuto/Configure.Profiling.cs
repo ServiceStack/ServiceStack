@@ -3,7 +3,9 @@ using MyApp.ServiceInterface;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.IO;
+using ServiceStack.Jobs;
 using ServiceStack.Messaging;
+using ServiceStack.Web;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureProfiling))]
 
@@ -19,13 +21,18 @@ public class ConfigureProfiling : IHostingStartup
                 if (context.HostingEnvironment.IsDevelopment())
                 {
                     var vfs = new FileSystemVirtualFiles(context.HostingEnvironment.ContentRootPath);
+                    services.AddHostedService<RequestLogsHostedService>();
                     services.AddPlugin(new RequestLogsFeature
                     {
+                        RequestLogger = new SqliteRequestLogger(),
+                        /*
                         RequestLogger = new CsvRequestLogger(vfs,
                             "requestlogs/{year}-{month}/{year}-{month}-{day}.csv",
                             "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv",
                             TimeSpan.FromSeconds(1)
                         ),
+                        */
+
                         EnableResponseTracking = true,
                         EnableRequestBodyTracking = true,
                         EnableErrorTracking = true
@@ -73,5 +80,19 @@ public class ConfigureProfiling : IHostingStartup
 
                     host.Resolve<IMessageService>().Start();
                 });
+    }
+}
+
+
+public class RequestLogsHostedService(ILogger<RequestLogsHostedService> log, IRequestLogger requestLogger) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var dbRequestLogger = (SqliteRequestLogger)requestLogger;
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
+        while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+        {
+            dbRequestLogger.Tick(log);
+        }
     }
 }
