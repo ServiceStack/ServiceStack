@@ -371,7 +371,7 @@ export const EditUser = {
         
         const showForm = ref(true)
         function updateRequest(value) {
-            console.log('updateRequest', value)
+            console.debug('updateRequest', value)
         }
         
         return {

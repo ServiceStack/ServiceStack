@@ -351,8 +351,6 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             if (lastDuration is > 0)
             {
                 progress = Math.Min(1.0, Math.Round(durationMs / (double)lastDuration.Value, 2));
-                // log.LogInformation("progress {Current} / {LastDuration} = {Progress}", 
-                //     currentMs, lastDuration.Value, job.Progress);
             }
         }
         

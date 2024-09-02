@@ -234,6 +234,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public static RequestLogEntry ToRequestLogEntry(RequestLog from)
     {
+        // /admin-ui/logging expects string responses
         return new RequestLogEntry
         {
             Id = from.Id,

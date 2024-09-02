@@ -188,13 +188,10 @@ function configureMetadata(api) {
             const apis = new Apis();
             metaTypes = api
             metaTypes?.operations.forEach(op => {
-                console.log('op', op.request.name, op.dataModel?.name)
                 if (op.dataModel?.name === type) {
-                    console.log('adding ', op)
                     apis.add(op)
                 }
             })
-            console.log('apis', apis, apis.AnyQuery)
             return apis
         },
         apiResolver: (name) => {

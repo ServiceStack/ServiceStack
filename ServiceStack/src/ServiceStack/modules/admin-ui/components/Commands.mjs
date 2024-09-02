@@ -474,7 +474,7 @@ export const Commands = {
         }
         async function loadMore() {
             const shouldLoad = routes.tab === 'latest' || routes.tab === 'errors'
-            console.log('load more...', hasMore, shouldLoad)
+            console.debug('load more...', hasMore, shouldLoad)
             if (shouldLoad && hasMore) {
                 take += 50
                 loadingMore.value = true
