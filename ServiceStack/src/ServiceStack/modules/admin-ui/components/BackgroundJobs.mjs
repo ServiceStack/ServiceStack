@@ -1,5 +1,5 @@
 import { ref, computed, watch, onMounted, onUnmounted, provide, inject, nextTick } from "vue"
-import { humanize, queryString, setQueryString, toDate, leftPart, rightPart, pick, EventBus } from "@servicestack/client"
+import { humanize, queryString, setQueryString, toDate, leftPart, rightPart, pick, omit, EventBus } from "@servicestack/client"
 import { useClient, useUtils, useFormatters } from "@servicestack/vue"
 import { AdminJobInfo, AdminGetJob, AdminGetJobProgress, AdminCancelJobs, AdminRequeueFailedJobs, AdminJobDashboard } from "dtos"
 import { Chart, registerables } from 'chart.js'
@@ -23,7 +23,7 @@ function getStats() {
 }
 async function updateStats() {
     const { swrApi } = useUtils()
-    console.log('updateStats', window.client)
+    console.debug('updateStats', !!window.client)
     if (window.client) {
         const prefs = getPrefs()
         swrApi(window.client, new AdminJobInfo({ month:prefs.monthDb }), r => {
@@ -230,7 +230,7 @@ const JobDialog = {
             <ErrorSummary :status="errorStatus" />
             <div class="mt-2 flex justify-between">
                 <div>
-                    <JobState class="pl-2" :state="job.state" />
+                    <JobState class="pl-2" :state="state" />
                     <HtmlFormat :value="basic" class="py-2 not-prose" />
                 </div>
                 <div class="pr-3 flex flex-col gap-y-3 items-end">
@@ -238,10 +238,10 @@ const JobDialog = {
                         <span @click="routes.to({edit:job.parentId})" class="cursor-pointer text-sm text-indigo-600 hover:text-indigo-700">{{job.parentId}}</span>
                         <svg class="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="currentColor" d="m21 4.094l-.72.687l-6 6l1.44 1.44L20 7.936V25H5v2h17V7.937l4.28 4.282l1.44-1.44l-6-6z"/></svg>
                     </div>
-                    <div v-if="job.state=='Cancelled' || job.state=='Failed'">
+                    <div v-if="state=='Cancelled' || state=='Failed'">
                         <SecondaryButton @click="requeueJob" :disabled="loading">Requeue</SecondaryButton>
                     </div>
-                    <div v-if="job.state=='Queued' || job.state=='Started'">
+                    <div v-if="state=='Queued' || state=='Started'">
                         <PrimaryButton color="red" @click="cancelJob" :disabled="loading">Cancel</PrimaryButton>
                     </div>
                     <div>
@@ -316,7 +316,7 @@ const JobDialog = {
                 <pre class="text-sm rounded py-2 px-3 bg-gray-800 text-gray-100">{{ logs }}</pre>                
               </div>
             </div>
-            <div v-if="isRunning(job.state)" class="flex items-center">
+            <div v-if="isRunning(state)" class="flex items-center">
                 <Loading class="m-2" imageClass="w-5 h-5"><div class="text-sm font-normal">Running... {{duration}}</div></Loading>
             </div>
             <div ref="bottom" class="bottom"></div>
@@ -334,21 +334,30 @@ const JobDialog = {
         const errorStatus = ref()
         const loading = ref(false)
         const isRunning = state => state === 'Queued' || state === 'Started'
-        const logs = ref(props.job.logs)
+        const logs = ref(props.job.logs || '')
+        const state = ref(props.job.state)
         const { formatDate, time } = useFormatters()
         function formatArgs(args) {
             Object.keys(args).forEach(key => {
                 if (key.endsWith('Date')) {
                     args[key] = formatDate(args[key]) + ' ' + time(args[key])
                 } else if (key === 'durationMs') {
-                    args['duration'] = formatMs(args[key])
-                    args.durationMs = undefined
+                    args['duration'] = duration.value
                 }
             })
-            return args
+            return omit(args, ['state', 'durationMs'])
         }
         const basic = computed(() => formatArgs(pick(props.job || {},
             'id,refId,tag,createdDate,worker,state,durationMs,completedDate,attempts,callback,replyTo')))
+        function updated(job) {
+            loading.value = false
+            logs.value = job.logs || ''
+            state.value = job.state
+            duration.value = formatMs(job.durationMs)
+            console.debug('updated', job, state.value)
+            emit('updated', job)
+        }
+        
         async function requeueJob() {
             errorStatus.value = null
             const api = await client.api(new AdminRequeueFailedJobs({ ids:[props.job.id] }))
@@ -356,17 +365,18 @@ const JobDialog = {
                 const errorKeys = Object.keys(api.response.errors ?? {}) 
                 if (errorKeys.length) {
                     errorStatus.value = api.response.errors[errorKeys[0]]
-                    console.log('errors', api.response.errors)
+                    console.debug('errors', api.response.errors)
                 } else {
                     while (true) {
                         loading.value = true
                         const apiRefresh = await client.api(new AdminGetJob({ id: props.job.id }))
                         const r = apiRefresh.response
                         const job = r.completed ?? r.failed ?? r.queued ?? r.result
+                        console.debug('requeue', job?.state, r.result.state)
                         if (job?.state === 'Queued' || job?.state === 'Started') {
-                            loading.value = false
-                            logs.value = job.logs || ''
-                            emit('updated', job)
+                            updated(job)
+                            clearTimeout(updateTimer)
+                            refresh()
                             return
                         }
                         await delay(500)
@@ -386,9 +396,7 @@ const JobDialog = {
                 const r = apiRefresh.response
                 const job = r.completed ?? r.failed ?? r.queued ?? r.result
                 if (job) {
-                    loading.value = false
-                    logs.value = job.logs
-                    emit('updated', job)
+                    updated(job)
                 }
             } else {
                 errorStatus.value = api.error
@@ -403,29 +411,28 @@ const JobDialog = {
             }
         }
         let updateTimer = null
-        async function update() {
-            if (isRunning(props.job.state)) {
-                if (!logs.value) logs.value = props.job.logs || ''
+        async function refresh() {
+            const running = isRunning(state.value)
+            console.debug('refresh', running)
+            if (running) {
+                //if (!logs.value) logs.value = props.job.logs || ''
                 const api = await client.api(new AdminGetJobProgress({ 
                     id: props.job.id,
                     logStart: logs.value.length
                 }))
                 if (api.response) {
                     const newLogs = logs.value + (api.response.logs || '')
-                    const newDuration = formatMs(api.response.durationMs ?? 0) 
-                    
-                    nextTick(() => {
-                        logs.value = newLogs
-                        duration.value = newDuration
-                    })
+                    const newDuration = formatMs(api.response.durationMs ?? 0)
+                    logs.value = newLogs
+                    state.value = api.response.state
+                    duration.value = newDuration
                     if (!isRunning(api.response.state)) {
                         const apiRefresh = await client.api(new AdminGetJob({ id: props.job.id }))
                         const r = apiRefresh.response
                         const job = r.completed ?? r.failed ?? r.queued ?? r.result
                         // console.log('apiRefresh',job)
                         if (job) {
-                            logs.value = job.logs
-                            emit('updated', job)
+                            updated(job)
                             scrollToBottom()
                             return
                         }
@@ -433,14 +440,14 @@ const JobDialog = {
                 }
                 scrollToBottom()
             }
-            updateTimer = setTimeout(update, 500)
+            updateTimer = setTimeout(refresh, 500)
         }
-        onMounted(update)
+        onMounted(refresh)
         onUnmounted(() => clearTimeout(updateTimer))
         
         return {
-            routes, bottom, error, hasItems, basic, logs, duration, errorStatus, loading,
-            prettyJson, isRunning, requeueJob, cancelJob, 
+            routes, bottom, error, basic, logs, state, duration, errorStatus, loading,
+            hasItems, prettyJson, isRunning, requeueJob, cancelJob, 
         }
     }
 }
@@ -480,7 +487,7 @@ const Queue = {
             <template #attempts="{attempts}">{{attempts}}</template>
             <template #errorCode="{errorCode,errorMessage}"><Markup :title="errorMessage">{{errorCode}}</Markup></template>
         </AutoQueryGrid>
-        <JobDialog v-if="edit" :job="edit" @done="routes.edit=null" @updated="job => edit = job" />
+        <JobDialog v-if="edit" :job="edit" @done="routes.edit=null" @updated="job => edit=job" />
     `,
     setup(props) {
         const routes = inject('routes')
@@ -551,7 +558,7 @@ const Summary = {
             if (routes.edit) {
                 const api = await client.api(new AdminGetJob({ id: routes.edit }))
                 if (api.succeeded) {
-                    console.log('api.response', api.response.result)
+                    console.debug('api.response', api.response.result)
                     const r = api.response
                     edit.value = r.completed ?? r.failed ?? r.queued ?? r.result
                     return
@@ -946,7 +953,6 @@ export const BackgroundJobs = {
         provide('info', info)
         
         function tabLabel(tab) {
-            //console.log('tab', tab)
             const count = tab === 'Queue'
                 ? info.value?.tableCounts['BackgroundJob']
                 : tab === 'History'
@@ -958,7 +964,7 @@ export const BackgroundJobs = {
         }
         let sub = bus.subscribe('stats:changed', () => info.value = getStats())
         onMounted(async () => {
-            console.log('onMounted')
+            console.debug('onMounted')
             updateStats()
             'JobSummary,CompletedJob,FailedJob'.split(',').forEach(table => {
                 const prefix = `Column/AutoQueryGrid:${table}.`
