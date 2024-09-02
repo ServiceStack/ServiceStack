@@ -167,7 +167,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     public object Any(AdminJobDashboard request)
     {
         var to = new AdminJobDashboardResponse();
-        using var db = jobs.OpenJobsDb();
+        using var db = jobs.OpenDb();
         var finishedStates = new[] { BackgroundJobState.Completed, BackgroundJobState.Failed, BackgroundJobState.Cancelled };
         Expression<Func<JobSummary,bool>> dateFilter = request is { From: not null, To: not null } 
             ? x => x.CreatedDate >= request.From && x.CreatedDate < request.To
@@ -267,7 +267,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             .OrderDescending()
             .ToList();
 
-        using var db = jobs.OpenJobsDb();
+        using var db = jobs.OpenDb();
         var dialect = db.GetDialectProvider();
 
         var tables = new (string Label, Type Type)[] 
@@ -285,7 +285,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             (nameof(CompletedJob), typeof(CompletedJob)),
             (nameof(FailedJob),    typeof(FailedJob)),
         };
-        using var monthDb = jobs.OpenJobsMonthDb(request.Month ?? DateTime.UtcNow);
+        using var monthDb = jobs.OpenMonthDb(request.Month ?? DateTime.UtcNow);
         var monthCounts = monthDb.Dictionary<string, int>(monthTables
             .Map(x => $"SELECT '{x.Label}', COUNT(*) FROM {dialect.GetQuotedTableName(x.Type.GetModelMetadata())}")
             .Join(" UNION "));
@@ -322,7 +322,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     public object Any(AdminGetJobProgress request)
     {
         var feature = AssertRequiredRole();
-        using var db = jobs.OpenJobsDb();
+        using var db = jobs.OpenDb();
         var job = db.SingleById<BackgroundJob>(request.Id);
         if (job == null)
         {
@@ -369,7 +369,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     public object Any(AdminQueryBackgroundJobs request)
     {
         var feature = AssertRequiredRole();
-        using var db = jobs.OpenJobsDb();
+        using var db = jobs.OpenDb();
         var q = autoQuery.CreateQuery(request, base.Request, db);
         var response = autoQuery.Execute(request, q, base.Request, db);
         foreach (var job in response.Results)
@@ -394,7 +394,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     public object Any(AdminQueryJobSummary request)
     {
         var feature = AssertRequiredRole();
-        using var db = jobs.OpenJobsDb();
+        using var db = jobs.OpenDb();
         var q = autoQuery.CreateQuery(request, base.Request, db);
         return autoQuery.Execute(request, q, base.Request, db);        
     }
@@ -402,7 +402,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     public object Any(AdminQueryScheduledTasks request)
     {
         var feature = AssertRequiredRole();
-        using var db = jobs.OpenJobsDb();
+        using var db = jobs.OpenDb();
         var q = autoQuery.CreateQuery(request, base.Request, db);
         return autoQuery.Execute(request, q, base.Request, db);        
     }
@@ -411,7 +411,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     {
         var feature = AssertRequiredRole();
         var month = request.Month ?? DateTime.UtcNow;
-        using var monthDb = jobs.OpenJobsMonthDb(month);
+        using var monthDb = jobs.OpenMonthDb(month);
         var q = autoQuery.CreateQuery(request, base.Request, monthDb);
         return autoQuery.Execute(request, q, base.Request, monthDb);        
     }
@@ -420,7 +420,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     {
         var feature = AssertRequiredRole();
         var month = request.Month ?? DateTime.UtcNow;
-        using var monthDb = jobs.OpenJobsMonthDb(month);
+        using var monthDb = jobs.OpenMonthDb(month);
         var q = autoQuery.CreateQuery(request, base.Request, monthDb);
         return autoQuery.Execute(request, q, base.Request, monthDb);        
     }

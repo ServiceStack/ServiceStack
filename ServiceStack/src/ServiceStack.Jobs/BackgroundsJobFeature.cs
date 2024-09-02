@@ -85,7 +85,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         if (AutoInitSchema)
         {
             InitSchema();
-            using var monthDb = OpenJobsMonthDb(DateTime.UtcNow);
+            using var monthDb = OpenMonthDb(DateTime.UtcNow);
             InitMonthDbSchema(monthDb);
         }
     }
@@ -125,12 +125,12 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         return dbFactory.OpenDbConnection(monthDb);
     }
 
-    public IDbConnection OpenJobsDb() => ResolveAppDb(DbFactory);
-    public IDbConnection OpenJobsMonthDb(DateTime createdDate) => ResolveMonthDb(DbFactory, createdDate);
+    public IDbConnection OpenDb() => ResolveAppDb(DbFactory);
+    public IDbConnection OpenMonthDb(DateTime createdDate) => ResolveMonthDb(DbFactory, createdDate);
 
     public void InitSchema()
     {
-        using var db = OpenJobsDb();
+        using var db = OpenDb();
         InitSchema(db);
     }
 

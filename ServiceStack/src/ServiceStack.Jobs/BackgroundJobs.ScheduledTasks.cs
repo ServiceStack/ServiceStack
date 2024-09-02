@@ -14,7 +14,7 @@ public partial class BackgroundJobs
     /// </summary>
     void LoadScheduledTasks()
     {
-        using var db = feature.OpenJobsDb();
+        using var db = feature.OpenDb();
         var tasks = db.Select<ScheduledTask>();
         foreach (var task in tasks)
         {
@@ -28,7 +28,7 @@ public partial class BackgroundJobs
     
     private void CreateOrUpdate(ScheduledTask task)
     {
-        using var db = feature.OpenJobsDb();
+        using var db = feature.OpenDb();
         lock (dbWrites)
         {
             var updated = db.UpdateOnly(() => new ScheduledTask
@@ -90,7 +90,7 @@ public partial class BackgroundJobs
     public void DeleteRecurringTask(string taskName)
     {
         namedScheduledTasks.Remove(taskName, out _);
-        using var db = OpenJobsDb();
+        using var db = OpenDb();
         lock (dbWrites)
         {
             db.Delete<ScheduledTask>(x => x.Name == taskName);
@@ -146,7 +146,7 @@ public partial class BackgroundJobs
         else throw new NotSupportedException("Unsupported RequestType: " + task.RequestType);
 
         task.LastRun = DateTime.UtcNow;
-        using var db = feature.OpenJobsDb();
+        using var db = feature.OpenDb();
         lock (dbWrites)
         {
             db.UpdateOnly(() => new ScheduledTask

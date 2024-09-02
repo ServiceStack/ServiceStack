@@ -1,4 +1,4 @@
-#nullable enable
+ #nullable enable
 
 using System;
 using System.Data;
@@ -27,8 +27,8 @@ public interface IBackgroundJobs
     Task TickAsync();
     Dictionary<string, int> GetWorkerQueueCounts();
     List<WorkerStats> GetWorkerStats();
-    IDbConnection OpenJobsDb();
-    IDbConnection OpenJobsMonthDb(DateTime createdDate);
+    IDbConnection OpenDb();
+    IDbConnection OpenMonthDb(DateTime createdDate);
     JobResult? GetJob(long jobId);
     JobResult? GetJobByRefId(string refId);
     object CreateRequest(BackgroundJobBase job);
