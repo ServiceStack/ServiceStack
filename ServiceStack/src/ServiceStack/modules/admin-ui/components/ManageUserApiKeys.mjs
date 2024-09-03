@@ -6,7 +6,7 @@ function arraysAreEqual(a, b) {
     if (!a || !b) return false
     return a.length === b.length && a.every((v, i) => v === b[i])
 }
-export const CreateApiKeyForm = {
+ export const CreateApiKeyForm = {
     template:`
       <div>
         <ModalDialog v-if="apiKey" size-class="w-96" @done="done">
@@ -143,7 +143,7 @@ export const CreateApiKeyForm = {
             submit, done }
     }
 }
-const EditApiKeyForm = {
+export const EditApiKeyForm = {
     template:`
         <div>
           <form @submit="submit" :class="css.card.panelClass">

@@ -146,7 +146,7 @@ function arraysAreEqual(a, b) {
     }
 }
 
-const EditApiKeyForm = {
+export const EditApiKeyForm = {
     template:`
         <div>
           <form @submit="submit" :class="css.card.panelClass">
