@@ -535,7 +535,8 @@ const Queue = {
         let updateTimer = null
         async function updateGrid(){
             if (grid.value) {
-                await grid.value.search()
+                const take = grid.value.apiPrefs?.take ?? 25
+                await grid.value.search({ include:'total', take })
             }
             updateTimer = setTimeout(updateGrid, 1000)
         }
