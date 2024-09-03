@@ -42,7 +42,7 @@ events.publish('route:nav',args)}
 let events=app.events
 let store={page,queryKeys,...each(allKeys,(o,x)=>o[x]=''),start(){window.addEventListener('popstate',(event)=>{this.set({[page]:getPage(),...event.state})
 publish('init',state(this))})
-console.log('routes.start()',page,getPage())
+console.debug('routes.start()',page,getPage())
 this.set({[page]:getPage(),...(location.search?queryString(location.search):{})})
 publish('init',state(this))},set(args){if(typeof args['$page']!='undefined'){this[page]=args[page]=args['$page']}
 if(args['$clear']){allKeys.forEach(k=>this[k]=args[k]!=null?args[k]:'')}else{Object.keys(args).forEach(k=>{if(allKeys.indexOf(k)>=0){this[k]=args[k]}})}},get state(){return state(this)},to(args){this.set(args)

@@ -8,7 +8,7 @@ function arraysAreEqual(a, b) {
     return a.length === b.length && a.every((v, i) => v === b[i])
 }
 
-const CreateApiKeyForm = {
+ export const CreateApiKeyForm = {
     template:`
       <div>
         <ModalDialog v-if="apiKey" size-class="w-96" @done="done">
@@ -322,7 +322,7 @@ const EditApiKeyForm = {
     }
 }
 
-const ManageUserApiKeys = {
+export const ManageUserApiKeys = {
     components: {
         CreateApiKeyForm,
         EditApiKeyForm,
@@ -429,6 +429,6 @@ const ManageUserApiKeys = {
     }
 }
 
-function install(app) {
+export function install(app) {
     app.components({ CreateApiKeyForm, EditApiKeyForm })
 }

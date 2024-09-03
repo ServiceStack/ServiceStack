@@ -85,7 +85,7 @@ export class App {
 }
 
 /**
- * @template {Record<<string,Function>} T
+ * @template {Record<string,Function>} T
  * Maintain page route state:
  *  - /{pageKey}?{queryKeys}
  * @remarks
@@ -132,7 +132,7 @@ export function usePageRoutes(app, { page, queryKeys, handlers, extend }) {
                 this.set({ [page]:getPage(), ...event.state})
                 publish('init', state(this))
             })
-            console.log('routes.start()', page, getPage())
+            console.debug('routes.start()', page, getPage())
             
             this.set({ [page]:getPage(), ...(location.search ? queryString(location.search) : {}) })
             publish('init', state(this))

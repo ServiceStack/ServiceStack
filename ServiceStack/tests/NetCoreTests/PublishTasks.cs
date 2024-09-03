@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack;
@@ -18,8 +11,8 @@ using ServiceStack.IO;
 using ServiceStack.Jobs;
 using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
-using ServiceStack.Testing;
 using ServiceStack.Text;
+using System.Text;
 
 namespace NetCoreTests;
 

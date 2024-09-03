@@ -6,7 +6,7 @@ function arraysAreEqual(a, b) {
     if (!a || !b) return false
     return a.length === b.length && a.every((v, i) => v === b[i])
 }
-const CreateApiKeyForm = {
+export const CreateApiKeyForm = {
     template:`
       <div>
         <ModalDialog v-if="apiKey" size-class="w-96" @done="done">
@@ -310,7 +310,7 @@ const EditApiKeyForm = {
             submit, submitDelete, submitDisable, submitEnable }
     }
 }
-const ManageUserApiKeys = {
+export const ManageUserApiKeys = {
     components: {
         CreateApiKeyForm,
         EditApiKeyForm,
@@ -415,6 +415,6 @@ const ManageUserApiKeys = {
         return { css, renderKey, id, userName, columns, show, api, toggleDialog, done, formatDate, relativeTime, selected, rowSelected }
     }
 }
-function install(app) {
+export function install(app) {
     app.components({ CreateApiKeyForm, EditApiKeyForm })
 }
