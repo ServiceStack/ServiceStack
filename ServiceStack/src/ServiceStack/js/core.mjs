@@ -40,7 +40,7 @@ function state(store){return each(allKeys,(o,key)=>store[key]?o[key]=store[key]:
 let publish=(name,args)=>{events.publish('route:'+name,args)
 events.publish('route:nav',args)}
 let events=app.events
-let store={page,queryKeys,...each(allKeys,(o,x)=>o[x]=''),start(){window.addEventListener('popstate',(event)=>{this.set({[page]:getPage(),...event.state})
+let store={page,queryKeys,...each(allKeys,(o,x)=>o[x]=''),start(){window.addEventListener('popstate',(event)=>{this.set({[page]:getPage(),...event.state,$clear:true})
 publish('init',state(this))})
 console.debug('routes.start()',page,getPage())
 this.set({[page]:getPage(),...(location.search?queryString(location.search):{})})

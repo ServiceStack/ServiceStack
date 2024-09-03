@@ -129,7 +129,7 @@ export function usePageRoutes(app, { page, queryKeys, handlers, extend }) {
         ...each(allKeys, (o,x) => o[x] = ''),
         start() {
             window.addEventListener('popstate', (event) => {
-                this.set({ [page]:getPage(), ...event.state})
+                this.set({ [page]:getPage(), ...event.state, $clear:true})
                 publish('init', state(this))
             })
             console.debug('routes.start()', page, getPage())
