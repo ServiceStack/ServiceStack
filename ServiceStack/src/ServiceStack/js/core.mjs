@@ -105,7 +105,7 @@ let sort1=group?group+map(SORT_METHODS.indexOf(op.method||'ANY'),x=>x===-1?'':x.
 return sort1+`_`+op.request.name}
 export function sortOps(ops){ops.sort((a,b)=>opSortName(a).localeCompare(opSortName(b)))
 return ops}
-let defaultIcon=globalThis.Server.ui.theme.modelIcon||{svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12v6s0 3 7 3s7-3 7-3v-6"/><path d="M5 6v6s0 3 7 3s7-3 7-3V6"/><path d="M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z"/></g></svg>`}
+let defaultIcon=globalThis.Server?.ui.theme.modelIcon||{svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12v6s0 3 7 3s7-3 7-3v-6"/><path d="M5 6v6s0 3 7 3s7-3 7-3V6"/><path d="M12 3c7 0 7 3 7 3s0 3-7 3s-7-3-7-3s0-3 7-3Z"/></g></svg>`}
 export function getIcon({op,type}){if(op){let img=op.request.icon||typeOfRef(op.viewModel)?.icon||typeOfRef(op.dataModel)?.icon
 if(img)
 return img}
