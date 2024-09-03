@@ -48,7 +48,7 @@ export const ApiKeys = {
           </div>
         </form>
         <CreateApiKeyForm v-if="routes.new" @done="done" class="mt-2 max-w-screen-md" :key="renderKey" />
-        <EditApiKeyForm v-else-if="routes.edit" :id="routes.edit" @done="done" class="mt-2 max-w-screen-md" :key="renderKey" />
+        <EditApiKeyForm v-else-if="routes.edit" :id="routes.edit" @done="done" class="mt-2 max-w-screen-md" :key="renderKey+1000" />
         <div class="w-full overflow-scroll px-1 -ml-1">
           <DataGrid v-if="results.length" :items="results"
                     @row-selected="rowSelected" :is-selected="row => routes.edit === row.id"

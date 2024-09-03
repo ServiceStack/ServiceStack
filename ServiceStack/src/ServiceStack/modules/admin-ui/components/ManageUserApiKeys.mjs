@@ -324,7 +324,7 @@ export const ManageUserApiKeys = {
             Create API Key
           </SecondaryButton>
           <CreateApiKeyForm v-if="show==='CreateApiKeyForm'" :userId="id" :userName="userName" @done="done" class="mt-2" :key="renderKey" />
-          <EditApiKeyForm v-else-if="selected" :id="selected" @done="done" class="mt-2" :key="renderKey" />
+          <EditApiKeyForm v-else-if="selected" :id="selected" @done="done" class="mt-2" :key="renderKey+1000" />
         </div>
         <div class="w-full overflow-auto px-1 -ml-1">
             <DataGrid v-if="api.response?.results?.length" :items="api.response.results"
