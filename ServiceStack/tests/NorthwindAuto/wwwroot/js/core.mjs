@@ -26,6 +26,11 @@ export class App {
     OnStart = []
     Components = {}
 
+    provide(name,provider) {
+        if (provider)
+            this.Providers[name] = provider
+        return this.Providers[name]
+    }
     provides(providers) {
         Object.keys(providers).forEach(k => this.Providers[k] = providers[k])
     }

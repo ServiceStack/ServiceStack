@@ -330,7 +330,7 @@ const JobDialog = {
             </div>
             <div v-if="logs" class="flex overflow-auto">
               <div class="pt-2 px-2 relative w-full">
-                <pre class="text-sm rounded py-2 px-3 bg-gray-800 text-gray-100">{{ logs }}</pre>                
+                <pre class="m-0 text-sm rounded py-2 px-3 bg-gray-800 text-gray-100">{{ logs }}</pre>                
               </div>
             </div>
             <div v-if="isRunning(state)" class="flex items-center">

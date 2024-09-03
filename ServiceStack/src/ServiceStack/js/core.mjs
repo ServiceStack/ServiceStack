@@ -11,6 +11,9 @@ Directives={}
 Props={}
 OnStart=[]
 Components={}
+provide(name,provider){if(provider)
+this.Providers[name]=provider
+return this.Providers[name]}
 provides(providers){Object.keys(providers).forEach(k=>this.Providers[k]=providers[k])}
 components(components){Object.keys(components).forEach(k=>this.Components[k]=components[k])}
 component(name,c){if(c){this.Components[name]=c}
