@@ -112,7 +112,7 @@ public class JwtAuthProvider : JwtAuthProviderReader, IAuthResponseFilter
         if (UseTokenCookie && authContext.Result.Cookies.All(x => x.Name != Keywords.RefreshTokenCookie)
                            && EnableRefreshToken())
         {
-            var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.Id, ExpireRefreshTokensIn);
+            var refreshToken = CreateJwtRefreshToken(authContext.Request, authContext.Session.UserAuthId, ExpireRefreshTokensIn);
             authContext.Result.AddCookie(authContext.Request,
                 new Cookie(Keywords.RefreshTokenCookie, refreshToken, Cookies.RootPath) {
                     HttpOnly = true,
