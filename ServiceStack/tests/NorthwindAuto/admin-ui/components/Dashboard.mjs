@@ -194,8 +194,9 @@ export const Dashboard = {
             profiling:'Profiling', 
             database:'Database', 
             redis:'Redis',
-            commands:'Commands',
             apikeys:'API Keys',
+            commands:'Commands',
+            backgroundjobs:'Background Jobs',
         }))
         
         function isRegistered(id) {
