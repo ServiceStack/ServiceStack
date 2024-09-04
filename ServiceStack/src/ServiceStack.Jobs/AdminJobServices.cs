@@ -103,6 +103,7 @@ public class AdminCancelJobs : IGet, IReturn<AdminCancelJobsResponse>
 {
     [Input(Type = "tag"), FieldCss(Field = "col-span-12")]
     public List<long>? Ids { get; set; }
+    public string? Worker { get; set; }
 }
 public class AdminCancelJobsResponse
 {
@@ -461,6 +462,10 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
                     ? "Job not found"
                     : "Can only cancel incomplete jobs";
             }
+        }
+        if (request.Worker != null)
+        {
+            jobs.CancelWorker(request.Worker);
         }
         return to;
     }
