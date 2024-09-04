@@ -351,7 +351,7 @@ const JobDialog = {
         const duration = ref(formatMs(props.job.durationMs))
         const errorStatus = ref()
         const loading = ref(false)
-        const isRunning = state => state === 'Queued' || state === 'Started'
+        const isRunning = state => state === 'Queued' || state === 'Started' || state === 'Executed'
         const logs = ref(props.job.logs || '')
         const state = ref(props.job.state)
         const { formatDate, time } = useFormatters()
@@ -392,7 +392,7 @@ const JobDialog = {
                         const r = apiRefresh.response
                         const job = r.completed ?? r.failed ?? r.queued ?? r.result
                         console.debug('requeue', job?.state, r.result.state)
-                        if (job?.state === 'Queued' || job?.state === 'Started') {
+                        if (job?.state === 'Queued' || job?.state === 'Started' || job?.state === 'Executed') {
                             updated(job)
                             clearTimeout(updateTimer)
                             refresh()

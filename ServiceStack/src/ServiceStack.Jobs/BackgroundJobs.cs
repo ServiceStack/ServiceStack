@@ -648,15 +648,36 @@ public partial class BackgroundJobs : IBackgroundJobs
                     return;
                 }
                 
-                job.NotifiedDate = DateTime.UtcNow;
+                job.LastActivityDate = job.NotifiedDate = DateTime.UtcNow;
                 job.Progress = 1;
+                job.State = BackgroundJobState.Completed;
+                if (job.StartedDate != null)
+                    job.DurationMs = (int)(job.NotifiedDate.Value - job.StartedDate!.Value).TotalMilliseconds;
+
+                using var db = OpenDb();
+                lock (dbWrites)
+                {
+                    db.UpdateOnly(() => new BackgroundJob {
+                        NotifiedDate = job.NotifiedDate,
+                        Progress = job.Progress,
+                        State = job.State,
+                        LastActivityDate = job.LastActivityDate,
+                        DurationMs = job.DurationMs,
+                    }, where:x => x.Id == job.Id);
+                    db.UpdateOnly(() => new JobSummary {
+                        State = job.State,
+                        DurationMs = job.DurationMs,
+                    }, where:x => x.Id == job.Id);
+                }
             }
             catch (Exception ex)
             {
+                PerformDbUpdates();
                 FailJob(job, ex, shouldRetry:false);
                 return;
             }
         }
+        PerformDbUpdates();
         ArchiveJob(job);
     }
 
