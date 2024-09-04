@@ -1111,13 +1111,20 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     public Task TickAsync()
     {
-        Interlocked.Increment(ref ticks);
-        if (log.IsEnabled(LogLevel.Debug))
-            log.LogDebug("JOBS Tick {Ticks}", ticks);
+        try
+        {
+            Interlocked.Increment(ref ticks);
+            if (log.IsEnabled(LogLevel.Debug))
+                log.LogDebug("JOBS Tick {Ticks}", ticks);
 
-        DispatchPendingJobs();
-        PerformDbUpdates();
-        ExecuteDueScheduledTasks();
+            DispatchPendingJobs();
+            PerformDbUpdates();
+            ExecuteDueScheduledTasks();
+        }
+        catch (Exception e)
+        {
+            log.LogError(e, "JOBS {Ticks} Tick Failed: {Message}", ticks, e.Message);
+        }
         return Task.CompletedTask;
     }
 
