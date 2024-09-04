@@ -163,11 +163,15 @@ public class ServiceMetadata(List<RestPath> restPaths)
             "ServiceStack.CrudTablesService",
             "ServiceStack.CrudCodeGenTypesService",
             "ServiceStack.AdminDatabaseService",
+            "ServiceStack.AdminApiKeysService",
+            "ServiceStack.UserApiKeysService",
             // ServiceStack.Extensions
             "ServiceStack.Auth.ConvertSessionToTokenService",
             "ServiceStack.Auth.GetAccessTokenIdentityService",
             "ServiceStack.Auth.IdentityAssignRolesService",
             "ServiceStack.Auth.IdentityUnAssignRolesService",
+            // ServiceStack.Jobs
+            "ServiceStack.Jobs.AdminJobServices",
         ];
 
         //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
