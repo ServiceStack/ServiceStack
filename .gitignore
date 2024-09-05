@@ -73,3 +73,4 @@ src/ServiceStack/Properties/Resources.resources
 src/ServiceStack.userprefs
 *.xap
 src/ServiceStack.sln.DotSettings
+ServiceStack/tests/NorthwindAuto/Configure.secrets.cs
