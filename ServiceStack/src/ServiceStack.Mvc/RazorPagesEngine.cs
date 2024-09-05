@@ -130,7 +130,8 @@ public class RazorPagesEngine
         using var ms = MemoryStreamFactory.GetStream();
         await WriteHtmlAsync(ms, page, model);
         ms.Position = 0;
-        var html = Encoding.UTF8.GetString((await ms.ReadFullyAsMemoryAsync(token)).Span);
+        var mem = await ms.ReadFullyAsMemoryAsync(token);
+        var html = Encoding.UTF8.GetString(mem.Span);
         return html;
     }
     
