@@ -638,6 +638,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                 if (command is IRequiresRequest requiresRequest)
                     requiresRequest.Request = reqCtx;
 
+                var retryLimit = job.RetryLimit ?? feature.DefaultRetryLimit;
                 CommandResult? commandResult;
                 var i = 0;
                 do
@@ -649,7 +650,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                         continue;
                     }
                     break;
-                } while (i++ < feature.DefaultRetryLimit && feature.ShouldRetry(job, commandResult.Exception));
+                } while (i++ < retryLimit && feature.ShouldRetry(job, commandResult.Exception));
 
                 if (commandResult.Exception != null)
                 {
