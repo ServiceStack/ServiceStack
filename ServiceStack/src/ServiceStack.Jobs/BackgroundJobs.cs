@@ -638,13 +638,16 @@ public partial class BackgroundJobs : IBackgroundJobs
                 if (command is IRequiresRequest requiresRequest)
                     requiresRequest.Request = reqCtx;
 
-                CommandResult? commandResult = null;
+                CommandResult? commandResult;
                 var i = 0;
                 do
                 {
                     commandResult = await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto, ct);
                     if (commandResult.Exception != null)
+                    {
+                        await ExecUtils.DelayBackOffMultiplierAsync(i);
                         continue;
+                    }
                     break;
                 } while (i++ < feature.DefaultRetryLimit && feature.ShouldRetry(job, commandResult.Exception));
 
