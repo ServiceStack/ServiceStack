@@ -64,25 +64,37 @@ public class CheckUrlsCommand(
         using var client = httpClientFactory.CreateClient();
         // Set a timeout of 3 seconds for each request
         client.Timeout = TimeSpan.FromSeconds(3);
+        var batchId = Guid.NewGuid().ToString("N");
 
         foreach (var url in request.Urls.Where(x => !string.IsNullOrEmpty(x.Trim())))
         {
-            try
-            {
-                var testUrl = url.Trim();
-                log.LogInformation("Checking {Url}", testUrl);
-                // Send a HEAD request to check if the URL is up
-                var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url), token);
-                result.UrlStatuses[url] = response.IsSuccessStatusCode;
-                log.LogInformation("{Url} is {Status}", testUrl, response.IsSuccessStatusCode ? "up" : "down");
-                await Task.Delay(1000, token);
-            }
-            catch (Exception e)
-            {
-                log.LogError(e, "Error checking url {Url}: {Message}", url, e.Message);
-                // If an exception occurs (e.g., network error), consider the URL as down
-                result.UrlStatuses[url] = false;
-            }
+            var testUrl = url.Trim();
+            log.LogInformation("Checking {Url}", testUrl);
+            // Send a HEAD request to check if the URL is up
+            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url), token);
+            response.EnsureSuccessStatusCode();
+
+            result.UrlStatuses[url] = response.IsSuccessStatusCode;
+            log.LogInformation("{Url} is {Status}", testUrl, response.IsSuccessStatusCode ? "up" : "down");
+
+            jobs.EnqueueCommand<SendEmailCommand>(new SendEmail {
+                To = "demis.bellot@gmail.com",
+                Subject = $"{testUrl} status",
+                BodyText = $"{testUrl} is " + (response.IsSuccessStatusCode ? "up" : "down"),
+            }, new() {
+                DependsOn = job.Id,
+                BatchId = batchId,
+            });
+            await Task.Delay(1000, token);
+            // try
+            // {
+            // }
+            // catch (Exception e)
+            // {
+            //     log.LogError(e, "Error checking url {Url}: {Message}", url, e.Message);
+            //     // If an exception occurs (e.g., network error), consider the URL as down
+            //     result.UrlStatuses[url] = false;
+            // }
         }
         
         log.LogInformation("Finished checking URLs, {Up} up, {Down} down", 
