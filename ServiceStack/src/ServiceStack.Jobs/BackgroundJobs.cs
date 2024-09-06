@@ -68,10 +68,16 @@ public partial class BackgroundJobs : IBackgroundJobs
         var job = options.ToBackgroundJob(CommandResult.Api, requestDto);
         return RecordAndDispatchJob(job);
     }
+ 
+    readonly HashSet<Type> uniqueCommandTypes = new();
 
     public BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null)
     {
         var commandInfo = AssertCommand(commandName);
+        uniqueCommandTypes.Add(commandInfo.Type);
+        if (uniqueCommandTypes.Count > LicenseUtils.FreeQuotas.JobCommandTypes)
+            LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Commands, uniqueCommandTypes.Count);
+        
         var workerAttr = commandInfo.Type.FirstAttribute<WorkerAttribute>();
         if (workerAttr != null)
         {

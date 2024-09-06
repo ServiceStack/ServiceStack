@@ -83,6 +83,7 @@ public enum QuotaType
     RequestsPerHour, //Redis
     Tables,          //OrmLite, Aws
     PremiumFeature,  //AdminUI, Advanced Redis APIs, etc
+    Commands,        //Jobs
 }
 
 /// <summary>
@@ -155,6 +156,7 @@ public static class LicenseUtils
         internal const string ExceededOrmLiteTables = "The free-quota limit on '{0} OrmLite Tables' has been reached." + UpgradeInstructions;
         internal const string ExceededAwsTables = "The free-quota limit on '{0} AWS Tables' has been reached." + UpgradeInstructions;
         internal const string ExceededServiceStackOperations = "The free-quota limit on '{0} ServiceStack Operations' has been reached." + UpgradeInstructions;
+        internal const string ExceededJobCommandTypes = "The free-quota limit on '{0} ServiceStack.Jobs Command Types' has been reached." + UpgradeInstructions;
         internal const string ExceededAdminUi = "The Admin UI is a commercial-only premium feature." + UpgradeInstructions;
         internal const string ExceededPremiumFeature = "Unauthorized use of a commercial-only premium feature." + UpgradeInstructions;
         public const string UnauthorizedAccessRequest = "Unauthorized access request of a licensed feature.";
@@ -168,6 +170,7 @@ public static class LicenseUtils
         public const int RedisRequestPerHour = 6000;
         public const int OrmLiteTables = 10;
         public const int AwsTables = 10;
+        public const int JobCommandTypes = 10;
         public const int PremiumFeature = 0;
     }
 
@@ -556,6 +559,9 @@ public static class LicenseUtils
                 {
                     case QuotaType.Operations:
                         ApprovedUsage(FreeQuotas.ServiceStackOperations, count, ErrorMessages.ExceededServiceStackOperations);
+                        return;
+                    case QuotaType.Commands:
+                        ApprovedUsage(FreeQuotas.JobCommandTypes, count, ErrorMessages.ExceededJobCommandTypes);
                         return;
                 }
                 break;
