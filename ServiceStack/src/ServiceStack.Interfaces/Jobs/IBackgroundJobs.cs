@@ -113,6 +113,12 @@ public class BackgroundJobOptions
     public virtual string? BatchId { get; set; }
     public string? CreatedBy { get; set; }
     public int? TimeoutSecs { get; set; }
+    public TimeSpan? Timeout
+    {
+        get => TimeoutSecs.HasValue ? TimeSpan.FromSeconds(TimeoutSecs.Value) : null;
+        set => TimeoutSecs = value.HasValue ? (int)value.Value.TotalSeconds : null;
+    }
+    
     public Dictionary<string, string>? Args { get; set; } //= Provider
 
     /// <summary>
