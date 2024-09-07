@@ -36,7 +36,6 @@ public abstract class BackgroundJobBase : IMeta
     /// Only run Job after date
     /// </summary>
     public virtual DateTime? RunAfter { get; set; }
-    [Index]
     public virtual DateTime CreatedDate { get; set; }
     public virtual string? CreatedBy { get; set; }
     /// <summary>
@@ -138,6 +137,7 @@ public class JobSummary
     public virtual string? Worker { get; set; }
     public virtual string? Tag { get; set; }
     public virtual string? BatchId { get; set; }
+    [Index]
     public virtual DateTime CreatedDate { get; set; }
     public virtual string? CreatedBy { get; set; }
     public virtual string RequestType { get; set; } // API or CMD
