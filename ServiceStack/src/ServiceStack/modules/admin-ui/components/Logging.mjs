@@ -2,14 +2,25 @@ import { computed, inject, onMounted, onUnmounted, ref } from "vue"
 import {
     ApiResult, map, apiValueFmt, humanize, toPascalCase, fromXsdDuration, parseCookie
 } from "@servicestack/client"
-import { useClient } from "@servicestack/vue"
+import { useClient, useFormatters } from "@servicestack/vue"
 import { keydown } from "app"
 import { RequestLogs } from "dtos"
 import { prettyJson, parseJsv, hasItems } from "core"
 export const Logging = {
     template:/*html*/`
+  <div v-if="useAutoQuery">
+    <AutoQueryGrid :ref="grid" type="RequestLog"
+        selectedColumns="id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration"
+        :headerTitles="{statusCode:'Status',httpMethod:'Method',operationName:'Operation',userAuthId:'UserId',ipAddress:'IP',requestDuration:'Duration'}"
+        @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id">
+      <template #requestDuration="{requestDuration}">
+        <span :title="requestDuration">{{ valueFmt(requestDuration,'requestDuration') }}</span>
+      </template>
+    </AutoQueryGrid>
+  </div>
+  <div v-else>
     <div class="mb-2 flex flex-wrap">
-    <span class="relative z-0 inline-flex shadow-sm rounded-md">
+        <span class="relative z-0 inline-flex shadow-sm rounded-md">
           <button v-href="href({ withErrors:!routes.withErrors })" type="button"
                   class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
               Has Errors
@@ -19,16 +30,16 @@ export const Logging = {
               Has Response
           </button>
         </span>
-    <div v-if="hasFilters" class="px-2">
-      <button type="button" @click="clearFilters" title="Reset Filters"
-              class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
-          <path fill="currentColor"
-                d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z"/>
-        </svg>
-      </button>
-    </div>
-    <span class="px-2 relative z-0 inline-flex shadow-sm rounded-md">
+      <div v-if="hasFilters" class="px-2">
+        <button type="button" @click="clearFilters" title="Reset Filters"
+                class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+            <path fill="currentColor"
+                  d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z"/>
+          </svg>
+        </button>
+      </div>
+      <span class="px-2 relative z-0 inline-flex shadow-sm rounded-md">
           <button type="button" :class="[canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400',
                 'relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
                   title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
@@ -51,51 +62,51 @@ export const Logging = {
           </button>
         </span>
     </div>
-    
     <section>
-    <div class="flex flex-col">
-      <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="py-2 align-middle inline-block sm:px-6 lg:px-8">
-          <div v-if="results.length" class="md:shadow border-b border-gray-200 md:rounded-lg">
-            <table class="divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-              <tr>
-                <th v-for="k in uniqueKeys"
-                    v-href="{ orderBy:routes.orderBy === k ? ('-' + k) : routes.orderBy === ('-' + k) ? '' : k }"
-                    class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  <div class="flex">
-                    <span class="mr-1 select-none">{{ keyFmt(fieldLabels[k] || k) }}</span>
-                    <svg class="w-4 h-4" v-if="routes.orderBy===k" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                      <g fill="none">
-                        <path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor"/>
-                      </g>
-                    </svg>
-                    <svg class="w-4 h-4" v-else-if="routes.orderBy===('-' + k)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                      <g fill="none">
-                        <path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor"/>
-                      </g>
-                    </svg>
-                    <span v-else class="w-4 h-4"></span>
-                  </div>
-                </th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
-                  :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : statusBackground(row.statusCode,index) + ' hover:bg-yellow-50']">
-                <td v-for="k in uniqueKeys" :key="k" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <span :title="row[k]">{{ valueFmt(row[k], k) }}</span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-          <div v-else-if="api && api.completed">
-            <h3 class="p-2">No Results</h3>
+      <div class="flex flex-col">
+        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div class="py-2 align-middle inline-block sm:px-6 lg:px-8">
+            <div v-if="results.length" class="md:shadow border-b border-gray-200 md:rounded-lg">
+              <table class="divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                  <th v-for="k in uniqueKeys"
+                      v-href="{ orderBy:routes.orderBy === k ? ('-' + k) : routes.orderBy === ('-' + k) ? '' : k }"
+                      class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    <div class="flex">
+                      <span class="mr-1 select-none">{{ keyFmt(fieldLabels[k] || k) }}</span>
+                      <svg class="w-4 h-4" v-if="routes.orderBy===k" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <g fill="none">
+                          <path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor"/>
+                        </g>
+                      </svg>
+                      <svg class="w-4 h-4" v-else-if="routes.orderBy===('-' + k)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <g fill="none">
+                          <path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor"/>
+                        </g>
+                      </svg>
+                      <span v-else class="w-4 h-4"></span>
+                    </div>
+                  </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
+                    :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : statusBackground(row.statusCode,index) + ' hover:bg-yellow-50']">
+                  <td v-for="k in uniqueKeys" :key="k" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span :title="row[k]">{{ valueFmt(row[k], k) }}</span>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-else-if="api && api.completed">
+              <h3 class="p-2">No Results</h3>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+  </div>
         
     <div v-if="selected" class="relative z-20" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
       <div class="fixed overflow-hidden">
@@ -346,6 +357,9 @@ export const Logging = {
         const routes = inject('routes')
         const server = inject('server')
         const client = useClient()
+        const grid = ref()
+        const { Formats } = useFormatters()
+        const useAutoQuery = computed(() => server.plugins.requestLogs?.requestLogger === 'SqliteRequestLogger')
         
         function parseJwt(token) {
             let base64Url = token.split('.')[1];
@@ -398,7 +412,8 @@ export const Logging = {
                 : apiValueFmt(obj)
         }
         const errorSummary = computed(() => api.value.summaryMessage())
-        const results = computed(() => api.value.response?.results || [])
+        const results = computed(() => grid.value?.results || 
+            api.value.response?.results || [])
         const total = computed(() => api.value.response?.total)
         const uniqueKeys = summaryFields
         const hasFilters = computed(()=> {
@@ -410,7 +425,7 @@ export const Logging = {
             return false
         })
         
-        const selected = computed(() => routes.show && results.value.find(x => x.id == routes.show))
+        const selected = computed(() => routes.edit && results.value.find(x => x.id == routes.edit))
         const selectedRequestDtoObj = computed(() => selected.value?.requestDto && parseObject(selected.value.requestDto))
         const selectedRequestDtoJson = computed(() => selected.value?.requestDto && prettyJson(parseObject(selected.value.requestDto)))
         const selectedResponseDtoObj = computed(() => selected.value?.responseDto && parseObject(selected.value.responseDto))
@@ -438,7 +453,7 @@ export const Logging = {
             return Object.assign(linkFields.reduce((acc,x) => { acc[x] = ''; return acc }, {}), links)
         }
         function clearFilters() {
-            routes.to(href({show:''}))
+            routes.to(href({edit:''}))
         }
         const take = ref(server.plugins.requestLogs?.defaultLimit ?? 100)
         const canPrev = computed(() => routes.skip > 0)
@@ -457,6 +472,10 @@ export const Logging = {
         }
         let sub = null
         onMounted(async () => {
+            const idSortKey = `Column/AutoQueryGrid:RequestLog.Id`
+            if (!localStorage.getItem(idSortKey)) {
+                localStorage.setItem(idSortKey, `{"filters":[],"sort":"DESC"}`)
+            }
             document.addEventListener('keydown', handleKeyDown)
             sub = app.subscribe('route:nav', update)
             await update()
@@ -469,6 +488,7 @@ export const Logging = {
         
         return {
             routes,
+            useAutoQuery,
             parseObject,
             prettyJson,
             api,
@@ -491,7 +511,7 @@ export const Logging = {
             selectedResponseDtoObj,
             selectedResponseDtoJson,
             toggle(row) {
-                routes.to({ show: routes.show === row.id ? '' : row.id })
+                routes.to({ edit: routes.edit === row.id ? '' : row.id })
             },
             expanded(id) { return selected.value?.id === id },
             get selectedHeaders() {
@@ -524,6 +544,8 @@ export const Logging = {
             canPrev,
             canNext,
             nextSkip,
+            Formats,
+            grid,
         }
     }
 }

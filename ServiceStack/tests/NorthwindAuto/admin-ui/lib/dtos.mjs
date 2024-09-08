@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-09-01 13:46:12
+Date: 2024-09-09 02:28:42
 Version: 8.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -37,22 +37,6 @@ export class AdminUserBase {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
-export class RedisEndpointInfo {
-    /** @param {{host?:string,port?:number,ssl?:boolean,db?:number,username?:string,password?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    host;
-    /** @type {number} */
-    port;
-    /** @type {?boolean} */
-    ssl;
-    /** @type {number} */
-    db;
-    /** @type {string} */
-    username;
-    /** @type {string} */
-    password;
-}
 export class QueryBase {
     /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -76,16 +60,6 @@ export class QueryDb extends QueryBase {
     /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
 }
-/** @typedef {'Queued'|'Started'|'Executed'|'Completed'|'Failed'|'Cancelled'} */
-export var BackgroundJobState;
-(function (BackgroundJobState) {
-    BackgroundJobState["Queued"] = "Queued"
-    BackgroundJobState["Started"] = "Started"
-    BackgroundJobState["Executed"] = "Executed"
-    BackgroundJobState["Completed"] = "Completed"
-    BackgroundJobState["Failed"] = "Failed"
-    BackgroundJobState["Cancelled"] = "Cancelled"
-})(BackgroundJobState || (BackgroundJobState = {}));
 export class ResponseError {
     /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -112,6 +86,92 @@ export class ResponseStatus {
     /** @type {{ [index: string]: string; }} */
     meta;
 }
+export class RequestLog {
+    /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,request?:string,requestBody?:string,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },response?:string,responseBody?:string,sessionBody?:string,error?:ResponseStatus,exceptionSource?:string,exceptionDataBody?:string,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    traceId;
+    /** @type {string} */
+    operationName;
+    /** @type {string} */
+    dateTime;
+    /** @type {number} */
+    statusCode;
+    /** @type {?string} */
+    statusDescription;
+    /** @type {?string} */
+    httpMethod;
+    /** @type {?string} */
+    absoluteUri;
+    /** @type {?string} */
+    pathInfo;
+    /** @type {?string} */
+    request;
+    /** @type {?string} */
+    requestBody;
+    /** @type {?string} */
+    userAuthId;
+    /** @type {?string} */
+    sessionId;
+    /** @type {?string} */
+    ipAddress;
+    /** @type {?string} */
+    forwardedFor;
+    /** @type {?string} */
+    referer;
+    /** @type {{ [index: string]: string; }} */
+    headers;
+    /** @type {?{ [index: string]: string; }} */
+    formData;
+    /** @type {{ [index: string]: string; }} */
+    items;
+    /** @type {?{ [index: string]: string; }} */
+    responseHeaders;
+    /** @type {?string} */
+    response;
+    /** @type {?string} */
+    responseBody;
+    /** @type {?string} */
+    sessionBody;
+    /** @type {?ResponseStatus} */
+    error;
+    /** @type {?string} */
+    exceptionSource;
+    /** @type {?string} */
+    exceptionDataBody;
+    /** @type {string} */
+    requestDuration;
+    /** @type {?{ [index: string]: string; }} */
+    meta;
+}
+export class RedisEndpointInfo {
+    /** @param {{host?:string,port?:number,ssl?:boolean,db?:number,username?:string,password?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    host;
+    /** @type {number} */
+    port;
+    /** @type {?boolean} */
+    ssl;
+    /** @type {number} */
+    db;
+    /** @type {string} */
+    username;
+    /** @type {string} */
+    password;
+}
+/** @typedef {'Queued'|'Started'|'Executed'|'Completed'|'Failed'|'Cancelled'} */
+export var BackgroundJobState;
+(function (BackgroundJobState) {
+    BackgroundJobState["Queued"] = "Queued"
+    BackgroundJobState["Started"] = "Started"
+    BackgroundJobState["Executed"] = "Executed"
+    BackgroundJobState["Completed"] = "Completed"
+    BackgroundJobState["Failed"] = "Failed"
+    BackgroundJobState["Cancelled"] = "Cancelled"
+})(BackgroundJobState || (BackgroundJobState = {}));
 export class BackgroundJobBase {
     /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -241,7 +301,7 @@ export class JobSummary {
     errorMessage;
 }
 export class BackgroundJobOptions {
-    /** @param {{refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number,args?:{ [index: string]: string; },runCommand?:boolean}} [init] */
+    /** @param {{refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number,timeout?:string,args?:{ [index: string]: string; },runCommand?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?string} */
     refId;
@@ -269,6 +329,8 @@ export class BackgroundJobOptions {
     createdBy;
     /** @type {?number} */
     timeoutSecs;
+    /** @type {?string} */
+    timeout;
     /** @type {?{ [index: string]: string; }} */
     args;
     /** @type {?boolean} */
@@ -949,12 +1011,10 @@ export class SharpPagesInfo {
     meta;
 }
 export class RequestLogsInfo {
-    /** @param {{accessRole?:string,requiredRoles?:string[],requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{accessRole?:string,requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     accessRole;
-    /** @type {string[]} */
-    requiredRoles;
     /** @type {string} */
     requestLogger;
     /** @type {number} */
@@ -1702,6 +1762,21 @@ export class AdminDeleteUserResponse {
     /** @type {ResponseStatus} */
     responseStatus;
 }
+/** @typedef T {any} */
+export class QueryResponse {
+    /** @param {{offset?:number,total?:number,results?:T[],meta?:{ [index: string]: string; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    offset;
+    /** @type {number} */
+    total;
+    /** @type {T[]} */
+    results;
+    /** @type {{ [index: string]: string; }} */
+    meta;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
 export class AdminProfilingResponse {
     /** @param {{results?:DiagnosticEntry[],total?:number,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1838,21 +1913,6 @@ export class AdminGetJobProgressResponse {
     /** @type {?ResponseStatus} */
     error;
     /** @type {?ResponseStatus} */
-    responseStatus;
-}
-/** @typedef T {any} */
-export class QueryResponse {
-    /** @param {{offset?:number,total?:number,results?:T[],meta?:{ [index: string]: string; },responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    offset;
-    /** @type {number} */
-    total;
-    /** @type {T[]} */
-    results;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-    /** @type {ResponseStatus} */
     responseStatus;
 }
 export class AdminRequeueFailedJobsJobsResponse {
@@ -2035,6 +2095,15 @@ export class AdminDeleteUser {
     getTypeName() { return 'AdminDeleteUser' }
     getMethod() { return 'DELETE' }
     createResponse() { return new AdminDeleteUserResponse() }
+}
+export class AdminQueryRequestLogs extends QueryDb {
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'AdminQueryRequestLogs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
 }
 export class AdminProfiling {
     /** @param {{source?:string,eventType?:string,threadId?:number,traceId?:string,userAuthId?:string,sessionId?:string,tag?:string,skip?:number,take?:number,orderBy?:string,withErrors?:boolean,pending?:boolean}} [init] */
@@ -2326,10 +2395,12 @@ export class AdminRequeueFailedJobs {
     createResponse() { return new AdminRequeueFailedJobsJobsResponse() }
 }
 export class AdminCancelJobs {
-    /** @param {{ids?:number[]}} [init] */
+    /** @param {{ids?:number[],worker?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?number[]} */
     ids;
+    /** @type {?string} */
+    worker;
     getTypeName() { return 'AdminCancelJobs' }
     getMethod() { return 'GET' }
     createResponse() { return new AdminCancelJobsResponse() }

@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-09-01 13:46:12
+Date: 2024-09-09 02:28:42
 Version: 8.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -94,18 +94,6 @@ export class AdminUserBase
     public constructor(init?: Partial<AdminUserBase>) { (Object as any).assign(this, init); }
 }
 
-export class RedisEndpointInfo
-{
-    public host: string;
-    public port: number;
-    public ssl?: boolean;
-    public db: number;
-    public username: string;
-    public password: string;
-
-    public constructor(init?: Partial<RedisEndpointInfo>) { (Object as any).assign(this, init); }
-}
-
 // @DataContract
 export class QueryBase
 {
@@ -137,16 +125,6 @@ export class QueryDb<T> extends QueryBase
 {
 
     public constructor(init?: Partial<QueryDb<T>>) { super(init); (Object as any).assign(this, init); }
-}
-
-export enum BackgroundJobState
-{
-    Queued = 'Queued',
-    Started = 'Started',
-    Executed = 'Executed',
-    Completed = 'Completed',
-    Failed = 'Failed',
-    Cancelled = 'Cancelled',
 }
 
 // @DataContract
@@ -186,6 +164,64 @@ export class ResponseStatus
     public meta: { [index: string]: string; };
 
     public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
+}
+
+export class RequestLog
+{
+    public id: number;
+    public traceId: string;
+    public operationName: string;
+    public dateTime: string;
+    public statusCode: number;
+    public statusDescription?: string;
+    public httpMethod?: string;
+    public absoluteUri?: string;
+    public pathInfo?: string;
+    public request?: string;
+    // @StringLength(2147483647)
+    public requestBody?: string;
+
+    public userAuthId?: string;
+    public sessionId?: string;
+    public ipAddress?: string;
+    public forwardedFor?: string;
+    public referer?: string;
+    public headers: { [index: string]: string; };
+    public formData?: { [index: string]: string; };
+    public items: { [index: string]: string; };
+    public responseHeaders?: { [index: string]: string; };
+    public response?: string;
+    public responseBody?: string;
+    public sessionBody?: string;
+    public error?: ResponseStatus;
+    public exceptionSource?: string;
+    public exceptionDataBody?: string;
+    public requestDuration: string;
+    public meta?: { [index: string]: string; };
+
+    public constructor(init?: Partial<RequestLog>) { (Object as any).assign(this, init); }
+}
+
+export class RedisEndpointInfo
+{
+    public host: string;
+    public port: number;
+    public ssl?: boolean;
+    public db: number;
+    public username: string;
+    public password: string;
+
+    public constructor(init?: Partial<RedisEndpointInfo>) { (Object as any).assign(this, init); }
+}
+
+export enum BackgroundJobState
+{
+    Queued = 'Queued',
+    Started = 'Started',
+    Executed = 'Executed',
+    Completed = 'Completed',
+    Failed = 'Failed',
+    Cancelled = 'Cancelled',
 }
 
 export class BackgroundJobBase
@@ -279,6 +315,7 @@ export class BackgroundJobOptions
     public batchId?: string;
     public createdBy?: string;
     public timeoutSecs?: number;
+    public timeout?: string;
     public args?: { [index: string]: string; };
     public runCommand?: boolean;
 
@@ -783,7 +820,6 @@ export class SharpPagesInfo
 export class RequestLogsInfo
 {
     public accessRole: string;
-    public requiredRoles: string[];
     public requestLogger: string;
     public defaultLimit: number;
     public serviceRoutes: { [index: string]: string[]; };
@@ -1400,6 +1436,27 @@ export class AdminDeleteUserResponse
     public constructor(init?: Partial<AdminDeleteUserResponse>) { (Object as any).assign(this, init); }
 }
 
+// @DataContract
+export class QueryResponse<RequestLog>
+{
+    // @DataMember(Order=1)
+    public offset: number;
+
+    // @DataMember(Order=2)
+    public total: number;
+
+    // @DataMember(Order=3)
+    public results: RequestLog[];
+
+    // @DataMember(Order=4)
+    public meta: { [index: string]: string; };
+
+    // @DataMember(Order=5)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<QueryResponse<RequestLog>>) { (Object as any).assign(this, init); }
+}
+
 export class AdminProfilingResponse
 {
     public results: DiagnosticEntry[];
@@ -1525,27 +1582,6 @@ export class AdminGetJobProgressResponse
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminGetJobProgressResponse>) { (Object as any).assign(this, init); }
-}
-
-// @DataContract
-export class QueryResponse<BackgroundJob>
-{
-    // @DataMember(Order=1)
-    public offset: number;
-
-    // @DataMember(Order=2)
-    public total: number;
-
-    // @DataMember(Order=3)
-    public results: BackgroundJob[];
-
-    // @DataMember(Order=4)
-    public meta: { [index: string]: string; };
-
-    // @DataMember(Order=5)
-    public responseStatus: ResponseStatus;
-
-    public constructor(init?: Partial<QueryResponse<BackgroundJob>>) { (Object as any).assign(this, init); }
 }
 
 export class AdminRequeueFailedJobsJobsResponse
@@ -1797,6 +1833,16 @@ export class AdminDeleteUser implements IReturn<AdminDeleteUserResponse>, IDelet
     public getTypeName() { return 'AdminDeleteUser'; }
     public getMethod() { return 'DELETE'; }
     public createResponse() { return new AdminDeleteUserResponse(); }
+}
+
+export class AdminQueryRequestLogs extends QueryDb<RequestLog> implements IReturn<QueryResponse<RequestLog>>
+{
+    public month?: string;
+
+    public constructor(init?: Partial<AdminQueryRequestLogs>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminQueryRequestLogs'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<RequestLog>(); }
 }
 
 export class AdminProfiling implements IReturn<AdminProfilingResponse>
@@ -2110,7 +2156,6 @@ export class AdminQueryFailedJobs extends QueryDb<FailedJob> implements IReturn<
 
 export class AdminRequeueFailedJobs implements IReturn<AdminRequeueFailedJobsJobsResponse>
 {
-    // @Validate(Validator="GreaterThan(0)")
     public ids?: number[];
 
     public constructor(init?: Partial<AdminRequeueFailedJobs>) { (Object as any).assign(this, init); }
@@ -2122,6 +2167,7 @@ export class AdminRequeueFailedJobs implements IReturn<AdminRequeueFailedJobsJob
 export class AdminCancelJobs implements IReturn<AdminCancelJobsResponse>, IGet
 {
     public ids?: number[];
+    public worker?: string;
 
     public constructor(init?: Partial<AdminCancelJobs>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminCancelJobs'; }

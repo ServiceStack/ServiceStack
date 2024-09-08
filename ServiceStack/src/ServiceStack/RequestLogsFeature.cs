@@ -145,7 +145,7 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
             typeof(AdminDashboard),
             typeof(AdminProfiling),
             typeof(AdminRedis),
-            typeof(NativeTypesBase)
+            typeof(NativeTypesBase),
         ];
         this.HideRequestBodyForRequestDtoTypes =
         [
@@ -185,8 +185,13 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         requestLogger.CurrentDateFn = CurrentDateFn;
 
         RequestLogger ??= requestLogger;
-        services.AddSingleton(requestLogger);
         requestLoggerType = requestLogger.GetType();
+        services.AddSingleton(requestLogger);
+
+        if (requestLogger is IConfigureServices configureServices)
+        {
+            configureServices.Configure(services);
+        }
     }
 
     public void Register(IAppHost appHost)

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Data;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
@@ -45,13 +46,44 @@ public class RequestLog : IMeta
     public Dictionary<string, string>? Meta { get; set; }
 }
 
-public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema, IRequireRegistration
+[ExcludeMetadata, Tag(TagNames.Admin), ExplicitAutoQuery]
+[NamedConnection("requests.db")]
+public class AdminQueryRequestLogs : QueryDb<RequestLog>
+{
+    public DateTime? Month { get; set; }
+}
+
+public class SqliteRequestLogsService(IRequestLogger requestLogger, IAutoQueryDb autoQuery) 
+    : Service
+{
+    private RequestLogsFeature AssertRequiredRole()
+    {
+        var feature = AssertPlugin<RequestLogsFeature>();
+        RequiredRoleAttribute.AssertRequiredRoles(Request, feature.AccessRole);
+        return feature;
+    }
+
+    public object Any(AdminQueryRequestLogs request)
+    {
+        var feature = AssertRequiredRole();
+        var sqliteLogger = (SqliteRequestLogger)requestLogger;
+        var month = request.Month ?? DateTime.UtcNow;
+        using var monthDb = sqliteLogger.OpenMonthDb(month);
+        var q = autoQuery.CreateQuery(request, base.Request, monthDb);
+        return autoQuery.Execute(request, q, base.Request, monthDb);        
+    }
+}
+
+public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema, 
+    IRequireRegistration, IConfigureServices
 {
     private static readonly object dbWrites = Locks.RequestsDb;
     public string DbDir { get; set; } = "App_Data/requests";
-
+    public bool EnableAdmin { get; set; } = true;
+    public AutoQueryFeature? AutoQueryFeature { get; set; }
     public Type[] IgnoreRequestTypes { get; set; } =
     [
+        typeof(AdminGetJob),
         typeof(AdminJobInfo),
         typeof(AdminJobDashboard),
         typeof(AdminGetJobProgress),
@@ -60,6 +92,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         typeof(AdminQueryScheduledTasks),
         typeof(AdminQueryCompletedJobs),
         typeof(AdminQueryFailedJobs),
+        typeof(AdminQueryRequestLogs),
     ];
 
     public Func<IDbConnectionFactory, DateTime, IDbConnection> ResolveMonthDb { get; set; }
@@ -151,6 +184,16 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         }
     }
 
+    public void Configure(IServiceCollection services)
+    {
+        if (EnableAdmin)
+        {
+            services.RegisterService<SqliteRequestLogsService>();
+            AutoQueryFeature ??= new() { MaxLimit = 1000 };
+            AutoQueryFeature.RegisterAutoQueryDbIfNotExists();
+        }
+    }
+
     public void Register(IAppHost appHost)
     {
         DbFactory ??= appHost.TryResolve<IDbConnectionFactory>() 
@@ -210,7 +253,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             HttpMethod = from.HttpMethod,
             AbsoluteUri = from.AbsoluteUri,
             PathInfo = from.PathInfo,
-            Request = from.RequestDto.GetType().Name,
+            Request = from.RequestDto?.GetType().Name,
             RequestBody = from.RequestBody ?? ClientConfig.ToJson(from.RequestDto),
             UserAuthId = from.UserAuthId,
             SessionId = from.SessionId,

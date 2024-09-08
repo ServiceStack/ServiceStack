@@ -240,6 +240,7 @@ public class PublishTasks
                 typeof(AdminQueryScheduledTasks),
                 typeof(AdminQueryCompletedJobs),
                 typeof(AdminQueryFailedJobs),
+                typeof(AdminQueryRequestLogs),
                 ..UiServices.AutoQueryTypes
             ];
             
@@ -261,7 +262,9 @@ public class PublishTasks
 
             Plugins.Add(new AdminUsersFeature());
             Plugins.Add(new AutoQueryFeature());
-            Plugins.Add(new RequestLogsFeature());
+            Plugins.Add(new RequestLogsFeature {
+                RequestLogger = new SqliteRequestLogger()
+            });
             Plugins.Add(new ProfilingFeature());
             Plugins.Add(new AdminRedisFeature());
             Plugins.Add(new AdminDatabaseFeature());
@@ -356,6 +359,7 @@ public class UiServices : Service
         typeof(AdminQueryScheduledTasks),
         typeof(AdminQueryCompletedJobs),
         typeof(AdminQueryFailedJobs),
+        typeof(AdminQueryRequestLogs),
     ];
     
     // Generate app metadata.js required for all AutoQuery APIs in built-in UIs
