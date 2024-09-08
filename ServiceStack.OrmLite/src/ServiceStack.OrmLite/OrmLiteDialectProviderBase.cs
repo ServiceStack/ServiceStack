@@ -198,6 +198,7 @@ namespace ServiceStack.OrmLite
         }
         
         public virtual bool SupportsSchema => true;
+        public virtual bool SupportsConcurrentWrites => true;
 
         public string DefaultValueFormat = " DEFAULT ({0})";
 

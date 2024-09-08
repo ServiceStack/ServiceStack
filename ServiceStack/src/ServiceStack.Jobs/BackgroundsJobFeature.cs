@@ -51,16 +51,8 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         if (EnableAdmin)
         {
             services.RegisterService<AdminJobServices>();
-
-            // Background Jobs Admin UI requires AutoQuery functionality
-            ServiceStackHost.GlobalAfterConfigureServices.Add(c =>
-            {
-                if (!c.Exists<IAutoQueryDb>())
-                {
-                    AutoQueryFeature ??= new() { MaxLimit = 1000 };
-                    c.AddSingleton<IAutoQueryDb>(AutoQueryFeature.CreateAutoQueryDb());
-                }
-            });
+            AutoQueryFeature ??= new() { MaxLimit = 1000 };
+            AutoQueryFeature.RegisterAutoQueryDbIfNotExists();
         }
     }
 

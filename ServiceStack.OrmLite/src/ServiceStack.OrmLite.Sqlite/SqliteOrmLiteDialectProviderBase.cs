@@ -61,6 +61,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
     public override bool SupportsSchema => false;
+    public override bool SupportsConcurrentWrites => false;
 
     public override string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string> insertFields = null)
     {

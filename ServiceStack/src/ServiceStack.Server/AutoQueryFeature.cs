@@ -58,7 +58,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
     /// Use DB Thread locks for DB Write operations.
     /// This is useful when using SQLite which only allows 1 concurrent writer
     /// </summary>
-    public bool UseDatabaseWriteLocks { get; set; }
+    public bool? UseDatabaseWriteLocks { get; set; }
     public string UseNamedConnection { get; set; }
     /// <summary>
     /// Whether to create implicit AutoQuery UI references based on field naming conventions
@@ -166,7 +166,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         ResponseFilters = [IncludeAggregates];
     }
 
-    public AutoQuery CreateAutoQueryDb() => new() {
+    public AutoQuery CreateAutoQueryDb(IDbConnectionFactory dbFactory) => new() {
         Feature = this,
         IgnoreProperties = IgnoreProperties,
         IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
@@ -181,12 +181,14 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         StartsWithConventions = StartsWithConventions,
         EndsWithConventions = EndsWithConventions,
         UseNamedConnection = UseNamedConnection,
-        UseDatabaseWriteLocks = UseDatabaseWriteLocks,
+        UseDatabaseWriteLocks = UseDatabaseWriteLocks 
+            ?? !(dbFactory?.GetDialectProvider().SupportsConcurrentWrites ?? true),
     };
 
     public void Configure(IServiceCollection services)
     {
-        services.AddSingleton<IAutoQueryDb>(c => CreateAutoQueryDb());
+        services.AddSingleton<IAutoQueryDb>(c => 
+            CreateAutoQueryDb(c.GetService<IDbConnectionFactory>()));
         //CRUD Services
         GenerateCrudServices?.Configure(services);
     }
