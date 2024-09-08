@@ -9,38 +9,128 @@ using System.Threading.Tasks;
 
 namespace ServiceStack.Jobs;
 
+/// <summary>
+/// Provides methods for managing background jobs, including enqueueing, running, canceling,
+/// and monitoring jobs.
+/// </summary>
 public interface IBackgroundJobs
 {
+    /// <summary>
+    /// Enqueues an API request as a background job.
+    /// </summary>
     BackgroundJobRef EnqueueApi(object requestDto, BackgroundJobOptions? options = null);
+    /// <summary>
+    /// Enqueues a command as a background job.
+    /// </summary>
     BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null);
+    /// <summary>
+    /// Executes a transient (i.e. non-durable) command and returns immediately with a Reference
+    /// to the Executing Job
+    /// </summary>
     BackgroundJob RunCommand(string commandName, object arg, BackgroundJobOptions? options = null);
+    /// <summary>
+    /// Executes a transient (i.e. non-durable) command that waits until the command is executed
+    /// and returns the command result if any
+    /// </summary>
     Task<object?> RunCommandAsync(string commandName, object arg, BackgroundJobOptions? options = null);
+    /// <summary>
+    /// Used by Background Workers to execute a Job 
+    /// </summary>
     Task ExecuteJobAsync(BackgroundJob job);
+    /// <summary>
+    /// Cancels a running job by its Id, returns true if a running job was cancelled
+    /// </summary>
     bool CancelJob(long jobId);
+    /// <summary>
+    /// Cancels a named Background Worker and transfers any pending queues to a new worker
+    /// </summary>
     void CancelWorker(string worker);
+    /// <summary>
+    /// Requeues a failed job.
+    /// </summary>
     void RequeueFailedJob(long jobId);
+    /// <summary>
+    /// Marks a job as failed due to an exception.
+    /// </summary>
     void FailJob(BackgroundJob job, Exception ex);
+    /// <summary>
+    /// Marks a job as failed that can optionally not be retried
+    /// </summary>
     void FailJob(BackgroundJob job, ResponseStatus error, bool shouldRetry);
+    /// <summary>
+    /// Marks a job as completed and transfers it from Job Queue to CompletedJob table in Monthly DB
+    /// </summary>
     void CompleteJob(BackgroundJob job, object? response = null);
+    /// <summary>
+    /// Update a running jobs status
+    /// </summary>
+    /// <param name="status"></param>
     void UpdateJobStatus(BackgroundJobStatusUpdate status);
+    /// <summary>
+    /// Run Startup tasks to populate Job Queue with incomplete tasks 
+    /// </summary>
     Task StartAsync(CancellationToken stoppingToken);
+    /// <summary>
+    /// Runs monitoring and periodic tasks 
+    /// </summary>
     Task TickAsync();
+    /// <summary>
+    /// Get all named workers with their active queue counts 
+    /// </summary>
     Dictionary<string, int> GetWorkerQueueCounts();
+    /// <summary>
+    /// Get execution stats of all named workers
+    /// </summary>
     List<WorkerStats> GetWorkerStats();
+    /// <summary>
+    /// Returns an open ADO .NET Connection to the jobs.db
+    /// </summary>
     IDbConnection OpenDb();
+    /// <summary>
+    /// Returns an open ADO .NET Connection to the monthly jobs.db indicated by CreatedDate
+    /// </summary>
     IDbConnection OpenMonthDb(DateTime createdDate);
+    /// <summary>
+    /// Retrieves a job by its Job Id
+    /// </summary>
     JobResult? GetJob(long jobId);
+    /// <summary>
+    /// Retrieves a job by its unique Ref Id
+    /// </summary>
     JobResult? GetJobByRefId(string refId);
+    /// <summary>
+    /// Rehydrates the Request DTO from a persisted Background Job
+    /// </summary>
     object CreateRequest(BackgroundJobBase job);
+    /// <summary>
+    /// Rehydrates the Response from a persisted Background Job
+    /// </summary>
     object? CreateResponse(BackgroundJobBase job);
-
+    /// <summary>
+    /// Schedules a recurring API task.
+    /// </summary>
     void RecurringApi(string taskName, Schedule schedule, object requestDto, BackgroundJobOptions? options = null);
+    /// <summary>
+    /// Schedules a recurring command task.
+    /// </summary>
     void RecurringCommand(string taskName, Schedule schedule, string commandName, object arg, BackgroundJobOptions? options = null);
+    /// <summary>
+    /// Deletes a recurring task.
+    /// </summary>
     void DeleteRecurringTask(string taskName);
+    /// <summary>
+    /// Returns the estimated duration of a Command Job in milliseconds
+    /// </summary>
     int? GetCommandEstimatedDurationMs(string commandType, string? worker=null);
+    /// <summary>
+    /// Returns the estimated duration of an API Job in milliseconds
+    /// </summary>
     int? GetApiEstimatedDurationMs(string requestType, string? worker=null);
 }
 
+/// <summary>
+/// Reference of a Queued Job 
+/// </summary>
 public class BackgroundJobRef(long id, string refId)
 {
     public long Id { get; } = id;
@@ -52,6 +142,9 @@ public class BackgroundJobRef(long id, string refId)
     }
 }
 
+/// <summary>
+/// Status Update of a Job
+/// </summary>
 public struct BackgroundJobStatusUpdate(BackgroundJob job, double? progress=null, string? status=null, string? log=null)
 {
     public BackgroundJob Job { get; } = job;
@@ -68,6 +161,9 @@ public struct BackgroundJobStatusUpdate(BackgroundJob job, double? progress=null
     }
 }
 
+/// <summary>
+/// Customize Queued Job Options
+/// </summary>
 public class BackgroundJobOptions
 {
     /// <summary>
@@ -133,6 +229,9 @@ public class BackgroundJobOptions
     public CancellationToken? Token { get; set; } 
 }
 
+/// <summary>
+/// Captures Stats of a Background Job Worker
+/// </summary>
 public class WorkerStats
 {
     public string Name { get; set; } = null!;
