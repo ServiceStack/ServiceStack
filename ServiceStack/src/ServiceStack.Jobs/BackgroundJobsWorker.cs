@@ -26,6 +26,8 @@ public class BackgroundJobsWorker : IDisposable
     private bool cancelled;
     private bool disposed;
     private int defaultTimeOutSecs;
+    private long? runningJobId;
+    public long? RunningJobId => runningJobId;
 
     public BackgroundJobsWorker(IBackgroundJobs jobs, CancellationToken ct, bool transient, int defaultTimeOutSecs)
     {
@@ -44,6 +46,7 @@ public class BackgroundJobsWorker : IDisposable
         Completed = completed,
         Retries = retries,
         Failed = failed,
+        RunningJob = runningJobId,
         RunningTime = RunningTime,
     };
 
@@ -64,6 +67,11 @@ public class BackgroundJobsWorker : IDisposable
         }
     }
 
+    public bool HasJobQueued(long jobId)
+    {
+        return runningJobId == jobId || Queue.Any(x => x.Id == jobId);
+    }
+
     record class JobWorkerContext(ConcurrentQueue<BackgroundJob> Queue, IBackgroundJobs Jobs, CancellationToken Token);
 
     // Runs on Worker Thread
@@ -81,6 +89,7 @@ public class BackgroundJobsWorker : IDisposable
                 {
                     try
                     {
+                        runningJobId = job.Id;
                         if (job.TimeoutSecs != null)
                             defaultTimeOutSecs = job.TimeoutSecs.Value;
                         
@@ -99,6 +108,7 @@ public class BackgroundJobsWorker : IDisposable
                     finally
                     {
                         lastRunStarted = null;
+                        runningJobId = null;
                     }
                 }
             }

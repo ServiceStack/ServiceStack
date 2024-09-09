@@ -885,6 +885,23 @@ public partial class BackgroundJobs : IBackgroundJobs
         {
             var worker = workers.GetOrAdd(job.Worker, 
                 _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = job.Worker });
+            if (worker.HasJobQueued(job.Id))
+            {
+                log.LogWarning("JOBS Worker Job {job.Id} has already been queued (currently running job {runningJobId} for {TotalSeconds})...",
+                    job.Id, worker.RunningJobId, worker.RunningTime == null ? -1 : Math.Floor(worker.RunningTime.Value.TotalSeconds));
+
+                if (worker.RunningTime != null && (worker.RunningTime.Value.TotalSeconds > feature.DefaultTimeoutSecs))
+                {
+                    CancelWorker(job.Worker);
+                    worker = workers.GetOrAdd(job.Worker, 
+                        _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = job.Worker });
+                }
+                else
+                {
+                    log.LogWarning("JOBS Ignoring already queued job {Id}", job.Id);
+                    return;
+                }
+            }
             worker.Enqueue(job);
         }
         else
@@ -898,6 +915,7 @@ public partial class BackgroundJobs : IBackgroundJobs
     {
         if (workers.TryRemove(worker, out var bgWorker))
         {
+            log.LogInformation("JOBS Cancelling worker {worker}...", worker);
             bgWorker.Cancel();
             
             // Transfer jobs to new Worker before disposing
@@ -909,6 +927,10 @@ public partial class BackgroundJobs : IBackgroundJobs
             }
             
             bgWorker.Dispose();
+        }
+        else
+        {
+            log.LogWarning("JOBS worker {worker} not found", worker);
         }
     }
 

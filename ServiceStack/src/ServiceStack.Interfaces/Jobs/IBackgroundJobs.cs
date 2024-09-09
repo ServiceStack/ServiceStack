@@ -240,5 +240,6 @@ public class WorkerStats
     public long Completed { get; set; }
     public long Retries { get; set; }
     public long Failed { get; set; }
+    public long? RunningJob { get; set; }
     public TimeSpan? RunningTime { get; set; }
 }
