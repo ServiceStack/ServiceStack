@@ -12,7 +12,7 @@ public class BackgroundJobsWorker : IDisposable
     private long running = 0;
     public bool Running => Interlocked.Read(ref running) == 1;
     DateTime? lastRunStarted = null;
-    public TimeSpan? RunningTime => lastRunStarted != null ? DateTime.UtcNow - lastRunStarted.Value : null;
+    public TimeSpan? RunningTime => lastRunStarted != null ? DateTime.UtcNow - (lastRunStarted ?? DateTime.UtcNow) : null;
     
     private long tasksStarted = 0; 
     private long received = 0; 
