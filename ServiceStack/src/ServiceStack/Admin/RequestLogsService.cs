@@ -10,7 +10,7 @@ namespace ServiceStack.Admin;
 
 [Icon(Svg = SvgIcons.Logs)]
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
-public class RequestLogs : IReturn<RequestLogsResponse>
+public class RequestLogs : IGet, IReturn<RequestLogsResponse>
 {
     [DataMember(Order=1)] public int? BeforeSecs { get; set; }
     [DataMember(Order=2)] public int? AfterSecs { get; set; }

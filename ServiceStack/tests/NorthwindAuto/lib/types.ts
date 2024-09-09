@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-09-09 02:28:42
+Date: 2024-09-09 17:50:12
 Version: 8.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -2177,7 +2177,7 @@ export class AdminCancelJobs implements IReturn<AdminCancelJobsResponse>, IGet
 
 // @Route("/requestlogs")
 // @DataContract
-export class RequestLogs implements IReturn<RequestLogsResponse>
+export class RequestLogs implements IReturn<RequestLogsResponse>, IGet
 {
     // @DataMember(Order=1)
     public beforeSecs?: number;
@@ -2247,7 +2247,7 @@ export class RequestLogs implements IReturn<RequestLogsResponse>
 
     public constructor(init?: Partial<RequestLogs>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'RequestLogs'; }
-    public getMethod() { return 'POST'; }
+    public getMethod() { return 'GET'; }
     public createResponse() { return new RequestLogsResponse(); }
 }
 

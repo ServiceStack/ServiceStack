@@ -1,5 +1,5 @@
 /* Options:
-Date: 2024-09-09 02:28:42
+Date: 2024-09-09 17:50:12
 Version: 8.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -2451,7 +2451,7 @@ export class RequestLogs {
     /** @type {string} */
     orderBy;
     getTypeName() { return 'RequestLogs' }
-    getMethod() { return 'POST' }
+    getMethod() { return 'GET' }
     createResponse() { return new RequestLogsResponse() }
 }
 export class GetValidationRules {

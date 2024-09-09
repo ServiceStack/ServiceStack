@@ -1,4 +1,4 @@
-import { computed, inject, onMounted, onUnmounted, ref } from "vue"
+import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue"
 import {
     ApiResult, map, apiValueFmt, humanize, toPascalCase, fromXsdDuration, parseCookie
 } from "@servicestack/client"
@@ -9,7 +9,7 @@ import { prettyJson, parseJsv, hasItems } from "core"
 export const Logging = {
     template:/*html*/`
   <div v-if="useAutoQuery">
-    <AutoQueryGrid :ref="grid" type="RequestLog"
+    <AutoQueryGrid ref="grid" type="RequestLog"
         selectedColumns="id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration"
         :headerTitles="{statusCode:'Status',httpMethod:'Method',operationName:'Operation',userAuthId:'UserId',ipAddress:'IP',requestDuration:'Duration'}"
         @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id">
@@ -182,7 +182,6 @@ export const Logging = {
     
                   <!-- Divider container -->
                   <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
-                    
                     <div v-if="selected.requestDto" class="flex overflow-auto">
                       <div class="p-2 relative w-full">
                         <span class="relative z-0 inline-flex shadow-sm rounded-md">
@@ -358,8 +357,13 @@ export const Logging = {
         const server = inject('server')
         const client = useClient()
         const grid = ref()
+        const selected = ref()
         const { Formats } = useFormatters()
         const useAutoQuery = computed(() => server.plugins.requestLogs?.requestLogger === 'SqliteRequestLogger')
+        const idSortKey = `Column/AutoQueryGrid:RequestLog.Id`
+        if (!localStorage.getItem(idSortKey)) {
+            localStorage.setItem(idSortKey, `{"filters":[],"sort":"DESC"}`)
+        }
         
         function parseJwt(token) {
             let base64Url = token.split('.')[1];
@@ -393,14 +397,27 @@ export const Logging = {
         }
         
         async function update() {
-            let request = new RequestLogs({ take: 100 })
-            if (routes.orderBy)
-                request.orderBy = routes.orderBy
-            linkFields.forEach(x => {
-                if (routes[x]) request[x] = routes[x]
-            })
-            api.value = await client.api(request, { jsconfig: 'eccn' })
+            // AutoQuery is queried using AutoQueryGrid
+            if (!useAutoQuery.value) {
+                let request = new RequestLogs({ take: 100 })
+                if (routes.orderBy)
+                    request.orderBy = routes.orderBy
+                linkFields.forEach(x => {
+                    if (routes[x]) request[x] = routes[x]
+                })
+                api.value = await client.api(request, { jsconfig: 'eccn' })
+            }
         }
+        
+        watch(() => routes.edit, async () => {
+            const id = parseInt(routes.edit)
+            if (!isNaN(id)) {
+                const apiResult = await client.api(new RequestLogs({ ids:[id] }))
+                selected.value = apiResult.response?.results?.[0]
+            } else {
+                selected.value = null
+            }
+        })
         
         function valueFmt(obj, k) {
             if (k === 'requestDuration' && obj === 'PT0S') return ''
@@ -411,10 +428,9 @@ export const Logging = {
                 ? fromXsdDuration(obj)
                 : apiValueFmt(obj)
         }
-        const errorSummary = computed(() => api.value.summaryMessage())
-        const results = computed(() => grid.value?.results || 
-            api.value.response?.results || [])
-        const total = computed(() => api.value.response?.total)
+        const errorSummary = computed(() => api.value?.summaryMessage())
+        const results = computed(() => api.value.response?.results || [])
+        const total = computed(() => api.value?.response?.total)
         const uniqueKeys = summaryFields
         const hasFilters = computed(()=> {
             for (let i; i<linkFields.length; i++) {
@@ -425,7 +441,6 @@ export const Logging = {
             return false
         })
         
-        const selected = computed(() => routes.edit && results.value.find(x => x.id == routes.edit))
         const selectedRequestDtoObj = computed(() => selected.value?.requestDto && parseObject(selected.value.requestDto))
         const selectedRequestDtoJson = computed(() => selected.value?.requestDto && prettyJson(parseObject(selected.value.requestDto)))
         const selectedResponseDtoObj = computed(() => selected.value?.responseDto && parseObject(selected.value.responseDto))
@@ -472,10 +487,6 @@ export const Logging = {
         }
         let sub = null
         onMounted(async () => {
-            const idSortKey = `Column/AutoQueryGrid:RequestLog.Id`
-            if (!localStorage.getItem(idSortKey)) {
-                localStorage.setItem(idSortKey, `{"filters":[],"sort":"DESC"}`)
-            }
             document.addEventListener('keydown', handleKeyDown)
             sub = app.subscribe('route:nav', update)
             await update()
