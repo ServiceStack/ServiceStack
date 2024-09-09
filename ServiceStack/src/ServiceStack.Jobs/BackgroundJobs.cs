@@ -887,10 +887,11 @@ public partial class BackgroundJobs : IBackgroundJobs
                 _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = job.Worker });
             if (worker.HasJobQueued(job.Id))
             {
+                var runningTime = (worker.RunningTime ?? TimeSpan.Zero);
                 log.LogWarning("JOBS Worker Job {job.Id} has already been queued (currently running job {runningJobId} for {TotalSeconds})...",
-                    job.Id, worker.RunningJobId, worker.RunningTime == null ? -1 : Math.Floor(worker.RunningTime.Value.TotalSeconds));
+                    job.Id, worker.RunningJobId, Math.Floor(runningTime.TotalSeconds));
 
-                if (worker.RunningTime != null && (worker.RunningTime.Value.TotalSeconds > feature.DefaultTimeoutSecs))
+                if (runningTime.TotalSeconds > feature.DefaultTimeoutSecs)
                 {
                     CancelWorker(job.Worker);
                     worker = workers.GetOrAdd(job.Worker, 
