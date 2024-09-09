@@ -426,30 +426,37 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     public bool CancelJob(long jobId)
     {
+        var wasCancelled = false;
+        using var db = OpenDb();
+        var error = new TaskCanceledException("Job was cancelled").ToResponseStatus();
+        lock (dbWrites)
+        {
+            var now = DateTime.UtcNow;
+            var updatedQueuedJob = db.UpdateOnly(() => new BackgroundJob {
+                State = BackgroundJobState.Cancelled,
+                Error = error,
+                ErrorCode = error.ErrorCode,
+                LastActivityDate = now,
+            }, where: x => x.Id == jobId);
+            if (updatedQueuedJob > 0)
+            {
+                cancelJobIds[jobId] = DateTime.UtcNow;
+                db.UpdateOnly(() => new JobSummary {
+                    State = BackgroundJobState.Cancelled,
+                    ErrorCode = error.ErrorCode,
+                    ErrorMessage = error.Message,
+                }, where: x => x.Id == jobId);
+                wasCancelled = true;
+            }
+            using var dbMonth = OpenMonthDb(now);
+            CancelDependentJobs(db, dbMonth, jobId, now);
+        }
         if (cancellationSources.TryGetValue(jobId, out var cts))
         {
             cts.Cancel();
             return true;
         }
-        using var db = OpenDb();
-        var error = new TaskCanceledException("Job was cancelled").ToResponseStatus();
-        var updatedQueuedJob = db.UpdateOnly(() => new BackgroundJob {
-            State = BackgroundJobState.Cancelled,
-            Error = error,
-            ErrorCode = error.ErrorCode,
-            LastActivityDate = DateTime.UtcNow,
-        }, where: x => x.Id == jobId);
-        if (updatedQueuedJob > 0)
-        {
-            cancelJobIds[jobId] = DateTime.UtcNow;
-            db.UpdateOnly(() => new JobSummary {
-                State = BackgroundJobState.Cancelled,
-                ErrorCode = error.ErrorCode,
-                ErrorMessage = error.Message,
-            }, where: x => x.Id == jobId);
-            return true;
-        }
-        return false;
+        return wasCancelled;
     }
 
     public void RequeueFailedJob(long jobId)
@@ -569,30 +576,8 @@ public partial class BackgroundJobs : IBackgroundJobs
 
                     db.DeleteById<BackgroundJob>(job.Id);
 
-                    // Cancel any Dependent Jobs as well
-                    var dependentJobs = db.Select<BackgroundJob>(x => x.DependsOn == job.Id);
-                    if (dependentJobs.Count > 0)
-                    {
-                        foreach (var dependentJob in dependentJobs)
-                        {
-                            var depFailedJob = dependentJob.PopulateJob(new FailedJob());
-                            depFailedJob.State = BackgroundJobState.Cancelled;
-                            depFailedJob.ErrorCode = nameof(TaskCanceledException);
-                            depFailedJob.LastActivityDate = job.LastActivityDate;
-                            depFailedJob.Error = new() {
-                                ErrorCode = depFailedJob.ErrorCode,
-                                Message = "Parent Job failed"
-                            };
-                            dbMonth.Insert(depFailedJob);
-                            db.UpdateOnly(() => new JobSummary {
-                                State = depFailedJob.State,
-                                ErrorMessage = depFailedJob.Error.Message,
-                                ErrorCode = depFailedJob.ErrorCode,
-                            }, where: x => x.Id == depFailedJob.Id);
-                            db.DeleteById<BackgroundJob>(depFailedJob.Id);
-                        }
-                    }
-                    
+                    CancelDependentJobs(db, dbMonth, job.Id, job.LastActivityDate.Value);
+
                     trans.Commit();
                 }
                 else
@@ -612,6 +597,34 @@ public partial class BackgroundJobs : IBackgroundJobs
                         LastActivityDate = job.LastActivityDate,
                     }, where: x => x.Id == job.Id);
                 }
+            }
+        }
+    }
+
+    // Call within lock
+    private static void CancelDependentJobs(IDbConnection db, IDbConnection dbMonth, long jobId, DateTime lastActivityDate)
+    {
+        // Cancel any Dependent Jobs as well
+        var dependentJobs = db.Select<BackgroundJob>(x => x.DependsOn == jobId);
+        if (dependentJobs.Count > 0)
+        {
+            foreach (var dependentJob in dependentJobs)
+            {
+                var depFailedJob = dependentJob.PopulateJob(new FailedJob());
+                depFailedJob.State = BackgroundJobState.Cancelled;
+                depFailedJob.ErrorCode = nameof(TaskCanceledException);
+                depFailedJob.LastActivityDate = lastActivityDate;
+                depFailedJob.Error = new() {
+                    ErrorCode = depFailedJob.ErrorCode,
+                    Message = "Parent Job failed"
+                };
+                dbMonth.Insert(depFailedJob);
+                db.UpdateOnly(() => new JobSummary {
+                    State = depFailedJob.State,
+                    ErrorMessage = depFailedJob.Error.Message,
+                    ErrorCode = depFailedJob.ErrorCode,
+                }, where: x => x.Id == depFailedJob.Id);
+                db.DeleteById<BackgroundJob>(depFailedJob.Id);
             }
         }
     }
