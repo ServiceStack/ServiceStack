@@ -1,5 +1,5 @@
 import { ref, computed, watch, onMounted, onUnmounted, provide, inject, nextTick } from "vue"
-import { humanize, queryString, setQueryString, toDate, leftPart, rightPart, pick, omit, EventBus } from "@servicestack/client"
+import { humanize,  toDate, timeFmt12, leftPart, rightPart, pick, omit, EventBus } from "@servicestack/client"
 import { useClient, useUtils, useFormatters } from "@servicestack/vue"
 import { AdminJobInfo, AdminGetJob, AdminGetJobProgress, AdminCancelJobs, AdminRequeueFailedJobs, AdminJobDashboard } from "dtos"
 import { Chart, registerables } from 'chart.js'
@@ -339,8 +339,9 @@ const JobDialog = {
         const { formatDate, time } = useFormatters()
         function formatArgs(args) {
             Object.keys(args).forEach(key => {
+                const val = args[key]
                 if (key.endsWith('Date')) {
-                    args[key] = formatDate(args[key]) + ' ' + time(args[key])
+                    args[key] = formatDate(val) + ' ' + timeFmt12(toDate(val))
                 } else if (key === 'durationMs') {
                     args['duration'] = duration.value
                 }
@@ -433,12 +434,13 @@ const JobDialog = {
                         // console.log('apiRefresh',job)
                         if (job) {
                             updated(job)
-                            scrollToBottom()
+                            if (api.response.logs) {
+                                scrollToBottom()
+                            }
                             return
                         }
                     }
                 }
-                scrollToBottom()
             }
             updateTimer = setTimeout(refresh, 500)
         }
@@ -474,7 +476,7 @@ const Queue = {
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id">
             <template #progress="job"><JobProgress :job="job" /></template>
             <template #id="{id}">{{id}}</template>
-            <template #parentId="{parentId}"><EditLink :id="parentId" @selected="editId = $event" /></template>
+            <template #parentId="{parentId}"><EditLink :id="parentId" @selected="routes.edit=$event" /></template>
             <template #refId="{ refId }"><Truncate class="w-16" :value="refId" /></template>
             <template #tag="{tag}">{{tag}}</template>
             <template #request="job"><Request :job="job" /></template>
@@ -585,7 +587,7 @@ const Completed = {
             :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id"
             :filters="{month}">
-            <template #parentId="{parentId}"><EditLink :id="parentId" @selected="editId = $event" /></template>
+            <template #parentId="{parentId}"><EditLink :id="parentId" @selected="routes.edit = $event" /></template>
             <template #refId="{ refId }"><Truncate class="w-16" :value="refId" /></template>
             <template #tag="{tag}">{{tag}}</template>
             <template #request="job"><Request :job="job" /></template>
