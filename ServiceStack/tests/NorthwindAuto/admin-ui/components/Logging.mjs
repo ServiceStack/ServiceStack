@@ -2,7 +2,7 @@ import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue"
 import {
     ApiResult, map, apiValueFmt, humanize, toPascalCase, fromXsdDuration, parseCookie
 } from "@servicestack/client"
-import { useClient, useFormatters } from "@servicestack/vue"
+import { useClient, useFormatters, css } from "@servicestack/vue"
 import { keydown } from "app"
 import { RequestLogs } from "dtos"
 import { prettyJson, parseJsv, hasItems } from "core"
@@ -13,7 +13,9 @@ export const Logging = {
     <AutoQueryGrid ref="grid" type="RequestLog"
         selectedColumns="id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration"
         :headerTitles="{statusCode:'Status',httpMethod:'Method',operationName:'Operation',userAuthId:'UserId',ipAddress:'IP',requestDuration:'Duration'}"
-        @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id">
+        @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id"
+        :rowClass="(row,i) => row.statusCode >= 300 ? (statusBackground(row.statusCode,i) + ' cursor-pointer hover:bg-yellow-50') : css.grid.getTableRowClass('stripedRows', i, routes.edit == row.id, true)"
+        >
       <template #requestDuration="{requestDuration}">
         <span :title="requestDuration">{{ valueFmt(requestDuration,'requestDuration') }}</span>
       </template>
@@ -511,6 +513,7 @@ export const Logging = {
         return {
             routes,
             useAutoQuery,
+            css,
             parseObject,
             prettyJson,
             api,
