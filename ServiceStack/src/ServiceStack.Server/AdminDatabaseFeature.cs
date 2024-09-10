@@ -15,7 +15,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin
+public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStringId, IPreInitPlugin, IPostInitPlugin
 {
     public string Id { get; set; } = Plugins.AdminDatabase;
     public string AdminRole { get; set; } = RoleNames.Admin;
@@ -31,6 +31,36 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
     }
 
     public void Register(IAppHost appHost)
+    {
+    }
+
+    private static List<SchemaInfo> ToSchemaTables(Dictionary<string, List<string>> schemasMap)
+    {
+        var schemas = new List<SchemaInfo>(); 
+        schemasMap.Keys.OrderBy(x => x).Each(schema =>
+        {
+            schemas.Add(new SchemaInfo
+            {
+                Name = schema,
+                Tables = schemasMap[schema],
+            });
+        });
+        return schemas;
+    }
+
+    public void BeforePluginsLoaded(IAppHost appHost)
+    {
+        appHost.ConfigurePlugin<UiFeature>(feature => {
+            feature.AddAdminLink(AdminUiFeature.Database, new LinkInfo {
+                Id = "database",
+                Label = "Database",
+                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Database)),
+                Show = $"role:{AdminRole}",
+            });
+        });
+    }
+
+    public void AfterPluginsLoaded(IAppHost appHost)
     {
         var dbFactory = appHost.Resolve<IDbConnectionFactory>();
         using var db = dbFactory.Open();
@@ -61,32 +91,6 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
                 QueryLimit = QueryLimit,
                 Databases = databases,
             };
-        });
-    }
-
-    private static List<SchemaInfo> ToSchemaTables(Dictionary<string, List<string>> schemasMap)
-    {
-        var schemas = new List<SchemaInfo>(); 
-        schemasMap.Keys.OrderBy(x => x).Each(schema =>
-        {
-            schemas.Add(new SchemaInfo
-            {
-                Name = schema,
-                Tables = schemasMap[schema],
-            });
-        });
-        return schemas;
-    }
-
-    public void BeforePluginsLoaded(IAppHost appHost)
-    {
-        appHost.ConfigurePlugin<UiFeature>(feature => {
-            feature.AddAdminLink(AdminUiFeature.Database, new LinkInfo {
-                Id = "database",
-                Label = "Database",
-                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Database)),
-                Show = $"role:{AdminRole}",
-            });
         });
     }
 }
