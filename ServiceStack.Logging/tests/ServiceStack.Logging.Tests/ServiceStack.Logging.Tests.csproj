@@ -14,11 +14,6 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="CommonServiceLocator" Version="1.3.0" />
     <PackageReference Include="EnterpriseLibrary.Common" Version="5.0.505" />
     <PackageReference Include="EnterpriseLibrary.Logging" Version="5.0.505.1" />

@@ -19,9 +19,9 @@
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-    <PackageReference Include="MongoDB.Bson" Version="2.26.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.26.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.26.0" />
+    <PackageReference Include="MongoDB.Bson" Version="2.28.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.28.0" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>

@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NLog" Version="4.7.12" />
+    <PackageReference Include="NLog" Version="5.3.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />

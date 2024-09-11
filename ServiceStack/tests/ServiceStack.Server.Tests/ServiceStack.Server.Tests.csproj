@@ -43,9 +43,9 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
-    <PackageReference Include="MongoDB.Bson" Version="2.26.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.26.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.26.0" />
+    <PackageReference Include="MongoDB.Bson" Version="2.28.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.28.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

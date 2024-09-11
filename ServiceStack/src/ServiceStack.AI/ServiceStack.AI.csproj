@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" Version="1.18.2" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="1.19.0" />
     </ItemGroup>
 
 </Project>

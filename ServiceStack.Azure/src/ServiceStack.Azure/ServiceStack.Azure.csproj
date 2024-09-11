@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
-    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.38.0" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.40.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
