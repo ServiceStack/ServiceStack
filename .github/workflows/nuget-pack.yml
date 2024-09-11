@@ -247,7 +247,7 @@ jobs:
         echo "Less packages produced than expected, failing."
         exit 1
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: ServiceStack Packages
         retention-days: 1
