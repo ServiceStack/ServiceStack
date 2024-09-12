@@ -70,9 +70,11 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
             dateConverter.DateStyle = DateTimeKind.Utc;
 
         AppHost ??= (IAppHostNetCore)appHost;
-        var fullDirPath = AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir).AssertDir();
+        var fullDirPath = Path.IsPathRooted(DbDir) 
+            ? DbDir
+            : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir);
 
-        DbFactory.RegisterConnection(DbFile, fullDirPath.CombineWith(DbFile), SqliteDialect.Provider);
+        DbFactory.RegisterConnection(DbFile, fullDirPath.AssertDir().CombineWith(DbFile), SqliteDialect.Provider);
 
         if (AutoInitSchema)
         {
