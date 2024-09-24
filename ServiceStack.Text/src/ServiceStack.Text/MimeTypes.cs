@@ -297,7 +297,7 @@ public static class MimeTypes
                 return "text/sgml";
 
             case "mp3":
-                return "audio/mpeg3";
+                return "audio/mpeg";
 
             case "au":
             case "snd":
