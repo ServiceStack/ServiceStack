@@ -1634,6 +1634,8 @@ namespace ServiceStack.OrmLite
                     return VisitParameter(exp as ParameterExpression);
                 case ExpressionType.Call:
                     return VisitMethodCall(exp as MethodCallExpression);
+                case ExpressionType.Invoke:
+                    return VisitInvocation(exp as InvocationExpression);
                 case ExpressionType.New:
                     return VisitNew(exp as NewExpression);
                 case ExpressionType.NewArrayInit:
@@ -2482,7 +2484,11 @@ namespace ServiceStack.OrmLite
                    && IsJoinedTable(exp.Expression.Type);
         }
 
-
+        protected virtual object VisitInvocation(InvocationExpression m)
+        {
+            return EvaluateExpression(m);
+        }
+        
         protected virtual object VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Sql))

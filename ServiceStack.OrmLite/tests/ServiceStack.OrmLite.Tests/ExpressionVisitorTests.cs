@@ -893,6 +893,21 @@ public class ExpressionVisitorTests(DialectContext context) : OrmLiteProvidersTe
         var target = Db.Select(q);
         Assert.That(target.Count, Is.EqualTo(0));
     }
+    
+    [Test]
+    public void Can_evaluate_invoke_expression()
+    {
+        System.Func<string> getValueWithFunc = () => "val";
+        System.Func<int, string> getValue1WithFunc = (id) => "val" + id;
+
+        var q = Db.From<TestType>().Where(t => t.TextCol.Contains(getValueWithFunc()));
+        var sql = q.ToMergedParamsSelectStatement();
+        Assert.True(!sql.Contains("%Invoke"));
+                
+        q = Db.From<TestType>().Where(t => t.TextCol.Contains(getValue1WithFunc(1)));
+        sql = q.ToMergedParamsSelectStatement();
+        Assert.True(!sql.Contains("%Invoke"));
+    }
 
     private int MethodReturningInt(int val)
     {
