@@ -31,7 +31,8 @@ async function updateStats() {
     console.debug('updateStats', !!window.client)
     if (window.client) {
         const prefs = getPrefs()
-        swrApi(window.client, new AdminJobInfo({ month:prefs.monthDb }), r => {
+        const request = new AdminJobInfo({ month:prefs.monthDb }) //var needed by safari
+        swrApi(window.client, request, r => {
             if (lastStats?.pageStats == null ||
                 lastStats.pageStats.find(x => x.label === 'JobSummary').total !==
                 r.response.pageStats.find(x => x.label === 'JobSummary').total) {
