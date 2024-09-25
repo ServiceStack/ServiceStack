@@ -1,7 +1,7 @@
 using ServiceStack;
 using ServiceStack.Redis;
 
-[assembly: HostingStartup(typeof(MyApp.ConfigureRedis))]
+// [assembly: HostingStartup(typeof(MyApp.ConfigureRedis))]
 
 namespace MyApp;
 
