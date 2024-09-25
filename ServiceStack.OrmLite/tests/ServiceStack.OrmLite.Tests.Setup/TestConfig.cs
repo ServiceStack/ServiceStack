@@ -11,7 +11,7 @@ public partial class TestConfig
     /// <summary>
     /// This value controls which providers are tested for all <see cref="TestFixtureOrmLiteAttribute"/> tests where dialects are not explicitly set
     /// </summary>
-    public static Dialect Dialects = EnvironmentVariable("ORMLITE_DIALECT", Dialect.MySql);
+    public static Dialect Dialects = EnvironmentVariable("ORMLITE_DIALECT", Dialect.Sqlite);
 }
 
 [Flags]
