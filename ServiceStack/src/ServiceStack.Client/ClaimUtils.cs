@@ -20,7 +20,9 @@ public static class ClaimUtils
     public static string? GetUserName(this ClaimsPrincipal? principal) => principal?.Identity?.Name; 
     public static string? GetUserId(this ClaimsPrincipal? principal) => principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     public static string? GetDisplayName(this ClaimsPrincipal? principal) => 
-        principal?.FindFirst(principal.Identities.FirstOrDefault()?.NameClaimType ?? ClaimTypes.Name)?.Value;
+        principal?.FindFirst(JwtClaimTypes.NickName)?.Value ??
+        principal?.FindFirst(principal.Identities.FirstOrDefault()?.NameClaimType ?? ClaimTypes.Name)?.Value ??
+        principal?.Identity?.Name;
     public static string? GetEmail(this ClaimsPrincipal principal) => principal.FindFirst(ClaimTypes.Email)?.Value;
     public static string[] GetRoles(this ClaimsPrincipal? principal) => principal?.Claims.Where(x => x.Type == ClaimTypes.Role)
         .Select(x => x.Value).ToArray() ?? [];
