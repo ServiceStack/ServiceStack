@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-servicestack:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       checks: write
       contents: read
@@ -29,7 +29,7 @@ jobs:
           SA_PASSWORD: Test!tesT
           MSSQL_PID: Developer
         ports:
-          - 1433:1433
+          - 48501:1433
       postgres:
         image: postgres
         env:
@@ -95,7 +95,7 @@ jobs:
       - name: Test WebHost Endpoints
         env:
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
-          MSSQL_CONNECTION: Server=localhost,1433;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+          MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
         run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx' --logger 'console;verbosity=detailed'
 
       - name: Test Report
