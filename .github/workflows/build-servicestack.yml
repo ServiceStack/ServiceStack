@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-servicestack:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       checks: write
       contents: read
@@ -23,7 +23,7 @@ jobs:
         ports:
           - 6379:6379
       sqlserver:
-        image: mcr.microsoft.com/mssql/server:2017-latest
+        image: mcr.microsoft.com/mssql/server:2019-latest
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: Test!tesT
