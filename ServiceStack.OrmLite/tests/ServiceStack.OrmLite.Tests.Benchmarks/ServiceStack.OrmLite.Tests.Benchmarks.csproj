@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="ServiceStack" />
+        <Using Include="ServiceStack.DataAnnotations" />
+        <Using Include="ServiceStack.OrmLite" />
+        <Using Include="BenchmarkDotNet" />
+        <Using Include="BenchmarkDotNet.Attributes" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\ServiceStack.OrmLite.MySql\ServiceStack.OrmLite.MySql.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.OrmLite.SqlServer.Data\ServiceStack.OrmLite.SqlServer.Data.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+    </ItemGroup>
+
+</Project>
