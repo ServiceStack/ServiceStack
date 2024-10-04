@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-servicestack:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     permissions:
       checks: write
       contents: read
