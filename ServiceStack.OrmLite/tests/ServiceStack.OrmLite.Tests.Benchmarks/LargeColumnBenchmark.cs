@@ -12,7 +12,7 @@ public class TextContents
 
 [MemoryDiagnoser]
 [ShortRunJob]
-public class SqlServerAsync
+public class LargeColumnBenchmark
 {
     private OrmLiteConnectionFactory dbFactory;
     private int id;
