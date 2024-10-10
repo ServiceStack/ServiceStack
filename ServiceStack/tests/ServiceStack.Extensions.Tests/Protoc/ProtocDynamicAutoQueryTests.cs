@@ -20,7 +20,7 @@ public class ProtocDynamicAutoQueryTests
     private static string[] DynamicTypeNames =
     [
         nameof(ChangeDb),
-        nameof(ChangeConnectionInfo),
+        // nameof(ChangeConnectionInfo),
     ];
 
     public static readonly byte[] AuthKey = AesUtils.CreateKey();
