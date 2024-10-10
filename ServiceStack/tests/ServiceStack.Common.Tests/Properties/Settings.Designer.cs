@@ -7,7 +7,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#if !NETCORE        
+#if NETFRAMEWORK        
 
 namespace ServiceStack.Common.Tests.Properties {
     

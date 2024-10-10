@@ -29,7 +29,7 @@ public abstract class HttpAsyncTaskHandler : IHttpAsyncHandler, IServiceStackHan
 
     protected virtual Task CreateProcessRequestTask(IRequest httpReq, IResponse httpRes, string operationName)
     {
-#if !NETCORE
+#if NETFRAMEWORK
         var currentCulture = Thread.CurrentThread.CurrentCulture;
         var currentUiCulture = Thread.CurrentThread.CurrentUICulture;
         var ctx = HttpContext.Current;
@@ -38,7 +38,7 @@ public abstract class HttpAsyncTaskHandler : IHttpAsyncHandler, IServiceStackHan
         //preserve Current Culture:
         return new Task(() =>
         {
-#if !NETCORE
+#if NETFRAMEWORK
             Thread.CurrentThread.CurrentCulture = currentCulture;
             Thread.CurrentThread.CurrentUICulture = currentUiCulture;
             //HttpContext is not preserved in ThreadPool threads: http://stackoverflow.com/a/13558065/85785
@@ -79,7 +79,7 @@ public abstract class HttpAsyncTaskHandler : IHttpAsyncHandler, IServiceStackHan
         return task;
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
     protected static bool DefaultHandledRequest(HttpListenerContext context) => false;
 
     protected static bool DefaultHandledRequest(HttpContextBase context) => false;

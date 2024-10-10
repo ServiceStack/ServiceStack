@@ -86,7 +86,7 @@ namespace ServiceStack.Text.Tests
             }
         }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void Can_Mock_UploadFile()
         {

@@ -15,7 +15,7 @@ public class AppSettings : AppSettingsBase
     {
         public string Get(string key)
         {
-#if !NETCORE
+#if NETFRAMEWORK
             return ConfigurationManager.AppSettings[key];
 #else
             var appSettings = ConfigUtils.GetAppSettingsMap();
@@ -27,7 +27,7 @@ public class AppSettings : AppSettingsBase
 
         public List<string> GetAllKeys()
         {
-#if !NETCORE
+#if NETFRAMEWORK
             return new List<string>(ConfigurationManager.AppSettings.AllKeys);
 #else
             var appSettings = ConfigUtils.GetAppSettingsMap();

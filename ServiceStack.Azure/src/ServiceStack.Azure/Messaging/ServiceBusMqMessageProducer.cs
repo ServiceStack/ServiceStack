@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
-#if NETCORE
+#if !NETFRAMEWORK
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 #else
@@ -16,7 +16,7 @@ public class ServiceBusMqMessageProducer : IMessageProducer
     private readonly Dictionary<string, MessageReceiver> sbReceivers = new();
     protected readonly ServiceBusMqMessageFactory? parentFactory;
         
-#if NETCORE
+#if !NETFRAMEWORK
     public Action<Microsoft.Azure.ServiceBus.Message,IMessage> PublishMessageFilter { get; set; }
 #else
     public Action<BrokeredMessage,IMessage> PublishMessageFilter { get; set; }
@@ -65,7 +65,7 @@ public class ServiceBusMqMessageProducer : IMessageProducer
         using (JsConfig.With(new Text.Config { IncludeTypeInfo = true }))
         {
             var msgBody = JsonSerializer.SerializeToString(message, typeof(IMessage));
-#if NETCORE
+#if !NETFRAMEWORK
             var msg = new Microsoft.Azure.ServiceBus.Message
             {
                 Body = msgBody.ToUtf8Bytes(),
@@ -80,7 +80,7 @@ public class ServiceBusMqMessageProducer : IMessageProducer
         }
     }
 
-#if NETCORE
+#if !NETFRAMEWORK
     public Microsoft.Azure.ServiceBus.Message ApplyFilter(Microsoft.Azure.ServiceBus.Message azureMessage, IMessage message)
     {
         PublishMessageFilter?.Invoke(azureMessage, message);
@@ -94,7 +94,7 @@ public class ServiceBusMqMessageProducer : IMessageProducer
     }
 #endif
 
-#if NETCORE
+#if !NETFRAMEWORK
     protected MessageReceiver GetOrCreateMessageReceiver(string queueName)
     {
         queueName = queueName.SafeQueueName()!;

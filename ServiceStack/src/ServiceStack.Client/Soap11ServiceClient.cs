@@ -1,4 +1,4 @@
-#if NETFX
+#if NETFRAMEWORK
 namespace ServiceStack
 {
     using System;

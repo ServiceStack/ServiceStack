@@ -121,7 +121,7 @@ public class AlwaysThrowsAppHost : AppHostHttpListenerBase
 
     public override void Configure(Container container)
     {
-#if !NETCORE
+#if NETFRAMEWORK
             Plugins.Add(new SoapFormat());
 #endif
         Plugins.Add(new ValidationFeature());
@@ -242,7 +242,7 @@ public abstract class WebServicesTests
     public void Can_Handle_Exception_from_AlwaysThrowsList_with_GET_route()
     {
         var client = CreateNewServiceClient();
-#if !NETCORE
+#if NETFRAMEWORK
             if (client is WcfServiceClient) return;
 #endif
         try
@@ -338,7 +338,7 @@ public class JsvIntegrationTests : WebServicesTests
     }
 }
 
-#if !NETCORE
+#if NETFRAMEWORK
     public class Soap11IntegrationTests : WebServicesTests
     {
         protected override IServiceClient CreateNewServiceClient()

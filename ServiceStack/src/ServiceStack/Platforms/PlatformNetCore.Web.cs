@@ -1,4 +1,4 @@
-﻿#if NETCORE
+﻿#if !NETFRAMEWORK
 
 using System;
 using System.Collections;
@@ -195,7 +195,7 @@ namespace ServiceStack.Host
                 property = ((DefaultMemberAttribute)atts[0]).MemberName;
 
             Type[] argTypes = new Type[] { (is_string) ? typeof(string) : typeof(int) };
-#if !NETCORE
+#if NETFRAMEWORK
             PropertyInfo prop = t.GetProperty(property, argTypes);
 #else
             PropertyInfo prop = t.GetTypeInfo().GetProperty(property, argTypes);
@@ -225,7 +225,7 @@ namespace ServiceStack.Host
             if (string.IsNullOrEmpty(propName))
                 throw new ArgumentNullException(nameof(propName));
 
-#if !NETCORE
+#if NETFRAMEWORK
             PropertyDescriptor prop = TypeDescriptor.GetProperties(container).Find(propName, true);
 #else
             PropertyInfo prop = container.GetType().GetProperty(propName);            

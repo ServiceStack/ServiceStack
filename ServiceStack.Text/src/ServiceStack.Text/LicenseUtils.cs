@@ -404,7 +404,7 @@ public static class LicenseUtils
             var rsa = RSA.Create();
             rsa.FromXml(LicensePublicKey);
 
-#if !NETCORE
+#if NETFRAMEWORK
                 var verified = ((RSACryptoServiceProvider)rsa)
                     .VerifyData(keyText.ToUtf8Bytes(), "SHA256", Convert.FromBase64String(keySign));
 #else
@@ -450,7 +450,7 @@ public static class LicenseUtils
             var rsa = RSA.Create();
             rsa.FromXml(LicensePublicKey);
 
-#if !NETCORE
+#if NETFRAMEWORK
                 var verified = ((RSACryptoServiceProvider)rsa)
                     .VerifyData(keyText.ToUtf8Bytes(), "SHA256", Convert.FromBase64String(keySign));
 #else
@@ -719,7 +719,6 @@ public static class LicenseUtils
 
     public static LicenseKey VerifyLicenseKeyText(string licenseKeyText)
     {
-#if NETFX || NETCORE
         LicenseKey key;
         try
         {
@@ -732,14 +731,11 @@ public static class LicenseUtils
                 throw;
         }
         return key;
-#else
-            return licenseKeyText.ToLicenseKey();
-#endif
     }
         
     private static void FromXml(this RSA rsa, string xml)
     {
-#if NETFX
+#if NETFRAMEWORK
             rsa.FromXmlString(xml);
 #else
         //throws PlatformNotSupportedException
@@ -747,8 +743,7 @@ public static class LicenseUtils
         rsa.ImportParameters(csp);
 #endif
     }
-        
-#if !NET45
+
     private static RSAParameters ExtractFromXml(string xml)
     {
         var csp = new RSAParameters();
@@ -801,8 +796,7 @@ public static class LicenseUtils
 
         return csp;
     }
-#endif
-        
+
     public static bool VerifyLicenseKeyText(this string licenseKeyText, out LicenseKey key)
     {
         var publicRsaProvider = new RSACryptoServiceProvider();

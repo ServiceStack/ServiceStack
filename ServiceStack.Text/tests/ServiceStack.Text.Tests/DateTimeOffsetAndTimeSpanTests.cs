@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.Serialization;
 #endif
 
@@ -9,7 +9,7 @@ namespace ServiceStack.Text.Tests
     [TestFixture]
     public class DateTimeOffsetAndTimeSpanTests : TestBase
     {
-#if !IOS && !NETCORE
+#if !IOS && NETFRAMEWORK
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {

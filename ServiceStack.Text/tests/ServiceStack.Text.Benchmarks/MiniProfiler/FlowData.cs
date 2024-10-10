@@ -1,4 +1,4 @@
-﻿#if NETFX
+﻿#if NETFRAMEWORK
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
@@ -16,7 +16,7 @@ namespace StackExchange.Profiling.Internal
     /// <typeparam name="T">The type of data to store.</typeparam>
     public class FlowData<T>
     {
-#if NETFX
+#if NETFRAMEWORK
         // Key specific to this type.
 #pragma warning disable RCS1158 // Avoid static members in generic types.
         private static readonly string _key = typeof(FlowData<T>).FullName;

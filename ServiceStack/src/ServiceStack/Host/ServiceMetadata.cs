@@ -823,7 +823,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
         return type;
     }
         
-#if !NETCORE
+#if NETFRAMEWORK
     public List<Type> GetAllSoapOperationTypes()
     {
         var operationTypes = GetAllOperationTypes();

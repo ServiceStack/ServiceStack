@@ -12,7 +12,7 @@ public class CachedJsonServiceClientTests : CachedServiceClientTests
     protected override ICachedServiceClient GetCachedServiceClient()
     {
         var client = new JsonServiceClient(Config.ListeningOn);
-#if NETCORE            
+#if !NETFRAMEWORK            
         client.AddHeader(HttpHeaders.AcceptEncoding, "gzip,deflate");
 #endif
         return new CachedServiceClient(client);

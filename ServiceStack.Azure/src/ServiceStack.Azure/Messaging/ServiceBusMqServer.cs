@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
-#if NETCORE
+#if !NETFRAMEWORK
 using Microsoft.Azure.ServiceBus.Management;
 #else
 using Microsoft.ServiceBus;
@@ -51,7 +51,7 @@ public class ServiceBusMqServer : IMessageService
     public Func<object, object> ResponseFilter { get; set; }
         
         
-#if NETCORE
+#if !NETFRAMEWORK
     /// <summary>
     /// Exposes the <see cref="Microsoft.Azure.ServiceBus.Management.ManagementClient"/> which can be used to perform
     /// management operations on ServiceBus entities.
@@ -104,7 +104,7 @@ public class ServiceBusMqServer : IMessageService
     public bool DisableNotifyMessages { get; set; }
 
         
-#if NETCORE
+#if !NETFRAMEWORK
     public Action<Microsoft.Azure.ServiceBus.Message,IMessage> PublishMessageFilter 
     {
         get => messageFactory!.PublishMessageFilter;

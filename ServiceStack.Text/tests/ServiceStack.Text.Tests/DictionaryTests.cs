@@ -292,7 +292,7 @@ namespace ServiceStack.Text.Tests
             Assert.That(deserializedDict["max"], Is.EqualTo(sbyte.MaxValue));
         }
 
-#if NETFX
+#if NETFRAMEWORK
         [Test]
         public void Deserializes_floats_into_to_best_fit_floating_point()
         {

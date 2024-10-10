@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.Auth;

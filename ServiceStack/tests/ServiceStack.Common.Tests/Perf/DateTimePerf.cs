@@ -79,7 +79,7 @@ namespace ServiceStack.Common.Tests.Perf
                 "DateTime.Parse(now.ToString())", () => DateTime.Parse(nowStr),
                 "XmlConvert.ToString", () => XmlConvert.ToDateTime(nowXmlStr, XmlDateTimeSerializationMode.Utc)
                 );
-#if !NETCORE
+#if NETFRAMEWORK
             CompareMultipleRuns(
                 "DateTime.ParseExact(utcNow, DateTimeFormat, null)", () => DateTime.ParseExact(nowXmlExact, DateTimeSerializer.XsdDateTimeFormat, null),
                 "XmlConvert.ToString", () => XmlConvert.ToDateTime(nowXmlExact, DateTimeSerializer.XsdDateTimeFormat)

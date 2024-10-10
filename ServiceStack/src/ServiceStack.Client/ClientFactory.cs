@@ -18,7 +18,7 @@ namespace ServiceStack
             if (endpointUrl.IndexOf("format=xml", StringComparison.Ordinal) >= 0)
                 return new XmlServiceClient(endpointUrl);
 
-#if NETFX
+#if NETFRAMEWORK
             if (endpointUrl.IndexOf("format=soap11", StringComparison.Ordinal) >= 0)
                 return new Soap11ServiceClient(endpointUrl);
 

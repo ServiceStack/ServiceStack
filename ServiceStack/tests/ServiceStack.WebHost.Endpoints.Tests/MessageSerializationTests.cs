@@ -65,7 +65,7 @@ public class MessageSerializationTests
 		}
 	}
 
-#if !NETCORE
+#if NETFRAMEWORK
 	[Test]
 	public void Can_create_entire_message_from_xml()
 	{

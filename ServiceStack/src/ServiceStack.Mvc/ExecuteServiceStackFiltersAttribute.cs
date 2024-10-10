@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-#if !NETCORE
+#if NETFRAMEWORK
     using System.Web.Mvc;
 #else
     using Microsoft.AspNetCore.Mvc;
@@ -54,7 +54,7 @@ public class ExecuteServiceStackFiltersAttribute : ActionFilterAttribute
     {
         var attrs = new List<T>();
 
-#if !NETCORE
+#if NETFRAMEWORK
         var attr = filterContext.ActionDescriptor
             .GetCustomAttributes(typeof(T), true)
             .FirstOrDefault() as T;
