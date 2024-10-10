@@ -1,10 +1,10 @@
 /* Options:
-Date: 2024-01-11 13:36:18
-Version: 8.01
+Date: 2024-10-10 19:27:32
+Version: 8.41
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
-GlobalNamespace: ServiceStack.Extensions.Tests.Protoc
+//GlobalNamespace: 
 //AddDescriptionAsComments: True
 */
 
@@ -34,8 +34,6 @@ service GrpcServices {
     rpc GetAuthenticate(Authenticate) returns (AuthenticateResponse) {}
 
     rpc PostAuthenticate(Authenticate) returns (AuthenticateResponse) {}
-
-    rpc GetChangeConnectionInfo(ChangeConnectionInfo) returns (ChangeDbResponse) {}
 
     rpc GetChangeDb(ChangeDb) returns (ChangeDbResponse) {}
 
@@ -111,12 +109,6 @@ service GrpcServices {
 
     rpc GetDynamicQueryRockstarAlbumsCustomLeftJoin(DynamicRequest) returns (QueryResponse_CustomRockstar) {}
 
-    rpc GetDynamicChangeDb(DynamicRequest) returns (ChangeDbResponse) {}
-
-    rpc GetDynamicChangeConnectionInfo(DynamicRequest) returns (ChangeDbResponse) {}
-
-    rpc GetDynamicQueryChangeConnectionInfo(DynamicRequest) returns (QueryResponse_Rockstar) {}
-
     rpc GetDynamicQueryRockstarAudit(DynamicRequest) returns (QueryResponse_RockstarAuto) {}
 
     rpc GetDynamicQueryRockstarAuditSubOr(DynamicRequest) returns (QueryResponse_RockstarAuto) {}
@@ -124,8 +116,6 @@ service GrpcServices {
     rpc GetDynamicQueryBookings(DynamicRequest) returns (QueryResponse_Booking) {}
 
     rpc GetDynamicQueryBookmarks(DynamicRequest) returns (QueryResponse_Bookmark) {}
-
-    rpc GetDynamicQueryNamedRockstars(DynamicRequest) returns (QueryResponse_NamedRockstar) {}
 
     rpc GetDynamicQueryRockstars(DynamicRequest) returns (QueryResponse_Rockstar) {}
 
@@ -291,6 +281,8 @@ service GrpcServices {
 
     rpc PostGetAccessToken(GetAccessToken) returns (GetAccessTokenResponse) {}
 
+    rpc CallGetApiKeys(GetApiKeys) returns (GetApiKeysResponse) {}
+
     rpc CallGetFile(GetFile) returns (FileContent) {}
 
     rpc CallGetHello(GetHello) returns (HelloResponse) {}
@@ -343,8 +335,6 @@ service GrpcServices {
 
     rpc GetQueryCaseInsensitiveOrderBy(QueryCaseInsensitiveOrderBy) returns (QueryResponse_Rockstar) {}
 
-    rpc GetQueryChangeConnectionInfo(QueryChangeConnectionInfo) returns (QueryResponse_Rockstar) {}
-
     rpc GetQueryChangeDb(QueryChangeDb) returns (QueryResponse_Rockstar) {}
 
     rpc GetQueryCustomRockstars(QueryCustomRockstars) returns (QueryResponse_CustomRockstar) {}
@@ -376,8 +366,6 @@ service GrpcServices {
     rpc GetQueryMovies(QueryMovies) returns (QueryResponse_Movie) {}
 
     rpc GetQueryMultiJoinRockstar(QueryMultiJoinRockstar) returns (QueryResponse_CustomRockstar) {}
-
-    rpc GetQueryNamedRockstars(QueryNamedRockstars) returns (QueryResponse_NamedRockstar) {}
 
     rpc GetQueryOrRockstars(QueryOrRockstars) returns (QueryResponse_Rockstar) {}
 
@@ -426,6 +414,12 @@ service GrpcServices {
     rpc DeleteRealDeleteAuditTenantGateway(RealDeleteAuditTenantGateway) returns (RockstarWithIdAndCountResponse) {}
 
     rpc DeleteRealDeleteAuditTenantMq(RealDeleteAuditTenantMq) returns (EmptyResponse) {}
+
+    rpc PostRegenerateApiKeys(RegenerateApiKeys) returns (RegenerateApiKeysResponse) {}
+
+    rpc PutRegister(Register) returns (RegisterResponse) {}
+
+    rpc PostRegister(Register) returns (RegisterResponse) {}
 
     rpc GetRequiresAuth(RequiresAuth) returns (RequiresAuth) {}
 
@@ -578,8 +572,9 @@ message AuthenticateResponse {
    string ProfileUrl = 9;
    repeated string Roles = 10;
    repeated string Permissions = 11;
-   ResponseStatus ResponseStatus = 12;
-   map<string,string> Meta = 13;
+   string AuthProvider = 12;
+   ResponseStatus ResponseStatus = 13;
+   map<string,string> Meta = 14;
 }
 message Bar {
    string Y = 2;
@@ -599,8 +594,6 @@ message Bookmark {
    string Title = 2;
    string Description = 3;
    string Url = 4;
-}
-message ChangeConnectionInfo {
 }
 message ChangeDb {
    string NamedConnection = 1;
@@ -907,6 +900,15 @@ message GetAccessTokenResponse {
    map<string,string> Meta = 2;
    ResponseStatus ResponseStatus = 3;
 }
+message GetApiKeys {
+   string Environment = 1;
+   map<string,string> Meta = 2;
+}
+message GetApiKeysResponse {
+   repeated UserApiKey Results = 1;
+   map<string,string> Meta = 2;
+   ResponseStatus ResponseStatus = 3;
+}
 message GetFile {
    string Path = 1;
 }
@@ -1142,7 +1144,6 @@ message QueryBase {
       QueryDb_RockstarReference QueryDb_RockstarReference = 139856298;
       QueryDb_Bookmark QueryDb_Bookmark = 146734877;
       QueryDb_Adhoc QueryDb_Adhoc = 193863048;
-      QueryDb_NamedRockstar QueryDb_NamedRockstar = 217534861;
       QueryDb_Foo QueryDb_Foo = 239635360;
       QueryDb_TypeWithEnum QueryDb_TypeWithEnum = 390586478;
       QueryDb_RockstarAlbum QueryDb_RockstarAlbum = 411180685;
@@ -1181,15 +1182,6 @@ message QueryCaseInsensitiveOrderBy {
    string Fields = 6;
    map<string,string> Meta = 7;
    int32 Age = 201;
-}
-message QueryChangeConnectionInfo {
-   int32 Skip = 1;
-   int32 Take = 2;
-   string OrderBy = 3;
-   string OrderByDesc = 4;
-   string Include = 5;
-   string Fields = 6;
-   map<string,string> Meta = 7;
 }
 message QueryChangeDb {
    int32 Skip = 1;
@@ -1260,8 +1252,6 @@ message QueryDb_CustomSelectRockstar_CustomSelectRockstarResponse {
 message QueryDb_Foo {
 }
 message QueryDb_Movie {
-}
-message QueryDb_NamedRockstar {
 }
 message QueryDb_PagingTest {
 }
@@ -1411,16 +1401,6 @@ message QueryMultiJoinRockstar {
    string RockstarAlbumName = 202;
    string RockstarGenreName = 203;
 }
-message QueryNamedRockstars {
-   int32 Skip = 1;
-   int32 Take = 2;
-   string OrderBy = 3;
-   string OrderByDesc = 4;
-   string Include = 5;
-   string Fields = 6;
-   map<string,string> Meta = 7;
-   int32 Age = 201;
-}
 message QueryOrRockstars {
    int32 Skip = 1;
    int32 Take = 2;
@@ -1542,13 +1522,6 @@ message QueryResponse_Movie {
    int32 Offset = 1;
    int32 Total = 2;
    repeated Movie Results = 3;
-   map<string,string> Meta = 4;
-   ResponseStatus ResponseStatus = 5;
-}
-message QueryResponse_NamedRockstar {
-   int32 Offset = 1;
-   int32 Total = 2;
-   repeated Rockstar Results = 3;
    map<string,string> Meta = 4;
    ResponseStatus ResponseStatus = 5;
 }
@@ -1794,6 +1767,41 @@ message RealDeleteAuditTenantGateway {
 }
 message RealDeleteAuditTenantMq {
    int32 Id = 1;
+}
+message RegenerateApiKeys {
+   string Environment = 1;
+   map<string,string> Meta = 2;
+}
+message RegenerateApiKeysResponse {
+   repeated UserApiKey Results = 1;
+   map<string,string> Meta = 2;
+   ResponseStatus ResponseStatus = 3;
+}
+message Register {
+   string UserName = 1;
+   string FirstName = 2;
+   string LastName = 3;
+   string DisplayName = 4;
+   string Email = 5;
+   string Password = 6;
+   string ConfirmPassword = 7;
+   bool AutoLogin = 8;
+   string ErrorView = 10;
+   map<string,string> Meta = 11;
+}
+message RegisterResponse {
+   string UserId = 1;
+   string SessionId = 2;
+   string UserName = 3;
+   string ReferrerUrl = 4;
+   string BearerToken = 5;
+   string RefreshToken = 6;
+   .google.protobuf.Timestamp RefreshTokenExpiry = 7;
+   repeated string Roles = 8;
+   repeated string Permissions = 9;
+   string RedirectUrl = 10;
+   ResponseStatus ResponseStatus = 11;
+   map<string,string> Meta = 12;
 }
 message RequiresAuth {
    string Name = 1;
@@ -2186,6 +2194,12 @@ message UpdateTodo {
    string Title = 2;
    int32 Order = 3;
    bool Completed = 4;
+}
+message UserApiKey {
+   string Key = 1;
+   string KeyType = 2;
+   .google.protobuf.Timestamp ExpiryDate = 3;
+   map<string,string> Meta = 4;
 }
 message ValidateCreateRockstar {
    string FirstName = 1;
