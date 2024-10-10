@@ -98,7 +98,7 @@ export const ApiForm = {
         </nav>
         <div class="w-body md:w-body fixed top-sub-nav h-sub-nav overflow-auto md:pb-scroll">
           <Alert v-if="store.invalidAccess()" class="pt-4 px-4" v-html="store.invalidAccess()" />
-          <Alert v-else-if="store.op.requiresApiKey && !store.apikey" class="pt-4 px-4">
+          <Alert v-else-if="store.op.requiresApiKey && !(store.apikey || ['apikey','authsecret'].includes(store.auth?.authProvider))" class="pt-4 px-4">
             This API Requires an <a v-href="{ dialog:'apikey' }" target="_blank" class="underline">API Key</a>
           </Alert>
           <AutoForm v-if="showAutoForm && routes.form===''" :type="routes.op" v-model="state.model" 

@@ -43,9 +43,10 @@ public class AuthenticateResponse : IMeta, IHasResponseStatus, IHasSessionId, IH
     [DataMember(Order = 9)] public string ProfileUrl { get; set; }
     [DataMember(Order = 10)] public List<string> Roles { get; set; } 
     [DataMember(Order = 11)] public List<string> Permissions { get; set; } 
+    [DataMember(Order = 12)] public string AuthProvider { get; set; }
 
-    [DataMember(Order = 12)] public ResponseStatus ResponseStatus { get; set; }
-    [DataMember(Order = 13)] public Dictionary<string, string> Meta { get; set; }
+    [DataMember(Order = 13)] public ResponseStatus ResponseStatus { get; set; }
+    [DataMember(Order = 14)] public Dictionary<string, string> Meta { get; set; }
 }
 
 [ExcludeMetadata]

@@ -30,6 +30,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public Func<string>? ApiKeyGenerator { get; set; }
     public TimeSpan? DefaultExpiry { get; set; }
     public Dictionary<int, DateTime> LastUsedApiKeys { get; set; } = new();
+    public ConcurrentDictionary<string, IApiKey> ValidApiKeys { get; } = new();
 
     public List<Type> RegisterServices { get; set; } = [
         typeof(AdminApiKeysService),
@@ -351,6 +352,13 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
             });
         });
     }
+
+    public void RemoveValidApiKeyById(int id)
+    {
+        var apiKey = ValidApiKeys.Values.Cast<ApiKey>().FirstOrDefault(x => x.Id == id);
+        if (apiKey != null)
+            ValidApiKeys.TryRemove(apiKey.Key, out _);
+    }
 }
 
 public static class ApiKeysExtensions
@@ -443,7 +451,7 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
     public async Task<object> Any(AdminUpdateApiKey request)
     {
         var dict = request.ToObjectDictionary();
-        var updateModel = new Dictionary<string, object?>();
+        var updateModel = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         var reset = (request.Reset ?? []).ToSet(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in dict)
         {
@@ -462,6 +470,10 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
         if (updateModel.Count > 0)
         {
             await Db.UpdateAsync<ApiKeysFeature.ApiKey>(updateModel, x => x.Id == request.Id);
+            if (updateModel.ContainsKey(nameof(ApiKeysFeature.ApiKey.CancelledDate)))
+            {
+                HostContext.AssertPlugin<ApiKeysFeature>().RemoveValidApiKeyById(request.Id);
+            }
         }
         
         return new EmptyResponse();
@@ -470,6 +482,9 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
     public async Task<object> Any(AdminDeleteApiKey request)
     {
         await Db.DeleteByIdAsync<ApiKeysFeature.ApiKey>(request.Id);
+
+        var feature = HostContext.AssertPlugin<ApiKeysFeature>();
+        feature.RemoveValidApiKeyById(request.Id.GetValueOrDefault());
         return new EmptyResponse();
     }
 }
@@ -481,7 +496,7 @@ public class UserApiKeysService(IDbConnectionFactory dbFactory) : Service
     {
         var claimsPrincipal = Request.GetClaimsPrincipal();
         var userId = claimsPrincipal.GetUserId()
-                     ?? throw new ArgumentNullException(nameof(IdentityUser.Id));
+            ?? throw new ArgumentNullException(nameof(IdentityUser.Id));
         var userName = claimsPrincipal.GetUserName();
         return (userId, userName);
     }
@@ -550,7 +565,7 @@ public class UserApiKeysService(IDbConnectionFactory dbFactory) : Service
         var feature = HostContext.AssertPlugin<ApiKeysFeature>();
 
         var dict = request.ToObjectDictionary();
-        var updateModel = new Dictionary<string, object?>();
+        var updateModel = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         var reset = (request.Reset ?? []).ToSet(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in dict)
         {
@@ -578,6 +593,11 @@ public class UserApiKeysService(IDbConnectionFactory dbFactory) : Service
         {
             await Db.UpdateAsync<ApiKeysFeature.ApiKey>(updateModel, 
                 x => x.Id == request.Id && x.UserId == userId);
+
+            if (updateModel.ContainsKey(nameof(ApiKeysFeature.ApiKey.CancelledDate)))
+            {
+                feature.RemoveValidApiKeyById(request.Id);
+            }
         }
         return new EmptyResponse();
     }
@@ -586,6 +606,7 @@ public class UserApiKeysService(IDbConnectionFactory dbFactory) : Service
     {
         var (userId, _) = GetUserIdAndUserName();
         await Db.DeleteAsync<ApiKeysFeature.ApiKey>(x => x.Id == request.Id && x.UserId == userId);
+        HostContext.AssertPlugin<ApiKeysFeature>().RemoveValidApiKeyById(request.Id.GetValueOrDefault());
         return new EmptyResponse();
     }
 }

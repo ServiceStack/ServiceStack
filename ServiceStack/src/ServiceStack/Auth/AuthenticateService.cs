@@ -318,10 +318,11 @@ public class AuthenticateService : Service
                 UserId = session.UserAuthId,
                 UserName = session.UserAuthName,
                 DisplayName = session.DisplayName
-                              ?? session.UserName 
-                              ?? $"{session.FirstName} {session.LastName}".Trim(),
+                    ?? session.UserName 
+                    ?? $"{session.FirstName} {session.LastName}".Trim(),
                 SessionId = session.Id,
                 ReferrerUrl = referrerUrl,
+                AuthProvider = session.AuthProvider,
             };
 
             if (response is AuthenticateResponse authResponse)
