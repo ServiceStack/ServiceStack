@@ -130,7 +130,8 @@ public class ApiKeyCredentialsProvider : AuthProvider
             };
             return response;
         }
-        return null;
+
+        throw HttpError.Unauthorized(ErrorMessages.ApiKeyInvalid.Localize(authService.Request));
     }
 
     public async Task<IApiKey?> GetValidApiKeyAsync(string token, IRequest request)
