@@ -10,6 +10,6 @@ namespace ServiceStack.Server.Tests
 
         public static readonly string RabbitMQConnString = Environment.GetEnvironmentVariable("CI_RABBITMQ") ?? "localhost";
         public static readonly string SqlServerConnString = Environment.GetEnvironmentVariable("MSSQL_CONNECTION")
-                                            ?? "Server=localhost;Database=test;User Id=test;Password=test;";
+            ?? "Server=localhost;Database=test;User Id=test;Password=test;";
     }
 }
