@@ -390,7 +390,9 @@ internal static class WriteType<T, TSerializer>
         writer.Write(JsWriter.MapStartChar);
 
         var i = 0;
-        if (WriteTypeInfo != null || JsState.IsWritingDynamic)
+        var writeTypeInfo = WriteTypeInfo != null || JsState.IsWritingDynamic
+            || (JsConfigScope.Current != null && JsConfigScope.Current.IncludeTypeInfo && !JsConfigScope.Current.ExcludeTypeInfo); 
+        if (writeTypeInfo)
         {
             if (JsConfig.PreferInterfaces && TryWriteSelfType(writer)) i++;
             else if (TryWriteTypeInfo(writer, instance)) i++;
