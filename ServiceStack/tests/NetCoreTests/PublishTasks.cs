@@ -228,21 +228,15 @@ public class PublishTasks
                 typeof(RequestLogsInfo),
                 typeof(ViewCommands),
                 typeof(ExecuteCommand),
-                typeof(AdminJobInfo),
-                typeof(AdminGetJob),
-                typeof(AdminGetJobProgress),
-                typeof(AdminCancelJobs),
-                typeof(AdminRequeueFailedJobs),
-                typeof(AdminJobDashboard),
                 
-                typeof(AdminQueryBackgroundJobs),
-                typeof(AdminQueryJobSummary),
-                typeof(AdminQueryScheduledTasks),
-                typeof(AdminQueryCompletedJobs),
-                typeof(AdminQueryFailedJobs),
-                typeof(AdminQueryRequestLogs),
-                ..UiServices.AutoQueryTypes
+                ..UiServices.AutoQueryTypes,
+                ..UiServices.BackgroundJobTypes,
             ];
+            
+            UiServices.BackgroundJobTypes.Each(x =>
+            {
+                NativeTypesService.BuiltInClientDtos.RemoveAll(x => UiServices.BackgroundJobTypes.Contains(x));
+            });
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), [
                 new CredentialsAuthProvider(AppSettings)
@@ -280,6 +274,8 @@ public class PublishTasks
         var baseUrl = "http://localhost:20000";
         using var appHost = new AppHost().Init().Start(baseUrl);
         
+        Thread.Sleep(20000);
+        
         var sb = new StringBuilder("import { ApiResult } from './client';\n\n");
         var dtos = baseUrl.CombineWith("/types/typescript").GetStringFromUrl();
         sb.AppendLine(dtos);
@@ -296,6 +292,33 @@ public class PublishTasks
 
         var metadataJs = $"export default {metadata}";
         File.WriteAllText(Path.GetFullPath("./admin-ui/lib/metadata.mjs"), metadataJs);
+        
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.mjs"), mjs);
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.ts"), dtos);
+
+        var python = baseUrl.CombineWith("/types/python").GetStringFromUrl();
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.py"), python);
+
+        var dart = baseUrl.CombineWith("/types/dart").GetStringFromUrl();
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.dart"), dart);
+
+        var php = baseUrl.CombineWith("/types/php").GetStringFromUrl();
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.php"), php);
+
+        var java = baseUrl.CombineWith("/types/java").GetStringFromUrl();
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.java"), java);
+
+        var kotlin = baseUrl.CombineWith("/types/kotlin").GetStringFromUrl();
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.kt"), kotlin);
+
+        var swift = baseUrl.CombineWith("/types/swift").GetStringFromUrl();
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.swift"), swift);
+
+        var fsharp = baseUrl.CombineWith("/types/fsharp").GetStringFromUrl();
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.fs"), fsharp);
+
+        var vb = baseUrl.CombineWith("/types/vbnet").GetStringFromUrl();
+        File.WriteAllText(Path.GetFullPath("./wwwroot/dtos/dtos.vb"), vb);
     }
 
     [Test]
@@ -360,6 +383,31 @@ public class UiServices : Service
         typeof(AdminQueryCompletedJobs),
         typeof(AdminQueryFailedJobs),
         typeof(AdminQueryRequestLogs),
+    ];
+    
+    public static Type[] BackgroundJobTypes =
+    [
+        typeof(AdminJobInfo),
+        typeof(AdminGetJob),
+        typeof(AdminGetJobProgress),
+        typeof(AdminCancelJobs),
+        typeof(AdminRequeueFailedJobs),
+        typeof(AdminJobDashboard),
+        typeof(AdminQueryBackgroundJobs),
+        typeof(AdminQueryJobSummary),
+        typeof(AdminQueryScheduledTasks),
+        typeof(AdminQueryCompletedJobs),
+        typeof(AdminQueryFailedJobs),
+        typeof(AdminQueryRequestLogs),
+
+        typeof(BackgroundJobBase),
+        typeof(BackgroundJobOptions),
+        typeof(BackgroundJob),
+        typeof(JobSummary),
+        typeof(ScheduledTask),
+        typeof(CompletedJob),
+        typeof(FailedJob),
+        typeof(WorkerStats),
     ];
     
     // Generate app metadata.js required for all AutoQuery APIs in built-in UIs
