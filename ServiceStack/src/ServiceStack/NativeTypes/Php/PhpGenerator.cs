@@ -951,8 +951,9 @@ public class PhpGenerator : ILangGenerator
                     }
                     else if (DictionaryTypes.Contains(prop.Type))
                     {
-                        sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:[{QuotedGenericArg(prop.GenericArgs[0])},{QuotedGenericArg(prop.GenericArgs[1])}]), $o['{propName}']);");
-                        toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:[{QuotedGenericArg(prop.GenericArgs[0])},{QuotedGenericArg(prop.GenericArgs[1])}]), $this->{propName});");
+                        var genericArgs = prop.GenericArgs ?? ["string","object"];
+                        sb.AppendLine($"if (isset($o['{propName}'])) $this->{propName} = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:[{QuotedGenericArg(genericArgs[0])},{QuotedGenericArg(genericArgs[1])}]), $o['{propName}']);");
+                        toJsonLines.Add($"if (isset($this->{propName})) $o['{propName}'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:[{QuotedGenericArg(genericArgs[0])},{QuotedGenericArg(genericArgs[1])}]), $this->{propName});");
                     }
                     else if (ArrayTypes.Contains(prop.Type))
                     {
