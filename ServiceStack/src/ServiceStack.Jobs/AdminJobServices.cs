@@ -16,6 +16,8 @@ public class AdminJobInfoResponse
 {
     public List<DateTime> MonthDbs { get; set; } = [];
     public Dictionary<string, int> TableCounts { get; set; } = [];
+    public List<WorkerStats> WorkerStats { get; set; } = [];
+    public Dictionary<string, int> QueueCounts { get; set; } = new();
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
@@ -294,6 +296,9 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
         {
             to.TableCounts[entry.Key] = entry.Value;
         }
+
+        to.WorkerStats = jobs.GetWorkerStats();
+        to.QueueCounts = jobs.GetWorkerQueueCounts();
         
         return to;
     }
