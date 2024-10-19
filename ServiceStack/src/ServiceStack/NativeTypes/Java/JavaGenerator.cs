@@ -506,7 +506,7 @@ public class JavaGenerator : ILangGenerator
 
                 var defaultName = prop.Name.PropertyStyle();
                 var fieldName = GetPropertyName(prop.Name);
-                if (fieldName == defaultName)
+                if (fieldName == defaultName || prop.DataMember?.Name != null)
                 {
                     sb.AppendLine($"public {propType} {fieldName} = null;");
                 }
@@ -651,6 +651,8 @@ public class JavaGenerator : ILangGenerator
                 return $"ArrayList<{GenericArg(genericArgs[0])}>";
             if (ArrayTypes.Contains(type))
                 return "ArrayList<{0}>".Fmt(GenericArg(genericArgs[0])).StripNullable();
+            if (type.EndsWith("[]"))
+                return $"ArrayList<{Type(type.Substring(0,type.Length-2), genericArgs)}>".StripNullable();
             if (DictionaryTypes.Contains(type))
                 return "HashMap<{0},{1}>".Fmt(
                     GenericArg(genericArgs[0]),
