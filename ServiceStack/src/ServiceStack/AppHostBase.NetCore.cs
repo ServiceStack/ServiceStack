@@ -32,6 +32,7 @@ using ServiceStack.Platforms;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ActionContext = ServiceStack.Host.ActionContext;
 #if NETSTANDARD2_0
 using IHostApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 using IWebHostEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
@@ -279,7 +280,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             operation.RequestType.ExcludesFeature(Feature.ApiExplorer) || 
             operation.RequestType.HasAttribute<ExcludeFromDescriptionAttribute>())
             builder.ExcludeFromDescription();
-
+        
         return builder;
     }
     
@@ -718,6 +719,18 @@ public static class NetCoreAppHostExtensions
     public static bool IsProductionEnvironment(this IAppHost appHost) =>
         appHost.GetHostingEnvironment().EnvironmentName == "Production";
 
+#if NET8_0_OR_GREATER
+    public static void AddRequestDtoAttributes(RouteHandlerBuilder builder, Operation operation, string verb, string route)
+    {
+        var attrs = operation.RequestType.GetCustomAttributes(true);
+        builder.WithMetadata(new CommandAttribute(operation.RequestType));
+        foreach (var attr in attrs)
+        {
+            builder.WithMetadata(attr);
+        }
+    }
+#endif
+
     public static IApplicationBuilder UseServiceStack(this IApplicationBuilder app, AppHostBase appHost
 #if NET8_0_OR_GREATER
         , Action<ServiceStackOptions>? configure = null
@@ -741,6 +754,8 @@ public static class NetCoreAppHostExtensions
             }
         }
         appHost.Options.AuthenticationSchemes ??= Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme;
+        
+        appHost.Options.RouteHandlerBuilders.Add(AddRequestDtoAttributes);
         
         configure?.Invoke(appHost.Options);
 

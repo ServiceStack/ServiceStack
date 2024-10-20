@@ -1,4 +1,10 @@
-﻿using MyApp.Data;
+﻿using System.ComponentModel;
+using System.Reflection;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Extensions;
+using Microsoft.OpenApi.Models;
+using MyApp.Data;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureOpenApi))]
 
@@ -11,7 +17,10 @@ public class ConfigureOpenApi : IHostingStartup
             if (context.HostingEnvironment.IsDevelopment())
             {
                 services.AddEndpointsApiExplorer();
-                services.AddSwaggerGen();
+                services.AddSwaggerGen(options =>
+                {
+                    options.OperationFilter<OpenApiDisplayNameOperationFilter>();
+                });
 
                 services.AddServiceStackSwagger();
                 services.AddBasicAuth<ApplicationUser>();
@@ -30,4 +39,21 @@ public class ConfigureOpenApi : IHostingStartup
             next(app);
         };
     }
+    
+    public class OpenApiDisplayNameOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            if (context.ApiDescription.ActionDescriptor.EndpointMetadata.FirstOrDefault(x =>
+                    x is OpenApiDisplayNameAttribute) is OpenApiDisplayNameAttribute attr)
+            {        
+                operation.AddExtension("x-displayName", new OpenApiString(attr.DisplayName));
+            }
+        }
+    }
+}
+[AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
+public class OpenApiDisplayNameAttribute : Attribute
+{
+    public string DisplayName { get; set;}
 }
