@@ -535,6 +535,10 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
         var typesConfig = metadata.GetConfig(request);
+        if (Request?.QueryString[nameof(request.MakePropertiesOptional)] == null)
+        {
+            typesConfig.MakePropertiesOptional = true;
+        }
 
         //Include SS types by removing ServiceStack namespaces
         if (typesConfig.AddServiceStackTypes)
