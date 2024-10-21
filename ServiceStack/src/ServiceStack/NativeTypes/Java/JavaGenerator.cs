@@ -572,11 +572,15 @@ public class JavaGenerator : ILangGenerator
                     if (attr.ConstructorArgs.Count > 1)
                         prefix = "// ";
 
+                    var props = attr.Attribute?.GetType().GetProperties() ?? [];
+                
                     foreach (var ctorArg in attr.ConstructorArgs)
                     {
                         if (args.Length > 0)
                             args.Append(", ");
-                        args.Append($"{ctorArg.Name}={TypeValue(ctorArg.Type, ctorArg.Value)}");
+
+                        var prop = props.FirstOrDefault(x => string.Equals(x.Name, ctorArg.Name, StringComparison.OrdinalIgnoreCase));
+                        args.Append($"{prop?.Name ?? ctorArg.Name}={TypeValue(ctorArg.Type, ctorArg.Value)}");
                     }
                 }
                 else if (attr.Args != null)

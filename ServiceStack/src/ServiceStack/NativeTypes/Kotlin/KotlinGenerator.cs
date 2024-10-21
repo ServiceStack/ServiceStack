@@ -589,6 +589,8 @@ public class KotlinGenerator : ILangGenerator
                 var args = StringBuilderCacheAlt.Allocate();
                 if (attr.ConstructorArgs != null)
                 {
+                    var props = attr.Attribute?.GetType().GetProperties() ?? [];
+
                     if (attr.ConstructorArgs.Count > 1)
                         prefix = "// ";
 
@@ -596,7 +598,8 @@ public class KotlinGenerator : ILangGenerator
                     {
                         if (args.Length > 0)
                             args.Append(", ");
-                        args.Append($"{ctorArg.Name}={TypeValue(ctorArg.Type, ctorArg.Value)}");
+                        var prop = props.FirstOrDefault(x => string.Equals(x.Name, ctorArg.Name, StringComparison.OrdinalIgnoreCase));
+                        args.Append($"{prop?.Name ?? ctorArg.Name}={TypeValue(ctorArg.Type, ctorArg.Value)}");
                     }
                 }
                 else if (attr.Args != null)
