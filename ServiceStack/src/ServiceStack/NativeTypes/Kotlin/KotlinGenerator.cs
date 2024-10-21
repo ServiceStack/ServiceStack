@@ -596,7 +596,7 @@ public class KotlinGenerator : ILangGenerator
                     {
                         if (args.Length > 0)
                             args.Append(", ");
-                        args.Append(TypeValue(ctorArg.Type, ctorArg.Value));
+                        args.Append($"{ctorArg.Name}={TypeValue(ctorArg.Type, ctorArg.Value)}");
                     }
                 }
                 else if (attr.Args != null)
