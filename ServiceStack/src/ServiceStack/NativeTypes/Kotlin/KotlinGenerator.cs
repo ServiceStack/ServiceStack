@@ -531,7 +531,9 @@ public class KotlinGenerator : ILangGenerator
                 var fieldName = GetPropertyName(prop.Name);
                 var overrides = allBaseProps.Contains(prop.Name) 
                     ? "override " 
-                    : "open ";
+                    : type.IsInterface() 
+                        ? "" 
+                        : "open ";
                 if (fieldName == defaultName || prop.DataMember?.Name != null)
                 {
                     sb.AppendLine(!initProp
