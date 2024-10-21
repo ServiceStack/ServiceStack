@@ -388,7 +388,7 @@ public class KotlinGenerator : ILangGenerator
         {
             var defType = type.IsInterface()
                 ? "interface"
-                : "class";
+                : "open class";
             var extends = new List<string>();
             var extendTypes = new List<Type>();
 
@@ -439,7 +439,7 @@ public class KotlinGenerator : ILangGenerator
             if (interfaces.Count > 0)
                 extend += (extend.IsNullOrEmpty() ? " : " : ", ") + string.Join(", ", interfaces.ToArray());
 
-            sb.AppendLine($"open {defType} {typeName}{extend}");
+            sb.AppendLine($"{defType} {typeName}{extend}");
             sb.AppendLine("{");
 
             sb = sb.Indent();
