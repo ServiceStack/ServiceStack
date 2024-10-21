@@ -952,20 +952,19 @@ public static class JavaGeneratorExtensions
             return new MetadataAttribute
             {
                 Name = "Route",
-                Args = new List<MetadataPropertyType> {
+                Args = [
                     new() { Name = "Path", Type = "string", Value = route.Path },
-                    new() { Name = "Verbs", Type = "string", Value = route.Verbs },
-                },
+                    new() { Name = "Verbs", Type = "string", Value = route.Verbs }
+                ],
             };
         }
 
         return new MetadataAttribute
         {
             Name = "Route",
-            ConstructorArgs = new List<MetadataPropertyType>
-            {
-                new() { Type = "string", Value = route.Path },
-            },
+            ConstructorArgs = [
+                new() { Name = "Path", Type = "string", Value = route.Path }
+            ],
         };
     }
 
