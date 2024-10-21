@@ -39,6 +39,7 @@ public class JavaGenerator : ILangGenerator
 
         "java.math.*",
         "java.util.*",
+        "java.io.InputStream",
         "net.servicestack.client.*",
     };
 
