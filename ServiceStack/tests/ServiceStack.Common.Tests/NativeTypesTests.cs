@@ -1,18 +1,18 @@
-﻿#if !NETCORE
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.Host;
+using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Java;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
-    using System.Collections.Generic;
-    using NativeTypes;
-    using Testing;
 
     [TestFixture]
     public class NativeTypesTests
@@ -408,6 +408,27 @@ namespace ServiceStack.Common.Tests
             Assert.That(gen.Type("List`1", new[] { "Int32" }), Is.EqualTo("[Int]"));
             Assert.That(gen.Type("List`1", new[] { "Int64" }), Is.EqualTo("[Int]"));
         }
+
+        [Test]
+        public void Does_generate_python_in_correct_order()
+        {
+            var result = appHost.ExecuteService(new TypesPython()
+            {
+            });
+
+            var stringResult = result.ToString();
+            
+            // Ensure the index of the class `Tools` comes before `OpenAiChat`
+            
+            var toolsIndex = stringResult.IndexOf("class ToolCall:", StringComparison.Ordinal);
+            // Ensure the toolsIndex is the lowest of any other instance of 'ToolCall'
+            var firstRef = stringResult.IndexOf("ToolCall", StringComparison.Ordinal);
+            Assert.That(toolsIndex, Is.LessThan(firstRef));
+            
+            Console.WriteLine($"{stringResult}");
+            Assert.That(false, Is.True);
+            
+        }
         
     }
 
@@ -416,6 +437,8 @@ namespace ServiceStack.Common.Tests
         public object Any(Dto request) => request;
 
         public object Any(DtoRequestWithStructProperty request) => request;
+        
+        public object Post(OpenAiChatCompletion request) => request;
     }
 
     public class Dto : IReturn<DtoResponse>
@@ -460,5 +483,305 @@ namespace ServiceStack.Common.Tests
     {
         public int Id;
     }
+    
+    [Route("/v1/chat/completions", "POST")]
+    public class OpenAiChatCompletion : OpenAiChat, IPost, IReturn<OpenAiChatResponse>
+    {
+
+        public string? RefId { get; set; }
+    
+
+        public string? Provider { get; set; }
+    
+
+        public string? Tag { get; set; }
+    }
+    
+    [DataContract]
+    public class OpenAiChat
+    {
+
+        [DataMember(Name = "messages")]
+        public List<OpenAiMessage> Messages { get; set; }
+        
+
+        [DataMember(Name = "model")]
+        public string Model { get; set; }
+        
+
+        [DataMember(Name = "frequency_penalty")]
+        public double? FrequencyPenalty { get; set; }
+
+
+        [DataMember(Name = "logit_bias")]
+        public Dictionary<int,int>? LogitBias { get; set; }
+        
+
+        [DataMember(Name = "logprobs")]
+        public bool? LogProbs { get; set; }
+
+
+        [DataMember(Name = "top_logprobs")]
+        public int? TopLogProbs { get; set; }
+
+
+        [DataMember(Name = "max_tokens")]
+        public int? MaxTokens { get; set; }
+        
+
+        [DataMember(Name = "n")]
+        public int? N { get; set; }
+        
+
+        [DataMember(Name = "presence_penalty")]
+        public double? PresencePenalty { get; set; }
+        
+
+        [DataMember(Name = "response_format")]
+        public OpenAiResponseFormat? ResponseFormat { get; set; }
+        
+
+        [DataMember(Name = "seed")]
+        public int? Seed { get; set; }
+        
+
+        [DataMember(Name = "stop")]
+        public List<string>? Stop { get; set; }
+        
+
+        [DataMember(Name = "stream")]
+        public bool? Stream { get; set; }
+        
+
+        [DataMember(Name = "temperature")]
+        public double? Temperature { get; set; }
+        
+
+        [DataMember(Name = "top_p")]
+        public double? TopP { get; set; }
+        
+
+        [DataMember(Name = "tools")]
+        public List<OpenAiTools>? Tools { get; set; }
+
+
+        [DataMember(Name = "user")]
+        public string? User { get; set; }
+    }
+
+
+    [DataContract]
+    public class OpenAiMessage
+    {
+        
+        [DataMember(Name = "content")]
+        public string Content { get; set; }
+        
+        
+        [DataMember(Name = "role")]
+        public string Role { get; set; }
+        
+        
+        [DataMember(Name = "name")]
+        public string? Name { get; set; }
+        
+        
+        [DataMember(Name = "tool_calls")]
+        public ToolCall[]? ToolCalls { get; set; }
+        
+        
+        [DataMember(Name = "tool_call_id")]
+        public string? ToolCallId { get; set; }
+    }
+
+    [DataContract]
+    public class OpenAiTools
+    {
+        
+        [DataMember(Name = "type")]
+        public OpenAiToolType Type { get; set; }
+    }
+
+    public enum OpenAiToolType
+    {
+        [EnumMember(Value = "function")]
+        Function,
+    }
+
+    [DataContract]
+    public class OpenAiToolFunction
+    {
+        
+        [DataMember(Name = "name")]
+        public string? Name { get; set; }
+
+        
+        [DataMember(Name = "description")]
+        public string? Description { get; set; }
+        
+        
+        [DataMember(Name = "parameters")]
+        public Dictionary<string,string>? Parameters { get; set; }
+    }
+
+    [DataContract]
+    public class OpenAiResponseFormat
+    {
+        public const string Text = "text";
+        public const string JsonObject = "json_object";
+        
+        [DataMember(Name = "response_format")]
+        public ResponseFormat Type { get; set; }
+    }
+
+    public enum ResponseFormat
+    {
+        [EnumMember(Value = "text")]
+        Text,
+        [EnumMember(Value = "json_object")]
+        JsonObject
+    }
+
+    [DataContract]
+    public class OpenAiChatResponse
+    {
+
+        [DataMember(Name = "id")]
+        public string Id { get; set; }
+        
+
+        [DataMember(Name = "choices")]
+        public List<Choice> Choices { get; set; }
+        
+
+        [DataMember(Name = "created")]
+        public long Created { get; set; }
+        
+
+        [DataMember(Name = "model")]
+        public string Model { get; set; }
+        
+
+        [DataMember(Name = "system_fingerprint")]
+        public string SystemFingerprint { get; set; }
+        
+
+        [DataMember(Name = "object")]
+        public string Object { get; set; }
+        
+
+        [DataMember(Name = "usage")]
+        public OpenAiUsage Usage { get; set; }
+        
+        [DataMember(Name = "responseStatus")]
+        public ResponseStatus? ResponseStatus { get; set; }
+    }
+
+
+    [DataContract]
+    public class OpenAiUsage
+    {
+
+        [DataMember(Name = "completion_tokens")]
+        public int CompletionTokens { get; set; }
+
+
+        [DataMember(Name = "prompt_tokens")]
+        public int PromptTokens { get; set; }
+        
+
+        [DataMember(Name = "total_tokens")]
+        public int TotalTokens { get; set; }
+    }
+
+    public class Choice
+    {
+
+        [DataMember(Name = "finish_reason")]
+        public string FinishReason { get; set; }
+
+
+        [DataMember(Name = "index")]
+        public int Index { get; set; }
+        
+
+        [DataMember(Name = "message")]
+        public ChoiceMessage Message { get; set; }
+    }
+
+    [DataContract]
+    public class ChoiceMessage
+    {
+
+        [DataMember(Name = "content")]
+        public string Content { get; set; }
+        
+
+        [DataMember(Name = "tool_calls")]
+        public ToolCall[] ToolCalls { get; set; }
+
+
+        [DataMember(Name = "role")]
+        public string Role { get; set; }
+    }
+
+
+    [DataContract]
+    public class ToolCall
+    {
+
+        [DataMember(Name = "id")]
+        public string Id { get; set; }
+        
+
+        [DataMember(Name = "type")]
+        public string Type { get; set; }
+        
+
+        [DataMember(Name = "function")]
+        public string Function { get; set; }
+    }
+
+
+    [DataContract]
+    public class ToolFunction
+    {
+
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+
+
+        [DataMember(Name = "arguments")]
+        public string Arguments { get; set; }
+    }
+
+
+    [DataContract]
+    public class Logprobs
+    {
+
+        [DataMember(Name = "content")]
+        public LogprobItem[] Content { get; set; }
+    }
+
+
+    [DataContract]
+    public class LogprobItem
+    {
+        
+        [DataMember(Name = "token")]
+        public string Token { get; set; }
+
+        
+        [DataMember(Name = "logprob")]
+        public double Logprob { get; set; }
+        
+        
+        [DataMember(Name = "bytes")]
+        public byte[] Bytes { get; set; }
+        
+        
+        [DataMember(Name = "top_logprobs")]
+        public LogprobItem[] TopLogprobs { get; set; }
+    }
 }
-#endif
