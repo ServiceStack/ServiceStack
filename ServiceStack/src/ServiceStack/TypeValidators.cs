@@ -188,7 +188,8 @@ public class ApiKeyValidator(Func<IApiKeySource> factory, Func<IApiKeyResolver> 
         if (authSecret != null && authSecret == HostContext.AppHost.Config.AdminAuthSecret)
             return true;
         
-        var token = resolver().GetApiKeyToken(request);
+        var apiKeyResolver = resolver() ?? throw new ArgumentNullException(nameof(IApiKeyResolver));
+        var token = apiKeyResolver.GetApiKeyToken(request);
         if (token != null)
         {
             if (validApiKeys.TryGetValue(token, out var apiKey))
@@ -197,7 +198,7 @@ public class ApiKeyValidator(Func<IApiKeySource> factory, Func<IApiKeyResolver> 
                 return true;
             }
 
-            var source = factory();
+            var source = factory() ?? throw new ArgumentNullException(nameof(IApiKeySource));
             apiKey = await source.GetApiKeyAsync(token);
             if (apiKey != null)
             {
