@@ -12,7 +12,7 @@ namespace ServiceStack.Text;
 public abstract class MemoryProvider
 {
     public static MemoryProvider Instance =
-#if NETCORE && !NETSTANDARD2_0
+#if NET6_0_OR_GREATER
         NetCoreMemory.Provider;
 #else
             DefaultMemory.Provider;

@@ -33,7 +33,7 @@ namespace ServiceStack.Server.Tests.Messaging
             : base(typeof(MqAppHost).Name, typeof(MqAppHostServices).Assembly) {}
         
         
-#if NETCORE
+#if !NETFRAMEWORK
         public override void Configure(Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
             Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions
@@ -105,7 +105,7 @@ namespace ServiceStack.Server.Tests.Messaging
             throw new CustomException("ERROR: " + request.Message);
         }
 
-#if NETCORE
+#if !NETFRAMEWORK
         public void Any(MqScopeDep request)
         {
             var instance1 = Request.TryResolve<IScopedDep>();
@@ -151,7 +151,7 @@ namespace ServiceStack.Server.Tests.Messaging
             }
         }
 
-#if NETCORE
+#if !NETFRAMEWORK
         [Test]
         public void Can_resolve_scoped_deps()
         {

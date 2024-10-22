@@ -170,7 +170,7 @@ public class ContentTypes : IContentTypes
                 break;
             case ErrorResponse errorDto:  //ignore writing ErrorResponse bodies for unknown content types
                 break;
-#if !NETCORE
+#if NETFRAMEWORK
             case System.Drawing.Image img:
                 img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                 break;

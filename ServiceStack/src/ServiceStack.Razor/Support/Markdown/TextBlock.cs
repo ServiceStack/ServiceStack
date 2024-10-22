@@ -919,7 +919,7 @@ namespace ServiceStack.Support.Markdown
 			var methodName = usesBaseType ? parts[0] : parts[1];
 
 			Type type = null;
-#if !NETCORE
+#if NETFRAMEWORK
             if (typePropertyName == "Html")
 			{
                 type = markdownPage.ExecutionContext.BaseType.HasGenericType()
@@ -945,7 +945,7 @@ namespace ServiceStack.Support.Markdown
                     ? type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                         .FirstOrDefault(m => m.GetParameters().Length == 2 && m.Name == methodName)
                     : type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
-#if !NETCORE
+#if NETFRAMEWORK
                 if (mi == null)
                 {
                     mi = HtmlHelper.GetMethod(methodName);

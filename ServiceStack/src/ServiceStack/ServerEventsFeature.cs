@@ -1,4 +1,4 @@
-﻿#if NETCORE        
+﻿#if !NETFRAMEWORK        
 using ServiceStack.Host;
 #else
 using System.Web;

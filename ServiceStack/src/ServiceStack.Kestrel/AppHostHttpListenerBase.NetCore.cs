@@ -1,5 +1,4 @@
 //Created for compatibility to run tests on .NET Core
-#if NETCORE
 using System.Reflection;
 
 namespace ServiceStack;
@@ -28,5 +27,3 @@ public abstract class AppHostHttpListenerSmartPoolBase : AppHostHttpListenerPool
         : base(serviceName, assembliesWithServices)
     { }
 }
-
-#endif

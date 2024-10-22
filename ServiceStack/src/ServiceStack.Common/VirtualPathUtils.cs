@@ -92,7 +92,7 @@ public static class VirtualPathUtils
     internal static void SleepBackOffMultiplier(this int i)
     {
         var nextTryMs = (2 ^ i) * 50;
-#if NETCORE
+#if !NETFRAMEWORK
         System.Threading.Tasks.Task.Delay(nextTryMs).Wait();
 #elif NETFX
             System.Threading.Thread.Sleep(nextTryMs);

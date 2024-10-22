@@ -16,7 +16,7 @@ namespace ServiceStack.Text.Tests
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
-#if NETCORE
+#if !NETFRAMEWORK
 			previousCulture = CultureInfo.CurrentCulture;
 			CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
 #else
@@ -30,7 +30,7 @@ namespace ServiceStack.Text.Tests
         [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
-#if NETCORE
+#if !NETFRAMEWORK
 			CultureInfo.CurrentCulture = previousCulture;
 #else
             Thread.CurrentThread.CurrentCulture = previousCulture;

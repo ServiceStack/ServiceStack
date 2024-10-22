@@ -55,7 +55,7 @@ namespace ServiceStack
     public class PclExportClient 
     {
         public static PclExportClient Instance
-#if NETCORE
+#if !NETFRAMEWORK
           = NetStandardPclExportClient.Configure()
 #else
           = Net45PclExportClient.Configure()
@@ -103,7 +103,7 @@ namespace ServiceStack
 
         public virtual NameValueCollection ParseQueryString(string query)
         {
-#if NETCORE
+#if !NETFRAMEWORK
             return ServiceStack.Pcl.HttpUtility.ParseQueryString(query);
 #else
 			return System.Web.HttpUtility.ParseQueryString(query);
@@ -122,7 +122,7 @@ namespace ServiceStack
 
         public virtual string HtmlAttributeEncode(string html)
         {
-#if NETCORE
+#if !NETFRAMEWORK
             return HtmlEncode(html).Replace("\"","&quot;").Replace("'","&#x27;");
 #else
             return System.Web.HttpUtility.HtmlAttributeEncode(html);

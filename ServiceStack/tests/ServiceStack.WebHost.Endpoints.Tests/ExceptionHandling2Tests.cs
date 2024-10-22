@@ -5,7 +5,7 @@ using NUnit.Framework;
 using ProtoBuf;
 using ServiceStack.Text;
 using ServiceStack.ProtoBuf;
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.ServiceModel;
 #endif
 using ServiceStack.Logging;

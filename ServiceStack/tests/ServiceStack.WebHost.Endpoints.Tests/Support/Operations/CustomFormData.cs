@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.Serialization;
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.ServiceModel;
 #endif
 

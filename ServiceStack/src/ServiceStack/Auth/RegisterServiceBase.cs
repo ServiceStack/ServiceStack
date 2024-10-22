@@ -128,7 +128,7 @@ public abstract class RegisterServiceBase : Service
         RegisterResponse response = null;
         if (autoLogin.GetValueOrDefault())
         {
-#if NETCORE || NET472
+#if !NETFRAMEWORK || NET472
             await using var authService = base.ResolveService<AuthenticateService>();
 #else
                 using var authService = base.ResolveService<AuthenticateService>();

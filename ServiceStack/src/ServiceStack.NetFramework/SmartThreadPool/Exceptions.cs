@@ -1,4 +1,4 @@
-#if !NETCORE
+#if NETFRAMEWORK
 
 using System;
 #if !(_WINDOWS_CE)

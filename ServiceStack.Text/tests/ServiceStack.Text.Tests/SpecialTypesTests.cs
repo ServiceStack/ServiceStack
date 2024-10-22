@@ -11,7 +11,7 @@ namespace ServiceStack.Text.Tests
     public class SpecialTypesTests
         : TestBase
     {
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void Can_Serialize_Version()
         {

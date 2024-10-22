@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 // Most of this class is sourced from the MONO project in the existing file:
 //
 // https://github.com/mono/mono/blob/master/mcs/class/System.Web/System.Web/HttpRequest.cs
@@ -133,14 +133,6 @@ public partial class ListenerRequest
                 form.Protect();
             }
 
-#if NET_4_0
-			if (validateRequestNewMode && !checked_form) {
-				// Setting this before calling the validator prevents
-				// possible endless recursion
-				checked_form = true;
-				ValidateNameValueCollection ("Form", query_string_nvc, RequestValidationSource.Form);
-			} else
-#endif
             if (validate_form && !checked_form)
             {
                 checked_form = true;

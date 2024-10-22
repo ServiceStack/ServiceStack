@@ -16,7 +16,7 @@ namespace ServiceStack.Text.Tests.JsonTests
         }
 
         [Test]
-#if !NETCORE
+#if NETFRAMEWORK
         [TestCase("[{'__type':'ServiceStack.Text.Tests.JsonTests.TypeInfoTests+MyClass'}]")]
         [TestCase("[{ '__type':'ServiceStack.Text.Tests.JsonTests.TypeInfoTests+MyClass'}]")]
         [TestCase("[{\n'__type':'ServiceStack.Text.Tests.JsonTests.TypeInfoTests+MyClass'}]")]

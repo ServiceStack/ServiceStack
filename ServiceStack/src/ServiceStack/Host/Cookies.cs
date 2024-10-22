@@ -1,4 +1,4 @@
-﻿#if NETCORE
+﻿#if !NETFRAMEWORK
 using Microsoft.AspNetCore.Http;
 #else
 using System.Web;
@@ -66,7 +66,7 @@ public static class CookiesExtensions
 {
     private static readonly DateTime Session = DateTime.MinValue;
 
-#if !NETCORE
+#if NETFRAMEWORK
 
 #if !NET472
         private static SetMemberDelegate sameSiteFn;
@@ -110,7 +110,7 @@ public static class CookiesExtensions
                 httpCookie.Domain = config.RestrictAllCookiesToDomain;
             }
 
-#if NET472
+#if NETFRAMEWORK
             httpCookie.SameSite = config.UseSameSiteCookies == null
                 ? SameSiteMode.Lax
                 : config.UseSameSiteCookies == true
@@ -131,7 +131,7 @@ public static class CookiesExtensions
         }
 #endif
 
-#if NETCORE
+#if !NETFRAMEWORK
     public static CookieOptions ToCookieOptions(this Cookie cookie)
     {
         var config = HostContext.Config;

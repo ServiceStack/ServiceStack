@@ -198,7 +198,7 @@ public class LispReplTcpServer : IPlugin, IPreInitPlugin, IAfterInitAppHost, IDi
             //give it a small chance to die gracefully
             if (!bgThread.Join(500))
             {
-#if !NETCORE                    
+#if NETFRAMEWORK                    
                 //Ideally we shouldn't get here, but lets try our hardest to clean it up
                 Log.Warn("Interrupting previous Background Thread: " + bgThread.Name);
                 bgThread.Interrupt();

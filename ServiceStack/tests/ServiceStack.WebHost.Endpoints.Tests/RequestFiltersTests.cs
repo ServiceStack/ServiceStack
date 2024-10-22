@@ -148,7 +148,7 @@ public abstract class RequestFiltersTests
 
         public override void Configure(Container container)
         {
-#if !NETCORE
+#if NETFRAMEWORK
                 Plugins.Add(new SoapFormat());
 #endif
 
@@ -187,7 +187,7 @@ public abstract class RequestFiltersTests
                     req.Response.UseBufferedStream = true;
                 }
             });
-#if !NETCORE
+#if NETFRAMEWORK
                 this.ServiceExceptionHandlers.Add((req, dto, ex) =>
                 {
                     if (dto is SoapDeserializationException)
@@ -242,7 +242,7 @@ public abstract class RequestFiltersTests
 
     private static void Assert401(IServiceClient client, WebServiceException ex)
     {
-#if !NETCORE
+#if NETFRAMEWORK
             if (client is Soap11ServiceClient || client is Soap12ServiceClient)
             {
                 if (ex.StatusCode != 401)
@@ -612,7 +612,7 @@ public abstract class RequestFiltersTests
         }
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
 
         [TestFixture]
         public class Soap11IntegrationTests : RequestFiltersTests

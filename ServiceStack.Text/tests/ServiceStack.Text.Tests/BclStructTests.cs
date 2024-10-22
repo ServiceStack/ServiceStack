@@ -7,7 +7,7 @@ namespace ServiceStack.Text.Tests
 {
     public class BclStructTests : TestBase
     {
-#if !NETCORE
+#if NETFRAMEWORK
         static BclStructTests()
         {
             JsConfig<System.Drawing.Color>.SerializeFn = c => c.ToString().Replace("Color ", "").Replace("[", "").Replace("]", "");

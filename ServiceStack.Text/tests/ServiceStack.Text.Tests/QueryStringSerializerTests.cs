@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Web;
 using NUnit.Framework;
-#if !NETCORE
+#if NETFRAMEWORK
 using ServiceStack.Host;
 using ServiceStack.Testing;
 #endif
@@ -139,7 +139,7 @@ namespace ServiceStack.Text.Tests
             Assert.That(QueryStringSerializer.SerializeToString(new B { Property = "\"quoted content, and with a comma\"" }), Is.EqualTo("Property=%22quoted+content,+and+with+a+comma%22"));
         }
 
-#if !NETCORE
+#if NETFRAMEWORK
         private T StringToPoco<T>(string str)
         {
             var envKey = Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE");
@@ -177,7 +177,7 @@ namespace ServiceStack.Text.Tests
             Assert.That(QueryStringSerializer.SerializeToString(testPocos), Is.EqualTo("ListOfA={ListOfB:[{Property:%22Doe,+John%22,Property2:Doe,Property3:John}]}"));
         }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void Can_deserialize_with_comma_in_property_in_list_from_QueryStringSerializer()
         {

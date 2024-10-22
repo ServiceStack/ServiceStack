@@ -6,7 +6,7 @@ public class RequestPreferences : IRequestPreferences
 {
     private string acceptEncoding;
 
-#if !NETCORE
+#if NETFRAMEWORK
     private readonly System.Web.HttpContextBase httpContext;
 
     public RequestPreferences(System.Web.HttpContextBase httpContext)

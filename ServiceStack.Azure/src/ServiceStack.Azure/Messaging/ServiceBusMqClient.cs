@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-#if NETCORE
+#if !NETFRAMEWORK
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 #else
@@ -42,7 +42,7 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
         var sbClient = parentFactory.GetOrCreateClient(queueName);
         try
         {
-#if NETCORE
+#if !NETFRAMEWORK
             sbClient.CompleteAsync(lockToken).GetAwaiter().GetResult();
 #else
             sbClient.Complete(Guid.Parse(lockToken));
@@ -59,7 +59,7 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
         if (mqResponse is IMessage)
             return (IMessage<T>)mqResponse;
 
-#if NETCORE
+#if !NETFRAMEWORK
         if (mqResponse is not Microsoft.Azure.ServiceBus.Message msg)
             return null;
         var msgBody = msg.Body.FromMessageBody();
@@ -85,7 +85,7 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
         var sbClient = parentFactory.GetOrCreateClient(queueName);
         string? lockToken = null;
 
-#if NETCORE
+#if !NETFRAMEWORK
         var msg = Task.Run(() => sbClient.ReceiveAsync(timeout)).GetAwaiter().GetResult();
         if (msg != null)
             lockToken = msg.SystemProperties.LockToken;
@@ -110,7 +110,7 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
         return iMessage;
     }
 
-#if NETCORE
+#if !NETFRAMEWORK
     private async Task<Microsoft.Azure.ServiceBus.Message> GetMessageFromReceiver(MessageReceiver messageReceiver, TimeSpan? timeout)
     {
         var msg = timeout.HasValue

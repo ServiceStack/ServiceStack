@@ -11,13 +11,6 @@
         <PackageTags>ServiceStack;gRPC;server;GrpcFeature</PackageTags>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
-    
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-        <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
-    </PropertyGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.31" />

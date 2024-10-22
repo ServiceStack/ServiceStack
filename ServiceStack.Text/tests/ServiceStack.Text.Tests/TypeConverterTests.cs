@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using NUnit.Framework;
-#if !NETCORE
+#if NETFRAMEWORK
 using System.Security.Policy;
 #endif
 
@@ -24,7 +24,7 @@ namespace ServiceStack.Text.Tests
         [Test]
         public void View_TypeConverter_outputs()
         {
-#if !NETCORE
+#if NETFRAMEWORK
             var converter1 = TypeDescriptor.GetConverter(typeof(Url));
             Console.WriteLine(converter1.ConvertToString(new Url("http://io/")));
 #endif

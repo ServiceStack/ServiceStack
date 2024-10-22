@@ -38,7 +38,7 @@ public class CacheServerFeatureTests
     protected JsonServiceClient GetClient()
     {
         var client = new JsonServiceClient(Config.ListeningOn);
-#if NETCORE            
+#if !NETFRAMEWORK            
         client.AddHeader(HttpHeaders.AcceptEncoding, "gzip,deflate");
 #endif
         return client;

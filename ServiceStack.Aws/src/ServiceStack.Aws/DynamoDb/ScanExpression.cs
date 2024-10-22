@@ -68,7 +68,7 @@ public class ScanExpression<T> : ScanExpression
             TotalSegments = TotalSegments,                
         }.SetSelect(base.Select);
 
-#if !NETCORE
+#if NETFRAMEWORK
             if (ReadWriteTimeoutInternal != null)
                 q.ReadWriteTimeoutInternal = ReadWriteTimeoutInternal;
             if (TimeoutInternal != null)

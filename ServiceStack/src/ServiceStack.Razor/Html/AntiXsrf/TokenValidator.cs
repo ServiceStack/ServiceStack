@@ -1,11 +1,8 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-#if NET_4_0
-using System.Diagnostics.Contracts;
-#endif
 using System.Globalization;
 using System.Security.Principal;
 using System.Web;
@@ -34,9 +31,6 @@ namespace ServiceStack.Html.AntiXsrf
 
         public AntiForgeryToken GenerateFormToken(HttpContextBase httpContext, IIdentity identity, AntiForgeryToken cookieToken)
         {
-#if NET_4_0
-            Contract.Assert(IsCookieTokenValid(cookieToken));
-#endif
             AntiForgeryToken formToken = new AntiForgeryToken()
             {
                 SecurityToken = cookieToken.SecurityToken,

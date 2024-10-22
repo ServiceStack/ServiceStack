@@ -52,7 +52,7 @@ namespace ServiceStack.Text.Tests
             Assert.That(typedMessage.GetBody().Value, Is.EqualTo(dto.Value));
         }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void Can_serialize_IMessage_ToBytes_into_typed_Message()
         {

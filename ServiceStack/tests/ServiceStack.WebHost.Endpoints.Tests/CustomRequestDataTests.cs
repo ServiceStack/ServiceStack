@@ -51,7 +51,7 @@ public class CustomRequestDataTests
 		{
 			using (var sw = new StreamWriter(PclExport.Instance.GetRequestStream(webReq)))
 			{
-#if !NETCORE
+#if NETFRAMEWORK
 					sw.Write("&");
 #endif
 				sw.Write("first-name=tom&item-0=blah&item-1-delete=1");
@@ -157,7 +157,7 @@ public class CustomRequestDataTests
 	}
 
 	[Test]
-#if NETCORE
+#if !NETFRAMEWORK
 	[Ignore("HttpClient does not support `Expect: 100-Continue`. Should be fixed in .NET Core 1.1")]
 #endif
 	public void Does_use_request_binder_for_PUT()

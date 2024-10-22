@@ -45,7 +45,7 @@ public class SaltedHash : IHashProvider
         Salt = new byte[SalthLength];
 
         var random = RandomNumberGenerator.Create();
-#if !NETCORE
+#if NETFRAMEWORK
             random.GetNonZeroBytes(Salt);
 #else
         random.GetBytes(Salt);

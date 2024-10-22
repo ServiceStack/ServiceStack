@@ -25,7 +25,7 @@ public abstract class BaseSoapMetadataHandler : BaseMetadataHandler
 
         if (httpReq.QueryString["xsd"] != null)
         {
-#if !NETCORE
+#if NETFRAMEWORK
                 var operationTypes = HostContext.Metadata.GetAllSoapOperationTypes();
                 var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
                 var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);

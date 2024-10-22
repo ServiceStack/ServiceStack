@@ -116,7 +116,7 @@ public class MultiAppSettingsBuilder
         return this;
     }
         
-#if NETCORE
+#if !NETFRAMEWORK
     public MultiAppSettingsBuilder AddNetCore(Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
         appSettingsQueue.Enqueue(

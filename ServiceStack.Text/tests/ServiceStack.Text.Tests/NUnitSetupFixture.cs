@@ -8,7 +8,7 @@
 //        [OneTimeSetUp]
 //        public void Setup()
 //        {
-//#if NETCORE
+//#if !NETFRAMEWORK
 //            ServiceStack.Memory.NetCoreMemory.Configure();
 //#endif
 //        }

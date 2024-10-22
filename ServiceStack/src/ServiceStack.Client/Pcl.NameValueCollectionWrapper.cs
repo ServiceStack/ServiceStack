@@ -38,7 +38,7 @@ using System.Text;
 
 using System.Collections.Specialized;
 
-#if NETCORE
+#if !NETFRAMEWORK
 //namespace System.Collections.Specialized
 namespace ServiceStack.Pcl
 {

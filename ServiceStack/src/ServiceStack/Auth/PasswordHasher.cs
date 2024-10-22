@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using ServiceStack.Logging;
 
-#if NETCORE
+#if !NETFRAMEWORK
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 #endif
 
@@ -25,7 +25,7 @@ public static class Pbkdf2Provider
     /// The PBKDF2 strategy PasswordHasher implementation that's used for hashing PBKDF2 passwords.
     /// </summary>
     public static Pbkdf2DeriveKeyDelegate DeriveKey { get; set; }
-#if NETCORE
+#if !NETFRAMEWORK
         = KeyDerivation.Pbkdf2; // .NET Core uses the most optimal implementation available for Windows
 #else
         = new ManagedPbkdf2Provider().DeriveKey; // Slowest managed implementation used by .NET Framework and all non-Windows OS's
@@ -243,7 +243,7 @@ public class PasswordHasher : IPasswordHasher
     }
 }
 
-#if NETFX || NET472
+#if NETFRAMEWORK
 
     //From: https://github.com/aspnet/DataProtection/
     /// <summary>

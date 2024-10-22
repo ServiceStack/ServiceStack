@@ -117,7 +117,7 @@ public class BufferedRequestLoggerTests
         Assert.That(logBody, Is.EqualTo(request.ToJson()));
     }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking_Soap12()
         {
@@ -169,7 +169,7 @@ public class BufferedRequestAppHost()
 
     public override void Configure(Container container)
     {
-#if !NETCORE
+#if NETFRAMEWORK
         Plugins.Add(new SoapFormat());
 #endif
         PreRequestFilters.Add((httpReq, httpRes) => {

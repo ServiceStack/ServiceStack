@@ -151,7 +151,7 @@ public class HostConfig
                 "jspm_packages/",
                 "bower_components/",
                 "wwwroot_build/",
-#if !NETCORE 
+#if NETFRAMEWORK 
                 "wwwroot/", //Need to allow VirtualFiles access from ContentRoot Folder
 #endif
             ],
@@ -186,7 +186,7 @@ public class HostConfig
                 Permissions = [],
                 UserAuthId = "0",
             },
-#if NETCORE
+#if !NETFRAMEWORK
             UseCamelCase = true,
             ReturnsInnerException = false,
 #else

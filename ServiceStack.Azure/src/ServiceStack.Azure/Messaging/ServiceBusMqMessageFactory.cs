@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using ServiceStack.Text;
 
-#if NETCORE
+#if !NETFRAMEWORK
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
 #else
@@ -20,13 +20,14 @@ namespace ServiceStack.Azure.Messaging;
 
 public class ServiceBusMqMessageFactory : IMessageFactory
 {
+
     private long timesStarted;
     private long doOperation = WorkerOperation.NoOp;
     private long noOfErrors = 0;
     private int noOfContinuousErrors = 0;
     private string lastExMsg = null;
 
-#if NETCORE
+#if !NETFRAMEWORK
     public Action<Microsoft.Azure.ServiceBus.Message,IMessage> PublishMessageFilter { get; set; }
 #else
     public Action<BrokeredMessage,IMessage> PublishMessageFilter { get; set; }
@@ -34,7 +35,7 @@ public class ServiceBusMqMessageFactory : IMessageFactory
 
         
     protected internal readonly string address;
-#if !NETCORE
+#if NETFRAMEWORK
     protected internal readonly NamespaceManager namespaceManager;
 #else
     protected internal readonly ManagementClient managementClient;
@@ -52,7 +53,7 @@ public class ServiceBusMqMessageFactory : IMessageFactory
     {
         this.MqServer = mqServer;
         this.address = address;
-#if !NETCORE
+#if NETFRAMEWORK
         this.namespaceManager = NamespaceManager.CreateFromConnectionString(address);
 #else
         this.managementClient = new ManagementClient(address);
@@ -103,7 +104,7 @@ public class ServiceBusMqMessageFactory : IMessageFactory
                     queueMap.Add(queueName, type);
 
                 var mqDesc = new QueueDescription(queueName);
-#if !NETCORE
+#if NETFRAMEWORK
                 if (!namespaceManager.QueueExists(queueName))
                     namespaceManager.CreateQueue(mqDesc);
 #else
@@ -127,7 +128,7 @@ public class ServiceBusMqMessageFactory : IMessageFactory
     {
         queueName = queueName.SafeQueueName()!;
 
-#if NETCORE
+#if !NETFRAMEWORK
         var sbClient = new QueueClient(address, queueName, ReceiveMode.PeekLock);
         var messageHandler = this.GetMessageHandler(queueType);
         var sbWorker = new ServiceBusMqWorker(messageHandler, CreateMessageQueueClient(), queueName, sbClient);
@@ -162,7 +163,7 @@ public class ServiceBusMqMessageFactory : IMessageFactory
     protected internal void StopQueues()
     {
         this.status = WorkerStatus.Stopping;
-#if NETCORE
+#if !NETFRAMEWORK
         sbClients.Each(async kvp => await kvp.Value.CloseAsync());
 #else
         sbClients.Each(kvp => kvp.Value.Close());
@@ -180,7 +181,7 @@ public class ServiceBusMqMessageFactory : IMessageFactory
 
         var qd = new QueueDescription(queueName);
 
-#if !NETCORE
+#if NETFRAMEWORK
         // Create queue on ServiceBus namespace if it doesn't exist
         if (!namespaceManager.QueueExists(queueName))
         {

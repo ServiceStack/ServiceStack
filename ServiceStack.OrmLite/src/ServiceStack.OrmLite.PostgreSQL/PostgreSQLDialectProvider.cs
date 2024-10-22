@@ -82,7 +82,7 @@ namespace ServiceStack.OrmLite.PostgreSQL
             RegisterConverter<DateOnly>(new PostgreSqlDateOnlyConverter());
 #endif
             
-#if NET472
+#if NETFRAMEWORK
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 #endif
 

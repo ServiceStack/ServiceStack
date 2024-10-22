@@ -211,7 +211,7 @@ namespace ServiceStack.Text.Tests.JsonTests
 
 #if !IOS
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
 		[Ignore(".NET Core does not allow to find types without assembly name specified")]
 #endif
         public void Can_deserialise_polymorphic_list_serialized_by_datacontractjsonserializer()
@@ -227,7 +227,7 @@ namespace ServiceStack.Text.Tests.JsonTests
             try
             {
                 var originalList = new List<Animal> { new Dog { Name = "Fido" }, new Cat { Name = "Tigger" } };
-#if NETCORE
+#if !NETFRAMEWORK
 			var dataContractJsonSerializer = new DataContractJsonSerializer(typeof(List<Animal>),
 			new DataContractJsonSerializerSettings() {
 				KnownTypes = new[] { typeof(Dog), typeof(Cat) },
@@ -318,7 +318,7 @@ namespace ServiceStack.Text.Tests.JsonTests
 
 #if !IOS
         [Test]
-#if NETCORE
+#if !NETFRAMEWORK
 		[Ignore(".NET Core does not allow to find types without assembly name specified")]
 #endif
         public void Can_deserialise_an_entity_containing_a_polymorphic_property_serialized_by_datacontractjsonserializer()
@@ -335,7 +335,7 @@ namespace ServiceStack.Text.Tests.JsonTests
             {
                 var originalPets = new Pets { Cat = new Cat { Name = "Tigger" }, Dog = new Dog { Name = "Fido" } };
 
-#if NETCORE 
+#if !NETFRAMEWORK 
                 var dataContractJsonSerializer = new DataContractJsonSerializer(typeof(Pets),
                     new DataContractJsonSerializerSettings() {
                         KnownTypes = new[] { typeof(Dog), typeof(Cat) },

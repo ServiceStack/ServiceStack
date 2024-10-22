@@ -29,7 +29,6 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Core.csproj" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Core.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.Core.csproj" />
-    <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
@@ -41,6 +40,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.2.0" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">

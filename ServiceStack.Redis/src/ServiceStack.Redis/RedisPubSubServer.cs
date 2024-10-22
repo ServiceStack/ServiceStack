@@ -468,7 +468,7 @@ public class RedisPubSubServer : IRedisPubSubServer
             //give it a small chance to die gracefully
             if (!bgThread.Join(500))
             {
-#if !NETCORE                    
+#if NETFRAMEWORK                    
                     //Ideally we shouldn't get here, but lets try our hardest to clean it up
                     OnEvent?.Invoke($"[{DateTime.UtcNow.TimeOfDay:g} {GetStatus()}] KillBgThreadIfExists()> bgThread.Interrupt()");
                     Log.Warn("Interrupting previous Background Thread: " + bgThread.Name);

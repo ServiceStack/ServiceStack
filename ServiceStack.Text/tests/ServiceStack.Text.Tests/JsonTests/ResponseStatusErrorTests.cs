@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+﻿#if NETFRAMEWORK
 using System.Globalization;
 using System.IO;
 using System.Threading;

@@ -111,7 +111,7 @@ namespace ServiceStack.Common.Tests
             Assert.That(argsCount, Is.EqualTo(1));
         }
 
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void Can_cache_a_geneneric_tuple_activator()
         {

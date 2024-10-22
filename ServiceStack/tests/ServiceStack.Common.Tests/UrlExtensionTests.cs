@@ -109,7 +109,7 @@ namespace ServiceStack.Common.Tests
     [TestFixture]
     public class UrlExtensionTests
     {
-#if !NETCORE
+#if NETFRAMEWORK
         [Test]
         public void GetLeftAuthority_equals_GetUriPartialAuthority()
         {

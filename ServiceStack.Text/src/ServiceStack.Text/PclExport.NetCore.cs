@@ -1,4 +1,4 @@
-#if (NETCORE || NET6_0_OR_GREATER) && !NETSTANDARD2_0
+#if NET6_0_OR_GREATER
 
 using System;
 using ServiceStack.Text;

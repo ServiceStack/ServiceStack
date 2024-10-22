@@ -147,7 +147,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
             var enableRequestBodyTracking = RequestBodyTrackingFilter?.Invoke(request);
             if (enableRequestBodyTracking ?? EnableRequestBodyTracking && request.CanReadRequestBody())
             {
-#if NETCORE
+#if !NETFRAMEWORK
                     // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
                     if (!request.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
                     {
