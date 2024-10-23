@@ -138,7 +138,7 @@ public class FSharpGenerator : ILangGenerator
             .Select(x => x.Response).ToSet();
         var types = metadata.Types.ToSet();
 
-        allTypes = new List<MetadataType>();
+        allTypes = [];
         allTypes.AddRange(types);
         allTypes.AddRange(responseTypes);
         allTypes.AddRange(requestTypes);
