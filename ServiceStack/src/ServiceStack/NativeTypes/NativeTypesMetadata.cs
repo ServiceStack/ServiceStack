@@ -454,7 +454,7 @@ public class MetadataTypesGenerator
             Type = type,
             Name = type.GetOperationName(),
             Namespace = type.Namespace,
-            GenericArgs = type.IsGenericType ? GetGenericArgs(type) : null,
+            GenericArgs = type.IsGenericType ? GetGenericTypeArgs(type) : null,
             Implements = ToInterfaces(type),
             Attributes = ToAttributes(type),
             Properties = ToProperties(type),
@@ -616,6 +616,11 @@ public class MetadataTypesGenerator
         (FieldInfo) type.GetMember(name, BindingFlags.Public | BindingFlags.Static).First();
 
     private static string[] GetGenericArgs(Type type)
+    {
+        return type.GetGenericArguments().Select(x => x.GetOperationName()).ToArray(); 
+    }
+
+    private static string[] GetGenericTypeArgs(Type type)
     {
         var genericDef = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
         return genericDef != null 

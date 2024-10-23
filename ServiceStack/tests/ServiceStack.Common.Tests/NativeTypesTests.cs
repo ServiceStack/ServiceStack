@@ -42,8 +42,12 @@ public class NativeTypesTests
     public void Does_generate_correct_csharp_types()
     {
         var src = (string)appHost.ExecuteService(new TypesCSharp());
-        // Uses Type Parameters
+        src.Print();
+        
+        // Uses Type Parameters for Types
         Assert.That(src, Does.Contain("class QueryResponseAlt<T>"));
+        // But not interfaces/refs
+        Assert.That(src, Does.Contain("IPatchDb<Item>"));
     }
 
     [Test]
@@ -387,6 +391,12 @@ public class CollectionTestService : Service
     public object Any(AltQueryItems request) => new QueryResponseAlt<Item>();
     public Items Get(GetItems dto) => new();
     public List<Item> Get(GetNakedItems request) => new();
+
+
+    public object Any(QueryItems request) => new QueryResponse<Item>();
+    public void Any(CreateItem request) {}
+    public void Any(UpdateItem request) {}
+    public void Any(DeleteItem request) {}
 }
 
 public class Dto : IReturn<DtoResponse>
@@ -760,3 +770,8 @@ public class QueryResponseAlt<T> : IHasResponseStatus, IMeta
     public virtual Dictionary<string, string> Meta { get; set; }
     public virtual ResponseStatus ResponseStatus { get; set; }
 }
+
+public class QueryItems : QueryDb<Item> {}
+public class CreateItem : ICreateDb<Item>, IReturnVoid {}
+public class UpdateItem : IPatchDb<Item>, IReturnVoid {}
+public class DeleteItem : IDeleteDb<Item>, IReturnVoid {}
