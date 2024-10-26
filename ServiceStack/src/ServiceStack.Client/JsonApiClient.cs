@@ -161,7 +161,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     {
         this.PopulateRequestMetadata(requestDto);
         return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) 
-            ?? requestDto.ToUrl(httpMethod, fallback:requestType => BasePath + requestType.GetOperationName()));
+                             ?? requestDto.ToUrl(httpMethod, fallback:requestType => BasePath + requestType.GetOperationName()));
     }
 
     public HttpClient GetHttpClient()
@@ -1381,9 +1381,19 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray(), token);
     }
 
+    public Task<TResponse> PostFilesWithRequestAsync<TResponse>(IReturn<TResponse> request, UploadFile[] files, CancellationToken token = default)
+    {
+        return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), (object) request, files, token);
+    }
+
     public Task<TResponse> PostFilesWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files, CancellationToken token = default)
     {
         return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray(), token);
+    }
+
+    public Task<TResponse> PostFilesWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, IReturn<TResponse> request, UploadFile[] files, CancellationToken token = default)
+    {
+        return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), (object)request, files, token);
     }
 
     public virtual async Task<TResponse> PostFilesWithRequestAsync<TResponse>(string requestUri, object request, UploadFile[] files, CancellationToken token = default)
@@ -1437,9 +1447,19 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return PostFilesWithRequest<TResponse>(ResolveTypedUrl(GetHttpMethod(request) ?? HttpMethods.Post, request), request, files.ToArray());
     }
 
+    public TResponse PostFilesWithRequest<TResponse>(IReturn<TResponse> request, UploadFile[] files)
+    {
+        return PostFilesWithRequest<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), (object) request, files);
+    }
+
     public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
     {
         return PostFilesWithRequest<TResponse>(ResolveUrl(GetHttpMethod(request) ?? HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray());
+    }
+
+    public TResponse PostFilesWithRequest<TResponse>(string relativeOrAbsoluteUrl, IReturn<TResponse> request, UploadFile[] files)
+    {
+        return PostFilesWithRequest<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), (object)request, files);
     }
 
     public virtual TResponse PostFilesWithRequest<TResponse>(string requestUri, object request, UploadFile[] files)
