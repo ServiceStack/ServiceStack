@@ -108,6 +108,7 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
             typeof(GetValidationRules),typeof(ModifyValidationRules),typeof(ValidationRule),typeof(ValidateRule),
             typeof(GetValidationRulesResponse),
         ];
+        Metadata.ForceInclude.Clear();
 
         ScriptContext.Args[nameof(AppData)] = new AppData
         {
