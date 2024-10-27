@@ -780,9 +780,11 @@ public class TypeScriptGenerator : ILangGenerator
                 cooked = "{0}[]".Fmt(GenericArg(genericArgs[0])).StripNullable();
             else if (DictionaryTypes.Contains(type))
             {
-                cooked = "{{ [index: {0}]: {1}; }}".Fmt(
-                    GetKeyType(GenericArg(genericArgs[0])),
-                    GenericArg(genericArgs[1]));
+                var keyArg = GenericArg(genericArgs[0]);
+                var valArg = genericArgs[1];
+                var keyType = GetKeyType(keyArg);
+                var valType = GenericArg(valArg); 
+                cooked = "{ [index:" + keyType + "]: " + valType + "; }";
             }
             else
             {
@@ -795,7 +797,7 @@ public class TypeScriptGenerator : ILangGenerator
                         if (args.Length > 0)
                             args.Append(", ");
 
-                        if (arg.StartsWith("{")) // { [name:T]: T }
+                        if (arg.StartsWith("{") || arg.Contains("<{")) // { [name:T]: T }
                             args.Append(arg);
                         else
                             args.Append(GenericArg(arg));

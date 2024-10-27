@@ -179,24 +179,25 @@ public static class UrlExtensions
 
     public static string GetFullyQualifiedName(this Type type)
     {
+        if (!type.IsGenericType)
+            return type.Name;
+        
         var sb = StringBuilderCache.Allocate().Append(type.Name);
-        if (type.IsGenericType)
+        var genericMarker = type.Name.IndexOf('`');
+        if (genericMarker > 0)
         {
-            var genericMarker = type.Name.IndexOf('`');
-            if (genericMarker > 0)
-            {
-                sb.Clear();
-                sb.Append(type.Name.Remove(genericMarker));
-            }
-            sb.Append('<');
-            var typeParameters = type.GetGenericArguments();
-            for (var i = 0; i < typeParameters.Length; ++i)
-            {
-                var paramName = typeParameters[i].Name;
-                sb.Append(i == 0 ? paramName : "," + paramName);
-            }
-            sb.Append('>');
+            sb.Clear();
+            sb.Append(type.Name.Remove(genericMarker));
         }
+        sb.Append('<');
+        var typeParameters = type.GetGenericArguments();
+        for (var i = 0; i < typeParameters.Length; ++i)
+        {
+            if (i > 0)
+                sb.Append(',');
+            sb.Append(GetFullyQualifiedName(typeParameters[i]));
+        }
+        sb.Append('>');
         return StringBuilderCache.ReturnAndFree(sb);
     }
 

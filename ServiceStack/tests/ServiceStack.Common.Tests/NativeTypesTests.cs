@@ -38,6 +38,27 @@ public class NativeTypesTests
         appHost.Dispose();
     }
 
+    public class ResponseBase<T>
+    {
+        public T Result { get; set; }
+    }
+    
+    [Test]
+    public void Does_generate_Cooked_ResponseType()
+    {
+        var str = typeof(StringResponse).GetFullyQualifiedName();
+        Assert.That(str, Is.EqualTo("StringResponse"));
+        
+        str = typeof(Dictionary<string, StringResponse>).GetFullyQualifiedName();
+        Assert.That(str, Is.EqualTo("Dictionary<String,StringResponse>"));
+        
+        str = typeof(Dictionary<string, List<StringResponse>>).GetFullyQualifiedName();
+        Assert.That(str, Is.EqualTo("Dictionary<String,List<StringResponse>>"));
+
+        str = typeof(ResponseBase<Dictionary<string, List<StringResponse>>>).GetFullyQualifiedName();
+        Assert.That(str, Is.EqualTo("ResponseBase<Dictionary<String,List<StringResponse>>>"));
+    }
+
     [Test]
     public void Does_generate_correct_csharp_types()
     {
