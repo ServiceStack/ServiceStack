@@ -117,13 +117,23 @@ public partial class LookupInput : TextInputBase, IHasJsonApiClient
             refPropertyName = Property.Name;
             if (refInfo.RefLabel != null)
             {
-                var colModel = MetadataType!.Properties.FirstOrDefault(x => x.Type == refInfo.Model);
-                if (colModel == null)
+                var colModels = MetadataType!.Properties.Where(x => x.Type == refInfo.Model).ToList();
+                if (colModels.Count == 0)
                 {
                     BlazorUtils.LogError("Could not resolve {0} Property on {1}", refInfo.Model, MetadataType.Name);
                 }
 
-                var modelValue = colModel != null ? Model.GetIgnoreCase(colModel.Name).ToObjectDictionary() : null;
+                var modelValues = colModels
+                    .Select(x => Model.GetIgnoreCase(x.Name) as Dictionary<string,object>)
+                    .Where(x => x != null)
+                    .Select(x => x!)
+                    .ToList();
+                    
+                var modelValue = colModels.Count == 0
+                    ? null
+                    : modelValues.Count == 1 
+                        ? modelValues[0].ToObjectDictionary() 
+                        : modelValues.FirstOrDefault(x => x.GetIgnoreCase(refInfo.RefId ?? "Id")?.ConvertTo<string>() == refIdValue)?.ToObjectDictionary();
                 if (modelValue != null)
                 {
                     var label = modelValue.GetIgnoreCase(refInfo.RefLabel)?.ConvertTo<string>();
