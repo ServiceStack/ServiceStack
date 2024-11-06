@@ -24,14 +24,27 @@ public class Booking : AuditBase
     [IntlNumber(Currency = NumberCurrency.USD)]
     public decimal Cost { get; set; }
 
-    [Ref(Model = nameof(Coupon), RefId = nameof(Coupon.Id), RefLabel = nameof(Coupon.Description))]
     [References(typeof(Coupon))]
+    [Ref(Model = nameof(Coupon), RefId = nameof(Coupon.Id), RefLabel = nameof(Coupon.Description))]
     public string? CouponId { get; set; }
 
     [Reference]
     public Coupon Discount { get; set; }
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
+
+    
+    [References(typeof(Address))]
+    public long? PermanentAddressId { get; set; }
+
+    [Reference]
+    public Address? PermanentAddress { get; set; }
+
+    [References(typeof(Address))]
+    public long? PostalAddressId { get; set; }
+
+    [Reference]
+    public Address? PostalAddress { get; set; }    
 }
 
 public enum RoomType
@@ -79,6 +92,8 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
     [Input(Type = "textarea")]
     public string? Notes { get; set; }
     public string? CouponId { get; set; }
+    public long? PermanentAddressId { get; set; }
+    public long? PostalAddressId { get; set; }
 }
 
 [Tag("bookings"), Description("Update an existing Booking")]
@@ -101,6 +116,8 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public string? Notes { get; set; }
     public string? CouponId { get; set; }
     public bool? Cancelled { get; set; }
+    public long? PermanentAddressId { get; set; }
+    public long? PostalAddressId { get; set; }
 }
 
 [Tag("bookings"), Description("Delete a Booking")]
@@ -130,7 +147,6 @@ public class QueryCoupons : QueryDb<Coupon>
     public string? Id { get; set; }
 }
 
-/*
 [Tag("bookings")]
 [Route("/coupons", "POST")]
 [ValidateHasRole(Roles.Employee)]
@@ -165,4 +181,28 @@ public class DeleteCoupon : IDeleteDb<Coupon>, IReturnVoid
 {
     public required string Id { get; set; }
 }
-*/
+
+
+public class Address
+{
+    [AutoIncrement]
+    public long Id { get; set; }
+    public string? AddressText { get; set; }
+}
+public class QueryAddresses : QueryDb<Address>
+{
+    public long[] Ids { get; set; }
+}
+
+public class CreateAddress
+    : ICreateDb<Address>, IReturn<IdResponse>
+{
+    public string? AddressText { get; set; }
+}
+
+public class UpdateAddress
+    : IPatchDb<Address>, IReturn<IdResponse>
+{
+    public int Id { get; set; }
+    public string? AddressText { get; set; }
+}

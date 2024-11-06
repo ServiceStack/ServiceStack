@@ -34,6 +34,18 @@ public class Booking : AuditBase
     [Format(FormatMethods.Hidden)]
     public string? Notes { get; set; }
     public bool? Cancelled { get; set; }
+    
+    [References(typeof(Address))]
+    public long? PermanentAddressId { get; set; }
+
+    [Reference]
+    public Address? PermanentAddress { get; set; }
+
+    [References(typeof(Address))]
+    public long? PostalAddressId { get; set; }
+
+    [Reference]
+    public Address? PostalAddress { get; set; }    
 }
 
 public enum RoomType
@@ -61,8 +73,10 @@ public class QueryBookings : QueryDb<Booking>
 // public class DeletedBookings : QueryDb<Booking> {}
 
 [Tag("bookings"), Description("Create a new Booking")]
-[LocodeCss(Field="col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-8 gap-2", Form = "border overflow-hidden max-w-screen-lg")]
-[ExplorerCss(Field="col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-6 gap-8", Form = "border border-indigo-500 overflow-hidden max-w-screen-lg")]
+[LocodeCss(Field = "col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-8 gap-2",
+    Form = "border overflow-hidden max-w-screen-lg")]
+[ExplorerCss(Field = "col-span-12 sm:col-span-6", Fieldset = "grid grid-cols-6 gap-8",
+    Form = "border border-indigo-500 overflow-hidden max-w-screen-lg")]
 [Route("/bookings", "POST")]
 [ValidateHasRole("Employee")]
 [AutoApply(Behavior.AuditCreate)]
@@ -70,20 +84,24 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 {
     [Description("Name this Booking is for"), ValidateNotEmpty]
     public string Name { get; set; } = string.Empty;
+
     public RoomType RoomType { get; set; }
-    [ValidateGreaterThan(0)]
-    public int RoomNumber { get; set; }
-    [ValidateGreaterThan(0)]
-    public decimal Cost { get; set; }
+    [ValidateGreaterThan(0)] public int RoomNumber { get; set; }
+    [ValidateGreaterThan(0)] public decimal Cost { get; set; }
+
     [Required]
-    [Input(Type="date", Options="{ datepicker:true, 'datepicker-format':'dd-mm-yyyy' }")]
+    [Input(Type = "date", Options = "{ datepicker:true, 'datepicker-format':'dd-mm-yyyy' }")]
     public DateTime BookingStartDate { get; set; }
-    [Input(Type="date", Options="{ datepicker:true, 'datepicker-format':'dd-mm-yyyy' }")]
+
+    [Input(Type = "date", Options = "{ datepicker:true, 'datepicker-format':'dd-mm-yyyy' }")]
     public DateTime? BookingEndDate { get; set; }
-    [Input(Type = "textarea")]
-    public string? Notes { get; set; }
+
+    [Input(Type = "textarea")] public string? Notes { get; set; }
     public string? CouponId { get; set; }
+    public long? PermanentAddressId { get; set; }
+    public long? PostalAddressId { get; set; }
 }
+
 
 [Tag("bookings"), Description("Update an existing Booking")]
 [Notes("Find out how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/nhc4MZufkcM'>C# Bookings App from Scratch</a>")]
@@ -105,6 +123,8 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
     public string? Notes { get; set; }
     public string? CouponId { get; set; }
     public bool? Cancelled { get; set; }
+    public long? PermanentAddressId { get; set; }
+    public long? PostalAddressId { get; set; }
 }
 
 [Tag("bookings"), Description("Delete a Booking")]
@@ -167,4 +187,29 @@ public class UpdateCoupon : IPatchDb<Coupon>, IReturn<IdResponse>
 public class DeleteCoupon : IDeleteDb<Coupon>, IReturnVoid
 {
     public string Id { get; set; }
+}
+
+public class Address
+{
+    [AutoIncrement]
+    [PrimaryKey]
+    public long Id { get; set; }
+    public string? AddressText { get; set; }
+}
+public class QueryAddresses : QueryDb<Address>
+{
+    public long[] Ids { get; set; }
+}
+
+public class CreateAddress
+    : ICreateDb<Address>, IReturn<IdResponse>
+{
+    public string? AddressText { get; set; }
+}
+
+public class UpdateAddress
+    : IPatchDb<Address>, IReturn<IdResponse>
+{
+    public int Id { get; set; }
+    public string? AddressText { get; set; }
 }

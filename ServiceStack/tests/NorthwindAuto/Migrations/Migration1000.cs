@@ -1,3 +1,4 @@
+using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
@@ -10,19 +11,47 @@ public class Migration1000 : MigrationBase
     {
         [AutoIncrement]
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public RoomType RoomType { get; set; }
         public int RoomNumber { get; set; }
+        [IntlDateTime(DateStyle.Long)]
         public DateTime BookingStartDate { get; set; }
+        [IntlRelativeTime]
         public DateTime? BookingEndDate { get; set; }
+        //[IntlNumber(Currency = NumberCurrency.USD)]
+        [Format(FormatMethods.Currency, Options = "{ currency:modelValue.notes||'GBP' }")]
         public decimal Cost { get; set; }
-        public string? Notes { get; set; }
-        public bool? Cancelled { get; set; }
-        
+
+        [Ref(Model = nameof(Coupon), RefId = nameof(Coupon.Id), RefLabel = nameof(Coupon.Description))]
         [References(typeof(Coupon))]
         public string? CouponId { get; set; }
-    }
 
+        [Reference]
+        public Coupon Discount { get; set; }
+        [Format(FormatMethods.Hidden)]
+        public string? Notes { get; set; }
+        public bool? Cancelled { get; set; }
+    
+        [References(typeof(Address))]
+        public long? PermanentAddressId { get; set; }
+
+        [Reference]
+        public Address? PermanentAddress { get; set; }
+
+        [References(typeof(Address))]
+        public long? PostalAddressId { get; set; }
+
+        [Reference]
+        public Address? PostalAddress { get; set; }    
+    }
+    
+    public enum RoomType
+    {
+        Queen,
+        Double,
+        Suite,
+    }
+    
     public class Coupon
     {
         public string Id { get; set; }
@@ -31,15 +60,18 @@ public class Migration1000 : MigrationBase
         public DateTime ExpiryDate { get; set; }
     }
 
-    public enum RoomType
+    public class Address
     {
-        Queen,
-        Double,
-        Suite,
+        [AutoIncrement]
+        [PrimaryKey]
+        public long Id { get; set; }
+        public string? AddressText { get; set; }
     }
+    
 
     public override void Up()
     {
+        Db.CreateTable<Address>();
         Db.CreateTable<Coupon>();
         Db.CreateTable<Booking>();
 
@@ -71,5 +103,6 @@ public class Migration1000 : MigrationBase
     {
         Db.DropTable<Booking>();
         Db.DropTable<Coupon>();
+        Db.DropTable<Address>();
     }
 }

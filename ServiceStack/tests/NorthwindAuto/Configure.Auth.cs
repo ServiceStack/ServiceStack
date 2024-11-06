@@ -17,7 +17,7 @@ public class ConfigureAuth : IHostingStartup
         new() { Key = "ak-1359a079e98841a2a0c52419433d207f", UserId = "A8BBBFDB-1DA6-44E6-96D9-93995A7CBCEF", UserName = "System" },
     ];
 
-    public void Configure(IWebHostBuilder builder) => builder
+    public void ConfigureApiKeys(IWebHostBuilder builder) => builder
         .ConfigureServices(services => {
             services.AddPlugin(new AuthFeature([
                 new ApiKeyCredentialsProvider(),
@@ -43,7 +43,7 @@ public class ConfigureAuth : IHostingStartup
             }
         });
     
-    public void Configure2(IWebHostBuilder builder) => builder
+    public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices(services =>
         {
             services.AddPlugin(new AuthFeature(IdentityAuth.For<ApplicationUser>(options => {

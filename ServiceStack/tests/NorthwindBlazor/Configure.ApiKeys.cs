@@ -32,6 +32,9 @@ public class ConfigureApiKeys : IHostingStartup
         })
         .ConfigureAppHost(appHost =>
         {
+            if (AppTasks.IsRunAsAppTask())
+                return;
+            
             appHost.Metadata.ForceInclude =
             [
                 typeof(QueryUserApiKeys),
@@ -40,7 +43,7 @@ public class ConfigureApiKeys : IHostingStartup
                 typeof(DeleteUserApiKey),
             ];
             var apiKeysFeature = appHost.GetPlugin<ApiKeysFeature>();
-
+            
             using var db = appHost.Resolve<IDbConnectionFactory>().Open();
             apiKeysFeature.InitSchema(db);
             // Optional, create API Key for specified Users

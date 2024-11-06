@@ -26,6 +26,25 @@ public class Migration1000 : MigrationBase
 
         [References(typeof(Coupon))]
         public string? CouponId { get; set; }
+        
+        [References(typeof(Address))]
+        public long? PermanentAddressId { get; set; }
+
+        [Reference]
+        public Address? PermanentAddress { get; set; }
+
+        [References(typeof(Address))]
+        public long? PostalAddressId { get; set; }
+
+        [Reference]
+        public Address? PostalAddress { get; set; }    
+    }
+
+    public enum RoomType
+    {
+        Queen,
+        Double,
+        Suite,
     }
 
     public class Coupon
@@ -36,15 +55,16 @@ public class Migration1000 : MigrationBase
         public DateTime ExpiryDate { get; set; }
     }
 
-    public enum RoomType
+    public class Address
     {
-        Queen,
-        Double,
-        Suite,
+        [AutoIncrement]
+        public long Id { get; set; }
+        public string? AddressText { get; set; }
     }
 
     public override void Up()
     {
+        Db.CreateTable<Address>();
         Db.CreateTable<Coupon>();
         Db.CreateTable<Booking>();
 
@@ -84,5 +104,6 @@ public class Migration1000 : MigrationBase
     {
         Db.DropTable<Booking>();
         Db.DropTable<Coupon>();
+        Db.DropTable<Address>();
     }
 }
