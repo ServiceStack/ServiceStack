@@ -81,6 +81,8 @@ public class ServiceStackServicesOptions
         typeof(IMessageFactory),
         typeof(ServiceController),
         typeof(HttpUtils),
+        typeof(Auth.IPasswordHasher),
+        typeof(Auth.IHashProvider),
     ];
     
     internal bool ShouldAutoRegister<T>() => AutoRegister.Contains(typeof(T));

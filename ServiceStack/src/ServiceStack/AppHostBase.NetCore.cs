@@ -696,6 +696,14 @@ public static class NetCoreAppHostExtensions
         {
             services.AddSingleton<ServiceController>(c => HostContext.ServiceController);
         }
+        if (options.ShouldAutoRegister<Auth.IPasswordHasher>() && !services.Exists<Auth.IPasswordHasher>())
+        {
+            services.AddSingleton<Auth.IPasswordHasher, Auth.PasswordHasher>();
+        }
+        if (options.ShouldAutoRegister<Auth.IHashProvider>() && !services.Exists<Auth.IHashProvider>())
+        {
+            services.AddTransient<Auth.IHashProvider, Auth.SaltedHash>();
+        }
     }
 #endif
 
