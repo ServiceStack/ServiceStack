@@ -1043,7 +1043,10 @@ public partial class BackgroundJobs : IBackgroundJobs
             {
                 // Requeue jobs that have timed out
                 var timeoutDate = DateTime.UtcNow.AddSeconds(-(job.TimeoutSecs ?? feature.DefaultTimeoutSecs));
-                if (job.CompletedDate == null && job.LastActivityDate < timeoutDate && job.State is BackgroundJobState.Queued or BackgroundJobState.Started)
+                var lastActivityDate = job.RunAfter != null && job.RunAfter > job.LastActivityDate
+                    ? job.RunAfter.Value
+                    : job.LastActivityDate;
+                if (job.CompletedDate == null && lastActivityDate < timeoutDate && job.State is BackgroundJobState.Queued or BackgroundJobState.Started)
                 {
                     expiredJobIds.Add(job.Id);
                     continue;
