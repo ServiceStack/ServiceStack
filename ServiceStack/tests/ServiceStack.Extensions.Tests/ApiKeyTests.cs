@@ -98,6 +98,7 @@ public class ApiKeyTests
                 new() { Key = RestrictedKey, UserId = "9FDC4B8B-04AA-42AD-80AD-803FF8530EFB", UserName = "restricted", RestrictTo = [nameof(RestrictedApiKey)] },
             ]);
             
+            
             SetConfig(new() {
                 AdminAuthSecret = AuthSecret,
                 DebugMode = true,

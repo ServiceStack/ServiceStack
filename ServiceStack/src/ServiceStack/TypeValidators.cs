@@ -181,6 +181,19 @@ public class ApiKeyValidator(Func<IApiKeySource> factory, Func<IApiKeyResolver> 
             };
         }
     }
+    
+    public bool CanApiKeyAccess(IApiKey apiKey, Type requestType)
+    {
+        if (apiKey.HasScope(RoleNames.Admin))
+            return true;
+
+        if (!apiKey.CanAccess(requestType))
+            return false;
+                
+        if (Scope != null && !apiKey.HasScope(Scope))
+            return false;
+        return true;
+    }
 
     public override async Task<bool> IsValidAsync(object dto, IRequest request)
     {
@@ -194,6 +207,9 @@ public class ApiKeyValidator(Func<IApiKeySource> factory, Func<IApiKeyResolver> 
         {
             if (validApiKeys.TryGetValue(token, out var apiKey))
             {
+                var isValid = CanApiKeyAccess(apiKey, dto.GetType());
+                if (!isValid)
+                    return false;
                 request.Items[Keywords.ApiKey] = apiKey;
                 return true;
             }
@@ -202,14 +218,9 @@ public class ApiKeyValidator(Func<IApiKeySource> factory, Func<IApiKeyResolver> 
             apiKey = await source.GetApiKeyAsync(token);
             if (apiKey != null)
             {
-                if (apiKey.HasScope(RoleNames.Admin))
-                    return true;
-
-                if (!apiKey.CanAccess(dto.GetType()))
+                var isValid = CanApiKeyAccess(apiKey, dto.GetType());
+                if (!isValid)
                     return false;
-                
-                if (Scope != null)
-                    return apiKey.HasScope(Scope);
                 
                 validApiKeys[token] = apiKey;
                 request.Items[Keywords.ApiKey] = apiKey;
