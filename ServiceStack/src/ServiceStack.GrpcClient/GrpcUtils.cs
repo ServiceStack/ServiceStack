@@ -159,6 +159,16 @@ namespace ServiceStack
                     typedStatus.Message = message = ex.Status.Detail;
                 }
 
+                var hasStatus = ResponseCallContext.GetHttpStatus(headers);
+                if (hasStatus == default)
+                {
+                    var httpStatus = ex.StatusCode == StatusCode.Unimplemented
+                        ? 404
+                        : 0;
+                    if (httpStatus != default)
+                        headers.Add(GrpcClientConfig.Keywords.HttpStatus, $"{httpStatus}");
+                }
+
                 var prop = TypeProperties<TResponse>.GetAccessor(nameof(IHasResponseStatus.ResponseStatus));
                 if (prop != null)
                 {

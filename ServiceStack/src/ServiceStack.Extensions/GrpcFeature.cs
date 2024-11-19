@@ -155,8 +155,15 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
         ProtoOption.PhpNamespace
     ];
 
-    private readonly IApplicationBuilder app;
-    public GrpcFeature(IApplicationBuilder app)
+    private IApplicationBuilder? app;
+    public IApplicationBuilder App
+    {
+        get => app ?? ServiceStackHost.Instance.GetApp()
+            ?? throw new NotSupportedException("GrpcFeature.app is not configured");
+        set => app = value;
+    }
+
+    public GrpcFeature(IApplicationBuilder? app = null)
     {
         this.app = app;
         GenerateMethodsForAny = DefaultGenerateMethodsForAny;
@@ -319,7 +326,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
 
     internal void MapGrpcService<TService>() where TService : class
     {
-        app.UseEndpoints(endpoints => endpoints.MapGrpcService<TService>());
+        App.UseEndpoints(endpoints => endpoints.MapGrpcService<TService>());
     }
 
     public Type GenerateGrpcServices(IEnumerable<Operation> metadataOperations, IEnumerable<Type> streamServices)

@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ServiceStack.Grpc;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Text.Pools;
@@ -242,6 +243,9 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
     {
         var req = ctx.AuthService.Request;
         if (req.IsInProcessRequest())
+            return ctx.AuthResponse;
+        
+        if (ctx.Request is GrpcRequest)
             return ctx.AuthResponse;
 
         if (ctx.AuthResponse.BearerToken == null)
@@ -740,7 +744,8 @@ public class ConvertSessionToTokenService(IIdentityJwtAuthProvider jwtAuthProvid
         if (Request.ResponseContentType.MatchesContentType(MimeTypes.Html))
             Request.ResponseContentType = MimeTypes.Json;
 
-        var httpResult = new HttpResult(new ConvertSessionToTokenResponse()); 
+        var dto = new ConvertSessionToTokenResponse();
+        var httpResult = new HttpResult(dto); 
 
         var token = Request.GetJwtToken();
         IAuthSession? session = null;
@@ -772,21 +777,29 @@ public class ConvertSessionToTokenService(IIdentityJwtAuthProvider jwtAuthProvid
             userTokens ??= new(token, null);
         }
 
-        httpResult.AddCookie(Request,
-            new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {
-                HttpOnly = true,
-                Secure = Request.IsSecureConnection,
-                Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
-            });
-        
-        if (userTokens.RefreshToken is { RefreshTokenExpiry: not null })
+        if (Request is GrpcRequest)
+        {
+            dto.AccessToken = token;
+            dto.RefreshToken = userTokens.RefreshToken?.RefreshToken;
+        }
+        else
         {
             httpResult.AddCookie(Request,
-                new Cookie(Keywords.RefreshTokenCookie, token, Cookies.RootPath) {
+                new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {
                     HttpOnly = true,
                     Secure = Request.IsSecureConnection,
-                    Expires = userTokens.RefreshToken.RefreshTokenExpiry.Value,
+                    Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
                 });
+            
+            if (userTokens.RefreshToken is { RefreshTokenExpiry: not null })
+            {
+                httpResult.AddCookie(Request,
+                    new Cookie(Keywords.RefreshTokenCookie, userTokens.RefreshToken?.RefreshToken, Cookies.RootPath) {
+                        HttpOnly = true,
+                        Secure = Request.IsSecureConnection,
+                        Expires = userTokens.RefreshToken!.RefreshTokenExpiry.Value,
+                    });
+            }
         }
         
         return httpResult;

@@ -518,7 +518,7 @@ public static class HttpResponseExtensionsInternal
         var hostConfig = HostContext.Config;
         if (!httpRes.HasStarted)
         {
-            if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
+            if (httpRes.ContentType is null or MimeTypes.Html 
                 && contentType != null && contentType != httpRes.ContentType)
             {
                 httpRes.ContentType = contentType;

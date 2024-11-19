@@ -276,9 +276,10 @@ namespace ServiceStack
                         if (retryStatus?.ErrorCode == null)
                             return retryResponse;
                     }
-                
+
+                    var statusCode = ResponseCallContext.GetHttpStatus(headers);
                     throw new WebServiceException(status.Message) {
-                        StatusCode = ResponseCallContext.GetHttpStatus(headers),
+                        StatusCode = statusCode,
                         ResponseDto = response as object ?? new EmptyResponse { ResponseStatus = status },
                         ResponseHeaders = GrpcUtils.ResolveHeaders(headers),
                         State = auc.GetStatus(),

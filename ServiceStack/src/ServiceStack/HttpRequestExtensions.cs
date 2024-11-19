@@ -265,12 +265,13 @@ public static class HttpRequestExtensions
         }
 
         if (ex is HttpError httpEx) return httpEx.Status;
-        if (ex is NotImplementedException || ex is NotSupportedException) return (int)HttpStatusCode.MethodNotAllowed;
+        if (ex is NotImplementedException or NotSupportedException) return (int)HttpStatusCode.MethodNotAllowed;
         if (ex is FileNotFoundException) return (int)HttpStatusCode.NotFound;
         if (ex is ArgumentException or SerializationException or FormatException) return (int)HttpStatusCode.BadRequest;
         if (ex is AuthenticationException) return (int)HttpStatusCode.Unauthorized;
         if (ex is UnauthorizedAccessException) return (int)HttpStatusCode.Forbidden;
         if (ex is OptimisticConcurrencyException) return (int)HttpStatusCode.Conflict;
+        if (ex.GetType().Name.StartsWith("SecurityToken")) return (int)HttpStatusCode.Unauthorized;
         return (int)HttpStatusCode.InternalServerError;
     }
 
@@ -1070,14 +1071,10 @@ public static class HttpRequestExtensions
 
     public static ClaimsPrincipal GetClaimsPrincipal(this IRequest req)
     {
-#if NETCORE
-        return req.GetOriginalRequest<Microsoft.AspNetCore.Http.HttpRequest>()?.HttpContext.User
-            ?? req.GetItem(Keywords.ClaimsPrincipal) as ClaimsPrincipal;
-#else
-            return req.GetOriginalRequest<HttpRequestBase>()?.RequestContext.HttpContext.User is ClaimsPrincipal principal
-                ? principal
-                : req.GetItem(Keywords.ClaimsPrincipal) as ClaimsPrincipal;
-#endif
+        return (req is IHasClaimsPrincipal hasClaimsPrincipal
+                   ? hasClaimsPrincipal.User
+                   : null)
+               ?? req.GetItem(Keywords.ClaimsPrincipal) as ClaimsPrincipal;
     }
 
     public static IEnumerable<Claim> GetClaims(this IRequest req) => 

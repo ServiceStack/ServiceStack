@@ -97,6 +97,7 @@ class MyJobCallback(IBackgroundJobs jobs) : SyncCommand<MyResponse>
     }
 }
 
+[IgnoreServices]
 public class JobServices(IBackgroundJobs jobs) : Service
 {
     public static long Count;
@@ -192,6 +193,7 @@ class MyScopedCommand(IBackgroundJobs jobs, UserManager<ApplicationUser> userMan
     }
 }
 
+[IgnoreServices]
 public class JobScopedServices(IBackgroundJobs jobs, UserManager<ApplicationUser> userManager) : Service
 {
     public static long Count;
