@@ -379,18 +379,30 @@ class ApiKeyResolver(ApiKeysFeature feature) : IApiKeyResolver
         return feature.GetApiKeyToken(req);
     }
 }
-class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory dbFactory) : IApiKeySource
+public class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory dbFactory) : IApiKeySource
 {
-    public async Task<IApiKey?> GetApiKeyAsync(string key)
+    public async Task<IApiKey?> GetApiKeyFromDbAsync(string key)
     {
         using var db = dbFactory.OpenDbConnection();
         var apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Key == key);
         if (apiKey == null) 
-            return null;
+            return apiKey;
         if (apiKey.CancelledDate != null)
             throw HttpError.Unauthorized(ErrorMessages.ApiKeyHasBeenCancelled.Localize());
         if (apiKey.ExpiryDate != null && apiKey.ExpiryDate < DateTime.UtcNow)
             throw HttpError.Unauthorized(ErrorMessages.ApiKeyHasExpired.Localize());
+        return apiKey;
+    }
+    
+    public async Task<IApiKey?> GetApiKeyAsync(string key)
+    {
+        if (!feature.ValidApiKeys.TryGetValue(key, out var apiKey))
+        {
+            apiKey = await GetApiKeyFromDbAsync(key);
+            if (apiKey == null)
+                return null;
+            feature.ValidApiKeys[key] = apiKey;
+        }
         feature.RecordUsage(apiKey);
         return apiKey;
     }
