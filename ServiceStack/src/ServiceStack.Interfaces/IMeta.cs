@@ -41,6 +41,11 @@ public interface IHasAuthSecret
     string? AuthSecret { get; set; }
 }
 
+public interface IHasClaimsPrincipal
+{
+    System.Security.Claims.ClaimsPrincipal? User { get; }
+}
+
 public interface IHasVersion
 {
     int Version { get; set; }

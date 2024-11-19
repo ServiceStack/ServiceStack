@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +15,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Grpc;
 
-public class GrpcRequest : IHttpRequest, IHasServiceScope
+public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 {
     public object Dto { get; set; }
     public object OriginalRequest { get; }
@@ -99,6 +100,8 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope
         }
     }
 
+    public ClaimsPrincipal? User => Context.ServerCallContext?.GetHttpContext()?.User;
+
     private string operationName;
     public string OperationName
     {
@@ -180,14 +183,14 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope
 
     public bool UseBufferedStream { get; set; }
 
-    public string GetRawBody() => null;
-    public Task<string> GetRawBodyAsync() => Task.FromResult((string)null);
+    public string? GetRawBody() => null;
+    public Task<string?> GetRawBodyAsync() => Task.FromResult((string)null);
 
     public string RawUrl { get; set; }
 
     public string RemoteIp { get; set; }
 
-    public string Authorization
+    public string? Authorization
     {
         get => string.IsNullOrEmpty(Headers[HttpHeaders.Authorization])
             ? null
@@ -240,5 +243,5 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope
     public int? XForwardedPort { get; set; }
     public string XForwardedProtocol { get; set; }
     public string XRealIp { get; set; }
-    public string Accept { get; set; }
+    public string Accept { get; set; } 
 }

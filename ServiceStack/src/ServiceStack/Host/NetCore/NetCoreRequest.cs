@@ -1,5 +1,6 @@
 ﻿
 
+using System.Security.Claims;
 using System.Threading.Tasks;
 #if NETCORE
 using System;
@@ -21,7 +22,8 @@ using ServiceStack.NetCore;
 
 namespace ServiceStack.Host.NetCore;
 
-public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IServiceProvider, IHasBufferedStream, IHasStringId, IHasTraceId
+public class NetCoreRequest : 
+    IHttpRequest, IHasResolver, IHasVirtualFiles, IServiceProvider, IHasBufferedStream, IHasStringId, IHasTraceId, IHasClaimsPrincipal
 {
     public static ILog log = LogManager.GetLogger(typeof(NetCoreRequest));
 
@@ -75,6 +77,8 @@ public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, ISer
 
     public object Dto { get; set; }
     public string ContentType => request.ContentType;
+
+    public ClaimsPrincipal User => context.User;
 
     public string TraceId => request.HttpContext.TraceIdentifier;
 

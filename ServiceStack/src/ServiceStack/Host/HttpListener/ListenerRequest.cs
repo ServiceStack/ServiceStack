@@ -1,5 +1,6 @@
 
 
+using System.Security.Claims;
 using System.Threading.Tasks;
 #if !NETCORE 
 
@@ -18,7 +19,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener;
 
-public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IHasBufferedStream
+public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IHasBufferedStream, IHasClaimsPrincipal
 {
     private IResolver resolver;
     public IResolver Resolver
@@ -27,11 +28,13 @@ public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFi
         set => resolver = value;
     }
 
+    private HttpListenerContext httpContext;
     private readonly HttpListenerRequest request;
     private readonly IHttpResponse response;
 
     public ListenerRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes)
     {
+        this.httpContext = httpContext;
         this.OperationName = operationName;
         this.RequestAttributes = requestAttributes;
         this.request = httpContext.Request;
@@ -73,6 +76,7 @@ public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFi
 
     public IHttpResponse HttpResponse => response;
 
+    public ClaimsPrincipal User => httpContext.User as ClaimsPrincipal;
     public RequestAttributes RequestAttributes { get; set; }
 
     public IRequestPreferences RequestPreferences { get; private set; }

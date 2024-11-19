@@ -1,5 +1,6 @@
 
 
+using System.Security.Claims;
 using System.Threading.Tasks;
 #if !NETCORE
 
@@ -20,7 +21,7 @@ using ServiceStack.Web;
 namespace ServiceStack.Host.AspNet;
 
 public class AspNetRequest
-    : IHttpRequest, IHasResolver, IHasVirtualFiles, IHasBufferedStream
+    : IHttpRequest, IHasResolver, IHasVirtualFiles, IHasBufferedStream, IHasClaimsPrincipal
 {
     public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
 
@@ -76,6 +77,8 @@ public class AspNetRequest
     public IResponse Response => response;
 
     public IHttpResponse HttpResponse => response;
+
+    public ClaimsPrincipal User => request.RequestContext?.HttpContext.User as ClaimsPrincipal;
 
     public RequestAttributes RequestAttributes { get; set; }
 
