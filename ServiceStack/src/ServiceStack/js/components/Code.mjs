@@ -124,7 +124,7 @@ let api = client.Api(new Hello(
 // Quickly inspect response
 api.Response.PrintDump()`
 }
-const InstallTool = {
+const InstallToolNet = {
     template:`<h2 class="text-lg p-4">
         To easily update DTOs for all APIs install the 
         <em><b>x</b></em> <a class="text-blue-600 underline" href="https://docs.servicestack.net/dotnet-tool">dotnet tool</a>
@@ -143,7 +143,20 @@ const InstallTool = {
         return { BaseUrl, create, update }
     }
 }
-const components = { InstallTool }
+const InstallTool = {
+    template:`
+    <h2 class="text-lg p-4">To generate all DTOs for <b>{{BaseUrl}}</b> run:</h2>
+    <CopyLine prefix="$ " :text="create" />
+    <h2 class="text-lg p-4">Once generated, the DTOs can be updated with:</h2>
+    <CopyLine prefix="$ " :text="update" />`,
+    props:['lang'],
+    setup(props) {
+        const create = `npx get-dtos ${props.lang} ${BaseUrl}`
+        const update = `npx get-dtos ${props.lang}`
+        return { BaseUrl, create, update }
+    }
+}
+const components = { InstallToolNet, InstallTool }
 const CSharp = {
     components,
     template:`<div>
@@ -165,7 +178,7 @@ const CSharp = {
           </div>
           <pre><code class="language-csharp" v-highlightjs="usage"></code></pre>
         </div>
-        <InstallTool lang="csharp" />
+        <InstallToolNet lang="csharp" />
     </div>`,
     props:['src','usage'],
     setup() {
@@ -426,7 +439,7 @@ const VbNet = {
       </div>
       <pre><code class="language-vbnet" v-highlightjs="usage"></code></pre>
     </div>
-    <InstallTool lang="vbnet" />
+    <InstallToolNet lang="vbnet" />
     </div>`,
     props:['src','usage'],
     setup() {
@@ -454,7 +467,7 @@ const FSharp = {
       </div>
       <pre><code class="language-fsharp" v-highlightjs="usage"></code></pre>
     </div>
-    <InstallTool lang="fsharp" />
+    <InstallToolNet lang="fsharp" />
     </div>`,
     props:['src','usage'],
     setup() {

@@ -1,6 +1,6 @@
 /* Options:
-Date: 2024-09-09 17:50:12
-Version: 8.31
+Date: 2024-10-17 23:05:22
+Version: 8.41
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 //AddServiceStackTypes: True
@@ -1578,6 +1578,26 @@ export class HourSummary {
     /** @type {number} */
     cancelled;
 }
+export class WorkerStats {
+    /** @param {{name?:string,queued?:number,received?:number,completed?:number,retries?:number,failed?:number,runningJob?:number,runningTime?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {number} */
+    queued;
+    /** @type {number} */
+    received;
+    /** @type {number} */
+    completed;
+    /** @type {number} */
+    retries;
+    /** @type {number} */
+    failed;
+    /** @type {?number} */
+    runningJob;
+    /** @type {?string} */
+    runningTime;
+}
 export class RequestLogEntry {
     /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,requestBody?:string,requestDto?:Object,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },session?:Object,responseDto?:Object,errorResponse?:Object,exceptionSource?:string,exceptionData?:any,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1679,7 +1699,7 @@ export class AdminDashboardResponse {
     responseStatus;
 }
 export class AuthenticateResponse {
-    /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,refreshTokenExpiry?:string,profileUrl?:string,roles?:string[],permissions?:string[],responseStatus?:ResponseStatus,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,refreshTokenExpiry?:string,profileUrl?:string,roles?:string[],permissions?:string[],authProvider?:string,responseStatus?:ResponseStatus,meta?:{ [index: string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     userId;
@@ -1703,6 +1723,8 @@ export class AuthenticateResponse {
     roles;
     /** @type {string[]} */
     permissions;
+    /** @type {string} */
+    authProvider;
     /** @type {ResponseStatus} */
     responseStatus;
     /** @type {{ [index: string]: string; }} */
@@ -1872,12 +1894,16 @@ export class AdminJobDashboardResponse {
     responseStatus;
 }
 export class AdminJobInfoResponse {
-    /** @param {{monthDbs?:string[],tableCounts?:{ [index: string]: number; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{monthDbs?:string[],tableCounts?:{ [index: string]: number; },workerStats?:WorkerStats[],queueCounts?:{ [index: string]: number; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     monthDbs;
     /** @type {{ [index: string]: number; }} */
     tableCounts;
+    /** @type {WorkerStats[]} */
+    workerStats;
+    /** @type {{ [index: string]: number; }} */
+    queueCounts;
     /** @type {?ResponseStatus} */
     responseStatus;
 }
