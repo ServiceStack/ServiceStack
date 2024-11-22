@@ -79,6 +79,9 @@ public class VbNetGenerator : ILangGenerator
         "True",
         "False",
         "Mod",
+        "Stop",
+        "Variant",
+        "To",
     };
 
     public static TypeFilterDelegate TypeFilter { get; set; }
