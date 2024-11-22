@@ -262,7 +262,7 @@ const Dart = {
     <p class="text-lg p-4">
       <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>pubspec.yaml</em>
     </p>
-    <CopyLine text="servicestack: ^3.0.0" />
+    <CopyLine text="servicestack: ^3.0.1" />
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
       <CopyIcon class="ml-3" :text="src" title="Copy code" />
@@ -287,7 +287,7 @@ const Java = {
     <p class="text-lg p-4">
       <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
     </p>
-    <CopyLine text="implementation 'net.servicestack:client:1.1.0'" />
+    <CopyLine text="implementation 'net.servicestack:client:1.1.3'" />
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
       <CopyIcon class="ml-3" :text="src" title="Copy code" />
@@ -312,7 +312,7 @@ const Kotlin = {
     <p class="text-lg p-4">
       <b class="mr-2">1.</b> Include <b>net.servicestack:client</b> package in your projects<em>build.gradle</em>
     </p>
-    <CopyLine text="implementation 'net.servicestack:client:1.1.0'" />
+    <CopyLine text="implementation 'net.servicestack:client:1.1.3'" />
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
       <CopyIcon class="ml-3" :text="src" title="Copy code" />
@@ -335,9 +335,9 @@ const Python = {
     template:`<div>
     <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from Python</h2>
     <p class="text-lg p-4">
-        <b class="mr-2">1.</b> Include <b>servicestack</b> package in your projects<em>requirements.txt</em>
+        <b class="mr-2">1.</b> Install the <b>servicestack</b> PyPI package
     </p>
-    <CopyLine text="servicestack>=0.1.3" />
+    <CopyLine text="pip install servicestack" />
     <div class="text-lg p-4 flex">
       <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
       <CopyIcon class="ml-3" :text="src" title="Copy code" />
@@ -411,10 +411,9 @@ const Swift = {
     props:['src','usage'],
     setup() {
         let pkg = `dependencies: [
-    .package(name: "ServiceStack", 
-        url: "https://github.com/ServiceStack/ServiceStack.Swift.git", 
-        Version(5,0,0)..&lt;Version(6,0,0)),
-]`
+    .package(url: "https://github.com/ServiceStack/ServiceStack.Swift.git",
+        Version(6,0,0)..<Version(7,0,0)),
+],`
         return { pkg }
     }
 }
