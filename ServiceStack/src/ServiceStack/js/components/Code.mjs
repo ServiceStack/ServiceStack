@@ -412,7 +412,7 @@ const Swift = {
     setup() {
         let pkg = `dependencies: [
     .package(url: "https://github.com/ServiceStack/ServiceStack.Swift.git",
-        Version(6,0,0)..<Version(7,0,0)),
+        Version(6,0,0)..&lt;Version(7,0,0)),
 ],`
         return { pkg }
     }
