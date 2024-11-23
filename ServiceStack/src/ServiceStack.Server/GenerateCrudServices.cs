@@ -959,7 +959,7 @@ public class GenerateCrudServices : IGenerateCrudServices
 
         var metadata = ServiceStackHost.GetOrCreateMetadata();
         var nativeTypes = ServiceStackHost.GetRequiredPlugin<NativeTypesFeature>();
-        var typesConfig = nativeTypes.MetadataTypesConfig;
+        var typesConfig = NativeTypesFeature.CreateMetadataTypesConfig();
         request.BaseUrl ??= nativeTypes.MetadataTypesConfig.BaseUrl ?? ServiceStackHost.Instance?.GetBaseUrl(req);
         if (request.MakePartial == null)
             typesConfig.MakePartial = false;
