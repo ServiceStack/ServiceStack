@@ -996,7 +996,7 @@ public static class MetadataExtensions
     {
         return type == null
                || (type.Namespace != null && type.Namespace.StartsWith("System"))
-               || (type.Inherits != null && type.Inherits.Name == "Array");
+               || type.Inherits is { Name: "Array" };
     }
 
     public static HashSet<string> GetDefaultNamespaces(this MetadataTypesConfig config, MetadataTypes metadata)
@@ -1011,10 +1011,7 @@ public static class MetadataExtensions
             if (!ns.StartsWith("System") && !config.IgnoreTypesInNamespaces.Contains(ns))
                 continue;
 
-            if (!namespaces.Contains(ns))
-            {
-                namespaces.Add(ns);
-            }
+            namespaces.Add(ns);
         }
 
         return namespaces;
