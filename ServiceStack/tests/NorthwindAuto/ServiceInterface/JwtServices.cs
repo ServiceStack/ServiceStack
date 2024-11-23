@@ -1,9 +1,11 @@
 using ServiceStack;
 using ServiceStack.Auth;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
 namespace MyApp.ServiceInterface;
 
+[ExcludeMetadata] // Exports AuthUserSession
 [Route("/jwt")]
 public class CreateJwt : AuthUserSession, IReturn<CreateJwtResponse>
 {
