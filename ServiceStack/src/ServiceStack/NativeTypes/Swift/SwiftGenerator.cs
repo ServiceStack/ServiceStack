@@ -678,22 +678,25 @@ public class SwiftGenerator : ILangGenerator
             optional = "?"; //always use optional
         }
 
-        if (prop.IsArray())
+        if (initCollections)
         {
-            optional = "";
-            defaultValue = " = []";
-        }
-        else if (initCollections && !prop.GenericArgs.IsEmpty())
-        {
-            if (ArrayTypes.Contains(prop.Type))
+            if (prop.IsArray())
             {
                 optional = "";
                 defaultValue = " = []";
             }
-            if (DictionaryTypes.Contains(prop.Type))
+            else if (!prop.GenericArgs.IsEmpty())
             {
-                optional = "";
-                defaultValue = " = [:]";
+                if (ArrayTypes.Contains(prop.Type))
+                {
+                    optional = "";
+                    defaultValue = " = []";
+                }
+                if (DictionaryTypes.Contains(prop.Type))
+                {
+                    optional = "";
+                    defaultValue = " = [:]";
+                }
             }
         }
         return (optional, defaultValue);
