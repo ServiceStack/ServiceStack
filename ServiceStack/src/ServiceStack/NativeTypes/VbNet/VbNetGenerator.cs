@@ -426,7 +426,7 @@ public class VbNetGenerator : ILangGenerator
             AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
         }
         AppendAttributes(sb, type.Attributes);
-        AppendDataContract(sb, type.DataContract);
+        if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
         if (Config.AddGeneratedCodeAttributes)
             sb.AppendLine($"<GeneratedCode(\"AddServiceStackReference\", \"{Env.VersionString}\")>");
 
@@ -556,35 +556,20 @@ public class VbNetGenerator : ILangGenerator
         if (type.IsInterface())
             return;
 
-        if (Config.AddImplicitVersion == null && !Config.InitializeCollections)
+        if (Config.AddImplicitVersion == null)
             return;
 
-        var collectionProps = new List<MetadataPropertyType>();
-        if (type.Properties != null && Config.InitializeCollections)
-            collectionProps = type.Properties.Where(x => x.IsCollection() && feature.ShouldInitializeCollection(type)).ToList();
-
         var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
-        if (!addVersionInfo && collectionProps.Count <= 0) return;
+        if (!addVersionInfo) return;
 
-        if (addVersionInfo)
-        {
-            var @virtual = Config.MakeVirtual ? "Overridable " : "";
-            sb.AppendLine("Public {0}Property Version As Integer".Fmt(@virtual));
-            sb.AppendLine();
-        }
+        var @virtual = Config.MakeVirtual ? "Overridable " : "";
+        sb.AppendLine("Public {0}Property Version As Integer".Fmt(@virtual));
+        sb.AppendLine();
 
         sb.AppendLine("Public Sub New()".Fmt(NameOnly(type.Name)));
-        //sb.AppendLine("{");
         sb = sb.Indent();
 
-        if (addVersionInfo)
-            sb.AppendLine("Version = {0}".Fmt(Config.AddImplicitVersion));
-
-        foreach (var prop in collectionProps)
-        {
-            var suffix = prop.IsArray() ? "{}" : "";
-            sb.AppendLine($"{GetPropertyName(prop.Name)} = New {Type(prop.Type, prop.GenericArgs,true)}{suffix}");
-        }
+        sb.AppendLine("Version = {0}".Fmt(Config.AddImplicitVersion));
 
         sb = sb.UnIndent();
         sb.AppendLine("End Sub");
@@ -620,12 +605,19 @@ public class VbNetGenerator : ILangGenerator
                 var explicitInterface = explicitInterfacesMap.TryGetValue(prop.Name, out var name)
                     ? $" Implements {name}"
                     : "";
-                sb.AppendLine(string.Format("{0}{1}Property {2} As {3}{4}",
+                
+                var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
+                                  && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                    ? $" = New {Type(prop.Type, prop.GenericArgs,true)}" + (prop.IsArray() ? "{}" : "")
+                    : "";
+
+                sb.AppendLine(string.Format("{0}{1}Property {2} As {3}{4}{5}",
                     visibility,
                     @virtual,
                     GetPropertyName(prop.Name), 
                     propType,
-                    explicitInterface));
+                    explicitInterface,
+                    initializer));
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
         }

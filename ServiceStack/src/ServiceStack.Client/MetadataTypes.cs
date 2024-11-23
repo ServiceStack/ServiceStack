@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -37,7 +38,7 @@ public class MetadataTypesConfig
         bool addNullableAnnotations = false,
         bool makePropertiesOptional = false,
         bool makeDataContractsExtensible = false,
-        bool initializeCollections = true,
+        bool initializeCollections = false,
         int? addImplicitVersion = null)
     {
         BaseUrl = baseUrl;
@@ -1832,6 +1833,12 @@ public static class AppMetadataUtils
             property.Format ??= new FormatInfo { Method = apiMember.Format };
             property.Description = apiMember.Description;
         }
+        
+#if NET6_0_OR_GREATER        
+        var nullableProp = pi.FirstAttribute<AllowNullAttribute>();
+        if (nullableProp != null)
+            property.IsRequired = false;
+#endif
 
         var requiredProp = pi.FirstAttribute<RequiredAttribute>();
         if (requiredProp != null)

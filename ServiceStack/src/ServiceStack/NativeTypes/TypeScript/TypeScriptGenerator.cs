@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -363,7 +364,7 @@ public class TypeScriptGenerator : ILangGenerator
             AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
         }
         AppendAttributes(sb, type.Attributes);
-        AppendDataContract(sb, type.DataContract);
+        if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
 
         sb.Emit(type, Lang.TypeScript);
         PreTypeFilter?.Invoke(sb, type);
@@ -611,9 +612,16 @@ public class TypeScriptGenerator : ILangGenerator
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
+                                  && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                    ? prop.IsDictionary()
+                        ? " = {}"
+                        : " = []"
+                    : "";
+                
                 sb.Emit(prop, Lang.TypeScript);
                 PrePropertyFilter?.Invoke(sb, prop, type);
-                sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, GetPropertyName(prop), optional));
+                sb.AppendLine(modifier + "{1}{2}: {0}{3};".Fmt(propType, GetPropertyName(prop), optional, initializer));
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
         }

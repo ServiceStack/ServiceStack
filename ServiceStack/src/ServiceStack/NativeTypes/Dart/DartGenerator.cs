@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -482,7 +483,7 @@ public class DartGenerator : ILangGenerator
             AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
         }
         AppendAttributes(sb, type.Attributes);
-        AppendDataContract(sb, type.DataContract);
+        if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
 
         sb.Emit(type, Lang.Dart);
         PreTypeFilter?.Invoke(sb, type);
@@ -1006,7 +1007,15 @@ public class DartGenerator : ILangGenerator
 
                 sb.Emit(prop, Lang.Dart);
                 PrePropertyFilter?.Invoke(sb, prop, type);
-                sb.AppendLine($"{propType}? {GetSafePropertyName(prop)};");
+                
+                var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
+                        && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                    ? prop.IsDictionary()
+                        ? " = {}"
+                        : " = []"
+                    : "";
+                
+                sb.AppendLine($"{propType}? {GetSafePropertyName(prop)}{initializer};");
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
         }

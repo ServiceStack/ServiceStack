@@ -14,10 +14,12 @@ public class JavaGenerator : ILangGenerator
     readonly MetadataTypesConfig Config;
     List<string> conflictTypeNames = new();
     List<MetadataType> allTypes;
+    readonly NativeTypesFeature feature;
 
     public JavaGenerator(MetadataTypesConfig config)
     {
         Config = config;
+        feature = HostContext.GetPlugin<NativeTypesFeature>();
     }
 
     public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
@@ -344,7 +346,7 @@ public class JavaGenerator : ILangGenerator
             AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
         }
         AppendAttributes(sb, type.Attributes);
-        AppendDataContract(sb, type.DataContract);
+        if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
 
         var typeName = Type(type.Name, type.GenericArgs);
 
@@ -502,6 +504,13 @@ public class JavaGenerator : ILangGenerator
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
+                var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
+                    && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                    ? propType.EndsWith("[]")
+                        ? $"new {propType}{{}}"
+                        : $"new {propType}()"
+                    : "null";
+
                 sb.Emit(prop, Lang.Java);
                 PrePropertyFilter?.Invoke(sb, prop, type);
 
@@ -509,11 +518,11 @@ public class JavaGenerator : ILangGenerator
                 var fieldName = GetPropertyName(prop.Name);
                 if (fieldName == defaultName || prop.DataMember?.Name != null)
                 {
-                    sb.AppendLine($"public {propType} {fieldName} = null;");
+                    sb.AppendLine($"public {propType} {fieldName} = {initializer};");
                 }
                 else
                 {
-                    sb.AppendLine($"@SerializedName(\"{defaultName}\") public {propType} {fieldName} = null;");
+                    sb.AppendLine($"@SerializedName(\"{defaultName}\") public {propType} {fieldName} = {initializer};");
                 }
                 PostPropertyFilter?.Invoke(sb, prop, type);
 

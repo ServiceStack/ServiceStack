@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -403,7 +404,14 @@ public class MjsGenerator : ILangGenerator
                 }
             }
 
-            sb.AppendLine(GetPropertyName(prop) + ";");
+            var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
+                    && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                ? prop.IsDictionary()
+                    ? " = {}"
+                    : " = []"
+                : "";
+                
+            sb.AppendLine(GetPropertyName(prop) + initializer + ";");
         }
 
         if (includeResponseStatus)

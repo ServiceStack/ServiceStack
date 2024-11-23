@@ -108,6 +108,29 @@ public class AllCollectionTypes : IReturn<AllCollectionTypes>
     public Dictionary<string, List<Dictionary<string, Poco>>> PocoLookupMap { get; set; }
 }
 
+[Tag("Test")]
+public class AllNullableCollectionTypes : IReturn<AllNullableCollectionTypes>
+{
+    public int[]? IntArray { get; set; }
+    public List<int>? IntList { get; set; }
+
+    public string[]? StringArray { get; set; }
+    public List<string>? StringList { get; set; }
+
+    public float[]? FloatArray { get; set; }
+    public List<double>? DoubleList { get; set; }
+
+    public byte[]? ByteArray { get; set; }
+    public char[]? CharArray { get; set; }
+    public List<decimal>? DecimalList { get; set; }
+
+    public Poco[]? PocoArray { get; set; }
+    public List<Poco>? PocoList { get; set; }
+
+    public Dictionary<string, List<Poco>>? PocoLookup { get; set; }
+    public Dictionary<string, List<Dictionary<string, Poco>>>? PocoLookupMap { get; set; }
+}
+
 public class HelloAllTypes : IReturn<HelloAllTypesResponse>
 {
     public string Name { get; set; }
@@ -424,6 +447,8 @@ public class TestServices : Service
     public object Any(AllTypes request) => request;
 
     public object Any(AllCollectionTypes request) => request;
+    
+    public object Any(AllNullableCollectionTypes request) => request;
     
     // public IAutoQueryDb AutoQuery { get; set; }
     // public Task<object> Post(CreateMqBooking request) => AutoQuery.CreateAsync(request, base.Request);

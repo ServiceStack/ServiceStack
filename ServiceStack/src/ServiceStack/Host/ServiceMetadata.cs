@@ -32,6 +32,33 @@ public class ServiceMetadata(List<RestPath> restPaths)
         
     public HashSet<Type> ForceInclude { get; set; } = new();
 
+    public static HashSet<string> CollectionTypes =
+    [
+        "List`1",
+        "HashSet`1",
+        "Queue`1",
+        "Stack`1",
+    ];
+    public static HashSet<string> CollectionInterfaceTypes =
+    [
+        "IEnumerable`1",
+        "ICollection`1",
+        "IEnumerable",
+    ];
+    public static HashSet<string> AnyCollectionTypes = new(CollectionTypes.Concat(CollectionInterfaceTypes));
+    public static HashSet<string> DictionaryTypes = new() {
+        "Dictionary`2",
+        "OrderedDictionary",
+        "StringDictionary",
+    };
+    public static HashSet<string> DictionaryInterfaceTypes = new() {
+        "IDictionary`2",
+        "IOrderedDictionary`2",
+        "IDictionary",
+        "IOrderedDictionary",
+    };
+    public static HashSet<string> AnyDictionaryTypes = new(DictionaryTypes.Concat(DictionaryInterfaceTypes));
+
     public void Add(Type serviceType, Type requestType, Type? responseType)
     {
         if (requestType.IsArray) //Custom AutoBatched requests
@@ -1156,16 +1183,16 @@ public static class MetadataTypeExtensions
             : defaultType;
     }
 
-    public static HashSet<string> CollectionTypes = new HashSet<string> {
-        "List`1",
-        "HashSet`1",
-        "Dictionary`2",
-        "Queue`1",
-        "Stack`1",
-    };
-
     public static bool IsCollection(this MetadataPropertyType prop) => 
-        CollectionTypes.Contains(prop.Type) || IsArray(prop);
+        ServiceMetadata.AnyCollectionTypes.Contains(prop.Type) || 
+        IsArray(prop);
+    public static bool IsEnumerable(this MetadataPropertyType prop) => prop.IsCollection() || prop.IsDictionary();
+    public static bool IsDictionary(this MetadataPropertyType prop) => 
+        ServiceMetadata.AnyDictionaryTypes.Contains(prop.Type);
+    public static bool IsInterface(this MetadataPropertyType prop) =>
+        ServiceMetadata.CollectionInterfaceTypes.Contains(prop.Type) ||
+        ServiceMetadata.DictionaryInterfaceTypes.Contains(prop.Type) ||
+        prop.PropertyInfo?.PropertyType.IsInterface == true;
 
     public static bool IsArray(this MetadataPropertyType prop) => 
         prop.Type.IndexOf('[') >= 0;

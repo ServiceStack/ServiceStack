@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -466,7 +467,7 @@ public class PythonGenerator : ILangGenerator
             AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
         }
         AppendAttributes(sb, type.Attributes);
-        AppendDataContract(sb, type.DataContract);
+        if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
 
         sb.Emit(type, Lang.Python);
         PreTypeFilter?.Invoke(sb, type);
@@ -729,7 +730,16 @@ public class PythonGenerator : ILangGenerator
                 PrePropertyFilter?.Invoke(sb, prop, type);
 
                 var defaultValue = " = None";
-                if (IsPropertyOptional(this, type, prop) ?? optionalProperty)
+                
+                var initProp = (prop.IsRequired == true || Config.InitializeCollections) 
+                    && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface();
+                if (initProp)
+                {
+                    defaultValue = prop.IsDictionary()
+                        ? " = {}"
+                        : " = []";
+                }
+                else if (IsPropertyOptional(this, type, prop) ?? optionalProperty)
                 {
                     propType = asOptional(propType);
                 }
@@ -841,26 +851,6 @@ public class PythonGenerator : ILangGenerator
         return value;
     }
 
-    public static HashSet<string> ArrayTypes = new() {
-        "List`1",
-        "IEnumerable`1",
-        "ICollection`1",
-        "HashSet`1",
-        "Queue`1",
-        "Stack`1",
-        "IEnumerable",
-    };
-
-    public static HashSet<string> DictionaryTypes = new() {
-        "Dictionary`2",
-        "IDictionary`2",
-        "IOrderedDictionary`2",
-        "OrderedDictionary",
-        "StringDictionary",
-        "IDictionary",
-        "IOrderedDictionary",
-    };
-
     public static HashSet<string> AllowedKeyTypes = new() {
         "str",
         "bool",
@@ -880,10 +870,10 @@ public class PythonGenerator : ILangGenerator
 
         if (genericArgs != null)
         {
-            if (ArrayTypes.Contains(type))
-                cooked = $"List[{GenericArg(genericArgs[0])}]".StripNullable();
-            if (DictionaryTypes.Contains(type))
+            if (ServiceMetadata.AnyDictionaryTypes.Contains(type))
                 cooked = $"Dict[{GenericArg(genericArgs[0])},{GenericArg(genericArgs[1])}]";
+            else if (ServiceMetadata.AnyCollectionTypes.Contains(type))
+                cooked = $"List[{GenericArg(genericArgs[0])}]".StripNullable();
         }
             
         if (cooked == null)
@@ -922,11 +912,13 @@ public class PythonGenerator : ILangGenerator
                 cooked = $"Optional[{GenericArg(genericArgs[0])}]";
             else if (type == "Nullable`1[]")
                 cooked = $"List[Optional[{GenericArg(genericArgs[0])}]]";
-            else if (ArrayTypes.Contains(type))
-                cooked = $"List[{GenericArg(genericArgs[0])}]".StripNullable();
-            else if (DictionaryTypes.Contains(type))
+            else if (ServiceMetadata.AnyDictionaryTypes.Contains(type))
             {
                 cooked = $"Dict[{GetKeyType(GenericArg(genericArgs[0]))}, {GenericArg(genericArgs[1])}]";
+            }
+            else if (ServiceMetadata.AnyCollectionTypes.Contains(type))
+            {
+                cooked = $"List[{GenericArg(genericArgs[0])}]".StripNullable();
             }
             else
             {

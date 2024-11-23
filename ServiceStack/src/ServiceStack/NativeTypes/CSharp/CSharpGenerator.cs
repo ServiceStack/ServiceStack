@@ -297,7 +297,7 @@ public class CSharpGenerator : ILangGenerator
             AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
         }
         AppendAttributes(sb, type.Attributes);
-        AppendDataContract(sb, type.DataContract);
+        if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
         if (Config.AddGeneratedCodeAttributes)
             sb.AppendLine($"[GeneratedCode(\"AddServiceStackReference\", \"{Env.VersionString}\")]");
 
@@ -414,15 +414,11 @@ public class CSharpGenerator : ILangGenerator
         if (type.IsInterface())
             return;
 
-        if (Config.AddImplicitVersion == null && !Config.InitializeCollections)
+        if (Config.AddImplicitVersion == null)
             return;
 
-        var collectionProps = new List<MetadataPropertyType>();
-        if (type.Properties != null && Config.InitializeCollections)
-            collectionProps = type.Properties.Where(x => x.IsCollection() && feature.ShouldInitializeCollection(type)).ToList();
-
         var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
-        if (!addVersionInfo && collectionProps.Count <= 0) return;
+        if (!addVersionInfo) return;
 
         if (addVersionInfo)
         {
@@ -437,11 +433,6 @@ public class CSharpGenerator : ILangGenerator
 
         if (addVersionInfo)
             sb.AppendLine($"Version = {Config.AddImplicitVersion};");
-
-        foreach (var prop in collectionProps)
-        {
-            sb.AppendLine($"{GetPropertyName(prop.Name)} = new {Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs,includeNested:true)}{{}};");
-        }
 
         sb = sb.UnIndent();
         sb.AppendLine("}");
@@ -477,10 +468,17 @@ public class CSharpGenerator : ILangGenerator
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
                 var visibility = type.IsInterface() ? "" : "public ";
-                    
+
+                var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
+                        && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                    ? prop.IsDictionary()
+                        ? " = new();"
+                        : " = [];"
+                    : "";
+                
                 sb.Emit(prop, Lang.CSharp);
                 PrePropertyFilter?.Invoke(sb, prop, type);
-                sb.AppendLine($"{visibility}{virt}{propType} {GetPropertyName(prop.Name)} {{ get; set; }}");
+                sb.AppendLine($"{visibility}{virt}{propType} {GetPropertyName(prop.Name)} {{ get; set; }}{initializer}");
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
         }

@@ -374,13 +374,13 @@ public class PhpGenerator : ILangGenerator
                                 if (operation?.ReturnsVoid == true)
                                     return nameof(IReturnVoid);
                                 if (operation?.ReturnType != null)
-                                    return Type("IReturn`1", new[] {
+                                    return Type("IReturn`1", [
                                         ReturnTypeAliases.TryGetValue(operation.ReturnType.Name, out var returnTypeAlias)
                                             ? returnTypeAlias
                                             : Type(operation.ReturnType)
-                                    });
+                                    ]);
                                 return response != null
-                                    ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs) })
+                                    ? Type("IReturn`1", [Type(response.Name, response.GenericArgs)])
                                     : null;
                             },
                             IsRequest = true,
@@ -446,7 +446,7 @@ public class PhpGenerator : ILangGenerator
             AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
         }
         AppendAttributes(sb, type.Attributes);
-        AppendDataContract(sb, type.DataContract);
+        if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
 
         sb.Emit(type, Lang.Php);
         PreTypeFilter?.Invoke(sb, type);
