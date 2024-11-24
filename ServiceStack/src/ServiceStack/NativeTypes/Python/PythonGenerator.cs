@@ -736,8 +736,8 @@ public class PythonGenerator : ILangGenerator
                 if (initProp)
                 {
                     defaultValue = prop.IsDictionary()
-                        ? " = {}"
-                        : " = []";
+                        ? " = field(default_factory=dict)"
+                        : " = field(default_factory=list)";
                 }
                 else if (IsPropertyOptional(this, type, prop) ?? optionalProperty)
                 {
