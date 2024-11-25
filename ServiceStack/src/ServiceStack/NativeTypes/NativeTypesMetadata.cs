@@ -1074,9 +1074,9 @@ public static class MetadataExtensions
         }
             
         if (excludeServices)
-            metadata.Operations = new List<MetadataOperationType>();
+            metadata.Operations = [];
         if (excludeTypes)
-            metadata.Types = new List<MetadataType>();
+            metadata.Types = [];
             
         //Ugly but need to revert state so it's ExcludeTypes option is emitted in generated dtos
         if (excludeServices)

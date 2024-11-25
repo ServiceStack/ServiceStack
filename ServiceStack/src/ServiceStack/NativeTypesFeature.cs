@@ -110,6 +110,7 @@ public class NativeTypesFeature : IPlugin, IConfigureServices, Model.IHasStringI
             "ServiceStack.Model",
             "ServiceStack.Redis",
             "ServiceStack.Web",
+            "ServiceStack.Jobs",
             "ServiceStack.Admin",
             "ServiceStack.NativeTypes",
             "ServiceStack.Api.OpenApi"
