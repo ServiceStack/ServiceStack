@@ -1376,6 +1376,16 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return result;
     }
 
+    public TResponse PostFileWithRequest<TResponse>(IReturn<TResponse> request, UploadFile file)
+    {
+        return PostFilesWithRequest(ResolveTypedUrl(GetHttpMethod(request) ?? HttpMethods.Post, request), request, [file]);
+    }
+
+    public Task<TResponse> PostFileWithRequestAsync<TResponse>(IReturn<TResponse> request, UploadFile file, CancellationToken token = default)
+    {
+        return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, [file], token);
+    }
+
     public Task<TResponse> PostFilesWithRequestAsync<TResponse>(object request, IEnumerable<UploadFile> files, CancellationToken token = default)
     {
         return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray(), token);
