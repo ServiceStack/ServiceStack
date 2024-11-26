@@ -8,8 +8,8 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.11" />
-        <PackageReference Include="Microsoft.OpenApi" Version="1.6.21" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+        <PackageReference Include="Microsoft.OpenApi" Version="1.6.22" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
     </ItemGroup>
 
     <ItemGroup>
