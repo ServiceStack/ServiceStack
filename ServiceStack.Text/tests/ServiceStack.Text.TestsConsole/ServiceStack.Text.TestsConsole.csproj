@@ -10,7 +10,7 @@
     <ProjectReference Include="..\..\src\ServiceStack.Text\ServiceStack.Text.csproj" />
     <ProjectReference Include="..\ServiceStack.Text.Tests\ServiceStack.Text.Tests.csproj" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Memory" Version="4.6.0" />
 <!--    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="6.*" />-->
   </ItemGroup>
 </Project>
