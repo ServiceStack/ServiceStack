@@ -37,10 +37,10 @@
         <ProjectReference Include="..\ServiceStack\ServiceStack.csproj"/>
         <ProjectReference Include="..\ServiceStack.GrpcClient\ServiceStack.GrpcClient.csproj"/>
 
-        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.65.0"/>
-        <PackageReference Include="Grpc.Core.Api" Version="2.65.0"/>
-        <PackageReference Include="protobuf-net" Version="3.2.30"/>
-        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.1.1"/>
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.67.0"/>
+        <PackageReference Include="Grpc.Core.Api" Version="2.67.0"/>
+        <PackageReference Include="protobuf-net" Version="3.2.45"/>
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.2.2"/>
 
         <PackageReference Include="System.Threading.Channels" Version="8.0.0"/>
 
