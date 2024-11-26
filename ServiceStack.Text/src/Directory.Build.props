@@ -56,4 +56,17 @@
     <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <MicrosoftFamilyLibraryVersions>8.0.0</MicrosoftFamilyLibraryVersions>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <MicrosoftFamilyLibraryVersions>8.0.0</MicrosoftFamilyLibraryVersions>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <MicrosoftFamilyLibraryVersions>6.0.0</MicrosoftFamilyLibraryVersions>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <MicrosoftFamilyLibraryVersions>8.0.0</MicrosoftFamilyLibraryVersions>
+  </PropertyGroup>
+
 </Project>
