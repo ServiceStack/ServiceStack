@@ -470,7 +470,7 @@ const Queue = {
     components,
     props:['info'],
     template: `
-        <AutoQueryGrid ref="grid" type="BackgroundJob" hide="downloadCsv,copyApiUrl"
+        <AutoQueryGrid ref="grid" type="BackgroundJob" hide="downloadCsv,copyApiUrl,forms"
             selectedColumns="progress,durationMs,worker,id,parentId,refId,tag,requestType,request,requestBody,command,userId,dependsOn,batchId,callback,replyTo,createdDate,state,status,lastActivityDate,attempts"
             :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
             :visibleFrom="{durationMs:'never',requestBody:'never'}"
@@ -529,7 +529,7 @@ const Queue = {
 const Summary = {
     components,
     template: `
-        <AutoQueryGrid ref="grid" type="JobSummary" hide="copyApiUrl" 
+        <AutoQueryGrid ref="grid" type="JobSummary" hide="copyApiUrl,forms" 
             selectedColumns="id,parentId,refId,tag,requestType,request,command,response,callback,createdDate,worker,state,durationMs,completedDate,attempts,errorCode,errorMessage"
             :visibleFrom="{requestType:'never',callback:'never',errorMessage:'never'}"
             :headerTitles="{parentId:'Parent',createdDate:'Created',completedDate:'Completed',durationMs:'Duration',errorCode:'Error'}"
@@ -583,7 +583,7 @@ const Completed = {
     components,
     props:['info','month'],
     template: `
-        <AutoQueryGrid ref="grid" type="CompletedJob" hide="copyApiUrl"
+        <AutoQueryGrid ref="grid" type="CompletedJob" hide="copyApiUrl,forms"
             selectedColumns="id,parentId,refId,tag,requestType,request,command,userId,dependsOn,batchId,response,callback,replyTo,createdDate,worker,startedDate,state,status,durationMs,completedDate,notifiedDate,attempts,lastActivityDate"
             :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id"
@@ -634,7 +634,7 @@ const Failed = {
     components,
     props:['info','month'],
     template: `
-        <AutoQueryGrid ref="grid" type="FailedJob" hide="copyApiUrl"
+        <AutoQueryGrid ref="grid" type="FailedJob" hide="copyApiUrl,forms"
             selectedColumns="id,parentId,refId,tag,dependsOn,batchId,requestType,request,command,userId,response,callback,replyTo,createdDate,worker,startedDate,state,status,durationMs,completedDate,notifiedDate,lastActivityDate,attempts,retryLimit,timeoutSecs,errorCode,error"
             :visibleFrom="{error:'never'}"
             :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
@@ -720,7 +720,7 @@ const History = {
 const ScheduledTasks = {
     components,
     template: `
-        <AutoQueryGrid ref="grid" type="ScheduledTask" hide="copyApiUrl"
+        <AutoQueryGrid ref="grid" type="ScheduledTask" hide="copyApiUrl,forms"
             selectedColumns="id,name,lastJobId,lastRun,interval,cronExpression,requestType,command,request,requestBody,options"
             :headerTitles="{lastJobId:'Last Job'}"
             @rowSelected="routes.edit = routes.edit === $event.id ? null : $event.id" :isSelected="(row) => routes.edit === row.id">
