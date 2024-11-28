@@ -198,32 +198,35 @@ public class ConditionalExpressionTest(DialectContext context) : ExpressionsTest
 	public void Can_use_coalesce_with_nullable_bool()
 	{
 		using var db = OpenDbConnection();
+        db.Insert(new TestType { NullableBoolColumn = true });
+        db.Insert(new TestType { NullableBoolColumn = true });
 		db.Insert(new TestType { NullableBoolColumn = true });
 		db.Insert(new TestType { NullableBoolColumn = false });
 		db.Insert(new TestType { NullableBoolColumn = null });
 
-		var q1 = db.From<TestType>().Where(q => q.NullableBoolColumn ?? false);
-		var rows1 = db.Select(q1);
+		var q = db.From<TestType>()
+            .Where(q => q.NullableBoolColumn ?? false);
+		var rows = db.Select(q);
+        Assert.That(rows.Count, Is.EqualTo(3));
 
-		var q2 = db.From<TestType>().Where(q => (q.NullableBoolColumn ?? false) == false);
-		var rows2 = db.Select(q2);
+        q = db.From<TestType>()
+            .Where(q => (q.NullableBoolColumn ?? false) == true);
+        rows = db.Select(q);
+        Assert.That(rows.Count, Is.EqualTo(3));
 
-		var q3 = db.From<TestType>().Where(q => (q.NullableBoolColumn ?? false) == true);
-		var rows3 = db.Select(q3);
+        q = db.From<TestType>()
+            .Where(q => q.NullableBoolColumn ?? true);
+        rows = db.Select(q);
+        Assert.That(rows.Count, Is.EqualTo(4));
 
-		var q4 = db.From<TestType>().Where(q => q.NullableBoolColumn == null);
-		var rows4 = db.Select(q4);
+        q = db.From<TestType>()
+            .Where(q => (q.NullableBoolColumn ?? false) == false);
+		rows = db.Select(q);
+        Assert.That(rows.Count, Is.EqualTo(2));
 
-		Assert.That(rows1.Count, Is.EqualTo(1));
-		Assert.That(rows2.Count, Is.EqualTo(2));
-		Assert.That(rows3.Count, Is.EqualTo(1));
-		Assert.That(rows4.Count, Is.EqualTo(1));
-
-		if (Dialect.AnySqlServer.HasFlag(Dialect))
-		{
-			StringAssert.Contains("=", q1.WhereExpression, "An expression of non-boolean type specified in a context where a condition is expected, near ')'.");
-			StringAssert.Contains("=", q2.WhereExpression, "An expression of non-boolean type specified in a context where a condition is expected, near ')'.");
-			StringAssert.Contains("=", q3.WhereExpression, "An expression of non-boolean type specified in a context where a condition is expected, near ')'.");
-		}
+		q = db.From<TestType>()
+            .Where(q => q.NullableBoolColumn == null);
+		rows = db.Select(q);
+		Assert.That(rows.Count, Is.EqualTo(1));
 	}
 }

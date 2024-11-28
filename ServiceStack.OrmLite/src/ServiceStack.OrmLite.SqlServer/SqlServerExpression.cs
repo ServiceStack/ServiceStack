@@ -1,15 +1,14 @@
 using System;
 using System.Data;
+using System.Linq.Expressions;
 using ServiceStack.OrmLite.SqlServer.Converters;
 using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.SqlServer
 {
-    public class SqlServerExpression<T> : SqlExpression<T>
+    public class SqlServerExpression<T>(IOrmLiteDialectProvider dialectProvider) 
+        : SqlExpression<T>(dialectProvider)
     {
-        public SqlServerExpression(IOrmLiteDialectProvider dialectProvider)
-            : base(dialectProvider) {}
-
         public override void PrepareUpdateStatement(IDbCommand dbCmd, T item, bool excludeDefaults = false)
         {
             SqlServerExpressionUtils.PrepareSqlServerUpdateStatement(dbCmd, this, item, excludeDefaults);
@@ -57,6 +56,15 @@ namespace ServiceStack.OrmLite.SqlServer
             return base.tableDefs.Count > 1
                 ? $"DELETE {DialectProvider.GetQuotedTableName(modelDef)} {FromExpression} {WhereExpression}"
                 : base.ToDeleteRowStatement();
+        }
+        
+        protected override string GetCoalesceExpression(BinaryExpression b, object left, object right)
+        {
+            if (b.Type == typeof(bool))
+            {
+                return $"COALESCE({left},{right}) = 1";
+            }
+            return $"COALESCE({left},{right})";
         }
     }
 

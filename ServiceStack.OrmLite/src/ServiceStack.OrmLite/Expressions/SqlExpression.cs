@@ -1848,7 +1848,7 @@ namespace ServiceStack.OrmLite
             }
 
             if (operand == "+" && b.Left.Type == typeof(string) && b.Right.Type == typeof(string))
-                return BuildConcatExpression(new List<object> {left, right});
+                return BuildConcatExpression([left, right]);
 
             VisitFilter(operand, originalLeft, originalRight, ref left, ref right);
 
@@ -1856,10 +1856,15 @@ namespace ServiceStack.OrmLite
             {
                 case "MOD":
                 case "COALESCE":
-                    return new PartialSqlString($"{operand}({left},{right})");
+                    return new PartialSqlString(GetCoalesceExpression(b, left.ToString(), right.ToString()));
                 default:
                     return new PartialSqlString("(" + left + separator + operand + separator + right + ")");
             }
+        }
+        
+        protected virtual string GetCoalesceExpression(BinaryExpression b, object left, object right)
+        {
+            return $"COALESCE({left},{right})";
         }
 
         private BinaryExpression PreEvaluateBinary(BinaryExpression b, object left, object right)
