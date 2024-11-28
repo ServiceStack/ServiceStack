@@ -11,8 +11,9 @@ public class TestType
     public object NullableCol { get; set; }
     public TimeSpan TimeSpanColumn { get; set; }
     public DateTime? Date { get; set; }
+	public bool? NullableBoolColumn { get; set; }
 
-    [AutoIncrement]
+	[AutoIncrement]
     public int Id { get; set; }
 
     public bool Equals(TestType other)
