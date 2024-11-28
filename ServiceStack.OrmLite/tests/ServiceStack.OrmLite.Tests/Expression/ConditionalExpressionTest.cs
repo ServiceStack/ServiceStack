@@ -197,8 +197,6 @@ public class ConditionalExpressionTest(DialectContext context) : ExpressionsTest
 	[Test]
 	public void Can_use_coalesce_with_nullable_bool()
 	{
-		var dateTime = DateTime.Now.Date;
-
 		using var db = OpenDbConnection();
 		db.Insert(new TestType { NullableBoolColumn = true });
 		db.Insert(new TestType { NullableBoolColumn = false });
@@ -221,7 +219,7 @@ public class ConditionalExpressionTest(DialectContext context) : ExpressionsTest
 		Assert.That(rows3.Count, Is.EqualTo(1));
 		Assert.That(rows4.Count, Is.EqualTo(1));
 
-		if ((Dialect.AnySqlServer).HasFlag(Dialect))
+		if (Dialect.AnySqlServer.HasFlag(Dialect))
 		{
 			StringAssert.Contains("=", q1.WhereExpression, "An expression of non-boolean type specified in a context where a condition is expected, near ')'.");
 			StringAssert.Contains("=", q2.WhereExpression, "An expression of non-boolean type specified in a context where a condition is expected, near ')'.");
