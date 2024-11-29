@@ -373,6 +373,10 @@ public class MetadataTypesGenerator
             {
                 registerTypeFn(arg);
             }
+
+            var genericTypeDef = type.GetGenericTypeDefinition();
+            if (!ignoreTypeFn(genericTypeDef))
+                registerTypeFn(genericTypeDef);
         }
 
         return metadata;
