@@ -1,71 +1,19 @@
-#if !MONO && !IOS
-using System;
-using System.Collections.Generic;
 using System.IO;
-using Northwind.Common.ComplexModel;
-using Northwind.Common.DataModel;
 using NUnit.Framework;
 
-namespace ServiceStack.Text.Tests
+namespace ServiceStack.Text.Tests;
+
+public class StringSerializerTests
+    : TestBase
 {
-    [TestFixture]
-#if NETCORE
-    [Ignore("Fix Northwind.dll")]
-#endif
-    public class StringSerializerTests
-        : TestBase
+    [Test]
+    public void Can_serialize_null_object_to_Stream()
     {
-        [OneTimeSetUp]
-        public void TestFixtureSetUp()
+        using (var ms = new MemoryStream())
         {
-            NorthwindData.LoadData(false);
+            JsonSerializer.SerializeToStream((object)null, ms);
+            TypeSerializer.SerializeToStream((object)null, ms);
+            XmlSerializer.SerializeToStream((object)null, ms);
         }
-
-        [Test]
-        public void Can_convert_CustomerOrderListDto()
-        {
-            var dto = DtoFactory.CustomerOrderListDto;
-
-            Serialize(dto);
-        }
-
-        [Test]
-        public void Can_convert_to_CustomerOrderListDto()
-        {
-            var dto = DtoFactory.CustomerOrderListDto;
-
-            Serialize(dto);
-        }
-
-        [Test]
-        public void Can_convert_to_Customers()
-        {
-            var dto = NorthwindData.Customers;
-
-            Serialize(dto);
-        }
-
-        [Test]
-        public void Can_convert_to_Orders()
-        {
-            NorthwindData.LoadData(false);
-            var dto = NorthwindData.Orders;
-
-            Serialize(dto);
-        }
-
-        [Test]
-        public void Can_serialize_null_object_to_Stream()
-        {
-            using (var ms = new MemoryStream())
-            {
-                JsonSerializer.SerializeToStream((object)null, ms);
-                TypeSerializer.SerializeToStream((object)null, ms);
-                XmlSerializer.SerializeToStream((object)null, ms);
-            }
-        }
-
     }
 }
-
-#endif

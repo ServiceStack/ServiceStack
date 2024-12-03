@@ -17,11 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Text", "Servic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Text.Tests", "..\tests\ServiceStack.Text.Tests\ServiceStack.Text.Tests.csproj", "{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Text.TestsConsole", "..\tests\ServiceStack.Text.TestsConsole\ServiceStack.Text.TestsConsole.csproj", "{DD3BEB33-2509-423A-8545-CE1A83684530}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.Benchmarks", "..\tests\ServiceStack.Text.Benchmarks\ServiceStack.Text.Benchmarks.csproj", "{FF1E5617-FD95-496F-B591-17DA6E0B364F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Northwind.Common", "..\tests\Northwind.Common\Northwind.Common.csproj", "{573926E5-F332-462D-A740-31706708A032}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{7F04B10B-46D4-4A67-93FE-E5AF6F25D3CB}"
 EndProject
@@ -47,17 +43,10 @@ Global
 		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DD3BEB33-2509-423A-8545-CE1A83684530}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DD3BEB33-2509-423A-8545-CE1A83684530}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DD3BEB33-2509-423A-8545-CE1A83684530}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DD3BEB33-2509-423A-8545-CE1A83684530}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FF1E5617-FD95-496F-B591-17DA6E0B364F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FF1E5617-FD95-496F-B591-17DA6E0B364F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF1E5617-FD95-496F-B591-17DA6E0B364F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF1E5617-FD95-496F-B591-17DA6E0B364F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{573926E5-F332-462D-A740-31706708A032}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{573926E5-F332-462D-A740-31706708A032}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{573926E5-F332-462D-A740-31706708A032}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7782B75D-F15D-429E-A268-7EB6D275A501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7782B75D-F15D-429E-A268-7EB6D275A501}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7782B75D-F15D-429E-A268-7EB6D275A501}.Release|Any CPU.ActiveCfg = Release|Any CPU

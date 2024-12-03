@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Northwind.Common.DataModel;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.Text.Tests.Northwind;
 
 namespace ServiceStack.Text.Tests;
 

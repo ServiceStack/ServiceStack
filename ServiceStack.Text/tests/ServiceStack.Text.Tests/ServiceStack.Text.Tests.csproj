@@ -24,7 +24,6 @@
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Text\ServiceStack.Text.csproj" />
-    <ProjectReference Include="..\Northwind.Common\Northwind.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
