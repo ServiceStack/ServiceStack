@@ -325,13 +325,14 @@ public class CSharpGenerator : ILangGenerator
                         AppendAttributes(sb, new List<MetadataAttribute> {
                             new MetadataAttribute {
                                 Name = "EnumMember",
-                                Args = new List<MetadataPropertyType> {
-                                    new() {
+                                Args = [
+                                    new()
+                                    {
                                         Name = "Value",
                                         Value = memberValue,
                                         Type = "String",
                                     }
-                                }
+                                ]
                             }
                         });
                     }

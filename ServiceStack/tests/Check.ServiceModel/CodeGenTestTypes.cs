@@ -264,6 +264,7 @@ namespace Check.ServiceModel.Operations
         [StringLength(20)]
         [References(typeof(Hello))]
         [Meta("Foo", "Bar")]
+        [Meta("Qux", "Baz")]
         public string Name { get; set; }
     }
 
