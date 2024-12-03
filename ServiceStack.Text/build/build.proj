@@ -28,12 +28,6 @@
 
         <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Text.sln" Targets="Build"
                  Properties="Configuration=$(Configuration)" />
-
-        <!-- Northwind.Common -->
-        <MSBuild Projects="$(BuildSolutionDir)/tests/Northwind.Common/Northwind.Common.csproj" Targets="Restore" />
-        <MSBuild Projects="$(BuildSolutionDir)/tests/Northwind.Common/Northwind.Common.csproj"
-                 Targets="Build"
-                 Properties="Configuration=$(Configuration)" />
     </Target>
 
     <Target Name="UpdateVersion">
