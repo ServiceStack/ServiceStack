@@ -27,7 +27,7 @@ export let AppData = {
     lastEditState: null,
     /** @type {Object<String,any>} */
     cache: {},
-    /** @type Record<number,string> */
+    /** @type {Record<number,string>} */
     HttpErrors: { 401:'Unauthorized', 403:'Forbidden' },
 }
 
