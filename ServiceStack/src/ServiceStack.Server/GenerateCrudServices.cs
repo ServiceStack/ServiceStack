@@ -874,7 +874,8 @@ public class GenerateCrudServices : IGenerateCrudServices
                     else
                     {
                         var quotedTable = dialect.GetQuotedTableName(table, schema);
-                        to.Columns = db.GetTableColumns($"SELECT * FROM {quotedTable} ${dialect.SqlLimit(rows:1)}");
+                        var sql = $"SELECT * FROM {quotedTable} {dialect.SqlLimit(rows: 1)}";
+                        to.Columns = db.GetTableColumns(sql);
                     }
                 }
                 catch (Exception e)
