@@ -22,4 +22,6 @@ public class IssuesService : Service
     public object Any(DigitalPrescriptionDMDRequest request) => new ResponseBase<DigitalPrescriptionDMDResponse>();
     
     public object Any(GetDiscountCodeBillingItem request) => new ResponseBase<BillingItem>();
+    
+    public object Any(GetFooDtos request) => new ResponseBase<FooDto>();
 }

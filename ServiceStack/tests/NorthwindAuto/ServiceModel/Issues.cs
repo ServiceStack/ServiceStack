@@ -54,5 +54,63 @@ public class GetDiscountCodeBillingItem : IReturn<ResponseBase<BillingItem>>
 public class BillingItem
 {
     public string Name { get; set; }
-} 
+}
 
+public class PagedRequest
+{
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+}
+
+public class PagedResult<T>
+{
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public long TotalResults { get; set; }
+
+    public List<T> Results { get; private set; }
+
+    public PagedResult()
+    {
+        Results = new List<T>();
+    }
+
+    public PagedResult(List<T> results, int page, int pageSize, long totalResults)
+    {
+        if (results == null)
+        {
+            Results = new List<T>();
+        }
+        else
+        {
+            Results = results;
+        }
+
+        Page = page;
+        PageSize = pageSize;
+        TotalResults = totalResults;
+    }
+
+    public PagedResult(List<T> results, PagedRequest request, long totalResults)
+        : this(results, request.Page, request.PageSize, totalResults)
+    {
+    }
+}
+
+public abstract class PagedAndOrderedRequest : PagedRequest
+{
+    [ApiMember(AllowMultiple = false, DataType = "string", Description = "Comma- or semicolon separated list of fields to sort by. To change sort order add a '-' in front of the field", IsRequired = false, Name = "OrderBy", ParameterType = "query", Verb = "GET")]
+    public string OrderBy { get; set; }
+}
+
+public class FooDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+[Route("/foos", "GET")]
+public class GetFooDtos : PagedAndOrderedRequest, IReturn<PagedResult<FooDto>>
+{
+    public string Query { get; set; }
+}
