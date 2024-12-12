@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
+using ServiceStack.Host;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -84,6 +87,14 @@ public class SGSyncPostValidationAsyncExternal : IReturn<SGSyncPostValidationAsy
 {
     public string Value { get; set; }
     public string Required { get; set; }
+}
+
+public class SGSendWithFile : IReturnVoid
+{
+}
+
+public class SGSentWithFile : IReturnVoid
+{
 }
 
 public class ServiceGatewayServices : Service
@@ -210,7 +221,19 @@ public class ServiceGatewayServices : Service
             throw new NotImplementedException("Should throw WebServiceException", e);
         }
     }
-
+    
+    public object Any(SGSendWithFile request)
+    {
+        var gateway = new InProcessServiceGateway(Request);
+        return gateway.SendAsync(request.ConvertTo<SGSentWithFile>());
+    }
+    
+    public object Any(SGSentWithFile request)
+    {
+        if (!Request.Files.Any())
+            throw HttpError.PreconditionFailed("Http File missing");
+        return new HttpResult(HttpStatusCode.OK);
+    }
 }
 
 public class SGSyncGetInternal : IReturn<SGSyncGetInternal>, IGet
@@ -449,6 +472,7 @@ public class AllExternalServiceGatewayTests : ServiceGatewayTests
 
         public override void Configure(Container container)
         {
+            
             container.Register<IMessageFactory>(c => new MessageFactory());
             var client = new JsonServiceClient(Tests.Config.ListeningOn);
             // client.CaptureHttp(print:true);
@@ -704,5 +728,17 @@ public abstract class ServiceGatewayTests
     {
         var response = client.Get(new SGSendSyncGetAsyncObjectExternal { Value = "GET CLIENT" });
         Assert.That(response.Value, Is.EqualTo("GET CLIENT> GET SGSendSyncGetAsyncObjectExternal> GET SGSyncGetAsyncObjectExternal"));
+    }
+
+    [Test]
+    public void Does_ServiceGatewayRetainFiles()
+    {
+        using var ms = new MemoryStream();
+        using var writer = new StreamWriter(ms);
+        writer.Write("test");
+        writer.Flush();
+        ms.Seek(0, SeekOrigin.Begin);
+        
+        Assert.DoesNotThrow(() => client.PostFileWithRequest<SGSendWithFile>(ms, "test.text", new SGSendWithFile()));
     }
 }

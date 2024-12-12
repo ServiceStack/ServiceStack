@@ -88,6 +88,7 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
             XForwardedProtocol = httpReq?.XForwardedProtocol,
             XRealIp = httpReq?.XRealIp,
             Accept = httpReq?.Accept,
+            Files = req.Files,
         };
         ret.PathInfo = req.PathInfo ?? ret.PathInfo;
         ret.AbsoluteUri = req.AbsoluteUri ?? ret.AbsoluteUri;
