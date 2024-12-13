@@ -988,7 +988,7 @@ public class ProtectedScripts : ScriptMethods
     private static HttpWebRequest initWebRequest(string url, Dictionary<string, object> scopedParams)
     {
 #pragma warning disable CS0618, SYSLIB0014
-        var webReq = (HttpWebRequest) WebRequest.Create(url);
+        var webReq = WebRequest.CreateHttp(url);
 #pragma warning restore CS0618, SYSLIB0014
         var dataType = scopedParams.TryGetValue("dataType", out object value)
             ? ConvertDataTypeToContentType((string) value)

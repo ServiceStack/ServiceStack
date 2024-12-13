@@ -319,7 +319,7 @@ namespace ServiceStack
         
         public static HttpWebRequest InitWebRequest(string url, string method="GET", Dictionary<string,string> headers=null)
         {
-            var webReq = (HttpWebRequest) WebRequest.Create(url);
+            var webReq = WebRequest.CreateHttp(url);
             if (method != null)
                 webReq.Method = method;
             if (headers != null)

@@ -818,7 +818,8 @@ public static partial class HttpUtils
     {
         try
         {
-            var webReq = WebRequest.Create(url);
+            // ZDI-CAN-25834: Always use `WebRequest.CreateHttp()` instead of `WebRequest.Create()` to prevent usage with files, e.g: `file://192.168.50.207/poc/poc` 
+            var webReq =  WebRequest.CreateHttp(url); 
             using var webRes = PclExport.Instance.GetResponse(webReq);
             webRes.ReadToEnd();
             return null;
@@ -833,7 +834,7 @@ public static partial class HttpUtils
     {
         try
         {
-            var webReq = WebRequest.Create(url);
+            var webReq =  WebRequest.CreateHttp(url);
             using var webRes = await webReq.GetResponseAsync().ConfigAwait();
             await webRes.ReadToEndAsync().ConfigAwait();
             return null;

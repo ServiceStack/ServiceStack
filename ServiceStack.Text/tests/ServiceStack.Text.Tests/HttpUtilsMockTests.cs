@@ -109,7 +109,7 @@ namespace ServiceStack.Text.Tests
 
                 fileNamesUploaded.Clear();
 
-                var webReq = WebRequest.Create(ExampleGoogleUrl);
+                var webReq =  WebRequest.CreateHttp(ExampleGoogleUrl);
                 webReq.UploadFile(new FileInfo(tempTextPath), "text/plain");
                 Assert.That(fileNamesUploaded, Is.EquivalentTo(new[] { "test.txt" }));
             }
