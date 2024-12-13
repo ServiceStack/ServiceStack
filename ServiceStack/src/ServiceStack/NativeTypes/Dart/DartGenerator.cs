@@ -566,12 +566,17 @@ public class DartGenerator : ILangGenerator
                         ? $"createResponse() => {newReturnInstance};"
                         : $"createResponse() => {DartLiteral(returnType + "()")};";
                     responseTypeName = $"getResponseTypeName() => \"{returnType}\";";
-                        
-                    var isGeneric = returnType.IndexOf('<') >= 0;
+                    
+                    var isReturnTypeGeneric = returnType.IndexOf('<') >= 0;
                     //Don't register non-existent 'T Generic Type
-                    var hasGenericBase = type.Inherits != null && type.Inherits?.Name.IndexOf('`') >= 0;  
-                    if (isGeneric && hasGenericBase)
-                        RegisterType(null, returnType);
+                    var hasGenericBase = type.Inherits != null && type.Inherits?.Name.IndexOf('`') >= 0;
+                    if (isReturnTypeGeneric)
+                    {
+                        if ((hasGenericBase || !type.Type.IsGenericType) && !type.Type.IsAbstract)
+                        {
+                            RegisterType(null, returnType);
+                        }
+                    }
                 }
                 else if (implStr == "IReturnVoid")
                 {
@@ -873,6 +878,9 @@ public class DartGenerator : ILangGenerator
         var factoryFn = defaultValues.TryGetValue(csharpType, out string defaultValue)
             ? $"() => {defaultValue}"
             : null;
+        
+        if (prop.PropertyType.IsGenericParameter)
+            return;
 
         allTypesMap.TryGetValue(csharpType, out var metaType);
         RegisterType(metaType, dartType, factoryFn);
@@ -894,6 +902,7 @@ public class DartGenerator : ILangGenerator
         dartType = dartType.TrimEnd('?');
         if (existingTypeInfos.Contains(dartType))
             return;
+        
         existingTypeInfos.Add(dartType);
 
         if (factoryFn == null)
@@ -907,7 +916,7 @@ public class DartGenerator : ILangGenerator
             
         if (metaType == null)
         {
-            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),");
+            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),/*1*/");
 
             var hasGenericArgs = dartType.IndexOf("<", StringComparison.Ordinal) >= 0;
             if (hasGenericArgs)
@@ -923,7 +932,7 @@ public class DartGenerator : ILangGenerator
                     var genericArgFactoryFn = defaultValues.TryGetValue(genericArg, out string defaultValue)
                         ? $"() => {defaultValue}"
                         : null;
-                        
+
                     RegisterType(null, genericArg, genericArgFactoryFn);
                 }
             }
@@ -931,12 +940,13 @@ public class DartGenerator : ILangGenerator
         }
 
         var isClass = metaType.IsAbstract != true && metaType.IsInterface != true && metaType.IsEnum != true;
-        var isGenericTypeDef = isClass && metaType.GenericArgs?.Length > 0 && metaType.GenericArgs.Any(x => x.StartsWith("'"));
+        var isGenericTypeDef = metaType.Type?.IsGenericTypeDefinition == true || 
+                               isClass && metaType.GenericArgs?.Length > 0 && metaType.GenericArgs.Any(x => x.StartsWith("'"));
 
         if (isGenericTypeDef)
         {
             var dartGenericBaseType = dartType.LeftPart("<");
-            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.GenericDef,create:() => {dartGenericBaseType}()),");
+            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.GenericDef,create:() => {dartGenericBaseType}()),/*2*/");
         }
         else if (metaType?.IsInterface == true)
         {
@@ -952,7 +962,7 @@ public class DartGenerator : ILangGenerator
         }
         else
         {
-            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),");
+            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),/*3*/");
         }
 
         //base classes need to be abstract and can't be instantiated in TypeContext mappings
@@ -968,7 +978,7 @@ public class DartGenerator : ILangGenerator
                 {
                     Name = $"List<{listArgType}>",
                     Namespace = typeof(List<>).Namespace,
-                    GenericArgs = new[] { listArgType },
+                    GenericArgs = [listArgType],
                 };
                 RegisterType(listType, listType.Name);
             }
