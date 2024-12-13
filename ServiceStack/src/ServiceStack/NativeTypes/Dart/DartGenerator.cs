@@ -916,7 +916,7 @@ public class DartGenerator : ILangGenerator
             
         if (metaType == null)
         {
-            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),/*1*/");
+            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),");
 
             var hasGenericArgs = dartType.IndexOf("<", StringComparison.Ordinal) >= 0;
             if (hasGenericArgs)
@@ -946,7 +946,7 @@ public class DartGenerator : ILangGenerator
         if (isGenericTypeDef)
         {
             var dartGenericBaseType = dartType.LeftPart("<");
-            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.GenericDef,create:() => {dartGenericBaseType}()),/*2*/");
+            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.GenericDef,create:() => {dartGenericBaseType}()),");
         }
         else if (metaType?.IsInterface == true)
         {
@@ -962,7 +962,7 @@ public class DartGenerator : ILangGenerator
         }
         else
         {
-            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),/*3*/");
+            sbTypeInfos.AppendLine($"    '{dartType}': TypeInfo(TypeOf.Class, create:{factoryFn}),");
         }
 
         //base classes need to be abstract and can't be instantiated in TypeContext mappings
