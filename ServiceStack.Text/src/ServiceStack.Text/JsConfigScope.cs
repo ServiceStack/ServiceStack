@@ -221,10 +221,11 @@ public class Config
         MaxDepth = 50,
         OnDeserializationError = null,
         ModelFactory = ReflectionExtensions.GetConstructorMethodToCache,
-        ExcludeTypes = new HashSet<Type> {
+        ExcludeTypes =
+        [
             typeof(System.IO.Stream),
-            typeof(System.Reflection.MethodBase),
-        },
+            typeof(System.Reflection.MethodBase)
+        ],
         ExcludeTypeNames = new HashSet<string> {}
     };
 

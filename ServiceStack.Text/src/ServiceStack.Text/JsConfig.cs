@@ -745,8 +745,8 @@ public static class JsConfig
 
     static void Reset(Type cachesForType)
     {
-        typeof(JsConfig<>).MakeGenericType(new[] { cachesForType }).InvokeReset();
-        typeof(TypeConfig<>).MakeGenericType(new[] { cachesForType }).InvokeReset();
+        typeof(JsConfig<>).MakeGenericType(cachesForType).InvokeReset();
+        typeof(TypeConfig<>).MakeGenericType(cachesForType).InvokeReset();
     }
 
     internal static void InvokeReset(this Type genericType)

@@ -59,7 +59,7 @@ namespace ServiceStack.Text.Tests
 
     public class RuntimeSerializationTests
     {
-        string CreateJson(Type type) => CreateJson(type.AssemblyQualifiedName);
+        string CreateJson(Type type) => CreateJson(JsConfig.TypeWriter(type));
         string CreateJson(string typeInfo) => "{\"Object\":{\"__type\":\"" + typeInfo + "\"}}";
 
         [Test]
@@ -146,7 +146,7 @@ namespace ServiceStack.Text.Tests
             }
         }
 
-        string CreateJsonArray(Type type) => CreateJsonArray(type.AssemblyQualifiedName);
+        string CreateJsonArray(Type type) => CreateJsonArray(JsConfig.TypeWriter(type));
         string CreateJsonArray(string typeInfo) => "{\"Objects\":[{\"__type\":\"" + typeInfo + "\"}]}";
 
         [Test]

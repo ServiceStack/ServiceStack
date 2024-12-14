@@ -55,7 +55,8 @@ namespace ServiceStack.Text.Tests
             var type = Type.GetType(typeof(Message<string>).AssemblyQualifiedName);
             Assert.That(type, Is.Not.Null);
 
-            type = AssemblyUtils.FindType(typeof(Message<string>).AssemblyQualifiedName);
+            typeof(Message<string>).AssemblyQualifiedName.Print();
+            type = AssemblyUtils.UncheckedFindType(typeof(Message<string>).AssemblyQualifiedName);
             Assert.That(type, Is.Not.Null);
 
             type = Type.GetType("ServiceStack.Messaging.Message`1[[System.String, mscorlib]], ServiceStack.Interfaces");

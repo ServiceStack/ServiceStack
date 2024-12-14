@@ -326,7 +326,7 @@ namespace ServiceStack.Text.Tests
             var o = new SomeObj
             {
                 Name = "Freddie",
-                Content = new byte[] { 42 }
+                Content = [42]
             };
 
             var normalSerialization = NormalSerialization(o);
@@ -350,7 +350,7 @@ namespace ServiceStack.Text.Tests
             string SerializeWithoutBytes<T>(T objToSerialize)
             {
                 using var scope = JsConfig.With(new Config {
-                    ExcludeTypes = new HashSet<Type>(new[] { typeof(byte[]) })
+                    ExcludeTypes = [typeof(byte[])]
                 });
                 return objToSerialize.ToJson();
             }

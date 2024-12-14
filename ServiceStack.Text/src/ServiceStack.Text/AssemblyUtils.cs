@@ -18,12 +18,25 @@ public static class AssemblyUtils
 
     private static Dictionary<string, Type> TypeCache = new();
 
+    public static Func<string,bool> ValidateTypeName { get; set; } = DefaultValidateTypeName;
+    public static Regex ValidateTypeRegex { get; set; } = 
+        new(@"^[a-zA-Z0-9_.,+`\[\]\s]+$", RegexOptions.Compiled);
+
+    public static bool DefaultValidateTypeName(string typeName) => ValidateTypeRegex.IsMatch(typeName);
+
+    public static Type FindType(string typeName)
+    {
+        if (!ValidateTypeName(typeName))
+            throw new NotSupportedException($"Invalid Type Name: {typeName}");
+        return UncheckedFindType(typeName);
+    }
+
     /// <summary>
     /// Find the type from the name supplied
     /// </summary>
     /// <param name="typeName">[typeName] or [typeName, assemblyName]</param>
     /// <returns></returns>
-    public static Type FindType(string typeName)
+    public static Type UncheckedFindType(string typeName)
     {
         if (TypeCache.TryGetValue(typeName, out var type)) return type;
 

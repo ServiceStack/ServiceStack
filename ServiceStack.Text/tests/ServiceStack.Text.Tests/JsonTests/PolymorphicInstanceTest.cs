@@ -22,12 +22,12 @@ namespace ServiceStack.Text.Tests.JsonTests
         [Test]
         public void Can_deserialise_polymorphic_dog_exact()
         {
-            var dog =
-                JsonSerializer.DeserializeFromString<Dog>(
-                    @"{""__type"":"""
-                    + typeof(Dog).ToTypeString()
-                    + @""",""Name"":""Fido""}");
-
+            var json =
+                @"{""__type"":"""
+                + typeof(Dog).ToTypeString()
+                + @""",""Name"":""Fido""}";
+            
+            var dog = JsonSerializer.DeserializeFromString<Dog>(json);
             Assert.That(dog.Name, Is.EqualTo(@"Fido"));
 
         }
@@ -50,6 +50,7 @@ namespace ServiceStack.Text.Tests.JsonTests
             var json = @"{""__type"":"""
                 + typeof(TestClass).ToTypeString() + @""", ""Name"":""Fido""}";
 
+            json.Print();
             var dog = JsonSerializer.DeserializeFromString<Dog>(json);
 
             Assert.IsFalse(TestClass.Called);
