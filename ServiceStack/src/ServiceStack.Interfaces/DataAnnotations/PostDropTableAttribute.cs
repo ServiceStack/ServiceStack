@@ -6,12 +6,7 @@ namespace ServiceStack.DataAnnotations;
 /// Run Custom SQL immediately after RDBMS table is dropped
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class PostDropTableAttribute : AttributeBase
+public class PostDropTableAttribute(string sql) : AttributeBase
 {
-    public string Sql { get; set; }
-
-    public PostDropTableAttribute(string sql)
-    {
-        Sql = sql;
-    }
+    public string Sql { get; set; } = sql;
 }

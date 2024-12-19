@@ -58,9 +58,9 @@ public class Intl : MetadataAttributeBase
     public string Locale { get; set; }
     public string Options { get; set; }
     
+    public NumberStyle Number { get; set; }
     public DateStyle Date { get; set; }
     public TimeStyle Time { get; set; }
-    public NumberStyle Number { get; set; }
     public RelativeTimeStyle RelativeTime { get; set; }
     public Numeric Numeric { get; set; }
     /// <summary>

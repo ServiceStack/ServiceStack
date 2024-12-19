@@ -55,8 +55,7 @@ public static class Locks
 /// Execute AutoQuery Create/Update/Delete Request DTO in a background thread
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-public class WorkerAttribute : AttributeBase
+public class WorkerAttribute(string name) : AttributeBase
 {
-    public string Name { get; set; }
-    public WorkerAttribute(string name) => Name = name;
+    public string Name { get; set; } = name;
 }

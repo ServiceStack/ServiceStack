@@ -11,12 +11,12 @@ public class UniqueConstraintAttribute : AttributeBase
 {
     public UniqueConstraintAttribute()
     {
-        this.FieldNames = new List<string>();
+        this.FieldNames = [];
     }
 
     public UniqueConstraintAttribute(params string[] fieldNames)
     {
-        this.FieldNames = new List<string>(fieldNames);
+        this.FieldNames = [..fieldNames];
     }
 
     public List<string> FieldNames { get; set; }

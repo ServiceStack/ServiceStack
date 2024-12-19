@@ -6,12 +6,7 @@ namespace ServiceStack.DataAnnotations;
 /// Run Custom SQL immediately after RDBMS table is created
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class PostCreateTableAttribute : AttributeBase
+public class PostCreateTableAttribute(string sql) : AttributeBase
 {
-    public string Sql { get; set; }
-
-    public PostCreateTableAttribute(string sql)
-    {
-        Sql = sql;
-    }
+    public string Sql { get; set; } = sql;
 }

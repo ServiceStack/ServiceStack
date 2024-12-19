@@ -6,9 +6,7 @@ namespace ServiceStack;
 /// Specify which File Upload location should be used to manage these file uploads
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class UploadToAttribute : AttributeBase
+public class UploadToAttribute(string location) : AttributeBase
 {
-    public string Location { get; set; }
-
-    public UploadToAttribute(string location) => Location = location;
+    public string Location { get; set; } = location;
 }

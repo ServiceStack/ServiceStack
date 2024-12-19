@@ -6,14 +6,8 @@ namespace ServiceStack.DataAnnotations;
 /// Decorate any type or property with custom metadata
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-public class MetaAttribute : AttributeBase
+public class MetaAttribute(string name, string value) : AttributeBase
 {
-    public string Name { get; set; }
-    public string Value { get; set; }
-
-    public MetaAttribute(string name, string value)
-    {
-        Name = name;
-        Value = value;
-    }
+    public string Name { get; set; } = name;
+    public string Value { get; set; } = value;
 }

@@ -7,12 +7,7 @@ namespace ServiceStack.DataAnnotations;
 /// Populate property from ambiguous column name in the specified joined table type
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public class BelongToAttribute : AttributeBase
+public class BelongToAttribute(Type belongToTableType) : AttributeBase
 {
-    public Type BelongToTableType { get; set; }
-
-    public BelongToAttribute(Type belongToTableType)
-    {
-        BelongToTableType = belongToTableType;
-    }
+    public Type BelongToTableType { get; set; } = belongToTableType;
 }

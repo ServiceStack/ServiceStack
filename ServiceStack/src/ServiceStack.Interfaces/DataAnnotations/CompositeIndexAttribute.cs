@@ -22,7 +22,7 @@ public class CompositeIndexAttribute : AttributeBase
     public CompositeIndexAttribute(bool unique, params string[] fieldNames)
     {
         this.Unique = unique;
-        this.FieldNames = new List<string>(fieldNames);
+        this.FieldNames = [..fieldNames];
     }
 
     public List<string> FieldNames { get; set; }
