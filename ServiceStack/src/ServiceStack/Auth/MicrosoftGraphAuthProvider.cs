@@ -92,9 +92,16 @@ public class MicrosoftGraphAuthProvider : OAuth2Provider
 
     protected override async Task<string> GetAccessTokenJsonAsync(string code, AuthContext ctx, CancellationToken token = default)
     {
-        var accessTokenParams = $"code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
+        var accessTokenParams = $"code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret.UrlEncode()}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
+
         var contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl)
-            .SendStringToUrlAsync(method:HttpMethods.Post, requestBody:accessTokenParams, contentType: MimeTypes.FormUrlEncoded, token: token).ConfigAwait();
+            .SendStringToUrlAsync(
+                method: HttpMethods.Post,
+                requestBody: accessTokenParams,
+                contentType: MimeTypes.FormUrlEncoded,
+                token: token
+            ).ConfigAwait();
+
         return contents;
     }
 
