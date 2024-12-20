@@ -135,6 +135,9 @@ public static class ServiceExtensions
         if (sessionId == null)
             throw new ArgumentNullException(nameof(sessionId));
 
+        if (Log.IsDebugEnabled)
+            Log.DebugFormat("Removing Session: {0}", sessionId);
+
         var sessionKey = SessionFeature.GetSessionKey(sessionId);
         httpReq.GetCacheClient().Remove(sessionKey);
 
@@ -147,6 +150,9 @@ public static class ServiceExtensions
         if (sessionId == null)
             throw new ArgumentNullException(nameof(sessionId));
 
+        if (Log.IsDebugEnabled)
+            Log.DebugFormat("Removing Session: {0}", sessionId);
+        
         var sessionKey = SessionFeature.GetSessionKey(sessionId);
         await httpReq.GetCacheClientAsync().RemoveAsync(sessionKey, token).ConfigAwait();
 
