@@ -20,14 +20,6 @@ namespace ServiceStack.OrmLite;
 
 public class ModelDefinition
 {
-    public ModelDefinition()
-    {
-        this.FieldDefinitions = new List<FieldDefinition>();
-        this.IgnoredFieldDefinitions = new List<FieldDefinition>();
-        this.CompositeIndexes = new List<CompositeIndexAttribute>();
-        this.UniqueConstraints = new List<UniqueConstraintAttribute>();
-    }
-
     public const string RowVersionName = "RowVersion";
 
     public string Name { get; set; }
@@ -69,13 +61,13 @@ public class ModelDefinition
             : instance.GetId();
     }
 
-    public List<FieldDefinition> FieldDefinitions { get; set; }
+    public List<FieldDefinition> FieldDefinitions { get; set; } = [];
 
     public FieldDefinition[] FieldDefinitionsArray { get; private set; }
 
     public FieldDefinition[] FieldDefinitionsWithAliases { get; private set; }
 
-    public List<FieldDefinition> IgnoredFieldDefinitions { get; set; }
+    public List<FieldDefinition> IgnoredFieldDefinitions { get; set; } = [];
 
     public FieldDefinition[] IgnoredFieldDefinitionsArray { get; private set; }
 
@@ -138,9 +130,9 @@ public class ModelDefinition
         }
     }
 
-    public List<CompositeIndexAttribute> CompositeIndexes { get; set; }
+    public List<CompositeIndexAttribute> CompositeIndexes { get; set; } = [];
 
-    public List<UniqueConstraintAttribute> UniqueConstraints { get; set; }
+    public List<UniqueConstraintAttribute> UniqueConstraints { get; set; } = [];
 
     public FieldDefinition GetFieldDefinition<T>(Expression<Func<T, object>> field)
     {

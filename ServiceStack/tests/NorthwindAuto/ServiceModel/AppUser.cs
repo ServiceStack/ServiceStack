@@ -4,13 +4,18 @@ using ServiceStack.DataAnnotations;
 using System;
 using System.Collections.Generic;
 
-namespace TalentBlazor.ServiceModel;
+namespace MyApp.ServiceModel;
 
-public enum Department
+/// <summary>
+/// Public User DTO
+/// </summary>
+[Alias("AspNetUsers")]
+public class User
 {
-    None,
-    Marketing,
-    Accounts,
-    Legal,
-    HumanResources,
+    public string? Id { get; set; }
+    public string? UserName { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? DisplayName { get; set; }
+    public string? ProfileUrl { get; set; }
 }
