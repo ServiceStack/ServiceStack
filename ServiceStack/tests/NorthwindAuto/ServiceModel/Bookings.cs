@@ -45,7 +45,10 @@ public class Booking : AuditBase
     public long? PostalAddressId { get; set; }
 
     [Reference]
-    public Address? PostalAddress { get; set; }    
+    public Address? PostalAddress { get; set; }
+
+    [Reference(SelfId = nameof(CreatedBy), RefId = nameof(User.UserName))]
+    public User? Employee { get; set; }
 }
 
 public enum RoomType

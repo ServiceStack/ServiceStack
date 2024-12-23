@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 
 namespace ServiceStack.DataAnnotations;
@@ -8,4 +9,6 @@ namespace ServiceStack.DataAnnotations;
 [AttributeUsage(AttributeTargets.Property)]
 public class ReferenceAttribute : AttributeBase
 {
+    public string? SelfId { get; set; }
+    public string? RefId { get; set; }
 }

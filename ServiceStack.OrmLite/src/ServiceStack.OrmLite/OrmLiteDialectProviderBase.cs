@@ -958,7 +958,7 @@ namespace ServiceStack.OrmLite
         }
 
         //Load Self Table.RefTableId PK
-        public virtual string GetRefSelfSql<From>(SqlExpression<From> refQ, ModelDefinition modelDef, FieldDefinition refSelf, ModelDefinition refModelDef)
+        public virtual string GetRefSelfSql<From>(SqlExpression<From> refQ, ModelDefinition modelDef, FieldDefinition refSelf, ModelDefinition refModelDef, FieldDefinition refId)
         {
             refQ.Select(this.GetQuotedColumnName(modelDef, refSelf));
             refQ.OrderBy().ClearLimits(); //clear any ORDER BY or LIMIT's in Sub Select's
@@ -967,7 +967,7 @@ namespace ServiceStack.OrmLite
 
             var sqlRef = $"SELECT {GetColumnNames(refModelDef)} " +
                          $"FROM {GetQuotedTableName(refModelDef)} " +
-                         $"WHERE {this.GetQuotedColumnName(refModelDef.PrimaryKey)} " +
+                         $"WHERE {this.GetQuotedColumnName(refId)} " +
                          $"IN ({subSqlRef})";
 
             if (OrmLiteConfig.LoadReferenceSelectFilter != null)
