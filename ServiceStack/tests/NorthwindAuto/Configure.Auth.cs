@@ -51,6 +51,8 @@ public class ConfigureAuth : IHostingStartup
                 options.CredentialsAuth();
                 options.JwtAuth();
                 options.BasicAuth();
+                // options.ApplicationAuth(feature => 
+                //     feature.PriorityMapClaimsToSession.Clear());
                 
                 options.AdminUsersFeature(feature =>
                 {

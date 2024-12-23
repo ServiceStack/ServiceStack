@@ -66,6 +66,14 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
     };
 
     /// <summary>
+    /// Override claims where exists
+    /// </summary>
+    public Dictionary<string, string> PriorityMapClaimsToSession { get; set; } = new()
+    {
+        [JwtClaimTypes.PreferredUserName] = nameof(AuthUserSession.UserAuthName),
+    };
+
+    /// <summary>
     /// Run custom filter after session is restored from ClaimsPrincipal
     /// </summary>
     public Action<IAuthSession, ClaimsPrincipal, IRequest>? PopulateSessionFilter { get; set; }
@@ -179,6 +187,12 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
             {
                 meta[claim.Type] = claim.Value;
             }
+        }
+        foreach (var entry in PriorityMapClaimsToSession)
+        {
+            var claim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == entry.Key);
+            if (claim != null)
+                sessionValues[entry.Value] = claim.Value;
         }
 
         session.PopulateFromMap(sessionValues);
