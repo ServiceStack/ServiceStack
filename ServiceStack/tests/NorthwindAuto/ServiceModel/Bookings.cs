@@ -47,7 +47,7 @@ public class Booking : AuditBase
     [Reference]
     public Address? PostalAddress { get; set; }
 
-    [Reference(SelfId = nameof(CreatedBy), RefId = nameof(User.UserName))]
+    [Reference(SelfId = nameof(CreatedBy), RefId = nameof(User.UserName), RefLabel = nameof(User.DisplayName))]
     public User? Employee { get; set; }
 }
 

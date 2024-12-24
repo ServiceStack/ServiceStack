@@ -1746,10 +1746,11 @@ public static class AppMetadataUtils
         if (fkAttr != null)
             return fkAttr.Type.CreateRefModel();
 
-        if (allAttrs.OfType<ReferenceAttribute>().FirstOrDefault() != null)
+        var referenceAttr = allAttrs.OfType<ReferenceAttribute>().FirstOrDefault();
+        if (referenceAttr != null)
         {
             var pt = p.PropertyInfo.PropertyType;
-            var props = p.PropertyInfo.DeclaringType?.GetAllProperties() ?? Array.Empty<PropertyInfo>();
+            var props = p.PropertyInfo.DeclaringType?.GetAllProperties() ?? [];
             var typePk = props.GetPrimaryKey();
             if (pt.HasInterface(typeof(IEnumerable)))
             {
@@ -1771,6 +1772,17 @@ public static class AppMetadataUtils
             }
             else
             {
+                if (referenceAttr is { SelfId: not null, RefLabel: not null })
+                {
+                    return new RefInfo
+                    {
+                        Model = pt.Name,
+                        SelfId = referenceAttr.SelfId,
+                        RefId = referenceAttr.RefId,
+                        RefLabel = referenceAttr.RefLabel,
+                    };
+                }
+                
                 var selfRefId = pt.Name + "Id";
                 var selfRef = props.FirstOrDefault(prop => prop.Name == selfRefId);
                 if (selfRef == null)
