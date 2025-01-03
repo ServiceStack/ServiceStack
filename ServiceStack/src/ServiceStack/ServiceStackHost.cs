@@ -2116,6 +2116,11 @@ public abstract partial class ServiceStackHost
 
     protected bool isDisposed;
     public bool IsDisposed => isDisposed;
+    public static void ThrowIfDisposed()
+    {
+        if (Instance.isDisposed)
+            throw new ObjectDisposedException(Instance.GetType().Name);
+    }
 
     /// <summary>
     /// Executes OnDisposeCallbacks and Disposes IDisposable's dependencies in the IOC &amp; reset singleton states
