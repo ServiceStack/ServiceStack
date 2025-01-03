@@ -446,6 +446,11 @@ public interface IAppHost : IResolver
     /// Register a callback to configure a plugin after AfterPluginsLoaded is run 
     /// </summary>
     void AfterPluginLoaded<T>(Action<T> configure) where T : class, IPlugin;
+    
+    /// <summary>
+    /// Whether the AppHost has been disposed
+    /// </summary>
+    bool IsDisposed { get; }
 }
 
 public interface IHasAppHost
