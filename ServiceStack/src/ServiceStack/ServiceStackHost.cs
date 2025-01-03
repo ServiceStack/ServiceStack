@@ -2115,6 +2115,7 @@ public abstract partial class ServiceStackHost
     }
 
     protected bool isDisposed;
+    public bool IsDisposed => isDisposed;
 
     /// <summary>
     /// Executes OnDisposeCallbacks and Disposes IDisposable's dependencies in the IOC &amp; reset singleton states
