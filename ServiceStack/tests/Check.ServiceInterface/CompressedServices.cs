@@ -1,23 +1,22 @@
 ﻿using ServiceStack;
 
-namespace Check.ServiceInterface
+namespace Check.ServiceInterface;
+
+[Route("/compress/{Path*}")]
+public class CompressFile
 {
-    [Route("/compress/{Path*}")]
-    public class CompressFile
-    {
-        public string Path { get; set; }
-    }
+    public string Path { get; set; }
+}
 
-    [CompressResponse]
-    public class CompressedServices : Service
+[CompressResponse]
+public class CompressedServices : Service
+{
+    public object Any(CompressFile request)
     {
-        public object Any(CompressFile request)
-        {
-            var file = VirtualFileSources.GetFile(request.Path);
-            if (file == null)
-                throw HttpError.NotFound($"{request.Path} does not exist");
+        var file = VirtualFileSources.GetFile(request.Path);
+        if (file == null)
+            throw HttpError.NotFound($"{request.Path} does not exist");
 
-            return new HttpResult(file);
-        }
+        return new HttpResult(file);
     }
 }

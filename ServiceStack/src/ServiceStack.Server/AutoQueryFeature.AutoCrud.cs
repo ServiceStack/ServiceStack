@@ -1079,7 +1079,7 @@ public partial class AutoQuery : IAutoCrudDb
                             (meta.UpdateAttrs.TryGetValue(entry.Key, out var attr) &&
                              attr.Style == AutoUpdateStyle.NonDefaults))
                         {
-                            removeKeys ??= new List<string>();
+                            removeKeys ??= [];
                             removeKeys.Add(entry.Key);
                         }
                     }
