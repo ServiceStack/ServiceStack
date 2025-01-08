@@ -1316,7 +1316,7 @@ public abstract partial class ServiceStackHost
         }
     }
 
-    private void HandleUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
+    protected void HandleUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
     {
         args.SetObserved();
         args.Exception.Handle(ex =>
