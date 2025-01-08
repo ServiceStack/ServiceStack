@@ -1357,15 +1357,17 @@ public static class MetadataExtensions
         // return metadata.Types.OrderTypesByDeps();
         // Base Types need to be written first
         var types = metadata.Types.CreateSortedTypeList();
-
-        var allTypes = new List<MetadataType>();
-        allTypes.AddRange(types);
-        allTypes.AddRange(metadata.Operations
-            .Where(x => x.Response != null)
-            .Select(x => x.Response)
-            .Distinct());
-        allTypes.AddRange(metadata.Operations.Select(x => x.Request));
-        return allTypes.Distinct().ToList();
+        var allTypes = new List<MetadataType>(types);
+        foreach (var type in metadata.Operations.Where(x => x.Response != null)
+            .Select(x => x.Response))
+        {
+            allTypes.AddIfNotExists(type);
+        }
+        foreach (var type in metadata.Operations.Select(x => x.Request))
+        {
+            allTypes.AddIfNotExists(type);
+        }
+        return allTypes.ToList();
     }
 
     public static List<MetadataType> CreateSortedTypeList(this List<MetadataType> allTypes)
@@ -1405,8 +1407,9 @@ public static class MetadataExtensions
     {
         if (metadataTypeName == null)
             return null;
-        var metaDataType = allTypes.Where(x => x.Name == metadataTypeName.Name &&
-                                               x.Namespace == metadataTypeName.Namespace)
+        var metaDataType = allTypes.Where(x => 
+                x.Name == metadataTypeName.Name 
+                && x.Namespace == metadataTypeName.Namespace)
             .FirstNonDefault();
         return metaDataType;
     }
@@ -1414,7 +1417,7 @@ public static class MetadataExtensions
     public static void Push(this Dictionary<string, List<string>> map, string key, string value)
     {
         if (!map.TryGetValue(key, out var results))
-            map[key] = results = new List<string>();
+            map[key] = results = [];
 
         if (!results.Contains(value))
             results.Add(value);
@@ -1423,7 +1426,7 @@ public static class MetadataExtensions
     public static List<string> GetValues(this Dictionary<string, List<string>> map, string key)
     {
         map.TryGetValue(key, out var results);
-        return results ?? new List<string>();
+        return results ?? [];
     }
 
     public static List<MetadataType> OrderTypesByDeps(this List<MetadataType> types)
@@ -1453,8 +1456,7 @@ public static class MetadataExtensions
             {
                 if (!type.Inherits.GenericArgs.IsEmpty())
                     type.Inherits.GenericArgs.Each(x => Push(typeName, x));
-                else
-                    Push(typeName, type.Inherits.Name);
+                Push(typeName, type.Inherits.Name);
             }
             foreach (var p in type.Properties.Safe())
             {

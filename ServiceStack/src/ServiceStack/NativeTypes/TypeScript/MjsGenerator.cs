@@ -20,8 +20,7 @@ public class MjsGenerator : ILangGenerator
     readonly NativeTypesFeature feature;
     public List<MetadataType> AllTypes => Gen.AllTypes;
     public string DictionaryDeclaration { get; set; } = CreateEmptyClass("Dictionary");
-        
-    public HashSet<string> AddedDeclarations { get; set; } = new();
+    public HashSet<string> AddedDeclarations { get; set; } = [];
 
     /// <summary>
     /// Add Code to top of generated code
@@ -105,8 +104,7 @@ public class MjsGenerator : ILangGenerator
         var responseTypes = metadata.Operations
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
-        var types = metadata.Types.CreateSortedTypeList();
-       
+
         sb.AppendLine(@"""use strict"";");
         
         //ServiceStack core interfaces
@@ -171,7 +169,7 @@ public class MjsGenerator : ILangGenerator
                     existingTypes.Add(fullTypeName);
                 }
             }
-            else if (types.Contains(type) && !existingTypes.Contains(fullTypeName))
+            else if (AllTypes.Contains(type) && !existingTypes.Contains(fullTypeName))
             {
                 lastNS = AppendType(ref sb, type, lastNS,
                     new CreateTypeOptions { IsType = true });

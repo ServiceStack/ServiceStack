@@ -13,7 +13,7 @@ public class PythonGenerator : ILangGenerator
 {
     public readonly MetadataTypesConfig Config;
     readonly NativeTypesFeature feature;
-    List<string> conflictTypeNames = new();
+    public List<string> ConflictTypeNames = new();
     public List<MetadataType> AllTypes { get; set; }
 
     public PythonGenerator(MetadataTypesConfig config)
@@ -89,7 +89,8 @@ public class PythonGenerator : ILangGenerator
     public static Dictionary<string, string> ReturnTypeAliases = new() {
     };
 
-    public static HashSet<string> KeyWords = new() {
+    public static HashSet<string> KeyWords =
+    [
         "and",
         "as",
         "assert",
@@ -122,8 +123,8 @@ public class PythonGenerator : ILangGenerator
         "try",
         "while",
         "with",
-        "yield",
-    };
+        "yield"
+    ];
 
     public static readonly Dictionary<string, string> DefaultValues = new() {
         {"Boolean", "False"},
@@ -150,7 +151,8 @@ public class PythonGenerator : ILangGenerator
     public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
 
     //In _builtInTypes servicestack dart library 
-    public static HashSet<string> IgnoreTypeInfosFor = new() {
+    public static HashSet<string> IgnoreTypeInfosFor =
+    [
         "dynamic",
         "String",
         "int",
@@ -209,8 +211,8 @@ public class PythonGenerator : ILangGenerator
         nameof(IdResponse),
         nameof(StringResponse),
         nameof(StringsResponse),
-        nameof(AuditBase),
-    };
+        nameof(AuditBase)
+    ];
 
     public static HashSet<string> IgnoreReturnMarkersForSubTypesOf = new() {
         // "QueryDb`1",
@@ -261,12 +263,35 @@ public class PythonGenerator : ILangGenerator
     public static Func<PythonGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
         DefaultIsPropertyOptional;
 
+    public void Init(MetadataTypes metadata)
+    {
+        var includeList = metadata.RemoveIgnoredTypes(Config);
+        AllTypes = metadata.GetAllTypesOrdered();
+        AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+        AllTypes = FilterTypes(AllTypes);
+
+        //Python doesn't support reusing same type name with different generic airity
+        var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
+            .GroupBy(g => g.LeftPart('`'))
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        ConflictTypeNames = AllTypes
+            .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
+            .Map(x => x.Name);
+
+        ConflictTypeNames.Add(typeof(QueryDb<,>).Name);
+        ConflictTypeNames.Add(typeof(QueryData<,>).Name);
+    }
+
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        Init(metadata);
+
         typeAliasValues ??= [..TypeAliases.Values];
             
         var typeNamespaces = new HashSet<string>();
-        var includeList = metadata.RemoveIgnoredTypes(Config);
         metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
         metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -328,25 +353,6 @@ public class PythonGenerator : ILangGenerator
         var responseTypes = metadata.Operations
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
-        var types = metadata.Types.CreateSortedTypeList();
-
-        AllTypes = metadata.GetAllTypesOrdered();
-        AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
-        AllTypes = FilterTypes(AllTypes);
-
-        //Python doesn't support reusing same type name with different generic airity
-        var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
-            .GroupBy(g => g.LeftPart('`'))
-            .Where(g => g.Count() > 1)
-            .Select(g => g.Key)
-            .ToList();
-
-        this.conflictTypeNames = AllTypes
-            .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
-            .Map(x => x.Name);
-
-        this.conflictTypeNames.Add(typeof(QueryDb<,>).Name);
-        this.conflictTypeNames.Add(typeof(QueryData<,>).Name);
 
         foreach (var import in defaultImports)
         {
@@ -431,7 +437,7 @@ public class PythonGenerator : ILangGenerator
                     existingTypes.Add(fullTypeName);
                 }
             }
-            else if (types.Contains(type) && !existingTypes.Contains(fullTypeName))
+            else if (AllTypes.Contains(type) && !existingTypes.Contains(fullTypeName))
             {
                 lastNS = AppendType(ref sb, type, lastNS,
                     new CreateTypeOptions { IsType = true });
@@ -968,7 +974,7 @@ public class PythonGenerator : ILangGenerator
 
     public string NameOnly(string type)
     {
-        var name = conflictTypeNames.Contains(type)
+        var name = ConflictTypeNames.Contains(type)
             ? type.Replace("`","")
             : type.LeftPart('`');
 

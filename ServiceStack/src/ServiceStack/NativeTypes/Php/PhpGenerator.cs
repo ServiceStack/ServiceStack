@@ -11,7 +11,7 @@ public class PhpGenerator : ILangGenerator
 {
     public readonly MetadataTypesConfig Config;
     readonly NativeTypesFeature feature;
-    public List<string> ConflictTypeNames = new();
+    public List<string> ConflictTypeNames = [];
     public List<MetadataType> AllTypes { get; set; }
     public List<MetadataType> BuiltInTypes { get; set; }
 
@@ -328,7 +328,6 @@ public class PhpGenerator : ILangGenerator
         var responseTypes = metadata.Operations
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
-        var types = metadata.Types.CreateSortedTypeList();
 
         sb.AppendLine();
 
@@ -404,7 +403,7 @@ public class PhpGenerator : ILangGenerator
                     existingTypes.Add(fullTypeName);
                 }
             }
-            else if (types.Contains(type) && !existingTypes.Contains(fullTypeName))
+            else if (AllTypes.Contains(type) && !existingTypes.Contains(fullTypeName))
             {
                 lastNS = AppendType(ref sb, type, lastNS,
                     new CreateTypeOptions { IsType = true });

@@ -337,11 +337,9 @@ public class DartGenerator : ILangGenerator
         var responseTypes = metadata.Operations
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
-        var types = metadata.Types.CreateSortedTypeList();
 
         allTypes = metadata.GetAllTypesOrdered();
         allTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
-
         allTypes = FilterTypes(allTypes);
             
         allTypesMap = new Dictionary<string, MetadataType>();
@@ -392,7 +390,7 @@ public class DartGenerator : ILangGenerator
         if (insertCode != null)
             sb.AppendLine(insertCode);
 
-        existingTypeInfos = new HashSet<string>(IgnoreTypeInfosFor);
+        existingTypeInfos = [..IgnoreTypeInfosFor];
         sbTypeInfos = new StringBuilder();
         var dtosName = Config.GlobalNamespace ?? new Uri(Config.BaseUrl).Host;
         sbTypeInfos.AppendLine().AppendLine("TypeContext _ctx = TypeContext(library: '" + dtosName.SafeVarRef() + "', types: <String, TypeInfo> {");
@@ -451,7 +449,7 @@ public class DartGenerator : ILangGenerator
                     existingTypes.Add(fullTypeName);
                 }
             }
-            else if (types.Contains(type) && !existingTypes.Contains(fullTypeName))
+            else if (allTypes.Contains(type) && !existingTypes.Contains(fullTypeName))
             {
                 lastNS = AppendType(ref sb, type, lastNS,
                     new CreateTypeOptions { IsType = true });

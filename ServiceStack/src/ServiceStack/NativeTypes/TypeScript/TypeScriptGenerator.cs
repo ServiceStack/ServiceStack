@@ -244,7 +244,6 @@ public class TypeScriptGenerator : ILangGenerator
         var responseTypes = metadata.Operations
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
-        var types = metadata.Types.CreateSortedTypeList();
 
         foreach (var import in defaultImports)
         {
@@ -329,7 +328,7 @@ public class TypeScriptGenerator : ILangGenerator
                     existingTypes.Add(fullTypeName);
                 }
             }
-            else if (types.Contains(type) && !existingTypes.Contains(fullTypeName))
+            else if (AllTypes.Contains(type) && !existingTypes.Contains(fullTypeName))
             {
                 lastNS = AppendType(ref sb, type, lastNS,
                     new CreateTypeOptions { IsType = true });
