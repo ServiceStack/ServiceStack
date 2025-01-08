@@ -163,6 +163,8 @@ public class QueryCoupons : QueryDb<Coupon>
 public class CreateCoupon : ICreateDb<Coupon>, IReturn<IdResponse>
 {
     [ValidateNotEmpty]
+    public string Id { get; set; }
+    [ValidateNotEmpty]
     public string Description { get; set; }
     [ValidateGreaterThan(0)]
     public int Discount { get; set; }
