@@ -28,10 +28,11 @@ public class SwiftGenerator : ILangGenerator
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-    public static List<string> DefaultImports = new() {
+    public static List<string> DefaultImports =
+    [
         "Foundation",
-        "ServiceStack", //Required when referencing ServiceStack.framework in CocoaPods, Carthage or SwiftPM
-    };
+        "ServiceStack" //Required when referencing ServiceStack.framework in CocoaPods, Carthage or SwiftPM
+    ];
 
     public static Func<string, string> EnumNameStrategy { get; set; } = CSharpStyleEnums;
 
@@ -188,7 +189,7 @@ public class SwiftGenerator : ILangGenerator
             .Select(x => x.Response).ToSet();
         var types = metadata.Types.ToSet();
 
-        allTypes = new List<MetadataType>();
+        allTypes = [];
         allTypes.AddRange(requestTypes);
         allTypes.AddRange(responseTypes);
         allTypes.AddRange(types);

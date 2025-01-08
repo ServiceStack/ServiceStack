@@ -263,7 +263,7 @@ public class PythonGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        typeAliasValues ??= new HashSet<string>(TypeAliases.Values);
+        typeAliasValues ??= [..TypeAliases.Values];
             
         var typeNamespaces = new HashSet<string>();
         var includeList = metadata.RemoveIgnoredTypes(Config);
