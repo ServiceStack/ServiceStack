@@ -63,7 +63,7 @@ public class PublishTasks
 
                 if (jsFile.Key == "chart.js")
                 {
-                    js = js.Replace("/npm/@kurkle/color@0.3.2/+esm", "color.js");
+                    js = js.Replace("/npm/@kurkle/color@0.3.4/+esm", "color.js");
                 }
                 
                 File.WriteAllText(toFile, js);
