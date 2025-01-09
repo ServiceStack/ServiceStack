@@ -1,8 +1,8 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2024-10-17 23:05:22
-Version: 8.41
+Date: 2025-01-10 00:18:06
+Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -86,10 +86,10 @@ export class AdminUserBase
     public phoneNumber: string;
 
     // @DataMember(Order=9)
-    public userAuthProperties: { [index: string]: string; };
+    public userAuthProperties: { [index:string]: string; };
 
     // @DataMember(Order=10)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AdminUserBase>) { (Object as any).assign(this, init); }
 }
@@ -116,7 +116,7 @@ export class QueryBase
     public fields: string;
 
     // @DataMember(Order=7)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<QueryBase>) { (Object as any).assign(this, init); }
 }
@@ -140,7 +140,7 @@ export class ResponseError
     public message: string;
 
     // @DataMember(Order=4)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<ResponseError>) { (Object as any).assign(this, init); }
 }
@@ -161,7 +161,7 @@ export class ResponseStatus
     public errors: ResponseError[];
 
     // @DataMember(Order=5)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
 }
@@ -186,10 +186,10 @@ export class RequestLog
     public ipAddress?: string;
     public forwardedFor?: string;
     public referer?: string;
-    public headers: { [index: string]: string; };
-    public formData?: { [index: string]: string; };
-    public items: { [index: string]: string; };
-    public responseHeaders?: { [index: string]: string; };
+    public headers: { [index:string]: string; } = {};
+    public formData?: { [index:string]: string; };
+    public items: { [index:string]: string; } = {};
+    public responseHeaders?: { [index:string]: string; };
     public response?: string;
     public responseBody?: string;
     public sessionBody?: string;
@@ -197,7 +197,7 @@ export class RequestLog
     public exceptionSource?: string;
     public exceptionDataBody?: string;
     public requestDuration: string;
-    public meta?: { [index: string]: string; };
+    public meta?: { [index:string]: string; };
 
     public constructor(init?: Partial<RequestLog>) { (Object as any).assign(this, init); }
 }
@@ -260,8 +260,8 @@ export class BackgroundJobBase
     public replyTo?: string;
     public errorCode?: string;
     public error?: ResponseStatus;
-    public args?: { [index: string]: string; };
-    public meta?: { [index: string]: string; };
+    public args?: { [index:string]: string; };
+    public meta?: { [index:string]: string; };
 
     public constructor(init?: Partial<BackgroundJobBase>) { (Object as any).assign(this, init); }
 }
@@ -316,7 +316,7 @@ export class BackgroundJobOptions
     public createdBy?: string;
     public timeoutSecs?: number;
     public timeout?: string;
-    public args?: { [index: string]: string; };
+    public args?: { [index:string]: string; };
     public runCommand?: boolean;
 
     public constructor(init?: Partial<BackgroundJobOptions>) { (Object as any).assign(this, init); }
@@ -397,7 +397,7 @@ export class AppInfo
     public jsTextCase: string;
     public useSystemJson: string;
     public endpointRouting?: string[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AppInfo>) { (Object as any).assign(this, init); }
 }
@@ -506,7 +506,7 @@ export class UiInfo
     public explorer: ExplorerUi;
     public admin: AdminUi;
     public defaultFormats: ApiFormat;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<UiInfo>) { (Object as any).assign(this, init); }
 }
@@ -514,7 +514,7 @@ export class UiInfo
 export class ConfigInfo
 {
     public debugMode?: boolean;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<ConfigInfo>) { (Object as any).assign(this, init); }
 }
@@ -531,7 +531,7 @@ export class NavItem
     public show: string;
     public hide: string;
     public children: NavItem[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<NavItem>) { (Object as any).assign(this, init); }
 }
@@ -575,7 +575,7 @@ export class InputInfo
     public options: string;
     public ignore?: boolean;
     public css: FieldCss;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<InputInfo>) { (Object as any).assign(this, init); }
 }
@@ -588,7 +588,7 @@ export class MetaAuthProvider
     public navItem: NavItem;
     public icon: ImageInfo;
     public formLayout: InputInfo[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<MetaAuthProvider>) { (Object as any).assign(this, init); }
 }
@@ -596,7 +596,7 @@ export class MetaAuthProvider
 export class IdentityAuthInfo
 {
     public hasRefreshToken?: boolean;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<IdentityAuthInfo>) { (Object as any).assign(this, init); }
 }
@@ -610,9 +610,9 @@ export class AuthInfo
     public htmlRedirect: string;
     public authProviders: MetaAuthProvider[];
     public identityAuth: IdentityAuthInfo;
-    public roleLinks: { [index: string]: LinkInfo[]; };
-    public serviceRoutes: { [index: string]: string[]; };
-    public meta: { [index: string]: string; };
+    public roleLinks: { [index:string]: LinkInfo[]; };
+    public serviceRoutes: { [index:string]: string[]; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AuthInfo>) { (Object as any).assign(this, init); }
 }
@@ -626,7 +626,7 @@ export class ApiKeyInfo
     public requestTypes: string[];
     public expiresIn: KeyValuePair<string,string>[];
     public hide: string[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<ApiKeyInfo>) { (Object as any).assign(this, init); }
 }
@@ -731,7 +731,7 @@ export class MetadataType
     public enumValues: string[];
     public enumMemberValues: string[];
     public enumDescriptions: string[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<MetadataType>) { (Object as any).assign(this, init); }
 }
@@ -749,7 +749,7 @@ export class CommandInfo
 export class CommandsInfo
 {
     public commands: CommandInfo[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<CommandsInfo>) { (Object as any).assign(this, init); }
 }
@@ -777,7 +777,7 @@ export class AutoQueryInfo
     public accessRole: string;
     public namedConnection: string;
     public viewerConventions: AutoQueryConvention[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AutoQueryInfo>) { (Object as any).assign(this, init); }
 }
@@ -796,11 +796,11 @@ export class ValidationInfo
 {
     public hasValidationSource?: boolean;
     public hasValidationSourceAdmin?: boolean;
-    public serviceRoutes: { [index: string]: string[]; };
+    public serviceRoutes: { [index:string]: string[]; };
     public typeValidators: ScriptMethodType[];
     public propertyValidators: ScriptMethodType[];
     public accessRole: string;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<ValidationInfo>) { (Object as any).assign(this, init); }
 }
@@ -812,7 +812,7 @@ export class SharpPagesInfo
     public metadataDebugAdminRole: string;
     public metadataDebug?: boolean;
     public spaFallback?: boolean;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<SharpPagesInfo>) { (Object as any).assign(this, init); }
 }
@@ -822,8 +822,8 @@ export class RequestLogsInfo
     public accessRole: string;
     public requestLogger: string;
     public defaultLimit: number;
-    public serviceRoutes: { [index: string]: string[]; };
-    public meta: { [index: string]: string; };
+    public serviceRoutes: { [index:string]: string[]; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<RequestLogsInfo>) { (Object as any).assign(this, init); }
 }
@@ -834,7 +834,7 @@ export class ProfilingInfo
     public defaultLimit: number;
     public summaryFields: string[];
     public tagLabel?: string;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<ProfilingInfo>) { (Object as any).assign(this, init); }
 }
@@ -857,7 +857,7 @@ export class FilesUploadInfo
 {
     public basePath: string;
     public locations: FilesUploadLocation[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<FilesUploadInfo>) { (Object as any).assign(this, init); }
 }
@@ -867,7 +867,7 @@ export class MediaRule
     public size: string;
     public rule: string;
     public applyTo: string[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<MediaRule>) { (Object as any).assign(this, init); }
 }
@@ -883,7 +883,7 @@ export class AdminUsersInfo
     public queryMediaRules: MediaRule[];
     public formLayout: InputInfo[];
     public css: ApiCss;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AdminUsersInfo>) { (Object as any).assign(this, init); }
 }
@@ -899,7 +899,7 @@ export class AdminIdentityUsersInfo
     public queryMediaRules: MediaRule[];
     public formLayout: InputInfo[];
     public css: ApiCss;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AdminIdentityUsersInfo>) { (Object as any).assign(this, init); }
 }
@@ -910,7 +910,7 @@ export class AdminRedisInfo
     public databases: number[];
     public modifiableConnection?: boolean;
     public endpoint: RedisEndpointInfo;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AdminRedisInfo>) { (Object as any).assign(this, init); }
 }
@@ -937,7 +937,7 @@ export class AdminDatabaseInfo
 {
     public queryLimit: number;
     public databases: DatabaseInfo[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AdminDatabaseInfo>) { (Object as any).assign(this, init); }
 }
@@ -958,7 +958,7 @@ export class PluginInfo
     public adminIdentityUsers: AdminIdentityUsersInfo;
     public adminRedis: AdminRedisInfo;
     public adminDatabase: AdminDatabaseInfo;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<PluginInfo>) { (Object as any).assign(this, init); }
 }
@@ -966,9 +966,9 @@ export class PluginInfo
 export class CustomPluginInfo
 {
     public accessRole: string;
-    public serviceRoutes: { [index: string]: string[]; };
+    public serviceRoutes: { [index:string]: string[]; };
     public enabled: string[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<CustomPluginInfo>) { (Object as any).assign(this, init); }
 }
@@ -1037,7 +1037,7 @@ export class ApiUiInfo
     public locodeCss: ApiCss;
     public explorerCss: ApiCss;
     public formLayout: InputInfo[];
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<ApiUiInfo>) { (Object as any).assign(this, init); }
 }
@@ -1077,12 +1077,33 @@ export class MetadataTypes
 
 export class ServerStats
 {
-    public redis: { [index: string]: number; };
-    public serverEvents: { [index: string]: string; };
+    public redis: { [index:string]: number; };
+    public serverEvents: { [index:string]: string; };
     public mqDescription: string;
-    public mqWorkers: { [index: string]: number; };
+    public mqWorkers: { [index:string]: number; };
 
     public constructor(init?: Partial<ServerStats>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class QueryResponse<T>
+{
+    // @DataMember(Order=1)
+    public offset: number;
+
+    // @DataMember(Order=2)
+    public total: number;
+
+    // @DataMember(Order=3)
+    public results: T[];
+
+    // @DataMember(Order=4)
+    public meta: { [index:string]: string; };
+
+    // @DataMember(Order=5)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<QueryResponse<T>>) { (Object as any).assign(this, init); }
 }
 
 export class DiagnosticEntry
@@ -1102,13 +1123,13 @@ export class DiagnosticEntry
     public arg?: string;
     public args?: string[];
     public argLengths?: number[];
-    public namedArgs?: { [index: string]: Object; };
+    public namedArgs?: { [index:string]: Object; };
     public duration?: string;
     public timestamp: number;
     public date: string;
     public tag?: string;
     public stackTrace?: string;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; } = {};
 
     public constructor(init?: Partial<DiagnosticEntry>) { (Object as any).assign(this, init); }
 }
@@ -1215,7 +1236,7 @@ export class PartialApiKey
     public refIdStr: string;
 
     // @DataMember(Order=17)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     // @DataMember(Order=18)
     public active: boolean;
@@ -1280,17 +1301,17 @@ export class RequestLogEntry
     public ipAddress: string;
     public forwardedFor: string;
     public referer: string;
-    public headers: { [index: string]: string; };
-    public formData: { [index: string]: string; };
-    public items: { [index: string]: string; };
-    public responseHeaders: { [index: string]: string; };
+    public headers: { [index:string]: string; };
+    public formData: { [index:string]: string; };
+    public items: { [index:string]: string; };
+    public responseHeaders: { [index:string]: string; };
     public session: Object;
     public responseDto: Object;
     public errorResponse: Object;
     public exceptionSource: string;
     public exceptionData: any;
     public requestDuration: string;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<RequestLogEntry>) { (Object as any).assign(this, init); }
 }
@@ -1309,12 +1330,12 @@ export class AppMetadata
     public app: AppInfo;
     public ui: UiInfo;
     public config: ConfigInfo;
-    public contentTypeFormats: { [index: string]: string; };
-    public httpHandlers: { [index: string]: string; };
+    public contentTypeFormats: { [index:string]: string; };
+    public httpHandlers: { [index:string]: string; };
     public plugins: PluginInfo;
-    public customPlugins: { [index: string]: CustomPluginInfo; };
+    public customPlugins: { [index:string]: CustomPluginInfo; };
     public api: MetadataTypes;
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AppMetadata>) { (Object as any).assign(this, init); }
 }
@@ -1370,7 +1391,7 @@ export class AuthenticateResponse implements IHasSessionId, IHasBearerToken
     public responseStatus: ResponseStatus;
 
     // @DataMember(Order=14)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AuthenticateResponse>) { (Object as any).assign(this, init); }
 }
@@ -1385,7 +1406,7 @@ export class AssignRolesResponse
     public allPermissions: string[];
 
     // @DataMember(Order=3)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     // @DataMember(Order=4)
     public responseStatus: ResponseStatus;
@@ -1403,7 +1424,7 @@ export class UnAssignRolesResponse
     public allPermissions: string[];
 
     // @DataMember(Order=3)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     // @DataMember(Order=4)
     public responseStatus: ResponseStatus;
@@ -1418,7 +1439,7 @@ export class AdminUserResponse
     public id: string;
 
     // @DataMember(Order=2)
-    public result: { [index: string]: Object; };
+    public result: { [index:string]: Object; };
 
     // @DataMember(Order=3)
     public details: { [index:string]: Object; }[];
@@ -1453,30 +1474,9 @@ export class AdminDeleteUserResponse
     public constructor(init?: Partial<AdminDeleteUserResponse>) { (Object as any).assign(this, init); }
 }
 
-// @DataContract
-export class QueryResponse<RequestLog>
-{
-    // @DataMember(Order=1)
-    public offset: number;
-
-    // @DataMember(Order=2)
-    public total: number;
-
-    // @DataMember(Order=3)
-    public results: RequestLog[];
-
-    // @DataMember(Order=4)
-    public meta: { [index: string]: string; };
-
-    // @DataMember(Order=5)
-    public responseStatus: ResponseStatus;
-
-    public constructor(init?: Partial<QueryResponse<RequestLog>>) { (Object as any).assign(this, init); }
-}
-
 export class AdminProfilingResponse
 {
-    public results: DiagnosticEntry[];
+    public results: DiagnosticEntry[] = [];
     public total: number;
     public responseStatus: ResponseStatus;
 
@@ -1487,7 +1487,7 @@ export class AdminRedisResponse
 {
     public db: number;
     public searchResults?: RedisSearchResult[];
-    public info?: { [index: string]: string; };
+    public info?: { [index:string]: string; };
     public endpoint?: RedisEndpointInfo;
     public result?: RedisText;
     public responseStatus?: ResponseStatus;
@@ -1497,7 +1497,7 @@ export class AdminRedisResponse
 
 export class AdminDatabaseResponse
 {
-    public results: { [index:string]: Object; }[];
+    public results: { [index:string]: Object; }[] = [];
     public total?: number;
     public columns?: MetadataPropertyType[];
     public responseStatus?: ResponseStatus;
@@ -1507,9 +1507,9 @@ export class AdminDatabaseResponse
 
 export class ViewCommandsResponse
 {
-    public commandTotals: CommandSummary[];
-    public latestCommands: CommandResult[];
-    public latestFailed: CommandResult[];
+    public commandTotals: CommandSummary[] = [];
+    public latestCommands: CommandResult[] = [];
+    public latestFailed: CommandResult[] = [];
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<ViewCommandsResponse>) { (Object as any).assign(this, init); }
@@ -1559,10 +1559,10 @@ export class EmptyResponse
 
 export class AdminJobDashboardResponse
 {
-    public commands: JobStatSummary[];
-    public apis: JobStatSummary[];
-    public workers: JobStatSummary[];
-    public today: HourSummary[];
+    public commands: JobStatSummary[] = [];
+    public apis: JobStatSummary[] = [];
+    public workers: JobStatSummary[] = [];
+    public today: HourSummary[] = [];
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminJobDashboardResponse>) { (Object as any).assign(this, init); }
@@ -1570,10 +1570,10 @@ export class AdminJobDashboardResponse
 
 export class AdminJobInfoResponse
 {
-    public monthDbs: string[];
-    public tableCounts: { [index: string]: number; };
-    public workerStats: WorkerStats[];
-    public queueCounts: { [index: string]: number; };
+    public monthDbs: string[] = [];
+    public tableCounts: { [index:string]: number; } = {};
+    public workerStats: WorkerStats[] = [];
+    public queueCounts: { [index:string]: number; } = {};
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminJobInfoResponse>) { (Object as any).assign(this, init); }
@@ -1605,8 +1605,8 @@ export class AdminGetJobProgressResponse
 
 export class AdminRequeueFailedJobsJobsResponse
 {
-    public results: number[];
-    public errors: { [index: number]: string; };
+    public results: number[] = [];
+    public errors: { [index:number]: string; } = {};
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminRequeueFailedJobsJobsResponse>) { (Object as any).assign(this, init); }
@@ -1614,8 +1614,8 @@ export class AdminRequeueFailedJobsJobsResponse
 
 export class AdminCancelJobsResponse
 {
-    public results: number[];
-    public errors: { [index: number]: string; };
+    public results: number[] = [];
+    public errors: { [index:number]: string; } = {};
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminCancelJobsResponse>) { (Object as any).assign(this, init); }
@@ -1628,7 +1628,7 @@ export class RequestLogsResponse
     public results: RequestLogEntry[];
 
     // @DataMember(Order=2)
-    public usage: { [index: string]: string; };
+    public usage: { [index:string]: string; };
 
     // @DataMember(Order=3)
     public total: number;
@@ -1709,7 +1709,7 @@ export class Authenticate implements IReturn<AuthenticateResponse>, IPost
     public errorView: string;
 
     // @DataMember(Order=9)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<Authenticate>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'Authenticate'; }
@@ -1731,7 +1731,7 @@ export class AssignRoles implements IReturn<AssignRolesResponse>, IPost
     public roles: string[];
 
     // @DataMember(Order=4)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AssignRoles>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AssignRoles'; }
@@ -1753,7 +1753,7 @@ export class UnAssignRoles implements IReturn<UnAssignRolesResponse>, IPost
     public roles: string[];
 
     // @DataMember(Order=4)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<UnAssignRoles>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'UnAssignRoles'; }
@@ -2004,7 +2004,7 @@ export class AdminCreateApiKey implements IReturn<AdminApiKeyResponse>, IPost
     public refIdStr: string;
 
     // @DataMember(Order=11)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<AdminCreateApiKey>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminCreateApiKey'; }
@@ -2053,7 +2053,7 @@ export class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
     public refIdStr: string;
 
     // @DataMember(Order=13)
-    public meta: { [index: string]: string; };
+    public meta: { [index:string]: string; };
 
     // @DataMember(Order=14)
     public reset: string[];

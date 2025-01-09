@@ -1,6 +1,6 @@
 /* Options:
-Date: 2024-10-17 23:05:22
-Version: 8.41
+Date: 2025-01-10 00:18:07
+Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 //AddServiceStackTypes: True
@@ -12,7 +12,7 @@ BaseUrl: http://localhost:20000
 */
 "use strict";
 export class AdminUserBase {
-    /** @param {{userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     userName;
@@ -30,13 +30,13 @@ export class AdminUserBase {
     profileUrl;
     /** @type {string} */
     phoneNumber;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     userAuthProperties;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class QueryBase {
-    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?number} */
     skip;
@@ -50,16 +50,16 @@ export class QueryBase {
     include;
     /** @type {string} */
     fields;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 /** @typedef T {any} */
 export class QueryDb extends QueryBase {
-    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
 }
 export class ResponseError {
-    /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     errorCode;
@@ -67,11 +67,11 @@ export class ResponseError {
     fieldName;
     /** @type {string} */
     message;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class ResponseStatus {
-    /** @param {{errorCode?:string,message?:string,stackTrace?:string,errors?:ResponseError[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{errorCode?:string,message?:string,stackTrace?:string,errors?:ResponseError[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     errorCode;
@@ -81,11 +81,11 @@ export class ResponseStatus {
     stackTrace;
     /** @type {ResponseError[]} */
     errors;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class RequestLog {
-    /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,request?:string,requestBody?:string,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },response?:string,responseBody?:string,sessionBody?:string,error?:ResponseStatus,exceptionSource?:string,exceptionDataBody?:string,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,request?:string,requestBody?:string,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index:string]: string; },formData?:{ [index:string]: string; },items?:{ [index:string]: string; },responseHeaders?:{ [index:string]: string; },response?:string,responseBody?:string,sessionBody?:string,error?:ResponseStatus,exceptionSource?:string,exceptionDataBody?:string,requestDuration?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -119,13 +119,13 @@ export class RequestLog {
     forwardedFor;
     /** @type {?string} */
     referer;
-    /** @type {{ [index: string]: string; }} */
-    headers;
-    /** @type {?{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
+    headers = {};
+    /** @type {?{ [index:string]: string; }} */
     formData;
-    /** @type {{ [index: string]: string; }} */
-    items;
-    /** @type {?{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
+    items = {};
+    /** @type {?{ [index:string]: string; }} */
     responseHeaders;
     /** @type {?string} */
     response;
@@ -141,7 +141,7 @@ export class RequestLog {
     exceptionDataBody;
     /** @type {string} */
     requestDuration;
-    /** @type {?{ [index: string]: string; }} */
+    /** @type {?{ [index:string]: string; }} */
     meta;
 }
 export class RedisEndpointInfo {
@@ -171,7 +171,7 @@ export var BackgroundJobState;
     BackgroundJobState["Cancelled"] = "Cancelled"
 })(BackgroundJobState || (BackgroundJobState = {}));
 export class BackgroundJobBase {
-    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -241,13 +241,13 @@ export class BackgroundJobBase {
     errorCode;
     /** @type {?ResponseStatus} */
     error;
-    /** @type {?{ [index: string]: string; }} */
+    /** @type {?{ [index:string]: string; }} */
     args;
-    /** @type {?{ [index: string]: string; }} */
+    /** @type {?{ [index:string]: string; }} */
     meta;
 }
 export class BackgroundJob extends BackgroundJobBase {
-    /** @param {{id?:number,id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -299,7 +299,7 @@ export class JobSummary {
     errorMessage;
 }
 export class BackgroundJobOptions {
-    /** @param {{refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number,timeout?:string,args?:{ [index: string]: string; },runCommand?:boolean}} [init] */
+    /** @param {{refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number,timeout?:string,args?:{ [index:string]: string; },runCommand?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?string} */
     refId;
@@ -329,7 +329,7 @@ export class BackgroundJobOptions {
     timeoutSecs;
     /** @type {?string} */
     timeout;
-    /** @type {?{ [index: string]: string; }} */
+    /** @type {?{ [index:string]: string; }} */
     args;
     /** @type {?boolean} */
     runCommand;
@@ -361,11 +361,11 @@ export class ScheduledTask {
     lastJobId;
 }
 export class CompletedJob extends BackgroundJobBase {
-    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
 }
 export class FailedJob extends BackgroundJobBase {
-    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
 }
 export class ValidateRule {
@@ -405,7 +405,7 @@ export class ValidationRule extends ValidateRule {
     notes;
 }
 export class AppInfo {
-    /** @param {{baseUrl?:string,serviceStackVersion?:string,serviceName?:string,apiVersion?:string,serviceDescription?:string,serviceIconUrl?:string,brandUrl?:string,brandImageUrl?:string,textColor?:string,linkColor?:string,backgroundColor?:string,backgroundImageUrl?:string,iconUrl?:string,jsTextCase?:string,useSystemJson?:string,endpointRouting?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{baseUrl?:string,serviceStackVersion?:string,serviceName?:string,apiVersion?:string,serviceDescription?:string,serviceIconUrl?:string,brandUrl?:string,brandImageUrl?:string,textColor?:string,linkColor?:string,backgroundColor?:string,backgroundImageUrl?:string,iconUrl?:string,jsTextCase?:string,useSystemJson?:string,endpointRouting?:string[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     baseUrl;
@@ -439,7 +439,7 @@ export class AppInfo {
     useSystemJson;
     /** @type {?string[]} */
     endpointRouting;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class ImageInfo {
@@ -547,7 +547,7 @@ export class ApiFormat {
     date;
 }
 export class UiInfo {
-    /** @param {{brandIcon?:ImageInfo,hideTags?:string[],modules?:string[],alwaysHideTags?:string[],adminLinks?:LinkInfo[],theme?:ThemeInfo,locode?:LocodeUi,explorer?:ExplorerUi,admin?:AdminUi,defaultFormats?:ApiFormat,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{brandIcon?:ImageInfo,hideTags?:string[],modules?:string[],alwaysHideTags?:string[],adminLinks?:LinkInfo[],theme?:ThemeInfo,locode?:LocodeUi,explorer?:ExplorerUi,admin?:AdminUi,defaultFormats?:ApiFormat,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {ImageInfo} */
     brandIcon;
@@ -569,19 +569,19 @@ export class UiInfo {
     admin;
     /** @type {ApiFormat} */
     defaultFormats;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class ConfigInfo {
-    /** @param {{debugMode?:boolean,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{debugMode?:boolean,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?boolean} */
     debugMode;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class NavItem {
-    /** @param {{label?:string,href?:string,exact?:boolean,id?:string,className?:string,iconClass?:string,iconSrc?:string,show?:string,hide?:string,children?:NavItem[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{label?:string,href?:string,exact?:boolean,id?:string,className?:string,iconClass?:string,iconSrc?:string,show?:string,hide?:string,children?:NavItem[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     label;
@@ -603,7 +603,7 @@ export class NavItem {
     hide;
     /** @type {NavItem[]} */
     children;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class FieldCss {
@@ -617,7 +617,7 @@ export class FieldCss {
     label;
 }
 export class InputInfo {
-    /** @param {{id?:string,name?:string,type?:string,value?:string,placeholder?:string,help?:string,label?:string,title?:string,size?:string,pattern?:string,readOnly?:boolean,required?:boolean,disabled?:boolean,autocomplete?:string,autofocus?:string,min?:string,max?:string,step?:string,minLength?:number,maxLength?:number,accept?:string,capture?:string,multiple?:boolean,allowableValues?:string[],allowableEntries?:KeyValuePair<string, string>[],options?:string,ignore?:boolean,css?:FieldCss,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:string,name?:string,type?:string,value?:string,placeholder?:string,help?:string,label?:string,title?:string,size?:string,pattern?:string,readOnly?:boolean,required?:boolean,disabled?:boolean,autocomplete?:string,autofocus?:string,min?:string,max?:string,step?:string,minLength?:number,maxLength?:number,accept?:string,capture?:string,multiple?:boolean,allowableValues?:string[],allowableEntries?:KeyValuePair<string, string>[],options?:string,ignore?:boolean,css?:FieldCss,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     id;
@@ -675,11 +675,11 @@ export class InputInfo {
     ignore;
     /** @type {FieldCss} */
     css;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class MetaAuthProvider {
-    /** @param {{name?:string,label?:string,type?:string,navItem?:NavItem,icon?:ImageInfo,formLayout?:InputInfo[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{name?:string,label?:string,type?:string,navItem?:NavItem,icon?:ImageInfo,formLayout?:InputInfo[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -693,19 +693,19 @@ export class MetaAuthProvider {
     icon;
     /** @type {InputInfo[]} */
     formLayout;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class IdentityAuthInfo {
-    /** @param {{hasRefreshToken?:boolean,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{hasRefreshToken?:boolean,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?boolean} */
     hasRefreshToken;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class AuthInfo {
-    /** @param {{hasAuthSecret?:boolean,hasAuthRepository?:boolean,includesRoles?:boolean,includesOAuthTokens?:boolean,htmlRedirect?:string,authProviders?:MetaAuthProvider[],identityAuth?:IdentityAuthInfo,roleLinks?:{ [index: string]: LinkInfo[]; },serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{hasAuthSecret?:boolean,hasAuthRepository?:boolean,includesRoles?:boolean,includesOAuthTokens?:boolean,htmlRedirect?:string,authProviders?:MetaAuthProvider[],identityAuth?:IdentityAuthInfo,roleLinks?:{ [index:string]: LinkInfo[]; },serviceRoutes?:{ [index:string]: string[]; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?boolean} */
     hasAuthSecret;
@@ -721,15 +721,15 @@ export class AuthInfo {
     authProviders;
     /** @type {IdentityAuthInfo} */
     identityAuth;
-    /** @type {{ [index: string]: LinkInfo[]; }} */
+    /** @type {{ [index:string]: LinkInfo[]; }} */
     roleLinks;
-    /** @type {{ [index: string]: string[]; }} */
+    /** @type {{ [index:string]: string[]; }} */
     serviceRoutes;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class ApiKeyInfo {
-    /** @param {{label?:string,httpHeader?:string,scopes?:string[],features?:string[],requestTypes?:string[],expiresIn?:KeyValuePair<string,string>[],hide?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{label?:string,httpHeader?:string,scopes?:string[],features?:string[],requestTypes?:string[],expiresIn?:KeyValuePair<string,string>[],hide?:string[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     label;
@@ -745,7 +745,7 @@ export class ApiKeyInfo {
     expiresIn;
     /** @type {string[]} */
     hide;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class MetadataTypeName {
@@ -851,7 +851,7 @@ export class MetadataPropertyType {
     ref;
 }
 export class MetadataType {
-    /** @param {{name?:string,namespace?:string,genericArgs?:string[],inherits?:MetadataTypeName,implements?:MetadataTypeName[],displayType?:string,description?:string,notes?:string,icon?:ImageInfo,isNested?:boolean,isEnum?:boolean,isEnumInt?:boolean,isInterface?:boolean,isAbstract?:boolean,isGenericTypeDef?:boolean,dataContract?:MetadataDataContract,properties?:MetadataPropertyType[],attributes?:MetadataAttribute[],innerTypes?:MetadataTypeName[],enumNames?:string[],enumValues?:string[],enumMemberValues?:string[],enumDescriptions?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{name?:string,namespace?:string,genericArgs?:string[],inherits?:MetadataTypeName,implements?:MetadataTypeName[],displayType?:string,description?:string,notes?:string,icon?:ImageInfo,isNested?:boolean,isEnum?:boolean,isEnumInt?:boolean,isInterface?:boolean,isAbstract?:boolean,isGenericTypeDef?:boolean,dataContract?:MetadataDataContract,properties?:MetadataPropertyType[],attributes?:MetadataAttribute[],innerTypes?:MetadataTypeName[],enumNames?:string[],enumValues?:string[],enumMemberValues?:string[],enumDescriptions?:string[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -899,7 +899,7 @@ export class MetadataType {
     enumMemberValues;
     /** @type {string[]} */
     enumDescriptions;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class CommandInfo {
@@ -915,11 +915,11 @@ export class CommandInfo {
     response;
 }
 export class CommandsInfo {
-    /** @param {{commands?:CommandInfo[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{commands?:CommandInfo[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {CommandInfo[]} */
     commands;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class AutoQueryConvention {
@@ -935,7 +935,7 @@ export class AutoQueryConvention {
     valueType;
 }
 export class AutoQueryInfo {
-    /** @param {{maxLimit?:number,untypedQueries?:boolean,rawSqlFilters?:boolean,autoQueryViewer?:boolean,async?:boolean,orderByPrimaryKey?:boolean,crudEvents?:boolean,crudEventsServices?:boolean,accessRole?:string,namedConnection?:string,viewerConventions?:AutoQueryConvention[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{maxLimit?:number,untypedQueries?:boolean,rawSqlFilters?:boolean,autoQueryViewer?:boolean,async?:boolean,orderByPrimaryKey?:boolean,crudEvents?:boolean,crudEventsServices?:boolean,accessRole?:string,namedConnection?:string,viewerConventions?:AutoQueryConvention[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?number} */
     maxLimit;
@@ -959,7 +959,7 @@ export class AutoQueryInfo {
     namedConnection;
     /** @type {AutoQueryConvention[]} */
     viewerConventions;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class ScriptMethodType {
@@ -975,13 +975,13 @@ export class ScriptMethodType {
     returnType;
 }
 export class ValidationInfo {
-    /** @param {{hasValidationSource?:boolean,hasValidationSourceAdmin?:boolean,serviceRoutes?:{ [index: string]: string[]; },typeValidators?:ScriptMethodType[],propertyValidators?:ScriptMethodType[],accessRole?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{hasValidationSource?:boolean,hasValidationSourceAdmin?:boolean,serviceRoutes?:{ [index:string]: string[]; },typeValidators?:ScriptMethodType[],propertyValidators?:ScriptMethodType[],accessRole?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?boolean} */
     hasValidationSource;
     /** @type {?boolean} */
     hasValidationSourceAdmin;
-    /** @type {{ [index: string]: string[]; }} */
+    /** @type {{ [index:string]: string[]; }} */
     serviceRoutes;
     /** @type {ScriptMethodType[]} */
     typeValidators;
@@ -989,11 +989,11 @@ export class ValidationInfo {
     propertyValidators;
     /** @type {string} */
     accessRole;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class SharpPagesInfo {
-    /** @param {{apiPath?:string,scriptAdminRole?:string,metadataDebugAdminRole?:string,metadataDebug?:boolean,spaFallback?:boolean,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{apiPath?:string,scriptAdminRole?:string,metadataDebugAdminRole?:string,metadataDebug?:boolean,spaFallback?:boolean,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     apiPath;
@@ -1005,11 +1005,11 @@ export class SharpPagesInfo {
     metadataDebug;
     /** @type {?boolean} */
     spaFallback;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class RequestLogsInfo {
-    /** @param {{accessRole?:string,requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index: string]: string[]; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{accessRole?:string,requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index:string]: string[]; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     accessRole;
@@ -1017,13 +1017,13 @@ export class RequestLogsInfo {
     requestLogger;
     /** @type {number} */
     defaultLimit;
-    /** @type {{ [index: string]: string[]; }} */
+    /** @type {{ [index:string]: string[]; }} */
     serviceRoutes;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class ProfilingInfo {
-    /** @param {{accessRole?:string,defaultLimit?:number,summaryFields?:string[],tagLabel?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{accessRole?:string,defaultLimit?:number,summaryFields?:string[],tagLabel?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     accessRole;
@@ -1033,7 +1033,7 @@ export class ProfilingInfo {
     summaryFields;
     /** @type {?string} */
     tagLabel;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class FilesUploadLocation {
@@ -1057,17 +1057,17 @@ export class FilesUploadLocation {
     maxFileBytes;
 }
 export class FilesUploadInfo {
-    /** @param {{basePath?:string,locations?:FilesUploadLocation[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{basePath?:string,locations?:FilesUploadLocation[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     basePath;
     /** @type {FilesUploadLocation[]} */
     locations;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class MediaRule {
-    /** @param {{size?:string,rule?:string,applyTo?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{size?:string,rule?:string,applyTo?:string[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     size;
@@ -1075,11 +1075,11 @@ export class MediaRule {
     rule;
     /** @type {string[]} */
     applyTo;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class AdminUsersInfo {
-    /** @param {{accessRole?:string,enabled?:string[],userAuth?:MetadataType,allRoles?:string[],allPermissions?:string[],queryUserAuthProperties?:string[],queryMediaRules?:MediaRule[],formLayout?:InputInfo[],css?:ApiCss,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{accessRole?:string,enabled?:string[],userAuth?:MetadataType,allRoles?:string[],allPermissions?:string[],queryUserAuthProperties?:string[],queryMediaRules?:MediaRule[],formLayout?:InputInfo[],css?:ApiCss,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     accessRole;
@@ -1099,11 +1099,11 @@ export class AdminUsersInfo {
     formLayout;
     /** @type {ApiCss} */
     css;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class AdminIdentityUsersInfo {
-    /** @param {{accessRole?:string,enabled?:string[],identityUser?:MetadataType,allRoles?:string[],allPermissions?:string[],queryIdentityUserProperties?:string[],queryMediaRules?:MediaRule[],formLayout?:InputInfo[],css?:ApiCss,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{accessRole?:string,enabled?:string[],identityUser?:MetadataType,allRoles?:string[],allPermissions?:string[],queryIdentityUserProperties?:string[],queryMediaRules?:MediaRule[],formLayout?:InputInfo[],css?:ApiCss,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     accessRole;
@@ -1123,11 +1123,11 @@ export class AdminIdentityUsersInfo {
     formLayout;
     /** @type {ApiCss} */
     css;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class AdminRedisInfo {
-    /** @param {{queryLimit?:number,databases?:number[],modifiableConnection?:boolean,endpoint?:RedisEndpointInfo,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{queryLimit?:number,databases?:number[],modifiableConnection?:boolean,endpoint?:RedisEndpointInfo,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     queryLimit;
@@ -1137,7 +1137,7 @@ export class AdminRedisInfo {
     modifiableConnection;
     /** @type {RedisEndpointInfo} */
     endpoint;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class SchemaInfo {
@@ -1161,17 +1161,17 @@ export class DatabaseInfo {
     schemas;
 }
 export class AdminDatabaseInfo {
-    /** @param {{queryLimit?:number,databases?:DatabaseInfo[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{queryLimit?:number,databases?:DatabaseInfo[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     queryLimit;
     /** @type {DatabaseInfo[]} */
     databases;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class PluginInfo {
-    /** @param {{loaded?:string[],auth?:AuthInfo,apiKey?:ApiKeyInfo,commands?:CommandsInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{loaded?:string[],auth?:AuthInfo,apiKey?:ApiKeyInfo,commands?:CommandsInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     loaded;
@@ -1201,19 +1201,19 @@ export class PluginInfo {
     adminRedis;
     /** @type {AdminDatabaseInfo} */
     adminDatabase;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class CustomPluginInfo {
-    /** @param {{accessRole?:string,serviceRoutes?:{ [index: string]: string[]; },enabled?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{accessRole?:string,serviceRoutes?:{ [index:string]: string[]; },enabled?:string[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     accessRole;
-    /** @type {{ [index: string]: string[]; }} */
+    /** @type {{ [index:string]: string[]; }} */
     serviceRoutes;
     /** @type {string[]} */
     enabled;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class MetadataTypesConfig {
@@ -1319,7 +1319,7 @@ export class MetadataRoute {
     summary;
 }
 export class ApiUiInfo {
-    /** @param {{locodeCss?:ApiCss,explorerCss?:ApiCss,formLayout?:InputInfo[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{locodeCss?:ApiCss,explorerCss?:ApiCss,formLayout?:InputInfo[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {ApiCss} */
     locodeCss;
@@ -1327,7 +1327,7 @@ export class ApiUiInfo {
     explorerCss;
     /** @type {InputInfo[]} */
     formLayout;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class MetadataOperationType {
@@ -1381,19 +1381,34 @@ export class MetadataTypes {
     operations;
 }
 export class ServerStats {
-    /** @param {{redis?:{ [index: string]: number; },serverEvents?:{ [index: string]: string; },mqDescription?:string,mqWorkers?:{ [index: string]: number; }}} [init] */
+    /** @param {{redis?:{ [index:string]: number; },serverEvents?:{ [index:string]: string; },mqDescription?:string,mqWorkers?:{ [index:string]: number; }}} [init] */
     constructor(init) { Object.assign(this, init) }
-    /** @type {{ [index: string]: number; }} */
+    /** @type {{ [index:string]: number; }} */
     redis;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     serverEvents;
     /** @type {string} */
     mqDescription;
-    /** @type {{ [index: string]: number; }} */
+    /** @type {{ [index:string]: number; }} */
     mqWorkers;
 }
+/** @typedef T {any} */
+export class QueryResponse {
+    /** @param {{offset?:number,total?:number,results?:T[],meta?:{ [index:string]: string; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    offset;
+    /** @type {number} */
+    total;
+    /** @type {T[]} */
+    results;
+    /** @type {{ [index:string]: string; }} */
+    meta;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
 export class DiagnosticEntry {
-    /** @param {{id?:number,traceId?:string,source?:string,eventType?:string,message?:string,operation?:string,threadId?:number,error?:ResponseStatus,commandType?:string,command?:string,userAuthId?:string,sessionId?:string,arg?:string,args?:string[],argLengths?:number[],namedArgs?:{ [index: string]: Object; },duration?:string,timestamp?:number,date?:string,tag?:string,stackTrace?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,traceId?:string,source?:string,eventType?:string,message?:string,operation?:string,threadId?:number,error?:ResponseStatus,commandType?:string,command?:string,userAuthId?:string,sessionId?:string,arg?:string,args?:string[],argLengths?:number[],namedArgs?:{ [index:string]: Object; },duration?:string,timestamp?:number,date?:string,tag?:string,stackTrace?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1425,7 +1440,7 @@ export class DiagnosticEntry {
     args;
     /** @type {?number[]} */
     argLengths;
-    /** @type {?{ [index: string]: Object; }} */
+    /** @type {?{ [index:string]: Object; }} */
     namedArgs;
     /** @type {?string} */
     duration;
@@ -1437,8 +1452,8 @@ export class DiagnosticEntry {
     tag;
     /** @type {?string} */
     stackTrace;
-    /** @type {{ [index: string]: string; }} */
-    meta;
+    /** @type {{ [index:string]: string; }} */
+    meta = {};
 }
 export class RedisSearchResult {
     /** @param {{id?:string,type?:string,ttl?:number,size?:number}} [init] */
@@ -1509,7 +1524,7 @@ export class CommandResult {
     error;
 }
 export class PartialApiKey {
-    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],restrictTo?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },active?:boolean}} [init] */
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,visibleKey?:string,environment?:string,createdDate?:string,expiryDate?:string,cancelledDate?:string,lastUsedDate?:string,scopes?:string[],features?:string[],restrictTo?:string[],notes?:string,refId?:number,refIdStr?:string,meta?:{ [index:string]: string; },active?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1543,7 +1558,7 @@ export class PartialApiKey {
     refId;
     /** @type {string} */
     refIdStr;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
     /** @type {boolean} */
     active;
@@ -1599,7 +1614,7 @@ export class WorkerStats {
     runningTime;
 }
 export class RequestLogEntry {
-    /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,requestBody?:string,requestDto?:Object,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index: string]: string; },formData?:{ [index: string]: string; },items?:{ [index: string]: string; },responseHeaders?:{ [index: string]: string; },session?:Object,responseDto?:Object,errorResponse?:Object,exceptionSource?:string,exceptionData?:any,requestDuration?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,requestBody?:string,requestDto?:Object,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index:string]: string; },formData?:{ [index:string]: string; },items?:{ [index:string]: string; },responseHeaders?:{ [index:string]: string; },session?:Object,responseDto?:Object,errorResponse?:Object,exceptionSource?:string,exceptionData?:any,requestDuration?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1633,13 +1648,13 @@ export class RequestLogEntry {
     forwardedFor;
     /** @type {string} */
     referer;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     headers;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     formData;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     items;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     responseHeaders;
     /** @type {Object} */
     session;
@@ -1653,7 +1668,7 @@ export class RequestLogEntry {
     exceptionData;
     /** @type {string} */
     requestDuration;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 /** @typedef TKey {any} */
@@ -1667,7 +1682,7 @@ export class KeyValuePair {
     value;
 }
 export class AppMetadata {
-    /** @param {{date?:string,app?:AppInfo,ui?:UiInfo,config?:ConfigInfo,contentTypeFormats?:{ [index: string]: string; },httpHandlers?:{ [index: string]: string; },plugins?:PluginInfo,customPlugins?:{ [index: string]: CustomPluginInfo; },api?:MetadataTypes,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{date?:string,app?:AppInfo,ui?:UiInfo,config?:ConfigInfo,contentTypeFormats?:{ [index:string]: string; },httpHandlers?:{ [index:string]: string; },plugins?:PluginInfo,customPlugins?:{ [index:string]: CustomPluginInfo; },api?:MetadataTypes,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     date;
@@ -1677,17 +1692,17 @@ export class AppMetadata {
     ui;
     /** @type {ConfigInfo} */
     config;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     contentTypeFormats;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     httpHandlers;
     /** @type {PluginInfo} */
     plugins;
-    /** @type {{ [index: string]: CustomPluginInfo; }} */
+    /** @type {{ [index:string]: CustomPluginInfo; }} */
     customPlugins;
     /** @type {MetadataTypes} */
     api;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class AdminDashboardResponse {
@@ -1699,7 +1714,7 @@ export class AdminDashboardResponse {
     responseStatus;
 }
 export class AuthenticateResponse {
-    /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,refreshTokenExpiry?:string,profileUrl?:string,roles?:string[],permissions?:string[],authProvider?:string,responseStatus?:ResponseStatus,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,refreshTokenExpiry?:string,profileUrl?:string,roles?:string[],permissions?:string[],authProvider?:string,responseStatus?:ResponseStatus,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     userId;
@@ -1727,39 +1742,39 @@ export class AuthenticateResponse {
     authProvider;
     /** @type {ResponseStatus} */
     responseStatus;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
 }
 export class AssignRolesResponse {
-    /** @param {{allRoles?:string[],allPermissions?:string[],meta?:{ [index: string]: string; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{allRoles?:string[],allPermissions?:string[],meta?:{ [index:string]: string; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     allRoles;
     /** @type {string[]} */
     allPermissions;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
     /** @type {ResponseStatus} */
     responseStatus;
 }
 export class UnAssignRolesResponse {
-    /** @param {{allRoles?:string[],allPermissions?:string[],meta?:{ [index: string]: string; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{allRoles?:string[],allPermissions?:string[],meta?:{ [index:string]: string; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     allRoles;
     /** @type {string[]} */
     allPermissions;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
     /** @type {ResponseStatus} */
     responseStatus;
 }
 export class AdminUserResponse {
-    /** @param {{id?:string,result?:{ [index: string]: Object; },details?:{ [index:string]: Object; }[],responseStatus?:ResponseStatus}} [init] */
+    /** @param {{id?:string,result?:{ [index:string]: Object; },details?:{ [index:string]: Object; }[],responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     id;
-    /** @type {{ [index: string]: Object; }} */
+    /** @type {{ [index:string]: Object; }} */
     result;
     /** @type {{ [index:string]: Object; }[]} */
     details;
@@ -1782,39 +1797,24 @@ export class AdminDeleteUserResponse {
     /** @type {ResponseStatus} */
     responseStatus;
 }
-/** @typedef T {any} */
-export class QueryResponse {
-    /** @param {{offset?:number,total?:number,results?:T[],meta?:{ [index: string]: string; },responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    offset;
-    /** @type {number} */
-    total;
-    /** @type {T[]} */
-    results;
-    /** @type {{ [index: string]: string; }} */
-    meta;
-    /** @type {ResponseStatus} */
-    responseStatus;
-}
 export class AdminProfilingResponse {
     /** @param {{results?:DiagnosticEntry[],total?:number,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {DiagnosticEntry[]} */
-    results;
+    results = [];
     /** @type {number} */
     total;
     /** @type {ResponseStatus} */
     responseStatus;
 }
 export class AdminRedisResponse {
-    /** @param {{db?:number,searchResults?:RedisSearchResult[],info?:{ [index: string]: string; },endpoint?:RedisEndpointInfo,result?:RedisText,responseStatus?:ResponseStatus}} [init] */
+    /** @param {{db?:number,searchResults?:RedisSearchResult[],info?:{ [index:string]: string; },endpoint?:RedisEndpointInfo,result?:RedisText,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     db;
     /** @type {?RedisSearchResult[]} */
     searchResults;
-    /** @type {?{ [index: string]: string; }} */
+    /** @type {?{ [index:string]: string; }} */
     info;
     /** @type {?RedisEndpointInfo} */
     endpoint;
@@ -1827,7 +1827,7 @@ export class AdminDatabaseResponse {
     /** @param {{results?:{ [index:string]: Object; }[],total?:number,columns?:MetadataPropertyType[],responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {{ [index:string]: Object; }[]} */
-    results;
+    results = [];
     /** @type {?number} */
     total;
     /** @type {?MetadataPropertyType[]} */
@@ -1839,11 +1839,11 @@ export class ViewCommandsResponse {
     /** @param {{commandTotals?:CommandSummary[],latestCommands?:CommandResult[],latestFailed?:CommandResult[],responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {CommandSummary[]} */
-    commandTotals;
+    commandTotals = [];
     /** @type {CommandResult[]} */
-    latestCommands;
+    latestCommands = [];
     /** @type {CommandResult[]} */
-    latestFailed;
+    latestFailed = [];
     /** @type {?ResponseStatus} */
     responseStatus;
 }
@@ -1883,27 +1883,27 @@ export class AdminJobDashboardResponse {
     /** @param {{commands?:JobStatSummary[],apis?:JobStatSummary[],workers?:JobStatSummary[],today?:HourSummary[],responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {JobStatSummary[]} */
-    commands;
+    commands = [];
     /** @type {JobStatSummary[]} */
-    apis;
+    apis = [];
     /** @type {JobStatSummary[]} */
-    workers;
+    workers = [];
     /** @type {HourSummary[]} */
-    today;
+    today = [];
     /** @type {?ResponseStatus} */
     responseStatus;
 }
 export class AdminJobInfoResponse {
-    /** @param {{monthDbs?:string[],tableCounts?:{ [index: string]: number; },workerStats?:WorkerStats[],queueCounts?:{ [index: string]: number; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{monthDbs?:string[],tableCounts?:{ [index:string]: number; },workerStats?:WorkerStats[],queueCounts?:{ [index:string]: number; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
-    monthDbs;
-    /** @type {{ [index: string]: number; }} */
-    tableCounts;
+    monthDbs = [];
+    /** @type {{ [index:string]: number; }} */
+    tableCounts = {};
     /** @type {WorkerStats[]} */
-    workerStats;
-    /** @type {{ [index: string]: number; }} */
-    queueCounts;
+    workerStats = [];
+    /** @type {{ [index:string]: number; }} */
+    queueCounts = {};
     /** @type {?ResponseStatus} */
     responseStatus;
 }
@@ -1940,31 +1940,31 @@ export class AdminGetJobProgressResponse {
     responseStatus;
 }
 export class AdminRequeueFailedJobsJobsResponse {
-    /** @param {{results?:number[],errors?:{ [index: number]: string; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{results?:number[],errors?:{ [index:number]: string; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number[]} */
-    results;
-    /** @type {{ [index: number]: string; }} */
-    errors;
+    results = [];
+    /** @type {{ [index:number]: string; }} */
+    errors = {};
     /** @type {?ResponseStatus} */
     responseStatus;
 }
 export class AdminCancelJobsResponse {
-    /** @param {{results?:number[],errors?:{ [index: number]: string; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{results?:number[],errors?:{ [index:number]: string; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number[]} */
-    results;
-    /** @type {{ [index: number]: string; }} */
-    errors;
+    results = [];
+    /** @type {{ [index:number]: string; }} */
+    errors = {};
     /** @type {?ResponseStatus} */
     responseStatus;
 }
 export class RequestLogsResponse {
-    /** @param {{results?:RequestLogEntry[],usage?:{ [index: string]: string; },total?:number,responseStatus?:ResponseStatus}} [init] */
+    /** @param {{results?:RequestLogEntry[],usage?:{ [index:string]: string; },total?:number,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {RequestLogEntry[]} */
     results;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     usage;
     /** @type {number} */
     total;
@@ -1997,7 +1997,7 @@ export class AdminDashboard {
     createResponse() { return new AdminDashboardResponse() }
 }
 export class Authenticate {
-    /** @param {{provider?:string,userName?:string,password?:string,rememberMe?:boolean,accessToken?:string,accessTokenSecret?:string,returnUrl?:string,errorView?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{provider?:string,userName?:string,password?:string,rememberMe?:boolean,accessToken?:string,accessTokenSecret?:string,returnUrl?:string,errorView?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /**
      * @type {string}
@@ -2017,14 +2017,14 @@ export class Authenticate {
     returnUrl;
     /** @type {string} */
     errorView;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
     getTypeName() { return 'Authenticate' }
     getMethod() { return 'POST' }
     createResponse() { return new AuthenticateResponse() }
 }
 export class AssignRoles {
-    /** @param {{userName?:string,permissions?:string[],roles?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{userName?:string,permissions?:string[],roles?:string[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     userName;
@@ -2032,14 +2032,14 @@ export class AssignRoles {
     permissions;
     /** @type {string[]} */
     roles;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
     getTypeName() { return 'AssignRoles' }
     getMethod() { return 'POST' }
     createResponse() { return new AssignRolesResponse() }
 }
 export class UnAssignRoles {
-    /** @param {{userName?:string,permissions?:string[],roles?:string[],meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{userName?:string,permissions?:string[],roles?:string[],meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     userName;
@@ -2047,7 +2047,7 @@ export class UnAssignRoles {
     permissions;
     /** @type {string[]} */
     roles;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
     getTypeName() { return 'UnAssignRoles' }
     getMethod() { return 'POST' }
@@ -2078,7 +2078,7 @@ export class AdminQueryUsers {
     createResponse() { return new AdminUsersResponse() }
 }
 export class AdminCreateUser extends AdminUserBase {
-    /** @param {{roles?:string[],permissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{roles?:string[],permissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {string[]} */
     roles;
@@ -2089,7 +2089,7 @@ export class AdminCreateUser extends AdminUserBase {
     createResponse() { return new AdminUserResponse() }
 }
 export class AdminUpdateUser extends AdminUserBase {
-    /** @param {{id?:string,lockUser?:boolean,unlockUser?:boolean,lockUserUntil?:string,addRoles?:string[],removeRoles?:string[],addPermissions?:string[],removePermissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index: string]: string; },meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:string,lockUser?:boolean,unlockUser?:boolean,lockUserUntil?:string,addRoles?:string[],removeRoles?:string[],addPermissions?:string[],removePermissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {string} */
     id;
@@ -2121,7 +2121,7 @@ export class AdminDeleteUser {
     createResponse() { return new AdminDeleteUserResponse() }
 }
 export class AdminQueryRequestLogs extends QueryDb {
-    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {?string} */
     month;
@@ -2248,7 +2248,7 @@ export class AdminQueryApiKeys {
     createResponse() { return new AdminApiKeysResponse() }
 }
 export class AdminCreateApiKey {
-    /** @param {{name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -2270,14 +2270,14 @@ export class AdminCreateApiKey {
     refId;
     /** @type {string} */
     refIdStr;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
     getTypeName() { return 'AdminCreateApiKey' }
     getMethod() { return 'POST' }
     createResponse() { return new AdminApiKeyResponse() }
 }
 export class AdminUpdateApiKey {
-    /** @param {{id?:number,name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,cancelledDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index: string]: string; },reset?:string[]}} [init] */
+    /** @param {{id?:number,name?:string,userId?:string,userName?:string,scopes?:string[],features?:string[],restrictTo?:string[],expiryDate?:string,cancelledDate?:string,notes?:string,refId?:number,refIdStr?:string,meta?:{ [index:string]: string; },reset?:string[]}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -2303,7 +2303,7 @@ export class AdminUpdateApiKey {
     refId;
     /** @type {string} */
     refIdStr;
-    /** @type {{ [index: string]: string; }} */
+    /** @type {{ [index:string]: string; }} */
     meta;
     /** @type {string[]} */
     reset;
@@ -2363,7 +2363,7 @@ export class AdminGetJobProgress {
     createResponse() { return new AdminGetJobProgressResponse() }
 }
 export class AdminQueryBackgroundJobs extends QueryDb {
-    /** @param {{id?:number,refId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,refId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {?number} */
     id;
@@ -2374,7 +2374,7 @@ export class AdminQueryBackgroundJobs extends QueryDb {
     createResponse() { return new QueryResponse() }
 }
 export class AdminQueryJobSummary extends QueryDb {
-    /** @param {{id?:number,refId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{id?:number,refId?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {?number} */
     id;
@@ -2385,14 +2385,14 @@ export class AdminQueryJobSummary extends QueryDb {
     createResponse() { return new QueryResponse() }
 }
 export class AdminQueryScheduledTasks extends QueryDb {
-    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     getTypeName() { return 'AdminQueryScheduledTasks' }
     getMethod() { return 'GET' }
     createResponse() { return new QueryResponse() }
 }
 export class AdminQueryCompletedJobs extends QueryDb {
-    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {?string} */
     month;
@@ -2401,7 +2401,7 @@ export class AdminQueryCompletedJobs extends QueryDb {
     createResponse() { return new QueryResponse() }
 }
 export class AdminQueryFailedJobs extends QueryDb {
-    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index: string]: string; }}} [init] */
+    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {?string} */
     month;
