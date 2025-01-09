@@ -513,8 +513,11 @@ const Queue = {
         let updateTimer = null
         async function updateGrid(){
             if (grid.value) {
-                const take = grid.value.apiPrefs?.take ?? 25
-                await grid.value.search({ include:'total', take })
+                const searchArgs = grid.value.createRequestArgs()
+                searchArgs.take = grid.value.apiPrefs?.take ?? 25
+                searchArgs.include = 'total'
+                delete searchArgs.fields
+                await grid.value.search(searchArgs)
             }
             updateTimer = setTimeout(updateGrid, 1000)
         }
@@ -777,7 +780,7 @@ const Dashboard = {
         <div v-if="isToday && results.today.length" class="mb-8">
             <h4 class="mt-4 font-semibold text-gray-500">24 hour activity</h4>
             <div style="max-width:1024px;max-height:512px">
-                <canvas ref="elChart"></canvas>            
+                <canvas ref="elChart"></canvas>
             </div>
         </div>
         <div v-if="results.commands.length">
