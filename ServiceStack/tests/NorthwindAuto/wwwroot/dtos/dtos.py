@@ -1,6 +1,6 @@
 """ Options:
-Date: 2024-10-17 23:05:22
-Version: 8.41
+Date: 2025-01-10 00:18:07
+Version: 8.53
 Tip: To override a DTO option, remove "#" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -62,9 +62,9 @@ class RequestLog:
     ip_address: Optional[str] = None
     forwarded_for: Optional[str] = None
     referer: Optional[str] = None
-    headers: Optional[Dict[str, str]] = None
+    headers: Dict[str, str] = field(default_factory=dict)
     form_data: Optional[Dict[str, str]] = None
-    items: Optional[Dict[str, str]] = None
+    items: Dict[str, str] = field(default_factory=dict)
     response_headers: Optional[Dict[str, str]] = None
     response: Optional[str] = None
     response_body: Optional[str] = None
@@ -905,7 +905,7 @@ class DiagnosticEntry:
     date: datetime.datetime = datetime.datetime(1, 1, 1)
     tag: Optional[str] = None
     stack_trace: Optional[str] = None
-    meta: Optional[Dict[str, str]] = None
+    meta: Dict[str, str] = field(default_factory=dict)
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -1078,7 +1078,7 @@ class AdminDeleteUserResponse:
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class AdminProfilingResponse:
-    results: Optional[List[DiagnosticEntry]] = None
+    results: List[DiagnosticEntry] = field(default_factory=list)
     total: int = 0
     response_status: Optional[ResponseStatus] = None
 
@@ -1097,7 +1097,7 @@ class AdminRedisResponse:
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class AdminDatabaseResponse:
-    results: Optional[List[Dict[str, Object]]] = None
+    results: List[Dict[str, Object]] = field(default_factory=list)
     total: Optional[int] = None
     columns: Optional[List[MetadataPropertyType]] = None
     response_status: Optional[ResponseStatus] = None
@@ -1106,9 +1106,9 @@ class AdminDatabaseResponse:
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class ViewCommandsResponse:
-    command_totals: Optional[List[CommandSummary]] = None
-    latest_commands: Optional[List[CommandResult]] = None
-    latest_failed: Optional[List[CommandResult]] = None
+    command_totals: List[CommandSummary] = field(default_factory=list)
+    latest_commands: List[CommandResult] = field(default_factory=list)
+    latest_failed: List[CommandResult] = field(default_factory=list)
     response_status: Optional[ResponseStatus] = None
 
 
@@ -1137,20 +1137,20 @@ class AdminApiKeyResponse:
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class AdminJobDashboardResponse:
-    commands: Optional[List[JobStatSummary]] = None
-    apis: Optional[List[JobStatSummary]] = None
-    workers: Optional[List[JobStatSummary]] = None
-    today: Optional[List[HourSummary]] = None
+    commands: List[JobStatSummary] = field(default_factory=list)
+    apis: List[JobStatSummary] = field(default_factory=list)
+    workers: List[JobStatSummary] = field(default_factory=list)
+    today: List[HourSummary] = field(default_factory=list)
     response_status: Optional[ResponseStatus] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class AdminJobInfoResponse:
-    month_dbs: Optional[List[datetime.datetime]] = None
-    table_counts: Optional[Dict[str, int]] = None
-    worker_stats: Optional[List[WorkerStats]] = None
-    queue_counts: Optional[Dict[str, int]] = None
+    month_dbs: List[datetime.datetime] = field(default_factory=list)
+    table_counts: Dict[str, int] = field(default_factory=dict)
+    worker_stats: List[WorkerStats] = field(default_factory=list)
+    queue_counts: Dict[str, int] = field(default_factory=dict)
     response_status: Optional[ResponseStatus] = None
 
 
@@ -1179,16 +1179,16 @@ class AdminGetJobProgressResponse:
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class AdminRequeueFailedJobsJobsResponse:
-    results: Optional[List[int]] = None
-    errors: Optional[Dict[int, str]] = None
+    results: List[int] = field(default_factory=list)
+    errors: Dict[int, str] = field(default_factory=dict)
     response_status: Optional[ResponseStatus] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class AdminCancelJobsResponse:
-    results: Optional[List[int]] = None
-    errors: Optional[Dict[int, str]] = None
+    results: List[int] = field(default_factory=list)
+    errors: Dict[int, str] = field(default_factory=dict)
     response_status: Optional[ResponseStatus] = None
 
 

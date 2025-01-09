@@ -1,6 +1,6 @@
 /* Options:
-Date: 2024-10-17 23:05:22
-Version: 8.41
+Date: 2025-01-10 00:18:07
+Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -103,9 +103,9 @@ class RequestLog implements IConvertible
     String? ipAddress;
     String? forwardedFor;
     String? referer;
-    Map<String,String?>? headers;
+    Map<String,String?>? headers = {};
     Map<String,String?>? formData;
-    Map<String,String?>? items;
+    Map<String,String?>? items = {};
     Map<String,String?>? responseHeaders;
     String? response;
     String? responseBody;
@@ -2717,7 +2717,7 @@ class DiagnosticEntry implements IConvertible
     DateTime? date;
     String? tag;
     String? stackTrace;
-    Map<String,String?>? meta;
+    Map<String,String?>? meta = {};
 
     DiagnosticEntry({this.id,this.traceId,this.source,this.eventType,this.message,this.operation,this.threadId,this.error,this.commandType,this.command,this.userAuthId,this.sessionId,this.arg,this.args,this.argLengths,this.namedArgs,this.duration,this.timestamp,this.date,this.tag,this.stackTrace,this.meta});
     DiagnosticEntry.fromJson(Map<String, dynamic> json) { fromMap(json); }
@@ -3354,7 +3354,7 @@ class AdminDeleteUserResponse implements IConvertible
 
 class AdminProfilingResponse implements IConvertible
 {
-    List<DiagnosticEntry>? results;
+    List<DiagnosticEntry>? results = [];
     int? total;
     ResponseStatus? responseStatus;
 
@@ -3415,7 +3415,7 @@ class AdminRedisResponse implements IConvertible
 
 class AdminDatabaseResponse implements IConvertible
 {
-    List<Map<String,dynamic>>? results;
+    List<Map<String,dynamic>>? results = [];
     int? total;
     List<MetadataPropertyType>? columns;
     ResponseStatus? responseStatus;
@@ -3444,9 +3444,9 @@ class AdminDatabaseResponse implements IConvertible
 
 class ViewCommandsResponse implements IConvertible
 {
-    List<CommandSummary>? commandTotals;
-    List<CommandResult>? latestCommands;
-    List<CommandResult>? latestFailed;
+    List<CommandSummary>? commandTotals = [];
+    List<CommandResult>? latestCommands = [];
+    List<CommandResult>? latestFailed = [];
     ResponseStatus? responseStatus;
 
     ViewCommandsResponse({this.commandTotals,this.latestCommands,this.latestFailed,this.responseStatus});
@@ -3553,10 +3553,10 @@ class AdminApiKeyResponse implements IConvertible
 
 class AdminJobDashboardResponse implements IConvertible
 {
-    List<JobStatSummary>? commands;
-    List<JobStatSummary>? apis;
-    List<JobStatSummary>? workers;
-    List<HourSummary>? today;
+    List<JobStatSummary>? commands = [];
+    List<JobStatSummary>? apis = [];
+    List<JobStatSummary>? workers = [];
+    List<HourSummary>? today = [];
     ResponseStatus? responseStatus;
 
     AdminJobDashboardResponse({this.commands,this.apis,this.workers,this.today,this.responseStatus});
@@ -3585,10 +3585,10 @@ class AdminJobDashboardResponse implements IConvertible
 
 class AdminJobInfoResponse implements IConvertible
 {
-    List<DateTime>? monthDbs;
-    Map<String,int?>? tableCounts;
-    List<WorkerStats>? workerStats;
-    Map<String,int?>? queueCounts;
+    List<DateTime>? monthDbs = [];
+    Map<String,int?>? tableCounts = {};
+    List<WorkerStats>? workerStats = [];
+    Map<String,int?>? queueCounts = {};
     ResponseStatus? responseStatus;
 
     AdminJobInfoResponse({this.monthDbs,this.tableCounts,this.workerStats,this.queueCounts,this.responseStatus});
@@ -3687,8 +3687,8 @@ class AdminGetJobProgressResponse implements IConvertible
 
 class AdminRequeueFailedJobsJobsResponse implements IConvertible
 {
-    List<int>? results;
-    Map<int,String?>? errors;
+    List<int>? results = [];
+    Map<int,String?>? errors = {};
     ResponseStatus? responseStatus;
 
     AdminRequeueFailedJobsJobsResponse({this.results,this.errors,this.responseStatus});
@@ -3713,8 +3713,8 @@ class AdminRequeueFailedJobsJobsResponse implements IConvertible
 
 class AdminCancelJobsResponse implements IConvertible
 {
-    List<int>? results;
-    Map<int,String?>? errors;
+    List<int>? results = [];
+    Map<int,String?>? errors = {};
     ResponseStatus? responseStatus;
 
     AdminCancelJobsResponse({this.results,this.errors,this.responseStatus});

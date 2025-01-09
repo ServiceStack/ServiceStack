@@ -1,7 +1,7 @@
 <?php namespace dtos;
 /* Options:
-Date: 2024-10-17 23:05:22
-Version: 8.41
+Date: 2025-01-10 00:18:07
+Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 

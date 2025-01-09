@@ -1,6 +1,6 @@
 /* Options:
-Date: 2024-10-17 23:05:22
-Version: 8.41
+Date: 2025-01-10 00:18:07
+Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -15,11 +15,12 @@ BaseUrl: http://localhost:20000
 //IncludeTypes: 
 //ExcludeTypes: 
 //TreatTypesAsStrings: 
-//DefaultImports: java.math.*,java.util.*,net.servicestack.client.*,com.google.gson.annotations.*,com.google.gson.reflect.*
+//DefaultImports: java.math.*,java.util.*,java.io.InputStream,net.servicestack.client.*,com.google.gson.annotations.*,com.google.gson.reflect.*
 */
 
 import java.math.*;
 import java.util.*;
+import java.io.InputStream;
 import net.servicestack.client.*;
 import com.google.gson.annotations.*;
 import com.google.gson.reflect.*;
@@ -27,7 +28,7 @@ import com.google.gson.reflect.*;
 public class dtos
 {
 
-    @Route("/metadata/app")
+    @Route(Path="/metadata/app")
     @DataContract
     public static class MetadataApp implements IReturn<AppMetadata>, IGet
     {
@@ -744,7 +745,7 @@ public class dtos
         public Object getResponseType() { return responseType; }
     }
 
-    @Route("/requestlogs")
+    @Route(Path="/requestlogs")
     @DataContract
     public static class RequestLogs implements IReturn<RequestLogsResponse>, IGet
     {
@@ -862,7 +863,7 @@ public class dtos
         public Object getResponseType() { return responseType; }
     }
 
-    @Route("/validation/rules/{Type}")
+    @Route(Path="/validation/rules/{Type}")
     @DataContract
     public static class GetValidationRules implements IReturn<GetValidationRulesResponse>, IGet
     {
@@ -880,7 +881,7 @@ public class dtos
         public Object getResponseType() { return responseType; }
     }
 
-    @Route("/validation/rules")
+    @Route(Path="/validation/rules")
     @DataContract
     public static class ModifyValidationRules implements IReturnVoid
     {
@@ -1143,7 +1144,7 @@ public class dtos
     }
 
     @DataContract
-    public static class QueryResponse<RequestLog>
+    public static class QueryResponse<T>
     {
         @DataMember(Order=1)
         public Integer offset = null;
@@ -1161,20 +1162,20 @@ public class dtos
         public ResponseStatus responseStatus = null;
         
         public Integer getOffset() { return offset; }
-        public QueryResponse<RequestLog> setOffset(Integer value) { this.offset = value; return this; }
+        public QueryResponse<T> setOffset(Integer value) { this.offset = value; return this; }
         public Integer getTotal() { return total; }
-        public QueryResponse<RequestLog> setTotal(Integer value) { this.total = value; return this; }
+        public QueryResponse<T> setTotal(Integer value) { this.total = value; return this; }
         public ArrayList<RequestLog> getResults() { return results; }
-        public QueryResponse<RequestLog> setResults(ArrayList<RequestLog> value) { this.results = value; return this; }
+        public QueryResponse<T> setResults(ArrayList<RequestLog> value) { this.results = value; return this; }
         public HashMap<String,String> getMeta() { return meta; }
-        public QueryResponse<RequestLog> setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+        public QueryResponse<T> setMeta(HashMap<String,String> value) { this.meta = value; return this; }
         public ResponseStatus getResponseStatus() { return responseStatus; }
-        public QueryResponse<RequestLog> setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+        public QueryResponse<T> setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
 
     public static class AdminProfilingResponse
     {
-        public ArrayList<DiagnosticEntry> results = null;
+        public ArrayList<DiagnosticEntry> results = new ArrayList<DiagnosticEntry>();
         public Integer total = null;
         public ResponseStatus responseStatus = null;
         
@@ -1211,7 +1212,7 @@ public class dtos
 
     public static class AdminDatabaseResponse
     {
-        public ArrayList<HashMap<String,Object>> results = null;
+        public ArrayList<HashMap<String,Object>> results = new ArrayList<HashMap<String,Object>>();
         public Long total = null;
         public ArrayList<MetadataPropertyType> columns = null;
         public ResponseStatus responseStatus = null;
@@ -1228,9 +1229,9 @@ public class dtos
 
     public static class ViewCommandsResponse
     {
-        public ArrayList<CommandSummary> commandTotals = null;
-        public ArrayList<CommandResult> latestCommands = null;
-        public ArrayList<CommandResult> latestFailed = null;
+        public ArrayList<CommandSummary> commandTotals = new ArrayList<CommandSummary>();
+        public ArrayList<CommandResult> latestCommands = new ArrayList<CommandResult>();
+        public ArrayList<CommandResult> latestFailed = new ArrayList<CommandResult>();
         public ResponseStatus responseStatus = null;
         
         public ArrayList<CommandSummary> getCommandTotals() { return commandTotals; }
@@ -1299,10 +1300,10 @@ public class dtos
 
     public static class AdminJobDashboardResponse
     {
-        public ArrayList<JobStatSummary> commands = null;
-        public ArrayList<JobStatSummary> apis = null;
-        public ArrayList<JobStatSummary> workers = null;
-        public ArrayList<HourSummary> today = null;
+        public ArrayList<JobStatSummary> commands = new ArrayList<JobStatSummary>();
+        public ArrayList<JobStatSummary> apis = new ArrayList<JobStatSummary>();
+        public ArrayList<JobStatSummary> workers = new ArrayList<JobStatSummary>();
+        public ArrayList<HourSummary> today = new ArrayList<HourSummary>();
         public ResponseStatus responseStatus = null;
         
         public ArrayList<JobStatSummary> getCommands() { return commands; }
@@ -1319,10 +1320,10 @@ public class dtos
 
     public static class AdminJobInfoResponse
     {
-        public ArrayList<Date> monthDbs = null;
-        public HashMap<String,Integer> tableCounts = null;
-        public ArrayList<WorkerStats> workerStats = null;
-        public HashMap<String,Integer> queueCounts = null;
+        public ArrayList<Date> monthDbs = new ArrayList<Date>();
+        public HashMap<String,Integer> tableCounts = new HashMap<String,Integer>();
+        public ArrayList<WorkerStats> workerStats = new ArrayList<WorkerStats>();
+        public HashMap<String,Integer> queueCounts = new HashMap<String,Integer>();
         public ResponseStatus responseStatus = null;
         
         public ArrayList<Date> getMonthDbs() { return monthDbs; }
@@ -1385,8 +1386,8 @@ public class dtos
 
     public static class AdminRequeueFailedJobsJobsResponse
     {
-        public ArrayList<Long> results = null;
-        public HashMap<Long,String> errors = null;
+        public ArrayList<Long> results = new ArrayList<Long>();
+        public HashMap<Long,String> errors = new HashMap<Long,String>();
         public ResponseStatus responseStatus = null;
         
         public ArrayList<Long> getResults() { return results; }
@@ -1399,8 +1400,8 @@ public class dtos
 
     public static class AdminCancelJobsResponse
     {
-        public ArrayList<Long> results = null;
-        public HashMap<Long,String> errors = null;
+        public ArrayList<Long> results = new ArrayList<Long>();
+        public HashMap<Long,String> errors = new HashMap<Long,String>();
         public ResponseStatus responseStatus = null;
         
         public ArrayList<Long> getResults() { return results; }
@@ -1523,7 +1524,7 @@ public class dtos
         public String absoluteUri = null;
         public String pathInfo = null;
         public String request = null;
-        @StringLength(2147483647)
+        @StringLength(MaximumLength=2147483647)
         public String requestBody = null;
 
         public String userAuthId = null;
@@ -1531,9 +1532,9 @@ public class dtos
         public String ipAddress = null;
         public String forwardedFor = null;
         public String referer = null;
-        public HashMap<String,String> headers = null;
+        public HashMap<String,String> headers = new HashMap<String,String>();
         public HashMap<String,String> formData = null;
-        public HashMap<String,String> items = null;
+        public HashMap<String,String> items = new HashMap<String,String>();
         public HashMap<String,String> responseHeaders = null;
         public String response = null;
         public String responseBody = null;
@@ -2015,7 +2016,7 @@ public class dtos
         public Date date = null;
         public String tag = null;
         public String stackTrace = null;
-        public HashMap<String,String> meta = null;
+        public HashMap<String,String> meta = new HashMap<String,String>();
         
         public Long getId() { return id; }
         public DiagnosticEntry setId(Long value) { this.id = value; return this; }
@@ -2420,7 +2421,7 @@ public class dtos
         public String httpMethod = null;
         public String absoluteUri = null;
         public String pathInfo = null;
-        @StringLength(2147483647)
+        @StringLength(MaximumLength=2147483647)
         public String requestBody = null;
 
         public Object requestDto = null;
@@ -3474,7 +3475,7 @@ public class dtos
         public String capture = null;
         public Boolean multiple = null;
         public ArrayList<String> allowableValues = null;
-        public ArrayList<KeyValuePair><String, String> allowableEntries = null;
+        public ArrayList<KeyValuePair<String, String>> allowableEntries = null;
         public String options = null;
         public Boolean ignore = null;
         public FieldCss css = null;
@@ -3528,8 +3529,8 @@ public class dtos
         public InputInfo setMultiple(Boolean value) { this.multiple = value; return this; }
         public ArrayList<String> getAllowableValues() { return allowableValues; }
         public InputInfo setAllowableValues(ArrayList<String> value) { this.allowableValues = value; return this; }
-        public ArrayList<KeyValuePair><String, String> getAllowableEntries() { return allowableEntries; }
-        public InputInfo setAllowableEntries(ArrayList<KeyValuePair><String, String> value) { this.allowableEntries = value; return this; }
+        public ArrayList<KeyValuePair<String, String>> getAllowableEntries() { return allowableEntries; }
+        public InputInfo setAllowableEntries(ArrayList<KeyValuePair<String, String>> value) { this.allowableEntries = value; return this; }
         public String getOptions() { return options; }
         public InputInfo setOptions(String value) { this.options = value; return this; }
         public Boolean isIgnore() { return ignore; }
