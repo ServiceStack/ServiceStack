@@ -281,6 +281,20 @@ public class QueryPlayerGameItem : QueryDb<PlayerGameItem>
 }
 
 [Tag("Game")]
+public class DeletePlayerGameItem : IDeleteDb<PlayerGameItem>, IReturnVoid
+{
+    public int? Id { get; set; }
+}
+
+[Tag("Game")]
+public class CreatePlayerGameItem : ICreateDb<PlayerGameItem>, IReturn<IdResponse>
+{
+    public int PlayerId { get; set; }
+
+    public string GameItemName { get; set; }
+}
+
+[Tag("Game")]
 public class PlayerGameItem
 {
     [AutoIncrement]
@@ -298,8 +312,14 @@ public class QueryLevel : QueryDb<Level>
     public Guid? Id { get; set; }                    // Unique Identifier/GUID Primary Key
 }
 
+[Tag("Game")]
+public class DeleteLevel : IDeleteDb<Level>, IReturnVoid
+{
+    public Guid? Id { get; set; }                    // Unique Identifier/GUID Primary Key
+}
+
 public class Level
 {
     public Guid Id { get; set; }                    // Unique Identifier/GUID Primary Key
-    public byte[] Data { get; set; } = Array.Empty<byte>(); // Saved as BLOB/Binary where possible
+    public byte[] Data { get; set; } = []; // Saved as BLOB/Binary where possible
 }
