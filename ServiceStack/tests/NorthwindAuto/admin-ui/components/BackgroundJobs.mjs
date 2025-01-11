@@ -352,14 +352,14 @@ const JobDialog = {
         const duration = ref(formatMs(props.job.durationMs))
         const errorStatus = ref()
         const loading = ref(false)
-        const isRunning = state => state === 'Queued' || state === 'Started' || state === 'Executed'
+        const isRunning = state => state === 'Started' || state === 'Executed'
         const logs = ref(props.job.logs || '')
         const state = ref(props.job.state)
         const { formatDate, time } = useFormatters()
         function formatArgs(args) {
             Object.keys(args).forEach(key => {
                 const val = args[key]
-                if (key.endsWith('Date')) {
+                if (key.endsWith('Date') || key === 'runAfter') {
                     args[key] = formatDate(val) + ' ' + timeFmt12(toDate(val))
                 } else if (key === 'durationMs') {
                     args['duration'] = duration.value
@@ -368,7 +368,7 @@ const JobDialog = {
             return omit(args, ['state', 'durationMs'])
         }
         const basic = computed(() => formatArgs(pick(props.job || {},
-            'id,refId,tag,createdDate,worker,state,durationMs,completedDate,attempts,callback,replyTo')))
+            'id,refId,tag,runAfter,createdDate,worker,state,durationMs,completedDate,attempts,callback,replyTo')))
 
         function updated(job) {
             loading.value = false
@@ -494,7 +494,7 @@ const Queue = {
     props:['info'],
     template: `
         <AutoQueryGrid ref="grid" type="BackgroundJob" hide="downloadCsv,copyApiUrl,forms"
-            selectedColumns="progress,durationMs,worker,id,parentId,refId,tag,requestType,request,requestBody,command,userId,dependsOn,batchId,callback,replyTo,createdDate,state,status,lastActivityDate,attempts"
+            selectedColumns="progress,durationMs,worker,id,parentId,refId,tag,requestType,request,requestBody,command,runAfter,userId,dependsOn,batchId,callback,replyTo,createdDate,state,status,lastActivityDate,attempts"
             :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
             :visibleFrom="{durationMs:'never',requestBody:'never'}"
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id">
@@ -571,6 +571,7 @@ const Summary = {
             <template #tag="{tag}">{{tag}}</template>
             <template #request="job"><Request :job="job" /></template>
             <template #command="job"><Command :job="job" /></template>
+            <template #runAfter="{runAfter}"><DateTime :value="runAfter"/></template>
             <template #response="job"><Response :job="job" /></template>
             <template #createdDate="{createdDate}"><DateTime :value="createdDate"/></template>
             <template #worker="{worker}">{{worker}}</template>
