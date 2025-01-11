@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-01-10 00:18:07
+Date: 2025-01-11 18:31:20
 Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1894,7 +1894,7 @@ export class AdminJobDashboardResponse {
     responseStatus;
 }
 export class AdminJobInfoResponse {
-    /** @param {{monthDbs?:string[],tableCounts?:{ [index:string]: number; },workerStats?:WorkerStats[],queueCounts?:{ [index:string]: number; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{monthDbs?:string[],tableCounts?:{ [index:string]: number; },workerStats?:WorkerStats[],queueCounts?:{ [index:string]: number; },workerCounts?:{ [index:string]: number; },stateCounts?:{ [index:string]: number; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     monthDbs = [];
@@ -1904,6 +1904,10 @@ export class AdminJobInfoResponse {
     workerStats = [];
     /** @type {{ [index:string]: number; }} */
     queueCounts = {};
+    /** @type {{ [index:string]: number; }} */
+    workerCounts = {};
+    /** @type {{ [index:string]: number; }} */
+    stateCounts = {};
     /** @type {?ResponseStatus} */
     responseStatus;
 }
@@ -2419,12 +2423,16 @@ export class AdminRequeueFailedJobs {
     createResponse() { return new AdminRequeueFailedJobsJobsResponse() }
 }
 export class AdminCancelJobs {
-    /** @param {{ids?:number[],worker?:string}} [init] */
+    /** @param {{ids?:number[],worker?:string,state?:BackgroundJobState,cancelWorker?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?number[]} */
     ids;
     /** @type {?string} */
     worker;
+    /** @type {?BackgroundJobState} */
+    state;
+    /** @type {?string} */
+    cancelWorker;
     getTypeName() { return 'AdminCancelJobs' }
     getMethod() { return 'GET' }
     createResponse() { return new AdminCancelJobsResponse() }

@@ -18,6 +18,8 @@ public class AdminJobInfoResponse
     public Dictionary<string, int> TableCounts { get; set; } = [];
     public List<WorkerStats> WorkerStats { get; set; } = [];
     public Dictionary<string, int> QueueCounts { get; set; } = new();
+    public Dictionary<string, int> WorkerCounts { get; set; } = new();
+    public Dictionary<BackgroundJobState, int> StateCounts { get; set; } = new();
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
@@ -106,6 +108,8 @@ public class AdminCancelJobs : IGet, IReturn<AdminCancelJobsResponse>
     [Input(Type = "tag"), FieldCss(Field = "col-span-12")]
     public List<long>? Ids { get; set; }
     public string? Worker { get; set; }
+    public BackgroundJobState? State { get; set; }
+    public string? CancelWorker { get; set; }
 }
 public class AdminCancelJobsResponse
 {
@@ -299,6 +303,21 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
 
         to.WorkerStats = jobs.GetWorkerStats();
         to.QueueCounts = jobs.GetWorkerQueueCounts();
+
+        var jobWorkerCounts = db.Select<(string? worker, int count)>(
+            db.From<BackgroundJob>()
+                .GroupBy(x => x.Worker)
+                .Select(x => new { Worker = x.Worker, Count = Sql.Count("*") }));
+        to.WorkerCounts = new Dictionary<string, int>();
+        foreach (var entry in jobWorkerCounts)
+        {
+            to.WorkerCounts[entry.worker ?? "None"] = entry.count;
+        }
+        
+        to.StateCounts = db.Dictionary<BackgroundJobState, int>(
+            db.From<BackgroundJob>()
+                .GroupBy(x => x.State)
+                .Select(x => new { State = x.State, Count = Sql.Count("*") }));
         
         return to;
     }
@@ -468,9 +487,13 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
                     : "Can only cancel incomplete jobs";
             }
         }
-        if (request.Worker != null)
+        if (request.Worker != null || request.State != null)
         {
-            jobs.CancelWorker(request.Worker);
+            to.Results.AddRange(jobs.CancelJobs(request.State, request.Worker));
+        }
+        if (request.CancelWorker != null)
+        {
+            jobs.CancelWorker(request.CancelWorker);
         }
         return to;
     }

@@ -42,6 +42,11 @@ public interface IBackgroundJobs
     /// </summary>
     bool CancelJob(long jobId);
     /// <summary>
+    /// Cancel all Jobs with the specified state
+    /// </summary>
+    /// <returns>How many jobs were cancelled</returns>
+    List<long> CancelJobs(BackgroundJobState? state = null, string? worker = null);
+    /// <summary>
     /// Cancels a named Background Worker and transfers any pending queues to a new worker
     /// </summary>
     void CancelWorker(string worker);

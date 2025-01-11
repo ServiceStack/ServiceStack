@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2025-01-10 00:18:06
+Date: 2025-01-11 18:31:19
 Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1574,6 +1574,8 @@ export class AdminJobInfoResponse
     public tableCounts: { [index:string]: number; } = {};
     public workerStats: WorkerStats[] = [];
     public queueCounts: { [index:string]: number; } = {};
+    public workerCounts: { [index:string]: number; } = {};
+    public stateCounts: { [index:string]: number; } = {};
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<AdminJobInfoResponse>) { (Object as any).assign(this, init); }
@@ -2187,6 +2189,8 @@ export class AdminCancelJobs implements IReturn<AdminCancelJobsResponse>, IGet
 {
     public ids?: number[];
     public worker?: string;
+    public state?: BackgroundJobState;
+    public cancelWorker?: string;
 
     public constructor(init?: Partial<AdminCancelJobs>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminCancelJobs'; }

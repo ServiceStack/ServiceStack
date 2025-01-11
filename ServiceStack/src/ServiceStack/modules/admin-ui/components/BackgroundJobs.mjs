@@ -334,14 +334,14 @@ const JobDialog = {
         const duration = ref(formatMs(props.job.durationMs))
         const errorStatus = ref()
         const loading = ref(false)
-        const isRunning = state => state === 'Queued' || state === 'Started' || state === 'Executed'
+        const isRunning = state => state === 'Started' || state === 'Executed'
         const logs = ref(props.job.logs || '')
         const state = ref(props.job.state)
         const { formatDate, time } = useFormatters()
         function formatArgs(args) {
             Object.keys(args).forEach(key => {
                 const val = args[key]
-                if (key.endsWith('Date')) {
+                if (key.endsWith('Date') || key === 'runAfter') {
                     args[key] = formatDate(val) + ' ' + timeFmt12(toDate(val))
                 } else if (key === 'durationMs') {
                     args['duration'] = duration.value
@@ -350,7 +350,7 @@ const JobDialog = {
             return omit(args, ['state', 'durationMs'])
         }
         const basic = computed(() => formatArgs(pick(props.job || {},
-            'id,refId,tag,createdDate,worker,state,durationMs,completedDate,attempts,callback,replyTo')))
+            'id,refId,tag,runAfter,createdDate,worker,state,durationMs,completedDate,attempts,callback,replyTo')))
         function updated(job) {
             loading.value = false
             logs.value = job.logs || ''
@@ -454,6 +454,77 @@ const JobDialog = {
         }
     }
 }
+const CancelJobs = {
+    template:`
+      <ModalDialog id="cancelJobs" size-class="w-full sm:max-w-prose" @done="done">
+        <div class="bg-white dark:bg-black px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="">
+            <div class="mt-3 text-center sm:mt-0 sm:mx-4 sm:text-left">
+              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Cancel Jobs</h3>
+              <fieldset class="mt-4">
+                <div class="grid grid-cols-6 gap-6">
+                  <div v-if="Object.keys(info?.stateCounts ?? {}).length" class="col-span-6">
+                    <div class="mb-2">
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">States</label>
+                    </div>
+                    <div class="grid grid-cols-3 xl:grid-cols-4 gap-4">
+                      <CheckboxInput v-for="(count, state) in info.stateCounts" :id="state" :label="state + ' (' + count + ')'" v-model="states[state]" />
+                    </div>
+                  </div>
+                  <div v-if="Object.keys(info?.workerCounts ?? {}).length" class="col-span-6">
+                    <div class="mb-2">
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Workers</label>
+                    </div>
+                    <div class="grid grid-cols-3 xl:grid-cols-4 gap-4">
+                      <CheckboxInput v-for="(count, worker) in info.workerCounts" :id="worker" :label="worker + ' (' + count + ')'" v-model="workers[worker]" />
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <PrimaryButton color="red" class="ml-2" @click="cancelJobs">Cancel Jobs</PrimaryButton>
+          <SecondaryButton @click="done">
+            Close
+          </SecondaryButton>
+        </div>
+      </ModalDialog>
+    `,
+    emits:['done'],
+    setup(props, { emit }) {
+        const info = inject('info')
+        const client = useClient()
+        
+        const states = ref({})
+        const workers = ref({})
+        
+        function done() {
+            emit('done')
+        }
+        
+        async function cancelJobs() {
+            const tasks = []
+            const stateKeys = Object.keys(states.value).filter(k => states.value[k])
+            stateKeys.forEach(state => {
+                tasks.push(client.api(new AdminCancelJobs({ state: state })))
+            })
+            const workerKeys = Object.keys(workers.value).filter(k => workers.value[k])
+            workerKeys.forEach(worker => {
+                tasks.push(client.api(new AdminCancelJobs({ worker: worker })))
+            })
+            await Promise.all(tasks)
+            
+            if (stateKeys.length || workerKeys.length) {
+                console.log('cancelJobs', stateKeys, workerKeys)
+            }
+            done()
+        }
+        
+        return { info, done, cancelJobs, states, workers }
+    }
+}
 const components = {
     Markup,
     Truncate,
@@ -465,13 +536,13 @@ const components = {
     Duration,
     JobProgress,
     JobDialog,
+    CancelJobs,
 }
 const Queue = {
     components,
-    props:['info'],
     template: `
         <AutoQueryGrid ref="grid" type="BackgroundJob" hide="downloadCsv,copyApiUrl,forms"
-            selectedColumns="progress,durationMs,worker,id,parentId,refId,tag,requestType,request,requestBody,command,userId,dependsOn,batchId,callback,replyTo,createdDate,state,status,lastActivityDate,attempts"
+            selectedColumns="progress,durationMs,worker,id,parentId,refId,tag,requestType,request,requestBody,command,runAfter,userId,dependsOn,batchId,callback,replyTo,createdDate,state,status,lastActivityDate,attempts"
             :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
             :visibleFrom="{durationMs:'never',requestBody:'never'}"
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id">
@@ -482,6 +553,7 @@ const Queue = {
             <template #tag="{tag}">{{tag}}</template>
             <template #request="job"><Request :job="job" /></template>
             <template #command="job"><Command :job="job" /></template>
+            <template #runAfter="{runAfter}"><DateTime :value="runAfter"/></template>
             <template #response="job"><Response :job="job" /></template>
             <template #createdDate="{createdDate}"><DateTime :value="createdDate"/></template>
             <template #worker="{worker}">{{worker}}</template>
@@ -489,13 +561,22 @@ const Queue = {
             <template #completedDate="{completedDate}"><DateTime :value="completedDate"/></template>
             <template #attempts="{attempts}">{{attempts}}</template>
             <template #errorCode="{errorCode,errorMessage}"><Markup :title="errorMessage">{{errorCode}}</Markup></template>
+            <template #toolbarbuttons="{toolbarButtonClass}">
+              <div class="pl-2 mt-1">
+                <button type="button" @click="show='cancel'" title="Cancel Jobs" :class="toolbarButtonClass">
+                  <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2m0 2c-1.9 0-3.6.6-4.9 1.7l11.2 11.2c1-1.4 1.7-3.1 1.7-4.9c0-4.4-3.6-8-8-8m4.9 14.3L5.7 7.1C4.6 8.4 4 10.1 4 12c0 4.4 3.6 8 8 8c1.9 0 3.6-.6 4.9-1.7"/></svg>
+                </button>
+              </div>
+            </template>
         </AutoQueryGrid>
         <JobDialog v-if="edit" :job="edit" @done="routes.edit=null" @updated="job => edit=job" />
+        <CancelJobs v-if="show=='cancel'" :info="info" @done="show=''" />
     `,
     setup(props) {
         const routes = inject('routes')
         const grid = ref()
         const edit = ref()
+        const show = ref('')
         async function update() {
             if (routes.edit) {
                 const api = await client.api(new AdminGetJob({ id: routes.edit }))
@@ -526,7 +607,7 @@ const Queue = {
             updateGrid()
         })
         onUnmounted(() => clearTimeout(updateTimer))
-        return { routes, grid, edit }
+        return { routes, grid, edit, show }
     }
 }
 const Summary = {
@@ -554,7 +635,6 @@ const Summary = {
         </AutoQueryGrid>
         <JobDialog v-if="edit" :job="edit" @done="routes.edit=null" @updated="job => edit=job" />
     `,
-    props:['info'],
     setup() {
         const routes = inject('routes')
         const client = useClient()
@@ -584,7 +664,7 @@ const Summary = {
 }
 const Completed = {
     components,
-    props:['info','month'],
+    props:['month'],
     template: `
         <AutoQueryGrid ref="grid" type="CompletedJob" hide="copyApiUrl,forms"
             selectedColumns="id,parentId,refId,tag,requestType,request,command,userId,dependsOn,batchId,response,callback,replyTo,createdDate,worker,startedDate,state,status,durationMs,completedDate,notifiedDate,attempts,lastActivityDate"
@@ -635,7 +715,7 @@ const Completed = {
 }
 const Failed = {
     components,
-    props:['info','month'],
+    props:['month'],
     template: `
         <AutoQueryGrid ref="grid" type="FailedJob" hide="copyApiUrl,forms"
             selectedColumns="id,parentId,refId,tag,dependsOn,batchId,requestType,request,command,userId,response,callback,replyTo,createdDate,worker,startedDate,state,status,durationMs,completedDate,notifiedDate,lastActivityDate,attempts,retryLimit,timeoutSecs,errorCode,error"

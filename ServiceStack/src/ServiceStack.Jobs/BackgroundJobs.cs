@@ -458,6 +458,30 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
         return wasCancelled;
     }
+    
+    public List<long> CancelJobs(BackgroundJobState? state = null, string? worker = null)
+    {
+        List<long> jobIds = new();
+        using (var db = OpenDb())
+        {
+            if (state != null)
+            {
+                jobIds.AddDistinctRange(db.Column<long>(db.From<BackgroundJob>()
+                    .Where(x => x.State == state)));
+            }
+            if (worker != null)
+            {
+                var useWorker = worker == "None" ? null : worker;
+                jobIds.AddDistinctRange(db.Column<long>(db.From<BackgroundJob>()
+                    .Where(x => x.Worker == useWorker)));
+            }
+        }
+        foreach (var jobId in jobIds)
+        {
+            CancelJob(jobId);
+        }
+        return jobIds;
+    }
 
     public void RequeueFailedJob(long jobId)
     {
@@ -516,6 +540,29 @@ public partial class BackgroundJobs : IBackgroundJobs
     public void FailJob(BackgroundJob job, Exception ex, bool shouldRetry) => 
         FailJob(job, ex.ToResponseStatus(), shouldRetry);
 
+    // Call within lock
+    public void InsertFailedJob(IDbConnection dbMonth, BackgroundJob job)
+    {
+        var failedJob = job.PopulateJob(new FailedJob());
+        try
+        {
+            dbMonth.Insert(failedJob);
+        }
+        catch (Exception e)
+        {
+            var existingJob = dbMonth.SingleById<FailedJob>(failedJob.Id);
+            if (existingJob != null)
+            {
+                log.LogWarning("Existing FailedJob {Id} already exists, updating instead", failedJob.Id);
+                dbMonth.Update(failedJob);
+            }
+            else
+            {
+                log.LogError(e, "Failed to Insert FailedJob {Id}: {Message}", failedJob.Id, e.Message);
+            }
+        }
+    }
+    
     public void FailJob(BackgroundJob job, ResponseStatus error, bool shouldRetry)
     {
         job.Error = error;
@@ -535,24 +582,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                         job.DurationMs = (int)(job.LastActivityDate.Value - job.StartedDate.Value).TotalMilliseconds;
 
                     using var dbMonth = feature.OpenMonthDb(job.CreatedDate);
-                    var failedJob = job.PopulateJob(new FailedJob());
-                    try
-                    {
-                        dbMonth.Insert(failedJob);
-                    }
-                    catch (Exception e)
-                    {
-                        var existingJob = dbMonth.SingleById<FailedJob>(failedJob.Id);
-                        if (existingJob != null)
-                        {
-                            log.LogWarning("Existing FailedJob {Id} already exists, updating instead", failedJob.Id);
-                            dbMonth.Update(failedJob);
-                        }
-                        else
-                        {
-                            log.LogError(e, "Failed to Insert FailedJob {Id}: {Message}", failedJob.Id, e.Message);
-                        }
-                    }
+                    InsertFailedJob(dbMonth, job);
 
                     using var db = feature.OpenDb();
                     using var trans = db.OpenTransaction();
@@ -1122,6 +1152,22 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
+    public void ClearCancelledJobs()
+    {
+        using var db = feature.OpenDb();
+        var cancelledJobs = db.Select(db.From<BackgroundJob>()
+            .Where(x => x.State == BackgroundJobState.Cancelled));
+        foreach (var cancelledJob in cancelledJobs)
+        {
+            using var dbMonth = feature.OpenMonthDb(cancelledJob.CreatedDate);
+            lock (dbWrites)
+            {
+                InsertFailedJob(dbMonth, cancelledJob);
+                db.DeleteById<BackgroundJob>(cancelledJob.Id);
+            }
+        }
+    }
+
     public void UpdateJobStatus(BackgroundJobStatusUpdate status)
     {
         updates.Enqueue(status);
@@ -1191,6 +1237,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             DispatchPendingJobs();
             PerformDbUpdates();
             ExecuteDueScheduledTasks();
+            ClearCancelledJobs();
         }
         catch (Exception e)
         {
