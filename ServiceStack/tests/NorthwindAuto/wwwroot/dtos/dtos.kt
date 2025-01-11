@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-01-10 00:18:07
+Date: 2025-01-11 18:31:20
 Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -474,6 +474,8 @@ open class AdminCancelJobs : IReturn<AdminCancelJobsResponse>, IGet
 {
     open var ids:ArrayList<Long>? = null
     open var worker:String? = null
+    open var state:BackgroundJobState? = null
+    open var cancelWorker:String? = null
     companion object { private val responseType = AdminCancelJobsResponse::class.java }
     override fun getResponseType(): Any? = AdminCancelJobs.responseType
 }
@@ -822,6 +824,8 @@ open class AdminJobInfoResponse
     open var tableCounts:HashMap<String,Int> = HashMap<String,Int>()
     open var workerStats:ArrayList<WorkerStats> = ArrayList<WorkerStats>()
     open var queueCounts:HashMap<String,Int> = HashMap<String,Int>()
+    open var workerCounts:HashMap<String,Int> = HashMap<String,Int>()
+    open var stateCounts:HashMap<BackgroundJobState,Int> = HashMap<BackgroundJobState,Int>()
     open var responseStatus:ResponseStatus? = null
 }
 
@@ -1018,6 +1022,16 @@ open class CompletedJob : BackgroundJobBase()
 
 open class FailedJob : BackgroundJobBase()
 {
+}
+
+enum class BackgroundJobState
+{
+    Queued,
+    Started,
+    Executed,
+    Completed,
+    Failed,
+    Cancelled,
 }
 
 open class ValidationRule : ValidateRule()
@@ -1302,16 +1316,6 @@ open class WorkerStats
     open var failed:Long? = null
     open var runningJob:Long? = null
     open var runningTime:TimeSpan? = null
-}
-
-enum class BackgroundJobState
-{
-    Queued,
-    Started,
-    Executed,
-    Completed,
-    Failed,
-    Cancelled,
 }
 
 open class RequestLogEntry

@@ -1,5 +1,5 @@
 """ Options:
-Date: 2025-01-10 00:18:07
+Date: 2025-01-11 18:31:20
 Version: 8.53
 Tip: To override a DTO option, remove "#" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1151,6 +1151,8 @@ class AdminJobInfoResponse:
     table_counts: Dict[str, int] = field(default_factory=dict)
     worker_stats: List[WorkerStats] = field(default_factory=list)
     queue_counts: Dict[str, int] = field(default_factory=dict)
+    worker_counts: Dict[str, int] = field(default_factory=dict)
+    state_counts: Dict[str, int] = field(default_factory=dict)
     response_status: Optional[ResponseStatus] = None
 
 
@@ -1445,6 +1447,8 @@ class AdminRequeueFailedJobs(IReturn[AdminRequeueFailedJobsJobsResponse]):
 class AdminCancelJobs(IReturn[AdminCancelJobsResponse], IGet):
     ids: Optional[List[int]] = None
     worker: Optional[str] = None
+    state: Optional[BackgroundJobState] = None
+    cancel_worker: Optional[str] = None
 
 
 # @Route("/requestlogs")

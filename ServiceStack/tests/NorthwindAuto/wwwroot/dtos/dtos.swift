@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-01-10 00:18:07
+Date: 2025-01-11 18:31:20
 SwiftVersion: 6.0
 Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
@@ -683,6 +683,8 @@ public class AdminCancelJobs : IReturn, IGet, Codable
 
     public var ids:[Int]?
     public var worker:String?
+    public var state:BackgroundJobState?
+    public var cancelWorker:String?
 
     required public init(){}
 }
@@ -1043,6 +1045,8 @@ public class AdminJobInfoResponse : Codable
     public var tableCounts:[String:Int] = [:]
     public var workerStats:[WorkerStats] = []
     public var queueCounts:[String:Int] = [:]
+    public var workerCounts:[String:Int] = [:]
+    public var stateCounts:[BackgroundJobState:Int] = [:]
     public var responseStatus:ResponseStatus?
 
     required public init(){}
@@ -1294,6 +1298,16 @@ public class FailedJob : BackgroundJobBase
     public override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
     }
+}
+
+public enum BackgroundJobState : String, Codable
+{
+    case Queued
+    case Started
+    case Executed
+    case Completed
+    case Failed
+    case Cancelled
 }
 
 public class ValidationRule : ValidateRule
@@ -1657,16 +1671,6 @@ public class WorkerStats : Codable
     @TimeSpan public var runningTime:TimeInterval?
 
     required public init(){}
-}
-
-public enum BackgroundJobState : String, Codable
-{
-    case Queued
-    case Started
-    case Executed
-    case Completed
-    case Failed
-    case Cancelled
 }
 
 public class RequestLogEntry : Codable

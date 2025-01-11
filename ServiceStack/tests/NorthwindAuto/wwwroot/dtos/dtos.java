@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-01-10 00:18:07
+Date: 2025-01-11 18:31:20
 Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -736,11 +736,17 @@ public class dtos
     {
         public ArrayList<Long> ids = null;
         public String worker = null;
+        public BackgroundJobState state = null;
+        public String cancelWorker = null;
         
         public ArrayList<Long> getIds() { return ids; }
         public AdminCancelJobs setIds(ArrayList<Long> value) { this.ids = value; return this; }
         public String getWorker() { return worker; }
         public AdminCancelJobs setWorker(String value) { this.worker = value; return this; }
+        public BackgroundJobState getState() { return state; }
+        public AdminCancelJobs setState(BackgroundJobState value) { this.state = value; return this; }
+        public String getCancelWorker() { return cancelWorker; }
+        public AdminCancelJobs setCancelWorker(String value) { this.cancelWorker = value; return this; }
         private static Object responseType = AdminCancelJobsResponse.class;
         public Object getResponseType() { return responseType; }
     }
@@ -1324,6 +1330,8 @@ public class dtos
         public HashMap<String,Integer> tableCounts = new HashMap<String,Integer>();
         public ArrayList<WorkerStats> workerStats = new ArrayList<WorkerStats>();
         public HashMap<String,Integer> queueCounts = new HashMap<String,Integer>();
+        public HashMap<String,Integer> workerCounts = new HashMap<String,Integer>();
+        public HashMap<BackgroundJobState,Integer> stateCounts = new HashMap<BackgroundJobState,Integer>();
         public ResponseStatus responseStatus = null;
         
         public ArrayList<Date> getMonthDbs() { return monthDbs; }
@@ -1334,6 +1342,10 @@ public class dtos
         public AdminJobInfoResponse setWorkerStats(ArrayList<WorkerStats> value) { this.workerStats = value; return this; }
         public HashMap<String,Integer> getQueueCounts() { return queueCounts; }
         public AdminJobInfoResponse setQueueCounts(HashMap<String,Integer> value) { this.queueCounts = value; return this; }
+        public HashMap<String,Integer> getWorkerCounts() { return workerCounts; }
+        public AdminJobInfoResponse setWorkerCounts(HashMap<String,Integer> value) { this.workerCounts = value; return this; }
+        public HashMap<BackgroundJobState,Integer> getStateCounts() { return stateCounts; }
+        public AdminJobInfoResponse setStateCounts(HashMap<BackgroundJobState,Integer> value) { this.stateCounts = value; return this; }
         public ResponseStatus getResponseStatus() { return responseStatus; }
         public AdminJobInfoResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
@@ -1748,6 +1760,16 @@ public class dtos
     public static class FailedJob extends BackgroundJobBase
     {
         
+    }
+
+    public static enum BackgroundJobState
+    {
+        Queued,
+        Started,
+        Executed,
+        Completed,
+        Failed,
+        Cancelled;
     }
 
     public static class ValidationRule extends ValidateRule
@@ -2398,16 +2420,6 @@ public class dtos
         public WorkerStats setRunningJob(Long value) { this.runningJob = value; return this; }
         public TimeSpan getRunningTime() { return runningTime; }
         public WorkerStats setRunningTime(TimeSpan value) { this.runningTime = value; return this; }
-    }
-
-    public static enum BackgroundJobState
-    {
-        Queued,
-        Started,
-        Executed,
-        Completed,
-        Failed,
-        Cancelled;
     }
 
     public static class RequestLogEntry

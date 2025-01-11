@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-01-10 00:18:07
+Date: 2025-01-11 18:31:20
 Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -3589,9 +3589,11 @@ class AdminJobInfoResponse implements IConvertible
     Map<String,int?>? tableCounts = {};
     List<WorkerStats>? workerStats = [];
     Map<String,int?>? queueCounts = {};
+    Map<String,int?>? workerCounts = {};
+    Map<BackgroundJobState,int?>? stateCounts = {};
     ResponseStatus? responseStatus;
 
-    AdminJobInfoResponse({this.monthDbs,this.tableCounts,this.workerStats,this.queueCounts,this.responseStatus});
+    AdminJobInfoResponse({this.monthDbs,this.tableCounts,this.workerStats,this.queueCounts,this.workerCounts,this.stateCounts,this.responseStatus});
     AdminJobInfoResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
@@ -3599,6 +3601,8 @@ class AdminJobInfoResponse implements IConvertible
         tableCounts = JsonConverters.fromJson(json['tableCounts'],'Map<String,int?>',context!);
         workerStats = JsonConverters.fromJson(json['workerStats'],'List<WorkerStats>',context!);
         queueCounts = JsonConverters.fromJson(json['queueCounts'],'Map<String,int?>',context!);
+        workerCounts = JsonConverters.fromJson(json['workerCounts'],'Map<String,int?>',context!);
+        stateCounts = JsonConverters.fromJson(json['stateCounts'],'Map<BackgroundJobState,int?>',context!);
         responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
         return this;
     }
@@ -3608,6 +3612,8 @@ class AdminJobInfoResponse implements IConvertible
         'tableCounts': JsonConverters.toJson(tableCounts,'Map<String,int?>',context!),
         'workerStats': JsonConverters.toJson(workerStats,'List<WorkerStats>',context!),
         'queueCounts': JsonConverters.toJson(queueCounts,'Map<String,int?>',context!),
+        'workerCounts': JsonConverters.toJson(workerCounts,'Map<String,int?>',context!),
+        'stateCounts': JsonConverters.toJson(stateCounts,'Map<BackgroundJobState,int?>',context!),
         'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
     };
 
@@ -4686,19 +4692,25 @@ class AdminCancelJobs implements IReturn<AdminCancelJobsResponse>, IGet, IConver
 {
     List<int>? ids;
     String? worker;
+    BackgroundJobState? state;
+    String? cancelWorker;
 
-    AdminCancelJobs({this.ids,this.worker});
+    AdminCancelJobs({this.ids,this.worker,this.state,this.cancelWorker});
     AdminCancelJobs.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         ids = JsonConverters.fromJson(json['ids'],'List<int>',context!);
         worker = json['worker'];
+        state = JsonConverters.fromJson(json['state'],'BackgroundJobState',context!);
+        cancelWorker = json['cancelWorker'];
         return this;
     }
 
     Map<String, dynamic> toJson() => {
         'ids': JsonConverters.toJson(ids,'List<int>',context!),
-        'worker': worker
+        'worker': worker,
+        'state': JsonConverters.toJson(state,'BackgroundJobState',context!),
+        'cancelWorker': cancelWorker
     };
 
     createResponse() => AdminCancelJobsResponse();
@@ -5040,6 +5052,7 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'AdminJobInfoResponse': TypeInfo(TypeOf.Class, create:() => AdminJobInfoResponse()),
     'List<DateTime>': TypeInfo(TypeOf.Class, create:() => <DateTime>[]),
     'List<WorkerStats>': TypeInfo(TypeOf.Class, create:() => <WorkerStats>[]),
+    'Map<BackgroundJobState,int?>': TypeInfo(TypeOf.Class, create:() => Map<BackgroundJobState,int?>()),
     'AdminGetJobResponse': TypeInfo(TypeOf.Class, create:() => AdminGetJobResponse()),
     'AdminGetJobProgressResponse': TypeInfo(TypeOf.Class, create:() => AdminGetJobProgressResponse()),
     'AdminRequeueFailedJobsJobsResponse': TypeInfo(TypeOf.Class, create:() => AdminRequeueFailedJobsJobsResponse()),

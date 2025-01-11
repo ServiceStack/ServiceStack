@@ -1,6 +1,6 @@
 <?php namespace dtos;
 /* Options:
-Date: 2025-01-10 00:18:07
+Date: 2025-01-11 18:31:20
 Version: 8.53
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -4604,6 +4604,10 @@ class AdminJobInfoResponse implements JsonSerializable
         public ?array $workerStats=null,
         /** @var array<string,int>|null */
         public ?array $queueCounts=null,
+        /** @var array<string,int>|null */
+        public ?array $workerCounts=null,
+        /** @var array<string,int>|null */
+        public ?array $stateCounts=null,
         /** @var ResponseStatus|null */
         public ?ResponseStatus $responseStatus=null
     ) {
@@ -4615,6 +4619,8 @@ class AdminJobInfoResponse implements JsonSerializable
         if (isset($o['tableCounts'])) $this->tableCounts = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','int']), $o['tableCounts']);
         if (isset($o['workerStats'])) $this->workerStats = JsonConverters::fromArray('WorkerStats', $o['workerStats']);
         if (isset($o['queueCounts'])) $this->queueCounts = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','int']), $o['queueCounts']);
+        if (isset($o['workerCounts'])) $this->workerCounts = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','int']), $o['workerCounts']);
+        if (isset($o['stateCounts'])) $this->stateCounts = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['BackgroundJobState','int']), $o['stateCounts']);
         if (isset($o['responseStatus'])) $this->responseStatus = JsonConverters::from('ResponseStatus', $o['responseStatus']);
     }
     
@@ -4626,6 +4632,8 @@ class AdminJobInfoResponse implements JsonSerializable
         if (isset($this->tableCounts)) $o['tableCounts'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','int']), $this->tableCounts);
         if (isset($this->workerStats)) $o['workerStats'] = JsonConverters::toArray('WorkerStats', $this->workerStats);
         if (isset($this->queueCounts)) $o['queueCounts'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','int']), $this->queueCounts);
+        if (isset($this->workerCounts)) $o['workerCounts'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','int']), $this->workerCounts);
+        if (isset($this->stateCounts)) $o['stateCounts'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['BackgroundJobState','int']), $this->stateCounts);
         if (isset($this->responseStatus)) $o['responseStatus'] = JsonConverters::to('ResponseStatus', $this->responseStatus);
         return empty($o) ? new class(){} : $o;
     }
@@ -5965,7 +5973,11 @@ class AdminCancelJobs implements IReturn, IGet, JsonSerializable
         /** @var array<int>|null */
         public ?array $ids=null,
         /** @var string|null */
-        public ?string $worker=null
+        public ?string $worker=null,
+        /** @var BackgroundJobState|null */
+        public ?BackgroundJobState $state=null,
+        /** @var string|null */
+        public ?string $cancelWorker=null
     ) {
     }
 
@@ -5973,6 +5985,8 @@ class AdminCancelJobs implements IReturn, IGet, JsonSerializable
     public function fromMap($o): void {
         if (isset($o['ids'])) $this->ids = JsonConverters::fromArray('int', $o['ids']);
         if (isset($o['worker'])) $this->worker = $o['worker'];
+        if (isset($o['state'])) $this->state = JsonConverters::from('BackgroundJobState', $o['state']);
+        if (isset($o['cancelWorker'])) $this->cancelWorker = $o['cancelWorker'];
     }
     
     /** @throws Exception */
@@ -5981,6 +5995,8 @@ class AdminCancelJobs implements IReturn, IGet, JsonSerializable
         $o = [];
         if (isset($this->ids)) $o['ids'] = JsonConverters::toArray('int', $this->ids);
         if (isset($this->worker)) $o['worker'] = $this->worker;
+        if (isset($this->state)) $o['state'] = JsonConverters::to('BackgroundJobState', $this->state);
+        if (isset($this->cancelWorker)) $o['cancelWorker'] = $this->cancelWorker;
         return empty($o) ? new class(){} : $o;
     }
     public function getTypeName(): string { return 'AdminCancelJobs'; }
