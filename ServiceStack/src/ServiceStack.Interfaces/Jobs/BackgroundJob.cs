@@ -16,7 +16,7 @@ public abstract class BackgroundJobBase : IMeta
     /// </summary>
     [Index(Unique = true)] public virtual string? RefId { get; set; }
     /// <summary>
-    /// Named Worker Thread to execute Job ob  
+    /// Named Worker Thread to execute Job on  
     /// </summary>
     public virtual string? Worker { get; set; }
     /// <summary>

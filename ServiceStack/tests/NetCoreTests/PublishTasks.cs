@@ -172,14 +172,14 @@ public class PublishTasks
     {
         Directory.SetCurrentDirectory(ProjectDir);
         
-        string[] ResolveTargetDirs(string name) => new[]
-        {
+        string[] ResolveTargetDirs(string name) =>
+        [
             $"../../tests/ServiceStack.Blazor.Tests/" + (name == "ServiceModel" ? name : "Server/" + name) + "/",
             $"../../../NetCoreTemplates/blazor-wasm/MyApp.{name}/",
             $"../../../NetCoreTemplates/vue-vite/api/MyApp.{name}/",
             $"../../../NetCoreTemplates/vue-ssg/api/MyApp.{name}/",
-            $"../../../NetCoreTemplates/nextjs/api/MyApp.{name}/",
-        };
+            $"../../../NetCoreTemplates/nextjs/api/MyApp.{name}/"
+        ];
 
         void CopyFile(string copyFile, string fileName, string[] targetDirs)
         {

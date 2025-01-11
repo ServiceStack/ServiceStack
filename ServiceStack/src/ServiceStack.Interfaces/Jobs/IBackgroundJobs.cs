@@ -175,7 +175,7 @@ public class BackgroundJobOptions
     /// </summary>
     public long? ParentId { get; set; }
     /// <summary>
-    /// Named Worker Thread to execute Job ob  
+    /// Named Worker Thread to execute Job on  
     /// </summary>
     public string? Worker { get; set; }
     /// <summary>
