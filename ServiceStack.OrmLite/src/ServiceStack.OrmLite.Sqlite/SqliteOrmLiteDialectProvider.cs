@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using System.Data.SQLite;
 
@@ -10,7 +11,13 @@ namespace ServiceStack.OrmLite.Sqlite
         public SqliteOrmLiteDialectProvider()
         {
 #if NETFX
-            ConnectionStringFilter = sb => sb.Append("Version=3;New=True;Compress=True");
+            ConnectionStringFilter = sb =>
+            {
+                if (sb.ToString().IndexOf("Version=3", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    sb.Append("Version=3;New=True;Compress=True");
+                }
+            };
 #endif
         }
 
