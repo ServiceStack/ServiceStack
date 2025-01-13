@@ -99,7 +99,7 @@ public static class VirtualPathUtils
 #endif
     }
         
-    static readonly HashSet<char> InvalidFileNameChars = new(Path.GetInvalidFileNameChars()) { ':' };
+    public static readonly HashSet<char> InvalidFileNameChars = new(Path.GetInvalidFileNameChars()) { ':' };
 
     public static string SafeFileName(string uri) => new(uri.Where(c => !InvalidFileNameChars.Contains(c)).ToArray());
 

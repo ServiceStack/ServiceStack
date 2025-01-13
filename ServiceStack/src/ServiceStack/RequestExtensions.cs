@@ -272,8 +272,8 @@ public static class RequestExtensions
 
     public static IVirtualFile GetFile(this IRequest request) => request is IHasVirtualFiles vfs ? vfs.GetFile() : null;
     public static IVirtualDirectory GetDirectory(this IRequest request) => request is IHasVirtualFiles vfs ? vfs.GetDirectory() : null;
-    public static bool IsFile(this IRequest request) => request is IHasVirtualFiles vfs && vfs.IsFile;
-    public static bool IsDirectory(this IRequest request) => request is IHasVirtualFiles vfs && vfs.IsDirectory;
+    public static bool IsFile(this IRequest request) => request is IHasVirtualFiles { IsFile: true };
+    public static bool IsDirectory(this IRequest request) => request is IHasVirtualFiles { IsDirectory: true };
 
     public static IVirtualFiles GetVirtualFiles(this IRequest request) => HostContext.VirtualFiles;
     public static IVirtualPathProvider GetVirtualFileSources(this IRequest request) => HostContext.VirtualFileSources;
