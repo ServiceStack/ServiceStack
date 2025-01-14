@@ -197,6 +197,28 @@ public static class RequestExtensions
     }
 
     /// <summary>
+    /// Returning the most optimized result based on the MimeType and CompressionType from the IRequest.
+    /// <param name="req"></param>
+    /// <param name="cacheClient"></param>
+    /// <param name="cacheKey"></param>
+    /// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
+    /// <param name="factoryFn"></param>
+    /// <param name="token"></param>
+    /// </summary>
+    public static async Task<object> ToOptimizedResultUsingCacheAsync<T>(
+        this IRequest req, ICacheClientAsync cacheClient, string cacheKey,
+        TimeSpan? expireCacheIn, Func<Task<T>> factoryFn, CancellationToken token=default)
+    {
+        var cacheResult = await cacheClient.ResolveFromCacheAsync(cacheKey, req, token).ConfigAwait();
+        if (cacheResult != null)
+            return cacheResult;
+
+        var responseDto = await factoryFn().ConfigAwait();
+        cacheResult = await cacheClient.CacheAsync(cacheKey, responseDto, req, expireCacheIn, token).ConfigAwait();
+        return cacheResult;
+    }
+
+    /// <summary>
     /// Store an entry in the IHttpRequest.Items Dictionary
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
