@@ -605,8 +605,8 @@ public static class OrmLiteUtils
 
     public static string[] GetFieldNames(this IDataReader reader)
     {
-        var fields = new string[reader.FieldCount];
         int count = reader.FieldCount;
+        var fields = new string[count];
         for (int i = 0; i < count; i++)
         {
             fields[i] = reader.GetName(i);
