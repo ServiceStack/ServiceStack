@@ -10,9 +10,9 @@ public class IndexFieldsCacheKey
 
     public IOrmLiteDialectProvider Dialect { get; } 
 
-    public string[] Fields { get; }
+    public string Fields { get; }
 
-    public IndexFieldsCacheKey(string[] fields, ModelDefinition modelDefinition, IOrmLiteDialectProvider dialect)
+    public IndexFieldsCacheKey(string fields, ModelDefinition modelDefinition, IOrmLiteDialectProvider dialect)
     {
         Fields = fields;
         ModelDefinition = modelDefinition;
@@ -23,11 +23,7 @@ public class IndexFieldsCacheKey
             hashCode = 17;
             hashCode = hashCode * 23 + ModelDefinition.GetHashCode();
             hashCode = hashCode * 23 + Dialect.GetHashCode();
-            hashCode = hashCode * 23 + Fields.Length;
-            foreach (var field in Fields)
-            {
-                hashCode = hashCode * 23 + field.Length;
-            }
+            hashCode = hashCode * 23 + Fields.GetHashCode();
         }
     }
 
@@ -39,8 +35,7 @@ public class IndexFieldsCacheKey
             
         return this.ModelDefinition == that.ModelDefinition
                && this.Dialect == that.Dialect
-               && this.Fields.Length == that.Fields.Length
-               && this.Fields.SequenceEqual(that.Fields);
+               && this.Fields == that.Fields;
     }
         
     public override int GetHashCode() => hashCode;
