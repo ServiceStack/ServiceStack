@@ -196,6 +196,9 @@ public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<
         }
 
         session.PopulateFromMap(sessionValues);
+        
+        // Revert `IsAuthenticated` if claimsPrincipal is not authenticated 
+        session.IsAuthenticated = claimsPrincipal.IsAuthenticated();
 
         if (session.UserAuthName?.IndexOf('@') >= 0 && session.Email == null)
             session.Email = session.UserAuthName;
