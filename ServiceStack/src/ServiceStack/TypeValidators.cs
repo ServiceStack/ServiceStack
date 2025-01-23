@@ -81,6 +81,37 @@ public class HasRolesValidator : TypeValidator, IAuthTypeValidator
     }
 }
 
+public class HasAnyRoleValidator : TypeValidator, IAuthTypeValidator
+{
+    public static string DefaultErrorMessage { get; set; } = "`${Roles.join(', ')} Any Role${Roles.length > 1 ? 's' : ''} Required`";
+
+    public string[] Roles { get; }
+    public HasAnyRoleValidator(string[] roles)
+        : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
+    {
+        this.Roles = roles ?? throw new ArgumentNullException(nameof(roles));
+        this.ContextArgs = new Dictionary<string, object> {
+            [nameof(Roles)] = roles
+        };
+    }
+
+    public override async Task<bool> IsValidAsync(object dto, IRequest? request)
+    {
+        return request != null && await IsAuthenticatedValidator.Instance.IsValidAsync(dto, request).ConfigAwait() 
+                               && await RequiresAnyRoleAttribute.HasAnyRoleAsync(request, Roles).ConfigAwait();
+    }
+
+    public override async Task ThrowIfNotValidAsync(object dto, IRequest request)
+    {
+        await IsAuthenticatedValidator.Instance.ThrowIfNotValidAsync(dto, request).ConfigAwait();
+            
+        if (await RequiresAnyRoleAttribute.HasAnyRoleAsync(request, Roles).ConfigAwait())
+            return;
+
+        throw new HttpError(ResolveStatusCode(), ResolveErrorCode(), ResolveErrorMessage(request, dto));
+    }
+}
+
 public class HasClaimValidator : TypeValidator, IAuthTypeValidator
 {
     public static string DefaultErrorMessage { get; set; } = "`${Type} Claim with '${Value}' is Required`";

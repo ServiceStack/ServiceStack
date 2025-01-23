@@ -110,7 +110,7 @@ public class RequiredRoleAttribute : AuthenticateAttribute
     /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
     /// </summary>
     public static Task AssertRequiredRoleAsync(IRequest req, string requiredRole, CancellationToken token = default) =>
-        AssertRequiredRolesAsync(req, new[] { requiredRole }, token);
+        AssertRequiredRolesAsync(req, [requiredRole], token);
 
     /// <summary>
     /// Check all session is in all supplied roles otherwise a 401 HttpError is thrown

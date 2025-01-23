@@ -53,6 +53,16 @@ public class RequiresAnyRoleAttribute : AuthenticateAttribute
             HttpStatusCode.Forbidden, ErrorMessages.InvalidRole.Localize(req)).ConfigAwait();
     }
 
+    public static Task<bool> HasAnyRoleAsync(IRequest req, string[] requiredRoles) => HasAnyRoleAsync(req, req.GetSession(), requiredRoles);
+    public static async Task<bool> HasAnyRoleAsync(IRequest req, IAuthSession session, ICollection<string> requiredRoles, CancellationToken token=default)
+    {
+        var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+        await using (authRepo as IAsyncDisposable)
+        {
+            return await session.HasAllRolesAsync(requiredRoles, authRepo, req, token).ConfigAwait();
+        }
+    }
+
     [Obsolete("Use HasAnyRolesAsync")]
     public virtual bool HasAnyRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
     {

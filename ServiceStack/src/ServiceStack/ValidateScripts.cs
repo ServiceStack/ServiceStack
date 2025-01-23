@@ -66,6 +66,7 @@ public class ValidateScripts : ScriptMethods
     public ITypeValidator IsAuthenticated(string provider) => new IsAuthenticatedValidator(provider);
     public ITypeValidator HasRole(string role) => new HasRolesValidator(role);
     public ITypeValidator HasRoles(string[] roles) => new HasRolesValidator(roles);
+    public ITypeValidator HasAnyRole(string[] roles) => new HasAnyRoleValidator(roles);
     public ITypeValidator HasPermission(string permission) => new HasPermissionsValidator(permission);
     public ITypeValidator HasPermissions(string[] permission) => new HasPermissionsValidator(permission);
     public ITypeValidator HasClaim(string type, string value) => new HasClaimValidator(type, value);
