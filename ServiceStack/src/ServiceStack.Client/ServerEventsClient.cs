@@ -946,16 +946,16 @@ public partial class ServerEventsClient : IDisposable
             EnsureSynchronizationContext();
             try {
 #if NET6_0_OR_GREATER
-                httpClient.SendStringToUrl(ConnectionInfo.UnRegisterUrl, method:HttpMethods.Get, requestFilter: req =>
+                httpClient.SendStringToUrl(ConnectionInfo.UnRegisterUrl, requestFilter: req =>
                 {
                     if (log.IsDebugEnabled)
                         log.Debug("[SSE-CLIENT] Unregistering...");
                     
                     UnRegisterRequestFilter?.Invoke(req);
                     AllRequestFilters?.Invoke(req);
-                });
+                }, method:HttpMethods.Post, requestBody:"");
 #else                    
-                ConnectionInfo.UnRegisterUrl.GetStringFromUrl(requestFilter: req =>
+                ConnectionInfo.UnRegisterUrl.SendStringToUrl(requestFilter: req =>
                 {
                     var hold = httpReq;
                     if (hold != null)
@@ -966,7 +966,7 @@ public partial class ServerEventsClient : IDisposable
                     
                     UnRegisterRequestFilter?.Invoke(req);
                     AllRequestFilters?.Invoke(req);
-                });
+                }, method:HttpMethods.Post, requestBody:"");
 #endif
             } catch (Exception) {}
         }
