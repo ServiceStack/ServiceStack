@@ -467,15 +467,15 @@ public partial class ServerEventsClient : IDisposable
         EnsureSynchronizationContext();
 
 #if NET6_0_OR_GREATER
-        var taskString = httpClient.SendStringToUrlAsync(ConnectionInfo.HeartbeatUrl, method:HttpMethods.Get, requestFilter: req => {
+        var taskString = httpClient.SendStringToUrlAsync(ConnectionInfo.HeartbeatUrl, requestFilter: req => {
             HeartbeatRequestFilter?.Invoke(req);
             AllRequestFilters?.Invoke(req);
 
             if (log.IsDebugEnabled)
                 log.Debug("[SSE-CLIENT] Sending Heartbeat...");
-        });
+        }, method:HttpMethods.Post, requestBody:"");
 #else
-        var taskString = ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter: req => {
+        var taskString = ConnectionInfo.HeartbeatUrl.SendStringToUrlAsync(requestFilter: req => {
                 var hold = httpReq;
                 if (hold != null)
                     req.CookieContainer = hold.CookieContainer;
@@ -485,7 +485,7 @@ public partial class ServerEventsClient : IDisposable
 
                 if (log.IsDebugEnabled)
                     log.Debug("[SSE-CLIENT] Sending Heartbeat...");
-            });
+            }, method:HttpMethods.Post, requestBody:"");
 #endif
         
         taskString.Success(t =>

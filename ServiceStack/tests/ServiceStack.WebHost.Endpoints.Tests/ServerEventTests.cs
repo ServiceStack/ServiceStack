@@ -1588,6 +1588,33 @@ public class AuthMemoryServerEventsTests
 
         Assert.That(client.EventStreamUri.EndsWith("Foo,Bar"));
     }
+    
+
+    [Test]
+    public async Task Does_send_multiple_heartbeats()
+    {
+        using var client = new ServerEventsClient(Conf.AbsoluteBaseUri, "home");
+        var heartbeats = 0;
+        var tcs = new TaskCompletionSource<object>();
+        client.OnHeartbeat = () =>
+        {
+            //configured to 1s interval in AppHost
+            if (heartbeats++ == 2)
+                tcs.SetResult(null);
+        };
+        await client.AuthenticateAsync(new Authenticate
+        {
+            provider = CustomCredentialsAuthProvider.Name,
+            UserName = "user",
+            Password = "pass",
+        });
+
+        client.Start();
+
+        await tcs.Task.WaitAsync();
+
+        Assert.That(heartbeats, Is.GreaterThanOrEqualTo(2));
+    }
 }
 
 
