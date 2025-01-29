@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -10,6 +11,8 @@ namespace ServiceStack;
 
 public static class DtoUtils
 {
+    internal static ILog Log = LogManager.GetLogger(typeof(DtoUtils));
+
     /// <summary>
     /// Naming convention for the ResponseStatus property name on the response DTO
     /// </summary>
@@ -25,6 +28,7 @@ public static class DtoUtils
         if (responseStatus == null && appHost != null)
         {
             responseStatus = appHost.CreateResponseStatus(e, request);
+            appHost.OnLogError(Log, responseStatus.Message, e);
             ranFilter = true;
         }
         responseStatus ??= ResponseStatusUtils.CreateResponseStatus(e.GetType().Name, e.Message);
@@ -98,9 +102,13 @@ public static class DtoUtils
     public static ResponseStatus ToResponseStatus(this Exception exception, object requestDto = null)
     {
         var appHost = HostContext.AppHost;
-        return appHost != null 
-            ? appHost.CreateResponseStatus(exception, requestDto)
-            : CreateResponseStatus(exception, requestDto);
+        if (appHost != null)
+        {
+            var ret = appHost.CreateResponseStatus(exception, requestDto);
+            appHost.OnLogError(Log, ret.Message, exception);
+            return ret;
+        }
+        return CreateResponseStatus(exception, requestDto);
     }
 
     public static ResponseStatus ToResponseStatus(this ValidationError validationException) => 
@@ -215,8 +223,7 @@ public static class DtoUtils
             var useEx = appHost.UseException(ex);
             var responseStatus = CreateResponseStatus(useEx, request, appHost.Config.DebugMode);
 
-            if (appHost.Config.DebugMode || appHost.IsDebugLogEnabled)
-                appHost.OnLogError(appHost.GetType(), responseStatus.Message, useEx);
+            appHost.OnLogError(Log, responseStatus.Message, useEx);
             return CreateErrorResponse(request, useEx, responseStatus);
         }
         else

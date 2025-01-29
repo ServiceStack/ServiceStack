@@ -28,6 +28,7 @@ using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Runtime.CompilerServices;
+using ServiceStack.Logging;
 #if NETFX
 using System.Web;
 #endif
@@ -742,9 +743,6 @@ public abstract partial class ServiceStackHost
         DtoUtils.PopulateResponseStatus(responseStatus, request, ex, Config.DebugMode);
         
         OnExceptionTypeFilter(e, responseStatus);
-
-        if (Config.DebugMode || Log.IsDebugEnabled)
-            OnLogError(GetType(), responseStatus.Message, e);
             
         return responseStatus;
     }
@@ -760,12 +758,12 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Callback for handling when errors are logged, also called for non-Exception error logging like 404 requests   
     /// </summary>
-    public virtual void OnLogError(Type type, string message, Exception innerEx=null)
+    public virtual void OnLogError(ILog logger, string message, Exception innerEx=null)
     {
         if (innerEx != null)
-            Log.Error(message, innerEx);
+            logger.Error(message, innerEx);
         else
-            Log.Error(message);
+            logger.Error(message);
     }
         
     /// <summary>

@@ -40,7 +40,7 @@ namespace ServiceStack;
 public abstract partial class ServiceStackHost
     : IAppHost, IFunqlet, IHasContainer, IDisposable
 {
-    protected ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
+    internal ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
     public bool IsDebugLogEnabled => Log.IsDebugEnabled;
 
     /// <summary>

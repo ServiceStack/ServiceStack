@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -6,6 +7,8 @@ namespace ServiceStack.Host.Handlers;
 
 public class NotFoundHttpHandler : HttpAsyncTaskHandler
 {
+    internal static ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
+
     public NotFoundHttpHandler() => this.RequestName = nameof(NotFoundHttpHandler);
 
     public string WebHostPhysicalPath { get; set; }
@@ -15,7 +18,7 @@ public class NotFoundHttpHandler : HttpAsyncTaskHandler
 
     public override Task ProcessRequestAsync(IRequest request, IResponse response, string operationName)
     {
-        HostContext.AppHost.OnLogError(typeof(NotFoundHttpHandler),
+        HostContext.AppHost.OnLogError(Log,
             $"{request.UserHostAddress} Request not found: {request.RawUrl}");
 
         var sb = StringBuilderCache.Allocate();

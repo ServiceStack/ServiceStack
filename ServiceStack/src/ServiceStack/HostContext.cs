@@ -152,7 +152,7 @@ public static class HostContext
         }
         catch (Exception ex)
         {
-            appHost.OnLogError(typeof(HostContext), ex.Message, ex);
+            appHost.OnLogError(appHost.Log, ex.Message, ex);
         }
     }
 
