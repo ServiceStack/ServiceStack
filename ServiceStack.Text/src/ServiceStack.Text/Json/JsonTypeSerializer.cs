@@ -169,7 +169,7 @@ public struct JsonTypeSerializer
     public void WriteGuid(TextWriter writer, object oValue)
     {
         var formatted = JsConfig.SystemJsonCompatible
-            ? ((Guid)oValue).ToString()
+            ? ((Guid)oValue).ToString("D")
             : ((Guid)oValue).ToString("N");
         WriteRawString(writer, formatted);
     }
@@ -177,7 +177,7 @@ public struct JsonTypeSerializer
     public void WriteNullableGuid(TextWriter writer, object oValue)
     {
         if (oValue == null) return;
-        WriteRawString(writer, ((Guid)oValue).ToString("N"));
+        WriteGuid(writer, oValue);
     }
 
     public void WriteBytes(TextWriter writer, object oByteValue)

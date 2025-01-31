@@ -104,7 +104,7 @@ public static class JsWriter
                 return true;
         }
 
-        return underlyingType == typeof(Guid);
+        return false;
     }
 
     public static ITypeSerializer GetTypeSerializer<TSerializer>()

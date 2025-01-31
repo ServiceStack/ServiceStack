@@ -130,13 +130,16 @@ public struct JsvTypeSerializer
 
     public void WriteGuid(TextWriter writer, object oValue)
     {
-        writer.Write(((Guid)oValue).ToString("N"));
+        var formatted = JsConfig.SystemJsonCompatible
+            ? ((Guid)oValue).ToString("D")
+            : ((Guid)oValue).ToString("N");
+        writer.Write(formatted);
     }
 
     public void WriteNullableGuid(TextWriter writer, object oValue)
     {
         if (oValue == null) return;
-        writer.Write(((Guid)oValue).ToString("N"));
+        WriteGuid(writer, oValue);
     }
 
     public void WriteBytes(TextWriter writer, object oByteValue)

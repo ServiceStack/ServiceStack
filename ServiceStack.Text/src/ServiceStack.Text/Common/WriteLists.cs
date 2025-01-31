@@ -492,7 +492,7 @@ internal static class WriteLists<T, TSerializer>
 
         var listInterface = type.GetTypeWithGenericTypeDefinitionOf(typeof(IList<>));
         if (listInterface == null)
-            throw new ArgumentException(string.Format("Type {0} is not of type IList<>", type.FullName));
+            throw new ArgumentException($"Type {type.FullName} is not of type IList<>");
 
         //optimized access for regularly used types
         if (type == typeof(List<string>))
