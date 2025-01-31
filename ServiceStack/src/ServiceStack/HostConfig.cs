@@ -96,7 +96,7 @@ public class HostConfig
                 "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
                 "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map",
                 "xls", "xla", "xlsx", "xltx", "doc", "dot", "docx", "dotx", "ppt", "pps", "ppa", "pptx", "potx", 
-                "wasm", "proto", "cer", "crt", "webmanifest", "mjs", "cjs", 
+                "wasm", "proto", "cer", "crt", "webmanifest", "mjs", "cjs", "cast",
             },
             CompressFilesWithExtensions = [],
             AllowFilePaths =
