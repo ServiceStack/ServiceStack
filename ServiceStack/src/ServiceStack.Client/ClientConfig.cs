@@ -37,6 +37,13 @@ public static class ClientConfig
     /// Use System.Text JSON for JsonApiClient
     /// </summary>
     public static UseSystemJson UseSystemJson { get; set; } = UseSystemJson.Never;
+
+    public static string ToSystemJson<T>(T obj)
+    {
+        var options = TextConfig.CreateSystemJsonOptions();
+        options.WriteIndented = true;
+        return System.Text.Json.JsonSerializer.Serialize(obj, options);
+    }
 #endif
 
     public static string ToJson<T>(T obj)
