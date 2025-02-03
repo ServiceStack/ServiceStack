@@ -1514,7 +1514,7 @@ namespace ServiceStack.OrmLite
 
         public abstract string ToCreateSchemaStatement(string schemaName);
 
-        public virtual List<string> GetSchemas(IDbCommand dbCmd) => new() { "default" };
+        public virtual List<string> GetSchemas(IDbCommand dbCmd) => ["default"];
 
         public virtual Dictionary<string, List<string>> GetSchemaTables(IDbCommand dbCmd) => new();
 

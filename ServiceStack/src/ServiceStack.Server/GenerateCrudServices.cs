@@ -438,8 +438,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     private static readonly CustomAttributeBuilder CodegenAttrBuilder = new(
         typeof(System.CodeDom.Compiler.GeneratedCodeAttribute)
             .GetConstructors().First(x => x.GetParameters().Length == 2),
-            
-        new object[]{ "ServiceStack", Env.VersionString },
+        ["ServiceStack", Env.VersionString],
         Array.Empty<PropertyInfo>(), TypeConstants.EmptyObjectArray);
 
     private static readonly ConstructorInfo DataContractCtor = typeof(DataContractAttribute)
@@ -453,10 +452,9 @@ public class GenerateCrudServices : IGenerateCrudServices
     private static readonly Attribute dataContractAttr = new DataContractAttribute();
     private static readonly Attribute dataMemberAttr = new DataMemberAttribute();
 
-    public static List<Type> AddInterfaceTypes { get; set; } = new()
-    {
+    public static List<Type> AddInterfaceTypes { get; set; } = [
         typeof(IRuntimeSerializable)
-    };
+    ];
 
     private static Type CreateOrGetType(ModuleBuilder dynModule, MetadataType metaType, 
         List<MetadataType> metadataTypes, Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap, 
@@ -608,7 +606,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         ilgen.Emit(OpCodes.Ret);
             
         var setterBuilder = typeBuilder.DefineMethod("set_" + propertyBuilder.Name,
-            attributes, null, new[] { propertyBuilder.PropertyType });
+            attributes, null, [propertyBuilder.PropertyType]);
 
         ilgen = setterBuilder.GetILGenerator();
 

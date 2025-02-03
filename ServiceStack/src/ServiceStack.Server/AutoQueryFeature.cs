@@ -435,7 +435,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
                     var batchMethod = typeBuilder.DefineMethod(ActionContext.AnyMethod, MethodAttributes.Public | MethodAttributes.Virtual,
                         CallingConventions.Standard,
                         returnType: typeof(object),
-                        parameterTypes: new[] { requestArrayType });
+                        parameterTypes: [requestArrayType]);
                     il = batchMethod.GetILGenerator();
 
                     var batchGenericMi = baseBatchMethod.MakeGenericMethod(crudTypes.Value.ModelType);
