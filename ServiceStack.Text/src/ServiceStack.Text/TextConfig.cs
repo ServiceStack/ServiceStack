@@ -39,6 +39,7 @@ public class TextConfig
         options.Converters.Add(new SystemJson.JsonEnumMemberStringEnumConverter());
         options.Converters.Add(new SystemJson.XsdTimeSpanJsonConverter());
         options.Converters.Add(new SystemJson.XsdTimeOnlyJsonConverter());
+        options.Converters.Add(new SystemJson.TypeJsonConverter());
         options.TypeInfoResolver = SystemJson.DataContractResolver.Instance;
     }
 
