@@ -819,13 +819,13 @@ public class GenerateCrudServices : IGenerateCrudServices
         return orderedTypes;
     }
 
-    public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema=null, string namedConnection=null,
-        List<string> includeTables = null, List<string> excludeTables = null)
+    public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string namedConnection = null,
+        string schema = null, List<string> includeTables = null, List<string> excludeTables = null)
     {
         var key = new Tuple<string, string>(schema ?? NoSchema, namedConnection);
         return CachedDbSchemas.GetOrAdd(key, k => {
 
-            var tables = dbFactory.GetTableSchemas(schema, namedConnection, includeTables, excludeTables, config:this);
+            var tables = dbFactory.GetTableSchemas(namedConnection: namedConnection, schema: schema, includeTables: includeTables, excludeTables: excludeTables, config: this);
             return new DbSchema {
                 Schema = schema,
                 NamedConnection = namedConnection,
@@ -882,9 +882,10 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
 
         var results = request.NoCache == true 
-            ? dbFactory.GetTableSchemas(request.Schema, request.NamedConnection, request.IncludeTables, excludeTables,
-                config:genServices)
-            : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, excludeTables).Tables;
+            ? dbFactory.GetTableSchemas(namedConnection: request.NamedConnection, schema: request.Schema, 
+                includeTables: request.IncludeTables, excludeTables: excludeTables, config: genServices)
+            : genServices.GetCachedDbSchema(dbFactory, namedConnection: request.NamedConnection, schema: request.Schema, 
+                includeTables: request.IncludeTables, excludeTables: excludeTables).Tables;
             
         genServices.TableSchemasFilter?.Invoke(results);
 
@@ -1473,9 +1474,10 @@ public class CrudTablesService : Service
             
         var dbFactory = TryResolve<IDbConnectionFactory>();
         var results = request.NoCache == true 
-            ? dbFactory.GetTableSchemas(request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables,
-                config:genServices)
-            : genServices.GetCachedDbSchema(dbFactory, request.Schema, request.NamedConnection, request.IncludeTables, request.ExcludeTables).Tables;
+            ? dbFactory.GetTableSchemas(namedConnection: request.NamedConnection, schema: request.Schema, 
+                includeTables: request.IncludeTables, excludeTables: request.ExcludeTables, config: genServices)
+            : genServices.GetCachedDbSchema(dbFactory, namedConnection: request.NamedConnection, schema: request.Schema, 
+                includeTables: request.IncludeTables, excludeTables: request.ExcludeTables).Tables;
 
         return new AutoCodeSchemaResponse {
             Results = results,

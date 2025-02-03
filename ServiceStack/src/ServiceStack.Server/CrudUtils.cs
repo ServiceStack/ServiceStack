@@ -98,8 +98,8 @@ public interface IGenerateCrudServices : ITableResolver
     bool AddDataContractAttributes { get; set; }
     bool AddIndexesToDataMembers { get; set; }
     string AccessRole { get; set; }
-    DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string schema = null, string namedConnection = null,
-        List<string> includeTables = null, List<string> excludeTables = null);
+    DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string namedConnection = null,
+        string schema = null, List<string> includeTables = null, List<string> excludeTables = null);
     void Configure(IServiceCollection services);
     
     /// <summary>
@@ -168,26 +168,24 @@ public static class CrudUtils
             : AddAttribute(propType, attr);
     }
 
-    public static List<TableSchema> GetTables(this IDbConnectionFactory dbFactory, 
-        string schema = null, 
+    public static List<TableSchema> GetTables(this IDbConnectionFactory dbFactory,
         string namedConnection = null,
-        List<string> includeTables = null, 
+        string schema = null,
+        List<string> includeTables = null,
         List<string> excludeTables = null,
         ITableResolver config = null)
     {
-        var results = dbFactory.GetTableSchemas(
-            schema:null, 
-            namedConnection:null,
-            includeTables:null,
-            excludeTables:null);
+        var results = dbFactory.GetTableSchemas(namedConnection: null,
+            schema: null,
+            includeTables: null, excludeTables: null);
         results.Each(t => t.Columns.Each(c => c.BaseServerName = null));
         return results;
     }
 
-    public static List<TableSchema> GetTableSchemas(this IDbConnectionFactory dbFactory, 
-        string schema = null, 
+    public static List<TableSchema> GetTableSchemas(this IDbConnectionFactory dbFactory,
         string namedConnection = null,
-        List<string> includeTables = null, 
+        string schema = null,
+        List<string> includeTables = null,
         List<string> excludeTables = null,
         ITableResolver config = null)
     {
