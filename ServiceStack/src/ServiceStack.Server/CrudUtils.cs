@@ -62,8 +62,24 @@ public class AutoGenContext(CrudCodeGenTypes instruction, string tableName, Tabl
     /// </summary>
     public Func<MetadataPropertyType, ColumnSchema, string> GetColumnAlias { get; set; }
 }
-    
-public interface IGenerateCrudServices
+
+public delegate List<string> GetTableNamesDelegate(IDbConnection db, string table);
+public delegate ColumnSchema[] GetTableColumnsDelegate(IDbConnection db, string table, string schema);
+
+public interface ITableResolver
+{
+    /// <summary>
+    /// Override which tables to generate APIs for from a 'schema'  
+    /// </summary>
+    GetTableNamesDelegate GetTableNames { get; set; }
+
+    /// <summary>
+    /// Override which table columns to generate APIs for from a 'table' and 'schema'  
+    /// </summary>
+    GetTableColumnsDelegate GetTableColumns { get; set; }
+}
+
+public interface IGenerateCrudServices : ITableResolver
 {
     List<string> IncludeCrudOperations { get; set; }
     List<string> ExcludeTables { get; set; }
@@ -95,20 +111,7 @@ public interface IGenerateCrudServices
     List<Type> GenerateMissingServices(AutoQueryFeature feature, HashSet<Type> requestTypes);
     
     Action<List<TableSchema>> TableSchemasFilter { get; set; }
-
-    /// <summary>
-    /// Override which tables to generate APIs for from a 'schema'  
-    /// </summary>
-    GetTableNamesDelegate GetTableNames { get; set; }
-
-    /// <summary>
-    /// Override which table columns to generate APIs for from a 'table' and 'schema'  
-    /// </summary>
-    GetTableColumnsDelegate GetTableColumns { get; set; }
 }
-
-public delegate List<string> GetTableNamesDelegate(IDbConnection db, string table);
-public delegate ColumnSchema[] GetTableColumnsDelegate(IDbConnection db, string table, string schema);
 
 public static class CrudUtils
 {
@@ -163,6 +166,94 @@ public static class CrudUtils
         return propType.Attributes?.Any(x => x.Attribute is T t && (test == null || test(t))) == true 
             ? propType 
             : AddAttribute(propType, attr);
+    }
+
+    public static List<TableSchema> GetTables(this IDbConnectionFactory dbFactory, 
+        string schema = null, 
+        string namedConnection = null,
+        List<string> includeTables = null, 
+        List<string> excludeTables = null,
+        ITableResolver config = null)
+    {
+        var results = dbFactory.GetTableSchemas(
+            schema:null, 
+            namedConnection:null,
+            includeTables:null,
+            excludeTables:null);
+        results.Each(t => t.Columns.Each(c => c.BaseServerName = null));
+        return results;
+    }
+
+    public static List<TableSchema> GetTableSchemas(this IDbConnectionFactory dbFactory, 
+        string schema = null, 
+        string namedConnection = null,
+        List<string> includeTables = null, 
+        List<string> excludeTables = null,
+        ITableResolver config = null)
+    {
+        var db = namedConnection != null
+            ? dbFactory.OpenDbConnection(namedConnection)
+            : dbFactory.OpenDbConnection();
+
+        try
+        {
+            var tables = config?.GetTableNames != null
+                ? config.GetTableNames(db,schema)
+                : db.GetTableNames(schema);
+                
+            var results = new List<TableSchema>();
+            Logging.ILog log = null;
+
+            var dialect = db.GetDialectProvider();
+            foreach (var table in tables)
+            {
+                if (includeTables != null && !includeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
+                    continue;
+                if (excludeTables != null && excludeTables.Contains(table, StringComparer.OrdinalIgnoreCase))
+                    continue;
+                
+                var to = new TableSchema {
+                    Name = table,
+                };
+
+                try
+                {
+                    if (config?.GetTableColumns != null)
+                    {
+                        to.Columns = config.GetTableColumns(db, table, schema);
+                    }
+                    else
+                    {
+                        var quotedTable = dialect.GetQuotedTableName(table, schema);
+                        var sql = $"SELECT * FROM {quotedTable} {dialect.SqlLimit(rows: 1)}";
+                        to.Columns = db.GetTableColumns(sql);
+                    }
+                }
+                catch (Exception e)
+                {
+                    to.ErrorType = e.GetType().Name;
+                    to.ErrorMessage = e.Message;
+                    log ??= Logging.LogManager.GetLogger(typeof(GenerateCrudServices));
+                    log.Error($"GetTableSchemas(): Failed to GetTableColumns() for {dialect.GetQuotedTableName(table, schema)}", e);
+
+                    if (db.State != System.Data.ConnectionState.Open)
+                    {
+                        try { db.Dispose(); } catch {}
+                        db = namedConnection != null
+                            ? dbFactory.OpenDbConnection(namedConnection)
+                            : dbFactory.OpenDbConnection();
+                    }
+                }
+
+                results.Add(to);
+            }
+
+            return results;
+        }
+        finally
+        {
+            db.Dispose();
+        }
     }
 }
 
