@@ -63,7 +63,7 @@ public class AutoGenContext(CrudCodeGenTypes instruction, string tableName, Tabl
     public Func<MetadataPropertyType, ColumnSchema, string> GetColumnAlias { get; set; }
 }
 
-public delegate List<string> GetTableNamesDelegate(IDbConnection db, string table);
+public delegate List<string> GetTableNamesDelegate(IDbConnection db, string schema);
 public delegate ColumnSchema[] GetTableColumnsDelegate(IDbConnection db, string table, string schema);
 
 public interface ITableResolver
@@ -177,7 +177,7 @@ public static class CrudUtils
     {
         var results = dbFactory.GetTableSchemas(namedConnection: null,
             schema: null,
-            includeTables: null, excludeTables: null);
+            includeTables: null, excludeTables: null, config: null);
         results.Each(t => t.Columns.Each(c => c.BaseServerName = null));
         return results;
     }
@@ -222,7 +222,9 @@ public static class CrudUtils
                     }
                     else
                     {
-                        var quotedTable = dialect.GetQuotedTableName(table, schema);
+                        var quotedTable = schema != null
+                            ? dialect.GetQuotedName(schema) + "." + dialect.GetQuotedName(table)
+                            : dialect.GetQuotedName(table);
                         var sql = $"SELECT * FROM {quotedTable} {dialect.SqlLimit(rows: 1)}";
                         to.Columns = db.GetTableColumns(sql);
                     }
