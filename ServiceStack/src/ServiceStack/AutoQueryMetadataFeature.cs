@@ -18,18 +18,15 @@ public class AutoQueryMetadataFeature : IPlugin, Model.IHasStringId
     public AutoQueryMetadataFeature()
     {
         this.AutoQueryViewerConfig = GetAutoQueryViewerConfigDefaults();
-        this.ExportTypes = new List<Type> {
-            typeof(RequestLogEntry)
-        };
+        this.ExportTypes = [typeof(RequestLogEntry)];
     }
 
     internal static AutoQueryViewerConfig GetAutoQueryViewerConfigDefaults()
     {
         return new AutoQueryViewerConfig
         {
-            Formats = new[] { "json", "xml", "csv" },
-            ImplicitConventions = new List<AutoQueryConvention>
-            {
+            Formats = ["json", "xml", "csv"],
+            ImplicitConventions = [
                 new AutoQueryConvention { Name = "=", Value = "%" },
                 new AutoQueryConvention { Name = "!=", Value = "%!" },
                 new AutoQueryConvention { Name = ">=", Value = ">%" },
@@ -41,7 +38,7 @@ public class AutoQueryMetadataFeature : IPlugin, Model.IHasStringId
                 new AutoQueryConvention { Name = "Starts With", Value = "%StartsWith", Types = "string" },
                 new AutoQueryConvention { Name = "Contains", Value = "%Contains", Types = "string" },
                 new AutoQueryConvention { Name = "Ends With", Value = "%EndsWith", Types = "string" },
-            }
+            ]
         };
     }
 
