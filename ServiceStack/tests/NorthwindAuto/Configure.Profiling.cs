@@ -22,6 +22,7 @@ public class ConfigureProfiling : IHostingStartup
                 {
                     var vfs = new FileSystemVirtualFiles(context.HostingEnvironment.ContentRootPath);
                     services.AddHostedService<RequestLogsHostedService>();
+                    services.AddPlugin(new PostmanFeature());
                     services.AddPlugin(new RequestLogsFeature
                     {
                         RequestLogger = new SqliteRequestLogger(),

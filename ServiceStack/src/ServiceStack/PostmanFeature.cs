@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Model;
@@ -12,7 +13,7 @@ namespace ServiceStack;
 /// <summary>
 /// Postman 2 Feature
 /// </summary>
-public class PostmanFeature : IPlugin, IHasStringId, IPreInitPlugin
+public class PostmanFeature : IPlugin, IHasStringId, IPreInitPlugin, IConfigureServices
 {
     public string Id { get; set; } = Plugins.Postman;
     public string AtRestPath { get; set; }
@@ -38,8 +39,8 @@ public class PostmanFeature : IPlugin, IHasStringId, IPreInitPlugin
     {
         this.AtRestPath = "/postman";
         this.Headers = "Accept: " + MimeTypes.Json;
-        this.DefaultVerbsForAny = new List<string> { HttpMethods.Get };
-        this.DefaultLabelFmt = new List<string> { "type" };
+        this.DefaultVerbsForAny = [HttpMethods.Get];
+        this.DefaultLabelFmt = ["type"];
     }
 
     public void BeforePluginsLoaded(IAppHost appHost)
@@ -50,15 +51,18 @@ public class PostmanFeature : IPlugin, IHasStringId, IPreInitPlugin
 
     public void Register(IAppHost appHost)
     {
-        appHost.RegisterService<PostmanService>(AtRestPath);
-
         if (EnableSessionExport == null)
             EnableSessionExport = appHost.Config.DebugMode;
+    }
+
+    public void Configure(IServiceCollection services)
+    {
+        services.RegisterService(typeof(PostmanService), AtRestPath);
     }
 }
 
 [ExcludeMetadata]
-public class Postman
+public class Postman : IGet, IReturn<PostmanCollection>
 {
     public List<string> Label { get; set; }
     public bool ExportSession { get; set; }
@@ -76,7 +80,7 @@ public class PostmanCollectionInfo
 
 public class PostmanCollection
 {
-    public PostmanCollectionInfo info { get; set; } = new PostmanCollectionInfo();
+    public PostmanCollectionInfo info { get; set; } = new();
     public List<PostmanRequest> item { get; set; }
 }
 
@@ -114,12 +118,8 @@ public class PostmanRequestKeyValue
 
 public class PostmanRequest
 {
-    public PostmanRequest()
-    {
-        request = new PostmanRequestDetails();
-    }
     public string name { get; set; }
-    public PostmanRequestDetails request { get; set; }
+    public PostmanRequestDetails request { get; set; } = new();
 }
 
 public class PostmanData
