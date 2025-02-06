@@ -22,7 +22,7 @@ public abstract class BaseSoapMetadataHandler : BaseMetadataHandler
         if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) 
             return;
 
-
+        httpRes.ApplyGlobalResponseHeaders();
         if (httpReq.QueryString["xsd"] != null)
         {
 #if !NETCORE

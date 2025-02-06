@@ -19,6 +19,7 @@ public class CustomActionHandler : HttpAsyncTaskHandler
         if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
             return;
 
+        httpRes.ApplyGlobalResponseHeaders();
         Action(httpReq, httpRes);
         httpRes.EndHttpHandlerRequest(skipHeaders:true);
     }
@@ -39,6 +40,7 @@ public class CustomActionHandlerAsync : HttpAsyncTaskHandler
         if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
             return;
 
+        httpRes.ApplyGlobalResponseHeaders();
         await Action(httpReq, httpRes);
         httpRes.EndHttpHandlerRequest(skipHeaders: true);
     }

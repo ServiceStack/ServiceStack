@@ -27,9 +27,9 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
         if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
             return;
 
+        httpRes.ApplyGlobalResponseHeaders();
         httpRes.ContentType = "text/html; charset=utf-8";
         await ProcessOperationsAsync(httpRes.OutputStream, httpReq, httpRes).ConfigAwait();
-
         await httpRes.EndHttpHandlerRequestAsync(skipHeaders:true);
     }
 

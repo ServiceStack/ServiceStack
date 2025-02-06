@@ -54,6 +54,12 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
         {
             DebugMode = true,
             AdminAuthSecret = "p@55wOrd",
+            GlobalResponseHeaders =
+            {
+                { "X-Content-Type-Options", "nosniff" },
+                { "X-Frame-Options", "SAMEORIGIN" },
+                { "X-XSS-Protection", "1; mode=block" },
+            },
         });
         
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
