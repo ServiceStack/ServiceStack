@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Authentication.MongoDb</PackageId>
     <AssemblyName>ServiceStack.Authentication.MongoDb</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
     <Title>A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB</Title>
     <PackageDescription>
       A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB.
@@ -19,8 +19,8 @@
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-    <PackageReference Include="MongoDB.Bson" Version="2.30.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.30.0" />
+    <PackageReference Include="MongoDB.Bson" Version="3.1.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.1.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />

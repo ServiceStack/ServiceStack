@@ -19,7 +19,7 @@
         <PackageReference Include="Grpc.Net.Client" Version="2.67.0" />
         <PackageReference Include="Grpc.Core" Version="2.46.6" />
         <PackageReference Include="protobuf-net.Grpc" Version="1.2.2" />
-        <PackageReference Include="protobuf-net" Version="3.2.45" />
+        <PackageReference Include="protobuf-net" Version="3.2.46" />
     </ItemGroup>
 
 </Project>
