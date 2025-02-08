@@ -154,10 +154,9 @@ public class UniqueTest4 : IHasId<int>
     public string UniqueNonClustered { get; set; }
 }    
 
-public class SqlServer2012UniqueTests : OrmLiteTestBase
+[TestFixtureOrmLiteDialects(Dialect.AnySqlServer)]
+public class SqlServer2012UniqueTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public SqlServer2012UniqueTests() : base(Dialect.SqlServer2012) { }
-
     [Test]
     public void Does_create_unique_non_null_constraint()
     {
@@ -180,10 +179,9 @@ public class SqlServer2012UniqueTests : OrmLiteTestBase
     }
 }
 
-public class SqlServer2014UniqueTests : OrmLiteTestBase
+[TestFixtureOrmLiteDialects(Dialect.SqlServer2014)]
+public class SqlServer2014UniqueTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public SqlServer2014UniqueTests() : base(Dialect.SqlServer2014) { }
-
     [Test]
     public void Does_create_unique_non_null_constraint()
     {

@@ -8,9 +8,9 @@ using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Tests;
 
-[TestFixture]
+[TestFixtureOrmLiteDialects(Dialect.AnySqlServer)]
 [NonParallelizable]
-public class OrmLiteMultipleDialectProviderTests
+public class OrmLiteMultipleDialectProviderTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
     public class Person
     {
