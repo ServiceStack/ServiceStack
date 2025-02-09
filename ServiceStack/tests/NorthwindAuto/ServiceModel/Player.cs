@@ -35,6 +35,7 @@ public class CreatePlayer : ICreateDb<Player>, IReturn<IdResponse>
 [AutoApply(Behavior.AuditModify)]
 public class UpdatePlayer : IPatchDb<Player>, IReturn<IdResponse>
 {
+    [Input(Type="lookup")]
     public int Id { get; set; }
 
     [ValidateNotEmpty]
