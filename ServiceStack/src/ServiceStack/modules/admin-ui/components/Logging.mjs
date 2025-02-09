@@ -12,7 +12,9 @@ export const Logging = {
     <AutoQueryGrid ref="grid" type="RequestLog"
         selectedColumns="id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration"
         :headerTitles="{statusCode:'Status',httpMethod:'Method',operationName:'Operation',userAuthId:'UserId',ipAddress:'IP',requestDuration:'Duration'}"
-        @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id"
+        @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" 
+        :isSelected="(row) => routes.edit == row.id"
+        hide="forms"
         :rowClass="(row,i) => row.statusCode >= 300 ? (statusBackground(row.statusCode,i) + ' cursor-pointer hover:bg-yellow-50') : css.grid.getTableRowClass('stripedRows', i, routes.edit == row.id, true)"
         >
       <template #requestDuration="{requestDuration}">
