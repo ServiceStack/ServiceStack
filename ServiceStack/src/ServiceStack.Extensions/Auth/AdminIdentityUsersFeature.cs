@@ -452,22 +452,27 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         var existingUser = await feature.FindUserByIdAsync(Request, request.Id).ConfigAwait();
         if (existingUser == null)
             throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
-
-        if (request.LockUser == true)
+        
+        bool hasFiredEvents = false;
+        if (request.LockUser == true || request.UnlockUser == true || !string.IsNullOrEmpty(request.Password))
         {
-            var result = await feature.LockUserAsync(Request, existingUser).ConfigAwait();
-            result.AssertSucceeded();
-        }
-        if (request.UnlockUser == true)
-        {
-            var result = await feature.UnlockUserAsync(Request, existingUser).ConfigAwait();
-            result.AssertSucceeded();
-        }
-            
-        if (!string.IsNullOrEmpty(request.Password))
-        {
-            var result = await feature.ChangePasswordAsync(Request, existingUser, request.Password).ConfigAwait();
-            result.AssertSucceeded();
+            hasFiredEvents = true;
+            await feature.BeforeUpdateUserAsync(Request, existingUser).ConfigAwait();
+            if (request.LockUser == true)
+            {
+                var result = await feature.LockUserAsync(Request, existingUser).ConfigAwait();
+                result.AssertSucceeded();
+            }
+            if (request.UnlockUser == true)
+            {
+                var result = await feature.UnlockUserAsync(Request, existingUser).ConfigAwait();
+                result.AssertSucceeded();
+            }
+            if (!string.IsNullOrEmpty(request.Password))
+            {
+                var result = await feature.ChangePasswordAsync(Request, existingUser, request.Password).ConfigAwait();
+                result.AssertSucceeded();
+            }
         }
         else
         {
@@ -482,24 +487,37 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
             if (updateProps.Count > 0)
             {
                 updateProps.PopulateInstance(existingUser);
+                hasFiredEvents = true;
                 await feature.BeforeUpdateUserAsync(Request, existingUser).ConfigAwait();
                 var result = await feature.UpdateUserAsync(Request, existingUser);
                 result.AssertSucceeded();
-                await feature.AfterUpdateUserAsync(Request, existingUser).ConfigAwait();
             }
         }
 
-        if (!request.AddRoles.IsEmpty())
+        if (!request.AddRoles.IsEmpty() || !request.RemoveRoles.IsEmpty())
         {
-            var result = await feature.AddRolesAsync(Request, existingUser, request.AddRoles).ConfigAwait();
-            result.AssertSucceeded();
+            if (!hasFiredEvents)
+            {
+                hasFiredEvents = true;
+                await feature.BeforeUpdateUserAsync(Request, existingUser).ConfigAwait();
+            }
+            if (!request.AddRoles.IsEmpty())
+            {
+                var result = await feature.AddRolesAsync(Request, existingUser, request.AddRoles).ConfigAwait();
+                result.AssertSucceeded();
+            }
+            if (!request.RemoveRoles.IsEmpty())
+            {
+                var result = await feature.RemoveRolesAsync(Request, existingUser, request.RemoveRoles).ConfigAwait();
+                result.AssertSucceeded();
+            }
         }
-        if (!request.RemoveRoles.IsEmpty())
+
+        if (hasFiredEvents)
         {
-            var result = await feature.RemoveRolesAsync(Request, existingUser, request.RemoveRoles).ConfigAwait();
-            result.AssertSucceeded();
+            await feature.AfterUpdateUserAsync(Request, existingUser).ConfigAwait();
         }
-        
+
         var (user, roles) = await feature.GetUserAndRolesByIdAsync(Request, request.Id);
         return await CreateUserResponse(user, roles).ConfigAwait();
     }
