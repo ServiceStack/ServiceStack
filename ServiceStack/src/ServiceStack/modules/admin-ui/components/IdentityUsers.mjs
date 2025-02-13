@@ -249,10 +249,10 @@ export const EditUser = {
             await send(new AdminDeleteUser({ id:props.id }), save)
         }
         async function lockUser() {
-            await send(new AdminUpdateUser({ id:props.id, lockUser:true }), response => bind(response))
+            await send(new AdminUpdateUser({ id:props.id, lockUser:true }), save)
         }
         async function unlockUser() {
-            await send(new AdminUpdateUser({ id:props.id, unlockUser:true }), response => bind(response))
+            await send(new AdminUpdateUser({ id:props.id, unlockUser:true }), save)
         }
         async function submit() {
             const requestDto = new AdminUpdateUser({ id:props.id, userAuthProperties:{ } })
