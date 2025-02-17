@@ -16,7 +16,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public delegate object ResultsFilterHttpDelegate(Type responseType, string httpMethod, string requestUri, object? request);
+public delegate object? ResultsFilterHttpDelegate(Type responseType, string httpMethod, string requestUri, object? request);
 
 public delegate void ResultsFilterHttpResponseDelegate(HttpResponseMessage webResponse, object? response, string httpMethod, string requestUri, object? request);
 
