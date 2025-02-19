@@ -60,7 +60,7 @@ public class ConfigureAuth : IHostingStartup
 Once configured we can enable JWT Auth in Swagger UI by installing **Swashbuckle.AspNetCore**:
 
 :::copy
-`<PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />`
+`<PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />`
 :::
 
 Then enable Open API, Swagger UI, ServiceStack's support for Swagger UI and the JWT Bearer Auth option:
