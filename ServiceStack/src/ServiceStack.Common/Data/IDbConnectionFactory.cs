@@ -14,4 +14,6 @@ public interface IDbConnectionFactoryExtended : IDbConnectionFactory
 
     IDbConnection OpenDbConnectionString(string connectionString);
     IDbConnection OpenDbConnectionString(string connectionString, string providerName);
+
+    IDbConnection Use(IDbConnection connection, IDbTransaction trans=null);
 }
