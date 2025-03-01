@@ -43,7 +43,7 @@ public static class IdentityAuth
         where TUser : IdentityUser<TKey>, new()
     {
         var ctx = new IdentityAuthContext<TUser, TKey>(
-            () => new IdentityAuthSession(new ClaimsPrincipal()),
+            () => new AuthUserSession(),
             new IdentityApplicationAuthProvider<TUser, TKey>(),
             new IdentityCredentialsAuthProvider<TUser, TKey>(),
             new IdentityJwtAuthProvider<TUser, TKey>(),
@@ -638,13 +638,5 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
     }
 }
 
-public interface IRequireClaimsPrincipal
-{
-    ClaimsPrincipal User { get; set; }
-}
 
-public class IdentityAuthSession(ClaimsPrincipal user) : AuthUserSession, IRequireClaimsPrincipal
-{
-    [IgnoreDataMember] public ClaimsPrincipal User { get; set; } = user;
-}
 

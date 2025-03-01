@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -70,7 +71,12 @@ public interface IAuthSession : IRuntimeSerializable
     HashSet<string> GetUserAttributes(IRequest request);
 }
 
-public interface IAuthSessionExtended : IAuthSession
+public interface IRequireClaimsPrincipal
+{
+    ClaimsPrincipal User { get; set; }
+}
+
+public interface IAuthSessionExtended : IAuthSession, IRequireClaimsPrincipal
 {
     string Company { get; set; }
     string PrimaryEmail { get; set; }
@@ -105,6 +111,7 @@ public interface IAuthSessionExtended : IAuthSession
     string RecoveryToken { get; set; }
     int? RefId { get; set; }
     string RefIdStr { get; set; }
+    ClaimsPrincipal User { get; set; }
 
     /// <summary>
     /// High-level overridable API that ServiceStack uses to check whether a user has all requiredRoles.
