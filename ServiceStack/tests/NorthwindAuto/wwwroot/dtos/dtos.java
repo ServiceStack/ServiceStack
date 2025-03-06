@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-01-11 18:31:20
-Version: 8.53
+Date: 2025-03-06 19:46:05
+Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -44,6 +44,80 @@ public class dtos
         public MetadataApp setIncludeTypes(ArrayList<String> value) { this.includeTypes = value; return this; }
         private static Object responseType = AppMetadata.class;
         public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminCreateRole implements IReturn<IdResponse>, IPost
+    {
+        @DataMember(Order=1)
+        public String name = null;
+        
+        public String getName() { return name; }
+        public AdminCreateRole setName(String value) { this.name = value; return this; }
+        private static Object responseType = IdResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminGetRoles implements IReturn<AdminGetRolesResponse>, IGet
+    {
+        
+        private static Object responseType = AdminGetRolesResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminGetRole implements IReturn<AdminGetRoleResponse>, IGet
+    {
+        @DataMember(Order=1)
+        public String id = null;
+        
+        public String getId() { return id; }
+        public AdminGetRole setId(String value) { this.id = value; return this; }
+        private static Object responseType = AdminGetRoleResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminUpdateRole implements IReturn<IdResponse>, IPost
+    {
+        @DataMember(Order=1)
+        public String id = null;
+
+        @DataMember(Order=2)
+        public String name = null;
+
+        @DataMember(Order=3)
+        public ArrayList<Property> addClaims = null;
+
+        @DataMember(Order=4)
+        public ArrayList<Property> removeClaims = null;
+
+        @DataMember(Order=5)
+        public ResponseStatus responseStatus = null;
+        
+        public String getId() { return id; }
+        public AdminUpdateRole setId(String value) { this.id = value; return this; }
+        public String getName() { return name; }
+        public AdminUpdateRole setName(String value) { this.name = value; return this; }
+        public ArrayList<Property> getAddClaims() { return addClaims; }
+        public AdminUpdateRole setAddClaims(ArrayList<Property> value) { this.addClaims = value; return this; }
+        public ArrayList<Property> getRemoveClaims() { return removeClaims; }
+        public AdminUpdateRole setRemoveClaims(ArrayList<Property> value) { this.removeClaims = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public AdminUpdateRole setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+        private static Object responseType = IdResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminDeleteRole implements IReturnVoid, IDelete
+    {
+        @DataMember(Order=1)
+        public String id = null;
+        
+        public String getId() { return id; }
+        public AdminDeleteRole setId(String value) { this.id = value; return this; }
     }
 
     public static class AdminDashboard implements IReturn<AdminDashboardResponse>, IGet
@@ -252,6 +326,12 @@ public class dtos
 
         @DataMember(Order=17)
         public ArrayList<String> removePermissions = null;
+
+        @DataMember(Order=18)
+        public ArrayList<Property> addClaims = null;
+
+        @DataMember(Order=19)
+        public ArrayList<Property> removeClaims = null;
         
         public String getId() { return id; }
         public AdminUpdateUser setId(String value) { this.id = value; return this; }
@@ -269,6 +349,10 @@ public class dtos
         public AdminUpdateUser setAddPermissions(ArrayList<String> value) { this.addPermissions = value; return this; }
         public ArrayList<String> getRemovePermissions() { return removePermissions; }
         public AdminUpdateUser setRemovePermissions(ArrayList<String> value) { this.removePermissions = value; return this; }
+        public ArrayList<Property> getAddClaims() { return addClaims; }
+        public AdminUpdateUser setAddClaims(ArrayList<Property> value) { this.addClaims = value; return this; }
+        public ArrayList<Property> getRemoveClaims() { return removeClaims; }
+        public AdminUpdateUser setRemoveClaims(ArrayList<Property> value) { this.removeClaims = value; return this; }
         private static Object responseType = AdminUserResponse.class;
         public Object getResponseType() { return responseType; }
     }
@@ -958,6 +1042,56 @@ public class dtos
         public AppMetadata setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
+    @DataContract
+    public static class IdResponse
+    {
+        @DataMember(Order=1)
+        public String id = null;
+
+        @DataMember(Order=2)
+        public ResponseStatus responseStatus = null;
+        
+        public String getId() { return id; }
+        public IdResponse setId(String value) { this.id = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public IdResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    @DataContract
+    public static class AdminGetRolesResponse
+    {
+        @DataMember(Order=1)
+        public ArrayList<AdminRole> results = null;
+
+        @DataMember(Order=2)
+        public ResponseStatus responseStatus = null;
+        
+        public ArrayList<AdminRole> getResults() { return results; }
+        public AdminGetRolesResponse setResults(ArrayList<AdminRole> value) { this.results = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public AdminGetRolesResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    @DataContract
+    public static class AdminGetRoleResponse
+    {
+        @DataMember(Order=1)
+        public AdminRole result = null;
+
+        @DataMember(Order=2)
+        public ArrayList<Property> claims = null;
+
+        @DataMember(Order=3)
+        public ResponseStatus responseStatus = null;
+        
+        public AdminRole getResult() { return result; }
+        public AdminGetRoleResponse setResult(AdminRole value) { this.result = value; return this; }
+        public ArrayList<Property> getClaims() { return claims; }
+        public AdminGetRoleResponse setClaims(ArrayList<Property> value) { this.claims = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public AdminGetRoleResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
     public static class AdminDashboardResponse
     {
         public ServerStats serverStats = null;
@@ -1107,6 +1241,9 @@ public class dtos
         public ArrayList<HashMap<String,Object>> details = null;
 
         @DataMember(Order=4)
+        public ArrayList<Property> claims = null;
+
+        @DataMember(Order=5)
         public ResponseStatus responseStatus = null;
         
         public String getId() { return id; }
@@ -1115,6 +1252,8 @@ public class dtos
         public AdminUserResponse setResult(HashMap<String,Object> value) { this.result = value; return this; }
         public ArrayList<HashMap<String,Object>> getDetails() { return details; }
         public AdminUserResponse setDetails(ArrayList<HashMap<String,Object>> value) { this.details = value; return this; }
+        public ArrayList<Property> getClaims() { return claims; }
+        public AdminUserResponse setClaims(ArrayList<Property> value) { this.claims = value; return this; }
         public ResponseStatus getResponseStatus() { return responseStatus; }
         public AdminUserResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
@@ -1462,6 +1601,21 @@ public class dtos
         public GetValidationRulesResponse setResults(ArrayList<ValidationRule> value) { this.results = value; return this; }
         public ResponseStatus getResponseStatus() { return responseStatus; }
         public GetValidationRulesResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    @DataContract
+    public static class Property
+    {
+        @DataMember(Order=1)
+        public String name = null;
+
+        @DataMember(Order=2)
+        public String value = null;
+        
+        public String getName() { return name; }
+        public Property setName(String value) { this.name = value; return this; }
+        public String getValue() { return value; }
+        public Property setValue(String value) { this.value = value; return this; }
     }
 
     @DataContract
@@ -1996,6 +2150,12 @@ public class dtos
         public MetadataTypes setTypes(ArrayList<MetadataType> value) { this.types = value; return this; }
         public ArrayList<MetadataOperationType> getOperations() { return operations; }
         public MetadataTypes setOperations(ArrayList<MetadataOperationType> value) { this.operations = value; return this; }
+    }
+
+    @DataContract
+    public static class AdminRole
+    {
+        
     }
 
     public static class ServerStats

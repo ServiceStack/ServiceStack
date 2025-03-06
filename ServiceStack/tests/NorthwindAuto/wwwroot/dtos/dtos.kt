@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-01-11 18:31:20
-Version: 8.53
+Date: 2025-03-06 19:46:05
+Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -35,6 +35,59 @@ open class MetadataApp : IReturn<AppMetadata>, IGet
     open var includeTypes:ArrayList<String>? = null
     companion object { private val responseType = AppMetadata::class.java }
     override fun getResponseType(): Any? = MetadataApp.responseType
+}
+
+@DataContract
+open class AdminCreateRole : IReturn<IdResponse>, IPost
+{
+    @DataMember(Order=1)
+    open var name:String? = null
+    companion object { private val responseType = IdResponse::class.java }
+    override fun getResponseType(): Any? = AdminCreateRole.responseType
+}
+
+@DataContract
+open class AdminGetRoles : IReturn<AdminGetRolesResponse>, IGet
+{
+    companion object { private val responseType = AdminGetRolesResponse::class.java }
+    override fun getResponseType(): Any? = AdminGetRoles.responseType
+}
+
+@DataContract
+open class AdminGetRole : IReturn<AdminGetRoleResponse>, IGet
+{
+    @DataMember(Order=1)
+    open var id:String? = null
+    companion object { private val responseType = AdminGetRoleResponse::class.java }
+    override fun getResponseType(): Any? = AdminGetRole.responseType
+}
+
+@DataContract
+open class AdminUpdateRole : IReturn<IdResponse>, IPost
+{
+    @DataMember(Order=1)
+    open var id:String? = null
+
+    @DataMember(Order=2)
+    open var name:String? = null
+
+    @DataMember(Order=3)
+    open var addClaims:ArrayList<Property>? = null
+
+    @DataMember(Order=4)
+    open var removeClaims:ArrayList<Property>? = null
+
+    @DataMember(Order=5)
+    open var responseStatus:ResponseStatus? = null
+    companion object { private val responseType = IdResponse::class.java }
+    override fun getResponseType(): Any? = AdminUpdateRole.responseType
+}
+
+@DataContract
+open class AdminDeleteRole : IReturnVoid, IDelete
+{
+    @DataMember(Order=1)
+    open var id:String? = null
 }
 
 open class AdminDashboard : IReturn<AdminDashboardResponse>, IGet
@@ -188,6 +241,12 @@ open class AdminUpdateUser : AdminUserBase(), IReturn<AdminUserResponse>, IPut
 
     @DataMember(Order=17)
     open var removePermissions:ArrayList<String>? = null
+
+    @DataMember(Order=18)
+    open var addClaims:ArrayList<Property>? = null
+
+    @DataMember(Order=19)
+    open var removeClaims:ArrayList<Property>? = null
     companion object { private val responseType = AdminUserResponse::class.java }
     override fun getResponseType(): Any? = AdminUpdateUser.responseType
 }
@@ -603,6 +662,39 @@ open class AppMetadata
     open var meta:HashMap<String,String>? = null
 }
 
+@DataContract
+open class IdResponse
+{
+    @DataMember(Order=1)
+    open var id:String? = null
+
+    @DataMember(Order=2)
+    open var responseStatus:ResponseStatus? = null
+}
+
+@DataContract
+open class AdminGetRolesResponse
+{
+    @DataMember(Order=1)
+    open var results:ArrayList<AdminRole>? = null
+
+    @DataMember(Order=2)
+    open var responseStatus:ResponseStatus? = null
+}
+
+@DataContract
+open class AdminGetRoleResponse
+{
+    @DataMember(Order=1)
+    open var result:AdminRole? = null
+
+    @DataMember(Order=2)
+    open var claims:ArrayList<Property>? = null
+
+    @DataMember(Order=3)
+    open var responseStatus:ResponseStatus? = null
+}
+
 open class AdminDashboardResponse
 {
     open var serverStats:ServerStats? = null
@@ -700,6 +792,9 @@ open class AdminUserResponse
     open var details:ArrayList<HashMap<String,Object>>? = null
 
     @DataMember(Order=4)
+    open var claims:ArrayList<Property>? = null
+
+    @DataMember(Order=5)
     open var responseStatus:ResponseStatus? = null
 }
 
@@ -887,6 +982,16 @@ open class GetValidationRulesResponse
 
     @DataMember(Order=2)
     open var responseStatus:ResponseStatus? = null
+}
+
+@DataContract
+open class Property
+{
+    @DataMember(Order=1)
+    open var name:String? = null
+
+    @DataMember(Order=2)
+    open var value:String? = null
 }
 
 @DataContract
@@ -1125,6 +1230,11 @@ open class MetadataTypes
     open var namespaces:ArrayList<String>? = null
     open var types:ArrayList<MetadataType>? = null
     open var operations:ArrayList<MetadataOperationType>? = null
+}
+
+@DataContract
+open class AdminRole
+{
 }
 
 open class ServerStats

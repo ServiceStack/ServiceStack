@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-01-11 18:31:19
-Version: 8.53
+Date: 2025-03-06 19:46:05
+Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -44,16 +44,67 @@ export interface IPost
 {
 }
 
-export interface IPut
+export interface IDelete
 {
 }
 
-export interface IDelete
+export interface IPut
 {
 }
 
 export interface IPatch
 {
+}
+
+// @DataContract
+export class Property
+{
+    // @DataMember(Order=1)
+    public name: string;
+
+    // @DataMember(Order=2)
+    public value: string;
+
+    public constructor(init?: Partial<Property>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class ResponseError
+{
+    // @DataMember(Order=1)
+    public errorCode: string;
+
+    // @DataMember(Order=2)
+    public fieldName: string;
+
+    // @DataMember(Order=3)
+    public message: string;
+
+    // @DataMember(Order=4)
+    public meta: { [index:string]: string; };
+
+    public constructor(init?: Partial<ResponseError>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class ResponseStatus
+{
+    // @DataMember(Order=1)
+    public errorCode: string;
+
+    // @DataMember(Order=2)
+    public message: string;
+
+    // @DataMember(Order=3)
+    public stackTrace: string;
+
+    // @DataMember(Order=4)
+    public errors: ResponseError[];
+
+    // @DataMember(Order=5)
+    public meta: { [index:string]: string; };
+
+    public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -123,45 +174,6 @@ export class QueryDb<T> extends QueryBase
 {
 
     public constructor(init?: Partial<QueryDb<T>>) { super(init); (Object as any).assign(this, init); }
-}
-
-// @DataContract
-export class ResponseError
-{
-    // @DataMember(Order=1)
-    public errorCode: string;
-
-    // @DataMember(Order=2)
-    public fieldName: string;
-
-    // @DataMember(Order=3)
-    public message: string;
-
-    // @DataMember(Order=4)
-    public meta: { [index:string]: string; };
-
-    public constructor(init?: Partial<ResponseError>) { (Object as any).assign(this, init); }
-}
-
-// @DataContract
-export class ResponseStatus
-{
-    // @DataMember(Order=1)
-    public errorCode: string;
-
-    // @DataMember(Order=2)
-    public message: string;
-
-    // @DataMember(Order=3)
-    public stackTrace: string;
-
-    // @DataMember(Order=4)
-    public errors: ResponseError[];
-
-    // @DataMember(Order=5)
-    public meta: { [index:string]: string; };
-
-    public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
 }
 
 export class RequestLog
@@ -1073,6 +1085,13 @@ export class MetadataTypes
     public constructor(init?: Partial<MetadataTypes>) { (Object as any).assign(this, init); }
 }
 
+// @DataContract
+export class AdminRole
+{
+
+    public constructor(init?: Partial<AdminRole>) { (Object as any).assign(this, init); }
+}
+
 export class ServerStats
 {
     public redis: { [index:string]: number; };
@@ -1338,6 +1357,45 @@ export class AppMetadata
     public constructor(init?: Partial<AppMetadata>) { (Object as any).assign(this, init); }
 }
 
+// @DataContract
+export class IdResponse
+{
+    // @DataMember(Order=1)
+    public id: string;
+
+    // @DataMember(Order=2)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<IdResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class AdminGetRolesResponse
+{
+    // @DataMember(Order=1)
+    public results: AdminRole[];
+
+    // @DataMember(Order=2)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminGetRolesResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class AdminGetRoleResponse
+{
+    // @DataMember(Order=1)
+    public result: AdminRole;
+
+    // @DataMember(Order=2)
+    public claims: Property[];
+
+    // @DataMember(Order=3)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminGetRoleResponse>) { (Object as any).assign(this, init); }
+}
+
 export class AdminDashboardResponse
 {
     public serverStats: ServerStats;
@@ -1443,6 +1501,9 @@ export class AdminUserResponse
     public details: { [index:string]: Object; }[];
 
     // @DataMember(Order=4)
+    public claims: Property[];
+
+    // @DataMember(Order=5)
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<AdminUserResponse>) { (Object as any).assign(this, init); }
@@ -1667,6 +1728,76 @@ export class MetadataApp implements IReturn<AppMetadata>, IGet
     public createResponse() { return new AppMetadata(); }
 }
 
+// @DataContract
+export class AdminCreateRole implements IReturn<IdResponse>, IPost
+{
+    // @DataMember(Order=1)
+    public name: string;
+
+    public constructor(init?: Partial<AdminCreateRole>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminCreateRole'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @DataContract
+export class AdminGetRoles implements IReturn<AdminGetRolesResponse>, IGet
+{
+
+    public constructor(init?: Partial<AdminGetRoles>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminGetRoles'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminGetRolesResponse(); }
+}
+
+// @DataContract
+export class AdminGetRole implements IReturn<AdminGetRoleResponse>, IGet
+{
+    // @DataMember(Order=1)
+    public id: string;
+
+    public constructor(init?: Partial<AdminGetRole>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminGetRole'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new AdminGetRoleResponse(); }
+}
+
+// @DataContract
+export class AdminUpdateRole implements IReturn<IdResponse>, IPost
+{
+    // @DataMember(Order=1)
+    public id: string;
+
+    // @DataMember(Order=2)
+    public name: string;
+
+    // @DataMember(Order=3)
+    public addClaims: Property[];
+
+    // @DataMember(Order=4)
+    public removeClaims: Property[];
+
+    // @DataMember(Order=5)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<AdminUpdateRole>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminUpdateRole'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @DataContract
+export class AdminDeleteRole implements IReturnVoid, IDelete
+{
+    // @DataMember(Order=1)
+    public id: string;
+
+    public constructor(init?: Partial<AdminDeleteRole>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'AdminDeleteRole'; }
+    public getMethod() { return 'DELETE'; }
+    public createResponse() {}
+}
+
 export class AdminDashboard implements IReturn<AdminDashboardResponse>, IGet
 {
 
@@ -1835,6 +1966,12 @@ export class AdminUpdateUser extends AdminUserBase implements IReturn<AdminUserR
 
     // @DataMember(Order=17)
     public removePermissions: string[];
+
+    // @DataMember(Order=18)
+    public addClaims: Property[];
+
+    // @DataMember(Order=19)
+    public removeClaims: Property[];
 
     public constructor(init?: Partial<AdminUpdateUser>) { super(init); (Object as any).assign(this, init); }
     public getTypeName() { return 'AdminUpdateUser'; }

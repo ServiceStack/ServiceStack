@@ -1,7 +1,7 @@
 /* Options:
-Date: 2025-01-11 18:31:20
+Date: 2025-03-06 19:46:05
 SwiftVersion: 6.0
-Version: 8.53
+Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -34,6 +34,68 @@ public class MetadataApp : IReturn, IGet, Codable
 
     // @DataMember(Order=2)
     public var includeTypes:[String]?
+
+    required public init(){}
+}
+
+// @DataContract
+public class AdminCreateRole : IReturn, IPost, Codable
+{
+    public typealias Return = IdResponse
+
+    // @DataMember(Order=1)
+    public var name:String?
+
+    required public init(){}
+}
+
+// @DataContract
+public class AdminGetRoles : IReturn, IGet, Codable
+{
+    public typealias Return = AdminGetRolesResponse
+
+    required public init(){}
+}
+
+// @DataContract
+public class AdminGetRole : IReturn, IGet, Codable
+{
+    public typealias Return = AdminGetRoleResponse
+
+    // @DataMember(Order=1)
+    public var id:String?
+
+    required public init(){}
+}
+
+// @DataContract
+public class AdminUpdateRole : IReturn, IPost, Codable
+{
+    public typealias Return = IdResponse
+
+    // @DataMember(Order=1)
+    public var id:String?
+
+    // @DataMember(Order=2)
+    public var name:String?
+
+    // @DataMember(Order=3)
+    public var addClaims:[Property]?
+
+    // @DataMember(Order=4)
+    public var removeClaims:[Property]?
+
+    // @DataMember(Order=5)
+    public var responseStatus:ResponseStatus?
+
+    required public init(){}
+}
+
+// @DataContract
+public class AdminDeleteRole : IReturnVoid, IDelete, Codable
+{
+    // @DataMember(Order=1)
+    public var id:String?
 
     required public init(){}
 }
@@ -224,6 +286,12 @@ public class AdminUpdateUser : AdminUserBase, IReturn, IPut
     // @DataMember(Order=17)
     public var removePermissions:[String]?
 
+    // @DataMember(Order=18)
+    public var addClaims:[Property]?
+
+    // @DataMember(Order=19)
+    public var removeClaims:[Property]?
+
     required public init(){ super.init() }
 
     private enum CodingKeys : String, CodingKey {
@@ -235,6 +303,8 @@ public class AdminUpdateUser : AdminUserBase, IReturn, IPut
         case removeRoles
         case addPermissions
         case removePermissions
+        case addClaims
+        case removeClaims
     }
 
     required public init(from decoder: Decoder) throws {
@@ -248,6 +318,8 @@ public class AdminUpdateUser : AdminUserBase, IReturn, IPut
         removeRoles = try container.decodeIfPresent([String].self, forKey: .removeRoles) ?? []
         addPermissions = try container.decodeIfPresent([String].self, forKey: .addPermissions) ?? []
         removePermissions = try container.decodeIfPresent([String].self, forKey: .removePermissions) ?? []
+        addClaims = try container.decodeIfPresent([Property].self, forKey: .addClaims) ?? []
+        removeClaims = try container.decodeIfPresent([Property].self, forKey: .removeClaims) ?? []
     }
 
     public override func encode(to encoder: Encoder) throws {
@@ -261,6 +333,8 @@ public class AdminUpdateUser : AdminUserBase, IReturn, IPut
         if removeRoles != nil { try container.encode(removeRoles, forKey: .removeRoles) }
         if addPermissions != nil { try container.encode(addPermissions, forKey: .addPermissions) }
         if removePermissions != nil { try container.encode(removePermissions, forKey: .removePermissions) }
+        if addClaims != nil { try container.encode(addClaims, forKey: .addClaims) }
+        if removeClaims != nil { try container.encode(removeClaims, forKey: .removeClaims) }
     }
 }
 
@@ -820,6 +894,45 @@ public class AppMetadata : Codable
     required public init(){}
 }
 
+// @DataContract
+public class IdResponse : Codable
+{
+    // @DataMember(Order=1)
+    public var id:String?
+
+    // @DataMember(Order=2)
+    public var responseStatus:ResponseStatus?
+
+    required public init(){}
+}
+
+// @DataContract
+public class AdminGetRolesResponse : Codable
+{
+    // @DataMember(Order=1)
+    public var results:[AdminRole]?
+
+    // @DataMember(Order=2)
+    public var responseStatus:ResponseStatus?
+
+    required public init(){}
+}
+
+// @DataContract
+public class AdminGetRoleResponse : Codable
+{
+    // @DataMember(Order=1)
+    public var result:AdminRole?
+
+    // @DataMember(Order=2)
+    public var claims:[Property]?
+
+    // @DataMember(Order=3)
+    public var responseStatus:ResponseStatus?
+
+    required public init(){}
+}
+
 public class AdminDashboardResponse : Codable
 {
     public var serverStats:ServerStats?
@@ -925,6 +1038,9 @@ public class AdminUserResponse : Codable
     public var details:[[String:String]]?
 
     // @DataMember(Order=4)
+    public var claims:[Property]?
+
+    // @DataMember(Order=5)
     public var responseStatus:ResponseStatus?
 
     required public init(){}
@@ -1120,6 +1236,18 @@ public class GetValidationRulesResponse : Codable
 
     // @DataMember(Order=2)
     public var responseStatus:ResponseStatus?
+
+    required public init(){}
+}
+
+// @DataContract
+public class Property : Codable
+{
+    // @DataMember(Order=1)
+    public var name:String?
+
+    // @DataMember(Order=2)
+    public var value:String?
 
     required public init(){}
 }
@@ -1457,6 +1585,12 @@ public class MetadataTypes : Codable
     public var types:[MetadataType]?
     public var operations:[MetadataOperationType]?
 
+    required public init(){}
+}
+
+// @DataContract
+public class AdminRole : Codable
+{
     required public init(){}
 }
 

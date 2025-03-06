@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-01-11 18:31:20
-Version: 8.53
+Date: 2025-03-06 19:46:05
+Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -15,6 +15,33 @@ BaseUrl: http://localhost:20000
 */
 
 import 'package:servicestack/servicestack.dart';
+
+// @DataContract
+class Property implements IConvertible
+{
+    // @DataMember(Order=1)
+    String? name;
+
+    // @DataMember(Order=2)
+    String? value;
+
+    Property({this.name,this.value});
+    Property.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        name = json['name'];
+        value = json['value'];
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'name': name,
+        'value': value
+    };
+
+    getTypeName() => "Property";
+    TypeContext? context = _ctx;
+}
 
 // @DataContract
 abstract class AdminUserBase
@@ -2665,6 +2692,20 @@ class MetadataTypes implements IConvertible
     TypeContext? context = _ctx;
 }
 
+// @DataContract
+class AdminRole implements IConvertible
+{
+    AdminRole();
+    AdminRole.fromJson(Map<String, dynamic> json) : super();
+    fromMap(Map<String, dynamic> json) {
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {};
+    getTypeName() => "AdminRole";
+    TypeContext? context = _ctx;
+}
+
 class ServerStats implements IConvertible
 {
     Map<String,int?>? redis;
@@ -3238,6 +3279,65 @@ class RequestLogEntry implements IConvertible
     TypeContext? context = _ctx;
 }
 
+// @DataContract
+class AdminGetRolesResponse implements IConvertible
+{
+    // @DataMember(Order=1)
+    List<AdminRole>? results;
+
+    // @DataMember(Order=2)
+    ResponseStatus? responseStatus;
+
+    AdminGetRolesResponse({this.results,this.responseStatus});
+    AdminGetRolesResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        results = JsonConverters.fromJson(json['results'],'List<AdminRole>',context!);
+        responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'results': JsonConverters.toJson(results,'List<AdminRole>',context!),
+        'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
+    };
+
+    getTypeName() => "AdminGetRolesResponse";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
+class AdminGetRoleResponse implements IConvertible
+{
+    // @DataMember(Order=1)
+    AdminRole? result;
+
+    // @DataMember(Order=2)
+    List<Property>? claims;
+
+    // @DataMember(Order=3)
+    ResponseStatus? responseStatus;
+
+    AdminGetRoleResponse({this.result,this.claims,this.responseStatus});
+    AdminGetRoleResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        result = JsonConverters.fromJson(json['result'],'AdminRole',context!);
+        claims = JsonConverters.fromJson(json['claims'],'List<Property>',context!);
+        responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'result': JsonConverters.toJson(result,'AdminRole',context!),
+        'claims': JsonConverters.toJson(claims,'List<Property>',context!),
+        'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
+    };
+
+    getTypeName() => "AdminGetRoleResponse";
+    TypeContext? context = _ctx;
+}
+
 class AdminDashboardResponse implements IConvertible
 {
     ServerStats? serverStats;
@@ -3274,15 +3374,19 @@ class AdminUserResponse implements IConvertible
     List<Map<String,dynamic>>? details;
 
     // @DataMember(Order=4)
+    List<Property>? claims;
+
+    // @DataMember(Order=5)
     ResponseStatus? responseStatus;
 
-    AdminUserResponse({this.id,this.result,this.details,this.responseStatus});
+    AdminUserResponse({this.id,this.result,this.details,this.claims,this.responseStatus});
     AdminUserResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         id = json['id'];
         result = JsonConverters.fromJson(json['result'],'Map<String,dynamic?>',context!);
         details = JsonConverters.fromJson(json['details'],'List<Map<String,dynamic>>',context!);
+        claims = JsonConverters.fromJson(json['claims'],'List<Property>',context!);
         responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
         return this;
     }
@@ -3291,6 +3395,7 @@ class AdminUserResponse implements IConvertible
         'id': id,
         'result': JsonConverters.toJson(result,'Map<String,dynamic?>',context!),
         'details': JsonConverters.toJson(details,'List<Map<String,dynamic>>',context!),
+        'claims': JsonConverters.toJson(claims,'List<Property>',context!),
         'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
     };
 
@@ -3807,6 +3912,137 @@ class GetValidationRulesResponse implements IConvertible
     TypeContext? context = _ctx;
 }
 
+// @DataContract
+class AdminCreateRole implements IReturn<IdResponse>, IPost, IConvertible
+{
+    // @DataMember(Order=1)
+    String? name;
+
+    AdminCreateRole({this.name});
+    AdminCreateRole.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        name = json['name'];
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'name': name
+    };
+
+    createResponse() => IdResponse();
+    getResponseTypeName() => "IdResponse";
+    getTypeName() => "AdminCreateRole";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
+class AdminGetRoles implements IReturn<AdminGetRolesResponse>, IGet, IConvertible
+{
+    AdminGetRoles();
+    AdminGetRoles.fromJson(Map<String, dynamic> json) : super();
+    fromMap(Map<String, dynamic> json) {
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {};
+    createResponse() => AdminGetRolesResponse();
+    getResponseTypeName() => "AdminGetRolesResponse";
+    getTypeName() => "AdminGetRoles";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
+class AdminGetRole implements IReturn<AdminGetRoleResponse>, IGet, IConvertible
+{
+    // @DataMember(Order=1)
+    String? id;
+
+    AdminGetRole({this.id});
+    AdminGetRole.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        id = json['id'];
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'id': id
+    };
+
+    createResponse() => AdminGetRoleResponse();
+    getResponseTypeName() => "AdminGetRoleResponse";
+    getTypeName() => "AdminGetRole";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
+class AdminUpdateRole implements IReturn<IdResponse>, IPost, IConvertible
+{
+    // @DataMember(Order=1)
+    String? id;
+
+    // @DataMember(Order=2)
+    String? name;
+
+    // @DataMember(Order=3)
+    List<Property>? addClaims;
+
+    // @DataMember(Order=4)
+    List<Property>? removeClaims;
+
+    // @DataMember(Order=5)
+    ResponseStatus? responseStatus;
+
+    AdminUpdateRole({this.id,this.name,this.addClaims,this.removeClaims,this.responseStatus});
+    AdminUpdateRole.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        id = json['id'];
+        name = json['name'];
+        addClaims = JsonConverters.fromJson(json['addClaims'],'List<Property>',context!);
+        removeClaims = JsonConverters.fromJson(json['removeClaims'],'List<Property>',context!);
+        responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'addClaims': JsonConverters.toJson(addClaims,'List<Property>',context!),
+        'removeClaims': JsonConverters.toJson(removeClaims,'List<Property>',context!),
+        'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
+    };
+
+    createResponse() => IdResponse();
+    getResponseTypeName() => "IdResponse";
+    getTypeName() => "AdminUpdateRole";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
+class AdminDeleteRole implements IReturnVoid, IDelete, IConvertible
+{
+    // @DataMember(Order=1)
+    String? id;
+
+    AdminDeleteRole({this.id});
+    AdminDeleteRole.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        id = json['id'];
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'id': id
+    };
+
+    createResponse() {}
+    getTypeName() => "AdminDeleteRole";
+    TypeContext? context = _ctx;
+}
+
 class AdminDashboard implements IReturn<AdminDashboardResponse>, IGet, IConvertible
 {
     AdminDashboard();
@@ -3942,7 +4178,13 @@ class AdminUpdateUser extends AdminUserBase implements IReturn<AdminUserResponse
     // @DataMember(Order=17)
     List<String>? removePermissions;
 
-    AdminUpdateUser({this.id,this.lockUser,this.unlockUser,this.lockUserUntil,this.addRoles,this.removeRoles,this.addPermissions,this.removePermissions});
+    // @DataMember(Order=18)
+    List<Property>? addClaims;
+
+    // @DataMember(Order=19)
+    List<Property>? removeClaims;
+
+    AdminUpdateUser({this.id,this.lockUser,this.unlockUser,this.lockUserUntil,this.addRoles,this.removeRoles,this.addPermissions,this.removePermissions,this.addClaims,this.removeClaims});
     AdminUpdateUser.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
@@ -3955,6 +4197,8 @@ class AdminUpdateUser extends AdminUserBase implements IReturn<AdminUserResponse
         removeRoles = JsonConverters.fromJson(json['removeRoles'],'List<String>',context!);
         addPermissions = JsonConverters.fromJson(json['addPermissions'],'List<String>',context!);
         removePermissions = JsonConverters.fromJson(json['removePermissions'],'List<String>',context!);
+        addClaims = JsonConverters.fromJson(json['addClaims'],'List<Property>',context!);
+        removeClaims = JsonConverters.fromJson(json['removeClaims'],'List<Property>',context!);
         return this;
     }
 
@@ -3966,7 +4210,9 @@ class AdminUpdateUser extends AdminUserBase implements IReturn<AdminUserResponse
         'addRoles': JsonConverters.toJson(addRoles,'List<String>',context!),
         'removeRoles': JsonConverters.toJson(removeRoles,'List<String>',context!),
         'addPermissions': JsonConverters.toJson(addPermissions,'List<String>',context!),
-        'removePermissions': JsonConverters.toJson(removePermissions,'List<String>',context!)
+        'removePermissions': JsonConverters.toJson(removePermissions,'List<String>',context!),
+        'addClaims': JsonConverters.toJson(addClaims,'List<Property>',context!),
+        'removeClaims': JsonConverters.toJson(removeClaims,'List<Property>',context!)
     });
 
     createResponse() => AdminUserResponse();
@@ -4929,6 +5175,7 @@ class ModifyValidationRules implements IReturnVoid, IConvertible, IPost
 }
 
 TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
+    'Property': TypeInfo(TypeOf.Class, create:() => Property()),
     'AdminUserBase': TypeInfo(TypeOf.AbstractClass),
     'RequestLog': TypeInfo(TypeOf.Class, create:() => RequestLog()),
     'RedisEndpointInfo': TypeInfo(TypeOf.Class, create:() => RedisEndpointInfo()),
@@ -5014,6 +5261,7 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'MetadataTypes': TypeInfo(TypeOf.Class, create:() => MetadataTypes()),
     'List<MetadataType>': TypeInfo(TypeOf.Class, create:() => <MetadataType>[]),
     'List<MetadataOperationType>': TypeInfo(TypeOf.Class, create:() => <MetadataOperationType>[]),
+    'AdminRole': TypeInfo(TypeOf.Class, create:() => AdminRole()),
     'ServerStats': TypeInfo(TypeOf.Class, create:() => ServerStats()),
     'Map<String,int?>': TypeInfo(TypeOf.Class, create:() => Map<String,int?>()),
     'DiagnosticEntry': TypeInfo(TypeOf.Class, create:() => DiagnosticEntry()),
@@ -5028,6 +5276,10 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'HourSummary': TypeInfo(TypeOf.Class, create:() => HourSummary()),
     'WorkerStats': TypeInfo(TypeOf.Class, create:() => WorkerStats()),
     'RequestLogEntry': TypeInfo(TypeOf.Class, create:() => RequestLogEntry()),
+    'AdminGetRolesResponse': TypeInfo(TypeOf.Class, create:() => AdminGetRolesResponse()),
+    'List<AdminRole>': TypeInfo(TypeOf.Class, create:() => <AdminRole>[]),
+    'AdminGetRoleResponse': TypeInfo(TypeOf.Class, create:() => AdminGetRoleResponse()),
+    'List<Property>': TypeInfo(TypeOf.Class, create:() => <Property>[]),
     'AdminDashboardResponse': TypeInfo(TypeOf.Class, create:() => AdminDashboardResponse()),
     'AdminUserResponse': TypeInfo(TypeOf.Class, create:() => AdminUserResponse()),
     'List<Map<String,dynamic>>': TypeInfo(TypeOf.Class, create:() => <Map<String,dynamic>>[]),
@@ -5062,6 +5314,11 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'List<RequestLogEntry>': TypeInfo(TypeOf.Class, create:() => <RequestLogEntry>[]),
     'GetValidationRulesResponse': TypeInfo(TypeOf.Class, create:() => GetValidationRulesResponse()),
     'List<ValidationRule>': TypeInfo(TypeOf.Class, create:() => <ValidationRule>[]),
+    'AdminCreateRole': TypeInfo(TypeOf.Class, create:() => AdminCreateRole()),
+    'AdminGetRoles': TypeInfo(TypeOf.Class, create:() => AdminGetRoles()),
+    'AdminGetRole': TypeInfo(TypeOf.Class, create:() => AdminGetRole()),
+    'AdminUpdateRole': TypeInfo(TypeOf.Class, create:() => AdminUpdateRole()),
+    'AdminDeleteRole': TypeInfo(TypeOf.Class, create:() => AdminDeleteRole()),
     'AdminDashboard': TypeInfo(TypeOf.Class, create:() => AdminDashboard()),
     'AdminGetUser': TypeInfo(TypeOf.Class, create:() => AdminGetUser()),
     'AdminQueryUsers': TypeInfo(TypeOf.Class, create:() => AdminQueryUsers()),

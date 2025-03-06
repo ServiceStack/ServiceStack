@@ -1,7 +1,7 @@
 <?php namespace dtos;
 /* Options:
-Date: 2025-01-11 18:31:20
-Version: 8.53
+Date: 2025-03-06 19:46:05
+Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -26,6 +26,36 @@ use ServiceStack\{ICrud,ICreateDb,IUpdateDb,IPatchDb,IDeleteDb,ISaveDb,AuditBase
 use ServiceStack\{ResponseStatus,ResponseError,EmptyResponse,IdResponse,ArrayList,KeyValuePair2,StringResponse,StringsResponse,Tuple2,Tuple3,ByteArray};
 use ServiceStack\{JsonConverters,Returns,TypeContext};
 
+
+// @DataContract
+class Property implements JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var string|null */
+        public ?string $name=null,
+
+        // @DataMember(Order=2)
+        /** @var string|null */
+        public ?string $value=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['name'])) $this->name = $o['name'];
+        if (isset($o['value'])) $this->value = $o['value'];
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->name)) $o['name'] = $this->name;
+        if (isset($this->value)) $o['value'] = $this->value;
+        return empty($o) ? new class(){} : $o;
+    }
+}
 
 // @DataContract
 class AdminUserBase implements JsonSerializable
@@ -3497,6 +3527,18 @@ class MetadataTypes implements JsonSerializable
     }
 }
 
+// @DataContract
+class AdminRole implements JsonSerializable
+{
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        return empty($o) ? new class(){} : $o;
+    }
+}
+
 class ServerStats implements JsonSerializable
 {
     public function __construct(
@@ -4197,6 +4239,72 @@ class RequestLogEntry implements JsonSerializable
     }
 }
 
+// @DataContract
+class AdminGetRolesResponse implements JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var array<AdminRole>|null */
+        public ?array $results=null,
+
+        // @DataMember(Order=2)
+        /** @var ResponseStatus|null */
+        public ?ResponseStatus $responseStatus=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['results'])) $this->results = JsonConverters::fromArray('AdminRole', $o['results']);
+        if (isset($o['responseStatus'])) $this->responseStatus = JsonConverters::from('ResponseStatus', $o['responseStatus']);
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->results)) $o['results'] = JsonConverters::toArray('AdminRole', $this->results);
+        if (isset($this->responseStatus)) $o['responseStatus'] = JsonConverters::to('ResponseStatus', $this->responseStatus);
+        return empty($o) ? new class(){} : $o;
+    }
+}
+
+// @DataContract
+class AdminGetRoleResponse implements JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var AdminRole|null */
+        public ?AdminRole $result=null,
+
+        // @DataMember(Order=2)
+        /** @var array<Property>|null */
+        public ?array $claims=null,
+
+        // @DataMember(Order=3)
+        /** @var ResponseStatus|null */
+        public ?ResponseStatus $responseStatus=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['result'])) $this->result = JsonConverters::from('AdminRole', $o['result']);
+        if (isset($o['claims'])) $this->claims = JsonConverters::fromArray('Property', $o['claims']);
+        if (isset($o['responseStatus'])) $this->responseStatus = JsonConverters::from('ResponseStatus', $o['responseStatus']);
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->result)) $o['result'] = JsonConverters::to('AdminRole', $this->result);
+        if (isset($this->claims)) $o['claims'] = JsonConverters::toArray('Property', $this->claims);
+        if (isset($this->responseStatus)) $o['responseStatus'] = JsonConverters::to('ResponseStatus', $this->responseStatus);
+        return empty($o) ? new class(){} : $o;
+    }
+}
+
 class AdminDashboardResponse implements JsonSerializable
 {
     public function __construct(
@@ -4240,6 +4348,10 @@ class AdminUserResponse implements JsonSerializable
         public ?array $details=null,
 
         // @DataMember(Order=4)
+        /** @var array<Property>|null */
+        public ?array $claims=null,
+
+        // @DataMember(Order=5)
         /** @var ResponseStatus|null */
         public ?ResponseStatus $responseStatus=null
     ) {
@@ -4250,6 +4362,7 @@ class AdminUserResponse implements JsonSerializable
         if (isset($o['id'])) $this->id = $o['id'];
         if (isset($o['result'])) $this->result = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','Object']), $o['result']);
         if (isset($o['details'])) $this->details = JsonConverters::fromArray('Dictionary<String,Object>', $o['details']);
+        if (isset($o['claims'])) $this->claims = JsonConverters::fromArray('Property', $o['claims']);
         if (isset($o['responseStatus'])) $this->responseStatus = JsonConverters::from('ResponseStatus', $o['responseStatus']);
     }
     
@@ -4260,6 +4373,7 @@ class AdminUserResponse implements JsonSerializable
         if (isset($this->id)) $o['id'] = $this->id;
         if (isset($this->result)) $o['result'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','Object']), $this->result);
         if (isset($this->details)) $o['details'] = JsonConverters::toArray('Dictionary<String,Object>', $this->details);
+        if (isset($this->claims)) $o['claims'] = JsonConverters::toArray('Property', $this->claims);
         if (isset($this->responseStatus)) $o['responseStatus'] = JsonConverters::to('ResponseStatus', $this->responseStatus);
         return empty($o) ? new class(){} : $o;
     }
@@ -4855,6 +4969,157 @@ class GetValidationRulesResponse implements JsonSerializable
     }
 }
 
+// @DataContract
+#[Returns('IdResponse')]
+class AdminCreateRole implements IReturn, IPost, JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var string|null */
+        public ?string $name=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['name'])) $this->name = $o['name'];
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->name)) $o['name'] = $this->name;
+        return empty($o) ? new class(){} : $o;
+    }
+    public function getTypeName(): string { return 'AdminCreateRole'; }
+    public function getMethod(): string { return 'POST'; }
+    public function createResponse(): mixed { return new IdResponse(); }
+}
+
+// @DataContract
+#[Returns('AdminGetRolesResponse')]
+class AdminGetRoles implements IReturn, IGet, JsonSerializable
+{
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        return empty($o) ? new class(){} : $o;
+    }
+    public function getTypeName(): string { return 'AdminGetRoles'; }
+    public function getMethod(): string { return 'GET'; }
+    public function createResponse(): mixed { return new AdminGetRolesResponse(); }
+}
+
+// @DataContract
+#[Returns('AdminGetRoleResponse')]
+class AdminGetRole implements IReturn, IGet, JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var string|null */
+        public ?string $id=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['id'])) $this->id = $o['id'];
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->id)) $o['id'] = $this->id;
+        return empty($o) ? new class(){} : $o;
+    }
+    public function getTypeName(): string { return 'AdminGetRole'; }
+    public function getMethod(): string { return 'GET'; }
+    public function createResponse(): mixed { return new AdminGetRoleResponse(); }
+}
+
+// @DataContract
+#[Returns('IdResponse')]
+class AdminUpdateRole implements IReturn, IPost, JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var string|null */
+        public ?string $id=null,
+
+        // @DataMember(Order=2)
+        /** @var string|null */
+        public ?string $name=null,
+
+        // @DataMember(Order=3)
+        /** @var array<Property>|null */
+        public ?array $addClaims=null,
+
+        // @DataMember(Order=4)
+        /** @var array<Property>|null */
+        public ?array $removeClaims=null,
+
+        // @DataMember(Order=5)
+        /** @var ResponseStatus|null */
+        public ?ResponseStatus $responseStatus=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['id'])) $this->id = $o['id'];
+        if (isset($o['name'])) $this->name = $o['name'];
+        if (isset($o['addClaims'])) $this->addClaims = JsonConverters::fromArray('Property', $o['addClaims']);
+        if (isset($o['removeClaims'])) $this->removeClaims = JsonConverters::fromArray('Property', $o['removeClaims']);
+        if (isset($o['responseStatus'])) $this->responseStatus = JsonConverters::from('ResponseStatus', $o['responseStatus']);
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->id)) $o['id'] = $this->id;
+        if (isset($this->name)) $o['name'] = $this->name;
+        if (isset($this->addClaims)) $o['addClaims'] = JsonConverters::toArray('Property', $this->addClaims);
+        if (isset($this->removeClaims)) $o['removeClaims'] = JsonConverters::toArray('Property', $this->removeClaims);
+        if (isset($this->responseStatus)) $o['responseStatus'] = JsonConverters::to('ResponseStatus', $this->responseStatus);
+        return empty($o) ? new class(){} : $o;
+    }
+    public function getTypeName(): string { return 'AdminUpdateRole'; }
+    public function getMethod(): string { return 'POST'; }
+    public function createResponse(): mixed { return new IdResponse(); }
+}
+
+// @DataContract
+class AdminDeleteRole implements IReturnVoid, IDelete, JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var string|null */
+        public ?string $id=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['id'])) $this->id = $o['id'];
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->id)) $o['id'] = $this->id;
+        return empty($o) ? new class(){} : $o;
+    }
+    public function getTypeName(): string { return 'AdminDeleteRole'; }
+    public function getMethod(): string { return 'DELETE'; }
+    public function createResponse(): void {}
+}
+
 #[Returns('AdminDashboardResponse')]
 class AdminDashboard implements IReturn, IGet, JsonSerializable
 {
@@ -5059,7 +5324,15 @@ class AdminUpdateUser extends AdminUserBase implements IReturn, IPut, JsonSerial
 
         // @DataMember(Order=17)
         /** @var array<string>|null */
-        public ?array $removePermissions=null
+        public ?array $removePermissions=null,
+
+        // @DataMember(Order=18)
+        /** @var array<Property>|null */
+        public ?array $addClaims=null,
+
+        // @DataMember(Order=19)
+        /** @var array<Property>|null */
+        public ?array $removeClaims=null
     ) {
         parent::__construct($userName,$firstName,$lastName,$displayName,$email,$password,$profileUrl,$phoneNumber,$userAuthProperties,$meta);
     }
@@ -5075,6 +5348,8 @@ class AdminUpdateUser extends AdminUserBase implements IReturn, IPut, JsonSerial
         if (isset($o['removeRoles'])) $this->removeRoles = JsonConverters::fromArray('string', $o['removeRoles']);
         if (isset($o['addPermissions'])) $this->addPermissions = JsonConverters::fromArray('string', $o['addPermissions']);
         if (isset($o['removePermissions'])) $this->removePermissions = JsonConverters::fromArray('string', $o['removePermissions']);
+        if (isset($o['addClaims'])) $this->addClaims = JsonConverters::fromArray('Property', $o['addClaims']);
+        if (isset($o['removeClaims'])) $this->removeClaims = JsonConverters::fromArray('Property', $o['removeClaims']);
     }
     
     /** @throws Exception */
@@ -5089,6 +5364,8 @@ class AdminUpdateUser extends AdminUserBase implements IReturn, IPut, JsonSerial
         if (isset($this->removeRoles)) $o['removeRoles'] = JsonConverters::toArray('string', $this->removeRoles);
         if (isset($this->addPermissions)) $o['addPermissions'] = JsonConverters::toArray('string', $this->addPermissions);
         if (isset($this->removePermissions)) $o['removePermissions'] = JsonConverters::toArray('string', $this->removePermissions);
+        if (isset($this->addClaims)) $o['addClaims'] = JsonConverters::toArray('Property', $this->addClaims);
+        if (isset($this->removeClaims)) $o['removeClaims'] = JsonConverters::toArray('Property', $this->removeClaims);
         return empty($o) ? new class(){} : $o;
     }
     public function getTypeName(): string { return 'AdminUpdateUser'; }

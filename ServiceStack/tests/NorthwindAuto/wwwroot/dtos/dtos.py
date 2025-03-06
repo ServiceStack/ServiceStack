@@ -1,6 +1,6 @@
 """ Options:
-Date: 2025-01-11 18:31:20
-Version: 8.53
+Date: 2025-03-06 19:46:05
+Version: 8.61
 Tip: To override a DTO option, remove "#" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -24,6 +24,13 @@ from typing import *
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json, LetterCase, Undefined, config
 from enum import Enum, IntEnum
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class Property:
+    name: Optional[str] = None
+    value: Optional[str] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -874,6 +881,12 @@ class MetadataTypes:
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
+class AdminRole:
+    pass
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
 class ServerStats:
     redis: Optional[Dict[str, int]] = None
     server_events: Optional[Dict[str, str]] = None
@@ -1047,6 +1060,21 @@ class RequestLogEntry:
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
+class AdminGetRolesResponse:
+    results: Optional[List[AdminRole]] = None
+    response_status: Optional[ResponseStatus] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class AdminGetRoleResponse:
+    result: Optional[AdminRole] = None
+    claims: Optional[List[Property]] = None
+    response_status: Optional[ResponseStatus] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
 class AdminDashboardResponse:
     server_stats: Optional[ServerStats] = None
     response_status: Optional[ResponseStatus] = None
@@ -1058,6 +1086,7 @@ class AdminUserResponse:
     id: Optional[str] = None
     result: Optional[Dict[str, Object]] = None
     details: Optional[List[Dict[str, Object]]] = None
+    claims: Optional[List[Property]] = None
     response_status: Optional[ResponseStatus] = None
 
 
@@ -1212,6 +1241,40 @@ class GetValidationRulesResponse:
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
+class AdminCreateRole(IReturn[IdResponse], IPost):
+    name: Optional[str] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class AdminGetRoles(IReturn[AdminGetRolesResponse], IGet):
+    pass
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class AdminGetRole(IReturn[AdminGetRoleResponse], IGet):
+    id: Optional[str] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class AdminUpdateRole(IReturn[IdResponse], IPost):
+    id: Optional[str] = None
+    name: Optional[str] = None
+    add_claims: Optional[List[Property]] = None
+    remove_claims: Optional[List[Property]] = None
+    response_status: Optional[ResponseStatus] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class AdminDeleteRole(IReturnVoid, IDelete):
+    id: Optional[str] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
 class AdminDashboard(IReturn[AdminDashboardResponse], IGet):
     pass
 
@@ -1249,6 +1312,8 @@ class AdminUpdateUser(AdminUserBase, IReturn[AdminUserResponse], IPut):
     remove_roles: Optional[List[str]] = None
     add_permissions: Optional[List[str]] = None
     remove_permissions: Optional[List[str]] = None
+    add_claims: Optional[List[Property]] = None
+    remove_claims: Optional[List[Property]] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
