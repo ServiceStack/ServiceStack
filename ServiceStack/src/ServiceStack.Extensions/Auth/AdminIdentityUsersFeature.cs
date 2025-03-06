@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,11 +39,20 @@ public interface IIdentityAdminUsersFeature
     Task<IdentityResult> CreateUserAsync(IRequest request, object user, string password, List<string>? roles=null);
     Task<IdentityResult> AddRolesAsync(IRequest request, object user, IEnumerable<string> roles);
     Task<IdentityResult> RemoveRolesAsync(IRequest request, object user, IEnumerable<string> roles);
+    Task<IdentityResult> AddClaimsAsync(IRequest request, object user, IEnumerable<Claim> claims);
+    Task<IdentityResult> RemoveClaimsAsync(IRequest request, object user, IEnumerable<Claim> claims);
 
     Task<IEnumerable<object>> SearchUsersAsync(IRequest request, string query, string? orderBy = null, int? skip = null, int? take = null);
     public Task<object?> FindUserByIdAsync(IRequest request, string userId);
     Task<(object, List<string>)> GetUserAndRolesByIdAsync(IRequest request, string userId);
+    Task<(object, List<string>, List<Claim>)> GetUserInfoByIdAsync(IRequest request, string userId);
     Task DeleteUserByIdAsync(string requestId);
+
+    Task<List<IdentityRole>> GetAllRolesAsync(IRequest request);
+    Task<(IdentityRole, IList<Claim>)> GetRoleAndClaimsAsync(IRequest request, string roleId);
+    Task<IdentityRole> CreateRoleAsync(IRequest request, string role);
+    Task<IdentityRole> UpdateRoleAsync(IRequest request, string id, string role, IEnumerable<Claim>? addClaims = null, IEnumerable<Claim>? removeClaims = null);
+    Task DeleteRoleByIdAsync(IRequest request, string id);
 }
 
 public static class IdentityAdminUsers
@@ -96,6 +106,11 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
         return await Manager.GetUserAndRolesByIdAsync(userId, request).ConfigAwait();
     }
 
+    public async Task<(object, List<string>, List<Claim>)>  GetUserInfoByIdAsync(IRequest request, string userId)
+    {
+        return await Manager.GetUserInfoByIdAsync(userId, request).ConfigAwait();
+    }
+
     public async Task DeleteUserByIdAsync(string requestId)
     {
         await Manager.DeleteUserByIdAsync(requestId);
@@ -136,6 +151,16 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
         return await Manager.RemoveRolesAsync((TUser)user, roles, request).ConfigAwait();
     }
 
+    public async Task<IdentityResult> AddClaimsAsync(IRequest request, object user, IEnumerable<Claim> claims)
+    {
+        return await Manager.AddClaimsAsync((TUser)user, claims, request).ConfigAwait();
+    }
+
+    public async Task<IdentityResult> RemoveClaimsAsync(IRequest request, object user, IEnumerable<Claim> claims)
+    {
+        return await Manager.RemoveClaimsAsync((TUser)user, claims, request).ConfigAwait();
+    }
+
     public async Task<IdentityResult> CreateUserAsync(IRequest request, object user, string password, List<string>? roles=null)
     {
         var typedUser = (TUser)user;
@@ -154,6 +179,31 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
         return await Manager.SearchUsersAsync(query, orderBy, skip, take, request).ConfigAwait();
     }
 
+    public Task<List<IdentityRole>> GetAllRolesAsync(IRequest request)
+    {
+        return Manager.GetAllRolesAsync(request);
+    }
+
+    public Task<(IdentityRole,IList<Claim>)> GetRoleAndClaimsAsync(IRequest request, string roleId)
+    {
+        return Manager.GetRoleAndClaimsAsync(roleId, request);
+    }
+    
+    public Task<IdentityRole> CreateRoleAsync(IRequest request, string role)
+    {
+        return Manager.CreateRoleAsync(role, request);
+    }
+
+    public Task<IdentityRole> UpdateRoleAsync(IRequest request, string id, string role, IEnumerable<Claim>? addClaims = null, IEnumerable<Claim>? removeClaims = null)
+    {
+        return Manager.UpdateRoleAsync(id, role, addClaims, removeClaims, request);
+    }
+
+    public Task DeleteRoleByIdAsync(IRequest request, string id)
+    {
+        return Manager.DeleteRoleByIdAsync(id, request);
+    }
+    
     /// <summary>
     /// Return only specified UserAuth Properties in AdminQueryUsers
     /// </summary>
@@ -330,6 +380,13 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
                 Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Users)),
                 Show = $"role:{AdminRole}",
             });
+            feature.AddAdminLink(AdminUiFeature.Users, new LinkInfo
+            {
+                Id = "roles",
+                Label = "Roles",
+                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Role)),
+                Show = $"role:{AdminRole}",
+            });
         });
     }
 
@@ -414,8 +471,8 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         if (request.Id == null)
             throw new ArgumentNullException(nameof(request.Id));
 
-        var (user, roles) = await feature.GetUserAndRolesByIdAsync(Request, request.Id);
-        return await CreateUserResponse(user, roles).ConfigAwait();
+        var (user, roles, claims) = await feature.GetUserInfoByIdAsync(Request, request.Id);
+        return await CreateUserResponse(user, roles, claims).ConfigAwait();
     }
 
     public async Task<object> Post(AdminCreateUser request)
@@ -493,8 +550,8 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
                 result.AssertSucceeded();
             }
         }
-
-        if (!request.AddRoles.IsEmpty() || !request.RemoveRoles.IsEmpty())
+        
+        if (!request.AddRoles.IsEmpty() || !request.RemoveRoles.IsEmpty() || !request.AddClaims.IsEmpty() || !request.RemoveClaims.IsEmpty())
         {
             if (!hasFiredEvents)
             {
@@ -511,15 +568,27 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
                 var result = await feature.RemoveRolesAsync(Request, existingUser, request.RemoveRoles).ConfigAwait();
                 result.AssertSucceeded();
             }
+            if (!request.AddClaims.IsEmpty())
+            {
+                var result = await feature.AddClaimsAsync(Request, existingUser, 
+                    request.AddClaims.Select(x => new Claim(x.Name, x.Value))).ConfigAwait();
+                result.AssertSucceeded();
+            }
+            if (!request.RemoveClaims.IsEmpty())
+            {
+                var result = await feature.RemoveClaimsAsync(Request, existingUser, 
+                    request.RemoveClaims.Select(x => new Claim(x.Name, x.Value))).ConfigAwait();
+                result.AssertSucceeded();
+            }
         }
-
+        
         if (hasFiredEvents)
         {
             await feature.AfterUpdateUserAsync(Request, existingUser).ConfigAwait();
         }
 
-        var (user, roles) = await feature.GetUserAndRolesByIdAsync(Request, request.Id);
-        return await CreateUserResponse(user, roles).ConfigAwait();
+        var (user, roles, claims) = await feature.GetUserInfoByIdAsync(Request, request.Id);
+        return await CreateUserResponse(user, roles, claims).ConfigAwait();
     }
 
     public async Task<object> Delete(AdminDeleteUser request)
@@ -540,7 +609,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         };
     }
 
-    private async Task<object> CreateUserResponse(object user, List<string> roles)
+    private async Task<object> CreateUserResponse(object user, List<string> roles, List<Claim> claims)
     {
         if (user == null)
             throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
@@ -551,6 +620,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         return new AdminUserResponse {
             Id = userProps["Id"]!.ToString(),
             Result = userProps,
+            Claims = claims.Map(x => new Property { Name = x.Type, Value = x.Value }),
         };
     }
 
@@ -562,6 +632,70 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
             userProps.Remove(removeProp);
         }
         return userProps;
+    }
+
+    public async Task<object> Get(AdminGetRoles request)
+    {
+        await AssertRequiredRole();
+
+        var roles = await feature.GetAllRolesAsync(Request!).ConfigAwait();
+
+        return new AdminGetRolesResponse {
+            Results = roles.Map(x => new AdminRole
+            {
+                Id = x.Id,
+                Name = x.Name,
+            })
+        };
+    }
+
+    public async Task<AdminGetRoleResponse> Get(AdminGetRole request)
+    {
+        await AssertRequiredRole();
+
+        var (role,claims) = await feature.GetRoleAndClaimsAsync(Request!, request.Id).ConfigAwait();
+
+        return new AdminGetRoleResponse {
+            Result = new AdminRole
+            {
+                Id = role.Id,
+                Name = role.Name,
+            },
+            Claims = claims.Map(x => new Property
+            {
+                Name = x.Type,
+                Value = x.Value,
+            })
+        };
+    }
+
+    public async Task<IdResponse> Post(AdminCreateRole request)
+    {
+        await AssertRequiredRole();
+        var role = await feature.CreateRoleAsync(Request!, request.Name).ConfigAwait();
+
+        return new IdResponse
+        {
+            Id = role.Id, 
+        };
+    }
+
+    public async Task<IdResponse> Post(AdminUpdateRole request)
+    {
+        await AssertRequiredRole();
+        var role = await feature.UpdateRoleAsync(Request!, request.Id, request.Name,
+            request.AddClaims?.Select(x => new Claim(x.Name, x.Value)),    
+            request.RemoveClaims?.Select(x => new Claim(x.Name, x.Value))).ConfigAwait();
+        return new IdResponse
+        {
+            Id = role.Id
+        };
+    }
+
+    public async Task Delete(AdminDeleteRole request)
+    {
+        await AssertRequiredRole();
+        await feature.DeleteRoleByIdAsync(Request!, request.Id).ConfigAwait();
     }
 }
 

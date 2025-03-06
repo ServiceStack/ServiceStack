@@ -611,7 +611,7 @@ public abstract class AdminUserBase : IMeta
     public T GetUserProperty<T>(string name) => 
         UserAuthProperties.TryGetValue(name, out var value) ? value.ConvertTo<T>() : default;
 }
-    
+
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public partial class AdminGetUser : IGet, IReturn<AdminUserResponse>
 {
@@ -642,6 +642,8 @@ public partial class AdminUpdateUser : AdminUserBase, IPut, IReturn<AdminUserRes
     [DataMember(Order = 15)] public List<string> RemoveRoles { get; set; }
     [DataMember(Order = 16)] public List<string> AddPermissions { get; set; }
     [DataMember(Order = 17)] public List<string> RemovePermissions { get; set; }
+    [DataMember(Order = 18)] public List<Property> AddClaims { get; set; }
+    [DataMember(Order = 19)] public List<Property> RemoveClaims { get; set; }
 }
     
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
@@ -663,7 +665,8 @@ public partial class AdminUserResponse : IHasResponseStatus
     [DataMember(Order = 1)] public string Id { get; set; }
     [DataMember(Order = 2)] public Dictionary<string,object> Result { get; set; }
     [DataMember(Order = 3)] public List<Dictionary<string,object>> Details { get; set; }
-    [DataMember(Order = 4)] public ResponseStatus ResponseStatus { get; set; }
+    [DataMember(Order = 4)] public List<Property> Claims { get; set; }
+    [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
 }
     
 [DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
@@ -680,6 +683,60 @@ public partial class AdminUsersResponse : IHasResponseStatus
 {
     [DataMember(Order = 1)] public List<Dictionary<string,object>> Results { get; set; }
     [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
+}
+
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
+public partial class AdminGetRoles : IGet, IReturn<AdminGetRolesResponse> {}
+[DataContract]
+public partial class AdminGetRolesResponse : IHasResponseStatus
+{
+    [DataMember(Order = 1)] public List<AdminRole> Results { get; set; }
+    [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
+}
+[DataContract]
+public class AdminRole
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+}
+
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
+public partial class AdminGetRole : IGet, IReturn<AdminGetRoleResponse>
+{
+    [DataMember(Order = 1)] public string Id { get; set; }
+}
+[DataContract]
+public partial class AdminGetRoleResponse : IHasResponseStatus
+{
+    [DataMember(Order = 1)] public AdminRole Result { get; set; }
+    [DataMember(Order = 2)] public List<Property> Claims { get; set; }
+    [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
+}
+
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
+public partial class AdminCreateRole : IPost, IReturn<IdResponse>
+{
+    [DataMember(Order = 1)] public string Name { get; set; }
+}
+
+#if NET8_0_OR_GREATER
+[SystemJson(UseSystemJson.Response)]
+#endif
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
+public partial class AdminUpdateRole : IPost, IReturn<IdResponse>
+{
+    [Input(Type="text", ReadOnly = true)]
+    [DataMember(Order = 1)] public string Id { get; set; }
+    [DataMember(Order = 2)] public string Name { get; set; }
+    [DataMember(Order = 3)] public List<Property> AddClaims { get; set; }
+    [DataMember(Order = 4)] public List<Property> RemoveClaims { get; set; }
+    [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
+}
+
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
+public partial class AdminDeleteRole : IDelete, IReturnVoid
+{
+    [DataMember(Order = 1)] public string Id { get; set; }
 }
 
 [DataContract, ValidateIsAuthenticated, ExcludeMetadata]

@@ -31,6 +31,7 @@ public static class ErrorMessages
     public static string InvalidAccessToken = "AccessToken is Invalid";
     public static string SessionIdEmpty = "Session not set. Is Session being set in RequestFilters?";
     public static string Requires2FA = "Session not set. Is Session being set in RequestFilters?";
+    public static string RoleNotExists = "Role does not exist";
 
     public static string AccessDenied = "Access Denied";
     public static string InvalidRole = "Invalid Role";

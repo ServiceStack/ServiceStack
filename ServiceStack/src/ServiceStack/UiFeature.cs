@@ -23,7 +23,8 @@ public enum AdminUiFeature
     Commands       = 1 << 6,
     ApiKeys        = 1 << 7,
     BackgroundJobs = 1 << 8,
-    All = Users | Validation | Logging | Profiling | Redis | Database | Commands | ApiKeys | BackgroundJobs,
+    Roles          = 1 << 9,
+    All = Users | Validation | Logging | Profiling | Redis | Database | Commands | ApiKeys | BackgroundJobs | Roles,
 }
 
 public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitPlugin, IHasStringId

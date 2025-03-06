@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-01-11 18:31:20
-Version: 8.53
+Date: 2025-03-06 19:46:05
+Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 //AddServiceStackTypes: True
@@ -11,6 +11,40 @@ BaseUrl: http://localhost:20000
 //DefaultImports: 
 */
 "use strict";
+export class Property {
+    /** @param {{name?:string,value?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {string} */
+    value;
+}
+export class ResponseError {
+    /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    errorCode;
+    /** @type {string} */
+    fieldName;
+    /** @type {string} */
+    message;
+    /** @type {{ [index:string]: string; }} */
+    meta;
+}
+export class ResponseStatus {
+    /** @param {{errorCode?:string,message?:string,stackTrace?:string,errors?:ResponseError[],meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    errorCode;
+    /** @type {string} */
+    message;
+    /** @type {string} */
+    stackTrace;
+    /** @type {ResponseError[]} */
+    errors;
+    /** @type {{ [index:string]: string; }} */
+    meta;
+}
 export class AdminUserBase {
     /** @param {{userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -57,32 +91,6 @@ export class QueryBase {
 export class QueryDb extends QueryBase {
     /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
-}
-export class ResponseError {
-    /** @param {{errorCode?:string,fieldName?:string,message?:string,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    errorCode;
-    /** @type {string} */
-    fieldName;
-    /** @type {string} */
-    message;
-    /** @type {{ [index:string]: string; }} */
-    meta;
-}
-export class ResponseStatus {
-    /** @param {{errorCode?:string,message?:string,stackTrace?:string,errors?:ResponseError[],meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    errorCode;
-    /** @type {string} */
-    message;
-    /** @type {string} */
-    stackTrace;
-    /** @type {ResponseError[]} */
-    errors;
-    /** @type {{ [index:string]: string; }} */
-    meta;
 }
 export class RequestLog {
     /** @param {{id?:number,traceId?:string,operationName?:string,dateTime?:string,statusCode?:number,statusDescription?:string,httpMethod?:string,absoluteUri?:string,pathInfo?:string,request?:string,requestBody?:string,userAuthId?:string,sessionId?:string,ipAddress?:string,forwardedFor?:string,referer?:string,headers?:{ [index:string]: string; },formData?:{ [index:string]: string; },items?:{ [index:string]: string; },responseHeaders?:{ [index:string]: string; },response?:string,responseBody?:string,sessionBody?:string,error?:ResponseStatus,exceptionSource?:string,exceptionDataBody?:string,requestDuration?:string,meta?:{ [index:string]: string; }}} [init] */
@@ -1380,6 +1388,9 @@ export class MetadataTypes {
     /** @type {MetadataOperationType[]} */
     operations;
 }
+export class AdminRole {
+    constructor(init) { Object.assign(this, init) }
+}
 export class ServerStats {
     /** @param {{redis?:{ [index:string]: number; },serverEvents?:{ [index:string]: string; },mqDescription?:string,mqWorkers?:{ [index:string]: number; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1705,6 +1716,32 @@ export class AppMetadata {
     /** @type {{ [index:string]: string; }} */
     meta;
 }
+export class IdResponse {
+    /** @param {{id?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    id;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetRolesResponse {
+    /** @param {{results?:AdminRole[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {AdminRole[]} */
+    results;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetRoleResponse {
+    /** @param {{result?:AdminRole,claims?:Property[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {AdminRole} */
+    result;
+    /** @type {Property[]} */
+    claims;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
 export class AdminDashboardResponse {
     /** @param {{serverStats?:ServerStats,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1770,7 +1807,7 @@ export class UnAssignRolesResponse {
     responseStatus;
 }
 export class AdminUserResponse {
-    /** @param {{id?:string,result?:{ [index:string]: Object; },details?:{ [index:string]: Object; }[],responseStatus?:ResponseStatus}} [init] */
+    /** @param {{id?:string,result?:{ [index:string]: Object; },details?:{ [index:string]: Object; }[],claims?:Property[],responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     id;
@@ -1778,6 +1815,8 @@ export class AdminUserResponse {
     result;
     /** @type {{ [index:string]: Object; }[]} */
     details;
+    /** @type {Property[]} */
+    claims;
     /** @type {ResponseStatus} */
     responseStatus;
 }
@@ -1994,6 +2033,56 @@ export class MetadataApp {
     getMethod() { return 'GET' }
     createResponse() { return new AppMetadata() }
 }
+export class AdminCreateRole {
+    /** @param {{name?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    getTypeName() { return 'AdminCreateRole' }
+    getMethod() { return 'POST' }
+    createResponse() { return new IdResponse() }
+}
+export class AdminGetRoles {
+    constructor(init) { Object.assign(this, init) }
+    getTypeName() { return 'AdminGetRoles' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetRolesResponse() }
+}
+export class AdminGetRole {
+    /** @param {{id?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    id;
+    getTypeName() { return 'AdminGetRole' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetRoleResponse() }
+}
+export class AdminUpdateRole {
+    /** @param {{id?:string,name?:string,addClaims?:Property[],removeClaims?:Property[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    id;
+    /** @type {string} */
+    name;
+    /** @type {Property[]} */
+    addClaims;
+    /** @type {Property[]} */
+    removeClaims;
+    /** @type {ResponseStatus} */
+    responseStatus;
+    getTypeName() { return 'AdminUpdateRole' }
+    getMethod() { return 'POST' }
+    createResponse() { return new IdResponse() }
+}
+export class AdminDeleteRole {
+    /** @param {{id?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    id;
+    getTypeName() { return 'AdminDeleteRole' }
+    getMethod() { return 'DELETE' }
+    createResponse() { }
+}
 export class AdminDashboard {
     constructor(init) { Object.assign(this, init) }
     getTypeName() { return 'AdminDashboard' }
@@ -2093,7 +2182,7 @@ export class AdminCreateUser extends AdminUserBase {
     createResponse() { return new AdminUserResponse() }
 }
 export class AdminUpdateUser extends AdminUserBase {
-    /** @param {{id?:string,lockUser?:boolean,unlockUser?:boolean,lockUserUntil?:string,addRoles?:string[],removeRoles?:string[],addPermissions?:string[],removePermissions?:string[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
+    /** @param {{id?:string,lockUser?:boolean,unlockUser?:boolean,lockUserUntil?:string,addRoles?:string[],removeRoles?:string[],addPermissions?:string[],removePermissions?:string[],addClaims?:Property[],removeClaims?:Property[],userName?:string,firstName?:string,lastName?:string,displayName?:string,email?:string,password?:string,profileUrl?:string,phoneNumber?:string,userAuthProperties?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {string} */
     id;
@@ -2111,6 +2200,10 @@ export class AdminUpdateUser extends AdminUserBase {
     addPermissions;
     /** @type {string[]} */
     removePermissions;
+    /** @type {Property[]} */
+    addClaims;
+    /** @type {Property[]} */
+    removeClaims;
     getTypeName() { return 'AdminUpdateUser' }
     getMethod() { return 'PUT' }
     createResponse() { return new AdminUserResponse() }

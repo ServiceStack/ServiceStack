@@ -13,6 +13,8 @@ using ServiceStack.NativeTypes;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using System.Text;
+using System.Text.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NetCoreTests;
 
@@ -201,18 +203,18 @@ public class PublishTasks
 
     class AppHost : AppSelfHostBase
     {
-        public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService), typeof(UiServices)) {}
+        public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService), typeof(UiServices), typeof(AdminServices)) {}
         public override void Configure(Container container)
         {
             Metadata.ForceInclude =
             [
                 typeof(MetadataApp),
                 typeof(AppMetadata),
-                typeof(AdminQueryUsers),
-                typeof(AdminGetUser),
-                typeof(AdminCreateUser),
-                typeof(AdminUpdateUser),
-                typeof(AdminDeleteUser),
+                typeof(AdminQueryUsers),typeof(AdminUsersResponse),typeof(AdminGetUser),typeof(AdminCreateUser),typeof(AdminUpdateUser),typeof(AdminDeleteUser),
+
+                typeof(AdminGetRoles),typeof(AdminGetRolesResponse),typeof(AdminGetRole),typeof(AdminGetRoleResponse),
+                typeof(AdminCreateRole),typeof(AdminUpdateRole),typeof(AdminDeleteRole),
+
                 typeof(GetCrudEvents),
                 typeof(GetValidationRules),
                 typeof(ModifyValidationRules),
@@ -288,7 +290,9 @@ public class PublishTasks
         
         File.WriteAllText(Path.GetFullPath("./admin-ui/lib/dtos.mjs"), mjs);
         
-        var metadata = baseUrl.CombineWith("/api/AdminMetadataTypes").GetStringFromUrl();
+        var origMetadata = baseUrl.CombineWith("/api/AdminMetadataTypes").GetStringFromUrl();
+        var elMetadata = JsonSerializer.Deserialize<JsonElement>(origMetadata);
+        var metadata = JsonSerializer.Serialize(elMetadata, new JsonSerializerOptions { WriteIndented = true });
 
         var metadataJs = $"export default {metadata}";
         File.WriteAllText(Path.GetFullPath("./admin-ui/lib/metadata.mjs"), metadataJs);
@@ -409,6 +413,13 @@ public class UiServices : Service
         typeof(FailedJob),
         typeof(WorkerStats),
     ];
+
+    // APIs using AutoForm APIs
+    public static Type[] AdminAuthTypes =
+    [
+        typeof(AdminCreateRole),
+        typeof(AdminUpdateRole),
+    ];
     
     // Generate app metadata.js required for all AutoQuery APIs in built-in UIs
     public object Any(AdminMetadataTypes request)
@@ -420,6 +431,13 @@ public class UiServices : Service
             var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
             var responseType = returnMarker?.GetGenericArguments()[0];
             meta.Add(typeof(AdminJobServices), requestType, responseType);
+        }
+
+        foreach (var requestType in AdminAuthTypes)
+        {
+            var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
+            var responseType = returnMarker?.GetGenericArguments()[0];
+            meta.Add(typeof(AdminServices), requestType, responseType);
         }
 
         var config = new MetadataTypesConfig
@@ -443,7 +461,14 @@ public class UiServices : Service
     }
 }
 
-
+public class AdminServices : Service
+{
+    public object Any(AdminCreateRole request) => request;
+    public object Any(AdminGetRoles request) => request;
+    public object Any(AdminGetRole request) => request;
+    public object Any(AdminUpdateRole request) => request;
+    public object Any(AdminDeleteRole request) => request;
+}
 
 public static class TypeScriptDefinitionUtils
 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security.Claims;
 using System.Threading;
@@ -167,6 +168,13 @@ public static class IdentityAuth
         var dbUsers = (Microsoft.EntityFrameworkCore.DbSet<TUser>) TypeProperties.Get(dbContext.GetType()).GetPublicGetter(
             nameof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<IdentityUser>.Users))(dbContext);
         return dbUsers;
+    }
+
+    public static Microsoft.EntityFrameworkCore.DbSet<TRole> ResolveDbRoles<TRole>(Microsoft.EntityFrameworkCore.DbContext dbContext) where TRole : class
+    {
+        var dbRoles = (Microsoft.EntityFrameworkCore.DbSet<TRole>) TypeProperties.Get(dbContext.GetType()).GetPublicGetter(
+            nameof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext.Roles))(dbContext);
+        return dbRoles;
     }
 }
 
@@ -545,7 +553,49 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
             return await RemoveRoles(userManager).ConfigAwait();
         }
     }
+    
+    public async Task<IdentityResult> AddClaimsAsync(TUser user, IEnumerable<Claim> claims, IRequest? request = null)
+    {
+        async Task<IdentityResult> AddClaims(UserManager<TUser> userManager)
+        {
+            return await userManager.AddClaimsAsync(user, claims).ConfigAwait();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await AddClaims(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await AddClaims(userManager).ConfigAwait();
+        }
+    }
 
+    public async Task<IdentityResult> RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, IRequest? request = null)
+    {
+        async Task<IdentityResult> RemoveClaims(UserManager<TUser> userManager)
+        {
+            return await userManager.RemoveClaimsAsync(user, claims).ConfigAwait();
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            return await RemoveClaims(userManager).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            return await RemoveClaims(userManager).ConfigAwait();
+        }
+    }
+    
     public Task<TUser?> FindUserByIdAsync(string userId, IRequest? request = null) =>
         FindUserAsync(userManager => userManager.FindByIdAsync(userId), request);
 
@@ -613,7 +663,7 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
 
             if (user == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
-
+            
             var roles = (await userManager.GetRolesAsync(user).ConfigAwait()).ToList();
             return (user, roles);
         }
@@ -636,7 +686,193 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
             return (user, roles);
         }
     }
+    
+    public Task<(TUser, List<string>, List<Claim>)>  GetUserInfoByIdAsync(string userId, IRequest? request = null) =>
+        GetUserInfoAsync(userManager => userManager.FindByIdAsync(userId), request);
+    
+    public async Task<(TUser, List<string>, List<Claim>)> GetUserInfoAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
+    {
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            var user = await findUser(userManager).ConfigAwait();
+
+            if (user == null)
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+            
+            var roles = (await userManager.GetRolesAsync(user).ConfigAwait()).ToList();
+            var claims = (await userManager.GetClaimsAsync(user).ConfigAwait()).ToList();
+            return (user, roles, claims);
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            var user = await findUser(userManager).ConfigAwait();
+            
+            if (user == null)
+            {
+                var session = await request.GetSessionAsync().ConfigAwait();
+                if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
+                    user = context.SessionToUserConverter(session);
+            }
+
+            if (user == null)
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+
+            var roles = (await userManager.GetRolesAsync(user).ConfigAwait()).ToList();
+            var claims = (await userManager.GetClaimsAsync(user).ConfigAwait()).ToList();
+            return (user, roles, claims);
+        }
+    }
+
+    public Task<List<IdentityRole>> GetAllRolesAsync(IRequest? request = null)
+    {
+        async Task<List<IdentityRole>> GetAllRoles(RoleManager<IdentityRole> roleManager)
+        {
+            return await roleManager.Roles.ToListAsync().ConfigAwait();
+        }
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            return GetAllRoles(roleManager);
+        }
+        else
+        {
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            return GetAllRoles(roleManager);
+        }
+    }
+
+    public Task<(IdentityRole, IList<Claim>)> GetRoleAndClaimsAsync(string roleId, IRequest? request = null)
+    {
+        async Task<(IdentityRole, IList<Claim>)> GetAllRoleClaims(RoleManager<IdentityRole> roleManager)
+        {
+            var role = await roleManager.FindByIdAsync(roleId).ConfigAwait();
+            if (role == null)
+                throw HttpError.NotFound(ErrorMessages.RoleNotExists.Localize(request));
+            return (role, await roleManager.GetClaimsAsync(role).ConfigAwait());
+        }
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            return GetAllRoleClaims(roleManager);
+        }
+        else
+        {
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            return GetAllRoleClaims(roleManager);
+        }
+    }
+
+    public async Task<IdentityRole> UpdateRoleAsync(string id, string role, 
+        IEnumerable<Claim>? addClaims = null, IEnumerable<Claim>? removeClaims = null, 
+        IRequest? request = null)
+    {
+        async Task<IdentityRole> UpdateRole(RoleManager<IdentityRole> roleManager)
+        {
+            var existingRole = await roleManager.FindByIdAsync(id).ConfigAwait();
+            if (existingRole == null)
+                throw HttpError.NotFound(ErrorMessages.RoleNotExists.Localize(request));
+            existingRole.Name = role;
+            var result = await roleManager.UpdateAsync(existingRole).ConfigAwait();
+            if (!result.Succeeded)
+                throw new Exception(result.Errors.First().Description);
+
+            List<Task<IdentityResult>> tasks = new();
+            if (removeClaims?.Count() > 0)
+            {
+                var allClaims = await roleManager.GetClaimsAsync(existingRole).ConfigAwait();
+                var removeExistingClaims = removeClaims
+                    .Select(x => allClaims.FirstOrDefault(c => x.Type == c.Type && x.Value == c.Value))
+                    .Where(c => c != null)
+                    .Select(c => c!)
+                    .ToList();
+                if (removeExistingClaims.Count > 0)
+                {
+                    tasks.AddRange(removeExistingClaims
+                        .Select(claim => roleManager.RemoveClaimAsync(existingRole, claim)));
+                }
+            }
+
+            if (addClaims?.Count() > 0)
+            {
+                tasks.AddRange(addClaims.Select(c => roleManager.AddClaimAsync(existingRole, c)));
+            }
+            
+            var results = await Task.WhenAll(tasks.ToArray()).ConfigAwait();
+            if (results.Any(x => !x.Succeeded))
+            {
+                throw new Exception(results.First(x => !x.Succeeded).Errors.First().Description);
+            }
+            
+            return existingRole;
+        }
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            return await UpdateRole(roleManager).ConfigAwait();
+        }
+        else
+        {
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            return await UpdateRole(roleManager).ConfigAwait();
+        }
+    }
+
+    public async Task<IdentityRole> CreateRoleAsync(string role, IRequest? request = null)
+    {
+        async Task<IdentityRole> CreateRole(RoleManager<IdentityRole> roleManager)
+        {
+            var newRole = new IdentityRole(role);
+            var result = await roleManager.CreateAsync(newRole).ConfigAwait();
+            if (!result.Succeeded)
+                throw new Exception(result.Errors.First().Description);
+            return newRole;
+        }
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            return await CreateRole(roleManager).ConfigAwait();
+        }
+        else
+        {
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            return await CreateRole(roleManager).ConfigAwait();
+        }
+    }
+
+    public Task DeleteRoleByIdAsync(string id, IRequest? request = null)
+    {
+        async Task DeleteRole(RoleManager<IdentityRole> roleManager)
+        {
+            var role = await roleManager.FindByIdAsync(id).ConfigAwait();
+            if (role == null)
+                throw HttpError.NotFound(ErrorMessages.RoleNotExists.Localize(request));
+            var result = await roleManager.DeleteAsync(role).ConfigAwait();
+            if (!result.Succeeded)
+                throw new Exception(result.Errors.First().Description);
+        }
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            return DeleteRole(roleManager);
+        }
+        else
+        {
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            return DeleteRole(roleManager);
+        }
+    }
 }
-
-
-

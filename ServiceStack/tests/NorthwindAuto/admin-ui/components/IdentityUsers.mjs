@@ -1,8 +1,7 @@
 import { inject, nextTick, onMounted, onUnmounted, ref, computed, watch } from "vue"
 import { useClient, useMetadata } from "@servicestack/vue"
-import { AdminCreateUser, AdminDeleteUser, AdminGetUser, AdminQueryUsers, AdminUpdateUser } from "dtos"
+import { AdminCreateUser, AdminDeleteUser, AdminGetUser, AdminQueryUsers, AdminUsersResponse, AdminUpdateUser, AdminUserResponse, Property } from "dtos"
 import { apiValueFmt, map, mapGet, humanify, ApiResult, toCamelCase, dateFmt } from "@servicestack/client"
-import { mapGetForInput } from "core"
 
 /**: cheap nav update without creating multiple App.events subs per child component */
 let adminUsersNav = null
@@ -198,6 +197,51 @@ export const EditUser = {
             </div>
 
             <div class="mt-8 pt-4 border-t border-gray-900/10 px-4 sm:px-6">
+              <h2 class="mb-3 text-lg font-medium text-gray-900 dark:text-gray-50" id="SlideOver-title">Manage Claims</h2>
+              <div v-if="claims.length" class="mb-2 shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                  <tr>
+                    <th class="group cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Name</th>
+                    <th class="group cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Value</th>
+                    <th class="w-8"></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-for="(row,index) in claims" :key="row.id"
+                      :class="[index % 2 === 0 ? 'bg-white' : 'bg-gray-50']">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {{row.name}}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {{row.value}}
+                    </td>
+                    <td class="w-8">
+                      <span title="Delete Role" class="cursor-pointer" @click="deleteClaim(row)"><svg class="w-5 h-5 cursor-pointer hover:text-red-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="currentColor" d="M12 12h2v12h-2zm6 0h2v12h-2z"></path><path fill="currentColor" d="M4 6v2h2v20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8h2V6zm4 22V8h16v20zm4-26h8v2h-8z"></path></svg></span>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+              <form @submit.prevent="addClaim" autocomplete="off">
+                <input type="submit" class="hidden">
+                <div class="pt-2 flex items-end">
+                  <div class="flex-grow grid grid-cols-6 gap-2">
+                    <div class="col-span-6 sm:col-span-3">
+                      <TextInput id="claimName" v-model="newClaim.name" required placeholder="Name" />
+                    </div>
+                    <div class="col-span-6 sm:col-span-3">
+                      <TextInput id="claimValue" v-model="newClaim.value" required placeholder="Value" />
+                    </div>
+                  </div>
+                  <div class="flex-shrink">
+                    <SecondaryButton class="ml-2 mt-2" @click="addClaim" :disabled="!newClaim.name || !newClaim.value">Add Claim</SecondaryButton>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-gray-900/10 px-4 sm:px-6">
               <ManageUserApiKeys v-if="store.plugins?.apiKey" :user="request" />
             </div>
             
@@ -236,6 +280,15 @@ export const EditUser = {
         const origRoles = ref([])
         const roles = ref([])
 
+        const orig = ref(new AdminUserResponse({ claims:[] }))
+        const newClaim = ref(new Property({name:'',value:''}))
+        const addClaims = ref([])
+        const removeClaims = ref([])
+        const claims = computed(() => orig.value.claims.filter(x =>
+            !removeClaims.value.find(c => c.name === x.name && c.value === x.value)
+        ).concat(addClaims.value))
+        
+        
         const loading = computed(() => client.loading.value)
         const api = ref(new ApiResult())
         const formFields = ref()
@@ -291,10 +344,19 @@ export const EditUser = {
 
             requestDto.addRoles = roles.value.filter(x => origRoles.value.indexOf(x) < 0)
             requestDto.removeRoles = origRoles.value.filter(x => roles.value.indexOf(x) < 0)
+
+            if (removeClaims.value.length) {
+                requestDto.removeClaims = removeClaims.value
+            }
+            if (addClaims.value.length) {
+                requestDto.addClaims = addClaims.value
+            }
+            
             await send(requestDto, save)
         }
 
         function bind(response) {
+            orig.value = response
             const requestDto = init(new AdminUpdateUser(), dtoProps)
             const result = response.result
             Object.keys(result).forEach(k => requestDto[k] = result[k])
@@ -335,6 +397,24 @@ export const EditUser = {
             emit('done')
         }
 
+        function addClaim() {
+            const existingClaim = orig.value.claims.find(x => x.name === newClaim.value.name && x.value === newClaim.value.value)
+            if (existingClaim) return
+            addClaims.value.push(newClaim.value)
+            newClaim.value = new Property()
+        }
+
+        function deleteClaim(claim) {
+            const existingClaim = orig.value.claims.find(x => x.name === claim.name && x.value === claim.value)
+            if (existingClaim) {
+                if (!removeClaims.value.find(x => x.name === existingClaim.name && x.value === existingClaim.value)) {
+                    removeClaims.value = [...removeClaims.value, claim]
+                }
+            } else {
+                addClaims.value = addClaims.value.filter(x => x.name !== claim.name && x.value !== claim.value)
+            }
+        }
+
         return {
             store,
             routes,
@@ -366,6 +446,11 @@ export const EditUser = {
             formFields,
             showForm,
             close,
+            orig,
+            newClaim,
+            claims,
+            addClaim,
+            deleteClaim,
         }
     }
 }
@@ -463,7 +548,7 @@ export const IdentityUsers = {
         const refreshKey = ref(1)
 
         const request = ref(new AdminQueryUsers({ query:routes.q }))
-        /** @type {Ref<ApiResult<AdminQueryUsersResponse>>>} */
+        /** @type {Ref<ApiResult<AdminUsersResponse>>} */
         const api = ref(new ApiResult())
 
         const results = computed(() => api.value?.response?.results || [])

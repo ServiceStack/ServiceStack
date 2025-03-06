@@ -107,6 +107,8 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
             typeof(AdminDatabase),typeof(AdminDatabaseResponse),
             typeof(AdminCreateUser),typeof(AdminDeleteUser),typeof(AdminDeleteUserResponse),typeof(AdminGetUser),typeof(AdminUserResponse),
             typeof(AdminQueryUsers),typeof(AdminUpdateUser),typeof(AdminUserBase),typeof(AdminUsersResponse),
+            typeof(AdminGetRoles),typeof(AdminGetRolesResponse),typeof(AdminGetRole),typeof(AdminGetRoleResponse),
+            typeof(AdminCreateRole),typeof(AdminUpdateRole),typeof(AdminDeleteRole),
             typeof(RequestLogs),typeof(RequestLogsResponse),
             typeof(AdminProfiling),typeof(AdminProfilingResponse),
             typeof(AdminRedis),typeof(AdminRedisResponse),
