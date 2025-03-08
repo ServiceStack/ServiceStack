@@ -52,7 +52,7 @@ public class RequiredClaimAttribute : AuthenticateAttribute
         if (principal.IsInRole(RoleNames.Admin))
             return true;
 
-        if (req.GetClaimsPrincipal().HasClaim(type, value))
+        if (principal.HasClaim(type, value))
             return true;
 
         return false;

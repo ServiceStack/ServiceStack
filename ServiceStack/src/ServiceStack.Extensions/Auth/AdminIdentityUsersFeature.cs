@@ -110,6 +110,11 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
     {
         return await Manager.GetUserInfoByIdAsync(userId, request).ConfigAwait();
     }
+    
+    public async Task<(TUser, List<string>, List<Claim>)> GetUserInfoByNameAsync(IRequest request, string userName)
+    {
+        return await Manager.GetUserInfoByNameAsync(userName, request).ConfigAwait();
+    }
 
     public async Task DeleteUserByIdAsync(string requestId)
     {

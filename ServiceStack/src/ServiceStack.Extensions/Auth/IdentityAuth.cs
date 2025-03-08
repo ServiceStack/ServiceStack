@@ -687,8 +687,10 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         }
     }
     
-    public Task<(TUser, List<string>, List<Claim>)>  GetUserInfoByIdAsync(string userId, IRequest? request = null) =>
+    public Task<(TUser, List<string>, List<Claim>)> GetUserInfoByIdAsync(string userId, IRequest? request = null) =>
         GetUserInfoAsync(userManager => userManager.FindByIdAsync(userId), request);
+    public Task<(TUser, List<string>, List<Claim>)> GetUserInfoByNameAsync(string userName, IRequest? request = null) =>
+        GetUserInfoAsync(userManager => userManager.FindByNameAsync(userName), request);
     
     public async Task<(TUser, List<string>, List<Claim>)> GetUserInfoAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
     {
