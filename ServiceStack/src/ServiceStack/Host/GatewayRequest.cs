@@ -91,8 +91,8 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
             Files = req.Files,
         };
         ret.PathInfo = req.PathInfo ?? ret.PathInfo;
-        ret.AbsoluteUri = req.AbsoluteUri ?? ret.AbsoluteUri;
-        ret.RawUrl = req.RawUrl ?? ret.RawUrl;
+        ret.AbsoluteUri = req.AbsoluteUri ?? ret.AbsoluteUri ?? $"gateway://{ret.PathInfo}";
+        ret.RawUrl = req.RawUrl ?? ret.RawUrl ?? $"gateway://{ret.PathInfo}";
         return ret;
     }
 
