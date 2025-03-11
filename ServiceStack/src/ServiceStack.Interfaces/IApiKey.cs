@@ -9,6 +9,7 @@ public interface IApiKey : IMeta
 {
     string Key { get; }
     string? Environment { get; }
+    string? UserAuthId { get; }
     DateTime CreatedDate { get; }
     DateTime? ExpiryDate { get; }
     DateTime? CancelledDate { get; }

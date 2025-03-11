@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using ServiceStack.Auth;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host;
@@ -133,6 +134,35 @@ public class InMemoryRollingRequestLogger : IRequestLogger
         {
             entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
             entry.SessionId = request.GetSessionId();
+        }
+
+        if (string.IsNullOrEmpty(entry.UserAuthId))
+        {
+            if (request.Items.TryGetValue(Keywords.Session, out var oSession) 
+                && oSession is IAuthSession { UserAuthId: not null } authSession)
+            {
+                entry.UserAuthId = authSession.UserAuthId;
+            }
+        }
+        var apiKey = request.GetApiKey();
+        if (apiKey != null)
+        {
+            if (string.IsNullOrEmpty(entry.UserAuthId))
+            {
+                entry.UserAuthId = apiKey.UserAuthId;
+            }
+
+            entry.Meta ??= new();
+            entry.Meta["apikey"] = apiKey.Key;
+        }
+        else
+        {
+            var bearerToken = request.GetBearerToken();
+            if (!string.IsNullOrEmpty(bearerToken))
+            {
+                entry.Meta ??= new();
+                entry.Meta["bearer"] = bearerToken;
+            }
         }
 
         if (HideRequestBodyForRequestDtoTypes != null

@@ -105,6 +105,8 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         /// User Primary Key
         /// </summary>
         public string? UserId { get; set; }
+        [Ignore]
+        public string? UserAuthId => UserId;
 
         /// <summary>
         /// Name of the User or Worker using the API Key
