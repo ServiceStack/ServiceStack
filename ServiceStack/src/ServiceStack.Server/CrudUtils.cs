@@ -225,7 +225,7 @@ public static class CrudUtils
                         var quotedTable = schema != null
                             ? dialect.GetQuotedName(schema) + "." + dialect.GetQuotedName(table)
                             : dialect.GetQuotedName(table);
-                        var sql = $"SELECT * FROM {quotedTable} {dialect.SqlLimit(rows: 1)}";
+                        var sql = $"SELECT * FROM {quotedTable} ORDER BY 1 {dialect.SqlLimit(rows: 1)}";
                         to.Columns = db.GetTableColumns(sql);
                     }
                 }
