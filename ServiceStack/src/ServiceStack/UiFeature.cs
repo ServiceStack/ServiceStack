@@ -15,16 +15,23 @@ public enum AdminUiFeature
 {
     None           = 0,
     Users          = 1 << 0,
-    Validation     = 1 << 1,
-    Logging        = 1 << 2,
-    Profiling      = 1 << 3,
-    Redis          = 1 << 4,
-    Database       = 1 << 5,
-    Commands       = 1 << 6,
-    ApiKeys        = 1 << 7,
-    BackgroundJobs = 1 << 8,
-    Roles          = 1 << 9,
-    All = Users | Validation | Logging | Profiling | Redis | Database | Commands | ApiKeys | BackgroundJobs | Roles,
+    Roles          = 1 << 1,
+    Validation     = 1 << 2,
+    Logging        = 1 << 3,
+    Analytics      = 1 << 4,
+    Profiling      = 1 << 5,
+    Redis          = 1 << 6,
+    Database       = 1 << 7,
+    Commands       = 1 << 8,
+    ApiKeys        = 1 << 9,
+    BackgroundJobs = 1 << 10,
+    All = Users | Roles | Validation | Logging | Analytics | Profiling | Redis | Database | Commands | ApiKeys | BackgroundJobs,
+}
+
+public interface IRequireAnalytics
+{
+    AnalyticsReports GetAnalyticsReports(DateTime month);
+    Dictionary<string, long> GetApiAnalytics(DateTime month, AnalyticsType type, string value);
 }
 
 public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitPlugin, IHasStringId

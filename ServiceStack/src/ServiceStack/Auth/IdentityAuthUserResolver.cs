@@ -3,6 +3,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +32,11 @@ public class IdentityAuthUserResolver(IIdentityAuthContextManager manager, IIden
             return session;
         }
         return null;
+    }
+
+    public async Task<List<Dictionary<string, object>>> GetUsersByIdsAsync(IRequest req, List<string> ids, CancellationToken token = default)
+    {
+        return await manager.GetUsersByIdsAsync(ids, req).ConfigAwait();
     }
 }
 
@@ -68,6 +74,32 @@ public class ServiceStackAuthUserResolver(NetCoreIdentityAuthProvider authProvid
     {
         var session = await authProvider.ConvertPrincipalToSessionAsync(req, user, token);
         return session;
+    }
+
+    public async Task<List<Dictionary<string, object>>> GetUsersByIdsAsync(IRequest req, List<string> ids, CancellationToken token = default)
+    {
+        var ret = new List<Dictionary<string, object>>();
+        var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+        await using (authRepo as IAsyncDisposable)
+        {
+            if (authRepo is IQueryUserAuthAsync queryUsers)
+            {
+                var allUsers = await queryUsers.GetUserAuthsAsync(orderBy: nameof(IUserAuth.Id), token: token).ConfigAwait();
+                var allUsersMap = new Dictionary<int, IUserAuth>();
+                foreach (var user in allUsers)
+                {
+                    allUsersMap[user.Id] = user;
+                }
+                foreach (var id in ids)
+                {
+                    if (int.TryParse(id, out var userId) && allUsersMap.TryGetValue(userId, out var userAuth))
+                    {
+                        ret.Add(userAuth.ToObjectDictionary());
+                    }
+                }
+            }
+        }
+        return ret;
     }
 }
 

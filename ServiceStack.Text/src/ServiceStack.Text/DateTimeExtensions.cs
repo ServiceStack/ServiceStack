@@ -223,4 +223,20 @@ public static class DateTimeExtensions
     {
         return new DateTime(from.Date.Year, from.Date.Month, 1).AddDays(-1);
     }
+    
+    /// <summary>
+    /// Creates a new DateTime instance with the specified day of the month, while preserving the original time.
+    /// </summary>
+    /// <param name="from">The original DateTime.</param>
+    /// <param name="day">The new day of the month (1-31).</param>
+    /// <returns>A new DateTime with the updated day.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified day is invalid for the month.</exception>
+    public static DateTime WithDay(this DateTime from, int day)
+    {
+        if (day < 1 || day > DateTime.DaysInMonth(from.Year, from.Month))
+            throw new ArgumentOutOfRangeException(nameof(day), 
+                $"Day must be between 1 and {DateTime.DaysInMonth(from.Year, from.Month)} for the month of {from:MMMM}.");
+
+        return new DateTime(from.Year, from.Month, day, from.Hour, from.Minute, from.Second, from.Millisecond, from.Kind);
+    }    
 }

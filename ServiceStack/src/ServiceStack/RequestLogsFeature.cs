@@ -243,6 +243,16 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         appHost.ConfigurePlugin<UiFeature>(feature =>
         {
             var role = AccessRole; 
+            if (RequestLogger is IRequireAnalytics)
+            {
+                feature.AddAdminLink(AdminUiFeature.Analytics, new LinkInfo {
+                    Id = "analytics",
+                    Label = "Analytics",
+                    Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Analytics)),
+                    Show = $"role:{role}",
+                });
+            }
+
             feature.AddAdminLink(AdminUiFeature.Logging, new LinkInfo {
                 Id = "logging",
                 Label = "Logging",

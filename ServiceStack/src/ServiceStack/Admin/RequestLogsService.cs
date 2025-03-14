@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Admin;
@@ -43,6 +45,64 @@ public class RequestLogsResponse
     [DataMember(Order=2)] public Dictionary<string, string> Usage { get; set; }
     [DataMember(Order=3)] public int Total { get; set; }
     [DataMember(Order=4)] public ResponseStatus ResponseStatus { get; set; }
+}
+
+[DataContract]
+public class GetAnalyticsReports : IGet, IReturn<AnalyticsReports>
+{
+    [DataMember(Order=1)] 
+    public DateTime? Month { get; set; }
+}
+
+public enum AnalyticsType
+{
+    User,
+    Day,
+    ApiKey,
+    IpAddress,
+}
+
+[DataContract]
+public class GetApiAnalytics : IGet, IReturn<GetApiAnalyticsResponse>
+{
+    [DataMember(Order=1)]
+    public DateTime? Month { get; set; }
+    [DataMember(Order=2)]
+    public AnalyticsType? Type { get; set; }
+    [DataMember(Order=3)]
+    public string Value { get; set; }
+}
+
+[DataContract]
+public class GetApiAnalyticsResponse
+{
+    [DataMember(Order=1)]
+    public Dictionary<string, long> Results { get; set; } = new();
+}
+
+[DataContract]
+public class AnalyticsReports
+{
+    [DataMember(Order=1)] public Dictionary<string, RequestSummary> Apis { get; set; } = new();
+    [DataMember(Order=2)] public Dictionary<string, RequestSummary> Users { get; set; } = new();
+    [DataMember(Order=3)] public Dictionary<string, RequestSummary> Tags { get; set; } = new();
+    [DataMember(Order=4)] public Dictionary<string, RequestSummary> Status { get; set; } = new();
+    [DataMember(Order=5)] public Dictionary<string, RequestSummary> Days { get; set; } = new();
+    [DataMember(Order=6)] public Dictionary<string, RequestSummary> ApiKeys { get; set; } = new();
+    [DataMember(Order=7)] public Dictionary<string, RequestSummary> IpAddresses { get; set; } = new();
+    [DataMember(Order=8)] public Dictionary<string, long> DurationRange { get; set; } = new();
+}
+
+[DataContract]
+public class RequestSummary
+{
+    // op,user,tag,status,day,apikey,time(ms 0-50,51-100,101-200ms,1-2s,2s-5s,5s+)
+    // public string Type { get; set; }
+    [DataMember(Order=1)] public string Name { get; set; }
+    [DataMember(Order=2)] public long Requests { get; set; }
+    [DataMember(Order=3)] public long RequestLength { get; set; }
+    [DataMember(Order=4)] public double Duration { get; set; }
+    [DataMember(Order=5)] public Dictionary<int,long> Status { get; set; }
 }
 
 [DefaultRequest(typeof(RequestLogs))]
@@ -129,6 +189,67 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             Results = results.ToList(),
             Total = snapshot.Count,
             Usage = Usage,
+        };
+    }
+
+    public async Task<object> Any(GetAnalyticsReports request)
+    {
+        var feature = AssertPlugin<RequestLogsFeature>();
+        if (!HostContext.DebugMode)
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+
+        if (feature.RequestLogger is not IRequireAnalytics analytics)
+            throw new NotSupportedException(feature.RequestLogger + " does not support IRequireAnalytics");
+
+        var ret = analytics.GetAnalyticsReports(request.Month ?? DateTime.UtcNow);
+
+        var userResolver = Request?.TryResolve<IUserResolver>();
+        if (userResolver != null)
+        {
+            var allUserIds = ret.Users.Where(x => x.Value.Name == null)
+                .Map(x => x.Key);
+            var allUsers = await userResolver.GetUsersByIdsAsync(Request, allUserIds).ConfigAwait();
+            var allUsersMap = new Dictionary<string, string>();
+            foreach (var user in allUsers)
+            {
+                if (user.TryGetValue(nameof(IUserAuth.Id), out var oId)
+                    && user.TryGetValue(nameof(IUserAuth.UserName), out var oUserName))
+                {
+                    allUsersMap[oId.ToString()!] = oUserName.ToString();
+                }
+            }
+            foreach (var user in ret.Users)
+            {
+                if (user.Value.Name == null && allUsersMap.TryGetValue(user.Key.ToString()!, out var userName))
+                {
+                    user.Value.Name = userName;
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    public async Task<object> Any(GetApiAnalytics request)
+    {
+        var feature = AssertPlugin<RequestLogsFeature>();
+        if (!HostContext.DebugMode)
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+
+        if (feature.RequestLogger is not IRequireAnalytics analytics)
+            throw new NotSupportedException(feature.RequestLogger + " does not support IRequireAnalytics");
+        
+        if (request.Type == null)
+            throw new ArgumentNullException(nameof(request.Type));
+        if (request.Value == null)
+            throw new ArgumentNullException(nameof(request.Value));
+        
+        var ret = analytics.GetApiAnalytics(request.Month ?? DateTime.UtcNow,
+            request.Type.Value, request.Value);
+
+        return new GetApiAnalyticsResponse
+        {
+            Results = ret
         };
     }
 }

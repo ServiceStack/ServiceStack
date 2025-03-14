@@ -25,6 +25,7 @@ public interface IIdentityAuthContextManager
     Task<IList<Claim>> GetClaimsByIdAsync(string userId, IRequest? request = null);
     Task<IList<Claim>> GetClaimsByNameAsync(string userName, IRequest? request = null);
     Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(string userId, IRequest? request = null);
+    Task<List<Dictionary<string, object>>> GetUsersByIdsAsync(List<string> ids, IRequest? request = null);
 }
 
 public interface IIdentityCredentialsAuthProvider

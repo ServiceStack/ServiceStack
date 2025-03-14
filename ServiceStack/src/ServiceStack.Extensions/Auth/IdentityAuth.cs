@@ -618,6 +618,26 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         }
     }
 
+    public async Task<List<Dictionary<string,object>>> GetUsersByIdsAsync(List<string> ids, IRequest? request = null)
+    {
+        var typedIds = ids.Map(x => x.ConvertTo<TKey>());
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+
+            var users = await userManager.Users.Where(x => typedIds.Contains(x.Id)).ToListAsync().ConfigAwait();
+            return users.Map(x => x.ToObjectDictionary());
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            var users = await userManager.Users.Where(x => typedIds.Contains(x.Id)).ToListAsync().ConfigAwait();
+            return users.Map(x => x.ToObjectDictionary());
+        }
+    }
+
     public Task<IList<Claim>> GetClaimsByIdAsync(string userId, IRequest? request = null) =>
         GetClaimsAsync(async userManager => await GetClaimsAsync(await userManager.FindByIdAsync(userId)).ConfigAwait(), request);
 

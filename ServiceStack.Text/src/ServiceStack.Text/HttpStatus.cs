@@ -17,16 +17,14 @@ public static class HttpStatus
     }
 
     private static readonly string[][] Descriptions =
-    {
+    [
         null,
-        new[]
-        {
+        [
             /* 100 */ "Continue",
             /* 101 */ "Switching Protocols",
             /* 102 */ "Processing"
-        },
-        new[]
-        {
+        ],
+        [
             /* 200 */ "OK",
             /* 201 */ "Created",
             /* 202 */ "Accepted",
@@ -35,9 +33,8 @@ public static class HttpStatus
             /* 205 */ "Reset Content",
             /* 206 */ "Partial Content",
             /* 207 */ "Multi-Status"
-        },
-        new[]
-        {
+        ],
+        [
             /* 300 */ "Multiple Choices",
             /* 301 */ "Moved Permanently",
             /* 302 */ "Found",
@@ -46,9 +43,8 @@ public static class HttpStatus
             /* 305 */ "Use Proxy",
             /* 306 */ string.Empty,
             /* 307 */ "Temporary Redirect"
-        },
-        new[]
-        {
+        ],
+        [
             /* 400 */ "Bad Request",
             /* 401 */ "Unauthorized",
             /* 402 */ "Payment Required",
@@ -74,9 +70,8 @@ public static class HttpStatus
             /* 422 */ "Unprocessable Entity",
             /* 423 */ "Locked",
             /* 424 */ "Failed Dependency"
-        },
-        new[]
-        {
+        ],
+        [
             /* 500 */ "Internal Server Error",
             /* 501 */ "Not Implemented",
             /* 502 */ "Bad Gateway",
@@ -85,6 +80,6 @@ public static class HttpStatus
             /* 505 */ "Http Version Not Supported",
             /* 506 */ string.Empty,
             /* 507 */ "Insufficient Storage"
-        }
-    };
+        ]
+    ];
 }

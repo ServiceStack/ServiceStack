@@ -142,6 +142,8 @@ public class InMemoryRollingRequestLogger : IRequestLogger
                 && oSession is IAuthSession { UserAuthId: not null } authSession)
             {
                 entry.UserAuthId = authSession.UserAuthId;
+                entry.Meta ??= new();
+                entry.Meta["username"] = authSession.UserAuthName ?? authSession.UserName;
             }
         }
         var apiKey = request.GetApiKey();

@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ServiceStack.Admin;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Jobs;
@@ -75,7 +77,7 @@ public class SqliteRequestLogsService(IRequestLogger requestLogger, IAutoQueryDb
 }
 
 public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema, 
-    IRequireRegistration, IConfigureServices
+    IRequireRegistration, IConfigureServices, IRequireAnalytics
 {
     private static readonly object dbWrites = Locks.RequestsDb;
     public string DbDir { get; set; } = "App_Data/requests";
@@ -308,5 +310,199 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             RequestDuration = from.RequestDuration,
             Meta = from.Meta,
         };
+    }
+    public static int AnalyticsBatchSize { get; set; } = 1000;
+
+    public AnalyticsReports GetAnalyticsReports(DateTime month)
+    {
+        // op,user,tag,status,day,apikey,time(ms 0-50,51-100,101-200ms,1-2s,2s-5s,5s+)
+        var ret = new AnalyticsReports(); 
+        using var db = OpenMonthDb(month);
+        List<RequestLog> batch = [];
+        long lastPk = 0;
+        var metadata = HostContext.Metadata;
+
+        void Add(Dictionary<string, RequestSummary> results, string name, RequestLog log)
+        {
+            var summary = results.TryGetValue(name, out var existing)
+                ? existing
+                : results[name] = new();
+
+            summary.Requests += 1;
+            summary.Duration += log.RequestDuration.TotalMilliseconds;
+            summary.RequestLength += log.RequestBody?.Length ?? 0;
+        }
+        void AddSummary(Dictionary<string, RequestSummary> results, string name, RequestSummary apiSummary)
+        {
+            var summary = results.TryGetValue(name, out var existing)
+                ? existing
+                : results[name] = new();
+            summary.Requests += apiSummary.Requests;
+            summary.Duration += apiSummary.Duration;
+            summary.RequestLength += apiSummary.RequestLength;
+        }
+        
+        do {
+            batch = db.Select(
+                db.From<RequestLog>()
+                    .Where(x => x.Id > lastPk)
+                    .OrderBy(x => x.Id)
+                    .Limit(AnalyticsBatchSize));
+            foreach (var requestLog in batch)
+            {
+                Add(ret.Apis, requestLog.Request ?? requestLog.OperationName, requestLog);
+                if (requestLog.StatusCode > 0)
+                {
+                    var apiLog = ret.Apis[requestLog.Request ?? requestLog.OperationName];
+                    apiLog.Status ??= new();
+                    apiLog.Status[requestLog.StatusCode] = apiLog.Status.TryGetValue(requestLog.StatusCode, out var existing)
+                        ? existing + 1
+                        : 1;
+                }
+
+                if (requestLog.UserAuthId != null)
+                {
+                    Add(ret.Users, requestLog.UserAuthId, requestLog);
+                    if (requestLog.Meta?.TryGetValue("username", out var username) == true)
+                    {
+                        ret.Users[requestLog.UserAuthId].Name = username;
+                    }
+                }
+
+                if (requestLog.StatusCode > 0)
+                {
+                    Add(ret.Status, requestLog.StatusCode.ToString(), requestLog);
+                }
+
+                Add(ret.Days, requestLog.DateTime.Day.ToString(), requestLog);
+
+                if ((requestLog.Headers.TryGetValue(HttpHeaders.Authorization, out var authorization) && authorization.StartsWith("ak-")) ||
+                    requestLog.Meta?.TryGetValue("apikey", out authorization) == true)
+                {
+                    Add(ret.ApiKeys, authorization, requestLog);
+                }
+                
+                if (requestLog.IpAddress != null)
+                    Add(ret.IpAddresses, requestLog.IpAddress, requestLog);
+
+                //(ms 0-50,51-100,101-200ms,1-2s,2s-5s,5s+)
+                int[] msRanges = [50, 100, 200, 1000, 2000, 5000, 30000];
+                var totalMs = (int)requestLog.RequestDuration.TotalMilliseconds;
+
+                var added = false;
+                foreach (var range in msRanges)
+                {
+                    if (totalMs < range)
+                    {
+                        ret.DurationRange[range.ToString()] = ret.DurationRange.TryGetValue(range.ToString(), out var duration)
+                            ? duration + 1
+                            : 1;
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added)
+                {
+                    var lastRange = ">" + msRanges.Last();
+                    ret.DurationRange[lastRange] = ret.DurationRange.TryGetValue(lastRange, out var duration)
+                        ? duration + 1
+                        : 1;
+                }
+                lastPk = requestLog.Id;
+            }
+        } while(batch.Count >= AnalyticsBatchSize);
+
+        foreach (var entry in ret.Status)
+        {
+            if (int.TryParse(entry.Key, out var status))
+            {
+                var desc = HttpStatus.GetStatusDescription(status);
+                if (!string.IsNullOrEmpty(desc))
+                {
+                    entry.Value.Name = desc;
+                }
+            }
+        }
+        foreach (var requestDto in ret.Apis.Keys)
+        {
+            var requestType = metadata.GetRequestType(requestDto);
+            if (requestType != null)
+            {
+                var op = metadata.GetOperation(requestType);
+                if (op != null)
+                {
+                    foreach (var tag in op.Tags)
+                    {
+                        AddSummary(ret.Tags, tag, ret.Apis[requestDto]);
+                    }
+                }
+            }
+        }
+
+        void Clean(Dictionary<string, RequestSummary> results)
+        {
+            foreach (var entry in results.Values)
+            {
+                entry.Duration = Math.Floor(entry.Duration);
+            }
+        }
+        
+        Clean(ret.Apis);
+        Clean(ret.Users);
+        Clean(ret.Tags);
+        Clean(ret.Status);
+        Clean(ret.Days);
+        Clean(ret.ApiKeys);
+        Clean(ret.IpAddresses);
+        
+        return ret;
+    }
+
+    public Dictionary<string, long> GetApiAnalytics(DateTime month, AnalyticsType type, string value)
+    {
+        using var db = OpenMonthDb(month);
+        List<RequestLog> batch = [];
+        long lastPk = 0;
+
+        var ret = new Dictionary<string, long>();
+
+        do
+        {
+            var q = db.From<RequestLog>()
+                .Where(x => x.Id > lastPk);
+
+            if (type == AnalyticsType.User)
+            {
+                q.And(x => x.UserAuthId == value);
+            }
+            else if (type == AnalyticsType.Day)
+            {
+                var day = value.ToInt();
+                var from = month.WithDay(day);
+                var to = from.AddDays(1);
+                q.And(x => x.DateTime >= from && x.DateTime < to);
+            }
+            else if (type == AnalyticsType.ApiKey)
+            {
+                q.And("Headers LIKE {0}", $"%Bearer {value}%");
+            }
+            else if (type == AnalyticsType.IpAddress)
+            {
+                q.And(x => x.IpAddress == value);
+            }
+
+            batch = db.Select(q
+                .OrderBy(x => x.Id)
+                .Limit(AnalyticsBatchSize));
+            foreach (var requestLog in batch)
+            {
+                var op = requestLog.Request ?? requestLog.OperationName;
+                ret[op] = ret.TryGetValue(op, out var existing)
+                    ? existing + 1
+                    : 1;
+                lastPk = requestLog.Id;
+            }
+        } while(batch.Count >= AnalyticsBatchSize);
+        return ret;
     }
 }
