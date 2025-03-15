@@ -114,6 +114,8 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
     /// </summary>
     public int DefaultLimit { get; set; } = 100;
 
+    public AnalyticsConfig AnalyticsConfig { get; set; } = new();
+
     public string RegisterAllowRuntimeTypeInTypes { get; set; } = typeof(RequestLogEntry).FullName;
         
     public bool DefaultIgnoreFilter(object o)

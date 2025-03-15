@@ -311,13 +311,21 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             Meta = from.Meta,
         };
     }
-    public static int AnalyticsBatchSize { get; set; } = 1000;
-    public static int[] AnalyticsDurationRanges { get; set; } = [50, 100, 200, 1000, 2000, 5000, 30000];
 
-    public AnalyticsReports GetAnalyticsReports(DateTime month)
+    public AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month)
     {
         // op,user,tag,status,day,apikey,time(ms 0-50,51-100,101-200ms,1-2s,2s-5s,5s+)
-        var ret = new AnalyticsReports(); 
+        var ret = new AnalyticsReports
+        {
+            Apis = new(),
+            Users = new(),
+            Tags = new(),
+            Status = new(),
+            Days = new(),
+            ApiKeys = new(),
+            IpAddresses = new(),
+            DurationRange = new(),
+        }; 
         using var db = OpenMonthDb(month);
         List<RequestLog> batch = [];
         long lastPk = 0;
@@ -348,7 +356,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 db.From<RequestLog>()
                     .Where(x => x.Id > lastPk)
                     .OrderBy(x => x.Id)
-                    .Limit(AnalyticsBatchSize));
+                    .Limit(config.BatchSize));
             foreach (var requestLog in batch)
             {
                 Add(ret.Apis, requestLog.Request ?? requestLog.OperationName, requestLog);
@@ -389,7 +397,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 var totalMs = (int)requestLog.RequestDuration.TotalMilliseconds;
 
                 var added = false;
-                foreach (var range in AnalyticsDurationRanges)
+                foreach (var range in config.DurationRanges)
                 {
                     if (totalMs < range)
                     {
@@ -402,14 +410,14 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 }
                 if (!added)
                 {
-                    var lastRange = ">" + AnalyticsDurationRanges.Last();
+                    var lastRange = ">" + config.DurationRanges.Last();
                     ret.DurationRange[lastRange] = ret.DurationRange.TryGetValue(lastRange, out var duration)
                         ? duration + 1
                         : 1;
                 }
                 lastPk = requestLog.Id;
             }
-        } while(batch.Count >= AnalyticsBatchSize);
+        } while(batch.Count >= config.BatchSize);
 
         foreach (var entry in ret.Status)
         {
@@ -457,7 +465,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         return ret;
     }
 
-    public Dictionary<string, long> GetApiAnalytics(DateTime month, AnalyticsType type, string value)
+    public Dictionary<string, long> GetApiAnalytics(AnalyticsConfig config, DateTime month, AnalyticsType type, string value)
     {
         using var db = OpenMonthDb(month);
         List<RequestLog> batch = [];
@@ -492,7 +500,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
             batch = db.Select(q
                 .OrderBy(x => x.Id)
-                .Limit(AnalyticsBatchSize));
+                .Limit(config.BatchSize));
             foreach (var requestLog in batch)
             {
                 var op = requestLog.Request ?? requestLog.OperationName;
@@ -501,7 +509,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     : 1;
                 lastPk = requestLog.Id;
             }
-        } while(batch.Count >= AnalyticsBatchSize);
+        } while(batch.Count >= config.BatchSize);
         return ret;
     }
 }

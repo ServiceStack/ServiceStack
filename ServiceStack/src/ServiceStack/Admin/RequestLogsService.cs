@@ -52,6 +52,9 @@ public class GetAnalyticsReports : IGet, IReturn<AnalyticsReports>
 {
     [DataMember(Order=1)] 
     public DateTime? Month { get; set; }
+
+    [DataMember(Order=2)] 
+    public string Filter { get; set; }
 }
 
 public enum AnalyticsType
@@ -83,14 +86,14 @@ public class GetApiAnalyticsResponse
 [DataContract]
 public class AnalyticsReports
 {
-    [DataMember(Order=1)] public Dictionary<string, RequestSummary> Apis { get; set; } = new();
-    [DataMember(Order=2)] public Dictionary<string, RequestSummary> Users { get; set; } = new();
-    [DataMember(Order=3)] public Dictionary<string, RequestSummary> Tags { get; set; } = new();
-    [DataMember(Order=4)] public Dictionary<string, RequestSummary> Status { get; set; } = new();
-    [DataMember(Order=5)] public Dictionary<string, RequestSummary> Days { get; set; } = new();
-    [DataMember(Order=6)] public Dictionary<string, RequestSummary> ApiKeys { get; set; } = new();
-    [DataMember(Order=7)] public Dictionary<string, RequestSummary> IpAddresses { get; set; } = new();
-    [DataMember(Order=8)] public Dictionary<string, long> DurationRange { get; set; } = new();
+    [DataMember(Order=1)] public Dictionary<string, RequestSummary> Apis { get; set; }
+    [DataMember(Order=2)] public Dictionary<string, RequestSummary> Users { get; set; }
+    [DataMember(Order=3)] public Dictionary<string, RequestSummary> Tags { get; set; }
+    [DataMember(Order=4)] public Dictionary<string, RequestSummary> Status { get; set; }
+    [DataMember(Order=5)] public Dictionary<string, RequestSummary> Days { get; set; }
+    [DataMember(Order=6)] public Dictionary<string, RequestSummary> ApiKeys { get; set; }
+    [DataMember(Order=7)] public Dictionary<string, RequestSummary> IpAddresses { get; set; }
+    [DataMember(Order=8)] public Dictionary<string, long> DurationRange { get; set; }
 }
 
 [DataContract]
@@ -201,7 +204,22 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         if (feature.RequestLogger is not IRequireAnalytics analytics)
             throw new NotSupportedException(feature.RequestLogger + " does not support IRequireAnalytics");
 
-        var ret = analytics.GetAnalyticsReports(request.Month ?? DateTime.UtcNow);
+        var ret = analytics.GetAnalyticsReports(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow);
+        foreach (var item in ret.IpAddresses.ToList())
+        {
+            item.Value.Name = item.Key;
+        }
+
+        var topIpAddresses = new Dictionary<string, RequestSummary>();
+        var top100Addresses = ret.IpAddresses.Values
+            .OrderByDescending(x => x.RequestLength)
+            .Take(feature.AnalyticsConfig.IpLimit);
+        foreach (var item in top100Addresses)
+        {
+            topIpAddresses[item.Name] = item;
+            item.Name = null;
+        }
+        ret.IpAddresses = topIpAddresses;
 
         var userResolver = Request?.TryResolve<IUserResolver>();
         if (userResolver != null)
@@ -227,7 +245,18 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             }
         }
 
-        return ret;
+        return request.Filter?.ToLower() switch
+        {
+            "apis" or "api" => new AnalyticsReports { Apis = ret.Apis },
+            "users" => new AnalyticsReports { Users = ret.Users },
+            "tags" => new AnalyticsReports { Tags = ret.Tags },
+            "status" => new AnalyticsReports { Status = ret.Status },
+            "days" => new AnalyticsReports { Days = ret.Days },
+            "apikeys" => new AnalyticsReports { ApiKeys = ret.ApiKeys },
+            "ipaddresses" or "ip" => new AnalyticsReports { IpAddresses = ret.IpAddresses },
+            "durationrange" or "duration" => new AnalyticsReports { DurationRange = ret.DurationRange },
+            _ => ret,
+        };
     }
 
     public async Task<object> Any(GetApiAnalytics request)
@@ -244,7 +273,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         if (request.Value == null)
             throw new ArgumentNullException(nameof(request.Value));
         
-        var ret = analytics.GetApiAnalytics(request.Month ?? DateTime.UtcNow,
+        var ret = analytics.GetApiAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow,
             request.Type.Value, request.Value);
 
         return new GetApiAnalyticsResponse

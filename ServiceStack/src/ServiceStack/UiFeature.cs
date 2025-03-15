@@ -28,10 +28,17 @@ public enum AdminUiFeature
     All = Users | Roles | Validation | Logging | Analytics | Profiling | Redis | Database | Commands | ApiKeys | BackgroundJobs,
 }
 
+public class AnalyticsConfig
+{
+    public int BatchSize { get; set; } = 1000;
+    public int[] DurationRanges { get; set; } = [10, 50, 100, 200, 1000, 2000, 5000, 30000];
+    public int IpLimit { get; set; } = 100;
+}
+
 public interface IRequireAnalytics
 {
-    AnalyticsReports GetAnalyticsReports(DateTime month);
-    Dictionary<string, long> GetApiAnalytics(DateTime month, AnalyticsType type, string value);
+    AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month);
+    Dictionary<string, long> GetApiAnalytics(AnalyticsConfig config, DateTime month, AnalyticsType type, string value);
 }
 
 public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitPlugin, IHasStringId
