@@ -312,6 +312,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         };
     }
     public static int AnalyticsBatchSize { get; set; } = 1000;
+    public static int[] AnalyticsDurationRanges { get; set; } = [50, 100, 200, 1000, 2000, 5000, 30000];
 
     public AnalyticsReports GetAnalyticsReports(DateTime month)
     {
@@ -385,12 +386,10 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 if (requestLog.IpAddress != null)
                     Add(ret.IpAddresses, requestLog.IpAddress, requestLog);
 
-                //(ms 0-50,51-100,101-200ms,1-2s,2s-5s,5s+)
-                int[] msRanges = [50, 100, 200, 1000, 2000, 5000, 30000];
                 var totalMs = (int)requestLog.RequestDuration.TotalMilliseconds;
 
                 var added = false;
-                foreach (var range in msRanges)
+                foreach (var range in AnalyticsDurationRanges)
                 {
                     if (totalMs < range)
                     {
@@ -403,7 +402,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 }
                 if (!added)
                 {
-                    var lastRange = ">" + msRanges.Last();
+                    var lastRange = ">" + AnalyticsDurationRanges.Last();
                     ret.DurationRange[lastRange] = ret.DurationRange.TryGetValue(lastRange, out var duration)
                         ? duration + 1
                         : 1;
@@ -478,7 +477,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             else if (type == AnalyticsType.Day)
             {
                 var day = value.ToInt();
-                var from = month.WithDay(day);
+                var from = month.WithDay(day).Date;
                 var to = from.AddDays(1);
                 q.And(x => x.DateTime >= from && x.DateTime < to);
             }

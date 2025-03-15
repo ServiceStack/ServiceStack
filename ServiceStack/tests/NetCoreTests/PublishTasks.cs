@@ -219,6 +219,7 @@ public class PublishTasks
                 typeof(GetValidationRules),
                 typeof(ModifyValidationRules),
                 typeof(RequestLogs),
+                typeof(GetAnalyticsReports), typeof(GetApiAnalytics), typeof(AnalyticsReports),
                 typeof(AdminDashboard),
                 typeof(AdminProfiling),
                 typeof(AdminRedis),
