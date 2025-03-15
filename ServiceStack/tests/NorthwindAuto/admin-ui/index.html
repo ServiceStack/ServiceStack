@@ -63,6 +63,7 @@ DEBUG = true /*debug*/
                                 <identity-users v-else-if="routes.admin === 'users' && server?.plugins.auth?.identityAuth"></identity-users>
                                 <identity-roles v-else-if="routes.admin === 'roles'"></identity-roles>
                                 <users v-else-if="routes.admin === 'users'"></users>
+                                <analytics v-else-if="routes.admin === 'analytics'"></analytics>
                                 <logging v-else-if="routes.admin === 'logging'"></logging>
                                 <profiling v-else-if="routes.admin === 'profiling'"></profiling>
                                 <redis v-else-if="routes.admin === 'redis'"></redis>

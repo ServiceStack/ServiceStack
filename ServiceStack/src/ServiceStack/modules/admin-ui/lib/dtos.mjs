@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-06 19:46:05
+Date: 2025-03-14 11:35:19
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1682,6 +1682,18 @@ export class RequestLogEntry {
     /** @type {{ [index:string]: string; }} */
     meta;
 }
+export class RequestSummary {
+    /** @param {{name?:string,requests?:number,requestLength?:number,duration?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {number} */
+    requests;
+    /** @type {number} */
+    requestLength;
+    /** @type {number} */
+    duration;
+}
 /** @typedef TKey {any} */
 /** @typedef  TValue {any} */
 export class KeyValuePair {
@@ -2013,6 +2025,26 @@ export class RequestLogsResponse {
     total;
     /** @type {ResponseStatus} */
     responseStatus;
+}
+export class AnalyticsReports {
+    /** @param {{apis?:{ [index:string]: RequestSummary; },users?:{ [index:string]: RequestSummary; },tags?:{ [index:string]: RequestSummary; },status?:{ [index:string]: RequestSummary; },days?:{ [index:string]: RequestSummary; },apiKeys?:{ [index:string]: RequestSummary; },ipAddresses?:{ [index:string]: RequestSummary; },durationRange?:{ [index:string]: number; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {{ [index:string]: RequestSummary; }} */
+    apis;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    users;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    tags;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    status;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    days;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    apiKeys;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    ipAddresses;
+    /** @type {{ [index:string]: number; }} */
+    durationRange;
 }
 export class GetValidationRulesResponse {
     /** @param {{results?:ValidationRule[],responseStatus?:ResponseStatus}} [init] */
@@ -2580,6 +2612,15 @@ export class RequestLogs {
     getTypeName() { return 'RequestLogs' }
     getMethod() { return 'GET' }
     createResponse() { return new RequestLogsResponse() }
+}
+export class GetAnalyticsReports {
+    /** @param {{month?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    getTypeName() { return 'GetAnalyticsReports' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AnalyticsReports() }
 }
 export class GetValidationRules {
     /** @param {{authSecret?:string,type?:string}} [init] */
