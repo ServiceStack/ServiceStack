@@ -1,6 +1,6 @@
 <?php namespace dtos;
 /* Options:
-Date: 2025-03-06 19:46:05
+Date: 2025-03-14 11:35:19
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -4240,6 +4240,48 @@ class RequestLogEntry implements JsonSerializable
 }
 
 // @DataContract
+class RequestSummary implements JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var string|null */
+        public ?string $name=null,
+
+        // @DataMember(Order=2)
+        /** @var int */
+        public int $requests=0,
+
+        // @DataMember(Order=3)
+        /** @var int */
+        public int $requestLength=0,
+
+        // @DataMember(Order=4)
+        /** @var float */
+        public float $duration=0.0
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['name'])) $this->name = $o['name'];
+        if (isset($o['requests'])) $this->requests = $o['requests'];
+        if (isset($o['requestLength'])) $this->requestLength = $o['requestLength'];
+        if (isset($o['duration'])) $this->duration = $o['duration'];
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->name)) $o['name'] = $this->name;
+        if (isset($this->requests)) $o['requests'] = $this->requests;
+        if (isset($this->requestLength)) $o['requestLength'] = $this->requestLength;
+        if (isset($this->duration)) $o['duration'] = $this->duration;
+        return empty($o) ? new class(){} : $o;
+    }
+}
+
+// @DataContract
 class AdminGetRolesResponse implements JsonSerializable
 {
     public function __construct(
@@ -4935,6 +4977,72 @@ class RequestLogsResponse implements JsonSerializable
         if (isset($this->usage)) $o['usage'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','string']), $this->usage);
         if (isset($this->total)) $o['total'] = $this->total;
         if (isset($this->responseStatus)) $o['responseStatus'] = JsonConverters::to('ResponseStatus', $this->responseStatus);
+        return empty($o) ? new class(){} : $o;
+    }
+}
+
+// @DataContract
+class AnalyticsReports implements JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var array<string,RequestSummary>|null */
+        public ?array $apis=null,
+
+        // @DataMember(Order=2)
+        /** @var array<string,RequestSummary>|null */
+        public ?array $users=null,
+
+        // @DataMember(Order=3)
+        /** @var array<string,RequestSummary>|null */
+        public ?array $tags=null,
+
+        // @DataMember(Order=4)
+        /** @var array<string,RequestSummary>|null */
+        public ?array $status=null,
+
+        // @DataMember(Order=5)
+        /** @var array<string,RequestSummary>|null */
+        public ?array $days=null,
+
+        // @DataMember(Order=6)
+        /** @var array<string,RequestSummary>|null */
+        public ?array $apiKeys=null,
+
+        // @DataMember(Order=7)
+        /** @var array<string,RequestSummary>|null */
+        public ?array $ipAddresses=null,
+
+        // @DataMember(Order=8)
+        /** @var array<string,int>|null */
+        public ?array $durationRange=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['apis'])) $this->apis = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $o['apis']);
+        if (isset($o['users'])) $this->users = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $o['users']);
+        if (isset($o['tags'])) $this->tags = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $o['tags']);
+        if (isset($o['status'])) $this->status = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $o['status']);
+        if (isset($o['days'])) $this->days = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $o['days']);
+        if (isset($o['apiKeys'])) $this->apiKeys = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $o['apiKeys']);
+        if (isset($o['ipAddresses'])) $this->ipAddresses = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $o['ipAddresses']);
+        if (isset($o['durationRange'])) $this->durationRange = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','int']), $o['durationRange']);
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->apis)) $o['apis'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $this->apis);
+        if (isset($this->users)) $o['users'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $this->users);
+        if (isset($this->tags)) $o['tags'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $this->tags);
+        if (isset($this->status)) $o['status'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $this->status);
+        if (isset($this->days)) $o['days'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $this->days);
+        if (isset($this->apiKeys)) $o['apiKeys'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $this->apiKeys);
+        if (isset($this->ipAddresses)) $o['ipAddresses'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','RequestSummary']), $this->ipAddresses);
+        if (isset($this->durationRange)) $o['durationRange'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','int']), $this->durationRange);
         return empty($o) ? new class(){} : $o;
     }
 }
@@ -6434,6 +6542,34 @@ class RequestLogs implements IReturn, IGet, JsonSerializable
     public function getTypeName(): string { return 'RequestLogs'; }
     public function getMethod(): string { return 'GET'; }
     public function createResponse(): mixed { return new RequestLogsResponse(); }
+}
+
+// @DataContract
+#[Returns('AnalyticsReports')]
+class GetAnalyticsReports implements IReturn, IGet, JsonSerializable
+{
+    public function __construct(
+        // @DataMember(Order=1)
+        /** @var DateTime|null */
+        public ?DateTime $month=null
+    ) {
+    }
+
+    /** @throws Exception */
+    public function fromMap($o): void {
+        if (isset($o['month'])) $this->month = JsonConverters::from('DateTime', $o['month']);
+    }
+    
+    /** @throws Exception */
+    public function jsonSerialize(): mixed
+    {
+        $o = [];
+        if (isset($this->month)) $o['month'] = JsonConverters::to('DateTime', $this->month);
+        return empty($o) ? new class(){} : $o;
+    }
+    public function getTypeName(): string { return 'GetAnalyticsReports'; }
+    public function getMethod(): string { return 'GET'; }
+    public function createResponse(): mixed { return new AnalyticsReports(); }
 }
 
 // @Route("/validation/rules/{Type}")

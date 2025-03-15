@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-06 19:46:05
+Date: 2025-03-14 11:35:19
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -612,6 +612,15 @@ open class RequestLogs : IReturn<RequestLogsResponse>, IGet
     override fun getResponseType(): Any? = RequestLogs.responseType
 }
 
+@DataContract
+open class GetAnalyticsReports : IReturn<AnalyticsReports>, IGet
+{
+    @DataMember(Order=1)
+    open var month:Date? = null
+    companion object { private val responseType = AnalyticsReports::class.java }
+    override fun getResponseType(): Any? = GetAnalyticsReports.responseType
+}
+
 @Route(Path="/validation/rules/{Type}")
 @DataContract
 open class GetValidationRules : IReturn<GetValidationRulesResponse>, IGet
@@ -972,6 +981,34 @@ open class RequestLogsResponse
 
     @DataMember(Order=4)
     open var responseStatus:ResponseStatus? = null
+}
+
+@DataContract
+open class AnalyticsReports
+{
+    @DataMember(Order=1)
+    open var apis:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=2)
+    open var users:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=3)
+    open var tags:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=4)
+    open var status:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=5)
+    open var days:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=6)
+    open var apiKeys:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=7)
+    open var ipAddresses:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=8)
+    open var durationRange:HashMap<String,Long>? = null
 }
 
 @DataContract
@@ -1459,6 +1496,22 @@ open class RequestLogEntry
     open var exceptionData:HashMap<String,Object>? = null
     open var requestDuration:TimeSpan? = null
     open var meta:HashMap<String,String>? = null
+}
+
+@DataContract
+open class RequestSummary
+{
+    @DataMember(Order=1)
+    open var name:String? = null
+
+    @DataMember(Order=2)
+    open var requests:Long? = null
+
+    @DataMember(Order=3)
+    open var requestLength:Long? = null
+
+    @DataMember(Order=4)
+    open var duration:Double? = null
 }
 
 @DataContract

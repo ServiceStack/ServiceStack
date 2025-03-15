@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-06 19:46:05
+Date: 2025-03-14 11:35:19
 SwiftVersion: 6.0
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
@@ -838,6 +838,17 @@ public class RequestLogs : IReturn, IGet, Codable
     required public init(){}
 }
 
+// @DataContract
+public class GetAnalyticsReports : IReturn, IGet, Codable
+{
+    public typealias Return = AnalyticsReports
+
+    // @DataMember(Order=1)
+    public var month:Date?
+
+    required public init(){}
+}
+
 // @Route("/validation/rules/{Type}")
 // @DataContract
 public class GetValidationRules : IReturn, IGet, Codable
@@ -1224,6 +1235,36 @@ public class RequestLogsResponse : Codable
 
     // @DataMember(Order=4)
     public var responseStatus:ResponseStatus?
+
+    required public init(){}
+}
+
+// @DataContract
+public class AnalyticsReports : Codable
+{
+    // @DataMember(Order=1)
+    public var apis:[String:RequestSummary]?
+
+    // @DataMember(Order=2)
+    public var users:[String:RequestSummary]?
+
+    // @DataMember(Order=3)
+    public var tags:[String:RequestSummary]?
+
+    // @DataMember(Order=4)
+    public var status:[String:RequestSummary]?
+
+    // @DataMember(Order=5)
+    public var days:[String:RequestSummary]?
+
+    // @DataMember(Order=6)
+    public var apiKeys:[String:RequestSummary]?
+
+    // @DataMember(Order=7)
+    public var ipAddresses:[String:RequestSummary]?
+
+    // @DataMember(Order=8)
+    public var durationRange:[String:Int]?
 
     required public init(){}
 }
@@ -1838,6 +1879,24 @@ public class RequestLogEntry : Codable
     public var exceptionData:[String:String]?
     @TimeSpan public var requestDuration:TimeInterval?
     public var meta:[String:String]?
+
+    required public init(){}
+}
+
+// @DataContract
+public class RequestSummary : Codable
+{
+    // @DataMember(Order=1)
+    public var name:String?
+
+    // @DataMember(Order=2)
+    public var requests:Int?
+
+    // @DataMember(Order=3)
+    public var requestLength:Int?
+
+    // @DataMember(Order=4)
+    public var duration:Double?
 
     required public init(){}
 }

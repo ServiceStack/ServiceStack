@@ -1,5 +1,5 @@
 """ Options:
-Date: 2025-03-06 19:46:05
+Date: 2025-03-14 11:35:19
 Version: 8.61
 Tip: To override a DTO option, remove "#" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1060,6 +1060,15 @@ class RequestLogEntry:
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
+class RequestSummary:
+    name: Optional[str] = None
+    requests: int = 0
+    request_length: int = 0
+    duration: float = 0.0
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
 class AdminGetRolesResponse:
     results: Optional[List[AdminRole]] = None
     response_status: Optional[ResponseStatus] = None
@@ -1230,6 +1239,19 @@ class RequestLogsResponse:
     usage: Optional[Dict[str, str]] = None
     total: int = 0
     response_status: Optional[ResponseStatus] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class AnalyticsReports:
+    apis: Optional[Dict[str, RequestSummary]] = None
+    users: Optional[Dict[str, RequestSummary]] = None
+    tags: Optional[Dict[str, RequestSummary]] = None
+    status: Optional[Dict[str, RequestSummary]] = None
+    days: Optional[Dict[str, RequestSummary]] = None
+    api_keys: Optional[Dict[str, RequestSummary]] = None
+    ip_addresses: Optional[Dict[str, RequestSummary]] = None
+    duration_range: Optional[Dict[str, int]] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -1542,6 +1564,12 @@ class RequestLogs(IReturn[RequestLogsResponse], IGet):
     skip: int = 0
     take: Optional[int] = None
     order_by: Optional[str] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class GetAnalyticsReports(IReturn[AnalyticsReports], IGet):
+    month: Optional[datetime.datetime] = None
 
 
 # @Route("/validation/rules/{Type}")

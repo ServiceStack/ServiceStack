@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-06 19:46:05
+Date: 2025-03-14 11:35:19
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -3280,6 +3280,43 @@ class RequestLogEntry implements IConvertible
 }
 
 // @DataContract
+class RequestSummary implements IConvertible
+{
+    // @DataMember(Order=1)
+    String? name;
+
+    // @DataMember(Order=2)
+    int? requests;
+
+    // @DataMember(Order=3)
+    int? requestLength;
+
+    // @DataMember(Order=4)
+    double? duration;
+
+    RequestSummary({this.name,this.requests,this.requestLength,this.duration});
+    RequestSummary.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        name = json['name'];
+        requests = json['requests'];
+        requestLength = json['requestLength'];
+        duration = JsonConverters.toDouble(json['duration']);
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'name': name,
+        'requests': requests,
+        'requestLength': requestLength,
+        'duration': duration
+    };
+
+    getTypeName() => "RequestSummary";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
 class AdminGetRolesResponse implements IConvertible
 {
     // @DataMember(Order=1)
@@ -3882,6 +3919,63 @@ class RequestLogsResponse implements IConvertible
     };
 
     getTypeName() => "RequestLogsResponse";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
+class AnalyticsReports implements IConvertible
+{
+    // @DataMember(Order=1)
+    Map<String,RequestSummary?>? apis;
+
+    // @DataMember(Order=2)
+    Map<String,RequestSummary?>? users;
+
+    // @DataMember(Order=3)
+    Map<String,RequestSummary?>? tags;
+
+    // @DataMember(Order=4)
+    Map<String,RequestSummary?>? status;
+
+    // @DataMember(Order=5)
+    Map<String,RequestSummary?>? days;
+
+    // @DataMember(Order=6)
+    Map<String,RequestSummary?>? apiKeys;
+
+    // @DataMember(Order=7)
+    Map<String,RequestSummary?>? ipAddresses;
+
+    // @DataMember(Order=8)
+    Map<String,int?>? durationRange;
+
+    AnalyticsReports({this.apis,this.users,this.tags,this.status,this.days,this.apiKeys,this.ipAddresses,this.durationRange});
+    AnalyticsReports.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        apis = JsonConverters.fromJson(json['apis'],'Map<String,RequestSummary?>',context!);
+        users = JsonConverters.fromJson(json['users'],'Map<String,RequestSummary?>',context!);
+        tags = JsonConverters.fromJson(json['tags'],'Map<String,RequestSummary?>',context!);
+        status = JsonConverters.fromJson(json['status'],'Map<String,RequestSummary?>',context!);
+        days = JsonConverters.fromJson(json['days'],'Map<String,RequestSummary?>',context!);
+        apiKeys = JsonConverters.fromJson(json['apiKeys'],'Map<String,RequestSummary?>',context!);
+        ipAddresses = JsonConverters.fromJson(json['ipAddresses'],'Map<String,RequestSummary?>',context!);
+        durationRange = JsonConverters.fromJson(json['durationRange'],'Map<String,int?>',context!);
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'apis': JsonConverters.toJson(apis,'Map<String,RequestSummary?>',context!),
+        'users': JsonConverters.toJson(users,'Map<String,RequestSummary?>',context!),
+        'tags': JsonConverters.toJson(tags,'Map<String,RequestSummary?>',context!),
+        'status': JsonConverters.toJson(status,'Map<String,RequestSummary?>',context!),
+        'days': JsonConverters.toJson(days,'Map<String,RequestSummary?>',context!),
+        'apiKeys': JsonConverters.toJson(apiKeys,'Map<String,RequestSummary?>',context!),
+        'ipAddresses': JsonConverters.toJson(ipAddresses,'Map<String,RequestSummary?>',context!),
+        'durationRange': JsonConverters.toJson(durationRange,'Map<String,int?>',context!)
+    };
+
+    getTypeName() => "AnalyticsReports";
     TypeContext? context = _ctx;
 }
 
@@ -5095,6 +5189,30 @@ class RequestLogs implements IReturn<RequestLogsResponse>, IGet, IConvertible
     TypeContext? context = _ctx;
 }
 
+// @DataContract
+class GetAnalyticsReports implements IReturn<AnalyticsReports>, IGet, IConvertible
+{
+    // @DataMember(Order=1)
+    DateTime? month;
+
+    GetAnalyticsReports({this.month});
+    GetAnalyticsReports.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        month = JsonConverters.fromJson(json['month'],'DateTime',context!);
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'month': JsonConverters.toJson(month,'DateTime',context!)
+    };
+
+    createResponse() => AnalyticsReports();
+    getResponseTypeName() => "AnalyticsReports";
+    getTypeName() => "GetAnalyticsReports";
+    TypeContext? context = _ctx;
+}
+
 // @Route("/validation/rules/{Type}")
 // @DataContract
 class GetValidationRules implements IReturn<GetValidationRulesResponse>, IGet, IConvertible
@@ -5276,6 +5394,7 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'HourSummary': TypeInfo(TypeOf.Class, create:() => HourSummary()),
     'WorkerStats': TypeInfo(TypeOf.Class, create:() => WorkerStats()),
     'RequestLogEntry': TypeInfo(TypeOf.Class, create:() => RequestLogEntry()),
+    'RequestSummary': TypeInfo(TypeOf.Class, create:() => RequestSummary()),
     'AdminGetRolesResponse': TypeInfo(TypeOf.Class, create:() => AdminGetRolesResponse()),
     'List<AdminRole>': TypeInfo(TypeOf.Class, create:() => <AdminRole>[]),
     'AdminGetRoleResponse': TypeInfo(TypeOf.Class, create:() => AdminGetRoleResponse()),
@@ -5312,6 +5431,8 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'AdminCancelJobsResponse': TypeInfo(TypeOf.Class, create:() => AdminCancelJobsResponse()),
     'RequestLogsResponse': TypeInfo(TypeOf.Class, create:() => RequestLogsResponse()),
     'List<RequestLogEntry>': TypeInfo(TypeOf.Class, create:() => <RequestLogEntry>[]),
+    'AnalyticsReports': TypeInfo(TypeOf.Class, create:() => AnalyticsReports()),
+    'Map<String,RequestSummary?>': TypeInfo(TypeOf.Class, create:() => Map<String,RequestSummary?>()),
     'GetValidationRulesResponse': TypeInfo(TypeOf.Class, create:() => GetValidationRulesResponse()),
     'List<ValidationRule>': TypeInfo(TypeOf.Class, create:() => <ValidationRule>[]),
     'AdminCreateRole': TypeInfo(TypeOf.Class, create:() => AdminCreateRole()),
@@ -5359,6 +5480,7 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'AdminRequeueFailedJobs': TypeInfo(TypeOf.Class, create:() => AdminRequeueFailedJobs()),
     'AdminCancelJobs': TypeInfo(TypeOf.Class, create:() => AdminCancelJobs()),
     'RequestLogs': TypeInfo(TypeOf.Class, create:() => RequestLogs()),
+    'GetAnalyticsReports': TypeInfo(TypeOf.Class, create:() => GetAnalyticsReports()),
     'GetValidationRules': TypeInfo(TypeOf.Class, create:() => GetValidationRules()),
     'ModifyValidationRules': TypeInfo(TypeOf.Class, create:() => ModifyValidationRules()),
 });
