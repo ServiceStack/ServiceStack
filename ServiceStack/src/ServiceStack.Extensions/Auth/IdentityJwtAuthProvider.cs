@@ -415,8 +415,9 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
             if (authService.Request.AllowConnection(RequireSecureConnection))
             {
                 var req = authContext.Request;
-                var (user, roles, claims) = await Manager.GetUserInfoByNameAsync(session.UserAuthName, authService.Request).ConfigAwait();
-                var bearerToken = CreateJwtBearerToken(user, roles, claims, req);
+                var (user, principal) = await Manager.GetUserClaimsPrincipalByNameAsync(session.UserAuthName, authService.Request).ConfigAwait();
+                var roles = authContext.Request.GetClaimsPrincipalRoles(principal);
+                var bearerToken = CreateJwtBearerToken(user, principal, req);
 
                 authContext.Session.UserAuthId = authContext.AuthResponse.UserId = user.Id.ToString();
                 authContext.Session.Roles = roles.ToList();
@@ -435,21 +436,21 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
 
     public async Task<List<Claim>> GetUserClaimsAsync(string userName, IRequest? req = null)
     {
-        var (user, roles) = await Manager.GetUserAndRolesByNameAsync(userName, req).ConfigAwait();
-        var claims = CreateUserClaims(user, roles);
+        var (user, principal) = await Manager.GetUserClaimsPrincipalByNameAsync(userName, req).ConfigAwait();
+        var claims = CreateUserClaims(user, principal);
         return claims;
     }
 
     public async Task<string> CreateBearerTokenAsync(string userName, IRequest? req = null)
     {
-        var (user, roles, claims) = await Manager.GetUserInfoByNameAsync(userName, req).ConfigAwait();
-        return CreateJwtBearerToken(user, roles, claims, req);
+        var (user, principal) = await Manager.GetUserClaimsPrincipalByNameAsync(userName, req).ConfigAwait();
+        return CreateJwtBearerToken(user, principal, req);
     }
 
     public async Task<UserJwtTokens> CreateBearerAndRefreshTokenAsync(string userName, IRequest? req = null)
     {
-        var (user, roles, claims) = await Manager.GetUserInfoByNameAsync(userName, req).ConfigAwait();
-        var jwt = CreateJwtBearerToken(user, roles, claims, req);
+        var (user, principal) = await Manager.GetUserClaimsPrincipalByNameAsync(userName, req).ConfigAwait();
+        var jwt = CreateJwtBearerToken(user, principal, req);
         if (user is IRequireRefreshToken hasRefreshToken && EnableRefreshToken)
         {
             if (hasRefreshToken.RefreshToken == null || hasRefreshToken.RefreshTokenExpiry == null || hasRefreshToken.RefreshTokenExpiry < DateTime.UtcNow)
@@ -462,10 +463,10 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
         return new(jwt, null);
     }
     
-    public string CreateJwtBearerToken(TUser user, IEnumerable<string>? roles = null, IEnumerable<Claim>? claims = null, IRequest? req = null)
+    public string CreateJwtBearerToken(TUser user, ClaimsPrincipal principal, IRequest? req = null)
     {
-        var userClaims = CreateUserClaims(user, roles);
-        foreach (var claim in claims.Safe())
+        var userClaims = CreateUserClaims(user, principal);
+        foreach (var claim in principal.Claims)
         {
             userClaims.Add(claim);
         }
@@ -497,7 +498,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
         return token;
     }
 
-    public List<Claim> CreateUserClaims(TUser user, IEnumerable<string>? roles = null)
+    public List<Claim> CreateUserClaims(TUser user, ClaimsPrincipal? principal = null)
     {
         var claims = new List<Claim>
         {
@@ -537,13 +538,9 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
             }
         }
 
-        if (roles != null)
+        if (principal != null)
         {
-            var roleClaim = TokenValidationParameters.RoleClaimType ?? ClaimTypes.Role;
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(roleClaim, role));
-            }
+            claims.AddRange(principal.Claims);
         }
 
         return claims;
@@ -664,6 +661,28 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
 #endif
         }
         
+        async Task<ClaimsPrincipal> Create(TUser? user, 
+            UserManager<TUser> userManager, 
+            RoleManager<IdentityRole> roleManager,
+            IOptions<IdentityOptions> options, 
+            IRequest? httpReq = null)
+        {
+            if (user == null && httpReq != null)
+            {
+                var context = httpReq.TryResolve<IdentityAuthContext<TUser, TKey>>();
+                var session = await httpReq.GetSessionAsync().ConfigAwait();
+                if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
+                    user = context.SessionToUserConverter(session);
+            }
+
+            if (user == null)
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(httpReq));
+
+            var userFactory = new UserClaimsPrincipalFactory<TUser, IdentityRole>(userManager, roleManager, options);
+            var principal = await userFactory.CreateAsync(user).ConfigAwait();
+            return principal;
+        }
+
         if (req == null)
         {
             var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
@@ -672,11 +691,14 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
             var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
 
             using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var options = scope.ServiceProvider.GetRequiredService<IOptions<IdentityOptions>>();
+
             var user = await GetUser(dbUsers).ConfigAwait();
-            var roles = await userManager.GetRolesAsync(user).ConfigAwait();
-            var claims = await userManager.GetClaimsAsync(user).ConfigAwait();
+            var principal = await Create(user, userManager, roleManager, options).ConfigAwait();
+
             await UpdateRefreshTokenExpiry(dbUsers).ConfigAwait();
-            return CreateJwtBearerToken(user, roles, claims, req);
+            return CreateJwtBearerToken(user, principal, req);
         }
         else
         {
@@ -685,11 +707,14 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
             var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
 
             var userManager = services.GetRequiredService<UserManager<TUser>>();
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var options = services.GetRequiredService<IOptions<IdentityOptions>>();
+            
             var user = await GetUser(dbUsers).ConfigAwait();
-            var roles = await userManager.GetRolesAsync(user).ConfigAwait();
-            var claims = await userManager.GetClaimsAsync(user).ConfigAwait();
+
+            var principal = await Create(user, userManager, roleManager, options).ConfigAwait();
             await UpdateRefreshTokenExpiry(dbUsers).ConfigAwait();
-            return CreateJwtBearerToken(user, roles, claims, req);
+            return CreateJwtBearerToken(user, principal, req);
         }
     }
 
@@ -700,10 +725,10 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
 
         if (addJwtCookie || addRefreshCookie)
         {
-            var (user, roles, claims) = await Manager.GetUserInfoByNameAsync(authContext.Session.UserAuthName, authContext.Request).ConfigAwait();
+            var (user, principal) = await Manager.GetUserClaimsPrincipalByNameAsync(authContext.Session.UserAuthName, authContext.Request).ConfigAwait();
             if (addJwtCookie)
             {
-                var accessToken = CreateJwtBearerToken(user, roles, claims, authContext.Request);
+                var accessToken = CreateJwtBearerToken(user, principal, authContext.Request);
                 await authContext.Request.RemoveSessionAsync(authContext.Session.Id, token);
 
                 authContext.Result.AddCookie(authContext.Request,

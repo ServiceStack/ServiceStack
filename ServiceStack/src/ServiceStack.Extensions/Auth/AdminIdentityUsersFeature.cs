@@ -44,8 +44,11 @@ public interface IIdentityAdminUsersFeature
 
     Task<IEnumerable<object>> SearchUsersAsync(IRequest request, string query, string? orderBy = null, int? skip = null, int? take = null);
     public Task<object?> FindUserByIdAsync(IRequest request, string userId);
+    Task<IList<Claim>> GetUserClaims(IRequest request, object user);
+
     Task<(object, List<string>)> GetUserAndRolesByIdAsync(IRequest request, string userId);
-    Task<(object, List<string>, List<Claim>)> GetUserInfoByIdAsync(IRequest request, string userId);
+    Task<(object, ClaimsPrincipal)> GetUserClaimsPrincipalByIdAsync(IRequest request, string userId);
+    Task<(object, ClaimsPrincipal)> GetUserClaimsPrincipalByNameAsync(IRequest request, string userName);
     Task DeleteUserByIdAsync(string requestId);
 
     Task<List<IdentityRole>> GetAllRolesAsync(IRequest request);
@@ -101,24 +104,29 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
         return await Manager.FindUserByIdAsync(userId, request).ConfigAwait();
     }
 
+    public async Task<IList<Claim>> GetUserClaims(IRequest request, object user)
+    {
+        return await Manager.GetClaimsByUserAsync(user, request).ConfigAwait();
+    }
+
     public async Task<(object, List<string>)> GetUserAndRolesByIdAsync(IRequest request, string userId)
     {
         return await Manager.GetUserAndRolesByIdAsync(userId, request).ConfigAwait();
     }
 
-    public async Task<(object, List<string>, List<Claim>)>  GetUserInfoByIdAsync(IRequest request, string userId)
+    public async Task<(object, ClaimsPrincipal)>  GetUserClaimsPrincipalByIdAsync(IRequest request, string userId)
     {
-        return await Manager.GetUserInfoByIdAsync(userId, request).ConfigAwait();
+        return await Manager.GetUserClaimsPrincipalByIdAsync(userId, request).ConfigAwait();
     }
     
-    public async Task<(TUser, List<string>, List<Claim>)> GetUserInfoByNameAsync(IRequest request, string userName)
+    public async Task<(object, ClaimsPrincipal)> GetUserClaimsPrincipalByNameAsync(IRequest request, string userName)
     {
-        return await Manager.GetUserInfoByNameAsync(userName, request).ConfigAwait();
+        return await Manager.GetUserClaimsPrincipalByNameAsync(userName, request).ConfigAwait();
     }
 
     public async Task DeleteUserByIdAsync(string requestId)
     {
-        await Manager.DeleteUserByIdAsync(requestId);
+        await Manager.DeleteUserByIdAsync(requestId).ConfigAwait();
     }
 
     public Func<TUser> CreateUser { get; set; } = () => new TUser { EmailConfirmed = true }; 
@@ -476,8 +484,9 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         if (request.Id == null)
             throw new ArgumentNullException(nameof(request.Id));
 
-        var (user, roles, claims) = await feature.GetUserInfoByIdAsync(Request, request.Id);
-        return await CreateUserResponse(user, roles, claims).ConfigAwait();
+        var (user, roles) = await feature.GetUserAndRolesByIdAsync(Request!, request.Id);
+        var claims = await feature.GetUserClaims(Request!, user);
+        return CreateUserResponse(user, claims, roles);
     }
 
     public async Task<object> Post(AdminCreateUser request)
@@ -592,8 +601,9 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
             await feature.AfterUpdateUserAsync(Request, existingUser).ConfigAwait();
         }
 
-        var (user, roles, claims) = await feature.GetUserInfoByIdAsync(Request, request.Id);
-        return await CreateUserResponse(user, roles, claims).ConfigAwait();
+        var (user, roles) = await feature.GetUserAndRolesByIdAsync(Request, request.Id).ConfigAwait();
+        var claims = await feature.GetUserClaims(Request, user).ConfigAwait();
+        return CreateUserResponse(user, claims, roles);
     }
 
     public async Task<object> Delete(AdminDeleteUser request)
@@ -614,7 +624,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         };
     }
 
-    private async Task<object> CreateUserResponse(object user, List<string> roles, List<Claim> claims)
+    private object CreateUserResponse(object user, IList<Claim> claims, List<string> roles)
     {
         if (user == null)
             throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));

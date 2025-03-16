@@ -4,10 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ServiceStack.Model;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
@@ -47,5 +50,12 @@ public static class IdentityUtils
         options.NameClaimType = JwtClaimTypes.Name;
         options.RoleClaimType = JwtClaimTypes.Roles;
         return options;
+    }
+
+    public static List<string> GetClaimsPrincipalRoles(this IRequest req, ClaimsPrincipal principal)
+    {
+        var options = req.TryResolve<IOptions<IdentityOptions>>();
+        var roleClaims = principal.Claims.Where(x => x.Type == options.Value.ClaimsIdentity.RoleClaimType).ToList();
+        return roleClaims.Map(x => x.Value);
     }
 }

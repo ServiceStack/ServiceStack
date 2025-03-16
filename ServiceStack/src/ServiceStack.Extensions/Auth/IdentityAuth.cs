@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using ServiceStack.FluentValidation;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -644,6 +645,9 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
     public Task<IList<Claim>> GetClaimsByNameAsync(string userName, IRequest? request = null) =>
         GetClaimsAsync(async userManager => await GetClaimsAsync(await userManager.FindByNameAsync(userName)).ConfigAwait(), request);
 
+    public Task<IList<Claim>> GetClaimsByUserAsync(object user, IRequest? request = null) =>
+        GetClaimsAsync(async userManager => await GetClaimsAsync((TUser)user).ConfigAwait(), request);
+
     public Task<IList<Claim>> GetClaimsAsync(TUser? user, IRequest? request = null) =>
         GetClaimsAsync(async userManager => {
             if (user == null) return [];
@@ -707,45 +711,52 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         }
     }
     
-    public Task<(TUser, List<string>, List<Claim>)> GetUserInfoByIdAsync(string userId, IRequest? request = null) =>
-        GetUserInfoAsync(userManager => userManager.FindByIdAsync(userId), request);
-    public Task<(TUser, List<string>, List<Claim>)> GetUserInfoByNameAsync(string userName, IRequest? request = null) =>
-        GetUserInfoAsync(userManager => userManager.FindByNameAsync(userName), request);
+    public Task<(TUser, ClaimsPrincipal)> GetUserClaimsPrincipalByIdAsync(string userId, IRequest? request = null) =>
+        GetUserClaimsPrincipalAsync(userManager => userManager.FindByIdAsync(userId), request);
+    public Task<(TUser, ClaimsPrincipal)> GetUserClaimsPrincipalByNameAsync(string userName, IRequest? request = null) =>
+        GetUserClaimsPrincipalAsync(userManager => userManager.FindByNameAsync(userName), request);
     
-    public async Task<(TUser, List<string>, List<Claim>)> GetUserInfoAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
+    public async Task<(TUser, ClaimsPrincipal)> GetUserClaimsPrincipalAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
     {
-        if (request == null)
+        async Task<(TUser, ClaimsPrincipal)> Create(TUser? user, 
+            UserManager<TUser> userManager, 
+            RoleManager<IdentityRole> roleManager,
+            IOptions<IdentityOptions> options,
+            IRequest? req = null)
         {
-            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
-            using var scope = scopeFactory.CreateScope();
-            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
-            var user = await findUser(userManager).ConfigAwait();
-
-            if (user == null)
-                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
-            
-            var roles = (await userManager.GetRolesAsync(user).ConfigAwait()).ToList();
-            var claims = (await userManager.GetClaimsAsync(user).ConfigAwait()).ToList();
-            return (user, roles, claims);
-        }
-        else
-        {
-            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
-            var user = await findUser(userManager).ConfigAwait();
-            
-            if (user == null)
+            if (user == null && req != null)
             {
                 var session = await request.GetSessionAsync().ConfigAwait();
                 if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
                     user = context.SessionToUserConverter(session);
             }
-
             if (user == null)
-                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
+                throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(req));
 
-            var roles = (await userManager.GetRolesAsync(user).ConfigAwait()).ToList();
-            var claims = (await userManager.GetClaimsAsync(user).ConfigAwait()).ToList();
-            return (user, roles, claims);
+            var userFactory = new UserClaimsPrincipalFactory<TUser, IdentityRole>(userManager, roleManager, options);
+            var claimsPrincipal = await userFactory.CreateAsync(user).ConfigAwait();
+            return (user, claimsPrincipal);
+        }
+        
+        if (request == null)
+        {
+            var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var options = scope.ServiceProvider.GetRequiredService<IOptions<IdentityOptions>>();
+            
+            var user = await findUser(userManager).ConfigAwait();
+            return await Create(user, userManager, roleManager, options).ConfigAwait();
+        }
+        else
+        {
+            var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            var options = request.GetServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
+
+            var user = await findUser(userManager).ConfigAwait();
+            return await Create(user, userManager, roleManager, options, request).ConfigAwait();
         }
     }
 

@@ -48,13 +48,40 @@ public class RequestLogsResponse
 }
 
 [DataContract]
-public class GetAnalyticsReports : IGet, IReturn<AnalyticsReports>
+public class GetAnalyticsReports : IGet, IReturn<GetAnalyticsReportsResponse>
 {
     [DataMember(Order=1)] 
     public DateTime? Month { get; set; }
 
     [DataMember(Order=2)] 
     public string Filter { get; set; }
+}
+[DataContract]
+public class GetAnalyticsReportsResponse
+{
+    [DataMember(Order=1)]
+    public AnalyticsReports Results { get; set; } = new();
+
+    [DataMember(Order=2)]
+    public List<string> Months { get; set; } = new();
+    
+    [DataMember(Order=3)]
+    public ResponseStatus ResponseStatus { get; set; }
+}
+
+[DataContract]
+public class AnalyticsReports
+{
+    [DataMember(Order=1)] public int Id { get; set; } // Use last Id of RequestLog
+    [DataMember(Order=2)] public DateTime Created { get; set; } // When it was created
+    [DataMember(Order=2)] public Dictionary<string, RequestSummary> Apis { get; set; }
+    [DataMember(Order=3)] public Dictionary<string, RequestSummary> Users { get; set; }
+    [DataMember(Order=4)] public Dictionary<string, RequestSummary> Tags { get; set; }
+    [DataMember(Order=5)] public Dictionary<string, RequestSummary> Status { get; set; }
+    [DataMember(Order=6)] public Dictionary<string, RequestSummary> Days { get; set; }
+    [DataMember(Order=7)] public Dictionary<string, RequestSummary> ApiKeys { get; set; }
+    [DataMember(Order=8)] public Dictionary<string, RequestSummary> IpAddresses { get; set; }
+    [DataMember(Order=9)] public Dictionary<string, long> DurationRange { get; set; }
 }
 
 public enum AnalyticsType
@@ -81,19 +108,6 @@ public class GetApiAnalyticsResponse
 {
     [DataMember(Order=1)]
     public Dictionary<string, long> Results { get; set; } = new();
-}
-
-[DataContract]
-public class AnalyticsReports
-{
-    [DataMember(Order=1)] public Dictionary<string, RequestSummary> Apis { get; set; }
-    [DataMember(Order=2)] public Dictionary<string, RequestSummary> Users { get; set; }
-    [DataMember(Order=3)] public Dictionary<string, RequestSummary> Tags { get; set; }
-    [DataMember(Order=4)] public Dictionary<string, RequestSummary> Status { get; set; }
-    [DataMember(Order=5)] public Dictionary<string, RequestSummary> Days { get; set; }
-    [DataMember(Order=6)] public Dictionary<string, RequestSummary> ApiKeys { get; set; }
-    [DataMember(Order=7)] public Dictionary<string, RequestSummary> IpAddresses { get; set; }
-    [DataMember(Order=8)] public Dictionary<string, long> DurationRange { get; set; }
 }
 
 [DataContract]
