@@ -115,6 +115,10 @@ public class HasAnyRoleValidator : TypeValidator, IAuthTypeValidator
 public class HasClaimValidator : TypeValidator, IAuthTypeValidator
 {
     public static string DefaultErrorMessage { get; set; } = "`${Type} Claim with '${Value}' is Required`";
+    public static Dictionary<string, string> ClaimErrorMessages { get; } = new()
+    {
+        { "perm", "`${Value} Permission Required`" }
+    };
 
     public string Type { get; }
     public string Value { get; }
@@ -144,6 +148,20 @@ public class HasClaimValidator : TypeValidator, IAuthTypeValidator
             return;
 
         throw new HttpError(ResolveStatusCode(), ResolveErrorCode(), ResolveErrorMessage(request, dto));
+    }
+
+    protected override string ResolveErrorMessage(IRequest request, object dto)
+    {
+        var errorCode = ErrorCode ?? DefaultErrorCode;
+        var messageExpr = ClaimErrorMessages.TryGetValue(Type, out var typeMsg)
+            ? typeMsg.Localize(request)
+            : Message != null
+                ? Message.Localize(request)
+                : Validators.ErrorCodeMessages.TryGetValue(errorCode, out var msg)
+                    ? msg.Localize(request)
+                    : DefaultMessage.Localize(request);
+
+        return ResolveErrorMessage(request, dto, messageExpr);
     }
 }
 
@@ -290,9 +308,8 @@ public abstract class TypeValidator : ITypeValidator
             DefaultStatusCode = statusCode;
     }
 
-    protected string ResolveErrorMessage(IRequest request, object dto)
+    protected virtual string ResolveErrorMessage(IRequest request, object dto)
     {
-        var appHost = HostContext.AppHost;
         var errorCode = ErrorCode ?? DefaultErrorCode;
         var messageExpr = Message != null
             ? Message.Localize(request)
@@ -300,6 +317,12 @@ public abstract class TypeValidator : ITypeValidator
                 ? msg.Localize(request)
                 : DefaultMessage.Localize(request);
 
+        return ResolveErrorMessage(request, dto, messageExpr);
+    }
+
+    protected virtual string ResolveErrorMessage(IRequest request, object dto, string messageExpr)
+    {
+        var appHost = HostContext.AppHost;
         string errorMsg = messageExpr;
         if (messageExpr.IndexOf('`') >= 0)
         {
