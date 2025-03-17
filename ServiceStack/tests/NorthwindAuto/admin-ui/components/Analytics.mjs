@@ -10,7 +10,7 @@ export const Analytics = {
     template: `
       <div class="container mx-auto">
 
-        <div v-if="loading" class="flex justify-center">
+        <div v-if="loading" class="flex justify-center p-12">
           <Loading v-if="loading">generating...</Loading>
         </div>
 
@@ -42,10 +42,22 @@ export const Analytics = {
             </div>
 
           </div>
-          
+
+          <div class="my-4 mx-auto max-w-lg">
+            <Autocomplete ref="cboApis" id="op" label="" placeholder="Select API"
+                          :match="(x, value) => x.key.toLowerCase().includes(value.toLowerCase())"
+                          v-model="opEntry" :options="opEntries">
+              <template #item="{ key, value }">
+                <div class="truncate flex justify-between mr-8">
+                  <span>{{ key }}</span>
+                  <span>({{ value.totalRequests }})</span>
+                </div>
+              </template>
+            </Autocomplete>
+          </div>
+
           <div v-if="routes.op && apiAnalytics" class="relative">
             <CloseButton @click="routes.to({ op: undefined })" title="Close API" />
-            <h3 class="mb-2 text-2xl font-semibold text-gray-900">{{routes.op}}</h3>
 
             <div class="flex">
               <div class="w-1/2">
@@ -91,6 +103,7 @@ export const Analytics = {
     `,
     setup(props) {
         const routes = inject('routes')
+        const server = inject('server')
         const client = useClient()
         const refApiRequests = ref(null)
         const refApiDurations = ref(null)
@@ -99,6 +112,8 @@ export const Analytics = {
         const loading = ref(false)
         const error = ref(null)
         const api = ref(new ApiResult())
+        const opEntry = ref()
+        const opEntries = ref([])
         const resultLimits = [5,10,25,50,100]
         const months = ref([])
         const years = computed(() => 
@@ -372,6 +387,10 @@ export const Analytics = {
             if (api.value.succeeded) {
                 analytics.value = api.value.response.results
                 months.value = api.value.response.months
+                opEntries.value = Object.keys(api.value.response.results.apis)
+                    .map(key => ({ key, value:api.value.response.results.apis[key] }))
+                    .sort((a,b) => b.value.totalRequests - a.value.totalRequests)
+                opEntry.value = routes.op ? opEntries.value.find(x => x.key === routes.op) : null
                 loading.value = false
 
                 // Wait for the DOM to update
@@ -405,6 +424,15 @@ export const Analytics = {
                 update()
             }, 0)
         })
+        watch(() => [routes.op], () => {
+            opEntry.value = routes.op ? opEntries.value.find(x => x.key === routes.op) : null
+        })
+        watch(() => [opEntry.value], () => {
+            const op = opEntry.value?.key
+            if (op !== routes.op) {
+                routes.to({ op })
+            }
+        })
         watch(() => [analytics.value, limits.value.api], () => {
             setTimeout(() => {
                 createApiRequestsChart()
@@ -435,6 +463,8 @@ export const Analytics = {
             refStatusCodes,
             months,
             years,
+            opEntry,
+            opEntries,
             chartHeight,
         }
     }

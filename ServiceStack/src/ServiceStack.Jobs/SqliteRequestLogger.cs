@@ -335,7 +335,22 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month)
     {
-        // op,user,tag,status,day,apikey,time(ms 0-50,51-100,101-200ms,1-2s,2s-5s,5s+)
+        using var db = OpenMonthDb(month);
+
+        var tableExists = db.TableExists<AnalyticsReports>();
+        var lastLogId = tableExists
+            ? db.Single(db.From<RequestLog>().OrderByDescending(x => x.Id).Limit(1))?.Id
+            : null;
+        var cachedReport = lastLogId != null
+            ? db.SingleById<AnalyticsReports>(lastLogId)
+            : null;
+
+        if (cachedReport != null)
+            return cachedReport;
+        
+        List<RequestLog> batch = [];
+        long lastPk = 0;
+        var metadata = HostContext.Metadata;
         var ret = new AnalyticsReports
         {
             Apis = new(),
@@ -347,10 +362,6 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             IpAddresses = new(),
             DurationRange = new(),
         }; 
-        using var db = OpenMonthDb(month);
-        List<RequestLog> batch = [];
-        long lastPk = 0;
-        var metadata = HostContext.Metadata;
 
         void Add(Dictionary<string, RequestSummary> results, string name, RequestLog log)
         {
@@ -504,6 +515,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         Clean(ret.Days);
         Clean(ret.ApiKeys);
         Clean(ret.IpAddresses);
+        
+        db.DropAndCreateTable<AnalyticsReports>();
+        db.Insert(ret);
         
         return ret;
     }
