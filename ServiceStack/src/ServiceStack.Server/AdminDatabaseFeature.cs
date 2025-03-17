@@ -58,6 +58,10 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
                 Show = $"role:{AdminRole}",
             });
         });
+        appHost.ConfigurePlugin<RequestLogsFeature>(feature =>
+        {
+            feature.ExcludeRequestDtoTypes.Add(typeof(AdminDatabase));
+        });
     }
 
     public void AfterPluginsLoaded(IAppHost appHost)

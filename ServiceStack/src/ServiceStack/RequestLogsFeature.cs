@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
@@ -71,18 +72,18 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
     /// <summary>
     /// Don't log requests of these types. By default RequestLog's are excluded
     /// </summary>
-    public Type[] ExcludeRequestDtoTypes { get; set; }
+    public List<Type> ExcludeRequestDtoTypes { get; set; }
 
     /// <summary>
     /// Don't log request body's for services with sensitive information.
     /// By default Auth and Registration requests are hidden.
     /// </summary>
-    public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
+    public List<Type> HideRequestBodyForRequestDtoTypes { get; set; }
         
     /// <summary>
     /// Don't log Response DTO Types
     /// </summary>
-    public Type[] ExcludeResponseTypes { get; set; }
+    public List<Type> ExcludeResponseTypes { get; set; }
 
     /// <summary>
     /// Limit logging to only Service Requests
@@ -147,6 +148,15 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
             typeof(AdminDashboard),
             typeof(AdminProfiling),
             typeof(AdminRedis),
+            typeof(AdminGetUser),
+            typeof(AdminQueryUsers),
+            typeof(AdminQueryApiKeys),
+            typeof(AdminGetRole),
+            typeof(AdminGetRoles),
+            typeof(GetValidationRules),
+            typeof(GetAnalyticsReports),
+            typeof(GetApiAnalytics),
+            typeof(ViewCommands),
             typeof(NativeTypesBase),
         ];
         this.HideRequestBodyForRequestDtoTypes =
@@ -171,21 +181,6 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
             services.RegisterService<RequestLogsService>(AtRestPath);
 
         var requestLogger = RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
-        requestLogger.EnableSessionTracking = EnableSessionTracking;
-        requestLogger.EnableResponseTracking = EnableResponseTracking;
-        requestLogger.ResponseTrackingFilter = ResponseTrackingFilter;
-        requestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
-        requestLogger.RequestBodyTrackingFilter = RequestBodyTrackingFilter;
-        requestLogger.LimitToServiceRequests = LimitToServiceRequests;
-        requestLogger.SkipLogging = SkipLogging;
-        requestLogger.EnableErrorTracking = EnableErrorTracking;
-        requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
-        requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
-        requestLogger.ExcludeResponseTypes = ExcludeResponseTypes;
-        requestLogger.RequestLogFilter = RequestLogFilter;
-        requestLogger.IgnoreFilter = IgnoreFilter;
-        requestLogger.CurrentDateFn = CurrentDateFn;
-
         RequestLogger ??= requestLogger;
         requestLoggerType = requestLogger.GetType();
         services.AddSingleton(requestLogger);
@@ -203,6 +198,23 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         
         if (RegisterAllowRuntimeTypeInTypes != null)
             JsConfig.AllowRuntimeTypeInTypes.Add(RegisterAllowRuntimeTypeInTypes);
+
+        RequestLogger = appHost.TryResolve<IRequestLogger>();
+        requestLoggerType = RequestLogger.GetType();
+        RequestLogger.EnableSessionTracking = EnableSessionTracking;
+        RequestLogger.EnableResponseTracking = EnableResponseTracking;
+        RequestLogger.ResponseTrackingFilter = ResponseTrackingFilter;
+        RequestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
+        RequestLogger.RequestBodyTrackingFilter = RequestBodyTrackingFilter;
+        RequestLogger.LimitToServiceRequests = LimitToServiceRequests;
+        RequestLogger.SkipLogging = SkipLogging;
+        RequestLogger.EnableErrorTracking = EnableErrorTracking;
+        RequestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes.ToArray();
+        RequestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes.ToArray();
+        RequestLogger.ExcludeResponseTypes = ExcludeResponseTypes.ToArray();
+        RequestLogger.RequestLogFilter = RequestLogFilter;
+        RequestLogger.IgnoreFilter = IgnoreFilter;
+        RequestLogger.CurrentDateFn = CurrentDateFn;
 
         if (EnableRequestBodyTracking)
         {
