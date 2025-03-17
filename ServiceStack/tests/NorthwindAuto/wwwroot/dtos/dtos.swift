@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-14 11:35:19
+Date: 2025-03-16 22:20:18
 SwiftVersion: 6.0
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
@@ -841,10 +841,30 @@ public class RequestLogs : IReturn, IGet, Codable
 // @DataContract
 public class GetAnalyticsReports : IReturn, IGet, Codable
 {
-    public typealias Return = AnalyticsReports
+    public typealias Return = GetAnalyticsReportsResponse
 
     // @DataMember(Order=1)
     public var month:Date?
+
+    // @DataMember(Order=2)
+    public var filter:String?
+
+    required public init(){}
+}
+
+// @DataContract
+public class GetApiAnalytics : IReturn, IGet, Codable
+{
+    public typealias Return = GetApiAnalyticsResponse
+
+    // @DataMember(Order=1)
+    public var month:Date?
+
+    // @DataMember(Order=2)
+    public var type:AnalyticsType?
+
+    // @DataMember(Order=3)
+    public var value:String?
 
     required public init(){}
 }
@@ -1240,31 +1260,25 @@ public class RequestLogsResponse : Codable
 }
 
 // @DataContract
-public class AnalyticsReports : Codable
+public class GetAnalyticsReportsResponse : Codable
 {
     // @DataMember(Order=1)
-    public var apis:[String:RequestSummary]?
+    public var results:AnalyticsReports?
 
     // @DataMember(Order=2)
-    public var users:[String:RequestSummary]?
+    public var months:[String]?
 
     // @DataMember(Order=3)
-    public var tags:[String:RequestSummary]?
+    public var responseStatus:ResponseStatus?
 
-    // @DataMember(Order=4)
-    public var status:[String:RequestSummary]?
+    required public init(){}
+}
 
-    // @DataMember(Order=5)
-    public var days:[String:RequestSummary]?
-
-    // @DataMember(Order=6)
-    public var apiKeys:[String:RequestSummary]?
-
-    // @DataMember(Order=7)
-    public var ipAddresses:[String:RequestSummary]?
-
-    // @DataMember(Order=8)
-    public var durationRange:[String:Int]?
+// @DataContract
+public class GetApiAnalyticsResponse : Codable
+{
+    // @DataMember(Order=1)
+    public var results:[String:Int]?
 
     required public init(){}
 }
@@ -1477,6 +1491,14 @@ public enum BackgroundJobState : String, Codable
     case Completed
     case Failed
     case Cancelled
+}
+
+public enum AnalyticsType : String, Codable
+{
+    case User
+    case Day
+    case ApiKey
+    case IpAddress
 }
 
 public class ValidationRule : ValidateRule
@@ -1884,19 +1906,37 @@ public class RequestLogEntry : Codable
 }
 
 // @DataContract
-public class RequestSummary : Codable
+public class AnalyticsReports : Codable
 {
     // @DataMember(Order=1)
-    public var name:String?
+    public var id:Int?
 
     // @DataMember(Order=2)
-    public var requests:Int?
+    public var created:Date?
+
+    // @DataMember(Order=2)
+    public var apis:[String:RequestSummary]?
 
     // @DataMember(Order=3)
-    public var requestLength:Int?
+    public var users:[String:RequestSummary]?
 
     // @DataMember(Order=4)
-    public var duration:Double?
+    public var tags:[String:RequestSummary]?
+
+    // @DataMember(Order=5)
+    public var status:[String:RequestSummary]?
+
+    // @DataMember(Order=6)
+    public var days:[String:RequestSummary]?
+
+    // @DataMember(Order=7)
+    public var apiKeys:[String:RequestSummary]?
+
+    // @DataMember(Order=8)
+    public var ipAddresses:[String:RequestSummary]?
+
+    // @DataMember(Order=9)
+    public var durationRange:[String:Int]?
 
     required public init(){}
 }
@@ -2377,6 +2417,27 @@ public class RefInfo : Codable
     public var refId:String?
     public var refLabel:String?
     public var queryApi:String?
+
+    required public init(){}
+}
+
+// @DataContract
+public class RequestSummary : Codable
+{
+    // @DataMember(Order=1)
+    public var name:String?
+
+    // @DataMember(Order=2)
+    public var requests:Int?
+
+    // @DataMember(Order=3)
+    public var requestLength:Int?
+
+    // @DataMember(Order=4)
+    public var duration:Double?
+
+    // @DataMember(Order=5)
+    public var status:[Int:Int]?
 
     required public init(){}
 }

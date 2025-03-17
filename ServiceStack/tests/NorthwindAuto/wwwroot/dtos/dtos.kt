@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-14 11:35:19
+Date: 2025-03-16 22:20:18
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -613,12 +613,30 @@ open class RequestLogs : IReturn<RequestLogsResponse>, IGet
 }
 
 @DataContract
-open class GetAnalyticsReports : IReturn<AnalyticsReports>, IGet
+open class GetAnalyticsReports : IReturn<GetAnalyticsReportsResponse>, IGet
 {
     @DataMember(Order=1)
     open var month:Date? = null
-    companion object { private val responseType = AnalyticsReports::class.java }
+
+    @DataMember(Order=2)
+    open var filter:String? = null
+    companion object { private val responseType = GetAnalyticsReportsResponse::class.java }
     override fun getResponseType(): Any? = GetAnalyticsReports.responseType
+}
+
+@DataContract
+open class GetApiAnalytics : IReturn<GetApiAnalyticsResponse>, IGet
+{
+    @DataMember(Order=1)
+    open var month:Date? = null
+
+    @DataMember(Order=2)
+    @SerializedName("type") open var Type:AnalyticsType? = null
+
+    @DataMember(Order=3)
+    open var value:String? = null
+    companion object { private val responseType = GetApiAnalyticsResponse::class.java }
+    override fun getResponseType(): Any? = GetApiAnalytics.responseType
 }
 
 @Route(Path="/validation/rules/{Type}")
@@ -984,31 +1002,23 @@ open class RequestLogsResponse
 }
 
 @DataContract
-open class AnalyticsReports
+open class GetAnalyticsReportsResponse
 {
     @DataMember(Order=1)
-    open var apis:HashMap<String,RequestSummary>? = null
+    open var results:AnalyticsReports? = null
 
     @DataMember(Order=2)
-    open var users:HashMap<String,RequestSummary>? = null
+    open var months:ArrayList<String>? = null
 
     @DataMember(Order=3)
-    open var tags:HashMap<String,RequestSummary>? = null
+    open var responseStatus:ResponseStatus? = null
+}
 
-    @DataMember(Order=4)
-    open var status:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=5)
-    open var days:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=6)
-    open var apiKeys:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=7)
-    open var ipAddresses:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=8)
-    open var durationRange:HashMap<String,Long>? = null
+@DataContract
+open class GetApiAnalyticsResponse
+{
+    @DataMember(Order=1)
+    open var results:HashMap<String,Long>? = null
 }
 
 @DataContract
@@ -1174,6 +1184,14 @@ enum class BackgroundJobState
     Completed,
     Failed,
     Cancelled,
+}
+
+enum class AnalyticsType
+{
+    User,
+    Day,
+    ApiKey,
+    IpAddress,
 }
 
 open class ValidationRule : ValidateRule()
@@ -1499,19 +1517,37 @@ open class RequestLogEntry
 }
 
 @DataContract
-open class RequestSummary
+open class AnalyticsReports
 {
     @DataMember(Order=1)
-    open var name:String? = null
+    open var id:Int? = null
 
     @DataMember(Order=2)
-    open var requests:Long? = null
+    open var created:Date? = null
+
+    @DataMember(Order=2)
+    open var apis:HashMap<String,RequestSummary>? = null
 
     @DataMember(Order=3)
-    open var requestLength:Long? = null
+    open var users:HashMap<String,RequestSummary>? = null
 
     @DataMember(Order=4)
-    open var duration:Double? = null
+    open var tags:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=5)
+    open var status:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=6)
+    open var days:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=7)
+    open var apiKeys:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=8)
+    open var ipAddresses:HashMap<String,RequestSummary>? = null
+
+    @DataMember(Order=9)
+    open var durationRange:HashMap<String,Long>? = null
 }
 
 @DataContract
@@ -1955,6 +1991,25 @@ open class RefInfo
     open var refId:String? = null
     open var refLabel:String? = null
     open var queryApi:String? = null
+}
+
+@DataContract
+open class RequestSummary
+{
+    @DataMember(Order=1)
+    open var name:String? = null
+
+    @DataMember(Order=2)
+    open var requests:Long? = null
+
+    @DataMember(Order=3)
+    open var requestLength:Long? = null
+
+    @DataMember(Order=4)
+    open var duration:Double? = null
+
+    @DataMember(Order=5)
+    open var status:HashMap<Int,Long>? = null
 }
 
 open class ApiCss
