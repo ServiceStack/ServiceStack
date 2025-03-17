@@ -156,8 +156,10 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
             typeof(GetValidationRules),
             typeof(GetAnalyticsReports),
             typeof(GetApiAnalytics),
-            typeof(ViewCommands),
             typeof(NativeTypesBase),
+#if NET6_0_OR_GREATER
+            typeof(ViewCommands),
+#endif
         ];
         this.HideRequestBodyForRequestDtoTypes =
         [
