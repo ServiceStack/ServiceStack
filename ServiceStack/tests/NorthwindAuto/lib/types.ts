@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2025-03-14 11:35:18
+Date: 2025-03-16 22:20:17
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -361,6 +361,14 @@ export class FailedJob extends BackgroundJobBase
 {
 
     public constructor(init?: Partial<FailedJob>) { super(init); (Object as any).assign(this, init); }
+}
+
+export enum AnalyticsType
+{
+    User = 'User',
+    Day = 'Day',
+    ApiKey = 'ApiKey',
+    IpAddress = 'IpAddress',
 }
 
 export class ValidateRule
@@ -1350,7 +1358,46 @@ export class RequestSummary
     // @DataMember(Order=4)
     public duration: number;
 
+    // @DataMember(Order=5)
+    public status: { [index:number]: number; };
+
     public constructor(init?: Partial<RequestSummary>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class AnalyticsReports
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public created: string;
+
+    // @DataMember(Order=2)
+    public apis: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=3)
+    public users: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=4)
+    public tags: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=5)
+    public status: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=6)
+    public days: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=7)
+    public apiKeys: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=8)
+    public ipAddresses: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=9)
+    public durationRange: { [index:string]: number; };
+
+    public constructor(init?: Partial<AnalyticsReports>) { (Object as any).assign(this, init); }
 }
 
 export class KeyValuePair<TKey, TValue>
@@ -1721,33 +1768,27 @@ export class RequestLogsResponse
 }
 
 // @DataContract
-export class AnalyticsReports
+export class GetAnalyticsReportsResponse
 {
     // @DataMember(Order=1)
-    public apis: { [index:string]: RequestSummary; };
+    public results: AnalyticsReports;
 
     // @DataMember(Order=2)
-    public users: { [index:string]: RequestSummary; };
+    public months: string[];
 
     // @DataMember(Order=3)
-    public tags: { [index:string]: RequestSummary; };
+    public responseStatus: ResponseStatus;
 
-    // @DataMember(Order=4)
-    public status: { [index:string]: RequestSummary; };
+    public constructor(init?: Partial<GetAnalyticsReportsResponse>) { (Object as any).assign(this, init); }
+}
 
-    // @DataMember(Order=5)
-    public days: { [index:string]: RequestSummary; };
+// @DataContract
+export class GetApiAnalyticsResponse
+{
+    // @DataMember(Order=1)
+    public results: { [index:string]: number; };
 
-    // @DataMember(Order=6)
-    public apiKeys: { [index:string]: RequestSummary; };
-
-    // @DataMember(Order=7)
-    public ipAddresses: { [index:string]: RequestSummary; };
-
-    // @DataMember(Order=8)
-    public durationRange: { [index:string]: number; };
-
-    public constructor(init?: Partial<AnalyticsReports>) { (Object as any).assign(this, init); }
+    public constructor(init?: Partial<GetApiAnalyticsResponse>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -2460,15 +2501,36 @@ export class RequestLogs implements IReturn<RequestLogsResponse>, IGet
 }
 
 // @DataContract
-export class GetAnalyticsReports implements IReturn<AnalyticsReports>, IGet
+export class GetAnalyticsReports implements IReturn<GetAnalyticsReportsResponse>, IGet
 {
     // @DataMember(Order=1)
     public month?: string;
 
+    // @DataMember(Order=2)
+    public filter: string;
+
     public constructor(init?: Partial<GetAnalyticsReports>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'GetAnalyticsReports'; }
     public getMethod() { return 'GET'; }
-    public createResponse() { return new AnalyticsReports(); }
+    public createResponse() { return new GetAnalyticsReportsResponse(); }
+}
+
+// @DataContract
+export class GetApiAnalytics implements IReturn<GetApiAnalyticsResponse>, IGet
+{
+    // @DataMember(Order=1)
+    public month?: string;
+
+    // @DataMember(Order=2)
+    public type?: AnalyticsType;
+
+    // @DataMember(Order=3)
+    public value: string;
+
+    public constructor(init?: Partial<GetApiAnalytics>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'GetApiAnalytics'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new GetApiAnalyticsResponse(); }
 }
 
 // @Route("/validation/rules/{Type}")

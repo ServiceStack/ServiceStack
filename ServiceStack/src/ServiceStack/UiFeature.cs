@@ -35,8 +35,14 @@ public class AnalyticsConfig
     public int IpLimit { get; set; } = 100;
 }
 
+public class AnalyticsInfo
+{
+    public List<string> Months { get; set; } = [];
+}
+
 public interface IRequireAnalytics
 {
+    AnalyticsInfo GetAnalyticInfo(AnalyticsConfig config);
     AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month);
     Dictionary<string, long> GetApiAnalytics(AnalyticsConfig config, DateTime month, AnalyticsType type, string value);
 }

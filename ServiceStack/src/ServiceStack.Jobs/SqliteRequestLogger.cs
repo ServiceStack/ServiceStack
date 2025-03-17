@@ -99,6 +99,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public Func<IDbConnectionFactory, DateTime, IDbConnection> ResolveMonthDb { get; set; }
     public Func<DateTime, string> DbMonthFile { get; set; } = DefaultDbMonthFile;
+    public Func<List<string>> ResolveMonthDbs { get; set; }
     public int MaxLimit { get; set; } = 5000;
     public bool AutoInitSchema { get; set; } = true;
     public IDbConnectionFactory DbFactory { get; set; } = null!;
@@ -107,6 +108,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     public SqliteRequestLogger()
     {
         ResolveMonthDb = DefaultResolveMonthDb;
+        ResolveMonthDbs = DefaultResolveMonthDbs;
     }
 
     public override void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
@@ -215,6 +217,15 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     }
 
     public static string DefaultDbMonthFile(DateTime createdDate) => $"requests_{createdDate.Year}-{createdDate.Month:00}.db";
+
+    public List<string> DefaultResolveMonthDbs()
+    {
+        var requestsDir = AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir);
+        var dir = new DirectoryInfo(requestsDir);
+        var files = dir.GetMatchingFiles("requests_*.db");
+        return files.ToList();
+    }
+    
     public IDbConnection DefaultResolveMonthDb(IDbConnectionFactory dbFactory, DateTime createdDate)
     {
         var monthDb = DbMonthFile(createdDate);
@@ -312,6 +323,16 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         };
     }
 
+    public AnalyticsInfo GetAnalyticInfo(AnalyticsConfig config)
+    {
+        var monthDbs = ResolveMonthDbs().Map(x => x.Replace('\\','/')); 
+        return new AnalyticsInfo
+        {
+            Months = monthDbs.Map(x => x.LastRightPart('/').RightPart('_').LeftPart('.'))
+                .OrderBy(x => x).ToList()
+        };
+    }
+
     public AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month)
     {
         // op,user,tag,status,day,apikey,time(ms 0-50,51-100,101-200ms,1-2s,2s-5s,5s+)
@@ -336,19 +357,38 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             var summary = results.TryGetValue(name, out var existing)
                 ? existing
                 : results[name] = new();
+            
+            summary.TotalRequests += 1;
 
-            summary.Requests += 1;
-            summary.Duration += log.RequestDuration.TotalMilliseconds;
-            summary.RequestLength += log.RequestBody?.Length ?? 0;
+            var len = log.RequestBody?.Length ?? 0;
+            summary.TotalRequestLength += len;
+            if (len > 0)
+            {
+                if (summary.MinRequestLength == 0 || len < summary.MinRequestLength)
+                    summary.MinRequestLength = len;
+                if (summary.MaxRequestLength == 0 || len > summary.MaxRequestLength)
+                    summary.MaxRequestLength = len;
+            }
+            
+            var duration = log.RequestDuration.TotalMilliseconds; 
+            summary.TotalDuration += duration;
+            if (duration > 0 && log.StatusCode is >= 200 and < 300)
+            {
+                if (summary.MinDuration == 0 || duration < summary.MinDuration)
+                    summary.MinDuration = duration;
+                if (summary.MaxDuration == 0 || duration > summary.MaxDuration)
+                    summary.MaxDuration = duration;
+            }
+            
         }
         void AddSummary(Dictionary<string, RequestSummary> results, string name, RequestSummary apiSummary)
         {
             var summary = results.TryGetValue(name, out var existing)
                 ? existing
                 : results[name] = new();
-            summary.Requests += apiSummary.Requests;
-            summary.Duration += apiSummary.Duration;
-            summary.RequestLength += apiSummary.RequestLength;
+            summary.TotalRequests += apiSummary.TotalRequests;
+            summary.TotalDuration += apiSummary.TotalDuration;
+            summary.TotalRequestLength += apiSummary.TotalRequestLength;
         }
         
         do {
@@ -419,6 +459,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             }
         } while(batch.Count >= config.BatchSize);
 
+        ret.Id = lastPk;
+        ret.Created = DateTime.UtcNow;
+
         foreach (var entry in ret.Status)
         {
             if (int.TryParse(entry.Key, out var status))
@@ -450,7 +493,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         {
             foreach (var entry in results.Values)
             {
-                entry.Duration = Math.Floor(entry.Duration);
+                entry.TotalDuration = Math.Floor(entry.TotalDuration);
             }
         }
         

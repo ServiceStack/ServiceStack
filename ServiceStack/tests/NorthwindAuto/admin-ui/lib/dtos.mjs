@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-14 11:35:19
+Date: 2025-03-16 22:20:17
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -378,6 +378,14 @@ export class FailedJob extends BackgroundJobBase {
     /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
 }
+/** @typedef {'User'|'Day'|'ApiKey'|'IpAddress'} */
+export var AnalyticsType;
+(function (AnalyticsType) {
+    AnalyticsType["User"] = "User"
+    AnalyticsType["Day"] = "Day"
+    AnalyticsType["ApiKey"] = "ApiKey"
+    AnalyticsType["IpAddress"] = "IpAddress"
+})(AnalyticsType || (AnalyticsType = {}));
 export class ValidateRule {
     /** @param {{validator?:string,condition?:string,errorCode?:string,message?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1685,7 +1693,7 @@ export class RequestLogEntry {
     meta;
 }
 export class RequestSummary {
-    /** @param {{name?:string,requests?:number,requestLength?:number,duration?:number}} [init] */
+    /** @param {{name?:string,requests?:number,requestLength?:number,duration?:number,status?:{ [index:number]: number; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -1695,6 +1703,32 @@ export class RequestSummary {
     requestLength;
     /** @type {number} */
     duration;
+    /** @type {{ [index:number]: number; }} */
+    status;
+}
+export class AnalyticsReports {
+    /** @param {{id?:number,created?:string,apis?:{ [index:string]: RequestSummary; },users?:{ [index:string]: RequestSummary; },tags?:{ [index:string]: RequestSummary; },status?:{ [index:string]: RequestSummary; },days?:{ [index:string]: RequestSummary; },apiKeys?:{ [index:string]: RequestSummary; },ipAddresses?:{ [index:string]: RequestSummary; },durationRange?:{ [index:string]: number; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    created;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    apis;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    users;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    tags;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    status;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    days;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    apiKeys;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    ipAddresses;
+    /** @type {{ [index:string]: number; }} */
+    durationRange;
 }
 /** @typedef TKey {any} */
 /** @typedef  TValue {any} */
@@ -2028,25 +2062,21 @@ export class RequestLogsResponse {
     /** @type {ResponseStatus} */
     responseStatus;
 }
-export class AnalyticsReports {
-    /** @param {{apis?:{ [index:string]: RequestSummary; },users?:{ [index:string]: RequestSummary; },tags?:{ [index:string]: RequestSummary; },status?:{ [index:string]: RequestSummary; },days?:{ [index:string]: RequestSummary; },apiKeys?:{ [index:string]: RequestSummary; },ipAddresses?:{ [index:string]: RequestSummary; },durationRange?:{ [index:string]: number; }}} [init] */
+export class GetAnalyticsReportsResponse {
+    /** @param {{results?:AnalyticsReports,months?:string[],responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
-    /** @type {{ [index:string]: RequestSummary; }} */
-    apis;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    users;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    tags;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    status;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    days;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    apiKeys;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    ipAddresses;
+    /** @type {AnalyticsReports} */
+    results;
+    /** @type {string[]} */
+    months;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
+export class GetApiAnalyticsResponse {
+    /** @param {{results?:{ [index:string]: number; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
     /** @type {{ [index:string]: number; }} */
-    durationRange;
+    results;
 }
 export class GetValidationRulesResponse {
     /** @param {{results?:ValidationRule[],responseStatus?:ResponseStatus}} [init] */
@@ -2616,13 +2646,28 @@ export class RequestLogs {
     createResponse() { return new RequestLogsResponse() }
 }
 export class GetAnalyticsReports {
-    /** @param {{month?:string}} [init] */
+    /** @param {{month?:string,filter?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?string} */
     month;
+    /** @type {string} */
+    filter;
     getTypeName() { return 'GetAnalyticsReports' }
     getMethod() { return 'GET' }
-    createResponse() { return new AnalyticsReports() }
+    createResponse() { return new GetAnalyticsReportsResponse() }
+}
+export class GetApiAnalytics {
+    /** @param {{month?:string,type?:AnalyticsType,value?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    /** @type {?AnalyticsType} */
+    type;
+    /** @type {string} */
+    value;
+    getTypeName() { return 'GetApiAnalytics' }
+    getMethod() { return 'GET' }
+    createResponse() { return new GetApiAnalyticsResponse() }
 }
 export class GetValidationRules {
     /** @param {{authSecret?:string,type?:string}} [init] */

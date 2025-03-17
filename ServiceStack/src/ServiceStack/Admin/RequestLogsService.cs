@@ -72,7 +72,7 @@ public class GetAnalyticsReportsResponse
 [DataContract]
 public class AnalyticsReports
 {
-    [DataMember(Order=1)] public int Id { get; set; } // Use last Id of RequestLog
+    [DataMember(Order=1)] public long Id { get; set; } // Use last Id of RequestLog
     [DataMember(Order=2)] public DateTime Created { get; set; } // When it was created
     [DataMember(Order=2)] public Dictionary<string, RequestSummary> Apis { get; set; }
     [DataMember(Order=3)] public Dictionary<string, RequestSummary> Users { get; set; }
@@ -116,9 +116,13 @@ public class RequestSummary
     // op,user,tag,status,day,apikey,time(ms 0-50,51-100,101-200ms,1-2s,2s-5s,5s+)
     // public string Type { get; set; }
     [DataMember(Order=1)] public string Name { get; set; }
-    [DataMember(Order=2)] public long Requests { get; set; }
-    [DataMember(Order=3)] public long RequestLength { get; set; }
-    [DataMember(Order=4)] public double Duration { get; set; }
+    [DataMember(Order=2)] public long TotalRequests { get; set; }
+    [DataMember(Order=3)] public long TotalRequestLength { get; set; }
+    [DataMember(Order=3)] public long MinRequestLength { get; set; }
+    [DataMember(Order=3)] public long MaxRequestLength { get; set; }
+    [DataMember(Order=4)] public double TotalDuration { get; set; }
+    [DataMember(Order=4)] public double MinDuration { get; set; }
+    [DataMember(Order=4)] public double MaxDuration { get; set; }
     [DataMember(Order=5)] public Dictionary<int,long> Status { get; set; }
 }
 
@@ -226,7 +230,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
 
         var topIpAddresses = new Dictionary<string, RequestSummary>();
         var top100Addresses = ret.IpAddresses.Values
-            .OrderByDescending(x => x.RequestLength)
+            .OrderByDescending(x => x.TotalRequestLength)
             .Take(feature.AnalyticsConfig.IpLimit);
         foreach (var item in top100Addresses)
         {
@@ -259,7 +263,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             }
         }
 
-        return request.Filter?.ToLower() switch
+        var results = request.Filter?.ToLower() switch
         {
             "apis" or "api" => new AnalyticsReports { Apis = ret.Apis },
             "users" => new AnalyticsReports { Users = ret.Users },
@@ -270,6 +274,16 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             "ipaddresses" or "ip" => new AnalyticsReports { IpAddresses = ret.IpAddresses },
             "durationrange" or "duration" => new AnalyticsReports { DurationRange = ret.DurationRange },
             _ => ret,
+        };
+
+        results.Id = ret.Id;
+        results.Created = ret.Created;
+        var info = analytics.GetAnalyticInfo(feature.AnalyticsConfig);
+
+        return new GetAnalyticsReportsResponse
+        {
+            Months = info.Months,
+            Results = results,
         };
     }
 
