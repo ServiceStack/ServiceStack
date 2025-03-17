@@ -728,9 +728,8 @@ public class JwtAuthProviderIntegrationTests
         {
             // just for testing, create a privateKeyXml on every instance
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                new IAuthProvider[]
-                {
-                    new BasicAuthProvider(),
+            [
+                new BasicAuthProvider(),
                     new CredentialsAuthProvider(),
                     new JwtAuthProvider
                     {
@@ -738,8 +737,8 @@ public class JwtAuthProviderIntegrationTests
                         RequireSecureConnection = false,
                         AllowInQueryString = true,
                         AllowInFormData = true,
-                    },
-                }));
+                    }
+            ]));
 
             Plugins.Add(new RegistrationFeature());
 
@@ -757,7 +756,7 @@ public class JwtAuthProviderIntegrationTests
                 
             Plugins.Add(new RequestLogsFeature {
                 EnableSessionTracking = true,
-                ExcludeRequestDtoTypes = new[] { typeof(Authenticate) },
+                ExcludeRequestDtoTypes = { typeof(Authenticate) },
             });
         }
     }
@@ -862,7 +861,7 @@ public class JwtAuthProviderTokenCookieTests
                 
             Plugins.Add(new RequestLogsFeature {
                 EnableSessionTracking = true,
-                ExcludeRequestDtoTypes = new[] { typeof(Authenticate) },
+                ExcludeRequestDtoTypes = { typeof(Authenticate) },
             });
         }
     }

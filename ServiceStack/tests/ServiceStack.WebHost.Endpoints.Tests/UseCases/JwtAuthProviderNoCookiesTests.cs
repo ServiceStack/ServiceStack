@@ -714,7 +714,7 @@ public class JwtAuthProviderIntegrationNoCookiesTests
                 
             Plugins.Add(new RequestLogsFeature {
                 EnableSessionTracking = true,
-                ExcludeRequestDtoTypes = new[] { typeof(Authenticate) },
+                ExcludeRequestDtoTypes = { typeof(Authenticate) },
             });
         }
     }
