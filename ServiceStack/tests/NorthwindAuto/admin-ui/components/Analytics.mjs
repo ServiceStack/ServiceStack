@@ -6,6 +6,31 @@ import {Chart, registerables} from 'chart.js'
 
 Chart.register(...registerables)
 
+export const colors = [
+    { background: 'rgba(54, 162, 235, 0.2)',  border: 'rgb(54, 162, 235)' }, //blue
+    { background: 'rgba(255, 99, 132, 0.2)',  border: 'rgb(255, 99, 132)' },
+    { background: 'rgba(153, 102, 255, 0.2)', border: 'rgb(153, 102, 255)' },
+    { background: 'rgba(54, 162, 235, 0.2)',  border: 'rgb(54, 162, 235)' },
+    { background: 'rgba(255, 159, 64, 0.2)',  border: 'rgb(255, 159, 64)' },
+    { background: 'rgba(67, 56, 202, 0.2)',   border: 'rgb(67, 56, 202)' },
+    { background: 'rgba(255, 99, 132, 0.2)',  border: 'rgb(255, 99, 132)' },
+    { background: 'rgba(14, 116, 144, 0.2)',  border: 'rgb(14, 116, 144)' },
+    { background: 'rgba(162, 28, 175, 0.2)',  border: 'rgb(162, 28, 175)' },
+    { background: 'rgba(201, 203, 207, 0.2)', border: 'rgb(201, 203, 207)' },
+]
+
+// Generate colors - you can adjust these or make them more dynamic
+const backgroundColors = [
+    'rgba(54, 162, 235, 0.7)',   // blue
+    'rgba(75, 192, 192, 0.7)',   // green
+    'rgba(255, 159, 64, 0.7)',   // orange
+    'rgba(153, 102, 255, 0.7)',  // purple
+    'rgba(255, 99, 132, 0.7)',   // red
+    'rgba(255, 205, 86, 0.7)',   // yellow
+    'rgba(201, 203, 207, 0.7)'   // grey
+]
+
+
 export const Analytics = {
     template: `
       <div class="container mx-auto">
@@ -73,6 +98,25 @@ export const Analytics = {
           </div>
           
           <div>
+            <div>
+              <div class="mb-2 flex justify-between">
+                <div>
+                  User Agents
+                </div>
+              </div>
+              <div class="flex w-full gap-x-2">
+                <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+                  <canvas ref="refBrowsers"></canvas>
+                </div>
+                <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+                  <canvas ref="refDevices"></canvas>
+                </div>
+                <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+                  <canvas ref="refBots"></canvas>
+                </div>
+              </div>
+            </div>
+            
             <div class="mb-1 flex justify-between">
               <div>
                 API Requests
@@ -105,6 +149,9 @@ export const Analytics = {
         const routes = inject('routes')
         const server = inject('server')
         const client = useClient()
+        const refBrowsers = ref(null)
+        const refDevices = ref(null)
+        const refBots = ref(null)
         const refApiRequests = ref(null)
         const refApiDurations = ref(null)
         const refStatusCodes = ref(null)
@@ -189,10 +236,10 @@ export const Analytics = {
             // Generate colors based on status code ranges
             const backgroundColor = labels.map(status => {
                 const code = parseInt(status)
-                if (code < 300) return 'rgba(75, 192, 192, 0.7)'  // 2xx - success - green
-                if (code < 400) return 'rgba(54, 162, 235, 0.7)'   // 3xx - redirect - blue
-                if (code < 500) return 'rgba(255, 159, 64, 0.7)'   // 4xx - client error - orange
-                return 'rgba(255, 99, 132, 0.7)'                  // 5xx - server error - red
+                if (code < 300) return 'rgba(75, 192, 192, 0.2)'  // 2xx - success - green
+                if (code < 400) return 'rgba(54, 162, 235, 0.2)'   // 3xx - redirect - blue
+                if (code < 500) return 'rgba(255, 159, 64, 0.2)'   // 4xx - client error - orange
+                return 'rgba(255, 99, 132, 0.2)'                  // 5xx - server error - red
             })
 
             // Destroy existing chart if it exists
@@ -207,7 +254,7 @@ export const Analytics = {
                     datasets: [{
                         data,
                         backgroundColor,
-                        borderColor: backgroundColor.map(color => color.replace('0.7', '1')),
+                        borderColor: backgroundColor.map(color => color.replace('0.2', '1')),
                         borderWidth: 1
                     }]
                 },
@@ -220,6 +267,189 @@ export const Analytics = {
                             title: {
                                 display: true,
                                 text: 'HTTP Status',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        let browsersChart = null
+        const createBrowsersChart = () => {
+            if (!analytics.value || !refBrowsers.value) return
+
+            const browsers = analytics.value.browsers || {}
+
+            // Create labels and data for the chart
+            const labels = Object.keys(browsers)
+            const data = Object.values(browsers).map(b => b.totalRequests)
+
+            // Ensure enough colors by cycling through the array
+            const backgroundColor = labels.map((_, i) => colors[i % backgroundColors.length].background)
+            const borderColor = labels.map((_, i) => colors[i % backgroundColors.length].border)
+
+            // Destroy existing chart if it exists
+            if (browsersChart) {
+                browsersChart.destroy()
+            }
+
+            browsersChart = new Chart(refBrowsers.value, {
+                type: 'pie',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor,
+                        borderColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Browsers',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        let devicesChart = null
+        const createDevicesChart = () => {
+            if (!analytics.value || !refDevices.value) return
+
+            const devices = analytics.value.devices || {}
+
+            // Create labels and data for the chart
+            const labels = Object.keys(devices)
+            const data = Object.values(devices).map(b => b.totalRequests)
+
+            // Ensure enough colors by cycling through the array
+            const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
+            const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
+            // Destroy existing chart if it exists
+            if (devicesChart) {
+                devicesChart.destroy()
+            }
+
+            devicesChart = new Chart(refDevices.value, {
+                type: 'pie',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor,
+                        borderColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Devices',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+        }
+
+        let botsChart = null
+        const createBotsChart = () => {
+            if (!analytics.value || !refBots.value) return
+
+            let bots = analytics.value.bots || {}
+            if (!Object.keys(bots).length) {
+                bots = { None: 0 }
+            }
+            
+            // Create labels and data for the chart
+            const labels = Object.keys(bots)
+            const data = Object.values(bots).map(b => b.totalRequests)
+
+            // Ensure enough colors by cycling through the array
+            const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
+            const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
+            // Destroy existing chart if it exists
+            if (botsChart) {
+                botsChart.destroy()
+            }
+
+            botsChart = new Chart(refBots.value, {
+                type: 'pie',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor,
+                        borderColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Bots',
                                 font: {
                                     weight: 'bold'
                                 }
@@ -259,7 +489,7 @@ export const Analytics = {
             if (apiRequestsChart) {
                 apiRequestsChart.destroy()
             }
-            
+
             apiRequestsChart = new Chart(refApiRequests.value, {
                 type: 'bar',
                 data: {
@@ -268,8 +498,8 @@ export const Analytics = {
                         {
                             label: 'Requests',
                             data,
-                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
                             borderWidth: 1
                         }
                     ]
@@ -334,8 +564,8 @@ export const Analytics = {
                         {
                             label: 'Average Duration (ms)',
                             data,
-                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
                             borderWidth: 1
                         }
                     ]
@@ -408,6 +638,12 @@ export const Analytics = {
         })
         
         onUnmounted(() => {
+            if (browsersChart) {
+                browsersChart.destroy()
+            }
+            if (botsChart) {
+                botsChart.destroy()
+            }
             if (apiRequestsChart) {
                 apiRequestsChart.destroy()
             }
@@ -435,6 +671,9 @@ export const Analytics = {
         })
         watch(() => [analytics.value, limits.value.api], () => {
             setTimeout(() => {
+                createBrowsersChart()
+                createDevicesChart()
+                createBotsChart()
                 createApiRequestsChart()
             }, 0)
         })
@@ -458,6 +697,9 @@ export const Analytics = {
             analytics,
             loading,
             error,
+            refBrowsers,
+            refDevices,
+            refBots,
             refApiRequests,
             refApiDurations,
             refStatusCodes,

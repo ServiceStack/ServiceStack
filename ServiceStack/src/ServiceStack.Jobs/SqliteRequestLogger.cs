@@ -341,9 +341,15 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         var lastLogId = tableExists
             ? db.Single(db.From<RequestLog>().OrderByDescending(x => x.Id).Limit(1))?.Id
             : null;
-        var cachedReport = lastLogId != null
-            ? db.SingleById<AnalyticsReports>(lastLogId)
-            : null;
+
+        AnalyticsReports? cachedReport = null;
+        try
+        {
+            // Ignore schema changes, table is recreated when cached
+            cachedReport = lastLogId != null
+                ? db.SingleById<AnalyticsReports>(lastLogId)
+                : null;
+        } catch (Exception ignore) {}
 
         if (cachedReport != null)
             return cachedReport;
@@ -360,6 +366,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             Days = new(),
             ApiKeys = new(),
             IpAddresses = new(),
+            Browsers = new(),
+            Devices = new(),
+            Bots = new(),
             DurationRange = new(),
         }; 
 
@@ -436,7 +445,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
                 Add(ret.Days, requestLog.DateTime.Day.ToString(), requestLog);
 
-                if ((requestLog.Headers.TryGetValue(HttpHeaders.Authorization, out var authorization) && authorization.StartsWith("ak-")) ||
+                var headers = new Dictionary<string, string>(requestLog.Headers ?? new(), StringComparer.OrdinalIgnoreCase);
+
+                if ((headers.TryGetValue(HttpHeaders.Authorization, out var authorization) && authorization.StartsWith("ak-")) ||
                     requestLog.Meta?.TryGetValue("apikey", out authorization) == true)
                 {
                     Add(ret.ApiKeys, authorization, requestLog);
@@ -444,6 +455,26 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 
                 if (requestLog.IpAddress != null)
                     Add(ret.IpAddresses, requestLog.IpAddress, requestLog);
+
+                if (headers.TryGetValue(HttpHeaders.UserAgent, out var userAgent) && !string.IsNullOrEmpty(userAgent))
+                {
+                    if (UserAgentHelper.IsBotUserAgent(userAgent, out var botName))
+                    {
+                        Add(ret.Browsers, "Bot", requestLog);
+                        Add(ret.Bots, botName, requestLog);
+                    }
+                    else
+                    {
+                        var (browser, version) = UserAgentHelper.GetBrowserInfo(userAgent);
+                        Add(ret.Browsers, browser, requestLog);
+                        Add(ret.Devices, UserAgentHelper.GetDeviceType(userAgent), requestLog);
+                    }
+                }
+                else
+                {
+                    Add(ret.Browsers, "None", requestLog);
+                    Add(ret.Devices, "None", requestLog);
+                }
 
                 var totalMs = (int)requestLog.RequestDuration.TotalMilliseconds;
 
@@ -472,6 +503,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         ret.Id = lastPk;
         ret.Created = DateTime.UtcNow;
+        ret.Version = Env.ServiceStackVersion;
 
         foreach (var entry in ret.Status)
         {

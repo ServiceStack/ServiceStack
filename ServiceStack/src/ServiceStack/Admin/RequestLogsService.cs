@@ -74,6 +74,7 @@ public class AnalyticsReports
 {
     [DataMember(Order=1)] public long Id { get; set; } // Use last Id of RequestLog
     [DataMember(Order=2)] public DateTime Created { get; set; } // When it was created
+    [DataMember(Order=1)] public decimal Version { get; set; } // ServiceStack Version
     [DataMember(Order=2)] public Dictionary<string, RequestSummary> Apis { get; set; }
     [DataMember(Order=3)] public Dictionary<string, RequestSummary> Users { get; set; }
     [DataMember(Order=4)] public Dictionary<string, RequestSummary> Tags { get; set; }
@@ -81,7 +82,10 @@ public class AnalyticsReports
     [DataMember(Order=6)] public Dictionary<string, RequestSummary> Days { get; set; }
     [DataMember(Order=7)] public Dictionary<string, RequestSummary> ApiKeys { get; set; }
     [DataMember(Order=8)] public Dictionary<string, RequestSummary> IpAddresses { get; set; }
-    [DataMember(Order=9)] public Dictionary<string, long> DurationRange { get; set; }
+    [DataMember(Order=9)] public Dictionary<string, RequestSummary> Browsers { get; set; }
+    [DataMember(Order=10)] public Dictionary<string, RequestSummary> Devices { get; set; }
+    [DataMember(Order=11)] public Dictionary<string, RequestSummary> Bots { get; set; }
+    [DataMember(Order=12)] public Dictionary<string, long> DurationRange { get; set; }
 }
 
 public enum AnalyticsType
@@ -272,12 +276,14 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             "days" => new AnalyticsReports { Days = ret.Days },
             "apikeys" => new AnalyticsReports { ApiKeys = ret.ApiKeys },
             "ipaddresses" or "ip" => new AnalyticsReports { IpAddresses = ret.IpAddresses },
+            "browsers" => new AnalyticsReports { Browsers = ret.Browsers, Bots = ret.Bots, Devices = ret.Devices },
             "durationrange" or "duration" => new AnalyticsReports { DurationRange = ret.DurationRange },
             _ => ret,
         };
 
         results.Id = ret.Id;
         results.Created = ret.Created;
+        results.Version = ret.Version;
         var info = analytics.GetAnalyticInfo(feature.AnalyticsConfig);
 
         return new GetAnalyticsReportsResponse
