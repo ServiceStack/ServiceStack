@@ -223,7 +223,7 @@ public static class UserAgentHelper
             var botMatch = Regex.Match(userAgent, @"([a-zA-Z0-9\._-]+bot|[a-zA-Z0-9\._-]+spider|[a-zA-Z0-9\._-]+crawler)");
             if (botMatch.Success)
             {
-                botName = $"Bot: {botMatch.Groups[1].Value}";
+                botName = botMatch.Groups[1].Value;
                 return true;
             }
             

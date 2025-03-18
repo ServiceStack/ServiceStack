@@ -64,46 +64,43 @@ export const Analytics = {
               <template #item="{ key, value }">
                 <div class="truncate flex justify-between mr-8">
                   <span>{{ key }}</span>
-                  <span>({{ value.totalRequests }})</span>
+                  <span class="text-gray-500">({{ value.totalRequests }})</span>
                 </div>
               </template>
             </Autocomplete>
           </div>
-          <div v-if="routes.op && apiAnalytics" class="relative">
+          <div v-if="routes.op && apiAnalytics" class="mb-8 pb-8 relative border-b">
             <CloseButton @click="routes.to({ op: undefined })" title="Close API" />
             <div class="flex">
               <div class="w-1/2">
-                <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+                <div class="bg-white rounded shadow p-4" style="height:300px">
                   <canvas ref="refStatusCodes"></canvas>
                 </div>
               </div>
               <div class="w-1/2">
                 <HtmlFormat :value="apiAnalytics" />
+                <div class="ml-4">
+                  <nav class="-mb-px flex space-x-8">
+                    <!-- Current: "border-indigo-500 text-indigo-600", Default: "border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700" -->
+                    <a v-href="{ $page:'logging', op:routes.op, month:routes.month }" title="View Request Logs"
+                       class="group flex whitespace-nowrap border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-indigo-500 hover:text-indigo-600">
+                      <svg class=" text-gray-400 group-hover:text-indigo-500 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13c0 1-.6 3-3 3m0 0H6c-1 0-3-.6-3-3v-2h12v2c0 2.4 2 3 3 3zM9 7h8m-8 4h4"></path></svg>
+                      <span>All</span>
+                    </a>
+                    <a v-for="link in apiLinks" :href="link.href" 
+                       class="group flex whitespace-nowrap border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-indigo-500 hover:text-indigo-600">
+                      {{link.label}}
+                      <!-- Current: "bg-indigo-100 text-indigo-600", Default: "bg-gray-100 text-gray-900" -->
+                      <span class="ml-3 hidden rounded-full bg-gray-100 group-hover:bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 hover:text-indigo-600 md:inline-block">{{link.count}}</span>
+                    </a>
+                  </nav>
+                </div>
               </div>
             </div>
             
           </div>
           
           <div>
-            <div>
-              <div class="mb-2 flex justify-between">
-                <div>
-                  User Agents
-                </div>
-              </div>
-              <div class="flex w-full gap-x-2">
-                <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
-                  <canvas ref="refBrowsers"></canvas>
-                </div>
-                <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
-                  <canvas ref="refDevices"></canvas>
-                </div>
-                <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
-                  <canvas ref="refBots"></canvas>
-                </div>
-              </div>
-            </div>
-            
             <div class="mb-1 flex justify-between">
               <div>
                 API Requests
@@ -127,6 +124,24 @@ export const Analytics = {
             </div>
             <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
               <canvas ref="refApiDurations"></canvas>
+            </div>
+          </div>
+          <div>
+            <div class="mb-2 flex justify-between">
+              <div>
+                User Agents
+              </div>
+            </div>
+            <div class="flex w-full gap-x-2">
+              <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+                <canvas ref="refBrowsers"></canvas>
+              </div>
+              <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+                <canvas ref="refDevices"></canvas>
+              </div>
+              <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+                <canvas ref="refBots"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -172,6 +187,22 @@ export const Analytics = {
             }
             return null
         })
+        const apiLinks = computed(() => {
+            const api = analytics.value?.apis?.[routes.op]
+            if (api) {
+                let linkBase = `./logging?op=${routes.op}`
+                if (routes.month) {
+                    linkBase += `&month=${routes.month}`
+                }
+                const ret = []
+                Object.entries(api.status).forEach(([status, count]) => {
+                    ret.push({ label:status, href:`${linkBase}&status=${status}`, count })
+                })
+                return ret
+            }
+            return []
+        })
+        
         function chartHeight(recordCount, minHeight = 300, heightPerRecord = 15) {
             // Validate input
             const count = Math.min(Math.max(1, recordCount), 100);
@@ -640,6 +671,7 @@ export const Analytics = {
             routes,
             api,
             apiAnalytics,
+            apiLinks,
             limits,
             resultLimits,
             analytics,

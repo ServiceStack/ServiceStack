@@ -255,8 +255,8 @@ public class InMemoryRollingRequestLogger : IRequestLogger
     public virtual List<RequestLogEntry> GetLatestLogs(int? take)
     {
         return take.HasValue
-            ? new List<RequestLogEntry>(logEntries.Take(take.Value))
-            : new List<RequestLogEntry>(logEntries);
+            ? [..logEntries.Take(take.Value)]
+            : [..logEntries];
     }
 
     public static object ToSerializableErrorResponse(object response)

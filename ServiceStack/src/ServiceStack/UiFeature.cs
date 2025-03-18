@@ -42,6 +42,7 @@ public class AnalyticsInfo
 
 public interface IRequireAnalytics
 {
+    List<RequestLogEntry> GetLatestLogs(DateTime month, int? take);
     AnalyticsInfo GetAnalyticInfo(AnalyticsConfig config);
     AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month);
     Dictionary<string, long> GetApiAnalytics(AnalyticsConfig config, DateTime month, AnalyticsType type, string value);

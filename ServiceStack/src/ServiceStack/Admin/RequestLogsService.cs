@@ -36,6 +36,7 @@ public class RequestLogs : IGet, IReturn<RequestLogsResponse>
     [DataMember(Order=20)] public int Skip { get; set; }
     [DataMember(Order=21)] public int? Take { get; set; }
     [DataMember(Order=22)] public string OrderBy { get; set; }
+    [DataMember(Order=23)] public DateTime? Month { get; set; }
 }
 
 [DataContract]
@@ -167,7 +168,10 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         var defaultLimit = feature?.DefaultLimit ?? 100;
 
         var now = DateTime.UtcNow;
-        var snapshot = requestLogger.GetLatestLogs(null);
+        var snapshot = request.Month != null && requestLogger is IRequireAnalytics analytics
+            ? analytics.GetLatestLogs(request.Month.Value, null)
+            : requestLogger.GetLatestLogs(null);
+        
         var logs = snapshot.AsQueryable();
 
         if (request.BeforeSecs.HasValue)
@@ -225,6 +229,20 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
 
         if (feature.RequestLogger is not IRequireAnalytics analytics)
             throw new NotSupportedException(feature.RequestLogger + " does not support IRequireAnalytics");
+
+        if (request.Filter == "info")
+        {
+            return new GetAnalyticsReportsResponse
+            {
+                Months = analytics.GetAnalyticInfo(feature.AnalyticsConfig).Months,
+                Results = new AnalyticsReports
+                {
+                    Id = 0,
+                    Created = DateTime.UtcNow,
+                    Version = Env.ServiceStackVersion,
+                },
+            };
+        }
 
         var ret = analytics.GetAnalyticsReports(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow);
         foreach (var item in ret.IpAddresses.ToList())

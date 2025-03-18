@@ -151,17 +151,20 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         logEntries.Enqueue(entry);
     }
 
-    public override List<RequestLogEntry> GetLatestLogs(int? take)
+    public List<RequestLogEntry> GetLatestLogs(DateTime month, int? take)
     {
-        using var db = OpenMonthDb(DateTime.UtcNow);
-
+        using var db = OpenMonthDb(month);
         var dbLogs = db.Select(db.From<RequestLog>()
-            .Where(x => x.DateTime >= DateTime.UtcNow.Date)
             .Take(take ?? MaxLimit)
             .OrderByDescending(x => x.Id));
         
         var to = dbLogs.Map(ToRequestLogEntry);
         return to;
+    }
+
+    public override List<RequestLogEntry> GetLatestLogs(int? take)
+    {
+        return GetLatestLogs(DateTime.UtcNow, take);
     }
 
     public void Tick(ILogger log)
@@ -259,7 +262,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         {
             Id = from.Id,
             TraceId = from.TraceId,
-            OperationName = from.OperationName,
+            OperationName = from.OperationName ?? from.RequestDto?.GetType().Name,
             DateTime = from.DateTime,
             StatusCode = from.StatusCode,
             StatusDescription = from.StatusDescription,
@@ -295,7 +298,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         {
             Id = from.Id,
             TraceId = from.TraceId,
-            OperationName = from.OperationName,
+            OperationName = from.OperationName ?? from.Request,
             DateTime = from.DateTime,
             StatusCode = from.StatusCode,
             StatusDescription = from.StatusDescription,

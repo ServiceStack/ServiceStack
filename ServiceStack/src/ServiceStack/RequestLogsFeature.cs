@@ -68,6 +68,11 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
     /// Change the RequestLogger provider. Default is InMemoryRollingRequestLogger
     /// </summary>
     public IRequestLogger RequestLogger { get; set; }
+    
+    /// <summary>
+    /// Whether to hide Analytics from Admin UI
+    /// </summary>
+    public bool DisableAnalytics { get; set; }
 
     /// <summary>
     /// Don't log requests of these types. By default RequestLog's are excluded
@@ -259,7 +264,7 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         appHost.ConfigurePlugin<UiFeature>(feature =>
         {
             var role = AccessRole; 
-            if (RequestLogger is IRequireAnalytics)
+            if (!DisableAnalytics && RequestLogger is IRequireAnalytics)
             {
                 feature.AddAdminLink(AdminUiFeature.Analytics, new LinkInfo {
                     Id = "analytics",

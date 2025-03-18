@@ -1,19 +1,42 @@
-import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue"
+import {computed, inject, nextTick, onMounted, onUnmounted, ref, watch} from "vue"
 import {
-    ApiResult, map, apiValueFmt, humanize, toPascalCase, fromXsdDuration, parseCookie
+    ApiResult, map, apiValueFmt, humanize, toPascalCase, fromXsdDuration, parseCookie, leftPart, queryString
 } from "@servicestack/client"
 import { useClient, useFormatters, css } from "@servicestack/vue"
 import { keydown } from "app"
-import { RequestLogs } from "dtos"
+import { RequestLogs, GetAnalyticsReports } from "dtos"
 import { prettyJson, parseJsv, hasItems } from "core"
 export const Logging = {
     template:/*html*/`
   <div v-if="useAutoQuery">
+    <div>
+      <div class="mb-2 flex flex-wrap justify-center">
+        <template v-for="year in years">
+          <b v-if="year === (routes.year || new Date().getFullYear().toString())" class="ml-3 text-sm font-semibold">
+            {{ year }}
+          </b>
+          <a v-else v-href="{ year }" class="ml-3 text-sm text-indigo-700 font-semibold hover:underline">
+            {{ year }}
+          </a>
+        </template>
+      </div>
+      <div class="flex flex-wrap justify-center">
+        <template v-for="month in months.filter(x => x.startsWith(routes.year || new Date().getFullYear().toString()))">
+                <span v-if="month === (routes.month || (new Date().getFullYear() + '-' + (new Date().getMonth() + 1).toString().padStart(2,'0')))" class="mr-2 mb-2 text-xs leading-5 font-semibold bg-indigo-600 text-white rounded-full py-1 px-3 flex items-center space-x-2">
+                  {{ new Date(month + '-01').toLocaleString('default', { month: 'long' }) }}
+                </span>
+          <a v-else v-href="{ month }" class="mr-2 mb-2 text-xs leading-5 font-semibold bg-slate-400/10 rounded-full py-1 px-3 flex items-center space-x-2 hover:bg-slate-400/20 dark:highlight-white/5">
+            {{ new Date(month + '-01').toLocaleString('default', { month: 'short' }) }}
+          </a>
+        </template>
+      </div>
+    </div>
+    
     <AutoQueryGrid ref="grid" type="RequestLog"
         selectedColumns="id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration"
         :headerTitles="{statusCode:'Status',httpMethod:'Method',operationName:'Operation',userAuthId:'UserId',ipAddress:'IP',requestDuration:'Duration'}"
         @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" 
-        :isSelected="(row) => routes.edit == row.id"
+        :isSelected="(row) => routes.edit == row.id" :filters="gridFilters"
         hide="forms"
         :rowClass="(row,i) => row.statusCode >= 300 ? (statusBackground(row.statusCode,i) + ' cursor-pointer hover:bg-yellow-50') : css.grid.getTableRowClass('stripedRows', i, routes.edit == row.id, true)"
         >
@@ -361,14 +384,30 @@ export const Logging = {
         const server = inject('server')
         const client = useClient()
         const grid = ref()
+        const gridFilters = ref({})
         const selected = ref()
         const { Formats } = useFormatters()
         const useAutoQuery = computed(() => server.plugins.requestLogs?.requestLogger === 'SqliteRequestLogger')
+        const months = ref([])
+        const years = computed(() =>
+            Array.from(new Set(months.value.map(x => leftPart(x,'-')))).toReversed())
         const idSortKey = `Column/AutoQueryGrid:RequestLog.Id`
         if (!localStorage.getItem(idSortKey)) {
             localStorage.setItem(idSortKey, `{"filters":[],"sort":"DESC"}`)
         }
-        
+        const qs = queryString(location.search)
+        const opKey = 'Column/AutoQueryGrid:RequestLog.OperationName'
+        if (qs.op) {
+            localStorage.setItem(opKey, `{"filters":[{"key":"%","name":"=","value":"${qs.op}"}]}`)
+        } else {
+            localStorage.removeItem(opKey)
+        }
+        const statusKey = 'Column/AutoQueryGrid:RequestLog.StatusCode'
+        if (qs.status) {
+            localStorage.setItem(statusKey, `{"filters":[{"key":"%","name":"=","value":"${qs.status}"}]}`)
+        } else {
+            localStorage.removeItem(statusKey)
+        }
         function parseJwt(token) {
             let base64Url = token.split('.')[1];
             let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -410,18 +449,33 @@ export const Logging = {
                     if (routes[x]) request[x] = routes[x]
                 })
                 api.value = await client.api(request, { jsconfig: 'eccn' })
+            } else {
+                updateMonth()
             }
         }
         
         watch(() => routes.edit, async () => {
             const id = parseInt(routes.edit)
             if (!isNaN(id)) {
-                const apiResult = await client.api(new RequestLogs({ ids:[id] }))
+                const request = new RequestLogs({ ids:[id] })
+                if (routes.month) {
+                    request.month = `${routes.month}-01`
+                }
+                const apiResult = await client.api(request)
                 selected.value = apiResult.response?.results?.[0]
             } else {
                 selected.value = null
             }
         })
+        
+        function updateMonth() {
+            gridFilters.value = routes.month
+                ? { month:`${routes.month}-01` }
+                : { }
+            setTimeout(() => grid.value?.update(), 1)
+        }
+        
+        watch(() => routes.month, updateMonth)
         
         function valueFmt(obj, k) {
             if (k === 'requestDuration' && obj === 'PT0S') return ''
@@ -493,7 +547,12 @@ export const Logging = {
         onMounted(async () => {
             document.addEventListener('keydown', handleKeyDown)
             sub = app.subscribe('route:nav', update)
+            updateMonth()
             await update()
+            const api = await client.api(new GetAnalyticsReports({ filter:'info' }))
+            if (api.succeeded) {
+                months.value = api.response.months
+            }
         })
         
         onUnmounted(() => {
@@ -562,6 +621,9 @@ export const Logging = {
             nextSkip,
             Formats,
             grid,
+            gridFilters,
+            years,
+            months,
         }
     }
 }
