@@ -165,15 +165,21 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         if (request.EnableSessionTracking.HasValue)
             requestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
 
-        var defaultLimit = feature?.DefaultLimit ?? 100;
+        request.Take ??= feature.DefaultLimit;
 
-        var now = DateTime.UtcNow;
-        var snapshot = request.Month != null && requestLogger is IRequireAnalytics analytics
-            ? analytics.GetLatestLogs(request.Month.Value, null)
-            : requestLogger.GetLatestLogs(null);
-        
+        if (requestLogger is IRequireAnalytics analytics)
+        {
+            var results = analytics.QueryLogs(request);
+            return new RequestLogsResponse {
+                Results = results.ToList(),
+                Total = (int)analytics.GetTotal(request.Month ?? DateTime.UtcNow),
+                Usage = Usage,
+            };
+        }
+
+        var snapshot =  requestLogger.GetLatestLogs(null);
         var logs = snapshot.AsQueryable();
-
+        var now = DateTime.UtcNow;
         if (request.BeforeSecs.HasValue)
             logs = logs.Where(x => (now - x.DateTime) <= TimeSpan.FromSeconds(request.BeforeSecs.Value));
         if (request.AfterSecs.HasValue)
@@ -211,11 +217,11 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             ? logs.OrderByDescending(x => x.Id)
             : logs.OrderBy(request.OrderBy);
 
-        var results = query.Skip(request.Skip);
-        results = results.Take(request.Take.GetValueOrDefault(defaultLimit));
+        query = query.Skip(request.Skip);
+        query = query.Take(request.Take.Value);
 
         return new RequestLogsResponse {
-            Results = results.ToList(),
+            Results = query.ToList(),
             Total = snapshot.Count,
             Usage = Usage,
         };

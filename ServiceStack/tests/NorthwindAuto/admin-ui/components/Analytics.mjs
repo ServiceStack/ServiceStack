@@ -19,18 +19,6 @@ export const colors = [
     { background: 'rgba(201, 203, 207, 0.2)', border: 'rgb(201, 203, 207)' },
 ]
 
-// Generate colors - you can adjust these or make them more dynamic
-const backgroundColors = [
-    'rgba(54, 162, 235, 0.7)',   // blue
-    'rgba(75, 192, 192, 0.7)',   // green
-    'rgba(255, 159, 64, 0.7)',   // orange
-    'rgba(153, 102, 255, 0.7)',  // purple
-    'rgba(255, 99, 132, 0.7)',   // red
-    'rgba(255, 205, 86, 0.7)',   // yellow
-    'rgba(201, 203, 207, 0.7)'   // grey
-]
-
-
 export const Analytics = {
     template: `
       <div class="container mx-auto">
@@ -112,33 +100,7 @@ export const Analytics = {
             </div>
             
           </div>
-          
-          <div>
-            <div class="mb-1 flex justify-between">
-              <div>
-                API Requests
-              </div>
-              <div>
-                <SelectInput id="apiLimit" label="" v-model="limits.api" :values="resultLimits" />
-              </div>
-            </div>
-            <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.api)) + 'px'}">
-              <canvas ref="refApiRequests"></canvas>
-            </div>
-          </div>
-          <div>
-            <div class="mb-1 flex justify-between">
-              <div>
-                API Duration
-              </div>
-              <div>
-                <SelectInput id="apiLimit" label="" v-model="limits.duration" :values="resultLimits" />
-              </div>
-            </div>
-            <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
-              <canvas ref="refApiDurations"></canvas>
-            </div>
-          </div>
+
           <div>
             <div class="mb-2 flex justify-between">
               <div>
@@ -157,6 +119,35 @@ export const Analytics = {
               </div>
             </div>
           </div>
+          
+          <div>
+            <div class="mb-1 flex justify-between">
+              <div>
+                API Requests
+              </div>
+              <div>
+                <SelectInput id="apiLimit" label="" v-model="limits.api" :values="resultLimits" />
+              </div>
+            </div>
+            <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.api)) + 'px'}">
+              <canvas ref="refApiRequests"></canvas>
+            </div>
+          </div>
+          
+          <div>
+            <div class="mb-1 flex justify-between">
+              <div>
+                API Duration
+              </div>
+              <div>
+                <SelectInput id="apiLimit" label="" v-model="limits.duration" :values="resultLimits" />
+              </div>
+            </div>
+            <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
+              <canvas ref="refApiDurations"></canvas>
+            </div>
+          </div>
+          
         </div>
       </div>
     `,
@@ -330,8 +321,8 @@ export const Analytics = {
             const data = Object.values(browsers).map(b => b.totalRequests)
 
             // Ensure enough colors by cycling through the array
-            const backgroundColor = labels.map((_, i) => colors[i % backgroundColors.length].background)
-            const borderColor = labels.map((_, i) => colors[i % backgroundColors.length].border)
+            const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
+            const borderColor = labels.map((_, i) => colors[i % colors.length].border)
 
             // Destroy existing chart if it exists
             if (browsersChart) {
@@ -449,8 +440,12 @@ export const Analytics = {
             }
             
             // Create labels and data for the chart
-            const labels = Object.keys(bots)
-            const data = Object.values(bots).map(b => b.totalRequests)
+            const sortedBots = Object.entries(bots)
+                .sort((a, b) => b[1].totalRequests - a[1].totalRequests)
+                .slice(0, 11) // Limit to top 11 for better visualization
+            
+            const labels = sortedBots.map(x => x[0])
+            const data = sortedBots.map(x => x[1].totalRequests)
 
             // Ensure enough colors by cycling through the array
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)

@@ -620,7 +620,11 @@ export const Logging = {
             statusBackground(status,index) {
                 return status < 300
                     ? (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')
-                    : status < 400 ? 'bg-amber-100' : status < 500 ? 'bg-red-100' : 'bg-gray-100'
+                    : status < 400 
+                        ? 'bg-amber-100' 
+                        : status < 500 
+                            ? 'bg-red-100' 
+                            : 'bg-orange-100'
             },
             /** @type {Cookie[]} */
             selectedCookies,
