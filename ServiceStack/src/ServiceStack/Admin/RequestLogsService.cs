@@ -56,6 +56,9 @@ public class GetAnalyticsReports : IGet, IReturn<GetAnalyticsReportsResponse>
 
     [DataMember(Order=2)] 
     public string Filter { get; set; }
+
+    [DataMember(Order=3)] 
+    public bool? Force { get; set; }
 }
 [DataContract]
 public class GetAnalyticsReportsResponse
@@ -86,7 +89,7 @@ public class AnalyticsReports
     [DataMember(Order=9)] public Dictionary<string, RequestSummary> Browsers { get; set; }
     [DataMember(Order=10)] public Dictionary<string, RequestSummary> Devices { get; set; }
     [DataMember(Order=11)] public Dictionary<string, RequestSummary> Bots { get; set; }
-    [DataMember(Order=12)] public Dictionary<string, long> DurationRange { get; set; }
+    [DataMember(Order=12)] public Dictionary<string, long> Durations { get; set; }
 }
 
 public enum AnalyticsType
@@ -123,12 +126,13 @@ public class RequestSummary
     [DataMember(Order=1)] public string Name { get; set; }
     [DataMember(Order=2)] public long TotalRequests { get; set; }
     [DataMember(Order=3)] public long TotalRequestLength { get; set; }
-    [DataMember(Order=3)] public long MinRequestLength { get; set; }
-    [DataMember(Order=3)] public long MaxRequestLength { get; set; }
-    [DataMember(Order=4)] public double TotalDuration { get; set; }
-    [DataMember(Order=4)] public double MinDuration { get; set; }
-    [DataMember(Order=4)] public double MaxDuration { get; set; }
-    [DataMember(Order=5)] public Dictionary<int,long> Status { get; set; }
+    [DataMember(Order=4)] public long MinRequestLength { get; set; }
+    [DataMember(Order=5)] public long MaxRequestLength { get; set; }
+    [DataMember(Order=6)] public double TotalDuration { get; set; }
+    [DataMember(Order=7)] public double MinDuration { get; set; }
+    [DataMember(Order=8)] public double MaxDuration { get; set; }
+    [DataMember(Order=9)] public Dictionary<int,long> Status { get; set; }
+    [DataMember(Order=10)] public Dictionary<string, long> Durations { get; set; }
 }
 
 [DefaultRequest(typeof(RequestLogs))]
@@ -236,6 +240,22 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         if (feature.RequestLogger is not IRequireAnalytics analytics)
             throw new NotSupportedException(feature.RequestLogger + " does not support IRequireAnalytics");
 
+        if (request.Force == true)
+        {
+            if (request.Month != null)
+            {
+                analytics.ClearAnalyticsCaches(request.Month.Value);
+            }
+            else
+            {
+                var months = analytics.GetAnalyticInfo(feature.AnalyticsConfig).Months;
+                foreach (var month in months)
+                {
+                    analytics.ClearAnalyticsCaches(DateTime.Parse(month + "-01"));
+                }
+            }
+        }
+        
         if (request.Filter == "info")
         {
             return new GetAnalyticsReportsResponse
@@ -301,7 +321,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             "apikeys" => new AnalyticsReports { ApiKeys = ret.ApiKeys },
             "ipaddresses" or "ip" => new AnalyticsReports { IpAddresses = ret.IpAddresses },
             "browsers" => new AnalyticsReports { Browsers = ret.Browsers, Bots = ret.Bots, Devices = ret.Devices },
-            "durationrange" or "duration" => new AnalyticsReports { DurationRange = ret.DurationRange },
+            "durations" => new AnalyticsReports { Durations = ret.Durations },
             _ => ret,
         };
 

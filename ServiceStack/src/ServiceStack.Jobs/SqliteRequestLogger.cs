@@ -382,6 +382,12 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         };
     }
 
+    public void ClearAnalyticsCaches(DateTime month)
+    {
+        using var db = OpenMonthDb(month);
+        db.DropTable<AnalyticsReports>();
+    }
+
     public AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month)
     {
         using var db = OpenMonthDb(month);
@@ -418,7 +424,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             Browsers = new(),
             Devices = new(),
             Bots = new(),
-            DurationRange = new(),
+            Durations = new(),
         }; 
 
         void Add(Dictionary<string, RequestSummary> results, string name, RequestLog log)
@@ -448,7 +454,6 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 if (summary.MaxDuration == 0 || duration > summary.MaxDuration)
                     summary.MaxDuration = duration;
             }
-            
         }
         void AddSummary(Dictionary<string, RequestSummary> results, string name, RequestSummary apiSummary)
         {
@@ -458,6 +463,29 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             summary.TotalRequests += apiSummary.TotalRequests;
             summary.TotalDuration += apiSummary.TotalDuration;
             summary.TotalRequestLength += apiSummary.TotalRequestLength;
+        }
+
+        void AddDurations(Dictionary<string, long> durations, int totalMs)
+        {
+            var added = false;
+            foreach (var range in config.DurationRanges)
+            {
+                if (totalMs < range)
+                {
+                    durations[range.ToString()] = durations.TryGetValue(range.ToString(), out var duration)
+                        ? duration + 1
+                        : 1;
+                    added = true;
+                    break;
+                }
+            }
+            if (!added)
+            {
+                var lastRange = ">" + config.DurationRanges.Last();
+                durations[lastRange] = durations.TryGetValue(lastRange, out var duration)
+                    ? duration + 1
+                    : 1;
+            }
         }
         
         do {
@@ -476,6 +504,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     apiLog.Status[requestLog.StatusCode] = apiLog.Status.TryGetValue(requestLog.StatusCode, out var existing)
                         ? existing + 1
                         : 1;
+
+                    apiLog.Durations ??= new();
+                    AddDurations(apiLog.Durations, (int)requestLog.RequestDuration.TotalMilliseconds);
                 }
 
                 if (requestLog.UserAuthId != null)
@@ -485,6 +516,15 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     {
                         ret.Users[requestLog.UserAuthId].Name = username;
                     }
+                    
+                    var userLog = ret.Users[requestLog.UserAuthId];
+                    userLog.Status ??= new();
+                    userLog.Status[requestLog.StatusCode] = userLog.Status.TryGetValue(requestLog.StatusCode, out var existing)
+                        ? existing + 1
+                        : 1;
+
+                    userLog.Durations ??= new();
+                    AddDurations(userLog.Durations, (int)requestLog.RequestDuration.TotalMilliseconds);
                 }
 
                 if (requestLog.StatusCode > 0)
@@ -525,27 +565,11 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     Add(ret.Devices, "None", requestLog);
                 }
 
-                var totalMs = (int)requestLog.RequestDuration.TotalMilliseconds;
+                if (requestLog.StatusCode is >= 200 and < 300)
+                {
+                    AddDurations(ret.Durations, (int)requestLog.RequestDuration.TotalMilliseconds);
+                }
 
-                var added = false;
-                foreach (var range in config.DurationRanges)
-                {
-                    if (totalMs < range)
-                    {
-                        ret.DurationRange[range.ToString()] = ret.DurationRange.TryGetValue(range.ToString(), out var duration)
-                            ? duration + 1
-                            : 1;
-                        added = true;
-                        break;
-                    }
-                }
-                if (!added)
-                {
-                    var lastRange = ">" + config.DurationRanges.Last();
-                    ret.DurationRange[lastRange] = ret.DurationRange.TryGetValue(lastRange, out var duration)
-                        ? duration + 1
-                        : 1;
-                }
                 lastPk = requestLog.Id;
             }
         } while(batch.Count >= config.BatchSize);
