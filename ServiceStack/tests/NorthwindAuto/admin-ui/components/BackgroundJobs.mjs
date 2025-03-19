@@ -7,6 +7,9 @@ Chart.register(...registerables)
 
 const bus = new EventBus()
 
+const { formatDate, time, prettyJson, humanifyNumber, humanifyMs } = useFormatters()
+const { swrApi, swrCacheKey, fromCache } = useUtils()
+
 function getPrefs() {
     return JSON.parse(localStorage.getItem('jobs.prefs') ?? "{}")
 }
@@ -22,12 +25,10 @@ let lastStats = null
 let updateStatsTimeout = null
 
 function getStats() {
-    const { swrCacheKey, fromCache } = useUtils()
     return lastStats ?? fromCache(swrCacheKey(new AdminJobInfo()));
 }
 
 async function updateStats() {
-    const { swrApi } = useUtils()
     //console.debug('updateStats', !!window.client)
     if (window.client) {
         const prefs = getPrefs()
@@ -48,41 +49,10 @@ function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time))
 }
 
-function prettyJson(o) {
-    return useFormatters().prettyJson(o)
-}
 function hasItems(obj) {
     return !obj ? false : typeof obj === 'object'
         ? Object.keys(obj).length > 0
         : obj.length
-}
-
-function humanifyNumber(n) {
-    if (n >= 1_000_000_000)
-        return (n / 1_000_000_000).toFixed(1) + "b"
-    if (n >= 1_000_000)
-        return (n / 1_000_000).toFixed(1) + "m"
-    if (n >= 1_000)
-        return (n / 1_000).toFixed(1) + "k"
-    return n.toLocaleString()
-}
-function humanifyMs(ms) {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) {
-        return `${days}d ${humanifyMs(ms - days * 24 * 60 * 60_000)}`;
-    } else if (hours > 0) {
-        return `${hours}h ${humanifyMs(ms - hours*60 * 60_000)}`;
-    } else if (minutes > 0) {
-        return `${minutes}m ${humanifyMs(ms - minutes*60_000)}`;
-    } else if (seconds > 0) {
-        return `${seconds}s`;
-    } else {
-        return `${ms}ms`;
-    }
 }
 
 const Markup = {
@@ -116,7 +86,6 @@ const DateTime = {
             const now = new Date()
             return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()
         })
-        const { formatDate, time } = useFormatters()
         return { formatDate, time, toDate, dateValue, sameDay }
     }
 }
@@ -355,7 +324,6 @@ const JobDialog = {
         const isRunning = state => state === 'Started' || state === 'Executed'
         const logs = ref(props.job.logs || '')
         const state = ref(props.job.state)
-        const { formatDate, time } = useFormatters()
         function formatArgs(args) {
             Object.keys(args).forEach(key => {
                 const val = args[key]
@@ -672,7 +640,6 @@ const Summary = {
     setup() {
         const routes = inject('routes')
         const client = useClient()
-        const { formatDate, time } = useFormatters()
         const grid = ref()
         const edit = ref()
 
