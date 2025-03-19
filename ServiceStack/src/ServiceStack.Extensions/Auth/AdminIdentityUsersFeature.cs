@@ -397,7 +397,7 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
             {
                 Id = "roles",
                 Label = "Roles",
-                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Role)),
+                Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Role, viewBox:"0 0 48 48")),
                 Show = $"role:{AdminRole}",
             });
         });
