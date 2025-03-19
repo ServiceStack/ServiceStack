@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-16 22:20:17
+Date: 2025-03-19 17:28:18
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1691,26 +1691,36 @@ export class RequestLogEntry {
     meta;
 }
 export class RequestSummary {
-    /** @param {{name?:string,requests?:number,requestLength?:number,duration?:number,status?:{ [index:number]: number; }}} [init] */
+    /** @param {{name?:string,totalRequests?:number,totalRequestLength?:number,minRequestLength?:number,maxRequestLength?:number,totalDuration?:number,minDuration?:number,maxDuration?:number,status?:{ [index:number]: number; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
     /** @type {number} */
-    requests;
+    totalRequests;
     /** @type {number} */
-    requestLength;
+    totalRequestLength;
     /** @type {number} */
-    duration;
+    minRequestLength;
+    /** @type {number} */
+    maxRequestLength;
+    /** @type {number} */
+    totalDuration;
+    /** @type {number} */
+    minDuration;
+    /** @type {number} */
+    maxDuration;
     /** @type {{ [index:number]: number; }} */
     status;
 }
 export class AnalyticsReports {
-    /** @param {{id?:number,created?:string,apis?:{ [index:string]: RequestSummary; },users?:{ [index:string]: RequestSummary; },tags?:{ [index:string]: RequestSummary; },status?:{ [index:string]: RequestSummary; },days?:{ [index:string]: RequestSummary; },apiKeys?:{ [index:string]: RequestSummary; },ipAddresses?:{ [index:string]: RequestSummary; },durationRange?:{ [index:string]: number; }}} [init] */
+    /** @param {{id?:number,created?:string,version?:number,apis?:{ [index:string]: RequestSummary; },users?:{ [index:string]: RequestSummary; },tags?:{ [index:string]: RequestSummary; },status?:{ [index:string]: RequestSummary; },days?:{ [index:string]: RequestSummary; },apiKeys?:{ [index:string]: RequestSummary; },ipAddresses?:{ [index:string]: RequestSummary; },browsers?:{ [index:string]: RequestSummary; },devices?:{ [index:string]: RequestSummary; },bots?:{ [index:string]: RequestSummary; },durationRange?:{ [index:string]: number; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
     /** @type {string} */
     created;
+    /** @type {number} */
+    version;
     /** @type {{ [index:string]: RequestSummary; }} */
     apis;
     /** @type {{ [index:string]: RequestSummary; }} */
@@ -1725,6 +1735,12 @@ export class AnalyticsReports {
     apiKeys;
     /** @type {{ [index:string]: RequestSummary; }} */
     ipAddresses;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    browsers;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    devices;
+    /** @type {{ [index:string]: RequestSummary; }} */
+    bots;
     /** @type {{ [index:string]: number; }} */
     durationRange;
 }
@@ -2593,7 +2609,7 @@ export class AdminCancelJobs {
     createResponse() { return new AdminCancelJobsResponse() }
 }
 export class RequestLogs {
-    /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string}} [init] */
+    /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string,month?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?number} */
     beforeSecs;
@@ -2639,6 +2655,8 @@ export class RequestLogs {
     take;
     /** @type {string} */
     orderBy;
+    /** @type {?string} */
+    month;
     getTypeName() { return 'RequestLogs' }
     getMethod() { return 'GET' }
     createResponse() { return new RequestLogsResponse() }

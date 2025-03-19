@@ -28,7 +28,7 @@ function getStats() {
 
 async function updateStats() {
     const { swrApi } = useUtils()
-    console.debug('updateStats', !!window.client)
+    //console.debug('updateStats', !!window.client)
     if (window.client) {
         const prefs = getPrefs()
         const request = new AdminJobInfo({ month:prefs.monthDb }) //var needed by safari
@@ -57,27 +57,27 @@ function hasItems(obj) {
         : obj.length
 }
 
-function toHumanReadable(n) {
+function humanifyNumber(n) {
     if (n >= 1_000_000_000)
-        return (n / 1_000_000_000).toFixed(1) + "b";
+        return (n / 1_000_000_000).toFixed(1) + "b"
     if (n >= 1_000_000)
-        return (n / 1_000_000).toFixed(1) + "m";
+        return (n / 1_000_000).toFixed(1) + "m"
     if (n >= 1_000)
-        return (n / 1_000).toFixed(1) + "k";
-    return n.toLocaleString();
+        return (n / 1_000).toFixed(1) + "k"
+    return n.toLocaleString()
 }
-function formatMs(ms) {
+function humanifyMs(ms) {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
     if (days > 0) {
-        return `${days}d ${formatMs(ms - days * 24 * 60 * 60_000)}`;
+        return `${days}d ${humanifyMs(ms - days * 24 * 60 * 60_000)}`;
     } else if (hours > 0) {
-        return `${hours}h ${formatMs(ms - hours*60 * 60_000)}`;
+        return `${hours}h ${humanifyMs(ms - hours*60 * 60_000)}`;
     } else if (minutes > 0) {
-        return `${minutes}m ${formatMs(ms - minutes*60_000)}`;
+        return `${minutes}m ${humanifyMs(ms - minutes*60_000)}`;
     } else if (seconds > 0) {
         return `${seconds}s`;
     } else {
@@ -122,10 +122,10 @@ const DateTime = {
 }
 
 const Duration = {
-    template: `<div>{{formatMs(value)}}</div>`,
+    template: `<div>{{humanifyMs(value)}}</div>`,
     props:['value'],
     setup() {
-        return { formatMs }
+        return { humanifyMs }
     }
 }
 
@@ -222,12 +222,12 @@ const JobProgress = {
             <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700">
                 <div class="bg-green-600 text-xs font-medium text-green-100 text-center p-0.5 leading-none rounded-full" :style="{width:percent}">{{percent}}</div>
             </div>
-            <div class="ml-2 w-16">{{formatMs(job.durationMs)}}</div>
+            <div class="ml-2 w-16">{{humanifyMs(job.durationMs)}}</div>
         </div>`,
     props:['job'],
     setup(props) {
         const percent = computed(() => (props.job.progress * 100).toFixed(0) + '%')
-        return { percent, formatMs }
+        return { percent, humanifyMs }
     }
 }
 
@@ -349,7 +349,7 @@ const JobDialog = {
             (props.job.errorCode ? {errorCode:props.job.errorCode,message:props.job.errorMessage} : null))
 
         const bottom = ref()
-        const duration = ref(formatMs(props.job.durationMs))
+        const duration = ref(humanifyMs(props.job.durationMs))
         const errorStatus = ref()
         const loading = ref(false)
         const isRunning = state => state === 'Started' || state === 'Executed'
@@ -374,7 +374,7 @@ const JobDialog = {
             loading.value = false
             logs.value = job.logs || ''
             state.value = job.state
-            duration.value = formatMs(job.durationMs)
+            duration.value = humanifyMs(job.durationMs)
             console.debug('updated', job, state.value)
             emit('updated', job)
         }
@@ -443,7 +443,7 @@ const JobDialog = {
                 }))
                 if (api.response) {
                     const newLogs = logs.value + (api.response.logs || '')
-                    const newDuration = formatMs(api.response.durationMs ?? 0)
+                    const newDuration = humanifyMs(api.response.durationMs ?? 0)
 
                     logs.value = newLogs
                     state.value = api.response.state
@@ -694,7 +694,7 @@ const Summary = {
         
         onMounted(update)
         
-        return { routes, grid, formatDate, time, toDate, formatMs, edit }
+        return { routes, grid, formatDate, time, toDate, humanifyMs, edit }
     }
 }
 const Completed = {
@@ -1095,7 +1095,7 @@ export const BackgroundJobs = {
                     : tab === 'ScheduledTasks'
                         ? info.value?.tableCounts['ScheduledTask']
                         : null
-            return humanize(tab) + (count != null ? `  (${toHumanReadable(count)})` : '')
+            return humanize(tab) + (count != null ? `  (${humanifyNumber(count)})` : '')
         }
 
         let sub = bus.subscribe('stats:changed', () => info.value = getStats())

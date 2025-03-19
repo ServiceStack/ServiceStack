@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2025-03-16 22:20:17
+Date: 2025-03-19 17:28:18
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1350,13 +1350,25 @@ export class RequestSummary
     public name: string;
 
     // @DataMember(Order=2)
-    public requests: number;
+    public totalRequests: number;
 
     // @DataMember(Order=3)
-    public requestLength: number;
+    public totalRequestLength: number;
+
+    // @DataMember(Order=3)
+    public minRequestLength: number;
+
+    // @DataMember(Order=3)
+    public maxRequestLength: number;
 
     // @DataMember(Order=4)
-    public duration: number;
+    public totalDuration: number;
+
+    // @DataMember(Order=4)
+    public minDuration: number;
+
+    // @DataMember(Order=4)
+    public maxDuration: number;
 
     // @DataMember(Order=5)
     public status: { [index:number]: number; };
@@ -1372,6 +1384,9 @@ export class AnalyticsReports
 
     // @DataMember(Order=2)
     public created: string;
+
+    // @DataMember(Order=1)
+    public version: number;
 
     // @DataMember(Order=2)
     public apis: { [index:string]: RequestSummary; };
@@ -1395,6 +1410,15 @@ export class AnalyticsReports
     public ipAddresses: { [index:string]: RequestSummary; };
 
     // @DataMember(Order=9)
+    public browsers: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=10)
+    public devices: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=11)
+    public bots: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=12)
     public durationRange: { [index:string]: number; };
 
     public constructor(init?: Partial<AnalyticsReports>) { (Object as any).assign(this, init); }
@@ -2493,6 +2517,9 @@ export class RequestLogs implements IReturn<RequestLogsResponse>, IGet
 
     // @DataMember(Order=22)
     public orderBy: string;
+
+    // @DataMember(Order=23)
+    public month?: string;
 
     public constructor(init?: Partial<RequestLogs>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'RequestLogs'; }
