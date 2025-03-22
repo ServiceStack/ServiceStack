@@ -1,12 +1,13 @@
 import {computed, inject, onMounted, onUnmounted, ref, watch} from "vue"
-import {useClient, useFiles, useFormatters, css} from "@servicestack/vue";
+import {useClient, useFiles, useFormatters, useUtils, css} from "@servicestack/vue";
 import {ApiResult, apiValueFmt, humanify, mapGet,leftPart,pick} from "@servicestack/client"
-import {GetAnalyticsReports} from "dtos"
+import { GetAnalyticsReports, AdminGetUser } from "dtos"
 import {Chart, registerables} from 'chart.js'
 
 Chart.register(...registerables)
 
 const { humanifyMs, humanifyNumber } = useFormatters()
+const { delay } = useUtils()
 
 const resultLimits = [5,10,25,50,100]
 export const colors = [
@@ -43,6 +44,75 @@ function chartHeight(recordCount, minHeight = 150, heightPerRecord = 22) {
     return minHeight + (count * heightPerRecord);
 }
 
+/** Create a vertical bar chart for duration ranges */
+function createDurationRangesChart(analytics, chart, elRef) {
+    if (!analytics || !elRef.value) return
+
+    // Convert durations object to arrays for Chart.js
+    const durations = analytics.durations
+    const labels = Object.keys(durations)
+    const data = Object.values(durations)
+
+    // Format labels for better display
+    const formattedLabels = labels.map(label => {
+        if (label.startsWith('>')) return `>${humanifyMs(parseInt(label.substring(1)))}`;
+        const num = parseInt(label)
+        return `<${humanifyMs(num)}`
+    });
+
+    // Destroy existing chart if it exists
+    if (chart) {
+        chart.destroy()
+    }
+
+    // Create chart
+    return new Chart(elRef.value, {
+        type: 'bar',
+        data: {
+            labels: formattedLabels,
+            datasets: [{
+                label: 'Requests',
+                data: data,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'x', // vertical bars
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Requests: ${context.raw}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Requests'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Duration Ranges'
+                    }
+                }
+            }
+        }
+    })
+}
+
 const numFmt = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -50,6 +120,7 @@ const numFmt = new Intl.NumberFormat('en-US', {
 function round(n) {
     return n.toString().indexOf(".") === -1 ? n : numFmt.format(n);
 }
+const userSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjNGE1NTY1IiBkPSJNMTYgOGE1IDUgMCAxIDAgNSA1YTUgNSAwIDAgMC01LTUiLz48cGF0aCBmaWxsPSIjNGE1NTY1IiBkPSJNMTYgMmExNCAxNCAwIDEgMCAxNCAxNEExNC4wMTYgMTQuMDE2IDAgMCAwIDE2IDJtNy45OTMgMjIuOTI2QTUgNSAwIDAgMCAxOSAyMGgtNmE1IDUgMCAwIDAtNC45OTIgNC45MjZhMTIgMTIgMCAxIDEgMTUuOTg1IDAiLz48L3N2Zz4='
 
 const ApiAnalytics = {
     template:`
@@ -74,8 +145,8 @@ const ApiAnalytics = {
       </div>
       <div v-if="routes.op && apiAnalytics && analytics.apis?.[routes.op]" class="mb-8 pb-8 relative border-b">
         <div class="mb-2">
-          <div class="flex">
-            <div class="w-1/2">
+          <div class="flex flex-wrap lg:flex-nowrap">
+            <div class="lg:w-1/2">
               <div>
                 <HtmlFormat :value="{ 'Total Requests': humanifyNumber(analytics.apis[routes.op].totalRequests) }" />
               </div>
@@ -96,18 +167,18 @@ const ApiAnalytics = {
                 </nav>
               </div>
             </div>
-            <div class="w-1/2">
+            <div class="lg:w-1/2">
               <HtmlFormat :value="apiAnalytics" />
             </div>
           </div>
         </div>
-        <div class="flex w-full gap-x-2">
-          <div class="w-1/2">
+        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
+          <div class="lg:w-1/2">
             <div class="bg-white rounded shadow p-4" style="height:300px">
-              <canvas ref="refStatusCodes"></canvas>
+              <canvas ref="refOpStatusCodes"></canvas>
             </div>
           </div>
-          <div class="w-1/2">
+          <div class="lg:w-1/2">
             <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refOpDurationRanges"></canvas>
             </div>
@@ -120,19 +191,19 @@ const ApiAnalytics = {
             Overview
           </div>
         </div>
-        <div class="flex w-full gap-x-2">
-          <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
+          <div class="lg:w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
             <canvas ref="refBrowsers"></canvas>
           </div>
-          <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="lg:w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
             <canvas ref="refDevices"></canvas>
           </div>
-          <div class="w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="lg:w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
             <canvas ref="refBots"></canvas>
           </div>
         </div>
-        <div class="flex w-full gap-x-2">
-          <div class="w-1/2">
+        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
+          <div class="lg:w-1/2">
             <div class="mb-2">
               Requests per day
             </div>
@@ -140,7 +211,7 @@ const ApiAnalytics = {
               <canvas ref="refWeeklyRequests"></canvas>
             </div>
           </div>
-          <div class="w-1/2">
+          <div class="lg:w-1/2">
             <div class="mb-2">
               API tag groups
             </div>
@@ -172,11 +243,11 @@ const ApiAnalytics = {
             <SelectInput id="apiLimit" label="" v-model="limits.duration" :values="resultLimits" />
           </div>
         </div>
-        <div class="flex w-full gap-x-2">
-          <div class="w-1/2 bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
+        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
+          <div class="lg:w-1/2 bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
             <canvas ref="refApiDurations"></canvas>
           </div>
-          <div class="w-1/2 bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="lg:w-1/2 bg-white rounded shadow p-4 mb-8" style="height:300px">
             <canvas ref="refApiDurationRanges"></canvas>
           </div>
         </div>
@@ -196,7 +267,7 @@ const ApiAnalytics = {
         const refApiRequests = ref(null)
         const refApiDurations = ref(null)
         const refApiDurationRanges = ref(null)
-        const refStatusCodes = ref(null)
+        const refOpStatusCodes = ref(null)
         const refOpDurationRanges = ref(null)
 
         const opEntry = ref()
@@ -246,7 +317,7 @@ const ApiAnalytics = {
             return []
         })
 
-        function apiOnClick(e, elements, chart) {
+        function handleOnClick(e, elements, chart) {
             console.log('onClick', e)
             const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
             if (points.length) {
@@ -266,7 +337,7 @@ const ApiAnalytics = {
         let statusCodesChart = null
         const createStatusCodesChart = () => {
             const api = props.analytics?.apis?.[routes.op]
-            if (!routes.op || !api || !refStatusCodes.value) return
+            if (!routes.op || !api || !refOpStatusCodes.value) return
 
             // Group requests by status code
             const statusCounts = {}
@@ -288,7 +359,7 @@ const ApiAnalytics = {
                 statusCodesChart.destroy()
             }
 
-            statusCodesChart = new Chart(refStatusCodes.value, {
+            statusCodesChart = new Chart(refOpStatusCodes.value, {
                 type: 'pie',
                 data: {
                     labels,
@@ -688,7 +759,7 @@ const ApiAnalytics = {
             // Sort APIs by request count in descending order
             const sortedApis = Object.entries(props.analytics.apis)
                 .sort((a, b) => b[1].totalRequests - a[1].totalRequests)
-                .slice(0, limits.value.api) // Limit to top 15 for better visualization
+                .slice(0, limits.value.api) // Limit for better visualization
 
             const labels = sortedApis.map(([api]) => api)
             const data = sortedApis.map(([_, stats]) => stats.totalRequests)
@@ -765,7 +836,7 @@ const ApiAnalytics = {
                             stacked: true
                         }
                     },
-                    onClick: apiOnClick
+                    onClick: handleOnClick
                 }
             })
         }
@@ -779,7 +850,7 @@ const ApiAnalytics = {
             const sortedApis = Object.entries(props.analytics.apis)
                 .sort((a, b) =>
                     Math.floor(b[1].totalDuration / b[1].totalRequests) - Math.floor(a[1].totalDuration / a[1].totalRequests))
-                .slice(0, limits.value.duration) // Limit to top 15 for better visualization
+                .slice(0, limits.value.duration) // Limit for better visualization
 
             const labels = sortedApis.map(([api]) => api)
             const data = sortedApis.map(([_, stats]) => Math.floor(stats.totalDuration / stats.totalRequests))
@@ -833,81 +904,13 @@ const ApiAnalytics = {
                             }
                         }
                     },
-                    onClick: apiOnClick
+                    onClick: handleOnClick
                 }
             })
         }
 
-        // Create a vertical bar chart for duration ranges
         let opDurationRangesChart = null
         let apiDurationRangesChart = null
-        function createDurationRangesChart(chart, elRef) {
-            if (!props.analytics || !elRef.value) return
-            
-            // Convert durations object to arrays for Chart.js
-            const durations = props.analytics.durations
-            const labels = Object.keys(durations)
-            const data = Object.values(durations)
-
-            // Format labels for better display
-            const formattedLabels = labels.map(label => {
-                if (label.startsWith('>')) return `>${humanifyMs(parseInt(label.substring(1)))}`;
-                const num = parseInt(label)
-                return `<${humanifyMs(num)}`
-            });
-
-            // Destroy existing chart if it exists
-            if (chart) {
-                chart.destroy()
-            }
-
-            // Create chart
-            return new Chart(elRef.value, {
-                type: 'bar',
-                data: {
-                    labels: formattedLabels,
-                    datasets: [{
-                        label: 'Requests',
-                        data: data,
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgb(54, 162, 235)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'x', // vertical bars
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Requests: ${context.raw}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Requests'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Duration Ranges'
-                            }
-                        }
-                    }
-                }
-            })
-        }
 
         onMounted(() => {
             update()
@@ -952,13 +955,13 @@ const ApiAnalytics = {
             createTagsChart()
             createApiRequestsChart()
             createApiDurationsChart()
-            apiDurationRangesChart = createDurationRangesChart(apiDurationRangesChart, refApiDurationRanges)
+            apiDurationRangesChart = createDurationRangesChart(props.analytics, apiDurationRangesChart, refApiDurationRanges)
             updateApi()
         }
         
         function updateApi() {
             createStatusCodesChart()
-            opDurationRangesChart = createDurationRangesChart(opDurationRangesChart, refOpDurationRanges)
+            opDurationRangesChart = createDurationRangesChart(props.analytics, opDurationRangesChart, refOpDurationRanges)
         }
         
         watch(() => [routes.month], update)
@@ -984,11 +987,6 @@ const ApiAnalytics = {
                 createApiDurationsChart()
             }, 0)
         })
-        watch(() => [props.analytics, routes.op], () => {
-            setTimeout(() => {
-                createStatusCodesChart()
-            }, 0)
-        })
 
         return {
             routes,
@@ -1006,7 +1004,7 @@ const ApiAnalytics = {
             refApiRequests,
             refApiDurations,
             refApiDurationRanges,
-            refStatusCodes,
+            refOpStatusCodes,
             refOpDurationRanges,
             chartHeight,
             humanifyNumber,
@@ -1016,6 +1014,91 @@ const ApiAnalytics = {
 
 const UserAnalytics = {
     template:`
+      <div class="my-4 mx-auto max-w-lg">
+        <div class="flex">
+          <div class="flex-grow">
+            <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select User"
+                          :match="(x, value) => getUserLabel(x.key).toLowerCase().includes(value.toLowerCase())"
+                          v-model="opEntry" :options="opEntries">
+              <template #item="{ key, value }">
+                <div v-if="value" class="truncate flex justify-between mr-8">
+                  <span>{{ getUserLabel(key) }}</span>
+                  <span class="text-gray-500">({{ humanifyNumber(value.totalRequests) }})</span>
+                </div>
+              </template>
+            </Autocomplete>
+          </div>
+          <div class="relative ml-12 -mt-1">
+            <CloseButton v-if="routes.userId" @click="routes.to({ userId: undefined })" title="Close User" />
+          </div>
+        </div>
+      </div>
+      <div v-if="routes.userId && userAnalytics && analytics.users?.[routes.userId]" class="mb-8 pb-8 relative border-b">
+        <div class="mb-2">
+          <div class="flex flex-wrap lg:flex-nowrap">
+            <div class="lg:w-1/2">
+              <div class="flex justify-between">
+                <table class="text-sm">
+                  <template v-if="userInfo">
+                    <tr>
+                      <td>Id</td>
+                      <td class="pl-2">
+                        <a :href="'./users?edit=' + userInfo.id" class="text-indigo-700 hover:text-indigo-600">
+                          {{userInfo.id}}
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Name</td>
+                      <td class="pl-2">
+                        {{ userInfo.result.DisplayName ?? (userInfo.result.FirstName ? (userInfo.FirstName + ' ' + userInfo.result.LastName) : userInfo.result.Email) }}
+                      </td>
+                    </tr>
+                  </template>
+                  <tr>
+                    <td>Total Requests</td>
+                    <td class="pl-2">{{humanifyNumber(analytics.users[routes.userId].totalRequests)}}</td>
+                  </tr>
+                </table>
+                <a :href="'./users?edit=' + routes.userId">
+                  <img :src="userInfo?.result.ProfileUrl || userSrc" class="mr-4 h-16 w-16 rounded-full text-gray-500" alt="User Profile" :onerror="'this.src=' + JSON.stringify(userSrc)">
+                </a>
+              </div>
+              <div class="ml-2">
+                <nav class="-mb-px flex space-x-4">
+                  <a v-href="{ $page:'logging', userId:routes.userId, month:routes.month }" title="User Request Logs"
+                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
+                    <svg class=" text-gray-400 group-hover:text-indigo-500 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13c0 1-.6 3-3 3m0 0H6c-1 0-3-.6-3-3v-2h12v2c0 2.4 2 3 3 3zM9 7h8m-8 4h4"></path>
+                    </svg>
+                    <span>All</span>
+                  </a>
+                  <a v-for="link in userLinks" :href="link.href" :title="link.label + ' Request Logs'"
+                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
+                    {{link.label}}
+                    <span class="ml-2 hidden rounded-full bg-gray-100 group-hover:bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 hover:text-indigo-600 md:inline-block">{{link.count}}</span>
+                  </a>
+                </nav>
+              </div>
+            </div>
+            <div class="lg:w-1/2">
+              <HtmlFormat :value="userAnalytics" />
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
+          <div class="lg:w-1/2">
+            <div class="bg-white rounded shadow p-4" style="height:300px">
+              <canvas ref="refUserStatusCodes"></canvas>
+            </div>
+          </div>
+          <div class="lg:w-1/2">
+            <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+              <canvas ref="refUserDurationRanges"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
       <div>
         <div class="mb-1 flex justify-between">
           <div>
@@ -1036,30 +1119,145 @@ const UserAnalytics = {
     setup(props) {
         const routes = inject('routes')
         const refUserRequests = ref(null)
+        const opEntry = ref()
+        const opEntries = ref([])
+        const refUsersDurations = ref(null)
+        const refUsersDurationRanges = ref(null)
+        const refUserStatusCodes = ref(null)
+        const refUserDurationRanges = ref(null)
+        const userInfo = ref()
 
         const limits = ref({
-            user: 10,
+            user: 50,
             duration: 10
         })
 
-        function apiOnClick(e, elements, chart) {
+        const { formatBytes } = useFiles()
+        const userAnalytics = computed(() => {
+            const user = props.analytics?.users?.[routes.userId]
+            if (user) {
+                let ret = []
+                if (user.totalDuration) {
+                    ret.push({ name: 'Duration',
+                        Total: humanifyMs(round(user.totalDuration)),
+                        Min: humanifyMs(round(user.minDuration)),
+                        Max: humanifyMs(round(user.maxDuration)),
+                    })
+                }
+                if (user.totalRequestLength) {
+                    ret.push({ name: 'Request Body',
+                        Total: formatBytes(user.totalRequestLength),
+                        Min: formatBytes(user.minRequestLength),
+                        Max: formatBytes(user.maxRequestLength),
+                    })
+                }
+                return ret
+            }
+            return []
+        })
+        const userLinks = computed(() => {
+            const api = props.analytics?.users?.[routes.userId]
+            if (api) {
+                let linkBase = `./logging?userId=${routes.userId}`
+                if (routes.month) {
+                    linkBase += `&month=${routes.month}`
+                }
+                const ret = []
+                Object.entries(api.status).forEach(([status, count]) => {
+                    ret.push({ label:status, href:`${linkBase}&status=${status}`, count })
+                })
+                return ret
+            }
+            return []
+        })
+
+        function handleOnClick(e, elements, chart) {
             const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
             if (points.length) {
-                const firstPoint = points[0];
-                const user = chart.data.labels[firstPoint.index];
-                const userStats = props.analytics.users[user];
-                routes.to({ user })
+                const firstPoint = points[0]
+                const userIdOrName = chart.data.labels[firstPoint.index]
+                const userId = userIdOrName in props.analytics.users ? userIdOrName : Object.keys(props.analytics.users)
+                    .find(key => props.analytics.users[key].name === userIdOrName)
+                if (userId) {
+                    routes.to({ userId })
+                }
             }
+        }
+
+        let statusCodesChart = null
+        const createUserStatusCodesChart = () => {
+            const user = props.analytics?.users?.[routes.userId]
+            if (!routes.userId || !user || !refUserStatusCodes.value) return
+
+            // Group requests by status code
+            const statusCounts = {}
+
+            // Process each API entry to count status codes
+            Object.entries(user.status).forEach(([status, count]) => {
+                statusCounts[status] = (statusCounts[status] || 0) + count
+            })
+
+            // Create labels and data for the chart
+            const labels = Object.keys(statusCounts)
+            const data = Object.values(statusCounts)
+
+            // Generate colors based on status code ranges
+            const backgroundColor = labels.map(httpStatusColor)
+
+            // Destroy existing chart if it exists
+            if (statusCodesChart) {
+                statusCodesChart.destroy()
+            }
+
+            statusCodesChart = new Chart(refUserStatusCodes.value, {
+                type: 'pie',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor,
+                        borderColor: backgroundColor.map(color => color.replace('0.2', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'HTTP Status',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            })
         }
         
         let userRequestsChart = null
-        const createApiRequestsChart = () => {
+        const createUserRequestsChart = () => {
             if (!props.analytics || !refUserRequests.value) return
 
             // Sort Users by request count in descending order
             const sortedUsers = Object.entries(props.analytics.users)
                 .sort((a, b) => b[1].totalRequests - a[1].totalRequests)
-                .slice(0, limits.value.user) // Limit to top 15 for better visualization
+                .slice(0, limits.value.user) // Limit for better visualization
 
             const labels = sortedUsers.map(([user,stats]) => stats.name ?? user)
             const data = sortedUsers.map(([_, stats]) => stats.totalRequests)
@@ -1117,8 +1315,13 @@ const UserAnalytics = {
                         tooltip: {
                             callbacks: {
                                 afterLabel: function(context) {
-                                    const index = context.dataIndex;
-                                    return `Total ${data[index]} requests, Avg Response Time: ${avgResponseTimes[index]}ms`;
+                                    const index = context.dataIndex
+                                    const userLabel = labels[index]
+                                    const userId = Object.keys(props.analytics.users)
+                                        .find(key => props.analytics.users[key].name === userLabel)
+                                    
+                                    return `Total ${data[index]} requests, Avg Response Time: ${avgResponseTimes[index]}ms`
+                                        + (userId ? `\nId: ${userId}` : '')
                                 }
                             }
                         }
@@ -1136,10 +1339,13 @@ const UserAnalytics = {
                             stacked: true
                         }
                     },
-                    onClick: apiOnClick
+                    onClick: handleOnClick
                 }
             })
         }
+
+        let userDurationRangesChart = null
+        let usersDurationRangesChart = null
 
         onMounted(() => {
             update()
@@ -1152,50 +1358,82 @@ const UserAnalytics = {
         })
 
         function update() {
-            createApiRequestsChart()
+            createUserRequestsChart()
+
+            usersDurationRangesChart = createDurationRangesChart(props.analytics, usersDurationRangesChart, refUsersDurationRanges)
             updateUser()
+        }
+        
+        function substringWithEllipsis(s, len) {
+            return s.length > len ? s.substring(0, len - 3) + '...' : s
+        }
+        
+        function getUserLabel(userIdOrName) {
+            const userId = userIdOrName in props.analytics.users ? userIdOrName : Object.keys(props.analytics.users)
+                .find(key => props.analytics.users[key].name === userIdOrName)
+            
+            const user = userId && props.analytics.users[userId]
+            return user 
+                ? user.name ? `${user.name} (${substringWithEllipsis(userId,8)})` : `${userId}` 
+                : userIdOrName
         }
 
         function updateUser() {
-            // createStatusCodesChart()
-            // opDurationRangesChart = createDurationRangesChart(opDurationRangesChart, refOpDurationRanges)
+            userInfo.value = null
+            if (routes.userId) {
+                client.api(new AdminGetUser({ id: routes.userId }))
+                    .then(r => {
+                        if (r.succeeded) {
+                            userInfo.value = r.response
+                        }
+                    })
+            }
+            opEntries.value = Object.keys(props.analytics?.users ?? {})
+                .map(key => ({ key, value:props.analytics.users[key] }))
+                .sort((a,b) => b.value.totalRequests - a.value.totalRequests)
+            opEntry.value = routes.userId ? opEntries.value.find(x => x.key === routes.userId) : null
+
+            createUserStatusCodesChart()
+            userDurationRangesChart = createDurationRangesChart(props.analytics, userDurationRangesChart, refUserDurationRanges)
         }
 
         watch(() => [routes.month], update)
-        watch(() => [routes.id], () => {
-            //opEntry.value = routes.op ? opEntries.value.find(x => x.key === routes.op) : null
+        watch(() => [routes.userId], () => {
+            opEntry.value = routes.userId ? opEntries.value.find(x => x.key === routes.userId) : null
             setTimeout(() => {
                 updateUser()
             }, 0)
         })
-        // watch(() => [opEntry.value], () => {
-        //     const op = opEntry.value?.key
-        //     if (op !== routes.op) {
-        //         routes.to({ op })
-        //     }
-        // })
+        watch(() => [opEntry.value], () => {
+            const userId = opEntry.value?.key
+            if (userId !== routes.userId) {
+                routes.to({ userId })
+            }
+        })
         watch(() => [props.analytics, limits.value.user], () => {
             setTimeout(() => {
-                createApiRequestsChart()
+                createUserRequestsChart()
             }, 0)
         })
-        // watch(() => [props.analytics, limits.value.duration], () => {
-        //     setTimeout(() => {
-        //         createApiDurationsChart()
-        //     }, 0)
-        // })
-        // watch(() => [props.analytics, routes.op], () => {
-        //     setTimeout(() => {
-        //         createStatusCodesChart()
-        //     }, 0)
-        // })
 
         return {
             routes,
             limits,
+            userSrc,
+            userAnalytics,
+            userLinks,
+            userInfo,
+            opEntry,
+            opEntries,
             resultLimits,
             refUserRequests,
+            refUsersDurations,
+            refUsersDurationRanges,
+            refUserStatusCodes,
+            refUserDurationRanges,
+            getUserLabel,
             chartHeight,
+            humanifyNumber,
         }
     }
 }
@@ -1207,12 +1445,8 @@ export const Analytics = {
     },
     template: `
       <div class="container mx-auto">
-        <div v-if="loading" class="flex justify-center p-12">
-          <Loading v-if="loading">generating...</Loading>
-        </div>
-        <ErrorSummary v-else-if="api.error" :status="api.error" />
-        <div v-else>
-          <div>
+        <ErrorSummary v-if="api.error" :status="api.error" />
+        <div>
             <div class="relative">
               <nav class="absolute flex space-x-4" aria-label="Tabs">
                 <a v-for="(tab,label) in ({ APIs:'', Users:'users' })" v-href="{ tab }"
@@ -1220,7 +1454,7 @@ export const Analytics = {
               </nav>
             </div>
             
-            <div class="mb-2 flex flex-wrap justify-center">
+            <div v-if="months.length" class="mb-2 flex flex-wrap justify-center">
               <template v-for="year in years">
                 <b v-if="year === (routes.year || new Date().getFullYear().toString())" class="ml-3 text-sm font-semibold">
                   {{ year }}
@@ -1230,7 +1464,7 @@ export const Analytics = {
                 </a>
               </template>
             </div>
-            <div class="flex flex-wrap justify-center">
+            <div v-if="months.length" class="flex flex-wrap justify-center">
               <template v-for="month in months.filter(x => x.startsWith(routes.year || new Date().getFullYear().toString()))">
                <span v-if="month === (routes.month || (new Date().getFullYear() + '-' + (new Date().getMonth() + 1).toString().padStart(2,'0')))" class="mr-2 mb-2 text-xs leading-5 font-semibold bg-indigo-600 text-white rounded-full py-1 px-3 flex items-center space-x-2">
                {{ new Date(month + '-01').toLocaleString('default', { month: 'long' }) }}
@@ -1240,13 +1474,15 @@ export const Analytics = {
                 </a>
               </template>
             </div>
-          </div>
           
-          <div v-if="analytics">
-            <UserAnalytics v-if="routes.tab === 'users'" :analytics="analytics"/>
-            <ApiAnalytics v-else :analytics="analytics" />
-          </div>
-          
+        </div>
+
+        <div v-if="loading" class="flex justify-center p-4">
+          <Loading v-if="loading">generating...</Loading>
+        </div>
+        <div v-else-if="analytics">
+          <UserAnalytics v-if="routes.tab === 'users'" :analytics="analytics"/>
+          <ApiAnalytics v-else :analytics="analytics" />
         </div>
       </div>
     `,
@@ -1263,8 +1499,13 @@ export const Analytics = {
         
         async function update() {
             loading.value = true
+            
+            client.api(new GetAnalyticsReports({ filter:'info' })).then(r => {
+                months.value = r.response?.months || []
+            })
+            
             //await delay(2000); // Pauses for 2 seconds
-
+            
             api.value = await client.api(new GetAnalyticsReports({
                 month: routes.month ? `${routes.month}-01` : undefined
             }))

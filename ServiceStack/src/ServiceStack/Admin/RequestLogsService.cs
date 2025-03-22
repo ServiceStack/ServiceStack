@@ -133,6 +133,9 @@ public class RequestSummary
     [DataMember(Order=8)] public double MaxDuration { get; set; }
     [DataMember(Order=9)] public Dictionary<int,long> Status { get; set; }
     [DataMember(Order=10)] public Dictionary<string, long> Durations { get; set; }
+    [DataMember(Order=11)] public Dictionary<string, long> Users { get; set; }
+    [DataMember(Order=12)] public Dictionary<string, long> Ips { get; set; }
+    [DataMember(Order=13)] public Dictionary<string, long> ApiKeys { get; set; }
 }
 
 [DefaultRequest(typeof(RequestLogs))]
@@ -275,17 +278,6 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         {
             item.Value.Name = item.Key;
         }
-
-        var topIpAddresses = new Dictionary<string, RequestSummary>();
-        var top100Addresses = ret.IpAddresses.Values
-            .OrderByDescending(x => x.TotalRequestLength)
-            .Take(feature.AnalyticsConfig.IpLimit);
-        foreach (var item in top100Addresses)
-        {
-            topIpAddresses[item.Name] = item;
-            item.Name = null;
-        }
-        ret.IpAddresses = topIpAddresses;
 
         var userResolver = Request?.TryResolve<IUserResolver>();
         if (userResolver != null)

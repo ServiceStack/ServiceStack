@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Concurrent;
 using System.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -388,6 +387,30 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         db.DropTable<AnalyticsReports>();
     }
 
+    [Flags]
+    enum Detail
+    {
+        None = 0,
+        Apis = 1 << 0,
+        Users = 1 << 1,
+        Status = 1 << 2,
+        ApiKeys = 1 << 3,
+        Durations = 1 << 4,
+    }
+    
+    public static string? GetApiKey(RequestLog log, Dictionary<string, string>? headers= null)
+    {
+        if (log.Meta?.TryGetValue("apikey", out var authorization) == true)
+            return authorization;
+        headers ??= new Dictionary<string, string>(log.Headers ?? new(), StringComparer.OrdinalIgnoreCase);
+        if (headers.TryGetValue(HttpHeaders.Authorization, out authorization) 
+            && authorization.StartsWith("Bearer ak-", StringComparison.OrdinalIgnoreCase))
+        {
+            return authorization.RightPart(' ');
+        }
+        return null;
+    }
+
     public AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month)
     {
         using var db = OpenMonthDb(month);
@@ -425,7 +448,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             Devices = new(),
             Bots = new(),
             Durations = new(),
-        }; 
+        };
 
         void Add(Dictionary<string, RequestSummary> results, string name, RequestLog log)
         {
@@ -465,6 +488,39 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             summary.TotalRequestLength += apiSummary.TotalRequestLength;
         }
 
+        void AddDetail(RequestSummary summary, RequestLog log, Dictionary<string,string> headers, Detail details)
+        {
+            if (details.HasFlag(Detail.Users))
+            {
+                if (log.UserAuthId != null)
+                {
+                    summary.Users ??= new();
+                    summary.Users[log.UserAuthId] = summary.Users.GetValueOrDefault(log.UserAuthId) + 1;
+                }
+            }
+            if (details.HasFlag(Detail.Status))
+            {
+                summary.Status ??= new();
+                summary.Status[log.StatusCode] = summary.Status.TryGetValue(log.StatusCode, out var existing)
+                    ? existing + 1
+                    : 1;
+            }
+            if (details.HasFlag(Detail.ApiKeys))
+            {
+                var apiKey = GetApiKey(log, headers);
+                if (apiKey != null)
+                {
+                    summary.ApiKeys ??= new();
+                    summary.ApiKeys[apiKey] = summary.ApiKeys.GetValueOrDefault(apiKey) + 1;
+                }
+            }
+            if (details.HasFlag(Detail.Durations))
+            {
+                summary.Durations ??= new();
+                AddDurations(summary.Durations, (int)log.RequestDuration.TotalMilliseconds);
+            }
+        }
+
         void AddDurations(Dictionary<string, long> durations, int totalMs)
         {
             var added = false;
@@ -496,35 +552,37 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     .Limit(config.BatchSize));
             foreach (var requestLog in batch)
             {
+                var headers = new Dictionary<string, string>(requestLog.Headers ?? new(), StringComparer.OrdinalIgnoreCase);
+
                 Add(ret.Apis, requestLog.Request ?? requestLog.OperationName, requestLog);
                 if (requestLog.StatusCode > 0)
                 {
-                    var apiLog = ret.Apis[requestLog.Request ?? requestLog.OperationName];
-                    apiLog.Status ??= new();
-                    apiLog.Status[requestLog.StatusCode] = apiLog.Status.TryGetValue(requestLog.StatusCode, out var existing)
-                        ? existing + 1
-                        : 1;
+                    var apiLog = ret.Apis.GetValueOrDefault(requestLog.Request ?? requestLog.OperationName);
+                    if (apiLog != null)
+                    {
+                        apiLog.Status ??= new();
+                        apiLog.Status[requestLog.StatusCode] = apiLog.Status.TryGetValue(requestLog.StatusCode, out var existing)
+                            ? existing + 1
+                            : 1;
 
-                    apiLog.Durations ??= new();
-                    AddDurations(apiLog.Durations, (int)requestLog.RequestDuration.TotalMilliseconds);
+                        apiLog.Durations ??= new();
+                        AddDurations(apiLog.Durations, (int)requestLog.RequestDuration.TotalMilliseconds);
+                    }
                 }
 
                 if (requestLog.UserAuthId != null)
                 {
                     Add(ret.Users, requestLog.UserAuthId, requestLog);
-                    if (requestLog.Meta?.TryGetValue("username", out var username) == true)
-                    {
-                        ret.Users[requestLog.UserAuthId].Name = username;
-                    }
-                    
-                    var userLog = ret.Users[requestLog.UserAuthId];
-                    userLog.Status ??= new();
-                    userLog.Status[requestLog.StatusCode] = userLog.Status.TryGetValue(requestLog.StatusCode, out var existing)
-                        ? existing + 1
-                        : 1;
 
-                    userLog.Durations ??= new();
-                    AddDurations(userLog.Durations, (int)requestLog.RequestDuration.TotalMilliseconds);
+                    var userLog = ret.Users.GetValueOrDefault(requestLog.UserAuthId);
+                    if (userLog != null)
+                    {
+                        if (requestLog.Meta?.TryGetValue("username", out var username) == true)
+                        {
+                            userLog.Name = username;
+                        }
+                        AddDetail(userLog, requestLog, headers, Detail.Apis | Detail.Status | Detail.ApiKeys | Detail.Durations);
+                    }
                 }
 
                 if (requestLog.StatusCode > 0)
@@ -534,16 +592,31 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
                 Add(ret.Days, requestLog.DateTime.Day.ToString(), requestLog);
 
-                var headers = new Dictionary<string, string>(requestLog.Headers ?? new(), StringComparer.OrdinalIgnoreCase);
-
-                if ((headers.TryGetValue(HttpHeaders.Authorization, out var authorization) && authorization.StartsWith("ak-")) ||
-                    requestLog.Meta?.TryGetValue("apikey", out authorization) == true)
+                var apiKey = GetApiKey(requestLog, headers);
+                if (apiKey != null)
                 {
-                    Add(ret.ApiKeys, authorization, requestLog);
+                    Add(ret.ApiKeys, apiKey, requestLog);
+
+                    var apiKeyLog = ret.ApiKeys.GetValueOrDefault(apiKey);
+                    if (apiKeyLog != null)
+                    {
+                        if (requestLog.Meta?.TryGetValue("keyname", out var apiKeyName) == true)
+                        {
+                            apiKeyLog.Name = apiKeyName;
+                        }
+                        AddDetail(apiKeyLog, requestLog, headers, Detail.Apis | Detail.Durations);
+                    }
                 }
-                
+
                 if (requestLog.IpAddress != null)
+                {
                     Add(ret.IpAddresses, requestLog.IpAddress, requestLog);
+                    var ipLog = ret.IpAddresses.GetValueOrDefault(requestLog.IpAddress);
+                    if (ipLog != null)
+                    {
+                        AddDetail(ipLog, requestLog, headers, Detail.Users | Detail.Status | Detail.Durations | Detail.ApiKeys);
+                    }
+                }
 
                 if (headers.TryGetValue(HttpHeaders.UserAgent, out var userAgent) && !string.IsNullOrEmpty(userAgent))
                 {
@@ -605,11 +678,48 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             }
         }
 
+        HashSet<string> GetTopKeys(Dictionary<string, long> results, int take) => results
+            .OrderByDescending(kv => kv.Value)
+            .Take(take)
+            .Select(kv => kv.Key)
+            .ToSet();
+            
+        void KeepOnly<V>(Dictionary<string, V> results, HashSet<string> keys)
+        {
+            foreach (var key in results.Keys)
+            {
+                if (keys.Contains(key))
+                    continue;
+                results.Remove(key);
+            }
+        }
+        
         void Clean(Dictionary<string, RequestSummary> results)
         {
             foreach (var entry in results.Values)
             {
                 entry.TotalDuration = Math.Floor(entry.TotalDuration);
+                if (entry.Users?.Count > config.DetailLimit)
+                {
+                    KeepOnly(entry.Users, GetTopKeys(entry.Users, config.DetailLimit));
+                }
+                if (entry.Ips?.Count > config.DetailLimit)
+                {
+                    KeepOnly(entry.Ips, GetTopKeys(entry.Ips, config.DetailLimit));
+                }
+                if (entry.ApiKeys?.Count > config.DetailLimit)
+                {
+                    KeepOnly(entry.ApiKeys, GetTopKeys(entry.ApiKeys, config.DetailLimit));
+                }
+            }
+            if (results.Count > config.SummaryLimit)
+            {
+                var topKeys = results
+                    .OrderByDescending(kv => kv.Value.TotalRequests)
+                    .Take(config.SummaryLimit)
+                    .Select(x => x.Key)
+                    .ToSet();
+                KeepOnly(results, topKeys);
             }
         }
         
@@ -620,6 +730,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         Clean(ret.Days);
         Clean(ret.ApiKeys);
         Clean(ret.IpAddresses);
+        Clean(ret.Browsers);
+        Clean(ret.Devices);
+        Clean(ret.Bots);
         
         db.DropAndCreateTable<AnalyticsReports>();
         db.Insert(ret);

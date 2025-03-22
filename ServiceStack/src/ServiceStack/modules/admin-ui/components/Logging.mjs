@@ -408,6 +408,18 @@ export const Logging = {
         } else {
             localStorage.removeItem(statusKey)
         }
+        const userKey = 'Column/AutoQueryGrid:RequestLog.UserAuthId'
+        if (qs.userId) {
+            localStorage.setItem(userKey, `{"filters":[{"key":"%","name":"=","value":"${qs.userId}"}]}`)
+        } else {
+            localStorage.removeItem(userKey)
+        }
+        const ipKey = 'Column/AutoQueryGrid:RequestLog.IpAddress'
+        if (qs.ip) {
+            localStorage.setItem(ipKey, `{"filters":[{"key":"%","name":"=","value":"${qs.ip}"}]}`)
+        } else {
+            localStorage.removeItem(ipKey)
+        }
         function parseJwt(token) {
             let base64Url = token.split('.')[1];
             let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');

@@ -33,7 +33,7 @@ export let AppData = {
     lastEditState: null,
     /** @type {Object<String,any>} */
     cache: {},
-    /** @type Record<number,string> */
+    /** @type {Record<number,string>} */
     HttpErrors: { 401:'Unauthorized', 403:'Forbidden' },
 }
 export const app = new App()
@@ -97,7 +97,7 @@ export let routes = usePageRoutes(app, {
     page:'admin',
     queryKeys: ('tab,provider,db,schema,table,q,page,sort,new,edit,op,skip,' +
         'show,orderBy,operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,' +
-        'source,threadId,eventType,traceId,userId,tag,body,type,dialog,period,year,month').split(','),
+        'source,threadId,eventType,traceId,userId,tag,body,type,dialog,period,year,month,ip').split(','),
     handlers: {
         nav(state) { console.debug('nav', state) } /*debug*/
     },
