@@ -1061,7 +1061,7 @@ const UserAnalytics = {
                   </tr>
                 </table>
                 <a :href="'./users?edit=' + routes.userId">
-                  <img :src="userInfo?.result.ProfileUrl || userSrc" class="mr-4 h-16 w-16 rounded-full text-gray-500" alt="User Profile" :onerror="'this.src=' + JSON.stringify(userSrc)">
+                  <img :src="userInfo?.result.ProfileUrl || userSrc" class="m-2 h-16 w-16 rounded-full text-gray-500" alt="User Profile" :onerror="'this.src=' + JSON.stringify(userSrc)">
                 </a>
               </div>
               <div class="ml-2">
