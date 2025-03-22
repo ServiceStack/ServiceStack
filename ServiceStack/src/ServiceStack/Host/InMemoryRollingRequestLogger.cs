@@ -156,6 +156,11 @@ public class InMemoryRollingRequestLogger : IRequestLogger
 
             entry.Meta ??= new();
             entry.Meta["apikey"] = apiKey.Key;
+            var apiKeyNameFn = TypeProperties.Get(apiKey.GetType()).GetPublicGetter("Name");
+            if (apiKeyNameFn != null)
+            {
+                entry.Meta["keyname"] = apiKeyNameFn(apiKey).ToString();
+            }
         }
         else
         {
