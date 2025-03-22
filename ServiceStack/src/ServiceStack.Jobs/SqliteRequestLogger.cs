@@ -501,9 +501,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             if (details.HasFlag(Detail.Status))
             {
                 summary.Status ??= new();
-                summary.Status[log.StatusCode] = summary.Status.TryGetValue(log.StatusCode, out var existing)
-                    ? existing + 1
-                    : 1;
+                summary.Status[log.StatusCode] = summary.Status.GetValueOrDefault(log.StatusCode) + 1;
             }
             if (details.HasFlag(Detail.ApiKeys))
             {
@@ -560,13 +558,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     var apiLog = ret.Apis.GetValueOrDefault(requestLog.Request ?? requestLog.OperationName);
                     if (apiLog != null)
                     {
-                        apiLog.Status ??= new();
-                        apiLog.Status[requestLog.StatusCode] = apiLog.Status.TryGetValue(requestLog.StatusCode, out var existing)
-                            ? existing + 1
-                            : 1;
-
-                        apiLog.Durations ??= new();
-                        AddDurations(apiLog.Durations, (int)requestLog.RequestDuration.TotalMilliseconds);
+                        AddDetail(apiLog, requestLog, headers, Detail.Users | Detail.Status | Detail.ApiKeys | Detail.Durations);
                     }
                 }
 
