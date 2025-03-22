@@ -16,10 +16,11 @@ namespace ServiceStack.Auth;
 /// <summary>
 /// Handles converting from Application Cookie ClaimsPrincipal into a ServiceStack Session
 /// </summary>
-public class IdentityApplicationAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, 
+public class IdentityApplicationAuthProvider<TUser,TRole,TKey> : IdentityAuthProvider<TUser,TRole,TKey>, 
     IAuthWithRequest, IAuthPlugin, IIdentityApplicationAuthProvider
-    where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
     public const string Name = AuthenticateService.IdentityProvider;
     public const string Realm = "/auth/" + AuthenticateService.IdentityProvider;

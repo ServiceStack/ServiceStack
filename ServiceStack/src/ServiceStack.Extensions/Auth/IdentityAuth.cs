@@ -32,27 +32,46 @@ public static class IdentityAuth
     public static IIdentityApplicationAuthProvider AuthApplication => ApplicationAuthProvider
         ?? throw new Exception("IdentityAuth.AuthApplication is not configured");
 
-    public static IdentityAuthContext<TUser, TKey>? Instance<TUser, TKey>()
+    public static IdentityAuthContext<TUser, TRole, TKey>? Instance<TUser, TRole, TKey>()
         where TKey : IEquatable<TKey>
+        where TRole : IdentityRole<TKey>
         where TUser : IdentityUser<TKey>, new()
-    => Config as IdentityAuthContext<TUser, TKey>;
+    => Config as IdentityAuthContext<TUser, TRole, TKey>;
 
-    public static Action<IServiceCollection,AuthFeature> For<TUser>(Action<IdentityAuthContext<TUser, string>> configure)
-        where TUser : IdentityUser<string>, new() => For<TUser, string>(configure);
-
-    public static Action<IServiceCollection,AuthFeature> For<TUser,TKey>(Action<IdentityAuthContext<TUser, TKey>> configure)
-        where TKey : IEquatable<TKey>
-        where TUser : IdentityUser<TKey>, new()
+    public static Action<IServiceCollection, AuthFeature> For<TUser, TRole>(
+        Action<IdentityAuthContext<TUser, TRole, string>> configure)
+        where TRole : IdentityRole<string>
+        where TUser : IdentityUser<string>, new()
     {
-        var ctx = new IdentityAuthContext<TUser, TKey>(
+        return For<TUser,TRole,string>(configure);
+    }
+
+    public static Action<IServiceCollection,AuthFeature> For<TUser>(Action<IdentityAuthContext<TUser, IdentityRole, string>> configure)
+        where TUser : IdentityUser<string>, new() 
+        => For<TUser, IdentityRole, string>(configure);
+
+    public static Action<IServiceCollection,AuthFeature> For<TUser,TKey>(Action<IdentityAuthContext<TUser, IdentityRole<TKey>, TKey>> configure)
+        where TUser : IdentityUser<TKey>, new()
+        where TKey : IEquatable<TKey>
+    {
+        return For<TUser, IdentityRole<TKey>, TKey>(configure);
+    }
+
+    public static Action<IServiceCollection, AuthFeature> For<TUser, TRole, TKey>(
+        Action<IdentityAuthContext<TUser, TRole, TKey>> configure)
+        where TUser : IdentityUser<TKey>, new()
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey>
+    {
+        var ctx = new IdentityAuthContext<TUser, TRole, TKey>(
             () => new AuthUserSession(),
-            new IdentityApplicationAuthProvider<TUser, TKey>(),
-            new IdentityCredentialsAuthProvider<TUser, TKey>(),
-            new IdentityJwtAuthProvider<TUser, TKey>(),
-            new IdentityBasicAuthProvider<TUser, TKey>());
+            new IdentityApplicationAuthProvider<TUser, TRole, TKey>(),
+            new IdentityCredentialsAuthProvider<TUser, TRole, TKey>(),
+            new IdentityJwtAuthProvider<TUser, TRole, TKey>(),
+            new IdentityBasicAuthProvider<TUser, TRole, TKey>());
 
         Config = ctx;
-        Manager = new IdentityAuthContextManager<TUser,TKey>(ctx);
+        Manager = new IdentityAuthContextManager<TUser,TRole,TKey>(ctx);
         ApplicationAuthProvider = ctx.AuthApplication;
         configure(ctx);
 
@@ -103,7 +122,7 @@ public static class IdentityAuth
             }
             if (ctx.IncludeRegisterService)
             {
-                authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TKey>)] = ["/" + "register".Localize()];
+                authFeature.ServiceRoutes[typeof(IdentityRegisterService<TUser, TRole, TKey>)] = ["/" + "register".Localize()];
                 services.RegisterValidator(c => new IdentityRegistrationValidator<TUser, TKey>());
             }
 
@@ -182,15 +201,16 @@ public static class IdentityAuth
 /// <summary>
 /// Configure ServiceStack's Identity Auth Integration
 /// </summary>
-public class IdentityAuthContext<TUser, TKey>(
+public class IdentityAuthContext<TUser, TRole, TKey>(
     Func<IAuthSession> sessionFactory,
-    IdentityApplicationAuthProvider<TUser, TKey> authApplication,
-    IdentityCredentialsAuthProvider<TUser, TKey> authCredentials,
-    IdentityJwtAuthProvider<TUser, TKey> authJwt,
-    IdentityBasicAuthProvider<TUser, TKey> authBasic)
+    IdentityApplicationAuthProvider<TUser, TRole, TKey> authApplication,
+    IdentityCredentialsAuthProvider<TUser, TRole, TKey> authCredentials,
+    IdentityJwtAuthProvider<TUser, TRole, TKey> authJwt,
+    IdentityBasicAuthProvider<TUser, TRole, TKey> authBasic)
     : IIdentityAuthContext
-    where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
     /// <summary>
     /// Specify which Custom AuthUserSession to use
@@ -200,22 +220,22 @@ public class IdentityAuthContext<TUser, TKey>(
     /// <summary>
     /// Application Cookie Identity Auth Provider
     /// </summary>
-    public IdentityApplicationAuthProvider<TUser, TKey> AuthApplication { get; set; } = authApplication;
+    public IdentityApplicationAuthProvider<TUser, TRole, TKey> AuthApplication { get; set; } = authApplication;
 
     /// <summary>
     /// Username/Password SignIn Identity Auth Provider
     /// </summary>
-    public IdentityCredentialsAuthProvider<TUser, TKey> AuthCredentials { get; set; } = authCredentials;
+    public IdentityCredentialsAuthProvider<TUser, TRole, TKey> AuthCredentials { get; set; } = authCredentials;
 
     /// <summary>
     /// JWT Identity Auth Provider
     /// </summary>
-    public IdentityJwtAuthProvider<TUser, TKey> AuthJwt { get; set; } = authJwt;
+    public IdentityJwtAuthProvider<TUser, TRole, TKey> AuthJwt { get; set; } = authJwt;
 
     /// <summary>
     /// Basic Auth Provider
     /// </summary>
-    public IdentityBasicAuthProvider<TUser, TKey> AuthBasic { get; set; } = authBasic;
+    public IdentityBasicAuthProvider<TUser, TRole, TKey> AuthBasic { get; set; } = authBasic;
 
     /// <summary>
     /// Enable Identity Cookie Application Auth (default true) 
@@ -282,7 +302,7 @@ public class IdentityAuthContext<TUser, TKey>(
     /// <summary>
     /// Admin Users Feature
     /// </summary>
-    internal IdentityAdminUsersFeature<TUser, TKey>? AdminUsers { get; set; }
+    internal IdentityAdminUsersFeature<TUser, TRole, TKey>? AdminUsers { get; set; }
 #endif
     
     public static TUser DefaultSessionToUserConverter(IAuthSession session)
@@ -297,45 +317,57 @@ public class IdentityAuthContext<TUser, TKey>(
         return to;
     }
 
-    public void ApplicationAuth(Action<IdentityApplicationAuthProvider<TUser,TKey>>? configure=null)
+    public void ApplicationAuth(Action<IdentityApplicationAuthProvider<TUser,TRole,TKey>>? configure=null)
     {
         EnableApplicationAuth = true;
         configure?.Invoke(AuthApplication);
     }
 
-    public void CredentialsAuth(Action<IdentityCredentialsAuthProvider<TUser,TKey>>? configure=null)
+    public void CredentialsAuth(Action<IdentityCredentialsAuthProvider<TUser,TRole,TKey>>? configure=null)
     {
         EnableCredentialsAuth = true;
         configure?.Invoke(AuthCredentials);
     }
 
-    public void JwtAuth(Action<IdentityJwtAuthProvider<TUser,TKey>>? configure=null)
+    public void JwtAuth(Action<IdentityJwtAuthProvider<TUser,TRole,TKey>>? configure=null)
     {
         EnableJwtAuth = true;
         configure?.Invoke(AuthJwt);
     }
 
-    public void BasicAuth(Action<IdentityBasicAuthProvider<TUser,TKey>>? configure=null)
+    public void BasicAuth(Action<IdentityBasicAuthProvider<TUser,TRole,TKey>>? configure=null)
     {
         EnableBasicAuth = true;
         configure?.Invoke(AuthBasic);
     }
 
 #if NET8_0_OR_GREATER
-    public void AdminUsersFeature(Action<IdentityAdminUsersFeature<TUser, TKey>>? configure=null)
+    public void AdminUsersFeature(Action<IdentityAdminUsersFeature<TUser, TRole, TKey>>? configure=null)
     {
-        AdminUsers = new IdentityAdminUsersFeature<TUser, TKey>();
+        AdminUsers = new IdentityAdminUsersFeature<TUser, TRole, TKey>();
         configure?.Invoke(AdminUsers);
         ServiceStackHost.InitOptions.Plugins.AddIfNotExists(AdminUsers);
     }
 #endif
 }
 
-public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, TKey> context) : IIdentityAuthContextManager
-    where TKey : IEquatable<TKey>
+public class IdentityAuthContextManager<TUser, TRole, TKey> : IIdentityAuthContextManager
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
-    public IdentityAuthContext<TUser, TKey> Context => context;
+    public IdentityAuthContext<TUser, TRole, TKey> Context => context;
+    private readonly IdentityAuthContext<TUser, TRole, TKey> context;
+    private readonly ObjectActivator roleActivator;
+
+    public IdentityAuthContextManager(IdentityAuthContext<TUser, TRole, TKey> context)
+    {
+        this.context = context;
+        var ctorInfo = typeof(TRole).GetConstructors().FirstOrDefault(x => x.GetParameters().Length == 1);
+        if (ctorInfo == null)
+            throw new NotSupportedException(typeof(TRole).Name + " does not have a public TRole(TKey) constructor.");
+        roleActivator = ctorInfo.GetActivator();
+    }
 
     public async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(string userId, IRequest? request = null)
     {
@@ -720,7 +752,7 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
     {
         async Task<(TUser, ClaimsPrincipal)> Create(TUser? user, 
             UserManager<TUser> userManager, 
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<TRole> roleManager,
             IOptions<IdentityOptions> options,
             IRequest? req = null)
         {
@@ -733,7 +765,7 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
             if (user == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(req));
 
-            var userFactory = new UserClaimsPrincipalFactory<TUser, IdentityRole>(userManager, roleManager, options);
+            var userFactory = new UserClaimsPrincipalFactory<TUser, TRole>(userManager, roleManager, options);
             var claimsPrincipal = await userFactory.CreateAsync(user).ConfigAwait();
             return (user, claimsPrincipal);
         }
@@ -743,7 +775,7 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
             var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
             using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
-            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TRole>>();
             var options = scope.ServiceProvider.GetRequiredService<IOptions<IdentityOptions>>();
             
             var user = await findUser(userManager).ConfigAwait();
@@ -752,7 +784,7 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         else
         {
             var userManager = request.GetServiceProvider().GetRequiredService<UserManager<TUser>>();
-            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<TRole>>();
             var options = request.GetServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
 
             var user = await findUser(userManager).ConfigAwait();
@@ -760,9 +792,9 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         }
     }
 
-    public Task<List<IdentityRole>> GetAllRolesAsync(IRequest? request = null)
+    public Task<List<TRole>> GetAllRolesAsync(IRequest? request = null)
     {
-        async Task<List<IdentityRole>> GetAllRoles(RoleManager<IdentityRole> roleManager)
+        async Task<List<TRole>> GetAllRoles(RoleManager<TRole> roleManager)
         {
             return await roleManager.Roles.ToListAsync().ConfigAwait();
         }
@@ -770,19 +802,19 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         {
             var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
-            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TRole>>();
             return GetAllRoles(roleManager);
         }
         else
         {
-            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<TRole>>();
             return GetAllRoles(roleManager);
         }
     }
 
-    public Task<(IdentityRole, IList<Claim>)> GetRoleAndClaimsAsync(string roleId, IRequest? request = null)
+    public Task<(TRole, IList<Claim>)> GetRoleAndClaimsAsync(string roleId, IRequest? request = null)
     {
-        async Task<(IdentityRole, IList<Claim>)> GetAllRoleClaims(RoleManager<IdentityRole> roleManager)
+        async Task<(TRole, IList<Claim>)> GetAllRoleClaims(RoleManager<TRole> roleManager)
         {
             var role = await roleManager.FindByIdAsync(roleId).ConfigAwait();
             if (role == null)
@@ -793,21 +825,21 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         {
             var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
-            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TRole>>();
             return GetAllRoleClaims(roleManager);
         }
         else
         {
-            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<TRole>>();
             return GetAllRoleClaims(roleManager);
         }
     }
 
-    public async Task<IdentityRole> UpdateRoleAsync(string id, string role, 
+    public async Task<TRole> UpdateRoleAsync(string id, string role, 
         IEnumerable<Claim>? addClaims = null, IEnumerable<Claim>? removeClaims = null, 
         IRequest? request = null)
     {
-        async Task<IdentityRole> UpdateRole(RoleManager<IdentityRole> roleManager)
+        async Task<TRole> UpdateRole(RoleManager<TRole> roleManager)
         {
             var existingRole = await roleManager.FindByIdAsync(id).ConfigAwait();
             if (existingRole == null)
@@ -850,21 +882,21 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         {
             var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
-            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TRole>>();
             return await UpdateRole(roleManager).ConfigAwait();
         }
         else
         {
-            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<TRole>>();
             return await UpdateRole(roleManager).ConfigAwait();
         }
     }
 
-    public async Task<IdentityRole> CreateRoleAsync(string role, IRequest? request = null)
+    public async Task<TRole> CreateRoleAsync(string role, IRequest? request = null)
     {
-        async Task<IdentityRole> CreateRole(RoleManager<IdentityRole> roleManager)
+        async Task<TRole> CreateRole(RoleManager<TRole> roleManager)
         {
-            var newRole = new IdentityRole(role);
+            var newRole = (TRole)roleActivator(role);
             var result = await roleManager.CreateAsync(newRole).ConfigAwait();
             if (!result.Succeeded)
                 throw new Exception(result.Errors.First().Description);
@@ -874,19 +906,19 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         {
             var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
-            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TRole>>();
             return await CreateRole(roleManager).ConfigAwait();
         }
         else
         {
-            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<TRole>>();
             return await CreateRole(roleManager).ConfigAwait();
         }
     }
 
     public Task DeleteRoleByIdAsync(string id, IRequest? request = null)
     {
-        async Task DeleteRole(RoleManager<IdentityRole> roleManager)
+        async Task DeleteRole(RoleManager<TRole> roleManager)
         {
             var role = await roleManager.FindByIdAsync(id).ConfigAwait();
             if (role == null)
@@ -899,12 +931,12 @@ public class IdentityAuthContextManager<TUser, TKey>(IdentityAuthContext<TUser, 
         {
             var scopeFactory = ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
-            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TRole>>();
             return DeleteRole(roleManager);
         }
         else
         {
-            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = request.GetServiceProvider().GetRequiredService<RoleManager<TRole>>();
             return DeleteRole(roleManager);
         }
     }

@@ -9,9 +9,10 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
-public class IdentityBasicAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IAuthWithRequest, IIdentityBasicAuthProvider
-    where TKey : IEquatable<TKey>
+public class IdentityBasicAuthProvider<TUser,TRole,TKey> : IdentityAuthProvider<TUser,TRole,TKey>, IAuthWithRequest, IIdentityBasicAuthProvider
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
     public new static string Name = AuthenticateService.BasicProvider;
     public new static string Realm = "/auth/" + AuthenticateService.BasicProvider;

@@ -54,16 +54,17 @@ public class IdentityRegistrationValidator<TUser,TKey> : AbstractValidator<Regis
 /// <summary>
 /// Register Base class for IAuthRepository / IUserAuth users
 /// </summary>
-public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser> userManager) : RegisterServiceBase
-    where TKey : IEquatable<TKey>
+public abstract class IdentityRegisterServiceBase<TUser, TRole, TKey>(UserManager<TUser> userManager) : RegisterServiceBase
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
 #if NET8_0_OR_GREATER
     [Microsoft.AspNetCore.Mvc.FromServices]
 #endif
     public IValidator<Register>? RegistrationValidator { get; set; }
 
-    public IdentityAuthContext<TUser, TKey> AuthContext => IdentityAuth.Instance<TUser, TKey>()
+    public IdentityAuthContext<TUser, TRole, TKey> AuthContext => IdentityAuth.Instance<TUser, TRole, TKey>()
         ?? throw new Exception(nameof(IdentityAuth) + " not configured");
 
     protected UserManager<TUser> UserManager => userManager;
@@ -103,10 +104,11 @@ public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser
 }
 
 [DefaultRequest(typeof(Register))]
-public class IdentityRegisterService<TUser, TKey>(UserManager<TUser> userManager)
-    : IdentityRegisterServiceBase<TUser, TKey>(userManager)
-    where TKey : IEquatable<TKey>
+public class IdentityRegisterService<TUser, TRole, TKey>(UserManager<TUser> userManager)
+    : IdentityRegisterServiceBase<TUser, TRole, TKey>(userManager)
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
     public async Task<object> PostAsync(Register request)
     {

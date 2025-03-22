@@ -13,18 +13,19 @@ public abstract class IdentityAuthProvider : AuthProvider
         : base(appSettings, authRealm, authProvider) { }
 }
 
-public abstract class IdentityAuthProvider<TUser,TKey> : IdentityAuthProvider
-    where TKey : IEquatable<TKey>
+public abstract class IdentityAuthProvider<TUser,TRole,TKey> : IdentityAuthProvider
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
     protected IdentityAuthProvider() { }
     protected IdentityAuthProvider(IAppSettings? appSettings, string authRealm, string authProvider)
         : base(appSettings, authRealm, authProvider) { }
     
-    public IdentityAuthContext<TUser, TKey> Context => IdentityAuth.Instance<TUser,TKey>()
+    public IdentityAuthContext<TUser, TRole, TKey> Context => IdentityAuth.Instance<TUser,TRole,TKey>()
         ?? throw new NotSupportedException("IdentityAuth is not configured");
 
-    public IdentityAuthContextManager<TUser, TKey> Manager => IdentityAuth.Manager as IdentityAuthContextManager<TUser, TKey>
+    public IdentityAuthContextManager<TUser, TRole, TKey> Manager => IdentityAuth.Manager as IdentityAuthContextManager<TUser, TRole, TKey>
         ?? throw new NotSupportedException("IdentityAuth is not configured");
 
     public override async Task<object> LogoutAsync(IServiceBase service, Authenticate request, CancellationToken token = default)

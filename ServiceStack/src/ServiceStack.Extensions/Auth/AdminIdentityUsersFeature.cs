@@ -51,10 +51,10 @@ public interface IIdentityAdminUsersFeature
     Task<(object, ClaimsPrincipal)> GetUserClaimsPrincipalByNameAsync(IRequest request, string userName);
     Task DeleteUserByIdAsync(string requestId);
 
-    Task<List<IdentityRole>> GetAllRolesAsync(IRequest request);
-    Task<(IdentityRole, IList<Claim>)> GetRoleAndClaimsAsync(IRequest request, string roleId);
-    Task<IdentityRole> CreateRoleAsync(IRequest request, string role);
-    Task<IdentityRole> UpdateRoleAsync(IRequest request, string id, string role, IEnumerable<Claim>? addClaims = null, IEnumerable<Claim>? removeClaims = null);
+    Task<List<object>> GetAllRolesAsync(IRequest request);
+    Task<(object, IList<Claim>)> GetRoleAndClaimsAsync(IRequest request, string roleId);
+    Task<object> CreateRoleAsync(IRequest request, string role);
+    Task<object> UpdateRoleAsync(IRequest request, string id, string role, IEnumerable<Claim>? addClaims = null, IEnumerable<Claim>? removeClaims = null);
     Task DeleteRoleByIdAsync(IRequest request, string id);
 }
 
@@ -75,10 +75,11 @@ public static class IdentityAdminUsers
         Task.FromResult(null as object);
 }
 
-public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature, IPlugin, IConfigureServices,
+public class IdentityAdminUsersFeature<TUser, TRole, TKey> : IIdentityAdminUsersFeature, IPlugin, IConfigureServices,
     Model.IHasStringId, IPreInitPlugin
-    where TKey : IEquatable<TKey>
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
     public string Id { get; set; } = Plugins.AdminIdentityUsers;
     public string AdminRole { get; set; } = RoleNames.Admin;
@@ -96,7 +97,7 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
         return q;
     }
 
-    public IdentityAuthContextManager<TUser, TKey> Manager => IdentityAuth.Manager as IdentityAuthContextManager<TUser, TKey>
+    public IdentityAuthContextManager<TUser, TRole, TKey> Manager => IdentityAuth.Manager as IdentityAuthContextManager<TUser, TRole, TKey>
         ?? throw new NotSupportedException("IdentityAuth is not configured");
 
     public async Task<object?> FindUserByIdAsync(IRequest request, string userId)
@@ -192,24 +193,27 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
         return await Manager.SearchUsersAsync(query, orderBy, skip, take, request).ConfigAwait();
     }
 
-    public Task<List<IdentityRole>> GetAllRolesAsync(IRequest request)
+    public async Task<List<object>> GetAllRolesAsync(IRequest request)
     {
-        return Manager.GetAllRolesAsync(request);
+        return (await Manager.GetAllRolesAsync(request).ConfigAwait()).Map(x => (object)x);
     }
 
-    public Task<(IdentityRole,IList<Claim>)> GetRoleAndClaimsAsync(IRequest request, string roleId)
+    public async Task<(object,IList<Claim>)> GetRoleAndClaimsAsync(IRequest request, string roleId)
     {
-        return Manager.GetRoleAndClaimsAsync(roleId, request);
+        var (role, claims) = await Manager.GetRoleAndClaimsAsync(roleId, request).ConfigAwait();
+        return ((object)role, claims);
     }
     
-    public Task<IdentityRole> CreateRoleAsync(IRequest request, string role)
+    public async Task<object> CreateRoleAsync(IRequest request, string role)
     {
-        return Manager.CreateRoleAsync(role, request);
+        var ret = await Manager.CreateRoleAsync(role, request).ConfigAwait();
+        return (object)ret;
     }
 
-    public Task<IdentityRole> UpdateRoleAsync(IRequest request, string id, string role, IEnumerable<Claim>? addClaims = null, IEnumerable<Claim>? removeClaims = null)
+    public async Task<object> UpdateRoleAsync(IRequest request, string id, string role, IEnumerable<Claim>? addClaims = null, IEnumerable<Claim>? removeClaims = null)
     {
-        return Manager.UpdateRoleAsync(id, role, addClaims, removeClaims, request);
+        var ret = await Manager.UpdateRoleAsync(id, role, addClaims, removeClaims, request).ConfigAwait();
+        return  (object)ret;
     }
 
     public Task DeleteRoleByIdAsync(IRequest request, string id)
@@ -360,22 +364,22 @@ public class IdentityAdminUsersFeature<TUser, TKey> : IIdentityAdminUsersFeature
     public Task AfterDeleteUserAsync(IRequest request, string userId) =>
         OnAfterDeleteUser?.Invoke(request, userId) ?? Task.CompletedTask;
 
-    public IdentityAdminUsersFeature<TUser, TKey> RemoveFromUserForm(params string[] fieldNames) =>
+    public IdentityAdminUsersFeature<TUser, TRole, TKey> RemoveFromUserForm(params string[] fieldNames) =>
         RemoveFromUserForm(input => fieldNames.Contains(input.Name));
 
-    public IdentityAdminUsersFeature<TUser, TKey> RemoveFromUserForm(Predicate<InputInfo> match)
+    public IdentityAdminUsersFeature<TUser, TRole, TKey> RemoveFromUserForm(Predicate<InputInfo> match)
     {
         FormLayout.RemoveAll(match);
         return this;
     }
 
-    public IdentityAdminUsersFeature<TUser, TKey> RemoveFromQueryResults(params string[] fieldNames)
+    public IdentityAdminUsersFeature<TUser, TRole, TKey> RemoveFromQueryResults(params string[] fieldNames)
     {
         QueryIdentityUserProperties.RemoveAll(fieldNames.Contains);
         return this;
     }
 
-    public IdentityAdminUsersFeature<TUser, TKey> RemoveFields(params string[] fieldNames)
+    public IdentityAdminUsersFeature<TUser, TRole, TKey> RemoveFields(params string[] fieldNames)
     {
         RemoveFromQueryResults(fieldNames);
         RemoveFromUserForm(fieldNames);
@@ -656,11 +660,11 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         var roles = await feature.GetAllRolesAsync(Request!).ConfigAwait();
 
         return new AdminGetRolesResponse {
-            Results = roles.Map(x => new AdminRole
+            Results = roles.Select(x => x.ToObjectDictionary()).Select(x => new AdminRole
             {
-                Id = x.Id,
-                Name = x.Name,
-            })
+                Id = x.GetValueOrDefault(nameof(IdentityRole.Id)).ConvertTo<string>(),
+                Name = x.GetValueOrDefault(nameof(IdentityRole.Name)).ConvertTo<string>(),
+            }).ToList()
         };
     }
 
@@ -669,12 +673,13 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         await AssertRequiredRole();
 
         var (role,claims) = await feature.GetRoleAndClaimsAsync(Request!, request.Id).ConfigAwait();
+        var roleObj = role.ToObjectDictionary();
 
         return new AdminGetRoleResponse {
             Result = new AdminRole
             {
-                Id = role.Id,
-                Name = role.Name,
+                Id = roleObj.GetValueOrDefault(nameof(IdentityRole.Id)).ConvertTo<string>(),
+                Name = roleObj.GetValueOrDefault(nameof(IdentityRole.Name)).ConvertTo<string>(),
             },
             Claims = claims.Map(x => new Property
             {
@@ -688,10 +693,11 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
     {
         await AssertRequiredRole();
         var role = await feature.CreateRoleAsync(Request!, request.Name).ConfigAwait();
+        var roleObj = role.ToObjectDictionary();
 
         return new IdResponse
         {
-            Id = role.Id, 
+            Id = roleObj.GetValueOrDefault(nameof(IdentityRole.Id)).ConvertTo<string>(), 
         };
     }
 
@@ -701,9 +707,11 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         var role = await feature.UpdateRoleAsync(Request!, request.Id, request.Name,
             request.AddClaims?.Select(x => new Claim(x.Name, x.Value)),    
             request.RemoveClaims?.Select(x => new Claim(x.Name, x.Value))).ConfigAwait();
+
+        var roleObj = role.ToObjectDictionary();
         return new IdResponse
         {
-            Id = role.Id
+            Id = roleObj.GetValueOrDefault(nameof(IdentityRole.Id)).ConvertTo<string>(), 
         };
     }
 

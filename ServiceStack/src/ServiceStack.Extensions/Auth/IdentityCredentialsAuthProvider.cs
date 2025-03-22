@@ -12,9 +12,10 @@ namespace ServiceStack.Auth;
 /// <summary>
 /// Implements /auth/credentials authenticating against ASP.NET Identity IdentityUser
 /// </summary>
-public class IdentityCredentialsAuthProvider<TUser,TKey> : IdentityAuthProvider<TUser,TKey>, IIdentityCredentialsAuthProvider
-    where TKey : IEquatable<TKey>
+public class IdentityCredentialsAuthProvider<TUser,TRole,TKey> : IdentityAuthProvider<TUser,TRole,TKey>, IIdentityCredentialsAuthProvider
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
     public override string Type => "credentials";
     public static string Name = AuthenticateService.CredentialsProvider;

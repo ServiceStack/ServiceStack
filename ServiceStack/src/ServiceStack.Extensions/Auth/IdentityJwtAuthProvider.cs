@@ -26,10 +26,11 @@ namespace ServiceStack.Auth;
 /// <summary>
 /// Converts an MVC JwtBearer Cookie into a ServiceStack Session
 /// </summary>
-public class IdentityJwtAuthProvider<TUser,TKey> : 
-    IdentityAuthProvider<TUser,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
-    where TKey : IEquatable<TKey>
+public class IdentityJwtAuthProvider<TUser,TRole,TKey> : 
+    IdentityAuthProvider<TUser,TRole,TKey>, IIdentityJwtAuthProvider, IAuthWithRequest, IAuthResponseFilter
     where TUser : IdentityUser<TKey>, new()
+    where TRole : IdentityRole<TKey>
+    where TKey : IEquatable<TKey>
 {
     public override string Type => "Bearer";
     public const string Name = AuthenticateService.JwtProvider;
@@ -663,13 +664,13 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
         
         async Task<ClaimsPrincipal> Create(TUser? user, 
             UserManager<TUser> userManager, 
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<TRole> roleManager,
             IOptions<IdentityOptions> options, 
             IRequest? httpReq = null)
         {
             if (user == null && httpReq != null)
             {
-                var context = httpReq.TryResolve<IdentityAuthContext<TUser, TKey>>();
+                var context = httpReq.TryResolve<IdentityAuthContext<TUser, TRole, TKey>>();
                 var session = await httpReq.GetSessionAsync().ConfigAwait();
                 if (HostContext.AssertPlugin<AuthFeature>().AuthSecretSession == session)
                     user = context.SessionToUserConverter(session);
@@ -678,7 +679,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
             if (user == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(httpReq));
 
-            var userFactory = new UserClaimsPrincipalFactory<TUser, IdentityRole>(userManager, roleManager, options);
+            var userFactory = new UserClaimsPrincipalFactory<TUser, TRole>(userManager, roleManager, options);
             var principal = await userFactory.CreateAsync(user).ConfigAwait();
             return principal;
         }
@@ -691,7 +692,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
             var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
 
             using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
-            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<TRole>>();
             var options = scope.ServiceProvider.GetRequiredService<IOptions<IdentityOptions>>();
 
             var user = await GetUser(dbUsers).ConfigAwait();
@@ -707,7 +708,7 @@ public class IdentityJwtAuthProvider<TUser,TKey> :
             var dbUsers = IdentityAuth.ResolveDbUsers<TUser>(dbContext);
 
             var userManager = services.GetRequiredService<UserManager<TUser>>();
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = services.GetRequiredService<RoleManager<TRole>>();
             var options = services.GetRequiredService<IOptions<IdentityOptions>>();
             
             var user = await GetUser(dbUsers).ConfigAwait();
