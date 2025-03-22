@@ -119,16 +119,14 @@ public static class ServiceGatewayExtensions
         return responseType;
     }
 
-    private static Dictionary<Type, Func<IServiceGateway, object, object>> LateBoundSendSyncFns =
-        new Dictionary<Type, Func<IServiceGateway, object, object>>();
+    private static Dictionary<Type, Func<IServiceGateway, object, object>> LateBoundSendSyncFns = new();
 
     internal static object SendObject<TResponse>(IServiceGateway client, object request)
     {
         return client.Send<TResponse>(request);
     }
 
-    private static Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>> LateBoundSendAsyncFns =
-        new Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>>();
+    private static Dictionary<Type, Func<IServiceGateway, object, CancellationToken, Task<object>>> LateBoundSendAsyncFns = new();
 
     internal static async Task<object> SendObjectAsync<TResponse>(IServiceGateway client, object request, CancellationToken token)
     {
@@ -160,6 +158,7 @@ public static class ServiceGatewayAsyncWrappers
     {
         try
         {
+            ServiceClientUtils.AssertRequestDto(requestDto);
             return ApiResult.Create(await (client is IServiceGatewayAsync nativeAsync
                 ? nativeAsync.SendAsync<TResponse>(requestDto, token)
                 : Task.Factory.StartNew(() => client.Send<TResponse>(requestDto), token)).ConfigAwait());
@@ -172,6 +171,7 @@ public static class ServiceGatewayAsyncWrappers
 
     public static Task<TResponse> SendAsync<TResponse>(this IServiceGateway client, object requestDto, CancellationToken token = default)
     {
+        ServiceClientUtils.AssertRequestDto(requestDto);
         return client is IServiceGatewayAsync nativeAsync
             ? nativeAsync.SendAsync<TResponse>(requestDto, token)
             : Task.Factory.StartNew(() => client.Send<TResponse>(requestDto), token);
@@ -181,6 +181,7 @@ public static class ServiceGatewayAsyncWrappers
     {
         try
         {
+            ServiceClientUtils.AssertRequestDto(requestDto);
             await (client is IServiceGatewayAsync nativeAsync
                 ? nativeAsync.SendAsync<byte[]>(requestDto, token)
                 : Task.Factory.StartNew(() => client.Send<byte[]>(requestDto), token)).ConfigAwait();
@@ -194,6 +195,7 @@ public static class ServiceGatewayAsyncWrappers
 
     public static Task SendAsync(this IServiceGateway client, IReturnVoid requestDto, CancellationToken token = default)
     {
+        ServiceClientUtils.AssertRequestDto(requestDto);
         return client is IServiceGatewayAsync nativeAsync
             ? nativeAsync.SendAsync<byte[]>(requestDto, token)
             : Task.Factory.StartNew(() => client.Send<byte[]>(requestDto), token);
@@ -222,6 +224,7 @@ public static class ServiceGatewayAsyncWrappers
 
     public static Task PublishAsync(this IServiceGateway client, object requestDto, CancellationToken token = default)
     {
+        ServiceClientUtils.AssertRequestDto(requestDto);
         return client is IServiceGatewayAsync nativeAsync
             ? nativeAsync.PublishAsync(requestDto, token)
             : Task.Factory.StartNew(() => client.Publish(requestDto), token);
@@ -240,7 +243,7 @@ public static class ServiceGatewayAsyncWrappers
     {
         try
         {
-            return ApiResult.Create(await client.SendAsync<TResponse>((object)requestDto, token).ConfigAwait());
+            return ApiResult.Create(await client.SendAsync<TResponse>(ServiceClientUtils.AssertRequestDto(requestDto), token).ConfigAwait());
         }
         catch (Exception e)
         {
@@ -250,7 +253,7 @@ public static class ServiceGatewayAsyncWrappers
 
     public static Task<TResponse> Send<TResponse>(this IServiceClientAsync client, IReturn<TResponse> requestDto, CancellationToken token = default)
     {
-        return client.SendAsync<TResponse>((object)requestDto, token);
+        return client.SendAsync<TResponse>(ServiceClientUtils.AssertRequestDto(requestDto), token);
     }
 
     public static async Task<ApiResult<List<TResponse>>> ApiAllAsync<TResponse>(this IServiceClientAsync client, IReturn<TResponse>[] requestDtos, CancellationToken token = default)
@@ -297,7 +300,7 @@ public static class ServiceGatewayAsyncWrappers
     {
         try
         {
-            var result = await client.SendFormAsync<TResponse>(requestDto, formData, token).ConfigAwait();
+            var result = await client.SendFormAsync<TResponse>(ServiceClientUtils.AssertRequestDto(requestDto), formData, token).ConfigAwait();
             return ApiResult.Create(result);
         }
         catch (Exception ex)

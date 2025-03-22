@@ -82,4 +82,14 @@ public static class ServiceClientUtils
             return HttpMethods.Get;
         return null;
     }
+
+    public static object AssertRequestDto(object requestDto)
+    {
+        if (requestDto == null)
+            throw new ArgumentNullException(nameof(requestDto));
+        var requestType = requestDto.GetType();
+        if (requestType.IsClass && requestType != typeof(string))
+            return requestDto;
+        throw new NotSupportedException($"{requestType.Name} is not a valid Request DTO");
+    }
 }

@@ -1474,7 +1474,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
     public virtual TResponse PostFilesWithRequest<TResponse>(string requestUri, object request, UploadFile[] files)
     {
-        var queryString = QueryStringSerializer.SerializeToString(request);
+        var queryString = QueryStringSerializer.SerializeToString(ServiceClientUtils.AssertRequestDto(request));
         var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
 
         using var content = new MultipartFormDataContent();
@@ -1676,7 +1676,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
     }
 
     public Task<TResponse> SendFormAsync<TResponse>(object requestDto, MultipartFormDataContent formData, CancellationToken token = default) =>
-        SendFormAsync<TResponse>(ServiceClientUtils.GetHttpMethod(requestDto.GetType()) ?? HttpMethods.Post, requestDto.GetType().ToApiUrl(), formData, token);
+        SendFormAsync<TResponse>(ServiceClientUtils.GetHttpMethod(ServiceClientUtils.AssertRequestDto(requestDto).GetType()) ?? HttpMethods.Post, requestDto.GetType().ToApiUrl(), formData, token);
 }
 
 
