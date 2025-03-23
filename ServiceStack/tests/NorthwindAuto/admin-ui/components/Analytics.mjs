@@ -1,12 +1,12 @@
 import {computed, inject, onMounted, onUnmounted, ref, watch} from "vue"
 import {useClient, useFiles, useFormatters, useUtils, css} from "@servicestack/vue";
 import {ApiResult, apiValueFmt, humanify, mapGet,leftPart,pick} from "@servicestack/client"
-import {GetAnalyticsReports, AdminGetUser} from "dtos"
+import {GetAnalyticsReports, AdminGetUser, AdminQueryApiKeys} from "dtos"
 import {Chart, registerables} from 'chart.js'
 
 Chart.register(...registerables)
 
-const { humanifyMs, humanifyNumber } = useFormatters()
+const { humanifyMs, humanifyNumber, formatDate } = useFormatters()
 const { delay } = useUtils()
 
 const resultLimits = [5,10,25,50,100]
@@ -48,6 +48,17 @@ function getUserLabel(analytics,userIdOrName) {
         ? user.name ? `${user.name} (${substringWithEllipsis(userId,8)})` : `${userId}`
         : userIdOrName
 }
+function hiddenApiKey(apiKey) {
+    return apiKey.substring(0,3) + '***' + apiKey.substring(apiKey.length-3)
+}
+function getApiKeyLabel(analytics,apiKey) {
+    const label = hiddenApiKey(apiKey)
+    const info = apiKey && analytics.apiKeys[apiKey]
+    return info
+        ? info.name ? `${info.name} (${label})` : `${label}`
+        : label
+}
+
 function chartHeight(recordCount, minHeight = 150, heightPerRecord = 22) {
     // Validate input
     const count = Math.min(Math.max(1, recordCount), 100);
@@ -1049,6 +1060,9 @@ const ApiAnalytics = {
                 requests: sortedDetailRequests(props.analytics.apis[routes.op]?.apiKeys),
                 chart: opTopApiKeysChart,
                 refEl: refOpTopApiKeys,
+                formatY: function(ctx, value, index, values) {
+                    return hiddenApiKey(ctx.labels[index])
+                },
                 onClick: onClick(props.analytics, routes, 'apiKey'),
             })
             opTopIpsChart = createRequestsChart({
@@ -1377,6 +1391,9 @@ const UserAnalytics = {
                 requests: sortedDetailRequests(props.analytics.users[routes.userId]?.apiKeys),
                 chart: userTopApiKeysChart,
                 refEl: refUserTopApiKeys,
+                formatY: function(ctx, value, index, values) {
+                    return hiddenApiKey(ctx.labels[index])
+                },
                 onClick: onClick(props.analytics, routes, 'apiKey'),
             })
             userTopIpsChart = createRequestsChart({
@@ -1437,11 +1454,11 @@ const ApiKeyAnalytics = {
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select API Key"
-                          :match="(x, value) => getUserLabel(analytics,x.key).toLowerCase().includes(value.toLowerCase())"
+                          :match="(x, value) => getApiKeyLabel(analytics,x.key).toLowerCase().includes(value.toLowerCase())"
                           v-model="opEntry" :options="opEntries">
               <template #item="{ key, value }">
                 <div v-if="value" class="truncate flex justify-between mr-8">
-                  <span>{{ getUserLabel(analytics,key) }}</span>
+                  <span>{{ getApiKeyLabel(analytics,key) }}</span>
                   <span class="text-gray-500">({{ humanifyNumber(value.totalRequests) }})</span>
                 </div>
               </template>
@@ -1459,11 +1476,50 @@ const ApiKeyAnalytics = {
               <div class="flex justify-between">
                 <table class="text-sm">
                   <tr>
-                    <td>IP</td>
+                    <td>API Key</td>
                     <td class="pl-2">
-                      {{routes.apiKey}}
+                      <span @click="showApiKey=true" v-if="!showApiKey" class="border border-dashed hover:border-gray-500 px-1 rounded-sm cursor-pointer" title="Show full API Key">
+                        {{hiddenApiKey(routes.apiKey)}}
+                      </span>
+                      <span v-else>
+                        {{routes.apiKey}}
+                      </span>
                     </td>
                   </tr>
+                  <template v-if="apiKeyInfo">
+                    <tr>
+                      <td>Name</td>
+                      <td class="pl-2">
+                        <a :href="'./apikeys?edit=' + apiKeyInfo.id" class="text-indigo-700 hover:text-indigo-600">
+                          {{apiKeyInfo.name}} ({{apiKeyInfo.id}})
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Created</td>
+                      <td class="pl-2">
+                        {{formatDate(apiKeyInfo.createdDate)}}
+                      </td>
+                    </tr>
+                    <tr v-if="apiKeyInfo.userName">
+                      <td>User</td>
+                      <td class="pl-2">
+                        {{formatDate(apiKeyInfo.userName)}}
+                      </td>
+                    </tr>
+                    <tr v-if="apiKeyInfo.expiryDate">
+                      <td>Expires</td>
+                      <td class="pl-2">
+                        {{formatDate(apiKeyInfo.expiryDate)}}
+                      </td>
+                    </tr>
+                    <tr v-if="apiKeyInfo.cancelledDate">
+                      <td>Cancelled</td>
+                      <td class="pl-2">
+                        {{formatDate(apiKeyInfo.cancelledDate)}}
+                      </td>
+                    </tr>
+                  </template>
                   <tr>
                     <td>Total Requests</td>
                     <td class="pl-2">{{humanifyNumber(analytics.apiKeys[routes.apiKey].totalRequests)}}</td>
@@ -1500,7 +1556,7 @@ const ApiKeyAnalytics = {
           </div>
           <div class="lg:w-1/2">
             <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
-              <canvas ref="refApiKeysDurationRanges"></canvas>
+              <canvas ref="refApiKeyDurationRanges"></canvas>
             </div>
           </div>
         </div>
@@ -1516,14 +1572,14 @@ const ApiKeyAnalytics = {
                :class="Object.keys(analytics.apiKeys[routes.apiKey].users ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
             Top Users
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
-              <canvas ref="refApiKeyTopIps"></canvas>
+              <canvas ref="refApiKeyTopUsers"></canvas>
             </div>
           </div>
           <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].ips ?? {}).length"
                :class="Object.keys(analytics.apiKeys[routes.apiKey].ips ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
             Top IPs
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
-              <canvas ref="refApiKeyTopUsers"></canvas>
+              <canvas ref="refApiKeyTopIps"></canvas>
             </div>
           </div>
         </div>
@@ -1557,6 +1613,8 @@ const ApiKeyAnalytics = {
         const refApiKeyTopApis = ref(null)
         const refApiKeyTopIps = ref(null)
         const refApiKeyTopUsers = ref(null)
+        const apiKeyInfo = ref()
+        const showApiKey = ref(false)
 
         const limits = ref({
             apiKey: 50,
@@ -1606,7 +1664,7 @@ const ApiKeyAnalytics = {
         let apiKeyDurationRangesChart = null
 
         let apiKeyTopApisChart = null
-        let apiKeyTopApiKeysChart = null
+        let apiKeyTopIpsChart = null
         let apiKeyTopUsersChart = null
 
         onMounted(() => {
@@ -1629,6 +1687,9 @@ const ApiKeyAnalytics = {
                 requests: sortedSummaryRequests(props.analytics?.apiKeys,limits.value.apiKey),
                 chart: apiKeyRequestsChart,
                 refEl: refApiKeyRequests,
+                formatY: function(ctx, value, index, values) {
+                    return hiddenApiKey(ctx.labels[index])
+                },
                 onClick: onClick(props.analytics, routes, 'apiKey')
             })
         }
@@ -1639,6 +1700,14 @@ const ApiKeyAnalytics = {
         }
 
         function updateApiKey() {
+            apiKeyInfo.value = null
+            client.api(new AdminQueryApiKeys({ apiKey:routes.apiKey }))
+                .then(r => {
+                    if (r.succeeded) {
+                        apiKeyInfo.value = r.response?.results?.[0]
+                    }
+                })
+
             opEntries.value = Object.keys(props.analytics?.apiKeys ?? {})
                 .map(key => ({ key, value:props.analytics.apiKeys[key] }))
                 .sort((a,b) => b.value.totalRequests - a.value.totalRequests)
@@ -1660,11 +1729,11 @@ const ApiKeyAnalytics = {
                 },
                 onClick: onClick(props.analytics, routes, 'api'),
             })
-            apiKeyTopApiKeysChart = createRequestsChart({
-                requests: sortedDetailRequests(props.analytics.apiKeys[routes.apiKey]?.apiKeys),
-                chart: apiKeyTopApiKeysChart,
+            apiKeyTopIpsChart = createRequestsChart({
+                requests: sortedDetailRequests(props.analytics.apiKeys[routes.apiKey]?.ips),
+                chart: apiKeyTopIpsChart,
                 refEl: refApiKeyTopIps,
-                onClick: onClick(props.analytics, routes, 'apiKey'),
+                onClick: onClick(props.analytics, routes, 'ip'),
             })
             apiKeyTopUsersChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.apiKeys[routes.apiKey]?.users),
@@ -1705,6 +1774,7 @@ const ApiKeyAnalytics = {
             apiKeyLinks,
             opEntry,
             opEntries,
+            apiKeyInfo,
             resultLimits,
             refApiKeyRequests,
             refApiKeysDurations,
@@ -1714,9 +1784,12 @@ const ApiKeyAnalytics = {
             refApiKeyTopApis,
             refApiKeyTopIps,
             refApiKeyTopUsers,
-            getUserLabel,
+            getApiKeyLabel,
             chartHeight,
             humanifyNumber,
+            formatDate,
+            hiddenApiKey,
+            showApiKey,
         }
     }
 }
@@ -1954,6 +2027,9 @@ const IpAnalytics = {
                 requests: sortedDetailRequests(props.analytics.ips[routes.ip]?.apiKeys),
                 chart: ipTopApiKeysChart,
                 refEl: refIpTopApiKeys,
+                formatY: function(ctx, value, index, values) {
+                    return hiddenApiKey(ctx.labels[index])
+                },
                 onClick: onClick(props.analytics, routes, 'apiKey'),
             })
             ipTopUsersChart = createRequestsChart({
