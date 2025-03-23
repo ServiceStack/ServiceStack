@@ -78,18 +78,18 @@ public class AnalyticsReports
 {
     [DataMember(Order=1)] public long Id { get; set; } // Use last Id of RequestLog
     [DataMember(Order=2)] public DateTime Created { get; set; } // When it was created
-    [DataMember(Order=1)] public decimal Version { get; set; } // ServiceStack Version
-    [DataMember(Order=2)] public Dictionary<string, RequestSummary> Apis { get; set; }
-    [DataMember(Order=3)] public Dictionary<string, RequestSummary> Users { get; set; }
-    [DataMember(Order=4)] public Dictionary<string, RequestSummary> Tags { get; set; }
-    [DataMember(Order=5)] public Dictionary<string, RequestSummary> Status { get; set; }
-    [DataMember(Order=6)] public Dictionary<string, RequestSummary> Days { get; set; }
-    [DataMember(Order=7)] public Dictionary<string, RequestSummary> ApiKeys { get; set; }
-    [DataMember(Order=8)] public Dictionary<string, RequestSummary> Ips { get; set; }
-    [DataMember(Order=9)] public Dictionary<string, RequestSummary> Browsers { get; set; }
-    [DataMember(Order=10)] public Dictionary<string, RequestSummary> Devices { get; set; }
-    [DataMember(Order=11)] public Dictionary<string, RequestSummary> Bots { get; set; }
-    [DataMember(Order=12)] public Dictionary<string, long> Durations { get; set; }
+    [DataMember(Order=3)] public decimal Version { get; set; } // ServiceStack Version
+    [DataMember(Order=4)] public Dictionary<string, RequestSummary> Apis { get; set; }
+    [DataMember(Order=5)] public Dictionary<string, RequestSummary> Users { get; set; }
+    [DataMember(Order=6)] public Dictionary<string, RequestSummary> Tags { get; set; }
+    [DataMember(Order=7)] public Dictionary<string, RequestSummary> Status { get; set; }
+    [DataMember(Order=8)] public Dictionary<string, RequestSummary> Days { get; set; }
+    [DataMember(Order=9)] public Dictionary<string, RequestSummary> ApiKeys { get; set; }
+    [DataMember(Order=10)] public Dictionary<string, RequestSummary> Ips { get; set; }
+    [DataMember(Order=11)] public Dictionary<string, RequestSummary> Browsers { get; set; }
+    [DataMember(Order=12)] public Dictionary<string, RequestSummary> Devices { get; set; }
+    [DataMember(Order=13)] public Dictionary<string, RequestSummary> Bots { get; set; }
+    [DataMember(Order=14)] public Dictionary<string, long> Durations { get; set; }
 }
 
 public enum AnalyticsType
@@ -116,6 +116,9 @@ public class GetApiAnalyticsResponse
 {
     [DataMember(Order=1)]
     public Dictionary<string, long> Results { get; set; } = new();
+    
+    [DataMember(Order=2)]
+    public ResponseStatus ResponseStatus { get; set; }
 }
 
 [DataContract]
@@ -306,7 +309,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
 
         var results = request.Filter?.ToLower() switch
         {
-            "apis" or "api" => new AnalyticsReports { Apis = ret.Apis },
+            "apis" => new AnalyticsReports { Apis = ret.Apis },
             "users" => new AnalyticsReports { Users = ret.Users },
             "tags" => new AnalyticsReports { Tags = ret.Tags },
             "status" => new AnalyticsReports { Status = ret.Status },

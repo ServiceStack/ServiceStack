@@ -299,6 +299,59 @@ function createRequestsChart(opt) {
     })
 }
 
+function onClick(analytics, routes, type) {
+    //console.log('onClick', type)
+
+    if (type === "api") {
+        return function(e, elements, chart) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+            if (points.length) {
+                const firstPoint = points[0]
+                const op = chart.data.labels[firstPoint.index]
+                routes.to({ tab:'', op })
+            }
+        }
+    }
+    if (type === "user") {
+        return function(e, elements, chart) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+            if (points.length) {
+                const firstPoint = points[0]
+                const userId = chart.data.labels[firstPoint.index]
+                if (userId in analytics.users) {
+                    routes.to({ tab:'users', userId })
+                }
+            }
+        }
+    }
+    if (type === "ip") {
+        return function(e, elements, chart) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+            if (points.length) {
+                const firstPoint = points[0]
+                const ip = chart.data.labels[firstPoint.index]
+                if (ip in analytics.ips) {
+                    routes.to({ tab:'ips', ip })
+                }
+            }
+        }
+    }
+    if (type === "apiKey") {
+        return function(e, elements, chart) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+            if (points.length) {
+                const firstPoint = points[0]
+                const apiKey = chart.data.labels[firstPoint.index]
+                if (apiKey in analytics.apiKeys) {
+                    routes.to({ tab:'apiKeys', apiKey })
+                }
+            }
+        }
+    }
+
+    throw new Error(`Unknown type: ${type}`)
+}
+
 const numFmt = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -528,27 +581,6 @@ const ApiAnalytics = {
             }
             return []
         })
-
-        function onClickApi(e, elements, chart) {
-            //console.log('onClickApi', e)
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
-            if (points.length) {
-                const firstPoint = points[0]
-                const op = chart.data.labels[firstPoint.index]
-                routes.to({ tab:'', op })
-            }
-        }
-        function onClickUser(e, elements, chart) {
-            //console.log('onClickUser', e)
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
-            if (points.length) {
-                const firstPoint = points[0]
-                const userId = chart.data.labels[firstPoint.index]
-                if (userId in props.analytics.users) {
-                    routes.to({ tab:'users', userId })
-                }
-            }
-        }
 
         let userStatusCodesChart = null
         let browsersChart = null
@@ -943,7 +975,7 @@ const ApiAnalytics = {
                             }
                         }
                     },
-                    onClick: onClickApi
+                    onClick: onClick(props.analytics, routes, 'api')
                 }
             })
         }
@@ -985,10 +1017,10 @@ const ApiAnalytics = {
             createWeeklyRequestsChart()
             createTagsChart()
             apiRequestsChart = createRequestsChart({
-                requests:sortedSummaryRequests(props.analytics?.apis,limits.value.api), 
-                chart:apiRequestsChart, 
-                refEl:refApiRequests,
-                onClick:onClickApi
+                requests: sortedSummaryRequests(props.analytics?.apis,limits.value.api), 
+                chart: apiRequestsChart, 
+                refEl: refApiRequests,
+                onClick: onClick(props.analytics, routes, 'api')
             })
             createApiDurationsChart()
             apiDurationRangesChart = createDurationRangesChart(props.analytics.durations, apiDurationRangesChart, refApiDurationRanges)
@@ -1011,17 +1043,19 @@ const ApiAnalytics = {
                     const user = userId && props.analytics.users[userId]
                     return user?.name ?? substringWithEllipsis(userId,16)
                 },
-                onClick: onClickUser,
+                onClick: onClick(props.analytics, routes, 'user'),
             })
             opTopApiKeysChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.apis[routes.op]?.apiKeys),
                 chart: opTopApiKeysChart,
-                refEl: refOpTopApiKeys
+                refEl: refOpTopApiKeys,
+                onClick: onClick(props.analytics, routes, 'apiKey'),
             })
             opTopIpsChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.apis[routes.op]?.ips),
                 chart: opTopIpsChart,
-                refEl: refOpTopIps
+                refEl: refOpTopIps,
+                onClick: onClick(props.analytics, routes, 'ip'),
             })
         }
         
@@ -1040,7 +1074,11 @@ const ApiAnalytics = {
         })
         watch(() => [props.analytics, limits.value.api], () => {
             setTimeout(() => {
-                apiRequestsChart = createRequestsChart(sortedDetailRequests(props.analytics?.apis,limits.value.api), refApiRequests, apiRequestsChart, onClickApi)
+                apiRequestsChart = createRequestsChart(
+                    sortedDetailRequests(props.analytics?.apis,limits.value.api), 
+                    refApiRequests, 
+                    apiRequestsChart,
+                    onClick(props.analytics, routes, 'api'))
             }, 0)
         })
         watch(() => [props.analytics, limits.value.duration], () => {
@@ -1195,7 +1233,7 @@ const UserAnalytics = {
             <SelectInput id="apiLimit" label="" v-model="limits.user" :values="resultLimits" />
           </div>
         </div>
-        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.user ?? {}).length, limits.user)) + 'px'}">
+        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.users ?? {}).length, limits.user)) + 'px'}">
           <canvas ref="refUserRequests"></canvas>
         </div>
       </div>
@@ -1260,28 +1298,6 @@ const UserAnalytics = {
             return []
         })
 
-        function onClickUser(e, elements, chart) {
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
-            if (points.length) {
-                const firstPoint = points[0]
-                const userIdOrName = chart.data.labels[firstPoint.index]
-                const userId = userIdOrName in props.analytics.users ? userIdOrName : Object.keys(props.analytics.users)
-                    .find(key => props.analytics.users[key].name === userIdOrName)
-                if (userId && userId in props.analytics.users) {
-                    routes.to({ tab:'users', userId })
-                }
-            }
-        }
-        function onClickApi(e, elements, chart) {
-            //console.log('onClickApi', e)
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
-            if (points.length) {
-                const firstPoint = points[0]
-                const op = chart.data.labels[firstPoint.index]
-                routes.to({ tab:'', op })
-            }
-        }
-
         let userStatusCodesChart = null
         let userRequestsChart = null
         let userDurationRangesChart = null
@@ -1315,7 +1331,7 @@ const UserAnalytics = {
                     const user = userId && props.analytics.users[userId]
                     return user?.name ?? substringWithEllipsis(userId,16)
                 },
-                onClick: onClickUser,
+                onClick: onClick(props.analytics, routes, 'user'),
             })
         }
 
@@ -1355,17 +1371,19 @@ const UserAnalytics = {
                 formatY: function(ctx, value, index, values) {
                     return ctx.labels[index]
                 },
-                onClick: onClickApi,
+                onClick: onClick(props.analytics, routes, 'api'),
             })
             userTopApiKeysChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.users[routes.userId]?.apiKeys),
                 chart: userTopApiKeysChart,
-                refEl: refUserTopApiKeys
+                refEl: refUserTopApiKeys,
+                onClick: onClick(props.analytics, routes, 'apiKey'),
             })
             userTopIpsChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.users[routes.userId]?.ips),
                 chart: userTopIpsChart,
-                refEl: refUserTopIps
+                refEl: refUserTopIps,
+                onClick: onClick(props.analytics, routes, 'ip'),
             })
         }
 
@@ -1406,6 +1424,297 @@ const UserAnalytics = {
             refUserTopApis,
             refUserTopApiKeys,
             refUserTopIps,
+            getUserLabel,
+            chartHeight,
+            humanifyNumber,
+        }
+    }
+}
+
+
+const ApiKeyAnalytics = {
+    template:`
+      <div class="my-4 mx-auto max-w-lg">
+        <div class="flex">
+          <div class="flex-grow">
+            <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select API Key"
+                          :match="(x, value) => getUserLabel(analytics,x.key).toLowerCase().includes(value.toLowerCase())"
+                          v-model="opEntry" :options="opEntries">
+              <template #item="{ key, value }">
+                <div v-if="value" class="truncate flex justify-between mr-8">
+                  <span>{{ getUserLabel(analytics,key) }}</span>
+                  <span class="text-gray-500">({{ humanifyNumber(value.totalRequests) }})</span>
+                </div>
+              </template>
+            </Autocomplete>
+          </div>
+          <div class="relative ml-12 -mt-1">
+            <CloseButton v-if="routes.apiKey" @click="routes.to({ apiKey: undefined })" title="Close IP Address" />
+          </div>
+        </div>
+      </div>
+      <div v-if="routes.apiKey && apiKeyAnalytics && analytics.apiKeys?.[routes.apiKey]" class="mb-8 pb-8 relative border-b">
+        <div class="mb-2">
+          <div class="flex flex-wrap lg:flex-nowrap">
+            <div class="lg:w-1/2">
+              <div class="flex justify-between">
+                <table class="text-sm">
+                  <tr>
+                    <td>IP</td>
+                    <td class="pl-2">
+                      {{routes.apiKey}}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Total Requests</td>
+                    <td class="pl-2">{{humanifyNumber(analytics.apiKeys[routes.apiKey].totalRequests)}}</td>
+                  </tr>
+                </table>
+              </div>
+              <div class="ml-2">
+                <nav class="-mb-px flex space-x-4 flex-wrap">
+                  <a v-href="{ $page:'logging', apiKey:routes.apiKey, month:routes.month, $clear:true }" title="IP Address Request Logs"
+                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
+                    <svg class=" text-gray-400 group-hover:text-indigo-500 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13c0 1-.6 3-3 3m0 0H6c-1 0-3-.6-3-3v-2h12v2c0 2.4 2 3 3 3zM9 7h8m-8 4h4"></path>
+                    </svg>
+                    <span>All</span>
+                  </a>
+                  <a v-for="link in apiKeyLinks" :href="link.href" :title="link.label + ' Request Logs'"
+                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
+                    {{link.label}}
+                    <span class="ml-2 hidden rounded-full bg-gray-100 group-hover:bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 hover:text-indigo-600 md:inline-block">{{link.count}}</span>
+                  </a>
+                </nav>
+              </div>
+            </div>
+            <div class="lg:w-1/2">
+              <HtmlFormat :value="apiKeyAnalytics" />
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
+          <div class="lg:w-1/2">
+            <div class="bg-white rounded shadow p-4" style="height:300px">
+              <canvas ref="refIpStatusCodes"></canvas>
+            </div>
+          </div>
+          <div class="lg:w-1/2">
+            <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+              <canvas ref="refIpDurationRanges"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
+          <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].apis ?? {}).length"
+               :class="Object.keys(analytics.apiKeys[routes.apiKey].apis ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+            Top APIs
+            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
+              <canvas ref="refIpTopApis"></canvas>
+            </div>
+          </div>
+          <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].users ?? {}).length"
+               :class="Object.keys(analytics.apiKeys[routes.apiKey].users ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+            Top Users
+            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+              <canvas ref="refIpTopUsers"></canvas>
+            </div>
+          </div>
+          <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].ips ?? {}).length"
+               :class="Object.keys(analytics.apiKeys[routes.apiKey].ips ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+            Top IPs
+            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+              <canvas ref="refIpTopIps"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="mb-1 flex justify-between">
+          <div>
+            IP Requests
+          </div>
+          <div>
+            <SelectInput id="apiLimit" label="" v-model="limits.apiKey" :values="resultLimits" />
+          </div>
+        </div>
+        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apiKeys ?? {}).length, limits.apiKey)) + 'px'}">
+          <canvas ref="refIpRequests"></canvas>
+        </div>
+      </div>
+    `,
+    props: {
+        analytics: Object,
+    },
+    setup(props) {
+        const routes = inject('routes')
+        const refApiKeyRequests = ref(null)
+        const opEntry = ref()
+        const opEntries = ref([])
+        const refApiKeysDurations = ref(null)
+        const refApiKeysDurationRanges = ref(null)
+        const refApiKeyStatusCodes = ref(null)
+        const refApiKeyDurationRanges = ref(null)
+        const refApiKeyTopApis = ref(null)
+        const refApiKeyTopIps = ref(null)
+        const refApiKeyTopUsers = ref(null)
+
+        const limits = ref({
+            apiKey: 50,
+        })
+
+        const { formatBytes } = useFiles()
+        const apiKeyAnalytics = computed(() => {
+            const user = props.analytics?.apiKeys?.[routes.apiKey]
+            if (user) {
+                let ret = []
+                if (user.totalDuration) {
+                    ret.push({ name: 'Duration',
+                        Total: humanifyMs(round(user.totalDuration)),
+                        Min: humanifyMs(round(user.minDuration)),
+                        Max: humanifyMs(round(user.maxDuration)),
+                    })
+                }
+                if (user.totalRequestLength) {
+                    ret.push({ name: 'Request Body',
+                        Total: formatBytes(user.totalRequestLength),
+                        Min: formatBytes(user.minRequestLength),
+                        Max: formatBytes(user.maxRequestLength),
+                    })
+                }
+                return ret
+            }
+            return []
+        })
+        const apiKeyLinks = computed(() => {
+            const api = props.analytics?.apiKeys?.[routes.apiKey]
+            if (api) {
+                let linkBase = `./logging?apiKey=${routes.apiKey}`
+                if (routes.month) {
+                    linkBase += `&month=${routes.month}`
+                }
+                const ret = []
+                Object.entries(api.status).forEach(([status, count]) => {
+                    ret.push({ label:status, href:`${linkBase}&status=${status}`, count })
+                })
+                return ret
+            }
+            return []
+        })
+
+        let apiKeyStatusCodesChart = null
+        let apiKeyRequestsChart = null
+        let apiKeyDurationRangesChart = null
+
+        let apiKeyTopApisChart = null
+        let apiKeyTopApiKeysChart = null
+        let apiKeyTopUsersChart = null
+
+        onMounted(() => {
+            update()
+        })
+
+        onUnmounted(() => {
+            [
+                apiKeyStatusCodesChart,
+                apiKeyRequestsChart,
+                apiKeyDurationRangesChart,
+                apiKeyTopApisChart,
+                apiKeyTopApiKeysChart,
+                apiKeyTopUsersChart,
+            ].forEach(chart => chart?.destroy())
+        })
+
+        function createApiKeyRequestsChart() {
+            apiKeyRequestsChart = createRequestsChart({
+                requests: sortedSummaryRequests(props.analytics?.apiKeys,limits.value.apiKey),
+                chart: apiKeyRequestsChart,
+                refEl: refApiKeyRequests,
+                onClick: onClick(props.analytics, routes, 'apiKey')
+            })
+        }
+
+        function update() {
+            createApiKeyRequestsChart()
+            updateApiKey()
+        }
+
+        function updateApiKey() {
+            opEntries.value = Object.keys(props.analytics?.apiKeys ?? {})
+                .map(key => ({ key, value:props.analytics.apiKeys[key] }))
+                .sort((a,b) => b.value.totalRequests - a.value.totalRequests)
+            opEntry.value = routes.apiKey ? opEntries.value.find(x => x.key === routes.apiKey) : null
+
+            apiKeyStatusCodesChart = createStatusCodesChart({
+                requests: props.analytics.apiKeys[routes.apiKey]?.status,
+                chart: apiKeyStatusCodesChart,
+                refEl: refApiKeyStatusCodes,
+            })
+            apiKeyDurationRangesChart = createDurationRangesChart(props.analytics.apiKeys[routes.apiKey]?.durations, apiKeyDurationRangesChart, refApiKeyDurationRanges)
+
+            apiKeyTopApisChart = createRequestsChart({
+                requests: sortedDetailRequests(props.analytics.apiKeys[routes.apiKey]?.apis),
+                chart: apiKeyTopApisChart,
+                refEl: refApiKeyTopApis,
+                formatY: function(ctx, value, index, values) {
+                    return ctx.labels[index]
+                },
+                onClick: onClick(props.analytics, routes, 'api'),
+            })
+            apiKeyTopApiKeysChart = createRequestsChart({
+                requests: sortedDetailRequests(props.analytics.apiKeys[routes.apiKey]?.apiKeys),
+                chart: apiKeyTopApiKeysChart,
+                refEl: refApiKeyTopIps,
+                onClick: onClick(props.analytics, routes, 'apiKey'),
+            })
+            apiKeyTopUsersChart = createRequestsChart({
+                requests: sortedDetailRequests(props.analytics.apiKeys[routes.apiKey]?.users),
+                chart: apiKeyTopUsersChart,
+                refEl: refApiKeyTopUsers,
+                formatY: function(ctx, value, index, values) {
+                    const userId = ctx.labels[index]
+                    const user = userId && props.analytics.users[userId]
+                    return user?.name ?? substringWithEllipsis(userId,16)
+                },
+                onClick: onClick(props.analytics, routes, 'user'),
+            })
+        }
+
+        watch(() => [routes.month], update)
+        watch(() => [routes.apiKey], () => {
+            opEntry.value = routes.apiKey ? opEntries.value.find(x => x.key === routes.apiKey) : null
+            setTimeout(() => {
+                updateApiKey()
+            }, 0)
+        })
+        watch(() => [opEntry.value], () => {
+            const apiKey = opEntry.value?.key
+            if (apiKey !== routes.apiKey) {
+                routes.to({ apiKey })
+            }
+        })
+        watch(() => [props.analytics, limits.value.apiKey], () => {
+            setTimeout(() => {
+                createApiKeyRequestsChart()
+            }, 0)
+        })
+
+        return {
+            routes,
+            limits,
+            apiKeyAnalytics,
+            apiKeyLinks,
+            opEntry,
+            opEntries,
+            resultLimits,
+            refApiKeyRequests,
+            refApiKeysDurations,
+            refApiKeysDurationRanges,
+            refApiKeyStatusCodes,
+            refApiKeyDurationRanges,
+            refApiKeyTopApis,
+            refApiKeyTopIps,
+            refApiKeyTopUsers,
             getUserLabel,
             chartHeight,
             humanifyNumber,
@@ -1488,17 +1797,17 @@ const IpAnalytics = {
         </div>
         <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
           <div v-if="Object.keys(analytics.ips[routes.ip].apis ?? {}).length"
-               :class="Object.keys(analytics.ips[routes.ip].apiKeys ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+               :class="Object.keys(analytics.ips[routes.ip].apis ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
             Top APIs
             <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refIpTopApis"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.ips[routes.ip].ips ?? {}).length"
+          <div v-if="Object.keys(analytics.ips[routes.ip].users ?? {}).length"
                :class="Object.keys(analytics.ips[routes.ip].users ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
             Top Users
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
-              <canvas ref="refIpTopIps"></canvas>
+              <canvas ref="refIpTopUsers"></canvas>
             </div>
           </div>
           <div v-if="Object.keys(analytics.ips[routes.ip].apiKeys ?? {}).length"
@@ -1519,7 +1828,7 @@ const IpAnalytics = {
             <SelectInput id="apiLimit" label="" v-model="limits.ip" :values="resultLimits" />
           </div>
         </div>
-        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.user ?? {}).length, limits.ip)) + 'px'}">
+        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.ips ?? {}).length, limits.ip)) + 'px'}">
           <canvas ref="refIpRequests"></canvas>
         </div>
       </div>
@@ -1538,7 +1847,7 @@ const IpAnalytics = {
         const refIpDurationRanges = ref(null)
         const refIpTopApis = ref(null)
         const refIpTopApiKeys = ref(null)
-        const refIpTopIps = ref(null)
+        const refIpTopUsers = ref(null)
 
         const limits = ref({
             ip: 50,
@@ -1583,43 +1892,13 @@ const IpAnalytics = {
             return []
         })
 
-        function onClickIp(e, elements, chart) {
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
-            if (points.length) {
-                const firstPoint = points[0]
-                const ip = chart.data.labels[firstPoint.index]
-                routes.to({ tab:'ips', ip })
-            }
-        }
-        function onClickUser(e, elements, chart) {
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
-            if (points.length) {
-                const firstPoint = points[0]
-                const userIdOrName = chart.data.labels[firstPoint.index]
-                const userId = userIdOrName in props.analytics.users ? userIdOrName : Object.keys(props.analytics.users)
-                    .find(key => props.analytics.users[key].name === userIdOrName)
-                if (userId && userId in props.analytics.users) {
-                    routes.to({ tab:'users', userId })
-                }
-            }
-        }
-        function onClickApi(e, elements, chart) {
-            //console.log('onClickApi', e)
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
-            if (points.length) {
-                const firstPoint = points[0]
-                const op = chart.data.labels[firstPoint.index]
-                routes.to({ tab:'', op })
-            }
-        }
-
         let ipStatusCodesChart = null
         let ipRequestsChart = null
         let ipDurationRangesChart = null
 
         let ipTopApisChart = null
         let ipTopApiKeysChart = null
-        let ipTopIpsChart = null
+        let ipTopUsersChart = null
 
         onMounted(() => {
             update()
@@ -1632,7 +1911,7 @@ const IpAnalytics = {
                 ipDurationRangesChart,
                 ipTopApisChart,
                 ipTopApiKeysChart,
-                ipTopIpsChart,
+                ipTopUsersChart,
             ].forEach(chart => chart?.destroy())
         })
         
@@ -1641,7 +1920,7 @@ const IpAnalytics = {
                 requests: sortedSummaryRequests(props.analytics?.ips,limits.value.ip),
                 chart: ipRequestsChart,
                 refEl: refIpRequests,
-                onClick: onClickIp
+                onClick: onClick(props.analytics, routes, 'ip')
             })
         }
 
@@ -1670,17 +1949,24 @@ const IpAnalytics = {
                 formatY: function(ctx, value, index, values) {
                     return ctx.labels[index]
                 },
-                onClick: onClickApi,
+                onClick: onClick(props.analytics, routes, 'api'),
             })
             ipTopApiKeysChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.ips[routes.ip]?.apiKeys),
                 chart: ipTopApiKeysChart,
-                refEl: refIpTopApiKeys
+                refEl: refIpTopApiKeys,
+                onClick: onClick(props.analytics, routes, 'apiKey'),
             })
-            ipTopIpsChart = createRequestsChart({
-                requests: sortedDetailRequests(props.analytics.ips[routes.ip]?.ips),
-                chart: ipTopIpsChart,
-                refEl: refIpTopIps
+            ipTopUsersChart = createRequestsChart({
+                requests: sortedDetailRequests(props.analytics.ips[routes.ip]?.users),
+                chart: ipTopUsersChart,
+                refEl: refIpTopUsers,
+                formatY: function(ctx, value, index, values) {
+                    const userId = ctx.labels[index]
+                    const user = userId && props.analytics.users[userId]
+                    return user?.name ?? substringWithEllipsis(userId,16)
+                },
+                onClick: onClick(props.analytics, routes, 'user'),
             })
         }
 
@@ -1718,7 +2004,7 @@ const IpAnalytics = {
             refIpDurationRanges,
             refIpTopApis,
             refIpTopApiKeys,
-            refIpTopIps,
+            refIpTopUsers,
             getUserLabel,
             chartHeight,
             humanifyNumber,
@@ -1730,6 +2016,7 @@ export const Analytics = {
     components: {
         ApiAnalytics,
         UserAnalytics,
+        ApiKeyAnalytics,
         IpAnalytics,
     },
     template: `
@@ -1771,6 +2058,7 @@ export const Analytics = {
         </div>
         <div v-else-if="analytics">
           <UserAnalytics v-if="routes.tab === 'users'" :analytics="analytics"/>
+          <ApiKeyAnalytics v-else-if="routes.tab === 'apiKeys'" :analytics="analytics"/>
           <IpAnalytics v-else-if="routes.tab === 'ips'" :analytics="analytics"/>
           <ApiAnalytics v-else :analytics="analytics" />
         </div>

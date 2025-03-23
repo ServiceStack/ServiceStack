@@ -576,7 +576,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     var apiLog = ret.Apis.GetValueOrDefault(requestLog.Request ?? requestLog.OperationName);
                     if (apiLog != null)
                     {
-                        AddDetail(apiLog, requestLog, headers, Detail.Users | Detail.Status | Detail.ApiKeys | Detail.Ips | Detail.Durations);
+                        AddDetail(apiLog, requestLog, headers, Detail.Status | Detail.Users | Detail.ApiKeys | Detail.Ips | Detail.Durations);
                     }
                 }
 
@@ -591,7 +591,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                         {
                             userLog.Name = username;
                         }
-                        AddDetail(userLog, requestLog, headers, Detail.Apis | Detail.Status | Detail.ApiKeys | Detail.Ips | Detail.Durations);
+                        AddDetail(userLog, requestLog, headers, Detail.Status | Detail.Apis | Detail.ApiKeys | Detail.Ips | Detail.Durations);
                     }
                 }
 
@@ -614,7 +614,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                         {
                             apiKeyLog.Name = apiKeyName;
                         }
-                        AddDetail(apiKeyLog, requestLog, headers, Detail.Apis | Detail.Ips | Detail.Durations);
+                        AddDetail(apiKeyLog, requestLog, headers, Detail.Status | Detail.Apis | Detail.Users | Detail.Ips | Detail.Durations);
                     }
                 }
 
@@ -624,7 +624,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     var ipLog = ret.Ips.GetValueOrDefault(requestLog.IpAddress);
                     if (ipLog != null)
                     {
-                        AddDetail(ipLog, requestLog, headers, Detail.Users | Detail.Status | Detail.Durations | Detail.ApiKeys);
+                        AddDetail(ipLog, requestLog, headers, Detail.Status | Detail.Apis | Detail.Users | Detail.ApiKeys | Detail.Durations);
                     }
                 }
 
