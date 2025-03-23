@@ -395,7 +395,8 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         Users = 1 << 1,
         Status = 1 << 2,
         ApiKeys = 1 << 3,
-        Durations = 1 << 4,
+        Ips = 1 << 4,
+        Durations = 1 << 5,
     }
     
     public static string? GetApiKey(RequestLog log, Dictionary<string, string>? headers= null)
@@ -443,7 +444,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             Status = new(),
             Days = new(),
             ApiKeys = new(),
-            IpAddresses = new(),
+            Ips = new(),
             Browsers = new(),
             Devices = new(),
             Bots = new(),
@@ -490,6 +491,15 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         void AddDetail(RequestSummary summary, RequestLog log, Dictionary<string,string> headers, Detail details)
         {
+            if (details.HasFlag(Detail.Apis))
+            {
+                var op = log.Request ?? log.OperationName;
+                if (!string.IsNullOrEmpty(op))
+                {
+                    summary.Apis ??= new();
+                    summary.Apis[op] = summary.Apis.GetValueOrDefault(op) + 1;
+                }
+            }
             if (details.HasFlag(Detail.Users))
             {
                 if (log.UserAuthId != null)
@@ -510,6 +520,14 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 {
                     summary.ApiKeys ??= new();
                     summary.ApiKeys[apiKey] = summary.ApiKeys.GetValueOrDefault(apiKey) + 1;
+                }
+            }
+            if (details.HasFlag(Detail.Ips))
+            {
+                if (log.IpAddress != null)
+                {
+                    summary.Ips ??= new();
+                    summary.Ips[log.IpAddress] = summary.Ips.GetValueOrDefault(log.IpAddress) + 1;
                 }
             }
             if (details.HasFlag(Detail.Durations))
@@ -558,7 +576,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                     var apiLog = ret.Apis.GetValueOrDefault(requestLog.Request ?? requestLog.OperationName);
                     if (apiLog != null)
                     {
-                        AddDetail(apiLog, requestLog, headers, Detail.Users | Detail.Status | Detail.ApiKeys | Detail.Durations);
+                        AddDetail(apiLog, requestLog, headers, Detail.Users | Detail.Status | Detail.ApiKeys | Detail.Ips | Detail.Durations);
                     }
                 }
 
@@ -573,7 +591,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                         {
                             userLog.Name = username;
                         }
-                        AddDetail(userLog, requestLog, headers, Detail.Apis | Detail.Status | Detail.ApiKeys | Detail.Durations);
+                        AddDetail(userLog, requestLog, headers, Detail.Apis | Detail.Status | Detail.ApiKeys | Detail.Ips | Detail.Durations);
                     }
                 }
 
@@ -596,14 +614,14 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                         {
                             apiKeyLog.Name = apiKeyName;
                         }
-                        AddDetail(apiKeyLog, requestLog, headers, Detail.Apis | Detail.Durations);
+                        AddDetail(apiKeyLog, requestLog, headers, Detail.Apis | Detail.Ips | Detail.Durations);
                     }
                 }
 
                 if (requestLog.IpAddress != null)
                 {
-                    Add(ret.IpAddresses, requestLog.IpAddress, requestLog);
-                    var ipLog = ret.IpAddresses.GetValueOrDefault(requestLog.IpAddress);
+                    Add(ret.Ips, requestLog.IpAddress, requestLog);
+                    var ipLog = ret.Ips.GetValueOrDefault(requestLog.IpAddress);
                     if (ipLog != null)
                     {
                         AddDetail(ipLog, requestLog, headers, Detail.Users | Detail.Status | Detail.Durations | Detail.ApiKeys);
@@ -691,6 +709,10 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             foreach (var entry in results.Values)
             {
                 entry.TotalDuration = Math.Floor(entry.TotalDuration);
+                if (entry.Apis?.Count > config.DetailLimit)
+                {
+                    KeepOnly(entry.Apis, GetTopKeys(entry.Apis, config.DetailLimit));
+                }
                 if (entry.Users?.Count > config.DetailLimit)
                 {
                     KeepOnly(entry.Users, GetTopKeys(entry.Users, config.DetailLimit));
@@ -721,7 +743,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         Clean(ret.Status);
         Clean(ret.Days);
         Clean(ret.ApiKeys);
-        Clean(ret.IpAddresses);
+        Clean(ret.Ips);
         Clean(ret.Browsers);
         Clean(ret.Devices);
         Clean(ret.Bots);
@@ -760,7 +782,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             {
                 q.And("Headers LIKE {0}", $"%Bearer {value}%");
             }
-            else if (type == AnalyticsType.IpAddress)
+            else if (type == AnalyticsType.Ips)
             {
                 q.And(x => x.IpAddress == value);
             }

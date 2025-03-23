@@ -85,7 +85,7 @@ public class AnalyticsReports
     [DataMember(Order=5)] public Dictionary<string, RequestSummary> Status { get; set; }
     [DataMember(Order=6)] public Dictionary<string, RequestSummary> Days { get; set; }
     [DataMember(Order=7)] public Dictionary<string, RequestSummary> ApiKeys { get; set; }
-    [DataMember(Order=8)] public Dictionary<string, RequestSummary> IpAddresses { get; set; }
+    [DataMember(Order=8)] public Dictionary<string, RequestSummary> Ips { get; set; }
     [DataMember(Order=9)] public Dictionary<string, RequestSummary> Browsers { get; set; }
     [DataMember(Order=10)] public Dictionary<string, RequestSummary> Devices { get; set; }
     [DataMember(Order=11)] public Dictionary<string, RequestSummary> Bots { get; set; }
@@ -97,7 +97,7 @@ public enum AnalyticsType
     User,
     Day,
     ApiKey,
-    IpAddress,
+    Ips,
 }
 
 [DataContract]
@@ -133,9 +133,10 @@ public class RequestSummary
     [DataMember(Order=8)] public double MaxDuration { get; set; }
     [DataMember(Order=9)] public Dictionary<int,long> Status { get; set; }
     [DataMember(Order=10)] public Dictionary<string, long> Durations { get; set; }
-    [DataMember(Order=11)] public Dictionary<string, long> Users { get; set; }
-    [DataMember(Order=12)] public Dictionary<string, long> Ips { get; set; }
-    [DataMember(Order=13)] public Dictionary<string, long> ApiKeys { get; set; }
+    [DataMember(Order=11)] public Dictionary<string, long> Apis { get; set; }
+    [DataMember(Order=12)] public Dictionary<string, long> Users { get; set; }
+    [DataMember(Order=13)] public Dictionary<string, long> Ips { get; set; }
+    [DataMember(Order=14)] public Dictionary<string, long> ApiKeys { get; set; }
 }
 
 [DefaultRequest(typeof(RequestLogs))]
@@ -274,7 +275,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         }
 
         var ret = analytics.GetAnalyticsReports(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow);
-        foreach (var item in ret.IpAddresses.ToList())
+        foreach (var item in ret.Ips.ToList())
         {
             item.Value.Name = item.Key;
         }
@@ -311,7 +312,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             "status" => new AnalyticsReports { Status = ret.Status },
             "days" => new AnalyticsReports { Days = ret.Days },
             "apikeys" => new AnalyticsReports { ApiKeys = ret.ApiKeys },
-            "ipaddresses" or "ip" => new AnalyticsReports { IpAddresses = ret.IpAddresses },
+            "ips" => new AnalyticsReports { Ips = ret.Ips },
             "browsers" => new AnalyticsReports { Browsers = ret.Browsers, Bots = ret.Bots, Devices = ret.Devices },
             "durations" => new AnalyticsReports { Durations = ret.Durations },
             _ => ret,

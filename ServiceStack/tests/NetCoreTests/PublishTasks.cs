@@ -51,6 +51,8 @@ public class PublishTasks
             ["vue.mjs"] = "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js",
             ["chart.js"] = "https://cdn.jsdelivr.net/npm/chart.js/+esm",
             ["color.js"] = "https://cdn.jsdelivr.net/npm/@kurkle/color/+esm",
+            //https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chunks/helpers.segment.js
+            //["chart.plugin.datalabels.js"] = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2",
         };
 
         var jsDir = "../../src/ServiceStack/js";
