@@ -1532,14 +1532,14 @@ const ApiKeyAnalytics = {
       <div>
         <div class="mb-1 flex justify-between">
           <div>
-            IP Requests
+            API Keys
           </div>
           <div>
             <SelectInput id="apiLimit" label="" v-model="limits.apiKey" :values="resultLimits" />
           </div>
         </div>
         <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apiKeys ?? {}).length, limits.apiKey)) + 'px'}">
-          <canvas ref="refIpRequests"></canvas>
+          <canvas ref="refApiKeyRequests"></canvas>
         </div>
       </div>
     `,
