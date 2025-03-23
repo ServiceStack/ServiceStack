@@ -803,12 +803,13 @@ public partial class DeleteUserApiKey : IDelete, IReturn<EmptyResponse>
 public partial class AdminQueryApiKeys : IGet, IReturn<AdminApiKeysResponse>
 {
     [DataMember(Order = 1)] public int? Id { get; set; }
-    [DataMember(Order = 2)] public string Search { get; set; }
-    [DataMember(Order = 3)] public string UserId { get; set; }
-    [DataMember(Order = 4)] public string UserName { get; set; }
-    [DataMember(Order = 5)] public string OrderBy { get; set; }
-    [DataMember(Order = 6)] public int? Skip { get; set; }
-    [DataMember(Order = 7)] public int? Take { get; set; }
+    [DataMember(Order = 2)] public string ApiKey { get; set; }
+    [DataMember(Order = 3)] public string Search { get; set; }
+    [DataMember(Order = 4)] public string UserId { get; set; }
+    [DataMember(Order = 5)] public string UserName { get; set; }
+    [DataMember(Order = 6)] public string OrderBy { get; set; }
+    [DataMember(Order = 7)] public int? Skip { get; set; }
+    [DataMember(Order = 8)] public int? Take { get; set; }
 }
 [DataContract]
 public partial class AdminApiKeysResponse : IHasResponseStatus

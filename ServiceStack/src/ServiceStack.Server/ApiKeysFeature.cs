@@ -412,12 +412,25 @@ public class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory d
 
 public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
 {
+    private async Task<ApiKeysFeature> AssertRequiredRole()
+    {
+        var feature = AssertPlugin<ApiKeysFeature>();
+        await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AdminRole);
+        return feature;
+    }
+    
     public async Task<object> Get(AdminQueryApiKeys request)
     {
+        var feature = await AssertRequiredRole().ConfigAwait();
+
         using var db = dbFactory.OpenDbConnection();
         var q = db.From<ApiKeysFeature.ApiKey>();
         if (request.Id != null)
             q.Where(x => x.Id == request.Id);
+        if (!string.IsNullOrEmpty(request.ApiKey))
+        {
+            q.Where(x => x.Key == request.ApiKey);
+        }
         if (!string.IsNullOrEmpty(request.Search))
         {
             var search = request.Search.ToLower();
@@ -436,7 +449,6 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
             q.Take(request.Take.Value);
         
         var results = await db.SelectAsync(q);
-        var feature = HostContext.AssertPlugin<ApiKeysFeature>();
         var partialResults = results.ConvertAll(feature.ToPartialApiKey);
         foreach (var result in partialResults)
         {
@@ -451,7 +463,7 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
 
     public async Task<object> Any(AdminCreateApiKey request)
     {
-        var feature = HostContext.AssertPlugin<ApiKeysFeature>();
+        var feature = await AssertRequiredRole().ConfigAwait();
 
         var apiKey = request.ConvertTo<ApiKeysFeature.ApiKey>();
         await feature.InsertAllAsync(Db, [apiKey]);
@@ -464,6 +476,8 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
 
     public async Task<object> Any(AdminUpdateApiKey request)
     {
+        var feature = await AssertRequiredRole().ConfigAwait();
+
         var dict = request.ToObjectDictionary();
         var updateModel = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         var reset = (request.Reset ?? []).ToSet(StringComparer.OrdinalIgnoreCase);
@@ -486,7 +500,7 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
             await Db.UpdateAsync<ApiKeysFeature.ApiKey>(updateModel, x => x.Id == request.Id);
             if (updateModel.ContainsKey(nameof(ApiKeysFeature.ApiKey.CancelledDate)))
             {
-                HostContext.AssertPlugin<ApiKeysFeature>().RemoveValidApiKeyById(request.Id);
+                feature.RemoveValidApiKeyById(request.Id);
             }
         }
         
@@ -495,9 +509,9 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
 
     public async Task<object> Any(AdminDeleteApiKey request)
     {
-        await Db.DeleteByIdAsync<ApiKeysFeature.ApiKey>(request.Id);
+        var feature = await AssertRequiredRole().ConfigAwait();
 
-        var feature = HostContext.AssertPlugin<ApiKeysFeature>();
+        await Db.DeleteByIdAsync<ApiKeysFeature.ApiKey>(request.Id);
         feature.RemoveValidApiKeyById(request.Id.GetValueOrDefault());
         return new EmptyResponse();
     }
