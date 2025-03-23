@@ -1414,12 +1414,12 @@ const ApiKeyAnalytics = {
         <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
           <div class="lg:w-1/2">
             <div class="bg-white rounded shadow p-4" style="height:300px">
-              <canvas ref="refIpStatusCodes"></canvas>
+              <canvas ref="refApiKeyStatusCodes"></canvas>
             </div>
           </div>
           <div class="lg:w-1/2">
             <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
-              <canvas ref="refIpDurationRanges"></canvas>
+              <canvas ref="refApiKeysDurationRanges"></canvas>
             </div>
           </div>
         </div>
@@ -1428,21 +1428,21 @@ const ApiKeyAnalytics = {
                :class="Object.keys(analytics.apiKeys[routes.apiKey].apis ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
             Top APIs
             <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
-              <canvas ref="refIpTopApis"></canvas>
+              <canvas ref="refApiKeyTopApis"></canvas>
             </div>
           </div>
           <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].users ?? {}).length"
                :class="Object.keys(analytics.apiKeys[routes.apiKey].users ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
             Top Users
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
-              <canvas ref="refIpTopUsers"></canvas>
+              <canvas ref="refApiKeyTopIps"></canvas>
             </div>
           </div>
           <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].ips ?? {}).length"
                :class="Object.keys(analytics.apiKeys[routes.apiKey].ips ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
             Top IPs
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
-              <canvas ref="refIpTopIps"></canvas>
+              <canvas ref="refApiKeyTopUsers"></canvas>
             </div>
           </div>
         </div>
