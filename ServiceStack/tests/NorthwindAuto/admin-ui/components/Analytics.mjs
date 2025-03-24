@@ -1167,7 +1167,9 @@ const UserAnalytics = {
                     <tr>
                       <td>Name</td>
                       <td class="pl-2">
-                        {{ userInfo.result.DisplayName ?? (userInfo.result.FirstName ? (userInfo.FirstName + ' ' + userInfo.result.LastName) : userInfo.result.Email) }}
+                        <a :href="'./users?edit=' + userInfo.id" class="text-indigo-700 hover:text-indigo-600">
+                            {{ userInfo.result.DisplayName ?? (userInfo.result.FirstName ? (userInfo.result.FirstName + ' ' + userInfo.result.LastName) : userInfo.result.UserName) ?? userInfo.result.Email }}
+                        </a>
                       </td>
                     </tr>
                   </template>
