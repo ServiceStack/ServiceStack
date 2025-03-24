@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -86,7 +87,7 @@ public class ServiceStackAuthUserResolver(NetCoreIdentityAuthProvider authProvid
             {
                 var allUsers = await queryUsers.GetUserAuthsAsync(orderBy: nameof(IUserAuth.Id), token: token).ConfigAwait();
                 var allUsersMap = new Dictionary<int, IUserAuth>();
-                foreach (var user in allUsers)
+                foreach (var user in allUsers.Where(x => x != null))
                 {
                     allUsersMap[user.Id] = user;
                 }

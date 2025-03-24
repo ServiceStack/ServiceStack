@@ -295,7 +295,10 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
                 if (user.TryGetValue(nameof(IUserAuth.Id), out var oId)
                     && user.TryGetValue(nameof(IUserAuth.UserName), out var oUserName))
                 {
-                    allUsersMap[oId.ToString()!] = oUserName.ToString();
+                    if (oId != null && oUserName != null)
+                    {
+                        allUsersMap[oId.ToString()!] = oUserName.ToString();
+                    }
                 }
             }
             foreach (var user in ret.Users)
