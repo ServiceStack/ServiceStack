@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-16 22:20:18
+Date: 2025-03-25 01:11:52
 SwiftVersion: 6.0
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
@@ -454,21 +454,24 @@ public class AdminQueryApiKeys : IReturn, IGet, Codable
     public var id:Int?
 
     // @DataMember(Order=2)
-    public var search:String?
+    public var apiKey:String?
 
     // @DataMember(Order=3)
-    public var userId:String?
+    public var search:String?
 
     // @DataMember(Order=4)
-    public var userName:String?
+    public var userId:String?
 
     // @DataMember(Order=5)
-    public var orderBy:String?
+    public var userName:String?
 
     // @DataMember(Order=6)
-    public var skip:Int?
+    public var orderBy:String?
 
     // @DataMember(Order=7)
+    public var skip:Int?
+
+    // @DataMember(Order=8)
     public var take:Int?
 
     required public init(){}
@@ -797,43 +800,75 @@ public class RequestLogs : IReturn, IGet, Codable
     public var pathInfo:String?
 
     // @DataMember(Order=10)
-    public var ids:[Int]?
+    public var bearerToken:String?
 
     // @DataMember(Order=11)
-    public var beforeId:Int?
+    public var ids:[Int]?
 
     // @DataMember(Order=12)
-    public var afterId:Int?
+    public var beforeId:Int?
 
     // @DataMember(Order=13)
-    public var hasResponse:Bool?
+    public var afterId:Int?
 
     // @DataMember(Order=14)
-    public var withErrors:Bool?
+    public var hasResponse:Bool?
 
     // @DataMember(Order=15)
-    public var enableSessionTracking:Bool?
+    public var withErrors:Bool?
 
     // @DataMember(Order=16)
-    public var enableResponseTracking:Bool?
+    public var enableSessionTracking:Bool?
 
     // @DataMember(Order=17)
-    public var enableErrorTracking:Bool?
+    public var enableResponseTracking:Bool?
 
     // @DataMember(Order=18)
-    @TimeSpan public var durationLongerThan:TimeInterval?
+    public var enableErrorTracking:Bool?
 
     // @DataMember(Order=19)
-    @TimeSpan public var durationLessThan:TimeInterval?
+    @TimeSpan public var durationLongerThan:TimeInterval?
 
     // @DataMember(Order=20)
-    public var skip:Int?
+    @TimeSpan public var durationLessThan:TimeInterval?
 
     // @DataMember(Order=21)
-    public var take:Int?
+    public var skip:Int?
 
     // @DataMember(Order=22)
+    public var take:Int?
+
+    // @DataMember(Order=23)
     public var orderBy:String?
+
+    // @DataMember(Order=24)
+    public var month:Date?
+
+    required public init(){}
+}
+
+// @DataContract
+public class GetAnalyticsInfo : IReturn, IGet, Codable
+{
+    public typealias Return = GetAnalyticsInfoResponse
+
+    // @DataMember(Order=1)
+    public var month:Date?
+
+    // @DataMember(Order=2)
+    public var type:String?
+
+    // @DataMember(Order=3)
+    public var op:String?
+
+    // @DataMember(Order=4)
+    public var apiKey:String?
+
+    // @DataMember(Order=5)
+    public var userId:String?
+
+    // @DataMember(Order=6)
+    public var ip:String?
 
     required public init(){}
 }
@@ -848,6 +883,9 @@ public class GetAnalyticsReports : IReturn, IGet, Codable
 
     // @DataMember(Order=2)
     public var filter:String?
+
+    // @DataMember(Order=3)
+    public var force:Bool?
 
     required public init(){}
 }
@@ -1260,6 +1298,21 @@ public class RequestLogsResponse : Codable
 }
 
 // @DataContract
+public class GetAnalyticsInfoResponse : Codable
+{
+    // @DataMember(Order=1)
+    public var months:[String]?
+
+    // @DataMember(Order=2)
+    public var result:AnalyticsLogInfo?
+
+    // @DataMember(Order=3)
+    public var responseStatus:ResponseStatus?
+
+    required public init(){}
+}
+
+// @DataContract
 public class GetAnalyticsReportsResponse : Codable
 {
     // @DataMember(Order=1)
@@ -1279,6 +1332,9 @@ public class GetApiAnalyticsResponse : Codable
 {
     // @DataMember(Order=1)
     public var results:[String:Int]?
+
+    // @DataMember(Order=2)
+    public var responseStatus:ResponseStatus?
 
     required public init(){}
 }
@@ -1498,7 +1554,7 @@ public enum AnalyticsType : String, Codable
     case User
     case Day
     case ApiKey
-    case IpAddress
+    case Ips
 }
 
 public class ValidationRule : ValidateRule
@@ -1906,6 +1962,39 @@ public class RequestLogEntry : Codable
 }
 
 // @DataContract
+public class AnalyticsLogInfo : Codable
+{
+    // @DataMember(Order=1)
+    public var id:Int?
+
+    // @DataMember(Order=2)
+    public var browser:String?
+
+    // @DataMember(Order=3)
+    public var device:String?
+
+    // @DataMember(Order=4)
+    public var bot:String?
+
+    // @DataMember(Order=5)
+    public var op:String?
+
+    // @DataMember(Order=6)
+    public var userId:String?
+
+    // @DataMember(Order=7)
+    public var userName:String?
+
+    // @DataMember(Order=8)
+    public var apiKey:String?
+
+    // @DataMember(Order=9)
+    public var ip:String?
+
+    required public init(){}
+}
+
+// @DataContract
 public class AnalyticsReports : Codable
 {
     // @DataMember(Order=1)
@@ -1914,29 +2003,41 @@ public class AnalyticsReports : Codable
     // @DataMember(Order=2)
     public var created:Date?
 
-    // @DataMember(Order=2)
-    public var apis:[String:RequestSummary]?
-
     // @DataMember(Order=3)
-    public var users:[String:RequestSummary]?
+    public var version:Double?
 
     // @DataMember(Order=4)
-    public var tags:[String:RequestSummary]?
+    public var apis:[String:RequestSummary]?
 
     // @DataMember(Order=5)
-    public var status:[String:RequestSummary]?
+    public var users:[String:RequestSummary]?
 
     // @DataMember(Order=6)
-    public var days:[String:RequestSummary]?
+    public var tags:[String:RequestSummary]?
 
     // @DataMember(Order=7)
-    public var apiKeys:[String:RequestSummary]?
+    public var status:[String:RequestSummary]?
 
     // @DataMember(Order=8)
-    public var ipAddresses:[String:RequestSummary]?
+    public var days:[String:RequestSummary]?
 
     // @DataMember(Order=9)
-    public var durationRange:[String:Int]?
+    public var apiKeys:[String:RequestSummary]?
+
+    // @DataMember(Order=10)
+    public var ips:[String:RequestSummary]?
+
+    // @DataMember(Order=11)
+    public var browsers:[String:RequestSummary]?
+
+    // @DataMember(Order=12)
+    public var devices:[String:RequestSummary]?
+
+    // @DataMember(Order=13)
+    public var bots:[String:RequestSummary]?
+
+    // @DataMember(Order=14)
+    public var durations:[String:Int]?
 
     required public init(){}
 }
@@ -2428,16 +2529,43 @@ public class RequestSummary : Codable
     public var name:String?
 
     // @DataMember(Order=2)
-    public var requests:Int?
+    public var totalRequests:Int?
 
     // @DataMember(Order=3)
-    public var requestLength:Int?
+    public var totalRequestLength:Int?
 
     // @DataMember(Order=4)
-    public var duration:Double?
+    public var minRequestLength:Int?
 
     // @DataMember(Order=5)
+    public var maxRequestLength:Int?
+
+    // @DataMember(Order=6)
+    public var totalDuration:Double?
+
+    // @DataMember(Order=7)
+    public var minDuration:Double?
+
+    // @DataMember(Order=8)
+    public var maxDuration:Double?
+
+    // @DataMember(Order=9)
     public var status:[Int:Int]?
+
+    // @DataMember(Order=10)
+    public var durations:[String:Int]?
+
+    // @DataMember(Order=11)
+    public var apis:[String:Int]?
+
+    // @DataMember(Order=12)
+    public var users:[String:Int]?
+
+    // @DataMember(Order=13)
+    public var ips:[String:Int]?
+
+    // @DataMember(Order=14)
+    public var apiKeys:[String:Int]?
 
     required public init(){}
 }

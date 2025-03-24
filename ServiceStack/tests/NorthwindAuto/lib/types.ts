@@ -1,7 +1,7 @@
 import { ApiResult } from './client';
 
 /* Options:
-Date: 2025-03-19 17:28:18
+Date: 2025-03-25 01:11:52
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -368,7 +368,7 @@ export enum AnalyticsType
     User = 'User',
     Day = 'Day',
     ApiKey = 'ApiKey',
-    IpAddress = 'IpAddress',
+    Ips = 'Ips',
 }
 
 export class ValidateRule
@@ -1344,6 +1344,39 @@ export class RequestLogEntry
 }
 
 // @DataContract
+export class AnalyticsLogInfo
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public browser: string;
+
+    // @DataMember(Order=3)
+    public device: string;
+
+    // @DataMember(Order=4)
+    public bot: string;
+
+    // @DataMember(Order=5)
+    public op: string;
+
+    // @DataMember(Order=6)
+    public userId: string;
+
+    // @DataMember(Order=7)
+    public userName: string;
+
+    // @DataMember(Order=8)
+    public apiKey: string;
+
+    // @DataMember(Order=9)
+    public ip: string;
+
+    public constructor(init?: Partial<AnalyticsLogInfo>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
 export class RequestSummary
 {
     // @DataMember(Order=1)
@@ -1355,23 +1388,38 @@ export class RequestSummary
     // @DataMember(Order=3)
     public totalRequestLength: number;
 
-    // @DataMember(Order=3)
+    // @DataMember(Order=4)
     public minRequestLength: number;
 
-    // @DataMember(Order=3)
+    // @DataMember(Order=5)
     public maxRequestLength: number;
 
-    // @DataMember(Order=4)
+    // @DataMember(Order=6)
     public totalDuration: number;
 
-    // @DataMember(Order=4)
+    // @DataMember(Order=7)
     public minDuration: number;
 
-    // @DataMember(Order=4)
+    // @DataMember(Order=8)
     public maxDuration: number;
 
-    // @DataMember(Order=5)
+    // @DataMember(Order=9)
     public status: { [index:number]: number; };
+
+    // @DataMember(Order=10)
+    public durations: { [index:string]: number; };
+
+    // @DataMember(Order=11)
+    public apis: { [index:string]: number; };
+
+    // @DataMember(Order=12)
+    public users: { [index:string]: number; };
+
+    // @DataMember(Order=13)
+    public ips: { [index:string]: number; };
+
+    // @DataMember(Order=14)
+    public apiKeys: { [index:string]: number; };
 
     public constructor(init?: Partial<RequestSummary>) { (Object as any).assign(this, init); }
 }
@@ -1385,41 +1433,41 @@ export class AnalyticsReports
     // @DataMember(Order=2)
     public created: string;
 
-    // @DataMember(Order=1)
+    // @DataMember(Order=3)
     public version: number;
 
-    // @DataMember(Order=2)
+    // @DataMember(Order=4)
     public apis: { [index:string]: RequestSummary; };
 
-    // @DataMember(Order=3)
+    // @DataMember(Order=5)
     public users: { [index:string]: RequestSummary; };
 
-    // @DataMember(Order=4)
+    // @DataMember(Order=6)
     public tags: { [index:string]: RequestSummary; };
 
-    // @DataMember(Order=5)
+    // @DataMember(Order=7)
     public status: { [index:string]: RequestSummary; };
 
-    // @DataMember(Order=6)
+    // @DataMember(Order=8)
     public days: { [index:string]: RequestSummary; };
 
-    // @DataMember(Order=7)
+    // @DataMember(Order=9)
     public apiKeys: { [index:string]: RequestSummary; };
 
-    // @DataMember(Order=8)
-    public ipAddresses: { [index:string]: RequestSummary; };
-
-    // @DataMember(Order=9)
-    public browsers: { [index:string]: RequestSummary; };
-
     // @DataMember(Order=10)
-    public devices: { [index:string]: RequestSummary; };
+    public ips: { [index:string]: RequestSummary; };
 
     // @DataMember(Order=11)
-    public bots: { [index:string]: RequestSummary; };
+    public browsers: { [index:string]: RequestSummary; };
 
     // @DataMember(Order=12)
-    public durationRange: { [index:string]: number; };
+    public devices: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=13)
+    public bots: { [index:string]: RequestSummary; };
+
+    // @DataMember(Order=14)
+    public durations: { [index:string]: number; };
 
     public constructor(init?: Partial<AnalyticsReports>) { (Object as any).assign(this, init); }
 }
@@ -1792,6 +1840,21 @@ export class RequestLogsResponse
 }
 
 // @DataContract
+export class GetAnalyticsInfoResponse
+{
+    // @DataMember(Order=1)
+    public months: string[];
+
+    // @DataMember(Order=2)
+    public result: AnalyticsLogInfo;
+
+    // @DataMember(Order=3)
+    public responseStatus: ResponseStatus;
+
+    public constructor(init?: Partial<GetAnalyticsInfoResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
 export class GetAnalyticsReportsResponse
 {
     // @DataMember(Order=1)
@@ -1811,6 +1874,9 @@ export class GetApiAnalyticsResponse
 {
     // @DataMember(Order=1)
     public results: { [index:string]: number; };
+
+    // @DataMember(Order=2)
+    public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<GetApiAnalyticsResponse>) { (Object as any).assign(this, init); }
 }
@@ -2199,21 +2265,24 @@ export class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet
     public id?: number;
 
     // @DataMember(Order=2)
-    public search: string;
+    public apiKey: string;
 
     // @DataMember(Order=3)
-    public userId: string;
+    public search: string;
 
     // @DataMember(Order=4)
-    public userName: string;
+    public userId: string;
 
     // @DataMember(Order=5)
-    public orderBy: string;
+    public userName: string;
 
     // @DataMember(Order=6)
-    public skip?: number;
+    public orderBy: string;
 
     // @DataMember(Order=7)
+    public skip?: number;
+
+    // @DataMember(Order=8)
     public take?: number;
 
     public constructor(init?: Partial<AdminQueryApiKeys>) { (Object as any).assign(this, init); }
@@ -2480,51 +2549,81 @@ export class RequestLogs implements IReturn<RequestLogsResponse>, IGet
     public pathInfo: string;
 
     // @DataMember(Order=10)
-    public ids: number[];
+    public bearerToken: string;
 
     // @DataMember(Order=11)
-    public beforeId?: number;
+    public ids: number[];
 
     // @DataMember(Order=12)
-    public afterId?: number;
+    public beforeId?: number;
 
     // @DataMember(Order=13)
-    public hasResponse?: boolean;
+    public afterId?: number;
 
     // @DataMember(Order=14)
-    public withErrors?: boolean;
+    public hasResponse?: boolean;
 
     // @DataMember(Order=15)
-    public enableSessionTracking?: boolean;
+    public withErrors?: boolean;
 
     // @DataMember(Order=16)
-    public enableResponseTracking?: boolean;
+    public enableSessionTracking?: boolean;
 
     // @DataMember(Order=17)
-    public enableErrorTracking?: boolean;
+    public enableResponseTracking?: boolean;
 
     // @DataMember(Order=18)
-    public durationLongerThan?: string;
+    public enableErrorTracking?: boolean;
 
     // @DataMember(Order=19)
-    public durationLessThan?: string;
+    public durationLongerThan?: string;
 
     // @DataMember(Order=20)
-    public skip: number;
+    public durationLessThan?: string;
 
     // @DataMember(Order=21)
-    public take?: number;
+    public skip: number;
 
     // @DataMember(Order=22)
-    public orderBy: string;
+    public take?: number;
 
     // @DataMember(Order=23)
+    public orderBy: string;
+
+    // @DataMember(Order=24)
     public month?: string;
 
     public constructor(init?: Partial<RequestLogs>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'RequestLogs'; }
     public getMethod() { return 'GET'; }
     public createResponse() { return new RequestLogsResponse(); }
+}
+
+// @DataContract
+export class GetAnalyticsInfo implements IReturn<GetAnalyticsInfoResponse>, IGet
+{
+    // @DataMember(Order=1)
+    public month?: string;
+
+    // @DataMember(Order=2)
+    public type: string;
+
+    // @DataMember(Order=3)
+    public op: string;
+
+    // @DataMember(Order=4)
+    public apiKey: string;
+
+    // @DataMember(Order=5)
+    public userId: string;
+
+    // @DataMember(Order=6)
+    public ip: string;
+
+    public constructor(init?: Partial<GetAnalyticsInfo>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'GetAnalyticsInfo'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new GetAnalyticsInfoResponse(); }
 }
 
 // @DataContract
@@ -2535,6 +2634,9 @@ export class GetAnalyticsReports implements IReturn<GetAnalyticsReportsResponse>
 
     // @DataMember(Order=2)
     public filter: string;
+
+    // @DataMember(Order=3)
+    public force?: boolean;
 
     public constructor(init?: Partial<GetAnalyticsReports>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'GetAnalyticsReports'; }

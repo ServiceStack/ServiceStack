@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-16 22:20:18
+Date: 2025-03-25 01:11:52
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -514,25 +514,30 @@ public class dtos
         public Integer id = null;
 
         @DataMember(Order=2)
-        public String search = null;
+        public String apiKey = null;
 
         @DataMember(Order=3)
-        public String userId = null;
+        public String search = null;
 
         @DataMember(Order=4)
-        public String userName = null;
+        public String userId = null;
 
         @DataMember(Order=5)
-        public String orderBy = null;
+        public String userName = null;
 
         @DataMember(Order=6)
-        public Integer skip = null;
+        public String orderBy = null;
 
         @DataMember(Order=7)
+        public Integer skip = null;
+
+        @DataMember(Order=8)
         public Integer take = null;
         
         public Integer getId() { return id; }
         public AdminQueryApiKeys setId(Integer value) { this.id = value; return this; }
+        public String getApiKey() { return apiKey; }
+        public AdminQueryApiKeys setApiKey(String value) { this.apiKey = value; return this; }
         public String getSearch() { return search; }
         public AdminQueryApiKeys setSearch(String value) { this.search = value; return this; }
         public String getUserId() { return userId; }
@@ -867,43 +872,49 @@ public class dtos
         public String pathInfo = null;
 
         @DataMember(Order=10)
-        public ArrayList<Long> ids = null;
+        public String bearerToken = null;
 
         @DataMember(Order=11)
-        public Integer beforeId = null;
+        public ArrayList<Long> ids = null;
 
         @DataMember(Order=12)
-        public Integer afterId = null;
+        public Integer beforeId = null;
 
         @DataMember(Order=13)
-        public Boolean hasResponse = null;
+        public Integer afterId = null;
 
         @DataMember(Order=14)
-        public Boolean withErrors = null;
+        public Boolean hasResponse = null;
 
         @DataMember(Order=15)
-        public Boolean enableSessionTracking = null;
+        public Boolean withErrors = null;
 
         @DataMember(Order=16)
-        public Boolean enableResponseTracking = null;
+        public Boolean enableSessionTracking = null;
 
         @DataMember(Order=17)
-        public Boolean enableErrorTracking = null;
+        public Boolean enableResponseTracking = null;
 
         @DataMember(Order=18)
-        public TimeSpan durationLongerThan = null;
+        public Boolean enableErrorTracking = null;
 
         @DataMember(Order=19)
-        public TimeSpan durationLessThan = null;
+        public TimeSpan durationLongerThan = null;
 
         @DataMember(Order=20)
-        public Integer skip = null;
+        public TimeSpan durationLessThan = null;
 
         @DataMember(Order=21)
-        public Integer take = null;
+        public Integer skip = null;
 
         @DataMember(Order=22)
+        public Integer take = null;
+
+        @DataMember(Order=23)
         public String orderBy = null;
+
+        @DataMember(Order=24)
+        public Date month = null;
         
         public Integer getBeforeSecs() { return beforeSecs; }
         public RequestLogs setBeforeSecs(Integer value) { this.beforeSecs = value; return this; }
@@ -923,6 +934,8 @@ public class dtos
         public RequestLogs setReferer(String value) { this.referer = value; return this; }
         public String getPathInfo() { return pathInfo; }
         public RequestLogs setPathInfo(String value) { this.pathInfo = value; return this; }
+        public String getBearerToken() { return bearerToken; }
+        public RequestLogs setBearerToken(String value) { this.bearerToken = value; return this; }
         public ArrayList<Long> getIds() { return ids; }
         public RequestLogs setIds(ArrayList<Long> value) { this.ids = value; return this; }
         public Integer getBeforeId() { return beforeId; }
@@ -949,7 +962,46 @@ public class dtos
         public RequestLogs setTake(Integer value) { this.take = value; return this; }
         public String getOrderBy() { return orderBy; }
         public RequestLogs setOrderBy(String value) { this.orderBy = value; return this; }
+        public Date getMonth() { return month; }
+        public RequestLogs setMonth(Date value) { this.month = value; return this; }
         private static Object responseType = RequestLogsResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class GetAnalyticsInfo implements IReturn<GetAnalyticsInfoResponse>, IGet
+    {
+        @DataMember(Order=1)
+        public Date month = null;
+
+        @DataMember(Order=2)
+        public String type = null;
+
+        @DataMember(Order=3)
+        public String op = null;
+
+        @DataMember(Order=4)
+        public String apiKey = null;
+
+        @DataMember(Order=5)
+        public String userId = null;
+
+        @DataMember(Order=6)
+        public String ip = null;
+        
+        public Date getMonth() { return month; }
+        public GetAnalyticsInfo setMonth(Date value) { this.month = value; return this; }
+        public String getType() { return type; }
+        public GetAnalyticsInfo setType(String value) { this.type = value; return this; }
+        public String getOp() { return op; }
+        public GetAnalyticsInfo setOp(String value) { this.op = value; return this; }
+        public String getApiKey() { return apiKey; }
+        public GetAnalyticsInfo setApiKey(String value) { this.apiKey = value; return this; }
+        public String getUserId() { return userId; }
+        public GetAnalyticsInfo setUserId(String value) { this.userId = value; return this; }
+        public String getIp() { return ip; }
+        public GetAnalyticsInfo setIp(String value) { this.ip = value; return this; }
+        private static Object responseType = GetAnalyticsInfoResponse.class;
         public Object getResponseType() { return responseType; }
     }
 
@@ -961,11 +1013,16 @@ public class dtos
 
         @DataMember(Order=2)
         public String filter = null;
+
+        @DataMember(Order=3)
+        public Boolean force = null;
         
         public Date getMonth() { return month; }
         public GetAnalyticsReports setMonth(Date value) { this.month = value; return this; }
         public String getFilter() { return filter; }
         public GetAnalyticsReports setFilter(String value) { this.filter = value; return this; }
+        public Boolean isForce() { return force; }
+        public GetAnalyticsReports setForce(Boolean value) { this.force = value; return this; }
         private static Object responseType = GetAnalyticsReportsResponse.class;
         public Object getResponseType() { return responseType; }
     }
@@ -1628,6 +1685,26 @@ public class dtos
     }
 
     @DataContract
+    public static class GetAnalyticsInfoResponse
+    {
+        @DataMember(Order=1)
+        public ArrayList<String> months = null;
+
+        @DataMember(Order=2)
+        public AnalyticsLogInfo result = null;
+
+        @DataMember(Order=3)
+        public ResponseStatus responseStatus = null;
+        
+        public ArrayList<String> getMonths() { return months; }
+        public GetAnalyticsInfoResponse setMonths(ArrayList<String> value) { this.months = value; return this; }
+        public AnalyticsLogInfo getResult() { return result; }
+        public GetAnalyticsInfoResponse setResult(AnalyticsLogInfo value) { this.result = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public GetAnalyticsInfoResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    @DataContract
     public static class GetAnalyticsReportsResponse
     {
         @DataMember(Order=1)
@@ -1652,9 +1729,14 @@ public class dtos
     {
         @DataMember(Order=1)
         public HashMap<String,Long> results = null;
+
+        @DataMember(Order=2)
+        public ResponseStatus responseStatus = null;
         
         public HashMap<String,Long> getResults() { return results; }
         public GetApiAnalyticsResponse setResults(HashMap<String,Long> value) { this.results = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public GetApiAnalyticsResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
 
     @DataContract
@@ -2000,7 +2082,7 @@ public class dtos
         User,
         Day,
         ApiKey,
-        IpAddress;
+        Ips;
     }
 
     public static class ValidationRule extends ValidateRule
@@ -2748,42 +2830,106 @@ public class dtos
     }
 
     @DataContract
+    public static class AnalyticsLogInfo
+    {
+        @DataMember(Order=1)
+        public Long id = null;
+
+        @DataMember(Order=2)
+        public String browser = null;
+
+        @DataMember(Order=3)
+        public String device = null;
+
+        @DataMember(Order=4)
+        public String bot = null;
+
+        @DataMember(Order=5)
+        public String op = null;
+
+        @DataMember(Order=6)
+        public String userId = null;
+
+        @DataMember(Order=7)
+        public String userName = null;
+
+        @DataMember(Order=8)
+        public String apiKey = null;
+
+        @DataMember(Order=9)
+        public String ip = null;
+        
+        public Long getId() { return id; }
+        public AnalyticsLogInfo setId(Long value) { this.id = value; return this; }
+        public String getBrowser() { return browser; }
+        public AnalyticsLogInfo setBrowser(String value) { this.browser = value; return this; }
+        public String getDevice() { return device; }
+        public AnalyticsLogInfo setDevice(String value) { this.device = value; return this; }
+        public String getBot() { return bot; }
+        public AnalyticsLogInfo setBot(String value) { this.bot = value; return this; }
+        public String getOp() { return op; }
+        public AnalyticsLogInfo setOp(String value) { this.op = value; return this; }
+        public String getUserId() { return userId; }
+        public AnalyticsLogInfo setUserId(String value) { this.userId = value; return this; }
+        public String getUserName() { return userName; }
+        public AnalyticsLogInfo setUserName(String value) { this.userName = value; return this; }
+        public String getApiKey() { return apiKey; }
+        public AnalyticsLogInfo setApiKey(String value) { this.apiKey = value; return this; }
+        public String getIp() { return ip; }
+        public AnalyticsLogInfo setIp(String value) { this.ip = value; return this; }
+    }
+
+    @DataContract
     public static class AnalyticsReports
     {
         @DataMember(Order=1)
-        public Integer id = null;
+        public Long id = null;
 
         @DataMember(Order=2)
         public Date created = null;
 
-        @DataMember(Order=2)
-        public HashMap<String,RequestSummary> apis = null;
-
         @DataMember(Order=3)
-        public HashMap<String,RequestSummary> users = null;
+        public BigDecimal version = null;
 
         @DataMember(Order=4)
-        public HashMap<String,RequestSummary> tags = null;
+        public HashMap<String,RequestSummary> apis = null;
 
         @DataMember(Order=5)
-        public HashMap<String,RequestSummary> status = null;
+        public HashMap<String,RequestSummary> users = null;
 
         @DataMember(Order=6)
-        public HashMap<String,RequestSummary> days = null;
+        public HashMap<String,RequestSummary> tags = null;
 
         @DataMember(Order=7)
-        public HashMap<String,RequestSummary> apiKeys = null;
+        public HashMap<String,RequestSummary> status = null;
 
         @DataMember(Order=8)
-        public HashMap<String,RequestSummary> ipAddresses = null;
+        public HashMap<String,RequestSummary> days = null;
 
         @DataMember(Order=9)
-        public HashMap<String,Long> durationRange = null;
+        public HashMap<String,RequestSummary> apiKeys = null;
+
+        @DataMember(Order=10)
+        public HashMap<String,RequestSummary> ips = null;
+
+        @DataMember(Order=11)
+        public HashMap<String,RequestSummary> browsers = null;
+
+        @DataMember(Order=12)
+        public HashMap<String,RequestSummary> devices = null;
+
+        @DataMember(Order=13)
+        public HashMap<String,RequestSummary> bots = null;
+
+        @DataMember(Order=14)
+        public HashMap<String,Long> durations = null;
         
-        public Integer getId() { return id; }
-        public AnalyticsReports setId(Integer value) { this.id = value; return this; }
+        public Long getId() { return id; }
+        public AnalyticsReports setId(Long value) { this.id = value; return this; }
         public Date getCreated() { return created; }
         public AnalyticsReports setCreated(Date value) { this.created = value; return this; }
+        public BigDecimal getVersion() { return version; }
+        public AnalyticsReports setVersion(BigDecimal value) { this.version = value; return this; }
         public HashMap<String,RequestSummary> getApis() { return apis; }
         public AnalyticsReports setApis(HashMap<String,RequestSummary> value) { this.apis = value; return this; }
         public HashMap<String,RequestSummary> getUsers() { return users; }
@@ -2796,10 +2942,16 @@ public class dtos
         public AnalyticsReports setDays(HashMap<String,RequestSummary> value) { this.days = value; return this; }
         public HashMap<String,RequestSummary> getApiKeys() { return apiKeys; }
         public AnalyticsReports setApiKeys(HashMap<String,RequestSummary> value) { this.apiKeys = value; return this; }
-        public HashMap<String,RequestSummary> getIpAddresses() { return ipAddresses; }
-        public AnalyticsReports setIpAddresses(HashMap<String,RequestSummary> value) { this.ipAddresses = value; return this; }
-        public HashMap<String,Long> getDurationRange() { return durationRange; }
-        public AnalyticsReports setDurationRange(HashMap<String,Long> value) { this.durationRange = value; return this; }
+        public HashMap<String,RequestSummary> getIps() { return ips; }
+        public AnalyticsReports setIps(HashMap<String,RequestSummary> value) { this.ips = value; return this; }
+        public HashMap<String,RequestSummary> getBrowsers() { return browsers; }
+        public AnalyticsReports setBrowsers(HashMap<String,RequestSummary> value) { this.browsers = value; return this; }
+        public HashMap<String,RequestSummary> getDevices() { return devices; }
+        public AnalyticsReports setDevices(HashMap<String,RequestSummary> value) { this.devices = value; return this; }
+        public HashMap<String,RequestSummary> getBots() { return bots; }
+        public AnalyticsReports setBots(HashMap<String,RequestSummary> value) { this.bots = value; return this; }
+        public HashMap<String,Long> getDurations() { return durations; }
+        public AnalyticsReports setDurations(HashMap<String,Long> value) { this.durations = value; return this; }
     }
 
     @DataContract
@@ -3886,27 +4038,72 @@ public class dtos
         public String name = null;
 
         @DataMember(Order=2)
-        public Long requests = null;
+        public Long totalRequests = null;
 
         @DataMember(Order=3)
-        public Long requestLength = null;
+        public Long totalRequestLength = null;
 
         @DataMember(Order=4)
-        public Double duration = null;
+        public Long minRequestLength = null;
 
         @DataMember(Order=5)
+        public Long maxRequestLength = null;
+
+        @DataMember(Order=6)
+        public Double totalDuration = null;
+
+        @DataMember(Order=7)
+        public Double minDuration = null;
+
+        @DataMember(Order=8)
+        public Double maxDuration = null;
+
+        @DataMember(Order=9)
         public HashMap<Integer,Long> status = null;
+
+        @DataMember(Order=10)
+        public HashMap<String,Long> durations = null;
+
+        @DataMember(Order=11)
+        public HashMap<String,Long> apis = null;
+
+        @DataMember(Order=12)
+        public HashMap<String,Long> users = null;
+
+        @DataMember(Order=13)
+        public HashMap<String,Long> ips = null;
+
+        @DataMember(Order=14)
+        public HashMap<String,Long> apiKeys = null;
         
         public String getName() { return name; }
         public RequestSummary setName(String value) { this.name = value; return this; }
-        public Long getRequests() { return requests; }
-        public RequestSummary setRequests(Long value) { this.requests = value; return this; }
-        public Long getRequestLength() { return requestLength; }
-        public RequestSummary setRequestLength(Long value) { this.requestLength = value; return this; }
-        public Double getDuration() { return duration; }
-        public RequestSummary setDuration(Double value) { this.duration = value; return this; }
+        public Long getTotalRequests() { return totalRequests; }
+        public RequestSummary setTotalRequests(Long value) { this.totalRequests = value; return this; }
+        public Long getTotalRequestLength() { return totalRequestLength; }
+        public RequestSummary setTotalRequestLength(Long value) { this.totalRequestLength = value; return this; }
+        public Long getMinRequestLength() { return minRequestLength; }
+        public RequestSummary setMinRequestLength(Long value) { this.minRequestLength = value; return this; }
+        public Long getMaxRequestLength() { return maxRequestLength; }
+        public RequestSummary setMaxRequestLength(Long value) { this.maxRequestLength = value; return this; }
+        public Double getTotalDuration() { return totalDuration; }
+        public RequestSummary setTotalDuration(Double value) { this.totalDuration = value; return this; }
+        public Double getMinDuration() { return minDuration; }
+        public RequestSummary setMinDuration(Double value) { this.minDuration = value; return this; }
+        public Double getMaxDuration() { return maxDuration; }
+        public RequestSummary setMaxDuration(Double value) { this.maxDuration = value; return this; }
         public HashMap<Integer,Long> getStatus() { return status; }
         public RequestSummary setStatus(HashMap<Integer,Long> value) { this.status = value; return this; }
+        public HashMap<String,Long> getDurations() { return durations; }
+        public RequestSummary setDurations(HashMap<String,Long> value) { this.durations = value; return this; }
+        public HashMap<String,Long> getApis() { return apis; }
+        public RequestSummary setApis(HashMap<String,Long> value) { this.apis = value; return this; }
+        public HashMap<String,Long> getUsers() { return users; }
+        public RequestSummary setUsers(HashMap<String,Long> value) { this.users = value; return this; }
+        public HashMap<String,Long> getIps() { return ips; }
+        public RequestSummary setIps(HashMap<String,Long> value) { this.ips = value; return this; }
+        public HashMap<String,Long> getApiKeys() { return apiKeys; }
+        public RequestSummary setApiKeys(HashMap<String,Long> value) { this.apiKeys = value; return this; }
     }
 
     public static class ApiCss

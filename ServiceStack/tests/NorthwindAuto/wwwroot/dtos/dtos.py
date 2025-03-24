@@ -1,5 +1,5 @@
 """ Options:
-Date: 2025-03-16 22:20:18
+Date: 2025-03-25 01:11:52
 Version: 8.61
 Tip: To override a DTO option, remove "#" prefix before updating
 BaseUrl: http://localhost:20000
@@ -229,7 +229,7 @@ class AnalyticsType(str, Enum):
     USER = 'User'
     DAY = 'Day'
     API_KEY = 'ApiKey'
-    IP_ADDRESS = 'IpAddress'
+    IPS = 'Ips'
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -1067,12 +1067,35 @@ class RequestLogEntry:
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
+class AnalyticsLogInfo:
+    id: int = 0
+    browser: Optional[str] = None
+    device: Optional[str] = None
+    bot: Optional[str] = None
+    op: Optional[str] = None
+    user_id: Optional[str] = None
+    user_name: Optional[str] = None
+    api_key: Optional[str] = None
+    ip: Optional[str] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
 class RequestSummary:
     name: Optional[str] = None
-    requests: int = 0
-    request_length: int = 0
-    duration: float = 0.0
+    total_requests: int = 0
+    total_request_length: int = 0
+    min_request_length: int = 0
+    max_request_length: int = 0
+    total_duration: float = 0.0
+    min_duration: float = 0.0
+    max_duration: float = 0.0
     status: Optional[Dict[int, int]] = None
+    durations: Optional[Dict[str, int]] = None
+    apis: Optional[Dict[str, int]] = None
+    users: Optional[Dict[str, int]] = None
+    ips: Optional[Dict[str, int]] = None
+    api_keys: Optional[Dict[str, int]] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -1080,14 +1103,18 @@ class RequestSummary:
 class AnalyticsReports:
     id: int = 0
     created: datetime.datetime = datetime.datetime(1, 1, 1)
+    version: Decimal = decimal.Decimal(0)
     apis: Optional[Dict[str, RequestSummary]] = None
     users: Optional[Dict[str, RequestSummary]] = None
     tags: Optional[Dict[str, RequestSummary]] = None
     status: Optional[Dict[str, RequestSummary]] = None
     days: Optional[Dict[str, RequestSummary]] = None
     api_keys: Optional[Dict[str, RequestSummary]] = None
-    ip_addresses: Optional[Dict[str, RequestSummary]] = None
-    duration_range: Optional[Dict[str, int]] = None
+    ips: Optional[Dict[str, RequestSummary]] = None
+    browsers: Optional[Dict[str, RequestSummary]] = None
+    devices: Optional[Dict[str, RequestSummary]] = None
+    bots: Optional[Dict[str, RequestSummary]] = None
+    durations: Optional[Dict[str, int]] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -1266,6 +1293,14 @@ class RequestLogsResponse:
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
+class GetAnalyticsInfoResponse:
+    months: Optional[List[str]] = None
+    result: Optional[AnalyticsLogInfo] = None
+    response_status: Optional[ResponseStatus] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
 class GetAnalyticsReportsResponse:
     results: Optional[AnalyticsReports] = None
     months: Optional[List[str]] = None
@@ -1276,6 +1311,7 @@ class GetAnalyticsReportsResponse:
 @dataclass
 class GetApiAnalyticsResponse:
     results: Optional[Dict[str, int]] = None
+    response_status: Optional[ResponseStatus] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -1434,6 +1470,7 @@ class ExecuteCommand(IReturn[ExecuteCommandResponse], IPost):
 @dataclass
 class AdminQueryApiKeys(IReturn[AdminApiKeysResponse], IGet):
     id: Optional[int] = None
+    api_key: Optional[str] = None
     search: Optional[str] = None
     user_id: Optional[str] = None
     user_name: Optional[str] = None
@@ -1575,6 +1612,7 @@ class RequestLogs(IReturn[RequestLogsResponse], IGet):
     session_id: Optional[str] = None
     referer: Optional[str] = None
     path_info: Optional[str] = None
+    bearer_token: Optional[str] = None
     ids: Optional[List[int]] = None
     before_id: Optional[int] = None
     after_id: Optional[int] = None
@@ -1588,6 +1626,18 @@ class RequestLogs(IReturn[RequestLogsResponse], IGet):
     skip: int = 0
     take: Optional[int] = None
     order_by: Optional[str] = None
+    month: Optional[datetime.datetime] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
+class GetAnalyticsInfo(IReturn[GetAnalyticsInfoResponse], IGet):
+    month: Optional[datetime.datetime] = None
+    type: Optional[str] = None
+    op: Optional[str] = None
+    api_key: Optional[str] = None
+    user_id: Optional[str] = None
+    ip: Optional[str] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -1595,6 +1645,7 @@ class RequestLogs(IReturn[RequestLogsResponse], IGet):
 class GetAnalyticsReports(IReturn[GetAnalyticsReportsResponse], IGet):
     month: Optional[datetime.datetime] = None
     filter: Optional[str] = None
+    force: Optional[bool] = None
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)

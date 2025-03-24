@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-16 22:20:18
+Date: 2025-03-25 01:11:52
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -632,7 +632,7 @@ enum AnalyticsType
     User,
     Day,
     ApiKey,
-    IpAddress,
+    Ips,
 }
 
 class ValidateRule implements IConvertible
@@ -3288,41 +3288,148 @@ class RequestLogEntry implements IConvertible
 }
 
 // @DataContract
+class AnalyticsLogInfo implements IConvertible
+{
+    // @DataMember(Order=1)
+    int? id;
+
+    // @DataMember(Order=2)
+    String? browser;
+
+    // @DataMember(Order=3)
+    String? device;
+
+    // @DataMember(Order=4)
+    String? bot;
+
+    // @DataMember(Order=5)
+    String? op;
+
+    // @DataMember(Order=6)
+    String? userId;
+
+    // @DataMember(Order=7)
+    String? userName;
+
+    // @DataMember(Order=8)
+    String? apiKey;
+
+    // @DataMember(Order=9)
+    String? ip;
+
+    AnalyticsLogInfo({this.id,this.browser,this.device,this.bot,this.op,this.userId,this.userName,this.apiKey,this.ip});
+    AnalyticsLogInfo.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        id = json['id'];
+        browser = json['browser'];
+        device = json['device'];
+        bot = json['bot'];
+        op = json['op'];
+        userId = json['userId'];
+        userName = json['userName'];
+        apiKey = json['apiKey'];
+        ip = json['ip'];
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'id': id,
+        'browser': browser,
+        'device': device,
+        'bot': bot,
+        'op': op,
+        'userId': userId,
+        'userName': userName,
+        'apiKey': apiKey,
+        'ip': ip
+    };
+
+    getTypeName() => "AnalyticsLogInfo";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
 class RequestSummary implements IConvertible
 {
     // @DataMember(Order=1)
     String? name;
 
     // @DataMember(Order=2)
-    int? requests;
+    int? totalRequests;
 
     // @DataMember(Order=3)
-    int? requestLength;
+    int? totalRequestLength;
 
     // @DataMember(Order=4)
-    double? duration;
+    int? minRequestLength;
 
     // @DataMember(Order=5)
+    int? maxRequestLength;
+
+    // @DataMember(Order=6)
+    double? totalDuration;
+
+    // @DataMember(Order=7)
+    double? minDuration;
+
+    // @DataMember(Order=8)
+    double? maxDuration;
+
+    // @DataMember(Order=9)
     Map<int,int?>? status;
 
-    RequestSummary({this.name,this.requests,this.requestLength,this.duration,this.status});
+    // @DataMember(Order=10)
+    Map<String,int?>? durations;
+
+    // @DataMember(Order=11)
+    Map<String,int?>? apis;
+
+    // @DataMember(Order=12)
+    Map<String,int?>? users;
+
+    // @DataMember(Order=13)
+    Map<String,int?>? ips;
+
+    // @DataMember(Order=14)
+    Map<String,int?>? apiKeys;
+
+    RequestSummary({this.name,this.totalRequests,this.totalRequestLength,this.minRequestLength,this.maxRequestLength,this.totalDuration,this.minDuration,this.maxDuration,this.status,this.durations,this.apis,this.users,this.ips,this.apiKeys});
     RequestSummary.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         name = json['name'];
-        requests = json['requests'];
-        requestLength = json['requestLength'];
-        duration = JsonConverters.toDouble(json['duration']);
+        totalRequests = json['totalRequests'];
+        totalRequestLength = json['totalRequestLength'];
+        minRequestLength = json['minRequestLength'];
+        maxRequestLength = json['maxRequestLength'];
+        totalDuration = JsonConverters.toDouble(json['totalDuration']);
+        minDuration = JsonConverters.toDouble(json['minDuration']);
+        maxDuration = JsonConverters.toDouble(json['maxDuration']);
         status = JsonConverters.fromJson(json['status'],'Map<int,int?>',context!);
+        durations = JsonConverters.fromJson(json['durations'],'Map<String,int?>',context!);
+        apis = JsonConverters.fromJson(json['apis'],'Map<String,int?>',context!);
+        users = JsonConverters.fromJson(json['users'],'Map<String,int?>',context!);
+        ips = JsonConverters.fromJson(json['ips'],'Map<String,int?>',context!);
+        apiKeys = JsonConverters.fromJson(json['apiKeys'],'Map<String,int?>',context!);
         return this;
     }
 
     Map<String, dynamic> toJson() => {
         'name': name,
-        'requests': requests,
-        'requestLength': requestLength,
-        'duration': duration,
-        'status': JsonConverters.toJson(status,'Map<int,int?>',context!)
+        'totalRequests': totalRequests,
+        'totalRequestLength': totalRequestLength,
+        'minRequestLength': minRequestLength,
+        'maxRequestLength': maxRequestLength,
+        'totalDuration': totalDuration,
+        'minDuration': minDuration,
+        'maxDuration': maxDuration,
+        'status': JsonConverters.toJson(status,'Map<int,int?>',context!),
+        'durations': JsonConverters.toJson(durations,'Map<String,int?>',context!),
+        'apis': JsonConverters.toJson(apis,'Map<String,int?>',context!),
+        'users': JsonConverters.toJson(users,'Map<String,int?>',context!),
+        'ips': JsonConverters.toJson(ips,'Map<String,int?>',context!),
+        'apiKeys': JsonConverters.toJson(apiKeys,'Map<String,int?>',context!)
     };
 
     getTypeName() => "RequestSummary";
@@ -3338,58 +3445,78 @@ class AnalyticsReports implements IConvertible
     // @DataMember(Order=2)
     DateTime? created;
 
-    // @DataMember(Order=2)
-    Map<String,RequestSummary?>? apis;
-
     // @DataMember(Order=3)
-    Map<String,RequestSummary?>? users;
+    double? version;
 
     // @DataMember(Order=4)
-    Map<String,RequestSummary?>? tags;
+    Map<String,RequestSummary?>? apis;
 
     // @DataMember(Order=5)
-    Map<String,RequestSummary?>? status;
+    Map<String,RequestSummary?>? users;
 
     // @DataMember(Order=6)
-    Map<String,RequestSummary?>? days;
+    Map<String,RequestSummary?>? tags;
 
     // @DataMember(Order=7)
-    Map<String,RequestSummary?>? apiKeys;
+    Map<String,RequestSummary?>? status;
 
     // @DataMember(Order=8)
-    Map<String,RequestSummary?>? ipAddresses;
+    Map<String,RequestSummary?>? days;
 
     // @DataMember(Order=9)
-    Map<String,int?>? durationRange;
+    Map<String,RequestSummary?>? apiKeys;
 
-    AnalyticsReports({this.id,this.created,this.apis,this.users,this.tags,this.status,this.days,this.apiKeys,this.ipAddresses,this.durationRange});
+    // @DataMember(Order=10)
+    Map<String,RequestSummary?>? ips;
+
+    // @DataMember(Order=11)
+    Map<String,RequestSummary?>? browsers;
+
+    // @DataMember(Order=12)
+    Map<String,RequestSummary?>? devices;
+
+    // @DataMember(Order=13)
+    Map<String,RequestSummary?>? bots;
+
+    // @DataMember(Order=14)
+    Map<String,int?>? durations;
+
+    AnalyticsReports({this.id,this.created,this.version,this.apis,this.users,this.tags,this.status,this.days,this.apiKeys,this.ips,this.browsers,this.devices,this.bots,this.durations});
     AnalyticsReports.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         id = json['id'];
         created = JsonConverters.fromJson(json['created'],'DateTime',context!);
+        version = JsonConverters.toDouble(json['version']);
         apis = JsonConverters.fromJson(json['apis'],'Map<String,RequestSummary?>',context!);
         users = JsonConverters.fromJson(json['users'],'Map<String,RequestSummary?>',context!);
         tags = JsonConverters.fromJson(json['tags'],'Map<String,RequestSummary?>',context!);
         status = JsonConverters.fromJson(json['status'],'Map<String,RequestSummary?>',context!);
         days = JsonConverters.fromJson(json['days'],'Map<String,RequestSummary?>',context!);
         apiKeys = JsonConverters.fromJson(json['apiKeys'],'Map<String,RequestSummary?>',context!);
-        ipAddresses = JsonConverters.fromJson(json['ipAddresses'],'Map<String,RequestSummary?>',context!);
-        durationRange = JsonConverters.fromJson(json['durationRange'],'Map<String,int?>',context!);
+        ips = JsonConverters.fromJson(json['ips'],'Map<String,RequestSummary?>',context!);
+        browsers = JsonConverters.fromJson(json['browsers'],'Map<String,RequestSummary?>',context!);
+        devices = JsonConverters.fromJson(json['devices'],'Map<String,RequestSummary?>',context!);
+        bots = JsonConverters.fromJson(json['bots'],'Map<String,RequestSummary?>',context!);
+        durations = JsonConverters.fromJson(json['durations'],'Map<String,int?>',context!);
         return this;
     }
 
     Map<String, dynamic> toJson() => {
         'id': id,
         'created': JsonConverters.toJson(created,'DateTime',context!),
+        'version': version,
         'apis': JsonConverters.toJson(apis,'Map<String,RequestSummary?>',context!),
         'users': JsonConverters.toJson(users,'Map<String,RequestSummary?>',context!),
         'tags': JsonConverters.toJson(tags,'Map<String,RequestSummary?>',context!),
         'status': JsonConverters.toJson(status,'Map<String,RequestSummary?>',context!),
         'days': JsonConverters.toJson(days,'Map<String,RequestSummary?>',context!),
         'apiKeys': JsonConverters.toJson(apiKeys,'Map<String,RequestSummary?>',context!),
-        'ipAddresses': JsonConverters.toJson(ipAddresses,'Map<String,RequestSummary?>',context!),
-        'durationRange': JsonConverters.toJson(durationRange,'Map<String,int?>',context!)
+        'ips': JsonConverters.toJson(ips,'Map<String,RequestSummary?>',context!),
+        'browsers': JsonConverters.toJson(browsers,'Map<String,RequestSummary?>',context!),
+        'devices': JsonConverters.toJson(devices,'Map<String,RequestSummary?>',context!),
+        'bots': JsonConverters.toJson(bots,'Map<String,RequestSummary?>',context!),
+        'durations': JsonConverters.toJson(durations,'Map<String,int?>',context!)
     };
 
     getTypeName() => "AnalyticsReports";
@@ -4003,6 +4130,38 @@ class RequestLogsResponse implements IConvertible
 }
 
 // @DataContract
+class GetAnalyticsInfoResponse implements IConvertible
+{
+    // @DataMember(Order=1)
+    List<String>? months;
+
+    // @DataMember(Order=2)
+    AnalyticsLogInfo? result;
+
+    // @DataMember(Order=3)
+    ResponseStatus? responseStatus;
+
+    GetAnalyticsInfoResponse({this.months,this.result,this.responseStatus});
+    GetAnalyticsInfoResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        months = JsonConverters.fromJson(json['months'],'List<String>',context!);
+        result = JsonConverters.fromJson(json['result'],'AnalyticsLogInfo',context!);
+        responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'months': JsonConverters.toJson(months,'List<String>',context!),
+        'result': JsonConverters.toJson(result,'AnalyticsLogInfo',context!),
+        'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
+    };
+
+    getTypeName() => "GetAnalyticsInfoResponse";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
 class GetAnalyticsReportsResponse implements IConvertible
 {
     // @DataMember(Order=1)
@@ -4040,16 +4199,21 @@ class GetApiAnalyticsResponse implements IConvertible
     // @DataMember(Order=1)
     Map<String,int?>? results;
 
-    GetApiAnalyticsResponse({this.results});
+    // @DataMember(Order=2)
+    ResponseStatus? responseStatus;
+
+    GetApiAnalyticsResponse({this.results,this.responseStatus});
     GetApiAnalyticsResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         results = JsonConverters.fromJson(json['results'],'Map<String,int?>',context!);
+        responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
         return this;
     }
 
     Map<String, dynamic> toJson() => {
-        'results': JsonConverters.toJson(results,'Map<String,int?>',context!)
+        'results': JsonConverters.toJson(results,'Map<String,int?>',context!),
+        'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
     };
 
     getTypeName() => "GetApiAnalyticsResponse";
@@ -4634,28 +4798,32 @@ class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet, IConvert
     int? id;
 
     // @DataMember(Order=2)
-    String? search;
+    String? apiKey;
 
     // @DataMember(Order=3)
-    String? userId;
+    String? search;
 
     // @DataMember(Order=4)
-    String? userName;
+    String? userId;
 
     // @DataMember(Order=5)
-    String? orderBy;
+    String? userName;
 
     // @DataMember(Order=6)
-    int? skip;
+    String? orderBy;
 
     // @DataMember(Order=7)
+    int? skip;
+
+    // @DataMember(Order=8)
     int? take;
 
-    AdminQueryApiKeys({this.id,this.search,this.userId,this.userName,this.orderBy,this.skip,this.take});
+    AdminQueryApiKeys({this.id,this.apiKey,this.search,this.userId,this.userName,this.orderBy,this.skip,this.take});
     AdminQueryApiKeys.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         id = json['id'];
+        apiKey = json['apiKey'];
         search = json['search'];
         userId = json['userId'];
         userName = json['userName'];
@@ -4667,6 +4835,7 @@ class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet, IConvert
 
     Map<String, dynamic> toJson() => {
         'id': id,
+        'apiKey': apiKey,
         'search': search,
         'userId': userId,
         'userName': userName,
@@ -5168,45 +5337,51 @@ class RequestLogs implements IReturn<RequestLogsResponse>, IGet, IConvertible
     String? pathInfo;
 
     // @DataMember(Order=10)
-    List<int>? ids;
+    String? bearerToken;
 
     // @DataMember(Order=11)
-    int? beforeId;
+    List<int>? ids;
 
     // @DataMember(Order=12)
-    int? afterId;
+    int? beforeId;
 
     // @DataMember(Order=13)
-    bool? hasResponse;
+    int? afterId;
 
     // @DataMember(Order=14)
-    bool? withErrors;
+    bool? hasResponse;
 
     // @DataMember(Order=15)
-    bool? enableSessionTracking;
+    bool? withErrors;
 
     // @DataMember(Order=16)
-    bool? enableResponseTracking;
+    bool? enableSessionTracking;
 
     // @DataMember(Order=17)
-    bool? enableErrorTracking;
+    bool? enableResponseTracking;
 
     // @DataMember(Order=18)
-    Duration? durationLongerThan;
+    bool? enableErrorTracking;
 
     // @DataMember(Order=19)
-    Duration? durationLessThan;
+    Duration? durationLongerThan;
 
     // @DataMember(Order=20)
-    int? skip;
+    Duration? durationLessThan;
 
     // @DataMember(Order=21)
-    int? take;
+    int? skip;
 
     // @DataMember(Order=22)
+    int? take;
+
+    // @DataMember(Order=23)
     String? orderBy;
 
-    RequestLogs({this.beforeSecs,this.afterSecs,this.operationName,this.ipAddress,this.forwardedFor,this.userAuthId,this.sessionId,this.referer,this.pathInfo,this.ids,this.beforeId,this.afterId,this.hasResponse,this.withErrors,this.enableSessionTracking,this.enableResponseTracking,this.enableErrorTracking,this.durationLongerThan,this.durationLessThan,this.skip,this.take,this.orderBy});
+    // @DataMember(Order=24)
+    DateTime? month;
+
+    RequestLogs({this.beforeSecs,this.afterSecs,this.operationName,this.ipAddress,this.forwardedFor,this.userAuthId,this.sessionId,this.referer,this.pathInfo,this.bearerToken,this.ids,this.beforeId,this.afterId,this.hasResponse,this.withErrors,this.enableSessionTracking,this.enableResponseTracking,this.enableErrorTracking,this.durationLongerThan,this.durationLessThan,this.skip,this.take,this.orderBy,this.month});
     RequestLogs.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
@@ -5219,6 +5394,7 @@ class RequestLogs implements IReturn<RequestLogsResponse>, IGet, IConvertible
         sessionId = json['sessionId'];
         referer = json['referer'];
         pathInfo = json['pathInfo'];
+        bearerToken = json['bearerToken'];
         ids = JsonConverters.fromJson(json['ids'],'List<int>',context!);
         beforeId = json['beforeId'];
         afterId = json['afterId'];
@@ -5232,6 +5408,7 @@ class RequestLogs implements IReturn<RequestLogsResponse>, IGet, IConvertible
         skip = json['skip'];
         take = json['take'];
         orderBy = json['orderBy'];
+        month = JsonConverters.fromJson(json['month'],'DateTime',context!);
         return this;
     }
 
@@ -5245,6 +5422,7 @@ class RequestLogs implements IReturn<RequestLogsResponse>, IGet, IConvertible
         'sessionId': sessionId,
         'referer': referer,
         'pathInfo': pathInfo,
+        'bearerToken': bearerToken,
         'ids': JsonConverters.toJson(ids,'List<int>',context!),
         'beforeId': beforeId,
         'afterId': afterId,
@@ -5257,12 +5435,62 @@ class RequestLogs implements IReturn<RequestLogsResponse>, IGet, IConvertible
         'durationLessThan': JsonConverters.toJson(durationLessThan,'Duration',context!),
         'skip': skip,
         'take': take,
-        'orderBy': orderBy
+        'orderBy': orderBy,
+        'month': JsonConverters.toJson(month,'DateTime',context!)
     };
 
     createResponse() => RequestLogsResponse();
     getResponseTypeName() => "RequestLogsResponse";
     getTypeName() => "RequestLogs";
+    TypeContext? context = _ctx;
+}
+
+// @DataContract
+class GetAnalyticsInfo implements IReturn<GetAnalyticsInfoResponse>, IGet, IConvertible
+{
+    // @DataMember(Order=1)
+    DateTime? month;
+
+    // @DataMember(Order=2)
+    String? type;
+
+    // @DataMember(Order=3)
+    String? op;
+
+    // @DataMember(Order=4)
+    String? apiKey;
+
+    // @DataMember(Order=5)
+    String? userId;
+
+    // @DataMember(Order=6)
+    String? ip;
+
+    GetAnalyticsInfo({this.month,this.type,this.op,this.apiKey,this.userId,this.ip});
+    GetAnalyticsInfo.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        month = JsonConverters.fromJson(json['month'],'DateTime',context!);
+        type = json['type'];
+        op = json['op'];
+        apiKey = json['apiKey'];
+        userId = json['userId'];
+        ip = json['ip'];
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'month': JsonConverters.toJson(month,'DateTime',context!),
+        'type': type,
+        'op': op,
+        'apiKey': apiKey,
+        'userId': userId,
+        'ip': ip
+    };
+
+    createResponse() => GetAnalyticsInfoResponse();
+    getResponseTypeName() => "GetAnalyticsInfoResponse";
+    getTypeName() => "GetAnalyticsInfo";
     TypeContext? context = _ctx;
 }
 
@@ -5275,18 +5503,23 @@ class GetAnalyticsReports implements IReturn<GetAnalyticsReportsResponse>, IGet,
     // @DataMember(Order=2)
     String? filter;
 
-    GetAnalyticsReports({this.month,this.filter});
+    // @DataMember(Order=3)
+    bool? force;
+
+    GetAnalyticsReports({this.month,this.filter,this.force});
     GetAnalyticsReports.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         month = JsonConverters.fromJson(json['month'],'DateTime',context!);
         filter = json['filter'];
+        force = json['force'];
         return this;
     }
 
     Map<String, dynamic> toJson() => {
         'month': JsonConverters.toJson(month,'DateTime',context!),
-        'filter': filter
+        'filter': filter,
+        'force': force
     };
 
     createResponse() => GetAnalyticsReportsResponse();
@@ -5511,6 +5744,7 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'HourSummary': TypeInfo(TypeOf.Class, create:() => HourSummary()),
     'WorkerStats': TypeInfo(TypeOf.Class, create:() => WorkerStats()),
     'RequestLogEntry': TypeInfo(TypeOf.Class, create:() => RequestLogEntry()),
+    'AnalyticsLogInfo': TypeInfo(TypeOf.Class, create:() => AnalyticsLogInfo()),
     'RequestSummary': TypeInfo(TypeOf.Class, create:() => RequestSummary()),
     'Map<int,int?>': TypeInfo(TypeOf.Class, create:() => Map<int,int?>()),
     'AnalyticsReports': TypeInfo(TypeOf.Class, create:() => AnalyticsReports()),
@@ -5551,6 +5785,7 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'AdminCancelJobsResponse': TypeInfo(TypeOf.Class, create:() => AdminCancelJobsResponse()),
     'RequestLogsResponse': TypeInfo(TypeOf.Class, create:() => RequestLogsResponse()),
     'List<RequestLogEntry>': TypeInfo(TypeOf.Class, create:() => <RequestLogEntry>[]),
+    'GetAnalyticsInfoResponse': TypeInfo(TypeOf.Class, create:() => GetAnalyticsInfoResponse()),
     'GetAnalyticsReportsResponse': TypeInfo(TypeOf.Class, create:() => GetAnalyticsReportsResponse()),
     'GetApiAnalyticsResponse': TypeInfo(TypeOf.Class, create:() => GetApiAnalyticsResponse()),
     'GetValidationRulesResponse': TypeInfo(TypeOf.Class, create:() => GetValidationRulesResponse()),
@@ -5600,6 +5835,7 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'AdminRequeueFailedJobs': TypeInfo(TypeOf.Class, create:() => AdminRequeueFailedJobs()),
     'AdminCancelJobs': TypeInfo(TypeOf.Class, create:() => AdminCancelJobs()),
     'RequestLogs': TypeInfo(TypeOf.Class, create:() => RequestLogs()),
+    'GetAnalyticsInfo': TypeInfo(TypeOf.Class, create:() => GetAnalyticsInfo()),
     'GetAnalyticsReports': TypeInfo(TypeOf.Class, create:() => GetAnalyticsReports()),
     'GetApiAnalytics': TypeInfo(TypeOf.Class, create:() => GetApiAnalytics()),
     'GetValidationRules': TypeInfo(TypeOf.Class, create:() => GetValidationRules()),
