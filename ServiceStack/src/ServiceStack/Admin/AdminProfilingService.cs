@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
 
 namespace ServiceStack.Admin;
 
@@ -33,13 +34,16 @@ public class AdminProfilingResponse
 [DefaultRequest(typeof(AdminProfiling))]
 public class AdminProfilingService : Service
 {
+    private async Task<ProfilingFeature> AssertRequiredRole()
+    {
+        var feature = AssertPlugin<ProfilingFeature>();
+        await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+        return feature;
+    }
+    
     public async Task<object> Any(AdminProfiling request)
     {
-        var feature = HostContext.AppHost.AssertPlugin<ProfilingFeature>();
-
-        if (!HostContext.DebugMode)
-            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
-
+        var feature = await AssertRequiredRole().ConfigAwait();
         var snapshot = request.Pending != true 
             ? feature.Observer.GetLatestEntries(null)
             : feature.Observer.GetPendingEntries(null);
