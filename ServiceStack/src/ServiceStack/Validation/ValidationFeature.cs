@@ -255,6 +255,12 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
         if (!result.IsValid)
             throw result.ToWebServiceException(requestDto, this);
     }
+
+    public async Task<ValidationFeature> AssertRequiredRole(IRequest request, string authSecret=null)
+    {
+        await RequestUtils.AssertAccessRoleAsync(request, accessRole: AccessRole, authSecret: authSecret).ConfigAwait();
+        return this;
+    }
 }
 
 [DefaultRequest(typeof(GetValidationRules))]
@@ -263,8 +269,7 @@ public class GetValidationRulesService(IValidationSource validationSource) : Ser
 {
     public async Task<object> Any(GetValidationRules request)
     {
-        var feature = HostContext.AssertPlugin<ValidationFeature>();
-        await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret).ConfigAwait();
+        var feature = await HostContext.AssertPlugin<ValidationFeature>().AssertRequiredRole(Request, request.AuthSecret).ConfigAwait();
 
         var type = HostContext.Metadata.FindDtoType(request.Type);
         if (type == null)
@@ -283,8 +288,7 @@ public class ModifyValidationRulesService(IValidationSource validationSource) : 
     public async Task Any(ModifyValidationRules request)
     {
         var appHost = HostContext.AssertAppHost();
-        var feature = appHost.AssertPlugin<ValidationFeature>();
-        await RequestUtils.AssertAccessRoleAsync(base.Request, accessRole: feature.AccessRole, authSecret: request.AuthSecret).ConfigAwait();
+        var feature = await HostContext.AssertPlugin<ValidationFeature>().AssertRequiredRole(Request, request.AuthSecret).ConfigAwait();
 
         var utcNow = DateTime.UtcNow;
         var userName = (await base.GetSessionAsync().ConfigAwait()).GetUserAuthName();

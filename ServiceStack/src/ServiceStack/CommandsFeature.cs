@@ -621,11 +621,16 @@ public class ExecuteCommandResponse
 [Restrict(VisibilityTo = RequestAttributes.Localhost)]
 public class CommandsService(ILogger<CommandsService> log) : Service
 {
-    public async Task<object> Any(ViewCommands request)
+    private async Task<CommandsFeature> AssertRequiredRole()
     {
         var feature = HostContext.AssertPlugin<CommandsFeature>();
-        if (!HostContext.DebugMode)
-            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+        await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+        return feature;
+    }
+
+    public async Task<object> Any(ViewCommands request)
+    {
+        var feature = await AssertRequiredRole().ConfigAwait();
 
         var to = new ViewCommandsResponse
         {
@@ -658,9 +663,7 @@ public class CommandsService(ILogger<CommandsService> log) : Service
 
     public async Task<object> Any(ExecuteCommand request)
     {
-        var feature = HostContext.AssertPlugin<CommandsFeature>();
-        if (!HostContext.DebugMode)
-            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+        var feature = await AssertRequiredRole().ConfigAwait();
 
         var commandInfo = feature.AssertCommandInfo(request.Command);
         var commandType = commandInfo.Type;

@@ -451,7 +451,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task<object> Get(AdminQueryUsers request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
 
         var users = await feature.SearchUsersAsync(Request, request.Query, request.OrderBy, request.Skip, request.Take);
 
@@ -483,7 +483,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         
     public async Task<object> Get(AdminGetUser request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
 
         if (request.Id == null)
             throw new ArgumentNullException(nameof(request.Id));
@@ -495,7 +495,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task<object> Post(AdminCreateUser request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
         await feature.ValidateCreateUser(Request!, request).ConfigAwait();
         
         var user = feature.NewUser();
@@ -521,7 +521,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task<object> Put(AdminUpdateUser request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
         await feature.ValidateUpdateUser(Request!, request).ConfigAwait();
         
         var existingUser = await feature.FindUserByIdAsync(Request, request.Id).ConfigAwait();
@@ -612,7 +612,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task<object> Delete(AdminDeleteUser request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
 
         if (request.Id == null)
             throw new ArgumentNullException(nameof(request.Id));
@@ -655,7 +655,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task<object> Get(AdminGetRoles request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
 
         var roles = await feature.GetAllRolesAsync(Request!).ConfigAwait();
 
@@ -670,7 +670,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task<AdminGetRoleResponse> Get(AdminGetRole request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
 
         var (role,claims) = await feature.GetRoleAndClaimsAsync(Request!, request.Id).ConfigAwait();
         var roleObj = role.ToObjectDictionary();
@@ -691,7 +691,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task<IdResponse> Post(AdminCreateRole request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
         var role = await feature.CreateRoleAsync(Request!, request.Name).ConfigAwait();
         var roleObj = role.ToObjectDictionary();
 
@@ -703,7 +703,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task<IdResponse> Post(AdminUpdateRole request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
         var role = await feature.UpdateRoleAsync(Request!, request.Id, request.Name,
             request.AddClaims?.Select(x => new Claim(x.Name, x.Value)),    
             request.RemoveClaims?.Select(x => new Claim(x.Name, x.Value))).ConfigAwait();
@@ -717,7 +717,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
 
     public async Task Delete(AdminDeleteRole request)
     {
-        await AssertRequiredRole();
+        await AssertRequiredRole().ConfigAwait();
         await feature.DeleteRoleByIdAsync(Request!, request.Id).ConfigAwait();
     }
 }

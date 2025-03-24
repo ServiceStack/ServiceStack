@@ -173,6 +173,8 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
 
     public object Any(AdminJobDashboard request)
     {
+        var feature = AssertRequiredRole();
+
         var to = new AdminJobDashboardResponse();
         using var db = jobs.OpenDb();
         var finishedStates = new[] { BackgroundJobState.Completed, BackgroundJobState.Failed, BackgroundJobState.Cancelled };
@@ -260,7 +262,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     public object Any(AdminJobInfo request)
     {
         var feature = AssertRequiredRole();
-        // 
+
         var dir = new DirectoryInfo(((IAppHostNetCore)HostContext.AppHost).HostingEnvironment.ContentRootPath
             .CombineWith(feature.DbDir));
         var monthDbs = dir.GetFiles()
@@ -450,6 +452,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
 
     public object Any(AdminRequeueFailedJobs request)
     {
+        var feature = AssertRequiredRole();
         if (request.Ids == null || request.Ids.Count == 0)
             throw new ArgumentNullException(nameof(request.Ids));
 
