@@ -4,7 +4,7 @@ import {
 } from "@servicestack/client"
 import { useClient, useFormatters, css } from "@servicestack/vue"
 import { keydown } from "app"
-import { RequestLogs, GetAnalyticsReports } from "dtos"
+import { RequestLogs, GetAnalyticsInfo } from "dtos"
 import { prettyJson, parseJsv, hasItems } from "core"
 
 export const Logging = {
@@ -575,7 +575,7 @@ export const Logging = {
             sub = app.subscribe('route:nav', update)
             updateMonth()
             await update()
-            const api = await client.api(new GetAnalyticsReports({ filter:'info' }))
+            const api = await client.api(new GetAnalyticsInfo({ type:'info' }))
             if (api.succeeded) {
                 months.value = api.response.months
             }

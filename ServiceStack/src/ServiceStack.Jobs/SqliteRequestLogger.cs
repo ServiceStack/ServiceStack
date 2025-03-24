@@ -181,6 +181,8 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             q = q.Where(x => x.Referer == request.Referer);
         if (!request.PathInfo.IsNullOrEmpty())
             q = q.Where(x => x.PathInfo == request.PathInfo);
+        if (!request.BearerToken.IsNullOrEmpty())
+            q = q.Where("Headers LIKE {0}", $"%Bearer {request.BearerToken.SqlVerifyFragment()}%");
         if (!request.Ids.IsEmpty())
             q = q.Where(x => request.Ids.Contains(x.Id));
         if (request.BeforeId.HasValue)

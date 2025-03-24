@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-19 17:28:18
+Date: 2025-03-25 01:11:52
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -378,13 +378,13 @@ export class FailedJob extends BackgroundJobBase {
     /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
 }
-/** @typedef {'User'|'Day'|'ApiKey'|'IpAddress'} */
+/** @typedef {'User'|'Day'|'ApiKey'|'Ips'} */
 export var AnalyticsType;
 (function (AnalyticsType) {
     AnalyticsType["User"] = "User"
     AnalyticsType["Day"] = "Day"
     AnalyticsType["ApiKey"] = "ApiKey"
-    AnalyticsType["IpAddress"] = "IpAddress"
+    AnalyticsType["Ips"] = "Ips"
 })(AnalyticsType || (AnalyticsType = {}));
 export class ValidateRule {
     /** @param {{validator?:string,condition?:string,errorCode?:string,message?:string}} [init] */
@@ -1692,8 +1692,30 @@ export class RequestLogEntry {
     /** @type {{ [index:string]: string; }} */
     meta;
 }
+export class AnalyticsLogInfo {
+    /** @param {{id?:number,browser?:string,device?:string,bot?:string,op?:string,userId?:string,userName?:string,apiKey?:string,ip?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    browser;
+    /** @type {string} */
+    device;
+    /** @type {string} */
+    bot;
+    /** @type {string} */
+    op;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    userName;
+    /** @type {string} */
+    apiKey;
+    /** @type {string} */
+    ip;
+}
 export class RequestSummary {
-    /** @param {{name?:string,totalRequests?:number,totalRequestLength?:number,minRequestLength?:number,maxRequestLength?:number,totalDuration?:number,minDuration?:number,maxDuration?:number,status?:{ [index:number]: number; }}} [init] */
+    /** @param {{name?:string,totalRequests?:number,totalRequestLength?:number,minRequestLength?:number,maxRequestLength?:number,totalDuration?:number,minDuration?:number,maxDuration?:number,status?:{ [index:number]: number; },durations?:{ [index:string]: number; },apis?:{ [index:string]: number; },users?:{ [index:string]: number; },ips?:{ [index:string]: number; },apiKeys?:{ [index:string]: number; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -1713,9 +1735,19 @@ export class RequestSummary {
     maxDuration;
     /** @type {{ [index:number]: number; }} */
     status;
+    /** @type {{ [index:string]: number; }} */
+    durations;
+    /** @type {{ [index:string]: number; }} */
+    apis;
+    /** @type {{ [index:string]: number; }} */
+    users;
+    /** @type {{ [index:string]: number; }} */
+    ips;
+    /** @type {{ [index:string]: number; }} */
+    apiKeys;
 }
 export class AnalyticsReports {
-    /** @param {{id?:number,created?:string,version?:number,apis?:{ [index:string]: RequestSummary; },users?:{ [index:string]: RequestSummary; },tags?:{ [index:string]: RequestSummary; },status?:{ [index:string]: RequestSummary; },days?:{ [index:string]: RequestSummary; },apiKeys?:{ [index:string]: RequestSummary; },ipAddresses?:{ [index:string]: RequestSummary; },browsers?:{ [index:string]: RequestSummary; },devices?:{ [index:string]: RequestSummary; },bots?:{ [index:string]: RequestSummary; },durationRange?:{ [index:string]: number; }}} [init] */
+    /** @param {{id?:number,created?:string,version?:number,apis?:{ [index:string]: RequestSummary; },users?:{ [index:string]: RequestSummary; },tags?:{ [index:string]: RequestSummary; },status?:{ [index:string]: RequestSummary; },days?:{ [index:string]: RequestSummary; },apiKeys?:{ [index:string]: RequestSummary; },ips?:{ [index:string]: RequestSummary; },browsers?:{ [index:string]: RequestSummary; },devices?:{ [index:string]: RequestSummary; },bots?:{ [index:string]: RequestSummary; },durations?:{ [index:string]: number; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1736,7 +1768,7 @@ export class AnalyticsReports {
     /** @type {{ [index:string]: RequestSummary; }} */
     apiKeys;
     /** @type {{ [index:string]: RequestSummary; }} */
-    ipAddresses;
+    ips;
     /** @type {{ [index:string]: RequestSummary; }} */
     browsers;
     /** @type {{ [index:string]: RequestSummary; }} */
@@ -1744,7 +1776,7 @@ export class AnalyticsReports {
     /** @type {{ [index:string]: RequestSummary; }} */
     bots;
     /** @type {{ [index:string]: number; }} */
-    durationRange;
+    durations;
 }
 /** @typedef TKey {any} */
 /** @typedef  TValue {any} */
@@ -2078,6 +2110,16 @@ export class RequestLogsResponse {
     /** @type {ResponseStatus} */
     responseStatus;
 }
+export class GetAnalyticsInfoResponse {
+    /** @param {{months?:string[],result?:AnalyticsLogInfo,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string[]} */
+    months;
+    /** @type {AnalyticsLogInfo} */
+    result;
+    /** @type {ResponseStatus} */
+    responseStatus;
+}
 export class GetAnalyticsReportsResponse {
     /** @param {{results?:AnalyticsReports,months?:string[],responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -2089,10 +2131,12 @@ export class GetAnalyticsReportsResponse {
     responseStatus;
 }
 export class GetApiAnalyticsResponse {
-    /** @param {{results?:{ [index:string]: number; }}} [init] */
+    /** @param {{results?:{ [index:string]: number; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {{ [index:string]: number; }} */
     results;
+    /** @type {ResponseStatus} */
+    responseStatus;
 }
 export class GetValidationRulesResponse {
     /** @param {{results?:ValidationRule[],responseStatus?:ResponseStatus}} [init] */
@@ -2404,10 +2448,12 @@ export class ExecuteCommand {
     createResponse() { return new ExecuteCommandResponse() }
 }
 export class AdminQueryApiKeys {
-    /** @param {{id?:number,search?:string,userId?:string,userName?:string,orderBy?:string,skip?:number,take?:number}} [init] */
+    /** @param {{id?:number,apiKey?:string,search?:string,userId?:string,userName?:string,orderBy?:string,skip?:number,take?:number}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?number} */
     id;
+    /** @type {string} */
+    apiKey;
     /** @type {string} */
     search;
     /** @type {string} */
@@ -2611,7 +2657,7 @@ export class AdminCancelJobs {
     createResponse() { return new AdminCancelJobsResponse() }
 }
 export class RequestLogs {
-    /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string,month?:string}} [init] */
+    /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,bearerToken?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string,month?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?number} */
     beforeSecs;
@@ -2631,6 +2677,8 @@ export class RequestLogs {
     referer;
     /** @type {string} */
     pathInfo;
+    /** @type {string} */
+    bearerToken;
     /** @type {number[]} */
     ids;
     /** @type {?number} */
@@ -2663,13 +2711,34 @@ export class RequestLogs {
     getMethod() { return 'GET' }
     createResponse() { return new RequestLogsResponse() }
 }
+export class GetAnalyticsInfo {
+    /** @param {{month?:string,type?:string,op?:string,apiKey?:string,userId?:string,ip?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    month;
+    /** @type {string} */
+    type;
+    /** @type {string} */
+    op;
+    /** @type {string} */
+    apiKey;
+    /** @type {string} */
+    userId;
+    /** @type {string} */
+    ip;
+    getTypeName() { return 'GetAnalyticsInfo' }
+    getMethod() { return 'GET' }
+    createResponse() { return new GetAnalyticsInfoResponse() }
+}
 export class GetAnalyticsReports {
-    /** @param {{month?:string,filter?:string}} [init] */
+    /** @param {{month?:string,filter?:string,force?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?string} */
     month;
     /** @type {string} */
     filter;
+    /** @type {?boolean} */
+    force;
     getTypeName() { return 'GetAnalyticsReports' }
     getMethod() { return 'GET' }
     createResponse() { return new GetAnalyticsReportsResponse() }

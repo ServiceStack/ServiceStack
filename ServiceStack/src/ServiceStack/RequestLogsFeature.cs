@@ -161,6 +161,7 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
             typeof(AdminGetRoles),
             typeof(GetValidationRules),
             typeof(GetAnalyticsReports),
+            typeof(GetAnalyticsInfo),
             typeof(GetApiAnalytics),
             typeof(NativeTypesBase),
 #if NET6_0_OR_GREATER

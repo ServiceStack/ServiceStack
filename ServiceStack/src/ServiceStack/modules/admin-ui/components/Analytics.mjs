@@ -1,7 +1,7 @@
 import {computed, inject, onMounted, onUnmounted, ref, watch} from "vue"
 import {useClient, useFiles, useFormatters, useUtils, css} from "@servicestack/vue";
 import {ApiResult, apiValueFmt, humanify, mapGet,leftPart,pick} from "@servicestack/client"
-import {GetAnalyticsReports, AdminGetUser, AdminQueryApiKeys} from "dtos"
+import {GetAnalyticsReports, GetAnalyticsInfo, AdminGetUser, AdminQueryApiKeys} from "dtos"
 import {Chart, registerables} from 'chart.js'
 Chart.register(...registerables)
 const { humanifyMs, humanifyNumber, formatDate } = useFormatters()
@@ -343,7 +343,85 @@ function round(n) {
     return n.toString().indexOf(".") === -1 ? n : numFmt.format(n);
 }
 const userSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjNGE1NTY1IiBkPSJNMTYgOGE1IDUgMCAxIDAgNSA1YTUgNSAwIDAgMC01LTUiLz48cGF0aCBmaWxsPSIjNGE1NTY1IiBkPSJNMTYgMmExNCAxNCAwIDEgMCAxNCAxNEExNC4wMTYgMTQuMDE2IDAgMCAwIDE2IDJtNy45OTMgMjIuOTI2QTUgNSAwIDAgMCAxOSAyMGgtNmE1IDUgMCAwIDAtNC45OTIgNC45MjZhMTIgMTIgMCAxIDEgMTUuOTg1IDAiLz48L3N2Zz4='
+const LogLinks = {
+    template:`
+    <div v-if="links.length" class="ml-2">
+      <nav class="-mb-px flex space-x-4 flex-wrap">
+        <a v-href="{ $page:'logging', month:routes.month, $clear:true, ...filter }" :title="title + ' Request Logs'"
+           class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
+          <svg class=" text-gray-400 group-hover:text-indigo-500 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13c0 1-.6 3-3 3m0 0H6c-1 0-3-.6-3-3v-2h12v2c0 2.4 2 3 3 3zM9 7h8m-8 4h4"></path>
+          </svg>
+          <span>All</span>
+        </a>
+        <a v-for="link in links" :href="link.href" :title="link.label + ' Request Logs'"
+           class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
+          {{link.label}}
+          <span class="ml-2 hidden rounded-full bg-gray-100 group-hover:bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 hover:text-indigo-600 md:inline-block">{{link.count}}</span>
+        </a>
+      </nav>
+      <nav v-if="lastLog" class="flex flex-wrap gap-x-2">
+        <span v-href="{ $page:'logging', month:routes.month, ...filter, orderBy:'-id', $clear:true }" title="Last Request Log"
+           class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
+          Last
+        </span>
+        <span v-if="lastLog.op && !filter.op" v-href="{ tab:'', op:lastLog.op }" title="API"
+              class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
+          {{lastLog.op}}
+        </span>
+        <span v-if="lastLog.userId && !filter.userId" v-href="{ tab:'users', userId:lastLog.userId }" title="User"
+              class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3zm9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"></path></svg>
+          {{lastLog.userName ?? substringWithEllipsis(lastLog.userId, 8)}}
+        </span>
+        <span v-if="lastLog.apiKey && !filter.apiKey" v-href="{ tab:'apiKeys', apiKey:lastLog.apiKey }" title="API Key"
+              class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
+          {{hiddenApiKey(lastLog.apiKey)}}
+        </span>
+        <span v-if="lastLog.ip && !filter.ip" v-href="{ tab:'ips', ip:lastLog.ip }" title="IP Address"
+              class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
+          IP {{lastLog.ip}}
+        </span>
+        <span v-if="lastLog.browser" class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{ lastLog.browser }}</span>
+        <span v-if="lastLog.device" class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{ lastLog.device }}</span>
+        <span v-if="lastLog.bot" class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{ lastLog.bot }}</span>
+      </nav>
+    </div>
+    `,
+    props: {
+        title: String,
+        links: Array,
+        filter: Object,
+    },
+    setup(props) {
+        const routes = inject('routes')
+        const client = useClient()
+        const lastLog = ref()
+        
+        async function update() {
+            const api = await client.api(new GetAnalyticsInfo({
+                month: routes.month ? `${routes.month}-01` : undefined,
+                ...props.filter
+            }))
+            lastLog.value = api.response?.result
+        }
+        
+        onMounted(update)
+        
+        watch(() => props.links, update)
+        
+        return {
+            routes,
+            lastLog,
+            hiddenApiKey,
+            substringWithEllipsis,
+        }
+    }
+}
 const ApiAnalytics = {
+    components: {
+        LogLinks,
+    },
     template:`
       <div class="my-4 mx-auto max-w-lg">
         <div class="flex">
@@ -371,22 +449,7 @@ const ApiAnalytics = {
               <div>
                 <HtmlFormat :value="{ 'Total Requests': humanifyNumber(analytics.apis[routes.op].totalRequests) }" />
               </div>
-              <div class="ml-2">
-                <nav class="-mb-px flex space-x-4 flex-wrap">
-                  <a v-href="{ $page:'logging', op:routes.op, month:routes.month, $clear:true }" :title="routes.op + ' Request Logs'"
-                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
-                    <svg class=" text-gray-400 group-hover:text-indigo-500 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13c0 1-.6 3-3 3m0 0H6c-1 0-3-.6-3-3v-2h12v2c0 2.4 2 3 3 3zM9 7h8m-8 4h4"></path>
-                    </svg>
-                    <span>All</span>
-                  </a>
-                  <a v-for="link in apiLinks" :href="link.href" :title="link.label + ' Request Logs'"
-                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
-                    {{link.label}}
-                    <span class="ml-2 hidden rounded-full bg-gray-100 group-hover:bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 hover:text-indigo-600 md:inline-block">{{link.count}}</span>
-                  </a>
-                </nav>
-              </div>
+              <LogLinks :title="routes.op" :links="apiLinks" :filter="{ op:routes.op }" />
             </div>
             <div class="lg:w-1/2">
               <HtmlFormat :value="apiAnalytics" />
@@ -1059,6 +1122,9 @@ const ApiAnalytics = {
     }
 }
 const UserAnalytics = {
+    components: {
+        LogLinks,
+    },
     template:`
       <div class="my-4 mx-auto max-w-lg">
         <div class="flex">
@@ -1112,22 +1178,7 @@ const UserAnalytics = {
                   <img :src="userInfo?.result.ProfileUrl || userSrc" class="m-2 h-16 w-16 rounded-full text-gray-500" alt="User Profile" :onerror="'this.src=' + JSON.stringify(userSrc)">
                 </a>
               </div>
-              <div class="ml-2">
-                <nav class="-mb-px flex space-x-4 flex-wrap">
-                  <a v-href="{ $page:'logging', userId:routes.userId, month:routes.month, $clear:true }" title="User Request Logs"
-                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
-                    <svg class=" text-gray-400 group-hover:text-indigo-500 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13c0 1-.6 3-3 3m0 0H6c-1 0-3-.6-3-3v-2h12v2c0 2.4 2 3 3 3zM9 7h8m-8 4h4"></path>
-                    </svg>
-                    <span>All</span>
-                  </a>
-                  <a v-for="link in userLinks" :href="link.href" :title="link.label + ' Request Logs'"
-                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
-                    {{link.label}}
-                    <span class="ml-2 hidden rounded-full bg-gray-100 group-hover:bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 hover:text-indigo-600 md:inline-block">{{link.count}}</span>
-                  </a>
-                </nav>
-              </div>
+              <LogLinks title="User" :links="userLinks" :filter="{ userId:routes.userId }" />
             </div>
             <div class="lg:w-1/2">
               <HtmlFormat :value="userAnalytics" />
@@ -1369,6 +1420,9 @@ const UserAnalytics = {
     }
 }
 const ApiKeyAnalytics = {
+    components: {
+        LogLinks,
+    },
     template:`
       <div class="my-4 mx-auto max-w-lg">
         <div class="flex">
@@ -1446,22 +1500,7 @@ const ApiKeyAnalytics = {
                   </tr>
                 </table>
               </div>
-              <div class="ml-2">
-                <nav class="-mb-px flex space-x-4 flex-wrap">
-                  <a v-href="{ $page:'logging', apiKey:routes.apiKey, month:routes.month, $clear:true }" title="IP Address Request Logs"
-                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
-                    <svg class=" text-gray-400 group-hover:text-indigo-500 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13c0 1-.6 3-3 3m0 0H6c-1 0-3-.6-3-3v-2h12v2c0 2.4 2 3 3 3zM9 7h8m-8 4h4"></path>
-                    </svg>
-                    <span>All</span>
-                  </a>
-                  <a v-for="link in apiKeyLinks" :href="link.href" :title="link.label + ' Request Logs'"
-                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
-                    {{link.label}}
-                    <span class="ml-2 hidden rounded-full bg-gray-100 group-hover:bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 hover:text-indigo-600 md:inline-block">{{link.count}}</span>
-                  </a>
-                </nav>
-              </div>
+              <LogLinks title="API Key" :links="apiKeyLinks" :filter="{ apiKey:routes.apiKey }" />
             </div>
             <div class="lg:w-1/2">
               <HtmlFormat :value="apiKeyAnalytics" />
@@ -1700,6 +1739,9 @@ const ApiKeyAnalytics = {
     }
 }
 const IpAnalytics = {
+    components: {
+        LogLinks,
+    },
     template:`
       <div class="my-4 mx-auto max-w-lg">
         <div class="flex">
@@ -1738,22 +1780,7 @@ const IpAnalytics = {
                   </tr>
                 </table>
               </div>
-              <div class="ml-2">
-                <nav class="-mb-px flex space-x-4 flex-wrap">
-                  <a v-href="{ $page:'logging', ip:routes.ip, month:routes.month, $clear:true }" title="IP Address Request Logs"
-                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
-                    <svg class=" text-gray-400 group-hover:text-indigo-500 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13c0 1-.6 3-3 3m0 0H6c-1 0-3-.6-3-3v-2h12v2c0 2.4 2 3 3 3zM9 7h8m-8 4h4"></path>
-                    </svg>
-                    <span>All</span>
-                  </a>
-                  <a v-for="link in ipLinks" :href="link.href" :title="link.label + ' Request Logs'"
-                     class="group flex whitespace-nowrap px-1 py-4 text-sm font-medium text-gray-500 hover:text-indigo-600">
-                    {{link.label}}
-                    <span class="ml-2 hidden rounded-full bg-gray-100 group-hover:bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-gray-900 hover:text-indigo-600 md:inline-block">{{link.count}}</span>
-                  </a>
-                </nav>
-              </div>
+              <LogLinks :title="routes.ip" :links="ipLinks" :filter="{ ip:routes.ip }" />
             </div>
             <div class="lg:w-1/2">
               <HtmlFormat :value="ipAnalytics" />
@@ -2047,7 +2074,7 @@ export const Analytics = {
         async function update() {
             loading.value = true
             
-            client.api(new GetAnalyticsReports({ filter:'info' })).then(r => {
+            client.api(new GetAnalyticsInfo({ type:'info' })).then(r => {
                 months.value = r.response?.months || []
             })
             
@@ -2058,7 +2085,6 @@ export const Analytics = {
             }))
             if (api.value.succeeded) {
                 analytics.value = api.value.response.results
-                months.value = api.value.response.months
                 loading.value = false
                 const newTabs = { APIs:'' }
                 if (Object.keys(analytics.value.users ?? {}).length) {
