@@ -1324,7 +1324,7 @@ const UserAnalytics = {
         const userInfo = ref()
 
         const limits = ref({
-            user: 50,
+            user: 25,
         })
 
         const { formatBytes } = useFiles()
@@ -1659,7 +1659,7 @@ const ApiKeyAnalytics = {
         const showApiKey = ref(false)
 
         const limits = ref({
-            apiKey: 50,
+            apiKey: 25,
         })
 
         const { formatBytes } = useFiles()
@@ -1952,7 +1952,7 @@ const IpAnalytics = {
         const refIpTopUsers = ref(null)
 
         const limits = ref({
-            ip: 50,
+            ip: 25,
         })
 
         const { formatBytes } = useFiles()
