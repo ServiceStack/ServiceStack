@@ -37,7 +37,8 @@ public class RequestLogsFeatureTests
         {
             SetConfig(new HostConfig
             {
-                DebugMode = true
+                DebugMode = true,
+                AdminAuthSecret = "secretz",
             });
 
             Plugins.Add(new RequestLogsFeature
@@ -59,17 +60,24 @@ public class RequestLogsFeatureTests
     [OneTimeTearDown]
     public void OneTimeTearDown() => appHost.Dispose();
 
+    private static string GetJsonRequestLogs()
+    {
+        return Config.ListeningOn.CombineWith("requestlogs")
+            .GetJsonFromUrl(req => req.AddHeader("authsecret","secretz"));
+    }
+
+    
     [Test]
     public void Does_log_Service_request()
     {
         var client = new JsonServiceClient(Config.ListeningOn)
         {
-            RequestFilter = req => req.Referer = Config.ListeningOn
+            RequestFilter = req => req.Referer = Config.ListeningOn,
         };
 
         var response = client.Get(new RequestLogsTest { Name = "foo1" });
 
-        var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+        var json = GetJsonRequestLogs();
         var requestLogs = json.FromJson<RequestLogsResponse>();
         var requestLog = requestLogs.Results.First();
         var request = (RequestLogsTest)requestLog.RequestDto;
@@ -92,7 +100,7 @@ public class RequestLogsFeatureTests
         };
         var response = client.SendAll(request);
 
-        var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+        var json = GetJsonRequestLogs();
         var requestLogs = json.FromJson<RequestLogsResponse>();
         var requestLog = requestLogs.Results.First();
 
@@ -122,7 +130,7 @@ public class RequestLogsFeatureTests
         catch (WebServiceException ex)
         {
             Assert.That(ex.Message, Is.EqualTo("Error: foo2"));
-            var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+            var json = GetJsonRequestLogs();
             var requestLogs = json.FromJson<RequestLogsResponse>();
             var requestLog = requestLogs.Results.First();
             var request = (RequestLogsErrorTest)requestLog.RequestDto;
@@ -138,7 +146,7 @@ public class RequestLogsFeatureTests
             .AddQueryParam("name", "foo3")
             .OptionsFromUrl(requestFilter: req => req.With(c => c.Referer = Config.ListeningOn));
 
-        var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+        var json = GetJsonRequestLogs();
         var requestLogs = json.FromJson<RequestLogsResponse>();
         var requestLog = requestLogs.Results.First();
         Assert.That(requestLog.HttpMethod, Is.EqualTo("OPTIONS"));
@@ -160,7 +168,7 @@ public class RequestLogsFeatureTests
         catch (WebServiceException ex)
         {
             Assert.That(ex.Message, Is.EqualTo("Error: foo2"));
-            var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+            var json = GetJsonRequestLogs();
             var requestLogs = json.FromJson<RequestLogsResponse>();
             var requestLog = requestLogs.Results.First();
             var request = (RequestLogsErrorTest)requestLog.RequestDto;
@@ -191,8 +199,7 @@ public class RequestLogsFeatureTests
         }
         catch (WebServiceException)
         {
-
-            var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+            var json = GetJsonRequestLogs();
             var requestLogs = json.FromJson<RequestLogsResponse>();
             var requestLog = requestLogs.Results.First();
 
