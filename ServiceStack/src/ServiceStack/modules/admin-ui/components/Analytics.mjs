@@ -54,6 +54,10 @@ function getApiKeyLabel(analytics,apiKey) {
         ? info.name ? `${info.name} (${label})` : `${label}`
         : label
 }
+function mapCounts(summary, keys) {
+    return (Array.isArray(keys) ? keys : [keys])
+        .reduce((acc,key) => acc + (summary && summary[key] && Object.keys(summary[key] ?? {})?.length ? 1 : 0), 0)
+}
 function chartHeight(recordCount, minHeight = 150, heightPerRecord = 22) {
     // Validate input
     const count = Math.min(Math.max(1, recordCount), 100);
@@ -456,35 +460,32 @@ const ApiAnalytics = {
             </div>
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div class="lg:w-1/2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
+          <div>
             <div class="bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refOpStatusCodes"></canvas>
             </div>
           </div>
-          <div class="lg:w-1/2">
+          <div>
             <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refOpDurationRanges"></canvas>
             </div>
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div v-if="Object.keys(analytics.apis[routes.op].users ?? {}).length"
-               :class="Object.keys(analytics.apis[routes.op].apiKeys ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+        <div :class="['mt-8 grid grid-cols-1 md:grid-cols-2 w-full gap-2', mapCounts(analytics.apis[routes.op],['users','apiKeys','ips']) === 3 ? 'lg:grid-cols-3' : '']">
+          <div v-if="mapCounts(analytics.apis[routes.op],'users')">
             Top Users
             <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refOpTopUsers"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.apis[routes.op].apiKeys ?? {}).length"
-               :class="Object.keys(analytics.apis[routes.op].apiKeys ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+          <div v-if="mapCounts(analytics.apis[routes.op],'apiKeys')">
             Top API Keys
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refOpTopApiKeys"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.apis[routes.op].ips ?? {}).length"
-              :class="Object.keys(analytics.apis[routes.op].apiKeys ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+          <div v-if="mapCounts(analytics.apis[routes.op],'ips')">
             Top IP Addresses
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refOpTopIps"></canvas>
@@ -498,19 +499,19 @@ const ApiAnalytics = {
             Overview
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div class="lg:w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-2">
+          <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
             <canvas ref="refBrowsers"></canvas>
           </div>
-          <div class="lg:w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
             <canvas ref="refDevices"></canvas>
           </div>
-          <div class="lg:w-1/3 bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
             <canvas ref="refBots"></canvas>
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div class="lg:w-1/2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
+          <div>
             <div class="mb-2">
               Requests per day
             </div>
@@ -518,7 +519,7 @@ const ApiAnalytics = {
               <canvas ref="refWeeklyRequests"></canvas>
             </div>
           </div>
-          <div class="lg:w-1/2">
+          <div>
             <div class="mb-2">
               API tag groups
             </div>
@@ -550,11 +551,14 @@ const ApiAnalytics = {
             <SelectInput id="apiLimit" label="" v-model="limits.duration" :values="resultLimits" />
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div class="lg:w-1/2 bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
-            <canvas ref="refApiDurations"></canvas>
+        <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
+          <div class="bg-white rounded shadow p-2" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
+            <canvas ref="refApiTotalDurations"></canvas>
           </div>
-          <div class="lg:w-1/2 bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="bg-white rounded shadow p-2" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
+            <canvas ref="refApiAverageDurations"></canvas>
+          </div>
+          <div class="bg-white rounded shadow p-2" style="height:300px">
             <canvas ref="refApiDurationRanges"></canvas>
           </div>
         </div>
@@ -571,7 +575,8 @@ const ApiAnalytics = {
         const refWeeklyRequests = ref(null)
         const refTags = ref(null)
         const refApiRequests = ref(null)
-        const refApiDurations = ref(null)
+        const refApiAverageDurations = ref(null)
+        const refApiTotalDurations = ref(null)
         const refApiDurationRanges = ref(null)
         const refOpStatusCodes = ref(null)
         const refOpDurationRanges = ref(null)
@@ -929,9 +934,9 @@ const ApiAnalytics = {
         }
         
         let apiRequestsChart = null
-        let apiDurationsChart = null
-        const createApiDurationsChart = () => {
-            if (!props.analytics || !refApiDurations.value) return
+        let apiAverageDurationsChart = null
+        const createApiAverageDurationsChart = () => {
+            if (!props.analytics || !refApiAverageDurations.value) return
             // Sort APIs by request count in descending order
             const sortedApis = Object.entries(props.analytics.apis)
                 .sort((a, b) =>
@@ -941,14 +946,14 @@ const ApiAnalytics = {
             const data = sortedApis.map(([_, stats]) => Math.floor(stats.totalDuration / stats.totalRequests))
             const avgRequestLengths = sortedApis.map(([_, stats]) =>
                 stats.totalRequests > 0 ? Math.round(stats.requestLength / stats.totalRequests) : 0)
-            apiDurationsChart?.destroy()
-            apiDurationsChart = new Chart(refApiDurations.value, {
+            apiAverageDurationsChart?.destroy()
+            apiAverageDurationsChart = new Chart(refApiAverageDurations.value, {
                 type: 'bar',
                 data: {
                     labels,
                     datasets: [
                         {
-                            label: 'Average Duration (ms)',
+                            label: 'Average Duration',
                             data,
                             backgroundColor: 'rgba(54, 162, 235, 0.2)',
                             borderColor: 'rgb(54, 162, 235)',
@@ -966,11 +971,18 @@ const ApiAnalytics = {
                         },
                         tooltip: {
                             callbacks: {
+                                label: function(context) {
+                                    return `Average Duration: ${humanifyMs(context.raw)}`;
+                                },
                                 afterLabel: function(context) {
                                     const index = context.dataIndex;
-                                    return avgRequestLengths[index] > 0
-                                        ? `Avg Request Body: ${avgRequestLengths[index]} bytes`
-                                        : '';
+                                    const api = sortedApis[index][1];
+                                    let lines = [];
+                                    if (avgRequestLengths[index] > 0) {
+                                        lines.push(`Avg Request Body: ${formatBytes(avgRequestLengths[index])}`);
+                                    }
+                                    lines.push(`Total Duration: ${humanifyMs(api.totalDuration)}`);
+                                    return lines;
                                 }
                             }
                         }
@@ -978,9 +990,78 @@ const ApiAnalytics = {
                     scales: {
                         x: {
                             beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Duration (ms)'
+                            ticks: {
+                                callback: function(value) {
+                                    return humanifyMs(value);
+                                }
+                            }
+                        }
+                    },
+                    onClick: onClick(props.analytics, routes, 'api')
+                }
+            })
+        }
+        let apiTotalDurationsChart = null
+        function createApiTotalDurationsChart() {
+            if (!props.analytics || !refApiTotalDurations.value) return
+            // Sort APIs by total duration in descending order
+            const sortedApis = Object.entries(props.analytics.apis)
+                .sort((a, b) => b[1].totalDuration - a[1].totalDuration)
+                .slice(0, limits.value.duration) // Limit for better visualization
+            const labels = sortedApis.map(([api]) => api)
+            const data = sortedApis.map(([_, stats]) => stats.totalDuration)
+            const avgDurations = sortedApis.map(([_, stats]) =>
+                stats.totalRequests > 0 ? Math.floor(stats.totalDuration / stats.totalRequests) : 0)
+            const avgRequestLengths = sortedApis.map(([_, stats]) =>
+                stats.totalRequests > 0 ? Math.round(stats.requestLength / stats.totalRequests) : 0)
+            apiTotalDurationsChart?.destroy()
+            apiTotalDurationsChart = new Chart(refApiTotalDurations.value, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Total Duration',
+                            data,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Total Duration: ${humanifyMs(context.raw)}`;
+                                },
+                                afterLabel: function(context) {
+                                    const index = context.dataIndex;
+                                    const api = sortedApis[index][1];
+                                    let lines = [];
+                                    lines.push(`Average Duration: ${humanifyMs(avgDurations[index])}`);
+                                    if (avgRequestLengths[index] > 0) {
+                                        lines.push(`Avg Request Body: ${formatBytes(avgRequestLengths[index])}`);
+                                    }
+                                    return lines;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return humanifyMs(value);
+                                }
                             }
                         }
                     },
@@ -1003,7 +1084,7 @@ const ApiAnalytics = {
                 weeklyRequestsChart,
                 tagsChart,
                 apiRequestsChart,
-                apiDurationsChart,
+                apiAverageDurationsChart,
                 apiDurationRangesChart,
                 userStatusCodesChart,
                 opTopUsersChart,
@@ -1028,7 +1109,8 @@ const ApiAnalytics = {
                 refEl: refApiRequests,
                 onClick: onClick(props.analytics, routes, 'api')
             })
-            createApiDurationsChart()
+            createApiAverageDurationsChart()
+            createApiTotalDurationsChart()
             apiDurationRangesChart = createDurationRangesChart(props.analytics.durations, apiDurationRangesChart, refApiDurationRanges)
             updateApi()
         }
@@ -1092,7 +1174,8 @@ const ApiAnalytics = {
         })
         watch(() => [props.analytics, limits.value.duration], () => {
             setTimeout(() => {
-                createApiDurationsChart()
+                createApiAverageDurationsChart()
+                createApiTotalDurationsChart()
             }, 0)
         })
         return {
@@ -1109,7 +1192,8 @@ const ApiAnalytics = {
             refWeeklyRequests,
             refTags,
             refApiRequests,
-            refApiDurations,
+            refApiAverageDurations,
+            refApiTotalDurations,
             refApiDurationRanges,
             refOpStatusCodes,
             refOpDurationRanges,
@@ -1118,6 +1202,7 @@ const ApiAnalytics = {
             refOpTopIps,
             chartHeight,
             humanifyNumber,
+            mapCounts,
         }
     }
 }
@@ -1197,25 +1282,22 @@ const UserAnalytics = {
             </div>
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div v-if="Object.keys(analytics.users[routes.userId].apis ?? {}).length"
-               :class="Object.keys(analytics.users[routes.userId].apiKeys ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+        <div :class="['mt-8 grid grid-cols-1 md:grid-cols-2 w-full gap-2', mapCounts(analytics.users[routes.userId],['apis','apiKeys','ips']) === 3 ? 'lg:grid-cols-3' : '']">
+          <div v-if="mapCounts(analytics.users[routes.userId],'apis')">
             Top APIs
             <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refUserTopApis"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.users[routes.userId].apiKeys ?? {}).length"
-               :class="Object.keys(analytics.users[routes.userId].apiKeys ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+          <div v-if="mapCounts(analytics.users[routes.userId],'apiKeys')">
             Top API Keys
-            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refUserTopApiKeys"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.users[routes.userId].ips ?? {}).length"
-               :class="Object.keys(analytics.users[routes.userId].apiKeys ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+          <div v-if="mapCounts(analytics.users[routes.userId],'ips')">
             Top IP Addresses
-            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refUserTopIps"></canvas>
             </div>
           </div>
@@ -1416,6 +1498,7 @@ const UserAnalytics = {
             getUserLabel,
             chartHeight,
             humanifyNumber,
+            mapCounts,
         }
     }
 }
@@ -1507,35 +1590,32 @@ const ApiKeyAnalytics = {
             </div>
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div class="lg:w-1/2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
+          <div>
             <div class="bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refApiKeyStatusCodes"></canvas>
             </div>
           </div>
-          <div class="lg:w-1/2">
+          <div>
             <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refApiKeyDurationRanges"></canvas>
             </div>
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].apis ?? {}).length"
-               :class="Object.keys(analytics.apiKeys[routes.apiKey].apis ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+        <div :class="['mt-8 grid grid-cols-1 md:grid-cols-2 w-full gap-2', mapCounts(analytics.apiKeys[routes.apiKey],['apis','users','ips']) === 3 ? 'lg:grid-cols-3' : '']">
+          <div v-if="mapCounts(analytics.apiKeys[routes.apiKey],'apis')">
             Top APIs
             <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refApiKeyTopApis"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].users ?? {}).length"
-               :class="Object.keys(analytics.apiKeys[routes.apiKey].users ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+          <div v-if="mapCounts(analytics.apiKeys[routes.apiKey],'users')">
             Top Users
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refApiKeyTopUsers"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.apiKeys[routes.apiKey].ips ?? {}).length"
-               :class="Object.keys(analytics.apiKeys[routes.apiKey].ips ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+          <div v-if="mapCounts(analytics.apiKeys[routes.apiKey],'ips')">
             Top IPs
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refApiKeyTopIps"></canvas>
@@ -1694,6 +1774,7 @@ const ApiKeyAnalytics = {
                 onClick: onClick(props.analytics, routes, 'user'),
             })
         }
+        
         watch(() => [routes.month], update)
         watch(() => [routes.apiKey], () => {
             opEntry.value = routes.apiKey ? opEntries.value.find(x => x.key === routes.apiKey) : null
@@ -1734,6 +1815,7 @@ const ApiKeyAnalytics = {
             humanifyNumber,
             formatDate,
             hiddenApiKey,
+            mapCounts,
             showApiKey,
         }
     }
@@ -1787,35 +1869,32 @@ const IpAnalytics = {
             </div>
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div class="lg:w-1/2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
+          <div>
             <div class="bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refIpStatusCodes"></canvas>
             </div>
           </div>
-          <div class="lg:w-1/2">
+          <div>
             <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refIpDurationRanges"></canvas>
             </div>
           </div>
         </div>
-        <div class="flex flex-wrap lg:flex-nowrap w-full gap-x-2">
-          <div v-if="Object.keys(analytics.ips[routes.ip].apis ?? {}).length"
-               :class="Object.keys(analytics.ips[routes.ip].apis ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+        <div :class="['mt-8 grid grid-cols-1 md:grid-cols-2 w-full gap-2', mapCounts(analytics.ips[routes.ip],['apis','users','apiKeys']) === 3 ? 'lg:grid-cols-3' : '']">
+          <div v-if="mapCounts(analytics.ips[routes.ip],'apis')">
             Top APIs
             <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
               <canvas ref="refIpTopApis"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.ips[routes.ip].users ?? {}).length"
-               :class="Object.keys(analytics.ips[routes.ip].users ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+          <div v-if="mapCounts(analytics.ips[routes.ip],'users')">
             Top Users
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refIpTopUsers"></canvas>
             </div>
           </div>
-          <div v-if="Object.keys(analytics.ips[routes.ip].apiKeys ?? {}).length"
-               :class="Object.keys(analytics.ips[routes.ip].apiKeys ?? {}).length ? 'lg:w-1/3' : 'lg:w-1/2'">
+          <div v-if="mapCounts(analytics.ips[routes.ip],'apiKeys')">
             Top API Keys
             <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
               <canvas ref="refIpTopApiKeys"></canvas>
@@ -2005,6 +2084,7 @@ const IpAnalytics = {
             getUserLabel,
             chartHeight,
             humanifyNumber,
+            mapCounts,
         }
     }
 }
