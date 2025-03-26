@@ -26,7 +26,7 @@ public static class HttpResponseExtensionsInternal
     [Obsolete("Use WriteToOutputStreamAsync")]
     public static bool WriteToOutputStream(IResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
     {
-        if (HostContext.Config.AllowPartialResponses && result is IPartialWriter partialResult && partialResult.IsPartialRequest)
+        if (HostContext.Config.AllowPartialResponses && result is IPartialWriter { IsPartialRequest: true } partialResult)
         {
             response.AllowSyncIO();
             partialResult.WritePartialTo(response);
