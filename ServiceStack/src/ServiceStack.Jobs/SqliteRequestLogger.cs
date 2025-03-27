@@ -547,6 +547,138 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         return ret;
     }
 
+    public AnalyticsReports GetApiKeyAnalytics(AnalyticsConfig config, DateTime month, string apiKey)
+    {
+        apiKey.SqlVerifyFragment();
+        
+        using var db = OpenMonthDb(month);
+
+        var tableExists = db.TableExists<ApiKeyAnalytics>();
+        var lastLogId = tableExists
+            ? db.Single(db.From<RequestLog>()
+                .And("Headers LIKE {0}", $"%Bearer {apiKey}%")
+                .OrderByDescending(x => x.Id).Limit(1))?.Id
+            : null;
+
+        ApiKeyAnalytics? apiKeyAnalytics = null;
+        try
+        {
+            // Ignore schema changes, table is recreated when cached
+            apiKeyAnalytics = lastLogId != null
+                ? db.SingleById<ApiKeyAnalytics>(lastLogId)
+                : null;
+        } catch (Exception ignore) {}
+
+        if (apiKeyAnalytics?.Report != null)
+            return apiKeyAnalytics.Report;
+        
+        List<RequestLog> batch = [];
+        long lastPk = 0;
+        var ret = CreateAnalyticsReports();
+        
+        do {
+            batch = db.Select(
+                db.From<RequestLog>()
+                    .Where(x => x.Id > lastPk)
+                    .And("Headers LIKE {0}", $"%Bearer {apiKey}%")
+                    .OrderBy(x => x.Id)
+                    .Limit(config.BatchSize));
+            
+            foreach (var requestLog in batch)
+            {
+                ret.AddRequestLog(requestLog, config);
+                lastPk = requestLog.Id;
+            }
+            
+        } while(batch.Count >= config.BatchSize);
+
+        ret.Id = lastPk;
+        ret.CleanResults(config);
+
+        if (ret.ApiKeys?.Count > 0)
+        {
+            db.CreateTableIfNotExists<ApiKeyAnalytics>();
+            db.Delete<ApiKeyAnalytics>(x => x.ApiKey == apiKey);
+            
+            db.Insert(new ApiKeyAnalytics
+            {
+                Id =  lastPk,
+                ApiKey = apiKey,
+                Created = DateTime.UtcNow,
+                Version =  Env.ServiceStackVersion,
+                Report = ret,
+            });
+        }
+        
+        return ret;
+    }
+
+    public AnalyticsReports GetIpAnalytics(AnalyticsConfig config, DateTime month, string ip)
+    {
+        ip.SqlVerifyFragment();
+        
+        using var db = OpenMonthDb(month);
+
+        var tableExists = db.TableExists<IpAnalytics>();
+        var lastLogId = tableExists
+            ? db.Single(db.From<RequestLog>()
+                .And(x => x.IpAddress == ip)
+                .OrderByDescending(x => x.Id).Limit(1))?.Id
+            : null;
+
+        IpAnalytics? apiKeyAnalytics = null;
+        try
+        {
+            // Ignore schema changes, table is recreated when cached
+            apiKeyAnalytics = lastLogId != null
+                ? db.SingleById<IpAnalytics>(lastLogId)
+                : null;
+        } catch (Exception ignore) {}
+
+        if (apiKeyAnalytics?.Report != null)
+            return apiKeyAnalytics.Report;
+        
+        List<RequestLog> batch = [];
+        long lastPk = 0;
+        var ret = CreateAnalyticsReports();
+        
+        do {
+            batch = db.Select(
+                db.From<RequestLog>()
+                    .Where(x => x.Id > lastPk)
+                    .And(x => x.IpAddress == ip)
+                    .OrderBy(x => x.Id)
+                    .Limit(config.BatchSize));
+            
+            foreach (var requestLog in batch)
+            {
+                ret.AddRequestLog(requestLog, config);
+                lastPk = requestLog.Id;
+            }
+            
+        } while(batch.Count >= config.BatchSize);
+
+        ret.Id = lastPk;
+        ret.CleanResults(config);
+
+        if (ret.ApiKeys?.Count > 0)
+        {
+            db.CreateTableIfNotExists<IpAnalytics>();
+            db.Delete<IpAnalytics>(x => x.Ip == ip);
+            
+            db.Insert(new IpAnalytics
+            {
+                Id =  lastPk,
+                Ip = ip,
+                Created = DateTime.UtcNow,
+                Version =  Env.ServiceStackVersion,
+                Report = ret,
+            });
+        }
+
+        return ret;
+    }
+
     public Dictionary<string, long> GetApiAnalytics(AnalyticsConfig config, DateTime month, AnalyticsType type, string value)
     {
         using var db = OpenMonthDb(month);

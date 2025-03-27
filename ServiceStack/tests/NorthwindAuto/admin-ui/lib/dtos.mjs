@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-27 21:08:51
+Date: 2025-03-28 01:55:01
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -378,14 +378,6 @@ export class FailedJob extends BackgroundJobBase {
     /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
 }
-/** @typedef {'User'|'Day'|'ApiKey'|'Ips'} */
-export var AnalyticsType;
-(function (AnalyticsType) {
-    AnalyticsType["User"] = "User"
-    AnalyticsType["Day"] = "Day"
-    AnalyticsType["ApiKey"] = "ApiKey"
-    AnalyticsType["Ips"] = "Ips"
-})(AnalyticsType || (AnalyticsType = {}));
 export class ValidateRule {
     /** @param {{validator?:string,condition?:string,errorCode?:string,message?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -1709,10 +1701,12 @@ export class RequestLogEntry {
     meta;
 }
 export class AnalyticsLogInfo {
-    /** @param {{id?:number,browser?:string,device?:string,bot?:string,op?:string,userId?:string,userName?:string,apiKey?:string,ip?:string}} [init] */
+    /** @param {{id?:number,dateTime?:string,browser?:string,device?:string,bot?:string,op?:string,userId?:string,userName?:string,apiKey?:string,ip?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
+    /** @type {string} */
+    dateTime;
     /** @type {string} */
     browser;
     /** @type {string} */
@@ -2141,14 +2135,6 @@ export class GetAnalyticsReportsResponse {
     constructor(init) { Object.assign(this, init) }
     /** @type {AnalyticsReports} */
     result;
-    /** @type {ResponseStatus} */
-    responseStatus;
-}
-export class GetApiAnalyticsResponse {
-    /** @param {{results?:{ [index:string]: number; },responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {{ [index:string]: number; }} */
-    results;
     /** @type {ResponseStatus} */
     responseStatus;
 }
@@ -2758,19 +2744,6 @@ export class GetAnalyticsReports {
     getTypeName() { return 'GetAnalyticsReports' }
     getMethod() { return 'GET' }
     createResponse() { return new GetAnalyticsReportsResponse() }
-}
-export class GetApiAnalytics {
-    /** @param {{month?:string,type?:AnalyticsType,value?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?string} */
-    month;
-    /** @type {?AnalyticsType} */
-    type;
-    /** @type {string} */
-    value;
-    getTypeName() { return 'GetApiAnalytics' }
-    getMethod() { return 'GET' }
-    createResponse() { return new GetApiAnalyticsResponse() }
 }
 export class GetValidationRules {
     /** @param {{authSecret?:string,type?:string}} [init] */

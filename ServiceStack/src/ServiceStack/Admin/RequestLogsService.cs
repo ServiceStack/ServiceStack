@@ -154,33 +154,32 @@ public class UserAnalytics
     [DataMember(Order=5)] public AnalyticsReports Report { get; set; }
 }
 
+[DataContract]
+public class ApiKeyAnalytics
+{
+    [DataMember(Order=1)] public long Id { get; set; } // Use last Id of RequestLog
+    [DataMember(Order=2)] public string ApiKey { get; set; }
+    [DataMember(Order=3)] public DateTime Created { get; set; } // When it was created
+    [DataMember(Order=4)] public decimal Version { get; set; } // ServiceStack Version
+    [DataMember(Order=5)] public AnalyticsReports Report { get; set; }
+}
+
+[DataContract]
+public class IpAnalytics
+{
+    [DataMember(Order=1)] public long Id { get; set; } // Use last Id of RequestLog
+    [DataMember(Order=2)] public string Ip { get; set; }
+    [DataMember(Order=3)] public DateTime Created { get; set; } // When it was created
+    [DataMember(Order=4)] public decimal Version { get; set; } // ServiceStack Version
+    [DataMember(Order=5)] public AnalyticsReports Report { get; set; }
+}
+
 public enum AnalyticsType
 {
     User,
     Day,
     ApiKey,
     Ips,
-}
-
-[DataContract]
-public class GetApiAnalytics : IGet, IReturn<GetApiAnalyticsResponse>
-{
-    [DataMember(Order=1)]
-    public DateTime? Month { get; set; }
-    [DataMember(Order=2)]
-    public AnalyticsType? Type { get; set; }
-    [DataMember(Order=3)]
-    public string Value { get; set; }
-}
-
-[DataContract]
-public class GetApiAnalyticsResponse
-{
-    [DataMember(Order=1)]
-    public Dictionary<string, long> Results { get; set; } = new();
-    
-    [DataMember(Order=2)]
-    public ResponseStatus ResponseStatus { get; set; }
 }
 
 [DataContract]
@@ -397,7 +396,8 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             }
         }
 
-        if (request.Filter == "user")
+        var filter = request.Filter?.ToLower();
+        if (filter == "user")
         {
             if (string.IsNullOrEmpty(request.Value))
                 throw new ArgumentNullException(nameof(request.Value));
@@ -405,6 +405,26 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             return new GetAnalyticsReportsResponse
             {
                 Result = userAnalytics,
+            };
+        }
+        if (filter == "apikey")
+        {
+            if (string.IsNullOrEmpty(request.Value))
+                throw new ArgumentNullException(nameof(request.Value));
+            var apiKeyAnalytics = analytics.GetApiKeyAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, request.Value);
+            return new GetAnalyticsReportsResponse
+            {
+                Result = apiKeyAnalytics,
+            };
+        }
+        if (filter == "ip")
+        {
+            if (string.IsNullOrEmpty(request.Value))
+                throw new ArgumentNullException(nameof(request.Value));
+            var ipAnalytics = analytics.GetIpAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, request.Value);
+            return new GetAnalyticsReportsResponse
+            {
+                Result = ipAnalytics,
             };
         }
 
@@ -441,7 +461,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             }
         }
 
-        var results = request.Filter?.ToLower() switch
+        var results = filter switch
         {
             "apis" => new AnalyticsReports { Apis = ret.Apis },
             "users" => new AnalyticsReports { Users = ret.Users },
@@ -465,21 +485,4 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         };
     }
 
-    public async Task<object> Any(GetApiAnalytics request)
-    {
-        var (feature, analytics) = await AssertRequireAnalytics().ConfigAwait();
-
-        if (request.Type == null)
-            throw new ArgumentNullException(nameof(request.Type));
-        if (request.Value == null)
-            throw new ArgumentNullException(nameof(request.Value));
-        
-        var ret = analytics.GetApiAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow,
-            request.Type.Value, request.Value);
-
-        return new GetApiAnalyticsResponse
-        {
-            Results = ret
-        };
-    }
 }

@@ -50,7 +50,8 @@ public interface IRequireAnalytics
     AnalyticsInfo GetAnalyticInfo(AnalyticsConfig config);
     AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month);
     AnalyticsReports GetUserAnalytics(AnalyticsConfig config, DateTime month, string userId);
-    Dictionary<string, long> GetApiAnalytics(AnalyticsConfig config, DateTime month, AnalyticsType type, string value);
+    AnalyticsReports GetApiKeyAnalytics(AnalyticsConfig config, DateTime month, string apiKey);
+    AnalyticsReports GetIpAnalytics(AnalyticsConfig config, DateTime month, string ip);
 }
 
 public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitPlugin, IHasStringId
