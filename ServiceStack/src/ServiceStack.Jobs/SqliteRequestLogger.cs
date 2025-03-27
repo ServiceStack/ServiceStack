@@ -529,17 +529,20 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         ret.Id = lastPk;
         ret.CleanResults(config);
 
-        db.CreateTableIfNotExists<UserAnalytics>();
-        db.Delete<UserAnalytics>(x => x.UserId == userId);
-        
-        db.Insert(new UserAnalytics
+        if (ret.Users?.Count > 0)
         {
-            Id =  lastPk,
-            UserId = userId,
-            Created = DateTime.UtcNow,
-            Version =  Env.ServiceStackVersion,
-            Report = ret,
-        });
+            db.CreateTableIfNotExists<UserAnalytics>();
+            db.Delete<UserAnalytics>(x => x.UserId == userId);
+            
+            db.Insert(new UserAnalytics
+            {
+                Id =  lastPk,
+                UserId = userId,
+                Created = DateTime.UtcNow,
+                Version =  Env.ServiceStackVersion,
+                Report = ret,
+            });
+        }
         
         return ret;
     }

@@ -777,8 +777,10 @@ const History = {
         </span>
       </nav>
     </div>
-    <div v-if="monthDbEntries.length && (routes.page==='completed'||routes.page==='failed')" class="absolute right-4 -mt-12">
-        <SelectInput v-model="monthDb" :entries="monthDbEntries" />
+    <div v-if="monthDbEntries.length && (routes.page==='completed'||routes.page==='failed')" class="relative">
+      <div class="absolute right-0 -mt-12">
+        <SelectInput id="month" label="" v-model="monthDb" :entries="monthDbEntries" />
+      </div>
     </div>
     <Completed v-if="routes.page==='completed'" :month="monthDb" />
     <Failed v-else-if="routes.page==='failed'" :month="monthDb" />

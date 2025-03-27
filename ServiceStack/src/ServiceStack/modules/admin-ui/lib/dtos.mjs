@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-25 01:11:52
+Date: 2025-03-27 21:08:51
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1024,8 +1024,22 @@ export class SharpPagesInfo {
     /** @type {{ [index:string]: string; }} */
     meta;
 }
+export class RequestLogsAnalytics {
+    /** @param {{months?:string[],tabs?:{ [index:string]: string; },disableAnalytics?:boolean,disableUserAnalytics?:boolean,disableApiKeyAnalytics?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string[]} */
+    months;
+    /** @type {{ [index:string]: string; }} */
+    tabs;
+    /** @type {?boolean} */
+    disableAnalytics;
+    /** @type {?boolean} */
+    disableUserAnalytics;
+    /** @type {?boolean} */
+    disableApiKeyAnalytics;
+}
 export class RequestLogsInfo {
-    /** @param {{accessRole?:string,requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index:string]: string[]; },meta?:{ [index:string]: string; }}} [init] */
+    /** @param {{accessRole?:string,requestLogger?:string,defaultLimit?:number,serviceRoutes?:{ [index:string]: string[]; },analytics?:RequestLogsAnalytics,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     accessRole;
@@ -1035,6 +1049,8 @@ export class RequestLogsInfo {
     defaultLimit;
     /** @type {{ [index:string]: string[]; }} */
     serviceRoutes;
+    /** @type {RequestLogsAnalytics} */
+    analytics;
     /** @type {{ [index:string]: string; }} */
     meta;
 }
@@ -1047,7 +1063,7 @@ export class ProfilingInfo {
     defaultLimit;
     /** @type {string[]} */
     summaryFields;
-    /** @type {?string} */
+    /** @type {string} */
     tagLabel;
     /** @type {{ [index:string]: string; }} */
     meta;
@@ -2119,12 +2135,10 @@ export class GetAnalyticsInfoResponse {
     responseStatus;
 }
 export class GetAnalyticsReportsResponse {
-    /** @param {{results?:AnalyticsReports,months?:string[],responseStatus?:ResponseStatus}} [init] */
+    /** @param {{result?:AnalyticsReports,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {AnalyticsReports} */
-    results;
-    /** @type {string[]} */
-    months;
+    result;
     /** @type {ResponseStatus} */
     responseStatus;
 }
@@ -2729,12 +2743,14 @@ export class GetAnalyticsInfo {
     createResponse() { return new GetAnalyticsInfoResponse() }
 }
 export class GetAnalyticsReports {
-    /** @param {{month?:string,filter?:string,force?:boolean}} [init] */
+    /** @param {{month?:string,filter?:string,value?:string,force?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?string} */
     month;
     /** @type {string} */
     filter;
+    /** @type {string} */
+    value;
     /** @type {?boolean} */
     force;
     getTypeName() { return 'GetAnalyticsReports' }

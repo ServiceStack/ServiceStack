@@ -71,20 +71,22 @@ public class AnalyticsLogInfo
     [DataMember(Order=1)]
     public long Id { get; set; }
     [DataMember(Order=2)]
-    public string Browser { get; set; }
+    public DateTime DateTime { get; set; }
     [DataMember(Order=3)]
-    public string Device { get; set; }
+    public string Browser { get; set; }
     [DataMember(Order=4)]
-    public string Bot { get; set; }
+    public string Device { get; set; }
     [DataMember(Order=5)]
-    public string Op { get; set; }
+    public string Bot { get; set; }
     [DataMember(Order=6)]
-    public string UserId { get; set; }
+    public string Op { get; set; }
     [DataMember(Order=7)]
-    public string UserName { get; set; }
+    public string UserId { get; set; }
     [DataMember(Order=8)]
-    public string ApiKey { get; set; }
+    public string UserName { get; set; }
     [DataMember(Order=9)]
+    public string ApiKey { get; set; }
+    [DataMember(Order=10)]
     public string Ip { get; set; }
 }
 [DataContract]
@@ -117,7 +119,7 @@ public class GetAnalyticsReports : IGet, IReturn<GetAnalyticsReportsResponse>
 public class GetAnalyticsReportsResponse
 {
     [DataMember(Order=1)]
-    public AnalyticsReports Results { get; set; } = new();
+    public AnalyticsReports Result { get; set; } = new();
     
     [DataMember(Order=2)]
     public ResponseStatus ResponseStatus { get; set; }
@@ -337,6 +339,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             var info = new AnalyticsLogInfo
             {
                 Id = log.Id,
+                DateTime = log.DateTime,
                 Op = log.OperationName ?? log.RequestDto?.GetType().Name,
                 UserId = log.UserAuthId,
                 Ip = log.IpAddress,
@@ -401,7 +404,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             var userAnalytics = analytics.GetUserAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, request.Value);
             return new GetAnalyticsReportsResponse
             {
-                Results = userAnalytics,
+                Result = userAnalytics,
             };
         }
 
@@ -458,7 +461,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
 
         return new GetAnalyticsReportsResponse
         {
-            Results = results,
+            Result = results,
         };
     }
 

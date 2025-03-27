@@ -89,11 +89,13 @@ public class RequestLogsHostedService(ILogger<RequestLogsHostedService> log, IRe
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var dbRequestLogger = (SqliteRequestLogger)requestLogger;
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
-        while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+        if (requestLogger is SqliteRequestLogger dbRequestLogger)
         {
-            dbRequestLogger.Tick(log);
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
+            while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+            {
+                dbRequestLogger.Tick(log);
+            }
         }
     }
 }
