@@ -74,6 +74,16 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
     /// Whether to hide Analytics from Admin UI
     /// </summary>
     public bool DisableAnalytics { get; set; }
+    
+    /// <summary>
+    /// Whether to hide Analytics from Admin User UI
+    /// </summary>
+    public bool DisableUserAnalytics { get; set; }
+    
+    /// <summary>
+    /// Whether to hide API Key Analytics from Admin User UI
+    /// </summary>
+    public bool DisableApiKeyAnalytics { get; set; }
 
     /// <summary>
     /// Don't log requests of these types. By default RequestLog's are excluded
@@ -253,6 +263,18 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
                 RequestLogger = requestLoggerType?.Name,
                 DefaultLimit = DefaultLimit,
             };
+            if (RequestLogger is IRequireAnalytics analytics)
+            {
+                var info = analytics.GetAnalyticInfo(AnalyticsConfig);
+                meta.Plugins.RequestLogs.Analytics = new()
+                {
+                    Months = info.Months,
+                    Tabs = info.Tabs,
+                    DisableAnalytics = DisableAnalytics.NullIfFalse(),
+                    DisableUserAnalytics = DisableUserAnalytics.NullIfFalse(),
+                    DisableApiKeyAnalytics = DisableApiKeyAnalytics.NullIfFalse(),
+                };
+            }
         });
 
         if (RequestLogger is IRequireRegistration requireRegistration)

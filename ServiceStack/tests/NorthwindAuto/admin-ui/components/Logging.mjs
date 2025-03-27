@@ -391,8 +391,8 @@ export const Logging = {
         const gridFilters = ref({})
         const selected = ref()
         const { Formats } = useFormatters()
-        const useAutoQuery = computed(() => server.plugins.requestLogs?.requestLogger === 'SqliteRequestLogger')
-        const months = ref([])
+        const useAutoQuery = computed(() => server.plugins.requestLogs?.analytics)
+        const months = ref(server.plugins.requestLogs?.analytics?.months ?? [])
         const years = computed(() =>
             Array.from(new Set(months.value.map(x => leftPart(x,'-')))).toReversed())
 

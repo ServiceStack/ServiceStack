@@ -301,7 +301,17 @@ public class RequestLogsInfo : IMeta
      public string RequestLogger { get; set; }
     public int DefaultLimit { get; set; }
     public Dictionary<string,string[]> ServiceRoutes { get; set; }
+    public RequestLogsAnalytics Analytics { get; set; }
     public Dictionary<string, string> Meta { get; set; }
+}
+
+public class RequestLogsAnalytics
+{
+    public List<string> Months { get; set; }
+    public Dictionary<string,string> Tabs { get; set; }
+    public bool? DisableAnalytics { get; set; }
+    public bool? DisableUserAnalytics { get; set; }
+    public bool? DisableApiKeyAnalytics { get; set; }
 }
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]
@@ -310,7 +320,7 @@ public class ProfilingInfo : IMeta
     public string AccessRole { get; set; }
     public int DefaultLimit { get; set; }
     public List<string> SummaryFields { get; set; }
-    public string? TagLabel { get; set; }
+    public string TagLabel { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 

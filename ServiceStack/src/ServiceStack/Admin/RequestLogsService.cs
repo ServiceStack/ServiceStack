@@ -108,6 +108,9 @@ public class GetAnalyticsReports : IGet, IReturn<GetAnalyticsReportsResponse>
     public string Filter { get; set; }
 
     [DataMember(Order=3)] 
+    public string Value { get; set; }
+
+    [DataMember(Order=4)] 
     public bool? Force { get; set; }
 }
 [DataContract]
@@ -115,11 +118,8 @@ public class GetAnalyticsReportsResponse
 {
     [DataMember(Order=1)]
     public AnalyticsReports Results { get; set; } = new();
-
-    [DataMember(Order=2)]
-    public List<string> Months { get; set; } = new();
     
-    [DataMember(Order=3)]
+    [DataMember(Order=2)]
     public ResponseStatus ResponseStatus { get; set; }
 }
 
@@ -140,6 +140,16 @@ public class AnalyticsReports
     [DataMember(Order=12)] public Dictionary<string, RequestSummary> Devices { get; set; }
     [DataMember(Order=13)] public Dictionary<string, RequestSummary> Bots { get; set; }
     [DataMember(Order=14)] public Dictionary<string, long> Durations { get; set; }
+}
+
+[DataContract]
+public class UserAnalytics
+{
+    [DataMember(Order=1)] public long Id { get; set; } // Use last Id of RequestLog
+    [DataMember(Order=2)] public string UserId { get; set; }
+    [DataMember(Order=3)] public DateTime Created { get; set; } // When it was created
+    [DataMember(Order=4)] public decimal Version { get; set; } // ServiceStack Version
+    [DataMember(Order=5)] public AnalyticsReports Report { get; set; }
 }
 
 public enum AnalyticsType
@@ -384,6 +394,17 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             }
         }
 
+        if (request.Filter == "user")
+        {
+            if (string.IsNullOrEmpty(request.Value))
+                throw new ArgumentNullException(nameof(request.Value));
+            var userAnalytics = analytics.GetUserAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, request.Value);
+            return new GetAnalyticsReportsResponse
+            {
+                Results = userAnalytics,
+            };
+        }
+
         var ret = analytics.GetAnalyticsReports(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow);
         foreach (var item in ret.Ips.ToList())
         {
@@ -410,7 +431,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             }
             foreach (var user in ret.Users)
             {
-                if (user.Value.Name == null && allUsersMap.TryGetValue(user.Key.ToString()!, out var userName))
+                if (user.Value.Name == null && allUsersMap.TryGetValue(user.Key, out var userName))
                 {
                     user.Value.Name = userName;
                 }
@@ -434,11 +455,9 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         results.Id = ret.Id;
         results.Created = ret.Created;
         results.Version = ret.Version;
-        var info = analytics.GetAnalyticInfo(feature.AnalyticsConfig);
 
         return new GetAnalyticsReportsResponse
         {
-            Months = info.Months,
             Results = results,
         };
     }
