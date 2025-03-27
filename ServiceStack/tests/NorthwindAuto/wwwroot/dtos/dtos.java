@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-25 01:11:52
+Date: 2025-03-28 01:55:02
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1015,37 +1015,20 @@ public class dtos
         public String filter = null;
 
         @DataMember(Order=3)
+        public String value = null;
+
+        @DataMember(Order=4)
         public Boolean force = null;
         
         public Date getMonth() { return month; }
         public GetAnalyticsReports setMonth(Date value) { this.month = value; return this; }
         public String getFilter() { return filter; }
         public GetAnalyticsReports setFilter(String value) { this.filter = value; return this; }
+        public String getValue() { return value; }
+        public GetAnalyticsReports setValue(String value) { this.value = value; return this; }
         public Boolean isForce() { return force; }
         public GetAnalyticsReports setForce(Boolean value) { this.force = value; return this; }
         private static Object responseType = GetAnalyticsReportsResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    @DataContract
-    public static class GetApiAnalytics implements IReturn<GetApiAnalyticsResponse>, IGet
-    {
-        @DataMember(Order=1)
-        public Date month = null;
-
-        @DataMember(Order=2)
-        public AnalyticsType type = null;
-
-        @DataMember(Order=3)
-        public String value = null;
-        
-        public Date getMonth() { return month; }
-        public GetApiAnalytics setMonth(Date value) { this.month = value; return this; }
-        public AnalyticsType getType() { return type; }
-        public GetApiAnalytics setType(AnalyticsType value) { this.type = value; return this; }
-        public String getValue() { return value; }
-        public GetApiAnalytics setValue(String value) { this.value = value; return this; }
-        private static Object responseType = GetApiAnalyticsResponse.class;
         public Object getResponseType() { return responseType; }
     }
 
@@ -1708,35 +1691,15 @@ public class dtos
     public static class GetAnalyticsReportsResponse
     {
         @DataMember(Order=1)
-        public AnalyticsReports results = null;
+        public AnalyticsReports result = null;
 
         @DataMember(Order=2)
-        public ArrayList<String> months = null;
-
-        @DataMember(Order=3)
         public ResponseStatus responseStatus = null;
         
-        public AnalyticsReports getResults() { return results; }
-        public GetAnalyticsReportsResponse setResults(AnalyticsReports value) { this.results = value; return this; }
-        public ArrayList<String> getMonths() { return months; }
-        public GetAnalyticsReportsResponse setMonths(ArrayList<String> value) { this.months = value; return this; }
+        public AnalyticsReports getResult() { return result; }
+        public GetAnalyticsReportsResponse setResult(AnalyticsReports value) { this.result = value; return this; }
         public ResponseStatus getResponseStatus() { return responseStatus; }
         public GetAnalyticsReportsResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    @DataContract
-    public static class GetApiAnalyticsResponse
-    {
-        @DataMember(Order=1)
-        public HashMap<String,Long> results = null;
-
-        @DataMember(Order=2)
-        public ResponseStatus responseStatus = null;
-        
-        public HashMap<String,Long> getResults() { return results; }
-        public GetApiAnalyticsResponse setResults(HashMap<String,Long> value) { this.results = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public GetApiAnalyticsResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
 
     @DataContract
@@ -2075,14 +2038,6 @@ public class dtos
         Completed,
         Failed,
         Cancelled;
-    }
-
-    public static enum AnalyticsType
-    {
-        User,
-        Day,
-        ApiKey,
-        Ips;
     }
 
     public static class ValidationRule extends ValidateRule
@@ -2836,31 +2791,36 @@ public class dtos
         public Long id = null;
 
         @DataMember(Order=2)
-        public String browser = null;
+        public Date dateTime = null;
 
         @DataMember(Order=3)
-        public String device = null;
+        public String browser = null;
 
         @DataMember(Order=4)
-        public String bot = null;
+        public String device = null;
 
         @DataMember(Order=5)
-        public String op = null;
+        public String bot = null;
 
         @DataMember(Order=6)
-        public String userId = null;
+        public String op = null;
 
         @DataMember(Order=7)
-        public String userName = null;
+        public String userId = null;
 
         @DataMember(Order=8)
-        public String apiKey = null;
+        public String userName = null;
 
         @DataMember(Order=9)
+        public String apiKey = null;
+
+        @DataMember(Order=10)
         public String ip = null;
         
         public Long getId() { return id; }
         public AnalyticsLogInfo setId(Long value) { this.id = value; return this; }
+        public Date getDateTime() { return dateTime; }
+        public AnalyticsLogInfo setDateTime(Date value) { this.dateTime = value; return this; }
         public String getBrowser() { return browser; }
         public AnalyticsLogInfo setBrowser(String value) { this.browser = value; return this; }
         public String getDevice() { return device; }
@@ -3455,6 +3415,7 @@ public class dtos
         public String requestLogger = null;
         public Integer defaultLimit = null;
         public HashMap<String,ArrayList<String>> serviceRoutes = null;
+        public RequestLogsAnalytics analytics = null;
         public HashMap<String,String> meta = null;
         
         public String getAccessRole() { return accessRole; }
@@ -3465,6 +3426,8 @@ public class dtos
         public RequestLogsInfo setDefaultLimit(Integer value) { this.defaultLimit = value; return this; }
         public HashMap<String,ArrayList<String>> getServiceRoutes() { return serviceRoutes; }
         public RequestLogsInfo setServiceRoutes(HashMap<String,ArrayList<String>> value) { this.serviceRoutes = value; return this; }
+        public RequestLogsAnalytics getAnalytics() { return analytics; }
+        public RequestLogsInfo setAnalytics(RequestLogsAnalytics value) { this.analytics = value; return this; }
         public HashMap<String,String> getMeta() { return meta; }
         public RequestLogsInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
@@ -4228,6 +4191,26 @@ public class dtos
         public ScriptMethodType setParamTypes(ArrayList<String> value) { this.paramTypes = value; return this; }
         public String getReturnType() { return returnType; }
         public ScriptMethodType setReturnType(String value) { this.returnType = value; return this; }
+    }
+
+    public static class RequestLogsAnalytics
+    {
+        public ArrayList<String> months = null;
+        public HashMap<String,String> tabs = null;
+        public Boolean disableAnalytics = null;
+        public Boolean disableUserAnalytics = null;
+        public Boolean disableApiKeyAnalytics = null;
+        
+        public ArrayList<String> getMonths() { return months; }
+        public RequestLogsAnalytics setMonths(ArrayList<String> value) { this.months = value; return this; }
+        public HashMap<String,String> getTabs() { return tabs; }
+        public RequestLogsAnalytics setTabs(HashMap<String,String> value) { this.tabs = value; return this; }
+        public Boolean isDisableAnalytics() { return disableAnalytics; }
+        public RequestLogsAnalytics setDisableAnalytics(Boolean value) { this.disableAnalytics = value; return this; }
+        public Boolean isDisableUserAnalytics() { return disableUserAnalytics; }
+        public RequestLogsAnalytics setDisableUserAnalytics(Boolean value) { this.disableUserAnalytics = value; return this; }
+        public Boolean isDisableApiKeyAnalytics() { return disableApiKeyAnalytics; }
+        public RequestLogsAnalytics setDisableApiKeyAnalytics(Boolean value) { this.disableApiKeyAnalytics = value; return this; }
     }
 
     public static class FilesUploadLocation

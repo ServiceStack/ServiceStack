@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-25 01:11:52
+Date: 2025-03-28 01:55:01
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -625,14 +625,6 @@ class FailedJob extends BackgroundJobBase implements IConvertible
     Map<String, dynamic> toJson() => super.toJson();
     getTypeName() => "FailedJob";
     TypeContext? context = _ctx;
-}
-
-enum AnalyticsType
-{
-    User,
-    Day,
-    ApiKey,
-    Ips,
 }
 
 class ValidateRule implements IConvertible
@@ -1944,15 +1936,48 @@ class SharpPagesInfo implements IConvertible
     TypeContext? context = _ctx;
 }
 
+class RequestLogsAnalytics implements IConvertible
+{
+    List<String>? months;
+    Map<String,String?>? tabs;
+    bool? disableAnalytics;
+    bool? disableUserAnalytics;
+    bool? disableApiKeyAnalytics;
+
+    RequestLogsAnalytics({this.months,this.tabs,this.disableAnalytics,this.disableUserAnalytics,this.disableApiKeyAnalytics});
+    RequestLogsAnalytics.fromJson(Map<String, dynamic> json) { fromMap(json); }
+
+    fromMap(Map<String, dynamic> json) {
+        months = JsonConverters.fromJson(json['months'],'List<String>',context!);
+        tabs = JsonConverters.toStringMap(json['tabs']);
+        disableAnalytics = json['disableAnalytics'];
+        disableUserAnalytics = json['disableUserAnalytics'];
+        disableApiKeyAnalytics = json['disableApiKeyAnalytics'];
+        return this;
+    }
+
+    Map<String, dynamic> toJson() => {
+        'months': JsonConverters.toJson(months,'List<String>',context!),
+        'tabs': tabs,
+        'disableAnalytics': disableAnalytics,
+        'disableUserAnalytics': disableUserAnalytics,
+        'disableApiKeyAnalytics': disableApiKeyAnalytics
+    };
+
+    getTypeName() => "RequestLogsAnalytics";
+    TypeContext? context = _ctx;
+}
+
 class RequestLogsInfo implements IConvertible
 {
     String? accessRole;
     String? requestLogger;
     int? defaultLimit;
     Map<String,List<String>?>? serviceRoutes;
+    RequestLogsAnalytics? analytics;
     Map<String,String?>? meta;
 
-    RequestLogsInfo({this.accessRole,this.requestLogger,this.defaultLimit,this.serviceRoutes,this.meta});
+    RequestLogsInfo({this.accessRole,this.requestLogger,this.defaultLimit,this.serviceRoutes,this.analytics,this.meta});
     RequestLogsInfo.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
@@ -1960,6 +1985,7 @@ class RequestLogsInfo implements IConvertible
         requestLogger = json['requestLogger'];
         defaultLimit = json['defaultLimit'];
         serviceRoutes = JsonConverters.fromJson(json['serviceRoutes'],'Map<String,List<String>?>',context!);
+        analytics = JsonConverters.fromJson(json['analytics'],'RequestLogsAnalytics',context!);
         meta = JsonConverters.toStringMap(json['meta']);
         return this;
     }
@@ -1969,6 +1995,7 @@ class RequestLogsInfo implements IConvertible
         'requestLogger': requestLogger,
         'defaultLimit': defaultLimit,
         'serviceRoutes': JsonConverters.toJson(serviceRoutes,'Map<String,List<String>?>',context!),
+        'analytics': JsonConverters.toJson(analytics,'RequestLogsAnalytics',context!),
         'meta': meta
     };
 
@@ -3294,34 +3321,38 @@ class AnalyticsLogInfo implements IConvertible
     int? id;
 
     // @DataMember(Order=2)
-    String? browser;
+    DateTime? dateTime;
 
     // @DataMember(Order=3)
-    String? device;
+    String? browser;
 
     // @DataMember(Order=4)
-    String? bot;
+    String? device;
 
     // @DataMember(Order=5)
-    String? op;
+    String? bot;
 
     // @DataMember(Order=6)
-    String? userId;
+    String? op;
 
     // @DataMember(Order=7)
-    String? userName;
+    String? userId;
 
     // @DataMember(Order=8)
-    String? apiKey;
+    String? userName;
 
     // @DataMember(Order=9)
+    String? apiKey;
+
+    // @DataMember(Order=10)
     String? ip;
 
-    AnalyticsLogInfo({this.id,this.browser,this.device,this.bot,this.op,this.userId,this.userName,this.apiKey,this.ip});
+    AnalyticsLogInfo({this.id,this.dateTime,this.browser,this.device,this.bot,this.op,this.userId,this.userName,this.apiKey,this.ip});
     AnalyticsLogInfo.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         id = json['id'];
+        dateTime = JsonConverters.fromJson(json['dateTime'],'DateTime',context!);
         browser = json['browser'];
         device = json['device'];
         bot = json['bot'];
@@ -3335,6 +3366,7 @@ class AnalyticsLogInfo implements IConvertible
 
     Map<String, dynamic> toJson() => {
         'id': id,
+        'dateTime': JsonConverters.toJson(dateTime,'DateTime',context!),
         'browser': browser,
         'device': device,
         'bot': bot,
@@ -4165,58 +4197,26 @@ class GetAnalyticsInfoResponse implements IConvertible
 class GetAnalyticsReportsResponse implements IConvertible
 {
     // @DataMember(Order=1)
-    AnalyticsReports? results;
+    AnalyticsReports? result;
 
     // @DataMember(Order=2)
-    List<String>? months;
-
-    // @DataMember(Order=3)
     ResponseStatus? responseStatus;
 
-    GetAnalyticsReportsResponse({this.results,this.months,this.responseStatus});
+    GetAnalyticsReportsResponse({this.result,this.responseStatus});
     GetAnalyticsReportsResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
-        results = JsonConverters.fromJson(json['results'],'AnalyticsReports',context!);
-        months = JsonConverters.fromJson(json['months'],'List<String>',context!);
+        result = JsonConverters.fromJson(json['result'],'AnalyticsReports',context!);
         responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
         return this;
     }
 
     Map<String, dynamic> toJson() => {
-        'results': JsonConverters.toJson(results,'AnalyticsReports',context!),
-        'months': JsonConverters.toJson(months,'List<String>',context!),
+        'result': JsonConverters.toJson(result,'AnalyticsReports',context!),
         'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
     };
 
     getTypeName() => "GetAnalyticsReportsResponse";
-    TypeContext? context = _ctx;
-}
-
-// @DataContract
-class GetApiAnalyticsResponse implements IConvertible
-{
-    // @DataMember(Order=1)
-    Map<String,int?>? results;
-
-    // @DataMember(Order=2)
-    ResponseStatus? responseStatus;
-
-    GetApiAnalyticsResponse({this.results,this.responseStatus});
-    GetApiAnalyticsResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
-
-    fromMap(Map<String, dynamic> json) {
-        results = JsonConverters.fromJson(json['results'],'Map<String,int?>',context!);
-        responseStatus = JsonConverters.fromJson(json['responseStatus'],'ResponseStatus',context!);
-        return this;
-    }
-
-    Map<String, dynamic> toJson() => {
-        'results': JsonConverters.toJson(results,'Map<String,int?>',context!),
-        'responseStatus': JsonConverters.toJson(responseStatus,'ResponseStatus',context!)
-    };
-
-    getTypeName() => "GetApiAnalyticsResponse";
     TypeContext? context = _ctx;
 }
 
@@ -5504,14 +5504,18 @@ class GetAnalyticsReports implements IReturn<GetAnalyticsReportsResponse>, IGet,
     String? filter;
 
     // @DataMember(Order=3)
+    String? value;
+
+    // @DataMember(Order=4)
     bool? force;
 
-    GetAnalyticsReports({this.month,this.filter,this.force});
+    GetAnalyticsReports({this.month,this.filter,this.value,this.force});
     GetAnalyticsReports.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         month = JsonConverters.fromJson(json['month'],'DateTime',context!);
         filter = json['filter'];
+        value = json['value'];
         force = json['force'];
         return this;
     }
@@ -5519,46 +5523,13 @@ class GetAnalyticsReports implements IReturn<GetAnalyticsReportsResponse>, IGet,
     Map<String, dynamic> toJson() => {
         'month': JsonConverters.toJson(month,'DateTime',context!),
         'filter': filter,
+        'value': value,
         'force': force
     };
 
     createResponse() => GetAnalyticsReportsResponse();
     getResponseTypeName() => "GetAnalyticsReportsResponse";
     getTypeName() => "GetAnalyticsReports";
-    TypeContext? context = _ctx;
-}
-
-// @DataContract
-class GetApiAnalytics implements IReturn<GetApiAnalyticsResponse>, IGet, IConvertible
-{
-    // @DataMember(Order=1)
-    DateTime? month;
-
-    // @DataMember(Order=2)
-    AnalyticsType? type;
-
-    // @DataMember(Order=3)
-    String? value;
-
-    GetApiAnalytics({this.month,this.type,this.value});
-    GetApiAnalytics.fromJson(Map<String, dynamic> json) { fromMap(json); }
-
-    fromMap(Map<String, dynamic> json) {
-        month = JsonConverters.fromJson(json['month'],'DateTime',context!);
-        type = JsonConverters.fromJson(json['type'],'AnalyticsType',context!);
-        value = json['value'];
-        return this;
-    }
-
-    Map<String, dynamic> toJson() => {
-        'month': JsonConverters.toJson(month,'DateTime',context!),
-        'type': JsonConverters.toJson(type,'AnalyticsType',context!),
-        'value': value
-    };
-
-    createResponse() => GetApiAnalyticsResponse();
-    getResponseTypeName() => "GetApiAnalyticsResponse";
-    getTypeName() => "GetApiAnalytics";
     TypeContext? context = _ctx;
 }
 
@@ -5654,7 +5625,6 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'ScheduledTask': TypeInfo(TypeOf.Class, create:() => ScheduledTask()),
     'CompletedJob': TypeInfo(TypeOf.Class, create:() => CompletedJob()),
     'FailedJob': TypeInfo(TypeOf.Class, create:() => FailedJob()),
-    'AnalyticsType': TypeInfo(TypeOf.Enum, enumValues:AnalyticsType.values),
     'ValidateRule': TypeInfo(TypeOf.Class, create:() => ValidateRule()),
     'ValidationRule': TypeInfo(TypeOf.Class, create:() => ValidationRule()),
     'AppInfo': TypeInfo(TypeOf.Class, create:() => AppInfo()),
@@ -5704,6 +5674,7 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'ValidationInfo': TypeInfo(TypeOf.Class, create:() => ValidationInfo()),
     'List<ScriptMethodType>': TypeInfo(TypeOf.Class, create:() => <ScriptMethodType>[]),
     'SharpPagesInfo': TypeInfo(TypeOf.Class, create:() => SharpPagesInfo()),
+    'RequestLogsAnalytics': TypeInfo(TypeOf.Class, create:() => RequestLogsAnalytics()),
     'RequestLogsInfo': TypeInfo(TypeOf.Class, create:() => RequestLogsInfo()),
     'ProfilingInfo': TypeInfo(TypeOf.Class, create:() => ProfilingInfo()),
     'FilesUploadLocation': TypeInfo(TypeOf.Class, create:() => FilesUploadLocation()),
@@ -5787,7 +5758,6 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'List<RequestLogEntry>': TypeInfo(TypeOf.Class, create:() => <RequestLogEntry>[]),
     'GetAnalyticsInfoResponse': TypeInfo(TypeOf.Class, create:() => GetAnalyticsInfoResponse()),
     'GetAnalyticsReportsResponse': TypeInfo(TypeOf.Class, create:() => GetAnalyticsReportsResponse()),
-    'GetApiAnalyticsResponse': TypeInfo(TypeOf.Class, create:() => GetApiAnalyticsResponse()),
     'GetValidationRulesResponse': TypeInfo(TypeOf.Class, create:() => GetValidationRulesResponse()),
     'List<ValidationRule>': TypeInfo(TypeOf.Class, create:() => <ValidationRule>[]),
     'AdminCreateRole': TypeInfo(TypeOf.Class, create:() => AdminCreateRole()),
@@ -5837,7 +5807,6 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'RequestLogs': TypeInfo(TypeOf.Class, create:() => RequestLogs()),
     'GetAnalyticsInfo': TypeInfo(TypeOf.Class, create:() => GetAnalyticsInfo()),
     'GetAnalyticsReports': TypeInfo(TypeOf.Class, create:() => GetAnalyticsReports()),
-    'GetApiAnalytics': TypeInfo(TypeOf.Class, create:() => GetApiAnalytics()),
     'GetValidationRules': TypeInfo(TypeOf.Class, create:() => GetValidationRules()),
     'ModifyValidationRules': TypeInfo(TypeOf.Class, create:() => ModifyValidationRules()),
 });

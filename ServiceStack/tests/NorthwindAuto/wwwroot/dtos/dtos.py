@@ -1,5 +1,5 @@
 """ Options:
-Date: 2025-03-25 01:11:52
+Date: 2025-03-28 01:55:01
 Version: 8.61
 Tip: To override a DTO option, remove "#" prefix before updating
 BaseUrl: http://localhost:20000
@@ -223,13 +223,6 @@ class CompletedJob(BackgroundJobBase):
 @dataclass
 class FailedJob(BackgroundJobBase):
     pass
-
-
-class AnalyticsType(str, Enum):
-    USER = 'User'
-    DAY = 'Day'
-    API_KEY = 'ApiKey'
-    IPS = 'Ips'
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
@@ -648,11 +641,22 @@ class SharpPagesInfo:
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
+class RequestLogsAnalytics:
+    months: Optional[List[str]] = None
+    tabs: Optional[Dict[str, str]] = None
+    disable_analytics: Optional[bool] = None
+    disable_user_analytics: Optional[bool] = None
+    disable_api_key_analytics: Optional[bool] = None
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
+@dataclass
 class RequestLogsInfo:
     access_role: Optional[str] = None
     request_logger: Optional[str] = None
     default_limit: int = 0
     service_routes: Optional[Dict[str, List[str]]] = None
+    analytics: Optional[RequestLogsAnalytics] = None
     meta: Optional[Dict[str, str]] = None
 
 
@@ -1069,6 +1073,7 @@ class RequestLogEntry:
 @dataclass
 class AnalyticsLogInfo:
     id: int = 0
+    date_time: datetime.datetime = datetime.datetime(1, 1, 1)
     browser: Optional[str] = None
     device: Optional[str] = None
     bot: Optional[str] = None
@@ -1302,15 +1307,7 @@ class GetAnalyticsInfoResponse:
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class GetAnalyticsReportsResponse:
-    results: Optional[AnalyticsReports] = None
-    months: Optional[List[str]] = None
-    response_status: Optional[ResponseStatus] = None
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
-@dataclass
-class GetApiAnalyticsResponse:
-    results: Optional[Dict[str, int]] = None
+    result: Optional[AnalyticsReports] = None
     response_status: Optional[ResponseStatus] = None
 
 
@@ -1645,15 +1642,8 @@ class GetAnalyticsInfo(IReturn[GetAnalyticsInfoResponse], IGet):
 class GetAnalyticsReports(IReturn[GetAnalyticsReportsResponse], IGet):
     month: Optional[datetime.datetime] = None
     filter: Optional[str] = None
-    force: Optional[bool] = None
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
-@dataclass
-class GetApiAnalytics(IReturn[GetApiAnalyticsResponse], IGet):
-    month: Optional[datetime.datetime] = None
-    type: Optional[AnalyticsType] = None
     value: Optional[str] = None
+    force: Optional[bool] = None
 
 
 # @Route("/validation/rules/{Type}")

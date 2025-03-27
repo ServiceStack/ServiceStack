@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-25 01:11:52
+Date: 2025-03-28 01:55:02
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -655,24 +655,12 @@ open class GetAnalyticsReports : IReturn<GetAnalyticsReportsResponse>, IGet
     open var filter:String? = null
 
     @DataMember(Order=3)
+    open var value:String? = null
+
+    @DataMember(Order=4)
     open var force:Boolean? = null
     companion object { private val responseType = GetAnalyticsReportsResponse::class.java }
     override fun getResponseType(): Any? = GetAnalyticsReports.responseType
-}
-
-@DataContract
-open class GetApiAnalytics : IReturn<GetApiAnalyticsResponse>, IGet
-{
-    @DataMember(Order=1)
-    open var month:Date? = null
-
-    @DataMember(Order=2)
-    @SerializedName("type") open var Type:AnalyticsType? = null
-
-    @DataMember(Order=3)
-    open var value:String? = null
-    companion object { private val responseType = GetApiAnalyticsResponse::class.java }
-    override fun getResponseType(): Any? = GetApiAnalytics.responseType
 }
 
 @Route(Path="/validation/rules/{Type}")
@@ -1054,20 +1042,7 @@ open class GetAnalyticsInfoResponse
 open class GetAnalyticsReportsResponse
 {
     @DataMember(Order=1)
-    open var results:AnalyticsReports? = null
-
-    @DataMember(Order=2)
-    open var months:ArrayList<String>? = null
-
-    @DataMember(Order=3)
-    open var responseStatus:ResponseStatus? = null
-}
-
-@DataContract
-open class GetApiAnalyticsResponse
-{
-    @DataMember(Order=1)
-    open var results:HashMap<String,Long>? = null
+    open var result:AnalyticsReports? = null
 
     @DataMember(Order=2)
     open var responseStatus:ResponseStatus? = null
@@ -1236,14 +1211,6 @@ enum class BackgroundJobState
     Completed,
     Failed,
     Cancelled,
-}
-
-enum class AnalyticsType
-{
-    User,
-    Day,
-    ApiKey,
-    Ips,
 }
 
 open class ValidationRule : ValidateRule()
@@ -1575,27 +1542,30 @@ open class AnalyticsLogInfo
     open var id:Long? = null
 
     @DataMember(Order=2)
-    open var browser:String? = null
+    open var dateTime:Date? = null
 
     @DataMember(Order=3)
-    open var device:String? = null
+    open var browser:String? = null
 
     @DataMember(Order=4)
-    open var bot:String? = null
+    open var device:String? = null
 
     @DataMember(Order=5)
-    open var op:String? = null
+    open var bot:String? = null
 
     @DataMember(Order=6)
-    open var userId:String? = null
+    open var op:String? = null
 
     @DataMember(Order=7)
-    open var userName:String? = null
+    open var userId:String? = null
 
     @DataMember(Order=8)
-    open var apiKey:String? = null
+    open var userName:String? = null
 
     @DataMember(Order=9)
+    open var apiKey:String? = null
+
+    @DataMember(Order=10)
     open var ip:String? = null
 }
 
@@ -1865,6 +1835,7 @@ open class RequestLogsInfo
     open var requestLogger:String? = null
     open var defaultLimit:Int? = null
     open var serviceRoutes:HashMap<String,ArrayList<String>>? = null
+    open var analytics:RequestLogsAnalytics? = null
     open var meta:HashMap<String,String>? = null
 }
 
@@ -2192,6 +2163,15 @@ open class ScriptMethodType
     open var paramNames:ArrayList<String>? = null
     open var paramTypes:ArrayList<String>? = null
     open var returnType:String? = null
+}
+
+open class RequestLogsAnalytics
+{
+    open var months:ArrayList<String>? = null
+    open var tabs:HashMap<String,String>? = null
+    open var disableAnalytics:Boolean? = null
+    open var disableUserAnalytics:Boolean? = null
+    open var disableApiKeyAnalytics:Boolean? = null
 }
 
 open class FilesUploadLocation

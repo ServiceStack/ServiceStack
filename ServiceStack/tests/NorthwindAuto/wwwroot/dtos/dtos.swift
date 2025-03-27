@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-25 01:11:52
+Date: 2025-03-28 01:55:02
 SwiftVersion: 6.0
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
@@ -885,24 +885,10 @@ public class GetAnalyticsReports : IReturn, IGet, Codable
     public var filter:String?
 
     // @DataMember(Order=3)
-    public var force:Bool?
-
-    required public init(){}
-}
-
-// @DataContract
-public class GetApiAnalytics : IReturn, IGet, Codable
-{
-    public typealias Return = GetApiAnalyticsResponse
-
-    // @DataMember(Order=1)
-    public var month:Date?
-
-    // @DataMember(Order=2)
-    public var type:AnalyticsType?
-
-    // @DataMember(Order=3)
     public var value:String?
+
+    // @DataMember(Order=4)
+    public var force:Bool?
 
     required public init(){}
 }
@@ -1316,22 +1302,7 @@ public class GetAnalyticsInfoResponse : Codable
 public class GetAnalyticsReportsResponse : Codable
 {
     // @DataMember(Order=1)
-    public var results:AnalyticsReports?
-
-    // @DataMember(Order=2)
-    public var months:[String]?
-
-    // @DataMember(Order=3)
-    public var responseStatus:ResponseStatus?
-
-    required public init(){}
-}
-
-// @DataContract
-public class GetApiAnalyticsResponse : Codable
-{
-    // @DataMember(Order=1)
-    public var results:[String:Int]?
+    public var result:AnalyticsReports?
 
     // @DataMember(Order=2)
     public var responseStatus:ResponseStatus?
@@ -1547,14 +1518,6 @@ public enum BackgroundJobState : String, Codable
     case Completed
     case Failed
     case Cancelled
-}
-
-public enum AnalyticsType : String, Codable
-{
-    case User
-    case Day
-    case ApiKey
-    case Ips
 }
 
 public class ValidationRule : ValidateRule
@@ -1968,27 +1931,30 @@ public class AnalyticsLogInfo : Codable
     public var id:Int?
 
     // @DataMember(Order=2)
-    public var browser:String?
+    public var dateTime:Date?
 
     // @DataMember(Order=3)
-    public var device:String?
+    public var browser:String?
 
     // @DataMember(Order=4)
-    public var bot:String?
+    public var device:String?
 
     // @DataMember(Order=5)
-    public var op:String?
+    public var bot:String?
 
     // @DataMember(Order=6)
-    public var userId:String?
+    public var op:String?
 
     // @DataMember(Order=7)
-    public var userName:String?
+    public var userId:String?
 
     // @DataMember(Order=8)
-    public var apiKey:String?
+    public var userName:String?
 
     // @DataMember(Order=9)
+    public var apiKey:String?
+
+    // @DataMember(Order=10)
     public var ip:String?
 
     required public init(){}
@@ -2269,6 +2235,7 @@ public class RequestLogsInfo : Codable
     public var requestLogger:String?
     public var defaultLimit:Int?
     public var serviceRoutes:[String:[String]]?
+    public var analytics:RequestLogsAnalytics?
     public var meta:[String:String]?
 
     required public init(){}
@@ -2642,6 +2609,17 @@ public class ScriptMethodType : Codable
     public var paramNames:[String]?
     public var paramTypes:[String]?
     public var returnType:String?
+
+    required public init(){}
+}
+
+public class RequestLogsAnalytics : Codable
+{
+    public var months:[String]?
+    public var tabs:[String:String]?
+    public var disableAnalytics:Bool?
+    public var disableUserAnalytics:Bool?
+    public var disableApiKeyAnalytics:Bool?
 
     required public init(){}
 }

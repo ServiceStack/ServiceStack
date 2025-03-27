@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-03-25 01:11:52
+Date: 2025-03-28 01:55:01
 Version: 8.61
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -359,14 +359,6 @@ export class FailedJob extends BackgroundJobBase
 {
 
     public constructor(init?: Partial<FailedJob>) { super(init); (Object as any).assign(this, init); }
-}
-
-export enum AnalyticsType
-{
-    User = 'User',
-    Day = 'Day',
-    ApiKey = 'ApiKey',
-    Ips = 'Ips',
 }
 
 export class ValidateRule
@@ -835,12 +827,24 @@ export class SharpPagesInfo
     public constructor(init?: Partial<SharpPagesInfo>) { (Object as any).assign(this, init); }
 }
 
+export class RequestLogsAnalytics
+{
+    public months: string[];
+    public tabs: { [index:string]: string; };
+    public disableAnalytics?: boolean;
+    public disableUserAnalytics?: boolean;
+    public disableApiKeyAnalytics?: boolean;
+
+    public constructor(init?: Partial<RequestLogsAnalytics>) { (Object as any).assign(this, init); }
+}
+
 export class RequestLogsInfo
 {
     public accessRole: string;
     public requestLogger: string;
     public defaultLimit: number;
     public serviceRoutes: { [index:string]: string[]; };
+    public analytics: RequestLogsAnalytics;
     public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<RequestLogsInfo>) { (Object as any).assign(this, init); }
@@ -851,7 +855,7 @@ export class ProfilingInfo
     public accessRole: string;
     public defaultLimit: number;
     public summaryFields: string[];
-    public tagLabel?: string;
+    public tagLabel: string;
     public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<ProfilingInfo>) { (Object as any).assign(this, init); }
@@ -1348,27 +1352,30 @@ export class AnalyticsLogInfo
     public id: number;
 
     // @DataMember(Order=2)
-    public browser: string;
+    public dateTime: string;
 
     // @DataMember(Order=3)
-    public device: string;
+    public browser: string;
 
     // @DataMember(Order=4)
-    public bot: string;
+    public device: string;
 
     // @DataMember(Order=5)
-    public op: string;
+    public bot: string;
 
     // @DataMember(Order=6)
-    public userId: string;
+    public op: string;
 
     // @DataMember(Order=7)
-    public userName: string;
+    public userId: string;
 
     // @DataMember(Order=8)
-    public apiKey: string;
+    public userName: string;
 
     // @DataMember(Order=9)
+    public apiKey: string;
+
+    // @DataMember(Order=10)
     public ip: string;
 
     public constructor(init?: Partial<AnalyticsLogInfo>) { (Object as any).assign(this, init); }
@@ -1856,27 +1863,12 @@ export class GetAnalyticsInfoResponse
 export class GetAnalyticsReportsResponse
 {
     // @DataMember(Order=1)
-    public results: AnalyticsReports;
+    public result: AnalyticsReports;
 
     // @DataMember(Order=2)
-    public months: string[];
-
-    // @DataMember(Order=3)
     public responseStatus: ResponseStatus;
 
     public constructor(init?: Partial<GetAnalyticsReportsResponse>) { (Object as any).assign(this, init); }
-}
-
-// @DataContract
-export class GetApiAnalyticsResponse
-{
-    // @DataMember(Order=1)
-    public results: { [index:string]: number; };
-
-    // @DataMember(Order=2)
-    public responseStatus: ResponseStatus;
-
-    public constructor(init?: Partial<GetApiAnalyticsResponse>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -2634,30 +2626,15 @@ export class GetAnalyticsReports implements IReturn<GetAnalyticsReportsResponse>
     public filter: string;
 
     // @DataMember(Order=3)
+    public value: string;
+
+    // @DataMember(Order=4)
     public force?: boolean;
 
     public constructor(init?: Partial<GetAnalyticsReports>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'GetAnalyticsReports'; }
     public getMethod() { return 'GET'; }
     public createResponse() { return new GetAnalyticsReportsResponse(); }
-}
-
-// @DataContract
-export class GetApiAnalytics implements IReturn<GetApiAnalyticsResponse>, IGet
-{
-    // @DataMember(Order=1)
-    public month?: string;
-
-    // @DataMember(Order=2)
-    public type?: AnalyticsType;
-
-    // @DataMember(Order=3)
-    public value: string;
-
-    public constructor(init?: Partial<GetApiAnalytics>) { (Object as any).assign(this, init); }
-    public getTypeName() { return 'GetApiAnalytics'; }
-    public getMethod() { return 'GET'; }
-    public createResponse() { return new GetApiAnalyticsResponse(); }
 }
 
 // @Route("/validation/rules/{Type}")
