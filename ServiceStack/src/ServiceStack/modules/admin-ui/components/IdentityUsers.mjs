@@ -457,7 +457,8 @@ export const EditUser = {
               <ManageUserApiKeys :user="request" />
             </div>
             
-            <Analytics v-if="server.plugins.requestLogs?.analytics" :info="server.plugins.requestLogs?.analytics" :id="id" />
+            <Analytics v-if="server.plugins.requestLogs?.analytics && !server.plugins.requestLogs.analytics.disableUserAnalytics" 
+                       :info="server.plugins.requestLogs?.analytics" :id="id" />
           </div>
         </form>
         <template #footer>
