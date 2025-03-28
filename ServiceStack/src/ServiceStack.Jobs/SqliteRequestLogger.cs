@@ -415,7 +415,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     public void ClearAnalyticsCaches(DateTime month)
     {
         using var db = OpenMonthDb(month);
-        lock (dbWrites)
+        lock (Locks.GetDbLock(DbMonthFile(month)))
         {
             db.DropTable<AnalyticsReports>();
         }
@@ -483,7 +483,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         ret.Id = lastPk;
         ret.CleanResults(config);
 
-        lock (dbWrites)
+        lock (Locks.GetDbLock(DbMonthFile(month)))
         {
             db.DropAndCreateTable<AnalyticsReports>();
             db.Insert(ret);
@@ -540,7 +540,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.Users?.Count > 0)
         {
-            lock (dbWrites)
+            lock (Locks.GetDbLock(DbMonthFile(month)))
             {
                 db.CreateTableIfNotExists<UserAnalytics>();
                 db.Delete<UserAnalytics>(x => x.UserId == userId);
@@ -609,7 +609,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.ApiKeys?.Count > 0)
         {
-            lock (dbWrites)
+            lock (Locks.GetDbLock(DbMonthFile(month)))
             {
                 db.CreateTableIfNotExists<ApiKeyAnalytics>();
                 db.Delete<ApiKeyAnalytics>(x => x.ApiKey == apiKey);
@@ -678,7 +678,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.ApiKeys?.Count > 0)
         {
-            lock (dbWrites)
+            lock (Locks.GetDbLock(DbMonthFile(month)))
             {
                 db.CreateTableIfNotExists<IpAnalytics>();
                 db.Delete<IpAnalytics>(x => x.Ip == ip);
@@ -694,53 +694,6 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             }
         }
 
-        return ret;
-    }
-
-    public Dictionary<string, long> GetApiAnalytics(AnalyticsConfig config, DateTime month, AnalyticsType type, string value)
-    {
-        using var db = OpenMonthDb(month);
-        List<RequestLog> batch = [];
-        long lastPk = 0;
-
-        var ret = new Dictionary<string, long>();
-        do
-        {
-            var q = db.From<RequestLog>()
-                .Where(x => x.Id > lastPk);
-
-            if (type == AnalyticsType.User)
-            {
-                q.And(x => x.UserAuthId == value);
-            }
-            else if (type == AnalyticsType.Day)
-            {
-                var day = value.ToInt();
-                var from = month.WithDay(day).Date;
-                var to = from.AddDays(1);
-                q.And(x => x.DateTime >= from && x.DateTime < to);
-            }
-            else if (type == AnalyticsType.ApiKey)
-            {
-                q.And("Headers LIKE {0}", $"%Bearer {value}%");
-            }
-            else if (type == AnalyticsType.Ips)
-            {
-                q.And(x => x.IpAddress == value);
-            }
-
-            batch = db.Select(q
-                .OrderBy(x => x.Id)
-                .Limit(config.BatchSize));
-            foreach (var requestLog in batch)
-            {
-                var op = requestLog.Request ?? requestLog.OperationName;
-                ret[op] = ret.TryGetValue(op, out var existing)
-                    ? existing + 1
-                    : 1;
-                lastPk = requestLog.Id;
-            }
-        } while(batch.Count >= config.BatchSize);
         return ret;
     }
 }

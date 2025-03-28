@@ -174,14 +174,6 @@ public class IpAnalytics
     [DataMember(Order=5)] public AnalyticsReports Report { get; set; }
 }
 
-public enum AnalyticsType
-{
-    User,
-    Day,
-    ApiKey,
-    Ips,
-}
-
 [DataContract]
 public class RequestSummary
 {
