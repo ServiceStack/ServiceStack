@@ -294,7 +294,10 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public void InitMonthDbSchema(IDbConnection db)
     {
-        db.CreateTableIfNotExists<RequestLog>();
+        lock (dbWrites)
+        {
+            db.CreateTableIfNotExists<RequestLog>();
+        }
     }
 
     public void InitSchema()
@@ -412,7 +415,10 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     public void ClearAnalyticsCaches(DateTime month)
     {
         using var db = OpenMonthDb(month);
-        db.DropTable<AnalyticsReports>();
+        lock (dbWrites)
+        {
+            db.DropTable<AnalyticsReports>();
+        }
     }
     
     private static AnalyticsReports CreateAnalyticsReports()
@@ -477,8 +483,11 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         ret.Id = lastPk;
         ret.CleanResults(config);
 
-        db.DropAndCreateTable<AnalyticsReports>();
-        db.Insert(ret);
+        lock (dbWrites)
+        {
+            db.DropAndCreateTable<AnalyticsReports>();
+            db.Insert(ret);
+        }
         
         return ret;
     }
@@ -531,17 +540,20 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.Users?.Count > 0)
         {
-            db.CreateTableIfNotExists<UserAnalytics>();
-            db.Delete<UserAnalytics>(x => x.UserId == userId);
-            
-            db.Insert(new UserAnalytics
+            lock (dbWrites)
             {
-                Id =  lastPk,
-                UserId = userId,
-                Created = DateTime.UtcNow,
-                Version =  Env.ServiceStackVersion,
-                Report = ret,
-            });
+                db.CreateTableIfNotExists<UserAnalytics>();
+                db.Delete<UserAnalytics>(x => x.UserId == userId);
+                
+                db.Insert(new UserAnalytics
+                {
+                    Id =  lastPk,
+                    UserId = userId,
+                    Created = DateTime.UtcNow,
+                    Version =  Env.ServiceStackVersion,
+                    Report = ret,
+                });
+            }
         }
         
         return ret;
@@ -597,17 +609,20 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.ApiKeys?.Count > 0)
         {
-            db.CreateTableIfNotExists<ApiKeyAnalytics>();
-            db.Delete<ApiKeyAnalytics>(x => x.ApiKey == apiKey);
-            
-            db.Insert(new ApiKeyAnalytics
+            lock (dbWrites)
             {
-                Id =  lastPk,
-                ApiKey = apiKey,
-                Created = DateTime.UtcNow,
-                Version =  Env.ServiceStackVersion,
-                Report = ret,
-            });
+                db.CreateTableIfNotExists<ApiKeyAnalytics>();
+                db.Delete<ApiKeyAnalytics>(x => x.ApiKey == apiKey);
+                
+                db.Insert(new ApiKeyAnalytics
+                {
+                    Id =  lastPk,
+                    ApiKey = apiKey,
+                    Created = DateTime.UtcNow,
+                    Version =  Env.ServiceStackVersion,
+                    Report = ret,
+                });
+            }
         }
         
         return ret;
@@ -663,17 +678,20 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.ApiKeys?.Count > 0)
         {
-            db.CreateTableIfNotExists<IpAnalytics>();
-            db.Delete<IpAnalytics>(x => x.Ip == ip);
-            
-            db.Insert(new IpAnalytics
+            lock (dbWrites)
             {
-                Id =  lastPk,
-                Ip = ip,
-                Created = DateTime.UtcNow,
-                Version =  Env.ServiceStackVersion,
-                Report = ret,
-            });
+                db.CreateTableIfNotExists<IpAnalytics>();
+                db.Delete<IpAnalytics>(x => x.Ip == ip);
+                
+                db.Insert(new IpAnalytics
+                {
+                    Id =  lastPk,
+                    Ip = ip,
+                    Created = DateTime.UtcNow,
+                    Version =  Env.ServiceStackVersion,
+                    Report = ret,
+                });
+            }
         }
 
         return ret;

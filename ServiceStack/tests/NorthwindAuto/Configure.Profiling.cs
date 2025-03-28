@@ -26,6 +26,8 @@ public class ConfigureProfiling : IHostingStartup
                     services.AddPlugin(new RequestLogsFeature
                     {
                         RequestLogger = new SqliteRequestLogger(),
+                        // DisableAnalytics = true,
+                        // DisableUserAnalytics = true,
                         /*
                         RequestLogger = new CsvRequestLogger(vfs,
                             "requestlogs/{year}-{month}/{year}-{month}-{day}.csv",
