@@ -78,7 +78,6 @@ public class SqliteRequestLogsService(IRequestLogger requestLogger, IAutoQueryDb
 public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema, 
     IRequireRegistration, IConfigureServices, IRequireAnalytics
 {
-    private static readonly object dbWrites = Locks.RequestsDb;
     public string DbDir { get; set; } = "App_Data/requests";
     public bool EnableAdmin { get; set; } = true;
     public AutoQueryFeature? AutoQueryFeature { get; set; }
@@ -220,13 +219,14 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         
         if (log.IsEnabled(LogLevel.Debug))
             log.LogDebug("Saving {Count} Request Log Entries...", logEntries.Count);
-        using var db = OpenMonthDb(DateTime.UtcNow);
+        var now = DateTime.UtcNow;
+        using var db = OpenMonthDb(now);
         while (logEntries.TryDequeue(out var entry))
         {
             try
             {
                 var dbEntry = ToRequestLog(entry);
-                lock (dbWrites)
+                lock (Locks.GetDbLock(DbMonthFile(now)))
                 {
                     db.Insert(dbEntry);
                 }
@@ -284,7 +284,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             var dataSource = AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
             dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", SqliteDialect.Provider);
             var db = dbFactory.OpenDbConnection(monthDb);
-            InitMonthDbSchema(db);
+            InitMonthDbSchema(db, createdDate);
             return db;
         }
         return dbFactory.OpenDbConnection(monthDb);
@@ -292,9 +292,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public IDbConnection OpenMonthDb(DateTime createdDate) => ResolveMonthDb(DbFactory, createdDate);
 
-    public void InitMonthDbSchema(IDbConnection db)
+    public void InitMonthDbSchema(IDbConnection db, DateTime month)
     {
-        lock (dbWrites)
+        lock (Locks.GetDbLock(DbMonthFile(month)))
         {
             db.CreateTableIfNotExists<RequestLog>();
         }
@@ -302,8 +302,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public void InitSchema()
     {
-        using var monthDb = OpenMonthDb(DateTime.UtcNow);
-        InitMonthDbSchema(monthDb);
+        var now = DateTime.UtcNow;
+        using var db = OpenMonthDb(now);
+        InitMonthDbSchema(db, now);
     }
     
     public static RequestLog ToRequestLog(RequestLogEntry from)
