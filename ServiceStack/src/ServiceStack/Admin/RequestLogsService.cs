@@ -145,6 +145,16 @@ public class AnalyticsReports
 }
 
 [DataContract]
+public class ApiAnalytics
+{
+    [DataMember(Order=1)] public long Id { get; set; } // Use last Id of RequestLog
+    [DataMember(Order=2)] public string Request { get; set; }
+    [DataMember(Order=3)] public DateTime Created { get; set; } // When it was created
+    [DataMember(Order=4)] public decimal Version { get; set; } // ServiceStack Version
+    [DataMember(Order=5)] public AnalyticsReports Report { get; set; }
+}
+
+[DataContract]
 public class UserAnalytics
 {
     [DataMember(Order=1)] public long Id { get; set; } // Use last Id of RequestLog
@@ -389,35 +399,53 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         }
 
         var filter = request.Filter?.ToLower();
-        if (filter == "user")
+        var filterValue = request.Value;
+        if (filter is "api" or "user" or "apikeyid" or "apikey" or "ip")
         {
-            if (string.IsNullOrEmpty(request.Value))
+            if (string.IsNullOrEmpty(filterValue))
                 throw new ArgumentNullException(nameof(request.Value));
-            var userAnalytics = analytics.GetUserAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, request.Value);
-            return new GetAnalyticsReportsResponse
+            
+            if (filter == "api")
             {
-                Result = userAnalytics,
-            };
-        }
-        if (filter == "apikey")
-        {
-            if (string.IsNullOrEmpty(request.Value))
-                throw new ArgumentNullException(nameof(request.Value));
-            var apiKeyAnalytics = analytics.GetApiKeyAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, request.Value);
-            return new GetAnalyticsReportsResponse
+                var apiAnalytics = analytics.GetApiAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, filterValue);
+                return new GetAnalyticsReportsResponse
+                {
+                    Result = apiAnalytics,
+                };
+            }
+            if (filter == "user")
             {
-                Result = apiKeyAnalytics,
-            };
-        }
-        if (filter == "ip")
-        {
-            if (string.IsNullOrEmpty(request.Value))
-                throw new ArgumentNullException(nameof(request.Value));
-            var ipAnalytics = analytics.GetIpAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, request.Value);
-            return new GetAnalyticsReportsResponse
+                var userAnalytics = analytics.GetUserAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, filterValue);
+                return new GetAnalyticsReportsResponse
+                {
+                    Result = userAnalytics,
+                };
+            }
+            if (filter == "apikeyid")
             {
-                Result = ipAnalytics,
-            };
+                var apiKeySource = Request.TryResolve<IApiKeySource>() ?? throw new NotSupportedException("Missing IApiKeySource");
+                var apiKey = await apiKeySource.GetApiKeyByIdAsync(filterValue.ToInt());
+                if (apiKey == null)
+                    throw HttpError.NotFound("API Key not found");
+                filter = "apikey";
+                filterValue = apiKey.Key;
+            }
+            if (filter == "apikey")
+            {
+                var apiKeyAnalytics = analytics.GetApiKeyAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, filterValue);
+                return new GetAnalyticsReportsResponse
+                {
+                    Result = apiKeyAnalytics,
+                };
+            }
+            if (filter == "ip")
+            {
+                var ipAnalytics = analytics.GetIpAnalytics(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow, filterValue);
+                return new GetAnalyticsReportsResponse
+                {
+                    Result = ipAnalytics,
+                };
+            }
         }
 
         var ret = analytics.GetAnalyticsReports(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow);

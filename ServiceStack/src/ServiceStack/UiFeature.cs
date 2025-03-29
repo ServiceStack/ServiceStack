@@ -49,6 +49,7 @@ public interface IRequireAnalytics
     void ClearAnalyticsCaches(DateTime month);
     AnalyticsInfo GetAnalyticInfo(AnalyticsConfig config);
     AnalyticsReports GetAnalyticsReports(AnalyticsConfig config, DateTime month);
+    AnalyticsReports GetApiAnalytics(AnalyticsConfig config, DateTime month, string op);
     AnalyticsReports GetUserAnalytics(AnalyticsConfig config, DateTime month, string userId);
     AnalyticsReports GetApiKeyAnalytics(AnalyticsConfig config, DateTime month, string apiKey);
     AnalyticsReports GetIpAnalytics(AnalyticsConfig config, DateTime month, string ip);

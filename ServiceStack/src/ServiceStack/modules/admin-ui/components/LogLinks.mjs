@@ -27,21 +27,21 @@ const LogLinks = {
           <span class="px-1">·</span>
           <span>{{relativeTimeFromDate(toDate(lastLog.dateTime))}}</span>
         </span>
-        <span v-if="lastLog.op && !filter.op" v-href="{ $page:'analytics', tab:'', op:lastLog.op }" :title="lastLog.op + ' API'"
+        <span v-if="lastLog.op && !filter.op" v-href="{ $page:'logging', month:routes.month, operationName:lastLog.op, ...filter, orderBy:'-id', $clear:true }" :title="lastLog.op + ' API'"
               class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
             <svg xmlns='http://www.w3.org/2000/svg' class="w-4 h-4" viewBox='0 0 56 56'><path fill='currentColor' d='m11.875 18.438l2.156-2.813c5.672 3.633 11.907 11.79 11.907 17.414v13.453c0 1.617.726 2.485 2.062 2.485c1.313 0 2.04-.868 2.04-2.485V33.04c0-5.555 6.116-13.617 11.812-17.344l1.992 2.72c.984 1.358 2.18 1.054 2.672-.47l2.953-8.625c.422-1.265-.258-2.156-1.547-2.133l-9.14.141c-1.571.024-2.227 1.055-1.266 2.39l1.898 2.602c-5.508 3.867-10.687 10.758-11.39 14.297h-.07c-.704-3.562-5.86-10.43-11.368-14.297l1.828-2.39c1.031-1.313.398-2.367-1.172-2.438l-9.14-.398c-1.29-.07-1.993.797-1.618 2.086l2.72 8.695c.468 1.547 1.64 1.898 2.671.563'/></svg>          
           {{lastLog.op}}
         </span>
-        <span v-if="lastLog.userId && !filter.userId" v-href="{ $page:'analytics', tab:'users', userId:lastLog.userId }" title="User"
+        <span v-if="lastLog.userId && !filter.userId" v-href="{ $page:'logging', month:routes.month, userId:lastLog.userId, ...filter, orderBy:'-id', $clear:true }" title="User"
               class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3zm9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"></path></svg>
           {{lastLog.userName ?? substringWithEllipsis(lastLog.userId, 8)}}
         </span>
-        <span v-if="lastLog.apiKey && !filter.apiKey" v-href="{ $page:'analytics', tab:'apiKeys', apiKey:lastLog.apiKey }" title="API Key"
+        <span v-if="lastLog.apiKey && !filter.apiKey" v-href="{ $page:'logging', month:routes.month, apiKey:lastLog.apiKey, ...filter, orderBy:'-id', $clear:true }" title="API Key"
               class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
           {{hiddenApiKey(lastLog.apiKey)}}
         </span>
-        <span v-if="lastLog.ip && !filter.ip" v-href="{ $page:'analytics', tab:'ips', ip:lastLog.ip }" title="IP Address"
+        <span v-if="lastLog.ip && !filter.ip" v-href="{ $page:'logging', month:routes.month, ip:lastLog.ip, ...filter, orderBy:'-id', $clear:true }" title="IP Address"
               class="group cursor-pointer flex items-center whitespace-nowrap px-1 text-sm font-medium text-gray-500 hover:text-indigo-600">
           IP {{lastLog.ip}}
         </span>

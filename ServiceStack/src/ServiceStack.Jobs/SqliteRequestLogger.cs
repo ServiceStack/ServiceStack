@@ -233,7 +233,10 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             }
             catch (Exception e)
             {
-                log.LogError(e, "Error while saving request log entry: {Message}", e.Message);
+                log.LogError("Error while saving request log entry: {Message}", e.Message);
+                // Requeue and wait for next tick
+                logEntries.Enqueue(entry);
+                return;
             }
         }
     }
@@ -390,11 +393,11 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         {
             var sql = 
                 """
-                select
-                (select 1 WHERE EXISTS(SELECT 1 from RequestLog where OperationName is not null)) AS 'apis',
-                (select 1 WHERE EXISTS(SELECT 1 from RequestLog where UserAuthId is not null)) AS 'users',
-                (select 1 WHERE EXISTS(SELECT 1 from RequestLog where Headers LIKE '%Bearer ak-%')) AS 'apiKeys',
-                (select 1 WHERE EXISTS(SELECT 1 from RequestLog where IpAddress is not null)) AS 'ips'
+                SELECT
+                (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where OperationName IS NOT NULL)) AS 'apis',
+                (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where UserAuthId IS NOT NULL)) AS 'users',
+                (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where Headers LIKE '%Bearer ak-%')) AS 'apiKeys',
+                (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where IpAddress IS NOT NULL)) AS 'ips'
                 """;
             using var db = OpenMonthDb(DateTime.UtcNow);
             var result = db.SqlList<(int? apis, int? users, int? apiKeys, bool? ips)>(sql).FirstOrDefault();
@@ -488,6 +491,73 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         {
             db.DropAndCreateTable<AnalyticsReports>();
             db.Insert(ret);
+        }
+        
+        return ret;
+    }
+
+    public AnalyticsReports GetApiAnalytics(AnalyticsConfig config, DateTime month, string op)
+    {
+        using var db = OpenMonthDb(month);
+
+        var tableExists = db.TableExists<ApiAnalytics>();
+        var lastLogId = tableExists
+            ? db.Single(db.From<RequestLog>()
+                .Where(x => x.OperationName == op)
+                .OrderByDescending(x => x.Id).Limit(1))?.Id
+            : null;
+
+        ApiAnalytics? apiAnalytics = null;
+        try
+        {
+            // Ignore schema changes, table is recreated when cached
+            apiAnalytics = lastLogId != null
+                ? db.SingleById<ApiAnalytics>(lastLogId)
+                : null;
+        } catch (Exception ignore) {}
+
+        if (apiAnalytics?.Report != null)
+            return apiAnalytics.Report;
+        
+        List<RequestLog> batch = [];
+        long lastPk = 0;
+        var ret = CreateAnalyticsReports();
+        
+        do {
+            batch = db.Select(
+                db.From<RequestLog>()
+                    .Where(x => x.Id > lastPk)
+                    .And(x => x.OperationName == op)
+                    .OrderBy(x => x.Id)
+                    .Limit(config.BatchSize));
+            
+            foreach (var requestLog in batch)
+            {
+                ret.AddRequestLog(requestLog, config);
+                lastPk = requestLog.Id;
+            }
+            
+        } while(batch.Count >= config.BatchSize);
+
+        ret.Id = lastPk;
+        ret.CleanResults(config);
+
+        if (ret.Users?.Count > 0)
+        {
+            lock (Locks.GetDbLock(DbMonthFile(month)))
+            {
+                db.CreateTableIfNotExists<ApiAnalytics>();
+                db.Delete<ApiAnalytics>(x => x.Request == op);
+                
+                db.Insert(new ApiAnalytics
+                {
+                    Id =  lastPk,
+                    Request = op,
+                    Created = DateTime.UtcNow,
+                    Version =  Env.ServiceStackVersion,
+                    Report = ret,
+                });
+            }
         }
         
         return ret;

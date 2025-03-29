@@ -1,4 +1,4 @@
-import {computed, inject, onMounted, onUnmounted, ref, watch} from "vue"
+import {computed, inject, onMounted, onUnmounted, ref, watch, nextTick} from "vue"
 import {useClient, useFiles, useFormatters, useUtils, css} from "@servicestack/vue";
 import {ApiResult, apiValueFmt, humanify, mapGet,leftPart,pick} from "@servicestack/client"
 import {GetAnalyticsReports, GetAnalyticsInfo, AdminGetUser, AdminQueryApiKeys} from "dtos"
@@ -15,62 +15,13 @@ import {
     chartHeight,
     sortedSummaryRequests,
     sortedDetailRequests,
+    onClick,
     createDurationRangesChart,
     createStatusCodesChart,
     createRequestsChart,
 } from "charts"
 const { humanifyMs, humanifyNumber, formatDate } = useFormatters()
 const { delay } = useUtils()
-function onClick(analytics, routes, type) {
-    //console.log('onClick', type)
-    if (type === "api") {
-        return function(e, elements, chart) {
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
-            if (points.length) {
-                const firstPoint = points[0]
-                const op = chart.data.labels[firstPoint.index]
-                routes.to({ tab:'', op })
-            }
-        }
-    }
-    if (type === "user") {
-        return function(e, elements, chart) {
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
-            if (points.length) {
-                const firstPoint = points[0]
-                const userId = chart.data.labels[firstPoint.index]
-                if (userId in analytics.users) {
-                    routes.to({ tab:'users', userId })
-                }
-            }
-        }
-    }
-    if (type === "ip") {
-        return function(e, elements, chart) {
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
-            if (points.length) {
-                const firstPoint = points[0]
-                const ip = chart.data.labels[firstPoint.index]
-                if (ip in analytics.ips) {
-                    routes.to({ tab:'ips', ip })
-                }
-            }
-        }
-    }
-    if (type === "apiKey") {
-        return function(e, elements, chart) {
-            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
-            if (points.length) {
-                const firstPoint = points[0]
-                const apiKey = chart.data.labels[firstPoint.index]
-                if (apiKey in analytics.apiKeys) {
-                    routes.to({ tab:'apiKeys', apiKey })
-                }
-            }
-        }
-    }
-    throw new Error(`Unknown type: ${type}`)
-}
 const numFmt = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -807,9 +758,7 @@ const ApiAnalytics = {
         watch(() => [routes.month], update)
         watch(() => [routes.op], () => {
             opEntry.value = routes.op ? opEntries.value.find(x => x.key === routes.op) : null
-            setTimeout(() => {
-                updateApi()
-            }, 0)
+            nextTick(updateApi)
         })
         watch(() => [opEntry.value], () => {
             const op = opEntry.value?.key
@@ -818,19 +767,19 @@ const ApiAnalytics = {
             }
         })
         watch(() => [props.analytics, limits.value.api], () => {
-            setTimeout(() => {
+            nextTick(() => {
                 apiRequestsChart = createRequestsChart(
                     sortedDetailRequests(props.analytics?.apis,limits.value.api), 
                     refApiRequests, 
                     apiRequestsChart,
                     onClick(props.analytics, routes, 'api'))
-            }, 0)
+            })
         })
         watch(() => [props.analytics, limits.value.duration], () => {
-            setTimeout(() => {
+            nextTick(() => {
                 createApiAverageDurationsChart()
                 createApiTotalDurationsChart()
-            }, 0)
+            })
         })
         return {
             routes,
@@ -1027,7 +976,8 @@ const UserAnalytics = {
         let userTopApisChart = null
         let userTopApiKeysChart = null
         let userTopIpsChart = null
-        onMounted(() => {
+        onMounted(async () => {
+            await loadUserIfMissing()
             update()
         })
         onUnmounted(() => {
@@ -1106,12 +1056,24 @@ const UserAnalytics = {
                 onClick: onClick(props.analytics, routes, 'ip'),
             })
         }
+        
+        async function loadUserIfMissing() {
+            if (routes.userId && props.analytics?.users && !props.analytics.users[routes.userId]) {
+                const r = await client.api(new GetAnalyticsReports({
+                    filter:'user',
+                    value:routes.userId
+                }))
+                if (r.response) {
+                    const user = Object.values(r.response.result?.users ?? {})[0]
+                    props.analytics.users[routes.userId] = user
+                }
+            }
+        }
         watch(() => [routes.month], update)
-        watch(() => [routes.userId], () => {
+        watch(() => [routes.userId], async () => {
             opEntry.value = routes.userId ? opEntries.value.find(x => x.key === routes.userId) : null
-            setTimeout(() => {
-                updateUser()
-            }, 0)
+            await loadUserIfMissing()
+            nextTick(updateUser)
         })
         watch(() => [opEntry.value], () => {
             const userId = opEntry.value?.key
@@ -1120,9 +1082,7 @@ const UserAnalytics = {
             }
         })
         watch(() => [props.analytics, limits.value.user], () => {
-            setTimeout(() => {
-                createUserRequestsChart()
-            }, 0)
+            nextTick(createUserRequestsChart)
         })
         return {
             routes,
@@ -1345,7 +1305,8 @@ const ApiKeyAnalytics = {
         let apiKeyTopApisChart = null
         let apiKeyTopIpsChart = null
         let apiKeyTopUsersChart = null
-        onMounted(() => {
+        onMounted(async () => {
+            await loadApiKeyIfMissing()
             update()
         })
         onUnmounted(() => {
@@ -1354,7 +1315,6 @@ const ApiKeyAnalytics = {
                 apiKeyRequestsChart,
                 apiKeyDurationRangesChart,
                 apiKeyTopApisChart,
-                apiKeyTopApiKeysChart,
                 apiKeyTopUsersChart,
             ].forEach(chart => chart?.destroy())
         })
@@ -1418,13 +1378,32 @@ const ApiKeyAnalytics = {
                 onClick: onClick(props.analytics, routes, 'user'),
             })
         }
+        async function loadApiKeyIfMissing() {
+            const requestArgs = routes.apiKey && props.analytics?.apiKeys && !props.analytics.apiKeys[routes.apiKey]
+                ? { filter:'apiKey', value:routes.apiKey }
+                : routes.apiKeyId
+                    ? { filter:'apiKeyId', value:routes.apiKeyId }
+                    : null
+            if (requestArgs) {
+                const r = await client.api(new GetAnalyticsReports(requestArgs))
+                if (r.response) {
+                    const apiKey = Object.keys(r.response.result?.apiKeys ?? {})[0]
+                    const apiKeyInfo = apiKey && r.response.result.apiKeys[apiKey]
+                    if (apiKeyInfo) {
+                        props.analytics.apiKeys[apiKey] = apiKeyInfo
+                        // from ManageUserApiKeys
+                        if (routes.apiKeyId) {
+                            routes.to({ apiKey, apiKeyId:undefined })
+                        }
+                    }
+                }
+            }
+        }
         
         watch(() => [routes.month], update)
-        watch(() => [routes.apiKey], () => {
-            opEntry.value = routes.apiKey ? opEntries.value.find(x => x.key === routes.apiKey) : null
-            setTimeout(() => {
-                updateApiKey()
-            }, 0)
+        watch(() => [routes.apiKey], async () => {
+            await loadApiKeyIfMissing()
+            nextTick(updateApiKey)
         })
         watch(() => [opEntry.value], () => {
             const apiKey = opEntry.value?.key
@@ -1433,9 +1412,7 @@ const ApiKeyAnalytics = {
             }
         })
         watch(() => [props.analytics, limits.value.apiKey], () => {
-            setTimeout(() => {
-                createApiKeyRequestsChart()
-            }, 0)
+            nextTick(createApiKeyRequestsChart)
         })
         return {
             routes,
@@ -1619,7 +1596,8 @@ const IpAnalytics = {
         let ipTopApisChart = null
         let ipTopApiKeysChart = null
         let ipTopUsersChart = null
-        onMounted(() => {
+        onMounted(async () => {
+            await loadIpIfMissing()
             update()
         })
         onUnmounted(() => {
@@ -1687,12 +1665,23 @@ const IpAnalytics = {
                 onClick: onClick(props.analytics, routes, 'user'),
             })
         }
+        
+        async function loadIpIfMissing() {
+            if (routes.ip && props.analytics?.ips && !props.analytics.ips[routes.ip]) {
+                const r = await client.api(new GetAnalyticsReports({
+                    filter:'ip',
+                    value:routes.ip
+                }))
+                if (r.response) {
+                    const ip = Object.values(r.response.result?.ips ?? {})[0]
+                    props.analytics.ips[routes.ip] = ip
+                }
+            }
+        }
         watch(() => [routes.month], update)
-        watch(() => [routes.ip], () => {
-            opEntry.value = routes.ip ? opEntries.value.find(x => x.key === routes.ip) : null
-            setTimeout(() => {
-                updateIp()
-            }, 0)
+        watch(() => [routes.ip], async () => {
+            await loadIpIfMissing()
+            nextTick(updateIp)
         })
         watch(() => [opEntry.value], () => {
             const ip = opEntry.value?.key
@@ -1701,9 +1690,7 @@ const IpAnalytics = {
             }
         })
         watch(() => [props.analytics, limits.value.ip], () => {
-            setTimeout(() => {
-                createIpRequestsChart()
-            }, 0)
+            nextTick(createIpRequestsChart)
         })        
         
         return {
@@ -1806,7 +1793,8 @@ export const Analytics = {
                 month: routes.month ? `${routes.month}-01` : undefined
             }))
             if (api.value.succeeded) {
-                analytics.value = api.value.response.result
+                const result = api.value.response.result
+                analytics.value = result
                 loading.value = false
                 const newTabs = { APIs:'' }
                 if (Object.keys(analytics.value.users ?? {}).length) {
@@ -1827,9 +1815,7 @@ export const Analytics = {
             await update()
         })
         watch(() => [routes.month], () => {
-            setTimeout(() => {
-                update()
-            }, 0)
+            nextTick(update)
         })
         return {
             routes,

@@ -2,7 +2,15 @@ import { inject, nextTick, onMounted, onUnmounted, ref, computed, watch } from "
 import { useClient, useFiles, useMetadata, useFormatters } from "@servicestack/vue"
 import { AdminCreateUser, AdminDeleteUser, AdminGetUser, AdminQueryUsers, AdminUsersResponse, AdminUpdateUser, AdminUserResponse, Property, GetAnalyticsReports } from "dtos"
 import { apiValueFmt, map, mapGet, humanify, ApiResult, toCamelCase, dateFmt, leftPart } from "@servicestack/client"
-import { createStatusCodesChart, createDurationRangesChart, createRequestsChart, mapCounts, sortedDetailRequests, hiddenApiKey } from "charts"
+import { 
+    createStatusCodesChart, 
+    createDurationRangesChart, 
+    createRequestsChart, 
+    mapCounts, 
+    sortedDetailRequests, 
+    hiddenApiKey,
+    onClick,
+} from "charts"
 let adminUsersNav = null
 const formClass = 'shadow overflow-hidden sm:rounded-md bg-white max-w-screen-lg'
 const gridClass = 'grid grid-cols-12 gap-6'
@@ -177,40 +185,26 @@ const Analytics = {
                 <HtmlFormat :value="userAnalytics" />
               </div>
             </div>
-            <div class="my-1">
-              API Requests
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
-              <div>
-                <div class="bg-white rounded shadow p-4" style="height:300px">
-                  <canvas ref="refUserStatusCodes"></canvas>
-                </div>
-              </div>
-              <div>
-                <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
-                  <canvas ref="refUserDurationRanges"></canvas>
-                </div>
-              </div>
-            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 w-full gap-2">
               <div v-if="mapCounts(analytics,'apis')">
-                Top APIs
+                <h4 class="my-1">Top APIs</h4>
                 <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
                   <canvas ref="refUserTopApis"></canvas>
                 </div>
               </div>
               <div v-if="mapCounts(analytics,'apiKeys')">
-                Top API Keys
-                <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
+                <h4 class="my-1">Top API Keys</h4>
+                <div class="bg-white rounded shadow p-4" style="height:300px">
                   <canvas ref="refUserTopApiKeys"></canvas>
                 </div>
               </div>
-              <div v-if="mapCounts(analytics,'ips')">
-                Top IP Addresses
-                <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
-                  <canvas ref="refUserTopIps"></canvas>
-                </div>
-              </div>
+            </div>
+            <div class="my-4 flex justify-center">
+              <span class="cursor-pointer flex font-medium text-indigo-600 hover:text-indigo-500" 
+                    v-href="{ $page:'analytics', tab:'users', userId:id, $clear:true }">
+                <svg class="mr-2 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path fill="currentColor" d="M13 5h2v14h-2zm-2 4H9v10h2zm-4 4H5v6h2zm12 0h-2v6h2z"></path></svg>
+                View User Analytics
+              </span>
             </div>
           </div>
           <div v-else class="text-center">
@@ -233,19 +227,12 @@ const Analytics = {
         const months = ref(props.info.months ?? [])
         const years = computed(() =>
             Array.from(new Set(months.value.map(x => leftPart(x,'-')))).toReversed())
-        const refUserStatusCodes = ref(null)
-        const refUserDurationRanges = ref(null)
         const refUserTopApis = ref(null)
         const refUserTopApiKeys = ref(null)
-        const refUserTopIps = ref(null)
-        let userStatusCodesChart = null
-        let userRequestsChart = null
-        let userDurationRangesChart = null
         let userTopApisChart = null
         let userTopApiKeysChart = null
-        let userTopIpsChart = null
         const { formatBytes } = useFiles()
-        const { humanifyMs, humanifyNumber, formatDate } = useFormatters()
+        const { humanifyMs, humanifyNumber } = useFormatters()
         const numFmt = new Intl.NumberFormat('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -289,7 +276,8 @@ const Analytics = {
                 return ret
             }
             return []
-        })        
+        })
+        
         async function update() {
             api.value = await client.api(new GetAnalyticsReports({
                 filter: "user",
@@ -297,13 +285,6 @@ const Analytics = {
                 month: routes.month ? `${routes.month}-01` : undefined,
             }))
             nextTick(() => {
-                userStatusCodesChart = createStatusCodesChart({
-                    requests: analytics.value?.status,
-                    chart: userStatusCodesChart,
-                    refEl: refUserStatusCodes,
-                })
-                userDurationRangesChart = createDurationRangesChart(
-                    analytics.value?.durations, userDurationRangesChart, refUserDurationRanges)
                 userTopApisChart = createRequestsChart({
                     requests: sortedDetailRequests(analytics.value?.apis),
                     chart: userTopApisChart,
@@ -311,7 +292,7 @@ const Analytics = {
                     formatY: function(ctx, value, index, values) {
                         return ctx.labels[index]
                     },
-                    //onClick: onClick(props.analytics, routes, 'api'),
+                    onClick: onClick(analytics.value, routes, 'api'),
                 })
                 userTopApiKeysChart = createRequestsChart({
                     requests: sortedDetailRequests(analytics.value?.apiKeys),
@@ -320,13 +301,7 @@ const Analytics = {
                     formatY: function(ctx, value, index, values) {
                         return hiddenApiKey(ctx.labels[index])
                     },
-                    //onClick: onClick(props.analytics, routes, 'apiKey'),
-                })
-                userTopIpsChart = createRequestsChart({
-                    requests: sortedDetailRequests(analytics.value?.ips),
-                    chart: userTopIpsChart,
-                    refEl: refUserTopIps,
-                    //onClick: onClick(props.analytics, routes, 'ip'),
+                    onClick: onClick(analytics.value, routes, 'apiKey'),
                 })
             })
         }
@@ -335,9 +310,8 @@ const Analytics = {
         
         onUnmounted(() => {
             [
-                userStatusCodesChart,
-                userRequestsChart,
-                userDurationRangesChart,
+                userTopApisChart,
+                userTopApiKeysChart,
             ].forEach(chart => chart?.destroy())
         })
         
@@ -350,13 +324,10 @@ const Analytics = {
             analytics,
             userAnalytics,
             userLinks,
-            refUserStatusCodes,
-            refUserDurationRanges,
             refUserTopApis,
             refUserTopApiKeys,
-            refUserTopIps,
-            humanifyNumber,
             mapCounts,
+            humanifyNumber,
         }
     }
 }

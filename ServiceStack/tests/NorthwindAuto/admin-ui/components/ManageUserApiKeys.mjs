@@ -187,12 +187,21 @@ export const EditApiKeyForm = {
                           <TextareaInput id="notes" v-model="request.notes" placeholder="Optional Notes about this API Key" class="h-24" />
                         </div>
                       </div>
-                      <div class="mt-2 col-span-6">
-                        <div v-if="request.cancelledDate" class="flex items-center">
+                      <div class="mt-2 flex justify-between">
+                        <div>
+                          <div v-if="request.cancelledDate" class="flex items-center">
                             <div class="text-red-500">Disabled on {{formatDate(request.cancelledDate)}}</div>
                             <SecondaryButton @click="submitEnable" class="ml-4">Enable API Key</SecondaryButton>
+                          </div>
+                          <PrimaryButton v-else @click="submitDisable" color="red" class="mr-2">Disable API Key</PrimaryButton>
                         </div>
-                        <PrimaryButton v-else @click="submitDisable" color="red" class="mr-2">Disable API Key</PrimaryButton>
+                        <div>
+                          <span class="mr-4 cursor-pointer flex font-medium text-indigo-600 hover:text-indigo-500"
+                                v-href="{ $page:'analytics', tab:'apiKeys', apiKeyId:id, $clear:true }">
+                            <svg class="mr-2 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path fill="currentColor" d="M13 5h2v14h-2zm-2 4H9v10h2zm-4 4H5v6h2zm12 0h-2v6h2z"></path></svg>
+                            View Analytics
+                          </span>
+                        </div>
                       </div>
                     </fieldset>
                   </div>

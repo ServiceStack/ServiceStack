@@ -76,6 +76,50 @@ export function sortedDetailRequests(requestsMap, limit= 11) {
         .sort((a, b) => b[1] - a[1])
         .slice(0, limit) // Limit for better visualization
 }
+export function onClick(analytics, routes, type) {
+    //console.log('onClick', type)
+    if (type === "api") {
+        return function(e, elements, chart) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false)
+            if (points.length) {
+                const firstPoint = points[0]
+                const op = chart.data.labels[firstPoint.index]
+                routes.to({ $page:'analytics', tab:'', op, $clear:true })
+            }
+        }
+    }
+    if (type === "user") {
+        return function(e, elements, chart) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+            if (points.length) {
+                const firstPoint = points[0]
+                const userId = chart.data.labels[firstPoint.index]
+                routes.to({ $page:'analytics', tab:'users', userId, $clear:true })
+            }
+        }
+    }
+    if (type === "ip") {
+        return function(e, elements, chart) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+            if (points.length) {
+                const firstPoint = points[0]
+                const ip = chart.data.labels[firstPoint.index]
+                routes.to({ $page:'analytics', tab:'ips', ip, $clear:true })
+            }
+        }
+    }
+    if (type === "apiKey") {
+        return function(e, elements, chart) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+            if (points.length) {
+                const firstPoint = points[0]
+                const apiKey = chart.data.labels[firstPoint.index]
+                routes.to({ $page:'analytics', tab:'apiKeys', apiKey, $clear:true })
+            }
+        }
+    }
+    throw new Error(`Unknown type: ${type}`)
+}
 /** Create a vertical bar chart for duration ranges */
 export function createDurationRangesChart(durations, chart, elRef) {
     if (!durations || !elRef.value) return

@@ -388,7 +388,7 @@ public class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory d
         using var db = dbFactory.OpenDbConnection();
         var apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Key == key);
         if (apiKey == null) 
-            return apiKey;
+            return null;
         if (apiKey.CancelledDate != null)
             throw HttpError.Unauthorized(ErrorMessages.ApiKeyHasBeenCancelled.Localize());
         if (apiKey.ExpiryDate != null && apiKey.ExpiryDate < DateTime.UtcNow)
@@ -406,6 +406,13 @@ public class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory d
             feature.ValidApiKeys[key] = apiKey;
         }
         feature.RecordUsage(apiKey);
+        return apiKey;
+    }
+
+    public async Task<IApiKey?> GetApiKeyByIdAsync(int id)
+    {
+        using var db = dbFactory.OpenDbConnection();
+        var apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Id == id);
         return apiKey;
     }
 }

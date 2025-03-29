@@ -28,4 +28,5 @@ public interface IApiKeyResolver
 public interface IApiKeySource
 {
     Task<IApiKey?> GetApiKeyAsync(string key);
+    Task<IApiKey?> GetApiKeyByIdAsync(int id);
 }
