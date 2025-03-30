@@ -343,7 +343,12 @@ let store = {
                 roleLinks[role].forEach(link => to.push(Object.assign(link, { href: urlWithState(link.href) })))
             })
         }
-        return to
+        const preferredOrder = globalThis.Server.ui.adminLinksOrder || []
+        const adminLinksSorted = preferredOrder.map(id => {
+            return to.find(link => link.id === id)
+        }).filter(link => link !== undefined)
+        const adminLinksUnsorted = to.filter(link => !preferredOrder.includes(link.id))
+        return [...adminLinksSorted, ...adminLinksUnsorted]
     },
     /** @return {string|null} */
     get displayName() {

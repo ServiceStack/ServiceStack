@@ -257,7 +257,14 @@ let store = {
      *  @return {LinkInfo} */
     adminLink(id) { return server.ui.adminLinks.find(x => x.id === id) },
 
-    get adminLinks() { return server.ui.adminLinks },
+    get adminLinks() { 
+        const preferredOrder = server.ui.adminLinksOrder || []
+        const adminLinksSorted = preferredOrder.map(id => {
+            return server.ui.adminLinks.find(link => link.id === id)
+        }).filter(link => link !== undefined)
+        const adminLinksUnsorted = server.ui.adminLinks.filter(link => !preferredOrder.includes(link.id))
+        return [...adminLinksSorted, ...adminLinksUnsorted]
+    },
 
     get link() { return this.adminLink(routes.admin) },
 

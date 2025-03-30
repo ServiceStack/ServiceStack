@@ -56,18 +56,18 @@ let DEBUG = false
                         <div class="mx-auto px-4 sm:px-6 md:px-8">
                             <div class="py-4">
                                 <dashboard v-if="(routes.admin ?? '') === ''"></dashboard>
-                                <validation v-else-if="routes.admin === 'validation'"></validation>
-                                <identity-users v-else-if="routes.admin === 'users' && server?.plugins.auth?.identityAuth"></identity-users>
-                                <identity-roles v-else-if="routes.admin === 'roles'"></identity-roles>
-                                <users v-else-if="routes.admin === 'users'"></users>
                                 <analytics v-else-if="routes.admin === 'analytics'"></analytics>
+                                <identity-users v-else-if="routes.admin === 'users' && server?.plugins.auth?.identityAuth"></identity-users>
+                                <users v-else-if="routes.admin === 'users'"></users>
+                                <identity-roles v-else-if="routes.admin === 'roles'"></identity-roles>
+                                <api-keys v-else-if="routes.admin === 'apikeys'"></api-keys>
                                 <logging v-else-if="routes.admin === 'logging'"></logging>
                                 <profiling v-else-if="routes.admin === 'profiling'"></profiling>
-                                <redis v-else-if="routes.admin === 'redis'"></redis>
-                                <database v-else-if="routes.admin === 'database'"></database>
                                 <commands v-else-if="routes.admin === 'commands'"></commands>
                                 <background-jobs v-else-if="routes.admin === 'backgroundjobs'"></background-jobs>
-                                <api-keys v-else-if="routes.admin === 'apikeys'"></api-keys>
+                                <validation v-else-if="routes.admin === 'validation'"></validation>
+                                <redis v-else-if="routes.admin === 'redis'"></redis>
+                                <database v-else-if="routes.admin === 'database'"></database>
                             </div>
                         </div>
                     </div>

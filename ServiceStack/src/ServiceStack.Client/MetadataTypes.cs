@@ -643,6 +643,11 @@ public class UiInfo : IMeta
     public ImageInfo BrandIcon { get; set; }
 
     /// <summary>
+    /// Default User Icon
+    /// </summary>
+    public ImageInfo UserIcon { get; set; }
+
+    /// <summary>
     /// Hide APIs with tags 
     /// </summary>
     public List<string> HideTags { get; set; }
@@ -661,6 +666,11 @@ public class UiInfo : IMeta
     /// Admin UI Links
     /// </summary>
     public List<LinkInfo> AdminLinks { get; set; }
+
+    /// <summary>
+    /// The order Admin UI Links should appear
+    /// </summary>
+    public List<string> AdminLinksOrder { get; set; }
     
     /// <summary>
     /// Default Themes for all UIs

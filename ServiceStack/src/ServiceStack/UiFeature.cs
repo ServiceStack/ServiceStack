@@ -64,6 +64,7 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
         HideTags = [TagNames.Auth, TagNames.Admin],
         AlwaysHideTags = [TagNames.Admin],
         BrandIcon = Svg.ImageUri(Svg.GetDataUri(Svg.Logos.ServiceStack, "#000000")),
+        UserIcon = Svg.ImageUri(JwtClaimTypes.DefaultProfileUrl),
         Theme = new ThemeInfo
         {
             Form = "shadow overflow-hidden sm:rounded-md bg-white",
@@ -116,9 +117,23 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
                 Form = "max-w-screen-lg",
                 Fieldset = "grid grid-cols-12 gap-6", 
                 Field = "col-span-12",
-            }
+            },
         },
         AdminLinks = new(),
+        AdminLinksOrder = [
+            "",
+            "analytics",
+            "users",
+            "roles",
+            "apikeys",
+            "logging",
+            "profiling",
+            "commands",
+            "backgroundjobs",
+            "validation",
+            "database",
+            "redis",
+        ],
     };
 
     public List<HtmlModule> HtmlModules { get; } = new();

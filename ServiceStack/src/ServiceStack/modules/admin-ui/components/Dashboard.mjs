@@ -177,16 +177,18 @@ export const Dashboard = {
         const urlApiExplorer = computed(() => urlWithState('../ui'))
         const loading = ref(false)
         
-        const adminFeatures = computed(() => ({ 
-            validation:'Validation', 
-            users:'Users', 
-            logging:'Logging', 
-            profiling:'Profiling', 
-            database:'Database', 
-            redis:'Redis',
+        const adminFeatures = computed(() => ({
+            analytics:'Analytics',
+            users:'Users',
+            roles:'Roles',
             apikeys:'API Keys',
+            logging:'Logging',
+            profiling:'Profiling',
             commands:'Commands',
             backgroundjobs:'Background Jobs',
+            validation:'Validation', 
+            database:'Database', 
+            redis:'Redis',
         }))
         
         function isRegistered(id) {
