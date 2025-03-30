@@ -33,8 +33,6 @@ const numFmt = new Intl.NumberFormat('en-US', {
 function round(n) {
     return n.toString().indexOf(".") === -1 ? n : numFmt.format(n);
 }
-const userSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjNGE1NTY1IiBkPSJNMTYgOGE1IDUgMCAxIDAgNSA1YTUgNSAwIDAgMC01LTUiLz48cGF0aCBmaWxsPSIjNGE1NTY1IiBkPSJNMTYgMmExNCAxNCAwIDEgMCAxNCAxNEExNC4wMTYgMTQuMDE2IDAgMCAwIDE2IDJtNy45OTMgMjIuOTI2QTUgNSAwIDAgMCAxOSAyMGgtNmE1IDUgMCAwIDAtNC45OTIgNC45MjZhMTIgMTIgMCAxIDEgMTUuOTg1IDAiLz48L3N2Zz4='
-
 const ApiAnalytics = {
     template:`
       <div class="my-4 mx-auto max-w-lg">
@@ -910,7 +908,7 @@ const UserAnalytics = {
                   </tr>
                 </table>
                 <a :href="'./users?edit=' + routes.userId">
-                  <img :src="userInfo?.result.ProfileUrl || userSrc" class="m-2 h-16 w-16 rounded-full text-gray-500" alt="User Profile" :onerror="'this.src=' + JSON.stringify(userSrc)">
+                  <img :src="userInfo?.result.ProfileUrl || store.userIconUri" class="m-2 h-16 w-16 rounded-full text-gray-500" alt="User Profile" :onerror="'this.src=' + JSON.stringify(store.userIconUri)">
                 </a>
               </div>
               <LogLinks title="User" :links="userLinks" :filter="{ userId:routes.userId }" />
@@ -968,6 +966,7 @@ const UserAnalytics = {
     },
     setup(props) {
         const routes = inject('routes')
+        const store = inject('store')
         const refUserRequests = ref(null)
         const opEntry = ref()
         const opEntries = ref([])
@@ -1147,8 +1146,8 @@ const UserAnalytics = {
 
         return {
             routes,
+            store,
             limits,
-            userSrc,
             userAnalytics,
             userLinks,
             userInfo,

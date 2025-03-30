@@ -284,7 +284,10 @@ let store = {
     },
     get authRoles() { return this.auth && this.auth.roles || [] },
     get authPermissions() { return this.auth && this.auth.permissions || [] },
-    get authProfileUrl() { return this.auth && this.auth.profileUrl },
+    get defaultUserUri() { return 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjNGE1NTY1IiBkPSJNMTYgOGE1IDUgMCAxIDAgNSA1YTUgNSAwIDAgMC01LTUiLz48cGF0aCBmaWxsPSIjNGE1NTY1IiBkPSJNMTYgMmExNCAxNCAwIDEgMCAxNCAxNEExNC4wMTYgMTQuMDE2IDAgMCAwIDE2IDJtNy45OTMgMjIuOTI2QTUgNSAwIDAgMCAxOSAyMGgtNmE1IDUgMCAwIDAtNC45OTIgNC45MjZhMTIgMTIgMCAxIDEgMTUuOTg1IDAiLz48L3N2Zz4=' },
+    get userIconUri() { return server.ui.userIcon?.uri || this.defaultUserUri },
+    get authProfileUrl() { return this.auth && this.auth.profileUrl || this.userIconUri },
+    
     get isAdmin() { return this.authRoles.indexOf('Admin') >= 0 },
     /** @return {LinkInfo[]} */
     get authLinks() {
