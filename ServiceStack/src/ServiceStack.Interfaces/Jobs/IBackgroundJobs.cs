@@ -42,7 +42,7 @@ public interface IBackgroundJobs
     /// </summary>
     bool CancelJob(long jobId);
     /// <summary>
-    /// Cancel all Jobs with the specified state
+    /// Cancel all Jobs with the specified state or the specified worker
     /// </summary>
     /// <returns>How many jobs were cancelled</returns>
     List<long> CancelJobs(BackgroundJobState? state = null, string? worker = null);

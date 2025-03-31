@@ -461,6 +461,7 @@ public partial class BackgroundJobs : IBackgroundJobs
     
     public List<long> CancelJobs(BackgroundJobState? state = null, string? worker = null)
     {
+        
         List<long> jobIds = new();
         using (var db = OpenDb())
         {
@@ -474,6 +475,11 @@ public partial class BackgroundJobs : IBackgroundJobs
                 var useWorker = worker == "None" ? null : worker;
                 jobIds.AddDistinctRange(db.Column<long>(db.From<BackgroundJob>()
                     .Where(x => x.Worker == useWorker)));
+            }
+            // If no filter was supplied, cancel All Jobs
+            if (state == null && worker == null)
+            {
+                jobIds = db.Column<long>(db.From<BackgroundJob>());
             }
         }
         foreach (var jobId in jobIds)
