@@ -51,6 +51,11 @@ public class IdentityRegistrationValidator<TUser,TKey> : AbstractValidator<Regis
     }
 }
 
+public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser> userManager)
+    : IdentityRegisterServiceBase<TUser, IdentityRole<TKey>, TKey>(userManager)
+    where TUser : IdentityUser<TKey>, new()
+    where TKey : IEquatable<TKey>  {}
+
 /// <summary>
 /// Register Base class for IAuthRepository / IUserAuth users
 /// </summary>
@@ -102,6 +107,12 @@ public abstract class IdentityRegisterServiceBase<TUser, TRole, TKey>(UserManage
             await asyncEvents.OnRegisteredAsync(this.Request, session, this).ConfigAwait();
     }
 }
+
+public abstract class IdentityRegisterService<TUser, TKey>(UserManager<TUser> userManager)
+    : IdentityRegisterService<TUser, IdentityRole<TKey>, TKey>(userManager)
+    where TUser : IdentityUser<TKey>, new()
+    where TKey : IEquatable<TKey>  {}
+
 
 [DefaultRequest(typeof(Register))]
 public class IdentityRegisterService<TUser, TRole, TKey>(UserManager<TUser> userManager)
