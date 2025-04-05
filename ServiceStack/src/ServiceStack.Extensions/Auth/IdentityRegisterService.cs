@@ -55,11 +55,6 @@ public abstract class IdentityRegisterServiceBase<TUser>(UserManager<TUser> user
     : IdentityRegisterServiceBase<TUser, IdentityRole, string>(userManager)
     where TUser : IdentityUser<string>, new() {}
 
-public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser> userManager)
-    : IdentityRegisterServiceBase<TUser, IdentityRole<TKey>, TKey>(userManager)
-    where TUser : IdentityUser<TKey>, new()
-    where TKey : IEquatable<TKey>  {}
-
 /// <summary>
 /// Register Base class for IAuthRepository / IUserAuth users
 /// </summary>
