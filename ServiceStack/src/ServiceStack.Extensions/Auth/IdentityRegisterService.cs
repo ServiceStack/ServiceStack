@@ -51,6 +51,10 @@ public class IdentityRegistrationValidator<TUser,TKey> : AbstractValidator<Regis
     }
 }
 
+public abstract class IdentityRegisterServiceBase<TUser>(UserManager<TUser> userManager)
+    : IdentityRegisterServiceBase<TUser, IdentityRole<string>, string>(userManager)
+    where TUser : IdentityUser<string>, new() {}
+
 public abstract class IdentityRegisterServiceBase<TUser, TKey>(UserManager<TUser> userManager)
     : IdentityRegisterServiceBase<TUser, IdentityRole<TKey>, TKey>(userManager)
     where TUser : IdentityUser<TKey>, new()

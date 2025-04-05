@@ -33,10 +33,10 @@ public static class IdentityAuth
         ?? throw new Exception("IdentityAuth.AuthApplication is not configured");
 
     public static IdentityAuthContext<TUser, TRole, TKey>? Instance<TUser, TRole, TKey>()
-        where TKey : IEquatable<TKey>
-        where TRole : IdentityRole<TKey>
         where TUser : IdentityUser<TKey>, new()
-    => Config as IdentityAuthContext<TUser, TRole, TKey>;
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey>
+    => Config != null ? (IdentityAuthContext<TUser, TRole, TKey>)Config : null;
 
     public static Action<IServiceCollection, AuthFeature> For<TUser, TRole>(
         Action<IdentityAuthContext<TUser, TRole, string>> configure)
