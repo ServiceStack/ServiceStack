@@ -32,6 +32,7 @@ export let AppData = {
 }
 
 export const app = new App()
+const server = globalThis.Server
 
 /**
  * @param {RequestInit} req

@@ -28,6 +28,7 @@ export let AppData = {
     HttpErrors: { 401:'Unauthorized', 403:'Forbidden' },
 }
 export const app = new App()
+const server = globalThis.Server
 /**
  * @param {RequestInit} req
  */
