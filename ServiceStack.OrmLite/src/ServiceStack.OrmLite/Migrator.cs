@@ -194,12 +194,22 @@ public class Migrator
                 var namedDesc = namedConnection == null ? "" : $" ({namedConnection})";
                 Log.Info($"Running {nextRun.Name}{descFmt}{namedDesc}...");
             
+                string? connectionString;
+                if(DbFactory is OrmLiteConnectionFactory factory)
+                {
+                    connectionString = factory.ConnectionString;
+                }
+                else
+                {
+                    connectionString = db.ConnectionString;
+                }
+
                 var migration = new Migration
                 {
                     Name = nextRun.Name,
                     Description = AppTasks.GetDesc(nextRun),
                     CreatedDate = DateTime.UtcNow,
-                    ConnectionString = OrmLiteUtils.MaskPassword(((OrmLiteConnectionFactory)DbFactory).ConnectionString),
+                    ConnectionString = OrmLiteUtils.MaskPassword(connectionString),
                     NamedConnection = namedConnection,
                 };
                 var id = db.Insert(migration, selectIdentity:true);
