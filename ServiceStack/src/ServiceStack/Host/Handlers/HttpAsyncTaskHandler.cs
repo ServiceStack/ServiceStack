@@ -19,7 +19,7 @@ public abstract class HttpAsyncTaskHandler : IHttpAsyncHandler, IServiceStackHan
 
     public string RequestName { get; set; }
 
-    private Type[] ProcessRequestArgTypes = {typeof(IRequest), typeof(IResponse), typeof(string)};
+    private Type[] ProcessRequestArgTypes = [typeof(IRequest), typeof(IResponse), typeof(string)];
 
     public virtual bool RunAsAsync()
     {
