@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
@@ -335,8 +336,9 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
 
     public void Configure(IServiceCollection services)
     {
-        services.AddSingleton<IApiKeySource>(c => new ApiKeysFeatureSource(this, c.GetRequiredService<IDbConnectionFactory>()));
-        services.AddSingleton<IApiKeyResolver>(_ => new ApiKeyResolver(this));
+        services.TryAddSingleton<IApiKeySource>(c => new ApiKeysFeatureSource(this, c.GetRequiredService<IDbConnectionFactory>()));
+        services.TryAddSingleton<IApiKeyResolver>(_ => new ApiKeyResolver(this));
+        
         foreach (var serviceType in RegisterServices)
         {
             services.RegisterService(serviceType);
