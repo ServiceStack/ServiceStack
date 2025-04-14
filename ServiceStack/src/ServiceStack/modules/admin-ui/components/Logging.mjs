@@ -396,6 +396,7 @@ export const Logging = {
       </section>
     `,
     setup() {
+        const app = inject('app')
         const routes = inject('routes')
         const server = inject('server')
         const client = useClient()
