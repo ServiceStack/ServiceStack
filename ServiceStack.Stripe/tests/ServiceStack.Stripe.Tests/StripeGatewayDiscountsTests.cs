@@ -2,31 +2,30 @@
 using ServiceStack.Stripe;
 using ServiceStack.Text;
 
-namespace Stripe.Tests
+namespace Stripe.Tests;
+
+/// <summary>
+/// https://stripe.com/docs/api/curl#discounts
+/// </summary>
+[TestFixture]
+public class StripeGatewayDiscountsTests : TestsBase
 {
-    /// <summary>
-    /// https://stripe.com/docs/api/curl#discounts
-    /// </summary>
-    [TestFixture]
-    public class StripeGatewayDiscountsTests : TestsBase
+    [Test]
+    public void Can_Delete_CustomerDiscount()
     {
-        [Test]
-        public void Can_Delete_CustomerDiscount()
+        var customer = CreateCustomer();
+        var coupon = GetOrCreateCoupon();
+
+        gateway.Post(new UpdateStripeCustomer
         {
-            var customer = CreateCustomer();
-            var coupon = GetOrCreateCoupon();
+            Id = customer.Id,
+            Coupon = coupon.Id
+        });
 
-            gateway.Post(new UpdateStripeCustomer
-            {
-                Id = customer.Id,
-                Coupon = coupon.Id
-            });
+        var deletedRef = gateway.Delete(new DeleteStripeDiscount { CustomerId = customer.Id });
 
-            var deletedRef = gateway.Delete(new DeleteStripeDiscount { CustomerId = customer.Id });
+        deletedRef.PrintDump();
 
-            deletedRef.PrintDump();
-
-            Assert.That(deletedRef.Deleted, Is.True);
-        }
+        Assert.That(deletedRef.Deleted, Is.True);
     }
 }
