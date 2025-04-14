@@ -22,7 +22,7 @@ namespace Stripe.Tests
 
             Assert.That(customer.Id, Is.Not.Null);
             Assert.That(customer.Email, Is.EqualTo("test@email.com"));
-            Assert.That(customer.Sources.TotalCount, Is.EqualTo(1));
+            Assert.That(customer.Sources.Data.Count, Is.EqualTo(1));
             Assert.That(customer.Sources.Data[0].Name, Is.EqualTo("Test Card"));
             Assert.That(customer.Sources.Data[0].ExpMonth, Is.EqualTo(1));
             Assert.That(customer.Sources.Data[0].ExpYear, Is.EqualTo(2030));
@@ -63,7 +63,7 @@ namespace Stripe.Tests
 
             Assert.That(customer.Id, Is.Not.Null);
             Assert.That(customer.Email, Is.EqualTo("test@email.com"));
-            Assert.That(customer.Sources.TotalCount, Is.EqualTo(1));
+            Assert.That(customer.Sources.Data.Count, Is.EqualTo(1));
             Assert.That(customer.Sources.Data[0].Name, Is.EqualTo("Test Card"));
             Assert.That(customer.Sources.Data[0].ExpMonth, Is.EqualTo(1));
             Assert.That(customer.Sources.Data[0].ExpYear, Is.EqualTo(2030));
@@ -80,7 +80,7 @@ namespace Stripe.Tests
 
             Assert.That(customer.Id, Is.Not.Null);
             Assert.That(customer.Email, Is.EqualTo("test@email.com"));
-            Assert.That(customer.Sources.TotalCount, Is.EqualTo(1));
+            Assert.That(customer.Sources.Data.Count, Is.EqualTo(1));
             Assert.That(customer.Sources.Data[0].Name, Is.EqualTo("Test Card"));
             Assert.That(customer.Sources.Data[0].ExpMonth, Is.EqualTo(1));
             Assert.That(customer.Sources.Data[0].ExpYear, Is.EqualTo(2030));
@@ -99,7 +99,7 @@ namespace Stripe.Tests
 
             Assert.That(newCustomer.Id, Is.EqualTo(customer.Id));
             Assert.That(newCustomer.Email, Is.EqualTo("test@email.com"));
-            Assert.That(newCustomer.Sources.TotalCount, Is.EqualTo(1));
+            Assert.That(newCustomer.Sources.Data.Count, Is.EqualTo(1));
             Assert.That(newCustomer.Sources.Data[0].Name, Is.EqualTo("Test Card"));
         }
 
@@ -134,7 +134,7 @@ namespace Stripe.Tests
 
             Assert.That(updatedCustomer.Id, Is.EqualTo(customer.Id));
             Assert.That(updatedCustomer.Email, Is.EqualTo("updated@email.com"));
-            Assert.That(updatedCustomer.Sources.TotalCount, Is.EqualTo(1));
+            Assert.That(updatedCustomer.Sources.Data.Count, Is.EqualTo(1));
             Assert.That(updatedCustomer.Sources.Data[0].Name, Is.EqualTo("Updated Test Card"));
         }
 

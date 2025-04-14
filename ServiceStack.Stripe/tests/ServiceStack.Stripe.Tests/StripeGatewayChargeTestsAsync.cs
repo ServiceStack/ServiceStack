@@ -230,7 +230,7 @@ namespace Stripe.Tests
             Assert.That(refundCharge.Amount, Is.EqualTo(100));
             Assert.That(refundCharge.Paid, Is.True);
             Assert.That(refundCharge.Refunded, Is.True);
-            Assert.That(refundCharge.Refunds.TotalCount, Is.EqualTo(1));
+            Assert.That(refundCharge.Refunds.Data.Count, Is.EqualTo(1));
             Assert.That(refundCharge.Refunds.Data[0].Amount, Is.EqualTo(100));
         }
 
@@ -280,7 +280,7 @@ namespace Stripe.Tests
 
             charges.PrintDump();
 
-            Assert.That(charges.TotalCount, Is.GreaterThan(0));
+            Assert.That(charges.Data.Count, Is.GreaterThan(0));
             Assert.That(charges.Data[0].Id, Is.Not.Null);
         }
 
@@ -305,7 +305,7 @@ namespace Stripe.Tests
 
             charges.PrintDump();
 
-            Assert.That(charges.TotalCount, Is.EqualTo(1));
+            Assert.That(charges.Data.Count, Is.EqualTo(1));
             Assert.That(charges.Data[0].Id, Is.Not.Null);
             Assert.That(charges.Data[0].Customer, Is.EqualTo(customer.Id));
         }

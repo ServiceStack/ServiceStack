@@ -17,7 +17,7 @@ namespace Stripe.Tests
         {
             var customer = CreateCustomer();
 
-            Assert.That(customer.Sources.TotalCount, Is.EqualTo(1));
+            Assert.That(customer.Sources.Data.Count, Is.EqualTo(1));
 
             var card = gateway.Post(new CreateStripeCard
             {
@@ -43,7 +43,7 @@ namespace Stripe.Tests
 
             customer = gateway.Get(new GetStripeCustomer { Id = customer.Id });
 
-            Assert.That(customer.Sources.TotalCount, Is.EqualTo(2));
+            Assert.That(customer.Sources.Data.Count, Is.EqualTo(2));
         }
 
         [Test]
@@ -113,7 +113,7 @@ namespace Stripe.Tests
         {
             var customer = CreateCustomer();
 
-            Assert.That(customer.Sources.TotalCount, Is.EqualTo(1));
+            Assert.That(customer.Sources.Data.Count, Is.EqualTo(1));
 
             var deletedRef = gateway.Delete(new DeleteStripeCustomerCard
             {
@@ -126,7 +126,7 @@ namespace Stripe.Tests
 
             customer = gateway.Get(new GetStripeCustomer { Id = customer.Id });
 
-            Assert.That(customer.Sources.TotalCount, Is.EqualTo(0));
+            Assert.That(customer.Sources.Data.Count, Is.EqualTo(0));
         }
 
         [Test]
@@ -154,7 +154,6 @@ namespace Stripe.Tests
             var cards = gateway.Get(new GetStripeCustomerCards { CustomerId = customer.Id });
 
             Assert.That(cards.Data.Count, Is.EqualTo(2));
-            Assert.That(cards.TotalCount, Is.EqualTo(2));
         }
     }
 }

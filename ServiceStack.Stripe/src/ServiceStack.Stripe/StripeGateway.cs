@@ -67,11 +67,6 @@ namespace ServiceStack.Stripe
     [Route("/charges")]
     public class GetStripeCharges : IGet, IReturn<StripeCollection<StripeCharge>>, IUrlFilter
     {
-        public GetStripeCharges()
-        {
-            Include = new[] { "total_count" };
-        }
-
         public int? Limit { get; set; }
         public string StartingAfter { get; set; }
         public string EndingBefore { get; set; }
@@ -159,11 +154,6 @@ namespace ServiceStack.Stripe
     [Route("/customers")]
     public class GetStripeCustomers : IGet, IReturn<StripeCollection<StripeCustomer>>, IUrlFilter
     {
-        public GetStripeCustomers()
-        {
-            Include = new[] { "total_count" };
-        }
-
         public int? Limit { get; set; }
         public string StartingAfter { get; set; }
         public string EndingBefore { get; set; }
@@ -237,11 +227,6 @@ namespace ServiceStack.Stripe
     [Route("/customers/{CustomerId}/sources")]
     public class GetStripeCustomerCards : IGet, IReturn<StripeCollection<StripeCard>>, IUrlFilter
     {
-        public GetStripeCustomerCards()
-        {
-            Include = new[] { "total_count" };
-        }
-
         public string CustomerId { get; set; }
 
         public int? Limit { get; set; }
@@ -1191,7 +1176,6 @@ namespace ServiceStack.Stripe.Types
     public class StripeCollection<T> : StripeId
     {
         public string Url { get; set; }
-        public int TotalCount { get; set; }
         public bool? HasMore { get; set; }
         public List<T> Data { get; set; }
     }
