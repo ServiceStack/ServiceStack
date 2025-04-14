@@ -55,12 +55,12 @@ const ApiAnalytics = {
           <div class="flex flex-wrap lg:flex-nowrap">
             <div class="lg:w-1/2">
               <div>
-                <HtmlFormat :value="{ 'Total Requests': humanifyNumber(analytics.apis[routes.op].totalRequests) }" />
+                <HtmlFormat class="not-prose" :value="{ 'Total Requests': humanifyNumber(analytics.apis[routes.op].totalRequests) }" />
               </div>
               <LogLinks :title="routes.op" :links="apiLinks" :filter="{ op:routes.op }" />
             </div>
             <div class="lg:w-1/2">
-              <HtmlFormat :value="apiAnalytics" />
+              <HtmlFormat class="not-prose" :value="apiAnalytics" />
             </div>
           </div>
         </div>
@@ -865,7 +865,7 @@ const UserAnalytics = {
               <LogLinks title="User" :links="userLinks" :filter="{ userId:routes.userId }" />
             </div>
             <div class="lg:w-1/2">
-              <HtmlFormat :value="userAnalytics" />
+              <HtmlFormat class="not-prose" :value="userAnalytics" />
             </div>
           </div>
         </div>
@@ -1190,7 +1190,7 @@ const ApiKeyAnalytics = {
               <LogLinks title="API Key" :links="apiKeyLinks" :filter="{ apiKey:routes.apiKey }" />
             </div>
             <div class="lg:w-1/2">
-              <HtmlFormat :value="apiKeyAnalytics" />
+              <HtmlFormat class="not-prose" :value="apiKeyAnalytics" />
             </div>
           </div>
         </div>
@@ -1483,7 +1483,7 @@ const IpAnalytics = {
               <LogLinks :title="routes.ip" :links="ipLinks" :filter="{ ip:routes.ip }" />
             </div>
             <div class="lg:w-1/2">
-              <HtmlFormat :value="ipAnalytics" />
+              <HtmlFormat class="not-prose" :value="ipAnalytics" />
             </div>
           </div>
         </div>
