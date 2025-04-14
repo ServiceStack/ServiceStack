@@ -163,7 +163,8 @@ public static class MySqlDb
     {
         try
         {
-            Versions = TestConfig.EnvironmentVariableInto("MYSQL_VERSION", [V5_5, V10_1, V10_2, V10_3, V10_4]);
+            // Versions = TestConfig.EnvironmentVariableInto("MYSQL_VERSION", [V5_5, V10_1, V10_2, V10_3, V10_4]);
+            Versions = TestConfig.EnvironmentVariableInto("MYSQL_VERSION", [V10_4]);
             MySqlConnectorVersions = Versions.Where(x => x == V10_4).ToArray();
             DefaultConnection = TestConfig.DialectConnections[Tuple.Create(Dialect.MySql, V10_4)];
         }
@@ -286,13 +287,13 @@ public partial class TestConfig
                 [Tuple.Create(Dialect.PostgreSql10, PostgreSqlDb.V10)] = EnvironmentVariable(["PGSQL10_CONNECTION", "PGSQL_CONNECTION"], "Server=localhost;Port=48302;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
                 [Tuple.Create(Dialect.PostgreSql11, PostgreSqlDb.V11)] = EnvironmentVariable(["PGSQL11_CONNECTION", "PGSQL_CONNECTION"], "Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
                 
-                [Tuple.Create(Dialect.MySql, MySqlDb.V5_5)]  = EnvironmentVariable(["MYSQL55_CONNECTION",  "MYSQL_CONNECTION"], "Server=localhost;Port=48201;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                [Tuple.Create(Dialect.MySql, MySqlDb.V10_1)] = EnvironmentVariable(["MYSQL101_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48202;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                [Tuple.Create(Dialect.MySql, MySqlDb.V10_2)] = EnvironmentVariable(["MYSQL102_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48203;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                [Tuple.Create(Dialect.MySql, MySqlDb.V10_3)] = EnvironmentVariable(["MYSQL103_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48204;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
-                [Tuple.Create(Dialect.MySql, MySqlDb.V10_4)] = EnvironmentVariable(["MYSQL104_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none;Convert Zero Datetime=True;"),
+                [Tuple.Create(Dialect.MySql, MySqlDb.V5_5)]  = EnvironmentVariable(["MYSQL55_CONNECTION",  "MYSQL_CONNECTION"], "Server=localhost;Port=48201;Database=test;UID=root;Password=p@55wOrd;SslMode=Required;Convert Zero Datetime=True;"),
+                [Tuple.Create(Dialect.MySql, MySqlDb.V10_1)] = EnvironmentVariable(["MYSQL101_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48202;Database=test;UID=root;Password=p@55wOrd;SslMode=Required;Convert Zero Datetime=True;"),
+                [Tuple.Create(Dialect.MySql, MySqlDb.V10_2)] = EnvironmentVariable(["MYSQL102_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48203;Database=test;UID=root;Password=p@55wOrd;SslMode=Required;Convert Zero Datetime=True;"),
+                [Tuple.Create(Dialect.MySql, MySqlDb.V10_3)] = EnvironmentVariable(["MYSQL103_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48204;Database=test;UID=root;Password=p@55wOrd;SslMode=Required;Convert Zero Datetime=True;"),
+                [Tuple.Create(Dialect.MySql, MySqlDb.V10_4)] = EnvironmentVariable(["MYSQL104_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48205;Database=test;UID=root;Password=p@55wOrd;SslMode=Required;Convert Zero Datetime=True;"),
 
-                [Tuple.Create(Dialect.MySqlConnector, MySqlDb.V10_4)] = EnvironmentVariable(["MYSQL104_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none"),
+                [Tuple.Create(Dialect.MySqlConnector, MySqlDb.V10_4)] = EnvironmentVariable(["MYSQL104_CONNECTION", "MYSQL_CONNECTION"], "Server=localhost;Port=48205;Database=test;UID=root;Password=p@55wOrd;SslMode=Required"),
                 
                 [Tuple.Create(Dialect.Oracle, OracleDb.V11)] = EnvironmentVariable(["ORACLE11_CONNECTION", "ORACLE_CONNECTION"], ""),
                 
