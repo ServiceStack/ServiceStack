@@ -92,7 +92,7 @@ export function onClick(analytics, routes, type) {
             if (points.length) {
                 const firstPoint = points[0]
                 const op = chart.data.labels[firstPoint.index]
-                routes.to({ $page:'analytics', tab:'', op, $clear:true })
+                routes.to({ $page:'analytics', tab:'', month:routes.month, op, $clear:true })
             }
         }
     }
@@ -102,7 +102,7 @@ export function onClick(analytics, routes, type) {
             if (points.length) {
                 const firstPoint = points[0]
                 const userId = chart.data.labels[firstPoint.index]
-                routes.to({ $page:'analytics', tab:'users', userId, $clear:true })
+                routes.to({ $page:'analytics', tab:'users', month:routes.month, userId, $clear:true })
             }
         }
     }
@@ -112,7 +112,7 @@ export function onClick(analytics, routes, type) {
             if (points.length) {
                 const firstPoint = points[0]
                 const ip = chart.data.labels[firstPoint.index]
-                routes.to({ $page:'analytics', tab:'ips', ip, $clear:true })
+                routes.to({ $page:'analytics', tab:'ips', month:routes.month, ip, $clear:true })
             }
         }
     }
@@ -122,7 +122,7 @@ export function onClick(analytics, routes, type) {
             if (points.length) {
                 const firstPoint = points[0]
                 const apiKey = chart.data.labels[firstPoint.index]
-                routes.to({ $page:'analytics', tab:'apiKeys', apiKey, $clear:true })
+                routes.to({ $page:'analytics', tab:'apiKeys', month:routes.month, apiKey, $clear:true })
             }
         }
     }
