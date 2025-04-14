@@ -2,7 +2,7 @@ import { inject, onMounted, ref, watch} from "vue"
 import { toDate } from "@servicestack/client"
 import { useClient, useFormatters } from "@servicestack/vue"
 import { GetAnalyticsInfo } from "dtos"
-const LogLinks = {
+export const LogLinks = {
     template:`
     <div v-if="links.length" class="ml-2">
       <nav class="-mb-px flex space-x-4 flex-wrap">
