@@ -337,7 +337,7 @@ public static class RequestExtensions
         var userSessionSource = AuthenticateService.GetUserSessionSourceAsync();
         if (userSessionSource != null)
         {
-            session = await userSessionSource.GetUserSessionAsync(userAuthId, token).ConfigAwait();
+            session = await userSessionSource.GetUserSessionAsync(userAuthId, request, token).ConfigAwait();
             if (session == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(request));
 

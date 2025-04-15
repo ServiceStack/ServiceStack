@@ -142,9 +142,9 @@ public class AuthenticateService : Service
 
     class UserSessionSourceSyncWrapper(IUserSessionSource source) : IUserSessionSourceAsync
     {
-        public Task<IAuthSession> GetUserSessionAsync(string userAuthId, CancellationToken token = default)
+        public Task<IAuthSession> GetUserSessionAsync(string userAuthId, IRequest request=null, CancellationToken token = default)
         {
-            return source.GetUserSession(userAuthId).InTask();
+            return source.GetUserSession(userAuthId, request).InTask();
         }
     }
 #pragma warning restore 618

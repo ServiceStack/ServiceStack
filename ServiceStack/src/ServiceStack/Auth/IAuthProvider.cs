@@ -68,12 +68,12 @@ public interface IAuthResponseFilter
 [Obsolete("Use IUserSessionSourceAsync")]
 public interface IUserSessionSource
 {
-    IAuthSession GetUserSession(string userAuthId);
+    IAuthSession GetUserSession(string userAuthId, IRequest request=null);
 }
 
 public interface IUserSessionSourceAsync
 {
-    Task<IAuthSession> GetUserSessionAsync(string userAuthId, CancellationToken token=default);
+    Task<IAuthSession> GetUserSessionAsync(string userAuthId, IRequest request=null, CancellationToken token=default);
 }
 
 public class AuthFilterContext
