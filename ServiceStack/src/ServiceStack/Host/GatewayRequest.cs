@@ -89,6 +89,7 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
             XRealIp = httpReq?.XRealIp,
             Accept = httpReq?.Accept,
             Files = req.Files,
+            User = (req as IHasClaimsPrincipal)?.User,
         };
         ret.PathInfo = req.PathInfo ?? ret.PathInfo;
         ret.AbsoluteUri = req.AbsoluteUri ?? ret.AbsoluteUri ?? $"gateway://{ret.PathInfo}";

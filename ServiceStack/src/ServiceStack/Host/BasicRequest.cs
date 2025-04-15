@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
@@ -12,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host;
 
-public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles
+public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IHasClaimsPrincipal
 #if NETCORE
 , IHasServiceScope
 #endif    
@@ -197,4 +198,6 @@ public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles
     public bool IsFile { get; set; }
     
     public bool IsDirectory { get; set; }
+    
+    public ClaimsPrincipal User { get; set; }
 }
