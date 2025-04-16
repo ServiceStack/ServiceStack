@@ -58,7 +58,7 @@ jobs:
           echo "CI_DYNAMODB=http://gistlyn.com:48000" >> $GITHUB_ENV
 
       - name: Check SQL Server Logs
-        run: docker logs sql-server
+        run: docker logs sqlserver
 
       - name: Test Extensions
         run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.Extensions.Tests/ServiceStack.Extensions.Tests.csproj  --logger 'trx;LogFileName=results.trx'
