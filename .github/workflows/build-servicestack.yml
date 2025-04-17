@@ -24,7 +24,6 @@ jobs:
           - 6379:6379
       sqlserver:
         image: mcr.microsoft.com/mssql/server:2022-latest
-        options: --memory=2g
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: Test!tesT
@@ -56,9 +55,6 @@ jobs:
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
           echo "CI_RABBITMQ=gistlyn.com:45672" >> $GITHUB_ENV
           echo "CI_DYNAMODB=http://gistlyn.com:48000" >> $GITHUB_ENV
-
-      - name: Check SQL Server Logs
-        run: docker logs sqlserver
 
       - name: Test Extensions
         run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.Extensions.Tests/ServiceStack.Extensions.Tests.csproj  --logger 'trx;LogFileName=results.trx'
