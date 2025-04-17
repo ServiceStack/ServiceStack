@@ -14,7 +14,7 @@ internal sealed partial class BufferedReader
     {
         token.ThrowIfCancellationRequested();
         offset = 0;
-#if ASYNC_MEMORY
+#if NET6_0_OR_GREATER
         var pending = source.ReadAsync(new Memory<byte>(buffer), token);
         if (!pending.IsCompletedSuccessfully)
             return Awaited(this, pending);
@@ -27,7 +27,7 @@ internal sealed partial class BufferedReader
         available = pending.Result;
         return (available > 0 ? ReadByteFromBuffer() : -1).AsValueTaskResult();
 
-#if ASYNC_MEMORY
+#if NET6_0_OR_GREATER
         static async ValueTask<int> Awaited(BufferedReader @this, ValueTask<int> pending)
         {
             @this.available = await pending.ConfigureAwait(false);
@@ -52,7 +52,7 @@ internal sealed partial class BufferedReader
         // if they're asking for more than we deal in, just step out of the way
         if (count >= buffer.Length)
         {
-#if ASYNC_MEMORY
+#if NET6_0_OR_GREATER
             return source.ReadAsync(new Memory<byte>(buffer, offset, count), token);
 #else
             return new ValueTask<int>(source.ReadAsync(buffer, offset, count, token));
@@ -61,7 +61,7 @@ internal sealed partial class BufferedReader
 
         // they're asking for less, so we could still have some left
         this.offset = 0;
-#if ASYNC_MEMORY
+#if NET6_0_OR_GREATER
         var pending = source.ReadAsync(new Memory<byte>(this.buffer), token);
         if (!pending.IsCompletedSuccessfully)
             return Awaited(this, pending, buffer, offset, count);

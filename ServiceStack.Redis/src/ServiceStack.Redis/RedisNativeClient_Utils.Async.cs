@@ -319,7 +319,7 @@ partial class RedisNativeClient
         {
             foreach (var segment in buffer)
             {
-#if ASYNC_MEMORY
+#if NET6_0_OR_GREATER
                 await destination.WriteAsync(new ReadOnlyMemory<byte>(segment.Array, segment.Offset, segment.Count), token).ConfigureAwait(false);
 #else
                     await destination.WriteAsync(segment.Array, segment.Offset, segment.Count, token).ConfigureAwait(false);
