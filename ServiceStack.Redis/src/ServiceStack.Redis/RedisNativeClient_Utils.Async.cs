@@ -177,9 +177,19 @@ partial class RedisNativeClient
 
         while (true)
         {
+            var useToken = token;
+            var linkedCts = SendTimeout > 0 
+                ? CancellationTokenSource.CreateLinkedTokenSource(token) 
+                : null;
+            if (linkedCts != null)
+            {
+                linkedCts.CancelAfter(SendTimeout);
+                useToken = linkedCts.Token;
+            }
+        
             // this is deliberately *before* the try, so we never retry
             // if we've been cancelled
-            token.ThrowIfCancellationRequested();
+            useToken.ThrowIfCancellationRequested();
             try
             {
                 if (TryConnectIfNeeded()) // TODO: asyncify
@@ -197,7 +207,7 @@ partial class RedisNativeClient
 
                 if (PipelineAsync == null) //pipeline will handle flush if in pipeline
                 {
-                    await FlushSendBufferAsync(token).ConfigureAwait(false);
+                    await FlushSendBufferAsync(useToken).ConfigureAwait(false);
                 }
                 else if (!sendWithoutRead)
                 {
@@ -216,7 +226,25 @@ partial class RedisNativeClient
 
                 var result = default(T);
                 if (fn != null)
-                    result = await fn(token).ConfigureAwait(false);
+                {
+                    var recvToken = token;
+                    var linkedRecvCts = ReceiveTimeout > 0 
+                        ? CancellationTokenSource.CreateLinkedTokenSource(token) 
+                        : null;
+                    if (linkedRecvCts != null)
+                    {
+                        linkedRecvCts.CancelAfter(ReceiveTimeout);
+                        recvToken = linkedCts.Token;
+                    }
+                    try
+                    {
+                        result = await fn(recvToken).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        linkedRecvCts?.Dispose();
+                    }
+                }
 
                 if (Pipeline == null)
                     ResetSendBuffer();
@@ -240,11 +268,7 @@ partial class RedisNativeClient
                 }
 
                 var ex = retryableEx ?? GetRetryableException(outerEx);
-                if (ex == null)
-                    throw CreateConnectionError(originalEx ?? outerEx);
-
-                if (originalEx == null)
-                    originalEx = ex;
+                originalEx ??= ex ?? throw CreateConnectionError(originalEx ?? outerEx);
 
                 var retry = DateTime.UtcNow - firstAttempt < retryTimeout;
                 if (!retry)
@@ -257,7 +281,7 @@ partial class RedisNativeClient
                 }
 
                 Interlocked.Increment(ref RedisState.TotalRetryCount);
-                await Task.Delay(GetBackOffMultiplier(++i), token).ConfigureAwait(false);
+                await Task.Delay(GetBackOffMultiplier(++i), useToken).ConfigureAwait(false);
                 wasError = null;
             }
             finally
@@ -266,6 +290,8 @@ partial class RedisNativeClient
                     Diagnostics.Redis.WriteCommandError(id, cmdWithBinaryArgs, originalEx ?? wasError, operation);
                 else
                     Diagnostics.Redis.WriteCommandAfter(id, cmdWithBinaryArgs, operation);
+                
+                linkedCts?.Dispose();
             }
         }
     }
