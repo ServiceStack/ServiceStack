@@ -171,7 +171,7 @@ export const Dashboard = {
         </div>
         <div class="mt-5">
             <span v-for="(label,id) in adminFeatures" :key="id"
-                  :class="['mr-2 inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium', 
+                  :class="['mr-2 mb-1 inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium', 
                   isRegistered(id) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800']">
               <svg :class="['-ml-0.5 mr-1.5 h-2 w-2', isRegistered(id) ? 'text-green-400' : 'text-gray-400']" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
               {{ label }}
