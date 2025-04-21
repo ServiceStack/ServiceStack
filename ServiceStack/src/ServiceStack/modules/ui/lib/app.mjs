@@ -1,5 +1,14 @@
 import { reactive } from "vue"
-import { JsonServiceClient, combinePaths, lastLeftPart, trimEnd, appendQueryString, enc, queryString } from "@servicestack/client"
+import {
+    JsonServiceClient,
+    combinePaths,
+    lastLeftPart,
+    trimEnd,
+    appendQueryString,
+    enc,
+    queryString,
+    sanitize
+} from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useAuth, useConfig } from "@servicestack/vue"
 import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
@@ -311,6 +320,7 @@ let store = {
     },
     /** @param {AuthenticateResponse} auth */
     login(auth) {
+        auth = sanitize(auth)
         globalThis.AUTH = this.auth = toAuth(auth)
         AppData.bearerToken = AppData.authsecret = AppData.userName = AppData.password = null
         if (auth.bearerToken) {

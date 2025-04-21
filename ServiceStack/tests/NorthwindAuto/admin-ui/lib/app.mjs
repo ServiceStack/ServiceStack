@@ -1,21 +1,11 @@
 import { reactive } from "vue"
-import {
-    JsonServiceClient,
-    map,
-    lastLeftPart,
-    trimEnd,
-    appendQueryString,
-    humanify,
-    queryString,
-    enc,
-} from "@servicestack/client"
+import { JsonServiceClient, map, lastLeftPart, trimEnd, queryString, enc, sanitize, } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useAuth, useConfig, useUtils } from "@servicestack/vue"
 import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
 
 const { setConfig } = useConfig()
-const { invalidAccessMessage, toAuth } = useAuth()
-const { Crud, apiOf } = useMetadata()
+const { toAuth } = useAuth()
 
 let BASE_URL = lastLeftPart(trimEnd(document.baseURI, '/'), '/')
 
@@ -294,6 +284,7 @@ let store = {
 
     /** @param {AuthenticateResponse} auth */
     login(auth) {
+        auth = sanitize(auth)
         globalThis.AUTH = this.auth = toAuth(auth)
         AppData.bearerToken = AppData.authsecret = AppData.userName = AppData.password = null
         if (auth.bearerToken) {
