@@ -9,7 +9,8 @@ public class JsonMetadataHandler : BaseMetadataHandler
 
     protected override string CreateMessage(Type dtoType)
     {
-        var requestObj = AutoMappingUtils.PopulateWith(dtoType.CreateInstance());
+        var requestObj = HostContext.GetPlugin<MetadataFeature>()?.CreateExampleObjectFn(dtoType) 
+            ?? AutoMappingUtils.PopulateWith(dtoType.CreateInstance());
         return JsonDataContractSerializer.Instance.SerializeToString(requestObj);
     }
 }

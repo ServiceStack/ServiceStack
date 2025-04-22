@@ -44,6 +44,13 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
         MetadataUtils.LocalizeMetadata
     ];
 
+    public Func<Type, object> CreateExampleObjectFn { get; set; } = DefaultCreateExampleObjectFn;
+
+    public static object DefaultCreateExampleObjectFn(Type dtoType)
+    {
+        return AutoMappingUtils.PopulateWith(dtoType.CreateInstance());
+    }
+
     public bool ShowResponseStatusInMetadataPages { get; set; }
         
     /// <summary>

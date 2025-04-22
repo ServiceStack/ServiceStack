@@ -1,5 +1,6 @@
 using Funq;
 using Microsoft.OpenApi.Models;
+using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.Admin;
 using ServiceStack.AspNetCore.OpenApi;
@@ -45,6 +46,51 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
                             : $"app/{ctx.Dto.GetId()}") + $"/{ctx.DateSegment}/{ctx.FileName}"),
                     readAccessRole:RoleNames.AllowAnon, writeAccessRole:RoleNames.AllowAnon)
             ));
+            
+            services.ConfigurePlugin<MetadataFeature>(feature =>
+            {
+                feature.CreateExampleObjectFn = type =>
+                {
+                    if (type == typeof(CreateJobApplication))
+                    {
+                        return new StringsResponse
+                        {
+                            Results =
+                            [
+                                "Example",
+                                "Response",
+                            ]
+                        };
+                    }
+                    if (type == typeof(CreateJob))
+                    {
+                        return new CreateJob
+                        {
+                            Title = "Example Job",
+                            Company = "Acme",
+                            Description = "Job Description",
+                            SalaryRangeLower = 50_000,
+                            SalaryRangeUpper = 100_000,
+                        };
+                    }
+                    if (type == typeof(Job))
+                    {
+                        return new Job
+                        {
+                            Id = 1,
+                            Description = "Job Description",
+                            Company = "Acme",
+                            SalaryRangeLower = 50_000,
+                            SalaryRangeUpper = 100_000,
+                            CreatedBy = "Admin",
+                            CreatedDate = DateTime.UtcNow.Date,
+                            ModifiedBy = "Admin",
+                            ModifiedDate = DateTime.UtcNow.Date,
+                        };
+                    }
+                    return null;
+                };
+            });
         });
 
     // Configure your AppHost with the necessary configuration and dependencies your App needs

@@ -23,7 +23,8 @@ public class CustomMetadataHandler
     {
         try
         {
-            var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
+            var requestObj = HostContext.GetPlugin<MetadataFeature>()?.CreateExampleObjectFn(dtoType) 
+                ?? AutoMappingUtils.PopulateWith(dtoType.CreateInstance());
 
             using var ms = MemoryStreamFactory.GetStream();
             HostContext.ContentTypes.SerializeToStreamAsync(

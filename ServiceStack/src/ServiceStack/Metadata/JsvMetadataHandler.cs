@@ -9,7 +9,8 @@ public class JsvMetadataHandler : BaseMetadataHandler
 
     protected override string CreateMessage(Type dtoType)
     {
-        var requestObj = AutoMappingUtils.PopulateWith(Activator.CreateInstance(dtoType));
+        var requestObj = HostContext.GetPlugin<MetadataFeature>()?.CreateExampleObjectFn(dtoType) 
+            ?? AutoMappingUtils.PopulateWith(dtoType.CreateInstance());
         return requestObj.SerializeAndFormat();
     }
 }
