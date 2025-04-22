@@ -74,7 +74,7 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
                 responseMessage = CreateResponse(responseType);
             }
 
-            var isSoap = Format == Format.Soap11 || Format == Format.Soap12;
+            var isSoap = Format is Format.Soap11 or Format.Soap12;
             var sb = StringBuilderCache.Allocate();
             var description = operationType.GetDescription();
             if (!description.IsNullOrEmpty())
