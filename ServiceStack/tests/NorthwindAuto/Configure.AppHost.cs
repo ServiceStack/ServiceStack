@@ -51,7 +51,7 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
             {
                 feature.CreateExampleObjectFn = type =>
                 {
-                    if (type == typeof(CreateJobApplication))
+                    if (type == typeof(StringsResponse))
                     {
                         return new StringsResponse
                         {
