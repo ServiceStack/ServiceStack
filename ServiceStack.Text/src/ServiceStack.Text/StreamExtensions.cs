@@ -782,5 +782,5 @@ public static class StreamExtensions
         }
             
         SharedPools.AsyncByteArray.Free(buf);
-    }        
+    }
 }
