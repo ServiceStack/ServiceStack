@@ -71,10 +71,10 @@ public class GenericHandler : ServiceStackHandlerBase, IRequestHttpHandler
         {
             appHost.AssertFeatures(format);
 
+            httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
+
             if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
                 return;
-
-            httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 
             var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwaitNetCore();
             HostContext.AppHost.OnAfterAwait(httpReq);

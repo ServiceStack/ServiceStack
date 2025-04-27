@@ -79,11 +79,11 @@ public class RestHandler
             httpReq.SetRoute(restPath as RestPath);
             httpReq.OperationName = operationName = restPath.RequestType.GetOperationName();
 
-            if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
-                return;
-
             if (ResponseContentType != null)
                 httpReq.ResponseContentType = ResponseContentType;
+
+            if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
+                return;
 
             appHost.AssertContentType(httpReq.ResponseContentType);
 
