@@ -171,22 +171,32 @@ namespace ServiceStack.OrmLite
             var parentDef = sourceDef;
             var childDef = targetDef;
 
-            var refField = parentDef.GetRefFieldDefIfExists(childDef);
-            if (refField == null) 
+            var refField = parentDef.GetExplicitRefFieldDefIfExists(childDef);
+            if (refField == null && childDef.GetExplicitRefFieldDefIfExists(parentDef) != null)
             {
                 parentDef = targetDef;
                 childDef = sourceDef;
+                refField = parentDef.GetExplicitRefFieldDefIfExists(childDef);
+            }
+            else
+            {
                 refField = parentDef.GetRefFieldDefIfExists(childDef);
+                if (refField == null) 
+                {
+                    parentDef = targetDef;
+                    childDef = sourceDef;
+                    refField = parentDef.GetRefFieldDefIfExists(childDef);
+                }
             }
 
             if (refField == null) 
             {
-                if(!isCrossJoin)
+                if (!isCrossJoin)
                     throw new ArgumentException($"Could not infer relationship between {sourceDef.ModelName} and {targetDef.ModelName}");
 
                 return string.Empty;
             }
-
+            
             return string.Format("{0}\n({1}.{2} = {3}.{4})",
                 isCrossJoin ? "WHERE" : "ON",
                 DialectProvider.GetQuotedTableName(parentDef),
