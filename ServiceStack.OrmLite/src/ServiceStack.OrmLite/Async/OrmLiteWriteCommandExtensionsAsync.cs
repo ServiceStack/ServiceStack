@@ -287,6 +287,12 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         return DeleteAllAsync(dbCmd, typeof(T), token);
     }
 
+    internal static Task<int> DeleteAllAsync<T>(this IDbCommand dbCmd, IEnumerable<T> rows, CancellationToken token)
+    {
+        var ids = rows.Map(x => x.GetId());
+        return dbCmd.DeleteByIdsAsync<T>(ids, null, token:token);
+    }
+
     internal static Task<int> DeleteAllAsync(this IDbCommand dbCmd, Type tableType, CancellationToken token)
     {
         var dialectProvider = dbCmd.GetDialectProvider();

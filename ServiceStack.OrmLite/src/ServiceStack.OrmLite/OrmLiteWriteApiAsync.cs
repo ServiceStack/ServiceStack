@@ -311,6 +311,16 @@ public static class OrmLiteWriteApiAsync
     }
 
     /// <summary>
+    /// Delete all rows provided. E.g:
+    /// <para>db.DeleteAllAsync&lt;Person&gt;(people)</para>
+    /// </summary>
+    /// <returns>number of rows deleted</returns>
+    public static Task<int> DeleteAllAsync<T>(this IDbConnection dbConn, IEnumerable<T> rows, CancellationToken token = default)
+    {
+        return dbConn.Exec(dbCmd => dbCmd.DeleteAllAsync(rows, token));
+    }
+
+    /// <summary>
     /// Delete all rows in the runtime table type. E.g:
     /// <para>db.DeleteAllAsync(typeof(Person))</para>
     /// </summary>
