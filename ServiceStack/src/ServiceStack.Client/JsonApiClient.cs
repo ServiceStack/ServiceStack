@@ -803,7 +803,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
         catch (Exception e)
         {
-            throw CreateException(httpRes, e);
+            throw CreateException(e);
         }
 
         if (!httpRes.IsSuccessStatusCode)
@@ -821,7 +821,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         }
         catch (Exception e)
         {
-            throw CreateException(httpRes, e);
+            throw CreateException(e);
         }
 
         if (!httpRes.IsSuccessStatusCode)
@@ -846,7 +846,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
         return response;
     }
 
-    private static WebServiceException CreateException(HttpResponseMessage httpRes, Exception ex) => new();
+    private static WebServiceException CreateException(Exception ex) => new(ex.Message, ex);
 
     readonly ConcurrentDictionary<Type, Action<HttpResponseMessage, object?, string, object?>> responseHandlers = new();
 
