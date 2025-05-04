@@ -1846,6 +1846,10 @@ namespace ServiceStack.OrmLite
             return command;
         }
 
+        public virtual string ToDropIndexStatement<T>(string indexName)
+        {
+            return $"DROP INDEX IF EXISTS {GetQuotedName(indexName)};";
+        }
 
         protected virtual string FkOptionToString(OnFkOption option)
         {

@@ -53,4 +53,14 @@ public class OrmLiteDropTableTests(DialectContext context) : OrmLiteProvidersTes
             db.TableExists(nameof(ModelWithIdAndName).SqlTableRaw(DialectProvider)),
             Is.False);
     }
+
+    [Test]
+    public void Can_drop_table_with_index()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTables(typeof(ModelWithIdAndName));
+        
+        db.CreateIndex<ModelWithIdAndName>(x => x.Name, "ModelWithIdAndName_Name_idx");
+        db.DropIndex<ModelWithIdAndName>("ModelWithIdAndName_Name_idx");
+    }
 }

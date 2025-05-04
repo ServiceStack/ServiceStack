@@ -548,6 +548,11 @@ namespace ServiceStack.OrmLite.MySql
         public override string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
 	        $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP FOREIGN KEY {GetQuotedName(foreignKeyName)};";
 
+        public override string ToDropIndexStatement<T>(string indexName)
+        {
+	        return $"DROP INDEX {GetQuotedName(indexName)} ON {GetQuotedTableName(typeof(T))}";
+        }
+
         public override string GetColumnDefinition(FieldDefinition fieldDef)
         {
             if (fieldDef.PropertyInfo?.HasAttributeCached<TextAttribute>() == true)

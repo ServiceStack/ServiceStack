@@ -268,6 +268,8 @@ public interface IOrmLiteDialectProvider
         
     string ToCreateIndexStatement<T>(Expression<Func<T,object>> field, string indexName=null, bool unique=false);
 
+    string ToDropIndexStatement<T>(string indexName);
+
     //Async
     bool SupportsAsync { get; }
     Task OpenAsync(IDbConnection db, CancellationToken token = default);
