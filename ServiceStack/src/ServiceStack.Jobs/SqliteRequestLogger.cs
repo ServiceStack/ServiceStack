@@ -255,9 +255,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     {
         DbFactory ??= appHost.TryResolve<IDbConnectionFactory>() 
             ?? new OrmLiteConnectionFactory("Data Source=:memory:", SqliteDialect.Provider);
-        AppHost ??= (IAppHostNetCore)appHost;
-        AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir).AssertDir();
-
+        AppHost ??= (IAppHostNetCore)appHost;        
+        _ = GetDbDir().AssertDir();
+        
         if (IgnoreRequestTypes.Length > 0)
         {
             ExcludeRequestDtoTypes = ExcludeRequestDtoTypes.Union(IgnoreRequestTypes).ToArray(); 
@@ -273,7 +273,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public List<string> DefaultResolveMonthDbs()
     {
-        var requestsDir = AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir);
+        var requestsDir = GetDbDir();
         var dir = new DirectoryInfo(requestsDir);
         var files = dir.GetMatchingFiles("requests_*.db");
         return files.ToList();
@@ -284,9 +284,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         var monthDb = DbMonthFile(createdDate);
         if (!OrmLiteConnectionFactory.NamedConnections.ContainsKey(monthDb))
         {
-            var dataSource =  Path.IsPathRooted(DbDir) 
-                            ? Path.Combine(DbDir, monthDb)
-                            : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
+            var dataSource =  GetDbDir(monthDb);
             dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", SqliteDialect.Provider);
             var db = dbFactory.OpenDbConnection(monthDb);
             InitMonthDbSchema(db, createdDate);
@@ -768,6 +766,13 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         }
 
         return ret;
+    }
+    
+    private string GetDbDir(string monthDb = "")
+    {
+        return Path.IsPathRooted(DbDir) 
+            ? DbDir.CombineWith(monthDb)
+            : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
     }
 }
 
