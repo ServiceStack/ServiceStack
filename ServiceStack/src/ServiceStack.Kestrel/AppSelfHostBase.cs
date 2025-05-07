@@ -86,17 +86,18 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         return useExistingNonWildcardEndpoint;
     }
     
-    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation, EndpointOptions options=default)
+    public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation, EndpointOptions options=default, Type? responseType=null)
     {
-        if (operation.ResponseType != null)
+        responseType ??= operation.ResponseType; 
+        if (responseType != null)
         {
-            if (operation.ResponseType == typeof(byte[]) || operation.ResponseType == typeof(Stream))
+            if (responseType == typeof(byte[]) || responseType == typeof(Stream))
             {
-                builder.Produces(200, responseType:operation.ResponseType, contentType:MimeTypes.Binary);
+                builder.Produces(200, responseType:responseType, contentType:MimeTypes.Binary);
             }
             else
             {
-                builder.Produces(200, responseType:operation.ResponseType, contentType:MimeTypes.Json);
+                builder.Produces(200, responseType:responseType, contentType:MimeTypes.Json);
             }
         }
         else

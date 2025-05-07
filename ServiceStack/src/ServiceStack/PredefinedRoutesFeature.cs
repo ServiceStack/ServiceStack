@@ -123,6 +123,7 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
                 }
 
                 var options = host.CreateEndpointOptions();
+                string[] autoBatchVerbs = [HttpMethods.Post];
                 
                 // Map /api/{Request} routes
                 var apis = routeBuilder.MapGroup(apiPath);
@@ -142,6 +143,20 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
                     foreach (var handler in host.Options.RouteHandlerBuilders)
                     {
                         handler(builder, operation, operation.Method, apiPath + "/" + requestType.Name);
+                    }
+                    
+                    // Register implicit AutoBatch APIs for HTTP POST/PUT/PATCH requests
+                    if (verb.Any(HttpUtils.HasRequestBody) && operation.ResponseType != null && operation.ResponseType != typeof(byte[]) && operation.ResponseType != typeof(System.IO.Stream))
+                    {
+                        var batchBuilder = apis.MapMethods("/" + requestType.Name + "[]", autoBatchVerbs, (HttpResponse response, HttpContext httpContext) => 
+                            httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:requestType.Name + "[]"));
+                        var responseType = typeof(List<>).MakeGenericType(operation.ResponseType);
+                        host.ConfigureOperationEndpoint(batchBuilder, operation, options, responseType:responseType)
+                            .ExcludeFromDescription();
+                        foreach (var handler in host.Options.RouteHandlerBuilders)
+                        {
+                            handler(batchBuilder, operation, operation.Method, apiPath + "/" + requestType.Name + "[]");
+                        }
                     }
                 }
 

@@ -248,17 +248,18 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
     }
     
     public virtual RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, 
-        Operation operation, EndpointOptions options=default)
+        Operation operation, EndpointOptions options=default, Type? responseType = null)
     {
-        if (operation.ResponseType != null)
+        responseType ??= operation.ResponseType;
+        if (responseType != null)
         {
-            if (operation.ResponseType == typeof(byte[]) || operation.ResponseType == typeof(Stream))
+            if (responseType == typeof(byte[]) || responseType == typeof(Stream))
             {
-                builder.Produces(200, responseType:operation.ResponseType, contentType:MimeTypes.Binary);
+                builder.Produces(200, responseType:responseType, contentType:MimeTypes.Binary);
             }
             else
             {
-                builder.Produces(200, responseType:operation.ResponseType, contentType:MimeTypes.Json);
+                builder.Produces(200, responseType:responseType, contentType:MimeTypes.Json);
             }
         }
         else
@@ -592,7 +593,7 @@ public interface IAppHostNetCore : IAppHost, IRequireConfiguration
     ServiceStackOptions Options { get; }
     Dictionary<string, string[]> EndpointVerbs { get; }
     EndpointOptions CreateEndpointOptions();
-    RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation, EndpointOptions options=default);
+    RouteHandlerBuilder ConfigureOperationEndpoint(RouteHandlerBuilder builder, Operation operation, EndpointOptions options=default, Type? responseType=null);
 #endif
 }
 
