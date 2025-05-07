@@ -70,9 +70,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
             dateConverter.DateStyle = DateTimeKind.Utc;
 
         AppHost ??= (IAppHostNetCore)appHost;
-        var fullDirPath = Path.IsPathRooted(DbDir) 
-            ? DbDir
-            : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir);
+        var fullDirPath = GetDbDir();
 
         DbFactory.RegisterConnection(DbFile, fullDirPath.AssertDir().CombineWith(DbFile), SqliteDialect.Provider);
 
@@ -83,7 +81,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
             InitMonthDbSchema(monthDb);
         }
     }
-    
+
     public void BeforePluginsLoaded(IAppHost appHost)
     {
         if (EnableAdmin)
@@ -110,9 +108,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         var monthDb = DbMonthFile(createdDate);
         if (!OrmLiteConnectionFactory.NamedConnections.ContainsKey(monthDb))
         {
-            var dataSource =  Path.IsPathRooted(DbDir) 
-                ? Path.Combine(DbDir, monthDb)
-                : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
+            var dataSource =  GetDbDir(monthDb);
                 
             dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", SqliteDialect.Provider);
             var db = dbFactory.OpenDbConnection(monthDb);
@@ -145,4 +141,11 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     }
 
     public IServiceProvider Services => AppHost!.App.ApplicationServices;
+    
+    private string GetDbDir(string monthDb = "")
+    {
+        return Path.IsPathRooted(DbDir) 
+            ? DbDir.CombineWith(monthDb)
+            : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
+    }
 }
