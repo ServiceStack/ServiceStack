@@ -284,7 +284,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         var monthDb = DbMonthFile(createdDate);
         if (!OrmLiteConnectionFactory.NamedConnections.ContainsKey(monthDb))
         {
-            var dataSource = AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
+            var dataSource =  Path.IsPathRooted(DbDir) 
+                            ? Path.Combine(DbDir, monthDb)
+                            : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
             dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", SqliteDialect.Provider);
             var db = dbFactory.OpenDbConnection(monthDb);
             InitMonthDbSchema(db, createdDate);
