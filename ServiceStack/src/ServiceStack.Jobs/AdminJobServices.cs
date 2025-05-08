@@ -263,8 +263,10 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     {
         var feature = AssertRequiredRole();
 
-        var dir = new DirectoryInfo(((IAppHostNetCore)HostContext.AppHost).HostingEnvironment.ContentRootPath
-            .CombineWith(feature.DbDir));
+        var dir = Path.IsPathRooted(feature.DbDir) ?
+            new DirectoryInfo(feature.DbDir)
+            : new DirectoryInfo(HostContext.AppHost.GetHostingEnvironment().ContentRootPath.CombineWith(feature.DbDir));
+        
         var monthDbs = dir.GetFiles()
             .Where(x => x.Name.Contains('_'));
         var to = new AdminJobInfoResponse();
@@ -393,7 +395,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     
     public object Any(AdminQueryBackgroundJobs request)
     {
-        var feature = AssertRequiredRole();
+        _ = AssertRequiredRole();
         using var db = jobs.OpenDb();
         var q = autoQuery.CreateQuery(request, base.Request, db);
         var response = autoQuery.Execute(request, q, base.Request, db);
