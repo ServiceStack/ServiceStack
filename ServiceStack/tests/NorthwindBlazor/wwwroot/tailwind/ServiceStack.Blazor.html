@@ -345,7 +345,7 @@ role="combobox" aria-controls="options" aria-expanded="false" autocomplete="off"
 </button>
 @if (showPopup)
 {
-<ul class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-black py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+<ul class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-black py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
 @onkeydown="OnKeyDownAsync" id=@("{Id}-options") role="listbox">
 @foreach (var option in FilteredValues)
 {
@@ -1417,7 +1417,7 @@ else if (ErrorFieldMessage != null)
 }
 @inherits UiComponentBase
 <div @onclick="Close" id=@Id aria-labelledby="modal-title" role="dialog" aria-modal="true" class=@ClassNames("relative z-10", DialogTransition.DisplayClass)>
-<div class=@ClassNames("fixed inset-0 bg-gray-500 dark:bg-gray-400 bg-opacity-75 dark:bg-opacity-75 transition-opacity", DialogTransition.Class)></div>
+<div class=@ClassNames("fixed inset-0 bg-gray-500 dark:bg-gray-400/75 transition-opacity", DialogTransition.Class)></div>
 <div class="fixed inset-0 z-10 overflow-y-auto">
 <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
 <!-- This element is to trick the browser into centering the modal contents. -->
@@ -1992,7 +1992,7 @@ public const TableStyle DefaultTableStyle = TableStyle.StripedRows;
 public const string GridClass = "mt-4 flex flex-col";
 public const string Grid2Class = "-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8";
 public const string Grid3Class = "inline-block min-w-full py-2 align-middle md:px-6 lg:px-8";
-public const string Grid4Class = "overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg";
+public const string Grid4Class = "overflow-hidden shadow ring-1 ring-black/5 md:rounded-lg";
 public const string TableClass = "min-w-full divide-y divide-gray-200 dark:divide-gray-700";
 public const string TableHeadClass = "bg-gray-50 dark:bg-gray-900";
 public const string TableCellClass = "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400";
@@ -2009,7 +2009,7 @@ public static string GetGrid3Class(TableStyle style = DefaultTableStyle) => styl
 public static string GetGrid4Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.WhiteBackground)
 ? ""
 : style.HasFlag(TableStyle.FullWidth)
-? "overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5"
+? "overflow-hidden shadow-sm ring-1 ring-black/5"
 : Grid4Class;
 public static string GetTableClass(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth) || style.HasFlag(TableStyle.VerticalLines)
 ? "min-w-full divide-y divide-gray-300"

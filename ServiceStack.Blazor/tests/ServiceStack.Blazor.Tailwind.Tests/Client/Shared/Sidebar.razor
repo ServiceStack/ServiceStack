@@ -4,7 +4,7 @@
 
 <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
 <div class=@CssUtils.ClassNames("mobile relative z-40 md:hidden", Collapse ? "hidden" : "") role="dialog" aria-modal="true">
-    <div class=@CssUtils.ClassNames("fixed inset-0 bg-gray-600 dark:bg-gray-400 bg-opacity-75 dark:bg-opacity-75", Collapse ? "opacity-0" : "opacity-100")></div>
+    <div class=@CssUtils.ClassNames("fixed inset-0 bg-gray-600 dark:bg-gray-400/75", Collapse ? "opacity-0" : "opacity-100")></div>
     <div class="fixed inset-0 flex z-40">
         <div class=@CssUtils.ClassNames("relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-black", Collapse ? "-translate-x-full" : "translate-x-0")>
             <div class=@CssUtils.ClassNames("absolute top-0 right-0 -mr-12 pt-2", Collapse ? "opacity-0" : "opacity-100")>

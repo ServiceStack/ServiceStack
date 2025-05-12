@@ -14,7 +14,7 @@ public static class CssDefaults
         public const string GridClass = "mt-4 flex flex-col";
         public const string Grid2Class = "-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8";
         public const string Grid3Class = "inline-block min-w-full py-2 align-middle md:px-6 lg:px-8";
-        public const string Grid4Class = "overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg";
+        public const string Grid4Class = "overflow-hidden shadow ring-1 ring-black/5 md:rounded-lg";
                                          
         public const string TableClass = "min-w-full divide-y divide-gray-200 dark:divide-gray-700";
 
@@ -38,7 +38,7 @@ public static class CssDefaults
         public static string GetGrid4Class(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.WhiteBackground)
             ? ""
             : style.HasFlag(TableStyle.FullWidth)
-                ? "overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5"
+                ? "overflow-hidden shadow-sm ring-1 ring-black/5"
                 : Grid4Class;
 
         public static string GetTableClass(TableStyle style = DefaultTableStyle) => style.HasFlag(TableStyle.FullWidth) || style.HasFlag(TableStyle.VerticalLines)

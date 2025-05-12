@@ -102,7 +102,6 @@ public class ConfigureAuthRepository : IHostingStartup
                     }),
                     Input.For<AppUser>(x => x.ProfileUrl, c => c.Type = Input.Types.Url),
                     Input.For<AppUser>(x => x.IsArchived), Input.For<AppUser>(x => x.ArchivedDate)
-
                 ]
             });
 

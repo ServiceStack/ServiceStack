@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{3D2479BC
 		..\tests\UI.Gallery\sync-gallery.bat = ..\tests\UI.Gallery\sync-gallery.bat
 		..\tests\sync-servicestack-blazor.bat = ..\tests\sync-servicestack-blazor.bat
 		..\tests\sync-tailwind.bat = ..\tests\sync-tailwind.bat
+		..\tests\sync-tailwind.sh = ..\tests\sync-tailwind.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{5EE0F35F-D9C1-46ED-ADDA-066C7D5ECA29}"
