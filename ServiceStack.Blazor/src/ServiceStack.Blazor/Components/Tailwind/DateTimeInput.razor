@@ -6,7 +6,7 @@
 {
     <label for=@Id class="@DateTimeInput.LabelClasses">@UseLabel</label>
 }
-    <div class="mt-1 relative rounded-md shadow-sm">
+    <div class="mt-1 relative">
         <input type="date" class=@ClassNames(DateTimeInput.InputBaseClasses,
                CssClass(DateTimeInput.InputValidClasses, DateTimeInput.InputInvalidClasses))
                id=@Id name=@Id @bind-value="CurrentValueAsDateTime" placeHolder=@UsePlaceholder @bind-value:event="oninput" @attributes="IncludeAttributes">
