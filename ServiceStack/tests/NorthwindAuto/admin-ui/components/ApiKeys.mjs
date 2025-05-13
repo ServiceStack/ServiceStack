@@ -8,7 +8,7 @@ export const ApiKeys = {
       <section id="apikeys">
         <form @submit.prevent="formSearch" class="mb-3">
           <div class="flex items-center">
-            <TextInput id="query" type="search" v-model="request.search" label="" placeholder="Search API Keys" @search="formSearch" />
+            <TextInput id="query" type="search" v-model="request.search" label="" placeholder="Search API Keys" @search="formSearch" class="-mt-1" />
             <button class="ml-2 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               Go
             </button>
