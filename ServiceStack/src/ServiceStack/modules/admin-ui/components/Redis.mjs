@@ -407,7 +407,7 @@ export const Redis = {
             </svg>
           </OutlineButton>
         </div>
-        <div :class="['origin-top-right absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none',transition1]"
+        <div :class="['origin-top-right absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black/5 focus:outline-none',transition1]"
              :style="{ display: showNew ? 'block' : 'none' }"
              role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
           <div class="py-1" role="none">

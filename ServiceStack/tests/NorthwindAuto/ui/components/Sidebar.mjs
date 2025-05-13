@@ -63,7 +63,7 @@ export const Sidebar = {
     template:/*html*/`
     <div id="sidebar" class="fixed inset-0 flex z-40 md:hidden" role="dialog" aria-modal="true">
         <!---: Off-canvas menu overlay, show/hide based on off-canvas menu state. -->
-        <div :class="['fixed inset-0 bg-gray-600 bg-opacity-75', transition1]" aria-hidden="true"></div>
+        <div :class="['fixed inset-0 bg-gray-600/75', transition1]" aria-hidden="true"></div>
     
         <!---: Off-canvas menu, show/hide based on off-canvas menu state. -->
         <div :class="['relative flex-1 flex flex-col max-w-sidebar w-full bg-white', transition2]">

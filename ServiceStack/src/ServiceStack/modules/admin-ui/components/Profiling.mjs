@@ -23,7 +23,7 @@ export const Profiling = {
     </svg>
   </button>
 </div>
-<span class="relative z-0 inline-flex shadow-sm rounded-md">
+    <span class="relative z-0 inline-flex shadow-sm rounded-md">
       <button type="button" :class="[canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400',
         'relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
               title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
@@ -35,15 +35,15 @@ export const Profiling = {
               title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
       </button>
-      <button type="button" @click="update" title="Refresh"
-              class="ml-2 inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+    </span>
+    <button type="button" @click="update" title="Refresh"
+            class="ml-2 inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
         <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g
             fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path
             d="M21.168 8A10.003 10.003 0 0 0 12 2c-5.185 0-9.45 3.947-9.95 9"/><path
             d="M17 8h4.4a.6.6 0 0 0 .6-.6V3M2.881 16c1.544 3.532 5.068 6 9.168 6c5.186 0 9.45-3.947 9.951-9"/><path
             d="M7.05 16h-4.4a.6.6 0 0 0-.6.6V21"/></g></svg>
-      </button>
-    </span>
+    </button>
 </div>
 <section>
 <div class="flex flex-col">

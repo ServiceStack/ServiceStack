@@ -3,18 +3,11 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "dotnet watch",
-    "ui:dev": "npx tailwindcss -c tailwind.config.js -i index.css -o wwwroot/css/ui.css --watch",
-    "ui:build": "npx tailwindcss -c tailwind.config.js -i index.css -o wwwroot/css/ui.css --minify",
+    "path": "which tailwindcss",
+    "ui:dev": "tailwindcss -i index.css -o wwwroot/css/ui.css --watch",
+    "ui:build": "tailwindcss -i index.css -o wwwroot/css/ui.css --minify",
     "migrate": "dotnet run --AppTasks=migrate",
     "revert:last": "dotnet run --AppTasks=migrate.revert:last",
     "revert:all": "dotnet run --AppTasks=migrate.revert:all"
-  },
-  "dependencies": {
-    "@servicestack/client": "^2.0.8",
-    "@tailwindcss/forms": "^0.5.3"
-  },
-  "devDependencies": {
-    "tailwindcss": "^3.3.1",
-    "vue": ""
   }
 }

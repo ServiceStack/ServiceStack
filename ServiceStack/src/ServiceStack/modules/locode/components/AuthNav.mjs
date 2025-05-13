@@ -17,7 +17,7 @@ export const AuthNav = {
                 </svg>
               </button>
             </div>
-            <div :class="[showPopup ? 'z-20 transform opacity-100 scale-100' : 'transform opacity-0 scale-95 hidden','origin-top-right absolute right-0 mt-2 w-48 flex flex-col rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none']"
+            <div :class="[showPopup ? 'z-20 transform opacity-100 scale-100' : 'transform opacity-0 scale-95 hidden','origin-top-right absolute right-0 mt-2 w-48 flex flex-col rounded-md shadow-lg py-1 bg-white ring-1 ring-black/5 focus:outline-none']"
                  role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
               <a v-href="{ $page:'' }"
                  class="px-4 py-2 text-sm text-gray-700 text-left hover:bg-gray-50" role="menuitem" tabindex="-1">Your Profile</a>

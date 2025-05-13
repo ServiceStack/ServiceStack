@@ -37,7 +37,7 @@ export const Commands = {
               <svg class="absolute ml-2.5 mt-2.5 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path>
               </svg>
-              <input type="search" placeholder="Filter..." v-model="q" class="border rounded-full overflow-hidden flex w-full px-4 py-1 pl-8 border-gray-200">
+              <input type="search" placeholder="Filter..." v-model="q" class="border rounded-full overflow-hidden flex w-full px-4 pl-8 border-gray-200">
             </div>
             <nav class="w-64 space-y-1 bg-white pb-4 md:pb-scroll" aria-label="Sidebar">
               <div v-for="nav in filteredNav" class="space-y-1">
@@ -111,7 +111,7 @@ export const Commands = {
           <div :class="['mt-2',{ hidden: !routes.op }]" style="max-width:1024px;max-height:512px">
             <canvas ref="elChart"></canvas>
           </div>
-          <div class="mt-2 flex flex-wrap">
+          <div class="mt-2 flex flex-wrap items-center">
             <div>
               <button type="button" @click="refresh()" title="Refresh" class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
@@ -120,9 +120,9 @@ export const Commands = {
               </button>
             </div>
             <div class="ml-2">
-                <span class="inline-flex rounded-md shadow-sm">
+                <span class="inline-flex">
                   <label for="message-type" class="sr-only">Select Type</label>
-                  <select id="message-type" v-model="type" class="-ml-px block w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-9 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                  <select id="message-type" v-model="type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none shadow-sm border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="ALL">All</option>
                     <option value="API">APIs</option>
                     <option value="CMD">Commands</option>
@@ -134,7 +134,7 @@ export const Commands = {
                 <svg class="absolute ml-2.5 mt-2.5 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                   <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path>
                 </svg>
-                <input type="search" placeholder="Filter..." v-model="q" class="border rounded-full overflow-hidden flex w-full px-4 py-1 pl-8 border-gray-200">
+                <input type="search" placeholder="Filter..." v-model="q" class="border shadow-sm rounded-full overflow-hidden flex w-full px-4 pl-8 border-gray-200">
               </div>
             </div>
           </div>
