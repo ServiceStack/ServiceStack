@@ -34,7 +34,7 @@
       <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     </ItemGroup>
 
-    <Target Name="CombineTailwind" AfterTargets="Build" Condition=" '$(OS)' == 'Windows_NT' AND '$(MYTHZ_TOKEN)' != '' ">
+    <Target Name="CombineTailwind" AfterTargets="Build" Condition=" '$(MYTHZ_TOKEN)' != '' ">
         <Exec Command="echo CombineTailwind..." />
         <CreateItem Include="./Components/Tailwind/**/*.razor">
             <Output TaskParameter="Include" ItemName="TailwindHtmlFiles" />
@@ -48,7 +48,7 @@
         <WriteLinesToFile File="./dist/tailwind.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
         <WriteLinesToFile File="../../tests/ServiceStack.Blazor.Server.Tests/Server/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
         <WriteLinesToFile File="../../tests/UI.Gallery/Gallery.Server/wwwroot/tailwind/ServiceStack.Blazor.html" Lines="@(TailwindHtmlFilesLines)" Overwrite="true" />
-        <Exec Command="npx --yes tailwindcss@v3 -o tailwind.css --content=&quot;./*.html&quot; --minify" WorkingDirectory="dist" />
+        <Exec Command="tailwindcss -o tailwind.css --content=&quot;./*.html&quot; --minify" WorkingDirectory="dist" />
     </Target>
 
 </Project>

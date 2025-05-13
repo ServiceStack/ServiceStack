@@ -78,7 +78,7 @@ public static class CssDefaults
         public static string GetFormClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.FormClass : SlideOver.FormClass;
         public static string GetHeadingClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.HeadingClass : SlideOver.HeadingClass;
         public static string GetSubHeadingClass(FormStyle style = FormStyle.SlideOver) => style == FormStyle.Card ? Card.SubHeadingClass : SlideOver.SubHeadingClass;
-        public const string ButtonsClass = "mt-4 px-4 py-3 bg-gray-50 dark:bg-gray-900 sm:px-6 flex flex-wrap justify-between";
+        public const string ButtonsClass = "px-4 py-3 bg-gray-50 dark:bg-gray-900 sm:px-6 flex flex-wrap justify-between";
         public const string LegendClass = "text-base font-medium text-gray-900 dark:text-gray-100 text-center mb-4";
 
         public static class SlideOver
