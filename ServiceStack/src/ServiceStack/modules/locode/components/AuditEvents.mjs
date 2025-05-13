@@ -44,6 +44,7 @@ export const AuditEvents = {
               <div class="flex-1 flex flex-col">
                 <div v-if="expanded(x.id)" class="p-4">
                   <table>
+                    <tbody>
                     <tr>
                       <td class="font-medium">API</td>
                       <td>{{ x.requestType }}</td>
@@ -60,6 +61,7 @@ export const AuditEvents = {
                       <td class="pr-4 font-medium">IP</td>
                       <td>{{ x.remoteIp }}</td>
                     </tr>
+                    </tbody>
                   </table>
                 </div>
               </div>
