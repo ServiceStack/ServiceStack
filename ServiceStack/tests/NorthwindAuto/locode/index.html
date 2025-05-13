@@ -54,15 +54,15 @@ DEBUG = true /*debug*/
         </div>
         <main class="flex-1 overflow-auto">
             <div class="pt-2.5 pb-6">
-                <div class="absolute top-1 right-2 flex">
+                <div class="absolute top-1 right-2 flex z-10">
                     <div v-if="routes.uiHref()" class="flex items-center">
                         <a title="View in API Explorer" :href="routes.uiHref({ tab:'details' })"
-                           class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                           class="p-1 inline-flex items-center border border-transparent hover:border-gray-400 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 14 14"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.34 4.814L.72 6.134m.88 2.412l3.619-1.319M4.12 4.211l1.318 3.62L13.5 5.575L11.741.75zm1.377 9.039l2.5-6.135l2.5 6.135M.5 5.53l1.319 3.62"/></svg>
                         </a>
                     </div>
                     <div v-if="store.plugins.apiKey" class="ml-2 flex items-center">
-                        <a class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        <a class="p-1 inline-flex items-center border border-transparent hover:border-gray-400 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                            aria-expanded="false" aria-haspopup="true" v-href="{ dialog:'apikey' }">
                             <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></g></svg>
                         </a>
@@ -98,7 +98,7 @@ DEBUG = true /*debug*/
                         </div>
                     </div>
                 </div>
-                <welcome v-else class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto"></welcome>
+                <welcome v-else class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto z-10"></welcome>
             </div>
         </main>
     </div>

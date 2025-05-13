@@ -73,7 +73,7 @@ const ApiResponse = {
 export const ApiForm = {
     components: { ApiResponse },
     template:/*html*/`
-    <div v-if="!showForm" class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto">
+    <div v-if="!showForm" class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto z-10">
         <div class="md:p-4">
           <Alert v-html="store.invalidAccess()" />
           <SignIn v-if="server.plugins.auth" title="Sign in to your account" :provider="routes.provider" @login="login" />

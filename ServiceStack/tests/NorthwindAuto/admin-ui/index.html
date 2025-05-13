@@ -93,7 +93,7 @@ DEBUG = true /*debug*/
     <div v-else-if="server.plugins.auth">
         <sign-in title="Sign in to your account" :provider="routes.provider" @login="store.login($event)"></sign-in>
         <div v-if="server.plugins.apiKey" class="flex justify-center">
-            <a class="p-1 inline-flex items-center border border-transparent hover:border-gray-600 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            <a class="p-1 inline-flex items-center border border-transparent hover:border-gray-400 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                aria-expanded="false" aria-haspopup="true" v-href="{ dialog:'apikey' }">
                 <svg class="w-6 h-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></g></svg>
             </a>
