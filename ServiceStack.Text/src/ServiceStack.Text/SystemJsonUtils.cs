@@ -22,6 +22,8 @@ public class SystemJsonUtils
                     return longValue;
                 if (element.TryGetDouble(out double doubleValue))
                     return doubleValue;
+                if (element.TryGetDecimal(out decimal decimalValue))
+                    return decimalValue;
                 return element.GetRawText(); // Fallback
             case JsonValueKind.True:
                 return true;
