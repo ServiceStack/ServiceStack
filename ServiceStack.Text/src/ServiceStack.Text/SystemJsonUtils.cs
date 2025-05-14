@@ -6,9 +6,9 @@ using System.Text.Json;
 
 namespace ServiceStack.Text;
 
-public class SystemJsonUtils
+public static class SystemJsonUtils
 {
-    public static object? AsObject(JsonElement element)
+    public static object? AsObject(this JsonElement element)
     {
         switch (element.ValueKind)
         {
