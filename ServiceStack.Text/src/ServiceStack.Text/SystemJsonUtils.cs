@@ -30,6 +30,7 @@ public static class SystemJsonUtils
             case JsonValueKind.False:
                 return false;
             case JsonValueKind.Null:
+            case JsonValueKind.Undefined:
                 return null;
             case JsonValueKind.Object:
                 // For objects, create a Dictionary
