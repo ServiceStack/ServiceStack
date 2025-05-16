@@ -82,6 +82,7 @@ public class PythonGenerator : ILangGenerator
         {"OrderedDictionary", "Dict"},
         {"Uri", "str"},
         {"Type", "str"},
+        {"Object", "Any"},
     };
 
     internal static HashSet<string> typeAliasValues;
