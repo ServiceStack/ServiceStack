@@ -484,7 +484,7 @@ public static class JsTokenUtils
             if ((firstDecimalPos > 0 && firstDecimalPos < i) || hasExponent)
                 token = new JsLiteral(ScriptConfig.ParseRealNumber(numLiteral));
             else
-                token = new JsLiteral(numLiteral.ParseSignedInteger());
+                token = new JsLiteral(numLiteral.ParseInteger());
 
             if (hasMemberSuffix) 
             {

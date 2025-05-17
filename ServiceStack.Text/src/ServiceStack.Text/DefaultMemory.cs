@@ -1016,7 +1016,7 @@ internal static class UnsignedInteger<T> where T : struct, IComparable<T>, IEqua
                     {
                         state = ParseState.TrailingWhite;
                     }
-                    else if (c > '0' && c <= '9')
+                    else if (c is > '0' and <= '9')
                     {
                         result = (ulong) (c - '0');
                         state = ParseState.Number;
@@ -1026,15 +1026,14 @@ internal static class UnsignedInteger<T> where T : struct, IComparable<T>, IEqua
 
                     break;
                 case ParseState.Number:
-                    if (c >= '0' && c <= '9')
+                    if (c is >= '0' and <= '9')
                     {
                         checked
                         {
                             result = 10 * result + (ulong) (c - '0');
                         }
 
-                        if (result > maxValue
-                           ) //check only minvalue, because in absolute value it's greater than maxvalue
+                        if (result > maxValue) //check only minvalue, because in absolute value it's greater than maxvalue
                             throw DefaultMemory.CreateOverflowException(maxValue);
                     }
                     else if (JsonUtils.IsWhiteSpace(c))

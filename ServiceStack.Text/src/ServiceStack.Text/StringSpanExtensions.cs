@@ -183,11 +183,38 @@ public static class StringSpanExtensions
     public static object ParseSignedInteger(this ReadOnlySpan<char> value)
     {
         var longValue = ParseInt64(value);
-        if (longValue >= int.MinValue && longValue <= int.MaxValue)
+        if (longValue is >= int.MinValue and <= int.MaxValue)
             return (int)longValue;
         return longValue;
     }
         
+    public static object ParseUnsignedInteger(this ReadOnlySpan<char> value)
+    {
+        var longValue = ParseUInt64(value);
+        if (longValue <= uint.MaxValue)
+            return (uint)longValue;
+        return longValue;
+    }
+
+    public static object ParseInteger(this ReadOnlySpan<char> value)
+    {
+        try
+        {
+            return ParseSignedInteger(value);
+        }
+        catch (OverflowException)
+        {
+            try
+            {
+                return ParseUInt64(value);
+            }
+            catch (OverflowException)
+            {
+                return ParseDecimal(value);
+            }
+        }
+    }
+    
     public static bool TryReadLine(this ReadOnlySpan<char> text, out ReadOnlySpan<char> line, ref int startIndex)
     {
         if (startIndex >= text.Length)
