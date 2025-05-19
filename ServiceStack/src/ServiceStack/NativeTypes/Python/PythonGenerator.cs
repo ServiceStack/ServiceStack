@@ -82,7 +82,7 @@ public class PythonGenerator : ILangGenerator
         {"OrderedDictionary", "Dict"},
         {"Uri", "str"},
         {"Type", "str"},
-        {"Object", "Any"},
+        // {"Object", "Any"}, Python can't deserialize Any/Unknown types
     };
 
     internal static HashSet<string> typeAliasValues;
