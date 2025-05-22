@@ -29,8 +29,14 @@ public class OrmLiteTestBase
     public static string GetConnectionString() => "Server=localhost;Database=test;User Id=test;Password=test;MultipleActiveResultSets=True;";
     public virtual IDbConnection OpenDbConnection(string connString = null, IOrmLiteDialectProvider dialectProvider = null)
     {
-        dialectProvider ??= OrmLiteConfig.DialectProvider;
-        connString ??= ConnectionString;
-        return new OrmLiteConnectionFactory(connString, dialectProvider).OpenDbConnection();
+        return CreateDbFactory(connString, dialectProvider).OpenDbConnection();
+    }
+
+    public virtual OrmLiteConnectionFactory CreateDbFactory(string connString = null,
+        IOrmLiteDialectProvider dialectProvider = null)
+    {
+        OrmLiteConfig.DialectProvider = dialectProvider ?? SqlServerDialect.Provider;
+        connString ??= ConnectionString ?? GetConnectionString();
+        return new OrmLiteConnectionFactory(connString, OrmLiteConfig.DialectProvider);
     }
 }

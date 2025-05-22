@@ -78,7 +78,7 @@ public class NamedMigrationTests : OrmLiteTestBase
         var db = DbFactory.Open();
         Migrator.Recreate(db);
         Migrator.Clear(db);
-        Migrator.Down(DbFactory, new[]{ typeof(Migration1000) });
+        Migrator.Down(DbFactory, [typeof(Migration1000)]);
         return db;
     }
 
