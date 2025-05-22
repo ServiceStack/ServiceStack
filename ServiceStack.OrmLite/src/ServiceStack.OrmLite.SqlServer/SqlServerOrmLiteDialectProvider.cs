@@ -265,15 +265,13 @@ namespace ServiceStack.OrmLite.SqlServer
 
         public override string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn)
         {
-            var modelName = NamingStrategy.GetTableName(table);
-            var objectName = $"{modelName}.{oldColumn}";
+            var objectName = $"{GetQuotedTableName(table, schema)}.{GetQuotedColumnName(oldColumn)}";
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedValue(fieldDef.FieldName)}, {GetQuotedValue("COLUMN")};";
         }
 
         public override string ToRenameColumnStatement(string schema, string table, string oldColumn, string newColumn)
         {
-            var modelName = NamingStrategy.GetTableName(table);
-            var objectName = $"{modelName}.{GetQuotedColumnName(oldColumn)}";
+            var objectName = $"{GetQuotedTableName(table, schema)}.{GetQuotedColumnName(oldColumn)}";
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedColumnName(newColumn)}, 'COLUMN';";
         }
 
