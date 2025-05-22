@@ -53,17 +53,6 @@ class Migration1001 : MigrationBase
 
 public class MigrationsWithSchemas : OrmLiteTestBase
 {
-    IDbConnectionFactory? DbFactory;
-    
-    private IDbConnection Create()
-    {
-        DbFactory ??= CreateDbFactory();
-        var db = DbFactory.OpenDbConnection();
-        Migrator.Recreate(db);
-        Migrator.Clear(db);
-        return db;
-    }
-
     [Test]
     public void Can_run_migrations()
     {
