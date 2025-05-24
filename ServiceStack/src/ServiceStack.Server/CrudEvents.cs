@@ -206,7 +206,8 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
             if (row == null)
                 return;
         }
-        context.Db.Insert(row);
+
+        context.DbExec(db => db.Insert(row));
     }
 
     /// <summary>

@@ -192,6 +192,20 @@ public class CrudContext
     public PropertyAccessor ResultProp { get; private set; }
     public PropertyAccessor CountProp { get; private set; }
     public PropertyAccessor RowVersionProp { get; private set; }
+    // When UseDatabaseWriteLocks=true to prevent concurrent writes (e.g for SQLite)
+    // Primary DB Connection uses Locks.AppDb whilst Named Connections uses Locks.NamedConnections
+    public object DbLock { get; private set; }
+    public T DbExec<T>(Func<IDbConnection, T> fn)
+    {
+        if (DbLock != null)
+        {
+            lock (DbLock)
+            {
+                return fn(Db);
+            }
+        }
+        return fn(Db);
+    }
         
     public object Id { get; set; }
         
@@ -213,10 +227,10 @@ public class CrudContext
     internal void ThrowPrimaryKeyRequiredForRowVersion() =>
         throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
 
-    public static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation) =>
-        Create(typeof(Table), request, db, dto, operation);
+    public static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation, object dbLock) =>
+        Create(typeof(Table), request, db, dto, operation, dbLock);
         
-    public static CrudContext Create(Type tableType, IRequest request, IDbConnection db, object dto, string operation)
+    public static CrudContext Create(Type tableType, IRequest request, IDbConnection db, object dto, string operation, object dbLock)
     {
         var appHost = HostContext.AppHost;
         var requestType = dto?.GetType() ?? throw new ArgumentNullException(nameof(dto));
@@ -238,6 +252,7 @@ public class CrudContext
             CountProp = responseProps?.GetAccessor(Keywords.Count),
             ResultProp = responseProps?.GetAccessor(Keywords.Result),
             RowVersionProp = responseProps?.GetAccessor(Keywords.RowVersion),
+            DbLock = dbLock,
         };
     }
 }
@@ -454,7 +469,7 @@ public partial class AutoQuery : IAutoCrudDb
         db ??= newDb;
         using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
+        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create,GetDbLock<Table>(req));
         Feature.OnBeforeCreate?.Invoke(ctx);
 
         ctx.Response = ExecAndReturnResponse<Table>(ctx,
@@ -501,7 +516,7 @@ public partial class AutoQuery : IAutoCrudDb
         
         using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create);
+        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create,GetDbLock<Table>(req));
         if (Feature.OnBeforeCreateAsync != null)
             await Feature.OnBeforeCreateAsync(ctx);
             
@@ -588,7 +603,7 @@ public partial class AutoQuery : IAutoCrudDb
         db ??= newDb;
         using (Profiler.Current.Step("AutoQuery.Update"))
         {
-            var ctx = CrudContext.Create<Table>(req,db,dto,operation);
+            var ctx = CrudContext.Create<Table>(req,db,dto,operation,GetDbLock<Table>(req));
                 
             if (skipDefaults)
                 Feature.OnBeforePatch?.Invoke(ctx);
@@ -634,7 +649,7 @@ public partial class AutoQuery : IAutoCrudDb
         
         using (Profiler.Current.Step("AutoQuery.Update"))
         {
-            var ctx = CrudContext.Create<Table>(req,db,dto,operation);
+            var ctx = CrudContext.Create<Table>(req,db,dto,operation,GetDbLock<Table>(req));
 
             if (skipDefaults)
             {
@@ -692,7 +707,7 @@ public partial class AutoQuery : IAutoCrudDb
         if (meta.SoftDelete)
             return PartialUpdate<Table>(dto, req, db);
 
-        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete);
+        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete,GetDbLock<Table>(req));
         Feature.OnBeforeDelete?.Invoke(ctx);
 
         ctx.Response = ExecAndReturnResponse<Table>(ctx,
@@ -726,7 +741,7 @@ public partial class AutoQuery : IAutoCrudDb
         if (meta.SoftDelete)
             return await UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch, db).ConfigAwait();
 
-        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete);
+        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete,GetDbLock<Table>(req));
         if (Feature.OnBeforeDeleteAsync != null)
             await Feature.OnBeforeDeleteAsync(ctx);
             
@@ -787,7 +802,7 @@ public partial class AutoQuery : IAutoCrudDb
         using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
         var row = dto.ConvertTo<Table>();
-        var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
+        var response = ExecAndReturnResponse<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save,GetDbLock<Table>(req)),
             ctx => {
                 DbExec(ctx.Db, GetDbLock<Table>(req), d => d.Save(row));
                 return SaveInternal(dto, ctx);
@@ -805,7 +820,7 @@ public partial class AutoQuery : IAutoCrudDb
         using var profiler = Profiler.Current.Step("AutoQuery.Save");
 
         var row = dto.ConvertTo<Table>();
-        var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save),
+        var response = await ExecAndReturnResponseAsync<Table>(CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Save,GetDbLock<Table>(req)),
             async ctx => {
                 await ctx.Db.SaveAsync(row).ConfigAwait();
                 return SaveInternal(dto, ctx);
