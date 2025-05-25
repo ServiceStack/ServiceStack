@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-<!--    <TargetFrameworks>net472;net5.0</TargetFrameworks>-->
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net8.0</TargetFrameworks>
     <AssemblyName>ServiceStack.OrmLite.FirebirdTests</AssemblyName>
     <PackageId>ServiceStack.OrmLite.FirebirdTests</PackageId>
     <LangVersion>default</LangVersion>
