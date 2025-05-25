@@ -646,14 +646,17 @@ namespace ServiceStack.OrmLite
         public virtual SqlExpression<T> Or(Expression<Func<T, bool>> predicate, params object[] filterParams) => 
             AppendToWhere("OR", predicate, filterParams);
 
-
         public virtual SqlExpression<T> WhereExists(ISqlExpression subSelect)
         {
-            return AppendToWhere("AND", FormatFilter($"EXISTS ({subSelect.ToSelectStatement()})"));
+            var sql = subSelect.ToSelectStatement(QueryType.Select);
+            var mergedSql = DialectProvider.MergeParamsIntoSql(sql, subSelect.Params);
+            return AppendToWhere("AND", FormatFilter($"EXISTS ({mergedSql})"));
         }
         public virtual SqlExpression<T> WhereNotExists(ISqlExpression subSelect)
         {
-            return AppendToWhere("AND", FormatFilter($"NOT EXISTS ({subSelect.ToSelectStatement()})"));
+            var sql = subSelect.ToSelectStatement(QueryType.Select);
+            var mergedSql = DialectProvider.MergeParamsIntoSql(sql, subSelect.Params);
+            return AppendToWhere("AND", FormatFilter($"NOT EXISTS ({mergedSql})"));
         }
         
         private LambdaExpression originalLambda;

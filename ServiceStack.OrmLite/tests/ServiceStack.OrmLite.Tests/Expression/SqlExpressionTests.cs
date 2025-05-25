@@ -669,4 +669,22 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
         Assert.That(results.Count, Is.EqualTo(1));
         Assert.That(results[0].Letter, Is.EqualTo("F"));
     }
+
+    [Test]
+    public void Does_add_params_in_subselect_condition()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<LetterFrequency>();
+        db.DropAndCreateTable<LetterWeighting>();
+
+        // OrmLiteUtils.PrintSql();
+        var q = db.From<LetterFrequency>(db.TableAlias("a"))
+            .WhereNotExists(db.From<LetterWeighting>()
+                .Where<LetterFrequency,LetterWeighting>((a,b) => 
+                    b.LetterFrequencyId == Sql.TableAlias(a.Id, "a")
+                    && b.Weighting > 0)
+                .Select(Sql.Custom("null")));
+
+        var results = db.Select(q);
+    }
 }

@@ -73,7 +73,7 @@ public class OrderByTests(DialectContext context) : OrmLiteProvidersTestBase(con
     {
         using var db = OpenDbConnection();
         db.DropAndCreateTable<LetterFrequency>();
-        OrmLiteUtils.PrintSql();
+        // OrmLiteUtils.PrintSql();
         db.Select(db.From<LetterFrequency>(db.TableAlias("lf"))
             .OrderByFields("Letter"));
         db.Select(db.From<LetterFrequency>(db.TableAlias("lf"))
