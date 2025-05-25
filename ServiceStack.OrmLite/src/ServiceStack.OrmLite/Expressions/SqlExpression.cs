@@ -2655,7 +2655,7 @@ namespace ServiceStack.OrmLite
         }
         
         protected virtual string GetQuotedColumnName(ModelDefinition tableDef, string memberName) => // Always call if no tableAlias to exec overrides  
-            GetQuotedColumnName(tableDef, null, memberName);
+            GetQuotedColumnName(tableDef, tableDef == modelDef ? TableAlias : null, memberName);
         
         protected virtual string GetQuotedColumnName(ModelDefinition tableDef, string tableAlias, string memberName)
         {

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using NUnit.Framework;
-using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Tests.Expression;
-using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Tests;
 
@@ -69,6 +66,18 @@ public class OrderByTests(DialectContext context) : OrmLiteProvidersTestBase(con
             .OrderBy<LetterFrequency, LetterWeighting>((f, w) => f.Id > w.Weighting ? f.Id : w.Weighting);
 
         var results = db.Select(q);
+    }
+
+    [Test]
+    public void Can_OrderByFields_with_aliased_table()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<LetterFrequency>();
+        OrmLiteUtils.PrintSql();
+        db.Select(db.From<LetterFrequency>(db.TableAlias("lf"))
+            .OrderByFields("Letter"));
+        db.Select(db.From<LetterFrequency>(db.TableAlias("lf"))
+            .OrderByFieldsDescending("Letter"));
     }
 
     [Test]
