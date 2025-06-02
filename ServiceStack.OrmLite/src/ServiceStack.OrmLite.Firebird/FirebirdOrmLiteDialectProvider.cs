@@ -757,7 +757,7 @@ namespace ServiceStack.OrmLite.Firebird
         public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
         {
             dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = {schemaName.Quoted()}";
-            var query = dbCmd.ExecuteNonQuery();
+            var query = dbCmd.ExecLongScalar();
             return query == 1;
         }
 
