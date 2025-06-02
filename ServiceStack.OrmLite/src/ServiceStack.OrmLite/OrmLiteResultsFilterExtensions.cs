@@ -34,7 +34,6 @@ public static class OrmLiteResultsFilterExtensions
 
     public static int ExecNonQuery(this IDbCommand dbCmd, string sql, Dictionary<string, object> dict)
     {
-
         if (dict != null)
             dbCmd.SetParameters(dict, (bool)false, sql:ref sql);
 

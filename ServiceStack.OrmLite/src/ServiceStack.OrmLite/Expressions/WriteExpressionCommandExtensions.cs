@@ -392,7 +392,7 @@ namespace ServiceStack.OrmLite
             if (selectIdentity)
                 return dbCmd.ExecLongScalar(dbCmd.CommandText + dbCmd.GetDialectProvider().GetLastInsertIdSqlSuffix<T>());
 
-            return dbCmd.ExecuteNonQuery();
+            return dbCmd.ExecNonQuery();
         }
 
         internal static IDbCommand InitInsertOnly<T>(this IDbCommand dbCmd, Expression<Func<T>> insertFields)

@@ -1174,7 +1174,7 @@ public static class OrmLiteWriteCommandExtensions
     {
         var dialectProvider = dbCmd.GetDialectProvider();
         dialectProvider.PrepareStoredProcedureStatement(dbCmd, obj);
-        dbCmd.ExecuteNonQuery();
+        dbCmd.ExecNonQuery();
     }
 
     internal static object GetRowVersion(this IDbCommand dbCmd, ModelDefinition modelDef, object id)
