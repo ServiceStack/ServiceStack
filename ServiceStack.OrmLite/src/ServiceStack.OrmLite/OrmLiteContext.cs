@@ -8,43 +8,43 @@ using System.Runtime.Remoting.Messaging;
 #endif
 using System.Threading;
 
-namespace ServiceStack.OrmLite
+namespace ServiceStack.OrmLite;
+
+public class OrmLiteContext
 {
-    public class OrmLiteContext
-    {
-        public static readonly OrmLiteContext Instance = new OrmLiteContext();
+    public static readonly OrmLiteContext Instance = new OrmLiteContext();
 
-        /// <summary>
-        /// Tell ServiceStack to use ThreadStatic Items Collection for Context Scoped items.
-        /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
-        /// </summary>
-        public static bool UseThreadStatic = false;
+    /// <summary>
+    /// Tell ServiceStack to use ThreadStatic Items Collection for Context Scoped items.
+    /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
+    /// </summary>
+    public static bool UseThreadStatic = false;
 
-        [ThreadStatic]
-        public static IDictionary ContextItems;
+    [ThreadStatic]
+    public static IDictionary ContextItems;
 
 #if NETCORE
-        AsyncLocal<IDictionary> localContextItems = new();
+    AsyncLocal<IDictionary> localContextItems = new();
 #endif
 
-        /// <summary>
-        /// Gets a list of items for this context. 
-        /// </summary>
-        public virtual IDictionary Items
-        {
-            get => GetItems() ?? (CreateItems());
-            set => CreateItems(value);
-        }
+    /// <summary>
+    /// Gets a list of items for this context. 
+    /// </summary>
+    public virtual IDictionary Items
+    {
+        get => GetItems() ?? (CreateItems());
+        set => CreateItems(value);
+    }
 
-        private const string _key = "__OrmLite.Items";
+    private const string _key = "__OrmLite.Items";
 
-        private IDictionary GetItems()
-        {
+    private IDictionary GetItems()
+    {
 #if NETCORE
-            if (UseThreadStatic)
-                return ContextItems;
+        if (UseThreadStatic)
+            return ContextItems;
 
-            return localContextItems.Value;
+        return localContextItems.Value;
 #else
             try
             {
@@ -59,19 +59,19 @@ namespace ServiceStack.OrmLite
                 return CallContext.GetData(_key) as IDictionary;
             }
 #endif
-        }
+    }
 
-        private IDictionary CreateItems(IDictionary items = null)
-        {
+    private IDictionary CreateItems(IDictionary items = null)
+    {
 #if NETCORE
-                if (UseThreadStatic)
-                {
-                    ContextItems = items ??= new Dictionary<object, object>();
-                }
-                else
-                {
-                    localContextItems.Value = items ??= new ConcurrentDictionary<object, object>();
-                }
+        if (UseThreadStatic)
+        {
+            ContextItems = items ??= new Dictionary<object, object>();
+        }
+        else
+        {
+            localContextItems.Value = items ??= new ConcurrentDictionary<object, object>();
+        }
 #else                
             try
             {
@@ -90,98 +90,97 @@ namespace ServiceStack.OrmLite
                 CallContext.SetData(_key, items ??= new ConcurrentDictionary<object, object>());
             }
 #endif
-            return items;
-        }
+        return items;
+    }
 
-        public void ClearItems()
+    public void ClearItems()
+    {
+        if (UseThreadStatic)
         {
-            if (UseThreadStatic)
-            {
-                ContextItems = new Dictionary<object, object>();
-            }
-            else
-            {
+            ContextItems = new Dictionary<object, object>();
+        }
+        else
+        {
 #if NETCORE
-                localContextItems.Value = new ConcurrentDictionary<object, object>();                
+            localContextItems.Value = new ConcurrentDictionary<object, object>();                
 #else                
                 CallContext.FreeNamedDataSlot(_key);
 #endif
-            }
-        }
-
-        public T GetOrCreate<T>(Func<T> createFn)
-        {
-            if (Items.Contains(typeof(T).Name))
-                return (T)Items[typeof(T).Name];
-
-            return (T)(Items[typeof(T).Name] = createFn());
-        }
-
-        internal static void SetItem<T>(string key, T value)
-        {
-            if (Equals(value, default(T)))
-            {
-                Instance.Items.Remove(key);
-            }
-            else
-            {
-                Instance.Items[key] = value;
-            }
-        }
-
-        public static OrmLiteState CreateNewState()
-        {
-            var state = new OrmLiteState();
-            OrmLiteState = state;
-            return state;
-        }
-
-        public static OrmLiteState GetOrCreateState()
-        {
-            return OrmLiteState
-                ?? CreateNewState();
-        }
-
-        public static OrmLiteState OrmLiteState
-        {
-            get
-            {
-                if (Instance.Items.Contains("OrmLiteState"))
-                    return Instance.Items["OrmLiteState"] as OrmLiteState;
-
-                return null;
-            }
-            set => SetItem("OrmLiteState", value);
-        }
-
-        //Only used when using OrmLite API's against a native IDbConnection (i.e. not from DbFactory) 
-        internal static IDbTransaction TSTransaction
-        {
-            get
-            {
-                var state = OrmLiteState;
-                return state?.TSTransaction;
-            }
-            set => GetOrCreateState().TSTransaction = value;
         }
     }
 
-    public class OrmLiteState
+    public T GetOrCreate<T>(Func<T> createFn)
     {
-        private static long Counter;
-        public long Id;
+        if (Items.Contains(typeof(T).Name))
+            return (T)Items[typeof(T).Name];
 
-        public OrmLiteState()
+        return (T)(Items[typeof(T).Name] = createFn());
+    }
+
+    internal static void SetItem<T>(string key, T value)
+    {
+        if (Equals(value, default(T)))
         {
-            Id = Interlocked.Increment(ref Counter);
+            Instance.Items.Remove(key);
         }
-
-        public IDbTransaction TSTransaction;
-        public IOrmLiteResultsFilter ResultsFilter;
-
-        public override string ToString()
+        else
         {
-            return $"State Id: {Id}";
+            Instance.Items[key] = value;
         }
+    }
+
+    public static OrmLiteState CreateNewState()
+    {
+        var state = new OrmLiteState();
+        OrmLiteState = state;
+        return state;
+    }
+
+    public static OrmLiteState GetOrCreateState()
+    {
+        return OrmLiteState
+               ?? CreateNewState();
+    }
+
+    public static OrmLiteState OrmLiteState
+    {
+        get
+        {
+            if (Instance.Items.Contains("OrmLiteState"))
+                return Instance.Items["OrmLiteState"] as OrmLiteState;
+
+            return null;
+        }
+        set => SetItem("OrmLiteState", value);
+    }
+
+    //Only used when using OrmLite API's against a native IDbConnection (i.e. not from DbFactory) 
+    internal static IDbTransaction TSTransaction
+    {
+        get
+        {
+            var state = OrmLiteState;
+            return state?.TSTransaction;
+        }
+        set => GetOrCreateState().TSTransaction = value;
+    }
+}
+
+public class OrmLiteState
+{
+    private static long Counter;
+    public long Id;
+
+    public OrmLiteState()
+    {
+        Id = Interlocked.Increment(ref Counter);
+    }
+
+    public IDbTransaction TSTransaction;
+    public IOrmLiteResultsFilter ResultsFilter;
+
+    public override string ToString()
+    {
+        return $"State Id: {Id}";
     }
 }

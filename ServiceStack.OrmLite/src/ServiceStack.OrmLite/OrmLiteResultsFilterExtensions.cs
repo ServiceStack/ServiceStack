@@ -8,334 +8,333 @@ using System.Collections.Generic;
 using System.Data;
 using ServiceStack.Logging;
 
-namespace ServiceStack.OrmLite
+namespace ServiceStack.OrmLite;
+
+public static class OrmLiteResultsFilterExtensions
 {
-    public static class OrmLiteResultsFilterExtensions
+    internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteResultsFilterExtensions));
+
+    public static int ExecNonQuery(this IDbCommand dbCmd, string sql, object anonType = null)
     {
-        internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteResultsFilterExtensions));
+        if (anonType != null)
+            dbCmd.SetParameters(anonType.ToObjectDictionary(), (bool)false, sql:ref sql);
 
-        public static int ExecNonQuery(this IDbCommand dbCmd, string sql, object anonType = null)
-        {
-            if (anonType != null)
-                dbCmd.SetParameters(anonType.ToObjectDictionary(), (bool)false, sql:ref sql);
+        dbCmd.CommandText = sql;
 
+        if (Log.IsDebugEnabled)
+            Log.DebugCommand(dbCmd);
+
+        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
+
+        return dbCmd.ExecuteNonQuery();
+    }
+
+    public static int ExecNonQuery(this IDbCommand dbCmd, string sql, Dictionary<string, object> dict)
+    {
+
+        if (dict != null)
+            dbCmd.SetParameters(dict, (bool)false, sql:ref sql);
+
+        dbCmd.CommandText = sql;
+
+        if (Log.IsDebugEnabled)
+            Log.DebugCommand(dbCmd);
+
+        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
+
+        return dbCmd.ExecuteNonQuery();
+    }
+
+    public static int ExecNonQuery(this IDbCommand dbCmd)
+    {
+        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
+
+        if (Log.IsDebugEnabled)
+            Log.DebugCommand(dbCmd);
+
+        return dbCmd.ExecuteNonQuery();
+    }
+
+    public static int ExecNonQuery(this IDbCommand dbCmd, string sql, Action<IDbCommand> dbCmdFilter)
+    {
+        dbCmdFilter?.Invoke(dbCmd);
+
+        dbCmd.CommandText = sql;
+
+        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
+
+        if (Log.IsDebugEnabled)
+            Log.DebugCommand(dbCmd);
+
+        return dbCmd.ExecuteNonQuery();
+    }
+
+    public static List<T> ConvertToList<T>(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
             dbCmd.CommandText = sql;
 
-            if (Log.IsDebugEnabled)
-                Log.DebugCommand(dbCmd);
+        var isScalar = OrmLiteUtils.IsScalar<T>();
 
-            OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
-
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
-
-            return dbCmd.ExecuteNonQuery();
-        }
-
-        public static int ExecNonQuery(this IDbCommand dbCmd, string sql, Dictionary<string, object> dict)
+        if (OrmLiteConfig.ResultsFilter != null)
         {
-
-            if (dict != null)
-                dbCmd.SetParameters(dict, (bool)false, sql:ref sql);
-
-            dbCmd.CommandText = sql;
-
-            if (Log.IsDebugEnabled)
-                Log.DebugCommand(dbCmd);
-
-            OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
-
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
-
-            return dbCmd.ExecuteNonQuery();
-        }
-
-        public static int ExecNonQuery(this IDbCommand dbCmd)
-        {
-            OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
-
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
-
-            if (Log.IsDebugEnabled)
-                Log.DebugCommand(dbCmd);
-
-            return dbCmd.ExecuteNonQuery();
-        }
-
-        public static int ExecNonQuery(this IDbCommand dbCmd, string sql, Action<IDbCommand> dbCmdFilter)
-        {
-            dbCmdFilter?.Invoke(dbCmd);
-
-            dbCmd.CommandText = sql;
-
-            OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
-
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
-
-            if (Log.IsDebugEnabled)
-                Log.DebugCommand(dbCmd);
-
-            return dbCmd.ExecuteNonQuery();
-        }
-
-        public static List<T> ConvertToList<T>(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
-
-            var isScalar = OrmLiteUtils.IsScalar<T>();
-
-            if (OrmLiteConfig.ResultsFilter != null)
-            {
-                return isScalar
-                    ? OrmLiteConfig.ResultsFilter.GetColumn<T>(dbCmd)
-                    : OrmLiteConfig.ResultsFilter.GetList<T>(dbCmd);
-            }
-
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
             return isScalar
-                ? reader.Column<T>(dbCmd.GetDialectProvider())
-                : reader.ConvertToList<T>(dbCmd.GetDialectProvider());
+                ? OrmLiteConfig.ResultsFilter.GetColumn<T>(dbCmd)
+                : OrmLiteConfig.ResultsFilter.GetList<T>(dbCmd);
         }
 
-        public static IList ConvertToList(this IDbCommand dbCmd, Type refType, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return isScalar
+            ? reader.Column<T>(dbCmd.GetDialectProvider())
+            : reader.ConvertToList<T>(dbCmd.GetDialectProvider());
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetRefList(dbCmd, refType);
+    public static IList ConvertToList(this IDbCommand dbCmd, Type refType, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.ConvertToList(dbCmd.GetDialectProvider(), refType);
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetRefList(dbCmd, refType);
 
-        public static IDbDataParameter PopulateWith(this IDbDataParameter to, IDbDataParameter from)
-        {
-            to.ParameterName = from.ParameterName;
-            to.DbType = from.DbType;
-            to.Value = from.Value;
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.ConvertToList(dbCmd.GetDialectProvider(), refType);
+    }
 
-            if (from.Precision != default(byte))
-                to.Precision = from.Precision;
-            if (from.Scale != default(byte))
-                to.Scale = from.Scale;
-            if (from.Size != default(int))
-                to.Size = from.Size;
+    public static IDbDataParameter PopulateWith(this IDbDataParameter to, IDbDataParameter from)
+    {
+        to.ParameterName = from.ParameterName;
+        to.DbType = from.DbType;
+        to.Value = from.Value;
 
-            return to;
-        }
+        if (from.Precision != default(byte))
+            to.Precision = from.Precision;
+        if (from.Scale != default(byte))
+            to.Scale = from.Scale;
+        if (from.Size != default(int))
+            to.Size = from.Size;
 
-        internal static List<T> ExprConvertToList<T>(this IDbCommand dbCmd, string sql = null, IEnumerable<IDbDataParameter> sqlParams = null, HashSet<string> onlyFields=null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        return to;
+    }
 
-            dbCmd.SetParameters(sqlParams);
+    internal static List<T> ExprConvertToList<T>(this IDbCommand dbCmd, string sql = null, IEnumerable<IDbDataParameter> sqlParams = null, HashSet<string> onlyFields=null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetList<T>(dbCmd);
+        dbCmd.SetParameters(sqlParams);
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.ConvertToList<T>(dbCmd.GetDialectProvider(), onlyFields:onlyFields);
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetList<T>(dbCmd);
 
-        public static T ConvertTo<T>(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.ConvertToList<T>(dbCmd.GetDialectProvider(), onlyFields:onlyFields);
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetSingle<T>(dbCmd);
+    public static T ConvertTo<T>(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.ConvertTo<T>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetSingle<T>(dbCmd);
 
-        internal static object ConvertTo(this IDbCommand dbCmd, Type refType, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.ConvertTo<T>(dbCmd.GetDialectProvider());
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetRefSingle(dbCmd, refType);
+    internal static object ConvertTo(this IDbCommand dbCmd, Type refType, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.ConvertTo(dbCmd.GetDialectProvider(), refType);
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetRefSingle(dbCmd, refType);
 
-        internal static T Scalar<T>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
-        {
-            return dbCmd.SetParameters(sqlParams).Scalar<T>(sql);
-        }
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.ConvertTo(dbCmd.GetDialectProvider(), refType);
+    }
 
-        internal static T Scalar<T>(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+    internal static T Scalar<T>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
+    {
+        return dbCmd.SetParameters(sqlParams).Scalar<T>(sql);
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetScalar<T>(dbCmd);
+    internal static T Scalar<T>(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.Scalar<T>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetScalar<T>(dbCmd);
 
-        public static object Scalar(this IDbCommand dbCmd, ISqlExpression sqlExpression)
-        {
-            dbCmd.PopulateWith(sqlExpression, QueryType.Scalar);
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.Scalar<T>(dbCmd.GetDialectProvider());
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetScalar(dbCmd);
+    public static object Scalar(this IDbCommand dbCmd, ISqlExpression sqlExpression)
+    {
+        dbCmd.PopulateWith(sqlExpression, QueryType.Scalar);
 
-            return dbCmd.ExecuteScalar();
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetScalar(dbCmd);
 
-        public static object Scalar(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        return dbCmd.ExecuteScalar();
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetScalar(dbCmd);
+    public static object Scalar(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            return dbCmd.ExecuteScalar();
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetScalar(dbCmd);
 
-        public static long ExecLongScalar(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        return dbCmd.ExecuteScalar();
+    }
 
-            if (Log.IsDebugEnabled)
-                Log.DebugCommand(dbCmd);
+    public static long ExecLongScalar(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        if (Log.IsDebugEnabled)
+            Log.DebugCommand(dbCmd);
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetLongScalar(dbCmd);
+        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
 
-            return dbCmd.LongScalar();
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetLongScalar(dbCmd);
 
-        internal static T ExprConvertTo<T>(this IDbCommand dbCmd, string sql = null, IEnumerable<IDbDataParameter> sqlParams = null, HashSet<string> onlyFields = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        return dbCmd.LongScalar();
+    }
 
-            dbCmd.SetParameters(sqlParams);
+    internal static T ExprConvertTo<T>(this IDbCommand dbCmd, string sql = null, IEnumerable<IDbDataParameter> sqlParams = null, HashSet<string> onlyFields = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetSingle<T>(dbCmd);
+        dbCmd.SetParameters(sqlParams);
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.ConvertTo<T>(dbCmd.GetDialectProvider(), onlyFields: onlyFields);
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetSingle<T>(dbCmd);
 
-        internal static List<T> Column<T>(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.ConvertTo<T>(dbCmd.GetDialectProvider(), onlyFields: onlyFields);
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetColumn<T>(dbCmd);
+    internal static List<T> Column<T>(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.Column<T>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetColumn<T>(dbCmd);
 
-        internal static List<T> Column<T>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
-        {
-            return dbCmd.SetParameters(sqlParams).Column<T>(sql);
-        }
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.Column<T>(dbCmd.GetDialectProvider());
+    }
 
-        internal static HashSet<T> ColumnDistinct<T>(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+    internal static List<T> Column<T>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
+    {
+        return dbCmd.SetParameters(sqlParams).Column<T>(sql);
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetColumnDistinct<T>(dbCmd);
+    internal static HashSet<T> ColumnDistinct<T>(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.ColumnDistinct<T>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetColumnDistinct<T>(dbCmd);
 
-        internal static HashSet<T> ColumnDistinct<T>(this IDbCommand dbCmd, ISqlExpression expression)
-        {
-            dbCmd.PopulateWith(expression, QueryType.Select);
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.ColumnDistinct<T>(dbCmd.GetDialectProvider());
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetColumnDistinct<T>(dbCmd);
+    internal static HashSet<T> ColumnDistinct<T>(this IDbCommand dbCmd, ISqlExpression expression)
+    {
+        dbCmd.PopulateWith(expression, QueryType.Select);
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.ColumnDistinct<T>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetColumnDistinct<T>(dbCmd);
 
-        internal static Dictionary<K, V> Dictionary<K, V>(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.ColumnDistinct<T>(dbCmd.GetDialectProvider());
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetDictionary<K, V>(dbCmd);
+    internal static Dictionary<K, V> Dictionary<K, V>(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.Dictionary<K, V>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetDictionary<K, V>(dbCmd);
 
-        internal static Dictionary<K, V> Dictionary<K, V>(this IDbCommand dbCmd, ISqlExpression expression)
-        {
-            dbCmd.PopulateWith(expression, QueryType.Select);
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.Dictionary<K, V>(dbCmd.GetDialectProvider());
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetDictionary<K, V>(dbCmd);
+    internal static Dictionary<K, V> Dictionary<K, V>(this IDbCommand dbCmd, ISqlExpression expression)
+    {
+        dbCmd.PopulateWith(expression, QueryType.Select);
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.Dictionary<K, V>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetDictionary<K, V>(dbCmd);
 
-        internal static List<KeyValuePair<K, V>> KeyValuePairs<K, V>(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.Dictionary<K, V>(dbCmd.GetDialectProvider());
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetKeyValuePairs<K, V>(dbCmd);
+    internal static List<KeyValuePair<K, V>> KeyValuePairs<K, V>(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.KeyValuePairs<K, V>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetKeyValuePairs<K, V>(dbCmd);
 
-        internal static List<KeyValuePair<K, V>> KeyValuePairs<K, V>(this IDbCommand dbCmd, ISqlExpression expression)
-        {
-            dbCmd.PopulateWith(expression, QueryType.Select);
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.KeyValuePairs<K, V>(dbCmd.GetDialectProvider());
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetKeyValuePairs<K,V>(dbCmd);
+    internal static List<KeyValuePair<K, V>> KeyValuePairs<K, V>(this IDbCommand dbCmd, ISqlExpression expression)
+    {
+        dbCmd.PopulateWith(expression, QueryType.Select);
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.KeyValuePairs<K, V>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetKeyValuePairs<K,V>(dbCmd);
 
-        internal static Dictionary<K, List<V>> Lookup<K, V>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
-        {
-            return dbCmd.SetParameters(sqlParams).Lookup<K, V>(sql);
-        }
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.KeyValuePairs<K, V>(dbCmd.GetDialectProvider());
+    }
 
-        internal static Dictionary<K, List<V>> Lookup<K, V>(this IDbCommand dbCmd, string sql = null)
-        {
-            if (sql != null)
-                dbCmd.CommandText = sql;
+    internal static Dictionary<K, List<V>> Lookup<K, V>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
+    {
+        return dbCmd.SetParameters(sqlParams).Lookup<K, V>(sql);
+    }
 
-            if (OrmLiteConfig.ResultsFilter != null)
-                return OrmLiteConfig.ResultsFilter.GetLookup<K, V>(dbCmd);
+    internal static Dictionary<K, List<V>> Lookup<K, V>(this IDbCommand dbCmd, string sql = null)
+    {
+        if (sql != null)
+            dbCmd.CommandText = sql;
 
-            using var reader = dbCmd.ExecReader(dbCmd.CommandText);
-            return reader.Lookup<K, V>(dbCmd.GetDialectProvider());
-        }
+        if (OrmLiteConfig.ResultsFilter != null)
+            return OrmLiteConfig.ResultsFilter.GetLookup<K, V>(dbCmd);
+
+        using var reader = dbCmd.ExecReader(dbCmd.CommandText);
+        return reader.Lookup<K, V>(dbCmd.GetDialectProvider());
     }
 }

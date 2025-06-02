@@ -10,22 +10,21 @@
 // Licensed under the same terms of ServiceStack.
 //
 
-namespace ServiceStack.OrmLite
+namespace ServiceStack.OrmLite;
+
+public class OrmLiteNamingStrategyBase : INamingStrategy
 {
-    public class OrmLiteNamingStrategyBase : INamingStrategy
-    {
-        public virtual string GetSchemaName(string name) => name;
+    public virtual string GetSchemaName(string name) => name;
 
-        public virtual string GetSchemaName(ModelDefinition modelDef) => GetSchemaName(modelDef.Schema);
+    public virtual string GetSchemaName(ModelDefinition modelDef) => GetSchemaName(modelDef.Schema);
 
-        public virtual string GetTableName(string name) => name;
+    public virtual string GetTableName(string name) => name;
 
-        public virtual string GetTableName(ModelDefinition modelDef) => GetTableName(modelDef.ModelName);
+    public virtual string GetTableName(ModelDefinition modelDef) => GetTableName(modelDef.ModelName);
 
-        public virtual string GetColumnName(string name) => name;
+    public virtual string GetColumnName(string name) => name;
 
-        public virtual string GetSequenceName(string modelName, string fieldName) => "SEQ_" + modelName + "_" + fieldName;
+    public virtual string GetSequenceName(string modelName, string fieldName) => "SEQ_" + modelName + "_" + fieldName;
 
-        public virtual string ApplyNameRestrictions(string name) => name;
-    }
+    public virtual string ApplyNameRestrictions(string name) => name;
 }

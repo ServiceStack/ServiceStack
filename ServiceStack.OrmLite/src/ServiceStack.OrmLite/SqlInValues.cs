@@ -1,38 +1,37 @@
 using System.Collections;
 
-namespace ServiceStack.OrmLite
+namespace ServiceStack.OrmLite;
+
+public class SqlInValues
 {
-    public class SqlInValues
-    {
-        public const string EmptyIn = "NULL";
+    public const string EmptyIn = "NULL";
         
-        private readonly IEnumerable values;
-        private readonly IOrmLiteDialectProvider dialectProvider;
+    private readonly IEnumerable values;
+    private readonly IOrmLiteDialectProvider dialectProvider;
 
-        public int Count { get; }
+    public int Count { get; }
 
-        public SqlInValues(IEnumerable values, IOrmLiteDialectProvider dialectProvider=null)
+    public SqlInValues(IEnumerable values, IOrmLiteDialectProvider dialectProvider=null)
+    {
+        this.values = values;
+        this.dialectProvider = dialectProvider ?? OrmLiteConfig.DialectProvider;
+
+        if (values == null) return;
+        foreach (var value in values)
         {
-            this.values = values;
-            this.dialectProvider = dialectProvider ?? OrmLiteConfig.DialectProvider;
-
-            if (values == null) return;
-            foreach (var value in values)
-            {
-                ++Count;
-            }
+            ++Count;
         }
+    }
 
-        public string ToSqlInString()
-        {
-            return Count == 0 
-                ? EmptyIn
-                : OrmLiteUtils.SqlJoin(values, dialectProvider);
-        }
+    public string ToSqlInString()
+    {
+        return Count == 0 
+            ? EmptyIn
+            : OrmLiteUtils.SqlJoin(values, dialectProvider);
+    }
 
-        public IEnumerable GetValues()
-        {
-            return values;
-        }
+    public IEnumerable GetValues()
+    {
+        return values;
     }
 }

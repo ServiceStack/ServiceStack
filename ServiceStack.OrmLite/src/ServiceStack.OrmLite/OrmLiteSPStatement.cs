@@ -3,171 +3,170 @@ using System.Collections.Generic;
 using System.Data;
 using ServiceStack.OrmLite.Dapper;
 
-namespace ServiceStack.OrmLite
+namespace ServiceStack.OrmLite;
+
+public class OrmLiteSPStatement : IDisposable
 {
-    public class OrmLiteSPStatement : IDisposable
+    private readonly IDbConnection db;
+    private readonly IDbCommand dbCmd;
+    private readonly IOrmLiteDialectProvider dialectProvider;
+
+    public bool TryGetParameterValue(string parameterName, out object value)
     {
-        private readonly IDbConnection db;
-        private readonly IDbCommand dbCmd;
-        private readonly IOrmLiteDialectProvider dialectProvider;
-
-        public bool TryGetParameterValue(string parameterName, out object value)
+        try
         {
-            try
-            {
-                value = ((IDataParameter)dbCmd.Parameters[parameterName]).Value;
-                return true;
-            }
-            catch(Exception)
-            {
-                value = null;
-                return false;
-            }
+            value = ((IDataParameter)dbCmd.Parameters[parameterName]).Value;
+            return true;
         }
-
-        public int ReturnValue
+        catch(Exception)
         {
-            get
-            {
-                var returnValue = ((IDataParameter)dbCmd.Parameters["__ReturnValue"]).Value;
-                return (int)returnValue;
-            }
+            value = null;
+            return false;
         }
+    }
 
-        public OrmLiteSPStatement(IDbCommand dbCmd)
-            : this(null, dbCmd) {}
-
-        public OrmLiteSPStatement(IDbConnection db, IDbCommand dbCmd)
+    public int ReturnValue
+    {
+        get
         {
-            this.db = db;
-            this.dbCmd = dbCmd;
-            dialectProvider = dbCmd.GetDialectProvider();
+            var returnValue = ((IDataParameter)dbCmd.Parameters["__ReturnValue"]).Value;
+            return (int)returnValue;
         }
+    }
 
-        public List<T> ConvertToList<T>()
+    public OrmLiteSPStatement(IDbCommand dbCmd)
+        : this(null, dbCmd) {}
+
+    public OrmLiteSPStatement(IDbConnection db, IDbCommand dbCmd)
+    {
+        this.db = db;
+        this.dbCmd = dbCmd;
+        dialectProvider = dbCmd.GetDialectProvider();
+    }
+
+    public List<T> ConvertToList<T>()
+    {
+        if (typeof(T).IsPrimitive || typeof(T) == typeof(string))
+            throw new Exception("Type " + typeof(T).Name + " is a primitive type. Use ConvertScalarToList function.");
+
+        IDataReader reader = null;
+        try
         {
-            if (typeof(T).IsPrimitive || typeof(T) == typeof(string))
-                throw new Exception("Type " + typeof(T).Name + " is a primitive type. Use ConvertScalarToList function.");
-
-            IDataReader reader = null;
-            try
-            {
-                reader = dbCmd.ExecuteReader();
-                return reader.ConvertToList<T>(dialectProvider);
-            }
-            finally
-            {
-                reader?.Close();
-            }
+            reader = dbCmd.ExecuteReader();
+            return reader.ConvertToList<T>(dialectProvider);
         }
-
-        public List<T> ConvertToScalarList<T>()
+        finally
         {
-            if (!((typeof(T).IsPrimitive) || typeof(T).IsValueType || (typeof(T) == typeof(string)) || (typeof(T) == typeof(String))))
-                throw new Exception("Type " + typeof(T).Name + " is a non primitive type. Use ConvertToList function.");
-
-            IDataReader reader = null;
-            try
-            {
-                reader = dbCmd.ExecuteReader();
-                return reader.Column<T>(dialectProvider);
-            }
-            finally
-            {
-                reader?.Close();
-            }
+            reader?.Close();
         }
+    }
 
-        public T ConvertTo<T>()
+    public List<T> ConvertToScalarList<T>()
+    {
+        if (!((typeof(T).IsPrimitive) || typeof(T).IsValueType || (typeof(T) == typeof(string)) || (typeof(T) == typeof(String))))
+            throw new Exception("Type " + typeof(T).Name + " is a non primitive type. Use ConvertToList function.");
+
+        IDataReader reader = null;
+        try
         {
-            if (typeof(T).IsPrimitive || typeof(T) == typeof(string))
-                throw new Exception("Type " + typeof(T).Name + " is a primitive type. Use ConvertScalarTo function.");
-
-            IDataReader reader = null;
-            try
-            {
-                reader = dbCmd.ExecuteReader();
-                return reader.ConvertTo<T>(dialectProvider);
-            }
-            finally
-            {
-                reader?.Close();
-            }
+            reader = dbCmd.ExecuteReader();
+            return reader.Column<T>(dialectProvider);
         }
-
-        public T ConvertToScalar<T>()
+        finally
         {
-            if (!((typeof(T).IsPrimitive) || typeof(T).IsValueType || (typeof(T) == typeof(string)) || (typeof(T) == typeof(String))))
-                throw new Exception("Type " + typeof(T).Name + " is a non primitive type. Use ConvertTo function.");
-
-            IDataReader reader = null;
-            try
-            {
-                reader = dbCmd.ExecuteReader();
-                return reader.Scalar<T>(dialectProvider);
-            }
-            finally
-            {
-                reader?.Close();
-            }
+            reader?.Close();
         }
+    }
 
-        public List<T> ConvertFirstColumnToList<T>()
+    public T ConvertTo<T>()
+    {
+        if (typeof(T).IsPrimitive || typeof(T) == typeof(string))
+            throw new Exception("Type " + typeof(T).Name + " is a primitive type. Use ConvertScalarTo function.");
+
+        IDataReader reader = null;
+        try
         {
-            if (!((typeof(T).IsPrimitive) || typeof(T).IsValueType || (typeof(T) == typeof(string)) || (typeof(T) == typeof(String))))
-                throw new Exception("Type " + typeof(T).Name + " is a non primitive type. Only primitive type can be used.");
-
-            IDataReader reader = null;
-            try
-            {
-                reader = dbCmd.ExecuteReader();
-                return reader.Column<T>(dialectProvider);
-            }
-            finally
-            {
-                reader?.Close();
-            }
+            reader = dbCmd.ExecuteReader();
+            return reader.ConvertTo<T>(dialectProvider);
         }
-
-        public HashSet<T> ConvertFirstColumnToListDistinct<T>()
+        finally
         {
-            if (!(typeof(T).IsPrimitive) || typeof(T).IsValueType || (typeof(T) == typeof(string)) || (typeof(T) == typeof(String)))
-                throw new Exception("Type " + typeof(T).Name + " is a non primitive type. Only primitive type can be used.");
-
-            IDataReader reader = null;
-            try
-            {
-                reader = dbCmd.ExecuteReader();
-                return reader.ColumnDistinct<T>(dialectProvider);
-            }
-            finally
-            {
-                reader?.Close();
-            }
+            reader?.Close();
         }
+    }
 
-        public int ExecuteNonQuery()
+    public T ConvertToScalar<T>()
+    {
+        if (!((typeof(T).IsPrimitive) || typeof(T).IsValueType || (typeof(T) == typeof(string)) || (typeof(T) == typeof(String))))
+            throw new Exception("Type " + typeof(T).Name + " is a non primitive type. Use ConvertTo function.");
+
+        IDataReader reader = null;
+        try
         {
-            return dbCmd.ExecuteNonQuery();
+            reader = dbCmd.ExecuteReader();
+            return reader.Scalar<T>(dialectProvider);
         }
-
-        public bool HasResult()
+        finally
         {
-            IDataReader reader = null;
-            try
-            {
-                reader = dbCmd.ExecuteReader();
-                return reader.Read();
-            }
-            finally
-            {
-                reader?.Close();
-            }
+            reader?.Close();
         }
+    }
 
-        public void Dispose()
+    public List<T> ConvertFirstColumnToList<T>()
+    {
+        if (!((typeof(T).IsPrimitive) || typeof(T).IsValueType || (typeof(T) == typeof(string)) || (typeof(T) == typeof(String))))
+            throw new Exception("Type " + typeof(T).Name + " is a non primitive type. Only primitive type can be used.");
+
+        IDataReader reader = null;
+        try
         {
-            dialectProvider.GetExecFilter().DisposeCommand(this.dbCmd, this.db);
+            reader = dbCmd.ExecuteReader();
+            return reader.Column<T>(dialectProvider);
         }
+        finally
+        {
+            reader?.Close();
+        }
+    }
+
+    public HashSet<T> ConvertFirstColumnToListDistinct<T>()
+    {
+        if (!(typeof(T).IsPrimitive) || typeof(T).IsValueType || (typeof(T) == typeof(string)) || (typeof(T) == typeof(String)))
+            throw new Exception("Type " + typeof(T).Name + " is a non primitive type. Only primitive type can be used.");
+
+        IDataReader reader = null;
+        try
+        {
+            reader = dbCmd.ExecuteReader();
+            return reader.ColumnDistinct<T>(dialectProvider);
+        }
+        finally
+        {
+            reader?.Close();
+        }
+    }
+
+    public int ExecuteNonQuery()
+    {
+        return dbCmd.ExecuteNonQuery();
+    }
+
+    public bool HasResult()
+    {
+        IDataReader reader = null;
+        try
+        {
+            reader = dbCmd.ExecuteReader();
+            return reader.Read();
+        }
+        finally
+        {
+            reader?.Close();
+        }
+    }
+
+    public void Dispose()
+    {
+        dialectProvider.GetExecFilter().DisposeCommand(this.dbCmd, this.db);
     }
 }

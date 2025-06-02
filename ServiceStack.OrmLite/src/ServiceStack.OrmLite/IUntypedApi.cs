@@ -4,33 +4,32 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.OrmLite
+namespace ServiceStack.OrmLite;
+
+public interface IUntypedApi
 {
-    public interface IUntypedApi
-    {
-        IDbConnection Db { get; set; }
-        IDbCommand DbCmd { get; set; }
+    IDbConnection Db { get; set; }
+    IDbCommand DbCmd { get; set; }
 
-        int SaveAll(IEnumerable objs);
-        Task<int> SaveAllAsync(IEnumerable objs, CancellationToken token);
-        bool Save(object obj);
-        Task<bool> SaveAsync(object obj, CancellationToken token);
+    int SaveAll(IEnumerable objs);
+    Task<int> SaveAllAsync(IEnumerable objs, CancellationToken token);
+    bool Save(object obj);
+    Task<bool> SaveAsync(object obj, CancellationToken token);
 
-        void InsertAll(IEnumerable objs);
-        void InsertAll(IEnumerable objs, Action<IDbCommand> commandFilter);
-        long Insert(object obj, bool selectIdentity = false);
-        long Insert(object obj, Action<IDbCommand> commandFilter, bool selectIdentity = false);
+    void InsertAll(IEnumerable objs);
+    void InsertAll(IEnumerable objs, Action<IDbCommand> commandFilter);
+    long Insert(object obj, bool selectIdentity = false);
+    long Insert(object obj, Action<IDbCommand> commandFilter, bool selectIdentity = false);
 
-        int UpdateAll(IEnumerable objs);
-        int UpdateAll(IEnumerable objs, Action<IDbCommand> commandFilter);
-        int Update(object obj);
-        Task<int> UpdateAsync(object obj, CancellationToken token);
+    int UpdateAll(IEnumerable objs);
+    int UpdateAll(IEnumerable objs, Action<IDbCommand> commandFilter);
+    int Update(object obj);
+    Task<int> UpdateAsync(object obj, CancellationToken token);
 
-        int DeleteAll();
-        int Delete(object obj, object anonType);
-        int DeleteNonDefaults(object obj, object filter);
-        int DeleteById(object id);
-        int DeleteByIds(IEnumerable idValues);
-        IEnumerable Cast(IEnumerable results);
-    }
+    int DeleteAll();
+    int Delete(object obj, object anonType);
+    int DeleteNonDefaults(object obj, object filter);
+    int DeleteById(object id);
+    int DeleteByIds(IEnumerable idValues);
+    IEnumerable Cast(IEnumerable results);
 }
