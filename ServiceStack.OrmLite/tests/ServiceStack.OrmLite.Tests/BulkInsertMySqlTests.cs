@@ -9,7 +9,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Tests;
 
-public class BulkInsertTests : OrmLiteTestBase
+[TestFixtureOrmLiteDialects(Dialect.AnyMySql)]
+public class BulkInsertMySqlTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
     [Test]
     public async Task Can_BulkInsert_CSV_Rockstars_MySql()
@@ -26,9 +27,9 @@ public class BulkInsertTests : OrmLiteTestBase
         var mysqlConn = (MySqlConnection)db.ToDbConnection();
 
         var tmpPath  = Path.GetTempFileName();
-        using (var fs = File.OpenWrite(tmpPath))
+        await using (var fs = File.OpenWrite(tmpPath))
         {
-            CsvSerializer.SerializeToStream(Person.Rockstars, fs);
+            await CsvSerializer.SerializeToStreamAsync(Person.Rockstars, fs);
             fs.Close();
         }
 
@@ -59,24 +60,4 @@ public class BulkInsertTests : OrmLiteTestBase
         rows.PrintDump();
         Assert.That(rows.Count, Is.EqualTo(Person.Rockstars.Length));
     }
-
-    [Test]
-    public async Task Can_BulkInsert_CSV_Rockstars_Sqlite()
-    {
-        var dbFactory = CreateSqliteMemoryDbFactory();
-        using var db = await dbFactory.OpenDbConnectionAsync();
-        db.DropAndCreateTable<Person>();
-
-        var dialect = db.Dialect();
-        
-        var sql = dialect.ToInsertRowsSql(Person.Rockstars);
-        sql.Print();
-
-        db.ExecuteSql(sql);
-        
-        var rows = db.Select<Person>();
-        rows.PrintDump();
-        Assert.That(rows.Count, Is.EqualTo(Person.Rockstars.Length));
-    }
-    
 }
