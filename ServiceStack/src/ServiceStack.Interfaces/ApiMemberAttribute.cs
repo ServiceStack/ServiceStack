@@ -1,5 +1,4 @@
-﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+﻿#nullable enable
 
 using System;
 
@@ -14,12 +13,12 @@ public class ApiMemberAttribute : AttributeBase
     /// <summary>
     /// Gets or sets verb to which applies attribute. By default applies to all verbs.
     /// </summary>
-    public string Verb { get; set; }
+    public string? Verb { get; set; }
 
     /// <summary>
     /// Gets or sets parameter type: It can be only one of the following: path, query, body, form, or header.
     /// </summary>
-    public string ParameterType { get; set; }
+    public string? ParameterType { get; set; }
 
     /// <summary>
     /// Gets or sets unique name for the parameter. Each name must be unique, even if they are associated with different paramType values. 
@@ -32,22 +31,22 @@ public class ApiMemberAttribute : AttributeBase
     /// If paramType is query, the name field corresponds to the query param name.
     /// </para>
     /// </remarks>
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Gets or sets the human-readable description for the parameter.
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// For path, query, and header paramTypes, this field must be a primitive. For body, this can be a complex or container datatype.
     /// </summary>
-    public string DataType { get; set; }
+    public string? DataType { get; set; }
 
     /// <summary>
     /// Fine-tuned primitive type definition.  
     /// </summary>
-    public string Format { get; set; }
+    public string? Format { get; set; }
 
     /// <summary>
     /// For path, this is always true. Otherwise, this field tells the client whether or not the field must be supplied.
@@ -67,7 +66,7 @@ public class ApiMemberAttribute : AttributeBase
     /// <summary>
     /// Gets or sets route to which applies attribute, matches using StartsWith. By default applies to all routes. 
     /// </summary>
-    public string Route { get; set; }
+    public string? Route { get; set; }
 
     /// <summary>
     /// Whether to exclude this property from being included in the ModelSchema

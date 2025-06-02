@@ -1,4 +1,6 @@
-﻿namespace ServiceStack;
+﻿#nullable enable
+
+namespace ServiceStack;
 
 public interface IHtmlString
 {

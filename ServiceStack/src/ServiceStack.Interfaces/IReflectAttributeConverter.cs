@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -17,6 +19,6 @@ public interface IReflectAttributeFilter
 public class ReflectAttribute
 {
     public string Name { get; set; }
-    public List<KeyValuePair<PropertyInfo, object>> ConstructorArgs { get; set; }
-    public List<KeyValuePair<PropertyInfo, object>> PropertyArgs { get; set; }
+    public List<KeyValuePair<PropertyInfo, object>>? ConstructorArgs { get; set; }
+    public List<KeyValuePair<PropertyInfo, object>>? PropertyArgs { get; set; }
 }

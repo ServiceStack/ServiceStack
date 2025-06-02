@@ -1,13 +1,15 @@
-﻿using System.IO;
+﻿#nullable enable
+
+using System.IO;
 
 namespace ServiceStack;
 
 public class UploadFile
 {
-    public string FileName { get; set; }
+    public string? FileName { get; set; }
     public Stream Stream { get; set; }
-    public string FieldName { get; set; }
-    public string ContentType { get; set; }
+    public string? FieldName { get; set; }
+    public string? ContentType { get; set; }
 
     public UploadFile(Stream stream)
         : this(null, stream, null, null) {}
@@ -18,7 +20,7 @@ public class UploadFile
     public UploadFile(string fileName, Stream stream, string fieldName)
         : this(fileName, stream, fieldName, null) {}
 
-    public UploadFile(string fileName, Stream stream, string fieldName, string contentType)
+    public UploadFile(string? fileName, Stream stream, string? fieldName, string? contentType)
     {
         FileName = fileName;
         Stream = stream;

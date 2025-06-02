@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 
 namespace ServiceStack;
@@ -11,9 +13,9 @@ namespace ServiceStack;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
 public class MultiPartFieldAttribute : AttributeBase
 {
-    public string ContentType { get; set; }
+    public string? ContentType { get; set; }
     public MultiPartFieldAttribute(string contentType) => ContentType = contentType;
 
-    public Type StringSerializer { get; set; }
+    public Type? StringSerializer { get; set; }
     public MultiPartFieldAttribute(Type stringSerializer) => StringSerializer = stringSerializer;
 }

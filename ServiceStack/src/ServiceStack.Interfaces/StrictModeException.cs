@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 
 namespace ServiceStack;
 
@@ -8,23 +10,23 @@ namespace ServiceStack;
 /// </summary>
 public class StrictModeException : ArgumentException
 {
-    public string Code { get; set; }
+    public string? Code { get; set; }
 
     public StrictModeException() {}
 
-    public StrictModeException(string message, string code = null) 
+    public StrictModeException(string message, string? code = null) 
         : base(message)
     {
         Code = code;
     }
 
-    public StrictModeException(string message, Exception innerException, string code = null) 
+    public StrictModeException(string message, Exception innerException, string? code = null) 
         : base(message, innerException)
     {
         Code = code;
     }
 
-    public StrictModeException(string message, string paramName, string code = null)
+    public StrictModeException(string message, string paramName, string? code = null)
         : base(message, paramName)
     {
         Code = code;

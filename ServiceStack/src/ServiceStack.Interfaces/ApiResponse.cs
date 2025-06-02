@@ -1,5 +1,4 @@
-﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+﻿#nullable enable
 
 using System;
 using System.Net;
@@ -43,7 +42,7 @@ public class ApiResponseAttribute : AttributeBase, IApiResponseDescription
     /// <summary>
     /// Open API schema definition type for response
     /// </summary>
-    public Type ResponseType { get; set; }
+    public Type? ResponseType { get; set; }
 
     public ApiResponseAttribute() { }
 

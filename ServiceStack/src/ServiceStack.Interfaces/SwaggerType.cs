@@ -1,4 +1,5 @@
-﻿namespace ServiceStack;
+﻿#nullable enable
+namespace ServiceStack;
 
 public static class SwaggerType
 {

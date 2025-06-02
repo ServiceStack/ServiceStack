@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 
 namespace ServiceStack;
@@ -13,8 +15,8 @@ public class FormatAttribute : AttributeBase
     /// Name of available JS function, see <see cref="FormatMethods"/> for built-in functions
     /// </summary>
     public string Method { get; set; }
-    public string Options { get; set; }
-    public string Locale { get; set; }
+    public string? Options { get; set; }
+    public string? Locale { get; set; }
     public FormatAttribute(){}
     public FormatAttribute(string method) => Method = method;
 }

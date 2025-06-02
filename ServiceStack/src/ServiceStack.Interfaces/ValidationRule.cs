@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,17 +10,17 @@ namespace ServiceStack;
 public interface IValidateRule
 {
     string Validator { get; set; }
-    string Condition { get; set; }
-    string ErrorCode { get; set; }
-    string Message { get; set; }
+    string? Condition { get; set; }
+    string? ErrorCode { get; set; }
+    string? Message { get; set; }
 }
 
 public class ValidateRule : IValidateRule 
 {
     public string Validator { get; set; }
-    public string Condition { get; set; }
-    public string ErrorCode { get; set; }
-    public string Message { get; set; }
+    public string? Condition { get; set; }
+    public string? ErrorCode { get; set; }
+    public string? Message { get; set; }
 }
 
 public interface IValidationSource
@@ -55,19 +57,19 @@ public class ValidationRule : ValidateRule
     /// <summary>
     /// The property field for Property Validators, null for Type Validators 
     /// </summary>
-    public string Field { get; set; }
+    public string? Field { get; set; }
         
-    public string CreatedBy { get; set; }
+    public string? CreatedBy { get; set; }
     public DateTime? CreatedDate { get; set; }
         
-    public string ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
     public DateTime? ModifiedDate { get; set; }
         
-    public string SuspendedBy { get; set; }
+    public string? SuspendedBy { get; set; }
     [Index]
     public DateTime? SuspendedDate { get; set; }
 
-    public string Notes { get; set; }
+    public string? Notes { get; set; }
 
     protected bool Equals(ValidationRule other)
     {

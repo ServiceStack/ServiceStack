@@ -1,5 +1,4 @@
-﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+﻿#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -38,7 +37,7 @@ public class RouteAttribute : AttributeBase, IReflectAttributeConverter
     /// </param>
     /// <param name="verbs">A comma-delimited list of HTTP verbs supported by the 
     ///		service.  If unspecified, all verbs are assumed to be supported.</param>
-    public RouteAttribute(string path, string verbs)
+    public RouteAttribute(string path, string? verbs)
     {
         Path = path;
         Verbs = verbs;
@@ -96,12 +95,12 @@ public class RouteAttribute : AttributeBase, IReflectAttributeConverter
     /// <summary>
     ///    Gets or sets short summary of what the route does.
     /// </summary>
-    public string Summary { get; set; }
+    public string? Summary { get; set; }
 
     /// <summary>
     ///    Gets or sets longer text to explain the behaviour of the route. 
     /// </summary>
-    public string Notes { get; set; }
+    public string? Notes { get; set; }
 
     /// <summary>
     ///		Gets or sets a comma-delimited list of HTTP verbs supported by the service, such as
@@ -111,7 +110,7 @@ public class RouteAttribute : AttributeBase, IReflectAttributeConverter
     ///		A <see cref="String"/> providing a comma-delimited list of HTTP verbs supported
     ///		by the service, <see langword="null"/> or empty if all verbs are supported.
     /// </value>
-    public string Verbs { get; set; }
+    public string? Verbs { get; set; }
 
     /// <summary>
     /// Used to rank the precedences of route definitions in reverse routing. 
@@ -123,7 +122,7 @@ public class RouteAttribute : AttributeBase, IReflectAttributeConverter
     /// Must match rule defined in Config.RequestRules or Regex expression with format: 
     /// "{IHttpRequest.Field} =~ {pattern}", e.g "PathInfo =~ \/[0-9]+$"
     /// </summary>
-    public string Matches { get; set; }
+    public string? Matches { get; set; }
 
     protected bool Equals(RouteAttribute other)
     {
@@ -162,7 +161,7 @@ public class RouteAttribute : AttributeBase, IReflectAttributeConverter
         if (Summary == null && Notes == null && Matches == null && Priority == default)
         {
             //Return ideal Constructor Args 
-            if (Path != null && Verbs != null)
+            if (Verbs != null)
             {
                 return new ReflectAttribute {
                     ConstructorArgs = [

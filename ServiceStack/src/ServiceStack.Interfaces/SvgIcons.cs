@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace ServiceStack;
 
 public static class SvgIcons

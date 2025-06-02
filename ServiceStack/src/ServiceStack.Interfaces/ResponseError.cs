@@ -1,5 +1,4 @@
-//Copyright (c) ServiceStack, Inc. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+#nullable enable
 
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -23,5 +22,5 @@ public class ResponseError : IMeta
     public string Message { get; set; }
 
     [DataMember(Order = 4)]
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 }

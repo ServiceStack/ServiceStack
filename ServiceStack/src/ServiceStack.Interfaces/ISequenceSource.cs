@@ -1,4 +1,6 @@
-﻿namespace ServiceStack;
+﻿#nullable enable
+
+namespace ServiceStack;
 
 /// <summary>
 /// Provide unique, incrementing sequences. Used in PocoDynamo.

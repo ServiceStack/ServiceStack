@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 
 namespace ServiceStack;
@@ -23,7 +25,7 @@ public class EmitCodeAttribute : AttributeBase
 {
     public Lang Lang { get; set; }
     public string[] Statements { get; set; }
-    public EmitCodeAttribute(Lang lang, string statement) : this(lang, new[] {statement}) {}
+    public EmitCodeAttribute(Lang lang, string statement) : this(lang, [statement]) {}
     public EmitCodeAttribute(Lang lang, string[] statements)
     {
         Lang = lang;
@@ -32,52 +34,22 @@ public class EmitCodeAttribute : AttributeBase
 }
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitCSharp : EmitCodeAttribute
-{
-    public EmitCSharp(params string[] statements) : base(Lang.CSharp, statements) { }
-}
+public class EmitCSharp(params string[] statements) : EmitCodeAttribute(Lang.CSharp, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitFSharp : EmitCodeAttribute
-{
-    public EmitFSharp(params string[] statements) : base(Lang.FSharp, statements) { }
-}
+public class EmitFSharp(params string[] statements) : EmitCodeAttribute(Lang.FSharp, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitVb : EmitCodeAttribute
-{
-    public EmitVb(params string[] statements) : base(Lang.Vb, statements) { }
-}
+public class EmitVb(params string[] statements) : EmitCodeAttribute(Lang.Vb, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitTypeScript : EmitCodeAttribute
-{
-    public EmitTypeScript(params string[] statements) : base(Lang.TypeScript, statements) { }
-}
+public class EmitTypeScript(params string[] statements) : EmitCodeAttribute(Lang.TypeScript, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitDart : EmitCodeAttribute
-{
-    public EmitDart(params string[] statements) : base(Lang.Dart, statements) { }
-}
+public class EmitDart(params string[] statements) : EmitCodeAttribute(Lang.Dart, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitSwift : EmitCodeAttribute
-{
-    public EmitSwift(params string[] statements) : base(Lang.Swift, statements) { }
-}
+public class EmitSwift(params string[] statements) : EmitCodeAttribute(Lang.Swift, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitJava : EmitCodeAttribute
-{
-    public EmitJava(params string[] statements) : base(Lang.Java, statements) { }
-}
+public class EmitJava(params string[] statements) : EmitCodeAttribute(Lang.Java, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitKotlin : EmitCodeAttribute
-{
-    public EmitKotlin(params string[] statements) : base(Lang.Kotlin, statements) { }
-}
+public class EmitKotlin(params string[] statements) : EmitCodeAttribute(Lang.Kotlin, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitPython : EmitCodeAttribute
-{
-    public EmitPython(params string[] statements) : base(Lang.Python, statements) { }
-}
+public class EmitPython(params string[] statements) : EmitCodeAttribute(Lang.Python, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitPhp : EmitCodeAttribute
-{
-    public EmitPhp(params string[] statements) : base(Lang.Php, statements) { }
-}
+public class EmitPhp(params string[] statements) : EmitCodeAttribute(Lang.Php, statements);

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -20,22 +22,22 @@ public interface IQuery : IMeta
     /// <summary>
     /// List of fields to sort by, can order by multiple fields and inverse order, e.g: Id,-Amount
     /// </summary>
-    string OrderBy { get; set; }
+    string? OrderBy { get; set; }
 
     /// <summary>
     /// List of fields to sort by descending, can order by multiple fields and inverse order, e.g: -Id,Amount
     /// </summary>
-    string OrderByDesc { get; set; }
+    string? OrderByDesc { get; set; }
 
     /// <summary>
     /// Include aggregate data like Total, COUNT(*), COUNT(DISTINCT Field), Sum(Amount), etc
     /// </summary>
-    string Include { get; set; }
+    string? Include { get; set; }
 
     /// <summary>
     /// The fields to return
     /// </summary>
-    string Fields { get; set; }
+    string? Fields { get; set; }
 }
 
 public interface IQueryDb : IQuery { }
@@ -158,22 +160,22 @@ public class QueryDbFieldAttribute : AttributeBase
     /// <summary>
     /// For Simple Filters to change Operand used in default Template, e.g. For Greater Than: Operand=">"
     /// </summary>
-    public string Operand { get; set; }
+    public string? Operand { get; set; }
         
     /// <summary>
     /// Use a Custom SQL Filter, Use <see cref="SqlTemplate"/> for common templates, e.g: Template=SqlTemplate.IsNotNull
     /// </summary>
-    public string Template { get; set; }
+    public string? Template { get; set; }
         
     /// <summary>
     /// The name of the DB Field to query
     /// </summary>
-    public string Field { get; set; }
+    public string? Field { get; set; }
         
     /// <summary>
     /// Value modifier, e.g. implement StartsWith with 'Name LIKE {Value}', ValueFormat="{0}%"
     /// </summary>
-    public string ValueFormat { get; set; }
+    public string? ValueFormat { get; set; }
         
     /// <summary>
     /// Type of Value used in the SQL Template
@@ -202,17 +204,17 @@ public class AutoFilterAttribute : ScriptValueAttribute
     /// <summary>
     /// For Simple Filters to change Operand used in default Template, e.g. For Greater Than: Operand=">"
     /// </summary>
-    public string Operand { get; set; }
+    public string? Operand { get; set; }
         
     /// <summary>
     /// Use a Custom SQL Filter, Use <see cref="SqlTemplate"/> for common templates, e.g: Template=SqlTemplate.IsNotNull
     /// </summary>
-    public string Template { get; set; }
+    public string? Template { get; set; }
         
     /// <summary>
     /// Value modifier, e.g. implement StartsWith with 'Name LIKE {Value}', ValueFormat="{0}%"
     /// </summary>
-    public string ValueFormat { get; set; }
+    public string? ValueFormat { get; set; }
 
     public AutoFilterAttribute() {}
     public AutoFilterAttribute(string field) => Field = field ?? throw new ArgumentNullException(nameof(field));

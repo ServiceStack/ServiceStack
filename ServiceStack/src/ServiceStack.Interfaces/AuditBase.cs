@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
@@ -27,5 +29,5 @@ public abstract class AuditBase
     public DateTime? DeletedDate { get; set; }
 
     [DataMember(Order = 6)]
-    public string DeletedBy { get; set; }
+    public string? DeletedBy { get; set; }
 }

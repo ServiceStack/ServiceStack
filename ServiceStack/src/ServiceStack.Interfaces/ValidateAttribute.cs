@@ -36,7 +36,7 @@ public class ValidateRequestAttribute : AttributeBase, IValidateRule, IReflectAt
     [Ignore]
     public string[] Conditions
     {
-        get => new []{ Condition };
+        get => [Condition];
         set => Condition = ValidateAttribute.Combine("&&", value);
     }
 

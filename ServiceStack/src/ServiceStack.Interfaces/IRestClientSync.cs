@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace ServiceStack;
 
 public interface IRestClientSync : IServiceClientCommon

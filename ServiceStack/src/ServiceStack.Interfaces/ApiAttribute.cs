@@ -1,5 +1,4 @@
-﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+﻿#nullable enable
 
 using System;
 
@@ -43,7 +42,7 @@ public class ApiAttribute : AttributeBase
     /// Preferred Content-Type, e.g: application/json, multipart/form-data, application/x-www-form-urlencoded
     /// or [MimeTypes.Json, MimeTypes.MultiPartFormData, MimeTypes.FormUrlEncoded]
     /// </summary>
-    public string RequestContentType { get; set; }
+    public string? RequestContentType { get; set; }
 
     /// <summary>
     /// Tells if body param is required

@@ -1,5 +1,4 @@
-﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+﻿#nullable enable
 
 using System.Runtime.Serialization;
 
@@ -13,5 +12,5 @@ namespace ServiceStack;
 public class ErrorResponse : IHasResponseStatus
 {
     [DataMember(Order = 1)]
-    public ResponseStatus ResponseStatus { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
 }

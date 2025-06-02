@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -10,7 +12,7 @@ namespace ServiceStack;
 public class EmptyResponse : IHasResponseStatus
 {
     [DataMember(Order = 1)]
-    public ResponseStatus ResponseStatus { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
 }
     
 [DataContract]
@@ -20,7 +22,7 @@ public class IdResponse : IHasResponseStatus
     public string Id { get; set; }
 
     [DataMember(Order = 2)]
-    public ResponseStatus ResponseStatus { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
 }
     
 [DataContract]
@@ -30,10 +32,10 @@ public class StringsResponse : IHasResponseStatus, IMeta
     public List<string> Results { get; set; } = [];
 
     [DataMember(Order = 2)]
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 
     [DataMember(Order = 3)]
-    public ResponseStatus ResponseStatus { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
 }
      
 [DataContract]
@@ -43,10 +45,10 @@ public class StringResponse : IHasResponseStatus, IMeta
     public string Result { get; set; }
 
     [DataMember(Order = 2)]
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 
     [DataMember(Order = 3)]
-    public ResponseStatus ResponseStatus { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
 }
     
 [DataContract]
@@ -56,10 +58,10 @@ public class IntResponse : IHasResponseStatus, IMeta
     public int Result { get; set; }
 
     [DataMember(Order = 2)]
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 
     [DataMember(Order = 3)]
-    public ResponseStatus ResponseStatus { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
 }
      
 [DataContract]
@@ -69,8 +71,8 @@ public class BoolResponse : IHasResponseStatus, IMeta
     public bool Result { get; set; }
 
     [DataMember(Order = 2)]
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 
     [DataMember(Order = 3)]
-    public ResponseStatus ResponseStatus { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
 }

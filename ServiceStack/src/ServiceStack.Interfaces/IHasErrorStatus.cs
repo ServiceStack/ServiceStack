@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace ServiceStack;
 
 /// <summary>
@@ -5,5 +7,5 @@ namespace ServiceStack;
 /// </summary>
 public interface IHasErrorStatus
 {
-    ResponseStatus Error { get; }
+    ResponseStatus? Error { get; }
 }

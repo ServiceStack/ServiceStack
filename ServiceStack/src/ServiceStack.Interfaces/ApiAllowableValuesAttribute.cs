@@ -1,5 +1,4 @@
-﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+﻿#nullable enable
 
 using System;
 
@@ -12,7 +11,7 @@ namespace ServiceStack;
 public class ApiAllowableValuesAttribute : AttributeBase
 {
     public ApiAllowableValuesAttribute() {}
-    public ApiAllowableValuesAttribute(string name) => Name = name;
+    public ApiAllowableValuesAttribute(string? name) => Name = name;
 
     public ApiAllowableValuesAttribute(string name, int min, int max) : this(name)
     {
@@ -30,7 +29,7 @@ public class ApiAllowableValuesAttribute : AttributeBase
     }
     public ApiAllowableValuesAttribute(string[] values) : this(null, values) {}
 
-    public ApiAllowableValuesAttribute(string name, Type enumType)
+    public ApiAllowableValuesAttribute(string? name, Type enumType)
         : this(name)
     {
         if (enumType.IsEnum)
@@ -41,7 +40,7 @@ public class ApiAllowableValuesAttribute : AttributeBase
     }
     public ApiAllowableValuesAttribute(Type enumType) : this(null, enumType) {}
 
-    public ApiAllowableValuesAttribute(string name, Func<string[]> listAction)
+    public ApiAllowableValuesAttribute(string name, Func<string[]>? listAction)
         : this(name)
     {
         if (listAction != null)
@@ -55,15 +54,15 @@ public class ApiAllowableValuesAttribute : AttributeBase
     /// <summary>
     /// Gets or sets parameter name with which allowable values will be associated.
     /// </summary>
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     public int? Min { get; set; }
 
     public int? Max { get; set; }
 
-    public string[] Values { get; set; }
+    public string[]? Values { get; set; }
 
     //TODO: should be implemented according to:
     //https://github.com/wordnik/swagger-core/wiki/datatypes

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 
 namespace ServiceStack;
 
@@ -6,29 +8,17 @@ namespace ServiceStack;
 /// Specify a VirtualPath or Layout for a Code Page
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true)]
-public class PageAttribute : AttributeBase
+public class PageAttribute(string virtualPath, string? layout = null) : AttributeBase
 {
-    public string VirtualPath { get; set; }
-    public string Layout { get; set; }
-        
-    public PageAttribute(string virtualPath, string layout=null)
-    {
-        VirtualPath = virtualPath;
-        Layout = layout;
-    }
+    public string VirtualPath { get; set; } = virtualPath;
+    public string? Layout { get; set; } = layout;
 }
     
 /// <summary>
 /// Specify static page arguments
 /// </summary>
-public class PageArgAttribute : AttributeBase
+public class PageArgAttribute(string name, string? value) : AttributeBase
 {
-    public string Name { get; set; }
-    public string Value { get; set; }
-
-    public PageArgAttribute(string name, string value)
-    {
-        Name = name;
-        Value = value;
-    }
+    public string Name { get; set; } = name;
+    public string? Value { get; set; } = value;
 }

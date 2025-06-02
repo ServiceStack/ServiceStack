@@ -1,5 +1,4 @@
-﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
-//License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
+﻿#nullable enable
 
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -51,24 +50,24 @@ public class ResponseStatus : IMeta
     /// A human friendly error message
     /// </summary>
     [DataMember(Order = 2)]
-    public string Message { get; set; }
+    public string? Message { get; set; }
 
     /// <summary>
     /// The Server StackTrace when DebugMode is enabled
     /// </summary>
     [DataMember(Order = 3)]
-    public string StackTrace { get; set; }
+    public string? StackTrace { get; set; }
 
     /// <summary>
     /// For multiple detailed validation errors.
     /// Can hold a specific error message for each named field.
     /// </summary>
     [DataMember(Order = 4)]
-    public List<ResponseError> Errors { get; set; }
+    public List<ResponseError>? Errors { get; set; }
 
     /// <summary>
     /// For additional custom metadata about the error
     /// </summary>
     [DataMember(Order = 5)]
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 }

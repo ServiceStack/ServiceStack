@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Reflection;
 
@@ -55,8 +57,8 @@ public class Intl : MetadataAttributeBase
     public Intl(IntlFormat type) => Type = type;
 
     public IntlFormat Type { get; set; }
-    public string Locale { get; set; }
-    public string Options { get; set; }
+    public string? Locale { get; set; }
+    public string? Options { get; set; }
     
     public NumberStyle Number { get; set; }
     public DateStyle Date { get; set; }
@@ -66,7 +68,7 @@ public class Intl : MetadataAttributeBase
     /// <summary>
     /// Use <see cref="NumberCurrency"/> for typed values
     /// </summary>
-    public string Currency { get; set; }
+    public string? Currency { get; set; }
     public CurrencyDisplay CurrencyDisplay { get; set; }
     public CurrencySign CurrencySign { get; set; }
     public SignDisplay SignDisplay { get; set; }
@@ -74,7 +76,7 @@ public class Intl : MetadataAttributeBase
     /// <summary>
     /// Use <see cref="NumberUnit"/> for typed values
     /// </summary>
-    public string Unit { get; set; }
+    public string? Unit { get; set; }
     public UnitDisplay UnitDisplay { get; set; }
     public Notation Notation { get; set; }
     public int MinimumIntegerDigits { get; set; } = int.MinValue;
@@ -93,7 +95,7 @@ public class Intl : MetadataAttributeBase
     public DatePart Minute { get; set; }
     public DatePart Second { get; set; }
     public DateText TimeZoneName { get; set; }
-    public string TimeZone { get; set; }
+    public string? TimeZone { get; set; }
     public bool Hour12 { get; set; }
 }
 
@@ -169,11 +171,11 @@ public static class NumberCurrency
     public const string MYR = nameof(MYR);
     public const string RON = nameof(RON);
 
-    public static string[] All = new[]
-    {
+    public static string[] All =
+    [
         USD,EUR,JPY,GBP,CHF,CAD,AUD,ZAR,CNY,HKD,NZD,KRW,SGD,NOK,MXN,INR,RUB,
-        TRY,BRL,TWD,DKK,PLN,THB,IDR,HUF,CZK,ILS,CLP,PHP,AED,COP,SAR,MYR,RON,
-    };
+        TRY,BRL,TWD,DKK,PLN,THB,IDR,HUF,CZK,ILS,CLP,PHP,AED,COP,SAR,MYR,RON
+    ];
 }
 
 public static class NumberUnit

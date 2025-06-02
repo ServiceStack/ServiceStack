@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace ServiceStack;
@@ -26,40 +28,40 @@ public class NavItem : IMeta
     /// <summary>
     /// Emit id="{Id}"
     /// </summary>
-    public string Id { get; set; }
+    public string? Id { get; set; }
         
     /// <summary>
     /// Override class="{Class}"
     /// </summary>
-    public string ClassName { get; set; }
+    public string? ClassName { get; set; }
 
     /// <summary>
     /// Icon class (if any)
     /// </summary>
-    public string IconClass { get; set; }
+    public string? IconClass { get; set; }
 
     /// <summary>
     /// Icon src (if any)
     /// </summary>
-    public string IconSrc { get; set; }
+    public string? IconSrc { get; set; }
         
     /// <summary>
     /// Only show if NavOptions.Attributes.Contains(Show) 
     /// </summary>
-    public string Show { get; set; }
+    public string? Show { get; set; }
         
     /// <summary>
     /// Do not show if NavOptions.Attributes.Contains(Hide) 
     /// </summary>
-    public string Hide { get; set; }
+    public string? Hide { get; set; }
      
     /// <summary>
     /// Sub Menu Child NavItems
     /// </summary>
-    public List<NavItem> Children { get; set; }
+    public List<NavItem>? Children { get; set; }
  
     /// <summary>
     /// Attach additional custom metadata to this NavItem
     /// </summary>
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 }
