@@ -42,6 +42,18 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         };
     }
 
+    public bool EnableWal
+    {
+        get => ConnectionCommands.Contains(SqlitePragmas.JournalModeWal);
+        set
+        {
+            if (value)
+                ConnectionCommands.AddIfNotExists(SqlitePragmas.JournalModeWal);
+            else
+                ConnectionCommands.Remove(SqlitePragmas.JournalModeWal);
+        }
+    }
+
     public bool EnableForeignKeys
     {
         get => ConnectionCommands.Contains(SqlitePragmas.EnableForeignKeys);
@@ -341,6 +353,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
 
 public static class SqlitePragmas
 {
+    public const string JournalModeWal = "PRAGMA journal_mode=WAL;";
     public const string EnableForeignKeys = "PRAGMA foreign_keys=ON;";
     public const string DisableForeignKeys = "PRAGMA foreign_keys=OFF;";
 }
