@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Data;
 using ServiceStack.Data;
@@ -43,6 +45,14 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
 
     public int ExecuteNonQuery()
     {
+        var writeLock = dbConn.WriteLock;
+        if (writeLock != null)
+        {
+            lock (writeLock)
+            {
+                return dbCmd.ExecuteNonQuery();
+            }
+        }
         return dbCmd.ExecuteNonQuery();
     }
 
@@ -56,22 +66,22 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         return dbCmd.ExecuteReader(behavior);
     }
 
-    public object ExecuteScalar()
+    public object? ExecuteScalar()
     {
         return dbCmd.ExecuteScalar();
     }
 
-    public IDbConnection Connection
+    public IDbConnection? Connection
     {
         get => dbCmd.Connection;
         set => dbCmd.Connection = value;
     }
-    public IDbTransaction Transaction
+    public IDbTransaction? Transaction
     {
         get => dbCmd.Transaction;
         set => dbCmd.Transaction = value;
     }
-    public string CommandText
+    public string? CommandText
     {
         get => dbCmd.CommandText;
         set => dbCmd.CommandText = value;

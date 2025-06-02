@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Data;
 using System.Data.Common;
@@ -16,13 +17,13 @@ public class OrmLiteConnection
     : IDbConnection, IHasDbConnection, IHasDbTransaction, ISetDbTransaction, IHasDialectProvider
 {
     public readonly OrmLiteConnectionFactory Factory;
-    public IDbTransaction Transaction { get; set; }
-    public IDbTransaction DbTransaction => Transaction;
-    private IDbConnection dbConnection;
+    public IDbTransaction? Transaction { get; set; }
+    public IDbTransaction? DbTransaction => Transaction;
+    private IDbConnection? dbConnection;
 
     public IOrmLiteDialectProvider DialectProvider { get; set; }
-    public string LastCommandText { get; set; }
-    public IDbCommand LastCommand { get; set; }
+    public string? LastCommandText { get; set; }
+    public IDbCommand? LastCommand { get; set; }
 
     /// <summary>
     /// Gets or sets the wait time before terminating the attempt to execute a command and generating an error(in seconds).
@@ -30,6 +31,7 @@ public class OrmLiteConnection
     public int? CommandTimeout { get; set; }
 
     public Guid ConnectionId { get; set; }
+    public object? WriteLock { get; set; }
 
     public OrmLiteConnection(OrmLiteConnectionFactory factory)
     {
@@ -37,7 +39,7 @@ public class OrmLiteConnection
         this.DialectProvider = factory.DialectProvider;
     }
 
-    public OrmLiteConnection(OrmLiteConnectionFactory factory, IDbConnection connection, IDbTransaction transaction = null)
+    public OrmLiteConnection(OrmLiteConnectionFactory factory, IDbConnection connection, IDbTransaction? transaction = null)
         : this(factory)
     {
         this.dbConnection = connection;
@@ -90,7 +92,7 @@ public class OrmLiteConnection
 
         var id = Diagnostics.OrmLite.WriteConnectionCloseBefore(dbConnection);
         var connectionId = dbConnection.GetConnectionId();
-        Exception e = null;
+        Exception? e = null;
         try
         {
             dbConnection.Close();
@@ -133,7 +135,7 @@ public class OrmLiteConnection
         if (dbConn.State == ConnectionState.Closed)
         {
             var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(dbConn);
-            Exception e = null;
+            Exception? e = null;
             try
             {
                 dbConn.Open();
@@ -167,7 +169,7 @@ public class OrmLiteConnection
         if (dbConn.State == ConnectionState.Closed)
         {
             var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(dbConn);
-            Exception e = null;
+            Exception? e = null;
             try
             {
                 await DialectProvider.OpenAsync(dbConn, token).ConfigAwait();
@@ -192,9 +194,9 @@ public class OrmLiteConnection
         }
     }
 
-    private string connectionString;
+    private string? connectionString;
 
-    public string ConnectionString
+    public string? ConnectionString
     {
         get => connectionString ?? Factory.ConnectionString;
         set => connectionString = value;
@@ -224,6 +226,6 @@ public static class OrmLiteConnectionUtils
     public static bool InTransaction(this IDbConnection db) =>
         db is IHasDbTransaction { DbTransaction: { } };
 
-    public static IDbTransaction GetTransaction(this IDbConnection db) =>
+    public static IDbTransaction? GetTransaction(this IDbConnection db) =>
         db is IHasDbTransaction setDb ? setDb.DbTransaction : null;
 }

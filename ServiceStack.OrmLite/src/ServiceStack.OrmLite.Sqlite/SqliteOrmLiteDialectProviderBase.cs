@@ -54,6 +54,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         }
     }
 
+    public bool EnableWriterLock { get; set; } = true;
     public static string Password { get; set; }
     public static bool UTF8Encoded { get; set; }
     public static bool ParseViaFramework { get; set; }
@@ -208,7 +209,19 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
 
         return CreateConnection(StringBuilderCache.ReturnAndFree(connString));
     }
-    
+
+    public override OrmLiteConnection CreateOrmLiteConnection(OrmLiteConnectionFactory factory, string namedConnection = null)
+    {
+        var conn = base.CreateOrmLiteConnection(factory, namedConnection);
+        if (EnableWriterLock)
+        {
+            conn.WriteLock = namedConnection == null
+                ? Locks.AppDb
+                : Locks.GetDbLock(namedConnection);
+        }
+        return conn;
+    }
+
     public Action<StringBuilder> ConnectionStringFilter { get; set; }
 
     protected abstract IDbConnection CreateConnection(string connectionString);

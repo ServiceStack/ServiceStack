@@ -34,6 +34,14 @@ public interface IOrmLiteDialectProvider
     void RegisterConverter<T>(IOrmLiteConverter converter);
 
     /// <summary>
+    /// Used to create an OrmLiteConnection
+    /// </summary>
+    /// <param name="factory"></param>
+    /// <param name="namedConnection"></param>
+    /// <returns></returns>
+    OrmLiteConnection CreateOrmLiteConnection(OrmLiteConnectionFactory factory, string namedConnection = null);
+
+    /// <summary>
     /// Invoked when a DB Connection is opened
     /// </summary>
     void InitConnection(IDbConnection dbConn);

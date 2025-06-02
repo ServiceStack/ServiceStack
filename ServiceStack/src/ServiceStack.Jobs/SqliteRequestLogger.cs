@@ -226,10 +226,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             try
             {
                 var dbEntry = ToRequestLog(entry);
-                lock (Locks.GetDbLock(DbMonthFile(now)))
-                {
-                    db.Insert(dbEntry);
-                }
+                db.Insert(dbEntry);
             }
             catch (Exception e)
             {
@@ -297,10 +294,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public void InitMonthDbSchema(IDbConnection db, DateTime month)
     {
-        lock (Locks.GetDbLock(DbMonthFile(month)))
-        {
-            db.CreateTableIfNotExists<RequestLog>();
-        }
+        db.CreateTableIfNotExists<RequestLog>();
     }
 
     public void InitSchema()
@@ -419,10 +413,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     public void ClearAnalyticsCaches(DateTime month)
     {
         using var db = OpenMonthDb(month);
-        lock (Locks.GetDbLock(DbMonthFile(month)))
-        {
-            db.DropTable<AnalyticsReports>();
-        }
+        db.DropTable<AnalyticsReports>();
     }
     
     private static AnalyticsReports CreateAnalyticsReports()
@@ -487,11 +478,8 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         ret.Id = lastPk;
         ret.CleanResults(config);
 
-        lock (Locks.GetDbLock(DbMonthFile(month)))
-        {
-            db.DropAndCreateTable<AnalyticsReports>();
-            db.Insert(ret);
-        }
+        db.DropAndCreateTable<AnalyticsReports>();
+        db.Insert(ret);
         
         return ret;
     }
@@ -544,20 +532,17 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.Users?.Count > 0)
         {
-            lock (Locks.GetDbLock(DbMonthFile(month)))
-            {
-                db.CreateTableIfNotExists<ApiAnalytics>();
-                db.Delete<ApiAnalytics>(x => x.Request == op);
+            db.CreateTableIfNotExists<ApiAnalytics>();
+            db.Delete<ApiAnalytics>(x => x.Request == op);
                 
-                db.Insert(new ApiAnalytics
-                {
-                    Id =  lastPk,
-                    Request = op,
-                    Created = DateTime.UtcNow,
-                    Version =  Env.ServiceStackVersion,
-                    Report = ret,
-                });
-            }
+            db.Insert(new ApiAnalytics
+            {
+                Id =  lastPk,
+                Request = op,
+                Created = DateTime.UtcNow,
+                Version =  Env.ServiceStackVersion,
+                Report = ret,
+            });
         }
         
         return ret;
@@ -611,20 +596,17 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.Users?.Count > 0)
         {
-            lock (Locks.GetDbLock(DbMonthFile(month)))
-            {
-                db.CreateTableIfNotExists<UserAnalytics>();
-                db.Delete<UserAnalytics>(x => x.UserId == userId);
+            db.CreateTableIfNotExists<UserAnalytics>();
+            db.Delete<UserAnalytics>(x => x.UserId == userId);
                 
-                db.Insert(new UserAnalytics
-                {
-                    Id =  lastPk,
-                    UserId = userId,
-                    Created = DateTime.UtcNow,
-                    Version =  Env.ServiceStackVersion,
-                    Report = ret,
-                });
-            }
+            db.Insert(new UserAnalytics
+            {
+                Id =  lastPk,
+                UserId = userId,
+                Created = DateTime.UtcNow,
+                Version =  Env.ServiceStackVersion,
+                Report = ret,
+            });
         }
         
         return ret;
@@ -680,20 +662,17 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.ApiKeys?.Count > 0)
         {
-            lock (Locks.GetDbLock(DbMonthFile(month)))
-            {
-                db.CreateTableIfNotExists<ApiKeyAnalytics>();
-                db.Delete<ApiKeyAnalytics>(x => x.ApiKey == apiKey);
+            db.CreateTableIfNotExists<ApiKeyAnalytics>();
+            db.Delete<ApiKeyAnalytics>(x => x.ApiKey == apiKey);
                 
-                db.Insert(new ApiKeyAnalytics
-                {
-                    Id =  lastPk,
-                    ApiKey = apiKey,
-                    Created = DateTime.UtcNow,
-                    Version =  Env.ServiceStackVersion,
-                    Report = ret,
-                });
-            }
+            db.Insert(new ApiKeyAnalytics
+            {
+                Id =  lastPk,
+                ApiKey = apiKey,
+                Created = DateTime.UtcNow,
+                Version =  Env.ServiceStackVersion,
+                Report = ret,
+            });
         }
         
         return ret;
@@ -749,20 +728,17 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         if (ret.ApiKeys?.Count > 0)
         {
-            lock (Locks.GetDbLock(DbMonthFile(month)))
-            {
-                db.CreateTableIfNotExists<IpAnalytics>();
-                db.Delete<IpAnalytics>(x => x.Ip == ip);
+            db.CreateTableIfNotExists<IpAnalytics>();
+            db.Delete<IpAnalytics>(x => x.Ip == ip);
                 
-                db.Insert(new IpAnalytics
-                {
-                    Id =  lastPk,
-                    Ip = ip,
-                    Created = DateTime.UtcNow,
-                    Version =  Env.ServiceStackVersion,
-                    Report = ret,
-                });
-            }
+            db.Insert(new IpAnalytics
+            {
+                Id =  lastPk,
+                Ip = ip,
+                Created = DateTime.UtcNow,
+                Version =  Env.ServiceStackVersion,
+                Report = ret,
+            });
         }
 
         return ret;

@@ -15,7 +15,7 @@ namespace ServiceStack.Jobs;
 
 public partial class BackgroundJobs : IBackgroundJobs
 {
-    private static readonly object dbWrites = Locks.JobsDb;
+    private static readonly object dbTransactions = new();
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
     private IServiceProvider services;
@@ -112,7 +112,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             }
         }
 
-        lock (dbWrites)
+        lock (dbTransactions)
         {
             using var trans = db.OpenTransaction();
             job.Id = db.Insert(job, selectIdentity: true);
@@ -345,16 +345,13 @@ public partial class BackgroundJobs : IBackgroundJobs
 
             if (!job.Transient)
             {
-                lock (dbWrites)
+                using var db = feature.OpenDb();
+                db.UpdateOnly(() => new BackgroundJob
                 {
-                    using var db = feature.OpenDb();
-                    db.UpdateOnly(() => new BackgroundJob
-                    {
-                        StartedDate = job.StartedDate,
-                        State = job.State,
-                        LastActivityDate = job.LastActivityDate,
-                    }, where: x => x.Id == job.Id);
-                }
+                    StartedDate = job.StartedDate,
+                    State = job.State,
+                    LastActivityDate = job.LastActivityDate,
+                }, where: x => x.Id == job.Id);
             }
 
             // Execute Command
@@ -429,7 +426,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         var wasCancelled = false;
         using var db = OpenDb();
         var error = new TaskCanceledException("Job was cancelled").ToResponseStatus();
-        lock (dbWrites)
+        lock (dbTransactions)
         {
             var now = DateTime.UtcNow;
             var updatedQueuedJob = db.UpdateOnly(() => new BackgroundJob {
@@ -513,7 +510,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         requeueJob.DurationMs = 0;
         requeueJob.StartedDate = requeueJob.LastActivityDate = DateTime.UtcNow;
 
-        lock (dbWrites)
+        lock (dbTransactions)
         {
             var jobMetadata = typeof(BackgroundJob).GetModelMetadata();
             try
@@ -577,7 +574,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         
         if (!job.Transient)
         {
-            lock (dbWrites)
+            lock (dbTransactions)
             {
                 if (!shouldRetry)
                 {
@@ -714,20 +711,17 @@ public partial class BackgroundJobs : IBackgroundJobs
                     job.DurationMs = (int)(job.NotifiedDate.Value - job.StartedDate!.Value).TotalMilliseconds;
 
                 using var db = OpenDb();
-                lock (dbWrites)
-                {
-                    db.UpdateOnly(() => new BackgroundJob {
-                        NotifiedDate = job.NotifiedDate,
-                        Progress = job.Progress,
-                        State = job.State,
-                        LastActivityDate = job.LastActivityDate,
-                        DurationMs = job.DurationMs,
-                    }, where:x => x.Id == job.Id);
-                    db.UpdateOnly(() => new JobSummary {
-                        State = job.State,
-                        DurationMs = job.DurationMs,
-                    }, where:x => x.Id == job.Id);
-                }
+                db.UpdateOnly(() => new BackgroundJob {
+                    NotifiedDate = job.NotifiedDate,
+                    Progress = job.Progress,
+                    State = job.State,
+                    LastActivityDate = job.LastActivityDate,
+                    DurationMs = job.DurationMs,
+                }, where:x => x.Id == job.Id);
+                db.UpdateOnly(() => new JobSummary {
+                    State = job.State,
+                    DurationMs = job.DurationMs,
+                }, where:x => x.Id == job.Id);
             }
             catch (Exception ex)
             {
@@ -760,7 +754,7 @@ public partial class BackgroundJobs : IBackgroundJobs
 
         if (!job.Transient)
         {
-            lock (dbWrites)
+            lock (dbTransactions)
             {
                 using var trans = db.OpenTransaction();
                 db.UpdateOnly(() => new BackgroundJob {
@@ -807,37 +801,34 @@ public partial class BackgroundJobs : IBackgroundJobs
         var requestId = Guid.NewGuid().ToString("N");
         var completedJob = job.PopulateJob(new CompletedJob());
         using var db = feature.OpenDb();
-        lock (dbWrites)
+        using var dbMonth = feature.OpenMonthDb(job.CreatedDate);
+        try
         {
-            using var dbMonth = feature.OpenMonthDb(job.CreatedDate);
-            try
-            {
-                dbMonth.Insert(completedJob);
-            }
-            catch (Exception e)
-            {
-                var existingJob = dbMonth.SingleById<CompletedJob>(completedJob.Id);
-                if (existingJob != null)
-                {
-                    log.LogWarning("Existing CompletedJob {Id} already exists, updating instead", completedJob.Id);
-                    dbMonth.Update(completedJob);
-                }
-                else
-                {
-                    log.LogError(e, "Failed to Insert CompletedJob {Id}: {Message}", completedJob.Id, e.Message);
-                }
-            }
-            db.DeleteById<BackgroundJob>(job.Id);
-            
-            // Execute any jobs depending on this job
-            db.UpdateOnly(() => new BackgroundJob {
-                RequestId = requestId,
-                StartedDate = now,
-                LastActivityDate = now,
-                State = BackgroundJobState.Queued,
-                ParentId = job.Id,
-            }, where:x => x.CompletedDate == null && x.RequestId == null && x.DependsOn == job.Id);
+            dbMonth.Insert(completedJob);
         }
+        catch (Exception e)
+        {
+            var existingJob = dbMonth.SingleById<CompletedJob>(completedJob.Id);
+            if (existingJob != null)
+            {
+                log.LogWarning("Existing CompletedJob {Id} already exists, updating instead", completedJob.Id);
+                dbMonth.Update(completedJob);
+            }
+            else
+            {
+                log.LogError(e, "Failed to Insert CompletedJob {Id}: {Message}", completedJob.Id, e.Message);
+            }
+        }
+        db.DeleteById<BackgroundJob>(job.Id);
+        
+        // Execute any jobs depending on this job
+        db.UpdateOnly(() => new BackgroundJob {
+            RequestId = requestId,
+            StartedDate = now,
+            LastActivityDate = now,
+            State = BackgroundJobState.Queued,
+            ParentId = job.Id,
+        }, where:x => x.CompletedDate == null && x.RequestId == null && x.DependsOn == job.Id);
         
         var dispatchJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
         if (dispatchJobs.Count > 0)
@@ -1038,15 +1029,12 @@ public partial class BackgroundJobs : IBackgroundJobs
             }
         }
         
-        lock (dbWrites)
-        {
-            db.UpdateOnly(() => new BackgroundJob {
-                RequestId = requestId,
-                StartedDate = now,
-                LastActivityDate = now,
-                State = BackgroundJobState.Queued,
-            }, where:x => x.DependsOn == null && (x.RunAfter == null || now > x.RunAfter));
-        }
+        db.UpdateOnly(() => new BackgroundJob {
+            RequestId = requestId,
+            StartedDate = now,
+            LastActivityDate = now,
+            State = BackgroundJobState.Queued,
+        }, where:x => x.DependsOn == null && (x.RunAfter == null || now > x.RunAfter));
 
         var dispatchJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
         if (dispatchJobs.Count > 0)
@@ -1116,25 +1104,22 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (allIds.Count == 0 && expiredJobIds.Count == 0) 
             return;
         
-        lock (dbWrites)
+        // Requeue any expired jobs
+        if (expiredJobIds.Count > 0)
         {
-            // Requeue any expired jobs
-            if (expiredJobIds.Count > 0)
-            {
-                requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
-                    RequestId = requestId,
-                    LastActivityDate = now,
-                }, where:x => expiredJobIds.Contains(x.Id));
-            }
+            requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
+                RequestId = requestId,
+                LastActivityDate = now,
+            }, where:x => expiredJobIds.Contains(x.Id));
+        }
 
-            // Queue any eligible scheduled or dependent jobs
-            if (allIds.Count > 0)
-            {
-                requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
-                    RequestId = requestId,
-                    LastActivityDate = now,
-                }, where:x => allIds.Contains(x.Id) && x.RequestId == null);
-            }
+        // Queue any eligible scheduled or dependent jobs
+        if (allIds.Count > 0)
+        {
+            requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
+                RequestId = requestId,
+                LastActivityDate = now,
+            }, where:x => allIds.Contains(x.Id) && x.RequestId == null);
         }
         
         if (requeudJobsCount > 0)
@@ -1166,11 +1151,8 @@ public partial class BackgroundJobs : IBackgroundJobs
         foreach (var cancelledJob in cancelledJobs)
         {
             using var dbMonth = feature.OpenMonthDb(cancelledJob.CreatedDate);
-            lock (dbWrites)
-            {
-                InsertFailedJob(dbMonth, cancelledJob);
-                db.DeleteById<BackgroundJob>(cancelledJob.Id);
-            }
+            InsertFailedJob(dbMonth, cancelledJob);
+            db.DeleteById<BackgroundJob>(cancelledJob.Id);
         }
     }
 
@@ -1219,10 +1201,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                 {
                     dbParams["id"] = job.Id;
                     var sql = $"UPDATE {Table} SET {string.Join(", ", fieldUpdates)} WHERE {columns.Id} = @id";
-                    lock (dbWrites)
-                    {
-                        db.ExecuteSql(sql, dbParams);
-                    }
+                    db.ExecuteSql(sql, dbParams);
                 }
             }
             catch (Exception e)

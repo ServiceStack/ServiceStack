@@ -199,6 +199,19 @@ public class CrudContext
     {
         if (DbLock != null)
         {
+            if (Db is OrmLiteConnection dbConn)
+            {
+                var hold = dbConn.WriteLock;
+                dbConn.WriteLock = DbLock;
+                try
+                {
+                    return fn(Db);
+                }
+                finally
+                {
+                    dbConn.WriteLock = hold;
+                }
+            }
             lock (DbLock)
             {
                 return fn(Db);
@@ -454,6 +467,19 @@ public partial class AutoQuery : IAutoCrudDb
         // Primary DB Connection uses Locks.AppDb whilst Named Connections uses Locks.NamedConnections
         if (useLock != null)
         {
+            if (db is OrmLiteConnection dbConn)
+            {
+                var hold = dbConn.WriteLock;
+                dbConn.WriteLock = useLock;
+                try
+                {
+                    return fn(db);
+                }
+                finally
+                {
+                    dbConn.WriteLock = hold;
+                }
+            }
             lock (useLock)
             {
                 return fn(db);

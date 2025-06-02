@@ -63,7 +63,9 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
     public Action<OrmLiteConnection> OnDispose { get; set; }
 
     private OrmLiteConnection ormLiteConnection;
-    private OrmLiteConnection OrmLiteConnection => ormLiteConnection ??= new OrmLiteConnection(this);
+    private OrmLiteConnection OrmLiteConnection => ormLiteConnection ??= DialectProvider != null 
+        ? DialectProvider.CreateOrmLiteConnection(this) 
+        : new OrmLiteConnection(this);
 
     public virtual IDbConnection CreateDbConnection()
     {
@@ -71,7 +73,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
             throw new ArgumentNullException("ConnectionString", "ConnectionString must be set");
 
         var connection = AutoDisposeConnection
-            ? new OrmLiteConnection(this)
+            ? DialectProvider.CreateOrmLiteConnection(this)
             : OrmLiteConnection;
 
         return connection;
@@ -91,7 +93,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
             throw new KeyNotFoundException("No factory registered is named " + namedConnection);
 
         IDbConnection connection = factory.AutoDisposeConnection
-            ? new OrmLiteConnection(factory)
+            ? factory.DialectProvider.CreateOrmLiteConnection(factory, namedConnection)
             : factory.OrmLiteConnection;
         return connection;
     }
@@ -135,13 +137,10 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
         if (connectionString == null)
             throw new ArgumentNullException(nameof(connectionString));
 
-        var connection = new OrmLiteConnection(this)
-        {
-            ConnectionString = connectionString
-        };
+        var connection = DialectProvider.CreateOrmLiteConnection(this);
+        connection.ConnectionString = connectionString;
 
         connection.Open();
-
         return connection;
     }
 
@@ -150,10 +149,8 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
         if (connectionString == null)
             throw new ArgumentNullException(nameof(connectionString));
 
-        var connection = new OrmLiteConnection(this)
-        {
-            ConnectionString = connectionString
-        };
+        var connection = DialectProvider.CreateOrmLiteConnection(this);
+        connection.ConnectionString = connectionString;
 
         await connection.OpenAsync(token).ConfigAwait();
 

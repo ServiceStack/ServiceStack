@@ -580,6 +580,11 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     {
         return $"-- {text}";
     }
+    
+    public virtual OrmLiteConnection CreateOrmLiteConnection(OrmLiteConnectionFactory factory, string namedConnection = null)
+    {
+        return new OrmLiteConnection(factory);
+    }
 
     public virtual void InitConnection(IDbConnection dbConn)
     {

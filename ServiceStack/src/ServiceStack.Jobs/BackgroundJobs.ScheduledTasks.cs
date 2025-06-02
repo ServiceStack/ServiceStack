@@ -29,7 +29,7 @@ public partial class BackgroundJobs
     private void CreateOrUpdate(ScheduledTask task)
     {
         using var db = feature.OpenDb();
-        lock (dbWrites)
+        lock (dbTransactions)
         {
             var updated = db.UpdateOnly(() => new ScheduledTask
             {
@@ -91,7 +91,7 @@ public partial class BackgroundJobs
     {
         namedScheduledTasks.Remove(taskName, out _);
         using var db = OpenDb();
-        lock (dbWrites)
+        lock (dbTransactions)
         {
             db.Delete<ScheduledTask>(x => x.Name == taskName);
         }
@@ -147,7 +147,7 @@ public partial class BackgroundJobs
 
         task.LastRun = DateTime.UtcNow;
         using var db = feature.OpenDb();
-        lock (dbWrites)
+        lock (dbTransactions)
         {
             db.UpdateOnly(() => new ScheduledTask
             {

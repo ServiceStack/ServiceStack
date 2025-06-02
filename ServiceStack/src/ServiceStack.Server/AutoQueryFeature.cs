@@ -181,8 +181,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         StartsWithConventions = StartsWithConventions,
         EndsWithConventions = EndsWithConventions,
         UseNamedConnection = UseNamedConnection,
-        UseDatabaseWriteLocks = UseDatabaseWriteLocks 
-            ?? !(dbFactory?.GetDialectProvider().SupportsConcurrentWrites ?? true),
+        UseDatabaseWriteLocks = UseDatabaseWriteLocks.GetValueOrDefault(),
     };
 
     public void Configure(IServiceCollection services)
