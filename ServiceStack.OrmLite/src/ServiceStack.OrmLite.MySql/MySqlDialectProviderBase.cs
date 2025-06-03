@@ -56,9 +56,8 @@ namespace ServiceStack.OrmLite.MySql
 
         public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
-        public static HashSet<string> ReservedWords = new HashSet<string>(new[]
-        {
-		  "ACCESSIBLE",
+        public static HashSet<string> ReservedWords = new([
+	      "ACCESSIBLE",
 		  "ADD",
 		  "ALL",
 		  "ALTER",
@@ -319,8 +318,8 @@ namespace ServiceStack.OrmLite.MySql
 		  "WRITE",
 		  "XOR",
 		  "YEAR_MONTH",
-		  "ZEROFILL",
-        }, StringComparer.OrdinalIgnoreCase);
+		  "ZEROFILL"
+        ], StringComparer.OrdinalIgnoreCase);
 
         public override void Init(string connectionString)
         {

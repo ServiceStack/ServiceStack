@@ -270,6 +270,4 @@ internal static class OrmLiteConfigExtensions
 
         return decimalAttribute != null ? new StringLengthAttribute(decimalAttribute.Precision) : null;
     }
-
-    
 }

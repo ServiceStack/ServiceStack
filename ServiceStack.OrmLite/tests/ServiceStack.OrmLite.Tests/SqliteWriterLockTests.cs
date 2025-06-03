@@ -7,7 +7,6 @@ using ServiceStack.OrmLite.Tests.Shared;
 namespace ServiceStack.OrmLite.Tests;
 
 [TestFixtureOrmLiteDialects(Dialect.Sqlite)]
-
 public class SqliteWriterLockTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
     public OrmLiteConnectionFactory CreateDbFactory()
