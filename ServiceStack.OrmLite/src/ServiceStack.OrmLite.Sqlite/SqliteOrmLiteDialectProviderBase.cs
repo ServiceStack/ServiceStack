@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -42,18 +44,24 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         };
     }
 
+    /// <summary>
+    /// Enable Write Ahead Logging (PRAGMA journal_mode=WAL)
+    /// </summary>
     public bool EnableWal
     {
-        get => ConnectionCommands.Contains(SqlitePragmas.JournalModeWal);
+        get => ConnectionCommands.Contains(SqlitePragmas.EnableForeignKeys);
         set
         {
             if (value)
-                ConnectionCommands.AddIfNotExists(SqlitePragmas.JournalModeWal);
+                ConnectionCommands.AddIfNotExists(SqlitePragmas.EnableForeignKeys);
             else
-                ConnectionCommands.Remove(SqlitePragmas.JournalModeWal);
+                ConnectionCommands.Remove(SqlitePragmas.DisableForeignKeys);
         }
     }
 
+    /// <summary>
+    /// Enable Foreign Keys (PRAGMA foreign_keys=ON)
+    /// </summary>
     public bool EnableForeignKeys
     {
         get => ConnectionCommands.Contains(SqlitePragmas.EnableForeignKeys);
@@ -66,6 +74,16 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         }
     }
 
+    /// <summary>
+    /// Whether to use UTC for DateTime fields
+    /// </summary>
+    public bool UseUtc
+    {
+        set => ((OrmLite.Converters.DateTimeConverter)this.GetConverter<DateTime>()).DateStyle = value 
+            ? DateTimeKind.Utc 
+            : DateTimeKind.Unspecified;
+    }
+
     public bool EnableWriterLock { get; set; } = true;
     public static string Password { get; set; }
     public static bool UTF8Encoded { get; set; }
@@ -76,7 +94,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override bool SupportsSchema => false;
     public override bool SupportsConcurrentWrites => false;
 
-    public override string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string> insertFields = null)
+    public override string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string>? insertFields = null)
     {
         var modelDef = ModelDefinition<T>.Definition;
         var sb = StringBuilderCache.Allocate()
@@ -234,30 +252,30 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         return conn;
     }
 
-    public Action<StringBuilder> ConnectionStringFilter { get; set; }
+    public Action<StringBuilder>? ConnectionStringFilter { get; set; }
 
     protected abstract IDbConnection CreateConnection(string connectionString);
 
     public override string GetQuotedName(string name, string schema) => GetQuotedName(name); //schema name is embedded in table name in MySql
 
-    public override string ToTableNamesStatement(string schema)
+    public override string ToTableNamesStatement(string? schema)
     {
         return schema == null 
             ? "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%'"
             : "SELECT name FROM sqlite_master WHERE type ='table' AND name LIKE {0}".SqlFmt(this, GetTableName("",schema) + "%");
     }
 
-    public override string GetSchemaName(string schema)
+    public override string GetSchemaName(string? schema)
     {
         return schema != null
             ? NamingStrategy.GetSchemaName(schema).Replace(".", "_")
             : NamingStrategy.GetSchemaName(schema);
     }
 
-    public override string GetTableName(string table, string schema = null) => 
+    public override string GetTableName(string table, string? schema = null) => 
         GetTableName(table, schema, useStrategy: true);
 
-    public override string GetTableName(string table, string schema, bool useStrategy)
+    public override string GetTableName(string table, string? schema, bool useStrategy)
     {
         if (useStrategy)
         {
@@ -271,7 +289,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
             : table;
     }
 
-    public override string GetQuotedTableName(string tableName, string schema = null) =>
+    public override string GetQuotedTableName(string tableName, string? schema = null) =>
         GetQuotedName(GetTableName(tableName, schema));
 
     public override SqlExpression<T> SqlExpression<T>() => new SqliteExpression<T>(this);
@@ -290,7 +308,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         throw new NotImplementedException("Schemas are not supported by sqlite");
     }
 
-    public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
+    public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string? schema = null)
     {
         var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0}"
             .SqlFmt(this, GetTableName(tableName, schema));
@@ -301,7 +319,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         return result > 0;
     }
 
-    public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string schema = null)
+    public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string? schema = null)
     {
         var sql = "PRAGMA table_info({0})"
             .SqlFmt(this, GetTableName(tableName, schema));
@@ -336,7 +354,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
 
     public override string SqlConcat(IEnumerable<object> args) => string.Join(" || ", args);
 
-    public override string SqlCurrency(string fieldOrValue, string currencySymbol) => SqlConcat(new []{ "'" + currencySymbol + "'", "printf(\"%.2f\", " + fieldOrValue + ")" });
+    public override string SqlCurrency(string fieldOrValue, string currencySymbol) => SqlConcat(["'" + currencySymbol + "'", "printf(\"%.2f\", " + fieldOrValue + ")"]);
 
     public override string SqlBool(bool value) => value ? "1" : "0";
 
@@ -361,7 +379,7 @@ public static class SqlitePragmas
 public static class SqliteExtensions
 {
     public static IOrmLiteDialectProvider Configure(this IOrmLiteDialectProvider provider,
-        string password = null, bool parseViaFramework = false, bool utf8Encoding = false)
+        string? password = null, bool parseViaFramework = false, bool utf8Encoding = false)
     {
         if (password != null)
             SqliteOrmLiteDialectProviderBase.Password = password;

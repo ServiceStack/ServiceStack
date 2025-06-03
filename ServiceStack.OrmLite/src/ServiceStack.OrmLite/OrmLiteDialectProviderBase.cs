@@ -122,6 +122,14 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         RegisterConverter<TimeOnly>(new TimeOnlyConverter());
 #endif
     }
+    
+    /// <summary>
+    /// Use JSON for serializing Complex Types
+    /// </summary>
+    public virtual bool UseJson
+    {
+        set => StringSerializer = value ? new JsonStringSerializer() : new JsvStringSerializer();
+    }
 
     public string GetColumnTypeDefinition(Type columnType, int? fieldLength, int? scale)
     {

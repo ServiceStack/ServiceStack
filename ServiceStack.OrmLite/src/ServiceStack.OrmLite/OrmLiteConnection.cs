@@ -62,7 +62,15 @@ public class OrmLiteConnection
             return;
         }
 
-        dbConnection?.Dispose();
+        try
+        {
+            dbConnection?.Dispose();
+        }
+        catch (Exception e)
+        {
+            LogManager.GetLogger(GetType()).Error("Failed to Dispose()", e);
+            Console.WriteLine(e);
+        }
         dbConnection = null;
     }
 

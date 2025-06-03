@@ -53,6 +53,9 @@
     <Compile Include="..\ServiceStack.OrmLite.Sqlite\Converters\SqliteStringConverters.cs">
       <Link>Converters\SqliteStringConverters.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.OrmLite.Sqlite\SqliteConfiguration.cs">
+      <Link>SqliteConfiguration.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.OrmLite.Sqlite\SqliteDialect.cs">
       <Link>SqliteDialect.cs</Link>
     </Compile>

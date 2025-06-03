@@ -18,13 +18,13 @@ public class ConfigureDb : IHostingStartup
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices((context, services) =>
         {
-            var dbFactory = new OrmLiteConnectionFactory(
-                context.Configuration.GetConnectionString("DefaultConnection"),
-                SqliteDialect.Provider);
-            
-            services.AddSingleton<IDbConnectionFactory>(dbFactory);
-            dbFactory.RegisterConnection("chinook", 
-                context.Configuration.GetConnectionString("ChinookConnection"), SqliteDialect.Provider);
+            services.AddOrmLite(options => 
+                options.UseSqlite(context.Configuration.GetConnectionString("DefaultConnection"), dialect => {
+                    dialect.EnableWal = true;
+                })
+            )
+            .AddSqlite("chinook", 
+                context.Configuration.GetConnectionString("ChinookConnection"));
             
             // Add support for dynamically generated db rules
             services.AddSingleton<IValidationSource>(c => 
