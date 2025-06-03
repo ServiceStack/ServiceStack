@@ -21,6 +21,7 @@ public class VbNetGenerator : ILangGenerator
         feature = HostContext.GetPlugin<NativeTypesFeature>();
     }
 
+    public static Func<IRequest,string> AddHeader { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
@@ -276,6 +277,10 @@ public class VbNetGenerator : ILangGenerator
             AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
             sb.AppendLine();
         }
+
+        var header = AddHeader?.Invoke(request);
+        if (!string.IsNullOrEmpty(header))
+            sb.AppendLine(header);
 
         namespaces.Where(x => !string.IsNullOrEmpty(x))
             .Each(x => sb.AppendLine("Imports {0}".Fmt(x)));

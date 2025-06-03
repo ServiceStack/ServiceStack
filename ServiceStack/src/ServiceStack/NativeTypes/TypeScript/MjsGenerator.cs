@@ -22,6 +22,7 @@ public class MjsGenerator : ILangGenerator
     public string DictionaryDeclaration { get; set; } = CreateEmptyClass("Dictionary");
     public HashSet<string> AddedDeclarations { get; set; } = [];
 
+    public static Func<IRequest,string> AddHeader { get; set; }
     /// <summary>
     /// Add Code to top of generated code
     /// </summary>
@@ -94,6 +95,10 @@ public class MjsGenerator : ILangGenerator
             sb.AppendLine("*/");
             sb.AppendLine();
         }
+
+        var header = AddHeader?.Invoke(request);
+        if (!string.IsNullOrEmpty(header))
+            sb.AppendLine(header);
 
         string lastNS = null;
 

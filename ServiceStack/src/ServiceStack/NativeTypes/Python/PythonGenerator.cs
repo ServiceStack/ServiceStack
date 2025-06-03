@@ -22,6 +22,7 @@ public class PythonGenerator : ILangGenerator
         feature = HostContext.GetPlugin<NativeTypesFeature>();
     }
         
+    public static Func<IRequest,string> AddHeader { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
@@ -336,6 +337,10 @@ public class PythonGenerator : ILangGenerator
             sb.AppendLine("\"\"\"");
             sb.AppendLine();
         }
+
+        var header = AddHeader?.Invoke(request);
+        if (!string.IsNullOrEmpty(header))
+            sb.AppendLine(header);
 
         Config.DataClass = string.IsNullOrEmpty(Config.DataClass)
             ? DataClass

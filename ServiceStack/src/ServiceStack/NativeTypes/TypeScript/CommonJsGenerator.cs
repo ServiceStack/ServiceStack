@@ -9,6 +9,7 @@ namespace ServiceStack.NativeTypes.TypeScript;
 
 public class CommonJsGenerator : ILangGenerator
 {
+    public static Func<IRequest,string> AddHeader { get; set; }
     /// <summary>
     /// Split assignment expression into smaller batches to avoid "Uncaught RangeError: Maximum call stack size exceeded" in Chrome/Blink
     /// </summary>
@@ -95,6 +96,10 @@ public class CommonJsGenerator : ILangGenerator
             sb.AppendLine("*/");
             sb.AppendLine();
         }
+
+        var header = AddHeader?.Invoke(request);
+        if (!string.IsNullOrEmpty(header))
+            sb.AppendLine(header);
 
         string lastNS = null;
 
