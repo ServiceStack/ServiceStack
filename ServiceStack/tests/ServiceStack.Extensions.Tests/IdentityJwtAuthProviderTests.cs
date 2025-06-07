@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -27,9 +28,22 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Extensions.Tests;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IDbConnectionFactory dbFactory)
     : IdentityDbContext<ApplicationUser>(options)
 {
+    private DbConnection? db;
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlite(db ??= dbFactory.CreateDbWithWriteLock());
+        base.OnConfiguring(optionsBuilder);
+    }
+
+    public override void Dispose()
+    {
+        db?.Dispose();
+        db = null;
+        base.Dispose();
+    }
 }
 
 // Add profile data for application users by adding properties to the ApplicationUser class
@@ -232,8 +246,9 @@ public class IdentityJwtAuthProviderTests
         var connectionString = $"DataSource={dbPath};Cache=Shared";
         var dbFactory = new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
         services.AddSingleton<IDbConnectionFactory>(dbFactory);
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(connectionString /*, b => b.MigrationsAssembly(nameof(MyApp))*/));
+        services.AddDbContext<ApplicationDbContext>();
+        // services.AddDbContext<ApplicationDbContext>(options =>
+        //     options.UseSqlite(connectionString /*, b => b.MigrationsAssembly(nameof(MyApp))*/));
 
         services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
             .AddRoles<IdentityRole>()

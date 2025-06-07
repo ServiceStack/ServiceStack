@@ -98,6 +98,15 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
         return connection;
     }
 
+    public DbConnection CreateDbWithWriteLock(string namedConnection=null)
+    {
+        var factory = this;
+        if (namedConnection != null && !NamedConnections.TryGetValue(namedConnection, out factory))
+            throw new KeyNotFoundException("No factory registered is named " + namedConnection);
+
+        return new SingleWriterDbConnection(factory, Locks.GetDbLock(namedConnection));
+    }
+
     public virtual IDbConnection OpenDbConnection()
     {
         var connection = CreateDbConnection();

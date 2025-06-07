@@ -3,15 +3,8 @@ using System.Data;
 
 namespace ServiceStack.Data;
 
-public class DbConnectionFactory : IDbConnectionFactory
+public class DbConnectionFactory(Func<IDbConnection> connectionFactoryFn) : IDbConnectionFactory
 {
-    private readonly Func<IDbConnection> connectionFactoryFn;
-
-    public DbConnectionFactory(Func<IDbConnection> connectionFactoryFn)
-    {
-        this.connectionFactoryFn = connectionFactoryFn;
-    }
-
     public IDbConnection OpenDbConnection()
     {
         var dbConn = CreateDbConnection();
