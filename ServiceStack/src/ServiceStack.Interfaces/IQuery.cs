@@ -259,8 +259,8 @@ public static class SqlTemplate
 public class QueryDataFieldAttribute : AttributeBase
 {
     public QueryTerm Term { get; set; }
-    public string Condition { get; set; }
-    public string Field { get; set; }
+    public string? Condition { get; set; }
+    public string? Field { get; set; }
 }
 
 [DataContract]
@@ -274,25 +274,25 @@ public abstract class QueryBase : IQuery, IHasQueryParams
 
     [DataMember(Order = 3)]
     [Input(Type = "tag", Options = "{ allowableValues:$dataModelFields }")]
-    public virtual string OrderBy { get; set; }
+    public virtual string? OrderBy { get; set; }
 
     [DataMember(Order = 4)]
     [Input(Type = "tag", Options = "{ allowableValues:$dataModelFields }")]
-    public virtual string OrderByDesc { get; set; }
+    public virtual string? OrderByDesc { get; set; }
 
     [DataMember(Order = 5)]
     [Input(Type = "tag", Options = "{ allowableValues:['total'] }")]
-    public virtual string Include { get; set; }
+    public virtual string? Include { get; set; }
 
     [DataMember(Order = 6)]
     [Input(Type = "tag", Options = "{ allowableValues:$dataModelFields }"), FieldCss(Field = "col-span-12")]
-    public virtual string Fields { get; set; }
+    public virtual string? Fields { get; set; }
 
     [DataMember(Order = 7)]
-    public virtual Dictionary<string, string> Meta { get; set; }
+    public virtual Dictionary<string, string>? Meta { get; set; }
 
     [IgnoreDataMember]
-    public virtual Dictionary<string, string> QueryParams { get; set; }
+    public virtual Dictionary<string, string>? QueryParams { get; set; }
 
     // note: the number of fields here must fit inside the reserved chunk
     // from GrpcServiceClient; see CreateMetaType
@@ -326,10 +326,10 @@ public class QueryResponse<T> : IQueryResponse
     public virtual List<T> Results { get; set; }
 
     [DataMember(Order = 4)]
-    public virtual Dictionary<string, string> Meta { get; set; }
+    public virtual Dictionary<string, string>? Meta { get; set; }
 
     [DataMember(Order = 5)]
-    public virtual ResponseStatus ResponseStatus { get; set; }
+    public virtual ResponseStatus? ResponseStatus { get; set; }
 }
     
 /* AutoCrud */
