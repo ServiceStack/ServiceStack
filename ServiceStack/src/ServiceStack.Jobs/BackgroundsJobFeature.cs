@@ -73,6 +73,10 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         var fullDirPath = GetDbDir();
 
         DbFactory.RegisterConnection(DbFile, fullDirPath.AssertDir().CombineWith(DbFile), SqliteDialect.Provider);
+        
+        // If DbFile has changed, replace the namedConnection lock with Locks.JobsDb
+        if (DbFile != Workers.JobsDb)
+            Locks.NamedConnections[DbFile] = Locks.JobsDb;
 
         if (AutoInitSchema)
         {

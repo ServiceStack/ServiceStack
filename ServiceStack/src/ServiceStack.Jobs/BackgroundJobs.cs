@@ -15,7 +15,7 @@ namespace ServiceStack.Jobs;
 
 public partial class BackgroundJobs : IBackgroundJobs
 {
-    private static readonly object dbTransactions = new();
+    private static readonly object dbTransactions = Locks.JobsDb;
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
     private IServiceProvider services;
@@ -93,7 +93,7 @@ public partial class BackgroundJobs : IBackgroundJobs
     private BackgroundJobRef RecordAndDispatchJob(BackgroundJob job)
     {
         var requestId = Guid.NewGuid().ToString("N");
-         using var db = feature.OpenDb();
+        using var db = feature.OpenDb();
         var now = DateTime.UtcNow;
         if (job.RunAfter == null || now > job.RunAfter)
         {

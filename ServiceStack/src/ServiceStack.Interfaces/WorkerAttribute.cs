@@ -30,6 +30,16 @@ public static class Locks
     };
     public static Dictionary<string, object> NamedConnections { get; } = new();
 
+    public static void AddLock(string name)
+    {
+        NamedConnections[name] = name switch
+        {
+            ServiceStack.Workers.AppDb => AppDb,
+            ServiceStack.Workers.JobsDb => JobsDb,
+            _ => new object()
+        };
+    }
+
     public static object? TryGetLock(string worker)
     {
         return Workers.TryGetValue(worker, out var oLock)
