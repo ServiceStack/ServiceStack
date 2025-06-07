@@ -1,5 +1,6 @@
 ﻿using MyApp.ServiceInterface;
 using ServiceStack;
+using ServiceStack.DataAnnotations;
 
 namespace MyApp.ServiceModel;
 
@@ -36,6 +37,53 @@ public class EchoComplexTypes : IReturn<EchoComplexTypes>
     public Dictionary<string, SubType> SubTypeMap { get; set; }
     public Dictionary<string, string> StringMap { get; set; }
     public Dictionary<int, string> IntStringMap { get; set; }
+}
+
+public class Data1
+{
+    public int Value { get; set; }
+    public int? OptionalValue { get; set; }
+    public string Text { get; set; }
+    public string? OptionalText { get; set; }
+    public List<string> Texts { get; set; }
+    public List<string>? OptionalTexts { get; set; }
+}
+
+public class Data2
+{
+    [Required]
+    public int Value { get; set; }
+    [Required] // No effect
+    public int? OptionalValue { get; set; }
+    [Required]
+    public string Text { get; set; }
+    [Required] // Generates non-nullable
+    public string? OptionalText { get; set; }
+    [Required]
+    public List<string> Texts { get; set; }
+    [Required]
+    public List<string>? OptionalTexts { get; set; }
+}
+
+public class Data3
+{
+    public int Value { get; set; }
+    public int? OptionalValue { get; set; }
+    [ServiceStack.DataAnnotations.Required]
+    public string Text { get; set; }
+    [System.ComponentModel.DataAnnotations.Required] // Not supported
+    public string Text2 { get; set; }
+    [ServiceStack.DataAnnotations.Required]
+    public string? NText { get; set; }
+    [System.ComponentModel.DataAnnotations.Required] // Not supported
+    public string? NText2 { get; set; }
+}
+
+public class EchoData
+{
+    public Data1 Data1 { get; set; }
+    public Data2 Data2 { get; set; }
+    public Data3 Data3 { get; set; }
 }
 
 /*
