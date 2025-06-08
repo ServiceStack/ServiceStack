@@ -6,7 +6,7 @@ using ServiceStack.Data;
 
 namespace ServiceStack.OrmLite;
 
-public class SingleWriterDbConnection : DbConnection
+public class SingleWriterDbConnection : DbConnection, IHasWriteLock
 {
     private DbConnection? db;
     public OrmLiteConnectionFactory? Factory { get; }
@@ -213,7 +213,10 @@ public static class SingleWriterExtensions
         _ => new SingleWriterDbConnection((DbConnection)db, writeLock)
     };
 
-    public static DbConnection OpenDbWithWriteLock(this IDbConnectionFactory dbFactory, string? namedConnection=null)
+    /// <summary>
+    /// Open a DB connection with a SingleWriter Lock 
+    /// </summary>
+    public static DbConnection OpenSingleWriterDb(this IDbConnectionFactory dbFactory, string? namedConnection=null)
     {
         var dbConn = namedConnection != null
             ? dbFactory.OpenDbConnection(namedConnection)
@@ -222,18 +225,21 @@ public static class SingleWriterExtensions
         return dbConn.WithWriteLock(writeLock);
     }
 
-    public static DbConnection CreateDbWithWriteLock(this IDbConnectionFactory dbFactory, string? namedConnection=null)
+    /// <summary>
+    /// Create a DB connection with a SingleWriter Lock 
+    /// </summary>
+    public static DbConnection CreateSingleWriterDb(this IDbConnectionFactory dbFactory, string? namedConnection=null)
     {
         return ((OrmLiteConnectionFactory)dbFactory).CreateDbWithWriteLock(namedConnection);
     }
 
-    public static object? GetWriteLock(this IDbConnection dbConnection)
+    public static object GetWriteLock(this IDbConnection dbConnection)
     {
         return dbConnection switch
         {
-            OrmLiteConnection dbConn => dbConn.WriteLock,
-            SingleWriterDbConnection singleWriterDbConn => singleWriterDbConn.WriteLock,
-            _ => null
+            OrmLiteConnection dbConn => dbConn.WriteLock ?? dbConnection,
+            IHasWriteLock hasWriteLock => hasWriteLock.WriteLock,
+            _ => dbConnection,
         };
     }
 }

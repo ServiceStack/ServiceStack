@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Data;
-using System.Security.Claims;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Host;
@@ -15,7 +14,6 @@ namespace ServiceStack.Jobs;
 
 public partial class BackgroundJobs : IBackgroundJobs
 {
-    private static readonly object dbTransactions = Locks.JobsDb;
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
     private IServiceProvider services;
@@ -112,7 +110,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             }
         }
 
-        lock (dbTransactions)
+        lock (db.GetWriteLock())
         {
             using var trans = db.OpenTransaction();
             job.Id = db.Insert(job, selectIdentity: true);
@@ -426,7 +424,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         var wasCancelled = false;
         using var db = OpenDb();
         var error = new TaskCanceledException("Job was cancelled").ToResponseStatus();
-        lock (dbTransactions)
+        lock (db.GetWriteLock())
         {
             var now = DateTime.UtcNow;
             var updatedQueuedJob = db.UpdateOnly(() => new BackgroundJob {
@@ -510,7 +508,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         requeueJob.DurationMs = 0;
         requeueJob.StartedDate = requeueJob.LastActivityDate = DateTime.UtcNow;
 
-        lock (dbTransactions)
+        lock (db.GetWriteLock())
         {
             var jobMetadata = typeof(BackgroundJob).GetModelMetadata();
             try
@@ -574,7 +572,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         
         if (!job.Transient)
         {
-            lock (dbTransactions)
+            lock (Locks.JobsDb)
             {
                 if (!shouldRetry)
                 {
@@ -754,7 +752,7 @@ public partial class BackgroundJobs : IBackgroundJobs
 
         if (!job.Transient)
         {
-            lock (dbTransactions)
+            lock (db.GetWriteLock())
             {
                 using var trans = db.OpenTransaction();
                 db.UpdateOnly(() => new BackgroundJob {

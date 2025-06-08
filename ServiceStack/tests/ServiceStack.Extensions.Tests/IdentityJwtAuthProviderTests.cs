@@ -34,7 +34,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     private DbConnection? db;
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite(db ??= dbFactory.CreateDbWithWriteLock());
+        optionsBuilder.UseSqlite(db ??= dbFactory.CreateSingleWriterDb());
         base.OnConfiguring(optionsBuilder);
     }
 
