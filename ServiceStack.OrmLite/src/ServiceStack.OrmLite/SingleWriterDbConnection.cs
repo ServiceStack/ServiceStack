@@ -9,24 +9,27 @@ namespace ServiceStack.OrmLite;
 public class SingleWriterDbConnection : DbConnection
 {
     private DbConnection? db;
-    public readonly OrmLiteConnectionFactory? Factory;
+    public OrmLiteConnectionFactory? Factory { get; }
+    public object WriteLock { get; }
+
     public DbConnection Db => db ??= (DbConnection)ConnectionString.ToDbConnection(Factory!.DialectProvider);
-    public object writeLock;
-    public object WriteLock => writeLock;
 
     public SingleWriterDbConnection(DbConnection db, object writeLock)
     {
         this.db = db;
-        this.writeLock = writeLock;
+        this.WriteLock = writeLock;
+        this.connectionString = db.ConnectionString;
     }
 
     public SingleWriterDbConnection(OrmLiteConnectionFactory factory, object writeLock)
     {
         Factory = factory;
-        this.writeLock = writeLock;
+        this.WriteLock = writeLock;
+        this.connectionString = factory.ConnectionString;
     }
 
     internal DbTransaction? Transaction;
+
     protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
     {
         Transaction = Db.BeginTransaction(isolationLevel);
@@ -80,10 +83,10 @@ public class SingleWriterDbConnection : DbConnection
         }
     }
 
-    private string? connectionString;
+    private string connectionString;
     public override string ConnectionString
     {
-        get => connectionString ?? throw new ArgumentNullException(nameof(ConnectionString));
+        get => connectionString;
         set => connectionString = value;
     }
 
@@ -113,45 +116,43 @@ public class SingleWriterDbConnection : DbConnection
 public class SingleWriterDbCommand(SingleWriterDbConnection db, DbCommand cmd, object writeLock) : DbCommand
 {
     SingleWriterDbConnection Db = db;
-    private readonly DbCommand Cmd = cmd;
-    private readonly object WriteLock = writeLock;
 
     public override void Prepare()
     {
-        Cmd.Prepare();
+        cmd.Prepare();
     }
 
     public override string CommandText
     {
-        get => Cmd.CommandText;
-        set => Cmd.CommandText = value;
+        get => cmd.CommandText;
+        set => cmd.CommandText = value;
     }
 
     public override int CommandTimeout
     {
-        get => Cmd.CommandTimeout;
-        set => Cmd.CommandTimeout = value;
+        get => cmd.CommandTimeout;
+        set => cmd.CommandTimeout = value;
     }
 
     public override CommandType CommandType
     {
-        get => Cmd.CommandType;
-        set => Cmd.CommandType = value;
+        get => cmd.CommandType;
+        set => cmd.CommandType = value;
     }
 
     public override UpdateRowSource UpdatedRowSource
     {
-        get => Cmd.UpdatedRowSource;
-        set => Cmd.UpdatedRowSource = value;
+        get => cmd.UpdatedRowSource;
+        set => cmd.UpdatedRowSource = value;
     }
 
     protected override DbConnection? DbConnection
     {
-        get => Cmd.Connection;
-        set => Cmd.Connection = value;
+        get => cmd.Connection;
+        set => cmd.Connection = value;
     }
 
-    protected override DbParameterCollection DbParameterCollection => Cmd.Parameters;
+    protected override DbParameterCollection DbParameterCollection => cmd.Parameters;
 
     protected override DbTransaction? DbTransaction
     {
@@ -161,43 +162,43 @@ public class SingleWriterDbCommand(SingleWriterDbConnection db, DbCommand cmd, o
 
     public override bool DesignTimeVisible
     {
-        get => Cmd.DesignTimeVisible;
-        set => Cmd.DesignTimeVisible = value;
+        get => cmd.DesignTimeVisible;
+        set => cmd.DesignTimeVisible = value;
     }
 
     public override void Cancel()
     {
-        Cmd.Cancel();
+        cmd.Cancel();
     }
 
     protected override DbParameter CreateDbParameter()
     {
-        return Cmd.CreateParameter();
+        return cmd.CreateParameter();
     }
 
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
     {
-        return Cmd.ExecuteReader(behavior);
+        return cmd.ExecuteReader(behavior);
     }
 
     public override int ExecuteNonQuery()
     {
-        lock (WriteLock)
+        lock (writeLock)
         {
-            return Cmd.ExecuteNonQuery();
+            return cmd.ExecuteNonQuery();
         }
     }
 
     public override object? ExecuteScalar()
     {
-        return Cmd.ExecuteScalar();
+        return cmd.ExecuteScalar();
     }
 
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            Cmd?.Dispose();
+            cmd?.Dispose();
         }
         base.Dispose(disposing);
     }
@@ -205,19 +206,13 @@ public class SingleWriterDbCommand(SingleWriterDbConnection db, DbCommand cmd, o
 
 public static class SingleWriterExtensions
 {
-    public static DbConnection WithWriteLock(this IDbConnection dbConnection, object writeLock)
+    public static DbConnection WithWriteLock(this IDbConnection db, object writeLock) => db switch
     {
-        switch (dbConnection)
-        {
-            case SingleWriterDbConnection writeLockConn:
-                return writeLockConn;
-            case OrmLiteConnection dbConn:
-                return new SingleWriterDbConnection((DbConnection)dbConn.ToDbConnection(), writeLock);
-            default:
-                return new SingleWriterDbConnection((DbConnection)dbConnection, writeLock);
-        }
-    }
-    
+        SingleWriterDbConnection writeLockConn => writeLockConn,
+        OrmLiteConnection ormConn => new SingleWriterDbConnection((DbConnection)ormConn.ToDbConnection(), writeLock),
+        _ => new SingleWriterDbConnection((DbConnection)db, writeLock)
+    };
+
     public static DbConnection OpenDbWithWriteLock(this IDbConnectionFactory dbFactory, string? namedConnection=null)
     {
         var dbConn = namedConnection != null
@@ -245,10 +240,9 @@ public static class SingleWriterExtensions
 
 public class SingleWriterTransaction(SingleWriterDbConnection dbConnection, DbTransaction transaction, IsolationLevel isolationLevel) : DbTransaction
 {
-    SingleWriterDbConnection Db = dbConnection;
     protected override DbConnection DbConnection { get; } = dbConnection;
     public override IsolationLevel IsolationLevel { get; } = isolationLevel;
-    public DbTransaction Transaction = transaction;
+    public readonly DbTransaction Transaction = transaction;
 
     public override void Commit()
     {
@@ -262,7 +256,7 @@ public class SingleWriterTransaction(SingleWriterDbConnection dbConnection, DbTr
 
     protected override void Dispose(bool disposing)
     {
-        Db.Transaction = null;
+        dbConnection.Transaction = null;
         base.Dispose(disposing);
     }
 }
