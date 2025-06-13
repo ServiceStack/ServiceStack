@@ -75,7 +75,7 @@ function arraysAreEqual(a, b) {
               </div>
             </div>
           </div>
-          <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
+          <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 text-right sm:px-6 flex justify-between">
             <div>
               <SecondaryButton @click="$emit('done')">Cancel</SecondaryButton>
             </div>
@@ -208,7 +208,7 @@ export const EditApiKeyForm = {
                 </div>
               </div>
             </div>
-            <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
+            <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 text-right sm:px-6 flex justify-between">
               <div>
                 <ConfirmDelete @delete="submitDelete" />
               </div>

@@ -115,7 +115,7 @@ const EditValidationRule = {
                     </div>
                 </div>
             </div>
-            <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
+            <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 text-right sm:px-6 flex justify-between">
                 <div>
                     <div v-if="rule && !(loading && !breakpoints.sm)">
                       <ConfirmDelete @delete="submitDelete" />

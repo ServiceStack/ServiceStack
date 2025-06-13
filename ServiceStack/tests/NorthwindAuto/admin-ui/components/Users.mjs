@@ -105,7 +105,7 @@ export const NewUser = {
               </div>
             </div>
           </div>
-          <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
+          <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 text-right sm:px-6 flex justify-between">
             <div>
               <Loading v-if="loading" class="m-0" />
             </div>
@@ -245,7 +245,7 @@ export const EditUser = {
                 </div>
             </div>
         </div>
-        <div class="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
+        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 text-right sm:px-6 flex justify-between">
             <div>
                 <ConfirmDelete @delete="deleteUser" />
             </div>
