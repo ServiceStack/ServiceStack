@@ -30,7 +30,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public TimeSpan? CacheDuration = TimeSpan.FromMinutes(10);
     public Func<string>? ApiKeyGenerator { get; set; }
     public TimeSpan? DefaultExpiry { get; set; }
-    public Dictionary<int, DateTime> LastUsedApiKeys { get; set; } = new();
+    public ConcurrentDictionary<int, DateTime> LastUsedApiKeys { get; set; } = new();
     public ConcurrentDictionary<string, IApiKey> ValidApiKeys { get; } = new();
 
     public List<Type> RegisterServices { get; set; } = [
