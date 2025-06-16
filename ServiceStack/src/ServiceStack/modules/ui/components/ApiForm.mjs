@@ -94,7 +94,7 @@ export const ApiForm = {
             This API Requires an <a v-href="{ dialog:'apikey' }" target="_blank" class="underline">API Key</a>
           </Alert>
           <AutoForm v-if="showAutoForm && routes.form===''" :type="routes.op" v-model="state.model" 
-                    class="sm:m-4 max-w-4xl"
+                    class="sm:m-4 max-w-4xl" :jsconfig="server?.ui?.explorer?.jsConfig"
                     @success="state.apiResult.response=$event" @error="state.apiResult.error=$event" />
           <div v-if="routes.form==='json'" class="sm:p-4">
         

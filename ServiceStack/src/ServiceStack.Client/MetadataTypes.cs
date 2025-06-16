@@ -725,6 +725,7 @@ public class ExplorerUi
 {
     public ApiCss Css { get; set; }
     public AppTags Tags { get; set; }
+    public string JsConfig { get; set; }
 }
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]

@@ -108,6 +108,8 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
             },
         });
         
+        this.AddToAppMetadata(meta => meta.Ui.Explorer.JsConfig = "eccn,inv");
+        
         var memFs = GetVirtualFileSource<MemoryVirtualFiles>();
 
         memFs.WriteFile("locode/custom.html", VirtualFiles.GetFile("custom/locode/custom.html"));

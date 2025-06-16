@@ -73,7 +73,7 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
         DefaultFormats = new ApiFormat
         {
             // Defaults to browsers navigator.languages
-            //Locale = Thread.CurrentThread.CurrentCulture.Name,
+            // Locale = Thread.CurrentThread.CurrentCulture.Name,
             AssumeUtc = true,
             Date = new Intl(IntlFormat.DateTime) {
                 Date = DateStyle.Medium,
@@ -109,6 +109,7 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
                 Default = "APIs",
                 Other = "other",
             },
+            JsConfig = "eccn,edv",
         },
         Admin = new()
         {
