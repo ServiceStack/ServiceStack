@@ -9,6 +9,7 @@ namespace ServiceStack.OrmLite;
 public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
 {
     private readonly OrmLiteConnection dbConn;
+    public OrmLiteConnection OrmLiteConnection => dbConn;
     private readonly IDbCommand dbCmd;
     public IOrmLiteDialectProvider DialectProvider { get; set; }
     public bool IsDisposed { get; private set; }
