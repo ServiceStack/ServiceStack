@@ -49,13 +49,13 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     /// </summary>
     public bool EnableWal
     {
-        get => ConnectionCommands.Contains(SqlitePragmas.JournalModeWal);
+        get => OneTimeConnectionCommands.Contains(SqlitePragmas.JournalModeWal);
         set
         {
             if (value)
-                ConnectionCommands.AddIfNotExists(SqlitePragmas.JournalModeWal);
+                OneTimeConnectionCommands.AddIfNotExists(SqlitePragmas.JournalModeWal);
             else
-                ConnectionCommands.Remove(SqlitePragmas.JournalModeWal);
+                OneTimeConnectionCommands.Remove(SqlitePragmas.JournalModeWal);
         }
     }
 
@@ -64,18 +64,18 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     /// </summary>
     public bool EnableForeignKeys
     {
-        get => ConnectionCommands.Contains(SqlitePragmas.EnableForeignKeys);
+        get => OneTimeConnectionCommands.Contains(SqlitePragmas.EnableForeignKeys);
         set
         {
             if (value)
-                ConnectionCommands.AddIfNotExists(SqlitePragmas.EnableForeignKeys);
+                OneTimeConnectionCommands.AddIfNotExists(SqlitePragmas.EnableForeignKeys);
             else
-                ConnectionCommands.Remove(SqlitePragmas.DisableForeignKeys);
+                OneTimeConnectionCommands.Remove(SqlitePragmas.DisableForeignKeys);
         }
     }
 
     /// <summary>
-    /// Enable Foreign Keys (PRAGMA foreign_keys=ON)
+    /// PRAGMA busy_timeout
     /// </summary>
     public TimeSpan BusyTimeout
     {
