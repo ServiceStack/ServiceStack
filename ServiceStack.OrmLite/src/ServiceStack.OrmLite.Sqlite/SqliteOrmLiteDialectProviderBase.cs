@@ -49,13 +49,13 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     /// </summary>
     public bool EnableWal
     {
-        get => ConnectionCommands.Contains(SqlitePragmas.EnableForeignKeys);
+        get => ConnectionCommands.Contains(SqlitePragmas.JournalModeWal);
         set
         {
             if (value)
-                ConnectionCommands.AddIfNotExists(SqlitePragmas.EnableForeignKeys);
+                ConnectionCommands.AddIfNotExists(SqlitePragmas.JournalModeWal);
             else
-                ConnectionCommands.Remove(SqlitePragmas.DisableForeignKeys);
+                ConnectionCommands.Remove(SqlitePragmas.JournalModeWal);
         }
     }
 
