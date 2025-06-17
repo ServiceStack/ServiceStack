@@ -65,6 +65,7 @@ public class OrmLiteConnection
 
         try
         {
+            DialectProvider.OnDisposeConnection?.Invoke(this);
             dbConnection?.Dispose();
         }
         catch (Exception e)

@@ -50,11 +50,13 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         if (writeLock != null)
         {
             DialectProvider.OnBeforeWriteLock?.Invoke(this);
+            int ret;
             lock (writeLock)
             {
-                return dbCmd.ExecuteNonQuery();
+                ret = dbCmd.ExecuteNonQuery();
             }
             DialectProvider.OnAfterWriteLock?.Invoke(this);
+            return ret;
         }
         return dbCmd.ExecuteNonQuery();
     }
