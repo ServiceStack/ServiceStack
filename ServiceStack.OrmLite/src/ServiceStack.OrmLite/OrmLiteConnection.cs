@@ -17,6 +17,7 @@ public class OrmLiteConnection
     : IDbConnection, IHasDbConnection, IHasDbTransaction, ISetDbTransaction, IHasDialectProvider
 {
     public readonly OrmLiteConnectionFactory Factory;
+    public string? Name { get; set; }
     public IDbTransaction? Transaction { get; set; }
     public IDbTransaction? DbTransaction => Transaction;
     private IDbConnection? dbConnection;
