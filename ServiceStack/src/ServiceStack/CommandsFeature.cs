@@ -365,6 +365,34 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         return await ExecuteCommandAsync(commandType, Exec, commandRequest, reqCtx, token);
     }
 
+    public string? GetCommandResultAsString(object command, CommandResult commandResult)
+    {
+        var commandType = command.GetType();
+        var resultProp = commandType.GetProperty("Result", BindingFlags.Instance | BindingFlags.Public);
+        var resultAccessor = TypeProperties.Get(commandType).GetAccessor("Result");
+        var result = resultProp != null
+            ? resultAccessor.PublicGetter(command)
+            : null;
+        string? resultString = null;
+
+        try
+        {
+            resultString = result switch
+            {
+                null => null,
+                string s => s,
+                StringBuilder sb => sb.ToString(),
+                _ => result.ToSafeJson(),
+            };
+        }
+        catch (Exception e)
+        {
+            Log?.LogWarning("Couldn't serialize {CommandType} result {ResultType}: {Message}",
+                commandType.Name, resultProp?.PropertyType.Name ?? "null", e.Message);
+        }
+        return resultString;
+    }
+
     IRequest CreateRequestContext(object requestDto, CancellationToken token)
     {
         var msg = MessageFactory.Create(requestDto);
@@ -664,6 +692,7 @@ public class CommandsService(ILogger<CommandsService> log) : Service
     public async Task<object> Any(ExecuteCommand request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
+        var services = Request.GetServiceProvider();
 
         var commandInfo = feature.AssertCommandInfo(request.Command);
         var commandType = commandInfo.Type;
@@ -672,33 +701,10 @@ public class CommandsService(ILogger<CommandsService> log) : Service
             ? requestType.CreateInstance()
             : Text.JsonSerializer.DeserializeFromString(request.RequestJson, requestType);
 
-        var services = Request.GetServiceProvider();
         var command = services.GetRequiredService(commandType);
         
         var commandResult = await feature.ExecuteCommandAsync(command, commandRequest);
-
-        var resultProp = commandType.GetProperty("Result", BindingFlags.Instance | BindingFlags.Public);
-        var resultAccessor = TypeProperties.Get(commandType).GetAccessor("Result");
-        var result = resultProp != null
-            ? resultAccessor.PublicGetter(command)
-            : null;
-        string? resultString = null;
-
-        try
-        {
-            resultString = result switch
-            {
-                null => null,
-                string s => s,
-                StringBuilder sb => sb.ToString(),
-                _ => result.ToSafeJson(),
-            };
-        }
-        catch (Exception e)
-        {
-            log.LogWarning("Couldn't serialize {CommandType} result {ResultType}: {Message}",
-                commandType.Name, resultProp?.PropertyType.Name ?? "null", e.Message);
-        }
+        var resultString = feature.GetCommandResultAsString(command, commandResult);
 
         var to = new ExecuteCommandResponse
         {
