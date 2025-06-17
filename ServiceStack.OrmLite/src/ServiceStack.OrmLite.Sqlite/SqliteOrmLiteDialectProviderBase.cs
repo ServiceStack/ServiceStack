@@ -75,6 +75,18 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     }
 
     /// <summary>
+    /// Enable Foreign Keys (PRAGMA foreign_keys=ON)
+    /// </summary>
+    public TimeSpan BusyTimeout
+    {
+        set
+        {
+            ConnectionCommands.RemoveAll(x => x.StartsWith("PRAGMA busy_timeout"));
+            ConnectionCommands.Add(SqlitePragmas.BusyTimeout(value));
+        }
+    }
+
+    /// <summary>
     /// Whether to use UTC for DateTime fields
     /// </summary>
     public bool UseUtc
@@ -374,6 +386,7 @@ public static class SqlitePragmas
     public const string JournalModeWal = "PRAGMA journal_mode=WAL;";
     public const string EnableForeignKeys = "PRAGMA foreign_keys=ON;";
     public const string DisableForeignKeys = "PRAGMA foreign_keys=OFF;";
+    public static string BusyTimeout(TimeSpan timeout) => $"PRAGMA busy_timeout={(int)timeout.TotalMilliseconds};";
 }
 
 public static class SqliteExtensions
