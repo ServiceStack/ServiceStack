@@ -50,6 +50,7 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         {
             lock (writeLock)
             {
+                DialectProvider.OnWriteLock?.Invoke(this);
                 return dbCmd.ExecuteNonQuery();
             }
         }

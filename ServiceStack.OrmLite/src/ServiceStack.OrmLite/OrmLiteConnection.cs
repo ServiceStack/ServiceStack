@@ -103,6 +103,7 @@ public class OrmLiteConnection
         Exception? e = null;
         try
         {
+            DialectProvider.OnDisposeConnection?.Invoke(this);
             dbConnection.Close();
         }
         catch (Exception ex)

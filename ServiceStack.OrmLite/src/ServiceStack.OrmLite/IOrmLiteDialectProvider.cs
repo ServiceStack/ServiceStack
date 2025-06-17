@@ -50,6 +50,8 @@ public interface IOrmLiteDialectProvider
     /// Custom delegate invoked when a DB Connection is opened
     /// </summary>
     Action<IDbConnection> OnOpenConnection { get; set; }
+    Action<IDbConnection> OnDisposeConnection { get; set; }
+    Action<IDbCommand> OnWriteLock { get; set; }
 
     IOrmLiteExecFilter ExecFilter { get; set; }
 

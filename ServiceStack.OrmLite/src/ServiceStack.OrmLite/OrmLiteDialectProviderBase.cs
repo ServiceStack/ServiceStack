@@ -178,6 +178,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public StringConverter StringConverter => (StringConverter)Converters[typeof(string)];
 
     public Action<IDbConnection> OnOpenConnection { get; set; }
+    public Action<IDbConnection> OnDisposeConnection { get; set; }
+    public Action<IDbCommand> OnWriteLock { get; set; }
 
     internal int OneTimeConnectionCommandsRun;
 
