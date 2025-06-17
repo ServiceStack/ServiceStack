@@ -594,7 +594,9 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     
     public virtual OrmLiteConnection CreateOrmLiteConnection(OrmLiteConnectionFactory factory, string namedConnection = null)
     {
-        return new OrmLiteConnection(factory);
+        return new OrmLiteConnection(factory) {
+            NamedConnection = namedConnection,
+        };
     }
 
     public virtual void InitConnection(IDbConnection dbConn)
