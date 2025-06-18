@@ -111,7 +111,13 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
     {
         var connection = CreateDbConnection();
         connection.Open();
-
+        return connection;
+    }
+    public virtual IDbConnection OpenDbConnection(Action<IDbConnection> configure)
+    {
+        var connection = CreateDbConnection();
+        configure(connection);
+        connection.Open();
         return connection;
     }
 
@@ -127,10 +133,37 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
         await DialectProvider.OpenAsync(connection, token).ConfigAwait();
         return connection;
     }
+    public virtual async Task<IDbConnection> OpenDbConnectionAsync(Action<IDbConnection> configure, CancellationToken token = default)
+    {
+        var connection = CreateDbConnection();
+        configure(connection);
+        if (connection is OrmLiteConnection ormliteConn)
+        {
+            await ormliteConn.OpenAsync(token).ConfigAwait();
+            return connection;
+        }
+
+        await DialectProvider.OpenAsync(connection, token).ConfigAwait();
+        return connection;
+    }
 
     public virtual async Task<IDbConnection> OpenDbConnectionAsync(string namedConnection, CancellationToken token = default)
     {
         var connection = CreateDbConnection(namedConnection);
+        if (connection is OrmLiteConnection ormliteConn)
+        {
+            await ormliteConn.OpenAsync(token).ConfigAwait();
+            return connection;
+        }
+
+        await DialectProvider.OpenAsync(connection, token).ConfigAwait();
+        return connection;
+    }
+
+    public virtual async Task<IDbConnection> OpenDbConnectionAsync(string namedConnection, Action<IDbConnection> configure, CancellationToken token = default)
+    {
+        var connection = CreateDbConnection(namedConnection);
+        configure(connection);
         if (connection is OrmLiteConnection ormliteConn)
         {
             await ormliteConn.OpenAsync(token).ConfigAwait();
@@ -239,6 +272,13 @@ public static class OrmLiteConnectionFactoryExtensions
     {
         return connectionFactory.OpenDbConnection();
     }
+    public static IDbConnection Open(this IDbConnectionFactory connectionFactory, Action<IDbConnection> configure)
+    {
+        var db = connectionFactory.CreateDbConnection();
+        configure(db);
+        db.Open();
+        return db;
+    }
 
     /// <summary>
     /// Alias for OpenDbConnectionAsync
@@ -251,6 +291,10 @@ public static class OrmLiteConnectionFactoryExtensions
     {
         return ((OrmLiteConnectionFactory)connectionFactory).OpenDbConnectionAsync(token);
     }
+    public static Task<IDbConnection> OpenAsync(this IDbConnectionFactory connectionFactory, Action<IDbConnection> configure, CancellationToken token = default)
+    {
+        return ((OrmLiteConnectionFactory)connectionFactory).OpenDbConnectionAsync(configure, token);
+    }
 
     /// <summary>
     /// Alias for OpenDbConnectionAsync
@@ -258,6 +302,10 @@ public static class OrmLiteConnectionFactoryExtensions
     public static Task<IDbConnection> OpenAsync(this IDbConnectionFactory connectionFactory, string namedConnection, CancellationToken token = default)
     {
         return ((OrmLiteConnectionFactory)connectionFactory).OpenDbConnectionAsync(namedConnection, token);
+    }
+    public static Task<IDbConnection> OpenAsync(this IDbConnectionFactory connectionFactory, string namedConnection, Action<IDbConnection> configure, CancellationToken token = default)
+    {
+        return ((OrmLiteConnectionFactory)connectionFactory).OpenDbConnectionAsync(namedConnection, configure, token);
     }
 
     /// <summary>
