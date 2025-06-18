@@ -978,20 +978,27 @@ public abstract partial class ServiceStackHost
         var dbFactory = Container.TryResolve<IDbConnectionFactory>();
         if (req != null)
         {
+            void withName(IDbConnection db)
+            {
+                var connName = req.Dto?.GetType().Name ?? req.PathInfo;
+                if (db is IHasName { Name: null } hasName)
+                    hasName.Name = connName;
+            }
+            
             if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
             {
-                if (dbFactory is not IDbConnectionFactoryExtended dbFactoryExtended)
+                if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
                     throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
                 if (connInfo.ConnectionString != null)
                 {
                     return connInfo.ProviderName != null 
-                        ? dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName) 
-                        : dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
+                        ? dbExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName, withName) 
+                        : dbExtended.OpenDbConnectionString(connInfo.ConnectionString, withName);
                 }
 
                 if (connInfo.NamedConnection != null)
-                    return dbFactoryExtended.OpenDbConnection(connInfo.NamedConnection);
+                    return dbExtended.OpenDbConnection(connInfo.NamedConnection, withName);
             }
             else
             {
@@ -1001,9 +1008,12 @@ public abstract partial class ServiceStackHost
                     if (dbFactory is not IDbConnectionFactoryExtended dbFactoryExtended)
                         throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
-                    return dbFactoryExtended.OpenDbConnection(namedConnectionAttr.Name);
+                    return dbFactoryExtended.OpenDbConnection(namedConnectionAttr.Name, withName);
                 }
             }
+            
+            if (dbFactory is IDbConnectionFactoryExtended factoryExtended)
+                return factoryExtended.OpenDbConnection(withName);
         }
 
         return dbFactory.OpenDbConnection();
@@ -1017,24 +1027,31 @@ public abstract partial class ServiceStackHost
 
         if (req != null)
         {
+            void withName(IDbConnection db)
+            {
+                var connName = req.Dto?.GetType().Name ?? req.PathInfo;
+                if (db is IHasName { Name: null } hasName)
+                    hasName.Name = connName;
+            }
+            
             if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
             {
                 if (connInfo.ConnectionString != null)
                 {
                     return connInfo.ProviderName != null 
-                        ? await dbExtended.OpenDbConnectionStringAsync(connInfo.ConnectionString, connInfo.ProviderName).ConfigAwait() 
-                        : await dbExtended.OpenDbConnectionStringAsync(connInfo.ConnectionString).ConfigAwait();
+                        ? await dbExtended.OpenDbConnectionStringAsync(connInfo.ConnectionString, connInfo.ProviderName, withName).ConfigAwait() 
+                        : await dbExtended.OpenDbConnectionStringAsync(connInfo.ConnectionString, withName).ConfigAwait();
                 }
 
                 if (connInfo.NamedConnection != null)
-                    return await dbExtended.OpenDbConnectionAsync(connInfo.NamedConnection);
+                    return await dbExtended.OpenDbConnectionAsync(connInfo.NamedConnection, withName);
             }
             else
             {
                 var namedConnectionAttr = req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>();
                 if (namedConnectionAttr != null)
                 {
-                    return await dbExtended.OpenDbConnectionAsync(namedConnectionAttr.Name);
+                    return await dbExtended.OpenDbConnectionAsync(namedConnectionAttr.Name, withName);
                 }
             }
         }
@@ -1044,13 +1061,20 @@ public abstract partial class ServiceStackHost
     public virtual IDbConnection GetDbConnection(string namedConnection, IRequest req = null)
     {
         var dbFactory = Container.TryResolve<IDbConnectionFactory>();
-        if (namedConnection == null) 
-            return dbFactory.OpenDbConnection();
-            
         if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
-            throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
+            throw new NotSupportedException($"{dbFactory.GetType().Name} does not implement IDbConnectionFactoryExtended");
+        
+        void withName(IDbConnection db)
+        {
+            var connName = req?.Dto?.GetType().Name ?? req?.PathInfo;
+            if (connName != null && db is IHasName { Name: null } hasName)
+                hasName.Name = connName;
+        }
             
-        return dbExtended.OpenDbConnection(namedConnection);
+        if (namedConnection == null) 
+            return dbExtended.OpenDbConnection(withName);
+            
+        return dbExtended.OpenDbConnection(namedConnection, withName);
     }
 
     public virtual async Task<IDbConnection> GetDbConnectionAsync(string namedConnection, IRequest req = null)
@@ -1058,11 +1082,18 @@ public abstract partial class ServiceStackHost
         var dbFactory = Container.TryResolve<IDbConnectionFactory>();
         if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
             throw new NotSupportedException($"{dbFactory.GetType().Name} does not implement IDbConnectionFactoryExtended");
+        
+        void withName(IDbConnection db)
+        {
+            var connName = req?.Dto?.GetType().Name ?? req?.PathInfo;
+            if (connName != null && db is IHasName { Name: null } hasName)
+                hasName.Name = connName;
+        }
 
         if (namedConnection == null) 
-            return await dbExtended.OpenDbConnectionAsync().ConfigAwait();
+            return await dbExtended.OpenDbConnectionAsync(withName).ConfigAwait();
             
-        return await dbExtended.OpenDbConnectionAsync(namedConnection).ConfigAwait();
+        return await dbExtended.OpenDbConnectionAsync(namedConnection,withName).ConfigAwait();
     }
 
     public virtual string GetDbNamedConnection(IRequest req, object dto=null)

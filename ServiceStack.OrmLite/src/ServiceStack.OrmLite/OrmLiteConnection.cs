@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Data;
 using ServiceStack.Logging;
+using ServiceStack.Model;
 using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite;
@@ -14,7 +15,7 @@ namespace ServiceStack.OrmLite;
 /// Wrapper IDbConnection class to allow for connection sharing, mocking, etc.
 /// </summary>
 public class OrmLiteConnection
-    : IDbConnection, IHasDbConnection, IHasDbTransaction, ISetDbTransaction, IHasDialectProvider
+    : IDbConnection, IHasDbConnection, IHasDbTransaction, ISetDbTransaction, IHasDialectProvider, IHasName
 {
     public readonly OrmLiteConnectionFactory Factory;
     public string? Name { get; set; }
