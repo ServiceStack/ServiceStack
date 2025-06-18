@@ -1009,21 +1009,68 @@ public abstract partial class ServiceStackHost
         return dbFactory.OpenDbConnection();
     }
 
-    public virtual IDbConnection GetDbConnection(string namedConnection)
+    public virtual async Task<IDbConnection> GetDbConnectionAsync(IRequest req = null)
     {
         var dbFactory = Container.TryResolve<IDbConnectionFactory>();
+        if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
+            throw new NotSupportedException($"{dbFactory.GetType().Name} does not implement IDbConnectionFactoryExtended");
 
+        if (req != null)
+        {
+            if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
+            {
+                if (connInfo.ConnectionString != null)
+                {
+                    return connInfo.ProviderName != null 
+                        ? await dbExtended.OpenDbConnectionStringAsync(connInfo.ConnectionString, connInfo.ProviderName).ConfigAwait() 
+                        : await dbExtended.OpenDbConnectionStringAsync(connInfo.ConnectionString).ConfigAwait();
+                }
+
+                if (connInfo.NamedConnection != null)
+                    return await dbExtended.OpenDbConnectionAsync(connInfo.NamedConnection);
+            }
+            else
+            {
+                var namedConnectionAttr = req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>();
+                if (namedConnectionAttr != null)
+                {
+                    return await dbExtended.OpenDbConnectionAsync(namedConnectionAttr.Name);
+                }
+            }
+        }
+        return await dbExtended.OpenDbConnectionAsync();
+    }
+
+    public virtual IDbConnection GetDbConnection(string namedConnection, IRequest req = null)
+    {
+        var dbFactory = Container.TryResolve<IDbConnectionFactory>();
         if (namedConnection == null) 
             return dbFactory.OpenDbConnection();
             
-        if (dbFactory is not IDbConnectionFactoryExtended dbFactoryExtended)
+        if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
             throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
             
-        return dbFactoryExtended.OpenDbConnection(namedConnection);
+        return dbExtended.OpenDbConnection(namedConnection);
     }
 
-    public virtual string GetDbNamedConnection(IRequest req)
+    public virtual async Task<IDbConnection> GetDbConnectionAsync(string namedConnection, IRequest req = null)
     {
+        var dbFactory = Container.TryResolve<IDbConnectionFactory>();
+        if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
+            throw new NotSupportedException($"{dbFactory.GetType().Name} does not implement IDbConnectionFactoryExtended");
+
+        if (namedConnection == null) 
+            return await dbExtended.OpenDbConnectionAsync().ConfigAwait();
+            
+        return await dbExtended.OpenDbConnectionAsync(namedConnection).ConfigAwait();
+    }
+
+    public virtual string GetDbNamedConnection(IRequest req, object dto=null)
+    {
+        var dtoAttr = dto?.GetType().FirstAttribute<NamedConnectionAttribute>();
+        if (dtoAttr != null)
+            return dtoAttr.Name;
+
         if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
             return connInfo.NamedConnection;
         var namedConnectionAttr = req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>();
