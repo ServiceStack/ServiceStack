@@ -36,7 +36,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         this.services = services;
         this.scopeFactory = scopeFactory;
 
-        var dialect = SqliteDialect.Provider;
+        var dialect = feature.DialectProvider;
         this.Table = dialect.GetTableName(typeof(BackgroundJob));
         this.columns = new(
             Logs:dialect.GetQuotedColumnName(nameof(BackgroundJob.Logs)),

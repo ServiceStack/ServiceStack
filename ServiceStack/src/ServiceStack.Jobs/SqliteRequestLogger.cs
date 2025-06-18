@@ -7,6 +7,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -95,6 +96,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         typeof(AdminQueryRequestLogs),
     ];
 
+    public Action<SqliteOrmLiteDialectProviderBase>? ConfigureDialectProvider { get; set; }
+    public SqliteOrmLiteDialectProviderBase DialectProvider { get; set; }
+    public Action<IDbConnection>? ConfigureDb { get; set; }
     public Func<IDbConnectionFactory, DateTime, IDbConnection> ResolveMonthDb { get; set; }
     public Func<DateTime, string> DbMonthFile { get; set; } = DefaultDbMonthFile;
     public Func<List<string>> ResolveMonthDbs { get; set; }
@@ -250,8 +254,11 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public void Register(IAppHost appHost)
     {
+        DialectProvider = SqliteConfiguration.Configure(SqliteDialect.Create());
+        ConfigureDialectProvider?.Invoke(DialectProvider);
+
         DbFactory ??= appHost.TryResolve<IDbConnectionFactory>() 
-            ?? new OrmLiteConnectionFactory("Data Source=:memory:", SqliteDialect.Provider);
+                      ?? new OrmLiteConnectionFactory("Data Source=:memory:", DialectProvider);
         AppHost ??= (IAppHostNetCore)appHost;        
         _ = GetDbDir().AssertDir();
         
@@ -278,16 +285,20 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     
     public IDbConnection DefaultResolveMonthDb(IDbConnectionFactory dbFactory, DateTime createdDate)
     {
+        var factory = (IDbConnectionFactoryExtended)dbFactory;
         var monthDb = DbMonthFile(createdDate);
-        if (!OrmLiteConnectionFactory.NamedConnections.ContainsKey(monthDb))
+        lock (this)
         {
-            var dataSource =  GetDbDir(monthDb);
-            dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", SqliteDialect.Provider);
-            var db = dbFactory.OpenDbConnection(monthDb);
-            InitMonthDbSchema(db, createdDate);
-            return db;
+            if (!OrmLiteConnectionFactory.NamedConnections.ContainsKey(monthDb))
+            {
+                var dataSource =  GetDbDir(monthDb);
+                dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", DialectProvider);
+                var db = factory.OpenDbConnection(monthDb, ConfigureDb);
+                InitMonthDbSchema(db, createdDate);
+                return db;
+            }
         }
-        return dbFactory.OpenDbConnection(monthDb);
+        return factory.OpenDbConnection(monthDb, ConfigureDb);
     }
 
     public IDbConnection OpenMonthDb(DateTime createdDate) => ResolveMonthDb(DbFactory, createdDate);

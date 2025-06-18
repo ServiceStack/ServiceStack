@@ -3,6 +3,7 @@ using System.Data;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.Jobs;
 
@@ -19,8 +20,13 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     public Func<DateTime, string> DbMonthFile { get; set; } = DefaultDbMonthFile;
     public Func<IDbConnectionFactory, IDbConnection> ResolveAppDb { get; set; }
     public Func<IDbConnectionFactory, DateTime, IDbConnection> ResolveMonthDb { get; set; }
+    public Action<SqliteOrmLiteDialectProviderBase>? ConfigureDialectProvider { get; set; }
+    public SqliteOrmLiteDialectProviderBase DialectProvider { get; set; }
+    public Action<IDbConnection>? ConfigureDb { get; set; }
+    public Action<IDbConnection>? ConfigureMonthDb { get; set; }
     public bool AutoInitSchema { get; set; } = true;
     public bool EnableAdmin { get; set; } = true;
+    public bool UseWriteLocks { get; set; } = true;
     public IDbConnectionFactory DbFactory { get; set; } = null!;
     public IAppHostNetCore AppHost { get; set; } = null!;
     public CommandsFeature CommandsFeature { get; set; } = null!;
@@ -55,24 +61,27 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
             AutoQueryFeature.RegisterAutoQueryDbIfNotExists();
         }
     }
-
+    
     public void Register(IAppHost appHost)
     {
+        DialectProvider = SqliteConfiguration.Configure(SqliteDialect.Create());
+        ConfigureDialectProvider?.Invoke(DialectProvider);
+
         CommandsFeature ??= appHost.GetPlugin<CommandsFeature>()
-            ?? throw new Exception($"{nameof(CommandsFeature)} is required to use {nameof(BackgroundsJobFeature)}");
+                            ?? throw new Exception($"{nameof(CommandsFeature)} is required to use {nameof(BackgroundsJobFeature)}");
         Jobs ??= appHost.TryResolve<IBackgroundJobs>() 
             ?? throw new Exception($"{nameof(IBackgroundJobs)} is not registered");
         DbFactory ??= appHost.TryResolve<IDbConnectionFactory>() 
-            ?? new OrmLiteConnectionFactory("Data Source=:memory:", SqliteDialect.Provider);
+            ?? new OrmLiteConnectionFactory("Data Source=:memory:", DialectProvider);
 
-        var dateConverter = SqliteDialect.Provider.GetDateTimeConverter();
+        var dateConverter = DialectProvider.GetDateTimeConverter();
         if (dateConverter.DateStyle == DateTimeKind.Unspecified)
             dateConverter.DateStyle = DateTimeKind.Utc;
 
         AppHost ??= (IAppHostNetCore)appHost;
         var fullDirPath = GetDbDir();
 
-        DbFactory.RegisterConnection(DbFile, fullDirPath.AssertDir().CombineWith(DbFile), SqliteDialect.Provider);
+        DbFactory.RegisterConnection(DbFile, fullDirPath.AssertDir().CombineWith(DbFile), DialectProvider);
         
         // If DbFile has changed, replace the namedConnection lock with Locks.JobsDb
         if (DbFile != Workers.JobsDb)
@@ -101,25 +110,28 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
             });
         }
     }
-
+    
     public static string DefaultDbMonthFile(DateTime createdDate) => $"jobs_{createdDate.Year}-{createdDate.Month:00}.db";
 
     public IDbConnection DefaultResolveAppDb(IDbConnectionFactory dbFactory) =>
-        dbFactory.OpenDbConnection(DbFile);
+        ((IDbConnectionFactoryExtended)dbFactory).OpenDbConnection(DbFile, ConfigureDb);
 
     public IDbConnection DefaultResolveMonthDb(IDbConnectionFactory dbFactory, DateTime createdDate)
     {
+        var factory = (IDbConnectionFactoryExtended)dbFactory;
         var monthDb = DbMonthFile(createdDate);
-        if (!OrmLiteConnectionFactory.NamedConnections.ContainsKey(monthDb))
+        lock (this)
         {
-            var dataSource =  GetDbDir(monthDb);
-                
-            dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", SqliteDialect.Provider);
-            var db = dbFactory.OpenDbConnection(monthDb);
-            InitMonthDbSchema(db);
-            return db;
+            if (!OrmLiteConnectionFactory.NamedConnections.ContainsKey(monthDb))
+            {
+                var dataSource =  GetDbDir(monthDb);
+                dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", DialectProvider);
+                var db = factory.OpenDbConnection(monthDb, ConfigureMonthDb);
+                InitMonthDbSchema(db);
+                return db;
+            }
         }
-        return dbFactory.OpenDbConnection(monthDb);
+        return factory.OpenDbConnection(monthDb, ConfigureMonthDb);
     }
 
     public IDbConnection OpenDb() => ResolveAppDb(DbFactory);

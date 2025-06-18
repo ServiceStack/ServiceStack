@@ -116,7 +116,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
     public virtual IDbConnection OpenDbConnection(Action<IDbConnection> configure)
     {
         var connection = CreateDbConnection();
-        configure(connection);
+        configure?.Invoke(connection);
         connection.Open();
         return connection;
     }
@@ -136,7 +136,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
     public virtual async Task<IDbConnection> OpenDbConnectionAsync(Action<IDbConnection> configure, CancellationToken token = default)
     {
         var connection = CreateDbConnection();
-        configure(connection);
+        configure?.Invoke(connection);
         if (connection is OrmLiteConnection ormliteConn)
         {
             await ormliteConn.OpenAsync(token).ConfigAwait();
@@ -163,7 +163,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
     public virtual async Task<IDbConnection> OpenDbConnectionAsync(string namedConnection, Action<IDbConnection> configure, CancellationToken token = default)
     {
         var connection = CreateDbConnection(namedConnection);
-        configure(connection);
+        configure?.Invoke(connection);
         if (connection is OrmLiteConnection ormliteConn)
         {
             await ormliteConn.OpenAsync(token).ConfigAwait();
@@ -193,7 +193,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
 
         var connection = DialectProvider.CreateOrmLiteConnection(this);
         connection.ConnectionString = connectionString;
-        configure(connection);
+        configure?.Invoke(connection);
 
         connection.Open();
         return connection;
@@ -218,7 +218,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
 
         var connection = DialectProvider.CreateOrmLiteConnection(this);
         connection.ConnectionString = connectionString;
-        configure(connection);
+        configure?.Invoke(connection);
 
         await connection.OpenAsync(token).ConfigAwait();
         return connection;
@@ -292,7 +292,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
     public virtual IDbConnection OpenDbConnection(string namedConnection, Action<IDbConnection> configure)
     {
         var connection = CreateDbConnection(namedConnection);
-        configure(connection);
+        configure?.Invoke(connection);
         connection.Open();
         return connection;
     }
