@@ -332,7 +332,7 @@ public static class OrmLiteConnectionFactoryExtensions
     public static IDbConnection Open(this IDbConnectionFactory connectionFactory, Action<IDbConnection> configure)
     {
         var db = connectionFactory.CreateDbConnection();
-        configure(db);
+        configure?.Invoke(db);
         db.Open();
         return db;
     }

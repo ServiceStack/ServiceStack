@@ -156,7 +156,7 @@ public class OrmLiteConnection
                 if (Factory.ConnectionFilter != null)
                     dbConn = Factory.ConnectionFilter(dbConn);
 
-                DialectProvider.InitConnection(dbConn);
+                DialectProvider.InitConnection(this);
             }
             catch (Exception ex)
             {
@@ -190,7 +190,7 @@ public class OrmLiteConnection
                 if (Factory.ConnectionFilter != null)
                     dbConn = Factory.ConnectionFilter(dbConn);
 
-                DialectProvider.InitConnection(dbConn);
+                DialectProvider.InitConnection(this);
             }
             catch (Exception ex)
             {

@@ -46,19 +46,23 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
 
     public int ExecuteNonQuery()
     {
-        var writeLock = dbConn.WriteLock;
-        if (writeLock != null)
+        DialectProvider.OnBeforeExecuteNonQuery?.Invoke(this);
+        try
         {
-            DialectProvider.OnBeforeWriteLock?.Invoke(this);
-            int ret;
-            lock (writeLock)
+            var writeLock = dbConn.WriteLock;
+            if (writeLock != null)
             {
-                ret = dbCmd.ExecuteNonQuery();
+                lock (writeLock)
+                {
+                    return  dbCmd.ExecuteNonQuery();
+                }
             }
-            DialectProvider.OnAfterWriteLock?.Invoke(this);
-            return ret;
+            return dbCmd.ExecuteNonQuery();
         }
-        return dbCmd.ExecuteNonQuery();
+        finally
+        {
+            DialectProvider.OnAfterExecuteNonQuery?.Invoke(this);
+        }
     }
 
     public IDataReader ExecuteReader()

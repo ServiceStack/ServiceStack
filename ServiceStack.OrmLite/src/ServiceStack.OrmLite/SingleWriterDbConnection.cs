@@ -65,7 +65,7 @@ public class SingleWriterDbConnection : DbConnection, IHasWriteLock
                     if (Factory.ConnectionFilter != null)
                         dbConn = (DbConnection)Factory.ConnectionFilter(dbConn);
 
-                    Factory.DialectProvider.InitConnection(dbConn);
+                    Factory.DialectProvider.InitConnection(this);
                 }
             }
             catch (Exception ex)

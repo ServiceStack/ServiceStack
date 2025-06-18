@@ -51,8 +51,8 @@ public interface IOrmLiteDialectProvider
     /// </summary>
     Action<IDbConnection> OnOpenConnection { get; set; }
     Action<IDbConnection> OnDisposeConnection { get; set; }
-    Action<IDbCommand> OnBeforeWriteLock { get; set; }
-    Action<IDbCommand> OnAfterWriteLock { get; set; }
+    Action<IDbCommand> OnBeforeExecuteNonQuery { get; set; }
+    Action<IDbCommand> OnAfterExecuteNonQuery { get; set; }
 
     IOrmLiteExecFilter ExecFilter { get; set; }
 

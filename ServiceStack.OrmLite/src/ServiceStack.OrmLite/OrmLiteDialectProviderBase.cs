@@ -179,8 +179,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public Action<IDbConnection> OnOpenConnection { get; set; }
     public Action<IDbConnection> OnDisposeConnection { get; set; }
-    public Action<IDbCommand> OnBeforeWriteLock { get; set; }
-    public Action<IDbCommand> OnAfterWriteLock { get; set; }
+    public Action<IDbCommand> OnBeforeExecuteNonQuery { get; set; }
+    public Action<IDbCommand> OnAfterExecuteNonQuery { get; set; }
 
     internal int OneTimeConnectionCommandsRun;
 
