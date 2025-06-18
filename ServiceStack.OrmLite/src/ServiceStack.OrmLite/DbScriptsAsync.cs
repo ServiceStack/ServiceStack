@@ -13,6 +13,7 @@ public partial class DbScriptsAsync : ScriptMethods
 {
     private const string DbInfo = "__dbinfo"; // Keywords.DbInfo
     private const string DbConnection = "__dbconnection"; // useDb global
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(DbScriptsAsync));
 
     private IDbConnectionFactory dbFactory;
     public IDbConnectionFactory DbFactory
@@ -30,13 +31,13 @@ public partial class DbScriptsAsync : ScriptMethods
         if (scope.PageResult != null)
         {
             if (scope.PageResult.Args.TryGetValue(DbInfo, out var oDbInfo) && oDbInfo is ConnectionInfo dbInfo)
-                return await DbFactory.OpenDbConnectionAsync(dbInfo);
+                return await DbFactory.OpenDbConnectionAsync(dbInfo,ConfigureDb);
 
             if (scope.PageResult.Args.TryGetValue(DbConnection, out var oDbConn) && oDbConn is Dictionary<string, object> globalDbConn)
                 return await OpenDbConnectionFromOptionsAsync(globalDbConn);
         }
 
-        return await DbFactory.OpenAsync();
+        return await DbFactory.OpenAsync(ConfigureDb);
     }
 
     T dialect<T>(ScriptScopeContext scope, Func<IOrmLiteDialectProvider, T> fn)
@@ -77,13 +78,13 @@ public partial class DbScriptsAsync : ScriptMethods
             if (options.TryGetValue("connectionString", out var connectionString))
             {
                 return options.TryGetValue("providerName", out var providerName)
-                    ? await DbFactory.OpenDbConnectionStringAsync((string) connectionString, (string) providerName).ConfigAwait()
-                    : await DbFactory.OpenDbConnectionStringAsync((string) connectionString).ConfigAwait();
+                    ? await DbFactory.OpenDbConnectionStringAsync((string) connectionString, (string) providerName, ConfigureDb).ConfigAwait()
+                    : await DbFactory.OpenDbConnectionStringAsync((string) connectionString, ConfigureDb).ConfigAwait();
             }
 
             if (options.TryGetValue("namedConnection", out var namedConnection))
             {
-                return await DbFactory.OpenDbConnectionAsync((string) namedConnection).ConfigAwait();
+                return await DbFactory.OpenDbConnectionAsync((string) namedConnection, ConfigureDb).ConfigAwait();
             }
         }
 

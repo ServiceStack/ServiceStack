@@ -14,6 +14,7 @@ public class DbScripts : ScriptMethods
 {
     private const string DbInfo = "__dbinfo"; // Keywords.DbInfo
     private const string DbConnection = "__dbconnection"; // useDb global
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(DbScripts));
         
     private IDbConnectionFactory dbFactory;
     public IDbConnectionFactory DbFactory
@@ -31,13 +32,13 @@ public class DbScripts : ScriptMethods
         if (scope.PageResult != null)
         {
             if (scope.PageResult.Args.TryGetValue(DbInfo, out var oDbInfo) && oDbInfo is ConnectionInfo dbInfo)
-                return DbFactory.OpenDbConnection(dbInfo);
+                return DbFactory.OpenDbConnection(dbInfo,ConfigureDb);
 
             if (scope.PageResult.Args.TryGetValue(DbConnection, out var oDbConn) && oDbConn is Dictionary<string, object> globalDbConn)
                 return OpenDbConnectionFromOptions(globalDbConn);
         }
 
-        return DbFactory.OpenDbConnection();
+        return DbFactory.Open(ConfigureDb);
     }
 
     T dialect<T>(ScriptScopeContext scope, Func<IOrmLiteDialectProvider, T> fn)
@@ -78,13 +79,13 @@ public class DbScripts : ScriptMethods
             if (options.TryGetValue("connectionString", out var connectionString))
             {
                 return options.TryGetValue("providerName", out var providerName)
-                    ? DbFactory.OpenDbConnectionString((string) connectionString, (string) providerName)
-                    : DbFactory.OpenDbConnectionString((string) connectionString);
+                    ? DbFactory.OpenDbConnectionString((string) connectionString, (string) providerName, ConfigureDb)
+                    : DbFactory.OpenDbConnectionString((string) connectionString, ConfigureDb);
             }
 
             if (options.TryGetValue("namedConnection", out var namedConnection))
             {
-                return DbFactory.OpenDbConnection((string) namedConnection);
+                return DbFactory.Open((string) namedConnection, ConfigureDb);
             }
         }
 

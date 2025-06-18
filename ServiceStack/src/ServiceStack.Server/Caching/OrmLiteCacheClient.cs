@@ -41,7 +41,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
     public T Exec<T>(Func<IDbConnection, T> action)
     {
         using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
-        using (var db = DbFactory.Open())
+        using (var db = DbFactory.Open(ConfigureDb))
         {
             return action(db);
         }
@@ -50,7 +50,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
     public void Exec(Action<IDbConnection> action)
     {
         using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
-        using (var db = DbFactory.Open())
+        using (var db = DbFactory.Open(ConfigureDb))
         {
             action(db);
         }

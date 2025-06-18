@@ -47,6 +47,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     {
         ResolveAppDb = DefaultResolveAppDb;
         ResolveMonthDb = DefaultResolveMonthDb;
+        ConfigureDb = ConfigureMonthDb = DefaultConfigureDb;
     }
 
     public void Configure(IServiceCollection services)
@@ -112,6 +113,8 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     }
     
     public static string DefaultDbMonthFile(DateTime createdDate) => $"jobs_{createdDate.Year}-{createdDate.Month:00}.db";
+
+    public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
 
     public IDbConnection DefaultResolveAppDb(IDbConnectionFactory dbFactory) =>
         ((IDbConnectionFactoryExtended)dbFactory).OpenDbConnection(DbFile, ConfigureDb);

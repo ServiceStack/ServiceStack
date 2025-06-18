@@ -64,10 +64,11 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
         });
     }
 
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(AdminDatabaseFeature));
     public void AfterPluginsLoaded(IAppHost appHost)
     {
         var dbFactory = appHost.Resolve<IDbConnectionFactory>();
-        using var db = dbFactory.Open();
+        using var db = dbFactory.Open(ConfigureDb);
 
         var databases = new List<DatabaseInfo> {
             new() {
@@ -78,7 +79,7 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
 
         foreach (var entry in dbFactory.GetNamedConnections())
         {
-            using var namedDb = dbFactory.OpenDbConnection(entry.Key);
+            using var namedDb = dbFactory.Open(entry.Key, ConfigureDb);
             databases.Add(new () {
                 Name = entry.Key,
                 Schemas = ToSchemaTables(namedDb.GetSchemaTables()),

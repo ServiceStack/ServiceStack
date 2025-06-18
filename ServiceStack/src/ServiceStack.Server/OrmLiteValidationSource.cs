@@ -13,6 +13,7 @@ namespace ServiceStack;
 public class OrmLiteValidationSource : IValidationSource, IRequiresSchema, IValidationSourceAdmin, IClearable
 {
     public IDbConnectionFactory DbFactory { get; }
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteValidationSource));
     public ICacheClient Cache { get; }
     public TimeSpan? CacheDuration { get; }
         
@@ -47,8 +48,8 @@ public class OrmLiteValidationSource : IValidationSource, IRequiresSchema, IVali
     private IDbConnection OpenDbConnection()
     {
         var db = NamedConnection == null
-            ? DbFactory.OpenDbConnection()
-            : DbFactory.OpenDbConnection(NamedConnection);
+            ? DbFactory.Open(ConfigureDb)
+            : DbFactory.Open(NamedConnection,ConfigureDb);
         return db;
     }
 

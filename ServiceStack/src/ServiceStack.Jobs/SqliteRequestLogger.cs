@@ -111,6 +111,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     {
         ResolveMonthDb = DefaultResolveMonthDb;
         ResolveMonthDbs = DefaultResolveMonthDbs;
+        ConfigureDb = DefaultConfigureDb;
     }
 
     public override void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
@@ -282,6 +283,8 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         var files = dir.GetMatchingFiles("requests_*.db");
         return files.ToList();
     }
+    
+    public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
     
     public IDbConnection DefaultResolveMonthDb(IDbConnectionFactory dbFactory, DateTime createdDate)
     {

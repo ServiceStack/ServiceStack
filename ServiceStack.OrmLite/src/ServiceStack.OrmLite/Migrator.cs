@@ -61,6 +61,7 @@ public class Migrator
     public const string Last = "last";
     public IDbConnectionFactory DbFactory { get; }
     public Type[] MigrationTypes { get; }
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(Migrator));
     
     public Migrator(IDbConnectionFactory dbFactory, params Assembly[] migrationAssemblies)
         : this(dbFactory, GetAllMigrationTypes(migrationAssemblies).ToArray()) {}
@@ -150,7 +151,7 @@ public class Migrator
     public AppTaskResult Run() => Run(throwIfError:true);
     public AppTaskResult Run(bool throwIfError)
     {
-        using var db = DbFactory.Open();
+        using var db = DbFactory.Open(ConfigureDb);
         Init(db);
         var allLogs = new StringBuilder();
 
@@ -360,7 +361,7 @@ public class Migrator
     public AppTaskResult Revert(string? migrationName) => Revert(migrationName, throwIfError:true);
     public AppTaskResult Revert(string? migrationName, bool throwIfError)
     {
-        using var db = DbFactory.Open();
+        using var db = DbFactory.Open(ConfigureDb);
         Init(db);
         
         var allMigrationTypes = MigrationTypes.ToList();
@@ -482,8 +483,8 @@ public class Migrator
         try
         {
             useDb = namedConnection == null
-                ? dbFactory.OpenDbConnection()
-                : dbFactory.OpenDbConnection(namedConnection);
+                ? dbFactory.Open(ConfigureDb)
+                : dbFactory.Open(namedConnection,ConfigureDb);
 
             instance.DbFactory = dbFactory;
             instance.Db = useDb;

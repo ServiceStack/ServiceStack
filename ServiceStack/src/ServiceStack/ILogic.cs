@@ -7,6 +7,7 @@ using System.Data;
 using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.Messaging;
+using ServiceStack.Model;
 using ServiceStack.Redis;
 
 namespace ServiceStack;
@@ -40,7 +41,12 @@ public abstract class RepositoryBase : IDisposable, IRepository
     public virtual IDbConnectionFactory DbFactory { get; set; }
 
     IDbConnection db;
-    public virtual IDbConnection Db => db ??= DbFactory.OpenDbConnection();
+    public virtual IDbConnection Db => db ??= 
+        (DbFactory as IDbConnectionFactoryExtended)?.OpenDbConnection(x => {
+            if (x is IHasName hasName)
+                hasName.Name = GetType().Name;
+        }) 
+        ?? DbFactory.OpenDbConnection();
 
     public virtual void Dispose() => db?.Dispose();
 }

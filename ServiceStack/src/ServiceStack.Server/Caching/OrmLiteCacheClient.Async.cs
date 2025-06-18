@@ -12,10 +12,11 @@ namespace ServiceStack.Caching;
 
 public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemoveByPatternAsync
 {
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteCacheClient));
     public async Task<T> ExecAsync<T>(Func<IDbConnection, Task<T>> action, CancellationToken token=default)
     {
         using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
-        using (var db = await DbFactory.OpenAsync(token).ConfigAwait())
+        using (var db = await DbFactory.OpenAsync(ConfigureDb,token).ConfigAwait())
         {
             return await action(db).ConfigAwait();
         }
@@ -24,7 +25,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
     public async Task ExecAsync(Func<IDbConnection,Task> action, CancellationToken token=default)
     {
         using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
-        using (var db = await DbFactory.OpenAsync(token).ConfigAwait())
+        using (var db = await DbFactory.OpenAsync(ConfigureDb,token).ConfigAwait())
         {
             await action(db).ConfigAwait();
         }

@@ -115,6 +115,7 @@ public interface IGenerateCrudServices : ITableResolver
 
 public static class CrudUtils
 {
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(CrudUtils));
     public static MetadataAttribute ToAttribute(string name, Dictionary<string, object> args = null, Attribute attr = null) => new() {
         Name = name,
         Attribute = attr,
@@ -190,8 +191,8 @@ public static class CrudUtils
         ITableResolver config = null)
     {
         var db = namedConnection != null
-            ? dbFactory.OpenDbConnection(namedConnection)
-            : dbFactory.OpenDbConnection();
+            ? dbFactory.Open(namedConnection,ConfigureDb)
+            : dbFactory.Open(ConfigureDb);
 
         try
         {
@@ -240,8 +241,8 @@ public static class CrudUtils
                     {
                         try { db.Dispose(); } catch {}
                         db = namedConnection != null
-                            ? dbFactory.OpenDbConnection(namedConnection)
-                            : dbFactory.OpenDbConnection();
+                            ? dbFactory.Open(namedConnection,ConfigureDb)
+                            : dbFactory.Open(ConfigureDb);
                     }
                 }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -14,6 +15,7 @@ public class ConfigSetting
 public class OrmLiteAppSettings(IDbConnectionFactory dbFactory)
     : AppSettingsBase(new OrmLiteSettings(dbFactory)), IRequiresSchema
 {
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteAppSettings));
     private OrmLiteSettings DbSettings => (OrmLiteSettings)base.settings;
 
     public IDbConnectionFactory DbFactory => DbSettings.DbFactory;
@@ -24,20 +26,20 @@ public class OrmLiteAppSettings(IDbConnectionFactory dbFactory)
 
         public string Get(string key)
         {
-            using var db = DbFactory.Open();
+            using var db = DbFactory.Open(ConfigureDb);
             var config = db.SingleById<ConfigSetting>(key);
             return config?.Value;
         }
 
         public List<string> GetAllKeys()
         {
-            using var db = DbFactory.Open();
+            using var db = DbFactory.Open(ConfigureDb);
             return db.Column<string>(db.From<ConfigSetting>().Select(x => x.Id));
         }
 
         public Dictionary<string, string> GetAll()
         {
-            using var db = DbFactory.Open();
+            using var db = DbFactory.Open(ConfigureDb);
             return db.Dictionary<string, string>(
                 db.From<ConfigSetting>().Select(x => new { x.Id, x.Value }));
         }
@@ -48,19 +50,19 @@ public class OrmLiteAppSettings(IDbConnectionFactory dbFactory)
                 ? (string)(object)value
                 : value.ToJsv();
 
-            using var db = DbFactory.Open();
+            using var db = DbFactory.Open(ConfigureDb);
             db.Save(new ConfigSetting { Id = key, Value = textValue });
         }
 
         public bool Exists(string key)
         {
-            using var db = DbFactory.Open();
+            using var db = DbFactory.Open(ConfigureDb);
             return db.Count<ConfigSetting>(q => q.Id == key) > 0;
         }
 
         public void Delete(string key)
         {
-            using var db = DbFactory.Open();
+            using var db = DbFactory.Open(ConfigureDb);
             db.DeleteById<ConfigSetting>(key);
         }
     }
@@ -88,7 +90,7 @@ public class OrmLiteAppSettings(IDbConnectionFactory dbFactory)
 
     public void InitSchema()
     {
-        using var db = DbSettings.DbFactory.Open();
+        using var db = DbSettings.DbFactory.Open(ConfigureDb);
         db.CreateTableIfNotExists<ConfigSetting>();
     }
 }

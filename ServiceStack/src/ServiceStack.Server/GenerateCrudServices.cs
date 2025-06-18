@@ -170,6 +170,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     };
 
     private const string NoSchema = "__noschema";
+    static void ConfigureDb(System.Data.IDbConnection db) => db.WithName(nameof(GenerateCrudServices));
 
     public void Configure(IServiceCollection services)
     {
@@ -1108,8 +1109,8 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
 
         using var db = request.NamedConnection == null
-            ? dbFactory.OpenDbConnection()
-            : dbFactory.OpenDbConnection(request.NamedConnection);
+            ? dbFactory.Open(ConfigureDb)
+            : dbFactory.Open(request.NamedConnection,ConfigureDb);
         var dialect = db.GetDialectProvider();
 
         List<MetadataPropertyType> toMetaProps(AutoGenContext ctx, IEnumerable<ColumnSchema> columns, bool isModel=false)

@@ -32,6 +32,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public TimeSpan? DefaultExpiry { get; set; }
     public ConcurrentDictionary<int, DateTime> LastUsedApiKeys { get; set; } = new();
     public ConcurrentDictionary<string, IApiKey> ValidApiKeys { get; } = new();
+    public void ConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
 
     public List<Type> RegisterServices { get; set; } = [
         typeof(AdminApiKeysService),
@@ -387,7 +388,7 @@ public class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory d
 {
     public async Task<IApiKey?> GetApiKeyFromDbAsync(string key)
     {
-        using var db = dbFactory.OpenDbConnection();
+        using var db = await dbFactory.OpenAsync(feature.ConfigureDb);
         var apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Key == key);
         if (apiKey == null) 
             return null;
@@ -413,13 +414,13 @@ public class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory d
 
     public async Task<IApiKey?> GetApiKeyByIdAsync(int id)
     {
-        using var db = dbFactory.OpenDbConnection();
+        using var db = await dbFactory.OpenAsync(feature.ConfigureDb);
         var apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Id == id);
         return apiKey;
     }
 }
 
-public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
+public class AdminApiKeysService : Service
 {
     private async Task<ApiKeysFeature> AssertRequiredRole()
     {
@@ -432,7 +433,7 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
     {
         var feature = await AssertRequiredRole().ConfigAwait();
 
-        using var db = dbFactory.OpenDbConnection();
+        using var db = Db;
         var q = db.From<ApiKeysFeature.ApiKey>();
         if (request.Id != null)
             q.Where(x => x.Id == request.Id);
@@ -527,7 +528,7 @@ public class AdminApiKeysService(IDbConnectionFactory dbFactory) : Service
 }
 
 
-public class UserApiKeysService(IDbConnectionFactory dbFactory) : Service
+public class UserApiKeysService : Service
 {
     private (string userId, string? userName) GetUserIdAndUserName()
     {
@@ -541,7 +542,7 @@ public class UserApiKeysService(IDbConnectionFactory dbFactory) : Service
     public async Task<object> Get(QueryUserApiKeys request)
     {
         var (userId, _) = GetUserIdAndUserName();
-        using var db = dbFactory.OpenDbConnection();
+        using var db = Db;
         var q = db.From<ApiKeysFeature.ApiKey>()
             .Where(x => x.UserId == userId);
         if (request.Id != null)

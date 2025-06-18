@@ -17,8 +17,8 @@ public partial class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : OrmLit
     protected async Task<IDbConnection> OpenDbConnectionAsync()
     {
         return this.NamedConnection != null
-            ? await dbFactory.OpenDbConnectionAsync(NamedConnection).ConfigAwait()
-            : await dbFactory.OpenDbConnectionAsync().ConfigAwait();
+            ? await dbFactory.OpenDbConnectionAsync(NamedConnection,ConfigureDb).ConfigAwait()
+            : await dbFactory.OpenDbConnectionAsync(ConfigureDb).ConfigAwait();
     }
 
     public override async Task ExecAsync(Func<IDbConnection,Task> fn)
@@ -66,8 +66,8 @@ public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetai
         {
             //Required by In Memory Sqlite
             var dbConn = connStr == ormLiteDbFactory.ConnectionString
-                ? await dbFactory.OpenDbConnectionAsync().ConfigAwait()
-                : await dbFactory.OpenDbConnectionStringAsync(connStr).ConfigAwait();
+                ? await dbFactory.OpenDbConnectionAsync(ConfigureDb).ConfigAwait()
+                : await dbFactory.OpenDbConnectionStringAsync(connStr,ConfigureDb).ConfigAwait();
 
             using (dbConn)
             {

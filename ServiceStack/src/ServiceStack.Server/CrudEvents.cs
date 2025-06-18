@@ -174,7 +174,8 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
     ICrudEvents, IRequiresSchema, IClearable
     where T : CrudEvent
 {
-        
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteCrudEvents));
+
     /// <summary>
     /// Don't persist CrudEvent's in primary IDbConnectionFactory
     /// </summary>
@@ -272,12 +273,12 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
     {
         if (!ExcludePrimaryDb)
         {
-            using var db = DbFactory.OpenDbConnection();
+            using var db = DbFactory.Open(ConfigureDb);
             db.CreateTableIfNotExists<T>();
         }
         foreach (var namedConnection in NamedConnections)
         {
-            using var db = DbFactory.OpenDbConnection(namedConnection);
+            using var db = DbFactory.Open(namedConnection, ConfigureDb);
             db.CreateTableIfNotExists<T>();
         }
     }
@@ -289,12 +290,12 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
     {
         if (!ExcludePrimaryDb)
         {
-            using var db = DbFactory.OpenDbConnection();
+            using var db = DbFactory.Open(ConfigureDb);
             db.DeleteAll<T>();
         }
         foreach (var namedConnection in NamedConnections)
         {
-            using var db = DbFactory.OpenDbConnection(namedConnection);
+            using var db = DbFactory.Open(namedConnection,ConfigureDb);
             db.DeleteAll<T>();
         }
     }
@@ -307,12 +308,12 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
     {
         if (!ExcludePrimaryDb)
         {
-            using var db = DbFactory.OpenDbConnection();
+            using var db = DbFactory.Open(ConfigureDb);
             db.DropAndCreateTable<T>();
         }
         foreach (var namedConnection in NamedConnections)
         {
-            using var db = DbFactory.OpenDbConnection(namedConnection);
+            using var db = DbFactory.Open(namedConnection, ConfigureDb);
             db.DropAndCreateTable<T>();
         }
         return this;

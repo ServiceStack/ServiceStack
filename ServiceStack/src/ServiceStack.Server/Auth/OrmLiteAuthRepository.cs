@@ -23,12 +23,13 @@ public partial class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails>(
     where TUserAuthDetails : class, IUserAuthDetails
 {
     public string NamedConnection { get; private set; } = namedConnection;
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteAuthRepository));
 
     protected IDbConnection OpenDbConnection()
     {
         return this.NamedConnection != null
-            ? dbFactory.OpenDbConnection(NamedConnection)
-            : dbFactory.OpenDbConnection();
+            ? dbFactory.Open(NamedConnection,ConfigureDb)
+            : dbFactory.Open(ConfigureDb);
     }
 
     public override void Exec(Action<IDbConnection> fn)
@@ -57,6 +58,7 @@ public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetai
     where TUserAuthDetails : class, IUserAuthDetails
 {
     private readonly IDbConnection db;
+    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteAuthRepositoryMultitenancy));
 
     public OrmLiteAuthRepositoryMultitenancy(IDbConnection db)
     {
@@ -99,8 +101,8 @@ public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetai
         {
             //Required by In Memory Sqlite
             var db = connStr == ormLiteDbFactory.ConnectionString
-                ? dbFactory.OpenDbConnection()
-                : dbFactory.OpenDbConnectionString(connStr);
+                ? dbFactory.Open(ConfigureDb)
+                : dbFactory.OpenDbConnectionString(connStr,ConfigureDb);
 
             using (db)
             {
