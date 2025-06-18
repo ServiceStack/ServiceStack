@@ -967,7 +967,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         var namedConnection = GetDbNamedConnection(fromType, req);
         return namedConnection == null 
             ? HostContext.AppHost.GetDbConnection(req)
-            : HostContext.TryResolve<IDbConnectionFactory>().OpenDbConnection(namedConnection);
+            : HostContext.AppHost.GetDbConnection(namedConnection, req);
     }
 
     public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null)

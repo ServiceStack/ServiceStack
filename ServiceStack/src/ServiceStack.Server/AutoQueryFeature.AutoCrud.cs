@@ -111,7 +111,7 @@ public partial class AutoQueryFeature
 }
     
 [DefaultRequest(typeof(GetCrudEvents))]
-public partial class GetCrudEventsService(IAutoQueryDb autoQuery, IDbConnectionFactory dbFactory) : Service
+public partial class GetCrudEventsService(IAutoQueryDb autoQuery) : Service
 {
     public async Task<object> Any(GetCrudEvents request)
     {
@@ -122,11 +122,10 @@ public partial class GetCrudEventsService(IAutoQueryDb autoQuery, IDbConnectionF
             throw new ArgumentNullException(nameof(request.Model));
 
         var dto = appHost.Metadata.FindDtoType(request.Model);
-        var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
-
+        var namedConnection = appHost.GetDbNamedConnection(Request, dto);
         using var useDb = namedConnection != null
-            ? await dbFactory.OpenDbConnectionAsync(namedConnection).ConfigAwait()
-            : await dbFactory.OpenDbConnectionAsync().ConfigAwait();
+            ? await appHost.GetDbConnectionAsync(namedConnection, Request).ConfigAwait()
+            : await appHost.GetDbConnectionAsync(Request).ConfigAwait();
             
         var q = autoQuery.CreateQuery(request, Request, useDb);
         var response = await autoQuery.ExecuteAsync(request, q, Request, useDb).ConfigAwait();
@@ -143,7 +142,7 @@ public partial class GetCrudEventsService(IAutoQueryDb autoQuery, IDbConnectionF
 }
 
 [DefaultRequest(typeof(CheckCrudEvents))]
-public partial class CheckCrudEventService(IAutoQueryDb autoQuery, IDbConnectionFactory dbFactory) : Service
+public partial class CheckCrudEventService(IAutoQueryDb autoQuery) : Service
 {
     public async Task<object> Any(CheckCrudEvents request)
     {
@@ -158,11 +157,10 @@ public partial class CheckCrudEventService(IAutoQueryDb autoQuery, IDbConnection
             : throw new ArgumentNullException(nameof(request.Ids));
 
         var dto = appHost.Metadata.FindDtoType(request.Model);
-        var namedConnection = dto?.FirstAttribute<NamedConnectionAttribute>()?.Name;
-
+        var namedConnection = appHost.GetDbNamedConnection(Request, dto);
         using var useDb = namedConnection != null
-            ? await dbFactory.OpenDbConnectionAsync(namedConnection).ConfigAwait()
-            : await dbFactory.OpenDbConnectionAsync().ConfigAwait();
+            ? await appHost.GetDbConnectionAsync(namedConnection, Request).ConfigAwait()
+            : await appHost.GetDbConnectionAsync(Request).ConfigAwait();
 
         var q = useDb.From<CrudEvent>()
             .Where(x => x.Model == request.Model)
