@@ -10,6 +10,7 @@ public static class PostgreSqlConfiguration
     public static PostgreSqlDialectProvider Configure(PostgreSqlDialectProvider dialect)
     {
         dialect.UseJson = true;
+        dialect.NamingStrategy = new OrmLiteNamingStrategyBase();
         return dialect;
     }
 
