@@ -91,7 +91,7 @@ namespace ServiceStack.OrmLite.Firebird
                     continue;
 
                 if (fieldDef.IsPrimaryKey)
-                    sbPk.AppendFormat(sbPk.Length != 0 ? ",{0}" : "{0}", GetQuotedColumnName(fieldDef.FieldName));
+                    sbPk.AppendFormat(sbPk.Length != 0 ? ",{0}" : "{0}", GetQuotedColumnName(fieldDef));
 
                 if (sbColumns.Length != 0)
                     sbColumns.Append(", \n  ");
@@ -107,9 +107,9 @@ namespace ServiceStack.OrmLite.Firebird
                 var fkName = NamingStrategy.ApplyNameRestrictions(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef)).ToLower();
                 sbConstraints.AppendFormat(", \n\n  CONSTRAINT {0} FOREIGN KEY ({1}) REFERENCES {2} ({3})",
                     GetQuotedName(fkName),
-                    GetQuotedColumnName(fieldDef.FieldName),
+                    GetQuotedColumnName(fieldDef),
                     GetQuotedTableName(refModelDef),
-                    GetQuotedColumnName(refModelDef.PrimaryKey.FieldName));
+                    GetQuotedColumnName(refModelDef.PrimaryKey));
 
                 sbConstraints.Append(GetForeignKeyOnDeleteClause(fieldDef.ForeignKey));
                 sbConstraints.Append(GetForeignKeyOnUpdateClause(fieldDef.ForeignKey));
@@ -153,7 +153,7 @@ namespace ServiceStack.OrmLite.Firebird
                 ?? GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
 
             var sql = StringBuilderCache.Allocate();
-            sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDef.FieldName), fieldDefinition);
+            sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDef), fieldDefinition);
 
             var defaultValue = GetDefaultValue(fieldDef);
             if (fieldDef.IsRowVersion)
@@ -201,7 +201,7 @@ namespace ServiceStack.OrmLite.Firebird
                 {
                     if (sbReturningColumns.Length > 0)
                         sbReturningColumns.Append(',');
-                    sbReturningColumns.Append(GetQuotedColumnName(fieldDef.FieldName));
+                    sbReturningColumns.Append(GetQuotedColumnName(fieldDef));
                 }
 
                 if ((ShouldSkipInsert(fieldDef) || (fieldDef.AutoIncrement && string.IsNullOrEmpty(fieldDef.Sequence)))
@@ -215,7 +215,7 @@ namespace ServiceStack.OrmLite.Firebird
 
                 try
                 {
-                    sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
+                    sbColumnNames.Append(GetQuotedColumnName(fieldDef));
 
                     // in FB4 only use 'next value for' if the FieldDef has a sequence explicitly.
                     if (fieldDef.AutoIncrement && !string.IsNullOrEmpty(fieldDef.Sequence))

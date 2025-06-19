@@ -103,7 +103,7 @@ public class FieldDefinition
     {
         return IsRowVersion
             ? dialectProvider.GetRowVersionSelectColumn(this).ToString()
-            : dialectProvider.GetQuotedColumnName(FieldName);
+            : dialectProvider.GetQuotedColumnName(this);
     }
 
     public string GetQuotedValue(object fromInstance, IOrmLiteDialectProvider dialect = null)

@@ -68,3 +68,8 @@ public class PrefixNamingStrategy : OrmLiteNamingStrategyBase
         ? alias 
         : ColumnPrefix + name;
 }
+
+public class NamingStrategyExtensions
+{
+    
+}

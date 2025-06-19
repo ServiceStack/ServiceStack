@@ -21,7 +21,7 @@ namespace ServiceStack.OrmLite.SqlServer
             var isMemoryTable = memTableAttrib != null;
 
             var sql = StringBuilderCache.Allocate();
-            sql.Append($"{GetQuotedColumnName(fieldDef.FieldName)} {fieldDefinition}");
+            sql.Append($"{GetQuotedColumnName(fieldDef)} {fieldDefinition}");
 
             if (fieldDef.FieldType == typeof(string))
             {
@@ -135,8 +135,8 @@ namespace ServiceStack.OrmLite.SqlServer
                     var refModelDef = OrmLiteUtils.GetModelDefinition(fieldDef.ForeignKey.ReferenceType);
                     sbConstraints.Append(
                         $", \n\n  CONSTRAINT {GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef))} " +
-                        $"FOREIGN KEY ({GetQuotedColumnName(fieldDef.FieldName)}) " +
-                        $"REFERENCES {GetQuotedTableName(refModelDef)} ({GetQuotedColumnName(refModelDef.PrimaryKey.FieldName)})");
+                        $"FOREIGN KEY ({GetQuotedColumnName(fieldDef)}) " +
+                        $"REFERENCES {GetQuotedTableName(refModelDef)} ({GetQuotedColumnName(refModelDef.PrimaryKey)})");
 
                     sbConstraints.Append(GetForeignKeyOnDeleteClause(fieldDef.ForeignKey));
                     sbConstraints.Append(GetForeignKeyOnUpdateClause(fieldDef.ForeignKey));

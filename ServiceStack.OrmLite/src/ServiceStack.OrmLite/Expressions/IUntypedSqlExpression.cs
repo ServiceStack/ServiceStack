@@ -699,8 +699,10 @@ namespace ServiceStack.OrmLite
                 : propertyName;
 
             return prefixTable
-                ? dialect.GetQuotedColumnName(tableDef, fieldName)
-                : dialect.GetQuotedColumnName(fieldName);
+                ? fieldDef != null 
+                    ? dialect.GetQuotedColumnName(tableDef, fieldDef) 
+                    : dialect.GetQuotedColumnName(tableDef, fieldName)
+                : dialect.GetQuotedColumnName(fieldDef);
         }
     }
 }

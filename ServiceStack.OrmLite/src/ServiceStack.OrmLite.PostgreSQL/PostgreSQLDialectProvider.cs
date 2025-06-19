@@ -243,7 +243,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         }
 
         var sql = StringBuilderCache.Allocate();
-        sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDef.FieldName), fieldDefinition);
+        sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDef), fieldDefinition);
 
         if (fieldDef.IsPrimaryKey)
         {
@@ -447,7 +447,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
             if (ShouldReturnOnInsert(modelDef, fieldDef))
             {
                 sbReturningColumns.Append(sbReturningColumns.Length == 0 ? " RETURNING " : ",");
-                sbReturningColumns.Append(GetQuotedColumnName(fieldDef.FieldName));
+                sbReturningColumns.Append(GetQuotedColumnName(fieldDef));
             }
 
             if ((ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
@@ -461,7 +461,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
             try
             {
-                sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
+                sbColumnNames.Append(GetQuotedColumnName(fieldDef));
 
                 sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName),fieldDef.CustomInsert));
                 AddParameter(cmd, fieldDef);
@@ -479,7 +479,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
                 continue;
 
             sbReturningColumns.Append(sbReturningColumns.Length == 0 ? " RETURNING " : ",");
-            sbReturningColumns.Append(GetQuotedColumnName(fieldDef.FieldName));
+            sbReturningColumns.Append(GetQuotedColumnName(fieldDef));
         }
 
         var strReturning = StringBuilderCacheAlt.ReturnAndFree(sbReturningColumns);
@@ -506,7 +506,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
     {
         var columnName = fieldDef.IsRowVersion
             ? RowVersionFieldComparer
-            : GetQuotedColumnName(fieldDef.FieldName);
+            : GetQuotedColumnName(fieldDef);
             
         sqlFilter
             .Append(columnName)
@@ -890,7 +890,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
     {
         //var column = GetColumnDefinition(fieldDef);
         var columnType = GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
-        var newColumnName = NamingStrategy.GetColumnName(fieldDef.FieldName);
+        var newColumnName = GetColumnName(fieldDef);
 
         var sql = $"ALTER TABLE {GetQuotedTableName(table, schema)} " +
                   $"ALTER COLUMN {GetQuotedColumnName(oldColumn)} TYPE {columnType}";

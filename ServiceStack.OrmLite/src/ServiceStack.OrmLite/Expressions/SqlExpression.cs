@@ -1430,7 +1430,7 @@ namespace ServiceStack.OrmLite
                     setFields.Append(", ");
 
                 setFields
-                    .Append(DialectProvider.GetQuotedColumnName(fieldDef.FieldName))
+                    .Append(DialectProvider.GetQuotedColumnName(fieldDef))
                     .Append("=")
                     .Append(DialectProvider.GetUpdateParam(dbCmd, value, fieldDef));
             }
@@ -1472,7 +1472,7 @@ namespace ServiceStack.OrmLite
                     setFields.Append(", ");
 
                 setFields
-                    .Append(DialectProvider.GetQuotedColumnName(fieldDef.FieldName))
+                    .Append(DialectProvider.GetQuotedColumnName(fieldDef))
                     .Append("=")
                     .Append(DialectProvider.GetUpdateParam(dbCmd, value, fieldDef));
             }
@@ -2680,9 +2680,15 @@ namespace ServiceStack.OrmLite
                 var includePrefix = PrefixFieldWithTableName && !tableDef.ModelType.IsInterface;
                 return includePrefix
                     ? (tableAlias == null 
-                        ? DialectProvider.GetQuotedColumnName(tableDef, fieldName) 
-                        : DialectProvider.GetQuotedColumnName(tableDef, tableAlias, fieldName))
-                    : DialectProvider.GetQuotedColumnName(fieldName);
+                        ? fd != null 
+                            ? DialectProvider.GetQuotedColumnName(tableDef, fd)
+                            : DialectProvider.GetQuotedColumnName(tableDef, fieldName) 
+                        : fd != null
+                            ? DialectProvider.GetQuotedColumnName(tableDef, tableAlias, fd)
+                            : DialectProvider.GetQuotedColumnName(tableDef, tableAlias, fieldName))
+                    : fd != null 
+                        ? DialectProvider.GetQuotedColumnName(fd)
+                        : DialectProvider.GetQuotedColumnName(fieldName);
             }
             return memberName;
         }

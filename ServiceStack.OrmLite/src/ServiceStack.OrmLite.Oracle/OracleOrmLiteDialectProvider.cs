@@ -310,7 +310,7 @@ namespace ServiceStack.OrmLite.Oracle
 
                 try
                 {
-                    sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
+                    sbColumnNames.Append(GetQuotedColumnName(fieldDef));
                     sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName),fieldDef.CustomInsert));
 
                     AddParameter(dbCommand, fieldDef);
@@ -418,7 +418,7 @@ namespace ServiceStack.OrmLite.Oracle
 
                 try
                 {
-                    sbColumnNames.Append($"{GetQuotedColumnName(fieldDef.FieldName)}");
+                    sbColumnNames.Append($"{GetQuotedColumnName(fieldDef)}");
                     if (!string.IsNullOrEmpty(fieldDef.Sequence) && dbCommand == null)
                         sbColumnValues.Append($":{fieldDef.Name}");
                     else
@@ -459,7 +459,7 @@ namespace ServiceStack.OrmLite.Oracle
                         sqlFilter.Append(" AND ");
 
                     sqlFilter
-                        .Append(GetQuotedColumnName(fieldDef.FieldName))
+                        .Append(GetQuotedColumnName(fieldDef))
                         .Append("=")
                         .Append(this.AddQueryParam(dbCmd, fieldDef.GetValue(objWithProperties), fieldDef).ParameterName);
 
@@ -473,7 +473,7 @@ namespace ServiceStack.OrmLite.Oracle
                     sql.Append(",");
 
                 sql
-                    .Append(GetQuotedColumnName(fieldDef.FieldName))
+                    .Append(GetQuotedColumnName(fieldDef))
                     .Append("=")
                     .Append(this.GetUpdateParam(dbCmd, fieldDef.GetValue(objWithProperties), fieldDef));
             }
@@ -500,7 +500,7 @@ namespace ServiceStack.OrmLite.Oracle
 
                 if (fieldDef.IsPrimaryKey)
                 {
-                    sbPk.AppendFormat(sbPk.Length != 0 ? ",{0}" : "{0}", GetQuotedColumnName(fieldDef.FieldName));
+                    sbPk.AppendFormat(sbPk.Length != 0 ? ",{0}" : "{0}", GetQuotedColumnName(fieldDef));
                 }
 
                 if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
@@ -515,9 +515,9 @@ namespace ServiceStack.OrmLite.Oracle
                 sbConstraints.AppendFormat(
                     ", \n\n  CONSTRAINT {0} FOREIGN KEY ({1}) REFERENCES {2} ({3})",
                     GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef)),
-                    GetQuotedColumnName(fieldDef.FieldName),
+                    GetQuotedColumnName(fieldDef),
                     GetQuotedTableName(refModelDef),
-                    GetQuotedColumnName(refModelDef.PrimaryKey.FieldName));
+                    GetQuotedColumnName(refModelDef.PrimaryKey));
 
                 sbConstraints.Append(GetForeignKeyOnDeleteClause(fieldDef.ForeignKey));
             }
@@ -612,7 +612,7 @@ namespace ServiceStack.OrmLite.Oracle
                 ?? GetColumnTypeDefinition(fieldDef.FieldType, fieldDef.FieldLength, fieldDef.Scale);
 
             var sql = StringBuilderCache.Allocate();
-            sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDef.FieldName), fieldDefinition);
+            sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldDef), fieldDefinition);
 
             var defaultValue = GetDefaultValue(fieldDef);
             if (fieldDef.IsRowVersion)
@@ -716,7 +716,7 @@ namespace ServiceStack.OrmLite.Oracle
                             && GetModel(fieldDef.ForeignKey.ReferenceType).ModelName == modelDef.ModelName)
                         {
                             if (filter.Length > 0) filter.Append(" AND ");
-                            filter.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef.FieldName),
+                            filter.AppendFormat("{0} = {1}", GetQuotedColumnName(fieldDef),
                                 fpk[i].GetQuotedValue(objWithProperties));
                             i++;
                         }
@@ -734,7 +734,7 @@ namespace ServiceStack.OrmLite.Oracle
                         {
                             if (filter.Length > 0) filter.Append(" AND ");
                             filter.AppendFormat("{0} = {1}",
-                                GetQuotedColumnName(fieldDef.FieldName),
+                                GetQuotedColumnName(fieldDef),
                                 fieldDef.GetQuotedValue(objWithProperties));
                         }
                     }
@@ -1033,21 +1033,21 @@ namespace ServiceStack.OrmLite.Oracle
             string foreignKeyName = null)
         {
             var sourceMd = ModelDefinition<T>.Definition;
-            var fieldName = sourceMd.GetFieldDefinition(field).FieldName;
+            var fieldDef = sourceMd.GetFieldDefinition(field);
 
             var referenceMd = ModelDefinition<TForeign>.Definition;
-            var referenceFieldName = referenceMd.GetFieldDefinition(foreignField).FieldName;
+            var referenceFieldDef = referenceMd.GetFieldDefinition(foreignField);
 
             var name = GetQuotedName(foreignKeyName.IsNullOrEmpty()
-                 ? "fk_" + sourceMd.ModelName + "_" + fieldName + "_" + referenceFieldName
+                 ? "fk_" + sourceMd.ModelName + "_" + fieldDef.FieldName + "_" + referenceFieldDef.FieldName
                  : foreignKeyName);
 
             return string.Format("ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) REFERENCES {3} ({4}){5}",
                  GetQuotedTableName(sourceMd.ModelName),
                  name,
-                 GetQuotedColumnName(fieldName),
+                 GetQuotedColumnName(fieldDef),
                  GetQuotedTableName(referenceMd.ModelName),
-                 GetQuotedColumnName(referenceFieldName),
+                 GetQuotedColumnName(referenceFieldDef),
                  GetForeignKeyOnDeleteClause(new ForeignKeyConstraint(typeof(T), FkOptionToString(onDelete))));
         }
 

@@ -201,11 +201,11 @@ namespace ServiceStack.OrmLite
             if (modelDef.RowVersion == null || !updateFields.TryGetValue(ModelDefinition.RowVersionName, out var rowVersion))
             {
                 args = new[] { idValue };
-                return "(" + dialectProvider.GetQuotedColumnName(pkField.FieldName) + " = {0})";
+                return "(" + dialectProvider.GetQuotedColumnName(pkField) + " = {0})";
             }
 
             args = new[] { idValue, rowVersion };
-            return "(" + dialectProvider.GetQuotedColumnName(pkField.FieldName) + " = {0} AND " + dialectProvider.GetRowVersionColumn(modelDef.RowVersion) + " = {1})";
+            return "(" + dialectProvider.GetQuotedColumnName(pkField) + " = {0} AND " + dialectProvider.GetRowVersionColumn(modelDef.RowVersion) + " = {1})";
         }
 
         public static int UpdateOnly<T>(this IDbCommand dbCmd,
@@ -351,7 +351,7 @@ namespace ServiceStack.OrmLite
                         hadRowVersion = true;
 
                     whereSql += string.IsNullOrEmpty(whereSql) ? "WHERE " : " AND ";
-                    whereSql += $"{dialectProvider.GetQuotedColumnName(fieldDef.FieldName)} = {dialectProvider.AddQueryParam(dbCmd, value, fieldDef).ParameterName}";
+                    whereSql += $"{dialectProvider.GetQuotedColumnName(fieldDef)} = {dialectProvider.AddQueryParam(dbCmd, value, fieldDef).ParameterName}";
                     continue;
                 }
 
@@ -359,7 +359,7 @@ namespace ServiceStack.OrmLite
                     sql.Append(", ");
 
                 sql
-                    .Append(dialectProvider.GetQuotedColumnName(fieldDef.FieldName))
+                    .Append(dialectProvider.GetQuotedColumnName(fieldDef))
                     .Append("=")
                     .Append(dialectProvider.GetUpdateParam(dbCmd, value, fieldDef));
             }

@@ -130,7 +130,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
 
             var sql = StringBuilderCache.Allocate();
-            sql.Append($"{GetQuotedColumnName(fieldDef.FieldName)} {fieldDefinition}");
+            sql.Append($"{GetQuotedColumnName(fieldDef)} {fieldDefinition}");
 
             if (fieldDef.FieldType == typeof(string))
             {
@@ -216,8 +216,8 @@ namespace ServiceStack.OrmLite.SqlServer
                     var refModelDef = GetModel(fieldDef.ForeignKey.ReferenceType);
                     sbConstraints.Append(
                         $", \n\n  CONSTRAINT {GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef))} " +
-                        $"FOREIGN KEY ({GetQuotedColumnName(fieldDef.FieldName)}) " +
-                        $"REFERENCES {GetQuotedTableName(refModelDef)} ({GetQuotedColumnName(refModelDef.PrimaryKey.FieldName)})");
+                        $"FOREIGN KEY ({GetQuotedColumnName(fieldDef)}) " +
+                        $"REFERENCES {GetQuotedTableName(refModelDef)} ({GetQuotedColumnName(refModelDef.PrimaryKey)})");
 
                     sbConstraints.Append(GetForeignKeyOnDeleteClause(fieldDef.ForeignKey));
                     sbConstraints.Append(GetForeignKeyOnUpdateClause(fieldDef.ForeignKey));
@@ -269,7 +269,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 // SqlGeometry: https://msdn.microsoft.com/en-us/library/microsoft.sqlserver.types.sqlgeometry.stequals.aspx
                 // SqlGeography: https://msdn.microsoft.com/en-us/library/microsoft.sqlserver.types.sqlgeography.stequals.aspx
                 sqlFilter
-                    .Append(GetQuotedColumnName(fieldDef.FieldName))
+                    .Append(GetQuotedColumnName(fieldDef))
                     .Append(".STEquals(")
                     .Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName)))
                     .Append(") = 1");
@@ -293,7 +293,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 // SqlGeometry: https://msdn.microsoft.com/en-us/library/microsoft.sqlserver.types.sqlgeometry.isnull.aspx
                 // SqlGeography: https://msdn.microsoft.com/en-us/library/microsoft.sqlserver.types.sqlgeography.isnull.aspx
                 sqlFilter
-                    .Append(GetQuotedColumnName(fieldDef.FieldName))
+                    .Append(GetQuotedColumnName(fieldDef))
                     .Append(".IsNull = 1");
             }
             else 

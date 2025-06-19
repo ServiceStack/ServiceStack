@@ -297,7 +297,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
 
             var sql = StringBuilderCache.Allocate();
-            sql.Append($"{GetQuotedColumnName(fieldDef.FieldName)} {fieldDefinition}");
+            sql.Append($"{GetQuotedColumnName(fieldDef)} {fieldDefinition}");
 
             if (fieldDef.FieldType == typeof(string))
             {
@@ -424,7 +424,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 {
                     if (sbReturningColumns.Length > 0)
                         sbReturningColumns.Append(",");
-                    sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef.FieldName));
+                    sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef));
                 }
 
                 if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
@@ -437,7 +437,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
                 try
                 {
-                    sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
+                    sbColumnNames.Append(GetQuotedColumnName(fieldDef));
                     sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName)));
 
                     AddParameter(cmd, fieldDef);
@@ -456,7 +456,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
                 if (sbReturningColumns.Length > 0)
                     sbReturningColumns.Append(",");
-                sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef.FieldName));
+                sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef));
             }
 
             var strReturning = StringBuilderCacheAlt.ReturnAndFree(sbReturningColumns);
@@ -535,7 +535,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 {
                     if (sbReturningColumns.Length > 0)
                         sbReturningColumns.Append(",");
-                    sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef.FieldName));
+                    sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef));
                 }
 
                 if ((ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
@@ -549,7 +549,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
                 try
                 {
-                    sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
+                    sbColumnNames.Append(GetQuotedColumnName(fieldDef));
 
                     if (SupportsSequences(fieldDef))
                     {
@@ -575,7 +575,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
                 if (sbReturningColumns.Length > 0)
                     sbReturningColumns.Append(",");
-                sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef.FieldName));
+                sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef));
             }
 
             var strReturning = StringBuilderCacheAlt.ReturnAndFree(sbReturningColumns);
@@ -603,7 +603,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 {
                     if (sbReturningColumns.Length > 0)
                         sbReturningColumns.Append(",");
-                    sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef.FieldName));
+                    sbReturningColumns.Append("INSERTED." + GetQuotedColumnName(fieldDef));
                 }
 
                 if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
@@ -618,7 +618,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
                 try
                 {
-                    sbColumnNames.Append(GetQuotedColumnName(fieldDef.FieldName));
+                    sbColumnNames.Append(GetQuotedColumnName(fieldDef));
                     sbColumnValues.Append(this.GetInsertParam(dbCmd, value, fieldDef));
                 }
                 catch (Exception ex)

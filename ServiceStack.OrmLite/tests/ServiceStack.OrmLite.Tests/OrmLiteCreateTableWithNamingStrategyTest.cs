@@ -190,13 +190,14 @@ public class OrmLiteCreateTableWithNamingStrategyTests(DialectContext context) :
     [Alias("AspNetUsers")]
     public class AppUser
     {
+        [Alias("Id")]
         public string Id { get; set; }
     }
 
     [Test]
     public void Can_create_table_with_FK_alias()
     {
-        // OrmLiteUtils.PrintSql();
+        OrmLiteUtils.PrintSql();
         using (new TemporaryNamingStrategy(DialectProvider, new LowercaseNamingStrategy()))
         {
             using var db = OpenDbConnection();
@@ -208,6 +209,7 @@ public class OrmLiteCreateTableWithNamingStrategyTests(DialectContext context) :
             Assert.That(db.GetLastSql(), Does.Contain("AspNetUsers"));
             db.CreateTable<Thread>();
             Assert.That(db.GetLastSql(), Does.Contain("AspNetUsers"));
+            Assert.That(db.GetLastSql().Replace('`','"'), Does.Contain("(\"Id\")"));
         }
     }
 }

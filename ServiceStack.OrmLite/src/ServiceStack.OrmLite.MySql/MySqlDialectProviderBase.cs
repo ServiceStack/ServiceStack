@@ -502,9 +502,9 @@ namespace ServiceStack.OrmLite.MySql
                 sbConstraints.AppendFormat(
                     ", \n\n  CONSTRAINT {0} FOREIGN KEY ({1}) REFERENCES {2} ({3})",
                     GetQuotedName(fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, NamingStrategy, fieldDef)),
-                    GetQuotedColumnName(fieldDef.FieldName),
+                    GetQuotedColumnName(fieldDef),
                     GetQuotedTableName(refModelDef),
-                    GetQuotedColumnName(refModelDef.PrimaryKey.FieldName));
+                    GetQuotedColumnName(refModelDef.PrimaryKey));
 
                 if (!string.IsNullOrEmpty(fieldDef.ForeignKey.OnDelete))
                     sbConstraints.AppendFormat(" ON DELETE {0}", fieldDef.ForeignKey.OnDelete);

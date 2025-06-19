@@ -39,18 +39,12 @@ public static class OrmLiteDialectProviderExtensions
         return (dialect ?? OrmLiteConfig.DialectProvider).NamingStrategy.GetColumnName(columnName);
     }
 
-    public static string GetQuotedColumnName(this IOrmLiteDialectProvider dialect, 
-        FieldDefinition fieldDef)
-    {
-        return dialect.GetQuotedColumnName(fieldDef.FieldName);
-    }
-
     public static string GetQuotedColumnName(this IOrmLiteDialectProvider dialect,
         ModelDefinition tableDef, FieldDefinition fieldDef)
     {
         return dialect.GetQuotedTableName(tableDef) +
                "." +
-               dialect.GetQuotedColumnName(fieldDef.FieldName);
+               dialect.GetQuotedColumnName(fieldDef);
     }
 
     public static string GetQuotedColumnName(this IOrmLiteDialectProvider dialect,
@@ -61,7 +55,7 @@ public static class OrmLiteDialectProviderExtensions
             
         return dialect.GetQuotedTableName(tableAlias) //aliases shouldn't have schemas
                + "." +
-               dialect.GetQuotedColumnName(fieldDef.FieldName);
+               dialect.GetQuotedColumnName(fieldDef);
     }
 
     public static string GetQuotedColumnName(this IOrmLiteDialectProvider dialect,

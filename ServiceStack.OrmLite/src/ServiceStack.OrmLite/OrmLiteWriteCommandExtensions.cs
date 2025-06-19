@@ -608,7 +608,7 @@ public static class OrmLiteWriteCommandExtensions
         var idParamString = dialectProvider.GetParam();
 
         var sql = $"DELETE FROM {dialectProvider.GetQuotedTableName(modelDef)} " +
-                  $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey.FieldName)} = {idParamString}";
+                  $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey)} = {idParamString}";
 
         var idParam = dbCmd.CreateParameter();
         idParam.ParameterName = idParamString;
@@ -654,7 +654,7 @@ public static class OrmLiteWriteCommandExtensions
         dbCmd.Parameters.Add(rowVersionParam);
 
         var sql = $"DELETE FROM {dialectProvider.GetQuotedTableName(modelDef)} " +
-                  $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey.FieldName)} = {idParam.ParameterName} " +
+                  $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey)} = {idParam.ParameterName} " +
                   $"AND {dialectProvider.GetRowVersionColumn(rowVersionField)} = {rowVersionParam.ParameterName}";
 
         return sql;
@@ -678,7 +678,7 @@ public static class OrmLiteWriteCommandExtensions
         var modelDef = ModelDefinition<T>.Definition;
 
         var sql = $"DELETE FROM {dialectProvider.GetQuotedTableName(modelDef)} " +
-                  $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey.FieldName)} IN ({sqlIn})";
+                  $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey)} IN ({sqlIn})";
         return sql;
     }
 
@@ -1195,7 +1195,7 @@ public static class OrmLiteWriteCommandExtensions
 
         var sql = $"SELECT {dialectProvider.GetRowVersionSelectColumn(modelDef.RowVersion)} " +
                   $"FROM {dialectProvider.GetQuotedTableName(modelDef)} " +
-                  $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey.FieldName)} = {idParamString}";
+                  $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey)} = {idParamString}";
 
         dbCmd.Parameters.Clear();
         var idParam = dbCmd.CreateParameter();

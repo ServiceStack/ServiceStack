@@ -125,7 +125,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
             if (i++ > 0)
                 sb.Append(",");
 
-            sb.Append(GetQuotedColumnName(fieldDef.FieldName));
+            sb.Append(GetQuotedColumnName(fieldDef));
         }
         sb.Append(") VALUES");
 

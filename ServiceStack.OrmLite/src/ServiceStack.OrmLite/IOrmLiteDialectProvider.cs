@@ -133,6 +133,7 @@ public interface IOrmLiteDialectProvider
     string GetQuotedTableName(string tableName, string schema, bool useStrategy);
 
     string GetQuotedColumnName(string columnName);
+    string GetQuotedColumnName(FieldDefinition fieldDef);
 
     string GetQuotedName(string name);
     string GetQuotedName(string name, string schema);

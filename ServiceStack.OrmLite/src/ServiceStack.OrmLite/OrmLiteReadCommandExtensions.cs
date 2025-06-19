@@ -393,7 +393,9 @@ public static class OrmLiteReadCommandExtensions
             if (fieldDef != null)
                 fieldName = fieldDef.FieldName;
 
-            sb.Append(dialectProvider.GetQuotedColumnName(fieldName));
+            sb.Append(fieldDef != null 
+                ? dialectProvider.GetQuotedColumnName(fieldDef)
+                : dialectProvider.GetQuotedColumnName(fieldName));
 
             p.ParameterName = dialectProvider.SanitizeFieldNameForParamName(fieldName);
 
@@ -416,7 +418,7 @@ public static class OrmLiteReadCommandExtensions
         var sqlIn = dbCmd.SetIdsInSqlParams(idValues);
         return string.IsNullOrEmpty(sqlIn)
             ? new List<T>()
-            : Select<T>(dbCmd, dbCmd.GetDialectProvider().GetQuotedColumnName(ModelDefinition<T>.PrimaryKeyName) + " IN (" + sqlIn + ")");
+            : Select<T>(dbCmd, dbCmd.GetDialectProvider().GetQuotedColumnName(ModelDefinition<T>.Definition.PrimaryKey) + " IN (" + sqlIn + ")");
     }
 
     internal static T SingleById<T>(this IDbCommand dbCmd, object value)
