@@ -58,7 +58,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
     /// Use DB Thread locks for DB Write operations.
     /// This is useful when using SQLite which only allows 1 concurrent writer
     /// </summary>
-    public bool? UseDatabaseWriteLocks { get; set; }
+    public bool? EnableWriterLock { get; set; }
     public string UseNamedConnection { get; set; }
     /// <summary>
     /// Whether to create implicit AutoQuery UI references based on field naming conventions
@@ -181,7 +181,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         StartsWithConventions = StartsWithConventions,
         EndsWithConventions = EndsWithConventions,
         UseNamedConnection = UseNamedConnection,
-        UseDatabaseWriteLocks = UseDatabaseWriteLocks.GetValueOrDefault(),
+        EnableWriterLock = EnableWriterLock.GetValueOrDefault(),
     };
 
     public void Configure(IServiceCollection services)
@@ -803,7 +803,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
     public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
 
     public string UseNamedConnection { get; set; }
-    public bool UseDatabaseWriteLocks { get; set; }
+    public bool EnableWriterLock { get; set; }
     public QueryFilterDelegate GlobalQueryFilter { get; set; }
     public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
     public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }

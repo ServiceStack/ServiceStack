@@ -26,7 +26,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     public Action<IDbConnection>? ConfigureMonthDb { get; set; }
     public bool AutoInitSchema { get; set; } = true;
     public bool EnableAdmin { get; set; } = true;
-    public bool UseWriteLocks { get; set; } = true;
+    public bool EnableWriterLock { get; set; } = true;
     public IDbConnectionFactory DbFactory { get; set; } = null!;
     public IAppHostNetCore AppHost { get; set; } = null!;
     public CommandsFeature CommandsFeature { get; set; } = null!;
@@ -66,7 +66,6 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     public void Register(IAppHost appHost)
     {
         DialectProvider = SqliteConfiguration.Configure(SqliteDialect.Create());
-        ConfigureDialectProvider?.Invoke(DialectProvider);
 
         CommandsFeature ??= appHost.GetPlugin<CommandsFeature>()
                             ?? throw new Exception($"{nameof(CommandsFeature)} is required to use {nameof(BackgroundsJobFeature)}");
@@ -78,6 +77,9 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         var dateConverter = DialectProvider.GetDateTimeConverter();
         if (dateConverter.DateStyle == DateTimeKind.Unspecified)
             dateConverter.DateStyle = DateTimeKind.Utc;
+
+        DialectProvider.EnableWriterLock = EnableWriterLock;
+        ConfigureDialectProvider?.Invoke(DialectProvider);
 
         AppHost ??= (IAppHostNetCore)appHost;
         var fullDirPath = GetDbDir();

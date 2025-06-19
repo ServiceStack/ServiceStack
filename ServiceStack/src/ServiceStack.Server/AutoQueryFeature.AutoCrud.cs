@@ -455,7 +455,7 @@ public partial class AutoQuery : IAutoCrudDb
     };
 
     public object GetDbLock<From>(IRequest req = null) => GetDbLock(typeof(From), req);
-    public object GetDbLock(Type fromType, IRequest req = null) => !UseDatabaseWriteLocks 
+    public object GetDbLock(Type fromType, IRequest req = null) => !EnableWriterLock 
         ? null 
         : Locks.GetDbLock(GetDbNamedConnection(fromType, req));
 

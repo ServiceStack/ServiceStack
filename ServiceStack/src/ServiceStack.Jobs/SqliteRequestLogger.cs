@@ -105,6 +105,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     public int MaxLimit { get; set; } = 5000;
     public bool AutoInitSchema { get; set; } = true;
     public IDbConnectionFactory DbFactory { get; set; } = null!;
+    public bool EnableWriterLock { get; set; } = true;
     public IAppHostNetCore AppHost { get; set; } = null!;
 
     public SqliteRequestLogger()
@@ -256,6 +257,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     public void Register(IAppHost appHost)
     {
         DialectProvider = SqliteConfiguration.Configure(SqliteDialect.Create());
+        DialectProvider.EnableWriterLock = EnableWriterLock;
         ConfigureDialectProvider?.Invoke(DialectProvider);
 
         DbFactory ??= appHost.TryResolve<IDbConnectionFactory>() 
