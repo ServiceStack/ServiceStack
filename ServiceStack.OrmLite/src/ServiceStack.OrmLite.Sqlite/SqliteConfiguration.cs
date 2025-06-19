@@ -13,7 +13,7 @@ public static class SqliteConfiguration
         dialect.UseUtc = true;
         dialect.EnableWal = true;
         dialect.EnableForeignKeys = true;
-        // dialect.BusyTimeout = TimeSpan.FromSeconds(30);
+        dialect.BusyTimeout = TimeSpan.FromSeconds(30);
         return dialect;
     }
 
