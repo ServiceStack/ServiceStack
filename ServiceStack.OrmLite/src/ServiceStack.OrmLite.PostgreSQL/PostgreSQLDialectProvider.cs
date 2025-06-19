@@ -307,7 +307,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         var modelDef = ModelDefinition<T>.Definition;
 
         var sb = StringBuilderCache.Allocate()
-            .Append($"COPY {GetTableName(modelDef)} (");
+            .Append($"COPY {GetQuotedTableName(modelDef)} (");
             
         var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:config.InsertFields);
         var i = 0;
