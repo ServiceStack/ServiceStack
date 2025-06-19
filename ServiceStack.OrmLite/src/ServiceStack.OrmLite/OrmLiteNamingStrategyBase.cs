@@ -10,19 +10,33 @@
 // Licensed under the same terms of ServiceStack.
 //
 
+using System.Collections.Generic;
+
 namespace ServiceStack.OrmLite;
 
 public class OrmLiteNamingStrategyBase : INamingStrategy
 {
-    public virtual string GetSchemaName(string name) => name;
-
+    public Dictionary<string, string> SchemaAliases = new();
+    public Dictionary<string, string> TableAliases = new();
+    public Dictionary<string, string> ColumnAliases = new();
+    public virtual string GetAlias(string name) => name;
+    public virtual string GetSchemaName(string name) => name == null ? null 
+        : SchemaAliases.TryGetValue(name, out var alias) 
+            ? alias 
+            : name;
     public virtual string GetSchemaName(ModelDefinition modelDef) => GetSchemaName(modelDef.Schema);
 
-    public virtual string GetTableName(string name) => name;
+    public virtual string GetTableName(string name) => TableAliases.TryGetValue(name, out var alias) 
+        ? alias 
+        : name;
 
-    public virtual string GetTableName(ModelDefinition modelDef) => GetTableName(modelDef.ModelName);
+    public virtual string GetTableName(ModelDefinition modelDef) => modelDef.Alias != null
+        ? GetAlias(modelDef.Alias)
+        : GetTableName(modelDef.Name);
 
-    public virtual string GetColumnName(string name) => name;
+    public virtual string GetColumnName(string name) => ColumnAliases.TryGetValue(name, out var alias) 
+        ? alias 
+        : name;
 
     public virtual string GetSequenceName(string modelName, string fieldName) => "SEQ_" + modelName + "_" + fieldName;
 

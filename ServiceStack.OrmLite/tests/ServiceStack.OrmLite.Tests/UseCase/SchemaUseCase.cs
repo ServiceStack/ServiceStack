@@ -35,6 +35,7 @@ public class SchemaUseCase(DialectContext context) : OrmLiteProvidersTestBase(co
     [Test]
     public void Can_Create_Tables_With_Schema()
     {
+        // OrmLiteUtils.PrintSql();
         using (var db = OpenDbConnection())
         {
             db.CreateTable<User>(true);

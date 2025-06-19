@@ -243,12 +243,12 @@ public class ForeignKeyConstraint
         if (ForeignKeyName.IsNullOrEmpty())
         {
             var modelName = modelDef.IsInSchema
-                ? $"{modelDef.Schema}_{namingStrategy.GetTableName(modelDef.ModelName)}"
+                ? $"{modelDef.Schema}_{namingStrategy.GetTableName(modelDef)}"
                 : namingStrategy.GetTableName(modelDef.ModelName);
 
             var refModelName = refModelDef.IsInSchema
-                ? $"{refModelDef.Schema}_{namingStrategy.GetTableName(refModelDef.ModelName)}"
-                : namingStrategy.GetTableName(refModelDef.ModelName);
+                ? $"{refModelDef.Schema}_{namingStrategy.GetTableName(refModelDef)}"
+                : namingStrategy.GetTableName(refModelDef);
 
             var fkName = $"FK_{modelName}_{refModelName}_{fieldDef.FieldName}";
             return namingStrategy.ApplyNameRestrictions(fkName);

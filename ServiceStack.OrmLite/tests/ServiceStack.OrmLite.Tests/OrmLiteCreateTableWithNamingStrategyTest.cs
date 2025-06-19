@@ -1,6 +1,8 @@
+using System;
 using System.Globalization;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.OrmLite.Tests;
 
@@ -173,7 +175,41 @@ public class OrmLiteCreateTableWithNamingStrategyTests(DialectContext context) :
             Assert.AreEqual(m.Name, modelFromDb.Name);
         }
     }
+    
+    public class Thread
+    {
+        [AutoIncrement]
+        public long Id { get; set; }
 
+        [References(typeof(AppUser))]
+        public string UserId { get; set; }
+        
+        public string ThreadName { get; set; }
+    }
+
+    [Alias("AspNetUsers")]
+    public class AppUser
+    {
+        public string Id { get; set; }
+    }
+
+    [Test]
+    public void Can_create_table_with_FK_alias()
+    {
+        // OrmLiteUtils.PrintSql();
+        using (new TemporaryNamingStrategy(DialectProvider, new LowercaseNamingStrategy()))
+        {
+            using var db = OpenDbConnection();
+            db.DropTable<Thread>();
+            db.DropTable<AppUser>();
+            Assert.That(db.GetLastSql(), Does.Contain("AspNetUsers"));
+            
+            db.CreateTable<AppUser>();
+            Assert.That(db.GetLastSql(), Does.Contain("AspNetUsers"));
+            db.CreateTable<Thread>();
+            Assert.That(db.GetLastSql(), Does.Contain("AspNetUsers"));
+        }
+    }
 }
 
 internal class PrefixNamingStrategy : OrmLiteNamingStrategyBase
@@ -197,17 +233,23 @@ internal class PrefixNamingStrategy : OrmLiteNamingStrategyBase
 
 internal class LowercaseNamingStrategy : OrmLiteNamingStrategyBase
 {
+    public bool IgnoreAlias { get; set; } = true;
+    public override string GetAlias(string name) => IgnoreAlias 
+        ? name 
+        : name.ToLowercaseUnderscore();
+        
+    public override string GetSchemaName(string name) => name == null ? null 
+        : SchemaAliases.TryGetValue(name, out var alias) 
+            ? alias 
+            : name.ToLowercaseUnderscore();
 
-    public override string GetTableName(string name)
-    {
-        return name.ToLower();
-    }
+    public override string GetTableName(string name) => TableAliases.TryGetValue(name, out var alias) 
+        ? alias 
+        : name.ToLowercaseUnderscore();
 
-    public override string GetColumnName(string name)
-    {
-        return name.ToLower();
-    }
-
+    public override string GetColumnName(string name) => ColumnAliases.TryGetValue(name, out var alias) 
+        ? alias 
+        : name.ToLowercaseUnderscore();
 }
 
 internal class UnderscoreSeparatedCompoundNamingStrategy : OrmLiteNamingStrategyBase

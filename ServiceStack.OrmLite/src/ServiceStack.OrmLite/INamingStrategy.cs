@@ -3,6 +3,7 @@ namespace ServiceStack.OrmLite;
 
 public interface INamingStrategy
 {
+    string GetAlias(string name);
     string GetSchemaName(string name);
     string GetSchemaName(ModelDefinition modelDef);
     string GetTableName(string name);

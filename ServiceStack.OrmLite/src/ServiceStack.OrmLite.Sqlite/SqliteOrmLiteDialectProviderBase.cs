@@ -290,6 +290,20 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override string GetTableName(string table, string? schema = null) => 
         GetTableName(table, schema, useStrategy: true);
 
+    public override string GetTableAlias(string alias, string? schema, bool useStrategy)
+    {
+        if (useStrategy)
+        {
+            return schema != null && !alias.StartsWithIgnoreCase(schema + "_")
+                ? $"{NamingStrategy.GetSchemaName(schema)}_{NamingStrategy.GetAlias(alias)}"
+                : NamingStrategy.GetAlias(alias);
+        }
+            
+        return schema != null && !alias.StartsWithIgnoreCase(schema + "_")
+            ? $"{schema}_{alias}"
+            : alias;
+    }
+
     public override string GetTableName(string table, string? schema, bool useStrategy)
     {
         if (useStrategy)
@@ -303,6 +317,9 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
             ? $"{schema}_{table}"
             : table;
     }
+
+    public override string GetQuotedTableAlias(string tableName, string? schema = null) =>
+        GetQuotedName(GetTableAlias(tableName, schema));
 
     public override string GetQuotedTableName(string tableName, string? schema = null) =>
         GetQuotedName(GetTableName(tableName, schema));
@@ -326,7 +343,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string? schema = null)
     {
         var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0}"
-            .SqlFmt(this, GetTableName(tableName, schema));
+            .SqlFmt(this, GetTableName(tableName, schema, useStrategy: false));
 
         dbCmd.CommandText = sql;
         var result = dbCmd.LongScalar();
@@ -337,7 +354,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string? schema = null)
     {
         var sql = "PRAGMA table_info({0})"
-            .SqlFmt(this, GetTableName(tableName, schema));
+            .SqlFmt(this, GetTableName(tableName, schema, useStrategy: false));
 
         var columns = db.SqlList<Dictionary<string, object>>(sql);
         foreach (var column in columns)

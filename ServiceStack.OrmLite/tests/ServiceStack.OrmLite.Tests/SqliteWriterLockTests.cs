@@ -11,11 +11,13 @@ public class SqliteWriterLockTests(DialectContext context) : OrmLiteProvidersTes
 {
     public OrmLiteConnectionFactory CreateDbFactory()
     {
+        var dialect = SqliteDialect.Create();
+        dialect.EnableWriterLock = true;
         var dbFactory = new OrmLiteConnectionFactory(
-            "DataSource=./App_Data/app.db;Cache=Shared", SqliteDialect.Provider);
+            "DataSource=./App_Data/app.db;Cache=Shared", dialect);
 
-        dbFactory.RegisterConnection("db1", "DataSource=./App_Data/db1.db;Cache=Shared", SqliteDialect.Provider);
-        dbFactory.RegisterConnection("db2", "DataSource=./App_Data/db2.db;Cache=Shared", SqliteDialect.Provider);
+        dbFactory.RegisterConnection("db1", "DataSource=./App_Data/db1.db;Cache=Shared", dialect);
+        dbFactory.RegisterConnection("db2", "DataSource=./App_Data/db2.db;Cache=Shared", dialect);
         
         return dbFactory;
     }

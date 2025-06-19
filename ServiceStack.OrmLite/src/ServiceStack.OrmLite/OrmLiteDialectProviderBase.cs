@@ -389,11 +389,30 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual string GetTableName(Type modelType) => GetTableName(modelType.GetModelDefinition());
 
-    public virtual string GetTableName(ModelDefinition modelDef) => 
-        GetTableName(modelDef.ModelName, modelDef.Schema, useStrategy:true);
+    public virtual string GetTableName(ModelDefinition modelDef) => modelDef.Alias != null
+        ? GetTableAlias(modelDef.Alias, modelDef.Schema, useStrategy:true)
+        : GetTableName(modelDef.Name, modelDef.Schema, useStrategy:true);
 
-    public virtual string GetTableName(ModelDefinition modelDef, bool useStrategy) => 
-        GetTableName(modelDef.ModelName, modelDef.Schema, useStrategy);
+    public virtual string GetTableAlias(string alias, string schema, bool useStrategy)
+    {
+        if (useStrategy)
+        {
+            return schema != null
+                ? $"{QuoteIfRequired(NamingStrategy.GetSchemaName(schema))}.{QuoteIfRequired(NamingStrategy.GetAlias(alias))}"
+                : QuoteIfRequired(NamingStrategy.GetAlias(alias));
+        }
+            
+        return schema != null
+            ? $"{QuoteIfRequired(schema)}.{QuoteIfRequired(alias)}"
+            : QuoteIfRequired(alias);
+    }
+
+    public virtual string GetTableName(ModelDefinition modelDef, bool useStrategy) => modelDef.Alias != null 
+        ? GetTableAlias(modelDef.Alias, modelDef.Schema, useStrategy)
+        : GetTableName(modelDef.Name, modelDef.Schema, useStrategy);
+
+    public virtual string GetTableAlias(string alias, string schema = null) =>
+        GetTableAlias(alias, schema, useStrategy: true);
 
     public virtual string GetTableName(string table, string schema = null) =>
         GetTableName(table, schema, useStrategy: true);
@@ -416,7 +435,20 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         
     public virtual string GetQuotedTableName(ModelDefinition modelDef)
     {
-        return GetQuotedTableName(modelDef.ModelName, modelDef.Schema);
+        return modelDef.Alias != null
+            ? GetQuotedTableAlias(modelDef.Alias, modelDef.Schema)
+            : GetQuotedTableName(modelDef.Name, modelDef.Schema);
+    }
+
+    public virtual string GetQuotedTableAlias(string alias, string schema = null)
+    {
+        if (schema == null)
+            return GetQuotedName(NamingStrategy.GetAlias(alias));
+
+        var escapedSchema = NamingStrategy.GetSchemaName(schema)
+            .Replace(".", "\".\"");
+
+        return $"{GetQuotedName(escapedSchema)}.{GetQuotedName(NamingStrategy.GetAlias(alias))}";
     }
 
     public virtual string GetQuotedTableName(string tableName, string schema = null)
