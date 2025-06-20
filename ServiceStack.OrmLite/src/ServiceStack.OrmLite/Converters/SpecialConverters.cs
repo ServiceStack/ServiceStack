@@ -81,7 +81,7 @@ namespace ServiceStack.OrmLite.Converters
             var enumString = enumKind == EnumKind.EnumMember
                 ? value.ToString()
                 : DialectProvider.StringSerializer.SerializeToString(value);
-            if (enumString == null || enumString == "null")
+            if (enumString is null or "null")
                 enumString = value.ToString();
 
             return !isEnumFlags 
@@ -92,6 +92,8 @@ namespace ServiceStack.OrmLite.Converters
         public override object ToDbValue(Type fieldType, object value)
         {
             var enumKind = GetEnumKind(fieldType);
+            if (value == null)
+                return null;
 
             if (value.GetType().IsEnum)
             {

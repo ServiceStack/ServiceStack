@@ -319,7 +319,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
             if (i++ > 0)
                 sb.Append(",");
 
-            sb.Append(NamingStrategy.GetColumnName(fieldDef.FieldName));
+            sb.Append(GetQuotedColumnName(fieldDef));
         }
         sb.Append(") FROM STDIN (FORMAT BINARY)");
 
@@ -339,6 +339,10 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
                     : fieldDef.GetValue(obj);
 
                 var converter = GetConverterBestMatch(fieldDef);
+                if (converter == null)
+                {
+                    throw new NotSupportedException($"No converter found for {fieldDef.FieldType.Name}");
+                }
                 var dbValue = converter.ToDbValue(fieldDef.FieldType, value);
                 if (dbValue is float f)
                     dbValue = (double)f;
