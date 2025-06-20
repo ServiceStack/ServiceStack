@@ -378,6 +378,16 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         var converter = GetConverterBestMatch(fieldDef);
 
         var columnDef = fieldDef.CustomFieldDefinition ?? converter.ColumnDefinition;
+        var dbType = converter.DbType;
+        if (converter is EnumConverter)
+        {
+            dbType = fieldDef.TreatAsType == typeof(int)
+                ? DbType.Int32
+                : fieldDef.TreatAsType == typeof(long)
+                    ? DbType.Int64
+                    : DbType.String;
+        }
+        
         return columnDef switch
         {
             "json" => NpgsqlDbType.Json,
@@ -392,7 +402,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
             "double numeric[]" => NpgsqlDbType.Array | NpgsqlDbType.Numeric,
             "timestamp[]" => NpgsqlDbType.Array | NpgsqlDbType.Timestamp,
             "timestamp with time zone[]" => NpgsqlDbType.Array | NpgsqlDbType.TimestampTz,
-            _ => converter.DbType switch
+            _ => dbType switch
             {
                 DbType.Boolean => NpgsqlDbType.Boolean,
                 DbType.SByte => NpgsqlDbType.Smallint,

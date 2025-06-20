@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.PostgreSQL.Tests;
 
@@ -36,17 +37,44 @@ public class MigrationFromSqlite
         db.ResetSequence<ApiKey>(x => x.Id);
         db.BulkInsert(dbSqlite.Select<ApiKey>(), config);
     }
+
+    [Test]
+    public void Can_BulkInsert_DeletedRows()
+    {
+        var dbFactory = ConfigureDb();
+        using var db = dbFactory.Open();
+        
+        int[] artifactIds = [
+            5374, 5373, 5372, 5371, 5370, 5368, 5367, 5366, 5365, 5364, 5363, 
+            5361, 5360, 5359, 5358, 5357, 5356, 5355, 5354, 5353, 5352, 5351,
+        ];
+        
+        db.DeleteAll<DeletedRow>();
+        db.ResetSequence<DeletedRow>(x => x.Id);
+        db.BulkInsert(artifactIds.Select(x => new DeletedRow { Table = Table.Artifact, Key = $"{x}" }));
+        
+        var rows = db.Select<DeletedRow>();
+        Assert.That(rows.Count, Is.EqualTo(artifactIds.Length));
+
+        db.DeleteAll<DeletedRow>();
+        db.ResetSequence<DeletedRow>(x => x.Id);
+        db.BulkInsert(artifactIds.Select(x => new DeletedRow { Table = Table.Artifact, Key = $"{x}" }), 
+            new() { Mode = BulkInsertMode.Sql});
+        
+        rows = db.Select<DeletedRow>();
+        Assert.That(rows.Count, Is.EqualTo(artifactIds.Length));
+    }
     
     [Test]
     public void Migrate_from_SQLite()
     {
         var dbFactory = ConfigureDb();
-        BulkInsertConfig? config = new BulkInsertConfig { Mode = BulkInsertMode.Sql };
-        // config = null;
-
         using var db = dbFactory.Open();
         using var dbSqlite = dbFactory.Open("app.db");
         
+        BulkInsertConfig? config = new BulkInsertConfig { Mode = BulkInsertMode.Sql };
+        config = null;
+
         // db.DeleteAll<Workflow>();
         // db.ResetSequence<Workflow>(x => x.Id);
         // db.Insert(dbSqlite.Select<Workflow>(x => x.Id == 1).First());
@@ -172,6 +200,29 @@ public class ApiKey : IApiKey
     public bool CanAccess(Type requestType) => RestrictTo.IsEmpty() || RestrictTo.Contains(requestType.Name);
 
     public Dictionary<string, string>? Meta { get; set; }
+}
+
+public class DeletedRow
+{
+    [AutoIncrement]
+    public int Id { get; set; }
+    public Table Table { get; set; }
+    public string Key { get; set; }
+}
+
+[Flags]
+public enum Table
+{
+    Artifact = 1,
+    ArtifactTag = 2,
+    ArtifactCategory = 3,
+    ArtifactReaction = 4,
+    HiddenArtifact = 5,
+    Thread = 6,
+    Comment = 7,
+    Workflow = 8,
+    WorkflowGeneration = 9,
+    WorkflowVersion = 10,
 }
 
 //jq -r 'to_entries[] | .value.input.required // {} | to_entries[] | .value[0] | if type == "array" then "ENUM" else . end' files/object_info.json | sort | uniq
