@@ -899,6 +899,18 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
             : ";";
         return sql;
     }
+    
+    public override string ToResetSequenceStatement(Type tableType, string columnName, int value)
+    {
+        base.ToResetSequenceStatement(tableType, columnName, value);
+        var modelDef = GetModel(tableType);
+        var fieldDef = modelDef.GetFieldDefinition(columnName);
+        // Table needs to be quoted but not column
+        var useTable = GetQuotedTableName(modelDef);
+        var useColumn = fieldDef != null ? GetColumnName(fieldDef) : columnName;
+        
+        return $"SELECT setval(pg_get_serial_sequence('{useTable}', '{useColumn}'), {value}, false);";
+    }
 
     public override string SqlConflict(string sql, string conflictResolution)
     {

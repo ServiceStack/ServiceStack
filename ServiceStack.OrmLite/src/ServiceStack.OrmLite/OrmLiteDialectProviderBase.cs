@@ -1814,6 +1814,11 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         return "";
     }
 
+    public virtual string ToResetSequenceStatement(Type tableType, string columnName, int value)
+    {
+        return "";
+    }
+
     public virtual string ToCreateSavePoint(string name) => $"SAVEPOINT {name}";
     public virtual string ToReleaseSavePoint(string name) => $"RELEASE SAVEPOINT {name}";
     public virtual string ToRollbackSavePoint(string name) => $"ROLLBACK TO SAVEPOINT {name}";

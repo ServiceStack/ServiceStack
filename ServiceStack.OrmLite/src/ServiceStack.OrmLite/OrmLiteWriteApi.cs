@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using ServiceStack.Data;
 using ServiceStack.Text;
@@ -547,5 +548,16 @@ public static class OrmLiteWriteApi
     public static string ToInsertStatement<T>(this IDbConnection dbConn, T item, ICollection<string> insertFields = null)
     {
         return dbConn.Exec(dbCmd => dbCmd.GetDialectProvider().ToInsertStatement(dbCmd, item, insertFields));
+    }
+    
+    public static object ResetSequence<T>(this IDbConnection dbConn, Expression<Func<T, object>> field, int value=1)
+    {
+        var fieldDef = ModelDefinition<T>.Definition.GetFieldDefinition(field);
+        return dbConn.Exec(dbCmd => dbCmd.ExecNonQuery(dbCmd.GetDialectProvider().ToResetSequenceStatement(typeof(T), fieldDef.Name, value)));
+    }
+    
+    public static object ResetSequence(this IDbConnection dbConn, Type tableType, string columnName, int value=1)
+    {
+        return dbConn.Exec(dbCmd => dbCmd.ExecNonQuery(dbCmd.GetDialectProvider().ToResetSequenceStatement(tableType, columnName, value)));
     }
 }
