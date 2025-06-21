@@ -15,8 +15,7 @@ public class MigrationFromSqlite
     private static OrmLiteConnectionFactory ConfigureDb()
     {
         var dialect = PostgreSqlConfiguration.Configure(PostgreSqlDialect.Create());
-        var dbFactory = new OrmLiteConnectionFactory(
-            Environment.GetEnvironmentVariable("PGSQL_CONNECTION"), dialect);
+        var dbFactory = new OrmLiteConnectionFactory(Environment.GetEnvironmentVariable("PGSQL_CONNECTION"), dialect);
 
         var sqliteDialect = SqliteConfiguration.Configure(SqliteDialect.Create());
         dbFactory.RegisterConnection("app.db", "DataSource=/home/mythz/src/ServiceStack/ComfyGateway/App_Data/app.db;Cache=Shared", sqliteDialect);
@@ -200,6 +199,55 @@ public class ApiKey : IApiKey
     public bool CanAccess(Type requestType) => RestrictTo.IsEmpty() || RestrictTo.Contains(requestType.Name);
 
     public Dictionary<string, string>? Meta { get; set; }
+}
+
+public class ComfyAgent
+{
+    [AutoIncrement] public int Id { get; set; }
+    [Index]
+    public string DeviceId { get; set; }
+    public int Version { get; set; }
+    [Index]
+    public string UserId { get; set; }
+    public string? UserName { get; set; }
+    public string ApiKey { get; set; }
+    public List<string>? Gpus { get; set; }
+    public List<string> Workflows { get; set; }
+    public List<string> Nodes { get; set; }
+    public List<string> Checkpoints { get; set; }
+    public List<string> Unets { get; set; }
+    public List<string> Vaes { get; set; }
+    public List<string> Loras { get; set; }
+    public List<string> Clips { get; set; }
+    public List<string> ClipVisions { get; set; }
+    public List<string> Upscalers { get; set; }
+    public List<string> ControlNets { get; set; }
+    public List<string> Embeddings { get; set; }
+    public List<string> Stylers { get; set; }
+    public List<string> Gligens { get; set; }
+    public List<string> PhotoMakers { get; set; }
+    public bool Enabled { get; set; }
+    public DateTime? OfflineDate { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime ModifiedDate { get; set; }
+    public string? LastIp { get; set; }
+    
+    public int Credits { get; set; }
+    public int WorkflowsExecuted { get; set; }
+    public int ImagesGenerated { get; set; }
+    public int AudiosGenerated { get; set; }
+    public int VideosGenerated { get; set; }
+    public int TextsGenerated { get; set; }
+    
+    public int QueueCount { get; set; }
+    public List<string>? LanguageModels { get; set; }
+    
+    [PgSqlJsonB]
+    public List<string>? RequirePip { get; set; }
+    [PgSqlJsonB]
+    public List<string>? RequireNodes { get; set; }
+    [PgSqlJsonB]
+    public List<string>? RequireModels { get; set; }
 }
 
 public class DeletedRow

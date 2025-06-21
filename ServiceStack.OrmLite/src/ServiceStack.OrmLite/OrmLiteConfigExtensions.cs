@@ -174,7 +174,10 @@ internal static class OrmLiteConfigExtensions
             var chkConstraintAttr = propertyInfo.FirstAttribute<CheckConstraintAttribute>();
 
             var order = propertyInfoIdx++;
-            if (customFieldAttr != null) order = customFieldAttr.Order;
+            if (customFieldAttr != null && customFieldAttr.Order != 0)
+            {
+                order = customFieldAttr.Order;
+            }
 
             var fieldDefinition = new FieldDefinition
             {
