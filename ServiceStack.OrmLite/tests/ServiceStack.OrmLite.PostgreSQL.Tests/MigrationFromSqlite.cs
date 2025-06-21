@@ -16,7 +16,7 @@ public class MigrationFromSqlite
     {
         var dialect = PostgreSqlConfiguration.Configure(PostgreSqlDialect.Create());
         var dbFactory = new OrmLiteConnectionFactory(
-            Environment.GetEnvironmentVariable("UBIXAR_DB_CONNECTION"), dialect);
+            Environment.GetEnvironmentVariable("PGSQL_CONNECTION"), dialect);
 
         var sqliteDialect = SqliteConfiguration.Configure(SqliteDialect.Create());
         dbFactory.RegisterConnection("app.db", "DataSource=/home/mythz/src/ServiceStack/ComfyGateway/App_Data/app.db;Cache=Shared", sqliteDialect);
