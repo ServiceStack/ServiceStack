@@ -145,6 +145,10 @@ public class MigrationTests : OrmLiteTestBase
         result = migrator.Revert(Migrator.Last);
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ AllMigrations.Last() }));
+        
+        result = migrator.Revert(Migrator.Last);
+        Assert.That(result.Succeeded);
+        Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ AllMigrations[^2] }));
     }    
 
     [Test]
