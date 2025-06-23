@@ -377,6 +377,14 @@ public static class OrmLiteReadExpressionsApi
     }
 
     /// <summary>
+    /// Return the number of rows returned by the supplied expression
+    /// </summary>
+    public static long RowCount<T>(this IDbConnection dbConn)
+    {
+        return dbConn.Exec(dbCmd => dbCmd.RowCount<T>());
+    }
+
+    /// <summary>
     /// Return the number of rows returned by the supplied sql
     /// </summary>
     public static long RowCount(this IDbConnection dbConn, string sql, object anonType = null)

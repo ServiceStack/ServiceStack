@@ -214,6 +214,12 @@ namespace ServiceStack.OrmLite
             return dbCmd.Scalar<long>(dbCmd.GetDialectProvider().ToRowCountStatement(countExpr.ToSelectStatement(QueryType.Scalar)), countExpr.Params);
         }
 
+        internal static long RowCount<T>(this IDbCommand dbCmd)
+        {
+            var quotedTableName = dbCmd.GetDialectProvider().GetQuotedTableName(typeof(T).GetModelDefinition());
+            return dbCmd.Scalar<long>(dbCmd.GetDialectProvider().ToRowCountStatement(quotedTableName));
+        }
+
         internal static long RowCount(this IDbCommand dbCmd, string sql, object anonType)
         {
             if (anonType != null)
