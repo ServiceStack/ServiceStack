@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "ServiceStack.OrmLite.Kingbase.Tests.Cli": {
+      "commandName": "Project"
+    }
+  }
+}

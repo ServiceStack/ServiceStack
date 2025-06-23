@@ -326,6 +326,7 @@ public interface IOrmLiteDialectProvider
     string SqlLimit(int? offset = null, int? rows = null);
     string SqlCast(object fieldOrValue, string castAs);
     string SqlRandom { get; }
+    string SelectIdentitySql { get; }
 
     /// <summary>
     ///  Generates a SQL comment.
