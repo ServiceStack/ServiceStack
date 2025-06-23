@@ -16,6 +16,8 @@ namespace ServiceStack.OrmLite;
 
 public class OrmLiteNamingStrategyBase : INamingStrategy
 {
+    public static readonly OrmLiteNamingStrategyBase Instance = new OrmLiteNamingStrategyBase();
+
     public Dictionary<string, string> SchemaAliases = new();
     public Dictionary<string, string> TableAliases = new();
     public Dictionary<string, string> ColumnAliases = new();

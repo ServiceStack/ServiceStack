@@ -2,6 +2,8 @@
 
 public class PostgreSqlNamingStrategy : OrmLiteNamingStrategyBase
 {
+    public new static readonly PostgreSqlNamingStrategy Instance = new PostgreSqlNamingStrategy();
+
     public bool IgnoreAlias { get; set; } = true;
     public override string GetAlias(string name) => IgnoreAlias 
         ? name 

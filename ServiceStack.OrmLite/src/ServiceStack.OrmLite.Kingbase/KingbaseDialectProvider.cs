@@ -2,7 +2,11 @@
 using KdbndpTypes;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite.Converters;
-using ServiceStack.OrmLite.Kingbase.Converters;
+using ServiceStack.OrmLite.Kingbase.Converters.MySql;
+using ServiceStack.OrmLite.MySql;
+using ServiceStack.OrmLite.MySql.Converters;
+using ServiceStack.OrmLite.PostgreSQL;
+using ServiceStack.OrmLite.PostgreSQL.Converters;
 using ServiceStack.Text;
 using System;
 using System.Collections;
@@ -15,7 +19,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.OrmLite.MySql;
+using MySqlBoolConverter = ServiceStack.OrmLite.Kingbase.Converters.MySql.KingbaseMySqlBoolConverter;
 
 namespace ServiceStack.OrmLite.Kingbase;
 
@@ -23,6 +27,7 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
 {
     public static KingbaseDialectProvider InstanceForMysql = new(MySqlConnectorDialect.Instance);
 
+    private readonly IOrmLiteDialectProvider flavorProvider;
     public bool UseReturningForLastInsertId { get; set; } = true;
     public string AutoIdGuidFunction { get; set; } = "uuid_generate_v4()";
 
@@ -30,94 +35,124 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
 
     public KingbaseDialectProvider(IOrmLiteDialectProvider flavorProvider)
     {
+        this.flavorProvider = flavorProvider;
         if (flavorProvider is MySqlConnectorDialectProvider mySqlConnectorDialectProvider)
         {
             DbMode = DbMode.Mysql;
             AutoIncrementDefinition = mySqlConnectorDialectProvider.AutoIncrementDefinition;
             DefaultValueFormat = mySqlConnectorDialectProvider.DefaultValueFormat;
             SelectIdentitySql = mySqlConnectorDialectProvider.SelectIdentitySql;
+            UseReturningForLastInsertId = false;
+
+            RegisterMySqlConverters();
+
+            this.Variables = new Dictionary<string, string>
+            {
+                { OrmLiteVariables.SystemUtc, "CURRENT_TIMESTAMP" },
+                { OrmLiteVariables.MaxText, "LONGTEXT" },
+                { OrmLiteVariables.MaxTextUnicode, "LONGTEXT" },
+                { OrmLiteVariables.True, SqlBool(true) },
+                { OrmLiteVariables.False, SqlBool(false) },
+            };
+        }
+        else if (flavorProvider is PostgreSqlDialectProvider postgreSqlDialectProvider)
+        {
+            DbMode = DbMode.Pg;
+            base.AutoIncrementDefinition = "";
+            base.ParamString = ":";
+            base.SelectIdentitySql = "SELECT LASTVAL()";
+
+            RegisterPostgresConverters();
+
+            this.Variables = new Dictionary<string, string>
+            {
+                { OrmLiteVariables.SystemUtc, "now() at time zone 'utc'" },
+                { OrmLiteVariables.MaxText, "TEXT" },
+                { OrmLiteVariables.MaxTextUnicode, "TEXT" },
+                { OrmLiteVariables.True, SqlBool(true) },
+                { OrmLiteVariables.False, SqlBool(false) },
+            };
         }
         else
         {
             throw new NotSupportedException();
         }
 
-        base.AutoIncrementDefinition = "";
-        base.ParamString = ":";
-        base.SelectIdentitySql = "SELECT LASTVAL()";
-        switch (DbMode)
-        {
-            case DbMode.Mysql:
-              
-                break;
-        }
-
-        this.NamingStrategy = new KingbaseSqlNamingStrategy(dbMode);
         this.StringSerializer = new JsonStringSerializer();
-
         base.InitColumnTypeMap();
-
-        this.RowVersionConverter = new KingbaseSqlRowVersionConverter();
-
-        RegisterConverter<string>(new KingbaseSqlStringConverter());
-        RegisterConverter<char[]>(new PostgreSqlCharArrayConverter());
-
-        RegisterConverter<bool>(new KingbaseSqlBoolConverter());
-        RegisterConverter<Guid>(new KingbaseSqlGuidConverter());
-
-        RegisterConverter<DateTime>(new KingbaseSqlDateTimeConverter());
-        RegisterConverter<DateTimeOffset>(new KingbaseSqlDateTimeOffsetConverter());
-
-
-        RegisterConverter<sbyte>(new KingbaseSqlSByteConverter());
-        RegisterConverter<ushort>(new KingbaseSqlUInt16Converter());
-        RegisterConverter<uint>(new KingbaseSqlUInt32Converter());
-        RegisterConverter<ulong>(new KingbaseSqlUInt64Converter());
-
-        RegisterConverter<float>(new KingbaseSqlFloatConverter());
-        RegisterConverter<double>(new KingbaseSqlDoubleConverter());
-        RegisterConverter<decimal>(new KingbaseSqlDecimalConverter());
-
-        RegisterConverter<byte[]>(new KingbaseSqlByteArrayConverter());
-
-        //TODO provide support for pgsql native data structures:
-        RegisterConverter<string[]>(new KingbaseSqlStringArrayConverter());
-        RegisterConverter<short[]>(new KingbaseSqlShortArrayConverter());
-        RegisterConverter<int[]>(new KingbaseSqlIntArrayConverter());
-        RegisterConverter<long[]>(new KingbaseSqlLongArrayConverter());
-        RegisterConverter<float[]>(new KingbaseSqlFloatArrayConverter());
-        RegisterConverter<double[]>(new KingbaseSqlDoubleArrayConverter());
-        RegisterConverter<decimal[]>(new KingbaseSqlDecimalArrayConverter());
-        RegisterConverter<DateTime[]>(new KingbaseSqlDateTimeTimeStampArrayConverter());
-        RegisterConverter<DateTimeOffset[]>(new KingbaseSqlDateTimeOffsetTimeStampTzArrayConverter());
-
-        RegisterConverter<XmlValue>(new KingbaseSqlXmlConverter());
 
 #if NET6_0_OR_GREATER
         // AppContext.SetSwitch("Kdbndp.EnableDiagnostics", true);
         // AppContext.SetSwitch("Kdbndp.DisableDateTimeInfinityConversions", true);
         AppContext.SetSwitch("Kdbndp.EnableLegacyTimestampBehavior", true);
-        RegisterConverter<DateOnly>(new KingbaseSqlDateOnlyConverter());
 #endif
 
 #if NET472
         AppContext.SetSwitch("Kdbndp.EnableLegacyTimestampBehavior", true);
 #endif
 
-        this.Variables = new Dictionary<string, string>
-        {
-            { OrmLiteVariables.SystemUtc, "now() at time zone 'utc'" },
-            { OrmLiteVariables.MaxText, "TEXT" },
-            { OrmLiteVariables.MaxTextUnicode, "TEXT" },
-            { OrmLiteVariables.True, SqlBool(true) },
-            { OrmLiteVariables.False, SqlBool(false) },
-        };
+        ExecFilter = new KingbaseSqlExecFilter(DbMode);
+    }
 
-        //this.ExecFilter = new PostgreSqlExecFilter {
-        //    OnCommand = cmd => cmd.AllResultTypesAreUnknown = true
-        //};
+    private void RegisterMySqlConverters()
+    {
+        base.RegisterConverter<string>(new MySqlStringConverter());
+        base.RegisterConverter<char[]>(new MySqlCharArrayConverter());
+        base.RegisterConverter<bool>(new KingbaseMySqlBoolConverter());
 
-        ExecFilter = new KingbaseSqlExecFilter(dbMode);
+        base.RegisterConverter<byte>(new MySqlByteConverter());
+        base.RegisterConverter<sbyte>(new MySqlSByteConverter());
+        base.RegisterConverter<short>(new MySqlInt16Converter());
+        base.RegisterConverter<ushort>(new MySqlUInt16Converter());
+        base.RegisterConverter<int>(new MySqlInt32Converter());
+        base.RegisterConverter<uint>(new MySqlUInt32Converter());
+
+        base.RegisterConverter<decimal>(new MySqlDecimalConverter());
+
+        base.RegisterConverter<Guid>(new MySqlGuidConverter());
+        base.RegisterConverter<DateTimeOffset>(new MySqlDateTimeOffsetConverter());
+    }
+
+    private void RegisterPostgresConverters()
+    {
+        this.RowVersionConverter = new PostgreSqlRowVersionConverter();
+
+        RegisterConverter<string>(new PostgreSqlStringConverter());
+        RegisterConverter<char[]>(new PostgreSqlCharArrayConverter());
+
+        RegisterConverter<bool>(new PostgreSqlBoolConverter());
+        RegisterConverter<Guid>(new PostgreSqlGuidConverter());
+
+        RegisterConverter<DateTime>(new PostgreSqlDateTimeConverter());
+        RegisterConverter<DateTimeOffset>(new PostgreSqlDateTimeOffsetConverter());
+
+
+        RegisterConverter<sbyte>(new PostrgreSqlSByteConverter());
+        RegisterConverter<ushort>(new PostrgreSqlUInt16Converter());
+        RegisterConverter<uint>(new PostrgreSqlUInt32Converter());
+        RegisterConverter<ulong>(new PostrgreSqlUInt64Converter());
+
+        RegisterConverter<float>(new PostrgreSqlFloatConverter());
+        RegisterConverter<double>(new PostrgreSqlDoubleConverter());
+        RegisterConverter<decimal>(new PostgreSqlDecimalConverter());
+
+        RegisterConverter<byte[]>(new PostrgreSqlByteArrayConverter());
+
+        //TODO provide support for pgsql native data structures:
+        RegisterConverter<string[]>(new PostgreSqlStringArrayConverter());
+        RegisterConverter<short[]>(new PostgreSqlShortArrayConverter());
+        RegisterConverter<int[]>(new PostgreSqlIntArrayConverter());
+        RegisterConverter<long[]>(new PostgreSqlLongArrayConverter());
+        RegisterConverter<float[]>(new PostgreSqlFloatArrayConverter());
+        RegisterConverter<double[]>(new PostgreSqlDoubleArrayConverter());
+        RegisterConverter<decimal[]>(new PostgreSqlDecimalArrayConverter());
+        RegisterConverter<DateTime[]>(new PostgreSqlDateTimeTimeStampArrayConverter());
+        RegisterConverter<DateTimeOffset[]>(new PostgreSqlDateTimeOffsetTimeStampTzArrayConverter());
+
+        RegisterConverter<XmlValue>(new PostgreSqlXmlConverter());
+#if NET6_0_OR_GREATER
+        RegisterConverter<DateOnly>(new PostgreSqlDateOnlyConverter());
+#endif
     }
 
     public bool UseHstore
@@ -126,8 +161,8 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
         {
             if (value)
             {
-                RegisterConverter<IDictionary<string, string>>(new KingbaseSqlHstoreConverter());
-                RegisterConverter<Dictionary<string, string>>(new KingbaseSqlHstoreConverter());
+                RegisterConverter<IDictionary<string, string>>(new PostgreSqlHstoreConverter());
+                RegisterConverter<Dictionary<string, string>>(new PostgreSqlHstoreConverter());
             }
             else
             {
@@ -145,9 +180,25 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
         set
         {
             normalize = value;
-            NamingStrategy = normalize
-                ? new OrmLiteNamingStrategyBase()
-                : new KingbaseSqlNamingStrategy();
+            if (DbMode == DbMode.Pg)
+            {
+            }
+
+            if (normalize)
+            {
+                if (DbMode == DbMode.Pg)
+                {
+                    NamingStrategy = PostgreSqlNamingStrategy.Instance;
+                }
+                else if (DbMode == DbMode.Oracle)
+                {
+                    //NamingStrategy =  // OracleNamingStrategy.Instance;
+                }
+            }
+            else
+            {
+                NamingStrategy = OrmLiteNamingStrategyBase.Instance;
+            }
         }
     }
 
@@ -1072,4 +1123,7 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
             reader.Dispose();
         }
     }
+
+    public override string ToRowCountStatement(string innerSql) =>
+        $"SELECT COUNT(*) AS COUNT FROM {innerSql}";
 }
