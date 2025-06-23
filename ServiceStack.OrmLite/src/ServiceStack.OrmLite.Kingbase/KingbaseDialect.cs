@@ -1,12 +1,14 @@
-﻿namespace ServiceStack.OrmLite.Kingbase;
+﻿using Kdbndp;
+
+namespace ServiceStack.OrmLite.Kingbase;
 
 public static class KingbaseDialect
 {
-    public static IOrmLiteDialectProvider ProviderForMySqlConnector =>
-        KingbaseDialectProvider.InstanceForMySqlConnector;
+    public static IOrmLiteDialectProvider ProviderForMySql =>
+        KingbaseDialectProvider.InstanceForMysql;
 
-    public static KingbaseDialectProvider InstanceForMySqlConnector =>
-        KingbaseDialectProvider.InstanceForMySqlConnector;
+    public static KingbaseDialectProvider InstanceForMySql =>
+        KingbaseDialectProvider.InstanceForMysql;
 
-    public static KingbaseDialectProvider Create(IOrmLiteDialectProvider flavorProvider) => new(flavorProvider);
+    public static KingbaseDialectProvider Create(DbMode dbMode) => new(dbMode);
 }
