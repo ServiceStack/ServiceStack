@@ -96,6 +96,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Kingba
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Kingbase.Tests.Cli", "..\tests\ServiceStack.OrmLite.Kingbase.Tests.Cli\ServiceStack.OrmLite.Kingbase.Tests.Cli.csproj", "{5DC025CC-D053-4213-B589-1951D314372B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Kingbase.Tests", "..\tests\ServiceStack.OrmLite.Kingbase.Tests\ServiceStack.OrmLite.Kingbase.Tests.csproj", "{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -622,6 +624,24 @@ Global
 		{5DC025CC-D053-4213-B589-1951D314372B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5DC025CC-D053-4213-B589-1951D314372B}.Release|x86.ActiveCfg = Release|Any CPU
 		{5DC025CC-D053-4213-B589-1951D314372B}.Release|x86.Build.0 = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Debug|x86.Build.0 = Debug|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Default|Any CPU.ActiveCfg = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Default|Any CPU.Build.0 = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Default|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Default|Mixed Platforms.Build.0 = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Default|x86.ActiveCfg = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Default|x86.Build.0 = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Release|x86.ActiveCfg = Release|Any CPU
+		{A8029F9C-26DC-4EFB-B9C4-E0F92B532E9B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
