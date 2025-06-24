@@ -1182,6 +1182,6 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
         }
     }
 
-    public override string ToRowCountStatement(string innerSql) =>
-        $"SELECT COUNT(*) AS COUNT FROM {innerSql}";
+    public override string ToRowCountStatement(string innerSql, bool asClause = true) =>
+        base.ToRowCountStatement(innerSql, false);
 }
