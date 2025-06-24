@@ -1982,8 +1982,11 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         return subSql;
     }
 
-    public virtual string ToRowCountStatement(string innerSql) => 
-        $"SELECT COUNT(*) FROM ({innerSql}) AS COUNT";
+    public virtual string ToRowCountStatement(string innerSql, bool asClause=true)
+    {
+        return asClause? $"SELECT COUNT(*) FROM ({innerSql}) AS COUNT":$"SELECT COUNT(*) FROM {innerSql} AS COUNT";
+    } 
+      
 
     public virtual string ToDropColumnStatement(string schema, string table, string column) => 
         $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP COLUMN {GetQuotedColumnName(column)};";
