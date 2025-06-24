@@ -12,9 +12,9 @@ namespace ServiceStack.OrmLite.Kingbase.Tests
     public class InsertTests : KingbaseTestBase
     {
         [Test]
-        public Task Kingbase_Model_Insert()
+        public Task Kingbase_MySql_Model_Insert()
         {
-            var factory = BuildOrmLiteConnectionFactory();
+            var factory = BuildOrmLiteConnectionFactory(KingbaseDialect.MySql);
             using var db = factory.OpenDbConnection();
 
             db.DropAndCreateTable<Person>();
