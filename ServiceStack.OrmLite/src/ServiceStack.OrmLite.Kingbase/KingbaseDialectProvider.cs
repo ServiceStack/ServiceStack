@@ -158,17 +158,17 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
         RegisterConverter<char[]>(new MySqlCharArrayConverter());
         RegisterConverter<bool>(new KingbaseMySqlBoolConverter());
 
-        RegisterConverter<byte>(new MySqlByteConverter());
-        RegisterConverter<sbyte>(new MySqlSByteConverter());
-        RegisterConverter<short>(new MySqlInt16Converter());
-        RegisterConverter<ushort>(new MySqlUInt16Converter());
-        RegisterConverter<int>(new MySqlInt32Converter());
-        RegisterConverter<uint>(new MySqlUInt32Converter());
+        RegisterConverter<byte>(new KingbaseMySqlByteConverter());
+        RegisterConverter<sbyte>(new KingbaseMySqlSByteConverter());
+        RegisterConverter<short>(new KingbaseMySqlInt16Converter());
+        RegisterConverter<ushort>(new KingbaseMySqlUInt16Converter());
+        RegisterConverter<int>(new KingbaseMySqlInt32Converter());
+        RegisterConverter<uint>(new KingbaseMySqlUInt32Converter());
 
         RegisterConverter<decimal>(new MySqlDecimalConverter());
 
         RegisterConverter<Guid>(new MySqlGuidConverter());
-        RegisterConverter<DateTimeOffset>(new MySqlDateTimeOffsetConverter());
+        RegisterConverter<DateTimeOffset>(new KingbaseMySqlDateTimeOffsetConverter());
     }
 
     private void RegisterPostgresConverters()
