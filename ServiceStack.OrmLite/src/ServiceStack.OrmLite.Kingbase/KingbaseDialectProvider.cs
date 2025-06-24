@@ -39,6 +39,9 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
         Dictionary<string, object> options = null)
     {
         _flavorProvider = flavorProvider;
+        StringSerializer = new JsonStringSerializer();
+        InitColumnTypeMap();
+
         if (flavorProvider is MySqlConnectorDialectProvider mySqlConnectorDialectProvider)
         {
             DbMode = DbMode.Mysql;
@@ -91,9 +94,6 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
         {
             throw new NotSupportedException();
         }
-
-        StringSerializer = new JsonStringSerializer();
-        InitColumnTypeMap();
 
 #if NET6_0_OR_GREATER
         // AppContext.SetSwitch("Kdbndp.EnableDiagnostics", true);
