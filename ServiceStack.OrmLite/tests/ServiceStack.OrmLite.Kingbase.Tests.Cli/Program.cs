@@ -12,7 +12,7 @@ internal class Program
         OrmLiteConfig.DeoptimizeReader = true;
         var factory = new OrmLiteConnectionFactory(
             "User Id=kingbase;Password=Jnvision_2022_Kb;Server=192.168.110.231;Port=54321;Database=ormlite-test;",
-            KingbaseDialect.ProviderForMySql);
+            KingbaseDialect.MySql);
 
         var db = factory.OpenDbConnection();
         //常规语句测试

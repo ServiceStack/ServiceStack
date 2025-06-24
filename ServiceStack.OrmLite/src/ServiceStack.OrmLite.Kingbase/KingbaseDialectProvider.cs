@@ -1,10 +1,13 @@
 ﻿using Kdbndp;
 using KdbndpTypes;
+using Oracle.ManagedDataAccess.Client;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite.Converters;
 using ServiceStack.OrmLite.Kingbase.Converters.MySql;
 using ServiceStack.OrmLite.MySql;
 using ServiceStack.OrmLite.MySql.Converters;
+using ServiceStack.OrmLite.Oracle;
+using ServiceStack.OrmLite.Oracle.Converters;
 using ServiceStack.OrmLite.PostgreSQL;
 using ServiceStack.OrmLite.PostgreSQL.Converters;
 using ServiceStack.Text;
@@ -16,70 +19,81 @@ using System.Data.Common;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MySqlBoolConverter = ServiceStack.OrmLite.Kingbase.Converters.MySql.KingbaseMySqlBoolConverter;
 
 namespace ServiceStack.OrmLite.Kingbase;
 
 public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<KingbaseDialectProvider>
 {
-    public static KingbaseDialectProvider InstanceForMysql = new(MySqlConnectorDialect.Instance);
-
-    private readonly IOrmLiteDialectProvider flavorProvider;
+    private readonly IOrmLiteDialectProvider _flavorProvider;
     public bool UseReturningForLastInsertId { get; set; } = true;
     public string AutoIdGuidFunction { get; set; } = "uuid_generate_v4()";
 
     public readonly DbMode DbMode;
 
-    public KingbaseDialectProvider(IOrmLiteDialectProvider flavorProvider)
+    public KingbaseDialectProvider(
+        IOrmLiteDialectProvider flavorProvider,
+        Dictionary<string, object> options = null)
     {
-        this.flavorProvider = flavorProvider;
+        _flavorProvider = flavorProvider;
         if (flavorProvider is MySqlConnectorDialectProvider mySqlConnectorDialectProvider)
         {
             DbMode = DbMode.Mysql;
+            //align with MySqlConnectorDialectProvider
             AutoIncrementDefinition = mySqlConnectorDialectProvider.AutoIncrementDefinition;
             DefaultValueFormat = mySqlConnectorDialectProvider.DefaultValueFormat;
             SelectIdentitySql = mySqlConnectorDialectProvider.SelectIdentitySql;
-            UseReturningForLastInsertId = false;
-
+            UseReturningForLastInsertId = false; // MySQL does not support RETURNING
+            Variables = mySqlConnectorDialectProvider.Variables;
             RegisterMySqlConverters();
-
-            this.Variables = new Dictionary<string, string>
-            {
-                { OrmLiteVariables.SystemUtc, "CURRENT_TIMESTAMP" },
-                { OrmLiteVariables.MaxText, "LONGTEXT" },
-                { OrmLiteVariables.MaxTextUnicode, "LONGTEXT" },
-                { OrmLiteVariables.True, SqlBool(true) },
-                { OrmLiteVariables.False, SqlBool(false) },
-            };
         }
         else if (flavorProvider is PostgreSqlDialectProvider postgreSqlDialectProvider)
         {
             DbMode = DbMode.Pg;
-            base.AutoIncrementDefinition = "";
-            base.ParamString = ":";
-            base.SelectIdentitySql = "SELECT LASTVAL()";
-
+            //align with PostgreSqlDialectProvider
+            AutoIncrementDefinition = postgreSqlDialectProvider.AutoIncrementDefinition;
+            ParamString = postgreSqlDialectProvider.ParamString;
+            SelectIdentitySql = postgreSqlDialectProvider.SelectIdentitySql;
+            UseReturningForLastInsertId = postgreSqlDialectProvider.UseReturningForLastInsertId;
+            NamingStrategy = postgreSqlDialectProvider.NamingStrategy;
+            RowVersionConverter = postgreSqlDialectProvider.RowVersionConverter;
+            Variables = postgreSqlDialectProvider.Variables;
             RegisterPostgresConverters();
+        }
+        else if (flavorProvider is Oracle11OrmLiteDialectProvider oracle11OrmLiteDialectProvider)
+        {
+            DbMode = DbMode.Oracle;
+            //align with Oracle11OrmLiteDialectProvider
+            AutoIncrementDefinition = oracle11OrmLiteDialectProvider.AutoIncrementDefinition;
+            ParamString = oracle11OrmLiteDialectProvider.ParamString;
+            SelectIdentitySql = oracle11OrmLiteDialectProvider.SelectIdentitySql;
+            UseReturningForLastInsertId = oracle11OrmLiteDialectProvider.UseReturningForLastInsertId;
+            NamingStrategy = oracle11OrmLiteDialectProvider.NamingStrategy;
+            RowVersionConverter = oracle11OrmLiteDialectProvider.RowVersionConverter;
+            Variables = oracle11OrmLiteDialectProvider.Variables;
+            ExecFilter = oracle11OrmLiteDialectProvider.ExecFilter;
+            EnumConverter = oracle11OrmLiteDialectProvider.EnumConverter;
 
-            this.Variables = new Dictionary<string, string>
-            {
-                { OrmLiteVariables.SystemUtc, "now() at time zone 'utc'" },
-                { OrmLiteVariables.MaxText, "TEXT" },
-                { OrmLiteVariables.MaxTextUnicode, "TEXT" },
-                { OrmLiteVariables.True, SqlBool(true) },
-                { OrmLiteVariables.False, SqlBool(false) },
-            };
+            OrmLiteContext.UseThreadStatic = true;
+            OrmLiteConfig.DeoptimizeReader = true;
+
+            OracleQuoteNames = TryGetOptions(options, "Oracle.QuoteNames", false);
+            OracleCompactGuid = TryGetOptions(options, "Oracle.CompactGuid", false);
+            OracleClientProvider = TryGetOptions(options, "Oracle.ClientProvider",
+                OracleOrmLiteDialectProvider.ManagedProvider);
+
+            RegisterOracleConverters();
         }
         else
         {
             throw new NotSupportedException();
         }
 
-        this.StringSerializer = new JsonStringSerializer();
-        base.InitColumnTypeMap();
+        StringSerializer = new JsonStringSerializer();
+        InitColumnTypeMap();
 
 #if NET6_0_OR_GREATER
         // AppContext.SetSwitch("Kdbndp.EnableDiagnostics", true);
@@ -94,28 +108,72 @@ public sealed class KingbaseDialectProvider : OrmLiteDialectProviderBase<Kingbas
         ExecFilter = new KingbaseSqlExecFilter(DbMode);
     }
 
+    public bool OracleQuoteNames { get; }
+    public bool OracleCompactGuid { get; }
+    public string OracleClientProvider { get; }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static T TryGetOptions<T>(Dictionary<string, object> options, string key, T defaultValue)
+    {
+        if (options != null && options.TryGetValue(key, out var value) && value is T typedValue)
+        {
+            return typedValue;
+        }
+
+        return defaultValue;
+    }
+
+    private void RegisterOracleConverters()
+    {
+        var factory = OracleClientFactory.Instance;
+        var timestampConverter = new OracleTimestampConverter(factory.GetType(), OracleClientProvider);
+        if (OracleCompactGuid)
+            RegisterConverter<Guid>(new OracleCompactGuidConverter());
+        else
+            RegisterConverter<Guid>(new OracleGuidConverter());
+
+        RegisterConverter<TimeSpan>(new OracleTimeSpanAsIntConverter());
+        RegisterConverter<string>(new OracleStringConverter());
+        RegisterConverter<char[]>(new OracleCharArrayConverter());
+        RegisterConverter<byte[]>(new OracleByteArrayConverter());
+
+        RegisterConverter<long>(new OracleInt64Converter());
+        RegisterConverter<sbyte>(new OracleSByteConverter());
+        RegisterConverter<ushort>(new OracleUInt16Converter());
+        RegisterConverter<uint>(new OracleUInt32Converter());
+        RegisterConverter<ulong>(new OracleUInt64Converter());
+
+        RegisterConverter<float>(new OracleFloatConverter());
+        RegisterConverter<double>(new OracleDoubleConverter());
+        RegisterConverter<decimal>(new OracleDecimalConverter());
+
+        RegisterConverter<DateTime>(new OracleDateTimeConverter());
+        RegisterConverter<DateTimeOffset>(new OracleDateTimeOffsetConverter(timestampConverter));
+        RegisterConverter<bool>(new OracleBoolConverter());
+    }
+
     private void RegisterMySqlConverters()
     {
-        base.RegisterConverter<string>(new MySqlStringConverter());
-        base.RegisterConverter<char[]>(new MySqlCharArrayConverter());
-        base.RegisterConverter<bool>(new KingbaseMySqlBoolConverter());
+        RegisterConverter<string>(new MySqlStringConverter());
+        RegisterConverter<char[]>(new MySqlCharArrayConverter());
+        RegisterConverter<bool>(new KingbaseMySqlBoolConverter());
 
-        base.RegisterConverter<byte>(new MySqlByteConverter());
-        base.RegisterConverter<sbyte>(new MySqlSByteConverter());
-        base.RegisterConverter<short>(new MySqlInt16Converter());
-        base.RegisterConverter<ushort>(new MySqlUInt16Converter());
-        base.RegisterConverter<int>(new MySqlInt32Converter());
-        base.RegisterConverter<uint>(new MySqlUInt32Converter());
+        RegisterConverter<byte>(new MySqlByteConverter());
+        RegisterConverter<sbyte>(new MySqlSByteConverter());
+        RegisterConverter<short>(new MySqlInt16Converter());
+        RegisterConverter<ushort>(new MySqlUInt16Converter());
+        RegisterConverter<int>(new MySqlInt32Converter());
+        RegisterConverter<uint>(new MySqlUInt32Converter());
 
-        base.RegisterConverter<decimal>(new MySqlDecimalConverter());
+        RegisterConverter<decimal>(new MySqlDecimalConverter());
 
-        base.RegisterConverter<Guid>(new MySqlGuidConverter());
-        base.RegisterConverter<DateTimeOffset>(new MySqlDateTimeOffsetConverter());
+        RegisterConverter<Guid>(new MySqlGuidConverter());
+        RegisterConverter<DateTimeOffset>(new MySqlDateTimeOffsetConverter());
     }
 
     private void RegisterPostgresConverters()
     {
-        this.RowVersionConverter = new PostgreSqlRowVersionConverter();
+        RowVersionConverter = new PostgreSqlRowVersionConverter();
 
         RegisterConverter<string>(new PostgreSqlStringConverter());
         RegisterConverter<char[]>(new PostgreSqlCharArrayConverter());

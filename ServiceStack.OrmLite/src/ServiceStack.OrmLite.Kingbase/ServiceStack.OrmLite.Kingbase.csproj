@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\ServiceStack.OrmLite.MySqlConnector\ServiceStack.OrmLite.MySqlConnector.csproj" />
+    <ProjectReference Include="..\ServiceStack.OrmLite.Oracle\ServiceStack.OrmLite.Oracle.csproj" />
     <ProjectReference Include="..\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
     <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
   </ItemGroup>
