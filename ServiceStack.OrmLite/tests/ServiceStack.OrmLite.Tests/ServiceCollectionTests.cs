@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ServiceStack.Data;
@@ -20,7 +21,13 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
         var services = new ServiceCollection();
         
         services.AddOrmLite(options => {
-                options.UseSqlite(":memory:");
+                options.UseSqlite(":memory:")
+                    .ConfigureJson(json => {
+                        json.DefaultSerializer = JsonSerializerType.ServiceStackJson;
+                        json.JsonObjectTypes.Add(typeof(object));
+                        json.ServiceStackJsonTypes.Add(typeof(ConcurrentDictionary<string,object>));
+                        json.SystemJsonTypes.Add(typeof(ConcurrentBag<object>));
+                    });
             })
             .AddSqlite("db1", "db1.sqlite")
             .AddSqlite("db2", "db2.sqlite")
