@@ -16,7 +16,7 @@ public class MigrationTests : OrmLiteTestBase
         var db = DbFactory.Open();
         Migrator.Recreate(db);
         Migrator.Clear(db);
-        Migrator.Down(DbFactory, new[]{ typeof(Migration1000), typeof(Migration1002) });
+        Migrator.Down(DbFactory, new[] { typeof(Migration1000), typeof(Migration1002) });
         return db;
     }
 
@@ -39,9 +39,10 @@ public class MigrationTests : OrmLiteTestBase
         using var db = Create();
         Migrator.Up(DbFactory, typeof(Migration1000));
 
-        db.Insert(new Migration {
-            Name = nameof(Migration1000), 
-            CreatedDate = DateTime.UtcNow, 
+        db.Insert(new Migration
+        {
+            Name = nameof(Migration1000),
+            CreatedDate = DateTime.UtcNow,
             CompletedDate = DateTime.UtcNow
         });
 
@@ -56,9 +57,10 @@ public class MigrationTests : OrmLiteTestBase
     {
         using var db = Create();
 
-        db.Insert(new Migration {
-            Name = AllMigrations.Last().Name, 
-            CreatedDate = DateTime.UtcNow, 
+        db.Insert(new Migration
+        {
+            Name = AllMigrations.Last().Name,
+            CreatedDate = DateTime.UtcNow,
             CompletedDate = DateTime.UtcNow
         });
 
@@ -73,13 +75,14 @@ public class MigrationTests : OrmLiteTestBase
     {
         using var db = Create();
 
-        db.Insert(new Migration {
-            Name = AllMigrations.Last().Name, 
-            CreatedDate = DateTime.UtcNow, 
+        db.Insert(new Migration
+        {
+            Name = AllMigrations.Last().Name,
+            CreatedDate = DateTime.UtcNow,
         });
 
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
-        var result = migrator.Run(throwIfError:false);
+        var result = migrator.Run(throwIfError: false);
         Assert.That(result.Succeeded, Is.False);
         Assert.That(result.TypesCompleted, Is.Empty);
     }
@@ -89,13 +92,14 @@ public class MigrationTests : OrmLiteTestBase
     {
         using var db = Create();
 
-        db.Insert(new Migration {
-            Name = nameof(Migration1001), 
-            CreatedDate = DateTime.UtcNow, 
+        db.Insert(new Migration
+        {
+            Name = nameof(Migration1001),
+            CreatedDate = DateTime.UtcNow,
         });
 
         var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly);
-        Assert.Throws<InfoException>(() => migrator.Run(throwIfError:true));
+        Assert.Throws<InfoException>(() => migrator.Run(throwIfError: true));
     }
 
     [Test]
@@ -104,12 +108,14 @@ public class MigrationTests : OrmLiteTestBase
         using var db = Create();
         Migrator.Up(DbFactory, new[] { typeof(Migration1000), typeof(Migration1001) });
 
-        db.Insert(new Migration {
-            Name = nameof(Migration1002), 
+        db.Insert(new Migration
+        {
+            Name = nameof(Migration1002),
             CreatedDate = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(11)),
         });
 
-        var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly) {
+        var migrator = new Migrator(DbFactory, typeof(Migration1000).Assembly)
+        {
             Timeout = TimeSpan.FromMinutes(10)
         };
         var result = migrator.Run();
@@ -126,12 +132,12 @@ public class MigrationTests : OrmLiteTestBase
         var result = migrator.Run();
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations));
-        
+
         result = migrator.Revert(Migrator.All);
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations.OrderByDescending(x => x.Name)));
-    }    
-
+    }
+#if NETCORE
     [Test]
     public void Can_run_and_revert_last_migration()
     {
@@ -149,7 +155,8 @@ public class MigrationTests : OrmLiteTestBase
         result = migrator.Revert(Migrator.Last);
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(new[]{ AllMigrations[^2] }));
-    }    
+    }
+#endif
 
     [Test]
     public void Can_run_and_revert_migration_by_name()
@@ -160,7 +167,7 @@ public class MigrationTests : OrmLiteTestBase
         var result = migrator.Run();
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations));
-        
+
         result = migrator.Revert(nameof(Migration1001));
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations.Skip(1)));
@@ -176,7 +183,7 @@ public class MigrationTests : OrmLiteTestBase
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations));
     }
-    
+
     [Test]
     public void Does_not_rerun_completed_migrations_if_one_removed()
     {
@@ -186,15 +193,16 @@ public class MigrationTests : OrmLiteTestBase
         var result = migrator.Run();
         Assert.That(result.Succeeded);
         Assert.That(result.TypesCompleted, Is.EquivalentTo(AllMigrations));
-        
+
         // Remove last migration type
-        var migrator2 = new Migrator(DbFactory, typeof(Migration1000), typeof(Migration1001), typeof(Migration1002), typeof(Migration1003));
+        var migrator2 = new Migrator(DbFactory, typeof(Migration1000), typeof(Migration1001), typeof(Migration1002),
+            typeof(Migration1003));
         // Should skip all run migrations
         var migrationsCountDb = db.Count<Migration>();
         Assert.That(migrationsCountDb, Is.EqualTo(5));
         var result2 = migrator2.Run();
         Assert.That(result2.Succeeded);
-        Assert.That(result2.TypesCompleted, Is.EquivalentTo(new Type[]{ }));
+        Assert.That(result2.TypesCompleted, Is.EquivalentTo(new Type[] { }));
         var migrations2CountDb = db.Count<Migration>();
         Assert.That(migrations2CountDb, Is.EqualTo(migrationsCountDb));
     }
@@ -202,9 +210,13 @@ public class MigrationTests : OrmLiteTestBase
     [Test]
     public void Can_mask_connection_string()
     {
-        Assert.That(OrmLiteUtils.MaskPassword("Server=host;User Id=u;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
+        Assert.That(
+            OrmLiteUtils.MaskPassword(
+                "Server=host;User Id=u;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"),
             Is.EqualTo("Server=host;User Id=u;Password=***;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200"));
-        Assert.That(OrmLiteUtils.MaskPassword("Server=host;Database=test;User Id=u;Password=test;MultipleActiveResultSets=True;"),
+        Assert.That(
+            OrmLiteUtils.MaskPassword(
+                "Server=host;Database=test;User Id=u;Password=test;MultipleActiveResultSets=True;"),
             Is.EqualTo("Server=host;Database=test;User Id=u;Password=***;MultipleActiveResultSets=True;"));
         Assert.That(OrmLiteUtils.MaskPassword("Server=host;Database=test;UID=u;Password=test;SslMode=none"),
             Is.EqualTo("Server=host;Database=test;UID=u;Password=***;SslMode=none"));
@@ -213,5 +225,4 @@ public class MigrationTests : OrmLiteTestBase
         Assert.That(OrmLiteUtils.MaskPassword("Server=host;Database=test;UID=u;pwd=test"),
             Is.EqualTo("Server=host;Database=test;UID=u;pwd=***"));
     }
-
 }

@@ -89,9 +89,9 @@ namespace ServiceStack.OrmLite.Firebird
             return LastInsertId;
         }
 
-        public override string ToRowCountStatement(string innerSql)
+        public override string ToRowCountStatement(string innerSql, bool  innerSqlAsSubQuery=true)
         {
-            return "SELECT COUNT(*) FROM ({0})".Fmt(innerSql);
+            return innerSqlAsSubQuery ? "SELECT COUNT(*) FROM ({0})".Fmt(innerSql) : "SELECT COUNT(*) FROM {0}".Fmt(innerSql);
         }
 
         public override string ToSelectStatement(Type tableType, string sqlFilter, params object[] filterParams)

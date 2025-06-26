@@ -11,9 +11,8 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        
     }
-    
+#if NETCORE
     [Test]
     public void Can_configure_OrmLite_with_ServiceCollection_Extensions()
     {
@@ -66,4 +65,5 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
             Assert.That(mysql.Scalar<string>("SELECT 'Hello World'"), Is.EqualTo("Hello World"));
         }
     }
+#endif
 }
