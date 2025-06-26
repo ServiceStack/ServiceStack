@@ -116,5 +116,44 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
         json = serializer.SerializeToString(dto.ObjectList);
         var fromObjList = serializer.DeserializeFromString<List<object>>(json);
         Assert.That(fromObjList, Is.EqualTo(dto.ObjectList));
-   }
+    }
+    
+    class PersonJsonObjectTypes
+    {
+        public Person Person { get; set; }
+        public List<Person> PersonList { get; set; }
+        public Dictionary<int,Person> PersonDictionary { get; set; }
+    }
+
+    [Test]
+    public void Can_serialize_typed_Complex_Types_with_JsonObject()
+    {
+        var serializer = new JsonComplexTypeSerializer
+        {
+            DefaultSerializer = JsonSerializerType.JsonObject
+        };
+        var person = new Person { Id = 1, FirstName = "FirstName", LastName = "LastName", Age = 27 };
+ 
+        var dto = new PersonJsonObjectTypes
+        {
+            Person = person,
+            PersonList = [person],
+            PersonDictionary = new()
+            {
+                [person.Id] = person,
+            }
+        };
+
+        var json = serializer.SerializeToString(dto.Person);
+        var dtoObject = serializer.DeserializeFromString<Person>(json);
+        Assert.That(dtoObject, Is.EqualTo(dto.Person));
+
+        json = serializer.SerializeToString(dto.PersonList);
+        var fromObjList = serializer.DeserializeFromString<List<Person>>(json);
+        Assert.That(fromObjList, Is.EqualTo(dto.PersonList));
+
+        json = serializer.SerializeToString(dto.PersonDictionary);
+        var fromPersonList = serializer.DeserializeFromString<Dictionary<int,Person>>(json);
+        Assert.That(fromPersonList, Is.EqualTo(dto.PersonDictionary));
+    }
 }

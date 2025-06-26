@@ -40,38 +40,38 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
     /// </summary>
     public HashSet<Type> ServiceStackJsonTypes { get; } = [];
     
-    public To? DeserializeFromString<To>(string serializedText)
+    public To? DeserializeFromString<To>(string json)
     {
         if (JsonObjectTypes.Contains(typeof(To)))
-            return (To)JSON.parse(serializedText);
+            return (To)JSON.Deserialize(json, typeof(To));
         if (SystemJsonTypes.Contains(typeof(To)))
-            return System.Text.Json.JsonSerializer.Deserialize<To>(serializedText, Text.TextConfig.SystemJsonOptions);
+            return System.Text.Json.JsonSerializer.Deserialize<To>(json, Text.TextConfig.SystemJsonOptions);
         if (ServiceStackJsonTypes.Contains(typeof(To)))
-            return Text.JsonSerializer.DeserializeFromString<To>(serializedText);
+            return Text.JsonSerializer.DeserializeFromString<To>(json);
 
         return DefaultSerializer switch
         {
-            JsonSerializerType.JsonObject => (To)JSON.parse(serializedText),
-            JsonSerializerType.SystemJson => System.Text.Json.JsonSerializer.Deserialize<To>(serializedText, Text.TextConfig.SystemJsonOptions),
-            JsonSerializerType.ServiceStackJson => Text.JsonSerializer.DeserializeFromString<To>(serializedText),
+            JsonSerializerType.JsonObject => (To)JSON.Deserialize(json, typeof(To))!,
+            JsonSerializerType.SystemJson => System.Text.Json.JsonSerializer.Deserialize<To>(json, Text.TextConfig.SystemJsonOptions),
+            JsonSerializerType.ServiceStackJson => Text.JsonSerializer.DeserializeFromString<To>(json),
             _ => throw new NotSupportedException(DefaultSerializer.ToString())
         };
     }
 
-    public object? DeserializeFromString(string serializedText, Type type)
+    public object? DeserializeFromString(string json, Type type)
     {
         if (JsonObjectTypes.Contains(type))
-            return JSON.parse(serializedText);
+            return JSON.parse(json);
         if (SystemJsonTypes.Contains(type))
-            return System.Text.Json.JsonSerializer.Deserialize(serializedText, type, Text.TextConfig.SystemJsonOptions);
+            return System.Text.Json.JsonSerializer.Deserialize(json, type, Text.TextConfig.SystemJsonOptions);
         if (ServiceStackJsonTypes.Contains(type))
-            return Text.JsonSerializer.DeserializeFromString(serializedText, type);
+            return Text.JsonSerializer.DeserializeFromString(json, type);
         
         return DefaultSerializer switch
         {
-            JsonSerializerType.JsonObject => JSON.parse(serializedText),
-            JsonSerializerType.SystemJson => System.Text.Json.JsonSerializer.Deserialize(serializedText, type, Text.TextConfig.SystemJsonOptions),
-            JsonSerializerType.ServiceStackJson => Text.JsonSerializer.DeserializeFromString(serializedText, type),
+            JsonSerializerType.JsonObject => JSON.Deserialize(json, type),
+            JsonSerializerType.SystemJson => System.Text.Json.JsonSerializer.Deserialize(json, type, Text.TextConfig.SystemJsonOptions),
+            JsonSerializerType.ServiceStackJson => Text.JsonSerializer.DeserializeFromString(json, type),
             _ => throw new NotSupportedException(DefaultSerializer.ToString())
         };
     }

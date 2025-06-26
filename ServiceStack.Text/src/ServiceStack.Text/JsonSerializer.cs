@@ -281,10 +281,10 @@ public static class JsonSerializer
 
 public class JsonStringSerializer : IStringSerializer
 {
-    public To DeserializeFromString<To>(string serializedText) => 
-        JsonSerializer.DeserializeFromString<To>(serializedText);
-    public object DeserializeFromString(string serializedText, Type type) => 
-        JsonSerializer.DeserializeFromString(serializedText, type);
+    public To DeserializeFromString<To>(string json) => 
+        JsonSerializer.DeserializeFromString<To>(json);
+    public object DeserializeFromString(string json, Type type) => 
+        JsonSerializer.DeserializeFromString(json, type);
     public string SerializeToString<TFrom>(TFrom @from) => 
         JsonSerializer.SerializeToString(@from);
 }
