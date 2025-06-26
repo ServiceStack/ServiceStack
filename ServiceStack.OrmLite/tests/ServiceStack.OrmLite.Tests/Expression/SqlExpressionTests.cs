@@ -11,13 +11,11 @@ namespace ServiceStack.OrmLite.Tests.Expression;
 
 public class LetterFrequency
 {
-    [AutoIncrement]
-    public int Id { get; set; }
+    [AutoIncrement] public int Id { get; set; }
 
     public string Letter { get; set; }
-        
-    [Alias("AliasValue")]
-    public int Value { get; set; }
+
+    [Alias("AliasValue")] public int Value { get; set; }
 }
 
 public class LetterWeighting
@@ -28,8 +26,7 @@ public class LetterWeighting
 
 public class LetterStat
 {
-    [AutoIncrement]
-    public int Id { get; set; }
+    [AutoIncrement] public int Id { get; set; }
     public long LetterFrequencyId { get; set; }
     public string Letter { get; set; }
     public int Weighting { get; set; }
@@ -71,7 +68,8 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
     {
         using var db = OpenDbConnection();
         var firstId = InitLetters(db);
-        var expected = new Dictionary<string, int> {
+        var expected = new Dictionary<string, int>
+        {
             { "A", 1 }, { "B", 2 }, { "C", 3 },
         };
 
@@ -424,7 +422,8 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
             .Join<LetterFrequency, LetterStat>()
             .Where<LetterStat>(x => x.Id > 0);
 
-        var count = db.SqlScalar<long>(expr.ToCountStatement(), expr.Params.ToDictionary(param => param.ParameterName, param => param.Value));
+        var count = db.SqlScalar<long>(expr.ToCountStatement(),
+            expr.Params.ToDictionary(param => param.ParameterName, param => param.Value));
 
         Assert.That(count, Is.GreaterThan(0));
 
@@ -500,6 +499,26 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
     }
 
     [Test]
+    public void Can_select_RowCount_without_db_params()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<LetterFrequency>();
+
+        db.Insert(new LetterFrequency { Letter = "A" });
+        db.Insert(new LetterFrequency { Letter = "A" });
+        db.Insert(new LetterFrequency { Letter = "A" });
+        db.Insert(new LetterFrequency { Letter = "B" });
+        db.Insert(new LetterFrequency { Letter = "B" });
+        db.Insert(new LetterFrequency { Letter = "B" });
+        db.Insert(new LetterFrequency { Letter = "B" });
+
+        var table = nameof(LetterFrequency).SqlTable(DialectProvider);
+
+        var rowCount = db.RowCount<LetterFrequency>();
+        Assert.That(rowCount, Is.EqualTo(7));
+    }
+
+    [Test]
     public void Can_get_RowCount_if_expression_has_OrderBy()
     {
         using var db = OpenDbConnection();
@@ -552,7 +571,7 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
         using var db = OpenDbConnection();
         db.DropAndCreateTable<LetterFrequency>();
 
-        var insertedIds = "A,B,B,C,C,C,D,D,E".Split(',').Map(letter => 
+        var insertedIds = "A,B,B,C,C,C,D,D,E".Split(',').Map(letter =>
             db.Insert(new LetterFrequency { Letter = letter }, selectIdentity: true));
 
         var first3Ids = insertedIds.Take(3).ToList();
@@ -625,20 +644,21 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
         using var db = OpenDbConnection();
         db.DropAndCreateTable<LetterFrequency>();
 
-        var insertedIds = "A,B,B,C,C,C,D,D,E".Split(',').Map(letter => 
+        var insertedIds = "A,B,B,C,C,C,D,D,E".Split(',').Map(letter =>
             db.Insert(new LetterFrequency { Letter = letter }, selectIdentity: true));
 
         var q = db.From<LetterFrequency>(db.TableAlias("x"));
         q.Where(x => x.Letter == Sql.TableAlias(x.Letter, "obj"));
         var subSql = q.Select(Sql.Count("*")).ToSelectStatement();
-                
+
         var rows = db.Select<Dictionary<string, object>>(db.From<LetterFrequency>(db.TableAlias("obj"))
             .Where(x => x.Letter == "C")
-            .Select(x => new {
+            .Select(x => new
+            {
                 x,
                 count = Sql.Custom($"({subSql})"),
             }));
-                
+
         rows.PrintDump();
         Assert.That(rows.Count, Is.EqualTo(3));
         Assert.That(rows.All(x => x["count"].ConvertTo<int>() == 3));
@@ -662,7 +682,7 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
 
         var q = db.From<LetterFrequency>(db.TableAlias("a"))
             .WhereNotExists(db.From<LetterWeighting>()
-                .Where<LetterFrequency,LetterWeighting>((a,b) => b.LetterFrequencyId == Sql.TableAlias(a.Id, "a"))
+                .Where<LetterFrequency, LetterWeighting>((a, b) => b.LetterFrequencyId == Sql.TableAlias(a.Id, "a"))
                 .Select(Sql.Custom("null")));
 
         var results = db.Select(q);
@@ -680,7 +700,7 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
         // OrmLiteUtils.PrintSql();
         var q = db.From<LetterFrequency>(db.TableAlias("a"))
             .WhereNotExists(db.From<LetterWeighting>()
-                .Where<LetterFrequency,LetterWeighting>((a,b) => 
+                .Where<LetterFrequency, LetterWeighting>((a, b) =>
                     b.LetterFrequencyId == Sql.TableAlias(a.Id, "a")
                     && b.Weighting > 0)
                 .Select(Sql.Custom("null")));
