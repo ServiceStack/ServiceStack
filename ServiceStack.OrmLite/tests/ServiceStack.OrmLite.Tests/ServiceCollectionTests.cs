@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ServiceStack.Data;
+using ServiceStack.OrmLite.Tests.Shared;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Tests;
 
@@ -73,4 +76,45 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
             Assert.That(mysql.Scalar<string>("SELECT 'Hello World'"), Is.EqualTo("Hello World"));
         }
     }
+
+    class JsonObjectTypes
+    {
+        public object Object { get; set; }
+        public Dictionary<string, object> ObjectDictionary { get; set; }
+        public List<object> ObjectList { get; set; }
+    }
+
+    [Test]
+    public void Can_serialize_Complex_Types_with_JsonObject()
+    {
+        var serializer = new JsonComplexTypeSerializer();
+        var person = new Person { Id = 1, FirstName = "FirstName", LastName = "LastName", Age = 27 };
+        var dto = new JsonObjectTypes
+        {
+            Object = person,
+            ObjectDictionary = new()
+            {
+                ["Id"] = 1,
+                ["FirstName"] = "FirstName",
+                ["LastName"] = "LastName",
+                ["Age"] = 27,
+            },
+        };
+        dto.ObjectList = [dto.ObjectDictionary];
+
+        var json = serializer.SerializeToString(dto.Object);
+        var dtoObject = serializer.DeserializeFromString<Person>(json);
+        Assert.That(dtoObject, Is.EqualTo(dto.Object));
+
+        json = serializer.SerializeToString(dto.ObjectDictionary);
+        var dtoObjectDictionary = serializer.DeserializeFromString<Dictionary<string, object>>(json);
+        Assert.That(dtoObjectDictionary, Is.EqualTo(dto.ObjectDictionary));
+        
+        var fromObjDict = dtoObjectDictionary.FromObjectDictionary<Person>();
+        Assert.That(fromObjDict, Is.EqualTo(person));
+        
+        json = serializer.SerializeToString(dto.ObjectList);
+        var fromObjList = serializer.DeserializeFromString<List<object>>(json);
+        Assert.That(fromObjList, Is.EqualTo(dto.ObjectList));
+   }
 }
