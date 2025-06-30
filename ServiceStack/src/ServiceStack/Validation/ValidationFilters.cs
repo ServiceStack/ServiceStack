@@ -95,8 +95,16 @@ public static class ValidationFilters
                 {
                     errorResponse = validationFeature.ErrorResponseFilter(req, validationResult, errorResponse);
                 }
-    
-                await res.WriteToResponse(req, errorResponse);
+
+                // If the response is null, it means the request is sent from the InProcessServiceGateway
+                if (res == null)
+                {
+                    req.Items[Keywords.ServiceGatewayResponseStatus] = errorResponse.GetResponseStatus();
+                }
+                else
+                {
+                    await res.WriteToResponse(req, errorResponse);    
+                }
             }
             catch (Exception ex)
             {
@@ -105,15 +113,39 @@ public static class ValidationFilters
                 var errorResponse = await HostContext.RaiseServiceException(req, requestDto, validationEx)
                                     ?? DtoUtils.CreateErrorResponse(requestDto, validationEx);
     
-                await res.WriteToResponse(req, errorResponse);
+                // If the response is null, it means the request is sent from the InProcessServiceGateway
+                if (res == null)
+                {
+                    req.Items[Keywords.ServiceGatewayResponseStatus] = errorResponse.GetResponseStatus();
+                }
+                else
+                {
+                    await res.WriteToResponse(req, errorResponse);    
+                }
             }
         }
     }
 
+    public static Task GatewayResponseFiltersAsync(IRequest req, object requestDto)
+    {
+        return ResponseFilterAsync(req, req.Response, requestDto);
+    }
+    
     public static async Task ResponseFilterAsync(IRequest req, IResponse res, object requestDto)
     {
-        if (requestDto is not IHasResponseStatus response)
+        IHasResponseStatus response;
+        if (requestDto is IHasResponseStatus)
+        {
+            response = (IHasResponseStatus)requestDto;
+        }
+        else if (req.Items.ContainsKey(Keywords.ServiceGatewayResponseStatus) && req.Items[Keywords.ServiceGatewayResponseStatus] is IHasResponseStatus)
+        {
+            response = (IHasResponseStatus)req.Items[Keywords.ServiceGatewayResponseStatus];
+        }
+        else
+        {
             return;
+        }
 
         var validator = ValidatorCache.GetValidator(req, req.Dto.GetType());
         if (validator == null)
