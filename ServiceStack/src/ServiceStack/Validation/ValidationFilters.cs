@@ -99,7 +99,7 @@ public static class ValidationFilters
                 // If the response is null, it means the request is sent from the InProcessServiceGateway
                 if (res == null)
                 {
-                    req.Items[Keywords.ServiceGatewayResponseStatus] = errorResponse.GetResponseStatus();
+                    req.Items[Keywords.ResponseStatus] = errorResponse.GetResponseStatus();
                 }
                 else
                 {
@@ -116,7 +116,7 @@ public static class ValidationFilters
                 // If the response is null, it means the request is sent from the InProcessServiceGateway
                 if (res == null)
                 {
-                    req.Items[Keywords.ServiceGatewayResponseStatus] = errorResponse.GetResponseStatus();
+                    req.Items[Keywords.ResponseStatus] = errorResponse.GetResponseStatus();
                 }
                 else
                 {
@@ -138,9 +138,9 @@ public static class ValidationFilters
         {
             response = (IHasResponseStatus)requestDto;
         }
-        else if (req.Items.ContainsKey(Keywords.ServiceGatewayResponseStatus) && req.Items[Keywords.ServiceGatewayResponseStatus] is IHasResponseStatus)
+        else if (req.Items.ContainsKey(Keywords.ResponseStatus) && req.Items[Keywords.ResponseStatus] is IHasResponseStatus)
         {
-            response = (IHasResponseStatus)req.Items[Keywords.ServiceGatewayResponseStatus];
+            response = (IHasResponseStatus)req.Items[Keywords.ResponseStatus];
         }
         else
         {

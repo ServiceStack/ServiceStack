@@ -285,7 +285,7 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
         }
 
         var errorResponse = DtoUtils.CreateErrorResponse(requestDto, ver);
-        req.Items[Keywords.ServiceGatewayResponseStatus] = errorResponse.GetResponseStatus();
+        req.Items[Keywords.ResponseStatus] = errorResponse.GetResponseStatus();
     }
 
     public async Task<ValidationFeature> AssertRequiredRole(IRequest request, string authSecret=null)
