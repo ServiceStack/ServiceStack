@@ -156,6 +156,11 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
             {
                 appHost.GlobalMessageResponseFiltersAsync.Add(ValidationFilters.ResponseFilterAsync);
             }
+
+            if (!appHost.GatewayResponseFiltersAsync.Contains(ValidationFilters.GatewayResponseFiltersAsync))
+            {
+                appHost.GatewayResponseFiltersAsync.Add(ValidationFilters.GatewayResponseFiltersAsync);
+            }
         }
 
         ValidationSource ??= appHost.TryResolve<IValidationSource>();
@@ -251,9 +256,36 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
             ? await validator.ValidateAsync(validationContext, token)
             // ReSharper disable once MethodHasAsyncOverloadWithCancellation
             : validator.Validate(validationContext);
-            
-        if (!result.IsValid)
+        
+        if (TreatInfoAndWarningsAsErrors && result.IsValid)
+        {
+            return;
+        }
+        
+        if (!result.IsValid && result.Errors.Any(x => x.Severity == Severity.Error))
+        {
             throw result.ToWebServiceException(requestDto, this);
+        }
+            
+        var ver = new ValidationErrorResult();
+        foreach (var error in result.Errors)
+        {
+            var vfe = new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue);
+            if (error.CustomState is IEnumerable<KeyValuePair<string, string>>)
+            {
+                vfe.Meta = error.CustomState.ToStringDictionary();
+            }
+            else
+            {
+                vfe.Meta = error.FormattedMessagePlaceholderValues.ToStringDictionary();
+            }
+
+            vfe.Meta[nameof(error.Severity)] = error.Severity.ToString();
+            ver.Errors.Add(vfe);
+        }
+
+        var errorResponse = DtoUtils.CreateErrorResponse(requestDto, ver);
+        req.Items[Keywords.ResponseStatus] = errorResponse.GetResponseStatus();
     }
 
     public async Task<ValidationFeature> AssertRequiredRole(IRequest request, string authSecret=null)
