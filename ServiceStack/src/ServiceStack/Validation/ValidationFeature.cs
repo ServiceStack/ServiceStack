@@ -264,7 +264,19 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
         
         if (!result.IsValid && result.Errors.Any(x => x.Severity == Severity.Error))
         {
-            throw result.ToWebServiceException(requestDto, this);
+            var validationException = result.ToWebServiceException(requestDto, this);
+
+            foreach (var error in validationException.ResponseStatus.Errors)
+            {
+                var correspondingError = result.Errors.FirstOrDefault(x =>
+                    x.ErrorMessage.Equals(error.Message, StringComparison.InvariantCultureIgnoreCase));
+                if (correspondingError != null && error.Meta != null)
+                {
+                    error.Meta[nameof(correspondingError.Severity)] = correspondingError.Severity.ToString();
+                }
+            }
+			
+            throw validationException;
         }
             
         var ver = new ValidationErrorResult();
