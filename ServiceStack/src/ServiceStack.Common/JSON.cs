@@ -58,6 +58,52 @@ public static class JSON
     }
 
     public static string stringify(object value) => value.ToJson();
+    
+    public static object Deserialize(string json, Type type)
+    {
+        var ret = parse(json);
+        if (ret is Dictionary<string, object> objDict)
+        {
+            if (type == typeof(Dictionary<string, object>))
+                return objDict;
+            
+            return objDict.FromObjectDictionary(type);
+        }
+        if (ret is List<object> objList)
+        {
+            if (type == typeof(List<object>))
+                return objList;
+            
+            var list = (System.Collections.IList)type.CreateInstance();
+            var itemType = type.GetCollectionType();
+            foreach (var oItem in objList)
+            {
+                if (oItem is Dictionary<string, object> itemDict)
+                {
+                    var item = itemDict.FromObjectDictionary(itemType);
+                    list.Add(item);
+                }
+                else
+                {
+                    if (itemType == typeof(object))
+                    {
+                        list.Add(oItem);
+                    }
+                    else
+                    {
+                        var item = oItem.ConvertTo(itemType);
+                        list.Add(item);
+                    }
+                }
+            }
+            return list;
+        }
+
+        if (type == typeof(object))
+            return ret;
+        var to = ret.ConvertTo(type);
+        return to;
+    }
 }
 
 public static class JS

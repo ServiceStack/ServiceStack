@@ -238,10 +238,10 @@ public class CrudContext
     internal void ThrowPrimaryKeyRequiredForRowVersion() =>
         throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
 
-    public static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation, object dbLock) =>
+    public static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation, object dbLock=null) =>
         Create(typeof(Table), request, db, dto, operation, dbLock);
         
-    public static CrudContext Create(Type tableType, IRequest request, IDbConnection db, object dto, string operation, object dbLock)
+    public static CrudContext Create(Type tableType, IRequest request, IDbConnection db, object dto, string operation, object dbLock=null)
     {
         var appHost = HostContext.AppHost;
         var requestType = dto?.GetType() ?? throw new ArgumentNullException(nameof(dto));

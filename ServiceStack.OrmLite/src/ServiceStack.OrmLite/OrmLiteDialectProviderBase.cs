@@ -128,9 +128,25 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     /// </summary>
     public virtual bool UseJson
     {
+#if NET8_0_OR_GREATER
+        set => StringSerializer = value ? new JsonComplexTypeSerializer() : new JsvStringSerializer();
+#else
         set => StringSerializer = value ? new JsonStringSerializer() : new JsvStringSerializer();
+#endif
     }
 
+#if NET8_0_OR_GREATER
+    public OrmLiteDialectProviderBase<TDialect> ConfigureJson(Action<JsonComplexTypeSerializer> configure)
+    {
+        if (StringSerializer is JsonComplexTypeSerializer jsonSerializer)
+        {
+            configure(jsonSerializer);
+        }
+        else throw new NotSupportedException($"StringSerializer {StringSerializer.GetType().Name} is not a {nameof(JsonComplexTypeSerializer)}");
+        return this;
+    }
+#endif
+    
     public string GetColumnTypeDefinition(Type columnType, int? fieldLength, int? scale)
     {
         var converter = GetConverter(columnType);
