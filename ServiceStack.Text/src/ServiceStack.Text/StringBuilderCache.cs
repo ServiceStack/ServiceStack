@@ -18,7 +18,7 @@ public static class StringBuilderCache
             return new StringBuilder();
 
         ret.Length = 0;
-        cache = null;  //don't re-issue cached instance until it's freed
+        cache = null; //don't re-issue cached instance until it's freed
         return ret;
     }
 
@@ -43,15 +43,20 @@ public static class StringBuilderCacheAlt
     [ThreadStatic]
     static StringBuilder cache;
 
-    public static StringBuilder Allocate()
+    public static StringBuilder Allocate(int capacity)
     {
         var ret = cache;
         if (ret == null)
-            return new StringBuilder();
+            return new StringBuilder(capacity);
 
         ret.Length = 0;
-        cache = null;  //don't re-issue cached instance until it's freed
+        cache = null; //don't re-issue cached instance until it's freed
         return ret;
+    }
+
+    public static StringBuilder Allocate()
+    {
+        return Allocate(16); // 16 is the default capacity for StringBuilder
     }
 
     public static void Free(StringBuilder sb)
@@ -80,7 +85,7 @@ internal static class StringBuilderThreadStatic
             return new StringBuilder();
 
         ret.Length = 0;
-        cache = null;  //don't re-issue cached instance until it's freed
+        cache = null; //don't re-issue cached instance until it's freed
         return ret;
     }
 
