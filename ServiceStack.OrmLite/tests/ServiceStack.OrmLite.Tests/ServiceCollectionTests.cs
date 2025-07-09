@@ -77,6 +77,7 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
     }
 #endif
 
+#if NET8_0_OR_GREATER
     class JsonObjectTypes
     {
         public object Object { get; set; }
@@ -156,4 +157,5 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
         var fromPersonList = serializer.DeserializeFromString<Dictionary<int,Person>>(json);
         Assert.That(fromPersonList, Is.EqualTo(dto.PersonDictionary));
     }
+#endif
 }
