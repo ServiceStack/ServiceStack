@@ -686,7 +686,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual SelectItem GetRowVersionSelectColumn(FieldDefinition field, string tablePrefix = null)
     {
-        return new SelectItemColumn(this, field.FieldName, null, tablePrefix);
+        return new SelectItemColumn(this, field, tablePrefix);
     }
 
     public virtual string GetRowVersionColumn(FieldDefinition field, string tablePrefix = null)
@@ -720,7 +720,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             }
             else
             {
-                sqlColumns[i] = new SelectItemColumn(this, field.FieldName, null, quotedPrefix);
+                sqlColumns[i] = new SelectItemColumn(this, field, quotedPrefix);
             }
         }
 

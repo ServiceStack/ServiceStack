@@ -3254,6 +3254,14 @@ namespace ServiceStack.OrmLite
 
     public class SelectItemColumn : SelectItem
     {
+        private FieldDefinition fieldDef;
+        public SelectItemColumn(IOrmLiteDialectProvider dialectProvider, FieldDefinition fieldDef, string quotedTableAlias = null)
+            : base(dialectProvider, null)
+        {
+            this.fieldDef = fieldDef;
+            QuotedTableAlias = quotedTableAlias;
+        }
+        
         public SelectItemColumn(IOrmLiteDialectProvider dialectProvider, string columnName, string columnAlias = null, string quotedTableAlias = null)
             : base(dialectProvider, columnAlias)
         {
@@ -3275,7 +3283,9 @@ namespace ServiceStack.OrmLite
 
         public override string ToString()
         {
-            var text = DialectProvider.GetQuotedColumnName(ColumnName);
+            var text = fieldDef != null 
+                ? DialectProvider.GetQuotedColumnName(fieldDef)
+                : DialectProvider.GetQuotedColumnName(ColumnName);
 
             if (!string.IsNullOrEmpty(QuotedTableAlias))
                 text = QuotedTableAlias + "." + text;
