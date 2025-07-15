@@ -156,10 +156,28 @@ public class OrmLiteCreateTableTests(DialectContext context) : OrmLiteProvidersT
         insertRowA = db.SingleById<AuditTableA>(idA);
         Assert.That(insertRowA.CreatedDate, Is.EqualTo(insertDate));
     }
-    
-    public class Test
+
+    class Region
     {
         public string Id { get; set; }
+        public int Type { get; set; } = 0;
+    }
+
+    [Test]
+    public async Task Does_use_StringConverter_in_DeleteById()
+    {
+        using var db = OpenDbConnection();
+        var stringConverter = DialectProvider.GetStringConverter();
+        var hold = stringConverter.UseUnicode;
+        stringConverter.UseUnicode = true;
+        
+        OrmLiteUtils.PrintSql();
+        
+        db.DropAndCreateTable<Region>();
+        await db.DeleteAsync<Region>(x => x.Id == "id1");
+        await db.DeleteByIdAsync<Region>("id1");
+
+        stringConverter.UseUnicode = hold;
     }
 
     [Test]

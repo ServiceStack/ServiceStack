@@ -3361,7 +3361,7 @@ namespace ServiceStack.OrmLite
                 p.Value = DBNull.Value;
             }
 
-            // Can't check DbType in PostgreSQL before p.Value is assinged 
+            // Can't check DbType in PostgreSQL before p.Value is assigned 
             if (p.Value is string strValue && strValue.Length > p.Size)
             {
                 var stringConverter = dialectProvider.GetStringConverter();

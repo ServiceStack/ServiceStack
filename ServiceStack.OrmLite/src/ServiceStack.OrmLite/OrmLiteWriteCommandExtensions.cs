@@ -614,6 +614,7 @@ public static class OrmLiteWriteCommandExtensions
         idParam.ParameterName = idParamString;
         idParam.Value = id;
         dbCmd.Parameters.Add(idParam);
+        dialectProvider.ConfigureParam(idParam, id, null);
         return sql;
     }
 
@@ -639,6 +640,7 @@ public static class OrmLiteWriteCommandExtensions
         idParam.ParameterName = dialectProvider.GetParam();
         idParam.Value = id;
         dbCmd.Parameters.Add(idParam);
+        dialectProvider.ConfigureParam(idParam, id, null);
 
         var rowVersionField = modelDef.RowVersion;
         if (rowVersionField == null)
