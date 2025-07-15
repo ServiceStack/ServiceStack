@@ -15,9 +15,8 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        
     }
-    
+#if NETCORE
     [Test]
     public void Can_configure_OrmLite_with_ServiceCollection_Extensions()
     {
@@ -76,7 +75,9 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
             Assert.That(mysql.Scalar<string>("SELECT 'Hello World'"), Is.EqualTo("Hello World"));
         }
     }
+#endif
 
+#if NET8_0_OR_GREATER
     class JsonObjectTypes
     {
         public object Object { get; set; }
@@ -156,4 +157,5 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
         var fromPersonList = serializer.DeserializeFromString<Dictionary<int,Person>>(json);
         Assert.That(fromPersonList, Is.EqualTo(dto.PersonDictionary));
     }
+#endif
 }

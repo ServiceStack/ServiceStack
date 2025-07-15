@@ -297,7 +297,7 @@ public interface IOrmLiteDialectProvider
     Task<long> InsertAndGetLastInsertIdAsync<T>(IDbCommand dbCmd, CancellationToken token);
     
     string GetLoadChildrenSubSelect<From>(SqlExpression<From> expr);
-    string ToRowCountStatement(string innerSql);
+    string ToRowCountStatement(string innerSql, bool  innerSqlAsSubQuery=true);
 
     string ToUpdateStatement<T>(IDbCommand dbCmd, T item, ICollection<string> updateFields = null);
     string ToInsertStatement<T>(IDbCommand dbCmd, T item, ICollection<string> insertFields = null);

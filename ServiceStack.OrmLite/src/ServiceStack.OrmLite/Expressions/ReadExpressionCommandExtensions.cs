@@ -222,6 +222,12 @@ namespace ServiceStack.OrmLite
             return dbCmd.Scalar<long>(dbCmd.GetDialectProvider().ToRowCountStatement(sql));
         }
 
+        internal static long RowCount<T>(this IDbCommand dbCmd)
+        {
+            var quotedTableName = dbCmd.GetDialectProvider().GetQuotedTableName(typeof(T).GetModelDefinition());
+            return dbCmd.Scalar<long>(dbCmd.GetDialectProvider().ToRowCountStatement(quotedTableName,false));
+        }
+
         internal static long RowCount(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
         {
             return dbCmd.SetParameters(sqlParams).Scalar<long>(dbCmd.GetDialectProvider().ToRowCountStatement(sql));
