@@ -147,19 +147,21 @@ public static class ServiceExtensions
     public static async Task RemoveSessionAsync(this IRequest httpReq, string sessionId, CancellationToken token=default)
     {
         if (httpReq == null) return;
-        if (httpReq.Items.ContainsKey(Keywords.HasClearedSession))
-            return; // already cleared session
         if (sessionId == null)
             throw new ArgumentNullException(nameof(sessionId));
 
         if (Log.IsDebugEnabled)
             Log.DebugFormat("Removing Session: {0}", sessionId);
         
+        httpReq.Items.Remove(Keywords.Session);
+
+        if (httpReq.Items.ContainsKey(Keywords.HasClearedSession))
+            return; // already cleared session
+
         var sessionKey = SessionFeature.GetSessionKey(sessionId);
         await httpReq.GetCacheClientAsync().RemoveAsync(sessionKey, token).ConfigAwait();
         
         httpReq.Items[Keywords.HasClearedSession] = true; // reset pre-authenticated state
-        httpReq.Items.Remove(Keywords.Session);
     }
 
     public static IAuthSession GetSession(this IServiceBase service, bool reload = false)
