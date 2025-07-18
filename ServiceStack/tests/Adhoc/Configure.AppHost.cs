@@ -16,10 +16,7 @@ public class AppHost() : AppHostBase("MyApp"), IHostingStartup
             
             services.AddPlugin(new AuthFeature(() => new AuthUserSession(), [
                 new BasicAuthProvider() //Sign-in with HTTP Basic Auth
-            ])
-            {
-                GenerateNewSessionCookiesOnAuthentication = false,
-            });
+            ]));
 
             //SqlServer2012Dialect.Provider.GetStringConverter().UseUnicode = true;
 
