@@ -41,6 +41,7 @@ public static class Keywords
     public const string HasPreAuthenticated = "__haspreauth";
     public const string HasGlobalHeaders = "__global_headers";
     public const string HasLogged = "_logged";
+    public const string HasClearedSession = "__hasclearedsession";
     public const string DidAuthenticate = "__didauth";
     public const string IgnoreEvent = "__ignoreevent";
     public const string EventModelId = "__eventmodelid";
