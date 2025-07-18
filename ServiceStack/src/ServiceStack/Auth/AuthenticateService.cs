@@ -503,12 +503,11 @@ public class AuthenticateService : Service
             return null; //Just return sessionInfo if no provider or username is given
 
         var authFeature = GetPlugin<AuthFeature>();
-        if (authFeature?.HasSessionFeature == true)
+        if (authFeature?.HasSessionFeature == true && oAuthConfig is not IAuthWithRequest)
         {
             var generateNewCookies = authFeature.GenerateNewSessionCookiesOnAuthentication
                  //keep existing session during OAuth flow
                  && string.IsNullOrEmpty(Request.QueryString["oauth_token"]) 
-                 && string.IsNullOrEmpty(Request.QueryString["State"]) 
                  && string.IsNullOrEmpty(Request.QueryString["state"]);
 
             if (generateNewCookies)

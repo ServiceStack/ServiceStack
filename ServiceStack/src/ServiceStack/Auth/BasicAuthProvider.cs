@@ -66,4 +66,9 @@ public class BasicAuthProvider : CredentialsAuthProvider, IAuthWithRequest
             }).ConfigAwait();
         }
     }
+
+    protected override Task<IAuthSession> ResetSessionBeforeLoginAsync(IServiceBase authService, IAuthSession session, string userName, CancellationToken token=default)
+    {
+        return Task.FromResult(session);
+    }
 }
