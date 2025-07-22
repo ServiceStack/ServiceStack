@@ -2167,23 +2167,6 @@ public static class ServerEventExtensions
         return res;
     }
 
-    internal static IEnumerable<TElement> ValuesWithoutLock<TKey, TElement>(this ConcurrentDictionary<TKey, TElement> source)
-    {
-        foreach (var item in source)
-        {
-            if (item.Value != null)
-                yield return item.Value;
-        }
-    }
-
-    internal static IEnumerable<TKey> KeysWithoutLock<TKey, TElement>(this ConcurrentDictionary<TKey, TElement> source)
-    {
-        foreach (var item in source)
-        {
-            yield return item.Key;
-        }
-    }
-
     internal static string AssertChannel(this string channel) => channel == null || channel.IndexOf('@') == -1
         ? channel
         : throw new ArgumentException(@"Illegal '@' used in name", nameof(channel));
