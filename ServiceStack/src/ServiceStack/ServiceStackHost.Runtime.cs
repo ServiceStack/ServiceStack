@@ -765,6 +765,45 @@ public abstract partial class ServiceStackHost
         else
             logger.Error(message);
     }
+    
+    /// <summary>
+    /// Initialize IRequest Context used to execute request
+    /// </summary>
+    /// <param name="handler"></param>
+    /// <param name="httpReq"></param>
+    /// <returns></returns>
+    public virtual IHttpHandler InitRequest(IHttpHandler handler, IHttpRequest httpReq)
+    {
+        if (handler is IServiceStackHandler ssHandler)
+            httpReq.OperationName = ssHandler.GetOperationName();
+
+        var shouldProfile = ShouldProfileRequest(httpReq);
+        if (shouldProfile || AddTimings)
+        {
+            httpReq.SetItem(Keywords.RequestDuration, System.Diagnostics.Stopwatch.GetTimestamp());
+        }
+        if (shouldProfile)
+        {
+            // https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/ActivityUserGuide.md
+            var activity = new System.Diagnostics.Activity(Diagnostics.Activity.HttpBegin);
+            activity.SetParentId(httpReq.GetTraceId());
+            var id = Diagnostics.ServiceStack.WriteRequestBefore(httpReq);
+            activity.AddTag(Diagnostics.Activity.OperationId, id);
+
+            var userId = TryGetUserId(httpReq);
+            if (userId != null)
+                activity.AddTag(Diagnostics.Activity.UserId, userId);
+
+            var feature = GetPlugin<ProfilingFeature>();
+            var tag = feature?.TagResolver?.Invoke(httpReq);
+            if (tag != null)
+                activity.AddTag(Diagnostics.Activity.Tag, tag);
+
+            httpReq.SetItem(Keywords.RequestActivity, activity);
+            Diagnostics.ServiceStack.StartActivity(activity, new ServiceStackActivityArgs { Request = httpReq, Activity = activity });
+        }
+        return handler;
+    }
         
     /// <summary>
     /// Try infer UserId from IRequest

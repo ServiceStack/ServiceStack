@@ -116,37 +116,7 @@ public class HttpHandlerFactory : IHttpHandlerFactory
 
     public static IHttpHandler InitHandler(IHttpHandler handler, IHttpRequest httpReq)
     {
-        if (handler is IServiceStackHandler ssHandler)
-            httpReq.OperationName = ssHandler.GetOperationName();
-
-        var appHost = HostContext.AppHost;
-        var shouldProfile = appHost.ShouldProfileRequest(httpReq);
-        if (shouldProfile || appHost.AddTimings)
-        {
-            httpReq.SetItem(Keywords.RequestDuration, System.Diagnostics.Stopwatch.GetTimestamp());
-        }
-        if (shouldProfile)
-        {
-            // https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/ActivityUserGuide.md
-            var activity = new System.Diagnostics.Activity(Diagnostics.Activity.HttpBegin);
-            activity.SetParentId(httpReq.GetTraceId());
-            var id = Diagnostics.ServiceStack.WriteRequestBefore(httpReq);
-            activity.AddTag(Diagnostics.Activity.OperationId, id);
-
-            var userId = appHost.TryGetUserId(httpReq);
-            if (userId != null)
-                activity.AddTag(Diagnostics.Activity.UserId, userId);
-
-            var feature = appHost.GetPlugin<ProfilingFeature>();
-            var tag = feature?.TagResolver?.Invoke(httpReq);
-            if (tag != null)
-                activity.AddTag(Diagnostics.Activity.Tag, tag);
-
-            httpReq.SetItem(Keywords.RequestActivity, activity);
-            Diagnostics.ServiceStack.StartActivity(activity, new ServiceStackActivityArgs { Request = httpReq, Activity = activity });
-        }
-
-        return handler;
+        return ServiceStackHost.Instance.InitRequest(handler, httpReq);
     }
 
 #if !NETCORE
