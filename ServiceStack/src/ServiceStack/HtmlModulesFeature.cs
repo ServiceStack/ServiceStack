@@ -483,7 +483,10 @@ public class HtmlModule
                     var req = httpContext.ToRequest();
                     var handler = handlerFn(req);
                     if (handler != null)
+                    {
+                        appHost.InitRequest(handler, req);
                         return handler.ProcessRequestAsync(req, req.Response, httpContext.Request.Path);
+                    }
                     return Task.CompletedTask;
                 })
                 .WithMetadata<string>(name:BasePath, tag:GetType().Name, contentType:MimeTypes.Html, additionalContentTypes:[MimeTypes.JavaScript]);

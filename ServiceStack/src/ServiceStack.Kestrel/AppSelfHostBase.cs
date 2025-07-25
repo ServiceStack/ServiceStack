@@ -145,6 +145,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
                     ResponseContentType = contentType
                 }
                 : new NotFoundHttpHandler();
+            Instance.InitRequest(handler, req);
             return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
         }
         

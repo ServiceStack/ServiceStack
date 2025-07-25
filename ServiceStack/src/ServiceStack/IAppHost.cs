@@ -446,6 +446,16 @@ public interface IAppHost : IResolver
     /// Register a callback to configure a plugin after AfterPluginsLoaded is run 
     /// </summary>
     void AfterPluginLoaded<T>(Action<T> configure) where T : class, IPlugin;
+
+    /// <summary>
+    /// Initialize IRequest Context used to execute request
+    /// </summary>
+    IHttpHandler InitRequest(IHttpHandler handler, IHttpRequest httpReq);
+
+    /// <summary>
+    /// Try infer UserId from IRequest
+    /// </summary>
+    string TryGetUserId(IRequest req);
     
     /// <summary>
     /// Whether the AppHost has been disposed

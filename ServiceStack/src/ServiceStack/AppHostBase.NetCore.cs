@@ -308,7 +308,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                     ResponseContentType = contentType
                 }
                 : new NotFoundHttpHandler();
-            
+            Instance.InitRequest(handler, req);
             return handler.ProcessRequestAsync(req, req.Response, requestType.Name);
         }
 
@@ -808,6 +808,7 @@ public static class NetCoreAppHostExtensions
         var handler = handlerFactory(req);
         if (handler == null)
             return Task.CompletedTask;
+        ServiceStackHost.Instance.InitRequest(handler, req);
         var res = (NetCoreResponse)req.Response;
         //res.KeepOpen = true; // Let ASP.NET Core close request
         configure?.Invoke(req);
@@ -819,6 +820,7 @@ public static class NetCoreAppHostExtensions
         if (handler == null)
             return Task.CompletedTask;
         var req = httpContext.ToRequest().AddTimingsIfNeeded();
+        ServiceStackHost.Instance.InitRequest(handler, req);
         var res = (NetCoreResponse)req.Response;
         //res.KeepOpen = true; // Let ASP.NET Core close request
         configure?.Invoke(req);
