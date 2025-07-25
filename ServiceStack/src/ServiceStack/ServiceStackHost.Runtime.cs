@@ -808,16 +808,17 @@ public abstract partial class ServiceStackHost
     /// <summary>
     /// Try infer UserId from IRequest
     /// </summary>
-    /// <returns></returns>
     public virtual string TryGetUserId(IRequest req)
     {
         var session = req.Items.TryGetValue(Keywords.Session, out var oSession)
             ? oSession as IAuthSession
             : null;
-        return session != null 
+        var userId = session != null 
             ? session.UserAuthId 
             : (req.Cookies.TryGetValue(HttpHeaders.XUserAuthId, out var cUserId) ? cUserId.Value : null) 
               ?? req.Response.GetHeader(HttpHeaders.XUserAuthId);
+        userId ??= req.GetClaimsPrincipal()?.GetUserId();
+        return userId;
     }
 
     /// <summary>
