@@ -177,7 +177,12 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         return links;
     }
 
-    private string GetBaseUrl(string baseUrl) => baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? Request.GetBaseUrl();
+    private string GetBaseUrl(string baseUrl)
+    {
+        return baseUrl
+           ?? HostContext.AssertPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl 
+           ?? Request.GetBaseUrl();
+    }
 
     public MetadataTypes Any(TypesMetadata request)
     {
