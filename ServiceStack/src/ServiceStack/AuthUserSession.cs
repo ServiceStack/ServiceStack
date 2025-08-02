@@ -90,7 +90,9 @@ public class AuthUserSession : IAuthSessionExtended, IMeta
     [DataMember(Order = 59)] public virtual string RecoveryToken { get; set; }
     [DataMember(Order = 60)] public virtual int? RefId { get; set; }
     [DataMember(Order = 61)] public virtual string RefIdStr { get; set; }
-    [DataMember(Order = 62)] public ClaimsPrincipal User { get; set; } = new();
+    
+    [IgnoreDataMember]
+    public ClaimsPrincipal User { get; set; } = new();
 
     public virtual bool IsAuthorized(string provider)
     {
