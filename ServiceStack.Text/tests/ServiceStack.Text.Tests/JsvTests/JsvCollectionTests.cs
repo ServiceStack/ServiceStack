@@ -58,5 +58,15 @@ namespace ServiceStack.Text.Tests.JsvTests
 
             collection.PrintDump();
         }
+
+        [Test]
+        public void Can_deserialize_quoted_keys()
+        {
+            var itemArray = "[{\"key\":\"KEY\",\"value\":\"VAL\"}]";
+            var items = TypeSerializer.DeserializeFromString<Item[]>(itemArray);
+            var item = items[0];
+            Assert.That(item.Key, Is.EqualTo("KEY"));
+            Assert.That(item.Value, Is.EqualTo("VAL"));
+        }
     }
 }

@@ -360,7 +360,10 @@ public struct JsvTypeSerializer
                     if (!isLiteralQuote)
                         break;
                 }
-                return value.Slice(tokenStartPos, i - tokenStartPos);
+                var key = value.Slice(tokenStartPos, i - tokenStartPos);
+                if (key.Length > 2 && key[0] == JsWriter.QuoteChar) // Don't unquote empty keys
+                    key = key.Slice(1, key.Length - 2);
+                return key;
 
             //Is Type/Map, i.e. {...}
             case JsWriter.MapStartChar:
