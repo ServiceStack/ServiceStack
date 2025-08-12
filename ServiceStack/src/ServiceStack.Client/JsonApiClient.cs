@@ -646,7 +646,7 @@ public class JsonApiClient : IJsonServiceClient, IHasCookieContainer, IServiceCl
 
         try
         {
-            absoluteUrl = new Uri(absoluteUrl).ToString();
+            absoluteUrl = new Uri(absoluteUrl).AbsoluteUri;
         }
         catch (Exception ex)
         {

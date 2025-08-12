@@ -16,7 +16,7 @@ namespace ServiceStack.Desktop
                 : DesktopState.StartUrl.CombineWith(resolvedUrl);
         }
         public bool openUrl(ScriptScopeContext scope, string url) =>
-            scope.DoWindow(w => NativeWin.Open(new Uri(resolveUrl(scope,url)).ToString()));
+            scope.DoWindow(w => NativeWin.Open(new Uri(resolveUrl(scope,url)).AbsoluteUri));
         public bool start(ScriptScopeContext scope, string cmd) =>
             scope.DoWindow(w => NativeWin.Open(cmd));
         public Dictionary<string, string> desktopInfo(ScriptScopeContext scope) => 
