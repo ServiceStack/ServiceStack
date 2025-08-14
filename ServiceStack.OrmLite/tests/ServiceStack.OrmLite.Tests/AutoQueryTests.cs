@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
@@ -93,7 +94,7 @@ public class AutoQueryTests(DialectContext context) : OrmLiteProvidersTestBase(c
         new RockstarAlbum { Id = 12, RockstarId = 7, Name = "Thriller" }
     ];
 
-    private static readonly Department2[] SeedDepartments =
+    public static readonly Department2[] SeedDepartments =
     [
         new Department2 { Id = 10, Name = "Dept 1" },
         new Department2 { Id = 20, Name = "Dept 2" },
@@ -106,6 +107,24 @@ public class AutoQueryTests(DialectContext context) : OrmLiteProvidersTestBase(c
         new DeptEmployee { Id = 2, DepartmentId = 20, FirstName = "First 2", LastName = "Last 2" },
         new DeptEmployee { Id = 3, DepartmentId = 30, FirstName = "First 3", LastName = "Last 3" }
     ];
+
+    public static void RecreateTables(IDbConnection db)
+    {
+        db.DropTable<RockstarAlbum>();
+        db.DropTable<Rockstar>();
+        db.DropTable<DeptEmployee>();
+        db.DropTable<Department2>();
+        
+        db.CreateTable<Department2>();
+        db.CreateTable<DeptEmployee>();
+        db.CreateTable<Rockstar>();
+        db.CreateTable<RockstarAlbum>();
+        
+        db.InsertAll(SeedRockstars);
+        db.InsertAll(SeedAlbums);
+        db.InsertAll(SeedDepartments);
+        db.InsertAll(SeedEmployees);
+    }
 
     [Test]
     public void Can_query_Rockstars()
