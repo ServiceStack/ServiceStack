@@ -9,6 +9,9 @@ public partial class BackgroundJobs
     private ConcurrentDictionary<string, ScheduledTask> namedScheduledTasks = new();
     private ConcurrentDictionary<string, CronExpression> cronExpressions = new();
 
+    public ICollection<ScheduledTask> ScheduledTasks => namedScheduledTasks.Values;
+    public ICollection<CronExpression> CronExpressions => cronExpressions.Values;
+
     /// <summary>
     /// On Startup load all scheduled tasks into memory
     /// </summary>

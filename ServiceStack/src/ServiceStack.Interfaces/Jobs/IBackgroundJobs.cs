@@ -131,6 +131,11 @@ public interface IBackgroundJobs
     /// Returns the estimated duration of an API Job in milliseconds
     /// </summary>
     int? GetApiEstimatedDurationMs(string requestType, string? worker=null);
+    
+    /// <summary>
+    /// Get collection of loaded Scheduled Tasks
+    /// </summary>
+    public ICollection<ScheduledTask> ScheduledTasks { get; }
 }
 
 /// <summary>
