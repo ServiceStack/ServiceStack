@@ -218,7 +218,7 @@ public static class OrmLiteReadCommandExtensions
 
     internal static IDbCommand SetParameters(this IDbCommand dbCmd, Type type, object anonType, bool excludeDefaults, ref string sql)
     {
-        if (anonType == null)
+        if (anonType.AssertAnonObject() == null)
             return dbCmd;
 
         dbCmd.Parameters.Clear();

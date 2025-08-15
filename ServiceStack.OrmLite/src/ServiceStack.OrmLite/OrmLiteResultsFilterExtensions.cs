@@ -17,7 +17,7 @@ public static class OrmLiteResultsFilterExtensions
     public static int ExecNonQuery(this IDbCommand dbCmd, string sql, object anonType = null)
     {
         if (anonType != null)
-            dbCmd.SetParameters(anonType.ToObjectDictionary(), (bool)false, sql:ref sql);
+            dbCmd.SetParameters(anonType.AssertAnonObject().ToObjectDictionary(), (bool)false, sql:ref sql);
 
         dbCmd.CommandText = sql;
 

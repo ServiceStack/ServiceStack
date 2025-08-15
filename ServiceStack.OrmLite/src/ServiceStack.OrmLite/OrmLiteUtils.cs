@@ -1011,7 +1011,19 @@ public static class OrmLiteUtils
     {
         return OrmLiteConfig.DialectProvider.GetNonDefaultValueInsertFields<T>(obj);
     }
+    
+    internal static object AssertAnonObject(this object anonType)
+    {
+        if (anonType == null)
+            return null;
         
+        var type = anonType.GetType();
+        if (type.IsValueType || type == typeof(string))
+            throw new ArgumentException("Anonymous types should be a class");
+
+        return anonType;
+    }
+
     public static void AssertNotAnonType<T>()
     {
         if (typeof(T) == typeof(object))
