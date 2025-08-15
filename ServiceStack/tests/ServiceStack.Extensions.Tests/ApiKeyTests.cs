@@ -85,10 +85,10 @@ public class ApiKeyTests
         {
             var services = this.GetApplicationServices();
             var apiKeysFeature = GetPlugin<ApiKeysFeature>();
-            apiKeysFeature.InitSchema();
+            using var db = apiKeysFeature.OpenDb();
+            apiKeysFeature.InitSchema(db);
             
             var dbFactory = services.GetRequiredService<IDbConnectionFactory>();
-            using var db = dbFactory.OpenDbConnection();
             apiKeysFeature.InsertAll(db, [
                 new() { Key = AnonKey },
                 new() { Key = UserKey, UserId = "89C1698D-9FD1-43B1-8C8B-C76EFA65E99B", UserName = "apiuser" },

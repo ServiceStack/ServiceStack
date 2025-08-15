@@ -32,8 +32,15 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public TimeSpan? DefaultExpiry { get; set; }
     public ConcurrentDictionary<int, DateTime> LastUsedApiKeys { get; set; } = new();
     public ConcurrentDictionary<string, IApiKey> ValidApiKeys { get; } = new();
-    public void ConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
+    public Func<IDbConnection>? UseDb { get; set; }
 
+    public IDbConnection OpenDb()
+    {
+        return UseDb != null 
+            ? UseDb() 
+            : HostContext.AppHost.GetDbConnection(null, db => db.WithName(GetType().Name));
+    }
+    
     public List<Type> RegisterServices { get; set; } = [
         typeof(AdminApiKeysService),
         typeof(UserApiKeysService),
@@ -273,7 +280,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
 
     public void InitSchema()
     {
-        using var db = HostContext.AppHost.GetDbConnection();
+        using var db = OpenDb();
         InitSchema(db);
     }
 
@@ -337,7 +344,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
 
     public void Configure(IServiceCollection services)
     {
-        services.TryAddSingleton<IApiKeySource>(c => new ApiKeysFeatureSource(this, c.GetRequiredService<IDbConnectionFactory>()));
+        services.TryAddSingleton<IApiKeySource>(c => new ApiKeysFeatureSource(this));
         services.TryAddSingleton<IApiKeyResolver>(_ => new ApiKeyResolver(this));
         
         foreach (var serviceType in RegisterServices)
@@ -384,11 +391,11 @@ class ApiKeyResolver(ApiKeysFeature feature) : IApiKeyResolver
         return feature.GetApiKeyToken(req);
     }
 }
-public class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory dbFactory) : IApiKeySource
+public class ApiKeysFeatureSource(ApiKeysFeature feature) : IApiKeySource
 {
     public async Task<IApiKey?> GetApiKeyFromDbAsync(string key)
     {
-        using var db = await dbFactory.OpenAsync(feature.ConfigureDb);
+        using var db = feature.OpenDb();
         var apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Key == key);
         if (apiKey == null) 
             return null;
@@ -414,7 +421,7 @@ public class ApiKeysFeatureSource(ApiKeysFeature feature, IDbConnectionFactory d
 
     public async Task<IApiKey?> GetApiKeyByIdAsync(int id)
     {
-        using var db = await dbFactory.OpenAsync(feature.ConfigureDb);
+        using var db = feature.OpenDb();
         var apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Id == id);
         return apiKey;
     }

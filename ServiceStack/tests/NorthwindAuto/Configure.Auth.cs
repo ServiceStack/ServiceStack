@@ -35,8 +35,8 @@ public class ConfigureAuth : IHostingStartup
         .ConfigureAppHost(appHost =>
         {
             var apiKeysFeature = appHost.GetPlugin<ApiKeysFeature>();
-            apiKeysFeature.InitSchema();
-            using var db = appHost.Resolve<IDbConnectionFactory>().Open();
+            using var db = apiKeysFeature.OpenDb();
+            apiKeysFeature.InitSchema(db);
             if (db.Count<ApiKeysFeature.ApiKey>() == 0)
             {
                 apiKeysFeature.InsertAll(db, ApiKeys);
@@ -95,6 +95,7 @@ public class ConfigureAuth : IHostingStartup
 
             services.AddPlugin(new ApiKeysFeature
             {
+                // UseDb = () => HostContext.AppHost.GetDbConnection("namedConnection"),
                 Scopes = [
                     RoleNames.Admin,
                     "todo:read",
@@ -114,8 +115,8 @@ public class ConfigureAuth : IHostingStartup
         .ConfigureAppHost(appHost =>
         {
             var apiKeysFeature = appHost.GetPlugin<ApiKeysFeature>();
-            apiKeysFeature.InitSchema();
-            using var db = appHost.Resolve<IDbConnectionFactory>().Open();
+            using var db = apiKeysFeature.OpenDb();
+            apiKeysFeature.InitSchema(db);
             if (db.Count<ApiKeysFeature.ApiKey>() == 0)
             {
                 apiKeysFeature.InsertAll(db, ApiKeys);

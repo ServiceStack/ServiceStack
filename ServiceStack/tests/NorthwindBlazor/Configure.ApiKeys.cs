@@ -44,7 +44,7 @@ public class ConfigureApiKeys : IHostingStartup
             ];
             var apiKeysFeature = appHost.GetPlugin<ApiKeysFeature>();
             
-            using var db = appHost.Resolve<IDbConnectionFactory>().Open();
+            using var db = apiKeysFeature.OpenDb();
             apiKeysFeature.InitSchema(db);
             // Optional, create API Key for specified Users
             if (apiKeysFeature.ApiKeyCount(db) == 0)
