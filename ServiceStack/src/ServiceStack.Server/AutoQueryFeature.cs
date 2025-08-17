@@ -205,16 +205,16 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         var customBatchedRequestTypes = ServiceController.GetAutoBatchedRequestTypes(ServiceStackHost.InitOptions.ResolveAssemblyServiceTypes());
 
         var missingQueryRequestTypes = scannedTypes
-            .Where(x => x.HasInterface(typeof(IQueryDb)) 
-                        && !userRequestDtosMap.ContainsKey(x)
-                        && !IgnoreGeneratingServicesFor.Contains(x)
-                        && x.GetCustomAttribute<ExplicitAutoQuery>() == null)
+            .Where(x => x.HasInterface(typeof(IQueryDb))
+                && !userRequestDtosMap.ContainsKey(x)
+                && !IgnoreGeneratingServicesFor.Contains(x)
+                && x.GetCustomAttribute<ExplicitAutoQuery>() == null)
             .ToList();
         var missingCrudRequestTypes = scannedTypes
             .Where(x => x.HasInterface(typeof(ICrud))
-                        && !userRequestDtosMap.ContainsKey(x)
-                        && !IgnoreGeneratingServicesFor.Contains(x)
-                        && x.GetCustomAttribute<ExplicitAutoQuery>() == null)
+                && !userRequestDtosMap.ContainsKey(x)
+                && !IgnoreGeneratingServicesFor.Contains(x)
+                && x.GetCustomAttribute<ExplicitAutoQuery>() == null)
             .ToList();
 
         if (FilterAutoQueryRequestTypes != null)

@@ -21,11 +21,29 @@ namespace ServiceStack;
 
 public partial class AutoQueryFeature
 {
+    /// <summary>
+    /// A collection of filters applied to the metadata of AutoCRUD operations.
+    /// These filters allow customization or additional processing of metadata definitions
+    /// for CRUD DTOs during the AutoQuery feature's initialization.
+    /// </summary>
     public List<Action<AutoCrudMetadata>> AutoCrudMetadataFilters { get; set; } = [
         AuditAutoCrudMetadataFilter
     ];
-        
+
+    /// <summary>
+    /// Defines the access role required to execute AutoQuery operations and services.
+    /// </summary>
     public string AccessRole { get; set; } = RoleNames.Admin;
+
+    /// <summary>
+    /// Specifies the method used to generate audit date values in AutoCRUD operations.
+    /// </summary>
+    public string AuditDateMethod { get; set; } = "utcNow";
+    
+    /// <summary>
+    /// Specifies the method used to generate audit user values in AutoCRUD operations.
+    /// </summary>
+    public string AuditUserMethod { get; set; } = "userAuthName";
 
     public Dictionary<Type, string[]> ServiceRoutes { get; set; } = new() {
         [typeof(GetCrudEventsService)] = ["/" + "crudevents".Localize() + "/{Model}"],
@@ -80,17 +98,17 @@ public partial class AutoQueryFeature
                     if (applyAttr.Name == Behavior.AuditCreate)
                     {
                         meta.Add(new AutoPopulateAttribute(nameof(AuditBase.CreatedDate)) {
-                            Eval = "utcNow"
+                            Eval = meta.Feature.AuditDateMethod
                         });
                         meta.Add(new AutoPopulateAttribute(nameof(AuditBase.CreatedBy)) {
-                            Eval = "userAuthName"
+                            Eval = meta.Feature.AuditUserMethod
                         });
                     }
                     meta.Add(new AutoPopulateAttribute(nameof(AuditBase.ModifiedDate)) {
-                        Eval = "utcNow"
+                        Eval = meta.Feature.AuditDateMethod
                     });
                     meta.Add(new AutoPopulateAttribute(nameof(AuditBase.ModifiedBy)) {
-                        Eval = "userAuthName"
+                        Eval = meta.Feature.AuditUserMethod
                     });
                     break;
                 case Behavior.AuditDelete:
@@ -99,10 +117,10 @@ public partial class AutoQueryFeature
                         meta.SoftDelete = true;
 
                     meta.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedDate)) {
-                        Eval = "utcNow"
+                        Eval = meta.Feature.AuditDateMethod
                     });
                     meta.Add(new AutoPopulateAttribute(nameof(AuditBase.DeletedBy)) {
-                        Eval = "userAuthName"
+                        Eval = meta.Feature.AuditUserMethod
                     });
                     break;
             }
@@ -270,6 +288,7 @@ public class CrudContext
 
 public class AutoCrudMetadata
 {
+    public AutoQueryFeature Feature { get; set; }
     public Type DtoType { get; set; }
     public Type ModelType { get; set; }
     public ModelDefinition ModelDef { get; set; }
@@ -297,6 +316,7 @@ public class AutoCrudMetadata
             return to;
 
         to = new AutoCrudMetadata {
+            Feature = feature,
             DtoType = dtoType,
             ModelType = AutoCrudOperation.GetModelType(dtoType),
             DtoProps = TypeProperties.Get(dtoType),
