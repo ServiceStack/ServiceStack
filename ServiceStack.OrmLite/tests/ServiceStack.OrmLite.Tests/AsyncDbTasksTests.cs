@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -23,5 +24,31 @@ public class AsyncDbTasksTests(DialectContext context) : OrmLiteProvidersTestBas
         Assert.That(albums.Count, Is.EqualTo(AutoQueryTests.SeedAlbums.Length));
         Assert.That(departments.Count, Is.EqualTo(AutoQueryTests.SeedDepartments.Length));
         Assert.That(employees.Count, Is.EqualTo(AutoQueryTests.SeedEmployees.Length));
+    }
+
+    [Test]
+    public async Task Only_throws_Exceptions_when_awaited()
+    {
+        using var Db = await OpenDbConnectionAsync();
+        Db.DropAndCreateTable<Rockstar>();
+        
+        OrmLiteUtils.PrintSql();
+        
+        var builder = DbFactory.AsyncDbTasksBuilder()
+            .Add(db => db.InsertAsync(AutoQueryTests.SeedRockstars[0]))
+            .Add(db => db.InsertAsync(AutoQueryTests.SeedRockstars[0])); // <-- Duplicate PK Exception
+
+        // Later tasks are run in parallel
+        await Db.InsertAsync(AutoQueryTests.SeedRockstars[1]);
+        
+        // Tasks are run in parallel as soon as they're added
+        await ExecUtils.WaitUntilTrueAsync(async () => 
+            await Db.CountAsync<Rockstar>() == 2, TimeSpan.FromSeconds(1));
+        
+        // Exceptions are not thrown until the task is awaited
+        var task = builder.RunAsync();
+
+        // Duplicate key exception only thrown when awaited
+        Assert.That(async () => await task, Throws.Exception);
     }
 }
