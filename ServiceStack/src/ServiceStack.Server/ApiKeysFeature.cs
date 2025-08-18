@@ -440,7 +440,7 @@ public class AdminApiKeysService : Service
     {
         var feature = await AssertRequiredRole().ConfigAwait();
 
-        using var db = Db;
+        using var db = feature.OpenDb();
         var q = db.From<ApiKeysFeature.ApiKey>();
         if (request.Id != null)
             q.Where(x => x.Id == request.Id);
@@ -452,7 +452,7 @@ public class AdminApiKeysService : Service
         {
             var search = request.Search.ToLower();
             q.Where(x => x.Name.ToLower().Contains(search) || x.Notes.ToLower().Contains(search) || 
-                         x.UserName.ToLower().Contains(search) || x.UserId.ToLower().Contains(search));
+                    x.UserName.ToLower().Contains(search) || x.UserId.ToLower().Contains(search));
         }
         if (request.UserId != null)
             q.Where(x => x.UserId == request.UserId);
@@ -481,9 +481,10 @@ public class AdminApiKeysService : Service
     public async Task<object> Any(AdminCreateApiKey request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
+        using var db = feature.OpenDb();
 
         var apiKey = request.ConvertTo<ApiKeysFeature.ApiKey>();
-        await feature.InsertAllAsync(Db, [apiKey]);
+        await feature.InsertAllAsync(db, [apiKey]);
         
         return new AdminApiKeyResponse
         {
@@ -494,6 +495,7 @@ public class AdminApiKeysService : Service
     public async Task<object> Any(AdminUpdateApiKey request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
+        using var db = feature.OpenDb();
 
         var dict = request.ToObjectDictionary();
         var updateModel = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -514,7 +516,7 @@ public class AdminApiKeysService : Service
 
         if (updateModel.Count > 0)
         {
-            await Db.UpdateAsync<ApiKeysFeature.ApiKey>(updateModel, x => x.Id == request.Id);
+            await db.UpdateAsync<ApiKeysFeature.ApiKey>(updateModel, x => x.Id == request.Id);
             if (updateModel.ContainsKey(nameof(ApiKeysFeature.ApiKey.CancelledDate)))
             {
                 feature.RemoveValidApiKeyById(request.Id);
@@ -527,8 +529,9 @@ public class AdminApiKeysService : Service
     public async Task<object> Any(AdminDeleteApiKey request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
+        using var db = feature.OpenDb();
 
-        await Db.DeleteByIdAsync<ApiKeysFeature.ApiKey>(request.Id);
+        await db.DeleteByIdAsync<ApiKeysFeature.ApiKey>(request.Id);
         feature.RemoveValidApiKeyById(request.Id.GetValueOrDefault());
         return new EmptyResponse();
     }
@@ -549,7 +552,9 @@ public class UserApiKeysService : Service
     public async Task<object> Get(QueryUserApiKeys request)
     {
         var (userId, _) = GetUserIdAndUserName();
-        using var db = Db;
+        var feature = AssertPlugin<ApiKeysFeature>();
+        using var db = feature.OpenDb();
+
         var q = db.From<ApiKeysFeature.ApiKey>()
             .Where(x => x.UserId == userId);
         if (request.Id != null)
@@ -567,7 +572,6 @@ public class UserApiKeysService : Service
             q.Take(request.Take.Value);
         
         var results = await db.SelectAsync(q);
-        var feature = HostContext.AssertPlugin<ApiKeysFeature>();
         var partialResults = results.ConvertAll(feature.ToPartialApiKey);
         foreach (var result in partialResults)
         {
@@ -582,7 +586,8 @@ public class UserApiKeysService : Service
 
     public async Task<object> Any(CreateUserApiKey request)
     {
-        var feature = HostContext.AssertPlugin<ApiKeysFeature>();
+        var feature = AssertPlugin<ApiKeysFeature>();
+        using var db = feature.OpenDb();
 
         var (userId, userName) = GetUserIdAndUserName();
         var apiKey = request.ConvertTo<ApiKeysFeature.ApiKey>();
@@ -597,7 +602,7 @@ public class UserApiKeysService : Service
             apiKey.Features = request.Features.Where(x => feature.UserFeatures.Contains(x)).ToList();
         }
         
-        await feature.InsertAllAsync(Db, [apiKey]);
+        await feature.InsertAllAsync(db, [apiKey]);
         return new UserApiKeyResponse
         {
             Result = apiKey.Key
@@ -608,6 +613,7 @@ public class UserApiKeysService : Service
     {
         var (userId, _) = GetUserIdAndUserName();
         var feature = HostContext.AssertPlugin<ApiKeysFeature>();
+        using var db = feature.OpenDb();
 
         var dict = request.ToObjectDictionary();
         var updateModel = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -636,7 +642,7 @@ public class UserApiKeysService : Service
         
         if (updateModel.Count > 0)
         {
-            await Db.UpdateAsync<ApiKeysFeature.ApiKey>(updateModel, 
+            await db.UpdateAsync<ApiKeysFeature.ApiKey>(updateModel, 
                 x => x.Id == request.Id && x.UserId == userId);
 
             if (updateModel.ContainsKey(nameof(ApiKeysFeature.ApiKey.CancelledDate)))
@@ -650,8 +656,11 @@ public class UserApiKeysService : Service
     public async Task<object> Any(DeleteUserApiKey request)
     {
         var (userId, _) = GetUserIdAndUserName();
-        await Db.DeleteAsync<ApiKeysFeature.ApiKey>(x => x.Id == request.Id && x.UserId == userId);
-        HostContext.AssertPlugin<ApiKeysFeature>().RemoveValidApiKeyById(request.Id.GetValueOrDefault());
+        var feature = AssertPlugin<ApiKeysFeature>();
+        using var db = feature.OpenDb();
+
+        await db.DeleteAsync<ApiKeysFeature.ApiKey>(x => x.Id == request.Id && x.UserId == userId);
+        feature.RemoveValidApiKeyById(request.Id.GetValueOrDefault());
         return new EmptyResponse();
     }
 }
