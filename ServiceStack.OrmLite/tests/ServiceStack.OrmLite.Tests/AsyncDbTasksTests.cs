@@ -27,6 +27,35 @@ public class AsyncDbTasksTests(DialectContext context) : OrmLiteProvidersTestBas
     }
 
     [Test]
+    public async Task Can_Execute_void_Async_DbTasks()
+    {
+        using var Db = await OpenDbConnectionAsync();
+        Db.DropAndCreateTable<Rockstar>();
+        Db.DropAndCreateTable<RockstarAlbum>();
+
+        var builder = DbFactory.AsyncDbTasksBuilder()
+            .Add(db => db.InsertAsync(
+                AutoQueryTests.SeedRockstars[0], 
+                AutoQueryTests.SeedRockstars[1])
+            )
+            .Add(db => db.InsertAsync(
+                AutoQueryTests.SeedRockstars[2], 
+                AutoQueryTests.SeedRockstars[3])
+            )
+            .Add(db => db.InsertAsync([AutoQueryTests.SeedRockstars[4]]))
+            .Add(db => db.InsertAsync([AutoQueryTests.SeedRockstars[5]]))
+            .Add(db => db.InsertAsync([AutoQueryTests.SeedRockstars[6]]))
+            .Add(db => db.InsertAsync([AutoQueryTests.SeedAlbums[0]]))
+            .Add(db => db.InsertAsync([AutoQueryTests.SeedAlbums[1]]))
+            .Add(db => db.InsertAsync([AutoQueryTests.SeedAlbums[2]]));
+        
+        var results = await builder.RunAsync();
+        Assert.That(results, Is.EqualTo((true, true, true, true, true, true, true, true)));
+        Assert.That(Db.Count<Rockstar>(), Is.EqualTo(7));
+        Assert.That(Db.Count<RockstarAlbum>(), Is.EqualTo(3));
+    }
+
+    [Test]
     public async Task Only_throws_Exceptions_when_awaited()
     {
         using var Db = await OpenDbConnectionAsync();
