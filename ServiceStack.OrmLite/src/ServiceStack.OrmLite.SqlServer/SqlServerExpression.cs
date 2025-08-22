@@ -58,9 +58,14 @@ namespace ServiceStack.OrmLite.SqlServer
                 : base.ToDeleteRowStatement();
         }
         
+        protected override string GetModExpression(BinaryExpression b, object left, object right)
+        {
+            return $"({left} % {right})";
+        }
+        
         protected override string GetCoalesceExpression(BinaryExpression b, object left, object right)
         {
-            if (b.Type == typeof(bool))
+            if (b.Type == typeof(bool) && !isSelectExpression)
             {
                 return $"COALESCE({left},{right}) = 1";
             }

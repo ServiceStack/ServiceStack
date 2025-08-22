@@ -1858,11 +1858,17 @@ namespace ServiceStack.OrmLite
             switch (operand)
             {
                 case "MOD":
+                    return new PartialSqlString(GetModExpression(b, left.ToString(), right.ToString()));
                 case "COALESCE":
                     return new PartialSqlString(GetCoalesceExpression(b, left.ToString(), right.ToString()));
                 default:
                     return new PartialSqlString("(" + left + separator + operand + separator + right + ")");
             }
+        }
+        
+        protected virtual string GetModExpression(BinaryExpression b, object left, object right)
+        {
+            return $"MOD({left},{right})";
         }
         
         protected virtual string GetCoalesceExpression(BinaryExpression b, object left, object right)
