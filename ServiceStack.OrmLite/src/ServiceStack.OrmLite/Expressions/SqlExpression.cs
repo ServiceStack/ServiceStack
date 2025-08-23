@@ -1775,7 +1775,7 @@ namespace ServiceStack.OrmLite
                     }
 
                     if (right is bool &&
-                        (left == null || left == PartialSqlString.Null))
+                        (left == null || left.ToString().Equals("null", StringComparison.OrdinalIgnoreCase)))
                     {
                         if (operand == "=")
                             return false; // "null == true/false" becomes "false"
@@ -1834,13 +1834,13 @@ namespace ServiceStack.OrmLite
                 }
             }
 
-            if (left == PartialSqlString.Null)
+            if (left.ToString().Equals("null", StringComparison.OrdinalIgnoreCase))
             {
                 Swap(ref left, ref right); // "null is x" will not work, so swap the operands
             }
 
             var separator = sep;
-            if (right == PartialSqlString.Null)
+            if (right.ToString().Equals("null", StringComparison.OrdinalIgnoreCase))
             {
                 if (operand == "=")
                     operand = "is";
