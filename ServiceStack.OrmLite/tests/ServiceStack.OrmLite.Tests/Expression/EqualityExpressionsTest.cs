@@ -263,7 +263,7 @@ public class EqualityExpressionsTest(DialectContext context) : ExpressionsTestBa
     [Test]
     public void Can_select_not_equals_null_espression()
     {
-        var expected = new TestType()
+        var expected = new TestType
         {
             IntColumn = 12,
             BoolColumn = false,
@@ -271,25 +271,23 @@ public class EqualityExpressionsTest(DialectContext context) : ExpressionsTestBa
             NullableCol = new TestType { StringColumn = "sometext" }
         };
 
-        Init(10, expected);
+        using var db = OpenDbConnection();
+        Init(db, 10, expected);
 
-        using (var db = OpenDbConnection())
-        {
-            var actual = db.Select<TestType>(q => q.NullableCol != null);
+        var actual = db.Select<TestType>(q => q.NullableCol != null);
 
-            Assert.IsNotNull(actual);
-            Assert.AreEqual(actual.Count, 1);
-            CollectionAssert.Contains(actual, expected);
-        }
+        Assert.IsNotNull(actual);
+        Assert.AreEqual(actual.Count, 1);
+        CollectionAssert.Contains(actual, expected);
     }
 
-    // Assume not equal works ;-)
     [Test]
     public void Can_select_equals_variable_null_expression()
     {
+        OrmLiteUtils.PrintSql();
         object columnValue = null;
 
-        var expected = new TestType()
+        var expected = new TestType
         {
             IntColumn = 12,
             BoolColumn = false,
@@ -297,9 +295,10 @@ public class EqualityExpressionsTest(DialectContext context) : ExpressionsTestBa
             NullableCol = new TestType { StringColumn = "sometext" }
         };
 
-        Init(10, expected);
+        using var db = OpenDbConnection();
+        Init(db, 10, expected);
 
-        var actual = OpenDbConnection().Select<TestType>(q => q.NullableCol == columnValue);
+        var actual = db.Select<TestType>(q => q.NullableCol == columnValue);
 
         Assert.IsNotNull(actual);
         Assert.AreEqual(actual.Count, 10);

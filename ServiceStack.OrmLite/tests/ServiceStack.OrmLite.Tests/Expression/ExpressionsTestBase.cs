@@ -49,19 +49,23 @@ public abstract class ExpressionsTestBase(DialectContext context) : OrmLiteProvi
         return item;
     }
 
-    protected void Init(int numberOfRandomObjects)
+    protected IDbConnection Init(int numberOfRandomObjects)
     {
-        Init(numberOfRandomObjects, null);
+        var db = OpenDbConnection();
+        Init(db, numberOfRandomObjects, null);
+        return db;
     }
 
-    protected void Init(int numberOfRandomObjects, params TestType[] obj)
+    protected IDbConnection Init(int numberOfRandomObjects, params TestType[] obj)
     {
+        var db = OpenDbConnection();
         Init(null, numberOfRandomObjects, obj);
+        return db;
     }
 
     protected void Init(IDbConnection db, int numberOfRandomObjects, params TestType[] obj)
     {
-        obj ??= Array.Empty<TestType>();
+        obj ??= [];
 
         var con = db ?? OpenDbConnection();
         foreach (var t in obj)

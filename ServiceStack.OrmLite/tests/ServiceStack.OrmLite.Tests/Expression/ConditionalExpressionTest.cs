@@ -152,12 +152,9 @@ public class ConditionalExpressionTest(DialectContext context) : ExpressionsTest
     {
         OrmLiteConfig.BeforeExecFilter = dbCmd => dbCmd.GetDebugString().Print();
             
-        Init(5);
+        using var db = Init(5);
 
-        List<TestType> results;
-
-        using var db = OpenDbConnection();
-        results = db.Select<TestType>(x => (x.Id | 2) == 3);
+        var results = db.Select<TestType>(x => (x.Id | 2) == 3);
         Assert.That(results.Map(x => x.Id), Is.EquivalentTo(new[]{ 1, 3 }));
                 
         results = db.Select<TestType>(x => (x.Id & 2) == 2);

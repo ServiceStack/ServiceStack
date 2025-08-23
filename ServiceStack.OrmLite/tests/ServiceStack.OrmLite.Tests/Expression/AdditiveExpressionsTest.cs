@@ -15,16 +15,12 @@ public class AdditiveExpressionsTest(DialectContext context) : ExpressionsTestBa
             StringColumn = "test"
         };
 
-        Init(10, expected);
+        using var db = Init(10, expected);
+        var actual = db.Select<TestType>(q => q.IntColumn == 4 + 3);
 
-        using (var db = OpenDbConnection())
-        {
-            var actual = db.Select<TestType>(q => q.IntColumn == 4 + 3);
-
-            Assert.IsNotNull(actual);
-            Assert.AreEqual(1, actual.Count);
-            CollectionAssert.Contains(actual, expected);
-        }
+        Assert.IsNotNull(actual);
+        Assert.AreEqual(1, actual.Count);
+        CollectionAssert.Contains(actual, expected);
     }
 
     [Test]
@@ -37,16 +33,12 @@ public class AdditiveExpressionsTest(DialectContext context) : ExpressionsTestBa
             StringColumn = "test"
         };
 
-        Init(10, expected);
+        using var db = Init(10, expected);
+        var actual = db.Select<TestType>(q => q.IntColumn == 10 - 3);
 
-        using (var db = OpenDbConnection())
-        {
-            var actual = db.Select<TestType>(q => q.IntColumn == 10 - 3);
-
-            Assert.IsNotNull(actual);
-            Assert.AreEqual(1, actual.Count);
-            CollectionAssert.Contains(actual, expected);
-        }
+        Assert.IsNotNull(actual);
+        Assert.AreEqual(1, actual.Count);
+        CollectionAssert.Contains(actual, expected);
     }
 
     [Test]
@@ -64,16 +56,12 @@ public class AdditiveExpressionsTest(DialectContext context) : ExpressionsTestBa
             StringColumn = "test"
         };
 
-        Init(10, expected);
+        using var db = Init(10, expected);
+        var actual = db.Select<TestType>(q => q.IntColumn == a + b);
 
-        using (var db = OpenDbConnection())
-        {
-            var actual = db.Select<TestType>(q => q.IntColumn == a + b);
-
-            Assert.IsNotNull(actual);
-            Assert.AreEqual(1, actual.Count);
-            CollectionAssert.Contains(actual, expected);
-        }
+        Assert.IsNotNull(actual);
+        Assert.AreEqual(1, actual.Count);
+        CollectionAssert.Contains(actual, expected);
     }
 
     [Test]
@@ -91,16 +79,12 @@ public class AdditiveExpressionsTest(DialectContext context) : ExpressionsTestBa
             StringColumn = "test"
         };
 
-        Init(10, expected);
+        using var db = Init(10, expected);
+        var actual = db.Select<TestType>(q => q.IntColumn == a - b);
 
-        using (var db = OpenDbConnection())
-        {
-            var actual = db.Select<TestType>(q => q.IntColumn == a - b);
-
-            Assert.IsNotNull(actual);
-            Assert.AreEqual(1, actual.Count);
-            CollectionAssert.Contains(actual, expected);
-        }
+        Assert.IsNotNull(actual);
+        Assert.AreEqual(1, actual.Count);
+        CollectionAssert.Contains(actual, expected);
     }
 
     [Test]
@@ -113,16 +97,12 @@ public class AdditiveExpressionsTest(DialectContext context) : ExpressionsTestBa
             StringColumn = "test"
         };
 
-        Init(10, expected);
+        using var db = Init(10, expected);
+        var actual = db.Select<TestType>(q => q.IntColumn == GetValue(4) + GetValue(3));
 
-        using (var db = OpenDbConnection())
-        {
-            var actual = db.Select<TestType>(q => q.IntColumn == GetValue(4) + GetValue(3));
-
-            Assert.IsNotNull(actual);
-            Assert.AreEqual(1, actual.Count);
-            CollectionAssert.Contains(actual, expected);
-        }
+        Assert.IsNotNull(actual);
+        Assert.AreEqual(1, actual.Count);
+        CollectionAssert.Contains(actual, expected);
     }
 
     [Test]
@@ -135,16 +115,11 @@ public class AdditiveExpressionsTest(DialectContext context) : ExpressionsTestBa
             StringColumn = "test"
         };
 
-        Init(10, expected);
+        using var db = Init(10, expected);
+        var actual = db.Select<TestType>(q => q.IntColumn == GetValue(10) - GetValue(3));
 
-        using (var db = OpenDbConnection())
-        {
-            var actual = db.Select<TestType>(q => q.IntColumn == GetValue(10) - GetValue(3));
-
-            Assert.IsNotNull(actual);
-            Assert.AreEqual(1, actual.Count);
-            CollectionAssert.Contains(actual, expected);
-
-        }
+        Assert.IsNotNull(actual);
+        Assert.AreEqual(1, actual.Count);
+        CollectionAssert.Contains(actual, expected);
     }
 }
