@@ -952,9 +952,9 @@ namespace ServiceStack.OrmLite.Oracle
             return sql;
         }
 
-        public override string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef)
+        public override string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef)
         {
-            var command = base.ToAddColumnStatement(schema, table, fieldDef);
+            var command = base.ToAddColumnStatement(tableRef, fieldDef);
             command = RemoveTerminatingSemicolon(command);
             return command.Replace("ADD COLUMN", "ADD");
         }
@@ -968,9 +968,9 @@ namespace ServiceStack.OrmLite.Oracle
             return command;
         }
 
-        public override string ToDropColumnStatement(string schema, string table, string column)
+        public override string ToDropColumnStatement(TableRef tableRef, string column)
         {
-            var command = base.ToDropColumnStatement(schema, table, column);
+            var command = base.ToDropColumnStatement(tableRef, column);
             return RemoveTerminatingSemicolon(command);
         }
 

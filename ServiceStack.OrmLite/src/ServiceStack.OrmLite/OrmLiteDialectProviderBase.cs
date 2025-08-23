@@ -467,6 +467,14 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         return $"{GetQuotedName(escapedSchema)}.{GetQuotedName(NamingStrategy.GetAlias(alias))}";
     }
 
+    public virtual string GetQuotedTableName(TableRef tableRef)
+    {
+        return tableRef.QuotedName ?? 
+           (tableRef.ModelDef != null
+            ? GetQuotedTableName(tableRef.ModelDef)
+            : GetQuotedTableName(tableRef.Name, tableRef.Schema));
+    }
+    
     public virtual string GetQuotedTableName(string tableName, string schema = null)
     {
         if (schema == null)
@@ -701,8 +709,11 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual SelectItem[] GetColumnNames(ModelDefinition modelDef, string tablePrefix)
     {
+        // If tablePrefix is the same as the table alias, use the quoted table name instead 
         var quotedPrefix = tablePrefix != null 
-            ? GetQuotedTableName(tablePrefix, modelDef.Schema) 
+            ? tablePrefix == modelDef.Alias  
+                ? GetQuotedTableName(modelDef)
+                : GetQuotedTableName(tablePrefix, modelDef.Schema) 
             : "";
 
         var sqlColumns = new SelectItem[modelDef.FieldDefinitions.Count];
@@ -1879,17 +1890,17 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual string GetDropForeignKeyConstraints(ModelDefinition modelDef) => null;
 
-    public virtual string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
-        $"ALTER TABLE {GetQuotedTableName(table, schema)} ADD COLUMN {GetColumnDefinition(fieldDef)};";
+    public virtual string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
+        $"ALTER TABLE {GetQuotedTableName(tableRef)} ADD COLUMN {GetColumnDefinition(fieldDef)};";
 
-    public virtual string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
-        $"ALTER TABLE {GetQuotedTableName(table, schema)} MODIFY COLUMN {GetColumnDefinition(fieldDef)};";
+    public virtual string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
+        $"ALTER TABLE {GetQuotedTableName(tableRef)} MODIFY COLUMN {GetColumnDefinition(fieldDef)};";
         
-    public virtual string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn) => 
-        $"ALTER TABLE {GetQuotedTableName(table, schema)} CHANGE COLUMN {GetQuotedColumnName(oldColumn)} {GetColumnDefinition(fieldDef)};";
+    public virtual string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn) => 
+        $"ALTER TABLE {GetQuotedTableName(tableRef)} CHANGE COLUMN {GetQuotedColumnName(oldColumn)} {GetColumnDefinition(fieldDef)};";
 
-    public virtual string ToRenameColumnStatement(string schema, string table, string oldColumn, string newColumn) => 
-        $"ALTER TABLE {GetQuotedTableName(table, schema)} RENAME COLUMN {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(newColumn)};";
+    public virtual string ToRenameColumnStatement(TableRef tableRef, string oldColumn, string newColumn) => 
+        $"ALTER TABLE {GetQuotedTableName(tableRef)} RENAME COLUMN {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(newColumn)};";
 
     public virtual string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
         Expression<Func<TForeign, object>> foreignField,
@@ -1915,10 +1926,10 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
                $"{GetForeignKeyOnUpdateClause(new ForeignKeyConstraint(typeof(T), onUpdate: FkOptionToString(onUpdate)))};";
     }
 
-    public virtual string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
-        $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
+    public virtual string ToDropForeignKeyStatement(TableRef tableRef, string foreignKeyName) =>
+        $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
 
-    public virtual string ToDropConstraintStatement(string schema, string table, string constraintName) => null;
+    public virtual string ToDropConstraintStatement(TableRef tableRef, string constraintName) => null;
 
     public virtual string ToCreateIndexStatement<T>(Expression<Func<T, object>> field, string indexName = null, bool unique = false)
     {
@@ -2001,8 +2012,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual string ToRowCountStatement(string innerSql) => 
         $"SELECT COUNT(*) FROM ({innerSql}) AS COUNT";
 
-    public virtual string ToDropColumnStatement(string schema, string table, string column) => 
-        $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP COLUMN {GetQuotedColumnName(column)};";
+    public virtual string ToDropColumnStatement(TableRef tableRef, string column) => 
+        $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP COLUMN {GetQuotedColumnName(column)};";
 
     public virtual string ToTableNamesStatement(string schema) => throw new NotSupportedException();
 

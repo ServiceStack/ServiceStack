@@ -544,8 +544,8 @@ namespace ServiceStack.OrmLite.MySql
             return $"SELECT 1";
         }
         
-        public override string ToDropForeignKeyStatement(string schema, string table, string foreignKeyName) =>
-	        $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP FOREIGN KEY {GetQuotedName(foreignKeyName)};";
+        public override string ToDropForeignKeyStatement(TableRef tableRef, string foreignKeyName) =>
+	        $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP FOREIGN KEY {GetQuotedName(foreignKeyName)};";
 
         public override string ToDropIndexStatement<T>(string indexName)
         {

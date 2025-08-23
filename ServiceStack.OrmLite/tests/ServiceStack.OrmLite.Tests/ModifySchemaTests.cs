@@ -81,13 +81,13 @@ public class ModifySchemaTests : OrmLiteTestBase
         
         db.DropAndCreateTable<BookingV1>();
 
-        db.AddColumn(table:"Booking", new FieldDefinition { Name = "ToCreate", FieldType = typeof(string), IsIndexed = true });
+        db.AddColumn(db.QuoteTableAlias("Booking"), new FieldDefinition { Name = "ToCreate", FieldType = typeof(string), IsIndexed = true });
         Assert.That(GetTableColumnNames(db), Does.Contain(db.GetNamingStrategy().GetColumnName("ToCreate")));
         
-        db.RenameColumn(table:"Booking", oldColumn:"ToCreate", newColumn:"NewName");
+        db.RenameColumn(db.QuoteTableAlias("Booking"), oldColumn:"ToCreate", newColumn:"NewName");
         Assert.That(GetTableColumnNames(db), Does.Contain(db.GetNamingStrategy().GetColumnName("NewName")));
 
-        db.DropColumn(table:"Booking", column:"NewName");
+        db.DropColumn(db.QuoteTableAlias("Booking"), column:"NewName");
         Assert.That(GetTableColumnNames(db), Does.Not.Contain(db.GetNamingStrategy().GetColumnName("NewName")));
     }
 

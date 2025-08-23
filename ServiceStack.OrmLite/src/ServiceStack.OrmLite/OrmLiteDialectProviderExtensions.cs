@@ -128,18 +128,18 @@ public static class OrmLiteDialectProviderExtensions
         OrmLiteUtils.SqlJoin(values, dialect);
 
     public static string ToAddColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, FieldDefinition fieldDef) =>
-        X.Map(modelType.GetModelDefinition(), x => dialect.ToAddColumnStatement(x.Schema, x.ModelName, fieldDef));
+        X.Map(modelType.GetModelDefinition(), x => dialect.ToAddColumnStatement(new(x), fieldDef));
 
     public static string ToAlterColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, FieldDefinition fieldDef) =>
-        X.Map(modelType.GetModelDefinition(), x => dialect.ToAlterColumnStatement(x.Schema, x.ModelName, fieldDef));
+        X.Map(modelType.GetModelDefinition(), x => dialect.ToAlterColumnStatement(new(x), fieldDef));
 
     public static string ToChangeColumnNameStatement(this IOrmLiteDialectProvider dialect, Type modelType, FieldDefinition fieldDef, string oldColumnName) =>
-        X.Map(modelType.GetModelDefinition(), x => dialect.ToChangeColumnNameStatement(x.Schema, x.ModelName, fieldDef, oldColumnName));
+        X.Map(modelType.GetModelDefinition(), x => dialect.ToChangeColumnNameStatement(new (x), fieldDef, oldColumnName));
 
     public static string ToRenameColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, string oldColumnName, string newColumnName) => 
-        X.Map(modelType.GetModelDefinition(), x => dialect.ToRenameColumnStatement(x.Schema, x.ModelName, oldColumnName, newColumnName));
+        X.Map(modelType.GetModelDefinition(), x => dialect.ToRenameColumnStatement(new(x), oldColumnName, newColumnName));
     public static string ToDropColumnStatement(this IOrmLiteDialectProvider dialect, Type modelType, string columnName) =>
-        X.Map(modelType.GetModelDefinition(), x => dialect.ToDropColumnStatement(x.Schema, x.ModelName, columnName));
+        X.Map(modelType.GetModelDefinition(), x => dialect.ToDropColumnStatement(new(x), columnName));
     public static string ToDropConstraintStatement(this IOrmLiteDialectProvider dialect, Type modelType, string constraintName) =>
-        X.Map(modelType.GetModelDefinition(), x => dialect.ToDropConstraintStatement(x.Schema, x.ModelName, constraintName));
+        X.Map(modelType.GetModelDefinition(), x => dialect.ToDropConstraintStatement(new(x), constraintName));
 }

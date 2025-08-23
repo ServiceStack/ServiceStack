@@ -708,10 +708,10 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         return sql;
     }
 
-    public override string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef)
+    public override string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef)
     {
         var columnDefinition = GetColumnDefinition(fieldDef);
-        var modelName = GetQuotedTableName(table, schema);
+        var modelName = GetQuotedTableName(tableRef);
 
         var parts = columnDefinition.SplitOnFirst(' ');
         var columnName = parts[0];
@@ -900,13 +900,13 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         SetParameterValues<T>(cmd, obj);
     }
 
-    public override string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn)
+    public override string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn)
     {
         //var column = GetColumnDefinition(fieldDef);
         var columnType = GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
         var newColumnName = GetColumnName(fieldDef);
 
-        var sql = $"ALTER TABLE {GetQuotedTableName(table, schema)} " +
+        var sql = $"ALTER TABLE {GetQuotedTableName(tableRef)} " +
                   $"ALTER COLUMN {GetQuotedColumnName(oldColumn)} TYPE {columnType}";
         sql += newColumnName != oldColumn
             ? $", RENAME COLUMN {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(newColumnName)};"

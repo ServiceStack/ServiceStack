@@ -1341,6 +1341,11 @@ namespace ServiceStack.OrmLite
             return DialectProvider.GetQuotedTableName(modelDef);
         }
 
+        public string SqlColumn(FieldDefinition fieldDef)
+        {
+            return DialectProvider.GetQuotedColumnName(fieldDef);
+        }
+
         public string SqlColumn(string columnName)
         {
             return DialectProvider.GetQuotedColumnName(columnName);

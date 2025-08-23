@@ -200,9 +200,9 @@ namespace ServiceStack.OrmLite
             return string.Format("{0}\n({1}.{2} = {3}.{4})",
                 isCrossJoin ? "WHERE" : "ON",
                 DialectProvider.GetQuotedTableName(parentDef),
-                SqlColumn(parentDef.PrimaryKey.FieldName),
+                SqlColumn(parentDef.PrimaryKey),
                 DialectProvider.GetQuotedTableName(childDef),
-                SqlColumn(refField.FieldName));
+                SqlColumn(refField));
         }
 
         public SqlExpression<T> CustomJoin(string joinString)
@@ -337,7 +337,7 @@ namespace ServiceStack.OrmLite
                                     }
                                     else
                                     {
-                                        sbSelect.Append($"{GetQuotedColumnName(tableDef, matchingField.Name)} AS {SqlColumn(fieldDef.Name)}");
+                                        sbSelect.Append($"{GetQuotedColumnName(tableDef, matchingField.Name)} AS {SqlColumn(fieldDef)}");
                                     }
                                 }
                                 else

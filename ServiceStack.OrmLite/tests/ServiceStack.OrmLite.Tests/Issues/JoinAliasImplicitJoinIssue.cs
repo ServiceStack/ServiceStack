@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 
@@ -24,6 +25,7 @@ public class JoinAliasImplicitJoinIssue : OrmLiteTestBase
         [AutoIncrement] 
         [Alias("DocumentId")] 
         public int? Id { get; set; }
+        [Alias("Name")]
         public string Name { get; set; }
     }
 
@@ -57,14 +59,15 @@ public class JoinAliasImplicitJoinIssue : OrmLiteTestBase
             },
         ]);
 
-        var doc = new Document { 
+        var doc = new Document {
             Id = 1, 
             DocumentTemplateId = 2,
         };
         db.Insert(doc);
 
+        List<DocumentTemplate> results;
         var q = db.From<DocumentTemplate>().Join<Document>();
-        var results = db.Select(q);
+        results = db.Select(q);
         Assert.That(results.Count, Is.EqualTo(1));
         Assert.That(results[0].Id, Is.EqualTo(2));
         Assert.That(results[0].Name, Is.EqualTo(nameof(DocumentTemplate) + "2"));

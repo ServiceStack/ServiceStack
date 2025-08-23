@@ -294,3 +294,42 @@ public static class ModelDefinition<T>
     private static string primaryKeyName;
     public static string PrimaryKeyName => primaryKeyName ??= Definition.PrimaryKey.FieldName;
 }
+
+/// <summary>
+/// Encapsulate different ways to reference a table, by:
+///  - Type
+///  - Model Definition
+///  - Table Name
+///  - Schema and Table Name
+///  - Quoted Name (use verbatim)
+/// </summary>
+public struct TableRef
+{
+    public string QuotedName { get; set; }
+    public ModelDefinition ModelDef { get; set; }
+    public string Schema { get; set; }
+    public string Name { get; set; }
+
+    public TableRef(string name) : this(null, name) {}
+    public TableRef(string schema, string name)
+    {
+        Schema = schema;
+        Name = name;
+    }
+
+    public TableRef(ModelDefinition modelDef)
+    {
+        ModelDef = modelDef;
+    }
+
+    public TableRef(Type modelType)
+    {
+        ModelDef = modelType.GetModelDefinition();
+    }
+    
+    // Use the literal Quoted Table Name
+    public static TableRef Literal(string quotedName) => new() { QuotedName = quotedName };
+    
+    // implict cast from string uses it as table name
+    public static implicit operator TableRef(string name) => new(name);
+}

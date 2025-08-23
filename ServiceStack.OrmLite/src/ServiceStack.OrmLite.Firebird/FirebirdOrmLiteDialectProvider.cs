@@ -807,14 +807,14 @@ namespace ServiceStack.OrmLite.Firebird
         }
 
         #region DDL
-        public override string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
-            $"ALTER TABLE {GetQuotedTableName(table, schema)} ADD {GetColumnDefinition(fieldDef)};";
+        public override string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(tableRef)} ADD {GetColumnDefinition(fieldDef)};";
 
-        public override string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
-            $"ALTER TABLE {GetQuotedTableName(table, schema)} ALTER {GetColumnDefinition(fieldDef)};";
+        public override string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(tableRef)} ALTER {GetColumnDefinition(fieldDef)};";
 
-        public override string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn) => 
-            $"ALTER TABLE {GetQuotedTableName(GetQuotedTableName(table, schema))} ALTER {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(fieldDef)};";
+        public override string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn) => 
+            $"ALTER TABLE {GetQuotedTableName(GetQuotedTableName(tableRef))} ALTER {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(fieldDef)};";
         #endregion DDL
 
         public override string ToSelectStatement(QueryType queryType, ModelDefinition modelDef,
@@ -849,8 +849,8 @@ namespace ServiceStack.OrmLite.Firebird
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
-        public override string ToDropColumnStatement(string schema, string table, string column) =>
-            $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP {GetQuotedColumnName(column)};";
+        public override string ToDropColumnStatement(TableRef tableRef, string column) =>
+            $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP {GetQuotedColumnName(column)};";
 
         public override string SqlConcat(IEnumerable<object> args) => string.Join(" || ", args);
 

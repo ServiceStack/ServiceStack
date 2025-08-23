@@ -257,21 +257,21 @@ namespace ServiceStack.OrmLite.SqlServer
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
-        public override string ToAddColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
-            $"ALTER TABLE {GetQuotedTableName(table, schema)} ADD {GetColumnDefinition(fieldDef)};";
+        public override string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(tableRef)} ADD {GetColumnDefinition(fieldDef)};";
 
-        public override string ToAlterColumnStatement(string schema, string table, FieldDefinition fieldDef) => 
-            $"ALTER TABLE {GetQuotedTableName(table, schema)} ALTER COLUMN {GetColumnDefinition(fieldDef)};";
+        public override string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
+            $"ALTER TABLE {GetQuotedTableName(tableRef)} ALTER COLUMN {GetColumnDefinition(fieldDef)};";
 
-        public override string ToChangeColumnNameStatement(string schema, string table, FieldDefinition fieldDef, string oldColumn)
+        public override string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn)
         {
-            var objectName = $"{GetQuotedTableName(table, schema)}.{GetQuotedColumnName(oldColumn)}";
+            var objectName = $"{GetQuotedTableName(tableRef)}.{GetQuotedColumnName(oldColumn)}";
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedValue(fieldDef.FieldName)}, {GetQuotedValue("COLUMN")};";
         }
 
-        public override string ToRenameColumnStatement(string schema, string table, string oldColumn, string newColumn)
+        public override string ToRenameColumnStatement(TableRef tableRef, string oldColumn, string newColumn)
         {
-            var objectName = $"{GetQuotedTableName(table, schema)}.{GetQuotedColumnName(oldColumn)}";
+            var objectName = $"{GetQuotedTableName(tableRef)}.{GetQuotedColumnName(oldColumn)}";
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedColumnName(newColumn)}, 'COLUMN';";
         }
 
@@ -344,8 +344,8 @@ namespace ServiceStack.OrmLite.SqlServer
             return StringBuilderCache.ReturnAndFree(sql);
         }
 
-        public override string ToDropConstraintStatement(string schema, string table, string constraintName) =>
-            $"ALTER TABLE {GetQuotedTableName(table, schema)} DROP CONSTRAINT {GetQuotedName(constraintName)};";
+        public override string ToDropConstraintStatement(TableRef tableRef, string constraintName) =>
+            $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP CONSTRAINT {GetQuotedName(constraintName)};";
 
         public override void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null)
         {
