@@ -2229,7 +2229,7 @@ namespace ServiceStack.OrmLite
                         {
                             if (item is SelectItemColumn columnItem)
                             {
-                                columnItem.Alias = member.Name + columnItem.ColumnName;
+                                columnItem.Alias = member.Name + columnItem.GetColumnName();
                             }
                         }
                     }
@@ -3286,6 +3286,8 @@ namespace ServiceStack.OrmLite
         /// Table name or alias used to prefix the column name, if any. Already quoted.
         /// </summary>
         public string QuotedTableAlias { get; set; }
+        
+        public string GetColumnName() => fieldDef != null ? fieldDef.Name : ColumnName;
 
         public override string ToString()
         {
