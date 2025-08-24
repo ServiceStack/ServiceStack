@@ -119,17 +119,11 @@ public interface IOrmLiteDialectProvider
 
     string GetTableNameOnly(TableRef tableRef);
     string GetTableName(TableRef tableRef);
-    string GetTableName(Type modelType);
-    string GetTableName(ModelDefinition modelDef);
-    string GetTableName(string table, string schema = null);
 
-    string GetQuotedTableName(TableRef tableRef);
+    string QuoteSchema(string schema, string table);
+    string QuoteTable(TableRef tableRef);
     string GetQuotedTableName(Type modelType);
     string GetQuotedTableName(ModelDefinition modelDef);
-
-    string GetQuotedTableName(string tableName, string schema=null);
-
-    string GetQuotedTableName(string tableName, string schema, bool useStrategy);
 
     string GetQuotedColumnName(string columnName);
     string GetQuotedColumnName(FieldDefinition fieldDef);

@@ -20,7 +20,7 @@ namespace ServiceStack.OrmLite.Tests.Issues
                 };
 
                 var sql = db.ToUpdateStatement(model);
-                Assert.That(sql, Is.EqualTo($"UPDATE {DialectProvider.GetQuotedTableName("Poco")} SET {DialectProvider.GetQuotedColumnName("Name")}='Guest$' WHERE {DialectProvider.GetQuotedColumnName("Id")}=1"));
+                Assert.That(sql, Is.EqualTo($"UPDATE {DialectProvider.QuoteTable("Poco")} SET {DialectProvider.GetQuotedColumnName("Name")}='Guest$' WHERE {DialectProvider.GetQuotedColumnName("Id")}=1"));
             }
         }
     }

@@ -59,7 +59,7 @@ public class OrmLiteCreateTableWithNamingStrategyTests(DialectContext context) :
             Assert.That(sql, Does.Contain("ColumnAlias".NormalizeSql()));
 
             var result = db.SqlList<ModelWithIdAndName>(
-                $"SELECT * FROM {"ModelWithOnlyStringFields".SqlTable(DialectProvider)} WHERE {"Name".SqlColumn(DialectProvider)} = 'foo'");
+                $"SELECT * FROM {nameof(ModelWithOnlyStringFields).SqlTable(DialectProvider)} WHERE {"Name".SqlColumn(DialectProvider)} = 'foo'");
                 
             Assert.That(db.GetLastSql().NormalizeSql(),
                 Is.EqualTo("SELECT * FROM TableAlias WHERE ColumnAlias = 'foo'".NormalizeSql()));

@@ -153,7 +153,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
         public override string ToCreateSchemaStatement(string schemaName)
         {
-            var sql = $"CREATE SCHEMA [{GetSchemaName(schemaName)}]";
+            var sql = $"CREATE SCHEMA [{NamingStrategy.GetSchemaName(schemaName)}]";
             return sql;
         }
         
@@ -266,20 +266,20 @@ namespace ServiceStack.OrmLite.SqlServer
         }
 
         public override string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
-            $"ALTER TABLE {GetQuotedTableName(tableRef)} ADD {GetColumnDefinition(fieldDef)};";
+            $"ALTER TABLE {QuoteTable(tableRef)} ADD {GetColumnDefinition(fieldDef)};";
 
         public override string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
-            $"ALTER TABLE {GetQuotedTableName(tableRef)} ALTER COLUMN {GetColumnDefinition(fieldDef)};";
+            $"ALTER TABLE {QuoteTable(tableRef)} ALTER COLUMN {GetColumnDefinition(fieldDef)};";
 
         public override string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn)
         {
-            var objectName = $"{GetQuotedTableName(tableRef)}.{GetQuotedColumnName(oldColumn)}";
+            var objectName = $"{QuoteTable(tableRef)}.{GetQuotedColumnName(oldColumn)}";
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedValue(fieldDef.FieldName)}, {GetQuotedValue("COLUMN")};";
         }
 
         public override string ToRenameColumnStatement(TableRef tableRef, string oldColumn, string newColumn)
         {
-            var objectName = $"{GetQuotedTableName(tableRef)}.{GetQuotedColumnName(oldColumn)}";
+            var objectName = $"{QuoteTable(tableRef)}.{GetQuotedColumnName(oldColumn)}";
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedColumnName(newColumn)}, 'COLUMN';";
         }
 
@@ -358,7 +358,7 @@ namespace ServiceStack.OrmLite.SqlServer
         }
 
         public override string ToDropConstraintStatement(TableRef tableRef, string constraintName) =>
-            $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP CONSTRAINT {GetQuotedName(constraintName)};";
+            $"ALTER TABLE {QuoteTable(tableRef)} DROP CONSTRAINT {GetQuotedName(constraintName)};";
 
         public override void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null)
         {

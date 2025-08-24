@@ -241,7 +241,7 @@ public class OrmLiteUpdateTestsAsync(DialectContext context) : OrmLiteProvidersT
         db.Insert(new PocoUpdateAsync { Id = 1, Name = "A" });
         db.Insert(new PocoUpdateAsync { Id = 2, Name = "B" });
 
-        var result = await db.ExecuteSqlAsync($"UPDATE {DialectProvider.GetQuotedTableName("PocoUpdateAsync")} SET name = @name WHERE id = @id", new { id = 2, name = "UPDATED" });
+        var result = await db.ExecuteSqlAsync($"UPDATE {DialectProvider.QuoteTable("PocoUpdateAsync")} SET name = @name WHERE id = @id", new { id = 2, name = "UPDATED" });
         Assert.That(result, Is.EqualTo(1));
 
         var row = await db.SingleByIdAsync<PocoUpdateAsync>(2);

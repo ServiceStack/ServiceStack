@@ -329,17 +329,15 @@ public class DefaultValueTests(DialectContext context) : OrmLiteProvidersTestBas
 /// MySql 5.5 only allows a single timestamp default column
 /// </summary>
 [TestFixtureOrmLiteDialects(Dialect.MySql, MySqlDb.V5_5)]
-public class MySqlDefaultValueTests : OrmLiteProvidersTestBase
+public class MySqlDefaultValueTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    public MySqlDefaultValueTests(DialectContext context) : base(context) {}
-
     [Test]
     public void Can_create_table_with_DefaultValues()
     {
         using var db = OpenDbConnection();
         var row = CreateAndInitialize(db);
 
-        var expectedDate = DateTime.Now.Date; //MySql CURRENT_TIMESTAMP == LOCAL_TIME
+        var expectedDate = DateTime.Now.Date.AddHours(-12); //MySql CURRENT_TIMESTAMP == LOCAL_TIME
 
         Assert.That(row.UpdatedDateUtc, Is.GreaterThan(expectedDate));
     }

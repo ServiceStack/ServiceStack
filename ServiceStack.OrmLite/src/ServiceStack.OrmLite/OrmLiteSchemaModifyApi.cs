@@ -47,7 +47,7 @@ public static class OrmLiteSchemaModifyApi
             ? new TableRef(null, null)
             {
                 QuotedName = useStrategy
-                    ? dialect.GetQuotedTableName(tableName)
+                    ? dialect.QuoteTable(tableName)
                     : dialect.GetQuotedName(tableName)
             } 
             : new TableRef(null, null) { QuotedName = tableName };

@@ -22,6 +22,7 @@ namespace ServiceStack.OrmLite.MySql
             base.AutoIncrementDefinition = "AUTO_INCREMENT";
             base.DefaultValueFormat = " DEFAULT {0}";
             base.SelectIdentitySql = "SELECT LAST_INSERT_ID()";
+            base.QuoteChar = '`';
 
             base.InitColumnTypeMap();
 
@@ -340,7 +341,7 @@ namespace ServiceStack.OrmLite.MySql
         {
             if (modelDef.RowVersion != null)
             {
-                var triggerName = RowVersionTriggerFormat.Fmt(GetTableName(modelDef));
+                var triggerName = RowVersionTriggerFormat.Fmt(GetTableNameOnly(new(modelDef)));
                 return "DROP TRIGGER IF EXISTS {0}".Fmt(GetQuotedName(triggerName));
             }
             return null;
@@ -354,8 +355,8 @@ namespace ServiceStack.OrmLite.MySql
                 var triggerBody = "SET NEW.{0} = OLD.{0} + 1;".Fmt(
                     modelDef.RowVersion.FieldName.SqlColumn(this));
 
-                var sql = "CREATE TRIGGER {0} BEFORE UPDATE ON {1} FOR EACH ROW BEGIN {2} END;".Fmt(
-                    triggerName, GetTableName(modelDef), triggerBody);
+                var sql = string.Format("CREATE TRIGGER {0} BEFORE UPDATE ON {1} FOR EACH ROW BEGIN {2} END;",
+                    triggerName, GetQuotedTableName(modelDef), triggerBody);
 
                 return sql;
             }
@@ -396,49 +397,14 @@ namespace ServiceStack.OrmLite.MySql
 		        : NamingStrategy.GetTableName(tableName);
         }
 
-        public override string GetTableName(string table, string schema = null) => 
-	        GetTableName(table, schema, useStrategy:true);
+        public override string QuoteSchema(string schema, string table) =>
+	        GetQuotedName(JoinSchema(schema, table));
+        public override string JoinSchema(string schema, string table) => string.IsNullOrEmpty(schema) || table.StartsWith(schema + "_") 
+	        ? table
+	        : schema + "_" + table;
 
-        public override string GetTableAlias(string alias, string? schema, bool useStrategy)
-        {
-	        if (useStrategy)
-	        {
-		        return schema != null && !alias.StartsWithIgnoreCase(schema + "_")
-			        ? $"{NamingStrategy.GetSchemaName(schema)}_{NamingStrategy.GetAlias(alias)}"
-			        : NamingStrategy.GetAlias(alias);
-	        }
-            
-	        return schema != null && !alias.StartsWithIgnoreCase(schema + "_")
-		        ? $"{schema}_{alias}"
-		        : alias;
-        }
-
-        public override string GetTableName(string table, string schema, bool useStrategy)
-        {
-            if (useStrategy)
-            {
-                return schema != null && !table.StartsWithIgnoreCase(schema + "_")
-					? QuoteIfRequired(NamingStrategy.GetSchemaName(schema) + "_" + NamingStrategy.GetTableName(table)) 	
-					: QuoteIfRequired(NamingStrategy.GetTableName(table));
-            }
-            
-            return schema != null && !table.StartsWithIgnoreCase(schema + "_")
-                ? QuoteIfRequired(schema + "_" + table)
-                : QuoteIfRequired(table);
-        }
-
-        public override string GetQuotedTableAlias(string tableName, string? schema = null) =>
-	        GetQuotedName(GetTableAlias(tableName, schema));
-
-        public override string GetQuotedTableName(string tableName, string? schema = null) =>
-	        GetQuotedName(GetTableName(tableName, schema));
-
-        
         public override bool ShouldQuote(string name) => name != null && 
             (ReservedWords.Contains(name) || name.IndexOf(' ') >= 0 || name.IndexOf('.') >= 0);
-
-        public override string GetQuotedName(string name) => name == null ? null : name.FirstCharEquals('`') 
-	        ? name : '`' + name + '`';
 
         public override SqlExpression<T> SqlExpression<T>()
         {
@@ -577,7 +543,7 @@ namespace ServiceStack.OrmLite.MySql
         }
         
         public override string ToDropForeignKeyStatement(TableRef tableRef, string foreignKeyName) =>
-	        $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP FOREIGN KEY {GetQuotedName(foreignKeyName)};";
+	        $"ALTER TABLE {QuoteTable(tableRef)} DROP FOREIGN KEY {GetQuotedName(foreignKeyName)};";
 
         public override string ToDropIndexStatement<T>(string indexName)
         {

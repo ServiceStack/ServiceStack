@@ -39,7 +39,7 @@ namespace ServiceStack.OrmLite.Legacy
 
             var sql = StringBuilderCache.Allocate();
             sql.Append("UPDATE ");
-            sql.Append(dialectProvider.GetQuotedTableName(table));
+            sql.Append(dialectProvider.QuoteTable(table));
             sql.Append(" SET ");
             sql.Append(set.SqlVerifyFragment());
             if (!string.IsNullOrEmpty(@where))
@@ -80,7 +80,7 @@ namespace ServiceStack.OrmLite.Legacy
 
             var sql = StringBuilderCache.Allocate();
             sql.AppendFormat("DELETE FROM {0} WHERE {1}",
-                             dialectProvider.GetQuotedTableName(table),
+                             dialectProvider.QuoteTable(table),
                              @where.SqlVerifyFragment());
             return StringBuilderCache.ReturnAndFree(sql);
         }

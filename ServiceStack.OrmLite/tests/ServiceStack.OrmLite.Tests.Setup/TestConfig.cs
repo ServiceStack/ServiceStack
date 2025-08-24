@@ -26,7 +26,7 @@ public enum Dialect
     SqlServer2017 = 1 << 5,
     SqlServer2019 = 1 << 6,
     SqlServer2022 = 1 << 7,
-        
+
     PostgreSql9 = 1 << 8,
     PostgreSql10 = 1 << 9,
     PostgreSql11 = 1 << 10,

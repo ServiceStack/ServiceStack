@@ -53,7 +53,7 @@ public static class OrmLiteDialectProviderExtensions
         if (tableAlias == null)
             return dialect.GetQuotedColumnName(tableDef, fieldDef);
             
-        return dialect.GetQuotedTableName(tableAlias) //aliases shouldn't have schemas
+        return dialect.QuoteTable(tableAlias) //aliases shouldn't have schemas
                + "." +
                dialect.GetQuotedColumnName(fieldDef);
     }
@@ -72,7 +72,7 @@ public static class OrmLiteDialectProviderExtensions
         if (tableAlias == null)
             return dialect.GetQuotedColumnName(tableDef, fieldName);
             
-        return dialect.GetQuotedTableName(tableAlias) //aliases shouldn't have schemas 
+        return dialect.QuoteTable(tableAlias) //aliases shouldn't have schemas 
                + "." +
                dialect.GetQuotedColumnName(fieldName);
     }

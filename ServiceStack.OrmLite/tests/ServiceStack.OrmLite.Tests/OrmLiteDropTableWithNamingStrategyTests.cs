@@ -31,7 +31,7 @@ public class OrmLiteDropTableWithNamingStrategyTests(DialectContext context) : O
             var dialect = db.Dialect();
             Assert.That(strategy.GetTableName(nameof(ModelWithOnlyStringFields)), Is.EqualTo("model_with_only_string_fields"));
             Assert.That(dialect.GetQuotedTableName(typeof(ModelWithOnlyStringFields)), Is.EqualTo(dialect.GetQuotedName("model_with_only_string_fields")));
-            Assert.That(dialect.GetQuotedTableName(nameof(ModelWithOnlyStringFields)), Is.EqualTo(dialect.GetQuotedName("model_with_only_string_fields")));
+            Assert.That(dialect.QuoteTable(nameof(ModelWithOnlyStringFields)), Is.EqualTo(dialect.GetQuotedName("model_with_only_string_fields")));
             
             db.CreateTable<ModelWithOnlyStringFields>(true);
 

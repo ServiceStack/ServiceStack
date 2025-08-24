@@ -536,7 +536,7 @@ namespace ServiceStack.OrmLite
             {
                 var singleTable = rawFrom.ToLower().IndexOfAny("join", ",") == -1;
                 FromExpression = singleTable
-                    ? " \nFROM " + DialectProvider.GetQuotedTableName(rawFrom)
+                    ? " \nFROM " + DialectProvider.QuoteTable(rawFrom)
                     : " \nFROM " + rawFrom;
             }
 

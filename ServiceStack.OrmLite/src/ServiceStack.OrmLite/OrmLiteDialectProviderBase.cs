@@ -393,13 +393,6 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public abstract IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
 
-    public virtual string GetQuotedValue(string paramValue)
-    {
-        return "'" + paramValue.Replace("'", "''") + "'";
-    }
-
-    public virtual string GetSchemaName(string schema) => NamingStrategy.GetSchemaName(schema);
-
     /// <summary>
     /// Returns an unquoted table name (inc schema if exists), using naming strategy 
     /// </summary>
@@ -412,15 +405,33 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         var alias = tableRef.ModelDef?.Alias; 
         if (alias != null)
             return schema != null
-                ? NamingStrategy.GetSchemaName(schema) + "." + NamingStrategy.GetAlias(alias)
+                ? JoinSchema(NamingStrategy.GetSchemaName(schema), NamingStrategy.GetAlias(alias))
                 : NamingStrategy.GetAlias(alias);
 
         var tableName = tableRef.GetTableName();
         return schema != null
-            ? NamingStrategy.GetSchemaName(schema) + "." + NamingStrategy.GetTableName(tableName)
+            ? JoinSchema(NamingStrategy.GetSchemaName(schema), NamingStrategy.GetTableName(tableName))
             : NamingStrategy.GetTableName(tableName);
     }
-    
+
+    /// <summary>
+    /// Returns an quoted table name (inc schema if exists), using naming strategy 
+    /// </summary>
+    public virtual string QuoteTable(TableRef tableRef)
+    {
+        var useVerbatim = tableRef.QuotedName;
+        if (useVerbatim != null)
+            return useVerbatim;
+
+        if (tableRef.ModelDef != null)
+            return GetQuotedTableName(tableRef.ModelDef);
+        
+        var schema = tableRef.GetSchemaName();
+        return schema != null
+            ? QuoteSchema(NamingStrategy.GetSchemaName(schema), NamingStrategy.GetTableName(tableRef.Name))
+            : GetQuotedName(NamingStrategy.GetTableName(tableRef.Name));
+    }
+
     /// <summary>
     /// Return unquoted table name only (i.e. without schema), using naming strategy
     /// </summary>
@@ -434,96 +445,41 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
                    : NamingStrategy.GetTableName(tableRef.Name));
     }
     
-    public virtual string GetSchemaName(TableRef tableRef) => 
-        NamingStrategy.GetSchemaName(tableRef.Schema ?? tableRef.ModelDef?.Schema); 
+    public virtual string GetSchemaName(TableRef tableRef) => NamingStrategy.GetSchemaName(tableRef.GetSchemaName()); 
     
-    /// <summary>
-    /// Returns quoted table name
-    /// </summary>
-    /// <param name="modelType"></param>
-    /// <returns></returns>
-    public virtual string GetTableName(Type modelType) => GetTableName(modelType.GetModelDefinition());
-
-    public virtual string GetTableName(ModelDefinition modelDef) => modelDef.Alias != null
-        ? GetTableAlias(modelDef.Alias, modelDef.Schema, useStrategy:true)
-        : GetTableName(modelDef.Name, modelDef.Schema, useStrategy:true);
-
-    public virtual string GetTableAlias(string alias, string schema, bool useStrategy)
-    {
-        if (useStrategy)
-        {
-            return schema != null
-                ? $"{QuoteIfRequired(NamingStrategy.GetSchemaName(schema))}.{QuoteIfRequired(NamingStrategy.GetAlias(alias))}"
-                : QuoteIfRequired(NamingStrategy.GetAlias(alias));
-        }
-            
-        return schema != null
-            ? $"{QuoteIfRequired(schema)}.{QuoteIfRequired(alias)}"
-            : QuoteIfRequired(alias);
-    }
-
-    public virtual string GetTableAlias(string alias, string schema = null) =>
-        GetTableAlias(alias, schema, useStrategy: true);
-
-    public virtual string GetTableName(string table, string schema = null) =>
-        GetTableName(table, schema, useStrategy: true);
-
-    public virtual string GetTableName(string table, string schema, bool useStrategy)
-    {
-        if (useStrategy)
-        {
-            return schema != null
-                ? $"{QuoteIfRequired(NamingStrategy.GetSchemaName(schema))}.{QuoteIfRequired(NamingStrategy.GetTableName(table))}"
-                : QuoteIfRequired(NamingStrategy.GetTableName(table));
-        }
-            
-        return schema != null
-            ? $"{QuoteIfRequired(schema)}.{QuoteIfRequired(table)}"
-            : QuoteIfRequired(table);
-    }
-
     public virtual string GetQuotedTableName(Type modelType) => 
         GetQuotedTableName(modelType.GetModelDefinition());
         
     public virtual string GetQuotedTableName(ModelDefinition modelDef)
     {
-        return modelDef.Alias != null
-            ? GetQuotedTableAlias(modelDef.Alias, modelDef.Schema)
-            : GetQuotedTableName(modelDef.Name, modelDef.Schema);
+        var schema = modelDef.Schema;
+        if (modelDef.Alias != null)
+        {
+            return schema == null 
+                ? GetQuotedName(NamingStrategy.GetAlias(modelDef.Alias)) 
+                : QuoteSchema(NamingStrategy.GetSchemaName(schema),NamingStrategy.GetAlias(modelDef.Alias));
+        }
+
+        return schema == null 
+            ? GetQuotedName(NamingStrategy.GetTableName(modelDef.Name)) 
+            : QuoteSchema(NamingStrategy.GetSchemaName(schema), NamingStrategy.GetTableName(modelDef.Name));
     }
 
-    public virtual string GetQuotedTableAlias(string alias, string schema = null)
+    /// <summary>
+    /// Return a quoted schema + table name (does not use naming strategy)
+    /// </summary>
+    public virtual string QuoteSchema(string schema, string table)
     {
-        if (schema == null)
-            return GetQuotedName(NamingStrategy.GetAlias(alias));
-
-        var escapedSchema = NamingStrategy.GetSchemaName(schema)
-            .Replace(".", "\".\"");
-
-        return $"{GetQuotedName(escapedSchema)}.{GetQuotedName(NamingStrategy.GetAlias(alias))}";
-    }
-
-    public virtual string GetQuotedTableName(TableRef tableRef)
-    {
-        return tableRef.QuotedName ?? 
-           (tableRef.ModelDef != null
-            ? GetQuotedTableName(tableRef.ModelDef)
-            : GetQuotedTableName(tableRef.Name, tableRef.Schema));
+        if (string.IsNullOrEmpty(schema))
+            return GetQuotedName(table);
+        var escapedSchema = schema.IndexOf('.') >= 0 
+            ? schema.Replace(".", QuoteChar + "." + QuoteChar) 
+            : schema;
+        return JoinSchema(GetQuotedName(escapedSchema), GetQuotedName(table));
     }
     
-    public virtual string GetQuotedTableName(string tableName, string schema = null)
-    {
-        if (schema == null)
-            return GetQuotedName(NamingStrategy.GetTableName(tableName));
-
-        var escapedSchema = NamingStrategy.GetSchemaName(schema)
-            .Replace(".", "\".\"");
-
-        return $"{GetQuotedName(escapedSchema)}.{GetQuotedName(NamingStrategy.GetTableName(tableName))}";
-    }
-
-    public virtual string GetQuotedTableName(string tableName, string schema, bool useStrategy) => 
-        GetQuotedName(GetTableName(tableName, schema, useStrategy));
+    public virtual string JoinSchema(string schema, string table) => 
+        schema + "." + table;
 
     public virtual string GetQuotedColumnName(FieldDefinition fieldDef)
     {
@@ -554,14 +510,20 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             : name;
     }
 
-    public virtual string GetQuotedName(string name) => name == null ? null : name.FirstCharEquals('"') 
-        ? name : '"' + name + '"';
+    protected char QuoteChar = '"';
+    public virtual string GetQuotedName(string name) => name == null ? null : name.FirstCharEquals(QuoteChar) 
+        ? name : QuoteChar + name + QuoteChar;
 
     public virtual string GetQuotedName(string name, string schema)
     {
         return schema != null
             ? $"{GetQuotedName(schema)}.{GetQuotedName(name)}"
             : GetQuotedName(name);
+    }
+
+    public virtual string GetQuotedValue(string paramValue)
+    {
+        return "'" + paramValue.Replace("'", "''") + "'";
     }
 
     public virtual string SanitizeFieldNameForParamName(string fieldName)
@@ -749,7 +711,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         var quotedPrefix = tablePrefix != null 
             ? tablePrefix == modelDef.Alias  
                 ? GetQuotedTableName(modelDef)
-                : GetQuotedTableName(tablePrefix, modelDef.Schema) 
+                : QuoteTable(new(modelDef.Schema, tablePrefix)) 
             : "";
 
         var sqlColumns = new SelectItem[modelDef.FieldDefinitions.Count];
@@ -1931,16 +1893,16 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual string GetDropForeignKeyConstraints(ModelDefinition modelDef) => null;
 
     public virtual string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
-        $"ALTER TABLE {GetQuotedTableName(tableRef)} ADD COLUMN {GetColumnDefinition(fieldDef)};";
+        $"ALTER TABLE {QuoteTable(tableRef)} ADD COLUMN {GetColumnDefinition(fieldDef)};";
 
     public virtual string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
-        $"ALTER TABLE {GetQuotedTableName(tableRef)} MODIFY COLUMN {GetColumnDefinition(fieldDef)};";
+        $"ALTER TABLE {QuoteTable(tableRef)} MODIFY COLUMN {GetColumnDefinition(fieldDef)};";
         
     public virtual string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn) => 
-        $"ALTER TABLE {GetQuotedTableName(tableRef)} CHANGE COLUMN {GetQuotedColumnName(oldColumn)} {GetColumnDefinition(fieldDef)};";
+        $"ALTER TABLE {QuoteTable(tableRef)} CHANGE COLUMN {GetQuotedColumnName(oldColumn)} {GetColumnDefinition(fieldDef)};";
 
     public virtual string ToRenameColumnStatement(TableRef tableRef, string oldColumn, string newColumn) => 
-        $"ALTER TABLE {GetQuotedTableName(tableRef)} RENAME COLUMN {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(newColumn)};";
+        $"ALTER TABLE {QuoteTable(tableRef)} RENAME COLUMN {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(newColumn)};";
 
     public virtual string ToAddForeignKeyStatement<T, TForeign>(Expression<Func<T, object>> field,
         Expression<Func<TForeign, object>> foreignField,
@@ -1967,7 +1929,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     }
 
     public virtual string ToDropForeignKeyStatement(TableRef tableRef, string foreignKeyName) =>
-        $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
+        $"ALTER TABLE {QuoteTable(tableRef)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
 
     public virtual string ToDropConstraintStatement(TableRef tableRef, string constraintName) => null;
 
@@ -2053,7 +2015,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         $"SELECT COUNT(*) FROM ({innerSql}) AS COUNT";
 
     public virtual string ToDropColumnStatement(TableRef tableRef, string column) => 
-        $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP COLUMN {GetQuotedColumnName(column)};";
+        $"ALTER TABLE {QuoteTable(tableRef)} DROP COLUMN {GetQuotedColumnName(column)};";
 
     public virtual string ToTableNamesStatement(string schema) => throw new NotSupportedException();
 

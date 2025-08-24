@@ -57,7 +57,7 @@ public class JoinSqlBuilder<TNewPoco, TBasePoco> : ISqlExpression
         foreach (var item in pocoType.GetModelMetadata().FieldDefinitions)
         {
             if (withTablePrefix)
-                result.Add($"{dialectProvider.GetQuotedTableName(tableName)}.{dialectProvider.GetQuotedColumnName(item.FieldName)}");
+                result.Add($"{dialectProvider.QuoteTable(tableName)}.{dialectProvider.GetQuotedColumnName(item.FieldName)}");
             else
                 result.Add($"{dialectProvider.GetQuotedColumnName(item.FieldName)}");
         }
@@ -517,7 +517,7 @@ public class JoinSqlBuilder<TNewPoco, TBasePoco> : ISqlExpression
                 dbColumns.AppendFormat("{0}{1}", dbColumns.Length > 0 ? "," : "", 
                     (string.IsNullOrEmpty(fieldDef.BelongToModelName) 
                         ? dialectProvider.GetQuotedTableName(modelDef) 
-                        : dialectProvider.GetQuotedTableName(fieldDef.BelongToModelName))
+                        : dialectProvider.QuoteTable(fieldDef.BelongToModelName))
                     + "." + dialectProvider.GetQuotedColumnName(fieldDef));
             }
             if (dbColumns.Length == 0)
@@ -557,7 +557,7 @@ public class JoinSqlBuilder<TNewPoco, TBasePoco> : ISqlExpression
                 }
                 else
                 {
-                    sbBody.AppendFormat(" {0} AS {1} ON {1}.{2} = {0}.{3}  \n", dialectProvider.GetQuotedTableName(join.Ref), dialectProvider.GetQuotedTableName(join.Ref.ModelName + "_" + i), join.Class1ColumnName, join.Class2ColumnName);
+                    sbBody.AppendFormat(" {0} AS {1} ON {1}.{2} = {0}.{3}  \n", dialectProvider.GetQuotedTableName(join.Ref), dialectProvider.QuoteTable(join.Ref.ModelName + "_" + i), join.Class1ColumnName, join.Class2ColumnName);
                 }
             }
         }

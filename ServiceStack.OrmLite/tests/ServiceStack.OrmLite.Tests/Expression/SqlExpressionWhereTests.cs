@@ -96,7 +96,7 @@ public class SqlExpressionWhereTests(DialectContext context) : OrmLiteProvidersT
                     (dialect, modelDef, joinExpr) =>
                     {
                         var injectJoin = " AND Table3.Id = Table2.Id)";
-                        return dialect.GetQuotedTableName(modelDef.ModelName)
+                        return dialect.QuoteTable(modelDef.ModelName)
                                + " " + joinExpr.Replace(")", injectJoin);
                     });
 

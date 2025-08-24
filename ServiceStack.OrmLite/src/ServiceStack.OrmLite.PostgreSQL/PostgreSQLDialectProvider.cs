@@ -530,11 +530,6 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         AddParameter(cmd, fieldDef);
     }
 
-    public override string GetQuotedValue(string paramValue)
-    {
-        return "'" + paramValue.Replace("'", @"''") + "'";
-    }
-
     public override IDbConnection CreateConnection(string connectionString, Dictionary<string, string> options)
     {
         return new NpgsqlConnection(connectionString);
@@ -630,21 +625,21 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
     public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
     {
-        dbCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = '{GetSchemaName(schemaName).SqlParam()}');";
+        dbCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = '{NamingStrategy.GetSchemaName(schemaName).SqlParam()}');";
         var query = dbCmd.ExecuteScalar();
         return query as bool? ?? false;
     }
 
     public override async Task<bool> DoesSchemaExistAsync(IDbCommand dbCmd, string schemaName, CancellationToken token = default)
     {
-        dbCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = '{GetSchemaName(schemaName).SqlParam()}');";
+        dbCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = '{NamingStrategy.GetSchemaName(schemaName).SqlParam()}');";
         var query = await dbCmd.ScalarAsync();
         return query as bool? ?? false;
     }
 
     public override string ToCreateSchemaStatement(string schemaName)
     {
-        var sql = $"CREATE SCHEMA {GetSchemaName(schemaName)}";
+        var sql = $"CREATE SCHEMA {NamingStrategy.GetSchemaName(schemaName)}";
         return sql;
     }
 
@@ -718,7 +713,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
     public override string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef)
     {
         var columnDefinition = GetColumnDefinition(fieldDef);
-        var modelName = GetQuotedTableName(tableRef);
+        var modelName = QuoteTable(tableRef);
 
         var parts = columnDefinition.SplitOnFirst(' ');
         var columnName = parts[0];
@@ -755,20 +750,6 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         return !modelDef.IsInSchema 
             ? base.GetQuotedTableName(modelDef) 
             : $"{GetQuotedName(NamingStrategy.GetSchemaName(modelDef.Schema))}.{GetQuotedName(NamingStrategy.GetTableName(modelDef))}";
-    }
-
-    public override string GetTableName(string table, string schema, bool useStrategy)
-    {
-        if (useStrategy)
-        {
-            return schema != null
-                ? $"{QuoteIfRequired(NamingStrategy.GetSchemaName(schema))}.{QuoteIfRequired(NamingStrategy.GetTableName(table))}"
-                : QuoteIfRequired(NamingStrategy.GetTableName(table));
-        }
-            
-        return schema != null
-            ? $"{QuoteIfRequired(schema)}.{QuoteIfRequired(table)}"
-            : QuoteIfRequired(table);
     }
         
     public override string GetLastInsertIdSqlSuffix<T>()
@@ -908,7 +889,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         var columnType = GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
         var newColumnName = GetColumnName(fieldDef);
 
-        var sql = $"ALTER TABLE {GetQuotedTableName(tableRef)} " +
+        var sql = $"ALTER TABLE {QuoteTable(tableRef)} " +
                   $"ALTER COLUMN {GetQuotedColumnName(oldColumn)} TYPE {columnType}";
         sql += newColumnName != oldColumn
             ? $", RENAME COLUMN {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(newColumnName)};"

@@ -35,9 +35,9 @@ public class MetaDataTests(DialectContext context) : OrmLiteProvidersTestBase(co
         var tableNames = db.GetTableNames();
         tableNames.TextDump().Print();
         Assert.That(tableNames.Count, Is.GreaterThan(0));
-        var table1Name = db.GetDialectProvider().GetTableName(typeof(TableMetadata1).GetModelMetadata());
+        var table1Name = db.GetTableName(typeof(TableMetadata1));
         Assert.That(tableNames.Any(x => x.EqualsIgnoreCase(table1Name)));
-        var table2Name = db.GetDialectProvider().GetTableName(typeof(TableMetadata2).GetModelMetadata());
+        var table2Name = db.GetTableName(typeof(TableMetadata2));
         Assert.That(tableNames.Any(x => x.EqualsIgnoreCase(table2Name)));
     }
 
@@ -54,9 +54,9 @@ public class MetaDataTests(DialectContext context) : OrmLiteProvidersTestBase(co
         var tableNames = await db.GetTableNamesAsync();
         tableNames.TextDump().Print();
         Assert.That(tableNames.Count, Is.GreaterThan(0));
-        var table1Name = db.GetDialectProvider().GetTableName(typeof(TableMetadata1).GetModelMetadata());
+        var table1Name = db.GetTableName(typeof(TableMetadata1));
         Assert.That(tableNames.Any(x => x.EqualsIgnoreCase(table1Name)));
-        var table2Name = db.GetDialectProvider().GetTableName(typeof(TableMetadata2).GetModelMetadata());
+        var table2Name = db.GetTableName(typeof(TableMetadata2));
         Assert.That(tableNames.Any(x => x.EqualsIgnoreCase(table2Name)));
     }
 
@@ -102,8 +102,8 @@ public class MetaDataTests(DialectContext context) : OrmLiteProvidersTestBase(co
         tableNames.TextDump().Print();
         Assert.That(tableNames.Count, Is.GreaterThan(0));
 
-        var table1Name = db.GetDialectProvider().GetTableName(typeof(TableMetadata1).GetModelMetadata());
-        var table2Name = db.GetDialectProvider().GetTableName(typeof(TableMetadata2).GetModelMetadata());
+        var table1Name = db.GetTableName(typeof(TableMetadata1));
+        var table2Name = db.GetTableName(typeof(TableMetadata2));
                 
         var table1Pos = IndexOf(tableNames, x => x.Key.EqualsIgnoreCase(table1Name) && x.Value == 3);
         Assert.That(table1Pos, Is.GreaterThanOrEqualTo(0));
@@ -130,7 +130,7 @@ public class MetaDataTests(DialectContext context) : OrmLiteProvidersTestBase(co
         var tableNames = db.GetTableNamesWithRowCounts(live:true);
         Assert.That(tableNames.Count, Is.GreaterThan(0));
 
-        var table1Name = db.GetDialectProvider().GetTableName(typeof(Order).GetModelMetadata()).StripDbQuotes();
+        var table1Name = db.GetTableName(typeof(Order));
                 
         var table1Pos = IndexOf(tableNames, x => x.Key.EqualsIgnoreCase(table1Name) && x.Value == 3);
         Assert.That(table1Pos, Is.GreaterThanOrEqualTo(0));
@@ -153,8 +153,8 @@ public class MetaDataTests(DialectContext context) : OrmLiteProvidersTestBase(co
         tableNames.TextDump().Print();
         Assert.That(tableNames.Count, Is.GreaterThan(0));
 
-        var table1Name = db.GetDialectProvider().GetTableName(typeof(TableMetadata1).GetModelMetadata());
-        var table2Name = db.GetDialectProvider().GetTableName(typeof(TableMetadata2).GetModelMetadata());
+        var table1Name = db.GetTableName(typeof(TableMetadata1));
+        var table2Name = db.GetTableName(typeof(TableMetadata2));
                 
         var table1Pos = IndexOf(tableNames, x => x.Key.EqualsIgnoreCase(table1Name) && x.Value == 3);
         Assert.That(table1Pos, Is.GreaterThanOrEqualTo(0));
@@ -184,8 +184,8 @@ public class MetaDataTests(DialectContext context) : OrmLiteProvidersTestBase(co
         tableNames.TextDump().Print();
         Assert.That(tableNames.Count, Is.GreaterThan(0));
 
-        var table1Name = db.GetDialectProvider().GetTableName(typeof(Schematable1).GetModelMetadata()).LastRightPart('.').StripDbQuotes();
-        var table2Name = db.GetDialectProvider().GetTableName(typeof(Schematable2).GetModelMetadata()).LastRightPart('.').StripDbQuotes();
+        var table1Name = db.GetTableName(typeof(Schematable1)).LastRightPart('.').StripDbQuotes();
+        var table2Name = db.GetTableName(typeof(Schematable2)).LastRightPart('.').StripDbQuotes();
 
         var table1Pos = IndexOf(tableNames, x => x.Key.IndexOf(table1Name, StringComparison.OrdinalIgnoreCase) >=0 && x.Value == 3);
         Assert.That(table1Pos, Is.GreaterThanOrEqualTo(0));

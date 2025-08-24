@@ -492,9 +492,9 @@ namespace ServiceStack.OrmLite.Firebird
                 var triggerBody = "new.{0} = old.{0}+1;".Fmt(
                     modelDef.RowVersion.FieldName.SqlColumn(this));
 
-                var sql = "CREATE OR ALTER TRIGGER {0} BEFORE UPDATE ON {1} AS BEGIN {2} END;".Fmt(
+                var sql = string.Format("CREATE OR ALTER TRIGGER {0} BEFORE UPDATE ON {1} AS BEGIN {2} END;",
                     Quote(triggerName), 
-                    GetTableName(modelDef.ModelName, modelDef.Schema), 
+                    GetQuotedTableName(modelDef), 
                     triggerBody);
 
                 return sql;
@@ -703,34 +703,11 @@ namespace ServiceStack.OrmLite.Firebird
             return Quote(name);
         }
 
-        public override string GetTableName(ModelDefinition modelDef)
-        {
-            return GetTableName(modelDef.ModelName, modelDef.Schema);
-        }
-
-        public override string GetTableName(string table, string schema = null) => GetTableName(table, schema, useStrategy: true);
-
-        public override string GetTableName(string table, string schema, bool useStrategy)
-        {
-            if (useStrategy)
-            {
-                return schema != null
-                    ? $"{NamingStrategy.GetSchemaName(schema)}_{NamingStrategy.GetTableName(table)}"
-                    : NamingStrategy.GetTableName(table);
-            }
-            
-            return schema != null
-                ? $"{schema}_{table}"
-                : table;
-        }
-
-        public override string GetQuotedTableName(ModelDefinition modelDef)
-        {
-            if (!modelDef.IsInSchema)
-                return Quote(NamingStrategy.GetTableName(modelDef.ModelName));
-
-            return Quote(GetTableName(modelDef.ModelName, modelDef.Schema));
-        }
+        public override string QuoteSchema(string schema, string table) =>
+            GetQuotedName(JoinSchema(schema, table));
+        public override string JoinSchema(string schema, string table) => string.IsNullOrEmpty(schema) || table.StartsWith(schema + "_") 
+            ? table
+            : schema + "_" + table;
 
         public override string GetQuotedColumnName(string fieldName)
         {
@@ -763,7 +740,7 @@ namespace ServiceStack.OrmLite.Firebird
 
         public override string ToCreateSchemaStatement(string schemaName)
         {
-            var sql = $"CREATE SCHEMA {GetSchemaName(schemaName)}";
+            var sql = $"CREATE SCHEMA {NamingStrategy.GetSchemaName(schemaName)}";
             return sql;
         }
 
@@ -808,13 +785,13 @@ namespace ServiceStack.OrmLite.Firebird
 
         #region DDL
         public override string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
-            $"ALTER TABLE {GetQuotedTableName(tableRef)} ADD {GetColumnDefinition(fieldDef)};";
+            $"ALTER TABLE {QuoteTable(tableRef)} ADD {GetColumnDefinition(fieldDef)};";
 
         public override string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
-            $"ALTER TABLE {GetQuotedTableName(tableRef)} ALTER {GetColumnDefinition(fieldDef)};";
+            $"ALTER TABLE {QuoteTable(tableRef)} ALTER {GetColumnDefinition(fieldDef)};";
 
         public override string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn) => 
-            $"ALTER TABLE {GetQuotedTableName(GetQuotedTableName(tableRef))} ALTER {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(fieldDef)};";
+            $"ALTER TABLE {QuoteTable(QuoteTable(tableRef))} ALTER {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(fieldDef)};";
         #endregion DDL
 
         public override string ToSelectStatement(QueryType queryType, ModelDefinition modelDef,
@@ -850,7 +827,7 @@ namespace ServiceStack.OrmLite.Firebird
         }
 
         public override string ToDropColumnStatement(TableRef tableRef, string column) =>
-            $"ALTER TABLE {GetQuotedTableName(tableRef)} DROP {GetQuotedColumnName(column)};";
+            $"ALTER TABLE {QuoteTable(tableRef)} DROP {GetQuotedColumnName(column)};";
 
         public override string SqlConcat(IEnumerable<object> args) => string.Join(" || ", args);
 

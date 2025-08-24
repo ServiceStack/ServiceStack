@@ -443,7 +443,7 @@ public static class OrmLiteUtils
 
     public static string SqlTable(this string tableName, IOrmLiteDialectProvider dialect = null)
     {
-        return (dialect ?? OrmLiteConfig.DialectProvider).GetQuotedTableName(tableName);
+        return (dialect ?? OrmLiteConfig.DialectProvider).QuoteTable(tableName);
     }
 
     public static string SqlTableRaw(this string tableName, IOrmLiteDialectProvider dialect = null)
@@ -1158,7 +1158,7 @@ public static class OrmLiteUtils
     public static JoinFormatDelegate JoinAlias(string alias)
     {
         return (dialect, tableDef, expr) =>
-            $"{dialect.GetQuotedTableName(tableDef)} {alias} {expr.Replace(dialect.GetQuotedTableName(tableDef), dialect.GetQuotedTableName(alias))}";
+            $"{dialect.GetQuotedTableName(tableDef)} {alias} {expr.Replace(dialect.GetQuotedTableName(tableDef), dialect.QuoteTable(alias))}";
     }
         
     /// <summary>
