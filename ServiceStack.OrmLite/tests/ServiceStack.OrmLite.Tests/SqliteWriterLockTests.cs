@@ -11,6 +11,8 @@ public class SqliteWriterLockTests(DialectContext context) : OrmLiteProvidersTes
 {
     public OrmLiteConnectionFactory CreateDbFactory()
     {
+        "App_Data".AssertDir();
+        
         var dialect = SqliteDialect.Create();
         dialect.EnableWriterLock = true;
         var dbFactory = new OrmLiteConnectionFactory(

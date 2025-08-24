@@ -34,13 +34,13 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
             })
             .AddSqlite("db1", "db1.sqlite")
             .AddSqlite("db2", "db2.sqlite")
-            .AddPostgres("postgres", Environment.GetEnvironmentVariable("PGSQL_CONNECTION"))
-            .AddSqlServer("sqlserver", Environment.GetEnvironmentVariable("MSSQL_CONNECTION"))
-            .AddSqlServer<SqlServer.SqlServer2016OrmLiteDialectProvider>("sqlserver2016", Environment.GetEnvironmentVariable("MSSQL_CONNECTION"))
-            .AddMySql("mysql", Environment.GetEnvironmentVariable("MYSQL_CONNECTION"))
-            .AddMySqlConnector("mysqlconnector", Environment.GetEnvironmentVariable("MYSQL_CONNECTION"))
-            .AddOracle("oracle", Environment.GetEnvironmentVariable("ORACLE_CONNECTION") ?? "")
-            .AddFirebird("firebird", Environment.GetEnvironmentVariable("FIREBIRD_CONNECTION") ?? "");
+            .AddPostgres("postgres", PostgreSqlDb.DefaultConnection)
+            .AddSqlServer("sqlserver", SqlServerDb.DefaultConnection)
+            .AddSqlServer<SqlServer.SqlServer2016OrmLiteDialectProvider>("sqlserver2016", SqlServerDb.DefaultConnection)
+            .AddMySql("mysql", MySqlDb.DefaultConnection)
+            .AddMySqlConnector("mysqlconnector", MySqlDb.DefaultConnection)
+            .AddOracle("oracle", OracleDb.DefaultConnection)
+            .AddFirebird("firebird", FirebirdDb.DefaultConnection);
         
         var provider = services.BuildServiceProvider();
         var dbFactory = provider.GetService<IDbConnectionFactory>();

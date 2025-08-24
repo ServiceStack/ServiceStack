@@ -268,7 +268,7 @@ public partial class TestConfig
 
     private static Dictionary<Tuple<Dialect, int>, string> dialectConnections;
     public static Dictionary<Tuple<Dialect,int>, string> DialectConnections => dialectConnections ??= LoadDialectConnections();
-
+    
     private static Dictionary<Tuple<Dialect, int>, string> LoadDialectConnections()
     {
         try 
