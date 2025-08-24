@@ -66,7 +66,6 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         var rows = 1.Times(i => AllNumbers.Create(i + 1));
         
         using var db = OpenDbConnection();
-        OrmLiteUtils.PrintSql();
         db.DropAndCreateTable<AllNumbers>();
         
         db.BulkInsert(rows, new BulkInsertConfig
@@ -85,7 +84,6 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         var rows = 3.Times(i => AllTypes.Create(i + 1));
         
         using var db = OpenDbConnection();
-        OrmLiteUtils.PrintSql();
         db.DropAndCreateTable<AllTypes>();
         
         db.BulkInsert(rows, new BulkInsertConfig
@@ -110,7 +108,6 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         }.ToList();
         
         using var db = OpenDbConnection();
-        OrmLiteUtils.PrintSql();
         db.DropAndCreateTable<AllTypes>();
         
         db.BulkInsert(rows, new BulkInsertConfig

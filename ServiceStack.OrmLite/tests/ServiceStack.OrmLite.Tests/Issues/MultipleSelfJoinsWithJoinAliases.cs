@@ -75,7 +75,6 @@ namespace ServiceStack.OrmLite.Tests.Issues
             var sales = db.Select<SaleView>(q);
             Assert.That(sales.Count, Is.EqualTo(1));
 
-            OrmLiteUtils.PrintSql();
             //Alternative
             q = db.From<Sale>()
                 .LeftJoin<ContactIssue>((s, c) => s.SellerId == c.Id, db.TableAlias("seller"))

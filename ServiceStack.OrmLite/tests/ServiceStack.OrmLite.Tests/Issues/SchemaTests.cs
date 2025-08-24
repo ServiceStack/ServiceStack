@@ -74,7 +74,6 @@ public class SchemaTests(DialectContext context) : OrmLiteProvidersTestBase(cont
     [Test]
     public void Can_query_with_Schema_and_alias_attributes()
     {
-        OrmLiteUtils.PrintSql();
         using var db = OpenDbConnection();
         db.DropAndCreateTable<Section>();
         db.DropAndCreateTable<Page>();

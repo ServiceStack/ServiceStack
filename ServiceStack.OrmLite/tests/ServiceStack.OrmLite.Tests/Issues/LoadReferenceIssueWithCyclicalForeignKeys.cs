@@ -69,7 +69,6 @@ namespace ServiceStack.OrmLite.Tests.Issues
                 db.Save(research);
             }
 
-            OrmLiteUtils.PrintSql();
             var res = db.LoadSelect(
                     db.From<ResearchEntity>().Where(x => x.Id == 5))
                 .FirstNonDefault();
@@ -94,7 +93,6 @@ namespace ServiceStack.OrmLite.Tests.Issues
                 await db.SaveAsync(research);
             }
 
-            OrmLiteUtils.PrintSql();
             var res = (await db.LoadSelectAsync(
                     db.From<ResearchEntity>().Where(x => x.Id == 5)))
                 .FirstNonDefault();

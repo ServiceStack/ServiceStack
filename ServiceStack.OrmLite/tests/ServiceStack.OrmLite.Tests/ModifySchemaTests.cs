@@ -25,7 +25,6 @@ public class ModifySchemaTests : OrmLiteTestBase
         public string? ToCreate { get; set; }
     }
 
-    public ModifySchemaTests() => OrmLiteUtils.PrintSql();
     private static HashSet<string> GetTableColumnNames(IDbConnection db) => db.GetTableColumns<BookingV1>().Select(x => x.ColumnName).ToSet();
 
     [Test]
@@ -90,5 +89,4 @@ public class ModifySchemaTests : OrmLiteTestBase
         db.DropColumn(db.QuoteTableAlias("Booking"), column:"NewName");
         Assert.That(GetTableColumnNames(db), Does.Not.Contain(db.GetNamingStrategy().GetColumnName("NewName")));
     }
-
 }

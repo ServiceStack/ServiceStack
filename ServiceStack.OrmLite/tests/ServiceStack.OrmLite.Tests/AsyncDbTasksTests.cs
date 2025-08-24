@@ -61,8 +61,6 @@ public class AsyncDbTasksTests(DialectContext context) : OrmLiteProvidersTestBas
         using var Db = await OpenDbConnectionAsync();
         Db.DropAndCreateTable<Rockstar>();
         
-        OrmLiteUtils.PrintSql();
-        
         var builder = DbFactory.AsyncDbTasksBuilder()
             .Add(db => db.InsertAsync(AutoQueryTests.SeedRockstars[0]))
             .Add(db => db.InsertAsync(AutoQueryTests.SeedRockstars[0])); // <-- Duplicate PK Exception

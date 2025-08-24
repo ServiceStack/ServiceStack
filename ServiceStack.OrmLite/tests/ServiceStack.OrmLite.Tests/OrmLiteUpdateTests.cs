@@ -935,8 +935,6 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
         var row = await db.SingleByIdAsync<DefaultValue>(1);
         AssertDefaultValues(row, orig);
 
-        OrmLiteUtils.PrintSql();
-        
         var updated = new DefaultValue
         {
             Status = Status.Unknown,   // Default = Status.Unknown 

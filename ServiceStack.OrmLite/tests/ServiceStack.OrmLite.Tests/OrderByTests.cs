@@ -103,7 +103,6 @@ public class OrderByTests(DialectContext context) : OrmLiteProvidersTestBase(con
         });
         db.InsertAll(items);
 
-        OrmLiteUtils.PrintSql();
         var q = db.From<LetterFrequency>();
         q.OrderBy(x => new { x.Value });
         // q.OrderBy(x => x.Value);

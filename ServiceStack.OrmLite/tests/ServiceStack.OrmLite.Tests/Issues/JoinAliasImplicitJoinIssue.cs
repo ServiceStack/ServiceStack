@@ -44,7 +44,6 @@ public class JoinAliasImplicitJoinIssue : OrmLiteTestBase
     public void Can_join_tables_with_aliases()
     {
         using var db = OpenDbConnection();
-        OrmLiteUtils.PrintSql();
 
         db.InsertAll([
             new DocumentTemplate

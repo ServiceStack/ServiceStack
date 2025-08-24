@@ -69,7 +69,6 @@ public class ConflictResolutionTests(DialectContext context) : OrmLiteProvidersT
     [Test]
     public async Task Can_change_conflict_resolution_with_InsertAll_Async()
     {
-        OrmLiteUtils.PrintSql();
         using var db = await OpenDbConnectionAsync();
         var rows = 5.Times(i => new ModelWithIdAndName(i));
 

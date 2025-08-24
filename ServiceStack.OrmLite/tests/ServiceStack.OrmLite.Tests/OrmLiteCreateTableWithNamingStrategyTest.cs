@@ -197,7 +197,6 @@ public class OrmLiteCreateTableWithNamingStrategyTests(DialectContext context) :
     [Test]
     public void Can_create_table_with_FK_alias()
     {
-        OrmLiteUtils.PrintSql();
         using (new TemporaryNamingStrategy(DialectProvider, new LowercaseNamingStrategy()))
         {
             using var db = OpenDbConnection();

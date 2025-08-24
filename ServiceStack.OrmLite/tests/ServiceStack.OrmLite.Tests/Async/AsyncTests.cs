@@ -51,7 +51,6 @@ public class AsyncTests(DialectContext context) : OrmLiteProvidersTestBase(conte
     [Test]
     public async Task Does_throw_async_errors()
     {
-        OrmLiteUtils.PrintSql();
         using var db = OpenDbConnection();
         db.DropAndCreateTable<Poco>();
 

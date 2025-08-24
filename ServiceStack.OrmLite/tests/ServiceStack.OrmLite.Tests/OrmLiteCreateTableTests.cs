@@ -171,8 +171,6 @@ public class OrmLiteCreateTableTests(DialectContext context) : OrmLiteProvidersT
         var hold = stringConverter.UseUnicode;
         stringConverter.UseUnicode = true;
         
-        OrmLiteUtils.PrintSql();
-        
         db.DropAndCreateTable<Region>();
         await db.DeleteAsync<Region>(x => x.Id == "id1");
         await db.DeleteByIdAsync<Region>("id1");

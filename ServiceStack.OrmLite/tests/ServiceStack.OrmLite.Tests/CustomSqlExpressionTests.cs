@@ -420,7 +420,6 @@ public class CustomSqlExpressionTests : OrmLiteProvidersTestBase
     public void Can_Having_using_constant()
     {
         using var db = OpenDbConnection();
-        OrmLiteUtils.PrintSql();
         Expression<Func<WaybillBase, bool>> filter = x =>
             (x.Number > 0 ? x.DecimalVirtProperty : x.Amount) == 10M;
         var q = db.From<WaybillBase>().Where(filter).Select(x => x.Name)

@@ -180,7 +180,6 @@ public class CustomSqlTests : OrmLiteProvidersTestBase
     [Test]
     public void Does_execute_PostCreateTable_and_PreDropTable()
     {
-        OrmLiteUtils.PrintSql();
         using var db = OpenDbConnection();
         db.CreateTable<ModelWithPreAndPostDrop>(true);
     }

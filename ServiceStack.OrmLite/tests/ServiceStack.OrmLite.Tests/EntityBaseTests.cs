@@ -83,7 +83,6 @@ public class EntityBaseTests : OrmLiteTestBase
 {
     public void SeedData(IDbConnection db)
     {
-        OrmLiteUtils.PrintSql();
         db.DropAndCreateTable<CustomerEntity>();
         db.Insert(new CustomerEntity {TenantId = 1, CustomerName = "Kurt" });
         db.Insert(new CustomerEntity {TenantId = 1, CustomerName = "Dave" });

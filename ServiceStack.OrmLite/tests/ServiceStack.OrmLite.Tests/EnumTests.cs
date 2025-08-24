@@ -192,7 +192,6 @@ public class EnumTests : OrmLiteProvidersTestBase
     [Test]
     public void Updates_EnumAsInt_with_int_value()
     {
-        OrmLiteUtils.PrintSql();
         using var db = OpenDbConnection();
         db.DropAndCreateTable<TypeWithEnumAsInt>();
 

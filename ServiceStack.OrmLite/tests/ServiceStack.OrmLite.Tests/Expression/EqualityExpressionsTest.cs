@@ -284,7 +284,6 @@ public class EqualityExpressionsTest(DialectContext context) : ExpressionsTestBa
     [Test]
     public void Can_select_equals_variable_null_expression()
     {
-        OrmLiteUtils.PrintSql();
         object columnValue = null;
 
         var expected = new TestType

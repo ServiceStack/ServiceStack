@@ -452,7 +452,6 @@ public partial class OrmLiteSelectTests(DialectContext context) : OrmLiteProvide
     public void Does_return_null_when_no_record_with_id_exists_in_AccountIntId()
     {
         using var db = OpenDbConnection();
-        OrmLiteUtils.PrintSql();
         db.DropAndCreateTable<AccountIntId>();
         db.Insert(new AccountIntId { Username = "johnsmith" });
         db.Insert(new AccountIntId { Username = "2-whatever-more-3" });

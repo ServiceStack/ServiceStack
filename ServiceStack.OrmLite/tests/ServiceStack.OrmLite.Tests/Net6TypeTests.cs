@@ -57,7 +57,6 @@ public class Net6TypeTests : OrmLiteTestBase
     [Test]
     public void Can_insert_and_query_TimeOnly()
     {
-        OrmLiteUtils.PrintSql();
         using var db = OpenDbConnection();
         db.DropAndCreateTable<TimeOnlyObject>();
 
