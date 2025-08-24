@@ -17,7 +17,7 @@ public static class OrmLiteSchemaApi
         dbConn.GetDialectProvider().DoesTableExist(dbConn, tableRef);
 
     [Obsolete("Use TableExists(TableRef) instead")]
-    public static bool TableExists(this IDbConnection dbConn, string tableName, string schema = null) => 
+    public static bool TableExists(this IDbConnection dbConn, string tableName, string schema) => 
         dbConn.GetDialectProvider().DoesTableExist(dbConn, new (schema, tableName));
 
     /// <summary>

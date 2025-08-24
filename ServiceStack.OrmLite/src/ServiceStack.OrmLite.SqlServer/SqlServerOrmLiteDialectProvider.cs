@@ -283,6 +283,11 @@ namespace ServiceStack.OrmLite.SqlServer
             return $"EXEC sp_rename {GetQuotedValue(objectName)}, {GetQuotedColumnName(newColumn)}, 'COLUMN';";
         }
 
+        public override string ToDropIndexStatement<T>(string indexName)
+        {
+            return $"DROP INDEX IF EXISTS {GetQuotedName(indexName)} ON {GetQuotedTableName(typeof(T))};";
+        }
+
         protected virtual string GetAutoIncrementDefinition(FieldDefinition fieldDef)
         {
             return AutoIncrementDefinition;
