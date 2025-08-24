@@ -38,6 +38,8 @@ jobs:
           - 48501:1433
       mysql:
         image: mariadb:latest
+        volumes:
+          - ./build/my.cnf:/etc/mysql/conf.d/my.cnf
         env:
           MYSQL_ROOT_PASSWORD: Test!tesT
           MYSQL_DATABASE: test
