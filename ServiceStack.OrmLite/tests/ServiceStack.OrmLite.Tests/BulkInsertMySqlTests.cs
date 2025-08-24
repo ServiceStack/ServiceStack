@@ -15,9 +15,8 @@ public class BulkInsertMySqlTests(DialectContext context) : OrmLiteProvidersTest
     [Test]
     public async Task Can_BulkInsert_CSV_Rockstars_MySql()
     {
-        var dbFactory = new OrmLiteConnectionFactory(
-            "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true;SslMode=None;AllowPublicKeyRetrieval=true", 
-            MySqlDialect.Provider);
+        // "Server=localhost;User Id=root;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200;AllowLoadLocalInfile=true;SslMode=None;AllowPublicKeyRetrieval=true"
+        var dbFactory = new OrmLiteConnectionFactory(MySqlDb.DefaultConnection, MySqlDialect.Provider);
         MySqlDialect.Instance.AllowLoadLocalInfile = true;
         
         using var db = await dbFactory.OpenDbConnectionAsync();

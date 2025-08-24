@@ -13,32 +13,45 @@ namespace ServiceStack.OrmLite.Tests.Async;
 [TestFixtureOrmLite]
 public class AsyncTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
+    [Alias(nameof(Poco))]
+    public class Poco
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    [Alias(nameof(Poco))]
+    public class DifferentPoco
+    {
+        public int Id { get; set; }
+        public string NotExists { get; set; }
+    }
+
     [Test]
     public async Task Can_Insert_and_SelectAsync()
     {
-        using (var db = await OpenDbConnectionAsync())
+        using var db = await OpenDbConnectionAsync();
+        db.DropAndCreateTable<Poco>();
+
+        for (var i = 0; i < 3; i++)
         {
-            db.DropAndCreateTable<Poco>();
-
-            for (var i = 0; i < 3; i++)
-            {
-                await db.InsertAsync(new Poco { Id = i + 1, Name = ((char)('A' + i)).ToString() });
-            }
-
-            var results = (await db.SelectAsync<Poco>()).Map(x => x.Name);
-            Assert.That(results, Is.EqualTo(new[] { "A", "B", "C" }));
-
-            results = (await db.SelectAsync<Poco>(x => x.Name == "A")).Map(x => x.Name);
-            Assert.That(results, Is.EqualTo(new[] { "A" }));
-
-            results = (await db.SelectAsync(db.From<Poco>().Where(x => x.Name == "A"))).Map(x => x.Name);
-            Assert.That(results, Is.EqualTo(new[] { "A" }));
+            await db.InsertAsync(new Poco { Id = i + 1, Name = ((char)('A' + i)).ToString() });
         }
+
+        var results = (await db.SelectAsync<Poco>()).Map(x => x.Name);
+        Assert.That(results, Is.EqualTo(new[] { "A", "B", "C" }));
+
+        results = (await db.SelectAsync<Poco>(x => x.Name == "A")).Map(x => x.Name);
+        Assert.That(results, Is.EqualTo(new[] { "A" }));
+
+        results = (await db.SelectAsync(db.From<Poco>().Where(x => x.Name == "A"))).Map(x => x.Name);
+        Assert.That(results, Is.EqualTo(new[] { "A" }));
     }
 
     [Test]
     public async Task Does_throw_async_errors()
     {
+        OrmLiteUtils.PrintSql();
         using var db = OpenDbConnection();
         db.DropAndCreateTable<Poco>();
 
@@ -98,14 +111,7 @@ public class AsyncTests(DialectContext context) : OrmLiteProvidersTestBase(conte
                 .Or.Contain("not_exists"));
         }
     }
-
-    [Alias("poco")]
-    public class DifferentPoco
-    {
-        public int Id { get; set; }
-        public string NotExists { get; set; }
-    }
-
+    
     [Test]
     public async Task Test_Thread_Affinity()
     {
