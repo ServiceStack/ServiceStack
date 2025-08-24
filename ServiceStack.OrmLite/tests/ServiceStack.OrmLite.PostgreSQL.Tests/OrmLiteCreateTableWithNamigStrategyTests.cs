@@ -11,7 +11,7 @@ namespace ServiceStack.OrmLite.PostgreSQL.Tests
         public OrmLiteCreateTableWithNamingStrategyTests(DialectContext context) : base(context) {}
 
         [Test]
-        public void Can_create_TableWithNamigStrategy_table_prefix()
+        public void Can_create_TableWithNamingStrategy_table_prefix()
         {
             using (new TemporaryNamingStrategy(DialectProvider, new PrefixNamingStrategy { TablePrefix = "tab_", ColumnPrefix = "col_" }))
             using (var db = OpenDbConnection())
@@ -21,7 +21,7 @@ namespace ServiceStack.OrmLite.PostgreSQL.Tests
         }
 
         [Test]
-        public void Can_create_TableWithNamigStrategy_table_lowered()
+        public void Can_create_TableWithNamingStrategy_table_lowered()
         {
             using (new TemporaryNamingStrategy(DialectProvider, new LowercaseNamingStrategy()))
             using (var db = OpenDbConnection())
@@ -32,7 +32,7 @@ namespace ServiceStack.OrmLite.PostgreSQL.Tests
 
 
         [Test]
-        public void Can_create_TableWithNamigStrategy_table_nameUnderscoreCompound()
+        public void Can_create_TableWithNamingStrategy_table_nameUnderscoreCompound()
         {
             using (new TemporaryNamingStrategy(DialectProvider, new UnderscoreSeparatedCompoundNamingStrategy()))
             using (var db = OpenDbConnection())
@@ -42,7 +42,7 @@ namespace ServiceStack.OrmLite.PostgreSQL.Tests
         }
 
         [Test]
-        public void Can_get_data_from_TableWithNamigStrategy_with_GetById()
+        public void Can_get_data_from_TableWithNamingStrategy_with_GetById()
         {
             using (new TemporaryNamingStrategy(DialectProvider, new PrefixNamingStrategy { TablePrefix = "tab_", ColumnPrefix = "col_" }))
             using (var db = OpenDbConnection())
@@ -59,7 +59,7 @@ namespace ServiceStack.OrmLite.PostgreSQL.Tests
 
 
         [Test]
-        public void Can_get_data_from_TableWithNamigStrategy_with_query_by_example()
+        public void Can_get_data_from_TableWithNamingStrategy_with_query_by_example()
         {
             using (new TemporaryNamingStrategy(DialectProvider, new PrefixNamingStrategy { TablePrefix = "tab_", ColumnPrefix = "col_" }))
             using (var db = OpenDbConnection())
@@ -76,7 +76,7 @@ namespace ServiceStack.OrmLite.PostgreSQL.Tests
         
         
         [Test]
-        public void Can_get_data_from_TableWithNamigStrategy_AfterChangingNamingStrategy()
+        public void Can_get_data_from_TableWithNamingStrategy_AfterChangingNamingStrategy()
         {
             using (new TemporaryNamingStrategy(DialectProvider, new PrefixNamingStrategy { TablePrefix = "tab_", ColumnPrefix = "col_" }))
             using (var db = OpenDbConnection())
