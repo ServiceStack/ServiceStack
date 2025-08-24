@@ -113,7 +113,7 @@ jobs:
         if: success() || failure()
         env:
           ORMLITE_DIALECT: SqlServer2017
-          MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
+          MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;AllowLoadLocalInfile=true;Convert Zero Datetime=True;
         run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
