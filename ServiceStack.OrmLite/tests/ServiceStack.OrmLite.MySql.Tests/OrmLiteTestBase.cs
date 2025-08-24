@@ -3,40 +3,39 @@ using System.Data;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 
-namespace ServiceStack.OrmLite.MySql.Tests
+namespace ServiceStack.OrmLite.MySql.Tests;
+
+public class MySqlConfig
 {
-    public class MySqlConfig
-    {
-        public static readonly IOrmLiteDialectProvider DialectProvider =
+    public static readonly IOrmLiteDialectProvider DialectProvider =
 #if !MYSQLCONNECTOR
-            MySqlDialectProvider.Instance;
+        MySqlDialectProvider.Instance;
 #else
             MySqlConnectorDialectProvider.Instance;
 #endif
-        public static string ConnectionString = "Server=localhost;Database=test;UID=root;Password=test";
+    public static string ConnectionString = "Server=localhost;Database=test;UID=root;Password=test";
+}
+
+public class OrmLiteTestBase
+{
+    protected string ConnectionString { get; set; }
+
+    public OrmLiteTestBase()
+    {
+        LogManager.LogFactory = new ConsoleLogFactory();
+
+        OrmLiteConfig.DialectProvider = MySqlConfig.DialectProvider;
+        ConnectionString = ConfigUtils.GetAppSetting("AppDb", MySqlConfig.ConnectionString);
     }
 
-    public class OrmLiteTestBase
+    public void Log(string text)
     {
-        protected string ConnectionString { get; set; }
+        Console.WriteLine(text);
+    }
 
-        public OrmLiteTestBase()
-		{
-			LogManager.LogFactory = new ConsoleLogFactory();
-
-		    OrmLiteConfig.DialectProvider = MySqlConfig.DialectProvider;
-            ConnectionString = ConfigUtils.GetAppSetting("AppDb", MySqlConfig.ConnectionString);
-		}
-
-		public void Log(string text)
-		{
-			Console.WriteLine(text);
-		}
-
-        public virtual IDbConnection OpenDbConnection(string connString = null)
-        {
-            connString = connString ?? ConnectionString;
-            return connString.OpenDbConnection();
-        }
+    public virtual IDbConnection OpenDbConnection(string connString = null)
+    {
+        connString = connString ?? ConnectionString;
+        return connString.OpenDbConnection();
     }
 }

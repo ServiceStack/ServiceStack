@@ -4,81 +4,80 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
-namespace ServiceStack.OrmLite.MySql.Tests.Expressions
+namespace ServiceStack.OrmLite.MySql.Tests.Expressions;
+
+public class ExpressionsTestBase : OrmLiteTestBase
 {
-    public class ExpressionsTestBase : OrmLiteTestBase
+    [SetUp]
+    public void Setup()
     {
-        [SetUp]
-        public void Setup()
+        OpenDbConnection().CreateTable<TestType>(true);
+    }
+
+    private IDbConnection db;
+
+    public override IDbConnection OpenDbConnection(string connString = null)
+    {
+        if (db == null || db.State != ConnectionState.Open)
         {
-            OpenDbConnection().CreateTable<TestType>(true);
+            db = base.OpenDbConnection(connString);
         }
+        return db;
+    }
 
-        private IDbConnection db;
-
-        public override IDbConnection OpenDbConnection(string connString = null)
+    [TearDown]
+    public void TearDown()
+    {
+        if (db != null)
         {
-            if (db == null || db.State != ConnectionState.Open)
+            db.Dispose();
+            db = null;
+        }
+    }
+
+    public T GetValue<T>(T item)
+    {
+        return item;
+    }
+
+    protected void EstablishContext(int numberOfRandomObjects)
+    {
+        EstablishContext(numberOfRandomObjects, null);
+    }
+
+    protected void EstablishContext(int numberOfRandomObjects, params TestType[] obj)
+    {
+        if (obj == null)
+            obj = new TestType[0];
+
+        using (var con = OpenDbConnection())
+        {
+            foreach (var t in obj)
             {
-                db = base.OpenDbConnection(connString);
+                con.Insert(t);
             }
-            return db;
-        }
 
-        [TearDown]
-        public void TearDown()
-        {
-            if (db != null)
+            var random = new Random((int)(DateTime.UtcNow.Ticks ^ (DateTime.UtcNow.Ticks >> 4)));
+            for (var i = 0; i < numberOfRandomObjects; i++)
             {
-                db.Dispose();
-                db = null;
-            }
-        }
+                TestType o = null;
 
-        public T GetValue<T>(T item)
-        {
-            return item;
-        }
-
-        protected void EstablishContext(int numberOfRandomObjects)
-        {
-            EstablishContext(numberOfRandomObjects, null);
-        }
-
-        protected void EstablishContext(int numberOfRandomObjects, params TestType[] obj)
-        {
-            if (obj == null)
-                obj = new TestType[0];
-
-            using (var con = OpenDbConnection())
-            {
-                foreach (var t in obj)
+                while (o == null)
                 {
-                    con.Insert(t);
-                }
+                    int intVal = random.Next();
 
-                var random = new Random((int)(DateTime.UtcNow.Ticks ^ (DateTime.UtcNow.Ticks >> 4)));
-                for (var i = 0; i < numberOfRandomObjects; i++)
-                {
-                    TestType o = null;
-
-                    while (o == null)
+                    o = new TestType
                     {
-                        int intVal = random.Next();
+                        BoolColumn = random.Next()%2 == 0,
+                        IntColumn = intVal,
+                        StringColumn = Guid.NewGuid().ToString()
+                    };
 
-                        o = new TestType
-                                {
-                                    BoolColumn = random.Next()%2 == 0,
-                                    IntColumn = intVal,
-                                    StringColumn = Guid.NewGuid().ToString()
-                                };
-
-                        if (obj.Any(x => x.IntColumn == intVal))
-                            o = null;
-                    }
-
-                    con.Insert(o);
+                    if (obj.Any(x => x.IntColumn == intVal))
+                        o = null;
                 }
+
+                con.Insert(o);
             }
         }
     }

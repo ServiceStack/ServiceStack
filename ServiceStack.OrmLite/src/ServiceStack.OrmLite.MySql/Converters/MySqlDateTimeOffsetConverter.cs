@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using ServiceStack.OrmLite.Converters;
 
 namespace ServiceStack.OrmLite.MySql.Converters;

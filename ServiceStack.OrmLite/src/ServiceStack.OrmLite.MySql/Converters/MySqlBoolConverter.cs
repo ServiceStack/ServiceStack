@@ -1,11 +1,8 @@
-﻿using System;
-using System.Data;
-using ServiceStack.OrmLite.Converters;
+﻿using ServiceStack.OrmLite.Converters;
 
-namespace ServiceStack.OrmLite.MySql.Converters
+namespace ServiceStack.OrmLite.MySql.Converters;
+
+public class MySqlBoolConverter : BoolAsIntConverter
 {
-    public class MySqlBoolConverter : BoolAsIntConverter
-    {
-        public override string ColumnDefinition => "tinyint(1)";
-    }
+    public override string ColumnDefinition => "tinyint(1)";
 }
