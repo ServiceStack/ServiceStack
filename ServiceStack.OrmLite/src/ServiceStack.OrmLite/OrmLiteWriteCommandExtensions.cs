@@ -79,9 +79,7 @@ public static class OrmLiteWriteCommandExtensions
         var modelDef = modelType.GetModelDefinition();
 
         var dialectProvider = dbCmd.GetDialectProvider();
-        var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef);
-        var schema = dialectProvider.NamingStrategy.GetSchemaName(modelDef);
-        var tableExists = dialectProvider.DoesTableExist(dbCmd, tableName, schema);
+        var tableExists = dialectProvider.DoesTableExist(dbCmd, new(modelDef));
         if (overwrite && tableExists)
         {
             DropTable(dbCmd, modelDef);
@@ -212,10 +210,7 @@ public static class OrmLiteWriteCommandExtensions
         try
         {
             var dialectProvider = dbCmd.GetDialectProvider();
-            var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef);
-            var schema = dialectProvider.NamingStrategy.GetSchemaName(modelDef);
-
-            if (dialectProvider.DoesTableExist(dbCmd, tableName, schema))
+            if (dialectProvider.DoesTableExist(dbCmd, new(modelDef)))
             {
                 if (modelDef.PreDropTableSql != null)
                 {

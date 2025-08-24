@@ -398,7 +398,7 @@ public class OrmLiteUpdateTests(DialectContext context) : OrmLiteProvidersTestBa
         db.Insert(new PocoUpdate { Id = 2, Name = "B" });
 
         var paramString = DialectProvider.ParamString;
-        var table = db.GetDialectProvider().GetTableName(nameof(PocoUpdate));
+        var table = db.GetDialectProvider().GetQuotedTableName(typeof(PocoUpdate));
         var sql = $"UPDATE {table} SET name = {paramString}name WHERE id = {paramString}id";
         var result = db.ExecuteSql(sql, new { id = 2, name = "UPDATED" });
         Assert.That(result, Is.EqualTo(1));

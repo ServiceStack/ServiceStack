@@ -245,14 +245,15 @@ namespace ServiceStack.OrmLite.Firebird
                 GetQuotedTableName(modelDef), 
                 StringBuilderCache.ReturnAndFree(sbColumnNames), 
                 StringBuilderCacheAlt.ReturnAndFree(sbColumnValues),
-                strReturning.Length > 0 ? "RETURNING " + strReturning : "");
+                strReturning.Length > 0 
+                    ? "RETURNING " + strReturning : "");
         }
 
         public override string GetLastInsertIdSqlSuffix<T>()
         {
             var modelDef = GetModel(typeof(T));
-            var pkName = NamingStrategy.GetColumnName(modelDef.PrimaryKey.FieldName);
-            return $" RETURNING \"{pkName}\"";
+            var pkName = GetQuotedColumnName(modelDef.PrimaryKey);
+            return $" RETURNING {pkName}";
         }
     }
 }

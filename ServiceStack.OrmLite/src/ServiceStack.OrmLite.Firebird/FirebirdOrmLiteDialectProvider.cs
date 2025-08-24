@@ -767,9 +767,9 @@ namespace ServiceStack.OrmLite.Firebird
             return sql;
         }
 
-        public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
+        public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
         {
-            tableName = GetTableName(tableName, schema);
+            var tableName = GetTableNameOnly(tableRef);
 
 //            if (!QuoteNames & !RESERVED.Contains(tableName.ToUpper()))
 //                tableName = tableName.ToUpper();
@@ -780,11 +780,11 @@ namespace ServiceStack.OrmLite.Firebird
             return result == 1;
         }
 
-        public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string schema = null)
+        public override bool DoesColumnExist(IDbConnection db, string columnName, TableRef tableRef)
         {
-            var table = GetTableName(tableName, schema);
+            var table = GetTableNameOnly(tableRef);
 
-            if (!QuoteNames & !RESERVED.Contains(tableName.ToUpper()))
+            if (!QuoteNames & !RESERVED.Contains(table.ToUpper()))
                 table = table.ToUpper();
 
             var sql = "SELECT COUNT(*) FROM RDB$RELATION_FIELDS "

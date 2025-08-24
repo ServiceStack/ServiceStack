@@ -161,11 +161,13 @@ namespace ServiceStack.OrmLite.SqlServer
         public override string ToReleaseSavePoint(string name) => null;
         public override string ToRollbackSavePoint(string name) => $"ROLLBACK TRANSACTION {name}";
 
-        public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
+        public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
         {
+            var tableName = GetTableNameOnly(tableRef);
             var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0}"
                 .SqlFmt(this, tableName);
 
+            var schema = GetSchemaName(tableRef);
             if (schema != null)
                 sql += " AND TABLE_SCHEMA = {0}".SqlFmt(this, schema);
             else
@@ -176,11 +178,13 @@ namespace ServiceStack.OrmLite.SqlServer
             return result > 0;
         }
 
-        public override async Task<bool> DoesTableExistAsync(IDbCommand dbCmd, string tableName, string schema = null, CancellationToken token = default)
+        public override async Task<bool> DoesTableExistAsync(IDbCommand dbCmd, TableRef tableRef, CancellationToken token = default)
         {
+            var tableName = GetTableNameOnly(tableRef);
             var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0}"
                 .SqlFmt(this, tableName);
 
+            var schema = GetSchemaName(tableRef);
             if (schema != null)
                 sql += " AND TABLE_SCHEMA = {0}".SqlFmt(this, schema);
             else
@@ -191,11 +195,13 @@ namespace ServiceStack.OrmLite.SqlServer
             return result > 0;
         }
 
-        public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string schema = null)
+        public override bool DoesColumnExist(IDbConnection db, string columnName, TableRef tableRef)
         {
+            var tableName = GetTableNameOnly(tableRef);
             var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @tableName AND COLUMN_NAME = @columnName"
                 .SqlFmt(this, tableName, columnName);
 
+            var schema = GetSchemaName(tableRef);
             if (schema != null)
                 sql += " AND TABLE_SCHEMA = @schema";
 
@@ -204,12 +210,14 @@ namespace ServiceStack.OrmLite.SqlServer
             return result > 0;
         }
 
-        public override async Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, string tableName, string schema = null,
+        public override async Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, TableRef tableRef,
             CancellationToken token = default)
         {
+            var tableName = GetTableNameOnly(tableRef);
             var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @tableName AND COLUMN_NAME = @columnName"
                 .SqlFmt(this, tableName, columnName);
 
+            var schema = GetSchemaName(tableRef);
             if (schema != null)
                 sql += " AND TABLE_SCHEMA = @schema";
 

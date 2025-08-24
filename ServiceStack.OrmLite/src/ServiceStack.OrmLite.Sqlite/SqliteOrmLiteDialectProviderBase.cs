@@ -287,6 +287,23 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
             : NamingStrategy.GetSchemaName(schema);
     }
 
+    public override string GetTableName(TableRef tableRef)
+    {
+        if (tableRef.QuotedName != null)
+            return tableRef.QuotedName.Replace("\"","");
+        var alias = tableRef.ModelDef?.Alias; 
+        if (alias != null)
+            return tableRef.ModelDef?.Schema != null
+                ? NamingStrategy.GetSchemaName(tableRef.ModelDef.Schema) + "_" + NamingStrategy.GetAlias(alias)
+                : NamingStrategy.GetAlias(alias);
+        
+        var schema = tableRef.ModelDef?.Schema ?? tableRef.Schema;
+        var tableName = tableRef.ModelDef?.Name ?? tableRef.Name;
+        return schema != null
+            ? NamingStrategy.GetSchemaName(schema) + "_" + NamingStrategy.GetTableName(tableName)
+            : NamingStrategy.GetTableName(tableName);
+    }
+
     public override string GetTableName(string table, string? schema = null) => 
         GetTableName(table, schema, useStrategy: true);
 
@@ -340,10 +357,10 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         throw new NotImplementedException("Schemas are not supported by sqlite");
     }
 
-    public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string? schema = null)
+    public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
     {
         var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0}"
-            .SqlFmt(this, GetTableName(tableName, schema, useStrategy: false));
+            .SqlFmt(this, GetTableName(tableRef));
 
         dbCmd.CommandText = sql;
         var result = dbCmd.LongScalar();
@@ -351,10 +368,10 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         return result > 0;
     }
 
-    public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string? schema = null)
+    public override bool DoesColumnExist(IDbConnection db, string columnName, TableRef tableRef)
     {
         var sql = "PRAGMA table_info({0})"
-            .SqlFmt(this, GetTableName(tableName, schema, useStrategy: false));
+            .SqlFmt(this, GetTableName(tableRef));
 
         var columns = db.SqlList<Dictionary<string, object>>(sql);
         foreach (var column in columns)

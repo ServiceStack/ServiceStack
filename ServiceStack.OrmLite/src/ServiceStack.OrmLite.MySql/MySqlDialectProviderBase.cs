@@ -430,44 +430,44 @@ namespace ServiceStack.OrmLite.MySql
                 : "SELECT table_name, table_rows FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = DATABASE() AND table_name LIKE {0}".SqlFmt(this, NamingStrategy.GetSchemaName(schema)  + "\\_%");
         }
         
-        public override bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
+        public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
         {
 	        var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
-		        .SqlFmt(GetTableName(tableName, schema).StripDbQuotes(), dbCmd.Connection.Database);
+		        .SqlFmt(GetTableNameOnly(tableRef), dbCmd.Connection.Database);
 
 	        var result = dbCmd.ExecLongScalar(sql);
 
 	        return result > 0;
         }
 
-        public override async Task<bool> DoesTableExistAsync(IDbCommand dbCmd, string tableName, string schema = null, CancellationToken token=default)
+        public override async Task<bool> DoesTableExistAsync(IDbCommand dbCmd, TableRef tableRef, CancellationToken token=default)
         {
 	        var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
-		        .SqlFmt(GetTableName(tableName, schema).StripDbQuotes(), dbCmd.Connection.Database);
+		        .SqlFmt(GetTableNameOnly(tableRef), dbCmd.Connection.Database);
 
 	        var result = await dbCmd.ExecLongScalarAsync(sql, token);
 
 	        return result > 0;
         }
 
-        public override bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string schema = null)
+        public override bool DoesColumnExist(IDbConnection db, string columnName, TableRef tableRef)
         {
-	        tableName = GetTableName(tableName, schema).StripQuotes();
+	        var tableName = GetTableNameOnly(tableRef);
 	        var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS"
 	                  + " WHERE TABLE_NAME = @tableName AND COLUMN_NAME = @columnName AND TABLE_SCHEMA = @schema"
-		                  .SqlFmt(GetTableName(tableName, schema).StripDbQuotes(), columnName);
+		                  .SqlFmt(GetTableNameOnly(tableRef), columnName);
             
 	        var result = db.SqlScalar<long>(sql, new { tableName, columnName, schema = db.Database });
 
 	        return result > 0;
         }
 
-        public override async Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, string tableName, string schema = null, CancellationToken token=default)
+        public override async Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, TableRef tableRef, CancellationToken token=default)
         {
-	        tableName = GetTableName(tableName, schema).StripQuotes();
+	        var tableName = GetTableNameOnly(tableRef);
 	        var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS"
 	                  + " WHERE TABLE_NAME = @tableName AND COLUMN_NAME = @columnName AND TABLE_SCHEMA = @schema"
-		                  .SqlFmt(GetTableName(tableName, schema).StripDbQuotes(), columnName);
+		                  .SqlFmt(tableName, columnName);
             
 	        var result = await db.SqlScalarAsync<long>(sql, new { tableName, columnName, schema = db.Database }, token);
 

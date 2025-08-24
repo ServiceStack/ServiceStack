@@ -330,6 +330,16 @@ public struct TableRef
     // Use the literal Quoted Table Name
     public static TableRef Literal(string quotedName) => new() { QuotedName = quotedName };
     
-    // implict cast from string uses it as table name
+    // implicit cast from string uses it as table name
     public static implicit operator TableRef(string name) => new(name);
+    
+    
+    /// <summary>
+    /// Get the unquoted table name
+    /// </summary>
+    public string GetTableName() => ModelDef?.ModelName ?? Name ?? QuotedName.StripDbQuotes();
+    /// <summary>
+    /// Get the unquoted schema name
+    /// </summary>
+    public string GetSchemaName() => ModelDef?.Schema ?? Schema;
 }

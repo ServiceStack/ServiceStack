@@ -39,69 +39,67 @@ public class AsyncTests(DialectContext context) : OrmLiteProvidersTestBase(conte
     [Test]
     public async Task Does_throw_async_errors()
     {
-        using (var db = OpenDbConnection())
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<Poco>();
+
+        try
         {
-            db.DropAndCreateTable<Poco>();
+            var results = await db.SelectAsync(db.From<Poco>().Where("NotExists = 1"));
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            Assert.That(ex.Message.ToLower(), Does.Contain("id")
+                .Or.Contain("notexists")
+                .Or.Contain("not_exists"));
+        }
 
-            try
-            {
-                var results = await db.SelectAsync(db.From<Poco>().Where("NotExists = 1"));
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.Message.ToLower(), Does.Contain("id")
-                    .Or.Contain("notexists")
-                    .Or.Contain("not_exists"));
-            }
+        try
+        {
+            await db.InsertAsync(new DifferentPoco { NotExists = "Foo" });
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            Assert.That(ex.Message.ToLower(), Does.Contain("id")
+                .Or.Contain("notexists")
+                .Or.Contain("not_exists"));
+        }
 
-            try
-            {
-                await db.InsertAsync(new DifferentPoco { NotExists = "Foo" });
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex.Message.ToLower(), Does.Contain("id")
-                    .Or.Contain("notexists")
-                    .Or.Contain("not_exists"));
-            }
+        try
+        {
+            await db.InsertAllAsync([
+                new DifferentPoco { NotExists = "Foo" },
+                new DifferentPoco { NotExists = "Bar" }
+            ]);
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            var innerEx = ex.UnwrapIfSingleException();
+            Assert.That(innerEx.Message.ToLower(), Does.Contain("id")
+                .Or.Contain("notexists")
+                .Or.Contain("not_exists"));
+        }
 
-            try
-            {
-                await db.InsertAllAsync(new[] {
-                    new DifferentPoco { NotExists = "Foo" },
-                    new DifferentPoco { NotExists = "Bar" }
-                });
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                var innerEx = ex.UnwrapIfSingleException();
-                Assert.That(innerEx.Message.ToLower(), Does.Contain("id")
-                    .Or.Contain("notexists")
-                    .Or.Contain("not_exists"));
-            }
-
-            try
-            {
-                await db.UpdateAllAsync(new[] {
-                    new DifferentPoco { NotExists = "Foo" },
-                    new DifferentPoco { NotExists = "Bar" }
-                });
-                Assert.Fail("Should throw");
-            }
-            catch (Exception ex)
-            {
-                var innerEx = ex.UnwrapIfSingleException();
-                Assert.That(innerEx.Message.ToLower(), Does.Contain("id")
-                    .Or.Contain("notexists")
-                    .Or.Contain("not_exists"));
-            }
+        try
+        {
+            await db.UpdateAllAsync(new[] {
+                new DifferentPoco { NotExists = "Foo" },
+                new DifferentPoco { NotExists = "Bar" }
+            });
+            Assert.Fail("Should throw");
+        }
+        catch (Exception ex)
+        {
+            var innerEx = ex.UnwrapIfSingleException();
+            Assert.That(innerEx.Message.ToLower(), Does.Contain("id")
+                .Or.Contain("notexists")
+                .Or.Contain("not_exists"));
         }
     }
 
-    [Alias("Poco")]
+    [Alias("poco")]
     public class DifferentPoco
     {
         public int Id { get; set; }

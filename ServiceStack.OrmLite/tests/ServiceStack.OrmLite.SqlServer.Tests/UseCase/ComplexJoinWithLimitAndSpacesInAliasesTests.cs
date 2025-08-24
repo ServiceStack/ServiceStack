@@ -83,33 +83,31 @@ namespace ServiceStack.OrmLite.SqlServerTests.UseCase
         [Test]
         public void ComplexJoin_with_JoinSqlBuilder_and_limit_with_spaces_in_aliases()
         {
-            using (var db = OpenDbConnection())
-            {
-                InitTables(db);
+            using var db = OpenDbConnection();
+            InitTables(db);
 
-                //JoinSqlBuilder is obsolete
-                //var jn = new JoinSqlBuilder<FooSpaceBarSpaceJoin, FooSpace>()
-                //    .Join<FooSpace, BarSpace>(dp => dp.BarId, p => p.Id)
-                //    .OrderBy<FooSpace>(f => f.Id)
-                //    .Limit(1, 2);
+            //JoinSqlBuilder is obsolete
+            //var jn = new JoinSqlBuilder<FooSpaceBarSpaceJoin, FooSpace>()
+            //    .Join<FooSpace, BarSpace>(dp => dp.BarId, p => p.Id)
+            //    .OrderBy<FooSpace>(f => f.Id)
+            //    .Limit(1, 2);
 
-                var jn = db.From<FooSpace>()
-                    .Join<FooSpace, BarSpace>((f,b) => f.BarId == b.Id)
-                    .OrderBy<FooSpace>(f => f.Id)
-                    .Limit(1, 2);
+            var jn = db.From<FooSpace>()
+                .Join<FooSpace, BarSpace>((f,b) => f.BarId == b.Id)
+                .OrderBy<FooSpace>(f => f.Id)
+                .Limit(1, 2);
 
-                var results = db.Select<FooSpaceBarSpaceJoin>(jn);
-                db.GetLastSql().Print();
+            var results = db.Select<FooSpaceBarSpaceJoin>(jn);
+            db.GetLastSql().Print();
 
-                results.PrintDump();
+            results.PrintDump();
 
-                var fooBarJoin = results.FirstOrDefault(x => x.BarId == _bar1Id);
-                Assert.IsNull(fooBarJoin);
-                fooBarJoin = results.First(x => x.BarId == _bar2Id);
-                Assert.That(fooBarJoin.Id, Is.EqualTo(_foo2Id));
-                fooBarJoin = results.First(x => x.BarId == _bar3Id);
-                Assert.That(fooBarJoin.Id, Is.EqualTo(_foo3Id));
-            }
+            var fooBarJoin = results.FirstOrDefault(x => x.BarId == _bar1Id);
+            Assert.IsNull(fooBarJoin);
+            fooBarJoin = results.First(x => x.BarId == _bar2Id);
+            Assert.That(fooBarJoin.Id, Is.EqualTo(_foo2Id));
+            fooBarJoin = results.First(x => x.BarId == _bar3Id);
+            Assert.That(fooBarJoin.Id, Is.EqualTo(_foo3Id));
         }
     }
 }

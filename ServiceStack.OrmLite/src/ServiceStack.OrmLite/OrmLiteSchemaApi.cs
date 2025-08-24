@@ -13,18 +13,20 @@ public static class OrmLiteSchemaApi
     /// Checks whether a Table Exists. E.g:
     /// <para>db.TableExists("Person")</para>
     /// </summary>
-    public static bool TableExists(this IDbConnection dbConn, string tableName, string schema = null)
-    {
-        return dbConn.GetDialectProvider().DoesTableExist(dbConn, tableName, schema);
-    }
+    public static bool TableExists(this IDbConnection dbConn, TableRef tableRef) => 
+        dbConn.GetDialectProvider().DoesTableExist(dbConn, tableRef);
+
+    [Obsolete("Use TableExists(TableRef) instead")]
+    public static bool TableExists(this IDbConnection dbConn, string tableName, string schema = null) => 
+        dbConn.GetDialectProvider().DoesTableExist(dbConn, new (schema, tableName));
 
     /// <summary>
     /// Checks whether a Table Exists. E.g:
     /// <para>db.TableExistsAsync("Person")</para>
     /// </summary>
-    public static Task<bool> TableExistsAsync(this IDbConnection dbConn, string tableName, string schema = null, CancellationToken token=default)
+    public static Task<bool> TableExistsAsync(this IDbConnection dbConn, TableRef tableRef, CancellationToken token=default)
     {
-        return dbConn.GetDialectProvider().DoesTableExistAsync(dbConn, tableName, schema, token);
+        return dbConn.GetDialectProvider().DoesTableExistAsync(dbConn, tableRef, token);
     }
 
     /// <summary>
@@ -35,9 +37,7 @@ public static class OrmLiteSchemaApi
     {
         var dialectProvider = dbConn.GetDialectProvider();
         var modelDef = typeof(T).GetModelDefinition();
-        var schema = modelDef.Schema == null ? null : dialectProvider.NamingStrategy.GetSchemaName(modelDef.Schema);
-        var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef);
-        return dialectProvider.DoesTableExist(dbConn, tableName, schema);
+        return dialectProvider.DoesTableExist(dbConn, new(modelDef));
     }
 
     /// <summary>
@@ -48,28 +48,26 @@ public static class OrmLiteSchemaApi
     {
         var dialectProvider = dbConn.GetDialectProvider();
         var modelDef = typeof(T).GetModelDefinition();
-        var schema = modelDef.Schema == null ? null : dialectProvider.NamingStrategy.GetSchemaName(modelDef.Schema);
-        var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef);
-        return dialectProvider.DoesTableExistAsync(dbConn, tableName, schema, token);
+        return dialectProvider.DoesTableExistAsync(dbConn, new(modelDef), token);
     }
 
     /// <summary>
     /// Checks whether a Table Column Exists. E.g:
     /// <para>db.ColumnExists("Age", "Person")</para>
     /// </summary>
-    public static bool ColumnExists(this IDbConnection dbConn, string columnName, string tableName, string schema = null)
-    {
-        return dbConn.GetDialectProvider().DoesColumnExist(dbConn, columnName, tableName, schema);
-    }
+    public static bool ColumnExists(this IDbConnection dbConn, string columnName, TableRef tableRef) => 
+        dbConn.GetDialectProvider().DoesColumnExist(dbConn, columnName, tableRef);
+
+    [Obsolete("Use ColumnExists(string, TableRef) instead")]
+    public static bool ColumnExists(this IDbConnection dbConn, string columnName, string tableName, string schema = null) => 
+        dbConn.GetDialectProvider().DoesColumnExist(dbConn, columnName, new(schema, tableName));
 
     /// <summary>
     /// Checks whether a Table Column Exists. E.g:
     /// <para>db.ColumnExistsAsync("Age", "Person")</para>
     /// </summary>
-    public static Task<bool> ColumnExistsAsync(this IDbConnection dbConn, string columnName, string tableName, string schema = null, CancellationToken token=default)
-    {
-        return dbConn.GetDialectProvider().DoesColumnExistAsync(dbConn, columnName, tableName, schema, token);
-    }
+    public static Task<bool> ColumnExistsAsync(this IDbConnection dbConn, string columnName, TableRef tableRef, CancellationToken token=default) => 
+        dbConn.GetDialectProvider().DoesColumnExistAsync(dbConn, columnName, tableRef, token);
 
     /// <summary>
     /// Checks whether a Table Column Exists. E.g:
@@ -79,11 +77,9 @@ public static class OrmLiteSchemaApi
     {
         var dialectProvider = dbConn.GetDialectProvider();
         var modelDef = typeof(T).GetModelDefinition();
-        var schema = modelDef.Schema == null ? null : dialectProvider.NamingStrategy.GetSchemaName(modelDef.Schema);
-        var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef);
         var fieldDef = modelDef.GetFieldDefinition(field);
         var fieldName = dialectProvider.NamingStrategy.GetColumnName(fieldDef.FieldName);
-        return dialectProvider.DoesColumnExist(dbConn, fieldName, tableName, schema);
+        return dialectProvider.DoesColumnExist(dbConn, fieldName, new(modelDef));
     }
 
     /// <summary>
@@ -94,11 +90,9 @@ public static class OrmLiteSchemaApi
     {
         var dialectProvider = dbConn.GetDialectProvider();
         var modelDef = typeof(T).GetModelDefinition();
-        var schema = modelDef.Schema == null ? null : dialectProvider.NamingStrategy.GetSchemaName(modelDef.Schema);
-        var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef);
         var fieldDef = modelDef.GetFieldDefinition(field);
         var fieldName = dialectProvider.NamingStrategy.GetColumnName(fieldDef.FieldName);
-        return dialectProvider.DoesColumnExistAsync(dbConn, fieldName, tableName, schema, token);
+        return dialectProvider.DoesColumnExistAsync(dbConn, fieldName, new(modelDef), token);
     }
         
     /// <summary>

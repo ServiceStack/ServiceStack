@@ -294,6 +294,7 @@ public class DefaultValueTests(DialectContext context) : OrmLiteProvidersTestBas
         Assert.That(rows.All(x => x.DefaultString == "String"));
     }
     
+    [Alias(nameof(TableV1))]
     public class TableV1
     {
         public int Id { get; set; }

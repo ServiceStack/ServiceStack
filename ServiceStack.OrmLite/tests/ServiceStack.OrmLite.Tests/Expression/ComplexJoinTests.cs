@@ -193,38 +193,37 @@ public class ComplexJoinTests(DialectContext context) : OrmLiteProvidersTestBase
     [Test]
     public void ComplexJoin_with_JoinSqlBuilder()
     {
-        using (var db = OpenDbConnection())
-        {
-            InitTables(db);
+        using var db = OpenDbConnection();
+        InitTables(db);
+        // OrmLiteUtils.PrintSql();
 
-            /* This gives the expected values for BazId */
-            var jn = new JoinSqlBuilder<JoinResult, FooBar>(DialectProvider)
-                .Join<FooBar, BarJoin>(
-                    sourceColumn: dp => dp.BarId,
-                    destinationColumn: p => p.Id,
-                    destinationTableColumnSelection: p => new { BarName = p.Name, BarId = p.Id })
-                .Join<FooBar, FooBarBaz>(
-                    sourceColumn: dp => dp.Id,
-                    destinationColumn: dpss => dpss.FooBarId,
-                    destinationTableColumnSelection: dpss => new { dpss.Amount, FooBarBazId = dpss.Id });
-            jn.Join<FooBarBaz, Baz>(
-                sourceColumn: dpss => dpss.BazId,
-                destinationColumn: ss => ss.Id,
-                destinationTableColumnSelection: ss => new { BazId = ss.Id, BazName = ss.Name });
-            jn.Select<FooBar>(dp => new { Id = dp.Id, });
+        /* This gives the expected values for BazId */
+        var jn = new JoinSqlBuilder<JoinResult, FooBar>(DialectProvider)
+            .Join<FooBar, BarJoin>(
+                sourceColumn: dp => dp.BarId,
+                destinationColumn: p => p.Id,
+                destinationTableColumnSelection: p => new { BarName = p.Name, BarId = p.Id })
+            .Join<FooBar, FooBarBaz>(
+                sourceColumn: dp => dp.Id,
+                destinationColumn: dpss => dpss.FooBarId,
+                destinationTableColumnSelection: dpss => new { dpss.Amount, FooBarBazId = dpss.Id });
+        jn.Join<FooBarBaz, Baz>(
+            sourceColumn: dpss => dpss.BazId,
+            destinationColumn: ss => ss.Id,
+            destinationTableColumnSelection: ss => new { BazId = ss.Id, BazName = ss.Name });
+        jn.Select<FooBar>(dp => new { dp.Id, });
 
-            var results = db.Select<JoinResult>(jn.ToSql());
-            db.GetLastSql().Print();
+        var results = db.Select<JoinResult>(jn.ToSql());
+        db.GetLastSql().Print();
 
-            results.PrintDump();
+        results.PrintDump();
 
-            var fooBarBaz = results.First(x => x.FooBarBazId == _fooBarBaz1Id);
-            Assert.That(fooBarBaz.BazId, Is.EqualTo(_baz2Id));
-            fooBarBaz = results.First(x => x.FooBarBazId == _fooBarBaz2Id);
-            Assert.That(fooBarBaz.BazId, Is.EqualTo(_baz1Id));
-            fooBarBaz = results.First(x => x.FooBarBazId == _fooBarBaz2Id);
-            Assert.That(fooBarBaz.BazId, Is.EqualTo(_baz1Id));
-        }
+        var fooBarBaz = results.First(x => x.FooBarBazId == _fooBarBaz1Id);
+        Assert.That(fooBarBaz.BazId, Is.EqualTo(_baz2Id));
+        fooBarBaz = results.First(x => x.FooBarBazId == _fooBarBaz2Id);
+        Assert.That(fooBarBaz.BazId, Is.EqualTo(_baz1Id));
+        fooBarBaz = results.First(x => x.FooBarBazId == _fooBarBaz2Id);
+        Assert.That(fooBarBaz.BazId, Is.EqualTo(_baz1Id));
     }
 #pragma warning restore 618
 

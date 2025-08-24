@@ -363,7 +363,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual object FromDbValue(object value, Type type)
     {
-        if (value == null || value is DBNull)
+        if (value is null or DBNull)
             return null;
 
         var converter = GetConverterBestMatch(type);
@@ -398,11 +398,50 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         return "'" + paramValue.Replace("'", "''") + "'";
     }
 
-    public virtual string GetSchemaName(string schema)
-    {
-        return NamingStrategy.GetSchemaName(schema);
-    }
+    public virtual string GetSchemaName(string schema) => NamingStrategy.GetSchemaName(schema);
 
+    /// <summary>
+    /// Returns an unquoted table name (inc schema if exists), using naming strategy 
+    /// </summary>
+    public virtual string GetTableName(TableRef tableRef)
+    {
+        if (tableRef.QuotedName != null)
+            return tableRef.QuotedName.Replace("\"","");
+
+        var schema = tableRef.GetSchemaName();
+        var alias = tableRef.ModelDef?.Alias; 
+        if (alias != null)
+            return schema != null
+                ? NamingStrategy.GetSchemaName(schema) + "." + NamingStrategy.GetAlias(alias)
+                : NamingStrategy.GetAlias(alias);
+
+        var tableName = tableRef.GetTableName();
+        return schema != null
+            ? NamingStrategy.GetSchemaName(schema) + "." + NamingStrategy.GetTableName(tableName)
+            : NamingStrategy.GetTableName(tableName);
+    }
+    
+    /// <summary>
+    /// Return unquoted table name only (i.e. without schema), using naming strategy
+    /// </summary>
+    /// <param name="tableRef"></param>
+    /// <returns></returns>
+    public virtual string GetTableNameOnly(TableRef tableRef)
+    {
+        return tableRef.QuotedName?.LastRightPart('.').StripDbQuotes() ?? 
+               (tableRef.ModelDef != null
+                   ? NamingStrategy.GetTableName(tableRef.ModelDef)
+                   : NamingStrategy.GetTableName(tableRef.Name));
+    }
+    
+    public virtual string GetSchemaName(TableRef tableRef) => 
+        NamingStrategy.GetSchemaName(tableRef.Schema ?? tableRef.ModelDef?.Schema); 
+    
+    /// <summary>
+    /// Returns quoted table name
+    /// </summary>
+    /// <param name="modelType"></param>
+    /// <returns></returns>
     public virtual string GetTableName(Type modelType) => GetTableName(modelType.GetModelDefinition());
 
     public virtual string GetTableName(ModelDefinition modelDef) => modelDef.Alias != null
@@ -422,10 +461,6 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             ? $"{QuoteIfRequired(schema)}.{QuoteIfRequired(alias)}"
             : QuoteIfRequired(alias);
     }
-
-    public virtual string GetTableName(ModelDefinition modelDef, bool useStrategy) => modelDef.Alias != null 
-        ? GetTableAlias(modelDef.Alias, modelDef.Schema, useStrategy)
-        : GetTableName(modelDef.Name, modelDef.Schema, useStrategy);
 
     public virtual string GetTableAlias(string alias, string schema = null) =>
         GetTableAlias(alias, schema, useStrategy: true);
@@ -447,7 +482,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             : QuoteIfRequired(table);
     }
 
-    public virtual string GetQuotedTableName(Type modelType) => GetQuotedTableName(modelType.GetModelDefinition());
+    public virtual string GetQuotedTableName(Type modelType) => 
+        GetQuotedTableName(modelType.GetModelDefinition());
         
     public virtual string GetQuotedTableName(ModelDefinition modelDef)
     {
@@ -508,8 +544,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             : NamingStrategy.GetColumnName(fieldDef.Name);
     }
 
-    public virtual bool ShouldQuote(string name) => !string.IsNullOrEmpty(name) && 
-                                                    (name.IndexOf(' ') >= 0 || name.IndexOf('.') >= 0);
+    public virtual bool ShouldQuote(string name) => 
+        !string.IsNullOrEmpty(name) && (name.IndexOf(' ') >= 0 || name.IndexOf('.') >= 0);
 
     public virtual string QuoteIfRequired(string name)
     {
@@ -1671,7 +1707,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual string GetUniqueConstraints(ModelDefinition modelDef)
     {
         var constraints = modelDef.UniqueConstraints.Map(x => 
-            $"CONSTRAINT {GetUniqueConstraintName(x, GetTableName(modelDef).StripDbQuotes())} UNIQUE ({x.FieldNames.Map(f => modelDef.GetQuotedName(f,this)).Join(",")})" );
+            $"CONSTRAINT {GetUniqueConstraintName(x, GetTableNameOnly(new(modelDef)))} UNIQUE ({x.FieldNames.Map(f => modelDef.GetQuotedName(f,this)).Join(",")})" );
 
         return constraints.Count > 0
             ? constraints.Join(",\n")
@@ -1738,13 +1774,16 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
                 var parts = fieldName.SplitOnLast(' ');
                 if (parts.Length == 2 && (parts[1].ToLower().StartsWith("desc") || parts[1].ToLower().StartsWith("asc")))
                 {
-                    sb.Append(GetQuotedColumnName(parts[0]))
+                    var name = parts[0];
+                    var fieldDef = modelDef.GetFieldDefinition(name);
+                    sb.Append(fieldDef != null ? GetQuotedColumnName(fieldDef) : GetQuotedColumnName(name))
                         .Append(' ')
                         .Append(parts[1]);
                 }
                 else
                 {
-                    sb.Append(GetQuotedColumnName(fieldName));
+                    var fieldDef = modelDef.GetFieldDefinition(fieldName);
+                    sb.Append(fieldDef != null ? GetQuotedColumnName(fieldDef) : GetQuotedColumnName(fieldName));
                 }
             }
 
@@ -1757,34 +1796,34 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         return sqlIndexes;
     }
 
-    public virtual bool DoesTableExist(IDbConnection db, string tableName, string schema = null)
+    public virtual bool DoesTableExist(IDbConnection db, TableRef tableRef)
     {
-        return db.Exec(dbCmd => DoesTableExist(dbCmd, tableName, schema));
+        return db.Exec(dbCmd => DoesTableExist(dbCmd, tableRef));
     }
 
-    public virtual async Task<bool> DoesTableExistAsync(IDbConnection db, string tableName, string schema = null, CancellationToken token = default)
+    public virtual async Task<bool> DoesTableExistAsync(IDbConnection db, TableRef tableRef, CancellationToken token = default)
     {
-        return await db.Exec(async dbCmd => await DoesTableExistAsync(dbCmd, tableName, schema, token));
+        return await db.Exec(async dbCmd => await DoesTableExistAsync(dbCmd, tableRef, token));
     }
 
-    public virtual bool DoesTableExist(IDbCommand dbCmd, string tableName, string schema = null)
+    public virtual bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
     {
         throw new NotImplementedException();
     }
 
-    public virtual Task<bool> DoesTableExistAsync(IDbCommand dbCmd, string tableName, string schema = null, CancellationToken token = default)
+    public virtual Task<bool> DoesTableExistAsync(IDbCommand dbCmd, TableRef tableRef, CancellationToken token = default)
     {
-        return DoesTableExist(dbCmd, tableName, schema).InTask();
+        return DoesTableExist(dbCmd, tableRef).InTask();
     }
 
-    public virtual bool DoesColumnExist(IDbConnection db, string columnName, string tableName, string schema = null)
+    public virtual bool DoesColumnExist(IDbConnection db, string columnName, TableRef tableRef)
     {
         throw new NotImplementedException();
     }
 
-    public virtual Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, string tableName, string schema = null, CancellationToken token = default)
+    public virtual Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, TableRef tableRef, CancellationToken token = default)
     {
-        return DoesColumnExist(db, columnName, tableName, schema).InTask();
+        return DoesColumnExist(db, columnName, tableRef).InTask();
     }
 
     public virtual bool DoesSequenceExist(IDbCommand dbCmd, string sequence)
@@ -1820,6 +1859,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     protected virtual string ToCreateIndexStatement(bool isUnique, string indexName, ModelDefinition modelDef, string fieldName,
         bool isCombined = false, FieldDefinition fieldDef = null)
     {
+        fieldDef ??= modelDef.GetFieldDefinition(fieldName);
         return $"CREATE {(isUnique ? "UNIQUE" : "")}" +
                (fieldDef?.IsClustered == true ? " CLUSTERED" : "") +
                (fieldDef?.IsNonClustered == true ? " NONCLUSTERED" : "") +

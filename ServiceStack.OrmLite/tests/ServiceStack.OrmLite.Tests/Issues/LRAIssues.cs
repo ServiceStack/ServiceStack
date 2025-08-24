@@ -18,62 +18,58 @@ namespace ServiceStack.OrmLite.Tests.Issues
         [Test]
         public void Can_run_LRA_Query()
         {
-            using (var db = OpenDbConnection())
-            {
-                CreateTables(db);
+            using var db = OpenDbConnection();
+            CreateTables(db);
 
-                var query = db.From<LRAAnalisi>()
-                    .Join<LRAAnalisi, LRAContenitore>((ana, cont) => ana.ContenitoreId == cont.Id)
-                    .Join<LRAContenitore, LRARichiesta>((cont, ric) => cont.RichiestaId == ric.Id)
-                    .Join<LRARichiesta, LRAPaziente>((ric, paz) => ric.PazienteId == paz.Id)
-                    .Select<LRAAnalisi, LRAContenitore, LRARichiesta, LRAPaziente>((ana, cont, ric, paz) =>
-                        new
-                        {
-                            AnalisiId = ana.Id,
-                            ContenitoreId = cont.Id,
-                            RichiestaId = ric.Id,
-                            DataAccettazioneRichiesta = ric.DataOraAccettazione,
-                            DataCheckinContenitore = cont.DataOraPrimoCheckin,
-                            DataEsecuzioneAnalisi = ana.DataOraEsecuzione,
-                            DataPrelievoContenitore = cont.DataOraPrelievo,
-                            DataValidazioneAnalisi = ana.DataOraValidazione,
-                            sessoPaziente = paz.Sesso,
-                            dataDiNascitaPaziente = paz.DataDiNascita,
-                            etaPazienteRichiesta = ric.EtaPaziente,
-                            dataOraAccettazioneRichiesta = ric.DataOraAccettazione,
-                            unitaMisuraEtaPaziente = ric.UnitaDiMisuraEtaPaziente,
-                            settimaneGravidanza = ric.SettimaneGravidanza,
-                            repartoId = ric.RepartoId,
-                            prioritaRichiesta = ric.PrioritaId,
-                            laboratorioRichiedente = ric.LaboratorioRichiedenteId,
-                            prioritaContenitore = cont.PrioritaId,
-                            idLaboratorioEsecutoreCandidatoAnalisi = ana.LaboratorioEsecutoreCandidatoId
-                        });
-            }
+            var query = db.From<LRAAnalisi>()
+                .Join<LRAAnalisi, LRAContenitore>((ana, cont) => ana.ContenitoreId == cont.Id)
+                .Join<LRAContenitore, LRARichiesta>((cont, ric) => cont.RichiestaId == ric.Id)
+                .Join<LRARichiesta, LRAPaziente>((ric, paz) => ric.PazienteId == paz.Id)
+                .Select<LRAAnalisi, LRAContenitore, LRARichiesta, LRAPaziente>((ana, cont, ric, paz) =>
+                    new
+                    {
+                        AnalisiId = ana.Id,
+                        ContenitoreId = cont.Id,
+                        RichiestaId = ric.Id,
+                        DataAccettazioneRichiesta = ric.DataOraAccettazione,
+                        DataCheckinContenitore = cont.DataOraPrimoCheckin,
+                        DataEsecuzioneAnalisi = ana.DataOraEsecuzione,
+                        DataPrelievoContenitore = cont.DataOraPrelievo,
+                        DataValidazioneAnalisi = ana.DataOraValidazione,
+                        sessoPaziente = paz.Sesso,
+                        dataDiNascitaPaziente = paz.DataDiNascita,
+                        etaPazienteRichiesta = ric.EtaPaziente,
+                        dataOraAccettazioneRichiesta = ric.DataOraAccettazione,
+                        unitaMisuraEtaPaziente = ric.UnitaDiMisuraEtaPaziente,
+                        settimaneGravidanza = ric.SettimaneGravidanza,
+                        repartoId = ric.RepartoId,
+                        prioritaRichiesta = ric.PrioritaId,
+                        laboratorioRichiedente = ric.LaboratorioRichiedenteId,
+                        prioritaContenitore = cont.PrioritaId,
+                        idLaboratorioEsecutoreCandidatoAnalisi = ana.LaboratorioEsecutoreCandidatoId
+                    });
         }
 
         [Test]
         public void Can_run_expression_using_captured_lambda_params()
         {
-            using (var db = OpenDbConnection())
-            {
-                CreateTables(db);
+            using var db = OpenDbConnection();
+            CreateTables(db);
 
-                var idContenitore = 1;
+            var idContenitore = 1;
                 
-                var q = db.From<LRAAnalisi>()
-                    .Where(ana => ana.ContenitoreId == idContenitore)
-                    .And(ana => !Sql.In(ana.Id, db.From<LRAContenitore>()
-                            .Where(ris => ris.Id == ana.ContenitoreId)
-                            .Select(ris => new { Id = ris.Id })
-                        )
+            var q = db.From<LRAAnalisi>()
+                .Where(ana => ana.ContenitoreId == idContenitore)
+                .And(ana => !Sql.In(ana.Id, db.From<LRAContenitore>()
+                        .Where(ris => ris.Id == ana.ContenitoreId)
+                        .Select(ris => new { ris.Id })
                     )
-                    .Select(x => new { A = 1 });
+                )
+                .Select(x => new { A = 1 });
 
-                var sql = q.ToSelectStatement();
-                sql.Print();
-                Assert.That(sql, Is.Not.Null);
-            }
+            var sql = q.ToSelectStatement();
+            sql.Print();
+            Assert.That(sql, Is.Not.Null);
         }
         
         [Test]
@@ -82,86 +78,80 @@ namespace ServiceStack.OrmLite.Tests.Issues
             var statements = new List<string>();
             OrmLiteConfig.BeforeExecFilter = cmd => statements.Add(cmd.GetDebugString());
 
-            using (var db = OpenDbConnection())
+            using var db = OpenDbConnection();
+            var ADeviceId = 1;
+                
+            var q = db.From<LRDDevice>();
+            q.LeftJoin<LRDDevice,LRDConnessione>((a,b)=>a.Id==b.DeviceId);
+            q.LeftJoin<LRDDevice, LRAAlert>((a, b) => a.Id == b.DeviceID && b.Visto==(int)SiNo.No);
+            q.Where<LRDDevice>(x => x.Id == ADeviceId);
+            q.GroupBy<LRDDevice,LRDConnessione, LRAAlert>((dev,con, ale) => new {dev.Id, con.DeviceId, ale.DeviceID,ale.Tipo });
+            q.Select<LRDDevice, LRDConnessione, LRAAlert>((dev, con, ale) => new //DeviceDashboardDTO
             {
-                var ADeviceId = 1;
-                
-                var q = db.From<LRDDevice>();
-                q.LeftJoin<LRDDevice,LRDConnessione>((a,b)=>a.Id==b.DeviceId);
-                q.LeftJoin<LRDDevice, LRAAlert>((a, b) => a.Id == b.DeviceID && b.Visto==(int)SiNo.No);
-                q.Where<LRDDevice>(x => x.Id == ADeviceId);
-                q.GroupBy<LRDDevice,LRDConnessione, LRAAlert>((dev,con, ale) => new {dev.Id, con.DeviceId, ale.DeviceID,ale.Tipo });
-                q.Select<LRDDevice, LRDConnessione, LRAAlert>((dev, con, ale) => new //DeviceDashboardDTO
-                {
-                    DeviceId = dev.Id,
-                    //Device = dev,
-                    StatoLinea = Sql.Min(con.StatoConnessione),
-                    StatoQC = (Sql.Count(ale.Tipo == (int)TipoAlert.AlertQC ? ale.Id : 0) > 0 ? (int)SiNo.Si : (int)SiNo.No),
-                    StatoWarning = (Sql.Count(ale.Tipo == (int)TipoAlert.WarningDevice ? ale.Id : 0) > 0 ? (int)SiNo.Si : (int)SiNo.No)
-                });
+                DeviceId = dev.Id,
+                //Device = dev,
+                StatoLinea = Sql.Min(con.StatoConnessione),
+                StatoQC = (Sql.Count(ale.Tipo == (int)TipoAlert.AlertQC ? ale.Id : 0) > 0 ? (int)SiNo.Si : (int)SiNo.No),
+                StatoWarning = (Sql.Count(ale.Tipo == (int)TipoAlert.WarningDevice ? ale.Id : 0) > 0 ? (int)SiNo.Si : (int)SiNo.No)
+            });
 
 
-                try
-                {
-                    var results = db.Select<DeviceDashboardDTO>(q);
-                }
-                catch {} // no tables
-
-                var lastStatement = statements.Last();
-                lastStatement.Print();
-                
-                lastStatement = lastStatement.NormalizeSql();
-                Assert.That(lastStatement, Does.Contain("as deviceid"));
-                Assert.That(lastStatement, Does.Contain("as statolinea"));
-                Assert.That(lastStatement, Does.Contain("as statoqc"));
-                Assert.That(lastStatement, Does.Contain("as statowarning"));
+            try
+            {
+                var results = db.Select<DeviceDashboardDTO>(q);
             }
+            catch {} // no tables
+
+            var lastStatement = statements.Last();
+            lastStatement.Print();
+                
+            lastStatement = lastStatement.NormalizeSql();
+            Assert.That(lastStatement, Does.Contain("as deviceid"));
+            Assert.That(lastStatement, Does.Contain("as statolinea"));
+            Assert.That(lastStatement, Does.Contain("as statoqc"));
+            Assert.That(lastStatement, Does.Contain("as statowarning"));
         }
 
         [Test]
         public async Task Does_RowCount_LRARichiesta_Async()
         {
-            using (var db = OpenDbConnection())
-            {
-               CreateTables(db);
+            using var db = OpenDbConnection();
+            CreateTables(db);
                 
-                var q = db.From<LRARichiesta>()
-                    .Where(x => x.Id > 0);
+            var q = db.From<LRARichiesta>()
+                .Where(x => x.Id > 0);
 
-                var result = await db.RowCountAsync(q);                
-            }
+            var result = await db.RowCountAsync(q);
         }
 
         [Test]
         public void Does_InsertIntoSelect_LRARichiesta()
-        {            
-            using (var db = OpenDbConnection())
-            {
-                RecreateLRARichiesta(db);
+        {
+            using var db = OpenDbConnection();
+            RecreateLRARichiesta(db);
 
-                long numeroRichieste = db.Count<LRARichiesta>();
+            long numeroRichieste = db.Count<LRARichiesta>();
 
-                var q = db.From<LRARichiesta>()
-                    .Select(ric => new //LRARisultato
-                    {
-                        AnalisiId = 1,
-                        Commento = ric.Commento,
-                        TipoValore = 1,
-                        Stato = 1,
-                        RisultatoId = 1,
-                        DataOraRicezione = DateTime.UtcNow,
-                        DataModifica = DateTime.UtcNow,
-                        VersioneRecord = 1,
-                        InviareALIS = 1,
-                        RisultatoPrincipale = 1,
-                        TipoInserimento = 1,
-                        Citrato = 1,
-                    });
+            var q = db.From<LRARichiesta>()
+                .Select(ric => new //LRARisultato
+                {
+                    AnalisiId = 1,
+                    Commento = ric.Commento,
+                    TipoValore = 1,
+                    Stato = 1,
+                    RisultatoId = 1,
+                    DataOraRicezione = DateTime.UtcNow,
+                    DataModifica = DateTime.UtcNow,
+                    VersioneRecord = 1,
+                    InviareALIS = 1,
+                    RisultatoPrincipale = 1,
+                    TipoInserimento = 1,
+                    Citrato = 1,
+                });
 
-                long result = db.InsertIntoSelect<LRARisultato>(q);
+            long result = db.InsertIntoSelect<LRARisultato>(q);
 
-                Assert.That(result, Is.EqualTo(numeroRichieste));
-            }
+            Assert.That(result, Is.EqualTo(numeroRichieste));
         }
 
         private static void RecreateLRARichiesta(IDbConnection db)
@@ -187,34 +177,32 @@ namespace ServiceStack.OrmLite.Tests.Issues
 
         [Test]
         public async Task Does_InsertIntoSelect_LRARichiesta_Async()
-        {            
-            using (var db = OpenDbConnection())
-            {
-                RecreateLRARichiesta(db);
+        {
+            using var db = OpenDbConnection();
+            RecreateLRARichiesta(db);
 
-                long numeroRichieste = await db.CountAsync<LRARichiesta>();
+            long numeroRichieste = await db.CountAsync<LRARichiesta>();
 
-                var q = db.From<LRARichiesta>()
-                    .Select(ric => new //LRARisultato
-                    {
-                        AnalisiId = 1,
-                        Commento = ric.Commento,
-                        TipoValore = 1,
-                        Stato = 1,
-                        RisultatoId = 1,
-                        DataOraRicezione = DateTime.UtcNow,
-                        DataModifica = DateTime.UtcNow,
-                        VersioneRecord = 1,
-                        InviareALIS = 1,
-                        RisultatoPrincipale = 1,
-                        TipoInserimento = 1,
-                        Citrato = 1,
-                    });
+            var q = db.From<LRARichiesta>()
+                .Select(ric => new //LRARisultato
+                {
+                    AnalisiId = 1,
+                    Commento = ric.Commento,
+                    TipoValore = 1,
+                    Stato = 1,
+                    RisultatoId = 1,
+                    DataOraRicezione = DateTime.UtcNow,
+                    DataModifica = DateTime.UtcNow,
+                    VersioneRecord = 1,
+                    InviareALIS = 1,
+                    RisultatoPrincipale = 1,
+                    TipoInserimento = 1,
+                    Citrato = 1,
+                });
 
-                long result = await db.InsertIntoSelectAsync<LRARisultato>(q);
+            long result = await db.InsertIntoSelectAsync<LRARisultato>(q);
 
-                Assert.That(result, Is.EqualTo(numeroRichieste));
-            }
+            Assert.That(result, Is.EqualTo(numeroRichieste));
         }
         
         private static void CreateTables(IDbConnection db)
@@ -272,60 +260,56 @@ namespace ServiceStack.OrmLite.Tests.Issues
         [Test]
         public void Table_Alias()
         {
-            using (var db = OpenDbConnection())
-            {
-                InitAliasTables(db);
+            using var db = OpenDbConnection();
+            InitAliasTables(db);
                 
-                var q = db.From<LRDAnalisi>(options => {
-                        options.SetTableAlias("dana");
-                        options.UseSelectPropertiesAsAliases = true;
-                    })
-                    .Join<LRDAnalisi, LRDContenitore>((dana, dcont) => dana.ContenitoreId == dcont.Id, db.TableAlias("c"))
-                    .Join<LRDAnalisi, LRDProfiloAnalisi>((dana, dprofana) => dana.Id == dprofana.AnalisiId, db.TableAlias("dprofana"))
-                    .Where<LRDProfiloAnalisi>(dprofana => Sql.TableAlias(dprofana.ProfiloAnalisiId, "dprofana") == null)
-                    .SelectDistinct<LRDAnalisi, LRDProfiloAnalisi, LRDContenitore>((dana, dprofana, dcont) =>
-                        new //ProfiloAnalisiDTO
-                        {
-                            Id = Sql.TableAlias(dprofana.Id, "dprofana"),
-                            AnalisiId = dana.Id,
-                            Codice = dana.Codice,
-                            Descrizione = dana.Descrizione,
-                            ContenitoreId = dana.ContenitoreId,
-                            ContenitoreCodice = Sql.TableAlias(dcont.Codice, "c"),
-                            ContenitoreDescrizione = Sql.TableAlias(dcont.Descrizione, "c"),
-                            VersioneRecord = Sql.TableAlias(dprofana.VersioneRecord, "dprofana")
-                        });
+            var q = db.From<LRDAnalisi>(options => {
+                    options.SetTableAlias("dana");
+                    options.UseSelectPropertiesAsAliases = true;
+                })
+                .Join<LRDAnalisi, LRDContenitore>((dana, dcont) => dana.ContenitoreId == dcont.Id, db.TableAlias("c"))
+                .Join<LRDAnalisi, LRDProfiloAnalisi>((dana, dprofana) => dana.Id == dprofana.AnalisiId, db.TableAlias("dprofana"))
+                .Where<LRDProfiloAnalisi>(dprofana => Sql.TableAlias(dprofana.ProfiloAnalisiId, "dprofana") == null)
+                .SelectDistinct<LRDAnalisi, LRDProfiloAnalisi, LRDContenitore>((dana, dprofana, dcont) =>
+                    new //ProfiloAnalisiDTO
+                    {
+                        Id = Sql.TableAlias(dprofana.Id, "dprofana"),
+                        AnalisiId = dana.Id,
+                        Codice = dana.Codice,
+                        Descrizione = dana.Descrizione,
+                        ContenitoreId = dana.ContenitoreId,
+                        ContenitoreCodice = Sql.TableAlias(dcont.Codice, "c"),
+                        ContenitoreDescrizione = Sql.TableAlias(dcont.Descrizione, "c"),
+                        VersioneRecord = Sql.TableAlias(dprofana.VersioneRecord, "dprofana")
+                    });
                 
-                var result = db.Select<ProfiloAnalisiDTO>(q);
-            }
+            var result = db.Select<ProfiloAnalisiDTO>(q);
         }
         
         [Test]
         public void Join_Alias()
         {
-            using (var db = OpenDbConnection())
-            {
-                InitAliasTables(db);
+            using var db = OpenDbConnection();
+            InitAliasTables(db);
 
-                var q = db.From<LRDAnalisi>()
-                    .Join<LRDAnalisi, LRDContenitore>((dana, dcont) => dana.ContenitoreId == dcont.Id, db.JoinAlias("c"))
-                    .Join<LRDAnalisi, LRDProfiloAnalisi>((dana, dprofana) => dana.Id == dprofana.AnalisiId, db.JoinAlias("dprofana"))
-                    .Where<LRDProfiloAnalisi>(dprofana => Sql.JoinAlias(dprofana.ProfiloAnalisiId, "dprofana") == null)
-                    .SelectDistinct<LRDAnalisi, LRDProfiloAnalisi, LRDContenitore>((dana, dprofana, dcont) =>
-                        new //ProfiloAnalisiDTO
-                        {
-                            Id = Sql.JoinAlias(dprofana.Id, "dprofana"),
-                            AnalisiId = dana.Id,
-                            Codice = dana.Codice,
-                            Descrizione = dana.Descrizione,
-                            ContenitoreId = Sql.JoinAlias(dcont.Id, "c"),
-                            ContenitoreCodice = Sql.JoinAlias(dcont.Codice, "c"),
-                            ContenitoreDescrizione = Sql.JoinAlias(dcont.Descrizione, "c"),
-                            VersioneRecord = Sql.JoinAlias(dprofana.VersioneRecord, "dprofana")
-                        });
+            var q = db.From<LRDAnalisi>()
+                .Join<LRDAnalisi, LRDContenitore>((dana, dcont) => dana.ContenitoreId == dcont.Id, db.JoinAlias("c"))
+                .Join<LRDAnalisi, LRDProfiloAnalisi>((dana, dprofana) => dana.Id == dprofana.AnalisiId, db.JoinAlias("dprofana"))
+                .Where<LRDProfiloAnalisi>(dprofana => Sql.JoinAlias(dprofana.ProfiloAnalisiId, "dprofana") == null)
+                .SelectDistinct<LRDAnalisi, LRDProfiloAnalisi, LRDContenitore>((dana, dprofana, dcont) =>
+                    new //ProfiloAnalisiDTO
+                    {
+                        Id = Sql.JoinAlias(dprofana.Id, "dprofana"),
+                        AnalisiId = dana.Id,
+                        Codice = dana.Codice,
+                        Descrizione = dana.Descrizione,
+                        ContenitoreId = Sql.JoinAlias(dcont.Id, "c"),
+                        ContenitoreCodice = Sql.JoinAlias(dcont.Codice, "c"),
+                        ContenitoreDescrizione = Sql.JoinAlias(dcont.Descrizione, "c"),
+                        VersioneRecord = Sql.JoinAlias(dprofana.VersioneRecord, "dprofana")
+                    });
                 
-                var result = db.Select<ProfiloAnalisiDTO>(q);
-            }
+            var result = db.Select<ProfiloAnalisiDTO>(q);
         }        
     }
     

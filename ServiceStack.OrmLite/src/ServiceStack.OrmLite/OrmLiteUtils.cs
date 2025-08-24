@@ -836,7 +836,7 @@ public static class OrmLiteUtils
         return StringBuilderCache.ReturnAndFree(sb).Trim();
     }
 
-    private static readonly char[] QuotedChars = ['"', '`', '[', ']'];
+    internal static readonly char[] QuotedChars = ['"', '`', '[', ']'];
     
     public static bool IsQuoted(string symbol) => symbol.IndexOfAny(QuotedChars) >= 0;
 
