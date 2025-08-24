@@ -15,7 +15,6 @@ namespace ServiceStack.OrmLite.MySql
 {
     public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProviderBase<TDialect> where TDialect : IOrmLiteDialectProvider
     {
-
         private const string TextColumnDefinition = "TEXT";
 
         public MySqlDialectProviderBase()
@@ -379,9 +378,40 @@ namespace ServiceStack.OrmLite.MySql
 
             return base.GetQuotedValue(value, fieldType);
         }
+
+        public override string GetTableName(TableRef tableRef)
+        {
+	        if (tableRef.QuotedName != null)
+		        return tableRef.QuotedName.Replace("\"","");
+	        var alias = tableRef.ModelDef?.Alias; 
+	        if (alias != null)
+		        return tableRef.ModelDef?.Schema != null
+			        ? NamingStrategy.GetSchemaName(tableRef.ModelDef.Schema) + "_" + NamingStrategy.GetAlias(alias)
+			        : NamingStrategy.GetAlias(alias);
         
+	        var schema = tableRef.ModelDef?.Schema ?? tableRef.Schema;
+	        var tableName = tableRef.ModelDef?.Name ?? tableRef.Name;
+	        return schema != null
+		        ? NamingStrategy.GetSchemaName(schema) + "_" + NamingStrategy.GetTableName(tableName)
+		        : NamingStrategy.GetTableName(tableName);
+        }
+
         public override string GetTableName(string table, string schema = null) => 
 	        GetTableName(table, schema, useStrategy:true);
+
+        public override string GetTableAlias(string alias, string? schema, bool useStrategy)
+        {
+	        if (useStrategy)
+	        {
+		        return schema != null && !alias.StartsWithIgnoreCase(schema + "_")
+			        ? $"{NamingStrategy.GetSchemaName(schema)}_{NamingStrategy.GetAlias(alias)}"
+			        : NamingStrategy.GetAlias(alias);
+	        }
+            
+	        return schema != null && !alias.StartsWithIgnoreCase(schema + "_")
+		        ? $"{schema}_{alias}"
+		        : alias;
+        }
 
         public override string GetTableName(string table, string schema, bool useStrategy)
         {
@@ -397,16 +427,18 @@ namespace ServiceStack.OrmLite.MySql
                 : QuoteIfRequired(table);
         }
 
+        public override string GetQuotedTableAlias(string tableName, string? schema = null) =>
+	        GetQuotedName(GetTableAlias(tableName, schema));
+
+        public override string GetQuotedTableName(string tableName, string? schema = null) =>
+	        GetQuotedName(GetTableName(tableName, schema));
+
+        
         public override bool ShouldQuote(string name) => name != null && 
             (ReservedWords.Contains(name) || name.IndexOf(' ') >= 0 || name.IndexOf('.') >= 0);
 
         public override string GetQuotedName(string name) => name == null ? null : name.FirstCharEquals('`') 
 	        ? name : '`' + name + '`';
-
-        public override string GetQuotedTableName(string tableName, string schema = null)
-        {
-            return GetQuotedName(GetTableName(tableName, schema));
-        }
 
         public override SqlExpression<T> SqlExpression<T>()
         {
@@ -433,7 +465,7 @@ namespace ServiceStack.OrmLite.MySql
         public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
         {
 	        var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
-		        .SqlFmt(GetTableNameOnly(tableRef), dbCmd.Connection.Database);
+		        .SqlFmt(GetTableName(tableRef), dbCmd.Connection.Database);
 
 	        var result = dbCmd.ExecLongScalar(sql);
 
@@ -443,7 +475,7 @@ namespace ServiceStack.OrmLite.MySql
         public override async Task<bool> DoesTableExistAsync(IDbCommand dbCmd, TableRef tableRef, CancellationToken token=default)
         {
 	        var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
-		        .SqlFmt(GetTableNameOnly(tableRef), dbCmd.Connection.Database);
+		        .SqlFmt(GetTableName(tableRef), dbCmd.Connection.Database);
 
 	        var result = await dbCmd.ExecLongScalarAsync(sql, token);
 
@@ -452,10 +484,10 @@ namespace ServiceStack.OrmLite.MySql
 
         public override bool DoesColumnExist(IDbConnection db, string columnName, TableRef tableRef)
         {
-	        var tableName = GetTableNameOnly(tableRef);
+	        var tableName = GetTableName(tableRef);
 	        var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS"
 	                  + " WHERE TABLE_NAME = @tableName AND COLUMN_NAME = @columnName AND TABLE_SCHEMA = @schema"
-		                  .SqlFmt(GetTableNameOnly(tableRef), columnName);
+		                  .SqlFmt(GetTableName(tableRef), columnName);
             
 	        var result = db.SqlScalar<long>(sql, new { tableName, columnName, schema = db.Database });
 
@@ -464,7 +496,7 @@ namespace ServiceStack.OrmLite.MySql
 
         public override async Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, TableRef tableRef, CancellationToken token=default)
         {
-	        var tableName = GetTableNameOnly(tableRef);
+	        var tableName = GetTableName(tableRef);
 	        var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS"
 	                  + " WHERE TABLE_NAME = @tableName AND COLUMN_NAME = @columnName AND TABLE_SCHEMA = @schema"
 		                  .SqlFmt(tableName, columnName);

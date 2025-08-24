@@ -118,21 +118,18 @@ public class UntypedApiTests(DialectContext context) : OrmLiteProvidersTestBase(
     [Test]
     public void Can_store_different_entities_in_single_field()
     {
-        using (var db = OpenDbConnection())
-        {
-            OrmLiteUtils.PrintSql();
-            db.DropAndCreateTable<UserEntity>();
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<UserEntity>();
                 
-            db.Insert(new UserEntity {Id = 1, MyPrimaryAnimal = new BirdEntity {Id = 1, Bird = "B"}});
-            db.Insert(new UserEntity {Id = 2, MyPrimaryAnimal = new CatEntity {Id = 1, Cat = "C"}});
-            db.Insert(new UserEntity {Id = 3, MyPrimaryAnimal = new DogEntity {Id = 1, Dog = "D"}});
+        db.Insert(new UserEntity {Id = 1, MyPrimaryAnimal = new BirdEntity {Id = 1, Bird = "B"}});
+        db.Insert(new UserEntity {Id = 2, MyPrimaryAnimal = new CatEntity {Id = 1, Cat = "C"}});
+        db.Insert(new UserEntity {Id = 3, MyPrimaryAnimal = new DogEntity {Id = 1, Dog = "D"}});
 
-            var results = db.Select<UserEntity>();
-            var animals = results.OrderBy(x => x.Id).Map(x => x.MyPrimaryAnimal);
-            Assert.That(animals[0] is BirdEntity b && b.Bird == "B");
-            Assert.That(animals[1] is CatEntity c && c.Cat == "C");
-            Assert.That(animals[2] is DogEntity d && d.Dog == "D");
-        }
+        var results = db.Select<UserEntity>();
+        var animals = results.OrderBy(x => x.Id).Map(x => x.MyPrimaryAnimal);
+        Assert.That(animals[0] is BirdEntity b && b.Bird == "B");
+        Assert.That(animals[1] is CatEntity c && c.Cat == "C");
+        Assert.That(animals[2] is DogEntity d && d.Dog == "D");
     }
 
 }
