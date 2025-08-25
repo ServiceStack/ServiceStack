@@ -2,7 +2,10 @@
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.Tests.Issues.SP
+namespace ServiceStack.OrmLite.Tests.Issues;
+
+[TestFixtureOrmLite]
+public class MappingFieldsFromStoredProcedureTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
     public class ProUser
     {
@@ -37,52 +40,44 @@ namespace ServiceStack.OrmLite.Tests.Issues.SP
         public string Details { get; set; }
     }
 
-    [TestFixtureOrmLite]
-    public class MappingFieldsFromStoredProcedureTests : OrmLiteProvidersTestBase
+    [NUnit.Framework.Ignore("Requires existing tables / SP at https://gist.github.com/mythz/6f336094f8dd07c22d91"), Test]
+    public void Can_select_from_Custom_stored_procedure()
     {
-        public MappingFieldsFromStoredProcedureTests(DialectContext context) : base(context) {}
+        using var db = OpenDbConnection();
+        db.DeleteAll<Address>();
+        db.DeleteAll<Order>();
+        db.DeleteAll<ProUser>();
 
-        [NUnit.Framework.Ignore("Requires existing tables / SP at https://gist.github.com/mythz/6f336094f8dd07c22d91"), Test]
-        public void Can_select_from_Custom_stored_procedure()
+        var user = new ProUser
         {
-            using (var db = OpenDbConnection())
-            {
-                db.DeleteAll<Address>();
-                db.DeleteAll<Order>();
-                db.DeleteAll<ProUser>();
+            Id = "A",
+            Password = "p@55w03d",
+            UserType = 1,
+        };
 
-                var user = new ProUser
-                {
-                    Id = "A",
-                    Password = "p@55w03d",
-                    UserType = 1,
-                };
+        db.Insert(user);
 
-                db.Insert(user);
+        var order = new Order
+        {
+            ProUserId = user.Id,
+            Details = "Details",
+            ItemId = 1,
+        };
 
-                var order = new Order
-                {
-                    ProUserId = user.Id,
-                    Details = "Details",
-                    ItemId = 1,
-                };
+        db.Insert(order);
 
-                db.Insert(order);
+        var address = new Address
+        {
+            ProUserId = user.Id,
+            StreetName = "1 Street",
+            ZipCode = 90210
+        };
 
-                var address = new Address
-                {
-                    ProUserId = user.Id,
-                    StreetName = "1 Street",
-                    ZipCode = 90210
-                };
+        db.Insert(address);
 
-                db.Insert(address);
+        var rows = db.SqlList<DomainUserDto>(
+            "EXEC TestJoinSupportForORMLite @Id", new { user.Id });
 
-                var rows = db.SqlList<DomainUserDto>(
-                    "EXEC TestJoinSupportForORMLite @Id", new { user.Id });
-
-                rows.PrintDump();
-            }
-        } 
-    }
+        rows.PrintDump();
+    } 
 }

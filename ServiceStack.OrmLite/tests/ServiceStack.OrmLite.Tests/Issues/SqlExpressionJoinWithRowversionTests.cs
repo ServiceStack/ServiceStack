@@ -1,85 +1,80 @@
 using NUnit.Framework;
 using ServiceStack.OrmLite.Tests.Expression;
 
-namespace ServiceStack.OrmLite.Tests.Issues
+namespace ServiceStack.OrmLite.Tests.Issues;
+
+[TestFixtureOrmLite]
+public class SqlExpressionJoinWithRowversionTests(DialectContext context) : ExpressionsTestBase(context)
 {
-    [TestFixtureOrmLite]
-    public class SqlExpressionJoinWithRowversionTests : ExpressionsTestBase
+    public class TableA
     {
-        public SqlExpressionJoinWithRowversionTests(DialectContext context) : base(context) {}
+        public int Id { get; set; }
+        public bool Bool { get; set; }
+        public string Name { get; set; }
 
-        public class TableA
+        public ulong RowVersion { get; set; }
+    }
+
+    public class TableB
+    {
+        public int Id { get; set; }
+        public int TableAId { get; set; }
+        public string Name { get; set; }
+        public ulong RowVersion { get; set; }
+    }
+
+    private class JoinSelectResults2
+    {
+        // From TableA
+        public int Id { get; set; }
+        public bool Bool { get; set; }
+        public string Name { get; set; }
+
+        public ulong RowVersion { get; set; }
+
+
+        // From TableB
+        public int TableBId { get; set; }
+        public string TableBName { get; set; }
+
+        public override bool Equals(object obj)
         {
-            public int Id { get; set; }
-            public bool Bool { get; set; }
-            public string Name { get; set; }
-
-            public ulong RowVersion { get; set; }
+            var other = (JoinSelectResults2)obj;
+            return Id == other.Id && Bool == other.Bool && Name == other.Name && TableBId == other.TableBId && TableBName == other.TableBName;
         }
 
-        public class TableB
-        {
-            public int Id { get; set; }
-            public int TableAId { get; set; }
-            public string Name { get; set; }
-            public ulong RowVersion { get; set; }
-        }
+        public override int GetHashCode() =>
+            ((23 * 37 + Id) * 37 + TableBId)
+            ^ Name.GetHashCode()
+            ^ TableBName.GetHashCode()
+            ^ (Bool ? 65535 : 0);
 
-        private class JoinSelectResults2
-        {
-            // From TableA
-            public int Id { get; set; }
-            public bool Bool { get; set; }
-            public string Name { get; set; }
+    }
 
-            public ulong RowVersion { get; set; }
+    [Test]
+    public void Can_select_entire_tables_with_rowversion()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<TableA>();
+        db.DropAndCreateTable<TableB>();
 
+        db.Insert(new TableA { Id = 1, Bool = false, Name = "NameA1" });
+        db.Insert(new TableA { Id = 2, Bool = true, Name = "NameA2" });
+        db.Insert(new TableB { Id = 1, TableAId = 1, Name = "NameB1" });
+        db.Insert(new TableB { Id = 2, TableAId = 2, Name = "NameB2" });
+        db.Insert(new TableB { Id = 3, TableAId = 2, Name = "NameB3" });
 
-            // From TableB
-            public int TableBId { get; set; }
-            public string TableBName { get; set; }
+        var q1 = db.From<TableA>()
+            .Join<TableB>();
 
-            public override bool Equals(object obj)
-            {
-                var other = (JoinSelectResults2)obj;
-                return Id == other.Id && Bool == other.Bool && Name == other.Name && TableBId == other.TableBId && TableBName == other.TableBName;
-            }
+        var results = db.Select<JoinSelectResults2>(q1);
+        Assert.That(results.Count, Is.EqualTo(3));
 
-            public override int GetHashCode() =>
-                ((23 * 37 + Id) * 37 + TableBId)
-                ^ Name.GetHashCode()
-                ^ TableBName.GetHashCode()
-                ^ (Bool ? 65535 : 0);
+        var q2 = db.From<TableA>()
+            .Join<TableB>()
+            .Select<TableA, TableB>((a, b) => new { a, TableBId = b.Id, TableBName = b.Name });
 
-        }
-
-        [Test]
-        public void Can_select_entire_tables_with_rowversion()
-        {
-            using (var db = OpenDbConnection())
-            {
-                db.DropAndCreateTable<TableA>();
-                db.DropAndCreateTable<TableB>();
-
-                db.Insert(new TableA { Id = 1, Bool = false, Name = "NameA1" });
-                db.Insert(new TableA { Id = 2, Bool = true, Name = "NameA2" });
-                db.Insert(new TableB { Id = 1, TableAId = 1, Name = "NameB1" });
-                db.Insert(new TableB { Id = 2, TableAId = 2, Name = "NameB2" });
-                db.Insert(new TableB { Id = 3, TableAId = 2, Name = "NameB3" });
-
-                var q1 = db.From<TableA>()
-                    .Join<TableB>();
-
-                var results = db.Select<JoinSelectResults2>(q1);
-                Assert.That(results.Count, Is.EqualTo(3));
-
-                var q2 = db.From<TableA>()
-                    .Join<TableB>()
-                    .Select<TableA, TableB>((a, b) => new { a, TableBId = b.Id, TableBName = b.Name });
-
-                results = db.Select<JoinSelectResults2>(q2);
-                Assert.That(results.Count, Is.EqualTo(3));
-            }
-        }
+        results = db.Select<JoinSelectResults2>(q2);
+        Assert.That(results.Count, Is.EqualTo(3));
     }
 }

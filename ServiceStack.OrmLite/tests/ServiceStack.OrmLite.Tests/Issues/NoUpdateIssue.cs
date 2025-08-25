@@ -4,48 +4,43 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.Model;
 using ServiceStack.Text;
 
-namespace ServiceStack.OrmLite.Tests.Issues
+namespace ServiceStack.OrmLite.Tests.Issues;
+
+public class LRDCategoria : IHasId<int>
 {
-    public class LRDCategoria : IHasId<int>
+    [Alias("IDDCATEGORIA")]
+    [AutoIncrement]
+    [PrimaryKey]
+    public int Id { get; set; }
+
+    [Alias("CODICE")]
+    [Required]
+    [Index(Unique = true)]
+    [StringLength(50)]
+    public string Codice { get; set; }
+}
+
+[TestFixtureOrmLiteDialects(Dialect.AnySqlServer)]
+public class NoUpdateIssue(DialectContext context) : OrmLiteProvidersTestBase(context)
+{
+    [Test]
+    public void Does_update_record()
     {
-        [Alias("IDDCATEGORIA")]
-        [AutoIncrement]
-        [PrimaryKey]
-        public int Id { get; set; }
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<LRDCategoria>();
 
-        [Alias("CODICE")]
-        [Required]
-        [Index(Unique = true)]
-        [StringLength(50)]
-        public string Codice { get; set; }
-    }
+        db.Insert(new LRDCategoria { Codice = "A" });
 
-    [TestFixtureOrmLiteDialects(Dialect.AnySqlServer)]
-    public class NoUpdateIssue : OrmLiteProvidersTestBase
-    {
-        public NoUpdateIssue(DialectContext context) : base(context) {}
+        var row = db.Select<LRDCategoria>().FirstOrDefault();
 
-        [Test]
-        public void Does_update_record()
-        {
-            using (var db = OpenDbConnection())
-            {
-                db.DropAndCreateTable<LRDCategoria>();
+        row.Codice = "";
 
-                db.Insert(new LRDCategoria { Codice = "A" });
+        db.Update(row);
 
-                var row = db.Select<LRDCategoria>().FirstOrDefault();
+        row = db.Select<LRDCategoria>().FirstOrDefault();
 
-                row.Codice = "";
+        row.PrintDump();
 
-                db.Update(row);
-
-                row = db.Select<LRDCategoria>().FirstOrDefault();
-
-                row.PrintDump();
-
-                Assert.That(row.Codice, Is.EqualTo(""));
-            }
-        }
+        Assert.That(row.Codice, Is.EqualTo(""));
     }
 }

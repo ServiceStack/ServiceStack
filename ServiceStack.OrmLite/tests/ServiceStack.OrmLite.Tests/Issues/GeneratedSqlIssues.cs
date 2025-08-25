@@ -1,27 +1,22 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 
-namespace ServiceStack.OrmLite.Tests.Issues
+namespace ServiceStack.OrmLite.Tests.Issues;
+
+[TestFixtureOrmLite]
+public class GeneratedSqlIssues(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    [TestFixtureOrmLite]
-    public class GeneratedSqlIssues : OrmLiteProvidersTestBase
+    [Test]
+    public void Does_generate_valid_sql_when_param_contains_dollar_char()
     {
-        public GeneratedSqlIssues(DialectContext context) : base(context) {}
-
-        [Test]
-        public void Does_generate_valid_sql_when_param_contains_dollar_char()
+        using var db = OpenDbConnection();
+        var model = new Poco
         {
-            using (var db = OpenDbConnection())
-            {
-                var model = new Poco
-                {
-                    Id = 1,
-                    Name = "Guest$"
-                };
+            Id = 1,
+            Name = "Guest$"
+        };
 
-                var sql = db.ToUpdateStatement(model);
-                Assert.That(sql, Is.EqualTo($"UPDATE {DialectProvider.QuoteTable("Poco")} SET {DialectProvider.GetQuotedColumnName("Name")}='Guest$' WHERE {DialectProvider.GetQuotedColumnName("Id")}=1"));
-            }
-        }
+        var sql = db.ToUpdateStatement(model);
+        Assert.That(sql, Is.EqualTo($"UPDATE {DialectProvider.QuoteTable("Poco")} SET {DialectProvider.GetQuotedColumnName("Name")}='Guest$' WHERE {DialectProvider.GetQuotedColumnName("Id")}=1"));
     }
 }

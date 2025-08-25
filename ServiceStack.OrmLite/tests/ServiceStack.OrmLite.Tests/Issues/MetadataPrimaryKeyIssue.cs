@@ -2,32 +2,27 @@
 using NUnit.Framework;
 using ServiceStack.OrmLite.Tests.Expression;
 
-namespace ServiceStack.OrmLite.Tests.Issues
+namespace ServiceStack.OrmLite.Tests.Issues;
+
+[TestFixtureOrmLite]
+public class MetadataPrimaryKeyIssue(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
-    [TestFixtureOrmLite]
-    public class MetadataPrimaryKeyIssue : OrmLiteProvidersTestBase
+    [Test]
+    public void Should_generate_select_statement_multi_threaded()
     {
-        public MetadataPrimaryKeyIssue(DialectContext context) : base(context) {}
+        typeof(LetterFrequency).GetModelMetadata();
 
-        [Test]
-        public void Should_generate_select_statement_multi_threaded()
-        {
-            typeof(LetterFrequency).GetModelMetadata();
+        Task<string> task1 = Task.Run(() => SelectStatement());
+        Task<string> task2 = Task.Run(() => SelectStatement());
+        Task.WaitAll(task1, task2);
 
-            Task<string> task1 = Task.Run(() => SelectStatement());
-            Task<string> task2 = Task.Run(() => SelectStatement());
-            Task.WaitAll(task1, task2);
+        Assert.AreEqual(task1.Result, task2.Result);
+    }
 
-            Assert.AreEqual(task1.Result, task2.Result);
-        }
-
-        private string SelectStatement()
-        {
-            var pk = typeof(LetterFrequency).GetModelMetadata().PrimaryKey;
-            using (var db = OpenDbConnection())
-            {
-                return db.From<LetterFrequency>().OrderByFields(pk).ToSelectStatement();
-            }
-        }
+    private string SelectStatement()
+    {
+        var pk = typeof(LetterFrequency).GetModelMetadata().PrimaryKey;
+        using var db = OpenDbConnection();
+        return db.From<LetterFrequency>().OrderByFields(pk).ToSelectStatement();
     }
 }
