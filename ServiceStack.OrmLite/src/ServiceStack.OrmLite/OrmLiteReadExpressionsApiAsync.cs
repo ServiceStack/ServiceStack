@@ -150,6 +150,14 @@ public static class OrmLiteReadExpressionsApiAsync
     {
         return dbConn.Exec(dbCmd => dbCmd.RowCountAsync(sql, anonType, token));
     }
+    
+    /// <summary>
+    /// Return the number of rows in the specified table
+    /// </summary>
+    public static Task<long> RowCountAsync<T>(this IDbConnection dbConn)
+    {
+        return dbConn.SqlScalarAsync<long>(dbConn.From<T>().Select(Sql.Count("*")));
+    }
 
     /// <summary>
     /// Returns results with references from using a LINQ Expression. E.g:

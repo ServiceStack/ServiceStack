@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.OrmLite.Dapper;
 using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite;
@@ -393,7 +394,15 @@ public static class OrmLiteReadExpressionsApi
     {
         return dbConn.Exec(dbCmd => dbCmd.RowCount(sql, sqlParams));
     }
-
+    
+    /// <summary>
+    /// Return the number of rows in the specified table
+    /// </summary>
+    public static long RowCount<T>(this IDbConnection dbConn)
+    {
+        return dbConn.SqlScalar<long>(dbConn.From<T>().Select(Sql.Count("*")));
+    }
+    
     /// <summary>
     /// Returns results with references from using a LINQ Expression. E.g:
     /// <para>db.LoadSelect&lt;Person&gt;(x =&gt; x.Age &gt; 40)</para>

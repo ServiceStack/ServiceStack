@@ -687,4 +687,22 @@ public class SqlExpressionTests(DialectContext context) : ExpressionsTestBase(co
 
         var results = db.Select(q);
     }
+    
+    [Test]
+    public void Can_select_RowCount_without_db_params()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<LetterFrequency>();
+
+        db.Insert(new LetterFrequency { Letter = "A" });
+        db.Insert(new LetterFrequency { Letter = "A" });
+        db.Insert(new LetterFrequency { Letter = "A" });
+        db.Insert(new LetterFrequency { Letter = "B" });
+        db.Insert(new LetterFrequency { Letter = "B" });
+        db.Insert(new LetterFrequency { Letter = "B" });
+        db.Insert(new LetterFrequency { Letter = "B" });
+
+        Assert.That(db.Count<LetterFrequency>(), Is.EqualTo(7));
+        Assert.That(db.RowCount<LetterFrequency>(), Is.EqualTo(7));
+    }    
 }
