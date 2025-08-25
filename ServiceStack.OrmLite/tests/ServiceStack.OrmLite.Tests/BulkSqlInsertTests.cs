@@ -8,7 +8,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.Tests;
 
-public class BulkSqlInsertTests : OrmLiteTestBase
+[TestFixtureOrmLite]
+public class BulkSqlInsertTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
     private List<Person> People = 15001.Times(i => new Person
         { Id = i + 1, Age = (10 + i) % 90, FirstName = $"First{i+1}", LastName = $"Last{i+1}" });
@@ -36,13 +37,21 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         using var db = OpenDbConnection();
         db.DropAndCreateTable<Person>();
 
-        db.BulkInsert(People, new BulkInsertConfig
+        try
         {
-            Mode = BulkInsertMode.Csv,
-        });
+            db.BulkInsert(People, new BulkInsertConfig
+            {
+                Mode = BulkInsertMode.Csv,
+            });
 
-        var rowsCount = db.Count<Person>();
-        Assert.That(rowsCount, Is.EqualTo(People.Count));
+            var rowsCount = db.Count<Person>();
+            Assert.That(rowsCount, Is.EqualTo(People.Count));
+        }
+        catch (Exception e)
+        {
+            if (!IgnoreException(e))
+                throw;
+        }
     }
 
     [Test]
@@ -67,15 +76,23 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         
         using var db = OpenDbConnection();
         db.DropAndCreateTable<AllNumbers>();
-        
-        db.BulkInsert(rows, new BulkInsertConfig
-        {
-            Mode = BulkInsertMode.Csv,
-        });
 
-        var dbRows = db.Select<AllNumbers>();
-        dbRows.PrintDump();
-        Assert.That(dbRows.Count, Is.EqualTo(rows.Count));
+        try
+        {
+            db.BulkInsert(rows, new BulkInsertConfig
+            {
+                Mode = BulkInsertMode.Csv,
+            });
+
+            var dbRows = db.Select<AllNumbers>();
+            dbRows.PrintDump();
+            Assert.That(dbRows.Count, Is.EqualTo(rows.Count));
+        }
+        catch (Exception e)
+        {
+            if (!IgnoreException(e))
+                throw;
+        }
     }
 
     [Test]
@@ -85,15 +102,23 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         
         using var db = OpenDbConnection();
         db.DropAndCreateTable<AllTypes>();
-        
-        db.BulkInsert(rows, new BulkInsertConfig
-        {
-            Mode = BulkInsertMode.Csv,
-        });
 
-        var dbRows = db.Select<AllTypes>();
-        dbRows.PrintDump();
-        Assert.That(dbRows.Count, Is.EqualTo(rows.Count));
+        try
+        {
+            db.BulkInsert(rows, new BulkInsertConfig
+            {
+                Mode = BulkInsertMode.Csv,
+            });
+
+            var dbRows = db.Select<AllTypes>();
+            dbRows.PrintDump();
+            Assert.That(dbRows.Count, Is.EqualTo(rows.Count));
+        }
+        catch (Exception e)
+        {
+            if (!IgnoreException(e))
+                throw;
+        }
     }
 
     [Test]
@@ -109,15 +134,23 @@ public class BulkSqlInsertTests : OrmLiteTestBase
         
         using var db = OpenDbConnection();
         db.DropAndCreateTable<AllTypes>();
-        
-        db.BulkInsert(rows, new BulkInsertConfig
-        {
-            Mode = BulkInsertMode.Csv,
-        });
 
-        var dbRows = db.Select<AllTypes>();
-        dbRows.PrintDump();
-        Assert.That(dbRows.Count, Is.EqualTo(rows.Count));
+        try
+        {
+            db.BulkInsert(rows, new BulkInsertConfig
+            {
+                Mode = BulkInsertMode.Csv,
+            });
+
+            var dbRows = db.Select<AllTypes>();
+            dbRows.PrintDump();
+            Assert.That(dbRows.Count, Is.EqualTo(rows.Count));
+        }
+        catch (Exception e)
+        {
+            if (!IgnoreException(e))
+                throw;
+        }
     }
 
     [Test]

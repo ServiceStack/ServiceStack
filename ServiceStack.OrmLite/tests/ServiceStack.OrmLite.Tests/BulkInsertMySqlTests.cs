@@ -51,12 +51,20 @@ public class BulkInsertMySqlTests(DialectContext context) : OrmLiteProvidersTest
         var columns = CsvSerializer.PropertiesFor<Person>()
             .Select(x => dialect.GetQuotedColumnName(modelDef.GetFieldDefinition(x.PropertyName)));
         bulkLoader.Columns.AddRange(columns);
-        
-        var rowCount = await bulkLoader.LoadAsync();
-        File.Delete(tmpPath);
 
-        var rows = db.Select<Person>();
-        rows.PrintDump();
-        Assert.That(rows.Count, Is.EqualTo(Person.Rockstars.Length));
+        try
+        {
+            var rowCount = await bulkLoader.LoadAsync();
+            File.Delete(tmpPath);
+
+            var rows = db.Select<Person>();
+            rows.PrintDump();
+            Assert.That(rows.Count, Is.EqualTo(Person.Rockstars.Length));
+        }
+        catch (Exception e)
+        {
+            if (!IgnoreException(e))
+                throw;
+        }
     }
 }
