@@ -1710,8 +1710,10 @@ namespace ServiceStack.OrmLite
                 return DialectProvider.GetQuotedValue(value, type);
 
             var paramValue = DialectProvider.GetParamValue(value, type);
-            return paramValue ?? "null";
+            return paramValue ?? PartialSqlString.Null;
         }
+
+        protected bool IsNull(object expr) => expr == null || PartialSqlString.Null.Equals(expr);
 
         protected virtual object VisitBinary(BinaryExpression b)
         {
@@ -1779,8 +1781,7 @@ namespace ServiceStack.OrmLite
                         Swap(ref left, ref right); // Should be safe to swap for equality/inequality checks
                     }
 
-                    if (right is bool &&
-                        (left == null || left.ToString().Equals("null", StringComparison.OrdinalIgnoreCase)))
+                    if (right is bool && IsNull(left))
                     {
                         if (operand == "=")
                             return false; // "null == true/false" becomes "false"
@@ -1809,8 +1810,7 @@ namespace ServiceStack.OrmLite
 
                 if (rightNeedsCoercing)
                 {
-                    var rightPartialSql = right as PartialSqlString;
-                    if (rightPartialSql == null)
+                    if (right is not PartialSqlString rightPartialSql)
                     {
                         right = GetValue(right, leftEnum.EnumType);
                     }
@@ -1839,13 +1839,13 @@ namespace ServiceStack.OrmLite
                 }
             }
 
-            if (left.ToString().Equals("null", StringComparison.OrdinalIgnoreCase))
+            if (IsNull(left))
             {
                 Swap(ref left, ref right); // "null is x" will not work, so swap the operands
             }
 
             var separator = sep;
-            if (right.ToString().Equals("null", StringComparison.OrdinalIgnoreCase))
+            if (IsNull(right))
             {
                 if (operand == "=")
                     operand = "is";
@@ -1941,7 +1941,7 @@ namespace ServiceStack.OrmLite
         /// </summary>
         protected virtual bool IsConstantExpression(Expression e)
         {
-            return CheckExpressionForTypes(e, new[] { ExpressionType.Constant });
+            return CheckExpressionForTypes(e, [ExpressionType.Constant]);
         }
 
         protected bool CheckExpressionForTypes(Expression e, ExpressionType[] types)
