@@ -37,7 +37,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         this.scopeFactory = scopeFactory;
 
         var dialect = feature.DialectProvider;
-        this.Table = dialect.GetTableName(typeof(BackgroundJob));
+        this.Table = dialect.GetQuotedTableName(typeof(BackgroundJob));
         this.columns = new(
             Logs:dialect.GetQuotedColumnName(nameof(BackgroundJob.Logs)),
             Status:dialect.GetQuotedColumnName(nameof(BackgroundJob.Status)),

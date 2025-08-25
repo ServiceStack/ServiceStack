@@ -163,13 +163,13 @@ public class AdminDatabaseService : Service
     {
         var feature = await AssertRequiredRole();
 
-        using var db = HostContext.AppHost.GetDbConnection(request.Db is null or "main" ? null : request.Db);
+        using var db = await HostContext.AppHost.GetDbConnectionAsync(request.Db is null or "main" ? null : request.Db);
         var dialect = db.GetDialectProvider();
         var schema = request.Schema == "default" ? null : request.Schema;
 
         var supportsMultiDb = !dialect.GetType().Name.StartsWith("Sqlite");
         var table = dialect.SupportsSchema
-            ? dialect.GetQuotedTableName(request.Table, schema)
+            ? dialect.QuoteTable(new(schema, request.Table))
             : supportsMultiDb //schema is db when !SupportsSchema 
                 ? dialect.GetQuotedName(schema) + "." + dialect.GetQuotedTableName(request.Table)
                 : dialect.GetQuotedTableName(request.Table);

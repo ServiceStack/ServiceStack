@@ -226,7 +226,7 @@ public static class CrudUtils
                         var quotedTable = schema != null
                             ? dialect.GetQuotedName(schema) + "." + dialect.GetQuotedName(table)
                             : dialect.GetQuotedName(table);
-                        var sql = $"SELECT * FROM {quotedTable} ORDER BY 1 {dialect.SqlLimit(rows: 1)}";
+                        var sql = $"SELECT * FROM {quotedTable} ORDER BY 1 {dialect.SqlLimit(rows:1)}";
                         to.Columns = db.GetTableColumns(sql);
                     }
                 }
@@ -235,7 +235,7 @@ public static class CrudUtils
                     to.ErrorType = e.GetType().Name;
                     to.ErrorMessage = e.Message;
                     log ??= Logging.LogManager.GetLogger(typeof(GenerateCrudServices));
-                    log.Error($"GetTableSchemas(): Failed to GetTableColumns() for {dialect.GetQuotedTableName(table, schema)}", e);
+                    log.Error($"GetTableSchemas(): Failed to GetTableColumns() for {dialect.QuoteTable(new(schema, table))}", e);
 
                     if (db.State != System.Data.ConnectionState.Open)
                     {
