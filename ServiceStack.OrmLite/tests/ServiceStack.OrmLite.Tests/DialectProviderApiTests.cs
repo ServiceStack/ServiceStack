@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace ServiceStack.OrmLite.Tests;
 
-public class DialectProviderApis : OrmLiteTestBase
+public class DialectProviderApiTests : OrmLiteTestBase
 {
     [Test]
     public void Dialect_APIs_referencing_tables_should_allow_and_return_null()

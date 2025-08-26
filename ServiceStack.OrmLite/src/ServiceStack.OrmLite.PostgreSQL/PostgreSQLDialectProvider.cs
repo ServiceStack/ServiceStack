@@ -740,6 +740,8 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
     public override string GetQuotedName(string name)
     {
+        if (name == null)
+            return null;
         return name.IndexOf('.') >= 0
             ? base.GetQuotedName(name.Replace(".", "\".\""))
             : base.GetQuotedName(name);
@@ -747,6 +749,8 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
     public override string GetQuotedTableName(ModelDefinition modelDef)
     {
+        if (modelDef == null)
+            return null;
         return !modelDef.IsInSchema 
             ? base.GetQuotedTableName(modelDef) 
             : $"{GetQuotedName(NamingStrategy.GetSchemaName(modelDef.Schema))}.{GetQuotedName(NamingStrategy.GetTableName(modelDef))}";
