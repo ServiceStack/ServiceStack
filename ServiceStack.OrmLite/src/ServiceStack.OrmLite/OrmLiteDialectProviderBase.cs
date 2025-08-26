@@ -429,7 +429,9 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         var schema = tableRef.GetSchemaName();
         return schema != null
             ? QuoteSchema(NamingStrategy.GetSchemaName(schema), NamingStrategy.GetTableName(tableRef.Name))
-            : GetQuotedName(NamingStrategy.GetTableName(tableRef.Name));
+            : tableRef.Name != null
+                ? GetQuotedName(NamingStrategy.GetTableName(tableRef.Name))
+                : null;
     }
 
     /// <summary>
@@ -452,6 +454,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         
     public virtual string GetQuotedTableName(ModelDefinition modelDef)
     {
+        if (modelDef == null) 
+            return null;
         var schema = modelDef.Schema;
         if (modelDef.Alias != null)
         {
@@ -471,30 +475,35 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual string QuoteSchema(string schema, string table)
     {
         if (string.IsNullOrEmpty(schema))
-            return GetQuotedName(table);
+            return string.IsNullOrEmpty(table)
+                ? null
+                : GetQuotedName(table);
         var escapedSchema = schema.IndexOf('.') >= 0 
             ? schema.Replace(".", QuoteChar + "." + QuoteChar) 
             : schema;
         return JoinSchema(GetQuotedName(escapedSchema), GetQuotedName(table));
     }
     
-    public virtual string JoinSchema(string schema, string table) => 
-        schema + "." + table;
+    public virtual string JoinSchema(string schema, string table) => schema != null 
+        ? schema + "." + table 
+        : table;
 
     public virtual string GetQuotedColumnName(FieldDefinition fieldDef)
     {
+        if (fieldDef == null)
+            return null;
         return GetQuotedName(fieldDef.Alias != null 
             ? NamingStrategy.GetAlias(fieldDef.Alias)
             : GetQuotedColumnName(fieldDef.Name));
     }
     
-    public virtual string GetQuotedColumnName(string columnName)
-    {
-        return GetQuotedName(NamingStrategy.GetColumnName(columnName));
-    }
+    public virtual string GetQuotedColumnName(string columnName) => columnName == null ? null : 
+        GetQuotedName(NamingStrategy.GetColumnName(columnName));
 
     public virtual string GetColumnName(FieldDefinition fieldDef)
     {
+        if (fieldDef == null)
+            return null;
         return fieldDef.Alias != null
             ? NamingStrategy.GetAlias(fieldDef.Alias)
             : NamingStrategy.GetColumnName(fieldDef.Name);
@@ -518,7 +527,9 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     {
         return schema != null
             ? $"{GetQuotedName(schema)}.{GetQuotedName(name)}"
-            : GetQuotedName(name);
+            : name != null 
+                ? GetQuotedName(name)
+                : null;
     }
 
     public virtual string GetQuotedValue(string paramValue)
