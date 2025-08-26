@@ -118,7 +118,7 @@ public interface IOrmLiteDialectProvider
     IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
 
     string GetTableNameOnly(TableRef tableRef);
-    string GetTableName(TableRef tableRef);
+    string UnquotedTable(TableRef tableRef);
 
     string QuoteSchema(string schema, string table);
     string QuoteTable(TableRef tableRef);

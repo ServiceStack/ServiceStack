@@ -39,15 +39,17 @@ public static class OrmLiteDialectProviderExtensions
         return (dialect ?? OrmLiteConfig.DialectProvider).NamingStrategy.GetColumnName(columnName);
     }
 
-    public static string GetQuotedTableName(this IOrmLiteDialectProvider dialect, string tableName)
-    {
-        return dialect.QuoteTable(new(tableName));
-    }
+    public static string GetQuotedTableName(this IOrmLiteDialectProvider dialect, string tableName) => tableName == null ? null : 
+        dialect.QuoteTable(new(tableName));
 
-    public static string GetTableName(this IOrmLiteDialectProvider dialect, Type table)
-    {
-        return dialect.GetTableName(new(table.GetModelDefinition()));
-    }
+    public static string GetTableName(this IOrmLiteDialectProvider dialect, string tableName) => tableName == null ? null : 
+        dialect.UnquotedTable(new(tableName));
+
+    public static string GetTableName(this IOrmLiteDialectProvider dialect, Type table) => table == null ? null : 
+        dialect.UnquotedTable(new(table.GetModelDefinition()));
+
+    public static string GetTableName(this IOrmLiteDialectProvider dialect, ModelDefinition modelDef) => modelDef == null ? null : 
+        dialect.UnquotedTable(new(modelDef));
 
     public static string GetQuotedColumnName(this IOrmLiteDialectProvider dialect,
         ModelDefinition tableDef, FieldDefinition fieldDef)

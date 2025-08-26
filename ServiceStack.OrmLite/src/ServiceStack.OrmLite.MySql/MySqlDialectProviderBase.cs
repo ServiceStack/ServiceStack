@@ -377,7 +377,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 		return base.GetQuotedValue(value, fieldType);
 	}
 
-	public override string GetTableName(TableRef tableRef)
+	public override string UnquotedTable(TableRef tableRef)
 	{
 		if (tableRef.QuotedName != null)
 			return tableRef.QuotedName.Replace("\"","");
@@ -428,7 +428,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 	public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
 	{
 		var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
-			.SqlFmt(GetTableName(tableRef), dbCmd.Connection.Database);
+			.SqlFmt(UnquotedTable(tableRef), dbCmd.Connection.Database);
 
 		var result = dbCmd.ExecLongScalar(sql);
 
@@ -438,7 +438,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 	public override async Task<bool> DoesTableExistAsync(IDbCommand dbCmd, TableRef tableRef, CancellationToken token=default)
 	{
 		var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
-			.SqlFmt(GetTableName(tableRef), dbCmd.Connection.Database);
+			.SqlFmt(UnquotedTable(tableRef), dbCmd.Connection.Database);
 
 		var result = await dbCmd.ExecLongScalarAsync(sql, token);
 
@@ -447,10 +447,10 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 
 	public override bool DoesColumnExist(IDbConnection db, string columnName, TableRef tableRef)
 	{
-		var tableName = GetTableName(tableRef);
+		var tableName = UnquotedTable(tableRef);
 		var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS"
 		          + " WHERE TABLE_NAME = @tableName AND COLUMN_NAME = @columnName AND TABLE_SCHEMA = @schema"
-			          .SqlFmt(GetTableName(tableRef), columnName);
+			          .SqlFmt(UnquotedTable(tableRef), columnName);
             
 		var result = db.SqlScalar<long>(sql, new { tableName, columnName, schema = db.Database });
 
@@ -459,7 +459,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 
 	public override async Task<bool> DoesColumnExistAsync(IDbConnection db, string columnName, TableRef tableRef, CancellationToken token=default)
 	{
-		var tableName = GetTableName(tableRef);
+		var tableName = UnquotedTable(tableRef);
 		var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS"
 		          + " WHERE TABLE_NAME = @tableName AND COLUMN_NAME = @columnName AND TABLE_SCHEMA = @schema"
 			          .SqlFmt(tableName, columnName);

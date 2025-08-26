@@ -310,34 +310,47 @@ public struct TableRef
     public string Schema { get; set; }
     public string Name { get; set; }
 
+    /// <summary>
+    /// Table Name without Schema (using naming strategy) 
+    /// </summary>
     public TableRef(string name) : this(null, name) {}
+
+    /// <summary>
+    /// Table Name with Schema (using naming strategy) 
+    /// </summary>
     public TableRef(string schema, string name)
     {
         Schema = schema;
         Name = name;
     }
 
+    /// <summary>
+    /// Table Definition (uses Alias if defined, otherwise table name with naming strategy) 
+    /// </summary>
     public TableRef(ModelDefinition modelDef)
     {
         ModelDef = modelDef;
     }
 
+    /// <summary>
+    /// Table Definition for Type (uses Alias if defined, otherwise table name with naming strategy) 
+    /// </summary>
     public TableRef(Type modelType)
     {
         ModelDef = modelType.GetModelDefinition();
     }
     
-    // Use the literal Quoted Table Name
+    // Use the literal Quoted Table Name verbatim
     public static TableRef Literal(string quotedName) => new() { QuotedName = quotedName };
     
     // implicit cast from string uses it as table name
     public static implicit operator TableRef(string name) => new(name);
     
-    
     /// <summary>
     /// Get the unquoted table name
     /// </summary>
     public string GetTableName() => ModelDef?.ModelName ?? Name ?? QuotedName.StripDbQuotes();
+    
     /// <summary>
     /// Get the unquoted schema name
     /// </summary>

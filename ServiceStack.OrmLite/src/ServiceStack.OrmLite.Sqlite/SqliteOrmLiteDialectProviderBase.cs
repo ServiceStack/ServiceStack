@@ -286,7 +286,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         ? table
         : schema + "_" + table;
 
-    public override string GetTableName(TableRef tableRef)
+    public override string UnquotedTable(TableRef tableRef)
     {
         if (tableRef.QuotedName != null)
             return tableRef.QuotedName.Replace("\"","");
@@ -322,7 +322,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
     {
         var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0}"
-            .SqlFmt(this, GetTableName(tableRef));
+            .SqlFmt(this, UnquotedTable(tableRef));
 
         dbCmd.CommandText = sql;
         var result = dbCmd.LongScalar();
@@ -333,7 +333,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override bool DoesColumnExist(IDbConnection db, string columnName, TableRef tableRef)
     {
         var sql = "PRAGMA table_info({0})"
-            .SqlFmt(this, GetTableName(tableRef));
+            .SqlFmt(this, UnquotedTable(tableRef));
 
         var columns = db.SqlList<Dictionary<string, object>>(sql);
         foreach (var column in columns)

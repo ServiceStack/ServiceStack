@@ -333,7 +333,7 @@ namespace ServiceStack.OrmLite
                                 {
                                     if (fieldDef.IsRowVersion)
                                     {
-                                        sbSelect.Append(DialectProvider.GetRowVersionSelectColumn(fieldDef, DialectProvider.GetTableName(tableDef.ModelName)));
+                                        sbSelect.Append(DialectProvider.GetRowVersionSelectColumn(fieldDef, DialectProvider.UnquotedTable(tableDef.ModelName)));
                                     }
                                     else
                                     {

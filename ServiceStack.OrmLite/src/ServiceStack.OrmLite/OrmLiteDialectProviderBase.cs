@@ -396,7 +396,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     /// <summary>
     /// Returns an unquoted table name (inc schema if exists), using naming strategy 
     /// </summary>
-    public virtual string GetTableName(TableRef tableRef)
+    public virtual string UnquotedTable(TableRef tableRef)
     {
         if (tableRef.QuotedName != null)
             return tableRef.QuotedName.Replace("\"","");

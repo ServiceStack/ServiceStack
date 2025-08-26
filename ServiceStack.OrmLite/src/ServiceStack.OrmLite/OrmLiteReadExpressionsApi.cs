@@ -119,9 +119,9 @@ public static class OrmLiteReadExpressionsApi
 
     public static TableOptions TableAlias(this IDbConnection db, string alias) => new TableOptions { Alias = alias };
 
-    public static string GetTableName<T>(this IDbConnection db) => db.GetDialectProvider().GetTableName(new(ModelDefinition<T>.Definition));
-    public static string GetTableName(this IDbConnection db, Type type) => db.GetDialectProvider().GetTableName(new(type));
-    public static string GetTableName(this IDbConnection db, ModelDefinition modelDef) => db.GetDialectProvider().GetTableName(new(modelDef));
+    public static string GetTableName<T>(this IDbConnection db) => db.GetDialectProvider().UnquotedTable(new(ModelDefinition<T>.Definition));
+    public static string GetTableName(this IDbConnection db, Type type) => db.GetDialectProvider().UnquotedTable(new(type));
+    public static string GetTableName(this IDbConnection db, ModelDefinition modelDef) => db.GetDialectProvider().UnquotedTable(new(modelDef));
 
     public static List<string> GetTableNames(this IDbConnection db) => GetTableNames(db, null);
     public static List<string> GetTableNames(this IDbConnection db, string schema) => db.Column<string>(db.GetDialectProvider().ToTableNamesStatement(schema));
