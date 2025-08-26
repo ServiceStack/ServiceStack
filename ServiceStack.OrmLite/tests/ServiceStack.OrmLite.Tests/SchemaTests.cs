@@ -193,7 +193,7 @@ public class SchemaTests(DialectContext context) : OrmLiteProvidersTestBase(cont
         using var db = OpenDbConnection();
         db.CreateTableIfNotExists<ModelWithSchema>();
             
-        var name = db.GetDialectProvider().GetTableName(nameof(ModelWithSchema)).StripDbQuotes().ToLower();
+        var name = db.GetDialectProvider().GetTableName(nameof(ModelWithSchema)).ToLower();
 
         var tableNames = db.GetTableNames("Schema").Map(x => x.ToLower());
         Assert.That(tableNames.Contains(name));
