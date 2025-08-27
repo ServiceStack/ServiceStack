@@ -234,6 +234,16 @@ public class PythonGenerator : ILangGenerator
     public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
 
     public static TextCase TextCase { get; set; } = TextCase.SnakeCase;
+
+    public static Func<string, string> EnumNameFormat { get; set; } = name =>
+        // If already has part separators, just convert to upper case
+        name.IndexOf('_') >= 0
+            ? name.ToUpper()
+            // If has any lower case, convert to UPPER_CASE
+            : name.Any(char.IsLower)
+                ? name.PropertyStyle().ToUpper()
+                // Leave as is
+                : name;
         
     /// <summary>
     /// Add Code to top of generated code
@@ -501,7 +511,7 @@ public class PythonGenerator : ILangGenerator
                 for (var i = 0; i < type.EnumNames.Count; i++)
                 {
                     var origName = type.EnumNames[i];
-                    var name = origName.PropertyStyle().ToUpper();
+                    var name = EnumNameFormat(origName);
                     var value = type.EnumValues?[i];
 
                     var memberValue = type.GetEnumMemberValue(i);
@@ -1176,7 +1186,7 @@ public static class PythonGeneratorExtensions
         return toName;
     }
 
-    static readonly char[] pythonGenericDelimChars = { '[', ']' };
+    static readonly char[] pythonGenericDelimChars = ['[', ']'];
     public static TextNode ParsePythonTypeIntoNodes(this string typeDef) =>
         typeDef.ParseTypeIntoNodes(pythonGenericDelimChars);
 }
