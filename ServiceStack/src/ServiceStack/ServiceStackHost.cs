@@ -2118,8 +2118,8 @@ public abstract partial class ServiceStackHost
     public bool IsDisposed => isDisposed;
     public static void ThrowIfDisposed()
     {
-        if (Instance.isDisposed)
-            throw new ObjectDisposedException(Instance.GetType().Name);
+        if (Instance == null || Instance.isDisposed)
+            throw new ObjectDisposedException("AppHost is disposed");
     }
 
     /// <summary>

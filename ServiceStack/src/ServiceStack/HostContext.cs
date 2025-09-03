@@ -33,11 +33,10 @@ public static class HostContext
     public static ServiceStackHost AssertAppHost()
     {
         if (ServiceStackHost.Instance == null)
-            throw new ConfigurationErrorsException(
-                "ServiceStack: AppHost does not exist or has not been initialized. " +
-                "Make sure you have created an AppHost and started it with 'new AppHost().Init();' " +
-                " in your Global.asax Application_Start() or alternative Application StartUp");
-                    
+            throw new ConfigurationErrorsException("ServiceStack AppHost is disposed or has not been initialized.");
+        if (ServiceStackHost.Instance.IsDisposed)
+            throw new ObjectDisposedException("AppHost is disposed");
+        
         return ServiceStackHost.Instance;
     }
 #if !NETCORE
