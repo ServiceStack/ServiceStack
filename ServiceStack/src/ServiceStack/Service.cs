@@ -218,7 +218,10 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters, IAs
         Request.ReleaseIfInProcessRequest();
     }
 
-    public virtual void OnBeforeExecute(object requestDto) {}
+    public virtual void OnBeforeExecute(object requestDto)
+    {
+        HostContext.AssertAppHost();
+    }
     public virtual object OnAfterExecute(object response) => response;
     public virtual Task<object> OnExceptionAsync(object requestDto, Exception ex) => TypeConstants.EmptyTask;
         
