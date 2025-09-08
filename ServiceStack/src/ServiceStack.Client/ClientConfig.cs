@@ -102,4 +102,15 @@ public static class ClientConfig
         return JsonSerializer.DeserializeFromString(json, type);
 #endif
     }
+
+#if NET8_0_OR_GREATER
+    public static string IndentJson(string json)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(json);
+        string formattedJson = System.Text.Json.JsonSerializer.Serialize(document, new System.Text.Json.JsonSerializerOptions { 
+            WriteIndented = true 
+        });
+        return formattedJson;
+    }
+#endif
 }
