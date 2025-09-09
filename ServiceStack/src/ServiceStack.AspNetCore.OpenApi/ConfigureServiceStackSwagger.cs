@@ -15,7 +15,7 @@ public class ConfigureServiceStackSwagger(OpenApiMetadata metadata) :
             options.DocumentFilterDescriptors.Add(new FilterDescriptor
             {
                 Type = filterType,
-                Arguments = Array.Empty<object>(),
+                Arguments = [],
             });
         }
         foreach (var filterType in metadata.SchemaFilterTypes)
@@ -23,7 +23,7 @@ public class ConfigureServiceStackSwagger(OpenApiMetadata metadata) :
             options.SchemaFilterDescriptors.Add(new FilterDescriptor
             {
                 Type = filterType,
-                Arguments = Array.Empty<object>(),
+                Arguments = [],
             });
         }
     }

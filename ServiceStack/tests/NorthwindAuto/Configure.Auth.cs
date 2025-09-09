@@ -1,3 +1,4 @@
+using Microsoft.OpenApi.Models;
 using MyApp.Data;
 using ServiceStack;
 using ServiceStack.Auth;
@@ -5,6 +6,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Html;
 using ServiceStack.OrmLite;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAuth))]
 

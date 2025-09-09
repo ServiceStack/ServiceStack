@@ -15,6 +15,11 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
             swaggerDoc.Components.SecuritySchemes[metadata.SecurityDefinition.Scheme] = metadata.SecurityDefinition;
         }
 
+        if (metadata.ApiKeySecurityDefinition != null)
+        {
+            swaggerDoc.Components.SecuritySchemes[metadata.ApiKeySecurityDefinition.Scheme] = metadata.ApiKeySecurityDefinition;
+        }
+
         var operations = HostContext.Metadata.OperationsMap.Values.ToList();
         var dtos = new HashSet<Type>();
         foreach (var op in operations)

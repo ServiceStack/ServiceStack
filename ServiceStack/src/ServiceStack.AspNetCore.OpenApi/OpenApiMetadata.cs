@@ -47,7 +47,7 @@ public static class OpenApiSecurity
                     Id = JwtBearerDefaults.AuthenticationScheme,
                 }
             },
-            Array.Empty<string>()
+            []
         }
     };
     public static OpenApiSecurityScheme JwtBearerScheme { get; set; } = new()
@@ -58,6 +58,29 @@ public static class OpenApiSecurity
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
         Scheme = JwtBearerDefaults.AuthenticationScheme,
+    };
+    
+    public static OpenApiSecurityRequirement ApiKey { get; } = new()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "ApiKey",
+                }
+            },
+            []
+        }
+    };
+    public static OpenApiSecurityScheme ApiKeyScheme { get; set; } = new()
+    {
+        Description = "API Key authorization header using the Bearer scheme in the format `Bearer <ApiKey>`",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "ApiKey"
     };
 }
 
@@ -121,6 +144,9 @@ public class OpenApiMetadata
     public OpenApiSecurityScheme? SecurityDefinition { get; set; }
     public OpenApiSecurityRequirement? SecurityRequirement { get; set; }
     
+    public OpenApiSecurityScheme? ApiKeySecurityDefinition { get; set; }
+    public OpenApiSecurityRequirement? ApiKeySecurityRequirement { get; set; }
+    
     /// <summary>
     /// Exclude showing Request DTO APIs in Open API metadata and Swagger UI
     /// </summary>
@@ -136,6 +162,12 @@ public class OpenApiMetadata
     {
         SecurityDefinition = OpenApiSecurity.JwtBearerScheme;
         SecurityRequirement = OpenApiSecurity.JwtBearer;
+    }
+
+    public void AddApiKeys()
+    {
+        ApiKeySecurityDefinition = OpenApiSecurity.ApiKeyScheme;
+        ApiKeySecurityRequirement = OpenApiSecurity.ApiKey;
     }
 
     public OpenApiOperation AddOperation(OpenApiOperation op, Operation operation, string verb, string route)
@@ -223,6 +255,12 @@ public class OpenApiMetadata
             if (SecurityRequirement != null)
                 op.Security.Add(SecurityRequirement);
         }
+        if (operation.RequiresApiKey)
+        {
+            if (ApiKeySecurityDefinition != null)
+                op.Security.Add(ApiKeySecurityRequirement);
+        }
+        
         var userTags = operation.RequestType.AllAttributes<TagAttribute>().Map(x => x.Name);
         if (userTags.Count > 0)
         {

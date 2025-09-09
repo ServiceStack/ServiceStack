@@ -68,6 +68,9 @@ public static class ServiceStackOpenApiExtensions
     public static void AddJwtAuth(this SwaggerGenOptions options) =>
         options.AddSecurityDefinition(OpenApiSecurity.JwtBearerScheme.Scheme, OpenApiSecurity.JwtBearerScheme);
 
+    public static void AddApiKeys(this SwaggerGenOptions options) =>
+        options.AddSecurityDefinition(OpenApiSecurity.ApiKeyScheme.Scheme, OpenApiSecurity.ApiKeyScheme);
+
     internal static List<IOpenApiAny> ToOpenApiEnums(this IEnumerable<string>? enums) =>
         enums.Safe().Map(x => (IOpenApiAny)new OpenApiString(x));
 

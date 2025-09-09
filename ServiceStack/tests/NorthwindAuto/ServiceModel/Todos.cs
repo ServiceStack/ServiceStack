@@ -22,7 +22,7 @@ public class Todo
     public bool IsFinished { get; set; }
 }
 
-// [ValidateApiKey]
+[ValidateApiKey]
 [Tag("todos")]
 [Route("/todos", "GET")]
 public class QueryTodos : QueryDb<Todo>
@@ -32,7 +32,7 @@ public class QueryTodos : QueryDb<Todo>
     public string? TextContains { get; set; }
 }
 
-// [ValidateApiKey("todo:write")]
+[ValidateApiKey("todo:write")]
 [Tag("todos")]
 [Route("/todos", "POST")]
 public class CreateTodo : ICreateDb<Todo>, IReturn<Todo>
@@ -54,7 +54,7 @@ public class UpdateTodo : IUpdateDb<Todo>, IReturn<Todo>
     public bool IsFinished { get; set; }
 }
 
-// [ValidateApiKey("todo:write")]
+[ValidateApiKey("todo:write")]
 [Tag("todos")]
 [Route("/todos", "DELETE")]
 [Route("/todos/{Id}", "DELETE")]

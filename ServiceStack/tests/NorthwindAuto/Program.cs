@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using MyApp;
 using MyApp.Data;
 using MyApp.ServiceInterface;
@@ -66,6 +67,7 @@ services.AddSwaggerGen();
 builder.Services.AddServiceStack(typeof(MyServices).Assembly, c => {
     c.AddSwagger(o => {
         o.AddBasicAuth();
+        o.AddApiKeys();
     });
 });
 
