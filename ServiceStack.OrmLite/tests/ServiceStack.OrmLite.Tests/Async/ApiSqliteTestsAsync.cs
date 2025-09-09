@@ -178,6 +178,9 @@ public class ApiSqliteTestsAsync(DialectContext context) : OrmLiteProvidersTestB
         Assert.That(db.GetLastSql(), Is.EqualTo("SELECT \"Id\", \"FirstName\", \"LastName\", \"Age\" FROM \"Person\" WHERE Age = @age"));
         await db.ExistsAsync<Person>("SELECT * FROM Person WHERE Age = @age", new { age = 42 });
         Assert.That(db.GetLastSql(), Is.EqualTo("SELECT * FROM Person WHERE Age = @age"));
+        Assert.That(await db.ExistsByIdAsync<Person>(1));
+        Assert.That(db.GetLastSql(), Is.EqualTo("SELECT 1 FROM \"Person\" WHERE \"Id\" = @Id"));
+        Assert.That(await db.ExistsByIdAsync<Person>(-1), Is.False);
 
         await db.SqlListAsync<Person>(db.From<Person>().Select("*").Where(q => q.Age < 50));
         Assert.That(db.GetLastSql(), Is.EqualTo("SELECT * \nFROM \"Person\"\nWHERE (\"Age\" < @0)"));

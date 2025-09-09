@@ -410,6 +410,15 @@ public static class OrmLiteReadApi
     }
 
     /// <summary>
+    /// Returns true if the Query returns any records, using a parameterized query. E.g:
+    /// <para>db.ExistsById&lt;Person&gt;(1)</para>
+    /// </summary>
+    public static bool ExistsById<T>(this IDbConnection dbConn, object id)
+    {
+        return dbConn.Exec(dbCmd => dbCmd.ExistsById<T>(id));
+    }
+
+    /// <summary>
     /// Returns results from an arbitrary SqlExpression. E.g:
     /// <para>db.SqlList&lt;Person&gt;(db.From&lt;Person&gt;().Select("*").Where(q => q.Age &lt; 50))</para>
     /// </summary>

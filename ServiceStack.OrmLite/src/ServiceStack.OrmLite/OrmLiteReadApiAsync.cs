@@ -379,6 +379,15 @@ public static class OrmLiteReadApiAsync
     }
 
     /// <summary>
+    /// Returns true if the Query returns any records, using a parameterized query. E.g:
+    /// <para>db.ExistsByIdAsync&lt;Person&gt;(1)</para>
+    /// </summary>
+    public static Task<bool> ExistsByIdAsync<T>(this IDbConnection dbConn, object id, CancellationToken token = default)
+    {
+        return dbConn.Exec(dbCmd => dbCmd.ExistsByIdAsync<T>(id, token));
+    }
+
+    /// <summary>
     /// Returns results from an arbitrary SqlExpression. E.g:
     /// <para>db.SqlListAsync&lt;Person&gt;(db.From&lt;Person&gt;().Select("*").Where(q => q.Age &lt; 50))</para>
     /// </summary>

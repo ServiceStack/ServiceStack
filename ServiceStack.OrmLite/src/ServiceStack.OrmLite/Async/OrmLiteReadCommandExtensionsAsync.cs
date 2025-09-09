@@ -344,6 +344,23 @@ internal static class OrmLiteReadCommandExtensionsAsync
         return ret != null;
     }
 
+    internal static async Task<bool> ExistsByIdAsync<T>(this IDbCommand dbCmd, object value, CancellationToken token)
+    {
+        if (value == null) 
+            throw new ArgumentNullException(nameof(value));
+        
+        var modelDef = ModelDefinition<T>.Definition;
+        var pkName = ModelDefinition<T>.PrimaryKeyName;
+        var dialect = dbCmd.GetDialectProvider();
+        var result = await dbCmd.SqlScalarAsync<int>(
+            "SELECT 1 FROM " + dialect.GetQuotedTableName(modelDef) + 
+            " WHERE " + dialect.GetQuotedColumnName(modelDef.PrimaryKey) + " = " + dialect.GetParam(pkName), 
+            new Dictionary<string,object> {
+                [pkName] = value
+            }, token);
+        return result == 1;
+    }
+
     // procedures ...		
     internal static Task<List<TOutputModel>> SqlProcedureAsync<TOutputModel>(this IDbCommand dbCommand, object fromObjWithProperties, CancellationToken token)
     {
