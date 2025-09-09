@@ -927,20 +927,20 @@ public static class OrmLiteReadCommandExtensions
 
     internal static long ToLong(int result) => result;
         
-    internal static long ToLong(object result)
+    internal static long ToLong(object result) => result switch
     {
-        if (result is DBNull) return default(long);
-        if (result is int) return (int)result;
-        if (result is decimal) return Convert.ToInt64((decimal)result);
-        if (result is ulong) return (long)Convert.ToUInt64(result);
-        return (long)result;
-    }
+        DBNull => 0,
+        int i => i,
+        decimal d => Convert.ToInt64(d),
+        ulong u => (long)u,
+        _ => Convert.ToInt64(result)
+    };
 
     internal static T LoadSingleById<T>(this IDbCommand dbCmd, object value, string[] include = null)
     {
         var row = dbCmd.SingleById<T>(value);
         if (row == null)
-            return default(T);
+            return default;
 
         dbCmd.LoadReferences(row, include);
 

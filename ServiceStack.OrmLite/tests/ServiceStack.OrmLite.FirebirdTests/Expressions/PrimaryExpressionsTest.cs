@@ -361,7 +361,7 @@ namespace ServiceStack.OrmLite.FirebirdTests.Expressions
         [Test]
         public void Can_select_static_bool_method_expression()
         {
-            var expected = new TestType()
+            var expected = new TestType
             {
                 IntColumn = 12,
                 BoolColumn = false,
