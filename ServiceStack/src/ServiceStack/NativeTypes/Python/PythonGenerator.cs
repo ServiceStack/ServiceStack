@@ -23,6 +23,12 @@ public class PythonGenerator : ILangGenerator
     }
         
     public static Func<IRequest,string> AddHeader { get; set; }
+    
+    public static List<string> AfterImports { get; set; } =
+    [
+        "Object = TypeVar('Object')"
+    ];
+    
     public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
@@ -376,6 +382,11 @@ public class PythonGenerator : ILangGenerator
             sb.AppendLine(pos == -1
                 ? $"import {import}"
                 : $"from {import.Substring(0, pos)} import {import.Substring(pos + 1).StripQuotes().Replace("/",", ")}");
+        }
+
+        foreach (var afterImport in AfterImports)
+        {
+            sb.AppendLine(afterImport);
         }
 
         if (!string.IsNullOrEmpty(globalNamespace))
