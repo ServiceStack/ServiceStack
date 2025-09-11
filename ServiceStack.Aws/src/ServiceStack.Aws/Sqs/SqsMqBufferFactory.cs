@@ -8,7 +8,10 @@ namespace ServiceStack.Aws.Sqs
     public class SqsMqBufferFactory : ISqsMqBufferFactory
     {
         private readonly SqsConnectionFactory sqsConnectionFactory;
-        private static readonly ConcurrentDictionary<string, ISqsMqBuffer> queueNameBuffers = new ConcurrentDictionary<string, ISqsMqBuffer>();
+
+        private static readonly ConcurrentDictionary<string, ISqsMqBuffer> queueNameBuffers = new();
+
+        private int disposing;
         private Timer timer;
         private int processingTimer = 0;
 
@@ -22,27 +25,36 @@ namespace ServiceStack.Aws.Sqs
         public Action<Exception> ErrorHandler { get; set; }
 
         private int bufferFlushIntervalSeconds = 0;
+
         public int BufferFlushIntervalSeconds
         {
             get { return bufferFlushIntervalSeconds; }
             set
             {
+                if (disposing > 0)
+                {
+                    return;
+                }
+
                 bufferFlushIntervalSeconds = value > 0
                     ? value
                     : 0;
 
                 if (timer != null)
-                    return;
-
-                timer = new Timer(OnTimerElapsed, null, bufferFlushIntervalSeconds, Timeout.Infinite);
+                {
+                    timer.Change(bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
+                }
+                else
+                {
+                    timer = new Timer(OnTimerElapsed, null, bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
+                }
             }
         }
 
         private void OnTimerElapsed(object state)
         {
-            if (Interlocked.CompareExchange(ref processingTimer, 1, 0) > 0)
+            if (disposing > 0 || Interlocked.CompareExchange(ref processingTimer, 1, 0) > 0)
                 return;
-
             try
             {
                 foreach (var buffer in queueNameBuffers)
@@ -52,19 +64,12 @@ namespace ServiceStack.Aws.Sqs
             }
             finally
             {
-                if (bufferFlushIntervalSeconds <= 0)
-                {
-                    timer.Dispose();
-                    timer = null;
-                }
-                else
-                {
-                    timer.Change(bufferFlushIntervalSeconds, Timeout.Infinite);
-                }
-
                 Interlocked.CompareExchange(ref processingTimer, 0, 1);
+                if (disposing == 0)
+                {
+                    timer.Change(bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
+                }
             }
-
         }
 
         public ISqsMqBuffer GetOrCreate(SqsQueueDefinition queueDefinition)
@@ -87,6 +92,12 @@ namespace ServiceStack.Aws.Sqs
 
         public void Dispose()
         {
+            if (Interlocked.CompareExchange(ref disposing, 1, 0) > 0)
+            {
+                return;
+            }
+
+            timer?.Dispose();
             foreach (var buffer in queueNameBuffers)
             {
                 buffer.Value.Dispose();
