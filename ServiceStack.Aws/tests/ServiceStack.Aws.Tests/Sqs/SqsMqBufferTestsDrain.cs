@@ -7,8 +7,9 @@ using ServiceStack.Aws.Sqs;
 
 namespace ServiceStack.Aws.Tests.Sqs;
 
+// Note: Test needs to run after SqsMqBufferTests
 [TestFixture]
-public class SqsMqBufferDrainTests
+public class SqsMqBufferTestsDrain
 {
     private SqsQueueManager sqsQueueManager;
     private SqsMqBufferFactory sqsMqBufferFactory;
