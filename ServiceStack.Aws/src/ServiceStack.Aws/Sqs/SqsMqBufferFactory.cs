@@ -98,10 +98,15 @@ namespace ServiceStack.Aws.Sqs
             }
 
             timer?.Dispose();
+            // Remove and dispose all the buffers
             foreach (var buffer in queueNameBuffers)
             {
-                buffer.Value.Dispose();
+                if (queueNameBuffers.TryRemove(buffer.Key, out var b))
+                {
+                    b.Dispose();
+                }
             }
+            timer = null;            
         }
     }
 }
