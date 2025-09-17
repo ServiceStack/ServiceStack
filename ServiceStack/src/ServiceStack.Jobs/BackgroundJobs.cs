@@ -390,8 +390,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                 if (response is IHttpError httpError)
                 {
                     var errorStatus = httpError.Response.GetResponseStatus()
-                                      ?? ResponseStatusUtils.CreateResponseStatus(httpError.ErrorCode,
-                                          httpError.Message, null);
+                       ?? ResponseStatusUtils.CreateResponseStatus(httpError.ErrorCode,httpError.Message,null);
                     FailJob(job, errorStatus, shouldRetry: false);
                     return;
                 }
@@ -978,7 +977,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         using var db = feature.OpenDb();
         var requestId = Guid.NewGuid().ToString("N");
         var now = DateTime.UtcNow;
-
+        
         var commandDurations = db.Dictionary<string, int>(
             db.From<JobSummary>()
                 .Where(j => Sql.In(j.Id,
@@ -986,11 +985,12 @@ public partial class BackgroundJobs : IBackgroundJobs
                         .Where(x => x.State == BackgroundJobState.Completed
                                     && x.DurationMs > 0
                                     && x.RequestType == CommandResult.Command)
-                        .GroupBy(x => new { x.Command, x.Worker })
-                        .Select(x => x.Id)))
+                        .GroupBy(x => new { x.Id, x.Command, x.Worker })
+                        .SelectDistinct(x => x.Id)))
+                .GroupBy(x => new { x.Command, x.Worker })
                 .Select(x => new {
-                    Command = Sql.Custom($"IIF({columns.Worker} is null, {columns.Command}, {columns.Command} || '.' || {columns.Worker}) AS Command, {columns.DurationMs}"), 
-                    x.DurationMs
+                    Command = Sql.Custom($"IIF({columns.Worker} is null, {columns.Command}, {columns.Command} || '.' || {columns.Worker})"), 
+                    DurationMs = Sql.Sum(columns.DurationMs),
                 }));
         lastCommandDurations = new(commandDurations);
         
@@ -1001,11 +1001,12 @@ public partial class BackgroundJobs : IBackgroundJobs
                         .Where(x => x.State == BackgroundJobState.Completed
                                     && x.DurationMs > 0
                                     && x.RequestType == CommandResult.Api)
-                        .GroupBy(x => new { x.Command, x.Worker })
-                        .Select(x => x.Id)))
+                        .GroupBy(x => new { x.Id, x.Command, x.Worker })
+                        .SelectDistinct(x => x.Id)))
+                .GroupBy(x => new { x.Command, x.Worker })
                 .Select(x => new {
-                    Request = Sql.Custom($"IIF({columns.Worker} is null, {columns.Request}, {columns.Request} || '.' || {columns.Worker}) AS Request, {columns.DurationMs}"), 
-                    x.DurationMs
+                    Command = Sql.Custom($"IIF({columns.Worker} is null, {columns.Command}, {columns.Command} || '.' || {columns.Worker})"), 
+                    DurationMs = Sql.Sum(columns.DurationMs),
                 }));
         lastApiDurations = new(apiDurations);
 
