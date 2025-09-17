@@ -1181,7 +1181,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                         ? job.Logs + "\n" + update.Log
                         : update.Log;
                     
-                    fieldUpdates.Add($"Logs = CASE WHEN {columns.Logs} IS NOT NULL THEN {columns.Logs} || char(10) || @log ELSE @log END");
+                    fieldUpdates.Add($"{columns.Logs} = CASE WHEN {columns.Logs} IS NOT NULL THEN {columns.Logs} || char(10) || @log ELSE @log END");
                     dbParams["log"] = update.Log;
                 }
                 if (update.Status != null)
