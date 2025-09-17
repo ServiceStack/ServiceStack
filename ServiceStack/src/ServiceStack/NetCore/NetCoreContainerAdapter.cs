@@ -22,11 +22,18 @@ public class NetCoreContainerAdapter : IContainerAdapter, IDisposable
     {
         try
         {
-            return httpContextAccessor?.HttpContext != null 
-                ? httpContextAccessor.HttpContext.RequestServices.GetService<T>() 
-                : scope.ServiceProvider.GetService<T>();
+            if (httpContextAccessor?.HttpContext != null)
+                return httpContextAccessor.HttpContext.RequestServices.GetService<T>();
+            if (scope.ServiceProvider != null)
+                return scope.ServiceProvider.GetService<T>();
+            return default;
         }
-        catch (NullReferenceException) // treat as not registered, happens with `ValueTask<ICacheClientAsync>`
+        // treat as not registered, happens with `ValueTask<ICacheClientAsync>`        
+        catch (NullReferenceException)
+        {
+            return default;
+        }
+        catch (ArgumentNullException)
         {
             return default;
         }
