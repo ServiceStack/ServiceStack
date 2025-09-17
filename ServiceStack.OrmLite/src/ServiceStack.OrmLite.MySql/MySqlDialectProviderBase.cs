@@ -579,6 +579,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 			: $"CAST({fieldOrValue} AS {castAs})";
 
 	public override string SqlBool(bool value) => value ? "1" : "0";
+	public override string SqlDateFormat(string quotedColumn, string format) => $"DATE_FORMAT({quotedColumn}, '{format}')";
 
 	public override void EnableForeignKeysCheck(IDbCommand cmd) => cmd.ExecNonQuery("SET FOREIGN_KEY_CHECKS=1;");
 	public override Task EnableForeignKeysCheckAsync(IDbCommand cmd, CancellationToken token = default) => 
