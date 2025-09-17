@@ -122,6 +122,7 @@ public class BackgroundJob : BackgroundJobBase
 
     [Ignore, IgnoreDataMember] public bool Transient { get; set; }
     [Ignore, IgnoreDataMember] public object? TransientRequest { get; set; }
+    [Ignore, IgnoreDataMember] public object? TransientResponse { get; set; }
     [Ignore, IgnoreDataMember] public CompletedJob? ParentJob { get; set; }
     [Ignore, IgnoreDataMember] public Action<object?>? OnSuccess { get; set; }
     [Ignore, IgnoreDataMember] public Action<Exception>? OnFailed { get; set; }
