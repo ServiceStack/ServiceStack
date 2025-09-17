@@ -262,24 +262,13 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     public object Any(AdminJobInfo request)
     {
         var feature = AssertRequiredRole();
-
-        var dir = Path.IsPathRooted(feature.DbDir) ?
-            new DirectoryInfo(feature.DbDir)
-            : new DirectoryInfo(HostContext.AppHost.GetHostingEnvironment().ContentRootPath.CombineWith(feature.DbDir));
-        
-        var monthDbs = dir.GetFiles()
-            .Where(x => x.Name.Contains('_'));
-        var to = new AdminJobInfoResponse();
-
-        to.MonthDbs = monthDbs.Select(x => 
-            DateTime.TryParse(x.Name.RightPart('_').LeftPart('.') + "-01", out var date) ? date : (DateTime?)null)
-            .Where(x => x != null)
-            .Select(x => x!.Value)
-            .OrderDescending()
-            .ToList();
-
         using var db = jobs.OpenDb();
         var dialect = db.GetDialectProvider();
+
+        var to = new AdminJobInfoResponse
+        {
+            MonthDbs = feature.GetTableMonths(db)
+        };
 
         var tables = new (string Label, Type Type)[] 
         {

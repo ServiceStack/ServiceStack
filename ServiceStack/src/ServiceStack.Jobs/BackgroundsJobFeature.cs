@@ -169,4 +169,21 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
             ? DbDir.CombineWith(monthDb)
             : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
     }
+
+    public List<DateTime> GetTableMonths(IDbConnection db)
+    {
+        var dir = Path.IsPathRooted(DbDir) ?
+            new DirectoryInfo(DbDir)
+            : new DirectoryInfo(HostContext.AppHost.GetHostingEnvironment().ContentRootPath.CombineWith(DbDir));
+        
+        var monthDbs = dir.GetFiles()
+            .Where(x => x.Name.Contains('_'));
+
+        return monthDbs.Select(x => 
+                DateTime.TryParse(x.Name.RightPart('_').LeftPart('.') + "-01", out var date) ? date : (DateTime?)null)
+            .Where(x => x != null)
+            .Select(x => x!.Value)
+            .OrderDescending()
+            .ToList();
+    }
 }
