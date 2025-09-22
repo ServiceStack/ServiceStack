@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -138,7 +139,7 @@ public class OpenApiMetadata
         {typeof(DateTimeOffset), OpenApiTypeFormat.DateTime},
     };
 
-    public Dictionary<string, OpenApiSchema> Schemas { get; } = new();
+    public ConcurrentDictionary<string, OpenApiSchema> Schemas { get; } = new();
     internal static List<string> InlineSchemaTypesInNamespaces { get; set; } = new();
     
     public OpenApiSecurityScheme? SecurityDefinition { get; set; }
