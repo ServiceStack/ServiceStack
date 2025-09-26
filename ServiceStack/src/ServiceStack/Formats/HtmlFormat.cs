@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Serialization;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Formats;
@@ -128,14 +130,14 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
             };
 
             html = ReplaceTokens(ResolveTemplate?.Invoke(req) ?? Templates.HtmlTemplates.GetHtmlFormatTemplate(), req)
-                    .Replace("${RequestName}", requestName)
+                    .Replace("${RequestName}", EncodeForJavaScriptString(requestName))
                     .Replace("${ServerInfo}", serverInfo.ToJson(configure:x => x.TextCase = Text.TextCase.CamelCase))
                     .Replace("${RequestDto}", JsonDataContractSerializer.Instance.SerializeToString(req.Dto)?.HtmlEncodeLite() ?? "null")
                     .Replace("${Dto}", json)
                     .Replace("${Title}", string.Format(TitleFormat, requestName, now))
                     .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
                     .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
-                    .Replace("${ServiceUrl}", url)
+                    .Replace("${ServiceUrl}", EncodeForJavaScriptString(url))
                     .Replace("${Humanize}", Humanize.ToString().ToLower())
                 ;
         }
@@ -149,13 +151,73 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
             return string.Empty;
 
         html = html
-                .Replace("${BaseUrl}", req.GetBaseUrl().WithTrailingSlash())
-                .Replace("${AuthRedirect}", req.ResolveAbsoluteUrl(HostContext.AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect))
-                .Replace("${AllowOrigins}", HostContext.AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";"))
-                .Replace("${NoProfileImgUrl}", req.TryResolve<IAuthMetadataProvider>()?.GetProfileUrl(null) ?? JwtClaimTypes.DefaultProfileUrl)
+                .Replace("${BaseUrl}", EncodeForJavaScriptString(req.GetBaseUrl().WithTrailingSlash()))
+                .Replace("${AuthRedirect}",  EncodeForJavaScriptString(req.ResolveAbsoluteUrl(HostContext.AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect)))
+                .Replace("${AllowOrigins}", EncodeForJavaScriptString(HostContext.AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";")))
+                .Replace("${NoProfileImgUrl}", EncodeForJavaScriptString(req.TryResolve<IAuthMetadataProvider>()?.GetProfileUrl(null)) ?? JwtClaimTypes.DefaultProfileUrl)
             ;
         return html;
     }
+    
+    /// <summary>
+    /// Encodes a string so it can be safely embedded within double-quoted JavaScript strings.
+    /// Handles escape sequences, Unicode characters, and line breaks.
+    /// </summary>
+    public static string EncodeForJavaScriptString(string input)
+    {
+        if (input == null)
+            return "";
+        
+        if (input.Length == 0)
+            return string.Empty;
+        
+        var sb = StringBuilderCache.Allocate();
+        foreach (char c in input)
+        {
+            switch (c)
+            {
+                case '"':
+                    sb.Append("\\\"");
+                    break;
+                case '\\':
+                    sb.Append("\\\\");
+                    break;
+                case '\b':
+                    sb.Append("\\b");
+                    break;
+                case '\f':
+                    sb.Append("\\f");
+                    break;
+                case '\n':
+                    sb.Append("\\n");
+                    break;
+                case '\r':
+                    sb.Append("\\r");
+                    break;
+                case '\t':
+                    sb.Append("\\t");
+                    break;
+                case '\v':
+                    sb.Append("\\v");
+                    break;
+                case '\0':
+                    sb.Append("\\0");
+                    break;
+                default:
+                    // Handle control characters and non-ASCII characters
+                    if (c < 32 || c > 126)
+                    {
+                        sb.AppendFormat("\\u{0:x4}", (int)c);
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                    }
+                    break;
+            }
+        }
+        return StringBuilderCache.ReturnAndFree(sb);
+    }    
 }
 
 public class ServerInfo
