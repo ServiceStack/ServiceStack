@@ -44,6 +44,9 @@ public class AnalyticsInfo
 
 public interface IRequireAnalytics
 {
+#if NET6_0_OR_GREATER
+    void Tick(Microsoft.Extensions.Logging.ILogger log);
+#endif
     long GetTotal(DateTime month);
     List<RequestLogEntry> QueryLogs(RequestLogs request);
     void ClearAnalyticsCaches(DateTime month);
