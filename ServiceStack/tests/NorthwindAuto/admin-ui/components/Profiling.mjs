@@ -243,6 +243,7 @@ export const Profiling = {
                     <div class="pt-2 icon-outer" style="min-height:2.5rem">
                       <CopyIcon class="absolute right-4" :text="prettyJson(selected.error)" />
                       <table>
+                      <tbody>
                         <tr>
                           <th class="text-left font-medium align-top pr-2">Code</th>
                           <td>{{ selected.error.errorCode }}</td>
@@ -263,6 +264,7 @@ export const Profiling = {
                             <HtmlFormat :value="selected.error.errors" />
                           </td>
                         </tr>
+                      </tbody>
                       </table>
                     </div>
                   </div>

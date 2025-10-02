@@ -271,6 +271,7 @@ const JobDialog = {
             <div v-if="error" class="relative flex overflow-auto">
               <CopyIcon class="absolute top-1 right-1" :text="prettyJson(error)" />
               <table class="border-separate border-spacing-2 text-sm">
+              <tbody>
                 <tr>
                   <th class="text-left font-medium align-top pr-2">Code</th>
                   <td>{{ error.errorCode }}</td>
@@ -291,6 +292,7 @@ const JobDialog = {
                     <HtmlFormat :value="error.errors" />
                   </td>
                 </tr>
+              </tbody>
               </table>
             </div>
             <div v-if="job.logs" class="bg-gray-100 text-gray-900 px-3 py-3">
