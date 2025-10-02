@@ -204,7 +204,7 @@ export const Logging = {
                                 {{ selectedSession && selectedSession.value }}
                               </a>
                             </div>
-                            <div v-if="selected.traceId" class="ml-2 flex items-center" title="Trace Id">
+                            <div v-if="server.plugins.profiling && selected.traceId" class="ml-2 flex items-center" title="Trace Id">
                               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500"
                                    viewBox="0 0 24 24">
                                 <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -585,6 +585,7 @@ export const Logging = {
             app.unsubscribe(sub)
         })
         return {
+            server,
             routes,
             useAutoQuery,
             css,
