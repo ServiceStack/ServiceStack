@@ -1,8 +1,8 @@
-import {computed, inject, onMounted, onUnmounted, ref, watch, nextTick} from "vue"
-import {useClient, useFiles, useFormatters, useUtils, css} from "@servicestack/vue";
-import {ApiResult, apiValueFmt, humanify, mapGet,leftPart,pick} from "@servicestack/client"
-import {GetAnalyticsReports, GetAnalyticsInfo, AdminGetUser, AdminQueryApiKeys} from "dtos"
-import {Chart, registerables} from 'chart.js'
+import { computed, inject, onMounted, onUnmounted, ref, watch, nextTick } from "vue"
+import { useClient, useFiles, useFormatters, useUtils, css } from "@servicestack/vue";
+import { ApiResult, apiValueFmt, humanify, mapGet, leftPart, pick } from "@servicestack/client"
+import { GetAnalyticsReports, GetAnalyticsInfo, AdminGetUser, AdminQueryApiKeys } from "dtos"
+import { Chart, registerables } from 'chart.js'
 Chart.register(...registerables)
 import {
     resultLimits,
@@ -20,8 +20,8 @@ import {
     createStatusCodesChart,
     createRequestsChart,
 } from "charts"
-const { humanifyMs, humanifyNumber, formatDate } = useFormatters()
-const { delay } = useUtils()
+const {humanifyMs, humanifyNumber, formatDate} = useFormatters()
+const {delay} = useUtils()
 const numFmt = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -30,8 +30,8 @@ function round(n) {
     return n.toString().indexOf(".") === -1 ? n : numFmt.format(n);
 }
 const ApiAnalytics = {
-    template:`
-      <div class="my-4 mx-auto max-w-lg">
+    template: `
+      <div class="my-4 mx-auto max-w-sm">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboApis" id="op" label="" placeholder="Select API"
@@ -193,23 +193,25 @@ const ApiAnalytics = {
             api: 10,
             duration: 10
         })
-        const { formatBytes } = useFiles()
+        const {formatBytes} = useFiles()
         const apiAnalytics = computed(() => {
             const api = props.analytics?.apis?.[routes.op]
             if (api) {
                 let ret = []
                 if (api.totalDuration) {
-                    ret.push({ name: 'Duration',
+                    ret.push({
+                        name: 'Duration',
                         Total: humanifyMs(round(api.totalDuration)),
                         Min: humanifyMs(round(api.minDuration)),
                         Max: humanifyMs(round(api.maxDuration)),
                     })
                 }
                 if (api.totalRequestLength) {
-                    ret.push({ name: 'Request Body', 
-                        Total: formatBytes(api.totalRequestLength), 
-                        Min: formatBytes(api.minRequestLength), 
-                        Max: formatBytes(api.maxRequestLength), 
+                    ret.push({
+                        name: 'Request Body',
+                        Total: formatBytes(api.totalRequestLength),
+                        Min: formatBytes(api.minRequestLength),
+                        Max: formatBytes(api.maxRequestLength),
                     })
                 }
                 return ret
@@ -225,7 +227,7 @@ const ApiAnalytics = {
                 }
                 const ret = []
                 Object.entries(api.status).forEach(([status, count]) => {
-                    ret.push({ label:status, href:`${linkBase}&status=${status}`, count })
+                    ret.push({label: status, href: `${linkBase}&status=${status}`, count})
                 })
                 return ret
             }
@@ -233,7 +235,6 @@ const ApiAnalytics = {
         })
         let userStatusCodesChart = null
         let browsersChart = null
-        
         const createBrowsersChart = () => {
             if (!props.analytics || !refBrowsers.value) return
             const browsers = props.analytics.browsers || {}
@@ -271,7 +272,7 @@ const ApiAnalytics = {
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     const label = context.label || '';
                                     const value = context.raw || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -322,7 +323,7 @@ const ApiAnalytics = {
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     const label = context.label || '';
                                     const value = context.raw || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -340,7 +341,7 @@ const ApiAnalytics = {
             if (!props.analytics || !refBots.value) return
             let bots = props.analytics.bots || {}
             if (!Object.keys(bots).length) {
-                bots = { None: 0 }
+                bots = {None: 0}
             }
             // Create labels and data for the chart
             const sortedBots = Object.entries(bots)
@@ -379,7 +380,7 @@ const ApiAnalytics = {
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     const label = context.label || '';
                                     const value = context.raw || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -397,13 +398,12 @@ const ApiAnalytics = {
             if (!props.analytics || !refWeeklyRequests.value) return
             // Sample data provided
             const days = props.analytics.days
-            
             const allDays = Object.keys(days)
             const last10Days = allDays.slice(Math.max(allDays.length - 10, 0))
             // Map numeric days to day names
             const labels = last10Days.map(day => new Date(routes.month
                 ? `${routes.month}-${day.padStart(2, '0')}`
-                : new Date().toISOString().slice(0, 7) + '-' + day.padStart(2, '0')).toLocaleDateString('en-US', { weekday: 'short' }) + ` ${day}`);
+                : new Date().toISOString().slice(0, 7) + '-' + day.padStart(2, '0')).toLocaleDateString('en-US', {weekday: 'short'}) + ` ${day}`);
             // Extract request data
             const requestData = last10Days.map(day => days[day].totalRequests);
             // Calculate average response time data
@@ -447,7 +447,7 @@ const ApiAnalytics = {
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     const label = context.dataset.label || '';
                                     const value = context.raw || 0;
                                     return `${label}: ${value.toLocaleString()}`;
@@ -484,7 +484,7 @@ const ApiAnalytics = {
             if (!props.analytics || !refTags.value) return
             let tags = props.analytics.tags || {}
             if (!Object.keys(tags).length) {
-                tags = { None: 0 }
+                tags = {None: 0}
             }
             // Create labels and data for the chart
             const sortedTags = Object.entries(tags)
@@ -523,7 +523,7 @@ const ApiAnalytics = {
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     const label = context.label || '';
                                     const value = context.raw || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -536,7 +536,6 @@ const ApiAnalytics = {
                 }
             })
         }
-        
         let apiRequestsChart = null
         let apiAverageDurationsChart = null
         const createApiAverageDurationsChart = () => {
@@ -575,10 +574,10 @@ const ApiAnalytics = {
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return `Average Duration: ${humanifyMs(context.raw)}`;
                                 },
-                                afterLabel: function(context) {
+                                afterLabel: function (context) {
                                     const index = context.dataIndex;
                                     const api = sortedApis[index][1];
                                     let lines = [];
@@ -595,7 +594,7 @@ const ApiAnalytics = {
                         x: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return humanifyMs(value);
                                 }
                             }
@@ -643,10 +642,10 @@ const ApiAnalytics = {
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return `Total Duration: ${humanifyMs(context.raw)}`;
                                 },
-                                afterLabel: function(context) {
+                                afterLabel: function (context) {
                                     const index = context.dataIndex;
                                     const api = sortedApis[index][1];
                                     let lines = [];
@@ -663,7 +662,7 @@ const ApiAnalytics = {
                         x: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return humanifyMs(value);
                                 }
                             }
@@ -696,11 +695,10 @@ const ApiAnalytics = {
                 opTopIpsChart,
             ].forEach(chart => chart?.destroy())
         })
-        
         function update() {
             opEntries.value = Object.keys(props.analytics?.apis ?? {})
-                .map(key => ({ key, value:props.analytics.apis[key] }))
-                .sort((a,b) => b.value.totalRequests - a.value.totalRequests)
+                .map(key => ({key, value: props.analytics.apis[key]}))
+                .sort((a, b) => b.value.totalRequests - a.value.totalRequests)
             opEntry.value = routes.op ? opEntries.value.find(x => x.key === routes.op) : null
             createBrowsersChart()
             createDevicesChart()
@@ -708,8 +706,8 @@ const ApiAnalytics = {
             createWeeklyRequestsChart()
             createTagsChart()
             apiRequestsChart = createRequestsChart({
-                requests: sortedSummaryRequests(props.analytics?.apis,limits.value.api), 
-                chart: apiRequestsChart, 
+                requests: sortedSummaryRequests(props.analytics?.apis, limits.value.api),
+                chart: apiRequestsChart,
                 refEl: refApiRequests,
                 onClick: onClick(props.analytics, routes, 'api')
             })
@@ -718,7 +716,6 @@ const ApiAnalytics = {
             apiDurationRangesChart = createDurationRangesChart(props.analytics.durations, apiDurationRangesChart, refApiDurationRanges)
             updateApi()
         }
-        
         function updateApi() {
             userStatusCodesChart = createStatusCodesChart({
                 requests: props.analytics.apis[routes.op]?.status,
@@ -728,12 +725,12 @@ const ApiAnalytics = {
             opDurationRangesChart = createDurationRangesChart(props.analytics.apis[routes.op]?.durations, opDurationRangesChart, refOpDurationRanges)
             opTopUsersChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.apis[routes.op]?.users),
-                chart: opTopUsersChart, 
+                chart: opTopUsersChart,
                 refEl: refOpTopUsers,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     const userId = ctx.labels[index]
                     const user = userId && props.analytics.users[userId]
-                    return user?.name ?? substringWithEllipsis(userId,16)
+                    return user?.name ?? substringWithEllipsis(userId, 16)
                 },
                 onClick: onClick(props.analytics, routes, 'user'),
             })
@@ -741,7 +738,7 @@ const ApiAnalytics = {
                 requests: sortedDetailRequests(props.analytics.apis[routes.op]?.apiKeys),
                 chart: opTopApiKeysChart,
                 refEl: refOpTopApiKeys,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     return hiddenApiKey(ctx.labels[index])
                 },
                 onClick: onClick(props.analytics, routes, 'apiKey'),
@@ -753,7 +750,6 @@ const ApiAnalytics = {
                 onClick: onClick(props.analytics, routes, 'ip'),
             })
         }
-        
         watch(() => [routes.month], update)
         watch(() => [routes.op], () => {
             opEntry.value = routes.op ? opEntries.value.find(x => x.key === routes.op) : null
@@ -762,14 +758,14 @@ const ApiAnalytics = {
         watch(() => [opEntry.value], () => {
             const op = opEntry.value?.key
             if (op !== routes.op) {
-                routes.to({ op })
+                routes.to({op})
             }
         })
         watch(() => [props.analytics, limits.value.api], () => {
             nextTick(() => {
                 apiRequestsChart = createRequestsChart(
-                    sortedDetailRequests(props.analytics?.apis,limits.value.api), 
-                    refApiRequests, 
+                    sortedDetailRequests(props.analytics?.apis, limits.value.api),
+                    refApiRequests,
                     apiRequestsChart,
                     onClick(props.analytics, routes, 'api'))
             })
@@ -809,8 +805,8 @@ const ApiAnalytics = {
     }
 }
 const UserAnalytics = {
-    template:`
-      <div class="my-4 mx-auto max-w-lg">
+    template: `
+      <div class="my-4 mx-auto max-w-sm">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select User"
@@ -835,6 +831,7 @@ const UserAnalytics = {
             <div class="lg:w-1/2">
               <div class="flex justify-between">
                 <table class="text-sm">
+                  <tbody>
                   <template v-if="userInfo">
                     <tr>
                       <td>Id</td>
@@ -848,7 +845,7 @@ const UserAnalytics = {
                       <td>Name</td>
                       <td class="pl-2">
                         <a :href="'./users?edit=' + userInfo.id" class="text-indigo-700 hover:text-indigo-600">
-                            {{ userInfo.result.DisplayName ?? (userInfo.result.FirstName ? (userInfo.result.FirstName + ' ' + userInfo.result.LastName) : userInfo.result.UserName) ?? userInfo.result.Email }}
+                          {{ userInfo.result.DisplayName ?? (userInfo.result.FirstName ? (userInfo.result.FirstName + ' ' + userInfo.result.LastName) : userInfo.result.UserName) ?? userInfo.result.Email }}
                         </a>
                       </td>
                     </tr>
@@ -857,6 +854,7 @@ const UserAnalytics = {
                     <td>Total Requests</td>
                     <td class="pl-2">{{humanifyNumber(analytics.users[routes.userId].totalRequests)}}</td>
                   </tr>
+                  </tbody>
                 </table>
                 <a :href="'./users?edit=' + routes.userId">
                   <img :src="userInfo?.result.ProfileUrl || store.userIconUri" class="m-2 h-16 w-16 rounded-full text-gray-500" alt="User Profile" :onerror="'this.src=' + JSON.stringify(store.userIconUri)">
@@ -932,20 +930,22 @@ const UserAnalytics = {
         const limits = ref({
             user: 25,
         })
-        const { formatBytes } = useFiles()
+        const {formatBytes} = useFiles()
         const userAnalytics = computed(() => {
             const user = props.analytics?.users?.[routes.userId]
             if (user) {
                 let ret = []
                 if (user.totalDuration) {
-                    ret.push({ name: 'Duration',
+                    ret.push({
+                        name: 'Duration',
                         Total: humanifyMs(round(user.totalDuration)),
                         Min: humanifyMs(round(user.minDuration)),
                         Max: humanifyMs(round(user.maxDuration)),
                     })
                 }
                 if (user.totalRequestLength) {
-                    ret.push({ name: 'Request Body',
+                    ret.push({
+                        name: 'Request Body',
                         Total: formatBytes(user.totalRequestLength),
                         Min: formatBytes(user.minRequestLength),
                         Max: formatBytes(user.maxRequestLength),
@@ -964,7 +964,7 @@ const UserAnalytics = {
                 }
                 const ret = []
                 Object.entries(api.status).forEach(([status, count]) => {
-                    ret.push({ label:status, href:`${linkBase}&status=${status}`, count })
+                    ret.push({label: status, href: `${linkBase}&status=${status}`, count})
                 })
                 return ret
             }
@@ -990,16 +990,15 @@ const UserAnalytics = {
                 userTopIpsChart,
             ].forEach(chart => chart?.destroy())
         })
-        
         function createUserRequestsChart() {
             userRequestsChart = createRequestsChart({
-                requests: sortedSummaryRequests(props.analytics?.users,limits.value.user),
+                requests: sortedSummaryRequests(props.analytics?.users, limits.value.user),
                 chart: userRequestsChart,
                 refEl: refUserRequests,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     const userId = ctx.labels[index]
                     const user = userId && props.analytics.users[userId]
-                    return user?.name ?? substringWithEllipsis(userId,16)
+                    return user?.name ?? substringWithEllipsis(userId, 16)
                 },
                 onClick: onClick(props.analytics, routes, 'user'),
             })
@@ -1008,11 +1007,10 @@ const UserAnalytics = {
             createUserRequestsChart()
             updateUser()
         }
-        
         function updateUser() {
             userInfo.value = null
             if (routes.userId) {
-                client.api(new AdminGetUser({ id: routes.userId }))
+                client.api(new AdminGetUser({id: routes.userId}))
                     .then(r => {
                         if (r.succeeded) {
                             userInfo.value = r.response
@@ -1020,22 +1018,21 @@ const UserAnalytics = {
                     })
             }
             opEntries.value = Object.keys(props.analytics?.users ?? {})
-                .map(key => ({ key, value:props.analytics.users[key] }))
-                .sort((a,b) => b.value.totalRequests - a.value.totalRequests)
+                .map(key => ({key, value: props.analytics.users[key]}))
+                .sort((a, b) => b.value.totalRequests - a.value.totalRequests)
             opEntry.value = routes.userId ? opEntries.value.find(x => x.key === routes.userId) : null
             userStatusCodesChart = createStatusCodesChart({
                 requests: props.analytics.users[routes.userId]?.status,
                 chart: userStatusCodesChart,
                 refEl: refUserStatusCodes,
             })
-            
             userDurationRangesChart = createDurationRangesChart(
                 props.analytics.users[routes.userId]?.durations, userDurationRangesChart, refUserDurationRanges)
             userTopApisChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.users[routes.userId]?.apis),
                 chart: userTopApisChart,
                 refEl: refUserTopApis,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     return ctx.labels[index]
                 },
                 onClick: onClick(props.analytics, routes, 'api'),
@@ -1044,7 +1041,7 @@ const UserAnalytics = {
                 requests: sortedDetailRequests(props.analytics.users[routes.userId]?.apiKeys),
                 chart: userTopApiKeysChart,
                 refEl: refUserTopApiKeys,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     return hiddenApiKey(ctx.labels[index])
                 },
                 onClick: onClick(props.analytics, routes, 'apiKey'),
@@ -1056,12 +1053,11 @@ const UserAnalytics = {
                 onClick: onClick(props.analytics, routes, 'ip'),
             })
         }
-        
         async function loadUserIfMissing() {
             if (routes.userId && props.analytics?.users && !props.analytics.users[routes.userId]) {
                 const r = await client.api(new GetAnalyticsReports({
-                    filter:'user',
-                    value:routes.userId
+                    filter: 'user',
+                    value: routes.userId
                 }))
                 if (r.response) {
                     const user = Object.values(r.response.result?.users ?? {})[0]
@@ -1078,7 +1074,7 @@ const UserAnalytics = {
         watch(() => [opEntry.value], () => {
             const userId = opEntry.value?.key
             if (userId !== routes.userId) {
-                routes.to({ userId })
+                routes.to({userId})
             }
         })
         watch(() => [props.analytics, limits.value.user], () => {
@@ -1110,8 +1106,8 @@ const UserAnalytics = {
     }
 }
 const ApiKeyAnalytics = {
-    template:`
-      <div class="my-4 mx-auto max-w-lg">
+    template: `
+      <div class="my-4 mx-auto max-w-sm">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select API Key"
@@ -1261,20 +1257,22 @@ const ApiKeyAnalytics = {
         const limits = ref({
             apiKey: 25,
         })
-        const { formatBytes } = useFiles()
+        const {formatBytes} = useFiles()
         const apiKeyAnalytics = computed(() => {
             const user = props.analytics?.apiKeys?.[routes.apiKey]
             if (user) {
                 let ret = []
                 if (user.totalDuration) {
-                    ret.push({ name: 'Duration',
+                    ret.push({
+                        name: 'Duration',
                         Total: humanifyMs(round(user.totalDuration)),
                         Min: humanifyMs(round(user.minDuration)),
                         Max: humanifyMs(round(user.maxDuration)),
                     })
                 }
                 if (user.totalRequestLength) {
-                    ret.push({ name: 'Request Body',
+                    ret.push({
+                        name: 'Request Body',
                         Total: formatBytes(user.totalRequestLength),
                         Min: formatBytes(user.minRequestLength),
                         Max: formatBytes(user.maxRequestLength),
@@ -1293,7 +1291,7 @@ const ApiKeyAnalytics = {
                 }
                 const ret = []
                 Object.entries(api.status).forEach(([status, count]) => {
-                    ret.push({ label:status, href:`${linkBase}&status=${status}`, count })
+                    ret.push({label: status, href: `${linkBase}&status=${status}`, count})
                 })
                 return ret
             }
@@ -1320,10 +1318,10 @@ const ApiKeyAnalytics = {
         })
         function createApiKeyRequestsChart() {
             apiKeyRequestsChart = createRequestsChart({
-                requests: sortedSummaryRequests(props.analytics?.apiKeys,limits.value.apiKey),
+                requests: sortedSummaryRequests(props.analytics?.apiKeys, limits.value.apiKey),
                 chart: apiKeyRequestsChart,
                 refEl: refApiKeyRequests,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     return hiddenApiKey(ctx.labels[index])
                 },
                 onClick: onClick(props.analytics, routes, 'apiKey')
@@ -1335,15 +1333,15 @@ const ApiKeyAnalytics = {
         }
         function updateApiKey() {
             apiKeyInfo.value = null
-            client.api(new AdminQueryApiKeys({ apiKey:routes.apiKey }))
+            client.api(new AdminQueryApiKeys({apiKey: routes.apiKey}))
                 .then(r => {
                     if (r.succeeded) {
                         apiKeyInfo.value = r.response?.results?.[0]
                     }
                 })
             opEntries.value = Object.keys(props.analytics?.apiKeys ?? {})
-                .map(key => ({ key, value:props.analytics.apiKeys[key] }))
-                .sort((a,b) => b.value.totalRequests - a.value.totalRequests)
+                .map(key => ({key, value: props.analytics.apiKeys[key]}))
+                .sort((a, b) => b.value.totalRequests - a.value.totalRequests)
             opEntry.value = routes.apiKey ? opEntries.value.find(x => x.key === routes.apiKey) : null
             apiKeyStatusCodesChart = createStatusCodesChart({
                 requests: props.analytics.apiKeys[routes.apiKey]?.status,
@@ -1355,7 +1353,7 @@ const ApiKeyAnalytics = {
                 requests: sortedDetailRequests(props.analytics.apiKeys[routes.apiKey]?.apis),
                 chart: apiKeyTopApisChart,
                 refEl: refApiKeyTopApis,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     return ctx.labels[index]
                 },
                 onClick: onClick(props.analytics, routes, 'api'),
@@ -1370,19 +1368,19 @@ const ApiKeyAnalytics = {
                 requests: sortedDetailRequests(props.analytics.apiKeys[routes.apiKey]?.users),
                 chart: apiKeyTopUsersChart,
                 refEl: refApiKeyTopUsers,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     const userId = ctx.labels[index]
                     const user = userId && props.analytics.users[userId]
-                    return user?.name ?? substringWithEllipsis(userId,16)
+                    return user?.name ?? substringWithEllipsis(userId, 16)
                 },
                 onClick: onClick(props.analytics, routes, 'user'),
             })
         }
         async function loadApiKeyIfMissing() {
             const requestArgs = routes.apiKey && props.analytics?.apiKeys && !props.analytics.apiKeys[routes.apiKey]
-                ? { filter:'apiKey', value:routes.apiKey }
+                ? {filter: 'apiKey', value: routes.apiKey}
                 : routes.apiKeyId
-                    ? { filter:'apiKeyId', value:routes.apiKeyId }
+                    ? {filter: 'apiKeyId', value: routes.apiKeyId}
                     : null
             if (requestArgs) {
                 const r = await client.api(new GetAnalyticsReports(requestArgs))
@@ -1393,13 +1391,12 @@ const ApiKeyAnalytics = {
                         props.analytics.apiKeys[apiKey] = apiKeyInfo
                         // from ManageUserApiKeys
                         if (routes.apiKeyId) {
-                            routes.to({ apiKey, apiKeyId:undefined })
+                            routes.to({apiKey, apiKeyId: undefined})
                         }
                     }
                 }
             }
         }
-        
         watch(() => [routes.month], update)
         watch(() => [routes.apiKey], async () => {
             await loadApiKeyIfMissing()
@@ -1408,7 +1405,7 @@ const ApiKeyAnalytics = {
         watch(() => [opEntry.value], () => {
             const apiKey = opEntry.value?.key
             if (apiKey !== routes.apiKey) {
-                routes.to({ apiKey })
+                routes.to({apiKey})
             }
         })
         watch(() => [props.analytics, limits.value.apiKey], () => {
@@ -1442,8 +1439,8 @@ const ApiKeyAnalytics = {
     }
 }
 const IpAnalytics = {
-    template:`
-      <div class="my-4 mx-auto max-w-lg">
+    template: `
+      <div class="my-4 mx-auto max-w-sm">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select IP Address"
@@ -1552,20 +1549,22 @@ const IpAnalytics = {
         const limits = ref({
             ip: 25,
         })
-        const { formatBytes } = useFiles()
+        const {formatBytes} = useFiles()
         const ipAnalytics = computed(() => {
             const user = props.analytics?.ips?.[routes.ip]
             if (user) {
                 let ret = []
                 if (user.totalDuration) {
-                    ret.push({ name: 'Duration',
+                    ret.push({
+                        name: 'Duration',
                         Total: humanifyMs(round(user.totalDuration)),
                         Min: humanifyMs(round(user.minDuration)),
                         Max: humanifyMs(round(user.maxDuration)),
                     })
                 }
                 if (user.totalRequestLength) {
-                    ret.push({ name: 'Request Body',
+                    ret.push({
+                        name: 'Request Body',
                         Total: formatBytes(user.totalRequestLength),
                         Min: formatBytes(user.minRequestLength),
                         Max: formatBytes(user.maxRequestLength),
@@ -1584,7 +1583,7 @@ const IpAnalytics = {
                 }
                 const ret = []
                 Object.entries(api.status).forEach(([status, count]) => {
-                    ret.push({ label:status, href:`${linkBase}&status=${status}`, count })
+                    ret.push({label: status, href: `${linkBase}&status=${status}`, count})
                 })
                 return ret
             }
@@ -1610,10 +1609,9 @@ const IpAnalytics = {
                 ipTopUsersChart,
             ].forEach(chart => chart?.destroy())
         })
-        
         function createIpRequestsChart() {
             ipRequestsChart = createRequestsChart({
-                requests: sortedSummaryRequests(props.analytics?.ips,limits.value.ip),
+                requests: sortedSummaryRequests(props.analytics?.ips, limits.value.ip),
                 chart: ipRequestsChart,
                 refEl: refIpRequests,
                 onClick: onClick(props.analytics, routes, 'ip')
@@ -1625,8 +1623,8 @@ const IpAnalytics = {
         }
         function updateIp() {
             opEntries.value = Object.keys(props.analytics?.ips ?? {})
-                .map(key => ({ key, value:props.analytics.ips[key] }))
-                .sort((a,b) => b.value.totalRequests - a.value.totalRequests)
+                .map(key => ({key, value: props.analytics.ips[key]}))
+                .sort((a, b) => b.value.totalRequests - a.value.totalRequests)
             opEntry.value = routes.ip ? opEntries.value.find(x => x.key === routes.ip) : null
             ipStatusCodesChart = createStatusCodesChart({
                 requests: props.analytics.ips[routes.ip]?.status,
@@ -1634,12 +1632,11 @@ const IpAnalytics = {
                 refEl: refIpStatusCodes,
             })
             ipDurationRangesChart = createDurationRangesChart(props.analytics.ips[routes.ip]?.durations, ipDurationRangesChart, refIpDurationRanges)
-            
             ipTopApisChart = createRequestsChart({
                 requests: sortedDetailRequests(props.analytics.ips[routes.ip]?.apis),
                 chart: ipTopApisChart,
                 refEl: refIpTopApis,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     return ctx.labels[index]
                 },
                 onClick: onClick(props.analytics, routes, 'api'),
@@ -1648,7 +1645,7 @@ const IpAnalytics = {
                 requests: sortedDetailRequests(props.analytics.ips[routes.ip]?.apiKeys),
                 chart: ipTopApiKeysChart,
                 refEl: refIpTopApiKeys,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     return hiddenApiKey(ctx.labels[index])
                 },
                 onClick: onClick(props.analytics, routes, 'apiKey'),
@@ -1657,20 +1654,19 @@ const IpAnalytics = {
                 requests: sortedDetailRequests(props.analytics.ips[routes.ip]?.users),
                 chart: ipTopUsersChart,
                 refEl: refIpTopUsers,
-                formatY: function(ctx, value, index, values) {
+                formatY: function (ctx, value, index, values) {
                     const userId = ctx.labels[index]
                     const user = userId && props.analytics.users[userId]
-                    return user?.name ?? substringWithEllipsis(userId,16)
+                    return user?.name ?? substringWithEllipsis(userId, 16)
                 },
                 onClick: onClick(props.analytics, routes, 'user'),
             })
         }
-        
         async function loadIpIfMissing() {
             if (routes.ip && props.analytics?.ips && !props.analytics.ips[routes.ip]) {
                 const r = await client.api(new GetAnalyticsReports({
-                    filter:'ip',
-                    value:routes.ip
+                    filter: 'ip',
+                    value: routes.ip
                 }))
                 if (r.response) {
                     const ip = Object.values(r.response.result?.ips ?? {})[0]
@@ -1686,13 +1682,12 @@ const IpAnalytics = {
         watch(() => [opEntry.value], () => {
             const ip = opEntry.value?.key
             if (ip !== routes.ip) {
-                routes.to({ ip })
+                routes.to({ip})
             }
         })
         watch(() => [props.analytics, limits.value.ip], () => {
             nextTick(createIpRequestsChart)
-        })        
-        
+        })
         return {
             routes,
             limits,
@@ -1775,20 +1770,16 @@ export const Analytics = {
         const loading = ref(false)
         const error = ref(null)
         const api = ref(new ApiResult())
-        const tabs = ref(server.plugins.requestLogs?.analytics?.tabs ?? { APIs:'' })
+        const tabs = ref(server.plugins.requestLogs?.analytics?.tabs ?? {APIs: ''})
         const months = ref(server.plugins.requestLogs?.analytics?.months ?? [])
-        const years = computed(() => 
-            Array.from(new Set(months.value.map(x => leftPart(x,'-')))).toReversed())
-        
+        const years = computed(() =>
+            Array.from(new Set(months.value.map(x => leftPart(x, '-')))).toReversed())
         async function update() {
             loading.value = true
-            
-            client.api(new GetAnalyticsInfo({ type:'info' })).then(r => {
+            client.api(new GetAnalyticsInfo({type: 'info'})).then(r => {
                 months.value = r.response?.months || []
             })
-            
             //await delay(2000); // Pauses for 2 seconds
-            
             api.value = await client.api(new GetAnalyticsReports({
                 month: routes.month ? `${routes.month}-01` : undefined
             }))
@@ -1796,7 +1787,7 @@ export const Analytics = {
                 const result = api.value.response.result
                 analytics.value = result
                 loading.value = false
-                const newTabs = { APIs:'' }
+                const newTabs = {APIs: ''}
                 if (Object.keys(analytics.value.users ?? {}).length) {
                     newTabs.Users = 'users'
                 }
@@ -1810,7 +1801,6 @@ export const Analytics = {
             }
             loading.value = false
         }
-        
         onMounted(async () => {
             await update()
         })
