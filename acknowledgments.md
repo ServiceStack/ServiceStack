@@ -6,3 +6,4 @@ ServiceStack makes use of the following OSS projects:
 * ASP.NET MVC3 Razor Helpers and Support files and is released under the Microsoft Public License (Ms-PL)
 * RazorEngine and is released under the Microsoft Public License (Ms-PL): http://razorengine.codeplex.com/license
 * Log4Net (http://logging.apache.org/log4net/index.html) under the apache license: http://logging.apache.org/log4net/license.html
+* Chronos (https://github.com/HangfireIO/Cronos) from HangfireIO under the MIT license: https://github.com/HangfireIO/Cronos/blob/main/LICENSE

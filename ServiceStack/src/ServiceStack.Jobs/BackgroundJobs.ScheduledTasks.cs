@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using ServiceStack.OrmLite;
-using Cronos;
+using ServiceStack.Cronos;
 
 namespace ServiceStack.Jobs;
 
