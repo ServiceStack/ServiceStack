@@ -1380,7 +1380,15 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
             if (selectDistinct)
                 fields = fields.Substring("DISTINCT ".Length);
 
-            var fieldNames = StringUtils.SplitVarNames(fields);
+            // Prevent duplicate fields
+            var uniqueFieldNames = new List<string>();
+            var caseInsensitiveFieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var fieldName in StringUtils.SplitVarNames(fields))
+            {
+                if (caseInsensitiveFieldNames.Add(fieldName))
+                    uniqueFieldNames.Add(fieldName);
+            }
+            var fieldNames = uniqueFieldNames.ToArray();
             if (selectDistinct)
                 q.SelectDistinct(fieldNames);
             else
