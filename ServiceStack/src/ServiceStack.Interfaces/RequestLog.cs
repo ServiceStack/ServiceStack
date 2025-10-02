@@ -14,6 +14,7 @@ public class RequestLog : IMeta
     public long Id { get; set; }
     public string TraceId { get; set; }
     public string OperationName { get; set; }
+    [Index]
     public DateTime DateTime { get; set; }
     public int StatusCode { get; set; }
     public string? StatusDescription { get; set; }
@@ -33,7 +34,9 @@ public class RequestLog : IMeta
     public Dictionary<string, string> Items { get; set; } = [];
     public Dictionary<string, string>? ResponseHeaders { get; set; }
     public string? Response { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
     public string? ResponseBody { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
     public string? SessionBody { get; set; }
     public ResponseStatus? Error { get; set; }
     public string? ExceptionSource { get; set; }

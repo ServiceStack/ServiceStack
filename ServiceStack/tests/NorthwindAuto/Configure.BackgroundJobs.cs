@@ -11,7 +11,13 @@ public class ConfigureBackgroundJobs : IHostingStartup
         .ConfigureServices(services =>
         {
             services.AddPlugin(new CommandsFeature());
+#if PGSQL || MSSQL || MYSQL
+            services.AddPlugin(new DatabaseJobFeature {
+                NamedConnection = "northwind"
+            });
+#else
             services.AddPlugin(new BackgroundsJobFeature());
+#endif
             services.AddHostedService<JobsHostedService>();
         }).ConfigureAppHost(afterAppHostInit: appHost => {
             var services = appHost.GetApplicationServices();

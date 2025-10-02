@@ -24,7 +24,21 @@ public class ConfigureDb : IHostingStartup
                 })
             )
             .AddSqlite("chinook", 
-                context.Configuration.GetConnectionString("ChinookConnection"));
+                context.Configuration.GetConnectionString("ChinookConnection"))
+#if PGSQL            
+            .AddPostgres(
+                "northwind", 
+                "Host=localhost;Port=5432;Database=northwind;Username=northwind;Password=northwind;Include Error Detail=true;")
+#elif MYSQL
+            .AddMySql(
+                "northwind", 
+                "Server=db;Database=northwind;UID=northwind;Password=northwind;SslMode=Required;AllowLoadLocalInfile=true;Convert Zero Datetime=True")
+#elif MSSQL
+            .AddSqlServer(
+                "northwind", 
+                "Server=db;Database=northwind;User Id=northwind;Password=p@55wOrd;MultipleActiveResultSets=True;TrustServerCertificate=True;")
+#endif
+            ;
             
             // Add support for dynamically generated db rules
             services.AddSingleton<IValidationSource>(c => 

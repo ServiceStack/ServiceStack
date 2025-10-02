@@ -1,15 +1,20 @@
+#if NET8_0_OR_GREATER
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
-using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
+using ServiceStack.Jobs;
+using DateTime = System.DateTime;
 
-namespace ServiceStack.Jobs;
+namespace ServiceStack;
 
-public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs jobs, IAutoQueryDb autoQuery) : Service
+public class DbJobsAdminServices(ILogger<DbJobsAdminServices> log, IBackgroundJobs jobs, IAutoQueryDb autoQuery) : Service
 {
-    private BackgroundsJobFeature AssertRequiredRole()
+    private DatabaseJobFeature AssertRequiredRole()
     {
-        var feature = AssertPlugin<BackgroundsJobFeature>();
+        var feature = AssertPlugin<DatabaseJobFeature>();
         RequiredRoleAttribute.AssertRequiredRoles(Request, feature.AccessRole);
         return feature;
     }
@@ -28,47 +33,66 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
                 : request.To != null
                     ? x => x.CreatedDate < request.To
                     : x => true;
+        var dialect = db.GetDialectProvider();
+        var tableDef = typeof(JobSummary).GetModelMetadata();
+        var Attempts = dialect.GetQuotedColumnName(tableDef.GetFieldDefinition(nameof(JobSummary.Attempts)));
+        
+        var sqlRetries = $"CASE WHEN {Attempts} > 1 THEN 1 ELSE 0 END";
+        // SQL Server doesn't support grouping by alias
+
+        string groupByFields(string column)
+        {
+            return new[]
+            {
+                dialect.GetQuotedColumnName(tableDef.GetFieldDefinition(column)),
+                dialect.GetQuotedColumnName(tableDef.GetFieldDefinition(nameof(JobSummary.Command))),
+                dialect.GetQuotedColumnName(tableDef.GetFieldDefinition(nameof(JobSummary.State))),
+                sqlRetries,
+            }.Join(",");
+        }
+        
         to.Commands = db.SqlList<JobStat>(db.From<JobSummary>()
             .Where(x => x.Command != null && finishedStates.Contains(x.State))
             .And(dateFilter)
-            .GroupBy(x => new { x.Command, x.State, Retries = "Retries" })
+            .UnsafeGroupBy(groupByFields(nameof(JobSummary.Command)))
             .Select(x => new {
                 Name = x.Command,
                 x.State,
-                Retries = Sql.Custom("IIF(Attempts>1,1,0)"),
+                Retries = Sql.Custom(sqlRetries),
                 Count = Sql.Count("*")
             })
         ).ToSummaries();
         to.Apis = db.SqlList<JobStat>(db.From<JobSummary>()
             .Where(x => x.Command == null && finishedStates.Contains(x.State))
             .And(dateFilter)
-            .GroupBy(x => new { x.Request, x.State, Retries = "Retries" })
+            .UnsafeGroupBy(groupByFields(nameof(JobSummary.Request)))
             .Select(x => new {
                 Name = x.Request,
                 x.State,
-                Retries = Sql.Custom("IIF(Attempts>1,1,0)"),
+                Retries = Sql.Custom(sqlRetries),
                 Count = Sql.Count("*")
             })
         ).ToSummaries();
         to.Workers = db.SqlList<JobStat>(db.From<JobSummary>()
             .Where(x => x.Worker != null && finishedStates.Contains(x.State))
             .And(dateFilter)
-            .GroupBy(x => new { x.Worker, x.State, Retries = "Retries" })
+            .UnsafeGroupBy(groupByFields(nameof(JobSummary.Worker)))
             .Select(x => new {
                 Name = x.Worker,
                 x.State,
-                Retries = Sql.Custom("IIF(Attempts>1,1,0)"),
+                Retries = Sql.Custom(sqlRetries),
                 Count = Sql.Count("*")
             })
         ).ToSummaries();
 
+        var createdDate = dialect.GetQuotedColumnName(tableDef.GetFieldDefinition(nameof(JobSummary.CreatedDate)));
         var yesterday = DateTime.UtcNow.AddDays(-1); //Sql.Custom<DateTime>("datetime('now','-24 hours')")
         var hourCounts = db.SqlList<HourStat>(db.From<JobSummary>()
             .Where(x => x.CreatedDate >= yesterday)
-            .GroupBy(x => new { Hour="Hour", x.State })
+            .GroupBy(x => new { x.State, x.CreatedDate })
             .OrderByDescending(x => x.CreatedDate)
             .Select(x => new {
-                Hour = Sql.Custom("strftime('%Y-%m-%d %H:00',CreatedDate)"),
+                Hour = Sql.Custom(feature.DateFormat(createdDate, "%Y-%m-%d %H:00")),
                 x.State,
                 Count = Sql.Count("*"),
             })
@@ -113,7 +137,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             MonthDbs = feature.GetTableMonths(db)
         };
 
-        var tables = new (string Label, Type Type)[] 
+        var tables = new (string Label, System.Type Type)[] 
         {
             (nameof(BackgroundJob), typeof(BackgroundJob)),
             (nameof(JobSummary),    typeof(JobSummary)),
@@ -123,7 +147,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             .Join(" UNION ");
         to.TableCounts = db.Dictionary<string,int>(totalSql);
 
-        var monthTables = new (string Label, Type Type)[] 
+        var monthTables = new (string Label, System.Type Type)[] 
         {
             (nameof(CompletedJob), typeof(CompletedJob)),
             (nameof(FailedJob),    typeof(FailedJob)),
@@ -397,3 +421,4 @@ public static class AdminJobServiceExtensions
         return to;
     }
 }
+#endif

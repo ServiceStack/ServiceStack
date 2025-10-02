@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Jobs;
 
 namespace ServiceStack;
 
@@ -983,4 +984,83 @@ public partial class DeleteFileUploadResponse
     public bool Result { get; set; }
     [DataMember(Order = 2)]
     public ResponseStatus ResponseStatus { get; set; }
+}
+
+
+[ExcludeMetadata, Tag(TagNames.Jobs)]
+public class AdminJobInfo : IGet, IReturn<AdminJobInfoResponse>
+{
+    public DateTime? Month { get; set; }
+}
+public class AdminJobInfoResponse
+{
+    public List<DateTime> MonthDbs { get; set; } = [];
+    public Dictionary<string, int> TableCounts { get; set; } = [];
+    public List<WorkerStats> WorkerStats { get; set; } = [];
+    public Dictionary<string, int> QueueCounts { get; set; } = new();
+    public Dictionary<string, int> WorkerCounts { get; set; } = new();
+    public Dictionary<BackgroundJobState, int> StateCounts { get; set; } = new();
+    public ResponseStatus? ResponseStatus { get; set; }
+}
+
+[ExcludeMetadata, Tag(TagNames.Jobs)]
+public class AdminGetJob : IGet, IReturn<AdminGetJobResponse>
+{
+    public long? Id { get; set; }
+    public string? RefId { get; set; }
+}
+
+public class AdminGetJobResponse
+{
+    public JobSummary Result { get; set; } = null!;
+    public BackgroundJob? Queued { get; set; }
+    public CompletedJob? Completed { get; set; }
+    public FailedJob? Failed { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
+}
+
+[ExcludeMetadata, Tag(TagNames.Jobs)]
+public class AdminGetJobProgress : IGet, IReturn<AdminGetJobProgressResponse>
+{
+    [ValidateGreaterThan(0)]
+    public long Id { get; set; }
+    public int? LogStart { get; set; }
+}
+public class AdminGetJobProgressResponse
+{
+    public BackgroundJobState State { get; set; }
+    public double? Progress { get; set; }
+    public string? Status { get; set; }
+    public string? Logs { get; set; }
+    public int? DurationMs { get; set; }
+    public ResponseStatus? Error { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
+}
+
+[ExcludeMetadata, Tag(TagNames.Jobs), ExplicitAutoQuery]
+public class AdminQueryBackgroundJobs : QueryDb<BackgroundJob>
+{
+    public int? Id { get; set; }
+    public string? RefId { get; set; }
+}
+
+[ExcludeMetadata, Tag(TagNames.Jobs), ExplicitAutoQuery]
+public class AdminQueryScheduledTasks : QueryDb<ScheduledTask> {}
+
+[ExcludeMetadata, Tag(TagNames.Jobs), ExplicitAutoQuery]
+public class AdminQueryJobSummary : QueryDb<JobSummary>
+{
+    public int? Id { get; set; }
+    public string? RefId { get; set; }
+}
+
+[ExcludeMetadata, Tag(TagNames.Jobs), ExplicitAutoQuery]
+public class AdminQueryCompletedJobs : QueryDb<CompletedJob>
+{
+    public DateTime? Month { get; set; }
+}
+[ExcludeMetadata, Tag(TagNames.Jobs), ExplicitAutoQuery]
+public class AdminQueryFailedJobs : QueryDb<FailedJob>
+{
+    public DateTime? Month { get; set; }
 }

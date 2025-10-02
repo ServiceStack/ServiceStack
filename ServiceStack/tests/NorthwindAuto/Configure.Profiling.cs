@@ -25,7 +25,13 @@ public class ConfigureProfiling : IHostingStartup
                     services.AddPlugin(new PostmanFeature());
                     services.AddPlugin(new RequestLogsFeature
                     {
+#if PGSQL || MSSQL || MYSQL                        
+                        RequestLogger = new DbRequestLogger {
+                            NamedConnection = "northwind"
+                        },
+#else
                         RequestLogger = new SqliteRequestLogger(),
+#endif                        
                         // DisableAnalytics = true,
                         // DisableUserAnalytics = true,
                         /*
@@ -91,7 +97,7 @@ public class RequestLogsHostedService(ILogger<RequestLogsHostedService> log, IRe
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (requestLogger is SqliteRequestLogger dbRequestLogger)
+        if (requestLogger is IRequireAnalytics dbRequestLogger)
         {
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))

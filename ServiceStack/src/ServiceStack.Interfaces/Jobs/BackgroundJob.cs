@@ -36,7 +36,7 @@ public abstract class BackgroundJobBase : IMeta
     /// Only run Job after date
     /// </summary>
     public virtual DateTime? RunAfter { get; set; }
-    public virtual DateTime CreatedDate { get; set; }
+    [Index] public virtual DateTime CreatedDate { get; set; }
     public virtual string? CreatedBy { get; set; }
     /// <summary>
     /// Batch Id for marking dispatched jobs
@@ -58,6 +58,7 @@ public abstract class BackgroundJobBase : IMeta
     /// <summary>
     /// JSON Body of Request
     /// </summary>
+    [StringLength(StringLengthAttribute.MaxText)]
     public virtual string RequestBody { get; set; }
 
     /// <summary>
@@ -73,6 +74,7 @@ public abstract class BackgroundJobBase : IMeta
     /// <summary>
     /// The Response DTO JSON Body
     /// </summary>
+    [StringLength(StringLengthAttribute.MaxText)]
     public virtual string? ResponseBody { get; set; }
     /// <summary>
     /// The state the Job is in
@@ -82,7 +84,7 @@ public abstract class BackgroundJobBase : IMeta
     /// <summary>
     /// The day the Job was started
     /// </summary>
-    [Index] public virtual DateTime? StartedDate { get; set; }
+    public virtual DateTime? StartedDate { get; set; }
     
     /// <summary>
     /// When the Job was completed
@@ -103,6 +105,7 @@ public abstract class BackgroundJobBase : IMeta
     public virtual int? TimeoutSecs { get; set; }
     public virtual double? Progress { get; set; } // 0-1
     public virtual string? Status { get; set; }   // e.g. Downloaded 2/10
+    [StringLength(StringLengthAttribute.MaxText)]
     public virtual string? Logs { get; set; }     // Append recorded logs
     public virtual DateTime? LastActivityDate { get; set; }
     public virtual string? ReplyTo { get; set; }

@@ -1,19 +1,23 @@
-﻿using System.Collections;
+#if NET8_0_OR_GREATER
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Admin;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.OrmLite;
-using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.OrmLite.Dapper;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-namespace ServiceStack.Jobs;
+namespace ServiceStack;
 
-public class SqliteRequestLogsService(IRequestLogger requestLogger, IAutoQueryDb autoQuery) 
+public class DbRequestLogsService(IRequestLogger requestLogger, IAutoQueryDb autoQuery) 
     : Service
 {
     private RequestLogsFeature AssertRequiredRole()
@@ -26,18 +30,145 @@ public class SqliteRequestLogsService(IRequestLogger requestLogger, IAutoQueryDb
     public object Any(AdminQueryRequestLogs request)
     {
         var feature = AssertRequiredRole();
-        var sqliteLogger = (SqliteRequestLogger)requestLogger;
+        var dbLogger = (DbRequestLogger)requestLogger;
         var month = request.Month ?? DateTime.UtcNow;
-        using var monthDb = sqliteLogger.OpenMonthDb(month);
+        using var monthDb = dbLogger.OpenMonthDb(month);
         var q = autoQuery.CreateQuery(request, base.Request, monthDb);
         return autoQuery.Execute(request, q, base.Request, monthDb);        
     }
 }
 
-public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema, 
+public class DbLoggingProvider
+{
+    public IDbConnectionFactory DbFactory { get; set; }
+    public string? NamedConnection { get; set; }
+    public IOrmLiteDialectProvider Dialect { get; set; }
+    public Action<IDbConnection>? ConfigureDb { get; set; }
+    public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
+
+    public virtual void InitSchema()
+    {
+        using var db = OpenDb();
+        InitSchema(db);
+    }
+
+    public virtual void InitSchema(IDbConnection db)
+    {
+        using var monthDb = OpenMonthDb(DateTime.UtcNow);
+        InitMonthDbSchema(monthDb);
+    }
+    
+    public virtual void InitMonthDbSchema(IDbConnection db)
+    {
+        db.CreateTableIfNotExists<RequestLog>();
+    }
+
+    public virtual IDbConnection OpenDb()
+    {
+        var db = NamedConnection != null
+            ? DbFactory.OpenDbConnection(NamedConnection)
+            : DbFactory.OpenDbConnection();
+        ConfigureDb?.Invoke(db);
+        return db;
+    }
+    
+    public virtual IDbConnection OpenMonthDb(DateTime createdDate)
+    {
+        return OpenDb();
+    }
+
+    public static DbLoggingProvider Create(IDbConnectionFactory dbFactory, string? namedConnection = null)
+    {
+        var dialect = dbFactory.GetDialectProvider(namedConnection: namedConnection);
+        var typeName = dialect.GetType().Name;
+        var dbProvider = typeName.StartsWith("Postgre")
+            ? new PostgresDbLoggingProvider()
+            :  typeName.StartsWith("MySql") || typeName.StartsWith("Maria")
+                ? new MySqlDbLoggingProvider()
+                : typeName.StartsWith("SqlServer")
+                    ? new SqlServerDbLoggingProvider()
+                    : new DbLoggingProvider();
+        dbProvider.DbFactory = dbFactory;
+        dbProvider.NamedConnection = namedConnection;
+        dbProvider.Dialect = dialect;
+        dbProvider.ConfigureDb = dbProvider.DefaultConfigureDb;
+        return dbProvider;
+    }
+
+    public virtual void DropTables(DateTime? createdDate=null)
+    {
+        createdDate ??= DateTime.UtcNow;
+        using var dbMonth = OpenMonthDb(createdDate.Value);
+        dbMonth.DropTable<RequestLog>();
+    }
+
+    public virtual List<DateTime> GetTableMonths(IDbConnection db)
+    {
+        var q = db.From<RequestLog>();
+        var dateTimeColumn = q.Column<RequestLog>(c => c.DateTime);
+        var months = db.SqlColumn<string>(q
+            .Select(x => new {
+                Month = SqlDateFormat(dateTimeColumn, "%Y-%m"),
+            }));
+
+        var ret = months
+            .Where(x => x.Contains('_'))
+            .Select(x => 
+                DateTime.TryParse(x.RightPart('_').LeftPart('.') + "-01", out var date) ? date : (DateTime?)null)
+            .Where(x => x != null)
+            .Select(x => x!.Value)
+            .OrderDescending()
+            .ToList();
+        
+        return ret;
+    }
+
+    public virtual string SqlDateFormat(string quotedColumn, string format) => SqliteUtils.SqlDateFormat(quotedColumn, format);
+
+}
+public class MySqlDbLoggingProvider : DbLoggingProvider
+{
+    public override string SqlDateFormat(string quotedColumn, string format) => MySqlUtils.SqlDateFormat(quotedColumn, format);
+}
+public class SqlServerDbLoggingProvider : DbLoggingProvider
+{
+    public override string SqlDateFormat(string quotedColumn, string format) => SqlServerUtils.SqlDateFormat(quotedColumn, format);
+}
+public class PostgresDbLoggingProvider : DbLoggingProvider
+{
+    ConcurrentDictionary<string, bool> monthDbs = new();
+    private readonly object partitionLock = new();
+    
+    public override IDbConnection OpenMonthDb(DateTime createdDate)
+    {
+        var partTableName = PostgresUtils.GetMonthTableName(Dialect, typeof(RequestLog), createdDate);
+        var db = OpenDb();
+        ConfigureDb?.Invoke(db);
+        if (monthDbs.TryAdd(partTableName, true))
+        {
+            db.Execute(PostgresUtils.CreatePartitionSql(Dialect, typeof(RequestLog), createdDate));
+        }
+        return db;
+    }
+
+    public override void InitSchema(IDbConnection db)
+    {
+        var completedSql = PostgresUtils.CreatePartitionTableSql(Dialect, typeof(RequestLog), nameof(RequestLog.DateTime));
+        db.Execute(completedSql);
+        using var monthDb = OpenMonthDb(DateTime.UtcNow);
+    }
+
+    public override List<DateTime> GetTableMonths(IDbConnection db)
+    {
+        return PostgresUtils.GetTableMonths(Dialect, db, typeof(RequestLog));
+    }
+    
+    public override string SqlDateFormat(string quotedColumn, string format) => PostgresUtils.SqlDateFormat(quotedColumn, format);
+}
+
+public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema, 
     IRequireRegistration, IConfigureServices, IRequireAnalytics
 {
-    public string DbDir { get; set; } = "App_Data/requests";
     public bool EnableAdmin { get; set; } = true;
     public AutoQueryFeature? AutoQueryFeature { get; set; }
     public Type[] IgnoreRequestTypes { get; set; } =
@@ -54,22 +185,18 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         typeof(AdminQueryRequestLogs),
     ];
 
-    public Action<SqliteOrmLiteDialectProviderBase>? ConfigureDialectProvider { get; set; }
-    public SqliteOrmLiteDialectProviderBase DialectProvider { get; set; }
+    public IDbConnectionFactory DbFactory { get; set; } = null!;
+    public string? NamedConnection { get; set; }
+    public DbLoggingProvider DbProvider { get; set; }
+    public IOrmLiteDialectProvider Dialect => DbProvider.Dialect;
+    public Action<IOrmLiteDialectProvider>? ConfigureDialect { get; set; }
     public Action<IDbConnection>? ConfigureDb { get; set; }
-    public Func<IDbConnectionFactory, DateTime, IDbConnection> ResolveMonthDb { get; set; }
-    public Func<DateTime, string> DbMonthFile { get; set; } = DefaultDbMonthFile;
-    public Func<List<string>> ResolveMonthDbs { get; set; }
     public int MaxLimit { get; set; } = 5000;
     public bool AutoInitSchema { get; set; } = true;
-    public IDbConnectionFactory DbFactory { get; set; } = null!;
-    public bool EnableWriterLock { get; set; } = true;
     public IAppHostNetCore AppHost { get; set; } = null!;
 
-    public SqliteRequestLogger()
+    public DbRequestLogger()
     {
-        ResolveMonthDb = DefaultResolveMonthDb;
-        ResolveMonthDbs = DefaultResolveMonthDbs;
         ConfigureDb = DefaultConfigureDb;
     }
 
@@ -206,7 +333,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
     {
         if (EnableAdmin)
         {
-            services.RegisterService<SqliteRequestLogsService>();
+            services.RegisterService<DbRequestLogsService>();
             AutoQueryFeature ??= new() { MaxLimit = 1000 };
             AutoQueryFeature.RegisterAutoQueryDbIfNotExists();
         }
@@ -214,15 +341,13 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public void Register(IAppHost appHost)
     {
-        DialectProvider = SqliteConfiguration.Configure(SqliteDialect.Create());
-        DialectProvider.EnableWriterLock = EnableWriterLock;
-        ConfigureDialectProvider?.Invoke(DialectProvider);
-
         DbFactory ??= appHost.TryResolve<IDbConnectionFactory>() 
-                      ?? new OrmLiteConnectionFactory("Data Source=:memory:", DialectProvider);
+                      ?? throw new Exception($"{nameof(IDbConnectionFactory)} is not registered");
+        DbProvider ??= DbLoggingProvider.Create(DbFactory, NamedConnection);
         AppHost ??= (IAppHostNetCore)appHost;        
-        _ = GetDbDir().AssertDir();
         
+        ConfigureDialect?.Invoke(Dialect);
+
         if (IgnoreRequestTypes.Length > 0)
         {
             ExcludeRequestDtoTypes = ExcludeRequestDtoTypes.Union(IgnoreRequestTypes).ToArray(); 
@@ -233,50 +358,12 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             InitSchema();
         }
     }
-
-    public static string DefaultDbMonthFile(DateTime createdDate) => $"requests_{createdDate.Year}-{createdDate.Month:00}.db";
-
-    public List<string> DefaultResolveMonthDbs()
-    {
-        var requestsDir = GetDbDir();
-        var dir = new DirectoryInfo(requestsDir);
-        var files = dir.GetMatchingFiles("requests_*.db");
-        return files.ToList();
-    }
     
     public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
-    
-    public IDbConnection DefaultResolveMonthDb(IDbConnectionFactory dbFactory, DateTime createdDate)
-    {
-        var factory = (IDbConnectionFactoryExtended)dbFactory;
-        var monthDb = DbMonthFile(createdDate);
-        lock (this)
-        {
-            if (!OrmLiteConnectionFactory.NamedConnections.ContainsKey(monthDb))
-            {
-                var dataSource =  GetDbDir(monthDb);
-                dbFactory.RegisterConnection(monthDb, $"DataSource={dataSource};Cache=Shared", DialectProvider);
-                var db = factory.OpenDbConnection(monthDb, ConfigureDb);
-                InitMonthDbSchema(db, createdDate);
-                return db;
-            }
-        }
-        return factory.OpenDbConnection(monthDb, ConfigureDb);
-    }
 
-    public IDbConnection OpenMonthDb(DateTime createdDate) => ResolveMonthDb(DbFactory, createdDate);
+    public IDbConnection OpenMonthDb(DateTime createdDate) => DbProvider.OpenMonthDb(createdDate);
 
-    public void InitMonthDbSchema(IDbConnection db, DateTime month)
-    {
-        db.CreateTableIfNotExists<RequestLog>();
-    }
-
-    public void InitSchema()
-    {
-        var now = DateTime.UtcNow;
-        using var db = OpenMonthDb(now);
-        InitMonthDbSchema(db, now);
-    }
+    public void InitSchema() => DbProvider.InitSchema();
     
     public static RequestLog ToRequestLog(RequestLogEntry from)
     {
@@ -350,25 +437,31 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public AnalyticsInfo GetAnalyticInfo(AnalyticsConfig config)
     {
-        var monthDbs = ResolveMonthDbs().Map(x => x.Replace('\\','/')); 
+        using var db = DbProvider.OpenDb();
+        var monthDbs = DbProvider.GetTableMonths(db); 
         var ret = new AnalyticsInfo
         {
-            Months = monthDbs.Map(x => x.LastRightPart('/').RightPart('_').LeftPart('.'))
-                .OrderBy(x => x).ToList()
+            Months = monthDbs.Map(x => x.ToString("yyyy-MM"))
         };
 
         try
         {
+            var modelDef = typeof(RequestLog).GetModelMetadata();
+            var tableName = Dialect.GetQuotedTableName(modelDef);
+            var operationName = Dialect.GetQuotedColumnName(modelDef.GetFieldDefinition(nameof(RequestLog.OperationName)));
+            var userAuthId = Dialect.GetQuotedColumnName(modelDef.GetFieldDefinition(nameof(RequestLog.UserAuthId)));
+            var headers = Dialect.GetQuotedColumnName(modelDef.GetFieldDefinition(nameof(RequestLog.Headers)));
+            var ipAddress = Dialect.GetQuotedColumnName(modelDef.GetFieldDefinition(nameof(RequestLog.IpAddress)));
             var sql = 
-                """
+                $"""
                 SELECT
-                (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where OperationName IS NOT NULL)) AS apis,
-                (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where UserAuthId IS NOT NULL)) AS users,
-                (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where Headers LIKE '%Bearer ak-%')) AS apiKeys,
-                (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where IpAddress IS NOT NULL)) AS ips
+                (SELECT 1 WHERE EXISTS(SELECT 1 from {tableName} where {operationName} IS NOT NULL)) AS apis,
+                (SELECT 1 WHERE EXISTS(SELECT 1 from {tableName} where {userAuthId} IS NOT NULL)) AS users,
+                (SELECT 1 WHERE EXISTS(SELECT 1 from {tableName} where {headers} LIKE '%Bearer ak-%')) AS apiKeys,
+                (SELECT 1 WHERE EXISTS(SELECT 1 from {tableName} where {ipAddress} IS NOT NULL)) AS ips
                 """;
-            using var db = OpenMonthDb(DateTime.UtcNow);
-            var result = db.SqlList<(int? apis, int? users, int? apiKeys, bool? ips)>(sql).FirstOrDefault();
+            using var dbMonth = OpenMonthDb(DateTime.UtcNow);
+            var result = dbMonth.SqlList<(int? apis, int? users, int? apiKeys, bool? ips)>(sql).FirstOrDefault();
             ret.Tabs = new();
             if (result.apis == 1)
                 ret.Tabs["APIs"] = "";
@@ -592,10 +685,13 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         
         using var db = OpenMonthDb(month);
 
+        var modelDef = typeof(RequestLog).GetModelMetadata();
+        var headers = Dialect.GetQuotedColumnName(modelDef.GetFieldDefinition(nameof(RequestLog.Headers)));
+
         var tableExists = db.TableExists<ApiKeyAnalytics>();
         var lastLogId = tableExists
             ? db.Single(db.From<RequestLog>()
-                .And("Headers LIKE {0}", $"%Bearer {apiKey}%")
+                .And(headers + " LIKE {0}", $"%Bearer {apiKey}%")
                 .OrderByDescending(x => x.Id).Limit(1))?.Id
             : null;
 
@@ -619,7 +715,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             batch = db.Select(
                 db.From<RequestLog>()
                     .Where(x => x.Id > lastPk)
-                    .And("Headers LIKE {0}", $"%Bearer {apiKey}%")
+                    .And(headers + " LIKE {0}", $"%Bearer {apiKey}%")
                     .OrderBy(x => x.Id)
                     .Limit(config.BatchSize));
             
@@ -717,16 +813,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
         return ret;
     }
-    
-    private string GetDbDir(string monthDb = "")
-    {
-        return Path.IsPathRooted(DbDir) 
-            ? DbDir.CombineWith(monthDb)
-            : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
-    }
 }
 
-public static class SqliteRequestLoggerUtils
+public static class DatabaseRequestLoggerUtils
 {
     [Flags]
     enum Detail
@@ -1045,3 +1134,4 @@ public static class SqliteRequestLoggerUtils
         Clean(ret.Bots);
     }
 }
+#endif
