@@ -38,7 +38,7 @@ function round(n) {
 
 const ApiAnalytics = {
     template: `
-      <div class="my-4 mx-auto max-w-sm">
+      <div class="mt-2 mb-4 mx-auto max-w-sm">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboApis" id="op" label="" placeholder="Select API"
@@ -865,7 +865,7 @@ const ApiAnalytics = {
 
 const UserAnalytics = {
     template: `
-      <div class="my-4 mx-auto max-w-sm">
+      <div class="mt-2 mb-4 mx-auto max-w-sm">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select User"
@@ -1182,7 +1182,7 @@ const UserAnalytics = {
 
 const ApiKeyAnalytics = {
     template: `
-      <div class="my-4 mx-auto max-w-sm">
+      <div class="mt-2 mb-4 mx-auto max-w-sm">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select API Key"
@@ -1531,7 +1531,7 @@ const ApiKeyAnalytics = {
 
 const IpAnalytics = {
     template: `
-      <div class="my-4 mx-auto max-w-sm">
+      <div class="mt-2 mb-4 mx-auto max-w-sm">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select IP Address"
@@ -1829,13 +1829,13 @@ export const Analytics = {
         <ErrorSummary v-if="api.error" :status="api.error" />
         <div>
             <div class="relative">
-              <nav class="absolute flex space-x-4" aria-label="Tabs">
+              <nav class="-mt-2 absolute flex space-x-4" aria-label="Tabs">
                 <a v-for="(tab,label) in tabs" v-href="{ tab }"
                    :class="['rounded-md px-3 py-2 text-sm font-medium', routes.tab === tab ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:text-gray-700']" aria-current="page">{{ label }}</a>
               </nav>
             </div>
             
-            <div v-if="months.length" class="mb-2 flex flex-wrap justify-center">
+            <div v-if="months.length" class="my-2 flex flex-wrap justify-center">
               <template v-for="year in years">
                 <b v-if="year === (routes.year || new Date().getFullYear().toString())" class="ml-3 text-sm font-semibold">
                   {{ year }}
@@ -1855,7 +1855,6 @@ export const Analytics = {
                 </a>
               </template>
             </div>
-          
         </div>
 
         <div v-if="loading" class="flex justify-center p-4">
