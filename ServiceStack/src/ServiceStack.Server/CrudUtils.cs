@@ -63,8 +63,8 @@ public class AutoGenContext(CrudCodeGenTypes instruction, string tableName, Tabl
     public Func<MetadataPropertyType, ColumnSchema, string> GetColumnAlias { get; set; }
 }
 
-public delegate List<string> GetTableNamesDelegate(IDbConnection db, string schema);
-public delegate ColumnSchema[] GetTableColumnsDelegate(IDbConnection db, string table, string schema);
+public delegate List<string> GetTableNamesDelegate(IDbConnection db, string? schema);
+public delegate ColumnSchema[] GetTableColumnsDelegate(IDbConnection db, string table, string? schema);
 
 public interface ITableResolver
 {
@@ -184,11 +184,11 @@ public static class CrudUtils
     }
 
     public static List<TableSchema> GetTableSchemas(this IDbConnectionFactory dbFactory,
-        string namedConnection = null,
-        string schema = null,
-        List<string> includeTables = null,
-        List<string> excludeTables = null,
-        ITableResolver config = null)
+        string? namedConnection = null,
+        string? schema = null,
+        List<string>? includeTables = null,
+        List<string>? excludeTables = null,
+        ITableResolver? config = null)
     {
         var db = namedConnection != null
             ? dbFactory.Open(namedConnection,ConfigureDb)
@@ -201,7 +201,7 @@ public static class CrudUtils
                 : db.GetTableNames(schema);
                 
             var results = new List<TableSchema>();
-            Logging.ILog log = null;
+            Logging.ILog? log = null;
 
             var dialect = db.GetDialectProvider();
             foreach (var table in tables)
@@ -272,46 +272,46 @@ public class CreateCrudServices : IMeta
     /// - Patch
     /// - Delete
     /// </summary>
-    public List<string> IncludeCrudOperations { get; set; }
+    public List<string>? IncludeCrudOperations { get; set; }
 
     /// <summary>
     /// The RDBMS Schema you want AutoQuery Services generated for
     /// </summary>
-    public string Schema { get; set; }
+    public string? Schema { get; set; }
 
     /// <summary>
     /// The NamedConnection you want AutoQuery Services generated for
     /// </summary>
-    public string NamedConnection { get; set; }
+    public string? NamedConnection { get; set; }
 
     /// <summary>
     /// Include additional C# namespaces
     /// </summary>
-    public List<string> AddNamespaces { get; set; }
+    public List<string>? AddNamespaces { get; set; }
 
     /// <summary>
     /// Allow List to specify only the tables you would like to have code-generated
     /// </summary>
-    public List<string> IncludeTables { get; set; }
+    public List<string>? IncludeTables { get; set; }
 
     /// <summary>
     /// Block list to specify which tables you would like excluded from being generated
     /// </summary>
-    public List<string> ExcludeTables { get; set; }
+    public List<string>? ExcludeTables { get; set; }
 
     /// <summary>
     /// Allow List to specify only the types you would like to have code-generated, see:
     /// https://docs.servicestack.net/csharp-add-servicestack-reference#includetypes
     /// </summary>
-    public List<string> IncludeTypes { get; set; }
+    public List<string>? IncludeTypes { get; set; }
 
     /// <summary>
     /// Block list to specify which types you would like excluded from being generated. see:
     /// https://docs.servicestack.net/csharp-add-servicestack-reference#excludetypes
     /// </summary>
-    public List<string> ExcludeTypes { get; set; }
+    public List<string>? ExcludeTypes { get; set; }
 
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 }
 
 public class CrudCodeGenTypes : NativeTypesBase, IMeta, IGet, IReturn<string>
@@ -319,7 +319,7 @@ public class CrudCodeGenTypes : NativeTypesBase, IMeta, IGet, IReturn<string>
     /// <summary>
     /// Either 'all' to include all AutoQuery Services or 'new' to include only missing Services and Types
     /// </summary>
-    public string Include { get; set; }
+    public string? Include { get; set; }
 
     /// <summary>
     /// The language you want
@@ -333,7 +333,7 @@ public class CrudCodeGenTypes : NativeTypesBase, IMeta, IGet, IReturn<string>
     ///  fsharp
     ///  typescript.d
     /// </summary>
-    public string Lang { get; set; }
+    public string? Lang { get; set; }
 
     /// <summary>
     /// Which AutoCrud Operations to include:
@@ -343,22 +343,22 @@ public class CrudCodeGenTypes : NativeTypesBase, IMeta, IGet, IReturn<string>
     /// - Patch
     /// - Delete
     /// </summary>
-    public List<string> IncludeCrudOperations { get; set; }
+    public List<string>? IncludeCrudOperations { get; set; }
 
     /// <summary>
     /// The RDBMS Schema you want AutoQuery Services generated for
     /// </summary>
-    public string Schema { get; set; }
+    public string? Schema { get; set; }
 
     /// <summary>
     /// The NamedConnection you want AutoQuery Services generated for
     /// </summary>
-    public string NamedConnection { get; set; }
+    public string? NamedConnection { get; set; }
 
     /// <summary>
     /// The Admin AuthSecret to access Service in Release mode
     /// </summary>
-    public string AuthSecret { get; set; }
+    public string? AuthSecret { get; set; }
 
     /// <summary>
     /// Do not use cached DB Table Schemas, re-fetch latest 
@@ -368,56 +368,56 @@ public class CrudCodeGenTypes : NativeTypesBase, IMeta, IGet, IReturn<string>
     /// <summary>
     /// Allow List to specify only the tables you would like to have code-generated
     /// </summary>
-    public List<string> IncludeTables { get; set; }
+    public List<string>? IncludeTables { get; set; }
 
     /// <summary>
     /// Block list to specify which tables you would like excluded from being generated
     /// </summary>
-    public List<string> ExcludeTables { get; set; }
+    public List<string>? ExcludeTables { get; set; }
 
-    public Dictionary<string, string> Meta { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 }
 
 public class CrudTables : IGet, IReturn<AutoCodeSchemaResponse>
 {
-    public string Schema { get; set; }
-    public string NamedConnection { get; set; }
-    public string AuthSecret { get; set; }
+    public string? Schema { get; set; }
+    public string? NamedConnection { get; set; }
+    public string? AuthSecret { get; set; }
 
     /// <summary>
     /// Allow List to specify only the tables you would like to have code-generated
     /// </summary>
-    public List<string> IncludeTables { get; set; }
+    public List<string>? IncludeTables { get; set; }
 
     /// <summary>
     /// Block list to specify which tables you would like excluded from being generated
     /// </summary>
-    public List<string> ExcludeTables { get; set; }
+    public List<string>? ExcludeTables { get; set; }
 
     public bool? NoCache { get; set; }
 }
 
 public class AutoCodeSchemaResponse
 {
-    public List<TableSchema> Results { get; set; }
+    public List<TableSchema>? Results { get; set; }
 
-    public ResponseStatus ResponseStatus { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
 }
 
 public class DbSchema
 {
-    public string Schema { get; set; }
-    public string NamedConnection { get; set; }
+    public string? Schema { get; set; }
+    public string? NamedConnection { get; set; }
 
     public List<TableSchema> Tables { get; set; } = [];
 }
 
 public class TableSchema
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
-    public ColumnSchema[] Columns { get; set; }
+    public ColumnSchema[]? Columns { get; set; }
 
-    public string ErrorType { get; set; }
-    public string ErrorMessage { get; set; }
+    public string? ErrorType { get; set; }
+    public string? ErrorMessage { get; set; }
 }

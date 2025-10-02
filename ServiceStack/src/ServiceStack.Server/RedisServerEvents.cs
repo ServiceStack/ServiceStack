@@ -206,7 +206,7 @@ public class RedisServerEvents : IServerEvents
     public void NotifyAll(string selector, object message) => NotifyRedis("notify.all", selector, message);
 
     public Task NotifyAllAsync(string selector, object message, CancellationToken token = default) => NotifyRedisAsync("notify.all", selector, message, token:token);
-    public Task NotifyAllJsonAsync(string selector, string json, CancellationToken token = default) => NotifyRedisRawAsync("notify.all", selector, json, token:token);
+    public Task NotifyAllJsonAsync(string? selector, string? json, CancellationToken token = default) => NotifyRedisRawAsync("notify.all", selector, json, token:token);
 
     public void NotifyChannels(string[] channels, string selector, IDictionary<string, string> meta)
     {
@@ -228,46 +228,46 @@ public class RedisServerEvents : IServerEvents
     public Task NotifyChannelAsync(string channel, string selector, object message, CancellationToken token = default) =>
         NotifyRedisAsync("notify.channel." + channel, selector, message, token: token);
 
-    public Task NotifyChannelJsonAsync(string channel, string selector, string json, CancellationToken token = default) =>
+    public Task NotifyChannelJsonAsync(string channel, string? selector, string? json, CancellationToken token = default) =>
         NotifyRedisRawAsync("notify.channel." + channel, selector, json, token: token);
 
-    public void NotifySubscription(string subscriptionId, string selector, object message, string channel = null) =>
+    public void NotifySubscription(string subscriptionId, string selector, object message, string? channel = null) =>
         NotifyRedis("notify.subscription." + subscriptionId, selector, message, channel);
 
-    public Task NotifySubscriptionAsync(string subscriptionId, string selector, object message, string channel = null, CancellationToken token = default) =>
+    public Task NotifySubscriptionAsync(string subscriptionId, string selector, object message, string? channel = null, CancellationToken token = default) =>
         NotifyRedisAsync("notify.subscription." + subscriptionId, selector, message, channel, token);
 
-    public Task NotifySubscriptionJsonAsync(string subscriptionId, string selector, string json, string channel = null, CancellationToken token = default) =>
+    public Task NotifySubscriptionJsonAsync(string subscriptionId, string? selector, string? json, string? channel = null, CancellationToken token = default) =>
         NotifyRedisRawAsync("notify.subscription." + subscriptionId, selector, json, channel, token);
 
-    public void NotifyUserId(string userId, string selector, object message, string channel = null) => 
+    public void NotifyUserId(string userId, string selector, object message, string? channel = null) => 
         NotifyRedis("notify.userid." + userId, selector, message, channel);
 
-    public Task NotifyUserIdAsync(string userId, string selector, object message, string channel = null, CancellationToken token = default) =>
+    public Task NotifyUserIdAsync(string userId, string selector, object message, string? channel = null, CancellationToken token = default) =>
         NotifyRedisAsync("notify.userid." + userId, selector, message, channel, token);
 
-    public Task NotifyUserIdJsonAsync(string userId, string selector, string json, string channel = null, CancellationToken token = default) =>
+    public Task NotifyUserIdJsonAsync(string userId, string? selector, string? json, string? channel = null, CancellationToken token = default) =>
         NotifyRedisRawAsync("notify.userid." + userId, selector, json, channel, token);
 
-    public void NotifyUserName(string userName, string selector, object message, string channel = null) => 
+    public void NotifyUserName(string userName, string selector, object message, string? channel = null) => 
         NotifyRedis("notify.username." + userName, selector, message, channel);
 
-    public Task NotifyUserNameAsync(string userName, string selector, object message, string channel = null, CancellationToken token = default) =>
+    public Task NotifyUserNameAsync(string userName, string selector, object message, string? channel = null, CancellationToken token = default) =>
         NotifyRedisAsync("notify.username." + userName, selector, message, channel, token);
 
-    public Task NotifyUserNameJsonAsync(string userName, string selector, string json, string channel = null, CancellationToken token = default) =>
+    public Task NotifyUserNameJsonAsync(string userName, string? selector, string? json, string? channel = null, CancellationToken token = default) =>
         NotifyRedisRawAsync("notify.username." + userName, selector, json, channel, token);
 
-    public void NotifySession(string sessionId, string selector, object message, string channel = null) =>
+    public void NotifySession(string sessionId, string selector, object message, string? channel = null) =>
         NotifyRedis("notify.session." + sessionId, selector, message, channel);
 
-    public Task NotifySessionAsync(string sessionId, string selector, object message, string channel = null, CancellationToken token = default) =>
+    public Task NotifySessionAsync(string sessionId, string selector, object message, string? channel = null, CancellationToken token = default) =>
         NotifyRedisAsync("notify.session." + sessionId, selector, message, channel, token);
 
-    public Task NotifySessionJsonAsync(string sessionId, string selector, string json, string channel = null, CancellationToken token = default) =>
+    public Task NotifySessionJsonAsync(string sessionId, string? selector, string? json, string? channel = null, CancellationToken token = default) =>
         NotifyRedisRawAsync("notify.session." + sessionId, selector, json, channel, token);
 
-    public SubscriptionInfo GetSubscriptionInfo(string id)
+    public SubscriptionInfo? GetSubscriptionInfo(string id)
     {
         using var redis = clientsManager.GetClient();
         var info = redis.Get<SubscriptionInfo>(RedisIndex.Subscription.Fmt(id));
@@ -503,19 +503,19 @@ public class RedisServerEvents : IServerEvents
 
     public Dictionary<string, string> GetStats() => Local.GetStats();
 
-    protected Task NotifyRedisAsync(string key, string selector, object message, string channel = null, CancellationToken token=default)
+    protected Task NotifyRedisAsync(string key, string selector, object message, string? channel = null, CancellationToken token=default)
     {
         NotifyRedis(key, selector, message, channel);
         return TypeConstants.EmptyTask;
     }
 
-    protected Task NotifyRedisRawAsync(string key, string selector, string json, string channel = null, CancellationToken token=default)
+    protected Task NotifyRedisRawAsync(string key, string? selector, string? json, string? channel = null, CancellationToken token=default)
     {
         NotifyRedisRaw(key, selector, json, channel);
         return TypeConstants.EmptyTask;
     }
         
-    protected void NotifyRedisRaw(string key, string selector, string json, string channel = null)
+    protected void NotifyRedisRaw(string key, string? selector, string? json, string? channel = null)
     {
         using var redis = clientsManager.GetClient();
         var sb = StringBuilderCache.Allocate().Append(key);
@@ -542,7 +542,7 @@ public class RedisServerEvents : IServerEvents
         redis.PublishMessage(Topic, msg);
     }
 
-    protected void NotifyRedis(string key, string selector, object message, string channel = null) =>
+    protected void NotifyRedis(string key, string selector, object? message, string? channel = null) =>
         NotifyRedisRaw(key, selector, message?.ToJson(), channel);
 
     public void HandleMessage(string channel, string message)

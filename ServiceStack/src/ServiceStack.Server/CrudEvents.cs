@@ -36,7 +36,7 @@ public abstract class CrudEventsBase<T>
 {
     public Func<object, string> Serializer { get; set; } = JsonSerializer.SerializeToString;
     public Func<string, string> IpMask { get; set; } = CrudEventsUtils.Identity;
-    public Func<T, CrudContext, T> EventFilter { get; set; }
+    public Func<T, CrudContext, T?>? EventFilter { get; set; }
         
     public virtual T ToEvent(CrudContext context)
     {
@@ -74,9 +74,9 @@ public class CrudEventsExecutor<T> : ICrudEventsExecutor<T>
     where T : CrudEvent 
 {
     public IServiceExecutor ServiceExecutor { get; set; }
-    public Func<string, Type> TypeResolver { get; set; }
+    public Func<string, Type?> TypeResolver { get; set; }
 
-    public Func<object, IRequest, bool> ExecuteFilter { get; set; }
+    public Func<object, IRequest, bool>? ExecuteFilter { get; set; }
         
     public List<Action<IRequest, IResponse, object>> RequestFilters { get; } = new();
         
@@ -89,7 +89,7 @@ public class CrudEventsExecutor<T> : ICrudEventsExecutor<T>
         RequestFiltersAsync = appHost.GlobalMessageRequestFiltersAsync;
     }
 
-    public CrudEventsExecutor(IServiceExecutor serviceExecutor, Func<string, Type> typeResolver)
+    public CrudEventsExecutor(IServiceExecutor? serviceExecutor, Func<string, Type?>? typeResolver)
     {
         ServiceExecutor = serviceExecutor ?? throw new ArgumentNullException(nameof(serviceExecutor));
         TypeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
@@ -184,7 +184,7 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
     /// <summary>
     /// Additional DB Connections CrudEvent's should be persisted in
     /// </summary>
-    public List<string> NamedConnections { get; } = new();
+    public List<string> NamedConnections { get; } = [];
 
     private IDbConnectionFactory DbFactory { get; } = dbFactory;
 
@@ -254,7 +254,7 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
         } while (results.Count > 0);
     }
 
-    public virtual IEnumerable<T> GetEvents(IDbConnection db, string table, string id=null)
+    public virtual IEnumerable<T> GetEvents(IDbConnection db, string table, string? id=null)
     {
         var q = db.From<T>()
             .Where(x => x.Model == table);
@@ -325,7 +325,7 @@ public static class CrudEventsUtils
     /// <summary>
     /// Returns null
     /// </summary>
-    public static string Null(string value) => null;
+    public static string? Null(string value) => null;
     /// <summary>
     /// Returns itself as-is
     /// </summary>

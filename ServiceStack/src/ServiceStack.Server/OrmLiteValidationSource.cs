@@ -14,12 +14,12 @@ public class OrmLiteValidationSource : IValidationSource, IRequiresSchema, IVali
 {
     public IDbConnectionFactory DbFactory { get; }
     static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteValidationSource));
-    public ICacheClient Cache { get; }
+    public ICacheClient? Cache { get; }
     public TimeSpan? CacheDuration { get; }
         
-    public string NamedConnection { get; set; }
+    public string? NamedConnection { get; set; }
 
-    public OrmLiteValidationSource(IDbConnectionFactory dbFactory=null, ICacheClient cache=null, TimeSpan? cacheDuration=null)
+    public OrmLiteValidationSource(IDbConnectionFactory? dbFactory=null, ICacheClient? cache=null, TimeSpan? cacheDuration=null)
     {
         DbFactory = dbFactory 
                     ?? HostContext.TryResolve<IDbConnectionFactory>() 

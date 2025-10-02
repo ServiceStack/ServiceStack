@@ -29,7 +29,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     /// <summary>
     /// Use specified DbFactory or from IOC
     /// </summary>
-    public IDbConnectionFactory DbFactory { get; set; }
+    public IDbConnectionFactory? DbFactory { get; set; }
     
     /// <summary>
     /// List of AutoQuery Operations to generate
@@ -65,7 +65,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     /// <summary>
     /// Customize AutoGen Operation Generation
     /// </summary>
-    public Action<AutoGenContext> GenerateOperationsFilter { get; set; }
+    public Action<AutoGenContext>? GenerateOperationsFilter { get; set; }
 
     /// <summary>
     /// Auto Register AutoQuery and Crud Services for Default DB

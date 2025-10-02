@@ -236,13 +236,13 @@ public class CrudContext
         return fn(Db);
     }
         
-    public object Id { get; set; }
+    public object? Id { get; set; }
         
-    public object Response { get; set; }
+    public object? Response { get; set; }
         
     public long? RowsUpdated { get; set; }
         
-    public string NamedConnection { get; set; }
+    public string? NamedConnection { get; set; }
 
     internal void SetResult(AutoQuery.ExecValue result)
     {
