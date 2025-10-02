@@ -24,7 +24,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.*" />
-        <PackageReference Include="Markdig" Version="0.33.*" />
+        <PackageReference Include="Markdig" Version="0.42.*" />
     </ItemGroup>
 
 <!--    <ItemGroup>-->
