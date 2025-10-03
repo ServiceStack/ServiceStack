@@ -68,7 +68,7 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
         foreach (var pi in type.GetSerializableProperties())
         {
             // Skip Obsolete properties
-            if (pi.ShouldIgnorePropertyInSwagger())
+            if (SwaggerUtils.IgnoreProperty(pi))
                 continue;
             
             if (to.Contains(pi.PropertyType))

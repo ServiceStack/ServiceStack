@@ -837,7 +837,7 @@ public class OpenApiMetadata
         Schemas[schemaId] = schema;
 
         var properties = schemaType.GetProperties()
-            .Where(x => !x.ShouldIgnorePropertyInSwagger())
+            .Where(pi => !SwaggerUtils.IgnoreProperty(pi))
             .ToArray();
 
         // Order schema properties by DataMember.Order if [DataContract] and [DataMember](s) defined

@@ -1,5 +1,3 @@
-using System.Reflection;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -75,11 +73,4 @@ public static class ServiceStackOpenApiExtensions
 
     internal static List<IOpenApiAny> ToOpenApiEnums(this IEnumerable<string>? enums) =>
         enums.Safe().Map(x => (IOpenApiAny)new OpenApiString(x));
-
-    internal static bool ShouldIgnorePropertyInSwagger(this PropertyInfo pi)
-    {
-        var propAttrs = pi.AllAttributes();
-        return propAttrs.Any(x => x is ObsoleteAttribute or JsonIgnoreAttribute
-            or Swashbuckle.AspNetCore.Annotations.SwaggerIgnoreAttribute);
-    }
 }
