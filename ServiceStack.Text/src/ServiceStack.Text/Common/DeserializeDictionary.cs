@@ -310,8 +310,7 @@ public static class DeserializeDictionary<TSerializer>
         return index;
     }
 
-    private static Dictionary<TypesKey, ParseDictionaryDelegate> ParseDelegateCache
-        = new Dictionary<TypesKey, ParseDictionaryDelegate>();
+    private static Dictionary<TypesKey, ParseDictionaryDelegate> ParseDelegateCache = new();
 
     private delegate object ParseDictionaryDelegate(ReadOnlySpan<char> value, Type createMapType,
         ParseStringSpanDelegate keyParseFn, ParseStringSpanDelegate valueParseFn);

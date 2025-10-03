@@ -167,6 +167,20 @@ public static class PlatformExtensions
         return hasAttr;
     }
 
+    public static T FirstInheritedAttribute<T>(this Type type) where T : Attribute
+    {
+        // GetCustomAttribute<T>(inherit:true) doesn't seem to work in .NET 8
+        var checkType = type;
+        while (checkType != null)
+        {
+            var attr = checkType.FirstAttribute<T>();
+            if (attr != null)
+                return attr;
+            checkType = checkType.BaseType;
+        }
+        return null;
+    }
+
     private static readonly ConcurrentDictionary<Tuple<MemberInfo,Type>, bool> hasAttributeOfCache = new();
     public static bool HasAttributeOfCached<T>(this MemberInfo memberInfo)
     {

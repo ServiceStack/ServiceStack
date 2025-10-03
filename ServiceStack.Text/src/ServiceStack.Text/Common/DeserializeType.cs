@@ -146,6 +146,29 @@ public static class DeserializeType<TSerializer>
         {
             if (value.IsNullOrEmpty()) return null;
             var concreteType = ExtractType(value);
+#if NET8_0_OR_GREATER
+            if (concreteType == null)
+            {
+                var attr = typeof(T).GetCustomAttribute<System.Text.Json.Serialization.JsonPolymorphicAttribute>();
+                if (attr != null)
+                {
+                    var searchType = attr.TypeDiscriminatorPropertyName;
+                    var jsonObj = DeserializeDictionary<TSerializer>.ParseJsonObject(value);
+                    if (jsonObj.TryGetValue(searchType, out var typeValue))
+                    {
+                        var knownTypeAttrs = typeof(T).GetCustomAttributes<System.Text.Json.Serialization.JsonDerivedTypeAttribute>();
+                        foreach (var knownType in knownTypeAttrs)
+                        {
+                            if (knownType.TypeDiscriminator is string discriminator && discriminator == typeValue)
+                            {
+                                concreteType = knownType.DerivedType;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+#endif
             if (concreteType != null)
             {
                 var fn = Serializer.GetParseStringSpanFn(concreteType);

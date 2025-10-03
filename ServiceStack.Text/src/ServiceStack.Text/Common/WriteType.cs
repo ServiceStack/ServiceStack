@@ -29,6 +29,7 @@ internal static class WriteType<T, TSerializer>
     private static readonly WriteObjectDelegate CacheFn;
     internal static TypePropertyWriter[] PropertyWriters;
     private static readonly WriteObjectDelegate WriteTypeInfo;
+    private static readonly bool ShouldIgnoreTypeInfo;
 
     private static bool IsIncluded => 
         JsConfig<T>.IncludeTypeInfo.GetValueOrDefault(JsConfig.IncludeTypeInfo);
@@ -47,19 +48,34 @@ internal static class WriteType<T, TSerializer>
             CacheFn = Init() ? GetWriteFn() : WriteEmptyType;
         }
 
+        ShouldIgnoreTypeInfo = IgnoreTypeInfo(typeof(T));
+        
         if (IsIncluded)
         {
-            WriteTypeInfo = TypeInfoWriter;
+            WriteTypeInfo = ShouldIgnoreTypeInfo 
+                ? null 
+                : TypeInfoWriter;
         }
 
         if (typeof(T).IsAbstract)
         {
-            WriteTypeInfo = TypeInfoWriter;
+            WriteTypeInfo = ShouldIgnoreTypeInfo 
+                ? null 
+                : TypeInfoWriter;
             if (!JsConfig.PreferInterfaces || !typeof(T).IsInterface)
             {
                 CacheFn = WriteAbstractProperties;
             }
         }
+    }
+
+    static bool IgnoreTypeInfo(Type type)
+    {
+#if NET8_0_OR_GREATER
+        var attr = type.FirstInheritedAttribute<System.Text.Json.Serialization.JsonPolymorphicAttribute>();
+        return attr?.TypeDiscriminatorPropertyName != null;
+#endif
+        return false;
     }
 
     public static void TypeInfoWriter(TextWriter writer, object obj)
@@ -394,8 +410,11 @@ internal static class WriteType<T, TSerializer>
             || (JsConfigScope.Current != null && JsConfigScope.Current.IncludeTypeInfo && !JsConfigScope.Current.ExcludeTypeInfo); 
         if (writeTypeInfo)
         {
-            if (JsConfig.PreferInterfaces && TryWriteSelfType(writer)) i++;
-            else if (TryWriteTypeInfo(writer, instance)) i++;
+            if (!ShouldIgnoreTypeInfo)
+            {
+                if (JsConfig.PreferInterfaces && TryWriteSelfType(writer)) i++;
+                else if (TryWriteTypeInfo(writer, instance)) i++;
+            }
             JsState.IsWritingDynamic = false;
         }
 
