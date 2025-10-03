@@ -836,7 +836,9 @@ public class OpenApiMetadata
         }
         Schemas[schemaId] = schema;
 
-        var properties = schemaType.GetProperties();
+        var properties = schemaType.GetProperties()
+            .Where(x => !x.ShouldIgnorePropertyInSwagger())
+            .ToArray();
 
         // Order schema properties by DataMember.Order if [DataContract] and [DataMember](s) defined
         // Ordering defined by: http://msdn.microsoft.com/en-us/library/ms729813.aspx
