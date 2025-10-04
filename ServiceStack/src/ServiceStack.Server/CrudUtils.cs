@@ -30,37 +30,37 @@ public class AutoGenContext(CrudCodeGenTypes instruction, string tableName, Tabl
     /// <summary>
     /// Generated DataModel Name to use 
     /// </summary>
-    public string DataModelName { get; set; }
+    public string? DataModelName { get; set; }
         
     /// <summary>
     /// Generated DataModel Name to use for Query Services 
     /// </summary>
-    public string PluralDataModelName { get; set; }
+    public string? PluralDataModelName { get; set; }
 
     /// <summary>
     /// Generated Route Path base to use 
     /// </summary>
-    public string RoutePathBase { get; set; }
+    public string? RoutePathBase { get; set; }
         
     /// <summary>
     /// Generated Request DTO Name to use per operation: Query, Create, Update, Patch, Delete
     /// </summary>
-    public Dictionary<string,string> OperationNames { get; set; } = new();
+    public Dictionary<string,string>? OperationNames { get; set; } = new();
         
     /// <summary>
     /// RDBMS Dialect
     /// </summary>
-    public IOrmLiteDialectProvider Dialect { get; set; }
+    public IOrmLiteDialectProvider? Dialect { get; set; }
         
     /// <summary>
     /// Return what table [Alias] name should be used (if any)
     /// </summary>
-    public Func<string> GetTableAlias { get; set; }
+    public Func<string>? GetTableAlias { get; set; }
         
     /// <summary>
     /// Return what table column [Alias] name should be used (if any)
     /// </summary>
-    public Func<MetadataPropertyType, ColumnSchema, string> GetColumnAlias { get; set; }
+    public Func<MetadataPropertyType, ColumnSchema, string>? GetColumnAlias { get; set; }
 }
 
 public delegate List<string> GetTableNamesDelegate(IDbConnection db, string? schema);
@@ -98,8 +98,8 @@ public interface IGenerateCrudServices : ITableResolver
     bool AddDataContractAttributes { get; set; }
     bool AddIndexesToDataMembers { get; set; }
     string AccessRole { get; set; }
-    DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string namedConnection = null,
-        string schema = null, List<string> includeTables = null, List<string> excludeTables = null);
+    DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string? namedConnection = null,
+        string? schema = null, List<string>? includeTables = null, List<string>? excludeTables = null);
     void Configure(IServiceCollection services);
     
     /// <summary>
@@ -116,7 +116,7 @@ public interface IGenerateCrudServices : ITableResolver
 public static class CrudUtils
 {
     static void ConfigureDb(IDbConnection db) => db.WithName(nameof(CrudUtils));
-    public static MetadataAttribute ToAttribute(string name, Dictionary<string, object> args = null, Attribute attr = null) => new() {
+    public static MetadataAttribute ToAttribute(string name, Dictionary<string, object>? args = null, Attribute? attr = null) => new() {
         Name = name,
         Attribute = attr,
         Args = args?.Map(x => new MetadataPropertyType {
@@ -127,7 +127,7 @@ public static class CrudUtils
     };
 
     public static MetadataType AddAttribute(this MetadataType type, string name,
-        Dictionary<string, object> args = null, Attribute attr = null)
+        Dictionary<string, object>? args = null, Attribute? attr = null)
     {
         var metaAttr = ToAttribute(name, args, attr);
         type.Attributes ??= [];
@@ -144,7 +144,7 @@ public static class CrudUtils
         return type;
     }
 
-    public static MetadataType AddAttributeIfNotExists<T>(this MetadataType type, T attr, Func<T, bool> test=null)
+    public static MetadataType AddAttributeIfNotExists<T>(this MetadataType type, T attr, Func<T, bool>? test=null)
         where T : Attribute
     {
         return type.Attributes?.Any(x => x.Attribute is T t && (test == null || test(t))) == true 
@@ -161,7 +161,7 @@ public static class CrudUtils
         return propType;
     }
 
-    public static MetadataPropertyType AddAttributeIfNotExists<T>(this MetadataPropertyType propType, T attr, Func<T, bool> test=null)
+    public static MetadataPropertyType AddAttributeIfNotExists<T>(this MetadataPropertyType propType, T attr, Func<T, bool>? test=null)
         where T : Attribute
     {
         return propType.Attributes?.Any(x => x.Attribute is T t && (test == null || test(t))) == true 
@@ -170,11 +170,11 @@ public static class CrudUtils
     }
 
     public static List<TableSchema> GetTables(this IDbConnectionFactory dbFactory,
-        string namedConnection = null,
-        string schema = null,
-        List<string> includeTables = null,
-        List<string> excludeTables = null,
-        ITableResolver config = null)
+        string? namedConnection = null,
+        string? schema = null,
+        List<string>? includeTables = null,
+        List<string>? excludeTables = null,
+        ITableResolver? config = null)
     {
         var results = dbFactory.GetTableSchemas(namedConnection: null,
             schema: null,
