@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Extensions.Tests;
 
-[Ignore("TODO Fix AI Test in CI"), TestFixture]
+[Ignore("TODO Fix AI Test in CI."), TestFixture]
 public class AiChatTests
 {
     public AiChatTests()
