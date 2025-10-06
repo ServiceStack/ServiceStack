@@ -71,4 +71,6 @@ public static class JwtClaimTypes
     public const string Permission = "perm";
     public const string Roles = "roles";
     public const string Permissions = "perms";
+    public const string IdentityRole = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+    public const string ApiKey = "apikey";
 }

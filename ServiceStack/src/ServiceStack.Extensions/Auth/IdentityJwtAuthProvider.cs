@@ -20,6 +20,7 @@ using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Text.Pools;
 using ServiceStack.Web;
+using JwtConstants = Microsoft.IdentityModel.JsonWebTokens.JwtConstants;
 
 namespace ServiceStack.Auth;
 
@@ -180,6 +181,11 @@ public class IdentityJwtAuthProvider<TUser,TRole,TKey> :
     /// Run custom filter after session is restored from a JWT Token
     /// </summary>
     public Action<IAuthSession, List<Claim>, IRequest>? OnSessionCreated { get; set; }
+
+    /// <summary>
+    /// Filter which claims are included in the JWT Token
+    /// </summary>
+    public Func<List<Claim>, List<Claim>> TokenClaimsFilter { get; set; } = DefaultTokenClaimsFilter;
 
 #if NET8_0_OR_GREATER    
     /// <summary>
@@ -483,9 +489,38 @@ public class IdentityJwtAuthProvider<TUser,TRole,TKey> :
 
         return CreateJwtBearerToken(userClaims, Audience, DateTime.UtcNow.Add(ExpireTokensIn));
     }
+    
+    public static List<Claim> DefaultTokenClaimsFilter(List<Claim> claims)
+    {
+        // filter out duplicate role and permission claims
+        var existingRoles = new List<string>();
+        var existingPerms = new List<string>();
+        
+        var to = new List<Claim>();
+        foreach (var claim in claims)
+        {
+            if (claim.Type is JwtClaimTypes.Role or JwtClaimTypes.IdentityRole)
+            {
+                if (existingRoles.Contains(claim.Value))
+                    continue;
+                existingRoles.Add(claim.Value);
+            }
+            else if (claim.Type == JwtClaimTypes.Permission)
+            {
+                if (existingPerms.Contains(claim.Value))
+                    continue;
+                existingPerms.Add(claim.Value);
+            }
+            to.Add(claim);
+        }
+        
+        return to;
+    }
 
     public string CreateJwtBearerToken(List<Claim> claims, string audience, DateTime expires)
     {
+        claims = TokenClaimsFilter(claims);
+        
         var credentials = new SigningCredentials(TokenValidationParameters.IssuerSigningKey, HashAlgorithm);
         var securityToken = new JwtSecurityToken(
             issuer: TokenValidationParameters.ValidIssuer,
