@@ -29,7 +29,7 @@ public class AiChatTests
             };
         });
         app.StartAsync(TestsConfig.ListeningOn);
-        WaitForLoadAsync().Wait();
+        WaitForLoadAsync(extraMs:1000).Wait();
     }
 
     [OneTimeTearDown]
@@ -62,7 +62,7 @@ public class AiChatTests
     [Test]
     public void All_Providers_uses_Variable_ApiKeys()
     {
-        var feature = HostContext.GetPlugin<ChatFeature>();
+        var feature = HostContext.AssertPlugin<ChatFeature>();
         foreach (var entry in feature.Providers)
         {
             var provider = entry.Value;
@@ -76,7 +76,7 @@ public class AiChatTests
     [Test]
     public void Can_get_all_Chat_clients()
     {
-        var feature = HostContext.GetPlugin<ChatFeature>();
+        var feature = HostContext.AssertPlugin<ChatFeature>();
         var services = HostContext.AppHost.GetApplicationServices();
         var clients = services.GetRequiredService<IChatClients>();
         
@@ -127,7 +127,7 @@ public class AiChatTests
     public async Task Can_enable_and_disable_provider()
     {
         var client = await CreateClientAsync();
-        var feature = HostContext.GetPlugin<ChatFeature>();
+        var feature = HostContext.AssertPlugin<ChatFeature>();
         
         Assert.That(feature.Providers.ContainsKey("mistral"), Is.True);
         var response = await client.SendAsync(new UpdateChatProvider {
