@@ -273,8 +273,18 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public string? GetApiKeyToken(IRequest req)
     {
         var to = (HttpHeader != null ? req.GetHeader(HttpHeader) : null) ?? req.GetBearerToken();
-        if (string.IsNullOrEmpty(to)) 
+        if (string.IsNullOrEmpty(to))
+        {
+            var user = req.GetClaimsPrincipal();
+            if (user.IsAuthenticated())
+            {
+                var apiKey = user.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.ApiKey)?.Value;
+                if (!string.IsNullOrEmpty(apiKey))
+                    return apiKey;
+            }
+            
             return null;
+        }
         return to;
     }
 
@@ -424,6 +434,22 @@ public class ApiKeysFeatureSource(ApiKeysFeature feature) : IApiKeySource
         using var db = feature.OpenDb();
         var apiKey = await db.SingleAsync<ApiKeysFeature.ApiKey>(x => x.Id == id);
         return apiKey;
+    }
+
+    public async Task<List<IApiKey>> GetApiKeysByUserIdAsync(string? userId)
+    {
+        using var db = feature.OpenDb();
+        var apiKeys = await db.SelectAsync<ApiKeysFeature.ApiKey>(x => x.UserId == userId);
+        var to = new List<IApiKey>();
+        foreach (var apiKey in apiKeys)
+        {
+            if (apiKey.CancelledDate == null 
+                && (apiKey.ExpiryDate == null || apiKey.ExpiryDate > DateTime.UtcNow))
+            {
+                to.Add(apiKey);
+            }
+        }
+        return to;
     }
 }
 

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
@@ -29,4 +30,5 @@ public interface IApiKeySource
 {
     Task<IApiKey?> GetApiKeyAsync(string key);
     Task<IApiKey?> GetApiKeyByIdAsync(int id);
+    Task<List<IApiKey>> GetApiKeysByUserIdAsync(string? userId);
 }
