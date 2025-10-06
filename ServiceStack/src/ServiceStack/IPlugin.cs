@@ -56,6 +56,7 @@ public static class Plugins
     public const string Profiling = "profiling";
     public const string RunAsAdmin = "runasadmin";
     public const string BackgroundJobs = "backgroundjobs";
+    public const string AiChat = "aichat";
 
     public static void AddToAppMetadata(this IAppHost appHost, Action<AppMetadata> fn)
     {
@@ -106,6 +107,13 @@ public interface IRequireRegistration
 {
     void Register(IAppHost appHost);
 }
+
+#if NET8_0_OR_GREATER
+public interface IRequireLoadAsync
+{
+    public System.Threading.Tasks.Task LoadAsync(System.Threading.CancellationToken token);
+}
+#endif
 
 /// <summary>
 /// Callback for AuthProviders to register callbacks with AuthFeature

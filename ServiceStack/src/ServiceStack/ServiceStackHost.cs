@@ -114,6 +114,11 @@ public abstract partial class ServiceStackHost
     /// Init Options before AppHost is initialized, e.g. in services.AddServiceStack(asm, options => { ... })
     /// </summary>
     public static ServiceStackServicesOptions InitOptions { get; internal set; } = new();
+    
+    /// <summary>
+    /// Whether all async plugins have loaded
+    /// </summary>
+    public static bool HasLoaded { get; set; }
 
     protected ServiceStackHost(string serviceName, params Assembly[] assembliesWithServices)
     {
@@ -347,6 +352,14 @@ public abstract partial class ServiceStackHost
         configInstances.ForEach(RunAfterInitAppHost);
         GlobalAfterAppHostInit.Each(RunManagedAction);
 
+#if NET8_0_OR_GREATER
+        // The AppHostStartup will set HasLoaded if there are any IRequireLoadAsync plugins to load
+        var hasAsyncPluginsToLoad = InitOptions.AutoRegister.Contains(typeof(AppHostStartup))
+            && Plugins.OfType<IRequireLoadAsync>().Any();
+        if (!HasLoaded)
+            HasLoaded = !hasAsyncPluginsToLoad;
+#endif
+        
         ReadyAt = DateTime.UtcNow;
         OnReady();
 

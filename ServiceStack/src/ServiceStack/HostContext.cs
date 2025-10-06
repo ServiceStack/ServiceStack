@@ -380,5 +380,6 @@ public static class HostContext
         ServiceStackHost.GlobalAfterPluginsLoaded.Clear();
         ServiceStackHost.GlobalAfterAppHostInit.Clear();
         ServiceStackHost.InitOptions = new();
+        ServiceStackHost.HasLoaded = false;
     }
 }

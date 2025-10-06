@@ -82,6 +82,9 @@ public class ServiceStackServicesOptions
         typeof(ServiceController),
         typeof(HttpUtils),
         typeof(Auth.IPasswordHasher),
+#if NET8_0_OR_GREATER
+        typeof(AppHostStartup),
+#endif        
     ];
     
     internal bool ShouldAutoRegister<T>() => AutoRegister.Contains(typeof(T));
@@ -296,5 +299,49 @@ public class ServiceStackOptions
 }
 
 public record struct EndpointOptions(bool RequireAuth=true);
+
+public class AppHostStartup(
+    Microsoft.Extensions.Logging.ILogger<AppHostStartup> log, 
+    Microsoft.Extensions.Hosting.IHostApplicationLifetime appLifetime) 
+    : Microsoft.Extensions.Hosting.IHostedService
+{
+    public DateTime StartedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public int LoadedPlugins { get; set; }
+        
+    public async System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken token)
+    {
+        StartedAt = DateTime.UtcNow;
+        
+        var loadPlugins = ServiceStackHost.Instance.Plugins.OfType<IRequireLoadAsync>().ToList();
+        Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(log, "Loading {Count} async plugins", loadPlugins.Count);
+        foreach (var plugin in loadPlugins)
+        {
+            var pluginStart = DateTime.UtcNow;
+            try
+            {
+                await plugin.LoadAsync(token).ConfigureAwait(false);
+                Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(log, "Loaded {Plugin} in {Duration}", 
+                    plugin.GetType().Name, (DateTime.UtcNow - pluginStart));
+                LoadedPlugins++;
+            }
+            catch (Exception e)
+            {
+                Microsoft.Extensions.Logging.LoggerExtensions.LogError(log, e, "Error loading {Plugin}", plugin.GetType().Name);
+                appLifetime.StopApplication();
+            }
+        }
+
+        CompletedAt = DateTime.UtcNow;
+        ServiceStackHost.HasLoaded = true;
+    }
+
+    public System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken)
+    {
+        Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(log, "Loaded {Count} async plugins in {Duration}", 
+            LoadedPlugins, (CompletedAt ?? DateTime.UtcNow) - StartedAt);
+        return System.Threading.Tasks.Task.CompletedTask;
+    }
+}    
 
 #endif

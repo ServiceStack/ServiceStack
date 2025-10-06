@@ -645,7 +645,7 @@ public static class NetCoreAppHostExtensions
         configure?.Invoke(options);
 
         options.ConfigurePlugins(services);
-
+        
         var allServiceTypes = options.GetAllServiceTypes();
         foreach (var type in allServiceTypes)
         {
@@ -655,6 +655,18 @@ public static class NetCoreAppHostExtensions
         ServiceStackHost.GlobalAfterConfigureServices.ForEach(fn => fn(services));
         ServiceStackHost.GlobalAfterConfigureServices.Clear();
 
+        var pluginsRequireLoadAsync = options.AutoRegister.Contains(typeof(AppHostStartup))
+            ? options.Plugins.OfType<IRequireLoadAsync>().ToList()
+            : [];
+        if (pluginsRequireLoadAsync.Count > 0)
+        {
+            services.AddHostedService<AppHostStartup>();
+        }
+        else
+        {
+            ServiceStackHost.HasLoaded = true;
+        }
+        
         if (options.AutoRegister.Contains(typeof(HttpUtils)))
         {
             services.AddHttpClient(nameof(HttpUtils))
