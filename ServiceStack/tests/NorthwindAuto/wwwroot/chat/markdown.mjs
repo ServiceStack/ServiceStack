@@ -2,10 +2,17 @@ import { Marked } from "marked"
 import hljs from "highlight.js"
 
 export const marked = (() => {
+    const aliases = {
+        vue: 'html',
+    }
+    
     const ret = new Marked(
         markedHighlight({
             langPrefix: 'hljs language-',
             highlight(code, lang, info) {
+                if (aliases[lang]) {
+                    lang = aliases[lang]
+                }
                 const language = hljs.getLanguage(lang) ? lang : 'plaintext'
                 return hljs.highlight(code, { language }).value
             }

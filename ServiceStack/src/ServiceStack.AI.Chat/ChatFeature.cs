@@ -322,7 +322,7 @@ public class ChatStatusResponse
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
-[ValidateIsAdmin]
+[ValidateApiKey]
 [ExcludeMetadata, Route("/chat/providers/{Id}")]
 public class UpdateChatProvider : IPost, IReturn<UpdateChatProviderResponse>
 {
@@ -393,7 +393,11 @@ public class ChatServices(ILogger<ChatServices> log) : Service
             : null;
 
         var user = await GetClaimsPrincipal(apiKey).ConfigAwait();
+        var roles = user.GetRoles().ToList();
 
+        if (apiKey.HasScope(RoleNames.Admin))
+            roles.AddIfNotExists(RoleNames.Admin);
+        
         var profileUrl = user.GetPicture();
 
         return new AuthenticateResponse
@@ -402,7 +406,7 @@ public class ChatServices(ILogger<ChatServices> log) : Service
             UserName = user.GetUserName(),
             DisplayName = user.GetDisplayName(),
             ProfileUrl = profileUrl,
-            Roles = user.GetRoles().ToList(),
+            Roles = roles,
             BearerToken = visibleKey,
         };
     }
@@ -410,7 +414,7 @@ public class ChatServices(ILogger<ChatServices> log) : Service
     private async Task<ClaimsPrincipal?> GetClaimsPrincipal(IApiKey apiKey)
     {
         var user = Request.GetClaimsPrincipal();
-        if (user == null)
+        if (!user.IsAuthenticated())
         {
             var userResolver = Request!.GetService<IUserResolver>();
             if (userResolver != null && apiKey.UserAuthId != null)

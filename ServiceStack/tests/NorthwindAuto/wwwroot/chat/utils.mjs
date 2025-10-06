@@ -16,11 +16,17 @@ export function toJsonObject(json) {
     }
 }
 
-export function storageArray(key) {
+export function storageArray(key, save) {
+    if (save && Array.isArray(save)) {
+        localStorage.setItem(key, JSON.stringify(save))
+    }
     return toJsonArray(localStorage.getItem(key)) ?? []
 }
 
-export function storageObject(key) {
+export function storageObject(key, save) {
+    if (typeof save == 'object') {
+        localStorage.setItem(key, JSON.stringify(save))
+    }
     return toJsonObject(localStorage.getItem(key)) ?? {}
 }
 

@@ -1,6 +1,7 @@
 import { onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThreadStore } from './threadStore.mjs'
+import Brand from './Brand.mjs'
 
 // Thread Item Component
 const ThreadItem = {
@@ -127,7 +128,7 @@ const GroupedThreads = {
         />
     </div>
     <div class="mb-4 flex w-full justify-center">
-        <button @click="$router.push($ai.Base + '/recents')" type="button"
+        <button @click="$router.push($ai.base + '/recents')" type="button"
             class="flex text-sm space-x-1 font-semibold text-gray-900 hover:text-blue-600 focus:outline-none transition-colors">
             <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M8 2.19c3.13 0 5.68 2.25 5.68 5s-2.55 5-5.68 5a5.7 5.7 0 0 1-1.89-.29l-.75-.26l-.56.56a14 14 0 0 1-2 1.55a.13.13 0 0 1-.07 0v-.06a6.58 6.58 0 0 0 .15-4.29a5.25 5.25 0 0 1-.55-2.16c0-2.77 2.55-5 5.68-5M8 .94c-3.83 0-6.93 2.81-6.93 6.27a6.4 6.4 0 0 0 .64 2.64a5.53 5.53 0 0 1-.18 3.48a1.32 1.32 0 0 0 2 1.5a15 15 0 0 0 2.16-1.71a6.8 6.8 0 0 0 2.31.36c3.83 0 6.93-2.81 6.93-6.27S11.83.94 8 .94"></path><ellipse cx="5.2" cy="7.7" fill="currentColor" rx=".8" ry=".75"></ellipse><ellipse cx="8" cy="7.7" fill="currentColor" rx=".8" ry=".75"></ellipse><ellipse cx="10.8" cy="7.7" fill="currentColor" rx=".8" ry=".75"></ellipse></svg>
             <span>All Chats</span>
@@ -146,31 +147,13 @@ const GroupedThreads = {
 
 const Sidebar = {
     components: {
+        Brand,
         GroupedThreads,
         ThreadItem,
     },
     template: `
         <div class="flex flex-col h-full bg-gray-50 border-r border-gray-200">
-            <!-- Header -->
-            <div class="flex-shrink-0 px-4 py-4 border-b border-gray-200 bg-white min-h-16 select-none">
-                <div class="flex items-center justify-between">
-                    <button type="button"
-                        @click="goToInitialState"
-                        class="text-lg font-semibold text-gray-900 hover:text-blue-600 focus:outline-none transition-colors"
-                        title="Go back to initial state"
-                    >
-                        History
-                    </button>
-                    <button type="button"
-                        @click="createNewThread"
-                        class="text-gray-900 hover:text-blue-600 focus:outline-none transition-colors"
-                        title="New Chat"
-                    >
-                        <svg class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></g></svg>
-                    </button>
-                </div>
-            </div>
-
+            <Brand @home="goToInitialState" @new="createNewThread" />
             <!-- Thread List -->
             <div class="flex-1 overflow-y-auto">
                 <div v-if="isLoading" class="p-4 text-center text-gray-500">
@@ -187,7 +170,7 @@ const Sidebar = {
                 </div>
 
                 <div v-else class="py-2">
-                    <GroupedThreads :currentThread="currentThread" :groupedThreads="threadStore.getGroupedThreads(19)" 
+                    <GroupedThreads :currentThread="currentThread" :groupedThreads="threadStore.getGroupedThreads(18)" 
                         @select="selectThread" @delete="deleteThread" />        
                 </div>
             </div>
@@ -213,7 +196,7 @@ const Sidebar = {
         })
 
         const selectThread = async (threadId) => {
-            router.push(`${ai.Base}/c/${threadId}`)
+            router.push(`${ai.base}/c/${threadId}`)
         }
 
         const deleteThread = async (threadId) => {
@@ -221,19 +204,19 @@ const Sidebar = {
                 const wasCurrent = currentThread?.value?.id === threadId
                 await deleteThreadFromStore(threadId)
                 if (wasCurrent) {
-                    router.push(`${ai.Base}/`)
+                    router.push(`${ai.base}/`)
                 }
             }
         }
 
         const createNewThread = async () => {
             const newThread = await createThread()
-            router.push(`${ai.Base}/c/${newThread.id}`)
+            router.push(`${ai.base}/c/${newThread.id}`)
         }
 
         const goToInitialState = () => {
             clearCurrentThread()
-            router.push(`${ai.Base}/`)
+            router.push(`${ai.base}/`)
         }
 
         return {

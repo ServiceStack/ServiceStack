@@ -378,8 +378,14 @@ public class IdentityAuthContextManager<TUser, TRole, TKey> : IIdentityAuthConte
 
         // Add default claims if needed
         claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()!));
-        claims.Add(new Claim(ClaimTypes.Name, user.UserName!));
-        claims.Add(new Claim(ClaimTypes.Email, user.Email!));
+        if (user.UserName != null)
+        {
+            claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+        }
+        if (user.Email != null)
+        {
+            claims.Add(new Claim(ClaimTypes.Email, user.Email));
+        }
 
         // Get the user roles and add them as claims
         foreach (var role in roles)

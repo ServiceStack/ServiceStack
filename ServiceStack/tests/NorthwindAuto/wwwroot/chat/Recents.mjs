@@ -128,7 +128,7 @@ const RecentResults = {
             return ''
         }
 
-        const open = (id) => router.push(ai.Base + `/c/${id}`)
+        const open = (id) => router.push(`${ai.base}/c/${id}`)
         const formatDate = (iso) => new Date(iso).toLocaleString()
 
         return {

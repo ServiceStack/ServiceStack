@@ -193,7 +193,7 @@ async function setCurrentThreadFromRoute(threadId, router) {
     } else {
         // Thread not found, redirect to home
         if (router) {
-            router.push((globalThis.ai?.Base || '') + '/')
+            router.push((globalThis.ai?.base || '') + '/')
         }
         currentThread.value = null
         return null
