@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>ServiceStack.AI.Chat</PackageId>
+        <AssemblyName>ServiceStack.AI.Chat</AssemblyName>
+        <RootNamespace>ServiceStack.AI</RootNamespace>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Title>ServiceStack functionality for OpenAI, Client, Server and UI</Title>
+        <PackageDescription>
+            ServiceStack functionality for OpenAI, Client, Server and UI
+        </PackageDescription>
+        <PackageTags>AI;GPT;OpenAI</PackageTags>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+        <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="chat\*.*;js\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+    </ItemGroup>
+
+</Project>

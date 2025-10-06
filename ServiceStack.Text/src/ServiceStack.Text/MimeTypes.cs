@@ -52,6 +52,10 @@ public static class MimeTypes
     public const string ImageJpg = "image/jpeg";
     public const string ImageSvg = "image/svg+xml";
 
+    public const string AudioMpeg = "audio/mpeg";
+    public const string AudioMp3 = "audio/mp3";
+    public const string AudioWav = "audio/wav";
+
     public const string Bson = "application/bson";
     public const string Binary = "application/octet-stream";
     public const string ServerSentEvents = "text/event-stream";

@@ -4,21 +4,17 @@ using NUnit.Framework;
 
 namespace ServiceStack.Extensions.Tests;
 
+/// <summary>
+/// Logger provider that writes to NUnit's TestContext for visibility in test runners
+/// </summary>
 public class NUnitLoggerProvider : ILoggerProvider
 {
     public ILogger CreateLogger(string categoryName) => new NUnitLogger(categoryName);
 
     public void Dispose() { }
 
-    private class NUnitLogger : ILogger
+    private class NUnitLogger(string categoryName) : ILogger
     {
-        private readonly string _categoryName;
-
-        public NUnitLogger(string categoryName)
-        {
-            _categoryName = categoryName;
-        }
-
         public IDisposable BeginScope<TState>(TState state) => null;
 
         public bool IsEnabled(LogLevel logLevel) => true;
@@ -26,7 +22,7 @@ public class NUnitLoggerProvider : ILoggerProvider
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             var message = formatter(state, exception);
-            TestContext.WriteLine($"[{logLevel}] {_categoryName}: {message}");
+            TestContext.WriteLine($"[{logLevel}] {categoryName}: {message}");
             if (exception != null)
                 TestContext.WriteLine(exception.ToString());
         }

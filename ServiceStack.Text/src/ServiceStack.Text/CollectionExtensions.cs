@@ -50,7 +50,7 @@ public static class CollectionExtensions
     /// Return T[0] when enumerable is null, safe to use in enumerations like foreach
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T> enumerable) => enumerable ?? Array.Empty<T>();
+    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T> enumerable) => enumerable ?? [];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IEnumerable OrEmpty(this IEnumerable enumerable) => enumerable ?? Array.Empty<object>();

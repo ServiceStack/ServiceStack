@@ -55,6 +55,9 @@ jobs:
           echo "SERVICESTACK_LICENSE=${{ secrets.SERVICESTACK_LICENSE }}" >> $GITHUB_ENV
           echo "CI_RABBITMQ=gistlyn.com:45672" >> $GITHUB_ENV
           echo "CI_DYNAMODB=http://gistlyn.com:48000" >> $GITHUB_ENV
+          echo "OPENROUTER_FREE_API_KEY=${{ secrets.OPENROUTER_FREE_API_KEY }}" >> $GITHUB_ENV
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
+          echo "GOOGLE_FREE_API_KEY=${{ secrets.GOOGLE_FREE_API_KEY }}" >> $GITHUB_ENV
 
       - name: Test Extensions
         run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.Extensions.Tests/ServiceStack.Extensions.Tests.csproj  --logger 'trx;LogFileName=results.trx'

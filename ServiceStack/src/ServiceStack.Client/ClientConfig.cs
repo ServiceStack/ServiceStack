@@ -38,11 +38,23 @@ public static class ClientConfig
     /// </summary>
     public static UseSystemJson UseSystemJson { get; set; } = UseSystemJson.Never;
 
+    /// <summary>
+    /// Serialize to Object to Indented Json with System.Text JSON
+    /// </summary>
     public static string ToSystemJson<T>(T obj)
     {
         var options = TextConfig.CreateSystemJsonOptions();
         options.WriteIndented = true;
         return System.Text.Json.JsonSerializer.Serialize(obj, options);
+    }
+
+    /// <summary>
+    /// Print Indented and unquoted System.Text JSON output to the Console
+    /// </summary>
+    public static void PrintSystemJson<T>(T obj)
+    {
+        var json = ToSystemJson(obj);
+        Console.WriteLine(json.Replace("\"", ""));
     }
 #endif
 

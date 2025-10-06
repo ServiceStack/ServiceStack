@@ -1,0 +1,70 @@
+<html>
+<head>
+    <title>llms.py</title>
+    <link rel="stylesheet" href="/chat/typography.css">
+    <link rel="stylesheet" href="/css/ui.css">
+    <link rel="icon" type="image/svg" href="/chat/fav.svg">
+    <style>
+        [type='button'],button[type='submit']{cursor:pointer}
+        [type='checkbox']:checked:hover, [type='checkbox']:checked:focus, [type='radio']:checked:hover, [type='radio']:checked:focus,
+        [type='checkbox']:checked, [type='radio']:checked,
+        [type='checkbox']:focus, [type='radio']:focus,
+        [type='checkbox'], [type='radio']
+        {
+            border: none; 
+            background: none;
+            outline: none;
+            box-shadow: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<script type="importmap">
+    {
+        "imports": {
+            "vue": "/lib/mjs/vue.mjs",
+            "vue-router": "/js/vue-router.mjs",
+            "@servicestack/client": "/js/servicestack-client.mjs",
+            "@servicestack/vue": "/lib/mjs/servicestack-vue.mjs",
+            "idb": "/js/idb.mjs",
+            "marked": "/js/marked.mjs",
+            "highlight.js": "/js/highlight.mjs"
+        }
+    }
+</script>
+<body>
+<div id="app"></div>
+</body>
+<script type="module">
+import { createApp, defineAsyncComponent } from 'vue'
+import { createWebHistory, createRouter } from "vue-router"
+import ServiceStackVue from "@servicestack/vue"
+import App from '/chat/App.mjs'
+import ai from '/chat/ai.mjs'
+
+const { config, models } = await ai.init()
+const MainComponent = defineAsyncComponent(() => import(ai.Base + '/Main.mjs'))
+const RecentsComponent = defineAsyncComponent(() => import(ai.Base + '/Recents.mjs'))
+
+const routes = [
+    { path: '/', component: MainComponent },
+    { path: '/c/:id', component: MainComponent },
+    { path: '/recents', component: RecentsComponent  },
+    { path: '/:fallback(.*)*', component: MainComponent }
+]
+routes.forEach(r => r.path = ai.Base + r.path)
+const router = createRouter({
+    history: createWebHistory(),
+    routes,
+})
+const app = createApp(App, { config, models })
+app.use(router)
+app.use(ServiceStackVue)
+app.provide('ai', ai)
+app.provide('config', config)
+app.provide('models', models)
+window.ai = app.config.globalProperties.$ai = ai
+
+app.mount('#app')
+</script>
+</html>

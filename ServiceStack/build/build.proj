@@ -134,7 +134,12 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.AspNetCore.OpenApi -->
+    <!-- ServiceStack.AI.Chat -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.AI.Chat/ServiceStack.AI.Chat.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+      <!-- ServiceStack.AspNetCore.OpenApi -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.AspNetCore.OpenApi/ServiceStack.AspNetCore.OpenApi.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />

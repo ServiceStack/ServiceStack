@@ -175,6 +175,9 @@ public static class DateTimeExtensions
     public static string Humanize(this TimeSpan span)
     {
         var duration = span.Duration();
+        if (duration.TotalSeconds < 1)
+            return $"{duration.TotalMilliseconds:0}ms";
+
         var secs = duration.Seconds > 0
             ? $"{span.Seconds:0} second{(span.Seconds == 1 ? string.Empty : "s")}"
             : string.Empty;
