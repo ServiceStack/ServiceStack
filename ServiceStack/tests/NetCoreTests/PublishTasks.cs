@@ -28,6 +28,9 @@ public class PublishTasks
     string[] IgnoreUiFiles = { };
     string[] IgnoreAdminUiFiles = { };
 
+    private string FromChatDir = Path.GetFullPath("../../../../NorthwindAuto/wwwroot/chat");
+    private string ToChatDir = Path.GetFullPath("../../../../../src/ServiceStack.AI.Chat/chat");
+
     FilesTransformer transformOptions => FilesTransformer.Defaults(debugMode: true);
 
     [Test]
@@ -36,6 +39,10 @@ public class PublishTasks
         Directory.SetCurrentDirectory(ProjectDir);
         FromModulesDir.Print();
         ToModulesDir.Print();
+     
+        "".Print();
+        FromChatDir.Print();
+        ToChatDir.Print();
     }
 
     [Test]
@@ -159,6 +166,13 @@ public class PublishTasks
         moduleOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("wwwroot/Templates/")),
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("../Templates")),
+            cleanTarget: true,
+            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+        
+        // Copy ServiceStack.AI.Chat
+        transformOptions.CopyAll(
+            source: new FileSystemVirtualFiles(FromChatDir),
+            target: new FileSystemVirtualFiles(ToChatDir),
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
     }

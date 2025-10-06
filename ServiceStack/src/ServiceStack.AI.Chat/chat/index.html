@@ -6,10 +6,11 @@
     <link rel="icon" type="image/svg" href="/chat/fav.svg">
     <style>
         [type='button'],button[type='submit']{cursor:pointer}
-        [type='checkbox']:checked:hover, [type='checkbox']:checked:focus, [type='radio']:checked:hover, [type='radio']:checked:focus,
-        [type='checkbox']:checked, [type='radio']:checked,
-        [type='checkbox']:focus, [type='radio']:focus,
-        [type='checkbox'], [type='radio']
+        [type='checkbox'].switch:checked:hover, 
+        [type='checkbox'].switch:checked:focus,
+        [type='checkbox'].switch:checked,
+        [type='checkbox'].switch:focus,
+        [type='checkbox'].switch
         {
             border: none; 
             background: none;
@@ -36,23 +37,19 @@
 <div id="app"></div>
 </body>
 <script type="module">
-import { createApp, defineAsyncComponent } from 'vue'
-import { createWebHistory, createRouter } from "vue-router"
-import ServiceStackVue from "@servicestack/vue"
-import App from '/chat/App.mjs'
-import ai from '/chat/ai.mjs'
-
 const { config, models } = await ai.init()
-const MainComponent = defineAsyncComponent(() => import(ai.Base + '/Main.mjs'))
-const RecentsComponent = defineAsyncComponent(() => import(ai.Base + '/Recents.mjs'))
-
+const MainComponent = defineAsyncComponent(() => import(ai.base + '/Main.mjs'))
+const RecentsComponent = defineAsyncComponent(() => import(ai.base + '/Recents.mjs'))
+const Components = {
+    SettingsDialog,
+}
 const routes = [
     { path: '/', component: MainComponent },
     { path: '/c/:id', component: MainComponent },
     { path: '/recents', component: RecentsComponent  },
     { path: '/:fallback(.*)*', component: MainComponent }
 ]
-routes.forEach(r => r.path = ai.Base + r.path)
+routes.forEach(r => r.path = ai.base + r.path)
 const router = createRouter({
     history: createWebHistory(),
     routes,
@@ -63,8 +60,10 @@ app.use(ServiceStackVue)
 app.provide('ai', ai)
 app.provide('config', config)
 app.provide('models', models)
+Object.keys(Components).forEach(name => {
+    app.component(name, Components[name])
+})
 window.ai = app.config.globalProperties.$ai = ai
-
 app.mount('#app')
 </script>
 </html>

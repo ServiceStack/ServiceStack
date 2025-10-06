@@ -1,18 +1,18 @@
 import { reactive } from "vue"
 import { useThreadStore } from "./threadStore.mjs"
-
-const Base = '/chat'
+const base = '/chat'
 const headers = { 'Accept': 'application/json' }
-
+const prefsKey = 'llms.prefs'
 export const o = {
-    Base,
+    base,
+    prefsKey,
     welcome: 'Welcome to AI Chat',
     auth: null,
     requiresAuth: true,
     headers,
     
     resolveUrl(url){
-        return url.startsWith('http') || url.startsWith('/v1') ? url : Base + url
+        return url.startsWith('http') || url.startsWith('/v1') ? url : base + url
     },
     get(url, options) {
         return fetch(this.resolveUrl(url), { 
@@ -37,6 +37,9 @@ export const o = {
     async getAuth() {
         return this.get('/auth')
     },
+    get isAdmin() {
+        return !this.requiresAuth || this.auth && this.auth.roles?.includes('Admin')
+    },
     
     signIn(auth) {
         this.auth = auth
@@ -44,17 +47,6 @@ export const o = {
             this.headers.Authorization = `Bearer ${auth.apiKey}`
         }
     },
-    get authTitle() {
-        if (!this.auth) return ''
-        const { userId, userName, displayName, bearerToken } = this.auth
-        const sb = [
-            `Id: ${userId}`,
-            `Name: ${userName || displayName}`,
-            `API Key: ${bearerToken}`,
-        ]
-        return sb.join('\n')
-    },
-    
     async init() {
         // Load models and prompts
         const { initDB } = useThreadStore()
@@ -75,6 +67,5 @@ export const o = {
         return { config, models, auth }
     }
 }
-
 let ai = reactive(o)
 export default ai
