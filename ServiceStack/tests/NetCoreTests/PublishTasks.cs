@@ -49,8 +49,13 @@ public class PublishTasks
             ["servicestack-client.mjs"] = "../../../../servicestack-client/dist/servicestack-client.min.mjs",
             ["servicestack-vue.mjs"] = "../../../../servicestack-vue/dist/servicestack-vue.min.mjs",
             ["vue.mjs"] = "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js",
-            ["chart.js"] = "https://cdn.jsdelivr.net/npm/chart.js/+esm",
-            ["color.js"] = "https://cdn.jsdelivr.net/npm/@kurkle/color/+esm",
+            
+            // ["marked.mjs"] = "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.min.js",
+            // ["vue-router.mjs"] = "https://unpkg.com/vue-router@4/dist/vue-router.esm-browser.prod.js",
+            // ["idb.mjs"] = "https://cdn.jsdelivr.net/npm/idb/+esm",
+            
+            // ["chart.js"] = "https://cdn.jsdelivr.net/npm/chart.js/+esm",
+            // ["color.js"] = "https://cdn.jsdelivr.net/npm/@kurkle/color/+esm",
             //https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chunks/helpers.segment.js
             //["chart.plugin.datalabels.js"] = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2",
         };
