@@ -29,16 +29,22 @@ public class AiChatTests
             };
         });
         app.StartAsync(TestsConfig.ListeningOn);
+        WaitForLoadAsync().Wait();
     }
 
     [OneTimeTearDown]
     public void TestFixtureTearDown() => AppHostBase.DisposeApp();
 
-    public async Task WaitForLoadAsync()
+    public async Task WaitForLoadAsync(int extraMs = 0)
     {
         while (!ServiceStackHost.HasLoaded)
         {
             await Task.Delay(100);
+        }
+
+        if (extraMs > 0)
+        {
+            await Task.Delay(extraMs);
         }
     }
 
