@@ -99,6 +99,7 @@
     [type='file']:focus{outline:1px auto -webkit-focus-ring-color;}
     [type='color']{height:2.4rem;padding:2px 3px}
     [type='range']{height:2.4rem}
+    [type='button'],button[type='submit']{cursor:pointer}
 
     @media (min-width: 640px) {
         [type='text'],[type='email'],[type='url'],[type='password'],[type='number'],[type='date'],[type='datetime-local'],[type='month'],[type='week'],[type='search'],[type='tel'],[type='time'],[type='color'],[multiple],textarea,select {

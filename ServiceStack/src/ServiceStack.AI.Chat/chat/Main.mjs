@@ -224,7 +224,7 @@ export default {
         const { currentThread } = threads
         const chatPrompt = useChatPrompt()
         const chatSettings = useSettings()
-        const { 
+        const {
             errorStatus,
             isGenerating,
         } = chatPrompt
@@ -279,8 +279,9 @@ export default {
                         currentSystemPrompt.value = thread.systemPrompt
                     }
                 } else {
-                    selectedPrompt.value = null
-                    currentSystemPrompt.value = ''
+                    // Preserve existing selected prompt
+                    // selectedPrompt.value = null
+                    // currentSystemPrompt.value = ''
                 }
             }
             if (!newId) {

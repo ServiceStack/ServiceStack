@@ -29,7 +29,7 @@ export const o = {
             headers: Object.assign({'Content-Type': 'application/json'}, this.headers, options?.headers),
         })
     },
-    
+
     async getConfig() {
         return this.get('/config')
     },
@@ -37,16 +37,20 @@ export const o = {
         return this.get('/models')
     },
     async getAuth() {
-        return this.get('/auth')
+        return this.requiresAuth
+            ? this.get('/auth')
+            : new Promise(resolve => resolve({ json: () => ({ responseStatus: { errorCode: '!requiresAuth' } })}))
     },
     get isAdmin() {
         return !this.requiresAuth || this.auth && this.auth.roles?.includes('Admin')
     },
-    
+
     signIn(auth) {
         this.auth = auth
-        if (auth.apiKey) {
+        if (auth?.apiKey) {
             this.headers.Authorization = `Bearer ${auth.apiKey}`
+        } else if (this.headers.Authorization) {
+            delete this.headers.Authorization
         }
     },
     async init() {
@@ -60,7 +64,9 @@ export const o = {
         ])
         const config = await configRes.json()
         const models = await modelsRes.json()
-        const auth = await authRes.json()
+        const auth = this.requiresAuth
+            ? await authRes.json()
+            : null
         if (auth?.responseStatus?.errorCode) {
             console.error(auth.responseStatus.errorCode, auth.responseStatus.message)
         } else {
