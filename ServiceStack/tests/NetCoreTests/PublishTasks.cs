@@ -170,11 +170,14 @@ public class PublishTasks
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
         // Copy ServiceStack.AI.Chat
-        transformOptions.CopyAll(
-            source: new FileSystemVirtualFiles(FromChatDir),
-            target: new FileSystemVirtualFiles(ToChatDir),
-            cleanTarget: true,
-            afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
+        var source = new FileSystemVirtualFiles(FromChatDir);
+        var target = new FileSystemVirtualFiles(ToChatDir);
+        foreach (var file in source.GetAllFiles())
+        {
+            var contents = await file.ReadAllTextAsync();
+            await target.WriteFileAsync(file.VirtualPath, contents);
+            $"{file.VirtualPath} ({contents.Length})".Print();
+        }
     }
 
     [Test]

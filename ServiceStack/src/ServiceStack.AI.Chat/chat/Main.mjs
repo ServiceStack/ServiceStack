@@ -11,6 +11,7 @@ import SystemPromptSelector from './SystemPromptSelector.mjs'
 import SystemPromptEditor from './SystemPromptEditor.mjs'
 import { useSettings } from "./SettingsDialog.mjs"
 import Welcome from './Welcome.mjs'
+
 export default {
     components: {
         ModelSelector,
@@ -27,6 +28,7 @@ export default {
             <div class="border-b border-gray-200 bg-white px-2 py-2 w-full min-h-16">
                 <div class="flex items-center justify-between w-full">
                     <ModelSelector :models="models" v-model="selectedModel" @updated="configUpdated" />
+
                     <div class="flex items-center space-x-2">
                         <SystemPromptSelector :prompts="prompts" v-model="selectedPrompt" 
                             :show="showSystemPrompt" @toggle="showSystemPrompt = !showSystemPrompt" />
@@ -34,8 +36,10 @@ export default {
                     </div>
                 </div>
             </div>
+
             <SystemPromptEditor v-if="showSystemPrompt" 
                 v-model="currentSystemPrompt" :prompts="prompts" :selected="selectedPrompt" />
+
             <!-- Messages Area -->
             <div class="flex-1 overflow-y-auto" ref="messagesContainer">
                 <div class="mx-auto max-w-6xl px-4 py-6">
@@ -45,10 +49,12 @@ export default {
                     <!-- Welcome message when no thread is selected -->
                     <div v-else-if="!currentThread" class="text-center py-12">
                         <Welcome />
+
                         <!-- Chat input for new conversation -->
                         <div class="max-w-2xl mx-auto">
                             <ChatPrompt :model="selectedModel" :systemPrompt="currentSystemPrompt" />
                         </div>
+
                         <!-- Export/Import buttons -->
                         <div class="mt-2 flex space-x-3 justify-center">
                             <button type="button"
@@ -66,6 +72,7 @@ export default {
                                 </svg>
                                 {{ isExporting ? 'Exporting...' : 'Export' }}
                             </button>
+
                             <button type="button"
                                 @click="triggerImport"
                                 :disabled="isImporting"
@@ -81,6 +88,7 @@ export default {
                                 </svg>
                                 {{ isImporting ? 'Importing...' : 'Import' }}
                             </button>
+
                             <!-- Hidden file input for import -->
                             <input
                                 ref="fileInput"
@@ -90,7 +98,9 @@ export default {
                                 class="hidden"
                             />
                         </div>
+
                     </div>
+
                     <!-- Messages -->
                     <div v-else class="space-y-6">
                         <div
@@ -108,6 +118,7 @@ export default {
                                 >
                                     {{ message.role === 'user' ? 'U' : 'AI' }}
                                 </div>
+
                                 <!-- Delete button (shown on hover) -->
                                 <button type="button" @click.stop="threads.deleteMessageFromThread(currentThread.id, message.id)"
                                     class="mx-auto opacity-0 group-hover:opacity-100 mt-2 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
@@ -117,6 +128,7 @@ export default {
                                     </svg>
                                 </button>
                             </div>
+
                             <!-- Message bubble -->
                             <div
                                 class="message rounded-lg px-4 py-3 relative group"
@@ -137,11 +149,13 @@ export default {
                                         <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
                                     </svg>
                                 </button>
+
                                 <div
                                     v-if="message.role === 'assistant'"
                                     v-html="renderMarkdown(message.content)"
                                     class="prose prose-sm max-w-none"
                                 ></div>
+
                                 <!-- Collapsible reasoning section -->
                                 <div v-if="message.role === 'assistant' && message.reasoning" class="mt-2">
                                     <button type="button" @click="toggleReasoning(message.id)" class="text-xs text-gray-600 hover:text-gray-800 flex items-center space-x-1">
@@ -153,12 +167,14 @@ export default {
                                         <pre v-else class="text-xs whitespace-pre-wrap overflow-x-auto">{{ formatReasoning(message.reasoning) }}</pre>
                                     </div>
                                 </div>
+
                                 <div v-if="message.role !== 'assistant'" class="whitespace-pre-wrap">{{ message.content }}</div>
                                 <div class="mt-2 text-xs opacity-70">
                                     {{ formatTime(message.timestamp) }}
                                 </div>
                             </div>
                         </div>
+
                         <!-- Loading indicator -->
                         <div v-if="isGenerating" class="flex items-start space-x-3">
                             <!-- Avatar outside the bubble -->
@@ -167,6 +183,7 @@ export default {
                                     AI
                                 </div>
                             </div>
+
                             <!-- Loading bubble -->
                             <div class="rounded-lg px-4 py-3 bg-gray-100 border border-gray-200">
                                 <div class="flex space-x-1">
@@ -176,6 +193,7 @@ export default {
                                 </div>
                             </div>
                         </div>
+
                         <!-- Error message bubble -->
                         <div v-if="errorStatus" class="flex items-start space-x-3">
                             <!-- Avatar outside the bubble -->
@@ -184,6 +202,7 @@ export default {
                                     !
                                 </div>
                             </div>
+
                             <!-- Error bubble -->
                             <div class="max-w-[85%] rounded-lg px-4 py-3 bg-red-50 border border-red-200 text-red-800 shadow-sm">
                                 <div class="flex items-start space-x-2">
@@ -208,6 +227,7 @@ export default {
                     </div>
                 </div>
             </div>
+
             <!-- Input Area - only show when thread is selected -->
             <div v-if="currentThread" class="flex-shrink-0 border-t border-gray-200 bg-white px-6 py-4">
                 <ChatPrompt :model="selectedModel" :systemPrompt="currentSystemPrompt" />
@@ -233,14 +253,18 @@ export default {
         provide('chatSettings', chatSettings)
         const models = inject('models')
         const config = inject('config')
+
         const prefs = storageObject(ai.prefsKey)
+
         const customPromptValue = ref('')
         const customPrompt = {
             id: '_custom_',
             name: 'Custom...',
             value: ''
         }
+
         const prompts = computed(() => [customPrompt, ...config.prompts])
+
         const selectedModel = ref(prefs.model || config.defaults.text.model || '')
         const selectedPrompt = ref(prefs.systemPrompt || null)
         const currentSystemPrompt = ref('')
@@ -249,6 +273,7 @@ export default {
         const isExporting = ref(false)
         const isImporting = ref(false)
         const fileInput = ref(null)
+
         // Auto-scroll to bottom when new messages arrive
         const scrollToBottom = async () => {
             await nextTick()
@@ -256,15 +281,19 @@ export default {
                 messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
             }
         }
+
         // Watch for new messages and scroll
         watch(() => currentThread.value?.messages?.length, scrollToBottom)
+
         // Watch for route changes and load the appropriate thread
         watch(() => route.params.id, async (newId) => {
             const thread = await threads.setCurrentThreadFromRoute(newId, router)
+
             // If the selected thread specifies a model and it's available, switch to it
             if (thread?.model && Array.isArray(models) && models.includes(thread.model)) {
                 selectedModel.value = thread.model
             }
+
             // Sync System Prompt selection from thread
             if (thread) {
                 const norm = s => (s || '').replace(/\s+/g, ' ').trim()
@@ -284,11 +313,13 @@ export default {
                     // currentSystemPrompt.value = ''
                 }
             }
+
             if (!newId) {
                 chatPrompt.reset()
             }
             nextTick(addCopyButtons)
         }, { immediate: true })
+
         // Watch selectedPrompt and update currentSystemPrompt
         watch(selectedPrompt, (newPrompt) => {
             // If using a custom prompt, keep whatever is already in currentSystemPrompt
@@ -296,19 +327,23 @@ export default {
             const prompt = newPrompt && config.prompts.find(p => p.id === newPrompt.id)
             currentSystemPrompt.value = prompt ? prompt.value.replace(/\n/g,' ') : ''
         }, { immediate: true })
+
         watch(() => [selectedModel.value, selectedPrompt.value], () => {
             localStorage.setItem(ai.prefsKey, JSON.stringify({
                 model: selectedModel.value,
                 systemPrompt: selectedPrompt.value
             }))
         })
+
         async function exportThreads() {
             if (isExporting.value) return
+
             isExporting.value = true
             try {
                 // Load all threads from IndexedDB
                 await threads.loadThreads()
                 const allThreads = threads.threads.value
+
                 // Create export data with metadata
                 const exportData = {
                     exportedAt: new Date().toISOString(),
@@ -317,10 +352,12 @@ export default {
                     threadCount: allThreads.length,
                     threads: allThreads
                 }
+
                 // Create and download JSON file
                 const jsonString = JSON.stringify(exportData, null, 2)
                 const blob = new Blob([jsonString], { type: 'application/json' })
                 const url = URL.createObjectURL(blob)
+
                 const link = document.createElement('a')
                 link.href = url
                 link.download = `aichat-threads-export-${new Date().toISOString().split('T')[0]}.json`
@@ -328,6 +365,7 @@ export default {
                 link.click()
                 document.body.removeChild(link)
                 URL.revokeObjectURL(url)
+
             } catch (error) {
                 console.error('Failed to export threads:', error)
                 alert('Failed to export threads: ' + error.message)
@@ -335,32 +373,40 @@ export default {
                 isExporting.value = false
             }
         }
+
         function triggerImport() {
             if (isImporting.value) return
             fileInput.value?.click()
         }
+
         async function handleFileImport(event) {
             const file = event.target.files?.[0]
             if (!file) return
+
             isImporting.value = true
             try {
                 const text = await file.text()
                 const importData = JSON.parse(text)
+
                 // Validate import data structure
                 if (!importData.threads || !Array.isArray(importData.threads)) {
                     throw new Error('Invalid import file: missing or invalid threads array')
                 }
+
                 // Import threads one by one
                 let importedCount = 0
                 let updatedCount = 0
+
                 for (const threadData of importData.threads) {
                     if (!threadData.id) {
                         console.warn('Skipping thread without ID:', threadData)
                         continue
                     }
+
                     try {
                         // Check if thread already exists
                         const existingThread = await threads.getThread(threadData.id)
+
                         if (existingThread) {
                             // Update existing thread
                             await threads.updateThread(threadData.id, {
@@ -394,9 +440,12 @@ export default {
                         console.error('Failed to import thread:', threadData.id, error)
                     }
                 }
+
                 // Reload threads to reflect changes
                 await threads.loadThreads()
+
                 alert(`Import completed!\nNew threads: ${importedCount}\nUpdated threads: ${updatedCount}`)
+
             } catch (error) {
                 console.error('Failed to import threads:', error)
                 alert('Failed to import threads: ' + error.message)
@@ -408,12 +457,14 @@ export default {
                 }
             }
         }
+
         function configUpdated() {
             console.log('configUpdated', selectedModel.value, models.length, models.includes(selectedModel.value))
             if (selectedModel.value && !models.includes(selectedModel.value)) {
                 selectedModel.value = config.defaults.text.model || ''
             }
         }
+
         // Format timestamp
         const formatTime = (timestamp) => {
             return new Date(timestamp).toLocaleTimeString([], {
@@ -421,6 +472,7 @@ export default {
                 minute: '2-digit'
             })
         }
+
         // Reasoning collapse state and helpers
         const expandedReasoning = ref(new Set())
         const isReasoningExpanded = (id) => expandedReasoning.value.has(id)
@@ -434,6 +486,7 @@ export default {
             expandedReasoning.value = s
         }
         const formatReasoning = (r) => typeof r === 'string' ? r : JSON.stringify(r, null, 2)
+
         // Copy message content to clipboard
         const copyMessageContent = async (message) => {
             try {
@@ -450,9 +503,11 @@ export default {
                 document.body.removeChild(textArea)
             }
         }
+
         onMounted(() => {
             setTimeout(addCopyButtons, 1)
         })
+
         return {
             config,
             models,

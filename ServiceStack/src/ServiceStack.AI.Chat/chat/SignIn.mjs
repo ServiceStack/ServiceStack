@@ -1,5 +1,6 @@
 import { inject, ref } from "vue"
 import { toJsonObject } from "./utils.mjs"
+
 export default {
     template: `
     <div class="min-h-full -mt-12 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

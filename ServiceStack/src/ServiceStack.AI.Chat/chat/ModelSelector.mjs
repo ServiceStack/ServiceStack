@@ -1,4 +1,5 @@
 import ProviderStatus from "./ProviderStatus.mjs";
+
 export default {
     components: {
         ProviderStatus,

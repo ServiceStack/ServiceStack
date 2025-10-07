@@ -2,6 +2,7 @@ import { ref, onMounted, watch, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useThreadStore } from './threadStore.mjs'
 import { renderMarkdown } from './markdown.mjs'
+
 const RecentResults = {
     template:`
         <div class="flex-1 overflow-y-auto" @scroll="onScroll">
@@ -10,7 +11,9 @@ const RecentResults = {
                     <span v-if="q">{{ filtered.length }} result{{ filtered.length===1?'':'s' }}</span>
                     <span v-else>Searching {{ threads.length }} conversation{{ threads.length===1?'':'s' }}</span>
                 </div>
+
                 <div v-if="!threads.length" class="text-gray-500">No conversations yet.</div>
+
                 <table class="w-full">
                     <tbody>
                         <tr v-for="t in displayed" :key="t.id" class="hover:bg-gray-50">
@@ -51,8 +54,10 @@ const RecentResults = {
         const visibleCount = ref(defaultVisibleCount)
         const filtered = ref([])
         const displayed = ref([])
+
         const start = Date.now()
         console.log('start', start, threads.value.length)
+
         onMounted(async () => {
             visibleCount.value = defaultVisibleCount
             if (!threads.value.length) {
@@ -61,9 +66,12 @@ const RecentResults = {
             update()
             console.log('end', Date.now() - start)
         })
+
         const normalized = (s) => (s || '').toString().toLowerCase()
+
         const replaceChars = new Set('<>`*|#'.split(''))
         const clean = s => [...s].map(c => replaceChars.has(c) ? ' ' : c).join('')
+
         function update() {
             console.log('update', props.q)
             const query = normalized(props.q)
@@ -79,6 +87,7 @@ const RecentResults = {
         function updateVisible() {
             displayed.value = filtered.value.slice(0, Math.min(visibleCount.value, filtered.value.length))
         }
+
         const onScroll = (e) => {
             const el = e.target
             if (el.scrollTop + el.clientHeight >= el.scrollHeight - 24) {
@@ -88,10 +97,12 @@ const RecentResults = {
                 }
             }
         }
+
         watch(() => props.q, () => {
             visibleCount.value = defaultVisibleCount
             update()
         })
+
         const snippet = (t) => {
             const highlight = (s) => clean(s).replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), `<mark>$1</mark>`)
             const query = normalized(props.q)
@@ -116,8 +127,10 @@ const RecentResults = {
             }
             return ''
         }
+
         const open = (id) => router.push(`${ai.base}/c/${id}`)
         const formatDate = (iso) => new Date(iso).toLocaleString()
+
         return {
             config,
             threads,
@@ -131,6 +144,7 @@ const RecentResults = {
         }
     }
 }
+
 export default {
     components: {
         RecentResults,
@@ -159,11 +173,13 @@ export default {
         const router = useRouter()
         const route = useRoute()
         const q = ref('')
+
         // Initialize search query from URL parameter
         onMounted(() => {
             const urlQuery = route.query.q || ''
             q.value = urlQuery
         })
+
         // Watch for changes in the search input and update URL
         watch(q, (newQuery) => {
             const currentQuery = route.query.q || ''
@@ -175,6 +191,7 @@ export default {
                 })
             }
         })
+
         // Watch for URL changes (browser back/forward) and update search input
         watch(() => route.query.q, (newQuery) => {
             const urlQuery = newQuery || ''
@@ -182,6 +199,7 @@ export default {
                 q.value = urlQuery
             }
         })
+
         return {
             q,
         }

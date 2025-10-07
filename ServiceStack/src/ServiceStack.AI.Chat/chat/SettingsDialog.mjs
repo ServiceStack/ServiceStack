@@ -1,6 +1,8 @@
 import { ref, computed, watch, inject } from 'vue'
 import { storageObject } from './utils.mjs'
+
 const settingsKey = 'llms.settings'
+
 export function useSettings() {
     const intFields = [
         'max_completion_tokens',
@@ -36,6 +38,7 @@ export function useSettings() {
         ...strFields,
         ...listFields,
     ]
+
     let settings = ref(storageObject(settingsKey))
     
     function validSettings(localSettings) {
@@ -71,6 +74,7 @@ export function useSettings() {
         })
         return to
     }
+
     function applySettings(chatRequest) {
         console.log('applySettings', JSON.stringify(settings.value, undefined, 2))
         const removeFields = allFields.filter(f => !(f in settings.value))
@@ -80,6 +84,7 @@ export function useSettings() {
         })
         console.log('applySettings.chatRequest', JSON.stringify(chatRequest, undefined, 2))
     }
+
     function resetSettings() {
         return saveSettings({})
     }
@@ -90,6 +95,7 @@ export function useSettings() {
         console.log('saveSettings.settings', JSON.stringify(settings.value, undefined, 2))
         return storageObject(settingsKey, settings.value)
     }
+
     return {
         allFields,
         settings,
@@ -98,6 +104,7 @@ export function useSettings() {
         resetSettings,
     }
 }
+
 export default {
     template: `
     <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" @click.self="close">
@@ -116,11 +123,13 @@ export default {
                         </svg>
                     </button>
                 </div>
+
                 <!-- Content -->
                 <form class="px-6 py-4 overflow-y-auto max-h-[calc(90vh-140px)]" @submit.prevent="save">
                     <p class="text-sm text-gray-600 mb-4">
                         Configure default values for chat request options. Leave empty to use model defaults.
                     </p>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Temperature -->
                         <div>
@@ -134,6 +143,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">Higher values more random, lower for more focus</p>
                         </div>
+
                         <!-- Max Completion Tokens -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -145,6 +155,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">Max tokens for completion (inc. reasoning tokens)</p>
                         </div>
+
                         <!-- Seed -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -156,6 +167,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">For deterministic sampling (Beta feature)</p>
                         </div>
+
                         <!-- Top P -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -168,6 +180,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">Nucleus sampling - alternative to temperature</p>
                         </div>
+
                         <!-- Frequency Penalty -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -180,6 +193,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">Penalize tokens based on frequency in text</p>
                         </div>
+
                         <!-- Presence Penalty -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -192,6 +206,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">Penalize tokens based on presence in text</p>
                         </div>
+
                         <!-- Stop Sequences -->
                         <div>
                             <label for="stop" class="block text-sm font-medium text-gray-700 mb-1">
@@ -204,6 +219,7 @@ export default {
                                 />
                             <p class="mt-1 text-xs text-gray-500">Up to 4 sequences where API stops generating</p>
                         </div>
+
                         <!-- Reasoning Effort -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -219,6 +235,7 @@ export default {
                             </select>
                             <p class="mt-1 text-xs text-gray-500">Constrains effort on reasoning for reasoning models</p>
                         </div>
+
                         <!-- Verbosity -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -233,6 +250,7 @@ export default {
                             </select>
                             <p class="mt-1 text-xs text-gray-500">Constrains verbosity of model's response</p>
                         </div>
+
                         <!-- Service Tier -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -243,6 +261,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">Processing type for serving the request</p>
                         </div>
+
                         <!-- Top Logprobs -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -255,6 +274,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">Number of most likely tokens to return with log probs</p>
                         </div>
+
                         <!-- Safety Identifier -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -265,6 +285,7 @@ export default {
                                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                             <p class="mt-1 text-xs text-gray-500">Identifier to help detect policy violations</p>
                         </div>
+
                         <!-- Store -->
                         <div>
                             <label class="flex items-center">
@@ -274,6 +295,7 @@ export default {
                             </label>
                             <p class="mt-1 text-xs text-gray-500">Store output for model distillation or evals</p>
                         </div>
+
                         <!-- Enable Thinking -->
                         <div>
                             <label class="flex items-center">
@@ -285,6 +307,7 @@ export default {
                         </div>
                     </div>
                 </form>
+
                 <!-- Footer -->
                 <div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
                     <button type="button" @click="reset"
@@ -319,22 +342,27 @@ export default {
         
         // Local copy for editing
         const localSettings = ref(Object.assign({}, settings.value))
+
         // Watch for dialog open to sync local settings
         watch(() => props.isOpen, (isOpen) => {
             if (isOpen) {
                 localSettings.value = Object.assign({}, settings.value)
             }
         })
+
         function close() {
             emit('close')
         }
+
         function save() {
             saveSettings(localSettings.value)
             close()
         }
+
         function reset() {
             localSettings.value = resetSettings()
         }
+
         return {
             localSettings,
             close,
@@ -343,3 +371,4 @@ export default {
         }
     }
 }
+

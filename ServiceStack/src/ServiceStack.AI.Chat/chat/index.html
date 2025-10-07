@@ -37,12 +37,21 @@
 <div id="app"></div>
 </body>
 <script type="module">
+import { createApp, defineAsyncComponent } from 'vue'
+import { createWebHistory, createRouter } from "vue-router"
+import ServiceStackVue from "@servicestack/vue"
+import App from '/chat/App.mjs'
+import ai from '/chat/ai.mjs'
+import SettingsDialog from '/chat/SettingsDialog.mjs'
+
 const { config, models } = await ai.init()
 const MainComponent = defineAsyncComponent(() => import(ai.base + '/Main.mjs'))
 const RecentsComponent = defineAsyncComponent(() => import(ai.base + '/Recents.mjs'))
+
 const Components = {
     SettingsDialog,
 }
+
 const routes = [
     { path: '/', component: MainComponent },
     { path: '/c/:id', component: MainComponent },
@@ -63,7 +72,9 @@ app.provide('models', models)
 Object.keys(Components).forEach(name => {
     app.component(name, Components[name])
 })
+
 window.ai = app.config.globalProperties.$ai = ai
+
 app.mount('#app')
 </script>
 </html>

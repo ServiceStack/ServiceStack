@@ -13,6 +13,7 @@ export default {
                 <div class="truncate max-w-72" :title="value">{{value}}</div>
             </template>
         </Autocomplete>
+
         <!-- Toggle System Prompt Visibility -->
         <button type="button"
             @click="$emit('toggle')"

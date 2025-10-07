@@ -1,4 +1,5 @@
 import { ref, computed, inject, onMounted, onUnmounted } from "vue"
+
 export default {
     template:`
         <div v-if="$ai.isAdmin" ref="triggerRef" class="relative" :key="renderKey">
@@ -41,6 +42,7 @@ export default {
         const allProviders = computed(() => config.status?.all)
         const isEnabled = (p) => config.status.enabled.includes(p)
         const togglePopover = () => showPopover.value = !showPopover.value
+
         const onToggle = async (provider, enable) => {
             pending.value = { ...pending.value, [provider]: true }
             try {
@@ -54,6 +56,7 @@ export default {
                 if (json.feedback) {
                     alert(json.feedback)
                 }
+
                 try {
                     const [configRes, modelsRes] = await Promise.all([
                         ai.getConfig(),
@@ -69,12 +72,14 @@ export default {
                 } catch (e) {
                     alert(`Failed to reload config: ${e.message}`)
                 }
+
             } catch (e) {
                 alert(`Failed to ${enable ? 'enable' : 'disable'} ${provider}: ${e.message}`)
             } finally {
                 pending.value = { ...pending.value, [provider]: false }
             }
         }
+
         const onDocClick = (e) => {
             const t = e.target
             if (triggerRef.value?.contains(t)) return

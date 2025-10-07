@@ -1,11 +1,14 @@
 import { ref, computed } from 'vue'
 import { openDB } from 'idb'
 import { nextId } from './utils.mjs'
+
 // Thread store for managing chat threads with IndexedDB
 const threads = ref([])
 const currentThread = ref(null)
 const isLoading = ref(false)
+
 let db = null
+
 // Initialize IndexedDB
 async function initDB() {
     if (db) return db
@@ -27,10 +30,12 @@ async function initDB() {
     
     return db
 }
+
 // Generate unique thread ID
 function generateThreadId() {
     return Date.now().toString()
 }
+
 // Create a new thread
 async function createThread(title = 'New Chat', model = '', systemPrompt = '') {
     await initDB()
@@ -51,8 +56,10 @@ async function createThread(title = 'New Chat', model = '', systemPrompt = '') {
     
     threads.value.unshift(thread)
     // Note: currentThread will be set by router navigation
+
     return thread
 }
+
 // Update thread
 async function updateThread(threadId, updates) {
     await initDB()
@@ -84,6 +91,7 @@ async function updateThread(threadId, updates) {
     
     return updatedThread
 }
+
 // Add message to thread
 async function addMessageToThread(threadId, message) {
     const thread = await getThread(threadId)
@@ -110,12 +118,14 @@ async function addMessageToThread(threadId, message) {
     
     return newMessage
 }
+
 async function deleteMessageFromThread(threadId, messageId) {
     const thread = await getThread(threadId)
     if (!thread) throw new Error('Thread not found')
     const updatedMessages = thread.messages.filter(m => m.id !== messageId)
     await updateThread(threadId, { messages: updatedMessages })
 }
+
 // Get all threads
 async function loadThreads() {
     await initDB()
@@ -134,6 +144,7 @@ async function loadThreads() {
         isLoading.value = false
     }
 }
+
 // Get single thread
 async function getThread(threadId) {
     await initDB()
@@ -143,6 +154,7 @@ async function getThread(threadId) {
     
     return thread
 }
+
 // Delete thread
 async function deleteThread(threadId) {
     await initDB()
@@ -157,6 +169,7 @@ async function deleteThread(threadId) {
         currentThread.value = null
     }
 }
+
 // Set current thread
 async function setCurrentThread(threadId) {
     const thread = await getThread(threadId)
@@ -165,12 +178,14 @@ async function setCurrentThread(threadId) {
     }
     return thread
 }
+
 // Set current thread from router params (router-aware version)
 async function setCurrentThreadFromRoute(threadId, router) {
     if (!threadId) {
         currentThread.value = null
         return null
     }
+
     const thread = await getThread(threadId)
     if (thread) {
         currentThread.value = thread
@@ -184,10 +199,12 @@ async function setCurrentThreadFromRoute(threadId, router) {
         return null
     }
 }
+
 // Clear current thread (go back to initial state)
 function clearCurrentThread() {
     currentThread.value = null
 }
+
 function getGroupedThreads(total) {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -202,6 +219,7 @@ function getGroupedThreads(total) {
     }
     
     const takeThreads = threads.value.slice(0, total)
+
     takeThreads.forEach(thread => {
         const threadDate = new Date(thread.updatedAt)
         
@@ -225,8 +243,10 @@ function getGroupedThreads(total) {
     
     return groups
 }
+
 // Group threads by time periods
 const groupedThreads = computed(() => getGroupedThreads(threads.value.length))
+
 // Export the store
 export function useThreadStore() {
     return {
@@ -235,6 +255,7 @@ export function useThreadStore() {
         currentThread,
         isLoading,
         groupedThreads,
+
         // Actions
         initDB,
         createThread,

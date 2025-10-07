@@ -1,8 +1,10 @@
 import { reactive } from "vue"
 import { useThreadStore } from "./threadStore.mjs"
+
 const base = '/chat'
 const headers = { 'Accept': 'application/json' }
 const prefsKey = 'llms.prefs'
+
 export const o = {
     base,
     prefsKey,
@@ -27,6 +29,7 @@ export const o = {
             headers: Object.assign({'Content-Type': 'application/json'}, this.headers, options?.headers),
         })
     },
+
     async getConfig() {
         return this.get('/config')
     },
@@ -41,6 +44,7 @@ export const o = {
     get isAdmin() {
         return !this.requiresAuth || this.auth && this.auth.roles?.includes('Admin')
     },
+
     signIn(auth) {
         this.auth = auth
         if (auth?.apiKey) {
@@ -71,5 +75,6 @@ export const o = {
         return { config, models, auth }
     }
 }
+
 let ai = reactive(o)
 export default ai

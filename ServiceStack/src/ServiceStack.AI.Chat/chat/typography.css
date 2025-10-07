@@ -69,6 +69,7 @@
 .prose>:where(:last-child):not(:where([class~="not-prose"] *)) {margin-bottom: 0 }
 .prose :where(b):not(:where([class~="not-prose"] *)) {color: inherit }
 .prose :where(em):not(:where([class~="not-prose"] *)) {color: inherit }
+
 .prose :where(img):not(:where([class~="not-prose"] *)) {
     max-width: 100%;
 }
@@ -92,6 +93,7 @@
 .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
     border-left-style: solid;
 }
+
 .dark .prose :not(:where([class~="not-prose"] *)), .dark .prose :where(td):not(:where([class~="not-prose"] *)) {
     color: rgb(209 213 219); /*text-gray-300*/
 }
@@ -108,15 +110,18 @@
 .prose :where(pre):not(:where([class~="not-prose"] *)) > code {
     background-color: transparent;
 }
+
 .prose.prose-comment {
     font-size: 14px;
     max-width: none;
 }
 .prose.prose-comment p { display: inline; margin: 0; padding: 0; }
+
 /* override typography */
 :root {
     --content-width: 50rem;
 }
+
 .prose { max-width: var(--content-width); }
 .dark .prose :where(a):not(:where([class~="not-prose"] *)):hover {
     opacity: .8;
@@ -156,18 +161,22 @@
         max-width: var(--content-width);
     }
 }
+
 /* custom containers */
 .copy p, .copy p code { color:#fff }
 .sh-copy { max-height: 34px; }
 .copied { display: none}
 .copying .copied { display: block }
 .copying .nocopy { display: none }
+
 .cp p, .cp p code { margin:0; padding:0 }
+
 .sh-copy code { font-size: 16px }
 .sh-copy p, .sh-copy p code { color: rgb(243 244 246) }
 .sh-copy p::before { content:'$ '; color: rgb(156 163 175) }
 .sh-copy a { color: rgb(243 244 246) }
 .sh-copy a:hover { text-decoration: none }
+
 /* Custom Info Containers*/
 .custom-block.tip,.custom-block.info,.custom-block.warning,.custom-block.danger {
     margin: 1rem 0;
@@ -241,6 +250,7 @@
 .dark .table-striped thead tr, .dark .table-striped tr:nth-child(2n), .dark .table-bordered tr:nth-child(2n) {
     background-color: #111827;
 }
+
 .table-striped thead tr th, .table-striped thead tr td {
     font-weight: 500;
     color: #6b7280; /*text-gray-500*/
@@ -248,6 +258,7 @@
 .dark .table-striped thead tr th, .dark .table-striped thead tr td {
     color: #f3f4f6;
 }
+
 .table th,.table td {
     border: 1px solid #dfe2e5;
     padding: .6em 1em
@@ -255,6 +266,7 @@
 .dark .table th,.dark .table td {
     border: 1px solid #1f2937;
 }
+
 .youtube {
     width: 768px;
     height: 432px;
@@ -273,9 +285,11 @@
 .prose pre::-webkit-scrollbar-thumb, .prose code::-webkit-scrollbar-thumb {
     background-color: rgb(100 116 139);
 }
+
 .html-format {
     max-width: unset;
 }
+
 .svg-external {
     color: #007bff;
     background: url("data:image/svg+xml,%3Csvg width='1.25rem' height='1.25rem' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none'%3E%3Cpath d='M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14' stroke='%23007bff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/g%3E%3C/svg%3E") no-repeat bottom right;
@@ -284,6 +298,8 @@
 .svg-external:hover {
     text-decoration: underline;
 }
+
+
 .header-anchor {
     float: left;
     margin-left: -.87em;
@@ -305,6 +321,7 @@
 h1:hover .header-anchor, h1 .header-anchor:focus, h2:hover .header-anchor, h2 .header-anchor:focus, h3:hover .header-anchor, h3 .header-anchor:focus, h4:hover .header-anchor, h4 .header-anchor:focus {
     opacity: 1;
 }
+
 /*custom styles*/
 .prose {
     --tw-prose-hr: oklch(87.2% 0.01 258.338);
@@ -323,6 +340,8 @@ h1:hover .header-anchor, h1 .header-anchor:focus, h2:hover .header-anchor, h2 .h
     margin: 1rem 0rem;
     line-height: 1;
 }
+
+
 /* Chat-specific styles */
 .prose {
     max-width: none;
@@ -370,6 +389,7 @@ h1:hover .header-anchor, h1 .header-anchor:focus, h2:hover .header-anchor, h2 .h
     background-color: #f9fafb;
     font-weight: 600;
 }
+
 /* highlight.js - vs.css */
 .hljs {background:white;color:black}
 .hljs-comment,.hljs-quote,.hljs-variable{color:#008000}
@@ -381,6 +401,7 @@ h1:hover .header-anchor, h1 .header-anchor:focus, h2:hover .header-anchor, h2 .h
 .hljs-symbol,.hljs-bullet,.hljs-link{color:#00b0e8}
 .hljs-emphasis{font-style:italic}
 .hljs-strong{font-weight:bold}
+
 /* https://unpkg.com/@highlightjs/cdn-assets/styles/atom-one-dark.min.css */
 pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}.hljs{color:#abb2bf;background:#282c34}
 .hljs-comment,.hljs-quote{color:#5c6370;font-style:italic}.hljs-doctag,.hljs-formula,.hljs-keyword{color:#c678dd}
@@ -391,6 +412,7 @@ pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5p
 .hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-symbol,.hljs-title{color:#61aeee}
 .hljs-built_in,.hljs-class .hljs-title,.hljs-title.class_{color:#e6c07b}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}
 .hljs-link{text-decoration:underline}
+
 /*highlightjs*/
 .hljs, .prose :where(pre):not(:where([class~="not-prose"] *)) .hljs {
     color: #e5e7eb !important;
@@ -399,6 +421,7 @@ pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5p
 .hljs-comment, .hljs-quote {
     color: rgb(148 163 184); /*text-slate-400*/
 }
+
 pre {
     overflow-x: auto;
     font-weight: 400;

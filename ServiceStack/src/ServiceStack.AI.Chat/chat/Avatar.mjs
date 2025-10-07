@@ -1,4 +1,5 @@
 import { computed, inject } from "vue"
+
 export default {
     template:`
         <div v-if="$ai.auth?.profileUrl" :title="authTitle">
