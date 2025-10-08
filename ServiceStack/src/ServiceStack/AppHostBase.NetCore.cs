@@ -644,6 +644,12 @@ public static class NetCoreAppHostExtensions
             options.ServiceAssemblies.AddRange(serviceAssemblies);
         configure?.Invoke(options);
 
+        if (options.AutoRegister.Contains(typeof(JS)))
+        {
+            // Ensure JS is configured for AppTasks
+            JS.Configure();
+        }
+
         options.ConfigurePlugins(services);
         
         var allServiceTypes = options.GetAllServiceTypes();

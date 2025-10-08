@@ -82,6 +82,7 @@ public class ServiceStackServicesOptions
         typeof(ServiceController),
         typeof(HttpUtils),
         typeof(Auth.IPasswordHasher),
+        typeof(JS), // JS.Configure()
 #if NET8_0_OR_GREATER
         typeof(AppHostStartup),
 #endif        
