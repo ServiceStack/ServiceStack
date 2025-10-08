@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Admin;
@@ -304,7 +306,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
         return QueryLogs(new RequestLogs { Take =  take });
     }
 
-    public void Tick(ILogger log)
+    public async Task TickAsync(ILogger log, CancellationToken token = default)
     {
         if (logEntries.IsEmpty) return;
         
@@ -312,19 +314,34 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
             log.LogDebug("Saving {Count} Request Log Entries...", logEntries.Count);
         var now = DateTime.UtcNow;
         using var db = OpenMonthDb(now);
+        var pendingEntries = new List<RequestLogEntry>();
         while (logEntries.TryDequeue(out var entry))
         {
-            try
+            pendingEntries.Add(entry);
+        }
+        
+        var dbEntries = pendingEntries.Map(ToRequestLog);
+        try
+        {
+            db.BulkInsert(dbEntries);
+        }
+        catch (Exception bulkEx)
+        {
+            log.LogError("Error while trying to BulkInsert {Count} entries: {Message}\nTrying to save entries individually...", 
+                dbEntries.Count, bulkEx.Message);
+            
+            foreach (var entry in pendingEntries)
             {
-                var dbEntry = ToRequestLog(entry);
-                db.Insert(dbEntry);
-            }
-            catch (Exception e)
-            {
-                log.LogError("Error while saving request log entry: {Message}", e.Message);
-                // Requeue and wait for next tick
-                logEntries.Enqueue(entry);
-                return;
+                try
+                {
+                    await db.InsertAsync(ToRequestLog(entry), token: token).ConfigAwait();
+                }
+                catch (Exception e)
+                {
+                    log.LogError("Error while saving request log entry: {Message}", e.Message);
+                    // Requeue and wait for next tick
+                    logEntries.Enqueue(entry);
+                }
             }
         }
     }

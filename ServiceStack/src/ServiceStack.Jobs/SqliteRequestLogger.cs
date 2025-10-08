@@ -177,6 +177,12 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         return QueryLogs(new RequestLogs { Take =  take });
     }
 
+    public Task TickAsync(ILogger log, CancellationToken token = default)
+    {
+        Tick(log);
+        return Task.CompletedTask;
+    }
+    
     public void Tick(ILogger log)
     {
         if (logEntries.IsEmpty) return;

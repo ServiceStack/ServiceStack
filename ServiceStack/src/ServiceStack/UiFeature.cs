@@ -45,7 +45,7 @@ public class AnalyticsInfo
 public interface IRequireAnalytics
 {
 #if NET6_0_OR_GREATER
-    void Tick(Microsoft.Extensions.Logging.ILogger log);
+    System.Threading.Tasks.Task TickAsync(Microsoft.Extensions.Logging.ILogger log, System.Threading.CancellationToken token = default);
 #endif
     long GetTotal(DateTime month);
     List<RequestLogEntry> QueryLogs(RequestLogs request);
