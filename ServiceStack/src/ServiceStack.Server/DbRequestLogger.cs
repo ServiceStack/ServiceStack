@@ -46,6 +46,7 @@ public class DbLoggingProvider
     public string? NamedConnection { get; set; }
     public IOrmLiteDialectProvider Dialect { get; set; }
     public Action<IDbConnection>? ConfigureDb { get; set; }
+    public BulkInsertConfig BulkInsertConfig = new () { Mode = BulkInsertMode.Sql };
     public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
 
     public virtual void InitSchema()
@@ -127,6 +128,77 @@ public class DbLoggingProvider
 
     public virtual string SqlDateFormat(string quotedColumn, string format) => SqliteUtils.SqlDateFormat(quotedColumn, format);
 
+    public virtual RequestLog ToRequestLog(RequestLogEntry from)
+    {
+        return new RequestLog
+        {
+            Id = from.Id,
+            TraceId = from.TraceId,
+            OperationName = from.OperationName ?? from.RequestDto?.GetType().Name,
+            DateTime = from.DateTime,
+            StatusCode = from.StatusCode,
+            StatusDescription = from.StatusDescription,
+            HttpMethod = from.HttpMethod,
+            AbsoluteUri = from.AbsoluteUri,
+            PathInfo = from.PathInfo,
+            Request = from.RequestDto?.GetType().Name,
+            RequestBody = from.RequestBody ?? ClientConfig.ToJson(from.RequestDto),
+            UserAuthId = from.UserAuthId,
+            SessionId = from.SessionId,
+            IpAddress = from.IpAddress,
+            ForwardedFor = from.ForwardedFor,
+            Referer = from.Referer,
+            Headers = from.Headers,
+            FormData = from.FormData,
+            Items = from.Items,
+            ResponseHeaders = from.ResponseHeaders,
+            Response = from.ResponseDto?.GetType().Name,
+            ResponseBody = from.ResponseDto != null ? ClientConfig.ToJson(from.ResponseDto) : null,
+            SessionBody = from.Session != null ? ClientConfig.ToJson(from.Session) : null,
+            Error = from.ErrorResponse.GetResponseStatus(),
+            ExceptionSource = from.ExceptionSource,
+            ExceptionDataBody = from.ExceptionData != null ? ClientConfig.ToJson(from.ExceptionData) : null,
+            RequestDuration = from.RequestDuration,
+            Meta = from.Meta,
+        };
+    }
+
+    public virtual void BulkInsert(IDbConnection db, IEnumerable<RequestLog> entries)
+    {
+        db.BulkInsert(entries, BulkInsertConfig);
+    }
+    
+    public virtual async Task<List<RequestLogEntry>> WriteLogsAsync(ILogger log, List<RequestLogEntry> logs,
+        CancellationToken token)
+    {
+        var failedEntries = new List<RequestLogEntry>();
+        var dbEntries = logs.Map(ToRequestLog);
+        using var db = OpenMonthDb(DateTime.UtcNow);
+        try
+        {
+            BulkInsert(db, dbEntries);
+        }
+        catch (Exception bulkEx)
+        {
+            log.LogError("Error while trying to BulkInsert {Count} entries: {Message}\nTrying to save entries individually...", 
+                dbEntries.Count, bulkEx.Message);
+            
+            foreach (var entry in logs)
+            {
+                try
+                {
+                    await db.InsertAsync(ToRequestLog(entry), token: token).ConfigAwait();
+                }
+                catch (Exception e)
+                {
+                    log.LogError("Error while saving request log entry: {Message}", e.Message);
+                    // Requeue and wait for next tick
+                    failedEntries.Add(entry);
+                }
+            }
+        }
+        return failedEntries;
+    }
 }
 public class MySqlDbLoggingProvider : DbLoggingProvider
 {
@@ -140,6 +212,11 @@ public class PostgresDbLoggingProvider : DbLoggingProvider
 {
     ConcurrentDictionary<string, bool> monthDbs = new();
     private readonly object partitionLock = new();
+
+    public PostgresDbLoggingProvider()
+    {
+        BulkInsertConfig = new() { Mode = BulkInsertMode.Optimized };
+    }
     
     public override IDbConnection OpenMonthDb(DateTime createdDate)
     {
@@ -319,30 +396,11 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
         {
             pendingEntries.Add(entry);
         }
-        
-        var dbEntries = pendingEntries.Map(ToRequestLog);
-        try
+
+        var failedEntries = await DbProvider.WriteLogsAsync(log, pendingEntries, token).ConfigAwait();
+        foreach (var entry in failedEntries)
         {
-            db.BulkInsert(dbEntries);
-        }
-        catch (Exception bulkEx)
-        {
-            log.LogError("Error while trying to BulkInsert {Count} entries: {Message}\nTrying to save entries individually...", 
-                dbEntries.Count, bulkEx.Message);
-            
-            foreach (var entry in pendingEntries)
-            {
-                try
-                {
-                    await db.InsertAsync(ToRequestLog(entry), token: token).ConfigAwait();
-                }
-                catch (Exception e)
-                {
-                    log.LogError("Error while saving request log entry: {Message}", e.Message);
-                    // Requeue and wait for next tick
-                    logEntries.Enqueue(entry);
-                }
-            }
+            logEntries.Enqueue(entry);
         }
     }
 
@@ -381,41 +439,6 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
     public IDbConnection OpenMonthDb(DateTime createdDate) => DbProvider.OpenMonthDb(createdDate);
 
     public void InitSchema() => DbProvider.InitSchema();
-    
-    public static RequestLog ToRequestLog(RequestLogEntry from)
-    {
-        return new RequestLog
-        {
-            Id = from.Id,
-            TraceId = from.TraceId,
-            OperationName = from.OperationName ?? from.RequestDto?.GetType().Name,
-            DateTime = from.DateTime,
-            StatusCode = from.StatusCode,
-            StatusDescription = from.StatusDescription,
-            HttpMethod = from.HttpMethod,
-            AbsoluteUri = from.AbsoluteUri,
-            PathInfo = from.PathInfo,
-            Request = from.RequestDto?.GetType().Name,
-            RequestBody = from.RequestBody ?? ClientConfig.ToJson(from.RequestDto),
-            UserAuthId = from.UserAuthId,
-            SessionId = from.SessionId,
-            IpAddress = from.IpAddress,
-            ForwardedFor = from.ForwardedFor,
-            Referer = from.Referer,
-            Headers = from.Headers,
-            FormData = from.FormData,
-            Items = from.Items,
-            ResponseHeaders = from.ResponseHeaders,
-            Response = from.ResponseDto?.GetType().Name,
-            ResponseBody = from.ResponseDto != null ? ClientConfig.ToJson(from.ResponseDto) : null,
-            SessionBody = from.Session != null ? ClientConfig.ToJson(from.Session) : null,
-            Error = from.ErrorResponse.GetResponseStatus(),
-            ExceptionSource = from.ExceptionSource,
-            ExceptionDataBody = from.ExceptionData != null ? ClientConfig.ToJson(from.ExceptionData) : null,
-            RequestDuration = from.RequestDuration,
-            Meta = from.Meta,
-        };
-    }
 
     public static RequestLogEntry ToRequestLogEntry(RequestLog from)
     {
