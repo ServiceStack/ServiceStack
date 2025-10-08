@@ -102,7 +102,7 @@ public class RequestLogsHostedService(ILogger<RequestLogsHostedService> log, IRe
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
-                dbRequestLogger.Tick(log);
+                await dbRequestLogger.TickAsync(log, stoppingToken);
             }
         }
     }
