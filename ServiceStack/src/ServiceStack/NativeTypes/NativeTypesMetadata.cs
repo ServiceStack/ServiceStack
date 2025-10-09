@@ -313,6 +313,24 @@ public class MetadataTypesGenerator
                     }
                 }
             }
+            
+            var attrs = type.GetCustomAttributes(true);
+            if (attrs != null)
+            {
+                foreach (var attr in attrs)
+                {
+#if NET8_0_OR_GREATER                    
+                    if (attr is System.Text.Json.Serialization.JsonDerivedTypeAttribute jsonAttr)
+                    {
+                        registerTypeFn(jsonAttr.DerivedType);
+                    }
+#endif                   
+                    if (attr is IncludeMetadataAttribute metaAttr)
+                    {
+                        registerTypeFn(metaAttr.Type);
+                    }
+                }
+            }
 
             var genericBaseTypeDef = type.BaseType is { IsGenericType: true }
                 ? type.BaseType.GetGenericTypeDefinition()
