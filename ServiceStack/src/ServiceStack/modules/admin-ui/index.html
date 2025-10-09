@@ -129,6 +129,7 @@ setFavIcon(globalThis.Server.ui.brandIcon, globalThis.Server.app.baseUrl + '/met
 <!--file:custom.html-->
 <script type="module">
 import { ref, computed, nextTick, inject, onMounted } from "vue"
+import ServiceStackVue from "@servicestack/vue"
 import { $1, $$, setQueryString } from "@servicestack/client"
 import { app, client } from "app"
 import { Authenticate } from "dtos"
@@ -166,6 +167,9 @@ const App = {
         return { store, routes, server, showSidebar, apiKeyError, updatedApiKey }
     }
 }
+Object.keys(app.Components).forEach(name => {
+    ServiceStackVue.component(name, app.Components[name])
+})
 app.build(App).mount('#app')
 app.start()
 function configureMetadata(api) {

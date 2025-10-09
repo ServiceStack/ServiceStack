@@ -136,6 +136,7 @@ window.config = {
 <!--file:custom.html-->
 <script type="module">
 import { ref, computed, nextTick, inject, onMounted } from "vue"
+import ServiceStackVue from "@servicestack/vue"
 import { $1, $$ } from "@servicestack/client"
 import { app } from "app"
 const App = {
@@ -164,6 +165,9 @@ const App = {
         return { app, store, routes, grid, showSidebar, canAccessCrudEvents }
     }
 }
+Object.keys(app.Components).forEach(name => {
+    ServiceStackVue.component(name, app.Components[name])
+})
 app.build(App).mount('#app')
 app.start()
 function styleProperty(name) {
