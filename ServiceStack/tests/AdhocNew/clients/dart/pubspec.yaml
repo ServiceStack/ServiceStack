@@ -1,0 +1,6 @@
+name: my_dart
+environment:
+  sdk: '^3.2.0'
+
+dependencies:
+  servicestack: ^3.0.2
