@@ -51,7 +51,7 @@ public static class ClientConfig
     /// <summary>
     /// Print Indented and unquoted System.Text JSON output to the Console
     /// </summary>
-    public static void PrintSystemJson<T>(T obj)
+    public static void PrintDump<T>(T obj)
     {
         var json = ToSystemJson(obj);
         Console.WriteLine(json.Replace("\"", ""));

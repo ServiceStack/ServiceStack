@@ -656,7 +656,7 @@ public class AiChatIntegrationTests
                 Message.Text("Capital of France?"),
             ]
         });
-        ClientConfig.PrintSystemJson(response);
+        ClientConfig.PrintDump(response);
         AssertValidResponse(response);
     }
 }
