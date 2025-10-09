@@ -517,7 +517,18 @@ public class ChatServices(ILogger<ChatServices> log) : Service
     {
         var (feature, error) = await AssertAccessAsync();
         if (error != null) return error;
-        return await feature.ChatCompletionAsync(request, Request!).ConfigAwait();
+        var response = await feature.ChatCompletionAsync(request, Request!).ConfigAwait();
+
+        // Remove IncludeNullValues jsconfig is specified to return cleaner output
+        return new HttpResult(response) {
+            ResultScope = () => {
+                var jsScope = JsConfig.CreateScope(HostContext.Config.AllowJsConfig 
+                    ? Request!.QueryString[Keywords.JsConfig] 
+                    : null) ?? JsConfig.With(new(){});
+                jsScope.IncludeNullValues = false;
+                return jsScope;
+            }
+        };
     }
     
     public async Task<object> Get(ChatStaticFile request)

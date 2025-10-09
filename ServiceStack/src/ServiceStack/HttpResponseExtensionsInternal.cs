@@ -47,7 +47,7 @@ public static class HttpResponseExtensionsInternal
 
     public static async Task<bool> WriteToOutputStreamAsync(IResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token=default(CancellationToken))
     {
-        if (HostContext.Config.AllowPartialResponses && result is IPartialWriterAsync partialResult && partialResult.IsPartialRequest)
+        if (HostContext.Config.AllowPartialResponses && result is IPartialWriterAsync { IsPartialRequest: true } partialResult)
         {
             await partialResult.WritePartialToAsync(response, token);
             return true;
@@ -286,7 +286,7 @@ public static class HttpResponseExtensionsInternal
                 var jsconfig = config.AllowJsConfig ? request.QueryString[Keywords.JsConfig] : null;
                 using (resultScope)
                 {
-                    var jsScope = jsconfig != null ? JsConfig.CreateScope(jsconfig) : null;
+                    var jsScope = resultScope == null && jsconfig != null ? JsConfig.CreateScope(jsconfig) : null;
                     using (jsScope)
                     {
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
