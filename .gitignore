@@ -1,3 +1,13 @@
+#Custom
+__pycache__
+.dart_tool/
+.pub-cache/
+.gradle/
+wrapper/
+ServiceStack/tests/AdhocNew/clients/kotlin/app/build/
+.build/
+vendor/
+
 #bower deps
 **/wwwroot/lib/
 bin/
