@@ -26,7 +26,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="chat\*.*;js\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+        <EmbeddedResource Include="chat\*.*;js\*.*;modules\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="modules\ui\components\" />
     </ItemGroup>
 
 </Project>

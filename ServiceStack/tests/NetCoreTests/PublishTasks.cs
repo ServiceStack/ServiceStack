@@ -25,10 +25,14 @@ public class PublishTasks
     string FromModulesDir => Path.GetFullPath(".");
     string ToModulesDir => Path.GetFullPath("../../src/ServiceStack/modules");
     readonly string NetCoreTestsDir = Path.GetFullPath("../../../");
-    string[] IgnoreUiFiles = { };
-    string[] IgnoreAdminUiFiles = { };
+    string[] IgnoreLocodeFiles = [];
+    string[] IgnoreUiFiles = [
+        "ChatMessages.mjs"
+    ];
+    string[] IgnoreAdminUiFiles = [];
 
     private string FromChatDir = Path.GetFullPath("../../../../NorthwindAuto/wwwroot/chat");
+    private string ToChatBaseDir = Path.GetFullPath("../../../../../src/ServiceStack.AI.Chat");
     private string ToChatDir = Path.GetFullPath("../../../../../src/ServiceStack.AI.Chat/chat");
 
     FilesTransformer transformOptions => FilesTransformer.Defaults(debugMode: true);
@@ -144,7 +148,7 @@ public class PublishTasks
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("locode")), 
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("locode")), 
             cleanTarget: true,
-            ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
+            ignore: file => IgnoreLocodeFiles.Contains(file.Name),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
         // copy to modules/admin-ui
@@ -152,14 +156,14 @@ public class PublishTasks
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui")), 
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui")), 
             cleanTarget: true,
-            ignore: file => IgnoreAdminUiFiles.Contains(file.VirtualPath),
+            ignore: file => IgnoreAdminUiFiles.Contains(file.Name),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
 
         moduleOptions.CopyAll(
             source: new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui")), 
             target: new FileSystemVirtualFiles(ToModulesDir.CombineWith("ui")), 
             cleanTarget: true,
-            ignore: file => IgnoreUiFiles.Contains(file.VirtualPath),
+            ignore: file => IgnoreUiFiles.Contains(file.Name),
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
         // copy to /Templates/HtmlFormat.html
@@ -178,6 +182,12 @@ public class PublishTasks
             await target.WriteFileAsync(file.VirtualPath, contents);
             $"{file.VirtualPath} ({contents.Length})".Print();
         }
+        // Move ChatMessages.mjs to ServiceStack.AI.Chat/js
+        source = new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui"));
+        target = new FileSystemVirtualFiles(ToChatBaseDir);
+        var chatMessages = source.GetFile("components/ChatMessages.mjs");
+        var txt = await chatMessages.ReadAllTextAsync();
+        await target.WriteFileAsync("modules/ui/components/ChatMessages.mjs", txt);
     }
 
     [Test]
