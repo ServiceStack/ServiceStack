@@ -333,6 +333,14 @@ export const ApiDetails = {
         function isRequired(prop) {
             return prop.isRequired || (prop.isValueType && prop.type !== 'Nullable`1')
         }
+        
+        watch(() => routes.hash, () => {
+            //console.log('hash', routes.hash)
+            const target = document.getElementById(routes.hash)
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+        })
 
         return {
             store, routes, breakpoints,

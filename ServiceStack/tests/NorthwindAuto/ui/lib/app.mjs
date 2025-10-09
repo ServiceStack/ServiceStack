@@ -102,7 +102,7 @@ export const breakpoints = useBreakpoints(app, {
  * @type {ExplorerRoutes & ExplorerRoutesExtend & Routes} */
 export let routes = usePageRoutes(app,{
     page:'op',
-    queryKeys:'tab,lang,provider,preview,body,doc,detailSrc,form,response,dialog'.split(','),
+    queryKeys:'tab,lang,provider,preview,body,doc,detailSrc,form,response,dialog,hash'.split(','),
     handlers: {
         nav(state) { console.debug('nav', state) } /*debug*/
     },
@@ -442,7 +442,8 @@ app.directive('hash', (el,binding) => {
     /** @param {Event} e */
     el.onclick = (e) => {
         e.preventDefault()
-        location.hash = binding.value
+        routes.to({ hash: binding.value })
+        //location.hash = binding.value
     }
 })
 
@@ -450,7 +451,7 @@ setConfig({
     navigate: (url) => {
         console.debug('navigate', url)
         if (url.startsWith('/signin')) {
-            routes.to({ op:'', tab:'', lang:'', provider:'', preview:'', body:'', doc:'', detailSrc:'', form:'', response:'' })
+            routes.to({ op:'', tab:'', lang:'', provider:'', preview:'', body:'', doc:'', detailSrc:'', form:'', response:'', hash:'' })
         } else {
             location.href = url
         }
