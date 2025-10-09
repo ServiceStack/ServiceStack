@@ -31,7 +31,11 @@
     <ItemGroup>
         <Folder Include="App_Data\" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <Compile Remove="clients\**" />
+    </ItemGroup>
+    
     <ItemGroup>
       <ProjectReference Include="..\..\..\ServiceStack.Blazor\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.PostgreSQL\ServiceStack.OrmLite.PostgreSQL.csproj" />
