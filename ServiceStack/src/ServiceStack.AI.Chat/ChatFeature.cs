@@ -113,6 +113,17 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
 
             CreateProviders(Services);
         }
+        
+        appHost.ScriptContext.Args[nameof(Chat)] = new Chat(this);
+    }
+    
+    public class Chat(ChatFeature feature)
+    {
+        public List<string> Models => feature.Providers.Values
+            .SelectMany(x => x.Models.Keys)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToList();
     }
 
     public void CreateProviders(IServiceProvider services)
