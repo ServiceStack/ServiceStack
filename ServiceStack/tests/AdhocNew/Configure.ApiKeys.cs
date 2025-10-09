@@ -45,6 +45,8 @@ public class ConfigureApiKeys : IHostingStartup
             // Optional: Create API Key for specified Users on Startup
             if (feature.ApiKeyCount(db) == 0 && db.TableExists(IdentityUsers.TableName))
             {
+                // admin@email.com ak-87949de37e894627a9f6173154e7cafa
+                // manager@email.com ak-09d5b92c2201486d9b8dcb3ed5b8b204
                 var createApiKeysFor = new [] { "admin@email.com", "manager@email.com" };
                 var users = IdentityUsers.GetByUserNames(db, createApiKeysFor);
                 foreach (var user in users)
