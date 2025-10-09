@@ -1,0 +1,15 @@
+{
+  "originHash" : "82c6d2c62d7272f87e6ba21fa32aee106e149b35630967ff94f8952439931fb5",
+  "pins" : [
+    {
+      "identity" : "servicestack.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ServiceStack/ServiceStack.Swift.git",
+      "state" : {
+        "revision" : "d3dd32db80d2fbacdd3ea081386f7abdebe7db5d",
+        "version" : "6.0.5"
+      }
+    }
+  ],
+  "version" : 3
+}
