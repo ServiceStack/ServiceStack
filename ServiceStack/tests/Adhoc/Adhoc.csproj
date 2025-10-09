@@ -11,6 +11,7 @@
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.AI.Chat\ServiceStack.AI.Chat.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
