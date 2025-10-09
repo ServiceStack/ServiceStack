@@ -17,6 +17,14 @@ public class ExcludeAttribute(Feature feature) : AttributeBase
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
 public class ExcludeMetadataAttribute() : ExcludeAttribute(Feature.Metadata | Feature.Soap);
 
+/// <summary>
+/// Explicitly include a referenced Type in Metadata Services
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+public class IncludeMetadataAttribute(Type type) : AttributeBase
+{
+    public Type Type => type;
+}
 
 /// <summary>
 /// Exclude Description from being generated for API Endpoint, e.g. hiding it from OpenAPI
@@ -29,3 +37,4 @@ public class ExcludeFromDescriptionAttribute() : AttributeBase;
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
 public class ExplicitAutoQuery() : AttributeBase;
+
