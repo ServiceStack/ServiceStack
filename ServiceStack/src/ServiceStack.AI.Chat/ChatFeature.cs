@@ -274,9 +274,9 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
         await LoadAsync();
     }
 
-    public Func<CreateChatCompletion, IRequest, Task<ChatResponse>> ChatCompletionAsync { get; set; }
+    public Func<ChatCompletion, IRequest, Task<ChatResponse>> ChatCompletionAsync { get; set; }
     
-    public async Task<ChatResponse> DefaultChatCompletionAsync(CreateChatCompletion request, IRequest req)
+    public async Task<ChatResponse> DefaultChatCompletionAsync(ChatCompletion request, IRequest req)
     {
         var candidateProviders = Providers
             .Where(x => x.Value.Models.ContainsKey(request.Model))
@@ -286,7 +286,7 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
 
         Exception? firstEx = null;
         var i = 0;
-        var chatRequest = request.ToChatCompletion();
+        var chatRequest = request;
         foreach (var entry in candidateProviders)
         {
             i++;
@@ -513,7 +513,7 @@ public class ChatServices(ILogger<ChatServices> log) : Service
         };
     }
     
-    public async Task<object> Post(CreateChatCompletion request)
+    public async Task<object> Post(ChatCompletion request)
     {
         var (feature, error) = await AssertAccessAsync();
         if (error != null) return error;

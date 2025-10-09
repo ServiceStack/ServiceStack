@@ -106,6 +106,10 @@ public static class MessageUtils
         return string.IsNullOrEmpty(ret) ? null : ret;
     }
 
+    public class CreateChatCompletion : ChatCompletion, IPost, IReturn<ChatResponse>
+    {
+    }
+
     /// <summary>
     /// Convert to OpenAI Chat Completion DTO to avoid sending unnecessary fields
     /// </summary>

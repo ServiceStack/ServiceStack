@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.AI;
@@ -17,18 +15,10 @@ public static class ChatTags
 [ValidateApiKey]
 [Route("/v1/chat/completions", "POST")]
 [SystemJson(UseSystemJson.Never)]
-public class CreateChatCompletion : ChatCompletion, IPost, IReturn<ChatResponse>
-{
-}
-
-/// <summary>
-/// https://platform.openai.com/docs/api-reference/chat/create
-/// </summary>
-[Tag(ChatTags.AI)]
 [Api("Chat Completions API (OpenAI-Compatible)")]
 [Notes("The industry-standard, message-based interface for interfacing with Large Language Models.")]
 [DataContract]
-public class ChatCompletion
+public class ChatCompletion : IPost, IReturn<ChatResponse>
 {
     [ApiMember(Description = "The messages to generate chat completions for.")]
     [DataMember(Name = "messages")]
