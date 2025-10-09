@@ -5,162 +5,160 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.AI;
 
-public static class Tags
+public static class ChatTags
 {
-    public const string Agent = nameof(Agent);
     public const string AI = nameof(AI);
 }
-
-[ValidateApiKey]
-[Tag(Tags.Agent)]
-public class GetChatCompletion : IGet, IReturn<ChatCompletion>
-{
-    [ValidateNotEmpty, ValidateExactLength(32)]
-    public string Device { get; set; }
-    [ValidateNotEmpty]
-    public List<string> Models { get; set; }
-}
-
-[ValidateApiKey]
-[Tag(Tags.Agent)]
-public class CompleteChatCompletion : ChatResponse, IPost, IReturn<EmptyResponse>
-{
-    [ValidateNotEmpty]
-    public long RefId { get; set; }
-}
-
 
 /// <summary>
 /// https://platform.openai.com/docs/api-reference/chat/create
 /// </summary>
-[Tag(Tags.AI)]
+[Tag(ChatTags.AI)]
 [ValidateApiKey]
 [Route("/v1/chat/completions", "POST")]
 [SystemJson(UseSystemJson.Never)]
 public class CreateChatCompletion : ChatCompletion, IPost, IReturn<ChatResponse>
 {
-    [ApiMember(Description="Provide a unique identifier to track requests")]
-    public string? RefId { get; set; }
-    
-    [ApiMember(Description="Categorize like requests under a common group")]
-    public string? Tag { get; set; }
 }
 
 /// <summary>
 /// https://platform.openai.com/docs/api-reference/chat/create
 /// </summary>
-[Tag(Tags.AI)]
-[Api("Given a list of messages comprising a conversation, the model will return a response.")]
+[Tag(ChatTags.AI)]
+[Api("Chat Completions API (OpenAI-Compatible)")]
+[Notes("The industry-standard, message-based interface for interfacing with Large Language Models.")]
 [DataContract]
 public class ChatCompletion
 {
-    [ApiMember(Description = "A list of messages comprising the conversation so far.")]
+    [ApiMember(Description = "The messages to generate chat completions for.")]
     [DataMember(Name = "messages")]
+    [Input(Type = "ChatMessages", Label=""), FieldCss(Field = "col-span-12")]
     public List<AiMessage> Messages { get; set; } = [];
     
     [ApiMember(Description="ID of the model to use. See the model endpoint compatibility table for details on which models work with the Chat API")]
     [DataMember(Name = "model")]
+    [Input(Type = "combobox", EvalAllowableValues = "Chat.Models", Placeholder = "e.g. glm-4.6", Help = "ID of the model to use")]
     public string Model { get; set; }
     
     [ApiMember(Description="Parameters for audio output. Required when audio output is requested with modalities: [audio]")]
     [DataMember(Name = "audio")]
     public AiChatAudio? Audio { get; set; }
     
-    [ApiMember(Description="Number between `-2.0` and `2.0`. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.")]
-    [DataMember(Name = "frequency_penalty")]
-    public double? FrequencyPenalty { get; set; }
-
     [ApiMember(Description="Modify the likelihood of specified tokens appearing in the completion.")]
     [DataMember(Name = "logit_bias")]
     public Dictionary<int,int>? LogitBias { get; set; }
     
-    [ApiMember(Description="Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message.")]
-    [DataMember(Name = "logprobs")]
-    public bool? Logprobs { get; set; }
-
-    [ApiMember(Description="An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.")]
-    [DataMember(Name = "max_completion_tokens")]
-    public int? MaxCompletionTokens { get; set; }
-    
     [ApiMember(Description = "Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.")]
     [DataMember(Name = "metadata")]
     public Dictionary<string,string>? Metadata { get; set; }
-    
-    [ApiMember(Description = "Output types that you would like the model to generate. Most models are capable of generating text, which is the default:")]
-    [DataMember(Name = "modalities")]
-    public List<string>? Modalities { get; set; }
-    
-    [ApiMember(Description="How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs.")]
-    [DataMember(Name = "n")]
-    public int? N { get; set; }
-    
-    [ApiMember(Description="Whether to enable parallel function calling during tool use.")]
-    [DataMember(Name = "parallel_tool_calls")]
-    public bool? ParallelToolCalls { get; set; }
-    
-    [ApiMember(Description="Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.")]
-    [DataMember(Name = "presence_penalty")]
-    public double? PresencePenalty { get; set; }
 
-    [ApiMember(Description="Used by OpenAI to cache responses for similar requests to optimize your cache hit rates.")]
-    [DataMember(Name = "prompt_cache_key")]
-    public string? PromptCacheKey { get; set; }
-    
     [ApiMember(Description="Constrains effort on reasoning for reasoning models. Currently supported values are minimal, low, medium, and high (none, default). Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.")]
     [DataMember(Name = "reasoning_effort")]
+    [Input(Type="combobox", Options = "{ allowableValues:['low','medium','high','none','default'] }", Help = "Constrains effort on reasoning for reasoning models")]
     public string? ReasoningEffort { get; set; }
     
     [ApiMember(Description="An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`. Setting Type to ResponseFormat.JsonObject enables JSON mode, which guarantees the message the model generates is valid JSON.")]
     [DataMember(Name = "response_format")]
     public AiResponseFormat? ResponseFormat { get; set; }
 
-    [ApiMember(Description="A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.")]
-    [DataMember(Name = "safety_identifier")]
-    public string? SafetyIdentifier { get; set; }
-    
-    [ApiMember(Description="This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.")]
-    [DataMember(Name = "seed")]
-    public int? Seed { get; set; }
-    
     [ApiMember(Description="Specifies the processing type used for serving the request.")]
     [DataMember(Name = "service_tier")]
+    [Input(Type = "combobox", Options = "{ allowableValues:['auto','default'] }", Help = "Processing type for serving the request")]
     public string? ServiceTier { get; set; }
     
     [ApiMember(Description="Up to 4 sequences where the API will stop generating further tokens.")]
     [DataMember(Name = "stop")]
+    [Input(Type = "tags", Max = "4", Help = "Up to 4 sequences for the API to stop generating tokens")]
     public List<string>? Stop { get; set; }
     
-    [ApiMember(Description="Whether or not to store the output of this chat completion request for use in our model distillation or evals products.")]
-    [DataMember(Name = "store")]
-    public bool? Store { get; set; }
+    [ApiMember(Description = "Output types that you would like the model to generate. Most models are capable of generating text, which is the default:")]
+    [DataMember(Name = "modalities")]
+    [Input(Type = "tags")]
+    public List<string>? Modalities { get; set; }
     
-    [ApiMember(Description="If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message.")]
-    [DataMember(Name = "stream")]
-    public bool? Stream { get; set; }
+    [ApiMember(Description="Used by OpenAI to cache responses for similar requests to optimize your cache hit rates.")]
+    [DataMember(Name = "prompt_cache_key")]
+    [Input(Type = "text", Placeholder = "e.g. my-cache-key", Help = "Used by OpenAI to cache responses for similar requests")]
+    public string? PromptCacheKey { get; set; }
     
-    [ApiMember(Description="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.")]
-    [DataMember(Name = "temperature")]
-    public double? Temperature { get; set; }
+    [ApiMember(Description="A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.")]
+    [DataMember(Name = "safety_identifier")]
+    [Input(Type = "text", Placeholder = "e.g. user-id", Help = "Stable identifier to help detect policy violations")]
+    public string? SafetyIdentifier { get; set; }
     
     [ApiMember(Description="A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.")]
     [DataMember(Name = "tools")]
     public List<Tool>? Tools { get; set; }
+    
+    [ApiMember(Description="Constrains the verbosity of the model's response. Lower values will result in more concise responses, while higher values will result in more verbose responses. Currently supported values are low, medium, and high.")]
+    [DataMember(Name = "verbosity")]
+    [Input(Type = "combobox", Options = "{ allowableValues:['low','medium','high'] }", Placeholder = "e.g. low", Help = "Constrains verbosity of model's response")]
+    public string? Verbosity { get; set; }
+    
+    [ApiMember(Description="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.")]
+    [DataMember(Name = "temperature")]
+    [Input(Type = "number", Step = "0.1", Min = "0", Max = "2", Placeholder = "e.g. 0.7", Help = "Higher values more random, lower for more focus\n\n")]
+    public double? Temperature { get; set; }
+
+    [ApiMember(Description="An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.")]
+    [DataMember(Name = "max_completion_tokens")]
+    [Input(Type = "number", Value = "2048", Step = "1", Min = "1", Placeholder = "e.g. 2048", Help = "Max tokens for completion (inc. reasoning tokens)")]
+    public int? MaxCompletionTokens { get; set; }
 
     [ApiMember(Description="An integer between 0 and 20 specifying the number of most likely tokens to return at each token position, each with an associated log probability. logprobs must be set to true if this parameter is used.")]
     [DataMember(Name = "top_logprobs")]
+    [Input(Type = "number", Step = "1", Min = "0", Max = "20", Placeholder = "e.g. 5", Help = "Number of most likely tokens to return with log probs")]
     public int? TopLogprobs { get; set; }
     
     [ApiMember(Description="An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.")]
     [DataMember(Name = "top_p")]
+    [Input(Type = "number", Step = "0.1", Min = "0", Max = "1", Placeholder = "e.g. 0.5", Help = "Nucleus sampling - alternative to temperature")]
     public double? TopP { get; set; }
+
+    [ApiMember(Description="Number between `-2.0` and `2.0`. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.")]
+    [DataMember(Name = "frequency_penalty")]
+    [Input(Type = "number", Step = "0.1", Min = "0", Max = "2", Placeholder = "e.g. 0.5", Help = "Penalize tokens based on frequency in text\n\n")]
+    public double? FrequencyPenalty { get; set; }
     
-    [ApiMember(Description="Constrains the verbosity of the model's response. Lower values will result in more concise responses, while higher values will result in more verbose responses. Currently supported values are low, medium, and high.")]
-    [DataMember(Name = "verbosity")]
-    public string? Verbosity { get; set; }
+    [ApiMember(Description="Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.")]
+    [DataMember(Name = "presence_penalty")]
+    [Input(Type = "number", Step = "0.1", Min = "0", Max = "2", Placeholder = "e.g. 0.5", Help = "Penalize tokens based on presence in text\n\n")]
+    public double? PresencePenalty { get; set; }
+    
+    [ApiMember(Description="This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.")]
+    [DataMember(Name = "seed")]
+    [Input(Type = "number", Placeholder = "e.g. 42", Help = "For deterministic sampling")]
+    public int? Seed { get; set; }
+    
+    [ApiMember(Description="How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs.")]
+    [DataMember(Name = "n")]
+    [Input(Type = "number", Placeholder = "e.g. 1", Help = "How many chat choices to generate for each input message")]
+    public int? N { get; set; }
+    
+    [ApiMember(Description="Whether or not to store the output of this chat completion request for use in our model distillation or evals products.")]
+    [Input(Type = "checkbox", Help = "Whether or not to store the output of this chat request")]
+    [DataMember(Name = "store")]
+    public bool? Store { get; set; }
+    
+    [ApiMember(Description="Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message.")]
+    [DataMember(Name = "logprobs")]
+    [Input(Type = "checkbox", Help = "Whether to return log probabilities of the output tokens")]
+    public bool? Logprobs { get; set; }
+    
+    [ApiMember(Description="Whether to enable parallel function calling during tool use.")]
+    [DataMember(Name = "parallel_tool_calls")]
+    [Input(Type = "checkbox", Help = "Enable parallel function calling during tool use")]
+    public bool? ParallelToolCalls { get; set; }
     
     [ApiMember(Description="Whether to enable thinking mode for some Qwen models and providers.")]
     [DataMember(Name = "enable_thinking")]
+    [Input(Type = "checkbox", Help = "Enable thinking mode for some Qwen providers")]
     public bool? EnableThinking { get; set; }
+    
+    [ApiMember(Description="If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message.")]
+    [DataMember(Name = "stream")]
+    [Input(Type = "hidden", Help = "Enable streaming of partial message deltas")]
+    public bool? Stream { get; set; }
 }
 
 [Description("Parameters for audio output. Required when audio output is requested with modalities: [audio]")]
