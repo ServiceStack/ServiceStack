@@ -1,0 +1,23 @@
+{
+  "name": "myapp/servicestack-console",
+  "description": "Simple console app using ServiceStack client",
+  "type": "project",
+  "require": {
+    "php": ">=7.4",
+    "servicestack/client": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "MyApp\\": "src/"
+    },
+    "files": [
+      "dtos.php"
+    ]
+  },
+  "authors": [
+    {
+      "name": "Your Name",
+      "email": "your.email@example.com"
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "dc643d296d377cdd938727838e88879f",
+    "packages": [
+        {
+            "name": "servicestack/client",
+            "version": "1.0.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ServiceStack/servicestack-php.git",
+                "reference": "37095b80ff9d6afa692ee470739e08187f94f570"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ServiceStack/servicestack-php/zipball/37095b80ff9d6afa692ee470739e08187f94f570",
+                "reference": "37095b80ff9d6afa692ee470739e08187f94f570",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": ">=8.2.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Returns.php",
+                    "src/Convertible.php",
+                    "src/ArrayList.php",
+                    "src/IReturn.php",
+                    "src/ICreateDb.php",
+                    "src/ICrud.php",
+                    "src/IDelete.php",
+                    "src/IDeleteDb.php",
+                    "src/IGet.php",
+                    "src/IHasBearerToken.php",
+                    "src/IHasSessionId.php",
+                    "src/IHasVersion.php",
+                    "src/IMeta.php",
+                    "src/IOptions.php",
+                    "src/IPatch.php",
+                    "src/IPatchDb.php",
+                    "src/IPost.php",
+                    "src/IPut.php",
+                    "src/IReturn.php",
+                    "src/IReturnVoid.php",
+                    "src/ISaveDb.php",
+                    "src/IUpdateDb.php",
+                    "src/ResponseError.php",
+                    "src/ResponseStatus.php",
+                    "src/KeyValuePair2.php",
+                    "src/Tuple2.php",
+                    "src/Tuple3.php",
+                    "src/ByteArray.php",
+                    "src/Log.php",
+                    "src/AuditBase.php",
+                    "src/QueryResponse.php",
+                    "src/QueryBase.php",
+                    "src/QueryDb.php",
+                    "src/QueryDb2.php",
+                    "src/QueryData.php",
+                    "src/QueryData2.php",
+                    "src/EmptyResponse.php",
+                    "src/IdResponse.php",
+                    "src/StringResponse.php",
+                    "src/StringsResponse.php",
+                    "src/TypeContext.php",
+                    "src/Converter.php",
+                    "src/JsonConverters.php",
+                    "src/JsonServiceClient.php",
+                    "src/Inspect.php",
+                    "src/AssignRoles.php",
+                    "src/AssignRolesResponse.php",
+                    "src/Authenticate.php",
+                    "src/AuthenticateResponse.php",
+                    "src/CancelRequest.php",
+                    "src/CancelRequestResponse.php",
+                    "src/ConvertSessionToToken.php",
+                    "src/ConvertSessionToTokenResponse.php",
+                    "src/GetAccessToken.php",
+                    "src/GetAccessTokenResponse.php",
+                    "src/UserApiKey.php",
+                    "src/GetApiKeys.php",
+                    "src/GetApiKeysResponse.php",
+                    "src/NavItem.php",
+                    "src/GetNavItems.php",
+                    "src/GetNavItemsResponse.php",
+                    "src/RegenerateApiKeys.php",
+                    "src/RegenerateApiKeysResponse.php",
+                    "src/Register.php",
+                    "src/RegisterResponse.php",
+                    "src/UnAssignRoles.php",
+                    "src/UnAssignRolesResponse.php",
+                    "src/UpdateEventSubscriber.php",
+                    "src/UpdateEventSubscriberResponse.php"
+                ],
+                "psr-4": {
+                    "ServiceStack\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause-Attribution"
+            ],
+            "authors": [
+                {
+                    "name": "ServiceStack, Inc.",
+                    "email": "team@servicestack.net"
+                }
+            ],
+            "description": "PHP ServiceStack Client",
+            "support": {
+                "issues": "https://github.com/ServiceStack/servicestack-php/issues",
+                "source": "https://github.com/ServiceStack/servicestack-php/tree/1.0.9"
+            },
+            "time": "2024-11-25T05:01:23+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=7.4"
+    },
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
+}
