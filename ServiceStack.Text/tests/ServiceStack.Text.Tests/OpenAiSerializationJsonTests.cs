@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace ServiceStack.Text.Tests;
 
-public class OpenAiSerializationTests
+public class OpenAiSerializationJsonTests
 {
     [Test]
     public void Can_serialize_ChatCompletion_with_Text_Content()

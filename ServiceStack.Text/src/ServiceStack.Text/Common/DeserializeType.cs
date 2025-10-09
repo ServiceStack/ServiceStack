@@ -156,6 +156,7 @@ public static class DeserializeType<TSerializer>
                     var jsonObj = DeserializeDictionary<TSerializer>.ParseJsonObject(value);
                     if (jsonObj.TryGetValue(searchType, out var typeValue))
                     {
+                        typeValue = typeValue.StripQuotes(); // quoted when JSV parses JSON  
                         var knownTypeAttrs = typeof(T).GetCustomAttributes<System.Text.Json.Serialization.JsonDerivedTypeAttribute>();
                         foreach (var knownType in knownTypeAttrs)
                         {
