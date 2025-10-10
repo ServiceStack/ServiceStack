@@ -33,12 +33,15 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public ConcurrentDictionary<int, DateTime> LastUsedApiKeys { get; set; } = new();
     public ConcurrentDictionary<string, IApiKey> ValidApiKeys { get; } = new();
     public Func<IDbConnection>? UseDb { get; set; }
+    public string? NamedConnection { get; set; }
 
     public IDbConnection OpenDb()
     {
         return UseDb != null 
             ? UseDb() 
-            : HostContext.AppHost.GetDbConnection(null, db => db.WithName(GetType().Name));
+            : NamedConnection != null
+                ? HostContext.AppHost.GetDbConnection(NamedConnection, null, db => db.WithName(GetType().Name))
+                : HostContext.AppHost.GetDbConnection(null, db => db.WithName(GetType().Name));
     }
     
     public List<Type> RegisterServices { get; set; } = [
