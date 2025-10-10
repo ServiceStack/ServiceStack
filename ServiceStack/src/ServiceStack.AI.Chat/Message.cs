@@ -92,6 +92,18 @@ public static class Message
 
 public static class MessageUtils
 {
+    public static string? GetUserPrompt(this ChatCompletion request)
+    {
+        var textContents = request.Messages
+            .Where(x => x.Role is "user" or null)
+            .SelectMany(x => x.Content ?? [])
+            .Where(x => x is AiTextContent)
+            .Cast<AiTextContent>()
+            .ToList();
+        
+        return textContents.LastOrDefault()?.Text;
+    }
+    
     public static string? GetAnswer(this ChatResponse? response)
     {
         var sb = StringBuilderCache.Allocate();

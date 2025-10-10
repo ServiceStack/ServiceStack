@@ -275,7 +275,9 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
     }
 
     public Func<ChatCompletion, IRequest, Task<ChatResponse>> ChatCompletionAsync { get; set; }
-    
+    public Func<ChatCompletion, ChatResponse, IRequest, Task>? OnChatCompletionSuccessAsync { get; set; }
+    public Func<ChatCompletion, Exception, IRequest, Task>? OnChatCompletionFailedAsync { get; set; }
+
     public async Task<ChatResponse> DefaultChatCompletionAsync(ChatCompletion request, IRequest req)
     {
         var candidateProviders = Providers
@@ -283,6 +285,12 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
             .ToList();
         if (candidateProviders.Count == 0)
             throw HttpError.NotFound($"Model {request.Model} not found");
+        
+        var oLong = req.GetItem(Keywords.RequestDuration);
+        if (oLong == null)
+        {
+            req.SetItem(Keywords.RequestDuration, System.Diagnostics.Stopwatch.GetTimestamp());
+        }
 
         Exception? firstEx = null;
         var i = 0;
@@ -295,6 +303,9 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
                 var provider = entry.Value;
                 chatRequest.Model = request.Model;
                 var ret = await provider.ChatAsync(chatRequest).ConfigAwait();
+                var onSuccess = OnChatCompletionSuccessAsync;
+                if (onSuccess != null)
+                    await onSuccess(chatRequest, ret, req).ConfigAwait();
                 return ret;
             }
             catch (Exception ex)
@@ -304,10 +315,12 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
                 firstEx ??= ex;
             }
         }
-        if (firstEx != null)
-            throw firstEx;
-        
-        throw HttpError.NotFound($"Model {request.Model} not found");
+
+        firstEx ??= HttpError.NotFound($"Model {request.Model} not found");
+        var onFailed = OnChatCompletionFailedAsync; 
+        if (onFailed != null)
+            await onFailed(request, firstEx, req).ConfigAwait();
+        throw firstEx;
     }
 }
 
