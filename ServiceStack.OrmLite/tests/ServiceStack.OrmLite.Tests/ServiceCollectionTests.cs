@@ -22,9 +22,15 @@ public class ServiceCollectionTests(DialectContext context) : OrmLiteProvidersTe
     public void Can_configure_OrmLite_with_ServiceCollection_Extensions()
     {
         var services = new ServiceCollection();
-        
+        services.AddOrmLite(options => options.UsePostgres("", dialect => {
+            dialect.NamingStrategy.TableAliases["MyTable"] = "my_table";
+            dialect.NamingStrategy.SchemaAliases["MySchema"] = "my_schema";
+            dialect.NamingStrategy.ColumnAliases["MyColumn"] = "my_columnt";
+        }));
         services.AddOrmLite(options => {
-                options.UseSqlite(":memory:")
+                options.UseSqlite(":memory:", dialect => {
+                        dialect.NamingStrategy = new OrmLiteNamingStrategyBase();
+                    })
                     .ConfigureJson(json => {
                         json.DefaultSerializer = JsonSerializerType.ServiceStackJson;
                         json.JsonObjectTypes.Add(typeof(object));

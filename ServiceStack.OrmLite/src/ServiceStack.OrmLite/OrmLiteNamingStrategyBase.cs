@@ -16,9 +16,9 @@ namespace ServiceStack.OrmLite;
 
 public class OrmLiteNamingStrategyBase : INamingStrategy
 {
-    public Dictionary<string, string> SchemaAliases = new();
-    public Dictionary<string, string> TableAliases = new();
-    public Dictionary<string, string> ColumnAliases = new();
+    public Dictionary<string, string> SchemaAliases { get; } = new();
+    public Dictionary<string, string> TableAliases { get; } = new();
+    public Dictionary<string, string> ColumnAliases { get; } = new();
     public virtual string GetAlias(string name) => name;
     public virtual string GetSchemaName(string name) => name == null ? null 
         : SchemaAliases.TryGetValue(name, out var alias) 
