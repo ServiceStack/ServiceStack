@@ -23,7 +23,7 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
     /// <summary>
     /// Types that should always be deserialized with JSON.parse()
     /// </summary>
-    public HashSet<Type> JsonObjectTypes { get; } =
+    public HashSet<Type> JsonObjectTypes { get; set; } =
     [
         typeof(object),
         typeof(List<object>),
@@ -33,12 +33,12 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
     /// <summary>
     /// Types that should always be deserialized with System.Text.Json
     /// </summary>
-    public HashSet<Type> SystemJsonTypes { get; } = [];
+    public HashSet<Type> SystemJsonTypes { get; set; } = [];
     
     /// <summary>
     /// Types that should always be deserialized with ServiceStack.Text JsonSerializer
     /// </summary>
-    public HashSet<Type> ServiceStackJsonTypes { get; } = [];
+    public HashSet<Type> ServiceStackJsonTypes { get; set; } = [];
     
     public To? DeserializeFromString<To>(string json)
     {
