@@ -8,6 +8,44 @@ namespace ServiceStack;
 
 public static class JSON
 {
+    public static Dictionary<string, object> ParseObject(string json) => (Dictionary<string, object>) parse(json);
+    public static bool TryParseObject(string json, out Dictionary<string,object> value)
+    {
+        try
+        {
+            if (parse(json) is Dictionary<string,object> obj)
+            {
+                value = obj;
+                return true;
+            }
+        }
+        catch
+        {
+            // ignored
+        }
+        value = null;
+        return false;
+    }
+
+    public static List<object> ParseArray(string json) => (List<object>) parse(json);
+    public static bool TryParseArray(string json, out List<object> value)
+    {
+        try
+        {
+            if (parse(json) is List<object> list)
+            {
+                value = list;
+                return true;
+            }
+        }
+        catch
+        {
+            // ignored
+        }
+        value = null;
+        return false;
+    }
+
     public static object parse(string json)
     {
         json.AsSpan().ParseJsToken(out var token);
