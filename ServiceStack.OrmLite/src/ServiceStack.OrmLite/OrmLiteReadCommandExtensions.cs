@@ -27,8 +27,7 @@ public delegate object GetValueDelegate(int i);
 
 public static class OrmLiteReadCommandExtensions
 {
-    internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteReadCommandExtensions));
-    public const string UseDbConnectionExtensions = "Use IDbConnection Extensions instead";
+    internal static ILog Log => OrmLiteLog.Log;
 
     internal static IDataReader ExecReader(this IDbCommand dbCmd, string sql)
     {
@@ -39,7 +38,7 @@ public static class OrmLiteReadCommandExtensions
 
         OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
 
-        return dbCmd.ExecuteReader();
+        return dbCmd.WithLog(dbCmd.ExecuteReader());
     }
 
     internal static IDataReader ExecReader(this IDbCommand dbCmd, string sql, CommandBehavior commandBehavior)
@@ -51,7 +50,7 @@ public static class OrmLiteReadCommandExtensions
 
         OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
 
-        return dbCmd.ExecuteReader(commandBehavior);
+        return dbCmd.WithLog(dbCmd.ExecuteReader(commandBehavior));
     }
 
     internal static IDataReader ExecReader(this IDbCommand dbCmd, string sql, IEnumerable<IDataParameter> parameters)
@@ -69,7 +68,7 @@ public static class OrmLiteReadCommandExtensions
 
         OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
 
-        return dbCmd.ExecuteReader();
+        return dbCmd.WithLog(dbCmd.ExecuteReader());
     }
 
     internal static List<T> Select<T>(this IDbCommand dbCmd)

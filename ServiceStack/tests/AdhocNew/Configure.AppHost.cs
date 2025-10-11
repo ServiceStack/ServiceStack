@@ -35,6 +35,10 @@ public class AppHost() : AppHostBase("MyApp"), IHostingStartup
     public override void Configure()
     {
         AppConfig.Instance.GitPagesBaseUrl ??= ResolveGitBlobBaseUrl(ContentRootDirectory);
+        SetConfig(new HostConfig {
+            DebugMode = true,
+        });
+            
     }
     
     private string? ResolveGitBlobBaseUrl(IVirtualDirectory contentDir)

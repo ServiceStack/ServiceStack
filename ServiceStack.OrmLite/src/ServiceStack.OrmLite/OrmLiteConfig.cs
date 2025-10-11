@@ -121,6 +121,12 @@ public static class OrmLiteConfig
         ? ormLiteCmd.OrmLiteConnection.GetTag() 
         : null;
 
+#if NET8_0_OR_GREATER
+    public static TimeSpan? GetElapsedTime(this IDbCommand db) => db is OrmLiteCommand ormLiteCmd 
+        ? ormLiteCmd.GetElapsedTime() 
+        : null;
+#endif
+
     private const string RequiresOrmLiteConnection = "{0} can only be set on a OrmLiteConnectionFactory connection, not a plain IDbConnection";
 
     /// <summary>
@@ -188,15 +194,7 @@ public static class OrmLiteConfig
     {
         logFactory ??= LogManager.LogFactory;
         LogManager.LogFactory = logFactory;
-        OrmLiteResultsFilterExtensions.Log = logFactory.GetLogger(typeof(OrmLiteResultsFilterExtensions));
-        OrmLiteWriteCommandExtensions.Log = logFactory.GetLogger(typeof(OrmLiteWriteCommandExtensions));
-        OrmLiteReadCommandExtensions.Log = logFactory.GetLogger(typeof(OrmLiteReadCommandExtensions));
-        OrmLiteResultsFilterExtensions.Log = logFactory.GetLogger(typeof(OrmLiteResultsFilterExtensions));
-        OrmLiteUtils.Log = logFactory.GetLogger(typeof(OrmLiteUtils));
-        OrmLiteWriteCommandExtensionsAsync.Log = logFactory.GetLogger(typeof(OrmLiteWriteCommandExtensionsAsync));
-        OrmLiteReadCommandExtensionsAsync.Log = logFactory.GetLogger(typeof(OrmLiteReadCommandExtensionsAsync));
-        OrmLiteResultsFilterExtensionsAsync.Log = logFactory.GetLogger(typeof(OrmLiteResultsFilterExtensionsAsync));
-        OrmLiteConverter.Log = logFactory.GetLogger(typeof(OrmLiteConverter));
+        OrmLiteLog.Log = logFactory.GetLogger(typeof(OrmLiteLog));
     }
         
     public static bool DisableColumnGuessFallback { get; set; }

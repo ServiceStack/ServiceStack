@@ -14,7 +14,7 @@ namespace ServiceStack.OrmLite;
 
 public static class OrmLiteResultsFilterExtensionsAsync
 {
-    internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteResultsFilterExtensionsAsync));
+    internal static ILog Log => OrmLiteLog.Log;
 
     public static Task<int> ExecNonQueryAsync(this IDbCommand dbCmd, string sql, object anonType, CancellationToken token = default)
     {
@@ -31,7 +31,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        return dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token);
+        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token));
     }
 
     public static Task<int> ExecNonQueryAsync(this IDbCommand dbCmd, string sql, Dictionary<string, object> dict, CancellationToken token = default)
@@ -49,7 +49,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        return dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token);
+        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token));
     }
 
     public static Task<int> ExecNonQueryAsync(this IDbCommand dbCmd, CancellationToken token = default)
@@ -62,12 +62,12 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        return dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token);
+        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token));
     }
 
     public static Task<List<T>> ConvertToListAsync<T>(this IDbCommand dbCmd)
     {
-        return dbCmd.ConvertToListAsync<T>(null, default(CancellationToken));
+        return dbCmd.ConvertToListAsync<T>(null, CancellationToken.None);
     }
 
     public static async Task<List<T>> ConvertToListAsync<T>(this IDbCommand dbCmd, string sql, CancellationToken token)
@@ -217,7 +217,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.GetLongScalar(dbCmd).InTask();
 
-        return dbCmd.LongScalarAsync(token);
+        return dbCmd.WithLog(dbCmd.LongScalarAsync(token));
     }
 
     internal static async Task<T> ExprConvertToAsync<T>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams, CancellationToken token)

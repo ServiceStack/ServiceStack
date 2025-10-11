@@ -35,7 +35,7 @@ public interface IHasColumnDefinitionPrecision
 
 public abstract class OrmLiteConverter : IOrmLiteConverter
 {
-    public static ILog Log = LogManager.GetLogger(typeof(OrmLiteConverter));
+    public static ILog Log => OrmLiteLog.Log;
 
     /// <summary>
     /// RDBMS Dialect this Converter is for. Injected at registration.

@@ -16,8 +16,8 @@ namespace ServiceStack.OrmLite;
 
 internal static class OrmLiteReadCommandExtensionsAsync
 {
-    internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteReadCommandExtensionsAsync));
-
+    internal static ILog Log => OrmLiteLog.Log;
+    
     internal static Task<IDataReader> ExecReaderAsync(this IDbCommand dbCmd, string sql, CancellationToken token)
     {
         dbCmd.CommandText = sql;
@@ -27,7 +27,7 @@ internal static class OrmLiteReadCommandExtensionsAsync
 
         OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
 
-        return dbCmd.GetDialectProvider().ExecuteReaderAsync(dbCmd, token);
+        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteReaderAsync(dbCmd, token));
     }
 
     internal static Task<IDataReader> ExecReaderAsync(this IDbCommand dbCmd, string sql, IEnumerable<IDataParameter> parameters, CancellationToken token)
@@ -45,7 +45,7 @@ internal static class OrmLiteReadCommandExtensionsAsync
 
         OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
 
-        return dbCmd.GetDialectProvider().ExecuteReaderAsync(dbCmd, token);
+        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteReaderAsync(dbCmd, token));
     }
 
     internal static Task<List<T>> SelectAsync<T>(this IDbCommand dbCmd, CancellationToken token)

@@ -12,7 +12,7 @@ namespace ServiceStack.OrmLite;
 
 public static class OrmLiteResultsFilterExtensions
 {
-    internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteResultsFilterExtensions));
+    internal static ILog Log => OrmLiteLog.Log;
 
     public static int ExecNonQuery(this IDbCommand dbCmd, string sql, object anonType = null)
     {
@@ -29,7 +29,7 @@ public static class OrmLiteResultsFilterExtensions
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
 
-        return dbCmd.ExecuteNonQuery();
+        return dbCmd.WithLog(dbCmd.ExecuteNonQuery());
     }
 
     public static int ExecNonQuery(this IDbCommand dbCmd, string sql, Dictionary<string, object> dict)
@@ -47,7 +47,7 @@ public static class OrmLiteResultsFilterExtensions
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
 
-        return dbCmd.ExecuteNonQuery();
+        return dbCmd.WithLog(dbCmd.ExecuteNonQuery());
     }
 
     public static int ExecNonQuery(this IDbCommand dbCmd)
@@ -60,7 +60,7 @@ public static class OrmLiteResultsFilterExtensions
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        return dbCmd.ExecuteNonQuery();
+        return dbCmd.WithLog(dbCmd.ExecuteNonQuery());
     }
 
     public static int ExecNonQuery(this IDbCommand dbCmd, string sql, Action<IDbCommand> dbCmdFilter)
@@ -77,7 +77,7 @@ public static class OrmLiteResultsFilterExtensions
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        return dbCmd.ExecuteNonQuery();
+        return dbCmd.WithLog(dbCmd.ExecuteNonQuery());
     }
 
     public static List<T> ConvertToList<T>(this IDbCommand dbCmd, string sql = null)
@@ -217,7 +217,7 @@ public static class OrmLiteResultsFilterExtensions
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.GetLongScalar(dbCmd);
 
-        return dbCmd.LongScalar();
+        return dbCmd.WithLog(dbCmd.LongScalar());
     }
 
     internal static T ExprConvertTo<T>(this IDbCommand dbCmd, string sql = null, IEnumerable<IDbDataParameter> sqlParams = null, HashSet<string> onlyFields = null)

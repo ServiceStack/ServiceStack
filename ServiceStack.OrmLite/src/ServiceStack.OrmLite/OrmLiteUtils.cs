@@ -18,6 +18,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
@@ -32,7 +33,7 @@ public static class OrmLiteUtils
     public static int MaxCachedIndexFields { get; set; } = 1000;
     private static readonly Dictionary<IndexFieldsCacheKey, Tuple<FieldDefinition, int, IOrmLiteConverter>[]> indexFieldsCache = new();
 
-    internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteUtils));
+    internal static ILog Log => OrmLiteLog.Log;
 
     public static void HandleException(Exception ex, string message = null, params object[] args)
     {
@@ -51,6 +52,11 @@ public static class OrmLiteUtils
     {
         var sb = StringBuilderCache.Allocate();
 
+        var tag = cmd.GetTag();
+        if (tag != null)
+        {
+            sb.Append("[").Append(tag).Append("] ");
+        }
         sb.Append("SQL: ").Append(cmd.CommandText);
 
         if (cmd.Parameters.Count > 0)
@@ -66,7 +72,6 @@ public static class OrmLiteUtils
                 sb.Append($"{p.ParameterName}={p.Value}");
             }
         }
-
         return StringBuilderCache.ReturnAndFree(sb);
     }
 
@@ -1204,4 +1209,5 @@ public static class OrmLiteUtils
     public static string MaskPassword(string connectionString) => connectionString != null
         ? RegexPassword.Replace(connectionString, "$1=***")
         : null;
+
 }

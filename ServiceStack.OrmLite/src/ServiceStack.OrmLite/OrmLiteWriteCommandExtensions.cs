@@ -24,7 +24,7 @@ namespace ServiceStack.OrmLite;
 
 public static class OrmLiteWriteCommandExtensions
 {
-    internal static ILog Log = LogManager.GetLogger(typeof(OrmLiteWriteCommandExtensions));
+    internal static ILog Log => OrmLiteLog.Log;
 
     internal static bool CreateSchema<T>(this IDbCommand dbCmd)
     {
@@ -258,7 +258,7 @@ public static class OrmLiteWriteCommandExtensions
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
 
-        return dbCmd.ExecuteNonQuery();
+        return dbCmd.WithLog(dbCmd.ExecuteNonQuery());
     }
 
     internal static int ExecuteSql(this IDbCommand dbCmd, string sql, object anonType, Action<IDbCommand> commandFilter = null)
@@ -278,7 +278,7 @@ public static class OrmLiteWriteCommandExtensions
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
 
-        return dbCmd.ExecuteNonQuery();
+        return dbCmd.WithLog(dbCmd.ExecuteNonQuery());
     }
 
     private static bool IgnoreAlreadyExistsError(Exception ex)

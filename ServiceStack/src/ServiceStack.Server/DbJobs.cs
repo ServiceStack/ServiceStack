@@ -971,7 +971,6 @@ public partial class DbJobs : IBackgroundJobs
     /// </summary>
     private void LoadJobQueue()
     {
-        OrmLiteUtils.PrintSql();
         using var db = feature.OpenDb();
         var requestId = Guid.NewGuid().ToString("N");
         var now = DateTime.UtcNow;
