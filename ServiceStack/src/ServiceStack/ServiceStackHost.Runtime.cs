@@ -1017,10 +1017,11 @@ public abstract partial class ServiceStackHost
     {
         void withTag(IDbConnection db)
         {
-            var tagName = req.Dto?.GetType().Name ?? req.PathInfo;
-            if (db is IHasTag { Tag: null } hasTag)
+            var tagName = req?.Dto?.GetType().Name ?? req?.PathInfo;
+            if (tagName != null && db is IHasTag { Tag: null } hasTag)
                 hasTag.Tag = tagName;
         }
+
         return GetDbConnection(req, withTag);
     }
 
