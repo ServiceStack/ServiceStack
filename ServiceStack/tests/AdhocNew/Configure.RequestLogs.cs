@@ -18,6 +18,25 @@ public class ConfigureRequestLogs : IHostingStartup
                 EnableErrorTracking = true
             });
             services.AddHostedService<RequestLogsHostedService>();
+
+            services.AddPlugin(new ProfilingFeature
+            {
+                IncludeStackTrace = true,
+                DiagnosticEntryFilter = (entry, evt) =>
+                {
+                    if (evt is RequestDiagnosticEvent requestEvent)
+                    {
+                        var req = requestEvent.Request;
+                        entry.Meta = new()
+                        {
+                            ["RemoteIp"] = req.RemoteIp,
+                            ["Referrer"] = req.UrlReferrer?.ToString(),
+                            ["Language"] = req.GetHeader(HttpHeaders.AcceptLanguage),
+                        };
+                    }
+                },
+            });
+            
         });
 }
 
