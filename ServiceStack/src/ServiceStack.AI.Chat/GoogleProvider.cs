@@ -12,22 +12,18 @@ public class GoogleProvider(ILogger log, IHttpClientFactory factory) : OpenAiPro
     {
         var origJson = JSON.stringify(geminiChat);
         var clone = (Dictionary<string,object>) JSON.parse(origJson);
-        if (clone.TryGetValue("contents", out var oContents)
-            && oContents is List<object> contents)
+        if (clone.TryGetList("contents", out var contents))
         {
             foreach (var oContent in contents)
             {
                 if (oContent is Dictionary<string, object> content
-                    && content.TryGetValue("parts", out var oParts)
-                    && oParts is List<object> parts)
+                    && content.TryGetList("parts", out var parts))
                 {
                     foreach (var oPart in parts)
                     {
                         if (oPart is Dictionary<string, object> part
-                            && part.TryGetValue("inline_data", out var oInlineData)
-                            && oInlineData is Dictionary<string, object> inlineData
-                            && inlineData.TryGetValue("data", out var oData)
-                            && oData is string data)
+                            && part.TryGetObject("inline_data", out var inlineData)
+                            && inlineData.TryGetValue<string>("data", out var data))
                         {
                             inlineData["data"] = $"({data.Length})";
                         }

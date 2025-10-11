@@ -17,6 +17,27 @@ public static class DictionaryExtensions
         return dictionary.TryGetValue(key, out var value) ? value : defaultValue();
     }
     
+    public static bool TryGetValue<T>(this Dictionary<string, object> dictionary, string key, out T value)
+    {
+        if (dictionary.TryGetValue(key, out var objValue) && objValue is T theValue)
+        {
+            value = theValue;
+            return true;
+        }
+        value = default;
+        return false;
+    }
+    
+    public static bool TryGetObject(this Dictionary<string, object> dictionary, string key, out Dictionary<string, object> value)
+    {
+        return TryGetValue(dictionary, key, out value);
+    }
+    
+    public static bool TryGetList(this Dictionary<string, object> dictionary, string key, out List<object> value)
+    {
+        return TryGetValue(dictionary, key, out value);
+    }
+    
     public static bool IsNullOrEmpty(this IDictionary dictionary)
     {
         return dictionary == null || dictionary.Count == 0;
