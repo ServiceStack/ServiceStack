@@ -108,7 +108,7 @@ public class AutoQueryTests(DialectContext context) : OrmLiteProvidersTestBase(c
         new DeptEmployee { Id = 3, DepartmentId = 30, FirstName = "First 3", LastName = "Last 3" }
     ];
 
-    public static void RecreateTables(IDbConnection db)
+    public static void RecreateTables(IDbConnection db, bool seed = true)
     {
         db.DropTable<RockstarAlbum>();
         db.DropTable<Rockstar>();
@@ -119,11 +119,14 @@ public class AutoQueryTests(DialectContext context) : OrmLiteProvidersTestBase(c
         db.CreateTable<DeptEmployee>();
         db.CreateTable<Rockstar>();
         db.CreateTable<RockstarAlbum>();
-        
-        db.InsertAll(SeedRockstars);
-        db.InsertAll(SeedAlbums);
-        db.InsertAll(SeedDepartments);
-        db.InsertAll(SeedEmployees);
+
+        if (seed)
+        {
+            db.InsertAll(SeedRockstars);
+            db.InsertAll(SeedAlbums);
+            db.InsertAll(SeedDepartments);
+            db.InsertAll(SeedEmployees);
+        }
     }
 
     [Test]
