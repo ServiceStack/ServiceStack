@@ -130,23 +130,17 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
     {
         Providers = [];
         Dictionary<string, object>? headers = null;
-        if (Config.GetValueOrDefault("defaults") is Dictionary<string, object> defaults)
+        if (Config.TryGetObject("defaults", out var defaults))
         {
-            if (defaults.TryGetValue("headers", out var oHeaders)
-                && oHeaders is Dictionary<string, object> headersDict)
-            {
-                headers = headersDict;
-            }
+            defaults.TryGetObject("headers", out headers);
         }
             
-        if (Config!.TryGetValue("providers", out var oProviders)
-            && oProviders is Dictionary<string, object> providers)
+        if (Config.TryGetObject("providers", out var providers))
         {
             foreach (var entry in providers)
             {
                 if (entry.Value is not Dictionary<string, object?> provider) continue;
-                if (!provider.TryGetValue("type", out var oType)
-                    || oType is not string type) continue;
+                if (!provider.TryGetValue("type", out string type)) continue;
 
                 if (EnableProviders.Count > 0)
                 {
@@ -157,7 +151,7 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
                 if (!enabled) continue;
                     
                 var definition = new Dictionary<string, object?>(provider);
-                if (definition.TryGetValue("api_key", out var oApiKey) && oApiKey is string apiKey)
+                if (definition.TryGetValue("api_key", out string apiKey))
                 {
                     if (apiKey.StartsWith('$'))
                     {

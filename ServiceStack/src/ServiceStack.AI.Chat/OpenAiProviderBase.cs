@@ -55,13 +55,11 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
 
     public void Populate(Dictionary<string, object?> definition)
     {
-        if (definition.TryGetValue("chat_url", out var oChatUrl)
-            && oChatUrl is string chatUrl)
+        if (definition.TryGetValue("chat_url", out string chatUrl))
         {
             ChatUrl = chatUrl;
         }
-        if (definition.TryGetValue("base_url", out var oBaseUrl)
-            && oBaseUrl is string baseUrl)
+        if (definition.TryGetValue("base_url", out string baseUrl))
         {
             BaseUrl = baseUrl;
             if (ChatUrl == null)
@@ -77,14 +75,12 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
                 }
             }
         }
-        if (definition.TryGetValue("models", out var oModels)
-            && oModels is Dictionary<string, object> models)
+        if (definition.TryGetObject("models", out var models))
         {
             Models = models.ToObjectDictionary().ToStringDictionary();
         }
         
-        if (definition.TryGetValue("headers", out var oHeaders) 
-            && oHeaders is Dictionary<string, object> headers)
+        if (definition.TryGetValue("headers", out var headers))
         {
             Headers = headers.ToObjectDictionary().ToStringDictionary();
         }
@@ -93,65 +89,53 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
             [HttpHeaders.ContentType] = "application/json"
         };
 
-        if (definition.TryGetValue("api_key", out var oApiKey)
-            && oApiKey is string apiKey && !string.IsNullOrEmpty(apiKey))
+        if (definition.TryGetValue("api_key", out string apiKey) && !string.IsNullOrEmpty(apiKey))
         {
             ApiKey = apiKey;
             Headers[HttpHeaders.Authorization] = $"Bearer {ApiKey}";
         }
 
-        if (definition.TryGetValue("frequency_penalty", out var oFrequencyPenalty)
-            && oFrequencyPenalty is double frequencyPenalty)
+        if (definition.TryGetValue("frequency_penalty", out double frequencyPenalty))
         {
             FrequencyPenalty = frequencyPenalty;
         }
-        if (definition.TryGetValue("logprobs", out var oLogProbs)
-            && oLogProbs is bool logProbs)
+        if (definition.TryGetValue("logprobs", out bool logProbs))
         {
             LogProbs = logProbs;
         }
-        if (definition.TryGetValue("max_completion_tokens", out var oMaxCompletionTokens)
-            && oMaxCompletionTokens is int maxCompletionTokens)
+        if (definition.TryGetValue("max_completion_tokens", out int maxCompletionTokens))
         {
             MaxCompletionTokens = maxCompletionTokens;
         }
-        if (definition.TryGetValue("n", out var oN)
-            && oN is int n)
+        if (definition.TryGetValue("n", out int n))
         {
             N = n;
         }
-        if (definition.TryGetValue("parallel_tool_calls", out var oParallelToolCalls)
-            && oParallelToolCalls is bool parallelToolCalls)
+        if (definition.TryGetValue("parallel_tool_calls", out bool parallelToolCalls))
         {
             ParallelToolCalls = parallelToolCalls;
         }
-        if (definition.TryGetValue("presence_penalty", out var oPresencePenalty)
-            && oPresencePenalty is double presencePenalty)
+        if (definition.TryGetValue("presence_penalty", out double presencePenalty))
         {
             PresencePenalty = presencePenalty;
         }
-        if (definition.TryGetValue("prompt_cache_key", out var oPromptCacheKey)
-            && oPromptCacheKey is string promptCacheKey)
+        if (definition.TryGetValue("prompt_cache_key", out string promptCacheKey))
         {
             PromptCacheKey = promptCacheKey;
         }
-        if (definition.TryGetValue("reasoning_effort", out var oReasoningEffort)
-            && oReasoningEffort is string reasoningEffort)
+        if (definition.TryGetValue("reasoning_effort", out string reasoningEffort))
         {
             ReasoningEffort = reasoningEffort;
         }
-        if (definition.TryGetValue("safety_identifier", out var oSafetyIdentifier)
-            && oSafetyIdentifier is string safetyIdentifier)
+        if (definition.TryGetValue("safety_identifier", out string safetyIdentifier))
         {
             SafetyIdentifier = safetyIdentifier;
         }
-        if (definition.TryGetValue("seed", out var oSeed)
-            && oSeed is int seed)
+        if (definition.TryGetValue("seed", out int seed))
         {
             Seed = seed;
         }
-        if (definition.TryGetValue("service_tier", out var oServiceTier)
-            && oServiceTier is string serviceTier)
+        if (definition.TryGetValue("service_tier", out string serviceTier))
         {
             ServiceTier = serviceTier;
         }
@@ -165,33 +149,27 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
                 _ => null
             };
         }
-        if (definition.TryGetValue("store", out var oStore)
-            && oStore is bool store)
+        if (definition.TryGetValue("store", out bool store))
         {
             Store = store;
         }
-        if (definition.TryGetValue("temperature", out var oTemperature)
-            && oTemperature is double temperature)
+        if (definition.TryGetValue("temperature", out double temperature))
         {
             Temperature = temperature;
         }
-        if (definition.TryGetValue("top_logprobs", out var oTopLogprobs)
-            && oTopLogprobs is int topLogprobs)
+        if (definition.TryGetValue("top_logprobs", out int topLogprobs))
         {
             TopLogprobs = topLogprobs;
         }
-        if (definition.TryGetValue("top_p", out var oTopP)
-            && oTopP is double topP)
+        if (definition.TryGetValue("top_p", out double topP))
         {
             TopP = topP;
         }
-        if (definition.TryGetValue("verbosity", out var oVerbosity)
-            && oVerbosity is string verbosity)
+        if (definition.TryGetValue("verbosity", out string verbosity))
         {
             Verbosity = verbosity;
         }
-        if (definition.TryGetValue("enable_thinking", out var oEnableThinking)
-            && oEnableThinking is bool enableThinking)
+        if (definition.TryGetValue("enable_thinking", out bool enableThinking))
         {
             EnableThinking = enableThinking;
         }

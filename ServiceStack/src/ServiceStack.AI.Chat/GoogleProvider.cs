@@ -11,19 +11,17 @@ public class GoogleProvider(ILogger log, IHttpClientFactory factory) : OpenAiPro
     public string GeminiChatSummaryJson(Dictionary<string, object> geminiChat)
     {
         var origJson = JSON.stringify(geminiChat);
-        var clone = (Dictionary<string,object>) JSON.parse(origJson);
-        if (clone.TryGetList("contents", out var contents))
+        var obj = JSON.ParseObject(origJson);
+        if (obj.TryGetValue("contents", out List<object> contents))
         {
-            foreach (var oContent in contents)
+            foreach (var content in contents.OfType<Dictionary<string,object>>())
             {
-                if (oContent is Dictionary<string, object> content
-                    && content.TryGetList("parts", out var parts))
+                if (content.TryGetValue("parts", out List<object> parts))
                 {
-                    foreach (var oPart in parts)
+                    foreach (var part in parts.OfType<Dictionary<string,object>>())
                     {
-                        if (oPart is Dictionary<string, object> part
-                            && part.TryGetObject("inline_data", out var inlineData)
-                            && inlineData.TryGetValue<string>("data", out var data))
+                        if (part.TryGetValue("inline_data", out Dictionary<string,object> inlineData)
+                            && inlineData.TryGetValue("data", out string data))
                         {
                             inlineData["data"] = $"({data.Length})";
                         }
@@ -31,7 +29,7 @@ public class GoogleProvider(ILogger log, IHttpClientFactory factory) : OpenAiPro
                 }
             }
         }
-        return ClientConfig.IndentJson(JSON.stringify(clone));
+        return ClientConfig.IndentJson(JSON.stringify(obj));
     }
     
     public override async Task<ChatResponse> ChatAsync(ChatCompletion request, CancellationToken token=default)
@@ -211,38 +209,29 @@ public class GoogleProvider(ILogger log, IHttpClientFactory factory) : OpenAiPro
         var choices = new List<Choice>();
         var i = 0;
         
-        if (obj.TryGetValue("candidates", out var oCandidates)
-            && oCandidates is List<object> candidates)
+        if (obj.TryGetValue("candidates", out List<object> candidates))
         {
-            foreach (var oCandidate in candidates)
+            foreach (var candidate in candidates.OfType<Dictionary<string, object>>())
             {
-                var candidate = (Dictionary<string, object>) oCandidate;
                 var role = "assistant";
                 var content = "";
                 var reasoning = "";
 
-                if (candidate.TryGetValue("content", out var oContent)
-                    && oContent is Dictionary<string, object> contentDict)
+                if (candidate.TryGetValue("content", out Dictionary<string, object> contentDict))
                 {
-                    if (contentDict.TryGetValue("role", out var oRole)
-                        && oRole is string geminiRole)
+                    if (contentDict.TryGetValue("role", out string geminiRole))
                     {
                         role = geminiRole == "model" ? "assistant" : geminiRole;
                     }
-
-                    if (contentDict.TryGetValue("parts", out var oParts)
-                        && oParts is List<object> parts)
+                    if (contentDict.TryGetValue("parts", out List<object> parts))
                     {
                         var textParts = new List<string>();
                         var reasoningParts = new List<string>();
-                        foreach (var oPart in parts)
+                        foreach (var part in parts.OfType<Dictionary<string, object>>())
                         {
-                            var part = (Dictionary<string, object>)oPart;
-                            if (part.TryGetValue("text", out var oText)
-                                && oText is string text)
+                            if (part.TryGetValue("text", out string text))
                             {
-                                if (part.TryGetValue("thought", out var oThought)
-                                    && oThought is true)
+                                if (part.TryGetValue("thought", out bool thought) && thought)
                                 {
                                     reasoningParts.Add(text);
                                 }
@@ -276,8 +265,7 @@ public class GoogleProvider(ILogger log, IHttpClientFactory factory) : OpenAiPro
             }
             response.Choices = choices;
             
-            if (obj.TryGetValue("usageMetadata", out var oUsageMetadata)
-                && oUsageMetadata is Dictionary<string, object> usageMetadata)
+            if (obj.TryGetValue("usageMetadata", out Dictionary<string, object> usageMetadata))
             {
                 response.Usage = new AiUsage
                 {
@@ -296,13 +284,11 @@ public class GoogleProvider(ILogger log, IHttpClientFactory factory) : OpenAiPro
         var to = new GoogleProvider(log, factory);
         to.Populate(definition);
         
-        if (definition.TryGetValue("safety_settings", out var oSafetySettings)
-            && oSafetySettings is List<object> safetySettings)
+        if (definition.TryGetValue("safety_settings", out List<object> safetySettings))
         {
             to.SafetySettings = safetySettings;
         }
-        if (definition.TryGetValue("thinking_config", out var oThinkingConfig)
-            && oThinkingConfig is Dictionary<string, object> thinkingConfig)
+        if (definition.TryGetValue("thinking_config", out Dictionary<string, object> thinkingConfig))
         {
             to.ThinkingConfig = thinkingConfig;
         }

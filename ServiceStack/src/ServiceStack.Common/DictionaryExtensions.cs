@@ -19,10 +19,25 @@ public static class DictionaryExtensions
     
     public static bool TryGetValue<T>(this Dictionary<string, object> dictionary, string key, out T value)
     {
-        if (dictionary.TryGetValue(key, out var objValue) && objValue is T theValue)
+        if (dictionary.TryGetValue(key, out var objValue))
         {
-            value = theValue;
-            return true;
+            if (objValue is T theValue)
+            {
+                value = theValue;
+                return true;
+            }
+            if (typeof(T).IsNumericType())
+            {
+                try
+                {
+                    value = objValue.ConvertTo<T>();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    // ignore
+                }
+            }
         }
         value = default;
         return false;
