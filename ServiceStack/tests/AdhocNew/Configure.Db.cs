@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using ServiceStack.OrmLite;
 using MyApp.Data;
 using ServiceStack.Data;
+using ServiceStack.Jobs;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -37,10 +38,21 @@ public class ConfigureDb : IHostingStartup
         })
         .ConfigureAppHost(appHost =>
         {
-            // var dbFactory = appHost.Resolve<IDbConnectionFactory>();
-            // string namedConneciton = "";
+            var dbFactory = appHost.Resolve<IDbConnectionFactory>();
+            using var db = dbFactory.Open();
+            
+            var q = db.From<CompletedJob>();
+            var createdDate = q.Column<CompletedJob>(c => c.CreatedDate);
+            var months = db.SqlColumn<string>(q
+                .Select(x => new {
+                    Month = q.sql.DateFormat(createdDate, "%Y-%m"),
+                    Log = q.sql.Concat(new[]{ "'Prefix'", q.sql.Char(10), createdDate })
+                }));
+            months.PrintDump();
+            
+            // string namedConnection = "";
             // using var db1 = dbFactory.Open(configure: db => db.WithTag("MyTag"));
-            // using var db = dbFactory.Open(namedConneciton, configure: db => db.WithTag("MyTag"));
+            // using var db = dbFactory.Open(namedConnection, configure: db => db.WithTag("MyTag"));
             // IHttpRequest req = null;
             // using var db3 = HostContext.AppHost.GetDbConnection(req, configure: db => db.WithTag("MyTag"));
             
@@ -51,6 +63,12 @@ public class ConfigureDb : IHostingStartup
             //     Console.WriteLine($"[{cmd.GetTag()}] {cmd.GetElapsedTime()}");
             // };
         });
+
+    public class Person
+    {
+        public int Id { get; set; }
+    }
+
 }
 
 // Used by dotnet ef

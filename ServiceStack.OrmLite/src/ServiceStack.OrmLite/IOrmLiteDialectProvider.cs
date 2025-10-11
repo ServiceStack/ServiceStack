@@ -318,6 +318,9 @@ public interface IOrmLiteDialectProvider
     string SqlBool(bool value);
     string SqlLimit(int? offset = null, int? rows = null);
     string SqlCast(object fieldOrValue, string castAs);
+    string SqlDateFormat(string quotedColumn, string format);
+    string SqlChar(int charCode);
+
     string SqlRandom { get; }
 
     /// <summary>

@@ -45,7 +45,7 @@ namespace ServiceStack.OrmLite
         public bool UseJoinTypeAsAliases { get; set; }
         public bool WhereStatementWithoutWhereString { get; set; }
         public ISet<string> Tags { get; } = new HashSet<string>();
-        public bool AllowEscapeWildcards { get; set; }= true;
+        public bool AllowEscapeWildcards { get; set; } = true;
 
         protected bool CustomSelect { get; set; }
         protected bool useFieldName = false;
@@ -54,6 +54,23 @@ namespace ServiceStack.OrmLite
         protected bool isSelectExpression = false;
         private bool hasEnsureConditions = false;
         private bool inSqlMethodCall = false;
+        
+        public DialectSql sql { get; }
+        
+        public class DialectSql(IOrmLiteDialectProvider dialect)
+        {
+            private IOrmLiteDialectProvider d { get; } = dialect;
+            public string Conflict(string sql, string conflictResolution) => d.SqlConflict(sql, conflictResolution);
+            public string Concat(IEnumerable<object> args) => d.SqlConcat(args);
+            public string Currency(string fieldOrValue) => d.SqlCurrency(fieldOrValue);
+            public string Currency(string fieldOrValue, string currencySymbol) => d.SqlCurrency(fieldOrValue, currencySymbol);
+            public string Bool(bool value) => d.SqlBool(value);
+            public string Limit(int? offset = null, int? rows = null) => d.SqlLimit(offset, rows);
+            public string Cast(object fieldOrValue, string castAs) => d.SqlCast(fieldOrValue, castAs);
+            public string DateFormat(string quotedColumn, string format) => d.SqlDateFormat(quotedColumn, format);
+            public string Char(int charCode) => d.SqlChar(charCode);
+            public string Random => d.SqlRandom;
+        }
 
         protected string Sep => sep;
 
@@ -67,6 +84,7 @@ namespace ServiceStack.OrmLite
             WhereStatementWithoutWhereString = false;
 
             DialectProvider = dialectProvider;
+            sql = new DialectSql(dialectProvider);
             Params = new List<IDbDataParameter>();
             tableDefs.Add(modelDef);
 
