@@ -119,7 +119,7 @@ public interface IOrmLiteDialectProvider
 
     string GetTableNameOnly(TableRef tableRef);
     string UnquotedTable(TableRef tableRef);
-
+    string GetSchemaName(TableRef tableRef);
     string QuoteSchema(string schema, string table);
     string QuoteTable(TableRef tableRef);
     string GetQuotedTableName(Type modelType);
