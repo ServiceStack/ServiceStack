@@ -86,7 +86,7 @@
             "enabled": true,
             "type": "OpenAiProvider",
             "base_url": "https://openrouter.ai/api",
-            "api_key": "$OPENROUTER_FREE_API_KEY",
+            "api_key": "$OPENROUTER_API_KEY",
             "models": {
                 "qwen2.5vl": "qwen/qwen2.5-vl-32b-instruct:free",
                 "llama4:109b": "meta-llama/llama-4-scout:free",

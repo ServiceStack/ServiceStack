@@ -17,7 +17,7 @@ public class AiChatTests
         {
             feature.Variables = new()
             {
-                ["OPENROUTER_FREE_API_KEY"] = "fake-key",
+                ["OPENROUTER_API_KEY"] = "fake-key",
                 ["GROQ_API_KEY"] = "fake-key",
                 ["GOOGLE_FREE_API_KEY"] = "fake-key",
                 ["CODESTRAL_API_KEY"] = "fake-key",
