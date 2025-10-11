@@ -15,7 +15,7 @@ public class ConfigSetting
 public class OrmLiteAppSettings(IDbConnectionFactory dbFactory)
     : AppSettingsBase(new OrmLiteSettings(dbFactory)), IRequiresSchema
 {
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteAppSettings));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(OrmLiteAppSettings));
     private OrmLiteSettings DbSettings => (OrmLiteSettings)base.settings;
 
     public IDbConnectionFactory DbFactory => DbSettings.DbFactory;

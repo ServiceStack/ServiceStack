@@ -13,7 +13,7 @@ public partial class DbScriptsAsync : ScriptMethods
 {
     private const string DbInfo = "__dbinfo"; // Keywords.DbInfo
     private const string DbConnection = "__dbconnection"; // useDb global
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(DbScriptsAsync));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(DbScriptsAsync));
 
     private IDbConnectionFactory dbFactory;
     public IDbConnectionFactory DbFactory

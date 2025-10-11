@@ -163,6 +163,7 @@ public class ProfilingFeature : IPlugin, IConfigureServices, Model.IHasStringId,
             nameof(DiagnosticEntry.Id),
             nameof(DiagnosticEntry.TraceId),
             nameof(DiagnosticEntry.Source),
+            nameof(DiagnosticEntry.Tag),
             nameof(DiagnosticEntry.EventType),
             nameof(DiagnosticEntry.Message),
             nameof(DiagnosticEntry.ThreadId),
@@ -185,9 +186,6 @@ public class ProfilingFeature : IPlugin, IConfigureServices, Model.IHasStringId,
         Observer = new ProfilerDiagnosticObserver(this);
         var subscription = DiagnosticListener.AllListeners.Subscribe(Observer);
         appHost.OnDisposeCallbacks.Add(host => subscription.Dispose());
-        
-        if (!SummaryFields.Contains(nameof(DiagnosticEntry.Tag)) && TagResolver != null)
-            SummaryFields.Add(nameof(DiagnosticEntry.Tag));
         
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.Profiling = new ProfilingInfo {

@@ -61,7 +61,7 @@ public class Migrator
     public const string Last = "last";
     public IDbConnectionFactory DbFactory { get; }
     public Type[] MigrationTypes { get; }
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(Migrator));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(Migrator));
     
     public Migrator(IDbConnectionFactory dbFactory, params Assembly[] migrationAssemblies)
         : this(dbFactory, GetAllMigrationTypes(migrationAssemblies).ToArray()) {}

@@ -1015,13 +1015,13 @@ public abstract partial class ServiceStackHost
     /// <returns></returns>
     public virtual IDbConnection GetDbConnection(IRequest req = null)
     {
-        void withName(IDbConnection db)
+        void withTag(IDbConnection db)
         {
-            var connName = req.Dto?.GetType().Name ?? req.PathInfo;
-            if (db is IHasName { Name: null } hasName)
-                hasName.Name = connName;
+            var tagName = req.Dto?.GetType().Name ?? req.PathInfo;
+            if (db is IHasTag { Tag: null } hasTag)
+                hasTag.Tag = tagName;
         }
-        return GetDbConnection(req, withName);
+        return GetDbConnection(req, withTag);
     }
 
     public virtual IDbConnection GetDbConnection(IRequest req, Action<IDbConnection> configure)
@@ -1055,23 +1055,23 @@ public abstract partial class ServiceStackHost
                     return dbFactoryExtended.OpenDbConnection(namedConnectionAttr.Name, configure);
                 }
             }
-            
-            if (dbFactory is IDbConnectionFactoryExtended factoryExtended)
-                return factoryExtended.OpenDbConnection(configure);
         }
+            
+        if (dbFactory is IDbConnectionFactoryExtended factoryExtended)
+            return factoryExtended.OpenDbConnection(configure);
 
         return dbFactory.OpenDbConnection();
     }
 
     public virtual async Task<IDbConnection> GetDbConnectionAsync(IRequest req = null)
     {
-        void withName(IDbConnection db)
+        void withTag(IDbConnection db)
         {
             var connName = req.Dto?.GetType().Name ?? req.PathInfo;
-            if (db is IHasName { Name: null } hasName)
-                hasName.Name = connName;
+            if (db is IHasTag { Tag: null } hasTag)
+                hasTag.Tag = connName;
         }
-        return await GetDbConnectionAsync(req, withName).ConfigAwait();
+        return await GetDbConnectionAsync(req, withTag).ConfigAwait();
     }
 
     public virtual async Task<IDbConnection> GetDbConnectionAsync(IRequest req, Action<IDbConnection> configure)
@@ -1108,13 +1108,13 @@ public abstract partial class ServiceStackHost
 
     public virtual IDbConnection GetDbConnection(string namedConnection, IRequest req = null)
     {
-        void withName(IDbConnection db)
+        void withTag(IDbConnection db)
         {
             var connName = req?.Dto?.GetType().Name ?? req?.PathInfo;
-            if (connName != null && db is IHasName { Name: null } hasName)
-                hasName.Name = connName;
+            if (connName != null && db is IHasTag { Tag: null } hasTag)
+                hasTag.Tag = connName;
         }
-        return GetDbConnection(namedConnection, req, withName);
+        return GetDbConnection(namedConnection, req, withTag);
     }
 
     public virtual IDbConnection GetDbConnection(string namedConnection, IRequest req, Action<IDbConnection> configure)
@@ -1131,13 +1131,13 @@ public abstract partial class ServiceStackHost
 
     public virtual async Task<IDbConnection> GetDbConnectionAsync(string namedConnection, IRequest req = null)
     {
-        void withName(IDbConnection db)
+        void withTag(IDbConnection db)
         {
             var connName = req?.Dto?.GetType().Name ?? req?.PathInfo;
-            if (connName != null && db is IHasName { Name: null } hasName)
-                hasName.Name = connName;
+            if (connName != null && db is IHasTag { Tag: null } hasTag)
+                hasTag.Tag = connName;
         }
-        return await GetDbConnectionAsync(namedConnection, req, withName).ConfigAwait();
+        return await GetDbConnectionAsync(namedConnection, req, withTag).ConfigAwait();
     }
 
     public virtual async Task<IDbConnection> GetDbConnectionAsync(string namedConnection, IRequest req, Action<IDbConnection> configure)

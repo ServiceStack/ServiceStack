@@ -250,7 +250,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         return files.ToList();
     }
     
-    public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
+    public void DefaultConfigureDb(IDbConnection db) => db.WithTag(GetType().Name);
     
     public IDbConnection DefaultResolveMonthDb(IDbConnectionFactory dbFactory, DateTime createdDate)
     {

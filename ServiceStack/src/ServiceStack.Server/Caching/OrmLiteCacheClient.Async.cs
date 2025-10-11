@@ -12,7 +12,7 @@ namespace ServiceStack.Caching;
 
 public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemoveByPatternAsync
 {
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteCacheClient));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(OrmLiteCacheClient));
     public async Task<T> ExecAsync<T>(Func<IDbConnection, Task<T>> action, CancellationToken token=default)
     {
         using (JsConfig.With(new Config { ExcludeTypeInfo = false }))

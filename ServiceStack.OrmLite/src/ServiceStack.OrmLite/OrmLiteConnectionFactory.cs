@@ -384,9 +384,17 @@ public static class OrmLiteConnectionFactoryExtensions
     /// <summary>
     /// Alias for OpenDbConnection
     /// </summary>
+    public static IDbConnection OpenDbConnection(this IDbConnectionFactory connectionFactory, Action<IDbConnection> configure)
+    {
+        return ((OrmLiteConnectionFactory)connectionFactory).OpenDbConnection(configure);
+    }
     public static IDbConnection OpenDbConnection(this IDbConnectionFactory connectionFactory, string namedConnection)
     {
         return ((OrmLiteConnectionFactory)connectionFactory).OpenDbConnection(namedConnection);
+    }
+    public static IDbConnection OpenDbConnection(this IDbConnectionFactory connectionFactory, string namedConnection, Action<IDbConnection> configure)
+    {
+        return ((OrmLiteConnectionFactory)connectionFactory).OpenDbConnection(namedConnection, configure);
     }
     public static Task<IDbConnection> OpenDbConnectionAsync(this IDbConnectionFactory connectionFactory, string namedConnection, CancellationToken token = default)
     {

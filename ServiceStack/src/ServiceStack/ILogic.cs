@@ -43,8 +43,8 @@ public abstract class RepositoryBase : IDisposable, IRepository
     IDbConnection db;
     public virtual IDbConnection Db => db ??= 
         (DbFactory as IDbConnectionFactoryExtended)?.OpenDbConnection(x => {
-            if (x is IHasName hasName)
-                hasName.Name = GetType().Name;
+            if (x is IHasTag hasTag)
+                hasTag.Tag = GetType().Name;
         }) 
         ?? DbFactory.OpenDbConnection();
 

@@ -56,8 +56,8 @@ public class ConfigureProfiling : IHostingStartup
 
                     services.AddPlugin(new ProfilingFeature
                     {
-                        TagLabel = "Tenant",
-                        TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0, 5),
+                        // TagLabel = "Tenant",
+                        // TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0, 5),
                         IncludeStackTrace = true,
                         DiagnosticEntryFilter = (entry, evt) =>
                         {

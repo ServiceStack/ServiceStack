@@ -23,7 +23,7 @@ public partial class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails>(
     where TUserAuthDetails : class, IUserAuthDetails
 {
     public string NamedConnection { get; private set; } = namedConnection;
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteAuthRepository));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(OrmLiteAuthRepository));
 
     protected IDbConnection OpenDbConnection()
     {
@@ -58,7 +58,7 @@ public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetai
     where TUserAuthDetails : class, IUserAuthDetails
 {
     private readonly IDbConnection db;
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteAuthRepositoryMultitenancy));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(OrmLiteAuthRepositoryMultitenancy));
 
     public OrmLiteAuthRepositoryMultitenancy(IDbConnection db)
     {

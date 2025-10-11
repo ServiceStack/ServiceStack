@@ -115,7 +115,7 @@ public interface IGenerateCrudServices : ITableResolver
 
 public static class CrudUtils
 {
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(CrudUtils));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(CrudUtils));
     public static MetadataAttribute ToAttribute(string name, Dictionary<string, object>? args = null, Attribute? attr = null) => new() {
         Name = name,
         Attribute = attr,

@@ -14,7 +14,7 @@ public class DbScripts : ScriptMethods
 {
     private const string DbInfo = "__dbinfo"; // Keywords.DbInfo
     private const string DbConnection = "__dbconnection"; // useDb global
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(DbScripts));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(DbScripts));
         
     private IDbConnectionFactory dbFactory;
     public IDbConnectionFactory DbFactory

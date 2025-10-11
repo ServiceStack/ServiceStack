@@ -47,7 +47,12 @@ public class DbLoggingProvider
     public IOrmLiteDialectProvider Dialect { get; set; }
     public Action<IDbConnection>? ConfigureDb { get; set; }
     public BulkInsertConfig BulkInsertConfig = new () { Mode = BulkInsertMode.Sql };
-    public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
+    public void DefaultConfigureDb(IDbConnection db) => db.WithTag(GetType().Name);
+
+    public DbLoggingProvider()
+    {
+        ConfigureDb = DefaultConfigureDb;
+    }
 
     public virtual void InitSchema()
     {
@@ -94,7 +99,7 @@ public class DbLoggingProvider
         dbProvider.DbFactory = dbFactory;
         dbProvider.NamedConnection = namedConnection;
         dbProvider.Dialect = dialect;
-        dbProvider.ConfigureDb = dbProvider.DefaultConfigureDb;
+        dbProvider.ConfigureDb ??= dbProvider.DefaultConfigureDb;
         return dbProvider;
     }
 
@@ -434,7 +439,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
         }
     }
     
-    public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
+    public void DefaultConfigureDb(IDbConnection db) => db.WithTag(GetType().Name);
 
     public IDbConnection OpenMonthDb(DateTime createdDate) => DbProvider.OpenMonthDb(createdDate);
 

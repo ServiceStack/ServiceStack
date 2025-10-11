@@ -40,8 +40,8 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         return UseDb != null 
             ? UseDb() 
             : NamedConnection != null
-                ? HostContext.AppHost.GetDbConnection(NamedConnection, null, db => db.WithName(GetType().Name))
-                : HostContext.AppHost.GetDbConnection(null, db => db.WithName(GetType().Name));
+                ? HostContext.AppHost.GetDbConnection(NamedConnection, null, db => db.WithTag(GetType().Name))
+                : HostContext.AppHost.GetDbConnection(null, db => db.WithTag(GetType().Name));
     }
     
     public List<Type> RegisterServices { get; set; } = [

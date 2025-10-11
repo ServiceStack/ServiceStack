@@ -64,7 +64,7 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
         });
     }
 
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(AdminDatabaseFeature));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(AdminDatabaseFeature));
     public void AfterPluginsLoaded(IAppHost appHost)
     {
         var dbFactory = appHost.Resolve<IDbConnectionFactory>();

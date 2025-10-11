@@ -106,14 +106,20 @@ public static class OrmLiteConfig
         }
     }
 
-    public static IDbConnection WithName(this IDbConnection db, string name)
+    public static IDbConnection WithTag(this IDbConnection db, string name)
     {
         if (db is OrmLiteConnection ormLiteConn)
         {
-            ormLiteConn.Name = name;
+            ormLiteConn.Tag = name;
         }
         return db;
     }
+    
+    public static string GetTag(this IDbConnection db) => db is OrmLiteConnection ormLiteConn ? ormLiteConn.Tag : null;
+    
+    public static string GetTag(this IDbCommand db) => db is OrmLiteCommand ormLiteCmd 
+        ? ormLiteCmd.OrmLiteConnection.GetTag() 
+        : null;
 
     private const string RequiresOrmLiteConnection = "{0} can only be set on a OrmLiteConnectionFactory connection, not a plain IDbConnection";
 

@@ -174,7 +174,7 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
     ICrudEvents, IRequiresSchema, IClearable
     where T : CrudEvent
 {
-    static void ConfigureDb(IDbConnection db) => db.WithName(nameof(OrmLiteCrudEvents));
+    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(OrmLiteCrudEvents));
 
     /// <summary>
     /// Don't persist CrudEvent's in primary IDbConnectionFactory

@@ -17,8 +17,13 @@ public class DbJobsProvider
     public string? NamedConnection { get; set; }
     public IOrmLiteDialectProvider Dialect { get; set; }
     public Action<IDbConnection>? ConfigureDb { get; set; }
-    public void DefaultConfigureDb(IDbConnection db) => db.WithName(GetType().Name);
+    public void DefaultConfigureDb(IDbConnection db) => db.WithTag(GetType().Name);
 
+    public DbJobsProvider()
+    {
+        ConfigureDb = DefaultConfigureDb;
+    }
+    
     public virtual void InitSchema()
     {
         using var db = OpenDb();
@@ -44,9 +49,8 @@ public class DbJobsProvider
     public virtual IDbConnection OpenDb()
     {
         var db = NamedConnection != null
-            ? DbFactory.OpenDbConnection(NamedConnection)
-            : DbFactory.OpenDbConnection();
-        ConfigureDb?.Invoke(db);
+            ? DbFactory.OpenDbConnection(NamedConnection, ConfigureDb)
+            : DbFactory.OpenDbConnection(ConfigureDb);
         return db;
     }
     
@@ -69,7 +73,7 @@ public class DbJobsProvider
         dbProvider.DbFactory = dbFactory;
         dbProvider.NamedConnection = namedConnection;
         dbProvider.Dialect = dialect;
-        dbProvider.ConfigureDb = dbProvider.DefaultConfigureDb;
+        dbProvider.ConfigureDb ??= dbProvider.DefaultConfigureDb;
         return dbProvider;
     }
 

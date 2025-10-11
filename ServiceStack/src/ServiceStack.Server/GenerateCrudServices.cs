@@ -170,7 +170,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     };
 
     private const string NoSchema = "__noschema";
-    static void ConfigureDb(System.Data.IDbConnection db) => db.WithName(nameof(GenerateCrudServices));
+    static void ConfigureDb(System.Data.IDbConnection db) => db.WithTag(nameof(GenerateCrudServices));
 
     public void Configure(IServiceCollection services)
     {

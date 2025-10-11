@@ -4,7 +4,7 @@
 
 namespace ServiceStack.Model;
 
-public interface IHasName
+public interface IHasTag
 {
-    string? Name { get; set; }
+    string? Tag { get; set; }
 }
