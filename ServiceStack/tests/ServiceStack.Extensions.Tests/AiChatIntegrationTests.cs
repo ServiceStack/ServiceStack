@@ -15,7 +15,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Extensions.Tests;
 
-// [Ignore("Requires API Provider Keys"), TestFixture]
+[Ignore("Requires API Provider Keys"), TestFixture]
 public class AiChatIntegrationTests
 {
     internal class AppHost() : AppHostBase(nameof(AiChatIntegrationTests))
