@@ -10,7 +10,7 @@
   
     <ItemGroup>
         <PackageReference Include="Google.Protobuf" Version="3.25.3" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.70.0"/>
+        <PackageReference Include="Grpc.Net.Client" Version="2.71.0"/>
         <PackageReference Include="Grpc.Tools" Version="2.62.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -20,7 +20,7 @@
         <PackageReference Include="System.Reflection.Emit" Version="4.7.0"/>
         <PackageReference Include="System.Reflection.Emit.LightWeight" Version="4.7.0"/>
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
-        <PackageReference Include="System.Memory" Version="4.6.0"/>
+        <PackageReference Include="System.Memory" Version="4.6.3"/>
     </ItemGroup>
 
     <ItemGroup>

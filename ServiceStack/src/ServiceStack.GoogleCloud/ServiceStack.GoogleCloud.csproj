@@ -22,8 +22,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Cloud.Speech.V2" Version="1.4.0" />
-        <PackageReference Include="Google.Cloud.Storage.V1" Version="4.11.0" />
+        <PackageReference Include="Google.Cloud.Speech.V2" Version="1.5.0" />
+        <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,12 +40,12 @@
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
         <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+        <PackageReference Include="System.Linq.Async" Version="6.0.3" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
-        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+        <PackageReference Include="System.Linq.Async" Version="6.0.3" />
     </ItemGroup>
 
 </Project>

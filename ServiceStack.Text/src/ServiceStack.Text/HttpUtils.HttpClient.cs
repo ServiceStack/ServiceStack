@@ -32,7 +32,7 @@ public static partial class HttpUtils
     };
 
     // This was the least desirable end to this sadness https://github.com/dotnet/aspnetcore/issues/28385
-    // Requires <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" /> 
+    // Requires <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" /> 
     // public static IHttpClientFactory ClientFactory { get; set; } = new ServiceCollection()
     //     .AddHttpClient()
     //     .Configure<HttpClientFactoryOptions>(options => 

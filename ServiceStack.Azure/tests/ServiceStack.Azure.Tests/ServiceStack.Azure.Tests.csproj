@@ -29,7 +29,7 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
-    <PackageReference Include="System.Memory" Version="4.6.0" />
+    <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="Microsoft.Azure.KeyVault.Core" Version="3.0.5" />
   </ItemGroup>
 
@@ -39,7 +39,7 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <ProjectReference Include="..\..\..\ServiceStack\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
-    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -22,7 +22,7 @@
     <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="RhinoMocks" Version="3.6.1" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="System.Memory" Version="4.6.0" />
+    <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Elmah\ServiceStack.Logging.Elmah.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Logging.EventLog\ServiceStack.Logging.EventLog.csproj" />

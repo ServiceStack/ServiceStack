@@ -15,8 +15,8 @@
 
     <ItemGroup>
         <PackageReference Include="Markdig" Version="0.42.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.11" />
-        <PackageReference Include="System.Memory" Version="4.6.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.20" />
+        <PackageReference Include="System.Memory" Version="4.6.3" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     </ItemGroup>
 

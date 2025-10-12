@@ -48,8 +48,8 @@
     <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
-    <PackageReference Include="Mysql.Data" Version="9.2.0" />
-    <PackageReference Include="System.Memory" Version="4.6.0" />
+    <PackageReference Include="Mysql.Data" Version="9.4.0" />
+    <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
@@ -69,7 +69,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.9" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="App_Data\customers.json">
