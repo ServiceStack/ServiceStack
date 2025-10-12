@@ -70,7 +70,8 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
     public void Configure(IServiceCollection services)
     {
         services.RegisterService<ChatServices>();
-        services.AddSingleton<IChatClients>(new ChatClients(this));
+        services.AddSingleton<IChatClients>(c => 
+            new ChatClients(c.GetRequiredService<ILogger<ChatClients>>(), this));
     }
     
     public ILogger<ChatFeature> Log { get; set; }
@@ -274,12 +275,8 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
 
     public async Task<ChatResponse> DefaultChatCompletionAsync(ChatCompletion request, IRequest req)
     {
-        var candidateProviders = Providers
-            .Where(x => x.Value.Models.ContainsKey(request.Model))
-            .ToList();
-        if (candidateProviders.Count == 0)
-            throw HttpError.NotFound($"Model {request.Model} not found");
-        
+        var candidateProviders = GetModelProviders(request);
+
         var oLong = req.GetItem(Keywords.RequestDuration);
         if (oLong == null)
         {
@@ -315,6 +312,16 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
         if (onFailed != null)
             await onFailed(request, firstEx, req).ConfigAwait();
         throw firstEx;
+    }
+
+    public List<KeyValuePair<string, OpenAiProviderBase>> GetModelProviders(ChatCompletion request)
+    {
+        var candidateProviders = Providers
+            .Where(x => x.Value.Models.ContainsKey(request.Model))
+            .ToList();
+        if (candidateProviders.Count == 0)
+            throw HttpError.NotFound($"Model {request.Model} not found");
+        return candidateProviders;
     }
 }
 

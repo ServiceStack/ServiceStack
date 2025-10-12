@@ -15,7 +15,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Extensions.Tests;
 
-[Ignore("Requires API Provider Keys"), TestFixture]
+// [Ignore("Requires API Provider Keys"), TestFixture]
 public class AiChatIntegrationTests
 {
     internal class AppHost() : AppHostBase(nameof(AiChatIntegrationTests))
@@ -137,6 +137,9 @@ public class AiChatIntegrationTests
         return CreateClient();
     }
     
+    public IChatClients GetChatClients() => HostContext.AppHost.GetApplicationServices()
+        .GetRequiredService<IChatClients>();
+    
     void AssertValidResponse(ChatResponse response, string? model = null)
     {
         Assert.That(response, Is.Not.Null);
@@ -198,6 +201,47 @@ public class AiChatIntegrationTests
         Assert.That(provider, Is.Not.Null);
         Assert.That(provider.Models.Count, Is.GreaterThan(0));
         return provider;
+    }
+    
+    [Test]
+    public async Task Can_send_request_to_Groq_using_IChatClients_factory()
+    {
+        var chatClients = GetChatClients();
+        
+        var request = new ChatCompletion
+        {
+            Model = "llama4:109b",
+            Messages = [
+                Message.Text("Capital of France?"),
+            ]
+        };
+        
+        var response = await chatClients.ChatAsync(request);
+        response.PrintDump();
+        AssertValidResponse(response);
+        var answer = response.GetAnswer();
+        Assert.That(answer, Does.Contain("Paris"));
+    }
+    
+    [Test]
+    public async Task Can_send_request_to_Groq_using_IChatClients_groq()
+    {
+        var chatClients = GetChatClients();
+        
+        var request = new ChatCompletion
+        {
+            Model = "llama4:109b",
+            Messages = [
+                Message.Text("Capital of France?"),
+            ]
+        };
+        
+        var client = chatClients.GetRequiredClient("groq");
+        var response = await client.ChatAsync(request);
+        response.PrintDump();
+        AssertValidResponse(response);
+        var answer = response.GetAnswer();
+        Assert.That(answer, Does.Contain("Paris"));
     }
     
     [Test]
