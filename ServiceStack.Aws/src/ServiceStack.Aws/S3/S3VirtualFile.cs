@@ -38,9 +38,9 @@ public class S3VirtualFile : AbstractVirtualFileBase
 
     public override string VirtualPath => FilePath;
 
-    public DateTime FileLastModified { get; set; }
+    public DateTime? FileLastModified { get; set; }
 
-    public override DateTime LastModified => FileLastModified;
+    public override DateTime LastModified => FileLastModified ?? DateTime.MinValue;
 
     public override long Length => ContentLength;
 

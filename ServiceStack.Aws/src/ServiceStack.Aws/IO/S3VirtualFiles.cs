@@ -295,7 +295,7 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
             yield return new S3VirtualFile(this, new S3VirtualDirectory(this, dirPath, GetParentDirectory(dirPath)))
             {
                 FilePath = filePath,
-                ContentLength = file.Size,
+                ContentLength = file.Size ?? 0,
                 FileLastModified = file.LastModified,
                 Etag = file.ETag,
             };
@@ -323,13 +323,13 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
                 yield return new S3VirtualFile(this, new S3VirtualDirectory(this, dirPath, GetParentDirectory(dirPath)))
                 {
                     FilePath = filePath,
-                    ContentLength = file.Size,
+                    ContentLength = file.Size ?? 0,
                     FileLastModified = file.LastModified,
                     Etag = file.ETag,
                 };
             }
 
-            if (!response.IsTruncated)
+            if (response.IsTruncated != true)
                 yield break;
         }
     }

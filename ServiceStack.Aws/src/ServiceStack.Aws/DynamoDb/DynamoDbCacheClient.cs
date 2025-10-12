@@ -21,7 +21,7 @@ public partial class DynamoDbCacheClient : ICacheClientExtended, IRequiresSchema
 
     public IPocoDynamo Dynamo { get; private set; }
 
-    private Table schema;
+    private ITable schema;
     private readonly DynamoMetadataType metadata;
 
     public DynamoDbCacheClient(IPocoDynamo dynamo, bool initSchema = false)

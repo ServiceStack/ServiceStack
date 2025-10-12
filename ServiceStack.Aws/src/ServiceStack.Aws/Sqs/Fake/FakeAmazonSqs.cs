@@ -68,6 +68,17 @@ public class FakeAmazonSqs : IAmazonSQS
         throw new NotImplementedException();
     }
 
+    public ChangeMessageVisibilityResponse ChangeMessageVisibility(string queueUrl, string receiptHandle, int? visibilityTimeout)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ChangeMessageVisibilityResponse> ChangeMessageVisibilityAsync(string queueUrl, string receiptHandle, int? visibilityTimeout,
+        CancellationToken cancellationToken = new CancellationToken())
+    {
+        throw new NotImplementedException();
+    }
+
     public ChangeMessageVisibilityResponse ChangeMessageVisibility(string queueUrl, string receiptHandle, int visibilityTimeout)
     {
         return ChangeMessageVisibility(new ChangeMessageVisibilityRequest

@@ -285,7 +285,7 @@ namespace ServiceStack.Aws.Sqs
             if (receiveBuffer.Count > 0 && receiveBuffer.TryDequeue(out var toReturn))
                 return toReturn;
 
-            request.MaxNumberOfMessages = Math.Min(SqsQueueDefinition.MaxBatchReceiveItems, Math.Max(request.MaxNumberOfMessages, 1));
+            request.MaxNumberOfMessages = Math.Min(SqsQueueDefinition.MaxBatchReceiveItems, Math.Max(request.MaxNumberOfMessages ?? 0, 1));
 
             var response = SqsClient.ReceiveMessage(request);
 

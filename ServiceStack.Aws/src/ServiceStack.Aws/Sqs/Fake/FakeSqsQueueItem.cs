@@ -20,7 +20,7 @@ namespace ServiceStack.Aws.Sqs.Fake
 
         public string Body { get; set; }
         public FakeSqsItemStatus Status { get; set; }
-        public long InFlightUntil { get; set; }
+        public long? InFlightUntil { get; set; }
 
         public Dictionary<string, string> Attributes { get; set; }
 

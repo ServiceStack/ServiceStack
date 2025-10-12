@@ -127,7 +127,7 @@ public partial class PocoDynamo : IPocoDynamo
         typeof(ResourceNotFoundException)
     };
 
-    public Table GetTableSchema(Type type)
+    public ITable GetTableSchema(Type type)
     {
         var table = DynamoMetadata.GetTable(type);
         return Exec(() =>
@@ -827,7 +827,7 @@ public partial class PocoDynamo : IPocoDynamo
         return Scan(request, r => r.ConvertAll<T>());
     }
 
-    public long ScanItemCount<T>()
+    public int? ScanItemCount<T>()
     {
         var table = DynamoMetadata.GetTable<T>();
         var request = new ScanRequest(table.Name);
@@ -835,7 +835,7 @@ public partial class PocoDynamo : IPocoDynamo
         return response.Sum();
     }
 
-    public long DescribeItemCount<T>()
+    public long? DescribeItemCount<T>()
     {
         var table = DynamoMetadata.GetTable<T>();
         var response = Exec(() => DynamoDb.DescribeTable(new DescribeTableRequest(table.Name)));

@@ -127,10 +127,10 @@ namespace ServiceStack.Aws.Sqs.Fake
 
             var visibilityTimeout = request.VisibilityTimeout <= 0
                 ? this.QueueDefinition.VisibilityTimeout
-                : SqsQueueDefinition.GetValidVisibilityTimeout(request.VisibilityTimeout);
+                : SqsQueueDefinition.GetValidVisibilityTimeout(request.VisibilityTimeout ?? 0);
 
             var foundItem = false;
-            var timeoutAt = DateTime.UtcNow.AddSeconds(request.WaitTimeSeconds).ToUnixTime();
+            var timeoutAt = DateTime.UtcNow.AddSeconds(request.WaitTimeSeconds ?? 0).ToUnixTime();
             do
             {
                 foundItem = qItems.TryDequeue(out var qi);

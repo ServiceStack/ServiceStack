@@ -38,7 +38,7 @@ public static class PocoDynamoExtensions
         DynamoMetadata.Converters.ValueConverters[type] = valueConverter;
     }
 
-    public static Table GetTableSchema<T>(this IPocoDynamo db)
+    public static ITable GetTableSchema<T>(this IPocoDynamo db)
     {
         return db.GetTableSchema(typeof(T));
     }
@@ -51,47 +51,47 @@ public static class PocoDynamoExtensions
     public static bool CreateTableIfMissing<T>(this IPocoDynamo db)
     {
         var table = db.GetTableMetadata<T>();
-        return db.CreateMissingTables(new[] { table });
+        return db.CreateMissingTables([table]);
     }
 
     public static async Task<bool> CreateTableIfMissingAsync<T>(this IPocoDynamo db, CancellationToken token=default)
     {
         var table = db.GetTableMetadata<T>();
-        return await db.CreateMissingTablesAsync(new[] { table }, token);
+        return await db.CreateMissingTablesAsync([table], token);
     }
 
     public static bool CreateTableIfMissing(this IPocoDynamo db, DynamoMetadataType table)
     {
-        return db.CreateMissingTables(new[] { table });
+        return db.CreateMissingTables([table]);
     }
 
     public static async Task<bool> CreateTableIfMissingAsync(this IPocoDynamo db, DynamoMetadataType table, CancellationToken token=default)
     {
-        return await db.CreateMissingTablesAsync(new[] { table }, token).ConfigAwait();
+        return await db.CreateMissingTablesAsync([table], token).ConfigAwait();
     }
 
     public static bool DeleteTable<T>(this IPocoDynamo db, TimeSpan? timeout = null)
     {
         var table = db.GetTableMetadata<T>();
-        return db.DeleteTables(new[] { table.Name }, timeout);
+        return db.DeleteTables([table.Name], timeout);
     }
 
     public static async Task<bool> DeleteTableAsync<T>(this IPocoDynamo db, TimeSpan? timeout = null, CancellationToken token=default)
     {
         var table = db.GetTableMetadata<T>();
-        return await db.DeleteTablesAsync(new[] { table.Name }, timeout, token).ConfigAwait();
+        return await db.DeleteTablesAsync([table.Name], timeout, token).ConfigAwait();
     }
 
     public static bool CreateTable<T>(this IPocoDynamo db, TimeSpan? timeout = null)
     {
         var table = db.GetTableMetadata<T>();
-        return db.CreateTables(new[] { table }, timeout);
+        return db.CreateTables([table], timeout);
     }
 
     public static async Task<bool> CreateTableAsync<T>(this IPocoDynamo db, TimeSpan? timeout = null, CancellationToken token=default)
     {
         var table = db.GetTableMetadata<T>();
-        return await db.CreateTablesAsync(new[] { table }, timeout, token).ConfigAwait();
+        return await db.CreateTablesAsync([table], timeout, token).ConfigAwait();
     }
 
     public static long DecrementById<T>(this IPocoDynamo db, object id, string fieldName, long amount = 1)

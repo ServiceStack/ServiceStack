@@ -540,7 +540,7 @@ public class DynamoConverters
 
     public virtual object GetAttributeValue(AttributeValue attr)
     {
-        if (attr == null || attr.NULL)
+        if (attr == null || attr.NULL == true)
             return null;
         if (attr.S != null)
             return attr.S;

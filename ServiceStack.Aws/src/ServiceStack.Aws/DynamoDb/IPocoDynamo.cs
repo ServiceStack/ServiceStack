@@ -43,7 +43,7 @@ public interface IPocoDynamo : IPocoDynamoAsync, IRequiresSchema
     /// <summary>
     /// Get the AWSSDK DocumentModel schema for this Table
     /// </summary>
-    Table GetTableSchema(Type table);
+    ITable GetTableSchema(Type table);
 
     /// <summary>
     /// Get PocoDynamo Table metadata for this table
@@ -271,12 +271,12 @@ public interface IPocoDynamo : IPocoDynamoAsync, IRequiresSchema
     /// <summary>
     /// Return Live ItemCount using Table ScanRequest
     /// </summary>
-    long ScanItemCount<T>();
+    int? ScanItemCount<T>();
 
     /// <summary>
     /// Return cached ItemCount in summary DescribeTable
     /// </summary>
-    long DescribeItemCount<T>();
+    long? DescribeItemCount<T>();
 
     /// <summary>
     /// Create a clone of the PocoDynamo client with different default settings

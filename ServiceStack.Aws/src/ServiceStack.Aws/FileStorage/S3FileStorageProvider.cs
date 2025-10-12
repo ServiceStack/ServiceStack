@@ -383,7 +383,7 @@ namespace ServiceStack.Aws.FileStorage
                     yield return file;
                 }
 
-                if (listResponse.IsTruncated)
+                if (listResponse.IsTruncated == true)
                 {
                     nextMarker = listResponse.NextMarker;
                 }

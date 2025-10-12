@@ -455,15 +455,15 @@ public partial class PocoDynamo
             : 0;
     }
 
-    public async Task<long> DescribeItemCountAsync<T>(CancellationToken token = default)
+    public async Task<long?> DescribeItemCountAsync<T>(CancellationToken token = default)
     {
         var table = DynamoMetadata.GetTable<T>();
         var response = await ExecAsync(async () => 
             await DynamoDb.DescribeTableAsync(new DescribeTableRequest(table.Name), token).ConfigAwait()).ConfigAwait();
         return response.Table.ItemCount;
     }
-        
-    public async Task<long> ScanItemCountAsync<T>(CancellationToken token = default)
+
+    public async Task<int?> ScanItemCountAsync<T>(CancellationToken token = default)
     {
         var table = DynamoMetadata.GetTable<T>();
         var request = new ScanRequest(table.Name);

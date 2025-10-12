@@ -50,8 +50,8 @@ public interface IPocoDynamoAsync
     Task DeleteItemsAsync<T>(IEnumerable<object> hashes, CancellationToken token = default);
     Task DeleteItemsAsync<T>(IEnumerable<DynamoId> ids, CancellationToken token = default);
     Task<long> IncrementAsync<T>(object hash, string fieldName, long amount = 1, CancellationToken token = default);
-    Task<long> ScanItemCountAsync<T>(CancellationToken token = default);
-    Task<long> DescribeItemCountAsync<T>(CancellationToken token = default);
+    Task<int?> ScanItemCountAsync<T>(CancellationToken token = default);
+    Task<long?> DescribeItemCountAsync<T>(CancellationToken token = default);
 
     IAsyncEnumerable<T> ScanAllAsync<T>(CancellationToken token = default);
     IAsyncEnumerable<T> ScanAsync<T>(ScanRequest request, Func<ScanResponse, IEnumerable<T>> converter,
