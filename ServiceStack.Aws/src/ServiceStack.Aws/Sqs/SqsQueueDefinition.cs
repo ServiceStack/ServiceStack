@@ -14,7 +14,7 @@
         public const int DefaultTempQueueRetentionSeconds = 60 * 60 * 6;
         public const int DefaultPermanentQueueRetentionSeconds = 60 * 60 * 24 * 5;
 
-        private static readonly char[] validNonAlphaNumericChars = new[] { '-', '_' };
+        private static readonly char[] validNonAlphaNumericChars = ['-', '_'];
 
         public SqsQueueDefinition()
         {
@@ -42,49 +42,37 @@
         private int sendBufferSize = 1;
         public int SendBufferSize
         {
-            get { return sendBufferSize; }
-            set
-            {
-                sendBufferSize = value > 0
-                    ? value
-                    : 1;
-            }
+            get => sendBufferSize;
+            set => sendBufferSize = value > 0
+                ? value
+                : 1;
         }
 
         private int receiveBufferSize = 1;
         public int ReceiveBufferSize
         {
-            get { return receiveBufferSize; }
-            set
-            {
-                receiveBufferSize = value > 0
-                    ? value
-                    : 1;
-            }
+            get => receiveBufferSize;
+            set => receiveBufferSize = value > 0
+                ? value
+                : 1;
         }
 
         private int deleteBufferSize = 1;
         public int DeleteBufferSize
         {
-            get { return deleteBufferSize; }
-            set
-            {
-                deleteBufferSize = value > 0
-                    ? value
-                    : 1;
-            }
+            get => deleteBufferSize;
+            set => deleteBufferSize = value > 0
+                ? value
+                : 1;
         }
 
         private int cvBufferSize = 1;
         public int ChangeVisibilityBufferSize
         {
-            get { return cvBufferSize; }
-            set
-            {
-                cvBufferSize = value > 0
-                    ? value
-                    : 1;
-            }
+            get => cvBufferSize;
+            set => cvBufferSize = value > 0
+                ? value
+                : 1;
         }
 
         public long ApproximateNumberOfMessages { get; set; }
@@ -94,7 +82,7 @@
 
         public static int GetValidQueueWaitTime(int value)
         {
-            return value >= 0 && value <= MaxWaitTimeSeconds
+            return value is >= 0 and <= MaxWaitTimeSeconds
                 ? value
                 : value < 0
                         ? 0
@@ -103,7 +91,7 @@
 
         public static int GetValidVisibilityTimeout(int value)
         {
-            return value >= 0 && value <= MaxVisibilityTimeoutSeconds
+            return value is >= 0 and <= MaxVisibilityTimeoutSeconds
                 ? value
                 : value < 0
                         ? 0
