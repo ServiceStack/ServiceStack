@@ -192,7 +192,7 @@ namespace ServiceStack.Aws.DynamoDbTests.UseCases
                 Id = Convert.ToInt64(response.Item["Id"].N),
                 Content = response.Item["Content"].S,
                 Order = Convert.ToInt32(response.Item["Order"].N),
-                Done = response.Item["Done"].BOOL,
+                Done = response.Item["Done"].BOOL == true,
             };
 
             todo.PrintDump();
@@ -225,7 +225,7 @@ namespace ServiceStack.Aws.DynamoDbTests.UseCases
                         Id = Convert.ToInt64(item["Id"].N),
                         Content = item["Content"].S,
                         Order = Convert.ToInt32(item["Order"].N),
-                        Done = item["Done"].BOOL,
+                        Done = item["Done"].BOOL == true,
                     };
                     allTodos.Add(todo);
                 }

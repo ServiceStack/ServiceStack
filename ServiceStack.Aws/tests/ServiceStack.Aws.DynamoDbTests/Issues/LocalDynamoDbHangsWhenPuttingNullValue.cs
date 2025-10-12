@@ -80,7 +80,7 @@ namespace ServiceStack.Aws.DynamoDbTests.Issues
             Assert.That(response.IsItemSet);
             Assert.That(response.Item["Id"].N, Is.EqualTo("1"));
             Assert.That(response.Item["Name"].S, Is.EqualTo("Foo"));
-            Assert.That(response.Item["Empty"].NULL);
+            Assert.That(response.Item["Empty"].NULL == true);
         }
     }
 }

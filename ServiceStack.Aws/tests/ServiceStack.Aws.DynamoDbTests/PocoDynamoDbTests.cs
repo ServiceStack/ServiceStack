@@ -129,8 +129,8 @@ public class PocoDynamoDbTests : DynamoTestBase
         Assert.That(response.IsItemSet);
         Assert.That(response.Item["Id"].N, Is.EqualTo("2"));
         Assert.That(response.Item["Name"].S, Is.EqualTo("Foo"));
-        Assert.That(response.Item["Orders"].NULL);
-        Assert.That(response.Item["CustomerAddress"].NULL);
+        Assert.That(response.Item["Orders"].NULL == true);
+        Assert.That(response.Item["CustomerAddress"].NULL == true);
     }
 
     [Test]
