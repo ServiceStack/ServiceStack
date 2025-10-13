@@ -35,6 +35,7 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
     public IHttpClientFactory Factory { get; set; } = factory;
 
     public IVirtualFiles? VirtualFiles { get; set; }
+    public Func<OpenAiProviderBase, string, Task<(string base64, string mimeType)>>? DownloadUrlAsBase64Async { get; set; }
     
     public async Task<Dictionary<string,object>> GetJsonObjectAsync(string url, CancellationToken token=default)
     {
@@ -206,6 +207,15 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
             return MimeTypes.Binary;
         return MimeTypes.GetMimeType(filename);
     }
+
+    public virtual async Task<string> DownloadUrlAsDataUriAsync(string url)
+    {
+        if (DownloadUrlAsBase64Async == null)
+            throw new Exception("DownloadUrlAsBase64Async is not configured");
+                        
+        var (base64, mimeType) = await DownloadUrlAsBase64Async(this, url).ConfigAwait();
+        return $"data:{mimeType};base64,{base64}";
+    }
     
     public string ChatSummaryJson(ChatCompletion request)
     {
@@ -296,17 +306,7 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
                         continue;
                     if (IsUrl(url))
                     {
-                        Log.LogDebug("Downloading image: {Url}", url);
-                        var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
-                        var httpRes = await httpClient.SendAsync(httpReq).ConfigAwait();
-                        httpRes.EnsureSuccessStatusCode();
-
-                        var mimeType = httpRes.Content.Headers.ContentType?.MediaType
-                            ?? GetMimeType(url);
-                        
-                        var bytes = await httpRes.Content.ReadAsByteArrayAsync().ConfigAwait();
-                        var base64 = Convert.ToBase64String(bytes);
-                        imagePart.ImageUrl!.Url = $"data:{mimeType};base64,{base64}";
+                        imagePart.ImageUrl!.Url = await DownloadUrlAsDataUriAsync(url).ConfigAwait();
                     }
                     else if (IsFilePath(url))
                     {
@@ -327,14 +327,9 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
                         continue;
                     if (IsUrl(data))
                     {
-                        Log.LogDebug("Downloading audio: {Data}", data);
-                        var httpReq = new HttpRequestMessage(HttpMethod.Get, data);
-                        var httpRes = await httpClient.SendAsync(httpReq).ConfigAwait();
-                        httpRes.EnsureSuccessStatusCode();
-                        var mimeType = httpRes.Content.Headers.ContentType?.MediaType
-                            ?? GetMimeType(data);
-                        var bytes = await httpRes.Content.ReadAsByteArrayAsync().ConfigAwait();
-                        var base64 = Convert.ToBase64String(bytes);
+                        if (DownloadUrlAsBase64Async == null)
+                            throw new Exception("DownloadUrlAsBase64Async is not configured");
+                        var (base64, mimeType) = await DownloadUrlAsBase64Async(this, data).ConfigAwait();
                         audioPart.InputAudio!.Data = base64;
                         // Typically only .mp3 or .wav is supported, sometimes URLs return audio/mpeg or .mp3
                         var format = mimeType.LastRightPart('/');
@@ -362,16 +357,8 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
                         continue;
                     if (IsUrl(fileData))
                     {
-                        Log.LogDebug("Downloading file: {FileData}", fileData);
-                        var httpReq = new HttpRequestMessage(HttpMethod.Get, fileData);
-                        var httpRes = await httpClient.SendAsync(httpReq).ConfigAwait();
-                        httpRes.EnsureSuccessStatusCode();
-                        var bytes = await httpRes.Content.ReadAsByteArrayAsync().ConfigAwait();
-                        var mimeType = httpRes.Content.Headers.ContentType?.MediaType
-                            ?? GetMimeType(fileData);
-                        var base64 = Convert.ToBase64String(bytes);
                         filePart.File!.Filename = fileData.LastRightPart('/');
-                        filePart.File!.FileData = $"data:{mimeType};base64," + base64;
+                        filePart.File!.FileData =await DownloadUrlAsDataUriAsync(fileData).ConfigAwait();
                     }
                     else if (IsFilePath(fileData))
                     {

@@ -204,9 +204,36 @@ public class AiChatIntegrationTests
     }
     
     [Test]
+    public async Task Can_send_request_to_Groq_using_IChatClients_factory_raw()
+    {
+        var client = GetChatClients();
+        
+        var request = new ChatCompletion
+        {
+            Model = "llama4:109b",
+            Messages = [
+                new() {
+                    Role = "user",
+                    Content = [
+                        new AiTextContent {
+                            Type = "text", Text = "What's the capital of France?"
+                        }
+                    ],
+                }
+            ]
+        };
+        
+        var response = await client.ChatAsync(request);
+        response.PrintDump();
+        AssertValidResponse(response);
+        var answer = response.GetAnswer();
+        Assert.That(answer, Does.Contain("Paris"));
+    }
+    
+    [Test]
     public async Task Can_send_request_to_Groq_using_IChatClients_factory()
     {
-        var chatClients = GetChatClients();
+        var client = GetChatClients();
         
         var request = new ChatCompletion
         {
@@ -216,7 +243,7 @@ public class AiChatIntegrationTests
             ]
         };
         
-        var response = await chatClients.ChatAsync(request);
+        var response = await client.ChatAsync(request);
         response.PrintDump();
         AssertValidResponse(response);
         var answer = response.GetAnswer();
@@ -543,6 +570,7 @@ public class AiChatIntegrationTests
         
         var feature = HostContext.GetPlugin<ChatFeature>();
         var bytes = await feature.VirtualFiles!.GetFile("/ubixar.webp").ReadAllBytesAsync();
+        // var bytes = await "https://ubixar.com/avatars/ub/ubixar.webp".GetBytesFromUrlAsync();
         var dataUri = $"data:image/webp;base64,{Convert.ToBase64String(bytes)}";
         
         var request = new ChatCompletion

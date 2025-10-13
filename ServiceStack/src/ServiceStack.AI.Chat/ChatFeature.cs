@@ -41,10 +41,18 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
     /// Whether to automatically resolve files in Chat messages using this VirtualFiles provider
     /// </summary>
     public IVirtualFiles? VirtualFiles { get; set; }
+    
+    /// <summary>
+    /// How to download embedded URLs
+    /// </summary>
+    public Func<OpenAiProviderBase, string, Task<(string base64, string mimeType)>>? DownloadUrlAsBase64Async { get; set; }
+    
+    public Action<string>? ValidateUrl { get; set; }
 
     public ChatFeature()
     {
         ChatCompletionAsync = DefaultChatCompletionAsync;
+        DownloadUrlAsBase64Async = DefaultDownloadUrlAsBase64Async;
     }
 
     public List<string> GetAllProviderKeys()
@@ -181,6 +189,7 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
                 if (p != null)
                 {
                     p.VirtualFiles = VirtualFiles;
+                    p.DownloadUrlAsBase64Async = DownloadUrlAsBase64Async;
                     Providers[entry.Key] = p;
                     Log.LogDebug("Registered {Type} provider {Name}", type, entry.Key);
                 }
@@ -267,6 +276,23 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
         EnableProviders.Remove(requestId);
         CreateProviders(Services);
         await LoadAsync();
+    }
+
+    public async Task<(string base64, string mimeType)> DefaultDownloadUrlAsBase64Async(OpenAiProviderBase provider, string url)
+    {
+        ValidateUrl?.Invoke(url);
+        Log.LogDebug("Downloading: {Url}", url);
+        var httpReq = new HttpRequestMessage(HttpMethod.Get, url);
+        using var httpClient = provider.Factory.CreateClient();
+        var httpRes = await httpClient.SendAsync(httpReq).ConfigAwait();
+        httpRes.EnsureSuccessStatusCode();
+
+        var mimeType = httpRes.Content.Headers.ContentType?.MediaType
+            ?? provider.GetMimeType(url);
+                        
+        var bytes = await httpRes.Content.ReadAsByteArrayAsync().ConfigAwait();
+        var base64 = Convert.ToBase64String(bytes);
+        return (base64, mimeType);
     }
 
     public Func<ChatCompletion, IRequest, Task<ChatResponse>> ChatCompletionAsync { get; set; }
