@@ -1,7 +1,8 @@
 #if NET8_0_OR_GREATER
 #nullable enable
-using MyApp.ServiceModel;
+
 using NUnit.Framework;
+using ServiceStack.AI;
 
 namespace ServiceStack.Text.Tests;
 
@@ -14,11 +15,7 @@ public class OpenAiSerializationJsvTests
         {
             Messages =
             [
-                new AiMessage
-                {
-                    Content = AiTextContent.Create("Hello World"),
-                    Role = "user",
-                }
+                Message.Text("Hello World"),
             ]
         };
 
@@ -41,11 +38,7 @@ public class OpenAiSerializationJsvTests
         {
             Messages =
             [
-                new AiMessage
-                {
-                    Content = AiTextContent.Create("Hello World"),
-                    Role = "user",
-                }
+                Message.Text("Hello World"),
             ]
         };
 
@@ -68,13 +61,8 @@ public class OpenAiSerializationJsvTests
         {
             Messages =
             [
-                new AiMessage
-                {
-                    Content = AiImageContent.Create(
-                        "https://example.org/image.png",
-                        "Describe the image"), 
-                    Role = "user",
-                }
+                Message.Image("https://example.org/image.png",
+                    "Describe the image"),
             ]
         };
         
@@ -101,14 +89,9 @@ public class OpenAiSerializationJsvTests
         {
             Messages =
             [
-                new AiMessage
-                {
-                    Content = AiAudioContent.Create(
-                        data:"https://example.org/audio.wav",
-                        format:"wav",
-                        text:"Describe the audio"), 
-                    Role = "user",
-                }
+                Message.Audio("https://example.org/audio.wav",
+                    format:"wav",
+                    "Describe the audio"),
             ]
         };
         
@@ -136,14 +119,9 @@ public class OpenAiSerializationJsvTests
         {
             Messages =
             [
-                new AiMessage
-                {
-                    Content = AiFileContent.Create(
-                        filename:"file.pdf",
-                        fileData:"https://example.org/file.pdf",
-                        text:"Describe the file"), 
-                    Role = "user",
-                }
+                Message.File(filename:"file.pdf",
+                    fileData:"https://example.org/file.pdf",
+                    text:"Describe the file"),
             ]
         };
         
