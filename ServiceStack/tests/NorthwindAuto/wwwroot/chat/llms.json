@@ -236,6 +236,7 @@
                 "qwen3-max": "qwen/qwen3-max",
                 "qwen3-vl:235b": "qwen/qwen3-vl-235b-a22b-instruct",
                 "qwen3-vl-thinking:235b": "qwen/qwen3-vl-235b-a22b-thinking",
+                "ling-1t": "inclusionai/ling-1t",
                 "llama4:109b": "meta-llama/llama-4-scout",
                 "llama4:400b": "meta-llama/llama-4-maverick"
             }
@@ -283,6 +284,7 @@
             "base_url": "https://api.openai.com",
             "api_key": "$OPENAI_API_KEY",
             "models": {
+                "gpt-5-pro": "openai/gpt-5-pro",
                 "gpt-5-codex": "gpt-5-codex",
                 "gpt-audio": "gpt-audio",
                 "gpt-realtime": "gpt-realtime",
@@ -386,6 +388,7 @@
                 "qwen3-coder:30b": "qwen3-coder-30b-a3b-instruct",
                 "qwen3-vl-thinking:235b": "qwen3-vl-235b-a22b-thinking",
                 "qwen3-vl:235b": "qwen3-vl-235b-a22b-instruct",
+                "qwen3-vl:30b": "qwen3-vl-30b-a3b-instruct",
                 "qwen2.5-vl:72b": "qwen2.5-vl-72b-instruct",
                 "qwen2.5-vl:32b": "qwen2.5-vl-32b-instruct",
                 "qwen2.5-vl:7b": "qwen2.5-vl-7b-instruct",
