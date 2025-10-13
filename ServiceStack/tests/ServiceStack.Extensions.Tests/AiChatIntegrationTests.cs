@@ -272,6 +272,28 @@ public class AiChatIntegrationTests
     }
     
     [Test]
+    public async Task Can_send_request_to_Groq_using_IChatClients_groq_with_system_prompt()
+    {
+        var chatClients = GetChatClients();
+        
+        var request = new ChatCompletion
+        {
+            Model = "llama4:109b",
+            Messages = [
+                Message.SystemPrompt("You are a helpful assistant"),
+                Message.Text("Capital of France?"),
+            ]
+        };
+        
+        var client = chatClients.GetRequiredClient("groq");
+        var response = await client.ChatAsync(request);
+        response.PrintDump();
+        AssertValidResponse(response);
+        var answer = response.GetAnswer();
+        Assert.That(answer, Does.Contain("Paris"));
+    }
+    
+    [Test]
     public async Task Can_send_request_to_Ollama()
     {
         var ollama = await GetOllama();

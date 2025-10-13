@@ -53,6 +53,8 @@ public static class Message
         }
     }
     
+    public static AiMessage SystemPrompt(string text) => Text(text, "system");
+    
     public static AiMessage Text(string text, string role="user")
     {
         return new AiMessage
