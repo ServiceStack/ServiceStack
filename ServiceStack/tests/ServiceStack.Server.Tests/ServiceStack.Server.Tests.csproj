@@ -46,6 +46,8 @@
     <PackageReference Include="MongoDB.Bson" Version="3.5.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.5.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" />
+    <PackageReference Include="AWSSDK.Core" Version="4.0.1" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.2.8" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
