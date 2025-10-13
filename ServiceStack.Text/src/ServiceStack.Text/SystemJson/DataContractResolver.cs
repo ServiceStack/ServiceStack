@@ -42,7 +42,8 @@ public class DataContractResolver : DefaultJsonTypeInfoResolver
                 jsonTypeInfo.Properties.Clear();
                 foreach (var propInfo in propInfos)
                 {
-                    if (propInfo.GetCustomAttribute<IgnoreDataMemberAttribute>() is not null)
+                    if (propInfo.GetCustomAttribute<IgnoreDataMemberAttribute>() is not null
+                        || propInfo.GetCustomAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>() is not null)
                         continue;
 
                     var attr = propInfo.GetCustomAttribute<DataMemberAttribute>();

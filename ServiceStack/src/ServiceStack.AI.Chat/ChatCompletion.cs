@@ -166,6 +166,7 @@ public class AiChatAudio
 [System.Text.Json.Serialization.JsonDerivedType(typeof(AiFileContent),  typeDiscriminator: "file")]
 public abstract class AiContent
 {
+    [System.Text.Json.Serialization.JsonIgnore]
     [Description("The type of the content part.")]
     [DataMember(Name = "type")]
     public string Type { get; set; }
