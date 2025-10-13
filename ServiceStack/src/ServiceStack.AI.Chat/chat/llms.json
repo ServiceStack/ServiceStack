@@ -2,7 +2,7 @@
     "defaults": {
         "headers": {
             "Content-Type": "application/json",
-            "User-Agent": "llms.py/1.0"
+            "User-Agent": "ServiceStack.AI.Chat/1.0"
         },
         "text": {
             "model": "kimi-k2",
