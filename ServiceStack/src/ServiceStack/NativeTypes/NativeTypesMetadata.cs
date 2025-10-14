@@ -978,6 +978,7 @@ public static class MetadataExtensions
                 }
             }
             AddAttributes(type.Attributes);
+            AddTypeAttributes(type.Type?.AllAttributes());
 
             foreach (var pi in type.Properties.Safe())
             {
@@ -1003,6 +1004,19 @@ public static class MetadataExtensions
                         Add(arg.Value.ExtractTypeName());
                     }
                 }
+            }
+        }
+        
+        void AddTypeAttributes(IEnumerable<object> attrs)
+        {
+            foreach (var attr in attrs.Safe())
+            {
+#if NET8_0_OR_GREATER                
+                if (attr is System.Text.Json.Serialization.JsonDerivedTypeAttribute derivedAttr)
+                {
+                    Add(derivedAttr.DerivedType.Name);
+                }
+#endif
             }
         }
 
