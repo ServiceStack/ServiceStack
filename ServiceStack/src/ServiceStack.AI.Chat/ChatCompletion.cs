@@ -38,7 +38,7 @@ public class ChatCompletion : IPost, IReturn<ChatResponse>
 
     [Description("Constrains effort on reasoning for reasoning models. Currently supported values are minimal, low, medium, and high (none, default). Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.")]
     [DataMember(Name = "reasoning_effort")]
-    [Input(Type="combobox", Options = "{ allowableValues:['low','medium','high','none','default'] }", Help = "Constrains effort on reasoning for reasoning models")]
+    [Input(Type="combobox", EvalAllowableValues = "['low','medium','high','none','default']", Help = "Constrains effort on reasoning for reasoning models")]
     public string? ReasoningEffort { get; set; }
     
     [Description("An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`. Setting Type to ResponseFormat.JsonObject enables JSON mode, which guarantees the message the model generates is valid JSON.")]
@@ -47,7 +47,7 @@ public class ChatCompletion : IPost, IReturn<ChatResponse>
 
     [Description("Specifies the processing type used for serving the request.")]
     [DataMember(Name = "service_tier")]
-    [Input(Type = "combobox", Options = "{ allowableValues:['auto','default'] }", Help = "Processing type for serving the request")]
+    [Input(Type = "combobox", EvalAllowableValues = "['auto','default']", Help = "Processing type for serving the request")]
     public string? ServiceTier { get; set; }
     
     [Description("A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.")]
@@ -76,7 +76,7 @@ public class ChatCompletion : IPost, IReturn<ChatResponse>
     
     [Description("Constrains the verbosity of the model's response. Lower values will result in more concise responses, while higher values will result in more verbose responses. Currently supported values are low, medium, and high.")]
     [DataMember(Name = "verbosity")]
-    [Input(Type = "combobox", Options = "{ allowableValues:['low','medium','high'] }", Placeholder = "e.g. low", Help = "Constrains verbosity of model's response")]
+    [Input(Type = "combobox", EvalAllowableValues = "['low','medium','high']", Placeholder = "e.g. low", Help = "Constrains verbosity of model's response")]
     public string? Verbosity { get; set; }
     
     [Description("What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.")]

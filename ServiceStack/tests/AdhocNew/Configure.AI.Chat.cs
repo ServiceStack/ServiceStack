@@ -1,4 +1,5 @@
 using ServiceStack.AI;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
@@ -12,6 +13,9 @@ public class ConfigureAiChat : IHostingStartup
         .ConfigureServices(services => {
             services.AddPlugin(new ChatFeature
             {
+                // ValidateRequest = async (req) => req.GetApiKey()?.HasScope(RoleNames.Admin) == true 
+                //     ? null 
+                //     : HttpResult.Redirect("/admin-ui"),
                 OnChatCompletionSuccessAsync = async (request, response, req) => {
                     using var db = await req.Resolve<IDbConnectionFactory>().OpenAsync();
                     await db.InsertAsync(req.ToChatCompletionLog(request, response));
