@@ -1,6 +1,7 @@
 using System.Net;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -78,8 +79,10 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
     public void Configure(IServiceCollection services)
     {
         services.RegisterService<ChatServices>();
-        services.AddSingleton<IChatClients>(c => 
+        services.TryAddSingleton<IChatClients>(c => 
             new ChatClients(c.GetRequiredService<ILogger<ChatClients>>(), this));
+        services.TryAddSingleton<IChatClient>(c => 
+            c.GetRequiredService<IChatClients>());
     }
     
     public ILogger<ChatFeature> Log { get; set; }
