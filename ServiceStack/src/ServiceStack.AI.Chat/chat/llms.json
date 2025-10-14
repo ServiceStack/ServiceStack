@@ -93,7 +93,6 @@
                 "llama4:400b": "meta-llama/llama-4-maverick:free",
                 "deepseek-v3.1:671b": "deepseek/deepseek-chat-v3.1:free",
                 "deepseek-r1:671b": "deepseek/deepseek-r1-0528:free",
-                "gemini-2.0-flash": "google/gemini-2.0-flash-exp:free",
                 "glm-4.5-air": "z-ai/glm-4.5-air:free",
                 "mai-ds-r1": "microsoft/mai-ds-r1:free",
                 "llama3.3:70b": "meta-llama/llama-3.3-70b-instruct:free",
