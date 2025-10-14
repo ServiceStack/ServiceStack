@@ -139,6 +139,8 @@ public class AiChatIntegrationTests
     
     public IChatClients GetChatClients() => HostContext.AppHost.GetApplicationServices()
         .GetRequiredService<IChatClients>();
+    public IChatClient GetChatClient() => HostContext.AppHost.GetApplicationServices()
+        .GetRequiredService<IChatClient>();
     
     void AssertValidResponse(ChatResponse response, string? model = null)
     {
@@ -234,6 +236,26 @@ public class AiChatIntegrationTests
     public async Task Can_send_request_to_Groq_using_IChatClients_factory()
     {
         var client = GetChatClients();
+        
+        var request = new ChatCompletion
+        {
+            Model = "llama4:109b",
+            Messages = [
+                Message.Text("Capital of France?"),
+            ]
+        };
+        
+        var response = await client.ChatAsync(request);
+        response.PrintDump();
+        AssertValidResponse(response);
+        var answer = response.GetAnswer();
+        Assert.That(answer, Does.Contain("Paris"));
+    }
+    
+    [Test]
+    public async Task Can_send_request_to_Groq_using_IChatClient_factory()
+    {
+        var client = GetChatClient();
         
         var request = new ChatCompletion
         {
