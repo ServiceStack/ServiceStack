@@ -1,18 +1,18 @@
 /* Options:
-Date: 2025-10-10 00:02:58
+Date: 2025-10-14 12:39:42
 Version: 8.81
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:5166
+BaseUrl: http://localhost:5000
 
-//Package:
+Package: org.example
 //AddServiceStackTypes: True
 //AddResponseStatus: False
-//AddImplicitVersion:
+//AddImplicitVersion: 
 //AddDescriptionAsComments: True
-//IncludeTypes:
-//ExcludeTypes:
+//IncludeTypes: 
+//ExcludeTypes: 
 //InitializeCollections: False
-//TreatTypesAsStrings:
+//TreatTypesAsStrings: 
 //DefaultImports: java.math.*,java.util.*,java.io.InputStream,net.servicestack.client.*,com.google.gson.annotations.*,com.google.gson.reflect.*
 */
 
@@ -44,7 +44,6 @@ open class AdminData : IReturn<AdminDataResponse>, IGet
 * Chat Completions API (OpenAI-Compatible)
 */
 @Route(Path="/v1/chat/completions", Verbs="POST")
-@Api(Description="Chat Completions API (OpenAI-Compatible)")
 @DataContract
 open class ChatCompletion : IReturn<ChatResponse>, IPost
 {
@@ -53,7 +52,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="messages")
     @SerializedName("messages")
-    @ApiMember(Description="The messages to generate chat completions for.")
     open var messages:ArrayList<AiMessage> = ArrayList<AiMessage>()
 
     /**
@@ -61,7 +59,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="model")
     @SerializedName("model")
-    @ApiMember(Description="ID of the model to use. See the model endpoint compatibility table for details on which models work with the Chat API")
     open var model:String? = null
 
     /**
@@ -69,7 +66,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="audio")
     @SerializedName("audio")
-    @ApiMember(Description="Parameters for audio output. Required when audio output is requested with modalities: [audio]")
     open var audio:AiChatAudio? = null
 
     /**
@@ -77,7 +73,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="logit_bias")
     @SerializedName("logit_bias")
-    @ApiMember(Description="Modify the likelihood of specified tokens appearing in the completion.")
     open var logitBias:HashMap<Int,Int>? = null
 
     /**
@@ -85,7 +80,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="metadata")
     @SerializedName("metadata")
-    @ApiMember(Description="Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.")
     open var metadata:HashMap<String,String>? = null
 
     /**
@@ -93,7 +87,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="reasoning_effort")
     @SerializedName("reasoning_effort")
-    @ApiMember(Description="Constrains effort on reasoning for reasoning models. Currently supported values are minimal, low, medium, and high (none, default). Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.")
     open var reasoningEffort:String? = null
 
     /**
@@ -101,7 +94,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="response_format")
     @SerializedName("response_format")
-    @ApiMember(Description="An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`. Setting Type to ResponseFormat.JsonObject enables JSON mode, which guarantees the message the model generates is valid JSON.")
     open var responseFormat:AiResponseFormat? = null
 
     /**
@@ -109,15 +101,20 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="service_tier")
     @SerializedName("service_tier")
-    @ApiMember(Description="Specifies the processing type used for serving the request.")
     open var serviceTier:String? = null
+
+    /**
+    * A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.
+    */
+    @DataMember(Name="safety_identifier")
+    @SerializedName("safety_identifier")
+    open var safetyIdentifier:String? = null
 
     /**
     * Up to 4 sequences where the API will stop generating further tokens.
     */
     @DataMember(Name="stop")
     @SerializedName("stop")
-    @ApiMember(Description="Up to 4 sequences where the API will stop generating further tokens.")
     open var stop:ArrayList<String>? = null
 
     /**
@@ -125,7 +122,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="modalities")
     @SerializedName("modalities")
-    @ApiMember(Description="Output types that you would like the model to generate. Most models are capable of generating text, which is the default:")
     open var modalities:ArrayList<String>? = null
 
     /**
@@ -133,23 +129,13 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="prompt_cache_key")
     @SerializedName("prompt_cache_key")
-    @ApiMember(Description="Used by OpenAI to cache responses for similar requests to optimize your cache hit rates.")
     open var promptCacheKey:String? = null
-
-    /**
-    * A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.
-    */
-    @DataMember(Name="safety_identifier")
-    @SerializedName("safety_identifier")
-    @ApiMember(Description="A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.")
-    open var safetyIdentifier:String? = null
 
     /**
     * A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
     */
     @DataMember(Name="tools")
     @SerializedName("tools")
-    @ApiMember(Description="A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.")
     open var tools:ArrayList<Tool>? = null
 
     /**
@@ -157,7 +143,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="verbosity")
     @SerializedName("verbosity")
-    @ApiMember(Description="Constrains the verbosity of the model's response. Lower values will result in more concise responses, while higher values will result in more verbose responses. Currently supported values are low, medium, and high.")
     open var verbosity:String? = null
 
     /**
@@ -165,7 +150,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="temperature")
     @SerializedName("temperature")
-    @ApiMember(Description="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.")
     open var temperature:Double? = null
 
     /**
@@ -173,7 +157,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="max_completion_tokens")
     @SerializedName("max_completion_tokens")
-    @ApiMember(Description="An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.")
     open var maxCompletionTokens:Int? = null
 
     /**
@@ -181,7 +164,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="top_logprobs")
     @SerializedName("top_logprobs")
-    @ApiMember(Description="An integer between 0 and 20 specifying the number of most likely tokens to return at each token position, each with an associated log probability. logprobs must be set to true if this parameter is used.")
     open var topLogprobs:Int? = null
 
     /**
@@ -189,7 +171,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="top_p")
     @SerializedName("top_p")
-    @ApiMember(Description="An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.")
     open var topP:Double? = null
 
     /**
@@ -197,7 +178,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="frequency_penalty")
     @SerializedName("frequency_penalty")
-    @ApiMember(Description="Number between `-2.0` and `2.0`. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.")
     open var frequencyPenalty:Double? = null
 
     /**
@@ -205,7 +185,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="presence_penalty")
     @SerializedName("presence_penalty")
-    @ApiMember(Description="Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.")
     open var presencePenalty:Double? = null
 
     /**
@@ -213,7 +192,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="seed")
     @SerializedName("seed")
-    @ApiMember(Description="This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.")
     open var seed:Int? = null
 
     /**
@@ -221,7 +199,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="n")
     @SerializedName("n")
-    @ApiMember(Description="How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs.")
     open var n:Int? = null
 
     /**
@@ -229,7 +206,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="store")
     @SerializedName("store")
-    @ApiMember(Description="Whether or not to store the output of this chat completion request for use in our model distillation or evals products.")
     open var store:Boolean? = null
 
     /**
@@ -237,7 +213,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="logprobs")
     @SerializedName("logprobs")
-    @ApiMember(Description="Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message.")
     open var logprobs:Boolean? = null
 
     /**
@@ -245,7 +220,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="parallel_tool_calls")
     @SerializedName("parallel_tool_calls")
-    @ApiMember(Description="Whether to enable parallel function calling during tool use.")
     open var parallelToolCalls:Boolean? = null
 
     /**
@@ -253,7 +227,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="enable_thinking")
     @SerializedName("enable_thinking")
-    @ApiMember(Description="Whether to enable thinking mode for some Qwen models and providers.")
     open var enableThinking:Boolean? = null
 
     /**
@@ -261,7 +234,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     */
     @DataMember(Name="stream")
     @SerializedName("stream")
-    @ApiMember(Description="If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message.")
     open var stream:Boolean? = null
     companion object { private val responseType = ChatResponse::class.java }
     override fun getResponseType(): Any? = ChatCompletion.responseType
@@ -512,7 +484,6 @@ open class ChatResponse
     */
     @DataMember(Name="id")
     @SerializedName("id")
-    @ApiMember(Description="A unique identifier for the chat completion.")
     open var id:String? = null
 
     /**
@@ -520,7 +491,6 @@ open class ChatResponse
     */
     @DataMember(Name="choices")
     @SerializedName("choices")
-    @ApiMember(Description="A list of chat completion choices. Can be more than one if n is greater than 1.")
     open var choices:ArrayList<Choice> = ArrayList<Choice>()
 
     /**
@@ -528,7 +498,6 @@ open class ChatResponse
     */
     @DataMember(Name="created")
     @SerializedName("created")
-    @ApiMember(Description="The Unix timestamp (in seconds) of when the chat completion was created.")
     open var created:Long? = null
 
     /**
@@ -536,7 +505,6 @@ open class ChatResponse
     */
     @DataMember(Name="model")
     @SerializedName("model")
-    @ApiMember(Description="The model used for the chat completion.")
     open var model:String? = null
 
     /**
@@ -544,7 +512,6 @@ open class ChatResponse
     */
     @DataMember(Name="system_fingerprint")
     @SerializedName("system_fingerprint")
-    @ApiMember(Description="This fingerprint represents the backend configuration that the model runs with.")
     open var systemFingerprint:String? = null
 
     /**
@@ -552,7 +519,6 @@ open class ChatResponse
     */
     @DataMember(Name="object")
     @SerializedName("object")
-    @ApiMember(Description="The object type, which is always chat.completion.")
     open var Object:String? = null
 
     /**
@@ -560,7 +526,6 @@ open class ChatResponse
     */
     @DataMember(Name="service_tier")
     @SerializedName("service_tier")
-    @ApiMember(Description="Specifies the processing type used for serving the request.")
     open var serviceTier:String? = null
 
     /**
@@ -568,7 +533,6 @@ open class ChatResponse
     */
     @DataMember(Name="usage")
     @SerializedName("usage")
-    @ApiMember(Description="Usage statistics for the completion request.")
     open var usage:AiUsage? = null
 
     /**
@@ -576,7 +540,6 @@ open class ChatResponse
     */
     @DataMember(Name="metadata")
     @SerializedName("metadata")
-    @ApiMember(Description="Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.")
     open var metadata:HashMap<String,String>? = null
 
     @DataMember(Name="responseStatus")
@@ -685,7 +648,6 @@ open class GetAnalyticsReportsResponse
 /**
 * A list of messages comprising the conversation so far.
 */
-@Api(Description="A list of messages comprising the conversation so far.")
 @DataContract
 open class AiMessage
 {
@@ -694,7 +656,6 @@ open class AiMessage
     */
     @DataMember(Name="content")
     @SerializedName("content")
-    @ApiMember(Description="The contents of the message.")
     open var content:ArrayList<AiContent>? = null
 
     /**
@@ -702,7 +663,6 @@ open class AiMessage
     */
     @DataMember(Name="role")
     @SerializedName("role")
-    @ApiMember(Description="The role of the author of this message. Valid values are `system`, `user`, `assistant` and `tool`.")
     open var role:String? = null
 
     /**
@@ -710,7 +670,6 @@ open class AiMessage
     */
     @DataMember(Name="name")
     @SerializedName("name")
-    @ApiMember(Description="An optional name for the participant. Provides the model information to differentiate between participants of the same role.")
     open var name:String? = null
 
     /**
@@ -718,7 +677,6 @@ open class AiMessage
     */
     @DataMember(Name="tool_calls")
     @SerializedName("tool_calls")
-    @ApiMember(Description="The tool calls generated by the model, such as function calls.")
     open var toolCalls:ArrayList<ToolCall>? = null
 
     /**
@@ -726,7 +684,6 @@ open class AiMessage
     */
     @DataMember(Name="tool_call_id")
     @SerializedName("tool_call_id")
-    @ApiMember(Description="Tool call that this message is responding to.")
     open var toolCallId:String? = null
 }
 
@@ -741,7 +698,6 @@ open class AiChatAudio
     */
     @DataMember(Name="format")
     @SerializedName("format")
-    @ApiMember(Description="Specifies the output audio format. Must be one of wav, mp3, flac, opus, or pcm16.")
     open var format:String? = null
 
     /**
@@ -749,7 +705,6 @@ open class AiChatAudio
     */
     @DataMember(Name="voice")
     @SerializedName("voice")
-    @ApiMember(Description="The voice the model uses to respond. Supported voices are alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, and shimmer.")
     open var voice:String? = null
 }
 
@@ -761,7 +716,6 @@ open class AiResponseFormat
     */
     @DataMember(Name="response_format")
     @SerializedName("response_format")
-    @ApiMember(Description="An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.")
     open var Type:ResponseFormat? = null
 }
 
@@ -773,7 +727,6 @@ open class Tool
     */
     @DataMember(Name="type")
     @SerializedName("type")
-    @ApiMember(Description="The type of the tool. Currently, only function is supported.")
     open var Type:ToolType? = null
 }
 
@@ -838,6 +791,7 @@ open class PageStats
     open var total:Int? = null
 }
 
+@DataContract
 open class Choice
 {
     /**
@@ -845,7 +799,6 @@ open class Choice
     */
     @DataMember(Name="finish_reason")
     @SerializedName("finish_reason")
-    @ApiMember(Description="The reason the model stopped generating tokens. This will be stop if the model hit a natural stop point or a provided stop sequence, length if the maximum number of tokens specified in the request was reached, content_filter if content was omitted due to a flag from our content filters, tool_calls if the model called a tool")
     open var finishReason:String? = null
 
     /**
@@ -853,7 +806,6 @@ open class Choice
     */
     @DataMember(Name="index")
     @SerializedName("index")
-    @ApiMember(Description="The index of the choice in the list of choices.")
     open var index:Int? = null
 
     /**
@@ -861,14 +813,12 @@ open class Choice
     */
     @DataMember(Name="message")
     @SerializedName("message")
-    @ApiMember(Description="A chat completion message generated by the model.")
     open var message:ChoiceMessage? = null
 }
 
 /**
 * Usage statistics for the completion request.
 */
-@Api(Description="Usage statistics for the completion request.")
 @DataContract
 open class AiUsage
 {
@@ -877,7 +827,6 @@ open class AiUsage
     */
     @DataMember(Name="completion_tokens")
     @SerializedName("completion_tokens")
-    @ApiMember(Description="Number of tokens in the generated completion.")
     open var completionTokens:Int? = null
 
     /**
@@ -885,7 +834,6 @@ open class AiUsage
     */
     @DataMember(Name="prompt_tokens")
     @SerializedName("prompt_tokens")
-    @ApiMember(Description="Number of tokens in the prompt.")
     open var promptTokens:Int? = null
 
     /**
@@ -893,7 +841,6 @@ open class AiUsage
     */
     @DataMember(Name="total_tokens")
     @SerializedName("total_tokens")
-    @ApiMember(Description="Total number of tokens used in the request (prompt + completion).")
     open var totalTokens:Int? = null
 
     /**
@@ -901,7 +848,6 @@ open class AiUsage
     */
     @DataMember(Name="completion_tokens_details")
     @SerializedName("completion_tokens_details")
-    @ApiMember(Description="Breakdown of tokens used in a completion.")
     open var completionTokensDetails:AiCompletionUsage? = null
 
     /**
@@ -909,7 +855,6 @@ open class AiUsage
     */
     @DataMember(Name="prompt_tokens_details")
     @SerializedName("prompt_tokens_details")
-    @ApiMember(Description="Breakdown of tokens used in the prompt.")
     open var promptTokensDetails:AiPromptUsage? = null
 }
 
@@ -1001,14 +946,12 @@ open class AiContent
     */
     @DataMember(Name="type")
     @SerializedName("type")
-    @ApiMember(Description="The type of the content part.")
     open var Type:String? = null
 }
 
 /**
 * The tool calls generated by the model, such as function calls.
 */
-@Api(Description="The tool calls generated by the model, such as function calls.")
 @DataContract
 open class ToolCall
 {
@@ -1017,7 +960,6 @@ open class ToolCall
     */
     @DataMember(Name="id")
     @SerializedName("id")
-    @ApiMember(Description="The ID of the tool call.")
     open var id:String? = null
 
     /**
@@ -1025,7 +967,6 @@ open class ToolCall
     */
     @DataMember(Name="type")
     @SerializedName("type")
-    @ApiMember(Description="The type of the tool. Currently, only `function` is supported.")
     open var Type:String? = null
 
     /**
@@ -1033,7 +974,6 @@ open class ToolCall
     */
     @DataMember(Name="function")
     @SerializedName("function")
-    @ApiMember(Description="The function that the model called.")
     open var function:String? = null
 }
 
@@ -1105,7 +1045,6 @@ open class ChoiceMessage
     */
     @DataMember(Name="content")
     @SerializedName("content")
-    @ApiMember(Description="The contents of the message.")
     open var content:String? = null
 
     /**
@@ -1113,7 +1052,6 @@ open class ChoiceMessage
     */
     @DataMember(Name="refusal")
     @SerializedName("refusal")
-    @ApiMember(Description="The refusal message generated by the model.")
     open var refusal:String? = null
 
     /**
@@ -1121,7 +1059,6 @@ open class ChoiceMessage
     */
     @DataMember(Name="reasoning")
     @SerializedName("reasoning")
-    @ApiMember(Description="The reasoning process used by the model.")
     open var reasoning:String? = null
 
     /**
@@ -1129,7 +1066,6 @@ open class ChoiceMessage
     */
     @DataMember(Name="role")
     @SerializedName("role")
-    @ApiMember(Description="The role of the author of this message.")
     open var role:String? = null
 
     /**
@@ -1137,7 +1073,6 @@ open class ChoiceMessage
     */
     @DataMember(Name="annotations")
     @SerializedName("annotations")
-    @ApiMember(Description="Annotations for the message, when applicable, as when using the web search tool.")
     open var annotations:ArrayList<ChoiceAnnotation>? = null
 
     /**
@@ -1145,7 +1080,6 @@ open class ChoiceMessage
     */
     @DataMember(Name="audio")
     @SerializedName("audio")
-    @ApiMember(Description="If the audio output modality is requested, this object contains data about the audio response from the model.")
     open var audio:ChoiceAudio? = null
 
     /**
@@ -1153,14 +1087,12 @@ open class ChoiceMessage
     */
     @DataMember(Name="tool_calls")
     @SerializedName("tool_calls")
-    @ApiMember(Description="The tool calls generated by the model, such as function calls.")
     open var toolCalls:ArrayList<ToolCall>? = null
 }
 
 /**
 * Usage statistics for the completion request.
 */
-@Api(Description="Usage statistics for the completion request.")
 @DataContract
 open class AiCompletionUsage
 {
@@ -1169,7 +1101,6 @@ open class AiCompletionUsage
     */
     @DataMember(Name="accepted_prediction_tokens")
     @SerializedName("accepted_prediction_tokens")
-    @ApiMember(Description="When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.\n\n")
     open var acceptedPredictionTokens:Int? = null
 
     /**
@@ -1177,7 +1108,6 @@ open class AiCompletionUsage
     */
     @DataMember(Name="audio_tokens")
     @SerializedName("audio_tokens")
-    @ApiMember(Description="Audio input tokens generated by the model.")
     open var audioTokens:Int? = null
 
     /**
@@ -1185,7 +1115,6 @@ open class AiCompletionUsage
     */
     @DataMember(Name="reasoning_tokens")
     @SerializedName("reasoning_tokens")
-    @ApiMember(Description="Tokens generated by the model for reasoning.")
     open var reasoningTokens:Int? = null
 
     /**
@@ -1193,14 +1122,12 @@ open class AiCompletionUsage
     */
     @DataMember(Name="rejected_prediction_tokens")
     @SerializedName("rejected_prediction_tokens")
-    @ApiMember(Description="When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion.")
     open var rejectedPredictionTokens:Int? = null
 }
 
 /**
 * Breakdown of tokens used in the prompt.
 */
-@Api(Description="Breakdown of tokens used in the prompt.")
 @DataContract
 open class AiPromptUsage
 {
@@ -1209,7 +1136,6 @@ open class AiPromptUsage
     */
     @DataMember(Name="accepted_prediction_tokens")
     @SerializedName("accepted_prediction_tokens")
-    @ApiMember(Description="When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.\n\n")
     open var acceptedPredictionTokens:Int? = null
 
     /**
@@ -1217,7 +1143,6 @@ open class AiPromptUsage
     */
     @DataMember(Name="audio_tokens")
     @SerializedName("audio_tokens")
-    @ApiMember(Description="Audio input tokens present in the prompt.")
     open var audioTokens:Int? = null
 
     /**
@@ -1225,7 +1150,6 @@ open class AiPromptUsage
     */
     @DataMember(Name="cached_tokens")
     @SerializedName("cached_tokens")
-    @ApiMember(Description="Cached tokens present in the prompt.")
     open var cachedTokens:Int? = null
 }
 
@@ -1286,7 +1210,6 @@ open class AiTextContent : AiContent()
     */
     @DataMember(Name="text")
     @SerializedName("text")
-    @ApiMember(Description="The text content.")
     open var text:String? = null
 }
 
@@ -1301,7 +1224,6 @@ open class AiImageContent : AiContent()
     */
     @DataMember(Name="image_url")
     @SerializedName("image_url")
-    @ApiMember(Description="The image for this content.")
     open var imageUrl:AiImageUrl? = null
 }
 
@@ -1316,7 +1238,6 @@ open class AiAudioContent : AiContent()
     */
     @DataMember(Name="input_audio")
     @SerializedName("input_audio")
-    @ApiMember(Description="The audio input for this content.")
     open var inputAudio:AiInputAudio? = null
 }
 
@@ -1331,7 +1252,6 @@ open class AiFileContent : AiContent()
     */
     @DataMember(Name="file")
     @SerializedName("file")
-    @ApiMember(Description="The file input for this content.")
     open var file:AiFile? = null
 }
 
@@ -1346,7 +1266,6 @@ open class ChoiceAnnotation
     */
     @DataMember(Name="type")
     @SerializedName("type")
-    @ApiMember(Description="The type of the URL citation. Always url_citation.")
     open var Type:String? = null
 
     /**
@@ -1354,7 +1273,6 @@ open class ChoiceAnnotation
     */
     @DataMember(Name="url_citation")
     @SerializedName("url_citation")
-    @ApiMember(Description="A URL citation when using web search.")
     open var urlCitation:UrlCitation? = null
 }
 
@@ -1369,7 +1287,6 @@ open class ChoiceAudio
     */
     @DataMember(Name="data")
     @SerializedName("data")
-    @ApiMember(Description="Base64 encoded audio bytes generated by the model, in the format specified in the request.")
     open var Data:String? = null
 
     /**
@@ -1377,7 +1294,6 @@ open class ChoiceAudio
     */
     @DataMember(Name="expires_at")
     @SerializedName("expires_at")
-    @ApiMember(Description="The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.")
     open var expiresAt:Int? = null
 
     /**
@@ -1385,7 +1301,6 @@ open class ChoiceAudio
     */
     @DataMember(Name="id")
     @SerializedName("id")
-    @ApiMember(Description="Unique identifier for this audio response.")
     open var id:String? = null
 
     /**
@@ -1393,10 +1308,10 @@ open class ChoiceAudio
     */
     @DataMember(Name="transcript")
     @SerializedName("transcript")
-    @ApiMember(Description="Transcript of the audio generated by the model.")
     open var transcript:String? = null
 }
 
+@DataContract
 open class AiImageUrl
 {
     /**
@@ -1404,7 +1319,6 @@ open class AiImageUrl
     */
     @DataMember(Name="url")
     @SerializedName("url")
-    @ApiMember(Description="Either a URL of the image or the base64 encoded image data.")
     open var url:String? = null
 }
 
@@ -1419,7 +1333,6 @@ open class AiInputAudio
     */
     @DataMember(Name="data")
     @SerializedName("data")
-    @ApiMember(Description="URL or Base64 encoded audio data.")
     open var Data:String? = null
 
     /**
@@ -1427,7 +1340,6 @@ open class AiInputAudio
     */
     @DataMember(Name="format")
     @SerializedName("format")
-    @ApiMember(Description="The format of the encoded audio data. Currently supports 'wav' and 'mp3'.")
     open var format:String? = null
 }
 
@@ -1442,7 +1354,6 @@ open class AiFile
     */
     @DataMember(Name="file_data")
     @SerializedName("file_data")
-    @ApiMember(Description="The URL or base64 encoded file data, used when passing the file to the model as a string.")
     open var fileData:String? = null
 
     /**
@@ -1450,7 +1361,6 @@ open class AiFile
     */
     @DataMember(Name="filename")
     @SerializedName("filename")
-    @ApiMember(Description="The name of the file, used when passing the file to the model as a string.")
     open var filename:String? = null
 
     /**
@@ -1458,7 +1368,6 @@ open class AiFile
     */
     @DataMember(Name="file_id")
     @SerializedName("file_id")
-    @ApiMember(Description="The ID of an uploaded file to use as input.")
     open var fileId:String? = null
 }
 
@@ -1473,7 +1382,6 @@ open class UrlCitation
     */
     @DataMember(Name="end_index")
     @SerializedName("end_index")
-    @ApiMember(Description="The index of the last character of the URL citation in the message.")
     open var endIndex:Int? = null
 
     /**
@@ -1481,7 +1389,6 @@ open class UrlCitation
     */
     @DataMember(Name="start_index")
     @SerializedName("start_index")
-    @ApiMember(Description="The index of the first character of the URL citation in the message.")
     open var startIndex:Int? = null
 
     /**
@@ -1489,7 +1396,6 @@ open class UrlCitation
     */
     @DataMember(Name="title")
     @SerializedName("title")
-    @ApiMember(Description="The title of the web resource.")
     open var title:String? = null
 
     /**
@@ -1497,6 +1403,5 @@ open class UrlCitation
     */
     @DataMember(Name="url")
     @SerializedName("url")
-    @ApiMember(Description="The URL of the web resource.")
     open var url:String? = null
 }

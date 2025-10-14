@@ -7,7 +7,7 @@ import 'package:servicestack/inspect.dart';
 import 'package:my_dart/dtos.dart';
 
 Future<void> main() async {
-    var client = ClientFactory.api("http://localhost:5166");
+    var client = ClientFactory.api("https://localhost:5001");
     client.bearerToken = "ak-87949de37e894627a9f6173154e7cafa";
     
     var response = await client.send(ChatCompletion()
@@ -24,4 +24,5 @@ Future<void> main() async {
     );
     
     Inspect.printDump(response);
+    exit(0);
 }

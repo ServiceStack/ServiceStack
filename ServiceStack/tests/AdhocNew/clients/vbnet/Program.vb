@@ -4,7 +4,7 @@ Imports ServiceStack.AI
 
 Module Program
     Sub Main(args As String())
-        Dim client = New JsonApiClient("http://localhost:5166")
+        Dim client = New JsonApiClient("https://localhost:5001")
         client.BearerToken = "ak-87949de37e894627a9f6173154e7cafa"
 
         Dim api = client.Api(New ChatCompletion With {

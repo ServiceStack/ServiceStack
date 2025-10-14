@@ -6,7 +6,7 @@ import net.servicestack.client.Utils
 
 fun main() {
     // Create a ServiceStack JSON client
-    val client = JsonServiceClient("http://localhost:5166")
+    val client = JsonServiceClient("http://localhost:5000")
     client.bearerToken = "ak-87949de37e894627a9f6173154e7cafa"
 
     // Create request

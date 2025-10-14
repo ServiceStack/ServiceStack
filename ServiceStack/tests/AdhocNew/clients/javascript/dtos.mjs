@@ -1,13 +1,13 @@
 /* Options:
-Date: 2025-10-09 22:56:46
+Date: 2025-10-14 12:15:29
 Version: 8.81
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:5166
+BaseUrl: https://localhost:5001
 
 //AddServiceStackTypes: True
 //AddDocAnnotations: True
 //AddDescriptionAsComments: True
-//IncludeTypes: 
+IncludeTypes: ChatCompletion.*
 //ExcludeTypes: 
 //DefaultImports: 
 */
@@ -99,118 +99,6 @@ export class Tool {
      * @type {ToolType}
      * @description The type of the tool. Currently, only function is supported. */
     type;
-}
-export class QueryBase {
-    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?number} */
-    skip;
-    /** @type {?number} */
-    take;
-    /** @type {?string} */
-    orderBy;
-    /** @type {?string} */
-    orderByDesc;
-    /** @type {?string} */
-    include;
-    /** @type {?string} */
-    fields;
-    /** @type {?{ [index:string]: string; }} */
-    meta;
-}
-/** @typedef T {any} */
-export class QueryDb extends QueryBase {
-    /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { super(init); Object.assign(this, init) }
-}
-export class AuditBase {
-    /** @param {{createdDate?:string,createdBy?:string,modifiedDate?:string,modifiedBy?:string,deletedDate?:string,deletedBy?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    createdDate;
-    /** @type {string} */
-    createdBy;
-    /** @type {string} */
-    modifiedDate;
-    /** @type {string} */
-    modifiedBy;
-    /** @type {?string} */
-    deletedDate;
-    /** @type {?string} */
-    deletedBy;
-}
-/** @typedef {'Single'|'Double'|'Queen'|'Twin'|'Suite'} */
-export var RoomType;
-(function (RoomType) {
-    RoomType["Single"] = "Single"
-    RoomType["Double"] = "Double"
-    RoomType["Queen"] = "Queen"
-    RoomType["Twin"] = "Twin"
-    RoomType["Suite"] = "Suite"
-})(RoomType || (RoomType = {}));
-export class Coupon {
-    /** @param {{id?:string,description?:string,discount?:number,expiryDate?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    id;
-    /** @type {string} */
-    description;
-    /** @type {number} */
-    discount;
-    /** @type {string} */
-    expiryDate;
-}
-export class User {
-    /** @param {{id?:string,userName?:string,firstName?:string,lastName?:string,displayName?:string,profileUrl?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    id;
-    /** @type {string} */
-    userName;
-    /** @type {?string} */
-    firstName;
-    /** @type {?string} */
-    lastName;
-    /** @type {?string} */
-    displayName;
-    /** @type {?string} */
-    profileUrl;
-}
-export class Booking extends AuditBase {
-    /** @param {{id?:number,name?:string,roomType?:RoomType,roomNumber?:number,bookingStartDate?:string,bookingEndDate?:string,cost?:number,couponId?:string,discount?:Coupon,notes?:string,cancelled?:boolean,employee?:User,createdDate?:string,createdBy?:string,modifiedDate?:string,modifiedBy?:string,deletedDate?:string,deletedBy?:string}} [init] */
-    constructor(init) { super(init); Object.assign(this, init) }
-    /** @type {number} */
-    id;
-    /** @type {string} */
-    name;
-    /** @type {RoomType} */
-    roomType;
-    /** @type {number} */
-    roomNumber;
-    /** @type {string} */
-    bookingStartDate;
-    /** @type {?string} */
-    bookingEndDate;
-    /** @type {number} */
-    cost;
-    /** @type {?string} */
-    couponId;
-    /** @type {Coupon} */
-    discount;
-    /** @type {?string} */
-    notes;
-    /** @type {?boolean} */
-    cancelled;
-    /** @type {User} */
-    employee;
-}
-export class PageStats {
-    /** @param {{label?:string,total?:number}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    label;
-    /** @type {number} */
-    total;
 }
 export class UrlCitation {
     /** @param {{end_index?:number,start_index?:number,title?:string,url?:string}} [init] */
@@ -319,7 +207,7 @@ export class AiCompletionUsage {
      * @type {number}
      * @description When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.
 
- */
+     */
     accepted_prediction_tokens;
     /**
      * @type {number}
@@ -341,7 +229,7 @@ export class AiPromptUsage {
      * @type {number}
      * @description When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.
 
- */
+     */
     accepted_prediction_tokens;
     /**
      * @type {number}
@@ -401,109 +289,6 @@ export class ResponseStatus {
     errors;
     /** @type {?{ [index:string]: string; }} */
     meta;
-}
-/** @typedef T {any} */
-export class QueryResponse {
-    /** @param {{offset?:number,total?:number,results?:T[],meta?:{ [index:string]: string; },responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    offset;
-    /** @type {number} */
-    total;
-    /** @type {T[]} */
-    results = [];
-    /** @type {?{ [index:string]: string; }} */
-    meta;
-    /** @type {?ResponseStatus} */
-    responseStatus;
-}
-export class AnalyticsLogInfo {
-    /** @param {{id?:number,dateTime?:string,browser?:string,device?:string,bot?:string,op?:string,userId?:string,userName?:string,apiKey?:string,ip?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    id;
-    /** @type {string} */
-    dateTime;
-    /** @type {string} */
-    browser;
-    /** @type {string} */
-    device;
-    /** @type {string} */
-    bot;
-    /** @type {string} */
-    op;
-    /** @type {string} */
-    userId;
-    /** @type {string} */
-    userName;
-    /** @type {string} */
-    apiKey;
-    /** @type {string} */
-    ip;
-}
-export class RequestSummary {
-    /** @param {{name?:string,totalRequests?:number,totalRequestLength?:number,minRequestLength?:number,maxRequestLength?:number,totalDuration?:number,minDuration?:number,maxDuration?:number,status?:{ [index:number]: number; },durations?:{ [index:string]: number; },apis?:{ [index:string]: number; },users?:{ [index:string]: number; },ips?:{ [index:string]: number; },apiKeys?:{ [index:string]: number; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    name;
-    /** @type {number} */
-    totalRequests;
-    /** @type {number} */
-    totalRequestLength;
-    /** @type {number} */
-    minRequestLength;
-    /** @type {number} */
-    maxRequestLength;
-    /** @type {number} */
-    totalDuration;
-    /** @type {number} */
-    minDuration;
-    /** @type {number} */
-    maxDuration;
-    /** @type {{ [index:number]: number; }} */
-    status;
-    /** @type {{ [index:string]: number; }} */
-    durations;
-    /** @type {{ [index:string]: number; }} */
-    apis;
-    /** @type {{ [index:string]: number; }} */
-    users;
-    /** @type {{ [index:string]: number; }} */
-    ips;
-    /** @type {{ [index:string]: number; }} */
-    apiKeys;
-}
-export class AnalyticsReports {
-    /** @param {{id?:number,created?:string,version?:number,apis?:{ [index:string]: RequestSummary; },users?:{ [index:string]: RequestSummary; },tags?:{ [index:string]: RequestSummary; },status?:{ [index:string]: RequestSummary; },days?:{ [index:string]: RequestSummary; },apiKeys?:{ [index:string]: RequestSummary; },ips?:{ [index:string]: RequestSummary; },browsers?:{ [index:string]: RequestSummary; },devices?:{ [index:string]: RequestSummary; },bots?:{ [index:string]: RequestSummary; },durations?:{ [index:string]: number; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    id;
-    /** @type {string} */
-    created;
-    /** @type {number} */
-    version;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    apis;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    users;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    tags;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    status;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    days;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    apiKeys;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    ips;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    browsers;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    devices;
-    /** @type {{ [index:string]: RequestSummary; }} */
-    bots;
-    /** @type {{ [index:string]: number; }} */
-    durations;
 }
 export class AiTextContent extends AiContent {
     /** @param {{text?:string,type?:string}} [init] */
@@ -573,18 +358,6 @@ export class AiFileContent extends AiContent {
      * @description The file input for this content. */
     file;
 }
-export class HelloResponse {
-    /** @param {{result?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    result;
-}
-export class AdminDataResponse {
-    /** @param {{pageStats?:PageStats[]}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {PageStats[]} */
-    pageStats = [];
-}
 export class ChatResponse {
     /** @param {{id?:string,choices?:Choice[],created?:number,model?:string,system_fingerprint?:string,object?:string,service_tier?:string,usage?:AiUsage,metadata?:{ [index:string]: string; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -627,81 +400,8 @@ export class ChatResponse {
     /** @type {?ResponseStatus} */
     responseStatus;
 }
-export class AuthenticateResponse {
-    /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,refreshTokenExpiry?:string,profileUrl?:string,roles?:string[],permissions?:string[],authProvider?:string,responseStatus?:ResponseStatus,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    userId;
-    /** @type {string} */
-    sessionId;
-    /** @type {string} */
-    userName;
-    /** @type {string} */
-    displayName;
-    /** @type {string} */
-    referrerUrl;
-    /** @type {string} */
-    bearerToken;
-    /** @type {string} */
-    refreshToken;
-    /** @type {?string} */
-    refreshTokenExpiry;
-    /** @type {string} */
-    profileUrl;
-    /** @type {string[]} */
-    roles;
-    /** @type {string[]} */
-    permissions;
-    /** @type {string} */
-    authProvider;
-    /** @type {ResponseStatus} */
-    responseStatus;
-    /** @type {{ [index:string]: string; }} */
-    meta;
-}
-export class IdResponse {
-    /** @param {{id?:string,responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    id;
-    /** @type {?ResponseStatus} */
-    responseStatus;
-}
-export class GetAnalyticsInfoResponse {
-    /** @param {{months?:string[],result?:AnalyticsLogInfo,responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string[]} */
-    months;
-    /** @type {AnalyticsLogInfo} */
-    result;
-    /** @type {ResponseStatus} */
-    responseStatus;
-}
-export class GetAnalyticsReportsResponse {
-    /** @param {{result?:AnalyticsReports,responseStatus?:ResponseStatus}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {AnalyticsReports} */
-    result;
-    /** @type {ResponseStatus} */
-    responseStatus;
-}
-export class Hello {
-    /** @param {{name?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?string} */
-    name;
-    getTypeName() { return 'Hello' }
-    getMethod() { return 'GET' }
-    createResponse() { return new HelloResponse() }
-}
-export class AdminData {
-    constructor(init) { Object.assign(this, init) }
-    getTypeName() { return 'AdminData' }
-    getMethod() { return 'GET' }
-    createResponse() { return new AdminDataResponse() }
-}
 export class ChatCompletion {
-    /** @param {{messages?:AiMessage[],model?:string,audio?:AiChatAudio,logit_bias?:{ [index:number]: number; },metadata?:{ [index:string]: string; },reasoning_effort?:string,response_format?:AiResponseFormat,service_tier?:string,stop?:string[],modalities?:string[],prompt_cache_key?:string,safety_identifier?:string,tools?:Tool[],verbosity?:string,temperature?:number,max_completion_tokens?:number,top_logprobs?:number,top_p?:number,frequency_penalty?:number,presence_penalty?:number,seed?:number,n?:number,store?:boolean,logprobs?:boolean,parallel_tool_calls?:boolean,enable_thinking?:boolean,stream?:boolean}} [init] */
+    /** @param {{messages?:AiMessage[],model?:string,audio?:AiChatAudio,logit_bias?:{ [index:number]: number; },metadata?:{ [index:string]: string; },reasoning_effort?:string,response_format?:AiResponseFormat,service_tier?:string,safety_identifier?:string,stop?:string[],modalities?:string[],prompt_cache_key?:string,tools?:Tool[],verbosity?:string,temperature?:number,max_completion_tokens?:number,top_logprobs?:number,top_p?:number,frequency_penalty?:number,presence_penalty?:number,seed?:number,n?:number,store?:boolean,logprobs?:boolean,parallel_tool_calls?:boolean,enable_thinking?:boolean,stream?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /**
      * @type {AiMessage[]}
@@ -736,6 +436,10 @@ export class ChatCompletion {
      * @description Specifies the processing type used for serving the request. */
     service_tier;
     /**
+     * @type {?string}
+     * @description A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user. */
+    safety_identifier;
+    /**
      * @type {?string[]}
      * @description Up to 4 sequences where the API will stop generating further tokens. */
     stop;
@@ -747,10 +451,6 @@ export class ChatCompletion {
      * @type {?string}
      * @description Used by OpenAI to cache responses for similar requests to optimize your cache hit rates. */
     prompt_cache_key;
-    /**
-     * @type {?string}
-     * @description A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user. */
-    safety_identifier;
     /**
      * @type {?Tool[]}
      * @description A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported. */
@@ -814,193 +514,5 @@ export class ChatCompletion {
     getTypeName() { return 'ChatCompletion' }
     getMethod() { return 'POST' }
     createResponse() { return new ChatResponse() }
-}
-export class Authenticate {
-    /** @param {{provider?:string,userName?:string,password?:string,rememberMe?:boolean,accessToken?:string,accessTokenSecret?:string,returnUrl?:string,errorView?:string,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /**
-     * @type {string}
-     * @description AuthProvider, e.g. credentials */
-    provider;
-    /** @type {string} */
-    userName;
-    /** @type {string} */
-    password;
-    /** @type {?boolean} */
-    rememberMe;
-    /** @type {string} */
-    accessToken;
-    /** @type {string} */
-    accessTokenSecret;
-    /** @type {string} */
-    returnUrl;
-    /** @type {string} */
-    errorView;
-    /** @type {{ [index:string]: string; }} */
-    meta;
-    getTypeName() { return 'Authenticate' }
-    getMethod() { return 'POST' }
-    createResponse() { return new AuthenticateResponse() }
-}
-export class QueryBookings extends QueryDb {
-    /** @param {{id?:number,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { super(init); Object.assign(this, init) }
-    /** @type {?number} */
-    id;
-    getTypeName() { return 'QueryBookings' }
-    getMethod() { return 'GET' }
-    createResponse() { return new QueryResponse() }
-}
-export class QueryCoupons extends QueryDb {
-    /** @param {{id?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { super(init); Object.assign(this, init) }
-    /** @type {string} */
-    id;
-    getTypeName() { return 'QueryCoupons' }
-    getMethod() { return 'GET' }
-    createResponse() { return new QueryResponse() }
-}
-export class QueryUsers extends QueryDb {
-    /** @param {{id?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { super(init); Object.assign(this, init) }
-    /** @type {?string} */
-    id;
-    getTypeName() { return 'QueryUsers' }
-    getMethod() { return 'GET' }
-    createResponse() { return new QueryResponse() }
-}
-export class CreateBooking {
-    /** @param {{name?:string,roomType?:RoomType,roomNumber?:number,cost?:number,bookingStartDate?:string,bookingEndDate?:string,notes?:string,couponId?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /**
-     * @type {string}
-     * @description Name this Booking is for */
-    name;
-    /** @type {RoomType} */
-    roomType;
-    /** @type {number} */
-    roomNumber;
-    /** @type {number} */
-    cost;
-    /** @type {string} */
-    bookingStartDate;
-    /** @type {?string} */
-    bookingEndDate;
-    /** @type {?string} */
-    notes;
-    /** @type {?string} */
-    couponId;
-    getTypeName() { return 'CreateBooking' }
-    getMethod() { return 'POST' }
-    createResponse() { return new IdResponse() }
-}
-export class UpdateBooking {
-    /** @param {{id?:number,name?:string,roomType?:RoomType,roomNumber?:number,cost?:number,bookingStartDate?:string,bookingEndDate?:string,notes?:string,couponId?:string,cancelled?:boolean}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    id;
-    /** @type {?string} */
-    name;
-    /** @type {?RoomType} */
-    roomType;
-    /** @type {?number} */
-    roomNumber;
-    /** @type {?number} */
-    cost;
-    /** @type {?string} */
-    bookingStartDate;
-    /** @type {?string} */
-    bookingEndDate;
-    /** @type {?string} */
-    notes;
-    /** @type {?string} */
-    couponId;
-    /** @type {?boolean} */
-    cancelled;
-    getTypeName() { return 'UpdateBooking' }
-    getMethod() { return 'PATCH' }
-    createResponse() { return new IdResponse() }
-}
-export class DeleteBooking {
-    /** @param {{id?:number}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {number} */
-    id;
-    getTypeName() { return 'DeleteBooking' }
-    getMethod() { return 'DELETE' }
-    createResponse() { }
-}
-export class CreateCoupon {
-    /** @param {{id?:string,description?:string,discount?:number,expiryDate?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    id;
-    /** @type {string} */
-    description;
-    /** @type {number} */
-    discount;
-    /** @type {string} */
-    expiryDate;
-    getTypeName() { return 'CreateCoupon' }
-    getMethod() { return 'POST' }
-    createResponse() { return new IdResponse() }
-}
-export class UpdateCoupon {
-    /** @param {{id?:string,description?:string,discount?:number,expiryDate?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    id;
-    /** @type {string} */
-    description;
-    /** @type {number} */
-    discount;
-    /** @type {string} */
-    expiryDate;
-    getTypeName() { return 'UpdateCoupon' }
-    getMethod() { return 'PATCH' }
-    createResponse() { return new IdResponse() }
-}
-export class DeleteCoupon {
-    /** @param {{id?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    id;
-    getTypeName() { return 'DeleteCoupon' }
-    getMethod() { return 'DELETE' }
-    createResponse() { }
-}
-export class GetAnalyticsInfo {
-    /** @param {{month?:string,type?:string,op?:string,apiKey?:string,userId?:string,ip?:string}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?string} */
-    month;
-    /** @type {string} */
-    type;
-    /** @type {string} */
-    op;
-    /** @type {string} */
-    apiKey;
-    /** @type {string} */
-    userId;
-    /** @type {string} */
-    ip;
-    getTypeName() { return 'GetAnalyticsInfo' }
-    getMethod() { return 'GET' }
-    createResponse() { return new GetAnalyticsInfoResponse() }
-}
-export class GetAnalyticsReports {
-    /** @param {{month?:string,filter?:string,value?:string,force?:boolean}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {?string} */
-    month;
-    /** @type {string} */
-    filter;
-    /** @type {string} */
-    value;
-    /** @type {?boolean} */
-    force;
-    getTypeName() { return 'GetAnalyticsReports' }
-    getMethod() { return 'GET' }
-    createResponse() { return new GetAnalyticsReportsResponse() }
 }
 

@@ -10,7 +10,7 @@ func main() {
     print("======================================\n")
 
     // Create a ServiceStack client
-    let client = JsonServiceClient(baseUrl: "http://localhost:5166")
+    let client = JsonServiceClient(baseUrl: "https://localhost:5001")
     client.bearerToken = "ak-87949de37e894627a9f6173154e7cafa"
 
     // Create a ChatCompletion request

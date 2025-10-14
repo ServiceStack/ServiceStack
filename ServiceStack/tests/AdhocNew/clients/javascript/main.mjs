@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 
 import { JsonServiceClient, Inspect } from './servicestack-client.mjs'
-import { ChatCompletion } from './dtos'
+import { ChatCompletion } from './dtos.mjs'
 
-let client = new JsonServiceClient('http://localhost:5166')
+let client = new JsonServiceClient('https://localhost:5001')
 client.bearerToken = 'ak-87949de37e894627a9f6173154e7cafa'
 
 ;(async () => {
@@ -13,5 +13,5 @@ client.bearerToken = 'ak-87949de37e894627a9f6173154e7cafa'
             { role: 'user', content: [{ type: 'text', text: 'Capital of France?' }] }
         ]
     }))
-    Inspect.printDump(api.response)    
+    Inspect.printDump(api.response)
 })()

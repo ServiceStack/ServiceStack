@@ -1,8 +1,8 @@
 /* Options:
-Date: 2025-10-09 23:49:16
+Date: 2025-10-14 12:13:33
 Version: 8.81
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:5166
+BaseUrl: http://localhost:5000
 
 Package: org.example
 //GlobalNamespace: dtos
@@ -52,7 +52,6 @@ public class dtos
     * Chat Completions API (OpenAI-Compatible)
     */
     @Route(Path="/v1/chat/completions", Verbs="POST")
-    @Api(Description="Chat Completions API (OpenAI-Compatible)")
     @DataContract
     public static class ChatCompletion implements IReturn<ChatResponse>, IPost
     {
@@ -61,7 +60,6 @@ public class dtos
         */
         @DataMember(Name="messages")
         @SerializedName("messages")
-        @ApiMember(Description="The messages to generate chat completions for.")
         public ArrayList<AiMessage> messages = new ArrayList<AiMessage>();
 
         /**
@@ -69,7 +67,6 @@ public class dtos
         */
         @DataMember(Name="model")
         @SerializedName("model")
-        @ApiMember(Description="ID of the model to use. See the model endpoint compatibility table for details on which models work with the Chat API")
         public String model = null;
 
         /**
@@ -77,7 +74,6 @@ public class dtos
         */
         @DataMember(Name="audio")
         @SerializedName("audio")
-        @ApiMember(Description="Parameters for audio output. Required when audio output is requested with modalities: [audio]")
         public AiChatAudio audio = null;
 
         /**
@@ -85,7 +81,6 @@ public class dtos
         */
         @DataMember(Name="logit_bias")
         @SerializedName("logit_bias")
-        @ApiMember(Description="Modify the likelihood of specified tokens appearing in the completion.")
         public HashMap<Integer,Integer> logitBias = null;
 
         /**
@@ -93,7 +88,6 @@ public class dtos
         */
         @DataMember(Name="metadata")
         @SerializedName("metadata")
-        @ApiMember(Description="Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.")
         public HashMap<String,String> metadata = null;
 
         /**
@@ -101,7 +95,6 @@ public class dtos
         */
         @DataMember(Name="reasoning_effort")
         @SerializedName("reasoning_effort")
-        @ApiMember(Description="Constrains effort on reasoning for reasoning models. Currently supported values are minimal, low, medium, and high (none, default). Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.")
         public String reasoningEffort = null;
 
         /**
@@ -109,7 +102,6 @@ public class dtos
         */
         @DataMember(Name="response_format")
         @SerializedName("response_format")
-        @ApiMember(Description="An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`. Setting Type to ResponseFormat.JsonObject enables JSON mode, which guarantees the message the model generates is valid JSON.")
         public AiResponseFormat responseFormat = null;
 
         /**
@@ -117,15 +109,20 @@ public class dtos
         */
         @DataMember(Name="service_tier")
         @SerializedName("service_tier")
-        @ApiMember(Description="Specifies the processing type used for serving the request.")
         public String serviceTier = null;
+
+        /**
+        * A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.
+        */
+        @DataMember(Name="safety_identifier")
+        @SerializedName("safety_identifier")
+        public String safetyIdentifier = null;
 
         /**
         * Up to 4 sequences where the API will stop generating further tokens.
         */
         @DataMember(Name="stop")
         @SerializedName("stop")
-        @ApiMember(Description="Up to 4 sequences where the API will stop generating further tokens.")
         public ArrayList<String> stop = null;
 
         /**
@@ -133,7 +130,6 @@ public class dtos
         */
         @DataMember(Name="modalities")
         @SerializedName("modalities")
-        @ApiMember(Description="Output types that you would like the model to generate. Most models are capable of generating text, which is the default:")
         public ArrayList<String> modalities = null;
 
         /**
@@ -141,23 +137,13 @@ public class dtos
         */
         @DataMember(Name="prompt_cache_key")
         @SerializedName("prompt_cache_key")
-        @ApiMember(Description="Used by OpenAI to cache responses for similar requests to optimize your cache hit rates.")
         public String promptCacheKey = null;
-
-        /**
-        * A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.
-        */
-        @DataMember(Name="safety_identifier")
-        @SerializedName("safety_identifier")
-        @ApiMember(Description="A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.")
-        public String safetyIdentifier = null;
 
         /**
         * A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
         */
         @DataMember(Name="tools")
         @SerializedName("tools")
-        @ApiMember(Description="A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.")
         public ArrayList<Tool> tools = null;
 
         /**
@@ -165,7 +151,6 @@ public class dtos
         */
         @DataMember(Name="verbosity")
         @SerializedName("verbosity")
-        @ApiMember(Description="Constrains the verbosity of the model's response. Lower values will result in more concise responses, while higher values will result in more verbose responses. Currently supported values are low, medium, and high.")
         public String verbosity = null;
 
         /**
@@ -173,7 +158,6 @@ public class dtos
         */
         @DataMember(Name="temperature")
         @SerializedName("temperature")
-        @ApiMember(Description="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.")
         public Double temperature = null;
 
         /**
@@ -181,7 +165,6 @@ public class dtos
         */
         @DataMember(Name="max_completion_tokens")
         @SerializedName("max_completion_tokens")
-        @ApiMember(Description="An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.")
         public Integer maxCompletionTokens = null;
 
         /**
@@ -189,7 +172,6 @@ public class dtos
         */
         @DataMember(Name="top_logprobs")
         @SerializedName("top_logprobs")
-        @ApiMember(Description="An integer between 0 and 20 specifying the number of most likely tokens to return at each token position, each with an associated log probability. logprobs must be set to true if this parameter is used.")
         public Integer topLogprobs = null;
 
         /**
@@ -197,7 +179,6 @@ public class dtos
         */
         @DataMember(Name="top_p")
         @SerializedName("top_p")
-        @ApiMember(Description="An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.")
         public Double topP = null;
 
         /**
@@ -205,7 +186,6 @@ public class dtos
         */
         @DataMember(Name="frequency_penalty")
         @SerializedName("frequency_penalty")
-        @ApiMember(Description="Number between `-2.0` and `2.0`. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.")
         public Double frequencyPenalty = null;
 
         /**
@@ -213,7 +193,6 @@ public class dtos
         */
         @DataMember(Name="presence_penalty")
         @SerializedName("presence_penalty")
-        @ApiMember(Description="Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.")
         public Double presencePenalty = null;
 
         /**
@@ -221,7 +200,6 @@ public class dtos
         */
         @DataMember(Name="seed")
         @SerializedName("seed")
-        @ApiMember(Description="This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.")
         public Integer seed = null;
 
         /**
@@ -229,7 +207,6 @@ public class dtos
         */
         @DataMember(Name="n")
         @SerializedName("n")
-        @ApiMember(Description="How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs.")
         public Integer n = null;
 
         /**
@@ -237,7 +214,6 @@ public class dtos
         */
         @DataMember(Name="store")
         @SerializedName("store")
-        @ApiMember(Description="Whether or not to store the output of this chat completion request for use in our model distillation or evals products.")
         public Boolean store = null;
 
         /**
@@ -245,7 +221,6 @@ public class dtos
         */
         @DataMember(Name="logprobs")
         @SerializedName("logprobs")
-        @ApiMember(Description="Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message.")
         public Boolean logprobs = null;
 
         /**
@@ -253,7 +228,6 @@ public class dtos
         */
         @DataMember(Name="parallel_tool_calls")
         @SerializedName("parallel_tool_calls")
-        @ApiMember(Description="Whether to enable parallel function calling during tool use.")
         public Boolean parallelToolCalls = null;
 
         /**
@@ -261,7 +235,6 @@ public class dtos
         */
         @DataMember(Name="enable_thinking")
         @SerializedName("enable_thinking")
-        @ApiMember(Description="Whether to enable thinking mode for some Qwen models and providers.")
         public Boolean enableThinking = null;
 
         /**
@@ -269,7 +242,6 @@ public class dtos
         */
         @DataMember(Name="stream")
         @SerializedName("stream")
-        @ApiMember(Description="If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message.")
         public Boolean stream = null;
         
         public ArrayList<AiMessage> getMessages() { return messages; }
@@ -288,14 +260,14 @@ public class dtos
         public ChatCompletion setResponseFormat(AiResponseFormat value) { this.responseFormat = value; return this; }
         public String getServiceTier() { return serviceTier; }
         public ChatCompletion setServiceTier(String value) { this.serviceTier = value; return this; }
+        public String getSafetyIdentifier() { return safetyIdentifier; }
+        public ChatCompletion setSafetyIdentifier(String value) { this.safetyIdentifier = value; return this; }
         public ArrayList<String> getStop() { return stop; }
         public ChatCompletion setStop(ArrayList<String> value) { this.stop = value; return this; }
         public ArrayList<String> getModalities() { return modalities; }
         public ChatCompletion setModalities(ArrayList<String> value) { this.modalities = value; return this; }
         public String getPromptCacheKey() { return promptCacheKey; }
         public ChatCompletion setPromptCacheKey(String value) { this.promptCacheKey = value; return this; }
-        public String getSafetyIdentifier() { return safetyIdentifier; }
-        public ChatCompletion setSafetyIdentifier(String value) { this.safetyIdentifier = value; return this; }
         public ArrayList<Tool> getTools() { return tools; }
         public ChatCompletion setTools(ArrayList<Tool> value) { this.tools = value; return this; }
         public String getVerbosity() { return verbosity; }
@@ -693,7 +665,6 @@ public class dtos
         */
         @DataMember(Name="id")
         @SerializedName("id")
-        @ApiMember(Description="A unique identifier for the chat completion.")
         public String id = null;
 
         /**
@@ -701,7 +672,6 @@ public class dtos
         */
         @DataMember(Name="choices")
         @SerializedName("choices")
-        @ApiMember(Description="A list of chat completion choices. Can be more than one if n is greater than 1.")
         public ArrayList<Choice> choices = new ArrayList<Choice>();
 
         /**
@@ -709,7 +679,6 @@ public class dtos
         */
         @DataMember(Name="created")
         @SerializedName("created")
-        @ApiMember(Description="The Unix timestamp (in seconds) of when the chat completion was created.")
         public Long created = null;
 
         /**
@@ -717,7 +686,6 @@ public class dtos
         */
         @DataMember(Name="model")
         @SerializedName("model")
-        @ApiMember(Description="The model used for the chat completion.")
         public String model = null;
 
         /**
@@ -725,7 +693,6 @@ public class dtos
         */
         @DataMember(Name="system_fingerprint")
         @SerializedName("system_fingerprint")
-        @ApiMember(Description="This fingerprint represents the backend configuration that the model runs with.")
         public String systemFingerprint = null;
 
         /**
@@ -733,7 +700,6 @@ public class dtos
         */
         @DataMember(Name="object")
         @SerializedName("object")
-        @ApiMember(Description="The object type, which is always chat.completion.")
         public String object = null;
 
         /**
@@ -741,7 +707,6 @@ public class dtos
         */
         @DataMember(Name="service_tier")
         @SerializedName("service_tier")
-        @ApiMember(Description="Specifies the processing type used for serving the request.")
         public String serviceTier = null;
 
         /**
@@ -749,7 +714,6 @@ public class dtos
         */
         @DataMember(Name="usage")
         @SerializedName("usage")
-        @ApiMember(Description="Usage statistics for the completion request.")
         public AiUsage usage = null;
 
         /**
@@ -757,7 +721,6 @@ public class dtos
         */
         @DataMember(Name="metadata")
         @SerializedName("metadata")
-        @ApiMember(Description="Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.")
         public HashMap<String,String> metadata = null;
 
         @DataMember(Name="responseStatus")
@@ -944,7 +907,6 @@ public class dtos
     /**
     * A list of messages comprising the conversation so far.
     */
-    @Api(Description="A list of messages comprising the conversation so far.")
     @DataContract
     public static class AiMessage
     {
@@ -953,7 +915,6 @@ public class dtos
         */
         @DataMember(Name="content")
         @SerializedName("content")
-        @ApiMember(Description="The contents of the message.")
         public ArrayList<AiContent> content = null;
 
         /**
@@ -961,7 +922,6 @@ public class dtos
         */
         @DataMember(Name="role")
         @SerializedName("role")
-        @ApiMember(Description="The role of the author of this message. Valid values are `system`, `user`, `assistant` and `tool`.")
         public String role = null;
 
         /**
@@ -969,7 +929,6 @@ public class dtos
         */
         @DataMember(Name="name")
         @SerializedName("name")
-        @ApiMember(Description="An optional name for the participant. Provides the model information to differentiate between participants of the same role.")
         public String name = null;
 
         /**
@@ -977,7 +936,6 @@ public class dtos
         */
         @DataMember(Name="tool_calls")
         @SerializedName("tool_calls")
-        @ApiMember(Description="The tool calls generated by the model, such as function calls.")
         public ArrayList<ToolCall> toolCalls = null;
 
         /**
@@ -985,7 +943,6 @@ public class dtos
         */
         @DataMember(Name="tool_call_id")
         @SerializedName("tool_call_id")
-        @ApiMember(Description="Tool call that this message is responding to.")
         public String toolCallId = null;
         
         public ArrayList<AiContent> getContent() { return content; }
@@ -1011,7 +968,6 @@ public class dtos
         */
         @DataMember(Name="format")
         @SerializedName("format")
-        @ApiMember(Description="Specifies the output audio format. Must be one of wav, mp3, flac, opus, or pcm16.")
         public String format = null;
 
         /**
@@ -1019,7 +975,6 @@ public class dtos
         */
         @DataMember(Name="voice")
         @SerializedName("voice")
-        @ApiMember(Description="The voice the model uses to respond. Supported voices are alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, and shimmer.")
         public String voice = null;
         
         public String getFormat() { return format; }
@@ -1036,7 +991,6 @@ public class dtos
         */
         @DataMember(Name="response_format")
         @SerializedName("response_format")
-        @ApiMember(Description="An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.")
         public ResponseFormat type = null;
         
         public ResponseFormat getType() { return type; }
@@ -1051,7 +1005,6 @@ public class dtos
         */
         @DataMember(Name="type")
         @SerializedName("type")
-        @ApiMember(Description="The type of the tool. Currently, only function is supported.")
         public ToolType type = null;
         
         public ToolType getType() { return type; }
@@ -1172,6 +1125,7 @@ public class dtos
         public PageStats setTotal(Integer value) { this.total = value; return this; }
     }
 
+    @DataContract
     public static class Choice
     {
         /**
@@ -1179,7 +1133,6 @@ public class dtos
         */
         @DataMember(Name="finish_reason")
         @SerializedName("finish_reason")
-        @ApiMember(Description="The reason the model stopped generating tokens. This will be stop if the model hit a natural stop point or a provided stop sequence, length if the maximum number of tokens specified in the request was reached, content_filter if content was omitted due to a flag from our content filters, tool_calls if the model called a tool")
         public String finishReason = null;
 
         /**
@@ -1187,7 +1140,6 @@ public class dtos
         */
         @DataMember(Name="index")
         @SerializedName("index")
-        @ApiMember(Description="The index of the choice in the list of choices.")
         public Integer index = null;
 
         /**
@@ -1195,7 +1147,6 @@ public class dtos
         */
         @DataMember(Name="message")
         @SerializedName("message")
-        @ApiMember(Description="A chat completion message generated by the model.")
         public ChoiceMessage message = null;
         
         public String getFinishReason() { return finishReason; }
@@ -1209,7 +1160,6 @@ public class dtos
     /**
     * Usage statistics for the completion request.
     */
-    @Api(Description="Usage statistics for the completion request.")
     @DataContract
     public static class AiUsage
     {
@@ -1218,7 +1168,6 @@ public class dtos
         */
         @DataMember(Name="completion_tokens")
         @SerializedName("completion_tokens")
-        @ApiMember(Description="Number of tokens in the generated completion.")
         public Integer completionTokens = null;
 
         /**
@@ -1226,7 +1175,6 @@ public class dtos
         */
         @DataMember(Name="prompt_tokens")
         @SerializedName("prompt_tokens")
-        @ApiMember(Description="Number of tokens in the prompt.")
         public Integer promptTokens = null;
 
         /**
@@ -1234,7 +1182,6 @@ public class dtos
         */
         @DataMember(Name="total_tokens")
         @SerializedName("total_tokens")
-        @ApiMember(Description="Total number of tokens used in the request (prompt + completion).")
         public Integer totalTokens = null;
 
         /**
@@ -1242,7 +1189,6 @@ public class dtos
         */
         @DataMember(Name="completion_tokens_details")
         @SerializedName("completion_tokens_details")
-        @ApiMember(Description="Breakdown of tokens used in a completion.")
         public AiCompletionUsage completionTokensDetails = null;
 
         /**
@@ -1250,7 +1196,6 @@ public class dtos
         */
         @DataMember(Name="prompt_tokens_details")
         @SerializedName("prompt_tokens_details")
-        @ApiMember(Description="Breakdown of tokens used in the prompt.")
         public AiPromptUsage promptTokensDetails = null;
         
         public Integer getCompletionTokens() { return completionTokens; }
@@ -1403,7 +1348,6 @@ public class dtos
         */
         @DataMember(Name="type")
         @SerializedName("type")
-        @ApiMember(Description="The type of the content part.")
         public String type = null;
         
         public String getType() { return type; }
@@ -1413,7 +1357,6 @@ public class dtos
     /**
     * The tool calls generated by the model, such as function calls.
     */
-    @Api(Description="The tool calls generated by the model, such as function calls.")
     @DataContract
     public static class ToolCall
     {
@@ -1422,7 +1365,6 @@ public class dtos
         */
         @DataMember(Name="id")
         @SerializedName("id")
-        @ApiMember(Description="The ID of the tool call.")
         public String id = null;
 
         /**
@@ -1430,7 +1372,6 @@ public class dtos
         */
         @DataMember(Name="type")
         @SerializedName("type")
-        @ApiMember(Description="The type of the tool. Currently, only `function` is supported.")
         public String type = null;
 
         /**
@@ -1438,7 +1379,6 @@ public class dtos
         */
         @DataMember(Name="function")
         @SerializedName("function")
-        @ApiMember(Description="The function that the model called.")
         public String function = null;
         
         public String getId() { return id; }
@@ -1545,7 +1485,6 @@ public class dtos
         */
         @DataMember(Name="content")
         @SerializedName("content")
-        @ApiMember(Description="The contents of the message.")
         public String content = null;
 
         /**
@@ -1553,7 +1492,6 @@ public class dtos
         */
         @DataMember(Name="refusal")
         @SerializedName("refusal")
-        @ApiMember(Description="The refusal message generated by the model.")
         public String refusal = null;
 
         /**
@@ -1561,7 +1499,6 @@ public class dtos
         */
         @DataMember(Name="reasoning")
         @SerializedName("reasoning")
-        @ApiMember(Description="The reasoning process used by the model.")
         public String reasoning = null;
 
         /**
@@ -1569,7 +1506,6 @@ public class dtos
         */
         @DataMember(Name="role")
         @SerializedName("role")
-        @ApiMember(Description="The role of the author of this message.")
         public String role = null;
 
         /**
@@ -1577,7 +1513,6 @@ public class dtos
         */
         @DataMember(Name="annotations")
         @SerializedName("annotations")
-        @ApiMember(Description="Annotations for the message, when applicable, as when using the web search tool.")
         public ArrayList<ChoiceAnnotation> annotations = null;
 
         /**
@@ -1585,7 +1520,6 @@ public class dtos
         */
         @DataMember(Name="audio")
         @SerializedName("audio")
-        @ApiMember(Description="If the audio output modality is requested, this object contains data about the audio response from the model.")
         public ChoiceAudio audio = null;
 
         /**
@@ -1593,7 +1527,6 @@ public class dtos
         */
         @DataMember(Name="tool_calls")
         @SerializedName("tool_calls")
-        @ApiMember(Description="The tool calls generated by the model, such as function calls.")
         public ArrayList<ToolCall> toolCalls = null;
         
         public String getContent() { return content; }
@@ -1615,7 +1548,6 @@ public class dtos
     /**
     * Usage statistics for the completion request.
     */
-    @Api(Description="Usage statistics for the completion request.")
     @DataContract
     public static class AiCompletionUsage
     {
@@ -1624,7 +1556,6 @@ public class dtos
         */
         @DataMember(Name="accepted_prediction_tokens")
         @SerializedName("accepted_prediction_tokens")
-        @ApiMember(Description="When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.\n\n")
         public Integer acceptedPredictionTokens = null;
 
         /**
@@ -1632,7 +1563,6 @@ public class dtos
         */
         @DataMember(Name="audio_tokens")
         @SerializedName("audio_tokens")
-        @ApiMember(Description="Audio input tokens generated by the model.")
         public Integer audioTokens = null;
 
         /**
@@ -1640,7 +1570,6 @@ public class dtos
         */
         @DataMember(Name="reasoning_tokens")
         @SerializedName("reasoning_tokens")
-        @ApiMember(Description="Tokens generated by the model for reasoning.")
         public Integer reasoningTokens = null;
 
         /**
@@ -1648,7 +1577,6 @@ public class dtos
         */
         @DataMember(Name="rejected_prediction_tokens")
         @SerializedName("rejected_prediction_tokens")
-        @ApiMember(Description="When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion.")
         public Integer rejectedPredictionTokens = null;
         
         public Integer getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
@@ -1664,7 +1592,6 @@ public class dtos
     /**
     * Breakdown of tokens used in the prompt.
     */
-    @Api(Description="Breakdown of tokens used in the prompt.")
     @DataContract
     public static class AiPromptUsage
     {
@@ -1673,7 +1600,6 @@ public class dtos
         */
         @DataMember(Name="accepted_prediction_tokens")
         @SerializedName("accepted_prediction_tokens")
-        @ApiMember(Description="When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.\n\n")
         public Integer acceptedPredictionTokens = null;
 
         /**
@@ -1681,7 +1607,6 @@ public class dtos
         */
         @DataMember(Name="audio_tokens")
         @SerializedName("audio_tokens")
-        @ApiMember(Description="Audio input tokens present in the prompt.")
         public Integer audioTokens = null;
 
         /**
@@ -1689,7 +1614,6 @@ public class dtos
         */
         @DataMember(Name="cached_tokens")
         @SerializedName("cached_tokens")
-        @ApiMember(Description="Cached tokens present in the prompt.")
         public Integer cachedTokens = null;
         
         public Integer getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
@@ -1786,7 +1710,6 @@ public class dtos
         */
         @DataMember(Name="text")
         @SerializedName("text")
-        @ApiMember(Description="The text content.")
         public String text = null;
         
         public String getText() { return text; }
@@ -1804,7 +1727,6 @@ public class dtos
         */
         @DataMember(Name="image_url")
         @SerializedName("image_url")
-        @ApiMember(Description="The image for this content.")
         public AiImageUrl imageUrl = null;
         
         public AiImageUrl getImageUrl() { return imageUrl; }
@@ -1822,7 +1744,6 @@ public class dtos
         */
         @DataMember(Name="input_audio")
         @SerializedName("input_audio")
-        @ApiMember(Description="The audio input for this content.")
         public AiInputAudio inputAudio = null;
         
         public AiInputAudio getInputAudio() { return inputAudio; }
@@ -1840,7 +1761,6 @@ public class dtos
         */
         @DataMember(Name="file")
         @SerializedName("file")
-        @ApiMember(Description="The file input for this content.")
         public AiFile file = null;
         
         public AiFile getFile() { return file; }
@@ -1858,7 +1778,6 @@ public class dtos
         */
         @DataMember(Name="type")
         @SerializedName("type")
-        @ApiMember(Description="The type of the URL citation. Always url_citation.")
         public String type = null;
 
         /**
@@ -1866,7 +1785,6 @@ public class dtos
         */
         @DataMember(Name="url_citation")
         @SerializedName("url_citation")
-        @ApiMember(Description="A URL citation when using web search.")
         public UrlCitation urlCitation = null;
         
         public String getType() { return type; }
@@ -1886,7 +1804,6 @@ public class dtos
         */
         @DataMember(Name="data")
         @SerializedName("data")
-        @ApiMember(Description="Base64 encoded audio bytes generated by the model, in the format specified in the request.")
         public String data = null;
 
         /**
@@ -1894,7 +1811,6 @@ public class dtos
         */
         @DataMember(Name="expires_at")
         @SerializedName("expires_at")
-        @ApiMember(Description="The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.")
         public Integer expiresAt = null;
 
         /**
@@ -1902,7 +1818,6 @@ public class dtos
         */
         @DataMember(Name="id")
         @SerializedName("id")
-        @ApiMember(Description="Unique identifier for this audio response.")
         public String id = null;
 
         /**
@@ -1910,7 +1825,6 @@ public class dtos
         */
         @DataMember(Name="transcript")
         @SerializedName("transcript")
-        @ApiMember(Description="Transcript of the audio generated by the model.")
         public String transcript = null;
         
         public String getData() { return data; }
@@ -1923,6 +1837,7 @@ public class dtos
         public ChoiceAudio setTranscript(String value) { this.transcript = value; return this; }
     }
 
+    @DataContract
     public static class AiImageUrl
     {
         /**
@@ -1930,7 +1845,6 @@ public class dtos
         */
         @DataMember(Name="url")
         @SerializedName("url")
-        @ApiMember(Description="Either a URL of the image or the base64 encoded image data.")
         public String url = null;
         
         public String getUrl() { return url; }
@@ -1948,7 +1862,6 @@ public class dtos
         */
         @DataMember(Name="data")
         @SerializedName("data")
-        @ApiMember(Description="URL or Base64 encoded audio data.")
         public String data = null;
 
         /**
@@ -1956,7 +1869,6 @@ public class dtos
         */
         @DataMember(Name="format")
         @SerializedName("format")
-        @ApiMember(Description="The format of the encoded audio data. Currently supports 'wav' and 'mp3'.")
         public String format = null;
         
         public String getData() { return data; }
@@ -1976,7 +1888,6 @@ public class dtos
         */
         @DataMember(Name="file_data")
         @SerializedName("file_data")
-        @ApiMember(Description="The URL or base64 encoded file data, used when passing the file to the model as a string.")
         public String fileData = null;
 
         /**
@@ -1984,7 +1895,6 @@ public class dtos
         */
         @DataMember(Name="filename")
         @SerializedName("filename")
-        @ApiMember(Description="The name of the file, used when passing the file to the model as a string.")
         public String filename = null;
 
         /**
@@ -1992,7 +1902,6 @@ public class dtos
         */
         @DataMember(Name="file_id")
         @SerializedName("file_id")
-        @ApiMember(Description="The ID of an uploaded file to use as input.")
         public String fileId = null;
         
         public String getFileData() { return fileData; }
@@ -2014,7 +1923,6 @@ public class dtos
         */
         @DataMember(Name="end_index")
         @SerializedName("end_index")
-        @ApiMember(Description="The index of the last character of the URL citation in the message.")
         public Integer endIndex = null;
 
         /**
@@ -2022,7 +1930,6 @@ public class dtos
         */
         @DataMember(Name="start_index")
         @SerializedName("start_index")
-        @ApiMember(Description="The index of the first character of the URL citation in the message.")
         public Integer startIndex = null;
 
         /**
@@ -2030,7 +1937,6 @@ public class dtos
         */
         @DataMember(Name="title")
         @SerializedName("title")
-        @ApiMember(Description="The title of the web resource.")
         public String title = null;
 
         /**
@@ -2038,7 +1944,6 @@ public class dtos
         */
         @DataMember(Name="url")
         @SerializedName("url")
-        @ApiMember(Description="The URL of the web resource.")
         public String url = null;
         
         public Integer getEndIndex() { return endIndex; }

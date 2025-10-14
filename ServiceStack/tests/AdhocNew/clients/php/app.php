@@ -7,7 +7,7 @@ use dtos\ChatCompletion;
 use dtos\AiMessage;
 use dtos\AiTextContent;
 
-$client = new JsonServiceClient("http://localhost:5166");
+$client = new JsonServiceClient("https://localhost:5001");
 $client->bearerToken = "ak-87949de37e894627a9f6173154e7cafa";
 
 /** @var {OpenAiChatCompletionResponse} $response */
