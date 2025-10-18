@@ -160,6 +160,7 @@ namespace ServiceStack.OrmLite.Tests
                 case Dialect.PostgreSql9:
                 case Dialect.PostgreSql10:
                 case Dialect.PostgreSql11:
+                case Dialect.AnyPostgreSql:
                     return Init(PostgreSqlDb.DefaultConnection, PostgreSqlDialect.Provider);
 //                case Dialect.SqlServerMdf:
 //                    return Init(Config.SqlServerDb, SqlServerDialect.Provider);
