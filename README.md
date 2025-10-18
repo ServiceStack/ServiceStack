@@ -372,6 +372,7 @@ Each library is released under its respective licence:
   - [ASP.NET MVC](https://github.com/aspnet/Mvc) [(Apache License 2.0)](https://github.com/aspnet/Mvc/blob/release/2.2/LICENSE.txt)
   - [CoreFX](https://github.com/dotnet/corefx) [(MIT License)](https://github.com/dotnet/corefx/blob/master/LICENSE.TXT)
   - [Nito.AsyncEx](https://github.com/StephenCleary/AsyncEx) [(MIT License)](https://github.com/StephenCleary/AsyncEx/blob/master/LICENSE)
+  - [HangfireIO Cronos](https://github.com/HangfireIO/Cronos) [(MIT License)](https://github.com/HangfireIO/Cronos/blob/main/LICENSE)
 
 ## Find out More
 
