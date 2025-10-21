@@ -95,8 +95,10 @@ public class OpenApiMetadata
     public List<Type> SchemaFilterTypes { get; set; } = [
     ];
     
-    public static Action<string, OpenApiOperation>? OperationFilter { get; set; }
-    public static Action<OpenApiOperation>? SchemaFilter { get; set; }
+    public Func<Operation, bool>? Ignore { get; set; }
+    
+    public Action<string, OpenApiOperation, Operation>? OperationFilter { get; set; }
+    public Action<OpenApiOperation, OpenApiSchema>? SchemaFilter { get; set; }
     public static Action<OpenApiSchema>? SchemaPropertyFilter { get; set; }
     
     private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarTypes = new()
@@ -248,6 +250,7 @@ public class OpenApiMetadata
                         }
                     };
                 }
+                SchemaFilter?.Invoke(op, openApiType);
             }
         }
         
@@ -265,8 +268,12 @@ public class OpenApiMetadata
         var userTags = operation.RequestType.AllAttributes<TagAttribute>().Map(x => x.Name);
         if (userTags.Count > 0)
         {
+            // Clear the endpoint out of the first (ServiceName) tag, so the API only appears once under its custom tag 
+            op.Tags.Clear();
             userTags.Each(tag => op.Tags.Add(new OpenApiTag { Name = tag }));
         }
+
+        OperationFilter?.Invoke(verb, op, operation);
         
         return op;
     }
@@ -598,13 +605,6 @@ public class OpenApiMetadata
             _ => null,
         };
         return paramLocation;
-    }
-
-    private static readonly char[] pathSep = { '/' };
-    private string? GetTagName(string path)
-    {
-        var tags = path.Split(pathSep, StringSplitOptions.RemoveEmptyEntries);
-        return tags.Length > 0 ? tags[0] : null;
     }
 
     private OpenApiParameter CreateArrayParameter(Type listType, 

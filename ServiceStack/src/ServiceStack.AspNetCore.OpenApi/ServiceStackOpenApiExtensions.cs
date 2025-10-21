@@ -18,6 +18,8 @@ public static class ServiceStackOpenApiExtensions
 
         options.RouteHandlerBuilders.Add((builder, operation, method, route) =>
         {
+            if (OpenApiMetadata.Instance.Ignore?.Invoke(operation) == true)
+                return;
             builder.WithOpenApi(op =>
             {
                 OpenApiMetadata.Instance.AddOperation(op, operation, method, route);
