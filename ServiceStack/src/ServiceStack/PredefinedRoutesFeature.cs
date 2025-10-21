@@ -31,6 +31,13 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
         set => JsonApiRoute = value ? null : JsonApiRoute;
     }
 
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Whether to Exclude pre-defined routes from ASP .NET Core Metadata / Swagger UI / etc
+    /// </summary>
+    public bool ExcludeFromDescription { get; set; }
+#endif    
+
     public Func<IRequest, Dictionary<string, List<ApiDescription>>> ApiIndex { get; set; } = DefaultApiIndex;
 
     public static Dictionary<string, List<ApiDescription>> DefaultApiIndex(IRequest req)
@@ -138,6 +145,11 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
                     var builder = apis.MapMethods("/" + requestType.Name, verb, (HttpResponse response, HttpContext httpContext) => 
                         httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:requestType.Name));
 
+                    if (ExcludeFromDescription)
+                    {
+                        builder.ExcludeFromDescription();
+                    }
+                    
                     host.ConfigureOperationEndpoint(builder, operation, options);
                     
                     foreach (var handler in host.Options.RouteHandlerBuilders)
