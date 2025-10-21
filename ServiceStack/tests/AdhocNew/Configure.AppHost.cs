@@ -30,6 +30,8 @@ public class AppHost() : AppHostBase("MyApp"), IHostingStartup
                     maxFileBytes: 10 * 1024 * 1024,
                     resolvePath:ctx => $"/users/{ctx.UserAuthId}/{ctx.FileName}")
             ));
+            
+            services.ConfigurePlugin<PredefinedRoutesFeature>(feature => feature.ExcludeFromDescription = true);
         });
 
     public override void Configure()
