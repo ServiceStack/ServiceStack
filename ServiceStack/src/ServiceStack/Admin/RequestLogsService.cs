@@ -49,7 +49,7 @@ public class RequestLogsResponse
     [DataMember(Order=4)] public ResponseStatus ResponseStatus { get; set; }
 }
 
-[DataContract]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public class GetAnalyticsInfo : IGet, IReturn<GetAnalyticsInfoResponse>
 {
     [DataMember(Order=1)] 
@@ -100,7 +100,7 @@ public class GetAnalyticsInfoResponse
     public ResponseStatus ResponseStatus { get; set; }
 }
 
-[DataContract]
+[DataContract, ExcludeMetadata, Tag(TagNames.Admin)]
 public class GetAnalyticsReports : IGet, IReturn<GetAnalyticsReportsResponse>
 {
     [DataMember(Order=1)] 

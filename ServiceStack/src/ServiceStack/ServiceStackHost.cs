@@ -530,6 +530,8 @@ public abstract partial class ServiceStackHost
         typeof(AdminUsersService),
         typeof(AdminProfilingService),
         typeof(AdminRedisService),
+        typeof(GetAnalyticsInfo),
+        typeof(GetAnalyticsReports),
         typeof(Validation.GetValidationRulesService),
         typeof(Validation.ModifyValidationRulesService),
 #if NET6_0_OR_GREATER
