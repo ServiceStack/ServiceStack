@@ -55,6 +55,7 @@ public static class LangGeneratorExtensions
             _ => throw new NotSupportedException($"Unknown language, Supported languages: " +
                                                  $"csharp, mjs, typescript, dart, java, kotlin, python, php, swift, vbnet, fsharp")
             "go" => Generate(new Go.GoGenerator(typesConfig)),
+            "ruby" => Generate(new Ruby.RubyGenerator(typesConfig)),
         };
         return src;
     }

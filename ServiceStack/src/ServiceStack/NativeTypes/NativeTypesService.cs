@@ -7,10 +7,12 @@ using ServiceStack.Jobs;
 using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
+using ServiceStack.NativeTypes.Go;
 using ServiceStack.NativeTypes.Java;
 using ServiceStack.NativeTypes.Kotlin;
 using ServiceStack.NativeTypes.Php;
 using ServiceStack.NativeTypes.Python;
+using ServiceStack.NativeTypes.Rust;
 using ServiceStack.NativeTypes.Swift;
 using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.NativeTypes.VbNet;
@@ -73,6 +75,9 @@ public class TypesKotlin : NativeTypesBase, IGet, IReturn<string> { }
 [Route("/types/python")]
 public class TypesPython : NativeTypesBase, IGet, IReturn<string> { }
 
+[ExcludeMetadata]
+[Route("/types/ruby")]
+public class TypesRuby : NativeTypesBase, IGet, IReturn<string> { }
 
 [ExcludeMetadata]
 [Route("/types/go")]
@@ -172,6 +177,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
             ["Kotlin"] = new TypesKotlin().ToAbsoluteUri(Request),
             ["Swift"] = new TypesSwift().ToAbsoluteUri(Request),
             ["Python"] = new TypesPython().ToAbsoluteUri(Request),
+            ["Ruby"] = new TypesRuby().ToAbsoluteUri(Request),
             ["Go"] = new TypesGo().ToAbsoluteUri(Request),
         };
         foreach (var linksFilter in TypeLinksFilters)
@@ -380,6 +386,36 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         return gen;
     }
 
+    [AddHeader(ContentType = MimeTypes.PlainText)]
+    public object Any(TypesRuby request)
+    {
+        request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+        var typesConfig = metadata.GetConfig(request);
+        typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
+        typesConfig.ExportAsTypes = true;
+            
+        var metadataTypes = ResolveMetadataTypes(typesConfig);
+
+        if (!RubyGenerator.GenerateServiceStackTypes)
+        {
+            var ignoreLibraryTypes = ReturnInterfaces.Map(x => x.Name);
+            ignoreLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
+            ignoreLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
+
+            metadataTypes.Operations.RemoveAll(x => ignoreLibraryTypes.Contains(x.Request.Name));
+            metadataTypes.Operations.Each(x => {
+                if (x.Response != null && ignoreLibraryTypes.Contains(x.Response.Name))
+                {
+                    x.Response = null;
+                }
+            });
+            metadataTypes.Types.RemoveAll(x => ignoreLibraryTypes.Contains(x.Name));
+        }
+
+        var gen = new RubyGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
+        return gen;
+    }
 
     [AddHeader(ContentType = MimeTypes.PlainText)]
     public object Any(TypesGo request)
