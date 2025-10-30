@@ -19,6 +19,7 @@ public enum Lang
     Go =         1 << 9,
     Php =        1 << 10,
     Ruby =       1 << 11,
+    Rust =       1 << 12,
 }
     
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
@@ -53,7 +54,10 @@ public class EmitKotlin(params string[] statements) : EmitCodeAttribute(Lang.Kot
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class EmitPython(params string[] statements) : EmitCodeAttribute(Lang.Python, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitPhp(params string[] statements) : EmitCodeAttribute(Lang.Php, statements);[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+public class EmitPhp(params string[] statements) : EmitCodeAttribute(Lang.Php, statements);
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class EmitGo(params string[] statements) : EmitCodeAttribute(Lang.Go, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class EmitRuby(params string[] statements) : EmitCodeAttribute(Lang.Ruby, statements);
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+public class EmitRust(params string[] statements) : EmitCodeAttribute(Lang.Rust, statements);
