@@ -18,7 +18,7 @@ namespace MyApp;
 
 public class AppHost() : AppHostBase("My App"), IHostingStartup
 {
-    public static string TalentBlazorDir = "../../../../../netcore/TalentBlazor/TalentBlazor";
+    public static string TalentBlazorDir = "../../../../../NetCoreApps/TalentBlazor/TalentBlazor";
     public static string TalentBlazorSeedDataDir = TalentBlazorDir + "/Migrations/seed";
     public static string TalentBlazorWwwRootDir = TalentBlazorDir + "/wwwroot";
     public static string ProfilesDir = $"{TalentBlazorWwwRootDir}/profiles";
