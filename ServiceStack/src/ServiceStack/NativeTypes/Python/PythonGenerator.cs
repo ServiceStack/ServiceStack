@@ -565,7 +565,7 @@ public class PythonGenerator : ILangGenerator
 
             string responseTypeExpression = null;
             string responseMethod = options?.Op?.Method != null
-                ? $"def method(): return '{options?.Op?.Method}'"
+                ? $"def get_type_name(): return '{options?.Op?.Method}'"
                 : null;
 
             if (string.IsNullOrEmpty(implStr) && type.Type is {IsAbstract: true})
@@ -689,7 +689,7 @@ public class PythonGenerator : ILangGenerator
 
             AddProperties(sb, type,
                 includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                                                                && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
+                    && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
 
             if (responseTypeExpression != null)
             {
