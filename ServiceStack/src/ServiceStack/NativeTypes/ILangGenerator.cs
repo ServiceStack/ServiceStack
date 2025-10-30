@@ -54,6 +54,7 @@ public static class LangGeneratorExtensions
             "fsharp" => Generate(new FSharp.FSharpGenerator(typesConfig)),
             _ => throw new NotSupportedException($"Unknown language, Supported languages: " +
                                                  $"csharp, mjs, typescript, dart, java, kotlin, python, php, swift, vbnet, fsharp")
+            "go" => Generate(new Go.GoGenerator(typesConfig)),
         };
         return src;
     }

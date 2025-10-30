@@ -52,4 +52,5 @@ public class EmitKotlin(params string[] statements) : EmitCodeAttribute(Lang.Kot
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class EmitPython(params string[] statements) : EmitCodeAttribute(Lang.Python, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
-public class EmitPhp(params string[] statements) : EmitCodeAttribute(Lang.Php, statements);
+public class EmitPhp(params string[] statements) : EmitCodeAttribute(Lang.Php, statements);[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+public class EmitGo(params string[] statements) : EmitCodeAttribute(Lang.Go, statements);

@@ -73,6 +73,9 @@ public class TypesKotlin : NativeTypesBase, IGet, IReturn<string> { }
 [Route("/types/python")]
 public class TypesPython : NativeTypesBase, IGet, IReturn<string> { }
 
+
+[ExcludeMetadata]
+[Route("/types/go")]
 [ExcludeMetadata]
 [Route("/types/js")]
 public class TypesCommonJs : NativeTypesBase, IGet, IReturn<string>
@@ -169,6 +172,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
             ["Kotlin"] = new TypesKotlin().ToAbsoluteUri(Request),
             ["Swift"] = new TypesSwift().ToAbsoluteUri(Request),
             ["Python"] = new TypesPython().ToAbsoluteUri(Request),
+            ["Go"] = new TypesGo().ToAbsoluteUri(Request),
         };
         foreach (var linksFilter in TypeLinksFilters)
         {
@@ -376,6 +380,37 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         return gen;
     }
 
+
+    [AddHeader(ContentType = MimeTypes.PlainText)]
+    public object Any(TypesGo request)
+    {
+        request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+        var typesConfig = metadata.GetConfig(request);
+        typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
+        typesConfig.ExportAsTypes = true;
+            
+        var metadataTypes = ResolveMetadataTypes(typesConfig);
+
+        if (!GoGenerator.GenerateServiceStackTypes)
+        {
+            var ignoreLibraryTypes = ReturnInterfaces.Map(x => x.Name);
+            ignoreLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
+            ignoreLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
+
+            metadataTypes.Operations.RemoveAll(x => ignoreLibraryTypes.Contains(x.Request.Name));
+            metadataTypes.Operations.Each(x => {
+                if (x.Response != null && ignoreLibraryTypes.Contains(x.Response.Name))
+                {
+                    x.Response = null;
+                }
+            });
+            metadataTypes.Types.RemoveAll(x => ignoreLibraryTypes.Contains(x.Name));
+        }
+
+        var gen = new GoGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
+        return gen;
+    }
     [AddHeader(ContentType = MimeTypes.PlainText)]
     public object Any(TypesDart request)
     {
