@@ -1,7 +1,11 @@
 import { onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
+import { useFormatters } from '@servicestack/vue'
 import { useThreadStore } from './threadStore.mjs'
 import Brand from './Brand.mjs'
+import { statsTitle, formatCost } from './utils.mjs'
+
+const { humanifyNumber, humanifyMs } = useFormatters()
 
 // Thread Item Component
 const ThreadItem = {
@@ -17,7 +21,11 @@ const ThreadItem = {
                         {{ thread.title }}
                     </div>
                     <div class="text-xs text-gray-500 truncate">
-                        {{ formatRelativeTime(thread.updatedAt) }} • {{ thread.messages.length }} messages
+                        <span>{{ formatRelativeTime(thread.updatedAt) }} • {{ thread.messages.length }} msgs</span>
+                        <span v-if="thread.stats?.inputTokens" :title="statsTitle(thread.stats)">
+                            &#8226; {{ humanifyNumber(thread.stats.inputTokens + thread.stats.outputTokens) }} toks
+                            {{ thread.stats.cost ? ' ' + formatCost(thread.stats.cost) : '' }}
+                        </span>
                     </div>
                     <div v-if="thread.model" class="text-xs text-blue-600 truncate">
                         {{ thread.model }}
@@ -66,7 +74,10 @@ const ThreadItem = {
         }
 
         return {
-            formatRelativeTime
+            formatRelativeTime,
+            humanifyNumber,
+            statsTitle,
+            formatCost,
         }
     }
 }
@@ -153,7 +164,7 @@ const Sidebar = {
     },
     template: `
         <div class="flex flex-col h-full bg-gray-50 border-r border-gray-200">
-            <Brand @home="goToInitialState" @new="createNewThread" />
+            <Brand @home="goToInitialState" @new="createNewThread" @analytics="goToAnalytics" />
             <!-- Thread List -->
             <div class="flex-1 overflow-y-auto">
                 <div v-if="isLoading" class="p-4 text-center text-gray-500">
@@ -219,6 +230,10 @@ const Sidebar = {
             router.push(`${ai.base}/`)
         }
 
+        const goToAnalytics = () => {
+            router.push(`${ai.base}/analytics`)
+        }
+
         return {
             threadStore,
             threads,
@@ -228,7 +243,8 @@ const Sidebar = {
             selectThread,
             deleteThread,
             createNewThread,
-            goToInitialState
+            goToInitialState,
+            goToAnalytics,
         }
     }
 }

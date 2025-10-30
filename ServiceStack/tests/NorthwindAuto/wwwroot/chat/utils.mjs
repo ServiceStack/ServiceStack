@@ -54,6 +54,42 @@ export function fileToDataUri(file) {
   })
 }
 
+export function toModelInfo(model) {
+    if (!model) return undefined
+    return Object.assign({}, model, { pricing: Object.assign({}, model.pricing) || undefined })
+}
+
+const numFmt = new Intl.NumberFormat(undefined,{style:'currency',currency:'USD', maximumFractionDigits:6})
+export function tokenCost(price) {
+    if (!price) return ''
+    var ret = numFmt.format(parseFloat(price))
+    return ret.endsWith('.00') ? ret.slice(0, -3) : ret
+}
+export function formatCost(cost) {
+    if (!cost) return ''
+    return numFmt.format(parseFloat(cost))
+}
+export function statsTitle(stats) {
+    let title = []
+    // Each stat on its own line
+    if (stats.cost) {
+        title.push(`Total Cost: ${formatCost(stats.cost)}`)
+    }
+    if (stats.inputTokens) {
+        title.push(`Input Tokens: ${stats.inputTokens}`)
+    }
+    if (stats.outputTokens) {
+        title.push(`Output Tokens: ${stats.outputTokens}`)
+    }
+    if (stats.requests) {
+        title.push(`Requests: ${stats.requests}`)
+    }
+    if (stats.duration) {
+        title.push(`Duration: ${stats.duration}ms`)
+    }
+    return title.join('\n')
+}
+
 const svg = {
     clipboard: `<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1M8 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M8 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 0h2a2 2 0 0 1 2 2v3m2 4H10m0 0l3-3m-3 3l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>`,
     check: `<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`,

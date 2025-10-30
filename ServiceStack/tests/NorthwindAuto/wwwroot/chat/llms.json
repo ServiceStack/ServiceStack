@@ -2,7 +2,7 @@
     "defaults": {
         "headers": {
             "Content-Type": "application/json",
-            "User-Agent": "ServiceStack.AI.Chat/1.0"
+            "User-Agent": "llms.py/1.0"
         },
         "text": {
             "model": "kimi-k2",
@@ -79,6 +79,21 @@
                     ]
                 }
             ]
+        },
+        "check": {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "1+1="
+                        }
+                    ]
+                }
+            ],
+            "max_completion_tokens": 16,
+            "stream": false
         }
     },
     "providers": {
@@ -93,6 +108,7 @@
                 "llama4:400b": "meta-llama/llama-4-maverick:free",
                 "deepseek-v3.1:671b": "deepseek/deepseek-chat-v3.1:free",
                 "deepseek-r1:671b": "deepseek/deepseek-r1-0528:free",
+                "gemini-2.0-flash": "google/gemini-2.0-flash-exp:free",
                 "glm-4.5-air": "z-ai/glm-4.5-air:free",
                 "mai-ds-r1": "microsoft/mai-ds-r1:free",
                 "llama3.3:70b": "meta-llama/llama-3.3-70b-instruct:free",
@@ -111,10 +127,13 @@
                 "qwen3:30b": "qwen/qwen3-30b-a3b:free",
                 "qwen3:8b": "qwen/qwen3-8b:free",
                 "qwen3:4b": "qwen/qwen3-4b:free",
-                "qwen2.5vl:72b": "qwen/qwen2.5-vl-72b-instruct:free",
                 "qwen2.5vl:32b": "qwen/qwen2.5-vl-32b-instruct:free",
                 "qwen-2.5:72b": "qwen/qwen-2.5-72b-instruct:free",
-                "hunyuan-a13b": "tencent/hunyuan-a13b-instruct:free"
+                "minimax-m2": "minimax/minimax-m2:free"
+            },
+            "default_pricing": {
+                "input": "0",
+                "output": "0"
             }
         },
         "groq": {
@@ -124,7 +143,6 @@
             "api_key": "$GROQ_API_KEY",
             "models": {
                 "allam-2-7b": "allam-2-7b",
-                "gemma2:9b": "gemma2-9b-it",
                 "compound": "groq/compound",
                 "compound-mini": "groq/compound-mini",
                 "llama3.1:8b": "llama-3.1-8b-instant",
@@ -138,6 +156,10 @@
                 "gpt-oss:120b": "openai/gpt-oss-120b",
                 "gpt-oss:20b": "openai/gpt-oss-20b",
                 "qwen3:32b": "qwen/qwen3-32b"
+            },
+            "default_pricing": {
+                "input": "0",
+                "output": "0"
             }
         },
         "google_free": {
@@ -151,6 +173,10 @@
                 "gemini-2.5-flash": "gemini-2.5-flash",
                 "gemini-2.5-flash-lite": "gemini-2.5-flash-lite"
             },
+            "default_pricing": {
+                "input": "0",
+                "output": "0"
+            },
             "safety_settings": [
                 {
                     "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
@@ -160,6 +186,25 @@
             "thinking_config": {
                 "thinkingBudget": 1024,
                 "includeThoughts": true
+            },
+            "check": {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "1+1="
+                            }
+                        ]
+                    }
+                ],
+                "max_completion_tokens": 512,
+                "reasoning": {
+                    "max_tokens": 128,
+                    "reasoning_effort": "low"
+                },
+                "stream": false
             }
         },
         "codestral": {
@@ -169,6 +214,24 @@
             "api_key": "$CODESTRAL_API_KEY",
             "models": {
                 "codestral:22b": "codestral-latest"
+            },
+            "default_pricing": {
+                "input": "0",
+                "output": "0"
+            },
+            "check": {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "1+1="
+                            }
+                        ]
+                    }
+                ],
+                "stream": false
             }
         },
         "ollama": {
@@ -176,10 +239,14 @@
             "type": "OllamaProvider",
             "base_url": "http://localhost:11434",
             "models": {},
-            "all_models": true
+            "all_models": true,
+            "default_pricing": {
+                "input": "0",
+                "output": "0"
+            }
         },
         "openrouter": {
-            "enabled": false,
+            "enabled": true,
             "type": "OpenAiProvider",
             "base_url": "https://openrouter.ai/api",
             "api_key": "$OPENROUTER_API_KEY",
@@ -194,7 +261,6 @@
                 "nova-micro": "amazon/nova-micro-v1",
                 "nova-lite": "amazon/nova-lite-v1",
                 "nova-pro": "amazon/nova-pro-v1",
-                "claude-opus-4-1": "anthropic/claude-opus-4.1",
                 "claude-sonnet-4-5": "anthropic/claude-sonnet-4.5",
                 "claude-sonnet-4-0": "anthropic/claude-sonnet-4",
                 "gpt-5": "openai/gpt-5",
@@ -221,10 +287,10 @@
                 "kimi-k2": "moonshotai/kimi-k2",
                 "deepseek-v3.1:671b": "deepseek/deepseek-chat",
                 "deepseek-v3.2-exp": "deepseek/deepseek-v3.2-exp",
-                "deepseek-chat-v3.1:671b": "deepseek/deepseek-chat-v3.1:free",
+                "deepseek-chat-v3.1:671b": "deepseek/deepseek-chat-v3.1",
                 "deepseek-r1:671b": "deepseek/deepseek-r1",
                 "deepseek-v3.1-terminus": "deepseek/deepseek-v3.1-terminus",
-                "qwen3:8b": "qwen/qwen3-8b:free",
+                "qwen3:8b": "qwen/qwen3-8b",
                 "qwen3:30b": "qwen/qwen3-30b-a3b",
                 "qwen3:32b": "qwen/qwen3-32b",
                 "qwen3:235b": "qwen/qwen3-235b-a22b",
@@ -238,10 +304,228 @@
                 "ling-1t": "inclusionai/ling-1t",
                 "llama4:109b": "meta-llama/llama-4-scout",
                 "llama4:400b": "meta-llama/llama-4-maverick"
+            },
+            "pricing": {
+                "meta-llama/llama-3.1-405b-instruct": {
+                    "input": "0.0000008",
+                    "output": "0.0000008"
+                },
+                "meta-llama/llama-3.3-70b-instruct": {
+                    "input": "0.00000013",
+                    "output": "0.00000038"
+                },
+                "microsoft/phi-4": {
+                    "input": "0.00000006",
+                    "output": "0.00000014"
+                },
+                "mistralai/codestral-2508": {
+                    "input": "0.0000003",
+                    "output": "0.0000009"
+                },
+                "mistralai/mistral-nemo": {
+                    "input": "0.00000002",
+                    "output": "0.00000004"
+                },
+                "mistralai/mixtral-8x22b-instruct": {
+                    "input": "0.000002",
+                    "output": "0.000006"
+                },
+                "mistralai/mistral-small-3.2-24b-instruct": {
+                    "input": "0.00000006",
+                    "output": "0.00000018"
+                },
+                "amazon/nova-micro-v1": {
+                    "input": "0.000000035",
+                    "output": "0.00000014"
+                },
+                "amazon/nova-lite-v1": {
+                    "input": "0.00000006",
+                    "output": "0.00000024"
+                },
+                "amazon/nova-pro-v1": {
+                    "input": "0.0000008",
+                    "output": "0.0000032"
+                },
+                "anthropic/claude-opus-4.1": {
+                    "input": "0.000015",
+                    "output": "0.000075"
+                },
+                "anthropic/claude-sonnet-4.5": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                },
+                "anthropic/claude-sonnet-4": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                },
+                "openai/gpt-5": {
+                    "input": "0.00000125",
+                    "output": "0.00001"
+                },
+                "openai/gpt-5-chat": {
+                    "input": "0.00000125",
+                    "output": "0.00001"
+                },
+                "openai/gpt-5-mini": {
+                    "input": "0.00000025",
+                    "output": "0.000002"
+                },
+                "openai/gpt-5-nano": {
+                    "input": "0.00000005",
+                    "output": "0.0000004"
+                },
+                "openai/gpt-5-codex": {
+                    "input": "0.00000125",
+                    "output": "0.00001"
+                },
+                "openai/gpt-oss-120b": {
+                    "input": "0.00000005",
+                    "output": "0.00000024"
+                },
+                "openai/gpt-oss-20b": {
+                    "input": "0.00000003",
+                    "output": "0.00000014"
+                },
+                "openai/gpt-4o": {
+                    "input": "0.000006",
+                    "output": "0.000018"
+                },
+                "openai/gpt-4o-mini": {
+                    "input": "0.00000015",
+                    "output": "0.0000006"
+                },
+                "openai/gpt-4.1": {
+                    "input": "0.000002",
+                    "output": "0.000008"
+                },
+                "openai/gpt-4.1-mini": {
+                    "input": "0.0000004",
+                    "output": "0.0000016"
+                },
+                "openai/gpt-4.1-nano": {
+                    "input": "0.0000001",
+                    "output": "0.0000004"
+                },
+                "openai/o4-mini": {
+                    "input": "0.0000011",
+                    "output": "0.0000044"
+                },
+                "openai/o4-mini-high": {
+                    "input": "0.0000011",
+                    "output": "0.0000044"
+                },
+                "x-ai/grok-4": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                },
+                "x-ai/grok-4-fast": {
+                    "input": "0.0000002",
+                    "output": "0.0000005"
+                },
+                "x-ai/grok-code-fast-1": {
+                    "input": "0.0000002",
+                    "output": "0.0000015"
+                },
+                "z-ai/glm-4.6": {
+                    "input": "0.0000006",
+                    "output": "0.0000019"
+                },
+                "z-ai/glm-4.5v": {
+                    "input": "0.0000006",
+                    "output": "0.0000018"
+                },
+                "z-ai/glm-4.5": {
+                    "input": "0.00000035",
+                    "output": "0.00000155"
+                },
+                "z-ai/glm-4.5-air": {
+                    "input": "0.00000013",
+                    "output": "0.00000085"
+                },
+                "moonshotai/kimi-k2": {
+                    "input": "0.00000014",
+                    "output": "0.00000249"
+                },
+                "deepseek/deepseek-chat": {
+                    "input": "0.0000003",
+                    "output": "0.00000085"
+                },
+                "deepseek/deepseek-v3.2-exp": {
+                    "input": "0.00000027",
+                    "output": "0.0000004"
+                },
+                "deepseek/deepseek-chat-v3.1": {
+                    "input": "0.00000027",
+                    "output": "0.000001"
+                },
+                "deepseek/deepseek-r1": {
+                    "input": "0.0000004",
+                    "output": "0.000002"
+                },
+                "deepseek/deepseek-v3.1-terminus": {
+                    "input": "0.00000027",
+                    "output": "0.000001"
+                },
+                "qwen/qwen3-8b": {
+                    "input": "0.000000035",
+                    "output": "0.000000138"
+                },
+                "qwen/qwen3-30b-a3b": {
+                    "input": "0.00000006",
+                    "output": "0.00000022"
+                },
+                "qwen/qwen3-32b": {
+                    "input": "0.00000005",
+                    "output": "0.0000002"
+                },
+                "qwen/qwen3-235b-a22b": {
+                    "input": "0.00000018",
+                    "output": "0.00000054"
+                },
+                "qwen/qwen3-coder": {
+                    "input": "0.00000038",
+                    "output": "0.00000153"
+                },
+                "qwen/qwen3-coder-flash": {
+                    "input": "0.0000003",
+                    "output": "0.0000015"
+                },
+                "qwen/qwen3-coder-plus": {
+                    "input": "0.000001",
+                    "output": "0.000005"
+                },
+                "qwen/qwen3-coder-30b-a3b-instruct": {
+                    "input": "0.00000006",
+                    "output": "0.00000025"
+                },
+                "qwen/qwen3-max": {
+                    "input": "0.0000012",
+                    "output": "0.000006"
+                },
+                "qwen/qwen3-vl-235b-a22b-instruct": {
+                    "input": "0.00000022",
+                    "output": "0.00000088"
+                },
+                "qwen/qwen3-vl-235b-a22b-thinking": {
+                    "input": "0.0000003",
+                    "output": "0.0000012"
+                },
+                "inclusionai/ling-1t": {
+                    "input": "0.00000057",
+                    "output": "0.00000228"
+                },
+                "meta-llama/llama-4-scout": {
+                    "input": "0.00000008",
+                    "output": "0.0000003"
+                },
+                "meta-llama/llama-4-maverick": {
+                    "input": "0.00000015",
+                    "output": "0.0000006"
+                }
             }
         },
         "google": {
-            "enabled": false,
+            "enabled": true,
             "type": "GoogleProvider",
             "api_key": "$GOOGLE_API_KEY",
             "models": {
@@ -250,6 +534,28 @@
                 "gemini-2.5-pro": "gemini-2.5-pro",
                 "gemini-2.5-flash": "gemini-2.5-flash",
                 "gemini-2.5-flash-lite": "gemini-2.5-flash-lite"
+            },
+            "pricing": {
+                "gemini-flash-latest": {
+                    "input": "0.0000003",
+                    "output": "0.0000025"
+                },
+                "gemini-flash-lite-latest": {
+                    "input": "0.0000001",
+                    "output": "0.0000004"
+                },
+                "gemini-2.5-pro": {
+                    "input": "0.00000125",
+                    "output": "0.00001"
+                },
+                "gemini-2.5-flash": {
+                    "input": "0.0000003",
+                    "output": "0.0000025"
+                },
+                "gemini-2.5-flash-lite": {
+                    "input": "0.0000001",
+                    "output": "0.0000004"
+                }
             },
             "safety_settings": [
                 {
@@ -260,75 +566,191 @@
             "thinking_config": {
                 "thinkingBudget": 1024,
                 "includeThoughts": true
+            },
+            "check": {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "1+1="
+                            }
+                        ]
+                    }
+                ],
+                "max_completion_tokens": 512,
+                "reasoning": {
+                    "max_tokens": 128,
+                    "reasoning_effort": "low"
+                },
+                "stream": false
             }
         },
         "anthropic": {
-            "enabled": false,
+            "enabled": true,
             "type": "OpenAiProvider",
             "base_url": "https://api.anthropic.com",
             "api_key": "$ANTHROPIC_API_KEY",
             "models": {
-                "claude-opus-4-1": "claude-opus-4-1",
-                "claude-opus-4": "claude-opus-4",
                 "claude-sonnet-4-5": "claude-sonnet-4-5",
                 "claude-sonnet-4-0": "claude-sonnet-4-0",
                 "claude-3-7-sonnet": "claude-3-7-sonnet-latest",
+                "claude-haiku-4-5": "claude-haiku-4-5",
                 "claude-3-5-haiku": "claude-3-5-haiku-latest",
                 "claude-3-haiku": "claude-3-haiku-20240307"
+            },
+            "pricing": {
+                "claude-opus-4-1": {
+                    "input": "0.000015",
+                    "output": "0.000075"
+                },
+                "claude-opus-4": {
+                    "input": "0.000015",
+                    "output": "0.000075"
+                },
+                "claude-sonnet-4-5": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                },
+                "claude-sonnet-4-0": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                },
+                "claude-3-7-sonnet-latest": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                },
+                "claude-haiku-4-5": {
+                    "input": "0.000001",
+                    "output": "0.000005"
+                },
+                "claude-3-5-haiku-latest": {
+                    "input": "0.0000008",
+                    "output": "0.000004"
+                },
+                "claude-3-haiku-20240307": {
+                    "input": "0.00000025",
+                    "output": "0.00000125"
+                }
+            },
+            "check": {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "1+1="
+                            }
+                        ]
+                    }
+                ],
+                "max_completion_tokens": 512,
+                "reasoning": {
+                    "max_tokens": 128,
+                    "reasoning_effort": "low"
+                },
+                "stream": false
             }
         },
         "openai": {
-            "enabled": false,
+            "enabled": true,
             "type": "OpenAiProvider",
             "base_url": "https://api.openai.com",
             "api_key": "$OPENAI_API_KEY",
             "models": {
-                "gpt-5-pro": "openai/gpt-5-pro",
-                "gpt-5-codex": "gpt-5-codex",
-                "gpt-audio": "gpt-audio",
-                "gpt-realtime": "gpt-realtime",
                 "gpt-5-nano": "gpt-5-nano",
                 "gpt-5-mini": "gpt-5-mini",
                 "gpt-5": "gpt-5",
                 "gpt-5-chat-latest": "gpt-5-chat-latest",
-                "o4-mini-deep-research": "o4-mini-deep-research",
-                "codex-mini-latest": "codex-mini-latest",
-                "gpt-image-1": "gpt-image-1",
                 "gpt-4.1-nano": "gpt-4.1-nano",
                 "gpt-4.1-mini": "gpt-4.1-mini",
                 "gpt-4.1": "gpt-4.1",
                 "o4-mini": "o4-mini",
                 "o3": "o3",
-                "gpt-4o-mini-tts": "gpt-4o-mini-tts",
-                "o1-pro": "o1-pro",
-                "gpt-4o-mini-transcribe": "gpt-4o-mini-transcribe",
-                "gpt-4o-transcribe": "gpt-4o-transcribe",
                 "gpt-4o-mini-search-preview": "gpt-4o-mini-search-preview",
                 "gpt-4o-search-preview": "gpt-4o-search-preview",
                 "o3-mini": "o3-mini",
-                "o1": "o1",
-                "omni-moderation-latest": "omni-moderation-latest",
-                "gpt-4o-realtime-preview": "gpt-4o-realtime-preview",
-                "gpt-4o-audio-preview": "gpt-4o-audio-preview",
-                "gpt-4o-mini-audio-preview": "gpt-4o-mini-audio-preview",
                 "o1-mini": "o1-mini",
                 "chatgpt-4o-latest": "chatgpt-4o-latest",
                 "gpt-4o-mini": "gpt-4o-mini",
                 "gpt-4o": "gpt-4o",
-                "gpt-4-turbo": "gpt-4-turbo",
-                "text-embedding-3-large": "text-embedding-3-large",
-                "text-embedding-3-small": "text-embedding-3-small",
-                "tts-1-hd": "tts-1-hd",
-                "gpt-3.5-turbo-instruct": "gpt-3.5-turbo-instruct",
-                "babbage-002": "babbage-002",
-                "davinci-002": "davinci-002",
-                "gpt-4": "gpt-4",
-                "tts-1": "tts-1",
                 "gpt-3.5-turbo": "gpt-3.5-turbo"
+            },
+            "pricing": {
+                "gpt-5-nano": {
+                    "input": "0.00000005",
+                    "output": "0.0000004"
+                },
+                "gpt-5-mini": {
+                    "input": "0.00000025",
+                    "output": "0.000002"
+                },
+                "gpt-5": {
+                    "input": "0.00000125",
+                    "output": "0.00001"
+                },
+                "gpt-5-chat-latest": {
+                    "input": "0.00000125",
+                    "output": "0.00001"
+                },
+                "gpt-4.1-nano": {
+                    "input": "0.0000001",
+                    "output": "0.0000004"
+                },
+                "gpt-4.1-mini": {
+                    "input": "0.0000004",
+                    "output": "0.0000016"
+                },
+                "gpt-4.1": {
+                    "input": "0.000002",
+                    "output": "0.000008"
+                },
+                "o4-mini": {
+                    "input": "0.0000011",
+                    "output": "0.0000044"
+                },
+                "o3": {
+                    "input": "0.000002",
+                    "output": "0.000008"
+                },
+                "gpt-4o-mini-search-preview": {
+                    "input": "0.00000015",
+                    "output": "0.0000006"
+                },
+                "gpt-4o-search-preview": {
+                    "input": "0.0000025",
+                    "output": "0.00001"
+                },
+                "o3-mini": {
+                    "input": "0.0000011",
+                    "output": "0.0000044"
+                },
+                "o1-mini": {
+                    "input": "0.0000011",
+                    "output": "0.0000044"
+                },
+                "chatgpt-4o-latest": {
+                    "input": "0.000005",
+                    "output": "0.000015"
+                },
+                "gpt-4o-mini": {
+                    "input": "0.00000015",
+                    "output": "0.0000006"
+                },
+                "gpt-4o": {
+                    "input": "0.0000025",
+                    "output": "0.00001"
+                },
+                "gpt-3.5-turbo": {
+                    "input": "0.000003",
+                    "output": "0.000006"
+                }
             }
         },
         "grok": {
-            "enabled": false,
+            "enabled": true,
             "type": "OpenAiProvider",
             "base_url": "https://api.x.ai",
             "api_key": "$GROK_API_KEY",
@@ -340,36 +762,54 @@
                 "grok-4-0709": "grok-4-0709",
                 "grok-3-mini": "grok-3-mini",
                 "grok-3": "grok-3"
+            },
+            "pricing": {
+                "grok-4": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                },
+                "grok-code-fast-1": {
+                    "input": "0.0000002",
+                    "output": "0.0000015"
+                },
+                "grok-4-fast-reasoning": {
+                    "input": "0.0000002",
+                    "output": "0.0000005"
+                },
+                "grok-4-fast-non-reasoning": {
+                    "input": "0.0000002",
+                    "output": "0.0000005"
+                },
+                "grok-4-0709": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                },
+                "grok-3-mini": {
+                    "input": "0.0000003",
+                    "output": "0.0000005"
+                },
+                "grok-3": {
+                    "input": "0.000003",
+                    "output": "0.000015"
+                }
             }
         },
         "qwen": {
-            "enabled": false,
+            "enabled": true,
             "type": "OpenAiProvider",
             "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode",
             "api_key": "$DASHSCOPE_API_KEY",
             "models": {
-                "qwen2.5vl": "qwen2.5-vl-7b-instruct",
                 "qwen3-max": "qwen3-max",
                 "qwen-max": "qwen-max",
                 "qwen-plus": "qwen-plus",
                 "qwen-flash": "qwen-flash",
                 "qwq-plus": "qwq-plus",
                 "qwen-turbo": "qwen-turbo",
-                "qvq-max": "qvq-max",
-                "qwen-vl-max": "qwen-vl-max",
-                "qwen3-vl-plus": "qwen3-vl-plus",
-                "qwen-vl-plus": "qwen-vl-plus",
-                "qwen3-omni-flash": "qwen3-omni-flash",
                 "qwen-omni-turbo": "qwen-omni-turbo",
-                "qwen3-omni-flash-realtime": "qwen3-omni-flash-realtime",
-                "qwen-omni-turbo-realtime": "qwen-omni-turbo-realtime",
-                "qwen3-omni-captioner:30b": "qwen3-omni-30b-a3b-captioner",
-                "qwen-vl-ocr": "qwen-vl-ocr",
-                "qwen3-asr-flash": "qwen3-asr-flash",
+                "qwen3-omni-flash": "qwen3-omni-flash",
                 "qwen3-coder-plus": "qwen3-coder-plus",
                 "qwen3-coder-flash": "qwen3-coder-flash",
-                "qwen-plus-character-ja": "qwen-plus-character-ja",
-                "qwen3-next-thinking:80b": "qwen3-next-80b-a3b-thinking",
                 "qwen3-next:80b": "qwen3-next-80b-a3b-instruct",
                 "qwen3:235b": "qwen3-235b-a22b",
                 "qwen3:32b": "qwen3-32b",
@@ -379,25 +819,124 @@
                 "qwen3:4b": "qwen3-4b",
                 "qwen3:1.7b": "qwen3-1.7b",
                 "qwen3:0.6b": "qwen3-0.6b",
-                "qwen2.5:72b": "qwen2.5-72b-instruct",
-                "qwen2.5:32b": "qwen2.5-32b-instruct",
-                "qwen2.5:14b": "qwen2.5-14b-instruct",
-                "qwen2.5:7b": "qwen2.5-7b-instruct",
                 "qwen3-coder": "qwen3-coder-480b-a35b-instruct",
                 "qwen3-coder:30b": "qwen3-coder-30b-a3b-instruct",
+                "qwen3-vl-plus": "qwen3-vl-plus",
                 "qwen3-vl-thinking:235b": "qwen3-vl-235b-a22b-thinking",
                 "qwen3-vl:235b": "qwen3-vl-235b-a22b-instruct",
                 "qwen3-vl:30b": "qwen3-vl-30b-a3b-instruct",
-                "qwen2.5-vl:72b": "qwen2.5-vl-72b-instruct",
-                "qwen2.5-vl:32b": "qwen2.5-vl-32b-instruct",
-                "qwen2.5-vl:7b": "qwen2.5-vl-7b-instruct",
-                "qwen2.5-vl:3b": "qwen2.5-vl-3b-instruct",
                 "qwen2.5-omni:7b": "qwen2.5-omni-7b"
+            },
+            "pricing": {
+                "qwen3-max": {
+                    "input": "0.0000012",
+                    "output": "0.000006"
+                },
+                "qwen-max": {
+                    "input": "0.0000012",
+                    "output": "0.000006"
+                },
+                "qwen-plus": {
+                    "input": "0.0000004",
+                    "output": "0.0000012"
+                },
+                "qwen-flash": {
+                    "input": "0.00000005",
+                    "output": "0.0000004"
+                },
+                "qwq-plus": {
+                    "input": "0.0000008",
+                    "output": "0.0000024"
+                },
+                "qwen-turbo": {
+                    "input": "0.00000005",
+                    "output": "0.0000005"
+                },
+                "qwen-omni-turbo": {
+                    "input": "0.00000007",
+                    "output": "0.00000027"
+                },
+                "qwen3-omni-flash": {
+                    "input": "0.00000043",
+                    "output": "0.00000166"
+                },
+                "qwen3-coder-plus": {
+                    "input": "0.000001",
+                    "output": "0.000005"
+                },
+                "qwen3-coder-flash": {
+                    "input": "0.0000003",
+                    "output": "0.0000015"
+                },
+                "qwen3-next-80b-a3b-instruct": {
+                    "input": "0.0000005",
+                    "output": "0.000002"
+                },
+                "qwen3-235b-a22b": {
+                    "input": "0.0000007",
+                    "output": "0.0000028"
+                },
+                "qwen3-32b": {
+                    "input": "0.0000007",
+                    "output": "0.0000028"
+                },
+                "qwen3-30b-a3b": {
+                    "input": "0.0000002",
+                    "output": "0.0000008"
+                },
+                "qwen3-14b": {
+                    "input": "0.00000035",
+                    "output": "0.0000014"
+                },
+                "qwen3-8b": {
+                    "input": "0.00000018",
+                    "output": "0.0000007"
+                },
+                "qwen3-4b": {
+                    "input": "0.00000011",
+                    "output": "0.00000042"
+                },
+                "qwen3-1.7b": {
+                    "input": "0.00000011",
+                    "output": "0.00000042"
+                },
+                "qwen3-0.6b": {
+                    "input": "0.00000011",
+                    "output": "0.00000042"
+                },
+                "qwen3-coder-480b-a35b-instruct": {
+                    "input": "0.0000015",
+                    "output": "0.0000075"
+                },
+                "qwen3-coder-30b-a3b-instruct": {
+                    "input": "0.00000045",
+                    "output": "0.00000225"
+                },
+                "qwen3-vl-plus": {
+                    "input": "0.0000002",
+                    "output": "0.0000016"
+                },
+                "qwen3-vl-235b-a22b-thinking": {
+                    "input": "0.0000007",
+                    "output": "0.0000084"
+                },
+                "qwen3-vl-235b-a22b-instruct": {
+                    "input": "0.0000007",
+                    "output": "0.0000084"
+                },
+                "qwen3-vl-30b-a3b-instruct": {
+                    "input": "0.0000002",
+                    "output": "0.0000024"
+                },
+                "qwen2.5-omni-7b": {
+                    "input": "0.0000001",
+                    "output": "0.0000004"
+                }
             },
             "enable_thinking": false
         },
         "z.ai": {
-            "enabled": false,
+            "enabled": true,
             "type": "OpenAiProvider",
             "base_url": "https://api.z.ai/api/paas/v4",
             "api_key": "$ZAI_API_KEY",
@@ -410,10 +949,40 @@
                 "glm-4.5-flash": "glm-4.5-flash",
                 "glm-4:32b": "glm-4-32b-0414-128k"
             },
-            "temperature": 0.7
+            "temperature": 0.7,
+            "pricing": {
+                "glm-4.6": {
+                    "input": "0.0000006",
+                    "output": "0.00000022"
+                },
+                "glm-4.5": {
+                    "input": "0.0000006",
+                    "output": "0.00000022"
+                },
+                "glm-4.5-air": {
+                    "input": "0.0000002",
+                    "output": "0.00000011"
+                },
+                "glm-4.5-x": {
+                    "input": "0.00000022",
+                    "output": "0.00000089"
+                },
+                "glm-4.5-airx": {
+                    "input": "0.0000011",
+                    "output": "0.00000045"
+                },
+                "glm-4.5-flash": {
+                    "input": "0",
+                    "output": "0"
+                },
+                "glm-4-32b-0414-128k": {
+                    "input": "0.0000001",
+                    "output": "0.0000001"
+                }
+            }
         },
         "mistral": {
-            "enabled": false,
+            "enabled": true,
             "type": "OpenAiProvider",
             "base_url": "https://api.mistral.ai",
             "api_key": "$MISTRAL_API_KEY",
@@ -422,24 +991,108 @@
                 "magistral-medium": "magistral-medium-latest",
                 "devstral-medium": "devstral-medium-2507",
                 "codestral:22b": "codestral-latest",
-                "mistral-ocr": "mistral-ocr-latest",
                 "mistral-small3.2:24b": "mistral-small-latest",
                 "magistral-small": "magistral-small-latest",
                 "devstral-small": "devstral-small-2507",
                 "voxtral-small": "voxtral-small-latest",
                 "voxtral-mini": "voxtral-mini-latest",
-                "codestral-embed": "codestral-embed-2505",
-                "mistral-embed": "mistral-embed",
                 "mistral-large:123b": "mistral-large-latest",
                 "pixtral-large:124b": "pixtral-large-latest",
                 "pixtral:12b": "pixtral-12b",
                 "mistral-nemo:12b": "open-mistral-nemo",
-                "mistral-saba": "mistral-saba-latest",
                 "mistral:7b": "open-mistral-7b",
                 "mixtral:8x7b": "open-mixtral-8x7b",
                 "mixtral:8x22b": "open-mixtral-8x22b",
                 "ministral:8b": "ministral-8b-latest",
                 "ministral:3b": "ministral-3b-latest"
+            },
+            "pricing": {
+                "mistral-medium-latest": {
+                    "input": "0.0000004",
+                    "output": "0.000002"
+                },
+                "magistral-medium-latest": {
+                    "input": "0.000002",
+                    "output": "0.000005"
+                },
+                "devstral-medium-2507": {
+                    "input": "0.0000004",
+                    "output": "0.000002"
+                },
+                "codestral-latest": {
+                    "input": "0.0000003",
+                    "output": "0.0000003"
+                },
+                "mistral-small-latest": {
+                    "input": "0.0000001",
+                    "output": "0.0000003"
+                },
+                "magistral-small-latest": {
+                    "input": "0.0000005",
+                    "output": "0.0000015"
+                },
+                "devstral-small-2507": {
+                    "input": "0.0000001",
+                    "output": "0.0000003"
+                },
+                "voxtral-small-latest": {
+                    "input": "0.0000001",
+                    "output": "0.0000003"
+                },
+                "voxtral-mini-latest": {
+                    "input": "0.00000004",
+                    "output": "0.00000004"
+                },
+                "mistral-large-latest": {
+                    "input": "0.000002",
+                    "output": "0.000006"
+                },
+                "pixtral-large-latest": {
+                    "input": "0.000002",
+                    "output": "0.000006"
+                },
+                "pixtral-12b": {
+                    "input": "0.00000015",
+                    "output": "0.00000015"
+                },
+                "open-mistral-nemo": {
+                    "input": "0.00000015",
+                    "output": "0.00000015"
+                },
+                "open-mistral-7b": {
+                    "input": "0.00000025",
+                    "output": "0.00000025"
+                },
+                "open-mixtral-8x7b": {
+                    "input": "0.0000007",
+                    "output": "0.0000007"
+                },
+                "open-mixtral-8x22b": {
+                    "input": "0.000002",
+                    "output": "0.000006"
+                },
+                "ministral-8b-latest": {
+                    "input": "0.0000001",
+                    "output": "0.0000001"
+                },
+                "ministral-3b-latest": {
+                    "input": "0.00000004",
+                    "output": "0.00000004"
+                }
+            },
+            "check": {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "1+1="
+                            }
+                        ]
+                    }
+                ],
+                "stream": false
             }
         }
     }

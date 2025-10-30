@@ -30,6 +30,8 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
     public double? TopP { get; set; }
     public string? Verbosity { get; set; }
     public bool? EnableThinking { get; set; }
+    public ModelPrice DefaultPricing { get; set; }
+    public Dictionary<string, ModelPrice> Pricing { get; set; } = [];
     
     public ILogger Log { get; set; } = log;
     public IHttpClientFactory Factory { get; set; } = factory;
@@ -173,6 +175,29 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
         if (definition.TryGetValue("enable_thinking", out bool enableThinking))
         {
             EnableThinking = enableThinking;
+        }
+        if (definition.TryGetObject("pricing", out Dictionary<string, object?> pricing))
+        {
+            Pricing = new();
+            foreach (var entry in pricing)
+            {
+                if (entry.Value is Dictionary<string, object?> modelPrice)
+                {
+                    Pricing[entry.Key] = new ModelPrice
+                    {
+                        Input = modelPrice.GetValueOrDefault("input") as string,
+                        Output = modelPrice.GetValueOrDefault("output") as string,
+                    };
+                }
+            }
+        }
+        if (definition.TryGetObject("default_pricing", out var defaultPricing))
+        {
+            DefaultPricing = new ModelPrice
+            {
+                Input = defaultPricing.GetValueOrDefault("input") as string,
+                Output = defaultPricing.GetValueOrDefault("output") as string,
+            };
         }
     }
     

@@ -1,7 +1,7 @@
-import { ref, nextTick, inject } from 'vue'
+import { ref, nextTick, inject, unref } from 'vue'
 import { useRouter } from 'vue-router'
 import { lastRightPart } from '@servicestack/client'
-import { deepClone, fileToDataUri, fileToBase64, addCopyButtons } from './utils.mjs'
+import { deepClone, fileToDataUri, fileToBase64, addCopyButtons, toModelInfo, tokenCost } from './utils.mjs'
 
 const imageExts = 'png,webp,jpg,jpeg,gif,bmp,svg,tiff,ico'.split(',')
 const audioExts = 'mp3,wav,ogg,flac,m4a,opus,webm'.split(',')
@@ -71,16 +71,28 @@ export default {
             </div>
 
             <div class="flex-1">
-                <textarea
-                    ref="messageInput"
-                    v-model="messageText"
-                    @keydown.enter.exact.prevent="sendMessage"
-                    @keydown.enter.shift.exact="addNewLine"
-                    placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                    rows="3"
-                    class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    :disabled="isGenerating || !model"
-                ></textarea>
+                <div class="relative">
+                    <textarea
+                        ref="messageInput"
+                        v-model="messageText"
+                        @keydown.enter.exact.prevent="sendMessage"
+                        @keydown.enter.shift.exact="addNewLine"
+                        placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+                        rows="3"
+                        class="block w-full rounded-md border border-gray-300 px-3 py-2 pr-12 text-sm placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        :disabled="isGenerating || !model"
+                    ></textarea>
+                    <button title="Send (Enter)" type="button"
+                        @click="sendMessage"
+                        :disabled="!messageText.trim() || isGenerating || !model"
+                        class="absolute bottom-2 right-2 size-8 flex items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:border-gray-200 transition-colors">
+                        <svg v-if="isGenerating" class="size-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <svg v-else class="size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="20" stroke-dashoffset="20" d="M12 21l0 -17.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0"/></path><path stroke-dasharray="12" stroke-dashoffset="12" d="M12 3l7 7M12 3l-7 7"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0"/></path></g></svg>
+                    </button>
+                </div>
 
                 <!-- Attached files preview -->
                 <div v-if="attachedFiles.length" class="mt-2 flex flex-wrap gap-2">
@@ -95,19 +107,6 @@ export default {
                 <div v-if="!model" class="mt-2 text-sm text-red-600">
                     Please select a model
                 </div>
-            </div>
-
-            <div class="pt-3">
-                <button title="Send (Enter)" type="button"
-                    @click="sendMessage"
-                    :disabled="!messageText.trim() || isGenerating || !model"
-                    class="p-2 flex items-center justify-center rounded-full bg-gray-700 text-white transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:outline-black disabled:bg-[#D7D7D7] disabled:text-[#f4f4f4] disabled:hover:opacity-100 dark:bg-white dark:text-black dark:focus-visible:outline-white disabled:dark:bg-token-text-quaternary dark:disabled:text-token-main-surface-secondary">
-                    <svg v-if="isGenerating" class="size-8 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <svg v-else class="size-8" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="20" stroke-dashoffset="20" d="M12 21l0 -17.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0"/></path><path stroke-dasharray="12" stroke-dashoffset="12" d="M12 3l7 7M12 3l-7 7"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0"/></path></g></svg>
-                </button>
             </div>
         </div>
     </div>    
@@ -222,21 +221,28 @@ export default {
                     threadId = currentThread.value.id
                     // Update the existing thread's model and systemPrompt to match current selection
                     await threads.updateThread(threadId, {
-                        model: props.model,
+                        model: props.model.id,
+                        info: toModelInfo(props.model),
                         systemPrompt: props.systemPrompt
                     })
                 }
 
-                // Add user message
-                await threads.addMessageToThread(threadId, {
-                    role: 'user',
-                    content: message
-                })
+                // Get the thread to check for duplicates
+                let thread = await threads.getThread(threadId)
+                const lastMessage = thread.messages[thread.messages.length - 1]
+                const isDuplicate = lastMessage && lastMessage.role === 'user' && lastMessage.content === message
+
+                // Add user message only if it's not a duplicate
+                if (!isDuplicate) {
+                    await threads.addMessageToThread(threadId, {
+                        role: 'user',
+                        content: message
+                    })
+                    // Reload thread after adding message
+                    thread = await threads.getThread(threadId)
+                }
 
                 isGenerating.value = true
-
-                // Get the updated thread to prepare chat request
-                const thread = await threads.getThread(threadId)
                 const messages = [...thread.messages]
 
                 // Add system prompt if present
@@ -250,7 +256,7 @@ export default {
                 }
 
                 const chatRequest = createChatRequest()
-                chatRequest.model = props.model
+                chatRequest.model = props.model.id
 
                 // Apply user settings
                 applySettings(chatRequest)
@@ -334,6 +340,7 @@ export default {
 
                 // Send to API
                 console.debug('chatRequest', chatRequest)
+                const startTime = Date.now()
                 const response = await ai.post('/v1/chat/completions', {
                     body: JSON.stringify(chatRequest)
                 })
@@ -369,6 +376,7 @@ export default {
                 } else {
                     try {
                         result = await response.json()
+                        console.debug('chatResponse', JSON.stringify(result, null, 2))
                     } catch (e) {
                         errorStatus.value = {
                             errorCode: 'Error',
@@ -388,7 +396,21 @@ export default {
                 if (!errorStatus.value) {
                     // Add assistant response (save entire message including reasoning)
                     const assistantMessage = result.choices?.[0]?.message
-                    await threads.addMessageToThread(threadId, assistantMessage)
+
+                    const usage = result.usage
+                    if (usage) {
+                        if (result.metadata?.pricing) {
+                            const [ input, output ] = result.metadata.pricing.split('/')
+                            usage.duration = result.metadata.duration ?? (Date.now() - startTime)
+                            usage.input = input
+                            usage.output = output
+                            usage.tokens = usage.completion_tokens
+                            usage.price = usage.output
+                            usage.cost = tokenCost(usage.prompt_tokens * parseFloat(input) + usage.completion_tokens * parseFloat(output))
+                        }
+                        await threads.logRequest(threadId, props.model, chatRequest, result)
+                    }
+                    await threads.addMessageToThread(threadId, assistantMessage, usage)
 
                     nextTick(addCopyButtons)
 

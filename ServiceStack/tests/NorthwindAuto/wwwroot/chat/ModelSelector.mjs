@@ -1,8 +1,11 @@
-import ProviderStatus from "./ProviderStatus.mjs";
+import ProviderStatus from "./ProviderStatus.mjs"
+import ProviderIcon from "./ProviderIcon.mjs"
+import { useFormatters } from "@servicestack/vue"
 
 export default {
     components: {
         ProviderStatus,
+        ProviderIcon,
     },
     template:`
         <!-- Model Selector -->
@@ -10,10 +13,26 @@ export default {
             <Autocomplete id="model" :options="models" label=""
                 :modelValue="modelValue" @update:modelValue="$emit('update:modelValue', $event)"
                 class="w-72 xl:w-84"
-                :match="(x, value) => x.toLowerCase().includes(value.toLowerCase())"
+                :match="(x, value) => x.id.toLowerCase().includes(value.toLowerCase())"
                 placeholder="Select Model...">
-                <template #item="{ value }">
-                    <div class="truncate max-w-72" :title="value">{{value}}</div>
+                <template #item="{ id, provider, provider_model, pricing }">
+                    <div :key="id + provider + provider_model" class="group truncate max-w-72 flex justify-between">
+                        <span :title="id">{{id}}</span>
+                        <span class="flex items-center space-x-1">
+                            <span v-if="pricing && (parseFloat(pricing.input) == 0 && parseFloat(pricing.input) == 0)">
+                                <span class="text-xs text-gray-500" title="Free to use">FREE</span>                            
+                            </span>
+                            <span v-else-if="pricing" class="text-xs text-gray-500" 
+                                :title="'Estimated Cost per token: ' + pricing.input + ' input | ' + pricing.output + ' output'">
+                              {{tokenPrice(pricing.input)}}
+                              &#183;
+                              {{tokenPrice(pricing.output)}} M
+                            </span>
+                            <span :title="provider_model + ' from ' + provider">    
+                                <ProviderIcon :provider="provider" />
+                            </span>
+                        </span>
+                    </div>
                 </template>
             </Autocomplete>
             <ProviderStatus @updated="$emit('updated', $event)" />
@@ -25,5 +44,17 @@ export default {
         modelValue: String,
     },
     setup() {
+
+        const numFmt = new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'})
+        
+        function tokenPrice(price) {
+            if (!price) return ''
+            var ret = numFmt.format(parseFloat(price) * 1_000_000)
+            return ret.endsWith('.00') ? ret.slice(0, -3) : ret
+        }
+
+        return {
+            tokenPrice
+        }
     }
 }

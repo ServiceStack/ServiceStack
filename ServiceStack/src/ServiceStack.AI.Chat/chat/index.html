@@ -29,7 +29,9 @@
             "@servicestack/vue": "/js/servicestack-vue.mjs",
             "idb": "/js/idb.mjs",
             "marked": "/js/marked.mjs",
-            "highlight.js": "/js/highlight.mjs"
+            "highlight.js": "/js/highlight.mjs",
+            "chart.js": "/js/chart.js",
+            "color.js": "/js/color.js"  
         }
     }
 </script>
@@ -47,6 +49,7 @@ import SettingsDialog from '/chat/SettingsDialog.mjs'
 const { config, models } = await ai.init()
 const MainComponent = defineAsyncComponent(() => import(ai.base + '/Main.mjs'))
 const RecentsComponent = defineAsyncComponent(() => import(ai.base + '/Recents.mjs'))
+const AnalyticsComponent = defineAsyncComponent(() => import(ai.base + '/Analytics.mjs'))
 
 const Components = {
     SettingsDialog,
@@ -56,6 +59,7 @@ const routes = [
     { path: '/', component: MainComponent },
     { path: '/c/:id', component: MainComponent },
     { path: '/recents', component: RecentsComponent  },
+    { path: '/analytics', component: AnalyticsComponent  },
     { path: '/:fallback(.*)*', component: MainComponent }
 ]
 routes.forEach(r => r.path = ai.base + r.path)

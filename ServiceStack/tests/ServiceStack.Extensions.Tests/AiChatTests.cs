@@ -98,7 +98,7 @@ public class AiChatTests
     public async Task Can_get_models()
     {
         var client = await CreateClientAsync();
-        var response = await client.SendAsync(new ChatModels());
+        var response = await client.SendAsync(new ChatModelsList());
         ClientConfig.PrintDump(response);
         Assert.That(response, Is.Not.Null);
         Assert.That(response.Length, Is.GreaterThan(0));

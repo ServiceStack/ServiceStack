@@ -1,4 +1,5 @@
 using System.Net;
+using System.Runtime.Serialization;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -355,8 +356,26 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
 }
 
 [ExcludeMetadata, Route("/chat/models")]
-public class ChatModels : IGet, IReturn<string[]>
+public class ChatModels : IGet, IReturn<ModelInfo[]>
 {
+}
+
+[DataContract]
+public class ModelInfo
+{
+    [DataMember]
+    public string Id { get; set; }
+    [DataMember]
+    public string Provider { get; set; }
+    [DataMember(Name = "provider_model")]
+    public string ProviderModel { get; set; }
+    [DataMember]
+    public ModelPrice? Pricing { get; set; }
+}
+public class ModelPrice
+{
+    public string? Input { get; set; }
+    public string? Output { get; set; }
 }
 
 [ExcludeMetadata, Route("/chat/config")]
@@ -492,12 +511,27 @@ public class ChatServices(ILogger<ChatServices> log) : Service
     {
         var (feature, error) = await AssertAccessAsync();
         if (error != null) return error;
-        var models = new HashSet<string>();
+        var existingModels = new HashSet<string>();
+        var ret = new List<ModelInfo>();
         foreach (var entry in feature.Providers)
         {
-            models.AddDistinctRange(entry.Value.Models.Keys);
+            var providerId = entry.Key;
+            var provider = entry.Value;
+            foreach (var model in provider.Models)
+            {
+                if (!existingModels.Add(model.Key))
+                    continue;
+                existingModels.Add(model.Key);
+                ret.Add(new ModelInfo
+                {
+                    Id = model.Key,
+                    Provider = providerId,
+                    ProviderModel = model.Value,
+                    Pricing = provider.Pricing?.GetValueOrDefault(model.Key) ?? provider.DefaultPricing, 
+                });
+            }
         }
-        return models;
+        return ret;
     }
 
     public async Task<object> Get(ChatConfig request)
