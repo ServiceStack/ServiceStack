@@ -152,7 +152,8 @@ public class RubyGenerator : ILangGenerator
     public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
 
     //In _builtInTypes servicestack library
-    public static HashSet<string> IgnoreTypeInfosFor =
+    public static HashSet<string> IgnoreTypeInfosFor = [];
+    /* if added in external library
     [
         "String",
         "Integer",
@@ -199,6 +200,7 @@ public class RubyGenerator : ILangGenerator
         nameof(StringsResponse),
         nameof(AuditBase)
     ];
+    */
 
     public static HashSet<string> IgnoreReturnMarkersForSubTypesOf = new() {
     };
@@ -408,11 +410,13 @@ public class RubyGenerator : ILangGenerator
 
         if (!WithoutOptions)
         {
-            sb.AppendLine("=begin");
             sb.AppendLine("# Options:");
-            sb.AppendLine("{0}BaseUrl: {1}".Fmt(defaultValue("BaseUrl"), Config.BaseUrl));
-
-
+            sb.AppendLine("=begin");
+            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
+            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
+            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            sb.AppendLine();
             sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
             sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
             sb.AppendLine("{0}MakeInternal: {1}".Fmt(defaultValue("MakeInternal"), Config.MakeInternal));
@@ -806,7 +810,7 @@ public class RubyGenerator : ILangGenerator
         {
             if (Config.AddIndexesToDataMembers)
             {
-                sb.AppendLine($"  # @DataMember(Order={dataMemberIndex})");
+                sb.AppendLine($"# @DataMember(Order={dataMemberIndex})");
                 return true;
             }
             return false;
@@ -843,7 +847,7 @@ public class RubyGenerator : ILangGenerator
 
         if (sbDataMember.Length > 0)
         {
-            sb.AppendLine($"  # @DataMember({StringBuilderCacheAlt.ReturnAndFree(sbDataMember)})");
+            sb.AppendLine($"# @DataMember({StringBuilderCacheAlt.ReturnAndFree(sbDataMember)})");
             return true;
         }
 
