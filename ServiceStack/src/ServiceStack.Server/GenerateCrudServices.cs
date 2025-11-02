@@ -914,7 +914,6 @@ public class GenerateCrudServices : IGenerateCrudServices
         if (string.IsNullOrEmpty(request.AddDefaultXmlNamespace))
             typesConfig.AddDefaultXmlNamespace = null;
 
-        typesConfig.UsePath = req.PathInfo;
         var exportDbAttrs = new[] {
             typeof(NamedConnectionAttribute),
             typeof(SchemaAttribute),

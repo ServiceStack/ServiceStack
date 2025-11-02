@@ -82,9 +82,6 @@ public class CommonJsGenerator : ILangGenerator
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
-
             sb.AppendLine();
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));

@@ -163,9 +163,6 @@ public class JavaGenerator : ILangGenerator
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
-
             sb.AppendLine();
             sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), globalNamespace));

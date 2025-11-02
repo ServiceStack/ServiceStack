@@ -243,12 +243,8 @@ public class RustGenerator : ILangGenerator
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
-
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));

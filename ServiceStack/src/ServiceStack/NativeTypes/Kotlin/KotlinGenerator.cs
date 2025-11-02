@@ -165,9 +165,6 @@ public class KotlinGenerator : ILangGenerator
             sb.AppendLine($"Version: {Env.VersionString}");
             sb.AppendLine($"Tip: {HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")}");
             sb.AppendLine($"BaseUrl: {Config.BaseUrl}");
-            if (Config.UsePath != null)
-                sb.AppendLine("UsePath: {0}".Fmt(Config.UsePath));
-
             sb.AppendLine();
             sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));

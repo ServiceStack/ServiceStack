@@ -412,8 +412,6 @@ public class RubyGenerator : ILangGenerator
             sb.AppendLine("# Options:");
             sb.AppendLine("{0}BaseUrl: {1}".Fmt(defaultValue("BaseUrl"), Config.BaseUrl));
 
-            if (Config.UsePath != null)
-                sb.AppendLine("{0}UsePath: {1}".Fmt(defaultValue("UsePath"), Config.UsePath));
 
             sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
             sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
