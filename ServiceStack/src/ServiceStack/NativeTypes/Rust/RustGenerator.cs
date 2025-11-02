@@ -32,7 +32,8 @@ public class RustGenerator : ILangGenerator
     public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
 
     //In _builtInTypes servicestack library
-    public static HashSet<string> IgnoreTypeInfosFor =
+    public static HashSet<string> IgnoreTypeInfosFor = [];
+    /* if added in external library
     [
         "String",
         "Integer",
@@ -79,7 +80,8 @@ public class RustGenerator : ILangGenerator
         nameof(StringsResponse),
         nameof(AuditBase)
     ];
-        
+    */
+
     public static List<string> DefaultImports = new() {
         "serde::{Serialize, Deserialize}",
         "std::collections::HashMap",
@@ -119,6 +121,16 @@ public class RustGenerator : ILangGenerator
         {"HttpWebResponse", "Vec<u8>"},
     };
 
+    // Rust keywords that need to be escaped with r# prefix
+    public static HashSet<string> RustKeywords = new() {
+        "as", "break", "const", "continue", "crate", "else", "enum", "extern",
+        "false", "fn", "for", "if", "impl", "in", "let", "loop", "match",
+        "mod", "move", "mut", "pub", "ref", "return", "self", "Self", "static",
+        "struct", "super", "trait", "true", "type", "unsafe", "use", "where",
+        "while", "async", "await", "dyn", "abstract", "become", "box", "do",
+        "final", "macro", "override", "priv", "typeof", "unsized", "virtual", "yield"
+    };
+
     private static string declaredEmptyString = "String::new()";
     internal static readonly Dictionary<string, string> primitiveDefaultValues = new() {
         {"String", declaredEmptyString},
@@ -135,12 +147,18 @@ public class RustGenerator : ILangGenerator
         {"f64", "0.0"},
         {"Vec", "Vec::new()"},
     };
+    
+    public static List<string> IgnoreAttributeNames { get; set; } =
+    [
+        "DataContract",
+        "DataMember"
+    ];
 
     public HashSet<string> UseGenericDefinitionsFor { get; set; } = new()
     {
         typeof(QueryResponse<>).Name,
     };
-        
+
     public static TypeFilterDelegate TypeFilter { get; set; }
     public static Func<string, string> CookedTypeFilter { get; set; }
     public static TypeFilterDelegate DeclarationTypeFilter { get; set; }
@@ -189,7 +207,7 @@ public class RustGenerator : ILangGenerator
             if (value)
             {
                 IsPropertyOptional = (gen, type, prop) => false;
-                PropertyTypeFilter = (gen, type, prop) => 
+                PropertyTypeFilter = (gen, type, prop) =>
                     prop.IsRequired == true
                         ? gen.GetPropertyType(prop, out _)
                         : gen.GetPropertyType(prop, out _) + "|null";
@@ -217,8 +235,8 @@ public class RustGenerator : ILangGenerator
     }
 
     public MetadataType FindType(MetadataTypeName typeRef) =>
-        typeRef == null ? null : FindType(typeRef.Name, typeRef.Namespace); 
-    public MetadataType FindType(string name, string @namespace = null) => AllTypes.FirstOrDefault(x => x.Name == name 
+        typeRef == null ? null : FindType(typeRef.Name, typeRef.Namespace);
+    public MetadataType FindType(string name, string @namespace = null) => AllTypes.FirstOrDefault(x => x.Name == name
         && (@namespace == null || @namespace == x.Namespace));
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
@@ -243,6 +261,7 @@ public class RustGenerator : ILangGenerator
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            sb.AppendLine("//RustPropertyStyle: ENABLED - Using snake_case with serde rename");
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
@@ -484,9 +503,20 @@ public class RustGenerator : ILangGenerator
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
-                // Add serde rename if property name differs from serialized name
-                var serializedName = prop.GetSerializedAlias();
-                if (serializedName != null && serializedName != prop.Name)
+                // Determine the serialized name (what appears in JSON/wire format)
+                var serializedName = (prop.GetSerializedAlias() ?? prop.Name).ToCamelCase();
+
+                // Get the Rust field name (snake_case)
+                var rustFieldName = GetPropertyName(prop);
+
+                // Remove r# prefix if present for comparison
+                var rustFieldNameWithoutPrefix = rustFieldName.StartsWith("r#")
+                    ? rustFieldName.Substring(2)
+                    : rustFieldName;
+
+                // Add serde rename if the Rust field name differs from serialized name
+                // This handles both explicit DataMember renames and snake_case conversion
+                if (serializedName != rustFieldNameWithoutPrefix)
                 {
                     sb.AppendLine($"#[serde(rename = \"{serializedName}\")]");
                 }
@@ -499,7 +529,7 @@ public class RustGenerator : ILangGenerator
 
                 sb.Emit(prop, Lang.Rust);
                 PrePropertyFilter?.Invoke(sb, prop, type);
-                sb.AppendLine("pub {0}: {1},".Fmt(GetPropertyName(prop), propType));
+                sb.AppendLine("pub {0}: {1},".Fmt(rustFieldName, propType));
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
         }
@@ -507,7 +537,24 @@ public class RustGenerator : ILangGenerator
         if (includeResponseStatus)
         {
             AppendDataMember(sb, null, dataMemberIndex++);
-            sb.AppendLine("pub {0}: Option<ResponseStatus>,".Fmt(GetPropertyName(nameof(ResponseStatus))));
+            var responseStatusFieldName = GetPropertyName(nameof(ResponseStatus));
+            if (nameof(ResponseStatus) != responseStatusFieldName)
+            {
+                sb.AppendLine($"#[serde(rename = \"{nameof(ResponseStatus)}\")]");
+            }
+            sb.AppendLine("pub {0}: Option<ResponseStatus>,".Fmt(responseStatusFieldName));
+        }
+
+        // Add PhantomData for generic types with no properties
+        if (type.GenericArgs?.Length > 0 &&
+            (type.Properties == null || type.Properties.Count == 0) &&
+            !includeResponseStatus)
+        {
+            for (int i = 0; i < type.GenericArgs.Length; i++)
+            {
+                sb.AppendLine("#[serde(skip)]");
+                sb.AppendLine($"pub _phantom{(i > 0 ? i.ToString() : "")}: std::marker::PhantomData<{type.GenericArgs[i]}>,");
+            }
         }
     }
 
@@ -733,6 +780,9 @@ public class RustGenerator : ILangGenerator
 
     public void AppendDataContract(StringBuilderWrapper sb, MetadataDataContract dcMeta)
     {
+        if (IgnoreAttributeNames.Contains("DataContract"))
+            return;
+        
         if (dcMeta == null)
         {
             if (Config.AddDataContractAttributes)
@@ -761,6 +811,9 @@ public class RustGenerator : ILangGenerator
 
     public bool AppendDataMember(StringBuilderWrapper sb, MetadataDataMember dmMeta, int dataMemberIndex)
     {
+        if (IgnoreAttributeNames.Contains("DataMember"))
+            return false;
+        
         if (dmMeta == null)
         {
             if (Config.AddDataContractAttributes)
@@ -870,9 +923,11 @@ public class RustGenerator : ILangGenerator
         return sb.ToString();
     }
 
-    public string GetPropertyName(string name) => name.SafeToken().PropertyStyle(); 
-    public string GetPropertyName(MetadataPropertyType prop) => 
-        prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle();
+    public string EscapeKeyword(string name) => RustKeywords.Contains(name) ? $"r#{name}" : name;
+
+    public string GetPropertyName(string name) => EscapeKeyword(name.SafeToken().PropertyStyle());
+    public string GetPropertyName(MetadataPropertyType prop) =>
+        EscapeKeyword(prop.Name.SafeToken().PropertyStyle());
 }
 
 public static class RustGeneratorExtensions
@@ -888,11 +943,7 @@ public static class RustGeneratorExtensions
 
     public static string PropertyStyle(this string name)
     {
-        // Rust uses snake_case for field names
-        return JsConfig.TextCase == TextCase.CamelCase
-            ? name.ToCamelCase()
-            : JsConfig.TextCase == TextCase.SnakeCase
-                ? name.ToLowercaseUnderscore()
-                : name.ToLowercaseUnderscore(); // Default to snake_case for Rust
+        // Rust always uses snake_case for field names
+        return name.ToLowercaseUnderscore();
     }
 }

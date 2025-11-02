@@ -1,0 +1,10 @@
+[package]
+name = "adhocnew-rust-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
+[lib]
+path = "dtos.rs"
