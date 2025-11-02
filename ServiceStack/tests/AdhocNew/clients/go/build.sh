@@ -17,3 +17,15 @@ else
     echo "✗ dtos.go has build errors"
     exit 1
 fi
+
+rm -f dtos.go && npx get-dtos go https://localhost:5001 --include "ChatCompletion.*"
+
+echo "Building dtos.go..."
+go build -o /dev/null dtos.go
+
+if [ $? -eq 0 ]; then
+    echo "✓ dtos.go compiled successfully"
+else
+    echo "✗ dtos.go has build errors"
+    exit 1
+fi

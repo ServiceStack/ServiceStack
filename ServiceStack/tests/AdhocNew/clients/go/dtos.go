@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-11-02 20:47:27
+Date: 2025-11-02 22:19:50
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -11,45 +11,18 @@ BaseUrl: https://localhost:5001
 //AddResponseStatus: False
 //AddImplicitVersion: 
 //AddDescriptionAsComments: True
-//IncludeTypes: 
+IncludeTypes: ChatCompletion.*
 //ExcludeTypes: 
-//DefaultImports: time
+//DefaultImports: 
 */
 
 package dtos
-
-import (
-    "time"
-)
 
 
 type IReturn struct {
 }
 
-type IReturnVoid struct {
-}
-
-type IHasSessionId struct {
-    SessionId *string `json:"sessionId,omitempty"`
-}
-
-type IHasBearerToken struct {
-    BearerToken *string `json:"bearerToken,omitempty"`
-}
-
-type IGet struct {
-}
-
 type IPost struct {
-}
-
-type ICreateDb struct {
-}
-
-type IPatchDb struct {
-}
-
-type IDeleteDb struct {
 }
 
 // @DataContract
@@ -129,101 +102,6 @@ type Tool struct {
     /** @description The type of the tool. Currently, only function is supported. */
     // @DataMember(Name="type")
     Type ToolType `json:"type,omitempty"`
-}
-
-// @DataContract
-type QueryBase struct {
-    // @DataMember(Order=1)
-    Skip *int `json:"skip,omitempty"`
-    // @DataMember(Order=2)
-    Take *int `json:"take,omitempty"`
-    // @DataMember(Order=3)
-    OrderBy *string `json:"orderBy,omitempty"`
-    // @DataMember(Order=4)
-    OrderByDesc *string `json:"orderByDesc,omitempty"`
-    // @DataMember(Order=5)
-    Include *string `json:"include,omitempty"`
-    // @DataMember(Order=6)
-    Fields *string `json:"fields,omitempty"`
-    // @DataMember(Order=7)
-    Meta map[string]string `json:"meta,omitempty"`
-}
-
-type QueryDb struct {
-    QueryBase
-}
-
-// @DataContract
-type AuditBase struct {
-    // @DataMember(Order=1)
-    CreatedDate time.Time `json:"createdDate,omitempty"`
-    // @DataMember(Order=2)
-    // @Required()
-    CreatedBy string `json:"createdBy"`
-    // @DataMember(Order=3)
-    ModifiedDate time.Time `json:"modifiedDate,omitempty"`
-    // @DataMember(Order=4)
-    // @Required()
-    ModifiedBy string `json:"modifiedBy"`
-    // @DataMember(Order=5)
-    DeletedDate *time.Time `json:"deletedDate,omitempty"`
-    // @DataMember(Order=6)
-    DeletedBy *string `json:"deletedBy,omitempty"`
-}
-
-type RoomType string
-
-const (
-    RoomTypeSingle RoomType = "Single"
-    RoomTypeDouble = "Double"
-    RoomTypeQueen = "Queen"
-    RoomTypeTwin = "Twin"
-    RoomTypeSuite = "Suite"
-)
-
-/** @description Discount Coupons */
-type Coupon struct {
-    Id string `json:"id"`
-    Description string `json:"description"`
-    Discount int `json:"discount,omitempty"`
-    ExpiryDate time.Time `json:"expiryDate,omitempty"`
-}
-
-type User struct {
-    Id string `json:"id"`
-    UserName string `json:"userName"`
-    FirstName *string `json:"firstName,omitempty"`
-    LastName *string `json:"lastName,omitempty"`
-    DisplayName *string `json:"displayName,omitempty"`
-    ProfileUrl *string `json:"profileUrl,omitempty"`
-}
-
-/** @description Booking Details */
-type Booking struct {
-    AuditBase
-    Id int `json:"id,omitempty"`
-    Name string `json:"name"`
-    RoomType RoomType `json:"roomType,omitempty"`
-    RoomNumber int `json:"roomNumber,omitempty"`
-    BookingStartDate time.Time `json:"bookingStartDate,omitempty"`
-    BookingEndDate *time.Time `json:"bookingEndDate,omitempty"`
-    Cost float64 `json:"cost,omitempty"`
-    // @References("typeof(MyApp.ServiceModel.Coupon)")
-    CouponId *string `json:"couponId,omitempty"`
-    Discount Coupon `json:"discount"`
-    Notes *string `json:"notes,omitempty"`
-    Cancelled *bool `json:"cancelled,omitempty"`
-    Employee User `json:"employee"`
-}
-
-type BackgroundJobRef struct {
-    Id int64 `json:"id,omitempty"`
-    RefId string `json:"refId"`
-}
-
-type PageStats struct {
-    Label string `json:"label"`
-    Total int `json:"total,omitempty"`
 }
 
 /** @description Annotations for the message, when applicable, as when using the web search tool. */
@@ -386,20 +264,6 @@ type ResponseStatus struct {
     Meta map[string]string `json:"meta,omitempty"`
 }
 
-// @DataContract
-type QueryResponse struct {
-    // @DataMember(Order=1)
-    Offset int `json:"offset,omitempty"`
-    // @DataMember(Order=2)
-    Total int `json:"total,omitempty"`
-    // @DataMember(Order=3)
-    Results []interface{} `json:"results"`
-    // @DataMember(Order=4)
-    Meta map[string]string `json:"meta,omitempty"`
-    // @DataMember(Order=5)
-    ResponseStatus *ResponseStatus `json:"responseStatus,omitempty"`
-}
-
 /** @description Text content part */
 // @DataContract
 type AiTextContent struct {
@@ -468,18 +332,6 @@ type AiFileContent struct {
     File AiFile `json:"file"`
 }
 
-type QueueCheckUrlsResponse struct {
-    JobRef BackgroundJobRef `json:"jobRef"`
-}
-
-type HelloResponse struct {
-    Result string `json:"result"`
-}
-
-type AdminDataResponse struct {
-    PageStats []PageStats `json:"pageStats"`
-}
-
 // @DataContract
 type ChatResponse struct {
     /** @description A unique identifier for the chat completion. */
@@ -511,58 +363,6 @@ type ChatResponse struct {
     Metadata map[string]string `json:"metadata,omitempty"`
     // @DataMember(Name="responseStatus")
     ResponseStatus *ResponseStatus `json:"responseStatus,omitempty"`
-}
-
-// @DataContract
-type AuthenticateResponse struct {
-    // @DataMember(Order=1)
-    UserId string `json:"userId,omitempty"`
-    // @DataMember(Order=2)
-    SessionId string `json:"sessionId,omitempty"`
-    // @DataMember(Order=3)
-    UserName string `json:"userName,omitempty"`
-    // @DataMember(Order=4)
-    DisplayName string `json:"displayName,omitempty"`
-    // @DataMember(Order=5)
-    ReferrerUrl string `json:"referrerUrl,omitempty"`
-    // @DataMember(Order=6)
-    BearerToken string `json:"bearerToken,omitempty"`
-    // @DataMember(Order=7)
-    RefreshToken string `json:"refreshToken,omitempty"`
-    // @DataMember(Order=8)
-    RefreshTokenExpiry *time.Time `json:"refreshTokenExpiry,omitempty"`
-    // @DataMember(Order=9)
-    ProfileUrl string `json:"profileUrl,omitempty"`
-    // @DataMember(Order=10)
-    Roles []string `json:"roles,omitempty"`
-    // @DataMember(Order=11)
-    Permissions []string `json:"permissions,omitempty"`
-    // @DataMember(Order=12)
-    AuthProvider string `json:"authProvider,omitempty"`
-    // @DataMember(Order=13)
-    ResponseStatus ResponseStatus `json:"responseStatus,omitempty"`
-    // @DataMember(Order=14)
-    Meta map[string]string `json:"meta,omitempty"`
-}
-
-// @DataContract
-type IdResponse struct {
-    // @DataMember(Order=1)
-    Id string `json:"id"`
-    // @DataMember(Order=2)
-    ResponseStatus *ResponseStatus `json:"responseStatus,omitempty"`
-}
-
-type QueueCheckUrls struct {
-    Urls string `json:"urls"`
-}
-
-// @Route("/hello/{Name}")
-type Hello struct {
-    Name *string `json:"name,omitempty"`
-}
-
-type AdminData struct {
 }
 
 /** @description Chat Completions API (OpenAI-Compatible) */
@@ -650,129 +450,4 @@ type ChatCompletion struct {
     /** @description If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message. */
     // @DataMember(Name="stream")
     Stream *bool `json:"stream,omitempty"`
-}
-
-/** @description Sign In */
-// @Route("/auth", "GET,POST")
-// @Route("/auth/{provider}", "POST")
-// @Api(Description="Sign In")
-// @DataContract
-type Authenticate struct {
-    /** @description AuthProvider, e.g. credentials */
-    // @DataMember(Order=1)
-    Provider string `json:"provider,omitempty"`
-    // @DataMember(Order=2)
-    UserName string `json:"userName,omitempty"`
-    // @DataMember(Order=3)
-    Password string `json:"password,omitempty"`
-    // @DataMember(Order=4)
-    RememberMe *bool `json:"rememberMe,omitempty"`
-    // @DataMember(Order=5)
-    AccessToken string `json:"accessToken,omitempty"`
-    // @DataMember(Order=6)
-    AccessTokenSecret string `json:"accessTokenSecret,omitempty"`
-    // @DataMember(Order=7)
-    ReturnUrl string `json:"returnUrl,omitempty"`
-    // @DataMember(Order=8)
-    ErrorView string `json:"errorView,omitempty"`
-    // @DataMember(Order=9)
-    Meta map[string]string `json:"meta,omitempty"`
-}
-
-/** @description Find Bookings */
-// @Route("/bookings", "GET")
-// @Route("/bookings/{Id}", "GET")
-type QueryBookings struct {
-    QueryDb
-    Id *int `json:"id,omitempty"`
-}
-
-/** @description Find Coupons */
-// @Route("/coupons", "GET")
-type QueryCoupons struct {
-    QueryDb
-    Id string `json:"id"`
-}
-
-// @ValidateRequest(Validator="IsAdmin")
-type QueryUsers struct {
-    QueryDb
-    Id *string `json:"id,omitempty"`
-}
-
-/** @description Create a new Booking */
-// @Route("/bookings", "POST")
-// @ValidateRequest(Validator="HasRole(`Employee`)")
-type CreateBooking struct {
-    /** @description Name this Booking is for */
-    // @Validate(Validator="NotEmpty")
-    Name string `json:"name"`
-    RoomType RoomType `json:"roomType,omitempty"`
-    // @Validate(Validator="GreaterThan(0)")
-    RoomNumber int `json:"roomNumber,omitempty"`
-    // @Validate(Validator="GreaterThan(0)")
-    Cost float64 `json:"cost,omitempty"`
-    // @Required()
-    BookingStartDate time.Time `json:"bookingStartDate"`
-    BookingEndDate *time.Time `json:"bookingEndDate,omitempty"`
-    Notes *string `json:"notes,omitempty"`
-    CouponId *string `json:"couponId,omitempty"`
-}
-
-/** @description Update an existing Booking */
-// @Route("/booking/{Id}", "PATCH")
-// @ValidateRequest(Validator="HasRole(`Employee`)")
-type UpdateBooking struct {
-    Id int `json:"id,omitempty"`
-    Name *string `json:"name,omitempty"`
-    RoomType *RoomType `json:"roomType,omitempty"`
-    // @Validate(Validator="GreaterThan(0)")
-    RoomNumber *int `json:"roomNumber,omitempty"`
-    // @Validate(Validator="GreaterThan(0)")
-    Cost *float64 `json:"cost,omitempty"`
-    BookingStartDate *time.Time `json:"bookingStartDate,omitempty"`
-    BookingEndDate *time.Time `json:"bookingEndDate,omitempty"`
-    Notes *string `json:"notes,omitempty"`
-    CouponId *string `json:"couponId,omitempty"`
-    Cancelled *bool `json:"cancelled,omitempty"`
-}
-
-/** @description Delete a Booking */
-// @Route("/booking/{Id}", "DELETE")
-// @ValidateRequest(Validator="HasRole(`Manager`)")
-type DeleteBooking struct {
-    Id int `json:"id,omitempty"`
-}
-
-// @Route("/coupons", "POST")
-// @ValidateRequest(Validator="HasRole(`Employee`)")
-type CreateCoupon struct {
-    // @Validate(Validator="NotEmpty")
-    Id string `json:"id"`
-    // @Validate(Validator="NotEmpty")
-    Description string `json:"description"`
-    // @Validate(Validator="GreaterThan(0)")
-    Discount int `json:"discount,omitempty"`
-    // @Validate(Validator="NotNull")
-    ExpiryDate time.Time `json:"expiryDate"`
-}
-
-// @Route("/coupons/{Id}", "PATCH")
-// @ValidateRequest(Validator="HasRole(`Employee`)")
-type UpdateCoupon struct {
-    Id string `json:"id"`
-    // @Validate(Validator="NotEmpty")
-    Description string `json:"description"`
-    // @Validate(Validator="NotNull")
-    // @Validate(Validator="GreaterThan(0)")
-    Discount *int `json:"discount"`
-    // @Validate(Validator="NotNull")
-    ExpiryDate *time.Time `json:"expiryDate"`
-}
-
-/** @description Delete a Coupon */
-// @Route("/coupons/{Id}", "DELETE")
-// @ValidateRequest(Validator="HasRole(`Manager`)")
-type DeleteCoupon struct {
-    Id string `json:"id"`
 }
