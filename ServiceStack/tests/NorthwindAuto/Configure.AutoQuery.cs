@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using MyApp.Data;
 using MyApp.ServiceModel;
 using ServiceStack;
+using ServiceStack.AI;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Html;
@@ -32,7 +33,10 @@ namespace MyApp
                         DbFactory = new OrmLiteConnectionFactory(
                             context.Configuration.GetConnectionString("DefaultConnection"), SqliteDialect.Provider),
                         AutoRegister = true,
-                        ExcludeTables = [nameof(ApplicationUser)],
+                        ExcludeTables =
+                        {
+                            nameof(ApplicationUser),
+                        },
                         ServiceFilter = (op, req) =>
                         {
                             op.Request.AddAttributeIfNotExists(new TagAttribute("Northwind"));

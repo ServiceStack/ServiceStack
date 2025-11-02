@@ -55,12 +55,12 @@ public class AutoGenContext(CrudCodeGenTypes instruction, string tableName, Tabl
     /// <summary>
     /// Return what table [Alias] name should be used (if any)
     /// </summary>
-    public Func<string>? GetTableAlias { get; set; }
+    public Func<string?>? GetTableAlias { get; set; }
         
     /// <summary>
     /// Return what table column [Alias] name should be used (if any)
     /// </summary>
-    public Func<MetadataPropertyType, ColumnSchema, string>? GetColumnAlias { get; set; }
+    public Func<MetadataPropertyType, ColumnSchema, string?>? GetColumnAlias { get; set; }
 }
 
 public delegate List<string> GetTableNamesDelegate(IDbConnection db, string? schema);
@@ -87,14 +87,14 @@ public interface IGenerateCrudServices : ITableResolver
     /// <summary>
     /// Generate services 
     /// </summary>
-    List<CreateCrudServices> CreateServices { get; set; }
-    Action<AutoGenContext> GenerateOperationsFilter { get; set; }
-    Func<ColumnSchema, IOrmLiteDialectProvider, Type> ResolveColumnType { get; set; }
-    Action<MetadataTypes, MetadataTypesConfig, IRequest> MetadataTypesFilter { get; set; }
-    Action<MetadataType, IRequest> TypeFilter { get; set; }
-    Action<MetadataOperationType, IRequest> ServiceFilter { get; set; }
-    Func<MetadataType, bool> IncludeType { get; set; }
-    Func<MetadataOperationType, bool> IncludeService { get; set; }
+    List<CreateCrudServices>? CreateServices { get; set; }
+    Action<AutoGenContext>? GenerateOperationsFilter { get; set; }
+    Func<ColumnSchema, IOrmLiteDialectProvider, Type?>? ResolveColumnType { get; set; }
+    Action<MetadataTypes, MetadataTypesConfig, IRequest>? MetadataTypesFilter { get; set; }
+    Action<MetadataType, IRequest>? TypeFilter { get; set; }
+    Action<MetadataOperationType, IRequest>? ServiceFilter { get; set; }
+    Func<MetadataType, bool>? IncludeType { get; set; }
+    Func<MetadataOperationType, bool>? IncludeService { get; set; }
     bool AddDataContractAttributes { get; set; }
     bool AddIndexesToDataMembers { get; set; }
     string AccessRole { get; set; }

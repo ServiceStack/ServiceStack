@@ -23,7 +23,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack;
 
-//TODO: persist AutoCrud
+/// <summary>
+/// Provides functionality to generate CRUD services dynamically based on metadata and configurations.
+/// </summary>
 public class GenerateCrudServices : IGenerateCrudServices
 {
     /// <summary>
@@ -54,7 +56,8 @@ public class GenerateCrudServices : IGenerateCrudServices
         nameof(ApiKey),
         nameof(CrudEvent),
         nameof(CacheEntry),
-        nameof(ConfigSetting)
+        nameof(ConfigSetting),
+        "ChatCompletionLog"
     ];
 
     /// <summary>
@@ -87,30 +90,30 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
     }
         
-    public Action<MetadataTypes, MetadataTypesConfig, IRequest> MetadataTypesFilter { get; set; }
-    public Action<MetadataType, IRequest> TypeFilter { get; set; }
-    public Action<MetadataOperationType, IRequest> ServiceFilter { get; set; }
+    public Action<MetadataTypes, MetadataTypesConfig, IRequest>? MetadataTypesFilter { get; set; }
+    public Action<MetadataType, IRequest>? TypeFilter { get; set; }
+    public Action<MetadataOperationType, IRequest>? ServiceFilter { get; set; }
 
-    public Func<MetadataType, bool> IncludeType { get; set; }
-    public Func<MetadataOperationType, bool> IncludeService { get; set; }
+    public Func<MetadataType, bool>? IncludeType { get; set; }
+    public Func<MetadataOperationType, bool>? IncludeService { get; set; }
 
     public bool AddDataContractAttributes { get; set; } = true; //required by protobuf/gRPC
     public bool AddIndexesToDataMembers { get; set; } = true;   //required by protobuf/gRPC
         
-    public string AccessRole { get; set; } = RoleNames.Admin;
+    public string? AccessRole { get; set; } = RoleNames.Admin;
         
-    internal ConcurrentDictionary<Tuple<string,string>, DbSchema> CachedDbSchemas { get; } = new();
+    internal ConcurrentDictionary<Tuple<string?,string?>, DbSchema> CachedDbSchemas { get; } = new();
 
-    public Func<ColumnSchema, IOrmLiteDialectProvider, Type> ResolveColumnType { get; set; } = DefaultResolveColumnType;
+    public Func<ColumnSchema, IOrmLiteDialectProvider, Type?> ResolveColumnType { get; set; } = DefaultResolveColumnType;
 
-    public Action<GenerateMissingServicesContext> GenerateMissingServicesFilter { get; set; }
+    public Action<GenerateMissingServicesContext>? GenerateMissingServicesFilter { get; set; }
 
     /// <summary>
     /// Filter to modify the `TableSchema` used by AutoGen to generate data models
     /// </summary>
-    public Action<List<TableSchema>> TableSchemasFilter { get; set; }
+    public Action<List<TableSchema>>? TableSchemasFilter { get; set; }
         
-    public GetTableNamesDelegate GetTableNames { get; set; }
+    public GetTableNamesDelegate? GetTableNames { get; set; }
 
     public static ScriptContext DefaultScriptContext = new ScriptContext {
         ScriptLanguages = { ScriptLisp.Language },
@@ -125,7 +128,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     /// </summary>
     public GetTableColumnsDelegate GetTableColumns { get; set; }
 
-    public static Type DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
+    public static Type? DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
     {
         var dataType = column.DataType;
         if (dataType == null)
@@ -180,8 +183,8 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
     }
 
-    static string ResolveRequestType(Dictionary<string, MetadataType> existingTypesMap, MetadataOperationType op, CrudCodeGenTypes requestDto,
-        out string modifier)
+    static string? ResolveRequestType(Dictionary<string, MetadataType> existingTypesMap, MetadataOperationType op, CrudCodeGenTypes requestDto,
+        out string? modifier)
     {
         modifier = null;
         if (existingTypesMap.ContainsKey(op.Request.Name))
@@ -223,7 +226,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         dynModule.SetCustomAttribute(CodegenAttrBuilder);
 
         var metadataTypes = GetMissingTypesToCreate(out var existingMetaTypesMap);
-        var generatedTypes = new Dictionary<Tuple<string,string>, Type>();
+        var generatedTypes = new Dictionary<Tuple<string?,string>, Type>();
 
         var dtoTypes = new HashSet<Type>();
         foreach (var dtoType in requestTypes)
@@ -282,9 +285,9 @@ public class GenerateCrudServices : IGenerateCrudServices
         return types;
     }
 
-    private static Type CreateOrGetType(ModuleBuilder dynModule, MetadataTypeName metaTypeRef,
-        List<MetadataType> metadataTypes, Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap, 
-        Dictionary<Tuple<string, string>, Type> generatedTypes)
+    private static Type? CreateOrGetType(ModuleBuilder dynModule, MetadataTypeName metaTypeRef,
+        List<MetadataType> metadataTypes, Dictionary<Tuple<string?, string>, MetadataType> existingMetaTypesMap, 
+        Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         var typeKey = key(metaTypeRef);
         var type = ResolveType(typeKey, generatedTypes);
@@ -298,9 +301,9 @@ public class GenerateCrudServices : IGenerateCrudServices
         return null;
     }
 
-    private static Type CreateOrGetType(ModuleBuilder dynModule, string typeName,
-        List<MetadataType> metadataTypes, Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap, 
-        Dictionary<Tuple<string, string>, Type> generatedTypes)
+    private static Type? CreateOrGetType(ModuleBuilder dynModule, string typeName,
+        List<MetadataType> metadataTypes, Dictionary<Tuple<string?, string>, MetadataType> existingMetaTypesMap, 
+        Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         var type = ResolveType(typeName, generatedTypes);
         if (type != null)
@@ -333,7 +336,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         { nameof(RequestLogEntry), typeof(RequestLogEntry) },
     };
         
-    private static Type ResolveType(string typeName, Dictionary<Tuple<string, string>, Type> generatedTypes)
+    private static Type? ResolveType(string typeName, Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         if (ServiceStackModelTypes.TryGetValue(typeName, out var ssType))
             return ssType;
@@ -362,7 +365,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         return ScriptContext.ProtectedMethods.@typeof(typeName);
     }
 
-    private static Type AssertResolveType(string typeName, Dictionary<Tuple<string, string>, Type> generatedTypes)
+    private static Type? AssertResolveType(string typeName, Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         var ret = ResolveType(typeName, generatedTypes);
         if (ret == null)
@@ -370,7 +373,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         return ret;
     }
 
-    private static Type ResolveType(Tuple<string,string> typeKey, Dictionary<Tuple<string, string>, Type> generatedTypes)
+    private static Type? ResolveType(Tuple<string?,string> typeKey, Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         var hasNs = typeKey.Item1 != null;
         if (!hasNs)
@@ -398,7 +401,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         return ScriptContext.ProtectedMethods.@typeof(fullTypeName);
     }
 
-    private static Type AssertResolveType(Tuple<string, string> typeKey, Dictionary<Tuple<string, string>, Type> generatedTypes)
+    private static Type? AssertResolveType(Tuple<string?, string> typeKey, Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         var hasNs = typeKey.Item1 != null;
         if (!hasNs)
@@ -410,7 +413,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         return ret;
     }
 
-    private static Dictionary<string, Type> attributesMap;
+    private static Dictionary<string, Type>? attributesMap;
     static Dictionary<string, Type> AttributesMap
     {
         get
@@ -443,9 +446,9 @@ public class GenerateCrudServices : IGenerateCrudServices
         Array.Empty<PropertyInfo>(), TypeConstants.EmptyObjectArray);
 
     private static readonly ConstructorInfo DataContractCtor = typeof(DataContractAttribute)
-        .GetConstructor(Type.EmptyTypes);
+        .GetConstructor(Type.EmptyTypes)!;
     private static readonly ConstructorInfo DataMemberCtor = typeof(DataMemberAttribute)
-        .GetConstructor(Type.EmptyTypes);
+        .GetConstructor(Type.EmptyTypes)!;
     private static readonly CustomAttributeBuilder DefaultDataContractCtorBuilder = new(
         DataContractCtor,
         TypeConstants.EmptyObjectArray,
@@ -458,8 +461,8 @@ public class GenerateCrudServices : IGenerateCrudServices
     ];
 
     private static Type CreateOrGetType(ModuleBuilder dynModule, MetadataType metaType, 
-        List<MetadataType> metadataTypes, Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap, 
-        Dictionary<Tuple<string, string>, Type> generatedTypes)
+        List<MetadataType> metadataTypes, Dictionary<Tuple<string?, string>, MetadataType> existingMetaTypesMap, 
+        Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         var typeKey = key(metaType);
         var existingType = ResolveType(typeKey, generatedTypes);
@@ -473,9 +476,11 @@ public class GenerateCrudServices : IGenerateCrudServices
         if (baseType?.IsGenericTypeDefinition == true)
         {
             var argTypes = new List<Type>();
-            foreach (var typeName in metaType.Inherits.GenericArgs)
+            foreach (var typeName in metaType.Inherits?.GenericArgs ?? [])
             {
                 var argType = CreateOrGetType(dynModule, typeName, metadataTypes, existingMetaTypesMap, generatedTypes);
+                if (argType == null)
+                    ThrowCouldNotResolveType(typeName);
                 argTypes.Add(argType);
             }
             baseType = baseType.MakeGenericType(argTypes.ToArray());
@@ -505,6 +510,8 @@ public class GenerateCrudServices : IGenerateCrudServices
                 foreach (var typeName in metaIface.GenericArgs.Safe())
                 {
                     var argType = CreateOrGetType(dynModule, typeName, metadataTypes, existingMetaTypesMap, generatedTypes);
+                    if (argType == null)
+                        ThrowCouldNotResolveType(typeName);
                     argTypes.Add(argType);
                 }
                 ifaceType = ifaceType.MakeGenericType(argTypes.ToArray());
@@ -516,7 +523,7 @@ public class GenerateCrudServices : IGenerateCrudServices
             TypeAttributes.Public | TypeAttributes.Class, baseType, interfaceTypes.ToArray());
         typeBuilder.SetCustomAttribute(CodegenAttrBuilder);
 
-        List<MetadataPropertyType> toMetadataPropertyTypes(Dictionary<string, object> args)
+        List<MetadataPropertyType> toMetadataPropertyTypes(Dictionary<string, object?> args)
         {
             var to = new List<MetadataPropertyType>();
             foreach (var entry in args)
@@ -535,7 +542,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 : CreateCustomAttributeBuilder(new MetadataAttribute {
                     Name = nameof(DataContractAttribute),
                     Attribute = dataContractAttr,
-                    Args = toMetadataPropertyTypes(new Dictionary<string, object> {
+                    Args = toMetadataPropertyTypes(new Dictionary<string, object?> {
                         [nameof(DataContractAttribute.Name)] = metaType.DataContract.Name,
                         [nameof(DataContractAttribute.Namespace)] = metaType.DataContract.Namespace,
                     })
@@ -552,7 +559,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         foreach (var metaProp in metaType.Properties.Safe())
         {
             var returnType = metaProp.PropertyType ??
-                             AssertResolveType(keyNs(metaProp.Namespace, metaProp.Type), generatedTypes);
+                             AssertResolveType(keyNs(metaProp.Namespace, metaProp.Type), generatedTypes)!;
             var propBuilder = typeBuilder.DefineProperty(metaProp.Name, PropertyAttributes.HasDefault,
                 CallingConventions.Any, returnType, null);
 
@@ -562,7 +569,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 var attrBuilder = CreateCustomAttributeBuilder(new MetadataAttribute {
                     Name = nameof(DataMemberAttribute),
                     Attribute = dataMemberAttr,
-                    Args = toMetadataPropertyTypes(new Dictionary<string, object> {
+                    Args = toMetadataPropertyTypes(new Dictionary<string, object?> {
                         [nameof(DataMemberAttribute.Name)] = dm.Name, 
                         [nameof(DataMemberAttribute.Order)] = dm.Order, 
                         [nameof(DataMemberAttribute.IsRequired)] = dm.IsRequired, 
@@ -621,7 +628,7 @@ public class GenerateCrudServices : IGenerateCrudServices
     }
 
     private static CustomAttributeBuilder CreateCustomAttributeBuilder(MetadataAttribute metaAttr,
-        Dictionary<Tuple<string, string>, Type> generatedTypes)
+        Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         var attrType = metaAttr.Attribute?.GetType();
         if (attrType == null && !AttributesMap.TryGetValue(metaAttr.Name, out attrType))
@@ -666,7 +673,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 {
                     try
                     {
-                        propInfos.Add(attrType.GetProperty(argType.Name));
+                        propInfos.Add(attrType.GetProperty(argType.Name)!);
                         var piAttrType = ResolveType(argType.Type, generatedTypes);
                         var argValue = argType.Value.ConvertTo(piAttrType);
                         args.Add(argValue);
@@ -684,7 +691,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
     }
 
-    string ResolveModelType(MetadataOperationType op)
+    string? ResolveModelType(MetadataOperationType op)
     {
         var baseGenericArg = op.Request.Inherits?.GenericArgs?.FirstOrDefault(); //e.g. QueryDb<From> or base class
         if (baseGenericArg != null)
@@ -707,12 +714,12 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
     }
 
-    void ReplaceModelType(MetadataType metadataType, string fromType, string toType)
+    void ReplaceModelType(MetadataType? metadataType, string fromType, string toType)
     {
         if (metadataType == null)
             return;
 
-        static void ReplaceGenericArgs(string[] genericArgs, string fromType, string toType)
+        static void ReplaceGenericArgs(string[]? genericArgs, string fromType, string toType)
         {
             if (genericArgs == null) 
                 return;
@@ -750,10 +757,10 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
     }
 
-    internal List<MetadataType> GetMissingTypesToCreate(out Dictionary<Tuple<string, string>, MetadataType> typesMap)
+    internal List<MetadataType> GetMissingTypesToCreate(out Dictionary<Tuple<string?, string>, MetadataType> typesMap)
     {
         var existingTypesMap = new Dictionary<string, MetadataType>();
-        var existingExactTypesMap = new Dictionary<Tuple<string, string>, MetadataType>();
+        var existingExactTypesMap = new Dictionary<Tuple<string?, string>, MetadataType>();
         var existingTypes = new List<MetadataType>();
 
         void addType(MetadataType type)
@@ -820,10 +827,10 @@ public class GenerateCrudServices : IGenerateCrudServices
         return orderedTypes;
     }
 
-    public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string namedConnection = null,
-        string schema = null, List<string> includeTables = null, List<string> excludeTables = null)
+    public DbSchema GetCachedDbSchema(IDbConnectionFactory dbFactory, string? namedConnection = null,
+        string? schema = null, List<string>? includeTables = null, List<string>? excludeTables = null)
     {
-        var key = new Tuple<string, string>(schema ?? NoSchema, namedConnection);
+        var key = new Tuple<string?, string?>(schema ?? NoSchema, namedConnection);
         return CachedDbSchemas.GetOrAdd(key, k => {
 
             var tables = dbFactory.GetTableSchemas(namedConnection: namedConnection, schema: schema, includeTables: includeTables, excludeTables: excludeTables, config: this);
@@ -835,8 +842,8 @@ public class GenerateCrudServices : IGenerateCrudServices
         });
     }
 
-    public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext> generateOperationsFilter, 
-        List<string> addQueryParamOptions=null)
+    public static string GenerateSource(IRequest req, CrudCodeGenTypes request, Action<AutoGenContext>? generateOperationsFilter, 
+        List<string>? addQueryParamOptions=null)
     {
         var ret = ResolveMetadataTypes(req.TryResolve<IDbConnectionFactory>(), request, req, generateOperationsFilter);
         var crudMetadataTypes = ret.Item1;
@@ -857,13 +864,13 @@ public class GenerateCrudServices : IGenerateCrudServices
         return src;
     }
 
-    static Tuple<string, string> key(Type type) => new(type.Namespace, type.Name);
-    static Tuple<string, string> key(MetadataType type) => new(type.Namespace, type.Name);
-    static Tuple<string, string> key(MetadataTypeName type) => new(type.Namespace, type.Name);
-    static Tuple<string, string> keyNs(string ns, string name) => new(ns, name);
+    static Tuple<string?, string> key(Type type) => new(type.Namespace, type.Name);
+    static Tuple<string?, string> key(MetadataType type) => new(type.Namespace, type.Name);
+    static Tuple<string?, string> key(MetadataTypeName type) => new(type.Namespace, type.Name);
+    static Tuple<string?, string> keyNs(string? ns, string name) => new(ns, name);
 
     public static Tuple<MetadataTypes, MetadataTypesConfig> ResolveMetadataTypes(IDbConnectionFactory dbFactory,
-        CrudCodeGenTypes request, IRequest req, Action<AutoGenContext> generateOperationsFilter)
+        CrudCodeGenTypes request, IRequest req, Action<AutoGenContext>? generateOperationsFilter)
     {
         if (string.IsNullOrEmpty(request.Include))
             throw new ArgumentNullException(nameof(request.Include));
@@ -974,7 +981,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 continue;
             }
                 
-            typesToGenerateMap[result.Name] = result;
+            typesToGenerateMap[result.Name!] = result;
             typesToGenerateSet.Add(StringUtils.SnakeCaseToPascalCase(result.Name));
         }
 
@@ -990,12 +997,12 @@ public class GenerateCrudServices : IGenerateCrudServices
         var types = new List<MetadataType>();
             
         var appDlls = new List<Assembly>();
-        var exactTypesLookup = new Dictionary<Tuple<string,string>, MetadataType>();
+        var exactTypesLookup = new Dictionary<Tuple<string?,string>, MetadataType>();
         foreach (var op in metadataTypes.Operations)
         {
-            exactTypesLookup[key(op.Request)] = op.Request;
+            exactTypesLookup[key(op.Request)!] = op.Request;
             if (op.Response != null)
-                exactTypesLookup[key(op.Response)] = op.Response;
+                exactTypesLookup[key(op.Response)!] = op.Response;
                 
             if (op.Request.Type != null)
                 appDlls.Add(op.Request.Type.Assembly);
@@ -1004,7 +1011,7 @@ public class GenerateCrudServices : IGenerateCrudServices
         }
         foreach (var metaType in metadataTypes.Types)
         {
-            exactTypesLookup[key(metaType)] = metaType;
+            exactTypesLookup[key(metaType)!] = metaType;
             if (metaType.Type != null)
                 appDlls.Add(metaType.Type.Assembly);
         }
@@ -1013,8 +1020,8 @@ public class GenerateCrudServices : IGenerateCrudServices
         ServiceStackHost.TryGetServiceAssemblies().Each(x => appDlls.Add(x));
         appDlls = appDlls.Where(x => !x.IsDynamic).Distinct().ToList();
         var existingAppTypes = new HashSet<string>();
-        var existingExactAppTypes = new HashSet<Tuple<string,string>>();
-        var existingModelOperationTypes = new HashSet<Tuple<string,string>>();
+        var existingExactAppTypes = new HashSet<Tuple<string?,string>>();
+        var existingModelOperationTypes = new HashSet<Tuple<string?,string>>();
             
         foreach (var appType in appDlls.SelectMany(x => x.GetTypes()))
         {
@@ -1026,7 +1033,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 var autoQueryType = AutoCrudOperation.GetAutoQueryDtoType(appType);
                 if (autoQueryType != null)
                 {
-                    existingModelOperationTypes.Add(new Tuple<string, string>(
+                    existingModelOperationTypes.Add(new Tuple<string?, string>(
                         autoQueryType.Value.ModelType.Name, autoQueryType.Value.Operation));
                 }
             }
@@ -1119,7 +1126,7 @@ public class GenerateCrudServices : IGenerateCrudServices
             var to = new List<MetadataPropertyType>();
             foreach (var column in columns)
             {
-                var dataType = genServices.ResolveColumnType(column, dialect);
+                var dataType = genServices.ResolveColumnType?.Invoke(column, dialect);
                 if (dataType == null)
                     continue;
 
@@ -1156,7 +1163,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                         prop.AddAttribute(new PrimaryKeyAttribute());
                     if (column.IsAutoIncrement)
                         prop.AddAttribute(new AutoIncrementAttribute());
-                    var columnAlias = ctx.GetColumnAlias(prop, column);
+                    var columnAlias = ctx.GetColumnAlias?.Invoke(prop, column);
                     if (columnAlias != null)
                         prop.AddAttribute(new AliasAttribute(columnAlias));
                     if (!dataType.IsValueType && !column.AllowDBNull && !isKey)
@@ -1209,19 +1216,20 @@ public class GenerateCrudServices : IGenerateCrudServices
                 
             if (includeCrudServices != null)
             {
-                var pkField = tableSchema.Columns.First(x => x.IsKey);
+                var pkField = tableSchema.Columns?.First(x => x.IsKey)
+                    ?? throw new NotSupportedException($"Table {tableSchema.Name} does not have a Primary Key");
                 var id = StringUtils.SnakeCaseToPascalCase(pkField.ColumnName);
                 foreach (var operation in includeCrudServices)
                 {
                     if (!AutoCrudOperation.IsOperation(operation))
                         continue;
 
-                    var modelOperation = new Tuple<string, string>(dataModelName, operation);
+                    var modelOperation = new Tuple<string?, string>(dataModelName, operation);
                     if (existingModelOperationTypes.Contains(modelOperation))
                         continue;
                     existingModelOperationTypes.Add(modelOperation);
 
-                    var requestType = (ctx.OperationNames.TryGetValue(operation, out var customOpName) ? customOpName : null) 
+                    var requestType = (ctx.OperationNames?.TryGetValue(operation, out var customOpName) == true ? customOpName : null) 
                                       ?? (operation == AutoCrudOperation.Query 
                                           ? operation + ctx.PluralDataModelName
                                           : operation + dataModelName);
@@ -1298,7 +1306,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                         };
                     }
 
-                    var allProps = toMetaProps(ctx, tableSchema.Columns);
+                    var allProps = toMetaProps(ctx, tableSchema.Columns ?? []);
                     switch (operation)
                     {
                         case AutoCrudOperation.Query:
@@ -1360,7 +1368,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 var modelType = new MetadataType {
                     Name = dataModelName,
                     Namespace = typesNs,
-                    Properties = toMetaProps(ctx, tableSchema.Columns, isModel:true),
+                    Properties = toMetaProps(ctx, tableSchema.Columns ?? [], isModel:true),
                     Items = new Dictionary<string, object> {
                         [nameof(TableSchema)] = tableSchema,
                     },
@@ -1425,12 +1433,12 @@ public class GenerateCrudServices : IGenerateCrudServices
 
 public class GenerateMissingServicesContext(
     List<MetadataType> metadataTypes,
-    Dictionary<Tuple<string, string>, MetadataType> existingMetaTypesMap,
-    Dictionary<Tuple<string, string>, Type> generatedTypes)
+    Dictionary<Tuple<string?, string>, MetadataType> existingMetaTypesMap,
+    Dictionary<Tuple<string?, string>, Type> generatedTypes)
 {
     public List<MetadataType> MetadataTypes { get; } = metadataTypes;
-    public Dictionary<Tuple<string, string>, MetadataType> ExistingMetaTypesMap { get; } = existingMetaTypesMap;
-    public Dictionary<Tuple<string, string>, Type> GeneratedTypes { get; } = generatedTypes;
+    public Dictionary<Tuple<string?, string>, MetadataType> ExistingMetaTypesMap { get; } = existingMetaTypesMap;
+    public Dictionary<Tuple<string?, string>, Type> GeneratedTypes { get; } = generatedTypes;
 }
 
 [Restrict(VisibilityTo = RequestAttributes.None)]
@@ -1445,7 +1453,7 @@ public class CrudCodeGenTypesService : Service
             var genServices = HostContext.AssertPlugin<AutoQueryFeature>().GenerateCrudServices;
             await RequestUtils.AssertAccessRoleOrDebugModeAsync(base.Request, accessRole: genServices.AccessRole, authSecret: request.AuthSecret);
                 
-            var src = GenerateCrudServices.GenerateSource(Request, request, genServices.GenerateOperationsFilter,
+            var src = GenerateCrudServices.GenerateSource(Request!, request, genServices.GenerateOperationsFilter,
             [
                 nameof(CrudCodeGenTypes.IncludeCrudOperations),
                 nameof(CrudCodeGenTypes.Schema),
@@ -1475,7 +1483,7 @@ public class CrudTablesService : Service
             
         var dbFactory = TryResolve<IDbConnectionFactory>();
         var results = request.NoCache == true 
-            ? dbFactory.GetTableSchemas(namedConnection: request.NamedConnection, schema: request.Schema, 
+            ? dbFactory!.GetTableSchemas(namedConnection: request.NamedConnection, schema: request.Schema, 
                 includeTables: request.IncludeTables, excludeTables: request.ExcludeTables, config: genServices)
             : genServices.GetCachedDbSchema(dbFactory, namedConnection: request.NamedConnection, schema: request.Schema, 
                 includeTables: request.IncludeTables, excludeTables: request.ExcludeTables).Tables;
