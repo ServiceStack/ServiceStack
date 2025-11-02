@@ -20,6 +20,7 @@ public enum Lang
     Php =        1 << 10,
     Ruby =       1 << 11,
     Rust =       1 << 12,
+    Zig =        1 << 13,
 }
     
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
@@ -61,3 +62,5 @@ public class EmitGo(params string[] statements) : EmitCodeAttribute(Lang.Go, sta
 public class EmitRuby(params string[] statements) : EmitCodeAttribute(Lang.Ruby, statements);
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
 public class EmitRust(params string[] statements) : EmitCodeAttribute(Lang.Rust, statements);
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
+public class EmitZig(params string[] statements) : EmitCodeAttribute(Lang.Zig, statements);

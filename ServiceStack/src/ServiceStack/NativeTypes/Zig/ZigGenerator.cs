@@ -36,7 +36,8 @@ public class ZigGenerator : ILangGenerator
     public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
 
     //In _builtInTypes servicestack library
-    public static HashSet<string> IgnoreTypeInfosFor =
+    public static HashSet<string> IgnoreTypeInfosFor = [];
+    /* if added in external library
     [
         "String",
         "Integer",
@@ -83,7 +84,8 @@ public class ZigGenerator : ILangGenerator
         nameof(StringsResponse),
         nameof(AuditBase)
     ];
-        
+    */
+    
     public static List<string> DefaultImports = new() {
         "const std = @import(\"std\");",
     };
@@ -249,22 +251,20 @@ public class ZigGenerator : ILangGenerator
 
         var globalNamespace = Config.GlobalNamespace;
 
-        string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+        string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "/// " : "//";
 
         var sbInner = StringBuilderCache.Allocate();
         var sb = new StringBuilderWrapper(sbInner);
         var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
-            sb.AppendLine("/* Options:");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-
+            sb.AppendLine("/// Options:");
+            sb.AppendLine("/// Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+            sb.AppendLine("/// Version: {0}".Fmt(Env.VersionString));
+            sb.AppendLine("/// Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("/")));
+            sb.AppendLine("/// BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
@@ -275,7 +275,7 @@ public class ZigGenerator : ILangGenerator
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
             AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
-            sb.AppendLine("*/");
+            sb.AppendLine("///");
             sb.AppendLine();
         }
 
@@ -393,7 +393,7 @@ public class ZigGenerator : ILangGenerator
         AppendAttributes(sb, type.Attributes);
         if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
 
-        sb.Emit(type, Lang.TypeScript);
+        sb.Emit(type, Lang.Zig);
         PreTypeFilter?.Invoke(sb, type);
 
         if (type.IsEnum.GetValueOrDefault())
@@ -442,8 +442,39 @@ public class ZigGenerator : ILangGenerator
         }
         else
         {
-            var typeName = Type(type.Name, type.GenericArgs);
-            sb.AppendLine($"pub const {typeName} = struct {{");
+            var typeName = NameOnly(type.Name);
+
+            // Check if this is a generic type
+            if (type.GenericArgs != null && type.GenericArgs.Length > 0)
+            {
+                // In Zig, generic types are functions that return types
+                var genericParams = new List<string>();
+
+                // Check if the type has properties (not a marker interface)
+                var hasProperties = type.Properties != null && type.Properties.Count > 0;
+
+                foreach (var arg in type.GenericArgs)
+                {
+                    genericParams.Add($"comptime {arg}: type");
+                }
+                sb.AppendLine($"pub fn {typeName}({string.Join(", ", genericParams)}) type {{");
+                sb = sb.Indent();
+
+                // For marker interfaces (no properties), explicitly discard unused parameters
+                if (!hasProperties)
+                {
+                    foreach (var arg in type.GenericArgs)
+                    {
+                        sb.AppendLine($"_ = {arg};");
+                    }
+                }
+
+                sb.AppendLine("return struct {");
+            }
+            else
+            {
+                sb.AppendLine($"pub const {typeName} = struct {{");
+            }
 
             sb = sb.Indent();
             InnerTypeFilter?.Invoke(sb, type);
@@ -462,6 +493,13 @@ public class ZigGenerator : ILangGenerator
 
             sb = sb.UnIndent();
             sb.AppendLine("};");
+
+            // Close the function for generic types
+            if (type.GenericArgs != null && type.GenericArgs.Length > 0)
+            {
+                sb = sb.UnIndent();
+                sb.AppendLine("}");
+            }
         }
 
         PostTypeFilter?.Invoke(sb, type);
@@ -669,16 +707,8 @@ public class ZigGenerator : ILangGenerator
                 var parts = type.Split('`');
                 if (parts.Length > 1)
                 {
-                    var args = StringBuilderCacheAlt.Allocate();
-                    foreach (var arg in genericArgs)
-                    {
-                        if (args.Length > 0)
-                            args.Append(", ");
-
-                        args.Append(GenericArg(arg));
-                    }
-                    var genericArgsList = StringBuilderCacheAlt.ReturnAndFree(args);
-
+                    // In Zig, we just use the base type name without generic args for now
+                    // Generic types will be handled specially in AppendType
                     var typeName = TypeAlias(type);
                     var suffix = "";
                     if (typeName.StartsWith("[]"))
@@ -687,7 +717,7 @@ public class ZigGenerator : ILangGenerator
                         typeName = typeName.Substring(2);
                     }
 
-                    cooked = $"{typeName}({genericArgsList}){suffix}";
+                    cooked = $"{typeName}{suffix}";
                 }
             }
 
