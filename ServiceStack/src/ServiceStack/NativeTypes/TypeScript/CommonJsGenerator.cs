@@ -66,9 +66,9 @@ public class CommonJsGenerator : ILangGenerator
     {
         Gen.Init(metadata);
 
-        var defaultImports = !Config.DefaultImports.IsEmpty()
+        List<string> defaultImports = new(!Config.DefaultImports.IsEmpty()
             ? Config.DefaultImports
-            : TypeScriptGenerator.DefaultImports;
+            : TypeScriptGenerator.DefaultImports);
         
         string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 

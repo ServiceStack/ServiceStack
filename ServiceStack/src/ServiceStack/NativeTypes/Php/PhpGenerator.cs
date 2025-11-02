@@ -277,9 +277,9 @@ public class PhpGenerator : ILangGenerator
     {
         Init(metadata);
 
-        var defaultImports = !Config.DefaultImports.IsEmpty()
+        List<string> defaultImports = new(!Config.DefaultImports.IsEmpty()
             ? Config.DefaultImports
-            : DefaultImports;
+            : DefaultImports);
 
         var globalNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
 

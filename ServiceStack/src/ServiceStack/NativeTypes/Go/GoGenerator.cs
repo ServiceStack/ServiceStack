@@ -83,7 +83,6 @@ public class GoGenerator : ILangGenerator
     */
 
     public static List<string> DefaultImports = new() {
-        "time",
     };
 
     public static Dictionary<string, string> TypeAliases = new() {
@@ -201,9 +200,9 @@ public class GoGenerator : ILangGenerator
     {
         Init(metadata);
 
-        var defaultImports = !Config.DefaultImports.IsEmpty()
+        List<string> defaultImports = new(!Config.DefaultImports.IsEmpty()
             ? Config.DefaultImports
-            : DefaultImports;
+            : DefaultImports);
 
         var packageName = Config.GlobalNamespace ?? "dtos";
 
@@ -244,20 +243,6 @@ public class GoGenerator : ILangGenerator
         sb.AppendLine($"package {packageName.SafeToken()}");
         sb.AppendLine();
 
-        // Add imports
-        if (defaultImports.Count > 0)
-        {
-            sb.AppendLine("import (");
-            sb = sb.Indent();
-            foreach (var import in defaultImports)
-            {
-                sb.AppendLine($"\"{import}\"");
-            }
-            sb = sb.UnIndent();
-            sb.AppendLine(")");
-            sb.AppendLine();
-        }
-
         string lastNS = null;
 
         var existingTypes = new HashSet<string>();
@@ -272,6 +257,37 @@ public class GoGenerator : ILangGenerator
         if (insertCode != null)
             sb.AppendLine(insertCode);
 
+
+        // If DefaultImports is not specified, add time import if needed
+        if (request.QueryString["DefaultImports"].IsNullOrEmpty())
+        {
+            foreach (var metaType in AllTypes)
+            {
+                foreach (var metaProp in metaType.Properties.Safe())
+                {
+                    var typeAlias = TypeAlias(metaProp.Type);
+                    if (typeAlias.StartsWith("time."))
+                    {
+                        defaultImports.AddIfNotExists("time");
+                    }
+                }
+            }
+        }
+        
+        // Add imports
+        if (defaultImports.Count > 0)
+        {
+            sb.AppendLine("import (");
+            sb = sb.Indent();
+            foreach (var import in defaultImports)
+            {
+                sb.AppendLine($"\"{import}\"");
+            }
+            sb = sb.UnIndent();
+            sb.AppendLine(")");
+            sb.AppendLine();
+        }
+        
         //ServiceStack core interfaces
         foreach (var type in AllTypes)
         {

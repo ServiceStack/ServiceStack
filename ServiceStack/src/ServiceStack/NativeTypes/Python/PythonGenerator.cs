@@ -313,9 +313,9 @@ public class PythonGenerator : ILangGenerator
         metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
         metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
-        var defaultImports = !Config.DefaultImports.IsEmpty()
+        List<string> defaultImports = new(!Config.DefaultImports.IsEmpty()
             ? Config.DefaultImports
-            : DefaultImports;
+            : DefaultImports);
 
         var globalNamespace = Config.GlobalNamespace;
 
