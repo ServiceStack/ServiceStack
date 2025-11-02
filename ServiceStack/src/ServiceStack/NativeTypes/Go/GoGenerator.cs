@@ -32,7 +32,8 @@ public class GoGenerator : ILangGenerator
     public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
 
     //In _builtInTypes servicestack library
-    public static HashSet<string> IgnoreTypeInfosFor =
+    public static HashSet<string> IgnoreTypeInfosFor = [];
+    /* if added in external library
     [
         "String",
         "Integer",
@@ -79,9 +80,9 @@ public class GoGenerator : ILangGenerator
         nameof(StringsResponse),
         nameof(AuditBase)
     ];
+    */
 
     public static List<string> DefaultImports = new() {
-        "encoding/json",
         "time",
     };
 
@@ -218,6 +219,7 @@ public class GoGenerator : ILangGenerator
             sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            sb.AppendLine("//GoPropertyStyle: ENABLED - Using PascalCase with keyword handling");
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
@@ -648,6 +650,13 @@ public class GoGenerator : ILangGenerator
             return "[]{0}".Fmt(TypeAlias(arrParts[0]));
         }
 
+        // Handle generic type parameters (single uppercase letter like T)
+        // Convert them to interface{} since Go doesn't support generic type parameters in the same way
+        if (type.Length == 1 && char.IsUpper(type[0]))
+        {
+            return "interface{}";
+        }
+
         TypeAliases.TryGetValue(type, out var typeAlias);
 
         var cooked = typeAlias ?? NameOnly(type);
@@ -819,9 +828,12 @@ public class GoGenerator : ILangGenerator
         return jsKeyType;
     }
 
-    public string GetPropertyName(string name) => name.SafeToken().PropertyStyle(); 
-    public string GetPropertyName(MetadataPropertyType prop) => 
-        prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle();
+    public string GetPropertyName(string name) => name.SafeToken().GoPropertyStyle();
+    public string GetPropertyName(MetadataPropertyType prop)
+    {
+        var name = prop.GetSerializedAlias() ?? prop.Name;
+        return name.SafeToken().GoPropertyStyle();
+    }
 }
 
 public static class GoGeneratorExtensions
@@ -831,7 +843,7 @@ public static class GoGeneratorExtensions
         var useType = GoGenerator.ReturnMarkerFilter?.Invoke(type);
         if (useType != null)
             return useType;
-            
+
         if (type.StartsWith("{"))
             return "any";
 
@@ -841,12 +853,12 @@ public static class GoGeneratorExtensions
             var ret = type.LeftPart("<{") + "<any>" + type.LastRightPart("}>");
             return ret;
         }
-            
+
         //Note: can only implement using Array short-hand notation: IReturn<Type[]>
 
         return type;
     }
-        
+
     public static string PropertyStyle(this string name)
     {
         return JsConfig.TextCase == TextCase.CamelCase
@@ -854,5 +866,21 @@ public static class GoGeneratorExtensions
             : JsConfig.TextCase == TextCase.SnakeCase
                 ? name.ToLowercaseUnderscore()
                 : name;
+    }
+
+    /// <summary>
+    /// Convert property name to Go-style exported field name.
+    /// In Go, exported fields must start with an uppercase letter.
+    /// Go keywords are all lowercase, so capitalizing them makes them valid identifiers.
+    /// </summary>
+    public static string GoPropertyStyle(this string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return name;
+
+        // Convert to PascalCase for Go exported fields
+        // This automatically handles Go keywords since they're all lowercase
+        // (e.g., "type" -> "Type", "func" -> "Func", "interface" -> "Interface")
+        return name.ToPascalCase();
     }
 }
