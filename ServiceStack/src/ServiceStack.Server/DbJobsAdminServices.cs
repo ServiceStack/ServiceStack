@@ -278,7 +278,7 @@ public class DbJobsAdminServices(ILogger<DbJobsAdminServices> log, IBackgroundJo
     {
         var feature = AssertRequiredRole();
         using var db = jobs.OpenDb();
-        var q = autoQuery.CreateQuery(request, base.Request, db);
+        var q = autoQuery.CreateQuery(request, base.Request!, db);
         return autoQuery.Execute(request, q, base.Request, db);        
     }
 
@@ -286,7 +286,7 @@ public class DbJobsAdminServices(ILogger<DbJobsAdminServices> log, IBackgroundJo
     {
         var feature = AssertRequiredRole();
         using var db = jobs.OpenDb();
-        var q = autoQuery.CreateQuery(request, base.Request, db);
+        var q = autoQuery.CreateQuery(request, base.Request!, db);
         return autoQuery.Execute(request, q, base.Request, db);        
     }
 
@@ -295,7 +295,7 @@ public class DbJobsAdminServices(ILogger<DbJobsAdminServices> log, IBackgroundJo
         var feature = AssertRequiredRole();
         var month = request.Month ?? DateTime.UtcNow;
         using var monthDb = jobs.OpenMonthDb(month);
-        var q = autoQuery.CreateQuery(request, base.Request, monthDb);
+        var q = autoQuery.CreateQuery(request, base.Request!, monthDb);
         return autoQuery.Execute(request, q, base.Request, monthDb);        
     }
 
@@ -304,7 +304,7 @@ public class DbJobsAdminServices(ILogger<DbJobsAdminServices> log, IBackgroundJo
         var feature = AssertRequiredRole();
         var month = request.Month ?? DateTime.UtcNow;
         using var monthDb = jobs.OpenMonthDb(month);
-        var q = autoQuery.CreateQuery(request, base.Request, monthDb);
+        var q = autoQuery.CreateQuery(request, base.Request!, monthDb);
         return autoQuery.Execute(request, q, base.Request, monthDb);        
     }
 

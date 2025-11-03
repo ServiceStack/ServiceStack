@@ -14,7 +14,7 @@ public class OrmLiteCacheClient : OrmLiteCacheClient<CacheEntry> { }
 public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSchema, ICacheClientExtended, IRemoveByPattern
     where TCacheEntry : ICacheEntry, new()
 {
-    TCacheEntry CreateEntry(string id, string data = null,
+    TCacheEntry CreateEntry(string id, string? data = null,
         DateTime? created = null, DateTime? expires = null)
     {
         var createdDate = created ?? DateTime.UtcNow;
@@ -66,7 +66,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
         Exec(db => db.DeleteByIds<TCacheEntry>(keys) > 0);
     }
 
-    public T Get<T>(string key)
+    public T? Get<T>(string key)
     {
         return Exec(db =>
         {
@@ -92,7 +92,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
             }
             else
             {
-                nextVal = long.Parse(cache.Data) + amount;
+                nextVal = long.Parse(cache.Data ?? "0") + amount;
                 cache.Data = nextVal.ToString();
 
                 db.Update(cache);
@@ -119,7 +119,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
             }
             else
             {
-                nextVal = long.Parse(cache.Data) - amount;
+                nextVal = long.Parse(cache.Data ?? "0") - amount;
                 cache.Data = nextVal.ToString();
 
                 db.Update(cache);
@@ -352,7 +352,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
         return Exec(db =>
         {
             var results = Verify(db, db.SelectByIds<TCacheEntry>(keys));
-            var map = new Dictionary<string, T>();
+            var map = new Dictionary<string, T?>();
 
             results.Each(x =>
                 map[x.Id] = db.Deserialize<T>(x.Data));
@@ -396,7 +396,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
         return results;
     }
 
-    public TCacheEntry Verify(IDbConnection db, TCacheEntry entry)
+    public TCacheEntry? Verify(IDbConnection db, TCacheEntry? entry)
     {
         if (entry != null &&
             entry.ExpiryDate != null && DateTime.UtcNow > entry.ExpiryDate)
@@ -464,7 +464,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
 public interface ICacheEntry
 {
     string Id { get; set; }
-    string Data { get; set; }
+    string? Data { get; set; }
     DateTime? ExpiryDate { get; set; }
     DateTime CreatedDate { get; set; }
     DateTime ModifiedDate { get; set; }
@@ -472,9 +472,9 @@ public interface ICacheEntry
 
 public class CacheEntry : ICacheEntry
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
     [StringLength(StringLengthAttribute.MaxText)]
-    public string Data { get; set; }
+    public string? Data { get; set; }
     [Index]
     public DateTime? ExpiryDate { get; set; }
     public DateTime CreatedDate { get; set; }
@@ -503,7 +503,7 @@ public static class DbExtensions
         return db.GetDialectProvider().StringSerializer.SerializeToString(value);
     }
 
-    public static T Deserialize<T>(this IDbConnection db, string text)
+    public static T? Deserialize<T>(this IDbConnection db, string? text)
     {
         return text == null
             ? default(T)

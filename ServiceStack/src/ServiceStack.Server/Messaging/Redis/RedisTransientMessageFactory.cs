@@ -17,9 +17,9 @@ namespace ServiceStack.Messaging.Redis;
 public class RedisTransientMessageFactory
 	: IMessageFactory
 {
-	public IRedisClientsManager ClientsManager { get; private set; }
+	public IRedisClientsManager? ClientsManager { get; private set; }
 
-	public RedisTransientMessageService MessageService { get; private set; }
+	public RedisTransientMessageService? MessageService { get; private set; }
 
 	public RedisTransientMessageFactory(
 		IRedisClientsManager clientsManager)
@@ -45,7 +45,7 @@ public class RedisTransientMessageFactory
 		return new RedisMessageProducer(this.ClientsManager, OnMessagePublished);
 	}
 
-	public IMessageService CreateMessageService()
+	public IMessageService? CreateMessageService()
 	{
 		return MessageService;
 	}

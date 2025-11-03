@@ -117,7 +117,7 @@ public class AdminDatabase : IGet, IReturn<AdminDatabaseResponse>
 [Csv(CsvBehavior.FirstEnumerable)]
 public class AdminDatabaseResponse : IHasResponseStatus
 {
-    public List<Dictionary<string, object?>> Results { get; set; }
+    public List<Dictionary<string, object?>> Results { get; set; } = [];
     public long? Total { get; set; }
     public List<MetadataPropertyType>? Columns { get; set; }
     public ResponseStatus? ResponseStatus { get; set; }
@@ -148,9 +148,9 @@ public class AdminDatabaseService : Service
         }
     }
 
-    private static char[] Delims = ['=', '!', '<', '>', '[', ']'];
+    private static readonly char[] Delims = ['=', '!', '<', '>', '[', ']'];
 
-    private static ConcurrentDictionary<string, List<MetadataPropertyType>> ColumnCache = new();
+    private static readonly ConcurrentDictionary<string, List<MetadataPropertyType>> ColumnCache = new();
 
     private async Task<AdminDatabaseFeature> AssertRequiredRole()
     {
@@ -301,7 +301,7 @@ public class AdminDatabaseService : Service
         var results = await db.SqlListAsync<Dictionary<string, object?>>(resultsSql, dbParams);
         long? total = null;
 
-        var includes = request.Include?.Split(',') ?? Array.Empty<string>();
+        var includes = request.Include?.Split(',') ?? [];
         if (includes.Contains("total"))
         {
             var totalSql = $"SELECT COUNT(*) FROM {table}" + n + sqlWhere;
@@ -309,7 +309,7 @@ public class AdminDatabaseService : Service
         }
 
         // Change CSV download filename
-        Request.Items[Keywords.FileName] = request.Table + ".csv";
+        Request!.Items[Keywords.FileName] = request.Table + ".csv";
         
         return new AdminDatabaseResponse
         {
@@ -328,7 +328,8 @@ public class AdminDatabaseService : Service
             var columnSchemas = db.GetTableColumns($"SELECT * FROM {table} ORDER BY 1 {dialect.SqlLimit(0, 1)}");
             var columns = columnSchemas.Map(x =>
             {
-                var type = GenerateCrudServices.DefaultResolveColumnType(x, dialect);
+                var type = GenerateCrudServices.DefaultResolveColumnType(x, dialect)
+                    ?? throw new NotSupportedException($"Unknown Column Type: {x.ColumnName}");
                 var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
                 return new MetadataPropertyType
                 {

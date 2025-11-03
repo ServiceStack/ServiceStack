@@ -24,7 +24,7 @@ public class OrmLiteAppSettings(IDbConnectionFactory dbFactory)
     {
         public IDbConnectionFactory DbFactory { get; } = dbFactory;
 
-        public string Get(string key)
+        public string? Get(string key)
         {
             using var db = DbFactory.Open(ConfigureDb);
             var config = db.SingleById<ConfigSetting>(key);
@@ -76,7 +76,7 @@ public class OrmLiteAppSettings(IDbConnectionFactory dbFactory)
             return value;
         }
 
-        return base.Get(key, default(T));
+        return base.Get(key, default(T))!;
     }
 
     public override string GetString(string name) => base.GetNullableString(name);

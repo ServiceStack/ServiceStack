@@ -8,13 +8,13 @@ namespace ServiceStack;
 
 public class AutoQueryScripts : ScriptMethods, IAutoQueryDbFilters
 {
-    private IRequest req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IRequest;
+    private IRequest? req(ScriptScopeContext scope) => scope.GetValue(ScriptConstants.Request) as IRequest;
     private ServiceStackHost appHost => HostContext.AppHost;
 
     public object sendToAutoQuery(ScriptScopeContext scope, string requestName) => 
         sendToAutoQuery(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
     public object sendToAutoQuery(ScriptScopeContext scope, object dto, string requestName) => sendToAutoQuery(scope, dto, requestName, null);
-    public object sendToAutoQuery(ScriptScopeContext scope, object dto, string requestName, object options)
+    public object sendToAutoQuery(ScriptScopeContext scope, object dto, string requestName, object? options)
     {
         try
         {
@@ -47,7 +47,7 @@ public class AutoQueryScripts : ScriptMethods, IAutoQueryDbFilters
                     ? dto
                     : dto.ConvertTo(requestType);
                 
-            if (!(requestDto is IQueryDb aqDto))
+            if (requestDto is not IQueryDb aqDto)
                 throw new ArgumentException("Request DTO is not an AutoQuery DTO: " + requestName);
 
             var reqParams = objDictionary?.ToStringDictionary() ?? TypeConstants.EmptyStringDictionary;

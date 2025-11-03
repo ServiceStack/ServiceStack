@@ -25,15 +25,20 @@ using ServiceStack.Extensions;
 
 namespace ServiceStack;
 
-public delegate void QueryFilterDelegate(ISqlExpression q, IQueryDb dto, IRequest req);
+public delegate void QueryFilterDelegate(ISqlExpression q, IQueryDb dto, IRequest? req);
 
-public class QueryDbFilterContext
+public class QueryDbFilterContext(
+    IDbConnection db,
+    List<Command> commands,
+    IQueryDb dto,
+    ISqlExpression sqlExpression,
+    IQueryResponse response)
 {
-    public IDbConnection Db { get; set; }
-    public List<Command> Commands { get; set; }
-    public IQueryDb Dto { get; set; }
-    public ISqlExpression SqlExpression { get; set; }
-    public IQueryResponse Response { get; set; }
+    public IDbConnection Db { get; set; } = db;
+    public List<Command> Commands { get; set; } = commands;
+    public IQueryDb Dto { get; set; } = dto;
+    public ISqlExpression SqlExpression { get; set; } = sqlExpression;
+    public IQueryResponse Response { get; set; } = response;
 }
 
 public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfigureServices, IPreInitPlugin, Model.IHasStringId
@@ -44,8 +49,8 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
     private static readonly string[] DefaultIgnoreProperties =
         ["Skip", "Take", "OrderBy", "OrderByDesc", "Fields", "_select", "_from", "_join", "_where"];
     public HashSet<string> IgnoreProperties { get; set; } = new(DefaultIgnoreProperties, StringComparer.OrdinalIgnoreCase);
-    public HashSet<string> IllegalSqlFragmentTokens { get; set; } = new(OrmLiteUtils.IllegalSqlFragmentTokens);
-    public HashSet<Assembly> LoadFromAssemblies { get; set; } = new();
+    public HashSet<string> IllegalSqlFragmentTokens { get; set; } = [..OrmLiteUtils.IllegalSqlFragmentTokens];
+    public HashSet<Assembly> LoadFromAssemblies { get; set; } = [];
     public int? MaxLimit { get; set; }
     public bool IncludeTotal { get; set; }
     public bool StripUpperInLike { get; set; } = OrmLiteConfig.StripUpperInLike;
@@ -128,9 +133,9 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         {"%IsNotNull",      SqlTemplate.IsNotNull},
     };
 
-    public Dictionary<string, QueryDbFieldAttribute> StartsWithConventions = new();
+    public Dictionary<string, QueryDbFieldAttribute> StartsWithConventions { get; set; } = new();
 
-    public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions = new() {
+    public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; } = new() {
         { "StartsWith", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "{0}%" }},
         { "Contains", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}%" }},
         { "EndsWith", new QueryDbFieldAttribute { Template = SqlTemplate.CaseInsensitiveLike, ValueFormat = "%{0}" }},
@@ -157,7 +162,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         new() { Name = "Not Exists", Value = "%IsNull", ValueType = "none" }
     ];
 
-    public HtmlModule HtmlModule { get; set; } = new("/modules/locode", "/locode") {
+    public HtmlModule? HtmlModule { get; set; } = new("/modules/locode", "/locode") {
         DynamicPageQueryStrings = { nameof(MetadataApp.IncludeTypes) }
     };
 
@@ -187,7 +192,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
     public void Configure(IServiceCollection services)
     {
         services.AddSingleton<IAutoQueryDb>(c => 
-            CreateAutoQueryDb(c.GetService<IDbConnectionFactory>()));
+            CreateAutoQueryDb(c.GetRequiredService<IDbConnectionFactory>()));
         //CRUD Services
         GenerateCrudServices?.Configure(services);
     }
@@ -301,8 +306,8 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         appHost.PostConfigurePlugin<MetadataFeature>(c => c.ExportTypes.Add(typeof(CrudEvent)));
     }
         
-    public Func<List<Type>,List<Type>> FilterAutoQueryRequestTypes { get; set; }
-    public Func<List<Type>,List<Type>> FilterAutoCrudRequestTypes { get; set; }
+    public Func<List<Type>,List<Type>>? FilterAutoQueryRequestTypes { get; set; }
+    public Func<List<Type>,List<Type>>? FilterAutoCrudRequestTypes { get; set; }
 
     Type GenerateMissingQueryServices(HashSet<Type> customBatchedRequestTypes,
         List<Type> missingQueryRequestTypes, List<Type> missingCrudRequestTypes)
@@ -452,7 +457,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         return servicesType;
     }
 
-    public AutoQueryFeature RegisterQueryFilter<Request, From>(Action<SqlExpression<From>, Request, IRequest> filterFn)
+    public AutoQueryFeature RegisterQueryFilter<Request, From>(Action<SqlExpression<From>, Request, IRequest?> filterFn)
     {
         QueryFilters[typeof(Request)] = (q, dto, req) =>
             filterFn((SqlExpression<From>)q, (Request)dto, req);
@@ -543,9 +548,13 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         var rows = ctx.Db.Select<Dictionary<string, object>>(q);
         var row = rows.FirstOrDefault();
 
-        foreach (var key in row.Keys)
+        if (row?.Keys.Count == 0)
         {
-            ctx.Response.Meta[key] = row[key]?.ToString();
+            ctx.Response.Meta ??= new();
+            foreach (var key in row.Keys)
+            {
+                ctx.Response.Meta[key] = row[key]?.ToString() ?? "";
+            }
         }
 
         ctx.Commands.RemoveAll(aggregateCommands.Contains);
@@ -567,17 +576,17 @@ public interface IAutoQueryDb : IAutoCrudDb
     /// <summary>
     /// Non-generic API to resolve the DB Connection to use for this request 
     /// </summary>
-    IDbConnection GetDb(Type fromType, IRequest req = null);
+    IDbConnection GetDb(Type fromType, IRequest? req = null);
 
     /// <summary>
     /// Generic API to resolve the DB Connection to use for this request
     /// </summary>
-    IDbConnection GetDb<From>(IRequest req = null);
+    IDbConnection GetDb<From>(IRequest? req = null);
                 
     /// <summary>
     /// Non-generic API to resolve the DB Named Connection to use for this request 
     /// </summary>
-    string GetDbNamedConnection(Type fromType, IRequest req = null);
+    string? GetDbNamedConnection(Type fromType, IRequest? req = null);
 
     /// <summary>
     /// Generate an untyped AutoQuery Query Builder
@@ -587,37 +596,37 @@ public interface IAutoQueryDb : IAutoCrudDb
     /// <summary>
     /// Generate a populated and Typed OrmLite SqlExpression using the same model as the source and output target
     /// </summary>
-    SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null);
+    SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest? req = null, IDbConnection? db = null);
 
     /// <summary>
     /// Execute an OrmLite SqlExpression using the same model as the source and output target
     /// </summary>
-    QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
+    QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null);
 
     /// <summary>
     /// Async Execute an OrmLite SqlExpression using the same model as the source and output target
     /// </summary>
-    Task<QueryResponse<From>> ExecuteAsync<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
+    Task<QueryResponse<From>> ExecuteAsync<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null);
 
     /// <summary>
     /// Generate a populated and Typed OrmLite SqlExpression using different models for source and output target
     /// </summary>
-    SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null);
+    SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest? req = null, IDbConnection? db = null);
 
     /// <summary>
     /// Execute an OrmLite SqlExpression using different models for source and output target
     /// </summary>
-    QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
+    QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null);
 
     /// <summary>
     /// Async Execute an OrmLite SqlExpression using different models for source and output target
     /// </summary>
-    Task<QueryResponse<Into>> ExecuteAsync<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null);
+    Task<QueryResponse<Into>> ExecuteAsync<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null);
         
     /// <summary>
     /// Generate a populated untyped ISqlExpression from an untyped AutoQuery Request
     /// </summary>
-    ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest req, IDbConnection db);
+    ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest? req, IDbConnection? db);
 
     /// <summary>
     /// Execute an untyped ISqlExpression 
@@ -638,72 +647,67 @@ public interface IAutoCrudDb
     /// <summary>
     /// Inserts new entry into Table
     /// </summary>
-    object Create<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null);
+    object Create<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection? db = null);
         
     /// <summary>
     /// Inserts new entry into Table Async
     /// </summary>
-    Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null);
+    Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection? db = null);
         
     /// <summary>
     /// Updates entry into Table
     /// </summary>
-    object Update<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection db = null);
+    object Update<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection? db = null);
         
     /// <summary>
     /// Updates entry into Table Async
     /// </summary>
-    Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection db = null);
+    Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection? db = null);
         
     /// <summary>
     /// Partially Updates entry into Table
     /// </summary>
-    object Patch<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection db = null);
+    object Patch<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection? db = null);
         
     /// <summary>
     /// Partially Updates entry into Table Async
     /// </summary>
-    Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection db = null);
+    Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection? db = null);
         
     /// <summary>
     /// Deletes entry from Table
     /// </summary>
-    object Delete<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection db = null);
+    object Delete<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection? db = null);
         
     /// <summary>
     /// Deletes entry from Table Async
     /// </summary>
-    Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection db = null);
+    Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection? db = null);
 
     /// <summary>
     /// Inserts or Updates entry into Table
     /// </summary>
-    object Save<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection db = null);
+    object Save<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection? db = null);
 
     /// <summary>
     /// Inserts or Updates entry into Table Async
     /// </summary>
-    Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection db = null);
+    Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection? db = null);
 
     /// <summary>
     /// Partially Update non-null properties of DTO
     /// </summary>
-    public object PartialUpdate<Table>(object dto, IRequest req, IDbConnection db = null);
+    public object PartialUpdate<Table>(object dto, IRequest req, IDbConnection? db = null);
 
     /// <summary>
     /// Partially Update non-null properties of DTO Async
     /// </summary>
-    Task<object> PartialUpdateAsync<Table>(object dto, IRequest req, IDbConnection db = null);
+    Task<object> PartialUpdateAsync<Table>(object dto, IRequest req, IDbConnection? db = null);
 }
     
-public abstract partial class AutoQueryServiceBase : Service
+public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Service
 {
-    public IAutoQueryDb AutoQuery { get; }
-
-    protected AutoQueryServiceBase(IAutoQueryDb autoQuery)
-    {
-        AutoQuery = autoQuery;
-    }
+    public IAutoQueryDb AutoQuery { get; } = autoQuery;
 
     public virtual object Exec<From>(IQueryDb<From> dto)
     {
@@ -781,32 +785,32 @@ public interface IAutoQueryOptions
     bool EnableUntypedQueries { get; set; }
     bool EnableSqlFilters { get; set; }
     bool OrderByPrimaryKeyOnLimitQuery { get; set; }
-    HashSet<string> IgnoreProperties { get; set; }
-    HashSet<string> IllegalSqlFragmentTokens { get; set; }
-    Dictionary<string, QueryDbFieldAttribute> StartsWithConventions { get; set; }
-    Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
+    HashSet<string>? IgnoreProperties { get; set; }
+    HashSet<string>? IllegalSqlFragmentTokens { get; set; }
+    Dictionary<string, QueryDbFieldAttribute>? StartsWithConventions { get; set; }
+    Dictionary<string, QueryDbFieldAttribute>? EndsWithConventions { get; set; }
 }
 
 public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 {
-    public AutoQueryFeature Feature { get; set; }  
+    public AutoQueryFeature Feature { get; set; } = null!;
     public string AccessRole => Feature?.AccessRole ?? RoleNames.Admin;
     public int? MaxLimit { get; set; }
     public bool IncludeTotal { get; set; }
     public bool EnableUntypedQueries { get; set; }
     public bool EnableSqlFilters { get; set; }
     public bool OrderByPrimaryKeyOnLimitQuery { get; set; }
-    public string RequiredRoleForRawSqlFilters { get; set; }
-    public HashSet<string> IgnoreProperties { get; set; }
-    public HashSet<string> IllegalSqlFragmentTokens { get; set; }
-    public Dictionary<string, QueryDbFieldAttribute> StartsWithConventions { get; set; }
-    public Dictionary<string, QueryDbFieldAttribute> EndsWithConventions { get; set; }
+    public string? RequiredRoleForRawSqlFilters { get; set; }
+    public HashSet<string>? IgnoreProperties { get; set; }
+    public HashSet<string>? IllegalSqlFragmentTokens { get; set; }
+    public Dictionary<string, QueryDbFieldAttribute>? StartsWithConventions { get; set; }
+    public Dictionary<string, QueryDbFieldAttribute>? EndsWithConventions { get; set; }
 
-    public string UseNamedConnection { get; set; }
+    public string? UseNamedConnection { get; set; }
     public bool EnableWriterLock { get; set; }
-    public QueryFilterDelegate GlobalQueryFilter { get; set; }
-    public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
-    public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
+    public QueryFilterDelegate? GlobalQueryFilter { get; set; }
+    public Dictionary<Type, QueryFilterDelegate>? QueryFilters { get; set; }
+    public List<Action<QueryDbFilterContext>>? ResponseFilters { get; set; }
 
     private static Dictionary<Type, ITypedQuery> TypedQueries = new();
 
@@ -852,7 +856,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         return defaultValue;
     }
 
-    public SqlExpression<From> Filter<From>(ISqlExpression q, IQueryDb dto, IRequest req)
+    public SqlExpression<From> Filter<From>(ISqlExpression q, IQueryDb dto, IRequest? req)
     {
         GlobalQueryFilter?.Invoke(q, dto, req);
 
@@ -873,7 +877,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         return (SqlExpression<From>)q;
     }
 
-    public ISqlExpression Filter(ISqlExpression q, IQueryDb dto, IRequest req)
+    public ISqlExpression Filter(ISqlExpression q, IQueryDb dto, IRequest? req)
     {
         GlobalQueryFilter?.Invoke(q, dto, req);
 
@@ -900,14 +904,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
         var commands = dto.Include.ParseCommands();
 
-        var ctx = new QueryDbFilterContext
-        {
-            Db = db,
-            Commands = commands,
-            Dto = dto,
-            SqlExpression = expr,
-            Response = response,
-        };
+        var ctx = new QueryDbFilterContext(db, commands, dto, expr, response);
 
         var totalCommand = commands.FirstOrDefault(x => x.Name.EqualsIgnoreCase("Total"));
         if (totalCommand != null)
@@ -924,7 +921,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
             if (!totalRequested)
                 commands.Add(new Command { Name = "COUNT", Args = { "*".AsMemory() } });
 
-            foreach (var responseFilter in ResponseFilters)
+            foreach (var responseFilter in ResponseFilters.Safe())
             {
                 responseFilter(ctx);
             }
@@ -943,7 +940,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         }
         else
         {
-            foreach (var responseFilter in ResponseFilters)
+            foreach (var responseFilter in ResponseFilters.Safe())
             {
                 responseFilter(ctx);
             }
@@ -952,7 +949,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         return response;
     }
 
-    public string GetDbNamedConnection(Type fromType, IRequest req = null)
+    public string? GetDbNamedConnection(Type fromType, IRequest? req = null)
     {
         var namedConnection = UseNamedConnection;
         var attr = fromType.FirstAttribute<NamedConnectionAttribute>();
@@ -961,8 +958,8 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
             : namedConnection ?? (req != null ? HostContext.AppHost.GetDbNamedConnection(req) : null);
     }
 
-    public IDbConnection GetDb<From>(IRequest req = null) => GetDb(typeof(From), req);
-    public IDbConnection GetDb(Type fromType, IRequest req = null)
+    public IDbConnection GetDb<From>(IRequest? req = null) => GetDb(typeof(From), req);
+    public IDbConnection GetDb(Type fromType, IRequest? req = null)
     {
         var namedConnection = GetDbNamedConnection(fromType, req);
         return namedConnection == null 
@@ -970,7 +967,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
             : HostContext.AppHost.GetDbConnection(namedConnection, req);
     }
 
-    public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null)
+    public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest? req = null, IDbConnection? db = null)
     {
         using (db == null ? db = GetDb<From>(req) : null)
         {
@@ -980,7 +977,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         }
     }
 
-    public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null)
+    public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null)
     {
         using (db == null ? db = GetDb<From>(req) : null)
         {
@@ -989,7 +986,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         }
     }
 
-    public async Task<QueryResponse<From>> ExecuteAsync<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null)
+    public async Task<QueryResponse<From>> ExecuteAsync<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null)
     {
         using (db == null ? db = GetDb<From>(req) : null)
         {
@@ -998,7 +995,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         }
     }
 
-    public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null)
+    public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest? req = null, IDbConnection? db = null)
     {
         using (db == null ? db = GetDb<From>(req) : null)
         {
@@ -1008,7 +1005,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         }
     }
 
-    public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null)
+    public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null)
     {
         using (db == null ? db = GetDb<From>(req) : null)
         {
@@ -1017,7 +1014,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         }
     }
 
-    public async Task<QueryResponse<Into>> ExecuteAsync<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest req = null, IDbConnection db = null)
+    public async Task<QueryResponse<Into>> ExecuteAsync<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null)
     {
         using (db == null ? db = GetDb<From>(req) : null)
         {
@@ -1026,7 +1023,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         }
     }
 
-    public ISqlExpression CreateQuery(IQueryDb requestDto, Dictionary<string, string> dynamicParams, IRequest req = null, IDbConnection db = null)
+    public ISqlExpression CreateQuery(IQueryDb requestDto, Dictionary<string, string> dynamicParams, IRequest? req = null, IDbConnection? db = null)
     {
         var requestDtoType = requestDto.GetType();
         var fromType = GetFromType(requestDtoType);
@@ -1113,30 +1110,32 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
 internal abstract class GenericAutoQueryDb
 {
-    public abstract IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection db = null);
+    public abstract IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection? db = null);
 
-    public abstract Task<IQueryResponse> ExecuteObjectAsync(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection db = null);
+    public abstract Task<IQueryResponse> ExecuteObjectAsync(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection? db = null);
 }
     
 internal class GenericAutoQueryDb<From, Into> : GenericAutoQueryDb
 {
-    public override IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection db = null)
+    public override IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection? db = null)
     {
-        using (db == null ? autoQuery.GetDb(request.GetType(), null) : null)
+        var useDb = db ?? autoQuery.GetDb(request.GetType(), null);
+        using (db == null ? useDb : null)
         {
             var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
             var q = (SqlExpression<From>)query;
-            return autoQuery.ResponseFilter(db, typedQuery.Execute<Into>(db, q), q, request);
+            return autoQuery.ResponseFilter(useDb, typedQuery.Execute<Into>(useDb, q), q, request);
         }
     }
 
-    public override async Task<IQueryResponse> ExecuteObjectAsync(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection db = null)
+    public override async Task<IQueryResponse> ExecuteObjectAsync(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection? db = null)
     {
-        using (db == null ? autoQuery.GetDb(request.GetType(), null) : null)
+        var useDb = db ?? autoQuery.GetDb(request.GetType(), null);
+        using (db == null ? useDb : null)
         {
             var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
             var q = (SqlExpression<From>)query;
-            return autoQuery.ResponseFilter(db, await typedQuery.ExecuteAsync<Into>(db, q).ConfigAwait(), q, request);
+            return autoQuery.ResponseFilter(useDb, await typedQuery.ExecuteAsync<Into>(useDb, q).ConfigAwait(), q, request);
         }
     }
 }
@@ -1150,8 +1149,8 @@ public interface ITypedQuery
         ISqlExpression query,
         IQueryDb dto,
         Dictionary<string, string> dynamicParams,
-        IAutoQueryOptions options = null,
-        IRequest req = null);
+        IAutoQueryOptions? options = null,
+        IRequest? req = null);
 
     QueryResponse<Into> Execute<Into>(
         IDbConnection db,
@@ -1164,23 +1163,23 @@ public interface ITypedQuery
 
 internal struct ExprResult
 {
-    internal string DefaultTerm;
-    internal string Format;
-    internal object[] Values;
-    private ExprResult(string defaultTerm, string format, params object[] values)
+    internal readonly string DefaultTerm;
+    internal readonly string Format;
+    internal readonly object?[]? Values;
+    private ExprResult(string defaultTerm, string format, params object?[] values)
     {
         DefaultTerm = defaultTerm;
         Format = format;
         Values = values;
     }
         
-    internal static ExprResult? CreateExpression(string defaultTerm, string quotedColumn, object value, QueryDbFieldAttribute implicitQuery)
+    internal static ExprResult? CreateExpression(string defaultTerm, string quotedColumn, object? value, QueryDbFieldAttribute? implicitQuery)
     {
         var seq = value as IEnumerable;
         if (value is string)
             seq = null;
 
-        if (seq != null && value is ICollection collection && collection.Count == 0) //ignore empty ICollection filters
+        if (seq != null && value is ICollection { Count: 0 }) //ignore empty ICollection filters
             return null;
 
         var format = seq == null
@@ -1291,7 +1290,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
 {
     static readonly Dictionary<string, GetMemberDelegate> PropertyGetters = new();
     static readonly Dictionary<string, QueryDbFieldAttribute> QueryFieldMap = new();
-    static AutoCrudMetadata Meta;
+    static AutoCrudMetadata Meta = null!;
 
     static TypedQuery()
     {
@@ -1317,8 +1316,8 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         ISqlExpression query,
         IQueryDb dto, 
         Dictionary<string, string> dynamicParams,
-        IAutoQueryOptions options = null,
-        IRequest req = null)
+        IAutoQueryOptions? options = null,
+        IRequest? req = null)
     {
         dynamicParams = new Dictionary<string, string>(dynamicParams, StringComparer.OrdinalIgnoreCase);
 
@@ -1334,7 +1333,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         }
             
         var q = (SqlExpression<From>) query;
-        if (options != null && options.EnableSqlFilters)
+        if (options is { EnableSqlFilters: true })
         {
             AppendSqlFilters(q, dto, dynamicParams, options);
         }
@@ -1398,13 +1397,13 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         return q;
     }
 
-    private void AppendSqlFilters(SqlExpression<From> q, IQueryDb dto, Dictionary<string, string> dynamicParams, IAutoQueryOptions options)
+    private void AppendSqlFilters(SqlExpression<From> q, IQueryDb dto, Dictionary<string, string> dynamicParams, IAutoQueryOptions? options)
     {
         dynamicParams.TryGetValue("_select", out var select);
         if (select != null)
         {
             dynamicParams.Remove("_select");
-            select.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
+            select.SqlVerifyFragment(options?.IllegalSqlFragmentTokens);
             q.Select(select);
         }
 
@@ -1412,7 +1411,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         if (from != null)
         {
             dynamicParams.Remove("_from");
-            from.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
+            from.SqlVerifyFragment(options?.IllegalSqlFragmentTokens);
             q.From(from);
         }
 
@@ -1420,12 +1419,12 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         if (where != null)
         {
             dynamicParams.Remove("_where");
-            where.SqlVerifyFragment(options.IllegalSqlFragmentTokens);
+            where.SqlVerifyFragment(options?.IllegalSqlFragmentTokens);
             q.Where(where);
         }
     }
 
-    private static void AppendLimits(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options)
+    private static void AppendLimits(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions? options)
     {
         var maxLimit = options?.MaxLimit;
         var take = dto.Take ?? maxLimit;
@@ -1444,7 +1443,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
             q.OrderByFieldsDescending(fieldNames);
         }
         else if ((dto.Skip != null || dto.Take != null)
-                 && (options != null && options.OrderByPrimaryKeyOnLimitQuery))
+                 && options is { OrderByPrimaryKeyOnLimitQuery: true })
         {
             q.OrderByFields(typeof(From).GetModelMetadata().PrimaryKey);
         }
@@ -1475,7 +1474,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         }
     }
 
-    private static void AppendAutoFilters(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions options, IRequest req)
+    private static void AppendAutoFilters(SqlExpression<From> q, IQueryDb dto, IAutoQueryOptions? options, IRequest? req)
     {
         if (Meta.AutoFilters.Count == 0)
             return;
@@ -1497,7 +1496,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         }
     }
 
-    private static void AppendTypedQueries(SqlExpression<From> q, IQueryDb dto, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options, Dictionary<string, string> aliases)
+    private static void AppendTypedQueries(SqlExpression<From> q, IQueryDb dto, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions? options, Dictionary<string, string> aliases)
     {
         foreach (var entry in PropertyGetters)
         {
@@ -1518,9 +1517,8 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
                 ? match.ImplicitQuery 
                 : implicitQuery.Combine(match.ImplicitQuery);
 
-            var quotedColumn = match.FieldDef.CustomSelect != null
-                ? match.FieldDef.CustomSelect
-                : q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
+            var quotedColumn = match.FieldDef.CustomSelect 
+                ?? q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
 
             var value = entry.Value(dto);
             if (value == null)
@@ -1530,7 +1528,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         }
     }
 
-    private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options, Dictionary<string, string> aliases)
+    private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions? options, Dictionary<string, string> aliases)
     {
         foreach (var entry in dynamicParams)
         {
@@ -1541,15 +1539,14 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
                 continue;
 
             var implicitQuery = match.ImplicitQuery;
-            var quotedColumn = match.FieldDef.CustomSelect != null
-                ? match.FieldDef.CustomSelect
-                : q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
+            var quotedColumn = match.FieldDef.CustomSelect 
+                ?? q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
                 
             var strValue = !string.IsNullOrEmpty(entry.Value)
                 ? entry.Value
                 : null;
             var fieldType = match.FieldDef.FieldType;
-            var isMultiple = (implicitQuery != null && (implicitQuery.ValueStyle > ValueStyle.Single))
+            var isMultiple = implicitQuery is { ValueStyle: > ValueStyle.Single }
                              || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
 
             var value = strValue == null ?
@@ -1564,7 +1561,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         }
     }
 
-    private static void AddCondition(SqlExpression<From> q, string defaultTerm, string quotedColumn, object value, QueryDbFieldAttribute implicitQuery)
+    private static void AddCondition(SqlExpression<From> q, string defaultTerm, string quotedColumn, object? value, QueryDbFieldAttribute? implicitQuery)
     {
         var ret = ExprResult.CreateExpression(defaultTerm, quotedColumn, value, implicitQuery);
         if (ret == null) 
@@ -1581,16 +1578,16 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         }
     }
 
-    class MatchQuery(Tuple<ModelDefinition, FieldDefinition> match, QueryDbFieldAttribute implicitQuery)
+    class MatchQuery(Tuple<ModelDefinition, FieldDefinition> match, QueryDbFieldAttribute? implicitQuery)
     {
         public readonly ModelDefinition ModelDef = match.Item1;
         public readonly FieldDefinition FieldDef = match.Item2;
-        public readonly QueryDbFieldAttribute ImplicitQuery = implicitQuery;
+        public readonly QueryDbFieldAttribute? ImplicitQuery = implicitQuery;
     }
 
     private const string Pluralized = "s";
 
-    private static MatchQuery GetQueryMatch(SqlExpression<From> q, string name, IAutoQueryOptions options, Dictionary<string,string> aliases)
+    private static MatchQuery? GetQueryMatch(SqlExpression<From> q, string name, IAutoQueryOptions? options, Dictionary<string,string> aliases)
     {
         var match = GetQueryMatch(q, name, options);
 
@@ -1606,7 +1603,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         return match;
     }
 
-    private static MatchQuery GetQueryMatch(SqlExpression<From> q, string name, IAutoQueryOptions options)
+    private static MatchQuery? GetQueryMatch(SqlExpression<From> q, string name, IAutoQueryOptions? options)
     {
         if (options == null) return null;
 
@@ -1616,7 +1613,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
 
         if (match == null)
         {
-            foreach (var startsWith in options.StartsWithConventions)
+            foreach (var startsWith in options.StartsWithConventions.Safe())
             {
                 if (name.Length <= startsWith.Key.Length || !name.StartsWith(startsWith.Key)) continue;
 
@@ -1628,7 +1625,7 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         }
         if (match == null)
         {
-            foreach (var endsWith in options.EndsWithConventions)
+            foreach (var endsWith in options.EndsWithConventions.Safe())
             {
                 if (name.Length <= endsWith.Key.Length || !name.EndsWith(endsWith.Key)) continue;
 
@@ -1714,7 +1711,7 @@ public static class AutoQueryExtensions
         return query;
     }
 
-    public static QueryDbFieldAttribute Combine(this QueryDbFieldAttribute field, QueryDbFieldAttribute convention)
+    public static QueryDbFieldAttribute Combine(this QueryDbFieldAttribute field, QueryDbFieldAttribute? convention)
     {
         if (convention == null)
             return field;
@@ -1736,7 +1733,7 @@ public static class AutoQueryExtensions
         return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
     }
 
-    public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest request, IDbConnection db)
+    public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest request, IDbConnection? db)
     {
         return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
     }
@@ -1751,9 +1748,9 @@ public static class AutoQueryExtensions
         return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
     }
 
-    public static IDbConnection GetDb<From>(this IAutoQueryDb autoQuery, IQueryDb<From> dto, IRequest req = null) => 
+    public static IDbConnection GetDb<From>(this IAutoQueryDb autoQuery, IQueryDb<From> dto, IRequest? req = null) => 
         autoQuery.GetDb(typeof(From), req);
 
-    public static IDbConnection GetDb<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From,Into> dto, IRequest req = null) => 
+    public static IDbConnection GetDb<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From,Into> dto, IRequest? req = null) => 
         autoQuery.GetDb(typeof(From), req);
 }

@@ -90,7 +90,7 @@ namespace ServiceStack.Messaging.Redis
         /// Opt-in to only publish responses on this white list. 
         /// Publishes all responses by default.
         /// </summary>
-        public string[] PublishResponsesWhitelist { get; set; }
+        public string[]? PublishResponsesWhitelist { get; set; }
 
         /// <summary>
         /// Don't publish any response messages
@@ -104,7 +104,7 @@ namespace ServiceStack.Messaging.Redis
         /// Opt-in to only publish .outq messages on this white list. 
         /// Publishes all responses by default.
         /// </summary>
-        public string[] PublishToOutqWhitelist { get; set; }
+        public string[]? PublishToOutqWhitelist { get; set; }
 
         /// <summary>
         /// Don't publish any messages to .outq
@@ -118,7 +118,7 @@ namespace ServiceStack.Messaging.Redis
 
         private readonly Dictionary<Type, int> handlerThreadCountMap = new();
 
-        private MessageHandlerWorker[] workers;
+        private MessageHandlerWorker[]? workers;
         private Dictionary<string, int[]> queueWorkerIndexMap;
 
         public List<Type> RegisteredTypes => handlerMap.Keys.ToList();
@@ -173,7 +173,7 @@ namespace ServiceStack.Messaging.Redis
             RegisterHandler(processMessageFn, processExceptionEx, noOfThreads: 1);
         }
 
-        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
+        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception>? processExceptionEx, int noOfThreads)
         {
             if (handlerMap.ContainsKey(typeof(T)))
             {
@@ -188,7 +188,7 @@ namespace ServiceStack.Messaging.Redis
                 JsConfig.AllowRuntimeTypeInTypes.Add(RedisMessageFactory.RegisterAllowRuntimeTypeInTypes);
         }
 
-        protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
+        protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception>? processExceptionEx)
         {
             return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx) {
                 RequestFilter = this.RequestFilter,
@@ -270,7 +270,7 @@ namespace ServiceStack.Messaging.Redis
 
                     if (!queueWorkerIndexMap.TryGetValue(worker.QueueName, out var workerIds))
                     {
-                        queueWorkerIndexMap[worker.QueueName] = new[] { i };
+                        queueWorkerIndexMap[worker.QueueName] = [i];
                     }
                     else
                     {
@@ -289,7 +289,7 @@ namespace ServiceStack.Messaging.Redis
                 {
                     foreach (var workerIndex in workerIndexes)
                     {
-                        workers[workerIndex].NotifyNewMessage();
+                        workers![workerIndex].NotifyNewMessage();
                     }
                 }
             }
@@ -321,7 +321,7 @@ namespace ServiceStack.Messaging.Redis
         public void NotifyAll()
         {
             Log.Debug("Notifying all worker threads to check for new messages...");
-            foreach (var worker in workers)
+            foreach (var worker in workers ?? [])
             {
                 worker.NotifyNewMessage();
             }
@@ -354,7 +354,7 @@ namespace ServiceStack.Messaging.Redis
         void WorkerErrorHandler(MessageHandlerWorker source, Exception ex)
         {
             Log.Error("Received exception in Worker: " + source.QueueName, ex);
-            for (int i = 0; i < workers.Length; i++)
+            for (int i = 0; i < workers!.Length; i++)
             {
                 var worker = workers[i];
                 if (worker == source)
@@ -370,7 +370,7 @@ namespace ServiceStack.Messaging.Redis
 
         public IMessageHandlerStats GetStats()
         {
-            lock (workers)
+            lock (workers!)
             {
                 var total = new MessageHandlerStats("All Handlers");
                 workers.ToList().ForEach(x => total.Add(x.GetStats()));
@@ -385,7 +385,7 @@ namespace ServiceStack.Messaging.Redis
 
         public string GetStatsDescription()
         {
-            lock (workers)
+            lock (workers!)
             {
                 var sb = StringBuilderCache.Allocate().Append("#MQ SERVER STATS:\n");
                 sb.AppendLine("Listening On: " + string.Join(", ", workers.ToList().ConvertAll(x => x.QueueName).ToArray()));
@@ -416,15 +416,14 @@ namespace ServiceStack.Messaging.Redis
 
         public List<string> WorkerThreadsStatus()
         {
-            return workers.ToList().ConvertAll(x => x.GetStatus());
+            return workers!.ToList().ConvertAll(x => x.GetStatus());
         }
 
         public long ExpireTemporaryQueues(int afterMs = 10*60*1000)
         {
-            using (var redis = clientsManager.GetClient())
-            {
-                var tmpWildCard = QueueNames.TempMqPrefix + "*";
-                var itemsExpired = redis.ExecLuaAsInt(@"
+            using var redis = clientsManager.GetClient();
+            var tmpWildCard = QueueNames.TempMqPrefix + "*";
+            var itemsExpired = redis.ExecLuaAsInt(@"
                         local count = 0
                         local pattern = KEYS[1]
                         local timeMs = tonumber(ARGV[1])
@@ -435,11 +434,10 @@ namespace ServiceStack.Messaging.Redis
                         end
                         return count
                     ",
-                    keys: new[] { tmpWildCard },
-                    args: new[] { afterMs.ToString() });
+                keys: [tmpWildCard],
+                args: [afterMs.ToString()]);
 
-                return itemsExpired;
-            }
+            return itemsExpired;
         }
     }
 }

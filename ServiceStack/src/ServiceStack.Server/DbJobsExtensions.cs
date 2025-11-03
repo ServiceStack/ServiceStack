@@ -14,7 +14,7 @@ public static class DbJobsExtensions
             if (!services.Exists<IAutoQueryDb>())
             {
                 services.AddSingleton<IAutoQueryDb>(c => 
-                    feature.CreateAutoQueryDb(c.GetService<IDbConnectionFactory>()));
+                    feature.CreateAutoQueryDb(c.GetRequiredService<IDbConnectionFactory>()));
             }
         });
     }    

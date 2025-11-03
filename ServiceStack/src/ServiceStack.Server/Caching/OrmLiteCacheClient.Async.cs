@@ -43,7 +43,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
             await db.DeleteByIdsAsync<TCacheEntry>(keys, token: token).ConfigAwait() > 0, token).ConfigAwait();
     }
 
-    public async Task<T> GetAsync<T>(string key, CancellationToken token=default)
+    public async Task<T?> GetAsync<T>(string key, CancellationToken token=default)
     {
         return await ExecAsync(async db =>
         {
@@ -69,7 +69,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
             }
             else
             {
-                nextVal = long.Parse(cache.Data) + amount;
+                nextVal = long.Parse(cache.Data ?? "0") + amount;
                 cache.Data = nextVal.ToString();
 
                 await db.UpdateAsync(cache, token: token).ConfigAwait();
@@ -96,7 +96,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
             }
             else
             {
-                nextVal = long.Parse(cache.Data) - amount;
+                nextVal = long.Parse(cache.Data ?? "0") - amount;
                 cache.Data = nextVal.ToString();
 
                 await db.UpdateAsync(cache, token: token).ConfigAwait();
@@ -329,7 +329,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
         return await ExecAsync(async db =>
         {
             var results = Verify(db, await db.SelectByIdsAsync<TCacheEntry>(keys, token).ConfigAwait());
-            var map = new Dictionary<string, T>();
+            var map = new Dictionary<string, T?>();
 
             results.Each(x =>
                 map[x.Id] = db.Deserialize<T>(x.Data));

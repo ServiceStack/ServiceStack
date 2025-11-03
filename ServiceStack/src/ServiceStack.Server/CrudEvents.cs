@@ -242,7 +242,7 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
                 .Take(OrmLiteCrudEvents.BatchSize)
                 .OrderBy(x => x.Id);
 
-            if (lastId != default)
+            if (lastId != 0)
                 q.Where(x => x.Id > lastId);
 
             results = db.Select(q);

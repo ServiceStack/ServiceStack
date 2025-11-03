@@ -171,7 +171,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }).ConfigAwait();
     }
 
-    public virtual async Task<IUserAuth> GetUserAuthByUserNameAsync(string userNameOrEmail, CancellationToken token=default)
+    public virtual async Task<IUserAuth?> GetUserAuthByUserNameAsync(string? userNameOrEmail, CancellationToken token=default)
     {
         if (userNameOrEmail == null)
             return null;
@@ -189,12 +189,12 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }).ConfigAwait();
     }
 
-    private async Task<TUserAuth> GetUserAuthByUserNameAsync(IDbConnection db, string userNameOrEmail, CancellationToken token=default)
+    private async Task<TUserAuth?> GetUserAuthByUserNameAsync(IDbConnection db, string userNameOrEmail, CancellationToken token=default)
     {
         var isEmail = userNameOrEmail.Contains("@");
         var lowerUserName = userNameOrEmail.ToLower();
             
-        TUserAuth userAuth = null;
+        TUserAuth? userAuth = null;
 
         // Usernames/Emails are saved in Lower Case so we can do an exact search using lowerUserName
         if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
@@ -223,7 +223,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return userAuth;
     }
 
-    public async Task<List<IUserAuth>> GetUserAuthsAsync(string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
+    public async Task<List<IUserAuth>> GetUserAuthsAsync(string? orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
     {
         return await ExecAsync(async db => {
             var q = db.From<TUserAuth>();
@@ -234,7 +234,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }).ConfigAwait();
     }
 
-    public async Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
+    public async Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string? orderBy = null, int? skip = null, int? take = null, CancellationToken token=default)
     {
         return await ExecAsync(async db => {
             var q = db.From<TUserAuth>();
@@ -253,7 +253,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }).ConfigAwait();
     }
         
-    public virtual async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token=default)
+    public virtual async Task<IUserAuth?> TryAuthenticateAsync(string userName, string password, CancellationToken token=default)
     {
         var userAuth = await GetUserAuthByUserNameAsync(userName, token).ConfigAwait();
         if (userAuth == null)
@@ -270,7 +270,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return null;
     }
 
-    public virtual async Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, CancellationToken token=default)
+    public virtual async Task<IUserAuth?> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, CancellationToken token=default)
     {
         var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token).ConfigAwait();
         if (userAuth == null)
@@ -336,7 +336,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
                 ? await db.SingleByIdAsync<TUserAuth>(int.Parse(authSession.UserAuthId), token).ConfigAwait()
                 : authSession.ConvertTo<TUserAuth>();
 
-            if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
+            if (userAuth.Id == 0 && !authSession.UserAuthId.IsNullOrEmpty())
                 userAuth.Id = int.Parse(authSession.UserAuthId);
 
             userAuth.ModifiedDate = DateTime.UtcNow;
@@ -372,7 +372,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }).ConfigAwait();
     }
 
-    public virtual async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
+    public virtual async Task<IUserAuth?> GetUserAuthAsync(IAuthSession authSession, IAuthTokens? tokens, CancellationToken token=default)
     {
         if (!authSession.UserAuthId.IsNullOrEmpty())
         {
@@ -406,7 +406,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
 
     public virtual async Task<IUserAuthDetails> CreateOrMergeAuthSessionAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
     {
-        TUserAuth userAuth = (TUserAuth)await GetUserAuthAsync(authSession, tokens, token).ConfigAwait()
+        TUserAuth userAuth = (await GetUserAuthAsync(authSession, tokens, token).ConfigAwait() as TUserAuth)
                              ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
         return await ExecAsync(async db =>
@@ -550,7 +550,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return Tuple.Create(roles, permissions);
     }
 
-    public virtual async Task<bool> HasRoleAsync(string userAuthId, string role, CancellationToken token=default)
+    public virtual async Task<bool> HasRoleAsync(string? userAuthId, string role, CancellationToken token=default)
     {
         if (role == null)
             throw new ArgumentNullException(nameof(role));
@@ -573,7 +573,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }
     }
 
-    public virtual async Task<bool> HasPermissionAsync(string userAuthId, string permission, CancellationToken token=default)
+    public virtual async Task<bool> HasPermissionAsync(string? userAuthId, string permission, CancellationToken token=default)
     {
         if (permission == null)
             throw new ArgumentNullException(nameof(permission));
@@ -634,7 +634,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         await AssignRolesAsync(userAuthId, roles:roles, token:token);
     }
 
-    public virtual async Task AssignRolesAsync(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
+    public virtual async Task AssignRolesAsync(string userAuthId, ICollection<string>? roles = null, ICollection<string>? permissions = null, CancellationToken token=default)
     {
         var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
         if (!UseDistinctRoleTables)
@@ -705,7 +705,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }
     }
 
-    public virtual async Task UnAssignRolesAsync(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null, CancellationToken token=default)
+    public virtual async Task UnAssignRolesAsync(string userAuthId, ICollection<string>? roles = null, ICollection<string>? permissions = null, CancellationToken token=default)
     {
         var userAuth = await GetUserAuthAsync(userAuthId, token).ConfigAwait();
         if (!UseDistinctRoleTables)

@@ -33,7 +33,7 @@ public partial class AutoQueryFeature
     /// <summary>
     /// Defines the access role required to execute AutoQuery operations and services.
     /// </summary>
-    public string AccessRole { get; set; } = RoleNames.Admin;
+    public string? AccessRole { get; set; } = RoleNames.Admin;
 
     /// <summary>
     /// Specifies the method used to generate audit date values in AutoCRUD operations.
@@ -55,25 +55,25 @@ public partial class AutoQueryFeature
     /// </summary>
     public List<string> GenerateAutoBatchImplementationsFor { get; set; } = Crud.Write.ToList();
 
-    public Action<CrudContext> OnBeforeCreate { get; set; }
-    public Func<CrudContext,Task> OnBeforeCreateAsync { get; set; }
-    public Action<CrudContext> OnAfterCreate { get; set; }
-    public Func<CrudContext,Task> OnAfterCreateAsync { get; set; }
+    public Action<CrudContext> ?OnBeforeCreate { get; set; }
+    public Func<CrudContext,Task>? OnBeforeCreateAsync { get; set; }
+    public Action<CrudContext>? OnAfterCreate { get; set; }
+    public Func<CrudContext,Task>? OnAfterCreateAsync { get; set; }
 
-    public Action<CrudContext> OnBeforePatch { get; set; }
-    public Func<CrudContext,Task> OnBeforePatchAsync { get; set; }
-    public Action<CrudContext> OnAfterPatch { get; set; }
-    public Func<CrudContext,Task> OnAfterPatchAsync { get; set; }
+    public Action<CrudContext>? OnBeforePatch { get; set; }
+    public Func<CrudContext,Task>? OnBeforePatchAsync { get; set; }
+    public Action<CrudContext>? OnAfterPatch { get; set; }
+    public Func<CrudContext,Task>? OnAfterPatchAsync { get; set; }
 
-    public Action<CrudContext> OnBeforeUpdate { get; set; }
-    public Func<CrudContext,Task> OnBeforeUpdateAsync { get; set; }
-    public Action<CrudContext> OnAfterUpdate { get; set; }
-    public Func<CrudContext,Task> OnAfterUpdateAsync { get; set; }
+    public Action<CrudContext>? OnBeforeUpdate { get; set; }
+    public Func<CrudContext,Task>? OnBeforeUpdateAsync { get; set; }
+    public Action<CrudContext>? OnAfterUpdate { get; set; }
+    public Func<CrudContext,Task>? OnAfterUpdateAsync { get; set; }
 
-    public Action<CrudContext> OnBeforeDelete { get; set; }
-    public Func<CrudContext,Task> OnBeforeDeleteAsync { get; set; }
-    public Action<CrudContext> OnAfterDelete { get; set; }
-    public Func<CrudContext,Task> OnAfterDeleteAsync { get; set; }
+    public Action<CrudContext>? OnBeforeDelete { get; set; }
+    public Func<CrudContext,Task>? OnBeforeDeleteAsync { get; set; }
+    public Action<CrudContext>? OnAfterDelete { get; set; }
+    public Func<CrudContext,Task>? OnAfterDeleteAsync { get; set; }
 
     protected void OnRegister(IServiceCollection services)
     {
@@ -197,20 +197,20 @@ public class CrudContext
     public ServiceStackHost AppHost { get; private set; }
     public IRequest Request { get; private set; }
     public IDbConnection Db { get; private set; }
-    public ICrudEvents Events { get; private set; }
+    public ICrudEvents? Events { get; private set; }
     public string Operation { get; set; }
     public object Dto { get; private set; }
     public Type ModelType { get; private set; }
     public Type RequestType { get; private set; }
-    public Type ResponseType { get; private set; }
+    public Type? ResponseType { get; private set; }
     public ModelDefinition ModelDef { get; private set; }
-    public PropertyAccessor IdProp { get; private set; }
-    public PropertyAccessor ResultProp { get; private set; }
-    public PropertyAccessor CountProp { get; private set; }
-    public PropertyAccessor RowVersionProp { get; private set; }
+    public PropertyAccessor? IdProp { get; private set; }
+    public PropertyAccessor? ResultProp { get; private set; }
+    public PropertyAccessor? CountProp { get; private set; }
+    public PropertyAccessor? RowVersionProp { get; private set; }
     // When UseDatabaseWriteLocks=true to prevent concurrent writes (e.g for SQLite)
     // Primary DB Connection uses Locks.AppDb whilst Named Connections uses Locks.NamedConnections
-    public object DbLock { get; private set; }
+    public object? DbLock { get; private set; }
     public T DbExec<T>(Func<IDbConnection, T> fn)
     {
         if (DbLock != null)
@@ -250,16 +250,16 @@ public class CrudContext
         RowsUpdated = result.RowsUpdated;
     }
         
-    internal GetMemberDelegate RequestIdGetter() => 
+    internal GetMemberDelegate? RequestIdGetter() => 
         TypeProperties.Get(RequestType).GetPublicGetter(ModelDef.PrimaryKey.Name);
         
     internal void ThrowPrimaryKeyRequiredForRowVersion() =>
         throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
 
-    public static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation, object dbLock=null) =>
+    public static CrudContext Create<Table>(IRequest request, IDbConnection db, object dto, string operation, object? dbLock=null) =>
         Create(typeof(Table), request, db, dto, operation, dbLock);
         
-    public static CrudContext Create(Type tableType, IRequest request, IDbConnection db, object dto, string operation, object dbLock=null)
+    public static CrudContext Create(Type tableType, IRequest request, IDbConnection db, object dto, string operation, object? dbLock=null)
     {
         var appHost = HostContext.AppHost;
         var requestType = dto?.GetType() ?? throw new ArgumentNullException(nameof(dto));
@@ -288,31 +288,31 @@ public class CrudContext
 
 public class AutoCrudMetadata
 {
-    public AutoQueryFeature Feature { get; set; }
+    public AutoQueryFeature Feature { get; set; } = null!;
     public Type DtoType { get; set; }
     public Type ModelType { get; set; }
     public ModelDefinition ModelDef { get; set; }
     public TypeProperties DtoProps { get; set; }
-    public List<AutoPopulateAttribute> PopulateAttrs { get; set; } = new();
-    public List<AutoFilterAttribute> AutoFilters { get; set; } = new();
-    public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; } = new();
-    public List<AutoApplyAttribute> AutoApplyAttrs { get; set; } = new();
+    public List<AutoPopulateAttribute> PopulateAttrs { get; set; } = [];
+    public List<AutoFilterAttribute> AutoFilters { get; set; } = [];
+    public List<QueryDbFieldAttribute> AutoFiltersDbFields { get; set; } = [];
+    public List<AutoApplyAttribute> AutoApplyAttrs { get; set; } = [];
     public Dictionary<string, AutoUpdateAttribute> UpdateAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, AutoDefaultAttribute> DefaultAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, AutoMapAttribute> MapAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, ValidateAttribute> ValidateAttrs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, InputInfo> MapInputs { get; set; } = new();
-    public HashSet<string> NullableProps { get; set; } = new();
-    public List<string> RemoveDtoProps { get; set; } = new();
-    public GetMemberDelegate RowVersionGetter { get; set; }
+    public HashSet<string> NullableProps { get; set; } = [];
+    public List<string> RemoveDtoProps { get; set; } = [];
+    public GetMemberDelegate? RowVersionGetter { get; set; }
     public bool SoftDelete { get; set; }
     public HashSet<string> DenyReset { get; set; } = new();
 
-    static readonly ConcurrentDictionary<Type, AutoCrudMetadata> cache = new();
+    static readonly ConcurrentDictionary<Type, AutoCrudMetadata> Cache = new();
 
     internal static AutoCrudMetadata Create(Type dtoType, AutoQueryFeature feature)
     {
-        if (cache.TryGetValue(dtoType, out var to))
+        if (Cache.TryGetValue(dtoType, out var to))
             return to;
 
         to = new AutoCrudMetadata {
@@ -403,16 +403,15 @@ public class AutoCrudMetadata
             }
         }
 
-        foreach (var fn in feature?.AutoCrudMetadataFilters.Safe())
+        foreach (var fn in feature.AutoCrudMetadataFilters.Safe())
         {
             fn(to);
         }
             
-        return cache[dtoType] = to;
+        return Cache[dtoType] = to;
     }
 
-    public bool HasAutoApply(string name) => 
-        AutoApplyAttrs != null && AutoApplyAttrs.Any(x => x.Name == name);
+    public bool HasAutoApply(string name) => AutoApplyAttrs.Any(x => x.Name == name);
 
     public void AddDtoPropertyToRemove(PropertyInfo pi)
     {
@@ -463,23 +462,25 @@ public class AutoCrudMetadata
 
 public partial class AutoQuery : IAutoCrudDb
 {
-    public static HashSet<string> IgnoreCrudProperties { get; } = new() {
+    public static HashSet<string> IgnoreCrudProperties { get; } =
+    [
         nameof(IHasSessionId.SessionId),
         nameof(IHasBearerToken.BearerToken),
-        nameof(IHasVersion.Version),
-    };
+        nameof(IHasVersion.Version)
+    ];
         
-    public static HashSet<string> IncludeCrudProperties { get; set; } = new() {
+    public static HashSet<string> IncludeCrudProperties { get; set; } =
+    [
         Keywords.Reset,
-        Keywords.RowVersion,
-    };
+        Keywords.RowVersion
+    ];
 
-    public object GetDbLock<From>(IRequest req = null) => GetDbLock(typeof(From), req);
-    public object GetDbLock(Type fromType, IRequest req = null) => !EnableWriterLock 
+    public object? GetDbLock<From>(IRequest? req = null) => GetDbLock(typeof(From), req);
+    public object? GetDbLock(Type fromType, IRequest? req = null) => !EnableWriterLock 
         ? null 
         : Locks.GetDbLock(GetDbNamedConnection(fromType, req));
 
-    T DbExec<T>(IDbConnection db, object useLock, Func<IDbConnection, T> fn)
+    T DbExec<T>(IDbConnection db, object? useLock, Func<IDbConnection, T> fn)
     {
         // When UseDatabaseWriteLocks=true to prevent concurrent writes (e.g for SQLite)
         // Primary DB Connection uses Locks.AppDb whilst Named Connections uses Locks.NamedConnections
@@ -506,7 +507,7 @@ public partial class AutoQuery : IAutoCrudDb
         return fn(db);
     }
     
-    public object Create<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null)
+    public object Create<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         //TODO: Allow Create to use Default Values
         using var newDb = db == null ? GetDb<Table>(req) : null;
@@ -550,7 +551,7 @@ public partial class AutoQuery : IAutoCrudDb
         return ctx.Response;
     }
 
-    public async Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection db = null)
+    public async Task<object> CreateAsync<Table>(ICreateDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         //TODO: Allow Create to use Default Values
         using var newDb = db == null ? GetDb<Table>(req) : null;
@@ -560,7 +561,7 @@ public partial class AutoQuery : IAutoCrudDb
         
         using var profiler = Profiler.Current.Step("AutoQuery.Create");
 
-        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Create,GetDbLock<Table>(req));
+        var ctx = CrudContext.Create<Table>(req,db!,dto,AutoCrudOperation.Create,GetDbLock<Table>(req));
         if (Feature.OnBeforeCreateAsync != null)
             await Feature.OnBeforeCreateAsync(ctx);
             
@@ -605,7 +606,7 @@ public partial class AutoQuery : IAutoCrudDb
         var isAutoId = pkField?.AutoId == true;
         var providedId = pkField != null && dtoValues.ContainsKey(pkField.Name);
         if (isAutoId || providedId)
-            return new ExecValue(pkField.GetValue(dtoValues), selectIdentity ? 1 : autoIntId);
+            return new ExecValue(pkField!.GetValue(dtoValues), selectIdentity ? 1 : autoIntId);
 
         return selectIdentity
             ? new ExecValue(autoIntId, 1)
@@ -614,40 +615,40 @@ public partial class AutoQuery : IAutoCrudDb
                 : new ExecValue(null, autoIntId);
     }
 
-    public object Update<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection db = null)
+    public object Update<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         return UpdateInternal<Table>(req, dto,AutoCrudOperation.Update, db);
     }
 
-    public Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection db = null)
+    public Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Update, db);
     }
 
-    public object Patch<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection db = null)
+    public object Patch<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         return UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch, db);
     }
 
-    public Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection db = null)
+    public Task<object> PatchAsync<Table>(IPatchDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         return UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch, db);
     }
 
-    public object PartialUpdate<Table>(object dto, IRequest req, IDbConnection db = null) =>
+    public object PartialUpdate<Table>(object dto, IRequest req, IDbConnection? db = null) =>
         UpdateInternal<Table>(req, dto, AutoCrudOperation.Patch, db);
 
-    public Task<object> PartialUpdateAsync<Table>(object dto, IRequest req, IDbConnection db = null) =>
+    public Task<object> PartialUpdateAsync<Table>(object dto, IRequest req, IDbConnection? db = null) =>
         UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch, db);
 
-    private object UpdateInternal<Table>(IRequest req, object dto, string operation, IDbConnection db = null)
+    private object UpdateInternal<Table>(IRequest req, object dto, string operation, IDbConnection? db = null)
     {
         var skipDefaults = operation == AutoCrudOperation.Patch;
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
         using (Profiler.Current.Step("AutoQuery.Update"))
         {
-            var ctx = CrudContext.Create<Table>(req,db,dto,operation,GetDbLock<Table>(req));
+            var ctx = CrudContext.Create<Table>(req,db!,dto,operation,GetDbLock<Table>(req));
                 
             if (skipDefaults)
                 Feature.OnBeforePatch?.Invoke(ctx);
@@ -683,7 +684,7 @@ public partial class AutoQuery : IAutoCrudDb
         }
     }
 
-    private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, string operation, IDbConnection db = null)
+    private async Task<object> UpdateInternalAsync<Table>(IRequest req, object dto, string operation, IDbConnection? db = null)
     {
         var skipDefaults = operation == AutoCrudOperation.Patch;
         using var newDb = db == null ? GetDb<Table>(req) : null;
@@ -693,7 +694,7 @@ public partial class AutoQuery : IAutoCrudDb
         
         using (Profiler.Current.Step("AutoQuery.Update"))
         {
-            var ctx = CrudContext.Create<Table>(req,db,dto,operation,GetDbLock<Table>(req));
+            var ctx = CrudContext.Create<Table>(req,db!,dto,operation,GetDbLock<Table>(req));
 
             if (skipDefaults)
             {
@@ -741,7 +742,7 @@ public partial class AutoQuery : IAutoCrudDb
         }
     }
 
-    public object Delete<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection db = null)
+    public object Delete<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
@@ -751,7 +752,7 @@ public partial class AutoQuery : IAutoCrudDb
         if (meta.SoftDelete)
             return PartialUpdate<Table>(dto, req, db);
 
-        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete,GetDbLock<Table>(req));
+        var ctx = CrudContext.Create<Table>(req,db!,dto,AutoCrudOperation.Delete,GetDbLock<Table>(req));
         Feature.OnBeforeDelete?.Invoke(ctx);
 
         ctx.Response = ExecAndReturnResponse<Table>(ctx,
@@ -772,7 +773,7 @@ public partial class AutoQuery : IAutoCrudDb
         return ctx.Response;
     }
 
-    public async Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection db = null)
+    public async Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
@@ -785,7 +786,7 @@ public partial class AutoQuery : IAutoCrudDb
         if (meta.SoftDelete)
             return await UpdateInternalAsync<Table>(req, dto, AutoCrudOperation.Patch, db).ConfigAwait();
 
-        var ctx = CrudContext.Create<Table>(req,db,dto,AutoCrudOperation.Delete,GetDbLock<Table>(req));
+        var ctx = CrudContext.Create<Table>(req,db!,dto,AutoCrudOperation.Delete,GetDbLock<Table>(req));
         if (Feature.OnBeforeDeleteAsync != null)
             await Feature.OnBeforeDeleteAsync(ctx);
             
@@ -807,7 +808,7 @@ public partial class AutoQuery : IAutoCrudDb
         return ctx.Response;
     }
 
-    internal SqlExpression<Table> DeleteInternal<Table>(CrudContext ctx, Dictionary<string, object> dtoValues)
+    internal SqlExpression<Table>? DeleteInternal<Table>(CrudContext ctx, Dictionary<string, object> dtoValues)
     {
         //Should have at least 1 non-default filter
         if (dtoValues.Count == 0)
@@ -839,7 +840,7 @@ public partial class AutoQuery : IAutoCrudDb
         return null;
     }
 
-    public object Save<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection db = null)
+    public object Save<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
@@ -855,7 +856,7 @@ public partial class AutoQuery : IAutoCrudDb
         return response;
     }
 
-    public async Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection db = null)
+    public async Task<object> SaveAsync<Table>(ISaveDb<Table> dto, IRequest req, IDbConnection? db = null)
     {
         using var newDb = db == null ? GetDb<Table>(req) : null;
         db ??= newDb;
@@ -876,7 +877,7 @@ public partial class AutoQuery : IAutoCrudDb
     private static ExecValue SaveInternal<Table>(ISaveDb<Table> dto, CrudContext ctx)
     {
         //TODO: Use Upsert when available
-        object idValue = null;
+        object? idValue = null;
         var pkField = ctx.ModelDef.PrimaryKey;
         if (pkField != null)
         {
@@ -888,18 +889,13 @@ public partial class AutoQuery : IAutoCrudDb
         return new ExecValue(idValue, 1);
     }
 
-    internal struct ExecValue
+    internal struct ExecValue(object? id, long? rowsUpdated)
     {
-        internal object Id;
-        internal long? RowsUpdated;
-        public ExecValue(object id, long? rowsUpdated)
-        {
-            Id = id;
-            RowsUpdated = rowsUpdated;
-        }
+        internal readonly object? Id = id;
+        internal long? RowsUpdated = rowsUpdated;
     }
         
-    private object ExecAndReturnResponse<Table>(CrudContext context, Func<CrudContext,ExecValue> fn)
+    private object? ExecAndReturnResponse<Table>(CrudContext context, Func<CrudContext,ExecValue> fn)
     {
         var ignoreEvent = context.Request.Items.ContainsKey(Keywords.IgnoreEvent);
         var trans = context.Events != null && !ignoreEvent && !context.Db.InTransaction()
@@ -918,15 +914,15 @@ public partial class AutoQuery : IAutoCrudDb
         if (context.ResponseType == null)
             return null;
 
-        object idValue = null;
+        object? idValue = null;
                 
         var response = context.ResponseType.CreateInstance();
-        if (context.IdProp != null && context.Id != null)
+        if (context is { IdProp: not null, Id: not null })
         {
             idValue = context.Id.ConvertTo(context.IdProp.PropertyInfo.PropertyType);
             context.IdProp.PublicSetter(response, idValue);
         }
-        if (context.CountProp != null && context.RowsUpdated != null)
+        if (context is { CountProp: not null, RowsUpdated: not null })
         {
             context.CountProp.PublicSetter(response, context.RowsUpdated.ConvertTo(context.CountProp.PropertyInfo.PropertyType));
         }
@@ -936,7 +932,7 @@ public partial class AutoQuery : IAutoCrudDb
             var result = context.Db.SingleById<Table>(idValue);
             response = result.ConvertTo(context.ResponseType);
         }
-        else if (context.ResultProp != null && context.Id != null)
+        else if (context is { ResultProp: not null, Id: not null })
         {
             var result = context.Db.SingleById<Table>(context.Id);
             context.ResultProp.PublicSetter(response, result.ConvertTo(context.ResultProp.PropertyInfo.PropertyType));
@@ -960,7 +956,7 @@ public partial class AutoQuery : IAutoCrudDb
         return response;
     }
 
-    private async Task<object> ExecAndReturnResponseAsync<Table>(CrudContext context, Func<CrudContext,Task<ExecValue>> fn)
+    private async Task<object?> ExecAndReturnResponseAsync<Table>(CrudContext context, Func<CrudContext,Task<ExecValue>> fn)
     {
         var ignoreEvent = context.Request.Items.ContainsKey(Keywords.IgnoreEvent);
         var trans = context.Events != null && !ignoreEvent && !context.Db.InTransaction()
@@ -979,16 +975,16 @@ public partial class AutoQuery : IAutoCrudDb
         if (context.ResponseType == null)
             return null;
 
-        object idValue = null;
+        object? idValue = null;
                 
         var response = context.ResponseType.CreateInstance();
-        if (context.IdProp != null && context.Id != null)
+        if (context is { IdProp: not null, Id: not null })
         {
             idValue = context.Id.ConvertTo(context.IdProp.PropertyInfo.PropertyType);
             context.IdProp.PublicSetter(response, idValue);
         }
             
-        if (context.CountProp != null && context.RowsUpdated != null)
+        if (context is { CountProp: not null, RowsUpdated: not null })
         {
             context.CountProp.PublicSetter(response, context.RowsUpdated.ConvertTo(context.CountProp.PropertyInfo.PropertyType));
         }
@@ -998,7 +994,7 @@ public partial class AutoQuery : IAutoCrudDb
             var result = await context.Db.SingleByIdAsync<Table>(idValue).ConfigAwait();
             response = result.ConvertTo(context.ResponseType);
         }
-        else if (context.ResultProp != null && context.Id != null)
+        else if (context is { ResultProp: not null, Id: not null })
         {
             var result = await context.Db.SingleByIdAsync<Table>(context.Id).ConfigAwait();
             context.ResultProp.PublicSetter(response, result.ConvertTo(context.ResultProp.PropertyInfo.PropertyType));
@@ -1024,14 +1020,14 @@ public partial class AutoQuery : IAutoCrudDb
         return response;
     }
 
-    internal bool GetAutoFilterExpressions(CrudContext ctx, Dictionary<string, object> dtoValues, out string expr, out List<object> exprParams)
+    internal bool GetAutoFilterExpressions(CrudContext ctx, Dictionary<string, object> dtoValues, out string? expr, out List<object?>? exprParams)
     {
         var meta = AutoCrudMetadata.Create(ctx.RequestType, Feature);
         if (meta.AutoFilters.Count > 0)
         {
             var dialectProvider = ctx.Db.GetDialectProvider();
             var sb = StringBuilderCache.Allocate();
-            var exprParamsList = new List<object>();
+            var exprParamsList = new List<object?>();
 
             //Update's require PK's, Delete's don't need to
             if (dtoValues.TryRemove(meta.ModelDef.PrimaryKey.Name, out var idValue))
@@ -1096,7 +1092,7 @@ public partial class AutoQuery : IAutoCrudDb
         
     private Dictionary<string, object> ResolveDtoValues(AutoCrudMetadata meta, IRequest req, object dto, bool skipDefaults=false)
     {
-        ILog log = null;
+        ILog? log = null;
         var dtoValues = dto.ToObjectDictionary();
 
         foreach (var entry in meta.MapAttrs)
@@ -1107,7 +1103,7 @@ public partial class AutoQuery : IAutoCrudDb
             }
         }
 
-        List<string> removeKeys = null;
+        List<string>? removeKeys = null;
         foreach (var removeDtoProp in meta.RemoveDtoProps)
         {
             removeKeys ??= [];
@@ -1117,7 +1113,7 @@ public partial class AutoQuery : IAutoCrudDb
         var appHost = HostContext.AppHost;
         if (skipDefaults || meta.UpdateAttrs.Count > 0 || meta.DefaultAttrs.Count > 0)
         {
-            Dictionary<string, object> replaceValues = null;
+            Dictionary<string, object>? replaceValues = null;
 
             foreach (var entry in dtoValues)
             {
@@ -1205,7 +1201,7 @@ public partial class AutoQuery : IAutoCrudDb
 
         // Ensure RowVersion is always populated if defined on Request DTO
         if (meta.RowVersionGetter != null && !dtoValues.ContainsKey(Keywords.RowVersion))
-            dtoValues[Keywords.RowVersion] = default(uint);
+            dtoValues[Keywords.RowVersion] = 0;
 
         return dtoValues;
     }
@@ -1213,23 +1209,23 @@ public partial class AutoQuery : IAutoCrudDb
 
 public abstract partial class AutoQueryServiceBase
 {
-    public virtual object Create<Table>(ICreateDb<Table> dto) => AutoQuery.Create(dto, Request);
+    public virtual object Create<Table>(ICreateDb<Table> dto) => AutoQuery.Create(dto, Request!);
 
-    public virtual Task<object> CreateAsync<Table>(ICreateDb<Table> dto) => AutoQuery.CreateAsync(dto, Request);
+    public virtual Task<object> CreateAsync<Table>(ICreateDb<Table> dto) => AutoQuery.CreateAsync(dto, Request!);
 
-    private static ConcurrentDictionary<Type, ObjectActivator> genericListCache = new();
+    private static readonly ConcurrentDictionary<Type, ObjectActivator> GenericListCache = new();
         
     private static IList CreateGenericList<T>(Type responseType)
     {
         if (responseType == typeof(object))
             return new List<object>();
             
-        var activator = genericListCache.GetOrAdd(responseType, type => 
+        var activator = GenericListCache.GetOrAdd(responseType, type => 
             typeof(List<>).MakeGenericType(type).GetConstructor(Type.EmptyTypes).GetActivator());
         return (IList)activator(Array.Empty<object>());
     }
 
-    private static Type GetResponseType(Type requestType)
+    private static Type? GetResponseType(Type? requestType)
     {
         if (requestType == null)
             return null;
@@ -1248,7 +1244,7 @@ public abstract partial class AutoQueryServiceBase
         var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
         foreach (var request in list)
         {
-            var response = await AutoQuery.CreateAsync(request, Request, db);
+            var response = await AutoQuery.CreateAsync(request, Request!, db);
             results.Add(response);
         }
 
@@ -1256,9 +1252,9 @@ public abstract partial class AutoQueryServiceBase
         return results;            
     }
 
-    public virtual object Update<Table>(IUpdateDb<Table> dto) => AutoQuery.Update(dto, Request);
+    public virtual object Update<Table>(IUpdateDb<Table> dto) => AutoQuery.Update(dto, Request!);
 
-    public virtual Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto) => AutoQuery.UpdateAsync(dto, Request);
+    public virtual Task<object> UpdateAsync<Table>(IUpdateDb<Table> dto) => AutoQuery.UpdateAsync(dto, Request!);
 
     public virtual async Task<object> BatchUpdateAsync<T>(IEnumerable<IUpdateDb<T>> requests)
     {
@@ -1269,7 +1265,7 @@ public abstract partial class AutoQueryServiceBase
         var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
         foreach (var request in list)
         {
-            var response = await AutoQuery.UpdateAsync(request, Request, db);
+            var response = await AutoQuery.UpdateAsync(request, Request!, db);
             results.Add(response);
         }
 
@@ -1277,9 +1273,9 @@ public abstract partial class AutoQueryServiceBase
         return results;            
     }
 
-    public virtual object Patch<Table>(IPatchDb<Table> dto) => AutoQuery.Patch(dto, Request);
+    public virtual object Patch<Table>(IPatchDb<Table> dto) => AutoQuery.Patch(dto, Request!);
 
-    public virtual Task<object> PatchAsync<Table>(IPatchDb<Table> dto) => AutoQuery.PatchAsync(dto, Request);
+    public virtual Task<object> PatchAsync<Table>(IPatchDb<Table> dto) => AutoQuery.PatchAsync(dto, Request!);
 
     public virtual async Task<object> BatchPatchAsync<T>(IEnumerable<IPatchDb<T>> requests)
     {
@@ -1290,7 +1286,7 @@ public abstract partial class AutoQueryServiceBase
         var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
         foreach (var request in list)
         {
-            var response = await AutoQuery.PartialUpdateAsync<T>(request, Request, db);
+            var response = await AutoQuery.PartialUpdateAsync<T>(request, Request!, db);
             results.Add(response);
         }
 
@@ -1298,9 +1294,9 @@ public abstract partial class AutoQueryServiceBase
         return results;            
     }
 
-    public virtual object Delete<Table>(IDeleteDb<Table> dto) => AutoQuery.Delete(dto, Request);
+    public virtual object Delete<Table>(IDeleteDb<Table> dto) => AutoQuery.Delete(dto, Request!);
 
-    public virtual Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto) => AutoQuery.DeleteAsync(dto, Request);
+    public virtual Task<object> DeleteAsync<Table>(IDeleteDb<Table> dto) => AutoQuery.DeleteAsync(dto, Request!);
 
     public virtual async Task<object> BatchDeleteAsync<T>(IEnumerable<IDeleteDb<T>> requests)
     {
@@ -1311,7 +1307,7 @@ public abstract partial class AutoQueryServiceBase
         var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
         foreach (var request in list)
         {
-            var response = await AutoQuery.DeleteAsync(request, Request, db);
+            var response = await AutoQuery.DeleteAsync(request, Request!, db);
             results.Add(response);
         }
 
@@ -1319,9 +1315,9 @@ public abstract partial class AutoQueryServiceBase
         return results;            
     }
 
-    public virtual object Save<Table>(ISaveDb<Table> dto) => AutoQuery.Save(dto, Request);
+    public virtual object Save<Table>(ISaveDb<Table> dto) => AutoQuery.Save(dto, Request!);
 
-    public virtual Task<object> SaveAsync<Table>(ISaveDb<Table> dto) => AutoQuery.SaveAsync(dto, Request);
+    public virtual Task<object> SaveAsync<Table>(ISaveDb<Table> dto) => AutoQuery.SaveAsync(dto, Request!);
 
     public virtual async Task<object> BatchSaveAsync<T>(IEnumerable<ISaveDb<T>> requests)
     {
@@ -1332,7 +1328,7 @@ public abstract partial class AutoQueryServiceBase
         var results = CreateGenericList<T>(GetResponseType(list.FirstOrDefault()?.GetType()) ?? typeof(object));
         foreach (var request in list)
         {
-            var response = await AutoQuery.SaveAsync(request, Request, db);
+            var response = await AutoQuery.SaveAsync(request, Request!, db);
             results.Add(response);
         }
 

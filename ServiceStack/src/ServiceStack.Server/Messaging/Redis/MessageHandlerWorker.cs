@@ -22,7 +22,7 @@ internal class MessageHandlerWorker(
     private int status;
     public int Status => status;
 
-    private Thread bgThread;
+    private Thread? bgThread;
     private int timesStarted = 0;
     private bool receivedNewMsgs = false;
     public Action<MessageHandlerWorker, Exception> errorHandler { get; set; } = errorHandler;

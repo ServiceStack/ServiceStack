@@ -480,8 +480,8 @@ public class AdminApiKeysService : Service
         if (!string.IsNullOrEmpty(request.Search))
         {
             var search = request.Search.ToLower();
-            q.Where(x => x.Name.ToLower().Contains(search) || x.Notes.ToLower().Contains(search) || 
-                    x.UserName.ToLower().Contains(search) || x.UserId.ToLower().Contains(search));
+            q.Where(x => x.Name.ToLower().Contains(search) || x.Notes!.ToLower().Contains(search) || 
+                    x.UserName!.ToLower().Contains(search) || x.UserId!.ToLower().Contains(search));
         }
         if (request.UserId != null)
             q.Where(x => x.UserId == request.UserId);
@@ -591,7 +591,7 @@ public class UserApiKeysService : Service
         if (!string.IsNullOrEmpty(request.Search))
         {
             var search = request.Search.ToLower();
-            q.Where(x => x.Name.ToLower().Contains(search) || x.Notes.ToLower().Contains(search));
+            q.Where(x => x.Name.ToLower().Contains(search) || x.Notes!.ToLower().Contains(search));
         }
         if (request.OrderBy != null)
             q.OrderByFields(request.OrderBy);

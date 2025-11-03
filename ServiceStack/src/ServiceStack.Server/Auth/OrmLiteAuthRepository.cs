@@ -11,18 +11,18 @@ public class OrmLiteAuthRepository : OrmLiteAuthRepository<UserAuth, UserAuthDet
 {
     public OrmLiteAuthRepository(IDbConnectionFactory dbFactory) : base(dbFactory) { }
 
-    public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, string namedConnection = null) 
+    public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, string? namedConnection = null) 
         : base(dbFactory, namedConnection) {}
 }
 
 public partial class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails>(
     IDbConnectionFactory dbFactory,
-    string namedConnection = null)
+    string? namedConnection = null)
     : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>
     where TUserAuth : class, IUserAuth
     where TUserAuthDetails : class, IUserAuthDetails
 {
-    public string NamedConnection { get; private set; } = namedConnection;
+    public string? NamedConnection { get; private set; } = namedConnection;
     static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(OrmLiteAuthRepository));
 
     protected IDbConnection OpenDbConnection()
@@ -66,7 +66,7 @@ public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetai
     }
 
     private readonly IDbConnectionFactory dbFactory;
-    private readonly string[] connectionStrings;
+    private readonly string[]? connectionStrings;
 
     public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, params string[] connectionStrings)
     {
@@ -97,7 +97,7 @@ public partial class OrmLiteAuthRepositoryMultitenancy<TUserAuth, TUserAuthDetai
 
         var ormLiteDbFactory = (OrmLiteConnectionFactory)dbFactory;
 
-        foreach (var connStr in connectionStrings)
+        foreach (var connStr in connectionStrings.Safe())
         {
             //Required by In Memory Sqlite
             var db = connStr == ormLiteDbFactory.ConnectionString
@@ -211,10 +211,10 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
 
     public virtual bool InitCheck()
     {
-        return hasInitSchema = Exec(db => {
-            return db.TableExists<TUserAuth>() && db.TableExists<TUserAuthDetails>()
-                                               && (!UseDistinctRoleTables || db.TableExists<UserAuthRole>());
-        });
+        return hasInitSchema = Exec(db => 
+            db.TableExists<TUserAuth>()
+            && db.TableExists<TUserAuthDetails>()
+            && (!UseDistinctRoleTables || db.TableExists<UserAuthRole>()));
     }
 
     public virtual IUserAuth CreateUserAuth(IUserAuth newUser, string password) => Exec(db => CreateUserAuth(db, newUser, password));
@@ -290,7 +290,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return newUser;
     }
 
-    public virtual IUserAuth GetUserAuthByUserName(string userNameOrEmail)
+    public virtual IUserAuth? GetUserAuthByUserName(string? userNameOrEmail)
     {
         if (userNameOrEmail == null)
             return null;
@@ -308,12 +308,12 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         });
     }
 
-    private TUserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
+    private TUserAuth? GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
     {
         var isEmail = userNameOrEmail.Contains("@");
         var lowerUserName = userNameOrEmail.ToLower();
             
-        TUserAuth userAuth = null;
+        TUserAuth? userAuth = null;
 
         // Usernames/Emails are saved in Lower Case so we can do an exact search using lowerUserName
         if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
@@ -342,7 +342,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return userAuth;
     }
 
-    private void SetOrderBy(SqlExpression<TUserAuth> q, string orderBy)
+    private void SetOrderBy(SqlExpression<TUserAuth> q, string? orderBy)
     {
         if (string.IsNullOrEmpty(orderBy))
             return;
@@ -354,10 +354,10 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
             q.OrderByDescending(orderByField);
     }
 
-    public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null) =>
+    public List<IUserAuth> GetUserAuths(string? orderBy = null, int? skip = null, int? take = null) =>
         Exec(db => GetUserAuths(db, orderBy, skip, take));
 
-    public List<IUserAuth> GetUserAuths(IDbConnection db, string orderBy = null, int? skip = null, int? take = null)
+    public List<IUserAuth> GetUserAuths(IDbConnection db, string? orderBy = null, int? skip = null, int? take = null)
     {
         var q = db.From<TUserAuth>();
         SetOrderBy(q, orderBy);
@@ -366,10 +366,10 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return db.Select(q).ConvertAll(x => (IUserAuth)x);
     }
 
-    public List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null) =>
+    public List<IUserAuth> SearchUserAuths(string query, string? orderBy = null, int? skip = null, int? take = null) =>
         Exec(db => SearchUserAuths(db, query, orderBy, skip, take));
 
-    public List<IUserAuth> SearchUserAuths(IDbConnection db, string query, string orderBy = null, int? skip = null, int? take = null)
+    public List<IUserAuth> SearchUserAuths(IDbConnection db, string query, string? orderBy = null, int? skip = null, int? take = null)
     {
         var q = db.From<TUserAuth>();
         if (!string.IsNullOrEmpty(query))
@@ -386,7 +386,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return db.Select(q).ConvertAll(x => (IUserAuth)x);
     }
 
-    public virtual bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
+    public virtual bool TryAuthenticate(string userName, string password, out IUserAuth? userAuth)
     {
         userAuth = GetUserAuthByUserName(userName);
         if (userAuth == null)
@@ -404,7 +404,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return false;
     }
 
-    public virtual bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
+    public virtual bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth? userAuth)
     {
         userAuth = GetUserAuthByUserName(digestHeaders["username"]);
         if (userAuth == null)
@@ -450,9 +450,9 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         session.PopulateSession(userAuth, this);
     }
 
-    public virtual IUserAuth GetUserAuth(string userAuthId) => Exec(db => GetUserAuth(db, userAuthId));
+    public virtual IUserAuth? GetUserAuth(string userAuthId) => Exec(db => GetUserAuth(db, userAuthId));
 
-    public virtual IUserAuth GetUserAuth(IDbConnection db, string userAuthId)
+    public virtual IUserAuth? GetUserAuth(IDbConnection db, string userAuthId)
     {
         if (string.IsNullOrEmpty(userAuthId))
             throw new ArgumentNullException(nameof(userAuthId));
@@ -471,7 +471,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
             ? db.SingleById<TUserAuth>(int.Parse(authSession.UserAuthId))
             : authSession.ConvertTo<TUserAuth>();
 
-        if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
+        if (userAuth.Id == 0 && !authSession.UserAuthId.IsNullOrEmpty())
             userAuth.Id = int.Parse(authSession.UserAuthId);
 
         userAuth.ModifiedDate = DateTime.UtcNow;
@@ -503,7 +503,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         return db.Select<TUserAuthDetails>(q => q.UserAuthId == id).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
     }
 
-    public virtual IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
+    public virtual IUserAuth? GetUserAuth(IAuthSession authSession, IAuthTokens? tokens)
     {
         if (!authSession.UserAuthId.IsNullOrEmpty())
         {
@@ -537,7 +537,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
 
     public virtual IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
     {
-        TUserAuth userAuth = (TUserAuth)GetUserAuth(authSession, tokens)
+        TUserAuth userAuth = GetUserAuth(authSession, tokens) as TUserAuth 
                              ?? typeof(TUserAuth).CreateInstance<TUserAuth>();
 
         return Exec(db =>
@@ -681,7 +681,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }
     }
 
-    public virtual bool HasRole(string userAuthId, string role)
+    public virtual bool HasRole(string? userAuthId, string role)
     {
         if (role == null)
             throw new ArgumentNullException(nameof(role));
@@ -692,7 +692,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         if (!UseDistinctRoleTables)
         {
             var userAuth = GetUserAuth(userAuthId);
-            return userAuth.Roles != null && userAuth.Roles.Contains(role);
+            return userAuth?.Roles != null && userAuth.Roles.Contains(role);
         }
         else
         {
@@ -703,7 +703,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }
     }
 
-    public virtual bool HasPermission(string userAuthId, string permission)
+    public virtual bool HasPermission(string? userAuthId, string permission)
     {
         if (permission == null)
             throw new ArgumentNullException(nameof(permission));
@@ -714,7 +714,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         if (!UseDistinctRoleTables)
         {
             var userAuth = GetUserAuth(userAuthId);
-            return userAuth.Permissions != null && userAuth.Permissions.Contains(permission);
+            return userAuth?.Permissions != null && userAuth.Permissions.Contains(permission);
         }
         else
         {
@@ -725,9 +725,11 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }
     }
 
-    public virtual void AssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+    public virtual void AssignRoles(string userAuthId, ICollection<string>? roles = null, ICollection<string>? permissions = null)
     {
         var userAuth = GetUserAuth(userAuthId);
+        if (userAuth == null)
+            return;
         if (!UseDistinctRoleTables)
         {
             if (!roles.IsEmpty())
@@ -756,9 +758,11 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }
     }
 
-    public virtual void AssignRoles(IDbConnection db, string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+    public virtual void AssignRoles(IDbConnection db, string userAuthId, ICollection<string>? roles = null, ICollection<string>? permissions = null)
     {
         var userAuth = GetUserAuth(db, userAuthId);
+        if (userAuth == null)
+            return;
         if (!UseDistinctRoleTables)
         {
             if (!roles.IsEmpty())
@@ -824,9 +828,11 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }
     }
 
-    public virtual void UnAssignRoles(string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+    public virtual void UnAssignRoles(string userAuthId, ICollection<string>? roles = null, ICollection<string>? permissions = null)
     {
         var userAuth = GetUserAuth(userAuthId);
+        if (userAuth == null)
+            return;
         if (!UseDistinctRoleTables)
         {
             roles.Each(x => userAuth.Roles.Remove(x));
@@ -843,9 +849,11 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         }
     }
 
-    public virtual void UnAssignRoles(IDbConnection db, string userAuthId, ICollection<string> roles = null, ICollection<string> permissions = null)
+    public virtual void UnAssignRoles(IDbConnection db, string userAuthId, ICollection<string>? roles = null, ICollection<string>? permissions = null)
     {
         var userAuth = GetUserAuth(db, userAuthId);
+        if (userAuth == null)
+            return;
         if (!UseDistinctRoleTables)
         {
             roles.Each(x => userAuth.Roles.Remove(x));
