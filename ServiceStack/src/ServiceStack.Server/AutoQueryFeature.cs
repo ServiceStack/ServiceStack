@@ -548,10 +548,10 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         var rows = ctx.Db.Select<Dictionary<string, object>>(q);
         var row = rows.FirstOrDefault();
 
-        if (row?.Keys.Count == 0)
+        ctx.Response.Meta ??= new();
+        if (row != null)
         {
-            ctx.Response.Meta ??= new();
-            foreach (var key in row.Keys)
+            foreach (var key in row.Keys.Safe())
             {
                 ctx.Response.Meta[key] = row[key]?.ToString() ?? "";
             }
