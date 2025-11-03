@@ -3,7 +3,7 @@
 
 # Options:
 =begin
-Date: 2025-11-02 22:30:41
+Date: 2025-11-03 11:38:36
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -45,7 +45,7 @@ end
 
 # @DataContract
 class AiContent
-      # @DataMember(Name="type")
+    # @DataMember(Name="type")
     # @return [String]
     attr_accessor :type
 end
@@ -55,15 +55,15 @@ end
 #
 # @DataContract
 class ToolCall
-      # @DataMember(Name="id")
+    # @DataMember(Name="id")
     # @return [String]
     attr_accessor :id
 
-      # @DataMember(Name="type")
+    # @DataMember(Name="type")
     # @return [String]
     attr_accessor :type
 
-      # @DataMember(Name="function")
+    # @DataMember(Name="function")
     # @return [String]
     attr_accessor :function
 end
@@ -73,23 +73,23 @@ end
 #
 # @DataContract
 class AiMessage
-      # @DataMember(Name="content")
+    # @DataMember(Name="content")
     # @return [List]
     attr_accessor :content
 
-      # @DataMember(Name="role")
+    # @DataMember(Name="role")
     # @return [String]
     attr_accessor :role
 
-      # @DataMember(Name="name")
+    # @DataMember(Name="name")
     # @return [String]
     attr_accessor :name
 
-      # @DataMember(Name="tool_calls")
+    # @DataMember(Name="tool_calls")
     # @return [List]
     attr_accessor :tool_calls
 
-      # @DataMember(Name="tool_call_id")
+    # @DataMember(Name="tool_call_id")
     # @return [String]
     attr_accessor :tool_call_id
 end
@@ -99,27 +99,69 @@ end
 #
 # @DataContract
 class AiChatAudio
-      # @DataMember(Name="format")
+    # @DataMember(Name="format")
     # @return [String]
     attr_accessor :format
 
-      # @DataMember(Name="voice")
+    # @DataMember(Name="voice")
     # @return [String]
     attr_accessor :voice
 end
 
 # @DataContract
 class AiResponseFormat
-      # @DataMember(Name="response_format")
+    # @DataMember(Name="response_format")
     # @return [ResponseFormat]
     attr_accessor :type
 end
 
 # @DataContract
 class Tool
-      # @DataMember(Name="type")
+    # @DataMember(Name="type")
     # @return [ToolType]
     attr_accessor :type
+end
+
+# @DataContract
+class ResponseError
+    # @DataMember(Order=1)
+    # @return [String]
+    attr_accessor :error_code
+
+    # @DataMember(Order=2)
+    # @return [String]
+    attr_accessor :field_name
+
+    # @DataMember(Order=3)
+    # @return [String]
+    attr_accessor :message
+
+    # @DataMember(Order=4)
+    # @return [Dictionary]
+    attr_accessor :meta
+end
+
+# @DataContract
+class ResponseStatus
+    # @DataMember(Order=1)
+    # @return [String]
+    attr_accessor :error_code
+
+    # @DataMember(Order=2)
+    # @return [String]
+    attr_accessor :message
+
+    # @DataMember(Order=3)
+    # @return [String]
+    attr_accessor :stack_trace
+
+    # @DataMember(Order=4)
+    # @return [List]
+    attr_accessor :errors
+
+    # @DataMember(Order=5)
+    # @return [Dictionary]
+    attr_accessor :meta
 end
 
 #
@@ -127,19 +169,19 @@ end
 #
 # @DataContract
 class UrlCitation
-      # @DataMember(Name="end_index")
+    # @DataMember(Name="end_index")
     # @return [Integer]
     attr_accessor :end_index
 
-      # @DataMember(Name="start_index")
+    # @DataMember(Name="start_index")
     # @return [Integer]
     attr_accessor :start_index
 
-      # @DataMember(Name="title")
+    # @DataMember(Name="title")
     # @return [String]
     attr_accessor :title
 
-      # @DataMember(Name="url")
+    # @DataMember(Name="url")
     # @return [String]
     attr_accessor :url
 end
@@ -149,11 +191,11 @@ end
 #
 # @DataContract
 class ChoiceAnnotation
-      # @DataMember(Name="type")
+    # @DataMember(Name="type")
     # @return [String]
     attr_accessor :type
 
-      # @DataMember(Name="url_citation")
+    # @DataMember(Name="url_citation")
     # @return [UrlCitation]
     attr_accessor :url_citation
 end
@@ -163,65 +205,65 @@ end
 #
 # @DataContract
 class ChoiceAudio
-      # @DataMember(Name="data")
+    # @DataMember(Name="data")
     # @return [String]
     attr_accessor :data
 
-      # @DataMember(Name="expires_at")
+    # @DataMember(Name="expires_at")
     # @return [Integer]
     attr_accessor :expires_at
 
-      # @DataMember(Name="id")
+    # @DataMember(Name="id")
     # @return [String]
     attr_accessor :id
 
-      # @DataMember(Name="transcript")
+    # @DataMember(Name="transcript")
     # @return [String]
     attr_accessor :transcript
 end
 
 # @DataContract
 class ChoiceMessage
-      # @DataMember(Name="content")
+    # @DataMember(Name="content")
     # @return [String]
     attr_accessor :content
 
-      # @DataMember(Name="refusal")
+    # @DataMember(Name="refusal")
     # @return [String]
     attr_accessor :refusal
 
-      # @DataMember(Name="reasoning")
+    # @DataMember(Name="reasoning")
     # @return [String]
     attr_accessor :reasoning
 
-      # @DataMember(Name="role")
+    # @DataMember(Name="role")
     # @return [String]
     attr_accessor :role
 
-      # @DataMember(Name="annotations")
+    # @DataMember(Name="annotations")
     # @return [List]
     attr_accessor :annotations
 
-      # @DataMember(Name="audio")
+    # @DataMember(Name="audio")
     # @return [ChoiceAudio]
     attr_accessor :audio
 
-      # @DataMember(Name="tool_calls")
+    # @DataMember(Name="tool_calls")
     # @return [List]
     attr_accessor :tool_calls
 end
 
 # @DataContract
 class Choice
-      # @DataMember(Name="finish_reason")
+    # @DataMember(Name="finish_reason")
     # @return [String]
     attr_accessor :finish_reason
 
-      # @DataMember(Name="index")
+    # @DataMember(Name="index")
     # @return [Integer]
     attr_accessor :index
 
-      # @DataMember(Name="message")
+    # @DataMember(Name="message")
     # @return [ChoiceMessage]
     attr_accessor :message
 end
@@ -231,19 +273,19 @@ end
 #
 # @DataContract
 class AiCompletionUsage
-      # @DataMember(Name="accepted_prediction_tokens")
+    # @DataMember(Name="accepted_prediction_tokens")
     # @return [Integer]
     attr_accessor :accepted_prediction_tokens
 
-      # @DataMember(Name="audio_tokens")
+    # @DataMember(Name="audio_tokens")
     # @return [Integer]
     attr_accessor :audio_tokens
 
-      # @DataMember(Name="reasoning_tokens")
+    # @DataMember(Name="reasoning_tokens")
     # @return [Integer]
     attr_accessor :reasoning_tokens
 
-      # @DataMember(Name="rejected_prediction_tokens")
+    # @DataMember(Name="rejected_prediction_tokens")
     # @return [Integer]
     attr_accessor :rejected_prediction_tokens
 end
@@ -253,15 +295,15 @@ end
 #
 # @DataContract
 class AiPromptUsage
-      # @DataMember(Name="accepted_prediction_tokens")
+    # @DataMember(Name="accepted_prediction_tokens")
     # @return [Integer]
     attr_accessor :accepted_prediction_tokens
 
-      # @DataMember(Name="audio_tokens")
+    # @DataMember(Name="audio_tokens")
     # @return [Integer]
     attr_accessor :audio_tokens
 
-      # @DataMember(Name="cached_tokens")
+    # @DataMember(Name="cached_tokens")
     # @return [Integer]
     attr_accessor :cached_tokens
 end
@@ -271,67 +313,25 @@ end
 #
 # @DataContract
 class AiUsage
-      # @DataMember(Name="completion_tokens")
+    # @DataMember(Name="completion_tokens")
     # @return [Integer]
     attr_accessor :completion_tokens
 
-      # @DataMember(Name="prompt_tokens")
+    # @DataMember(Name="prompt_tokens")
     # @return [Integer]
     attr_accessor :prompt_tokens
 
-      # @DataMember(Name="total_tokens")
+    # @DataMember(Name="total_tokens")
     # @return [Integer]
     attr_accessor :total_tokens
 
-      # @DataMember(Name="completion_tokens_details")
+    # @DataMember(Name="completion_tokens_details")
     # @return [AiCompletionUsage]
     attr_accessor :completion_tokens_details
 
-      # @DataMember(Name="prompt_tokens_details")
+    # @DataMember(Name="prompt_tokens_details")
     # @return [AiPromptUsage]
     attr_accessor :prompt_tokens_details
-end
-
-# @DataContract
-class ResponseError
-      # @DataMember(Order=1)
-    # @return [String]
-    attr_accessor :error_code
-
-      # @DataMember(Order=2)
-    # @return [String]
-    attr_accessor :field_name
-
-      # @DataMember(Order=3)
-    # @return [String]
-    attr_accessor :message
-
-      # @DataMember(Order=4)
-    # @return [Dictionary]
-    attr_accessor :meta
-end
-
-# @DataContract
-class ResponseStatus
-      # @DataMember(Order=1)
-    # @return [String]
-    attr_accessor :error_code
-
-      # @DataMember(Order=2)
-    # @return [String]
-    attr_accessor :message
-
-      # @DataMember(Order=3)
-    # @return [String]
-    attr_accessor :stack_trace
-
-      # @DataMember(Order=4)
-    # @return [List]
-    attr_accessor :errors
-
-      # @DataMember(Order=5)
-    # @return [Dictionary]
-    attr_accessor :meta
 end
 
 #
@@ -339,14 +339,14 @@ end
 #
 # @DataContract
 class AiTextContent < AiContent
-      # @DataMember(Name="text")
+    # @DataMember(Name="text")
     # @return [String]
     attr_accessor :text
 end
 
 # @DataContract
 class AiImageUrl
-      # @DataMember(Name="url")
+    # @DataMember(Name="url")
     # @return [String]
     attr_accessor :url
 end
@@ -356,7 +356,7 @@ end
 #
 # @DataContract
 class AiImageContent < AiContent
-      # @DataMember(Name="image_url")
+    # @DataMember(Name="image_url")
     # @return [AiImageUrl]
     attr_accessor :image_url
 end
@@ -366,11 +366,11 @@ end
 #
 # @DataContract
 class AiInputAudio
-      # @DataMember(Name="data")
+    # @DataMember(Name="data")
     # @return [String]
     attr_accessor :data
 
-      # @DataMember(Name="format")
+    # @DataMember(Name="format")
     # @return [String]
     attr_accessor :format
 end
@@ -380,7 +380,7 @@ end
 #
 # @DataContract
 class AiAudioContent < AiContent
-      # @DataMember(Name="input_audio")
+    # @DataMember(Name="input_audio")
     # @return [AiInputAudio]
     attr_accessor :input_audio
 end
@@ -390,15 +390,15 @@ end
 #
 # @DataContract
 class AiFile
-      # @DataMember(Name="file_data")
+    # @DataMember(Name="file_data")
     # @return [String]
     attr_accessor :file_data
 
-      # @DataMember(Name="filename")
+    # @DataMember(Name="filename")
     # @return [String]
     attr_accessor :filename
 
-      # @DataMember(Name="file_id")
+    # @DataMember(Name="file_id")
     # @return [String]
     attr_accessor :file_id
 end
@@ -408,50 +408,50 @@ end
 #
 # @DataContract
 class AiFileContent < AiContent
-      # @DataMember(Name="file")
+    # @DataMember(Name="file")
     # @return [AiFile]
     attr_accessor :file
 end
 
 # @DataContract
 class ChatResponse
-      # @DataMember(Name="id")
+    # @DataMember(Name="id")
     # @return [String]
     attr_accessor :id
 
-      # @DataMember(Name="choices")
+    # @DataMember(Name="choices")
     # @return [List]
     attr_accessor :choices
 
-      # @DataMember(Name="created")
+    # @DataMember(Name="created")
     # @return [Integer]
     attr_accessor :created
 
-      # @DataMember(Name="model")
+    # @DataMember(Name="model")
     # @return [String]
     attr_accessor :model
 
-      # @DataMember(Name="system_fingerprint")
+    # @DataMember(Name="system_fingerprint")
     # @return [String]
     attr_accessor :system_fingerprint
 
-      # @DataMember(Name="object")
+    # @DataMember(Name="object")
     # @return [String]
     attr_accessor :object
 
-      # @DataMember(Name="service_tier")
+    # @DataMember(Name="service_tier")
     # @return [String]
     attr_accessor :service_tier
 
-      # @DataMember(Name="usage")
+    # @DataMember(Name="usage")
     # @return [AiUsage]
     attr_accessor :usage
 
-      # @DataMember(Name="metadata")
+    # @DataMember(Name="metadata")
     # @return [Dictionary]
     attr_accessor :metadata
 
-      # @DataMember(Name="responseStatus")
+    # @DataMember(Name="responseStatus")
     # @return [ResponseStatus]
     attr_accessor :response_status
 end
@@ -462,111 +462,111 @@ end
 # @Route("/v1/chat/completions", "POST")
 # @DataContract
 class ChatCompletion
-      # @DataMember(Name="messages")
+    # @DataMember(Name="messages")
     # @return [List]
     attr_accessor :messages
 
-      # @DataMember(Name="model")
+    # @DataMember(Name="model")
     # @return [String]
     attr_accessor :model
 
-      # @DataMember(Name="audio")
+    # @DataMember(Name="audio")
     # @return [AiChatAudio]
     attr_accessor :audio
 
-      # @DataMember(Name="logit_bias")
+    # @DataMember(Name="logit_bias")
     # @return [Dictionary]
     attr_accessor :logit_bias
 
-      # @DataMember(Name="metadata")
+    # @DataMember(Name="metadata")
     # @return [Dictionary]
     attr_accessor :metadata
 
-      # @DataMember(Name="reasoning_effort")
+    # @DataMember(Name="reasoning_effort")
     # @return [String]
     attr_accessor :reasoning_effort
 
-      # @DataMember(Name="response_format")
+    # @DataMember(Name="response_format")
     # @return [AiResponseFormat]
     attr_accessor :response_format
 
-      # @DataMember(Name="service_tier")
+    # @DataMember(Name="service_tier")
     # @return [String]
     attr_accessor :service_tier
 
-      # @DataMember(Name="safety_identifier")
+    # @DataMember(Name="safety_identifier")
     # @return [String]
     attr_accessor :safety_identifier
 
-      # @DataMember(Name="stop")
+    # @DataMember(Name="stop")
     # @return [List]
     attr_accessor :stop
 
-      # @DataMember(Name="modalities")
+    # @DataMember(Name="modalities")
     # @return [List]
     attr_accessor :modalities
 
-      # @DataMember(Name="prompt_cache_key")
+    # @DataMember(Name="prompt_cache_key")
     # @return [String]
     attr_accessor :prompt_cache_key
 
-      # @DataMember(Name="tools")
+    # @DataMember(Name="tools")
     # @return [List]
     attr_accessor :tools
 
-      # @DataMember(Name="verbosity")
+    # @DataMember(Name="verbosity")
     # @return [String]
     attr_accessor :verbosity
 
-      # @DataMember(Name="temperature")
+    # @DataMember(Name="temperature")
     # @return [Float]
     attr_accessor :temperature
 
-      # @DataMember(Name="max_completion_tokens")
+    # @DataMember(Name="max_completion_tokens")
     # @return [Integer]
     attr_accessor :max_completion_tokens
 
-      # @DataMember(Name="top_logprobs")
+    # @DataMember(Name="top_logprobs")
     # @return [Integer]
     attr_accessor :top_logprobs
 
-      # @DataMember(Name="top_p")
+    # @DataMember(Name="top_p")
     # @return [Float]
     attr_accessor :top_p
 
-      # @DataMember(Name="frequency_penalty")
+    # @DataMember(Name="frequency_penalty")
     # @return [Float]
     attr_accessor :frequency_penalty
 
-      # @DataMember(Name="presence_penalty")
+    # @DataMember(Name="presence_penalty")
     # @return [Float]
     attr_accessor :presence_penalty
 
-      # @DataMember(Name="seed")
+    # @DataMember(Name="seed")
     # @return [Integer]
     attr_accessor :seed
 
-      # @DataMember(Name="n")
+    # @DataMember(Name="n")
     # @return [Integer]
     attr_accessor :n
 
-      # @DataMember(Name="store")
+    # @DataMember(Name="store")
     # @return [TrueClass]
     attr_accessor :store
 
-      # @DataMember(Name="logprobs")
+    # @DataMember(Name="logprobs")
     # @return [TrueClass]
     attr_accessor :logprobs
 
-      # @DataMember(Name="parallel_tool_calls")
+    # @DataMember(Name="parallel_tool_calls")
     # @return [TrueClass]
     attr_accessor :parallel_tool_calls
 
-      # @DataMember(Name="enable_thinking")
+    # @DataMember(Name="enable_thinking")
     # @return [TrueClass]
     attr_accessor :enable_thinking
 
-      # @DataMember(Name="stream")
+    # @DataMember(Name="stream")
     # @return [TrueClass]
     attr_accessor :stream
 end

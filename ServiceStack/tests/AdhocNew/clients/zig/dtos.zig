@@ -1,5 +1,5 @@
 /// Options:
-/// Date: 2025-11-03 03:14:11
+/// Date: 2025-11-03 11:38:21
 /// Version: 8.91
 /// Tip: To override a DTO option, remove "/" prefix before updating
 /// BaseUrl: https://localhost:5001
@@ -107,6 +107,39 @@ pub const Tool = struct {
     /// The type of the tool. Currently, only function is supported.
     // @DataMember(Name="type")
     type: ToolType,
+};
+
+// @DataContract
+pub const ResponseError = struct {
+    // @DataMember(Order=1)
+    errorCode: []const u8,
+
+    // @DataMember(Order=2)
+    fieldName: []const u8,
+
+    // @DataMember(Order=3)
+    message: []const u8,
+
+    // @DataMember(Order=4)
+    meta: ?std.StringHashMap([]const u8),
+};
+
+// @DataContract
+pub const ResponseStatus = struct {
+    // @DataMember(Order=1)
+    errorCode: []const u8,
+
+    // @DataMember(Order=2)
+    message: ?[]const u8,
+
+    // @DataMember(Order=3)
+    stackTrace: ?[]const u8,
+
+    // @DataMember(Order=4)
+    errors: ?[]ResponseError,
+
+    // @DataMember(Order=5)
+    meta: ?std.StringHashMap([]const u8),
 };
 
 /// Annotations for the message, when applicable, as when using the web search tool.
@@ -265,39 +298,6 @@ pub const AiUsage = struct {
     /// Breakdown of tokens used in the prompt.
     // @DataMember(Name="prompt_tokens_details")
     prompt_tokens_details: ?AiPromptUsage,
-};
-
-// @DataContract
-pub const ResponseError = struct {
-    // @DataMember(Order=1)
-    errorCode: []const u8,
-
-    // @DataMember(Order=2)
-    fieldName: []const u8,
-
-    // @DataMember(Order=3)
-    message: []const u8,
-
-    // @DataMember(Order=4)
-    meta: ?std.StringHashMap([]const u8),
-};
-
-// @DataContract
-pub const ResponseStatus = struct {
-    // @DataMember(Order=1)
-    errorCode: []const u8,
-
-    // @DataMember(Order=2)
-    message: ?[]const u8,
-
-    // @DataMember(Order=3)
-    stackTrace: ?[]const u8,
-
-    // @DataMember(Order=4)
-    errors: ?[]ResponseError,
-
-    // @DataMember(Order=5)
-    meta: ?std.StringHashMap([]const u8),
 };
 
 /// Text content part

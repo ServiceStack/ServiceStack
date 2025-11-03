@@ -1,9 +1,8 @@
 /* Options:
-Date: 2025-11-03 02:51:10
+Date: 2025-11-03 11:38:27
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
-//RustPropertyStyle: ENABLED - Using snake_case with serde rename
 
 //GlobalNamespace: 
 //MakePropertiesOptional: False
@@ -96,6 +95,27 @@ pub enum ToolType {
 pub struct Tool {
     /// The type of the tool. Currently, only function is supported.
     pub r#type: ToolType,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct ResponseError {
+    #[serde(rename = "errorCode")]
+    pub error_code: String,
+    #[serde(rename = "fieldName")]
+    pub field_name: String,
+    pub message: String,
+    pub meta: Option<HashMap<String, String>>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct ResponseStatus {
+    #[serde(rename = "errorCode")]
+    pub error_code: String,
+    pub message: Option<String>,
+    #[serde(rename = "stackTrace")]
+    pub stack_trace: Option<String>,
+    pub errors: Option<Vec<ResponseError>>,
+    pub meta: Option<HashMap<String, String>>,
 }
 
 /// Annotations for the message, when applicable, as when using the web search tool.
@@ -198,27 +218,6 @@ pub struct AiUsage {
     pub completion_tokens_details: Option<AiCompletionUsage>,
     /// Breakdown of tokens used in the prompt.
     pub prompt_tokens_details: Option<AiPromptUsage>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct ResponseError {
-    #[serde(rename = "errorCode")]
-    pub error_code: String,
-    #[serde(rename = "fieldName")]
-    pub field_name: String,
-    pub message: String,
-    pub meta: Option<HashMap<String, String>>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct ResponseStatus {
-    #[serde(rename = "errorCode")]
-    pub error_code: String,
-    pub message: Option<String>,
-    #[serde(rename = "stackTrace")]
-    pub stack_trace: Option<String>,
-    pub errors: Option<Vec<ResponseError>>,
-    pub meta: Option<HashMap<String, String>>,
 }
 
 /// Text content part

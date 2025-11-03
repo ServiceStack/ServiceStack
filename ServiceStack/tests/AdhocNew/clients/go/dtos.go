@@ -1,9 +1,8 @@
 /* Options:
-Date: 2025-11-02 22:19:50
+Date: 2025-11-03 11:38:42
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
-//GoPropertyStyle: ENABLED - Using PascalCase with keyword handling
 
 //GlobalNamespace: 
 //MakePropertiesOptional: False
@@ -102,6 +101,32 @@ type Tool struct {
     /** @description The type of the tool. Currently, only function is supported. */
     // @DataMember(Name="type")
     Type ToolType `json:"type,omitempty"`
+}
+
+// @DataContract
+type ResponseError struct {
+    // @DataMember(Order=1)
+    ErrorCode string `json:"errorCode"`
+    // @DataMember(Order=2)
+    FieldName string `json:"fieldName"`
+    // @DataMember(Order=3)
+    Message string `json:"message"`
+    // @DataMember(Order=4)
+    Meta map[string]string `json:"meta,omitempty"`
+}
+
+// @DataContract
+type ResponseStatus struct {
+    // @DataMember(Order=1)
+    ErrorCode string `json:"errorCode"`
+    // @DataMember(Order=2)
+    Message *string `json:"message,omitempty"`
+    // @DataMember(Order=3)
+    StackTrace *string `json:"stackTrace,omitempty"`
+    // @DataMember(Order=4)
+    Errors []ResponseError `json:"errors,omitempty"`
+    // @DataMember(Order=5)
+    Meta map[string]string `json:"meta,omitempty"`
 }
 
 /** @description Annotations for the message, when applicable, as when using the web search tool. */
@@ -236,32 +261,6 @@ type AiUsage struct {
     /** @description Breakdown of tokens used in the prompt. */
     // @DataMember(Name="prompt_tokens_details")
     PromptTokensDetails *AiPromptUsage `json:"prompt_tokens_details,omitempty"`
-}
-
-// @DataContract
-type ResponseError struct {
-    // @DataMember(Order=1)
-    ErrorCode string `json:"errorCode"`
-    // @DataMember(Order=2)
-    FieldName string `json:"fieldName"`
-    // @DataMember(Order=3)
-    Message string `json:"message"`
-    // @DataMember(Order=4)
-    Meta map[string]string `json:"meta,omitempty"`
-}
-
-// @DataContract
-type ResponseStatus struct {
-    // @DataMember(Order=1)
-    ErrorCode string `json:"errorCode"`
-    // @DataMember(Order=2)
-    Message *string `json:"message,omitempty"`
-    // @DataMember(Order=3)
-    StackTrace *string `json:"stackTrace,omitempty"`
-    // @DataMember(Order=4)
-    Errors []ResponseError `json:"errors,omitempty"`
-    // @DataMember(Order=5)
-    Meta map[string]string `json:"meta,omitempty"`
 }
 
 /** @description Text content part */
