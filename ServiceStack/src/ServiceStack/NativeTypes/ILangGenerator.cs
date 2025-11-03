@@ -6,6 +6,9 @@ namespace ServiceStack.NativeTypes;
 
 public interface ILangGenerator
 {
+    Lang Lang { get; }
+    MetadataTypesConfig Config { get; }
+    
     bool WithoutOptions { get; set; }
     
     List<string> AddQueryParamOptions { get; set; }

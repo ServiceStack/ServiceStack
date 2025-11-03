@@ -10,7 +10,8 @@ namespace ServiceStack.NativeTypes.FSharp;
 
 public class FSharpGenerator : ILangGenerator
 {
-    readonly MetadataTypesConfig Config;
+    public Lang Lang => Lang.FSharp;
+    public MetadataTypesConfig Config { get; }
     private readonly NativeTypesFeature feature;
     private List<MetadataType> allTypes;
 
@@ -74,6 +75,7 @@ public class FSharpGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        var formatter = request.TryResolve<INativeTypesFormatter>();
         var namespaces = Config.GetDefaultNamespaces(metadata);
 
         var typeNamespaces = new HashSet<string>();
@@ -124,6 +126,8 @@ public class FSharpGenerator : ILangGenerator
             sb.AppendLine("*)");
             sb.AppendLine();
         }
+
+        formatter?.AddHeader(sb, this, request);
 
         var header = AddHeader?.Invoke(request);
         if (!string.IsNullOrEmpty(header))
@@ -230,8 +234,9 @@ public class FSharpGenerator : ILangGenerator
             sb.AppendLine(addCode);
 
         sb.AppendLine();
-
-        return StringBuilderCache.ReturnAndFree(sbInner);
+        
+        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
 
     private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,

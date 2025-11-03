@@ -11,7 +11,9 @@ namespace ServiceStack.NativeTypes.Ruby;
 
 public class RubyGenerator : ILangGenerator
 {
-    public readonly MetadataTypesConfig Config;
+    public Lang Lang => Lang.Ruby;
+    public MetadataTypesConfig Config { get; }
+
     readonly NativeTypesFeature feature;
     public List<string> ConflictTypeNames = new();
     public List<MetadataType> AllTypes { get; set; }
@@ -289,6 +291,7 @@ public class RubyGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        var formatter = request.TryResolve<INativeTypesFormatter>();
         Init(metadata);
 
         var typeNamespaces = new HashSet<string>();
@@ -302,9 +305,64 @@ public class RubyGenerator : ILangGenerator
         Func<string, string> defaultValue = k =>
             request.QueryString[k].IsNullOrEmpty() ? "#" : "";
 
-        var sb = new StringBuilder();
+        var sbInner = StringBuilderCache.Allocate();
+        var sb = new StringBuilderWrapper(sbInner);
         sb.AppendLine("# frozen_string_literal: true");
         sb.AppendLine("# encoding: utf-8");
+        sb.AppendLine();
+
+        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        if (includeOptions)
+        {
+            sb.AppendLine("# Options:");
+            sb.AppendLine("=begin");
+            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));        
+            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
+            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            sb.AppendLine();
+            sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
+            sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
+            sb.AppendLine("{0}MakeInternal: {1}".Fmt(defaultValue("MakeInternal"), Config.MakeInternal));
+            sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
+            sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
+            sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
+            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
+
+            if (AddQueryParamOptions != null)
+            {
+                foreach (var name in AddQueryParamOptions)
+                {
+                    sb.AppendLine("{0}{1}: {2}".Fmt(defaultValue(name), name, request.QueryString[name]));
+                }
+            }
+
+            sb.AppendLine("=end");
+        }
+
+        formatter?.AddHeader(sb, this, request);
+
+        var header = AddHeader?.Invoke(request);
+        if (!string.IsNullOrEmpty(header))
+            sb.AppendLine(header);
+
+        sb.AppendLine();
+        defaultImports.Each(x => sb.AppendLine($"require '{x}'"));
+
+        var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
+        if (insertCode != null)
+            sb.AppendLine(insertCode);
+
         sb.AppendLine();
 
         string lastNS = null;
@@ -328,8 +386,6 @@ public class RubyGenerator : ILangGenerator
 
         var orderedTypes = allTypes;
 
-        var sbInner = StringBuilderCacheAlt.Allocate();
-        var sbServiceStackTypes = StringBuilderCacheAlt.Allocate();
         foreach (var type in orderedTypes)
         {
             var fullTypeName = type.GetFullName();
@@ -343,7 +399,7 @@ public class RubyGenerator : ILangGenerator
                         response = operation.Response;
                     }
 
-                    lastNS = AppendType(ref sbInner, type, lastNS,
+                    lastNS = AppendType(ref sb, type, lastNS,
                         new CreateTypeOptions
                         {
                             Routes = metadata.Operations.GetRoutes(type),
@@ -379,9 +435,8 @@ public class RubyGenerator : ILangGenerator
                 if (!existingTypes.Contains(fullTypeName)
                     && !Config.IgnoreTypesInNamespaces.Contains(type.Namespace))
                 {
-                    lastNS = AppendType(ref sbInner, type, lastNS,
-                        new CreateTypeOptions
-                        {
+                    lastNS = AppendType(ref sb, type, lastNS,
+                        new CreateTypeOptions {
                             IsResponse = true,
                         });
 
@@ -393,84 +448,28 @@ public class RubyGenerator : ILangGenerator
                 var ignoreType = IgnoreTypeInfosFor.Contains(type.Name);
                 if (!ignoreType)
                 {
-                    var sbTarget = ignoreType ? sbServiceStackTypes : sbInner;
-                    lastNS = AppendType(ref sbTarget, type, lastNS,
+                    lastNS = AppendType(ref sb, type, lastNS,
                         new CreateTypeOptions { IsType = true });
                 }
 
                 existingTypes.Add(fullTypeName);
             }
         }
-
-        var addHeader = AddHeader?.Invoke(request);
-        if (addHeader != null)
-        {
-            sb.AppendLine(addHeader);
-        }
-
-        if (!WithoutOptions)
-        {
-            sb.AppendLine("# Options:");
-            sb.AppendLine("=begin");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
-            sb.AppendLine();
-            sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
-            sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
-            sb.AppendLine("{0}MakeInternal: {1}".Fmt(defaultValue("MakeInternal"), Config.MakeInternal));
-            sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
-            sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
-            sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
-            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
-
-            if (AddQueryParamOptions != null)
-            {
-                foreach (var name in AddQueryParamOptions)
-                {
-                    sb.AppendLine("{0}{1}: {2}".Fmt(defaultValue(name), name, request.QueryString[name]));
-                }
-            }
-
-            sb.AppendLine("=end");
-        }
-
-        sb.AppendLine();
-        defaultImports.Each(x => sb.AppendLine($"require '{x}'"));
-
-        var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
-        if (insertCode != null)
-            sb.AppendLine(insertCode);
-
-        sb.AppendLine();
-        sb.Append(StringBuilderCacheAlt.ReturnAndFree(sbInner));
-        StringBuilderCacheAlt.Free(sbServiceStackTypes);
-
         var addCode = AddCodeFilter?.Invoke(AllTypes, Config);
         if (addCode != null)
             sb.AppendLine(addCode);
-        return sb.ToString();
+        
+        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
 
     private List<MetadataType> allTypes;
 
     string AsIReturn(string genericArg) => $"IReturn[{genericArg}]";
 
-    private string AppendType(ref StringBuilder sbInner, MetadataType type, string lastNS,
+    private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
         CreateTypeOptions options)
     {
-        var sb = new StringBuilderWrapper(sbInner);
         sb.AppendLine();
 
         AppendComments(sb, type.Description);

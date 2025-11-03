@@ -9,7 +9,9 @@ namespace ServiceStack.NativeTypes.Php;
 
 public class PhpGenerator : ILangGenerator
 {
-    public readonly MetadataTypesConfig Config;
+    public Lang Lang => Lang.Php;
+    public MetadataTypesConfig Config { get; }
+
     readonly NativeTypesFeature feature;
     public List<string> ConflictTypeNames = [];
     public List<MetadataType> AllTypes { get; set; }
@@ -275,6 +277,7 @@ public class PhpGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        var formatter = request.TryResolve<INativeTypesFormatter>();
         Init(metadata);
 
         List<string> defaultImports = new(!Config.DefaultImports.IsEmpty()
@@ -315,6 +318,8 @@ public class PhpGenerator : ILangGenerator
             sb.AppendLine("*/");
             sb.AppendLine();
         }
+
+        formatter?.AddHeader(sb, this, request);
 
         var header = AddHeader?.Invoke(request);
         if (!string.IsNullOrEmpty(header))
@@ -419,8 +424,9 @@ public class PhpGenerator : ILangGenerator
             sb.AppendLine(addCode);
             
         sb.AppendLine();
-
-        return StringBuilderCache.ReturnAndFree(sbInner);
+        
+        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
 
     public string GetDefaultInitializer(string typeName)

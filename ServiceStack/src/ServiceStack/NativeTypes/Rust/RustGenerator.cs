@@ -10,7 +10,9 @@ namespace ServiceStack.NativeTypes.Rust;
 
 public class RustGenerator : ILangGenerator
 {
-    public readonly MetadataTypesConfig Config;
+    public Lang Lang => Lang.Rust;
+    public MetadataTypesConfig Config { get; }
+
     readonly NativeTypesFeature feature;
     public List<string> ConflictTypeNames = new();
     public List<MetadataType> AllTypes { get; set; }
@@ -241,6 +243,7 @@ public class RustGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        var formatter = request.TryResolve<INativeTypesFormatter>();
         Init(metadata);
 
         List<string> defaultImports = new(!Config.DefaultImports.IsEmpty()
@@ -276,6 +279,8 @@ public class RustGenerator : ILangGenerator
             sb.AppendLine("*/");
             sb.AppendLine();
         }
+
+        formatter?.AddHeader(sb, this, request);
 
         var header = AddHeader?.Invoke(request);
         if (!string.IsNullOrEmpty(header))
@@ -375,8 +380,9 @@ public class RustGenerator : ILangGenerator
         var addCode = AddCodeFilter?.Invoke(AllTypes, Config);
         if (addCode != null)
             sb.AppendLine(addCode);
-
-        return StringBuilderCache.ReturnAndFree(sbInner);
+        
+        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
 
     private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,

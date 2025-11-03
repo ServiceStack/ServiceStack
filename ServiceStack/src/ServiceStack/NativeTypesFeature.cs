@@ -167,3 +167,9 @@ public class NativeTypesFeature : IPlugin, IConfigureServices, Model.IHasStringI
         DefaultGenerator = nativeTypesMeta.GetGenerator();
     }
 }
+
+public interface INativeTypesFormatter
+{
+    void AddHeader(StringBuilderWrapper sb, ILangGenerator gen, ServiceStack.Web.IRequest req);
+    string Transform(string code, ILangGenerator gen, ServiceStack.Web.IRequest req);
+}

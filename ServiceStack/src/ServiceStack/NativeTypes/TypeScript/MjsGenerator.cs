@@ -10,14 +10,15 @@ namespace ServiceStack.NativeTypes.TypeScript;
 
 public class MjsGenerator : ILangGenerator
 {
+    public Lang Lang => Lang.JavaScript;
+    public MetadataTypesConfig Config { get; }
+    readonly NativeTypesFeature feature;
+
     /// <summary>
     /// Split assignment expression into smaller batches to avoid "Uncaught RangeError: Maximum call stack size exceeded" in Chrome/Blink
     /// </summary>
     public bool WithoutOptions { get; set; }
     public List<string> AddQueryParamOptions { get; set; }
-
-    public readonly MetadataTypesConfig Config;
-    readonly NativeTypesFeature feature;
     public List<MetadataType> AllTypes => Gen.AllTypes;
     public string DictionaryDeclaration { get; set; } = CreateEmptyClass("Dictionary");
     public HashSet<string> AddedDeclarations { get; set; } = [];
@@ -62,6 +63,7 @@ public class MjsGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        var formatter = request.TryResolve<INativeTypesFormatter>();
         Gen.Init(metadata);
 
         List<string> defaultImports = new(!Config.DefaultImports.IsEmpty()
@@ -92,6 +94,8 @@ public class MjsGenerator : ILangGenerator
             sb.AppendLine("*/");
             sb.AppendLine();
         }
+
+        formatter?.AddHeader(sb, this, request);
 
         var header = AddHeader?.Invoke(request);
         if (!string.IsNullOrEmpty(header))
@@ -185,8 +189,9 @@ public class MjsGenerator : ILangGenerator
             sb.AppendLine(addCode);
 
         sb.AppendLine(); //tslint
-
-        return StringBuilderCache.ReturnAndFree(sbInner);
+        
+        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
 
     private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,

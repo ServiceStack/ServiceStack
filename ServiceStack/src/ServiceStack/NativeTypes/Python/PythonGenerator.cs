@@ -11,7 +11,9 @@ namespace ServiceStack.NativeTypes.Python;
 
 public class PythonGenerator : ILangGenerator
 {
-    public readonly MetadataTypesConfig Config;
+    public Lang Lang => Lang.Python;
+    public MetadataTypesConfig Config { get; }
+
     readonly NativeTypesFeature feature;
     public List<string> ConflictTypeNames = new();
     public List<MetadataType> AllTypes { get; set; }
@@ -305,6 +307,7 @@ public class PythonGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        var formatter = request.TryResolve<INativeTypesFormatter>();
         Init(metadata);
 
         typeAliasValues ??= [..TypeAliases.Values];
@@ -347,6 +350,8 @@ public class PythonGenerator : ILangGenerator
             sb.AppendLine("\"\"\"");
             sb.AppendLine();
         }
+
+        formatter?.AddHeader(sb, this, request);
 
         var header = AddHeader?.Invoke(request);
         if (!string.IsNullOrEmpty(header))
@@ -478,8 +483,9 @@ public class PythonGenerator : ILangGenerator
         }
             
         sb.AppendLine();
-
-        return StringBuilderCache.ReturnAndFree(sbInner);
+        
+        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
 
     string AsIReturn(string genericArg) => $"IReturn[{genericArg}]";

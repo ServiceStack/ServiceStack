@@ -11,7 +11,9 @@ namespace ServiceStack.NativeTypes.Swift;
 
 public class SwiftGenerator : ILangGenerator
 {
-    readonly MetadataTypesConfig Config;
+    public Lang Lang => Lang.Swift;
+    public MetadataTypesConfig Config { get; }
+
     readonly NativeTypesFeature feature;
     List<MetadataType> allTypes;
     List<string> conflictTypeNames = new();
@@ -127,6 +129,7 @@ public class SwiftGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        var formatter = request.TryResolve<INativeTypesFormatter>();
         var typeNamespaces = new HashSet<string>();
         var includeList = RemoveIgnoredTypes(metadata);
         metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -169,6 +172,8 @@ public class SwiftGenerator : ILangGenerator
             sb.AppendLine("*/");
             sb.AppendLine();
         }
+
+        formatter?.AddHeader(sb, this, request);
 
         var header = AddHeader?.Invoke(request);
         if (!string.IsNullOrEmpty(header))
@@ -286,8 +291,9 @@ public class SwiftGenerator : ILangGenerator
         var addCode = AddCodeFilter?.Invoke(allTypes, Config);
         if (addCode != null)
             sb.AppendLine(addCode);
-
-        return StringBuilderCache.ReturnAndFree(sbInner);
+        
+        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
 
     private List<string> RemoveIgnoredTypes(MetadataTypes metadata)

@@ -11,7 +11,8 @@ namespace ServiceStack.NativeTypes.Java;
 
 public class JavaGenerator : ILangGenerator
 {
-    readonly MetadataTypesConfig Config;
+    public Lang Lang => Lang.Java;
+    public MetadataTypesConfig Config { get; }
     List<string> conflictTypeNames = new();
     List<MetadataType> allTypes;
     readonly NativeTypesFeature feature;
@@ -126,6 +127,7 @@ public class JavaGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
+        var formatter = request.TryResolve<INativeTypesFormatter>();
         var typeNamespaces = new HashSet<string>();
         var includeList = RemoveIgnoredTypes(metadata);
         metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -181,6 +183,8 @@ public class JavaGenerator : ILangGenerator
             sb.AppendLine("*/");
             sb.AppendLine();
         }
+
+        formatter?.AddHeader(sb, this, request);
 
         var header = AddHeader?.Invoke(request);
         if (!string.IsNullOrEmpty(header))
@@ -305,8 +309,9 @@ public class JavaGenerator : ILangGenerator
         var addCode = AddCodeFilter?.Invoke(allTypes, Config);
         if (addCode != null)
             sb.AppendLine(addCode);
-
-        return StringBuilderCache.ReturnAndFree(sbInner);
+        
+        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
 
     private bool ReferencesGson(MetadataTypes metadata)
