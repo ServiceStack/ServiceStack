@@ -94,16 +94,18 @@
     border-left-style: solid;
 }
 
-.dark .prose :not(:where([class~="not-prose"] *)), .dark .prose :where(td):not(:where([class~="not-prose"] *)) {
+.dark .prose :where(td):not(:where([class~="not-prose"] *)) {
     color: rgb(209 213 219); /*text-gray-300*/
 }
 .dark .prose :where(h1,h2,h3,h4,h5,h6,th):not(:where([class~="not-prose"] *)) {
     color: rgb(243 244 246); /*text-gray-100*/
 }
-.dark .prose :where(code):not(:where([class~="not-prose"] *)) {
+.dark .prose :where(code):not(:where([class~="not-prose"] *)),
+.dark .message em {
     background-color: rgb(30 58 138); /*text-blue-900*/
     color: rgb(243 244 246); /*text-gray-100*/
 }
+
 .dark .prose :where(pre code):not(:where([class~="not-prose"] *)) {
     background-color: unset;
 }
@@ -130,10 +132,6 @@
 .not-prose { max-width: unset; }
 .prose-table { max-width: 56rem; width: 56rem; padding-left: 1px; overflow-x: auto; }
 .hide-h2+h2 { display:none }
-.hljs, .prose :where(pre):not(:where([class~="not-prose"] *)) .hljs {
-    color: var(--tw-prose-pre-code) !important;
-    background-color: var(--tw-prose-pre-bg) !important;
-}
 @media (min-width: 1024px) {
     .lg\:prose-xl {
         font-size: 1.25rem;
@@ -285,6 +283,12 @@
 .prose pre::-webkit-scrollbar-thumb, .prose code::-webkit-scrollbar-thumb {
     background-color: rgb(100 116 139);
 }
+.dark .prose pre::-webkit-scrollbar, .dark .prose code::-webkit-scrollbar {
+    background: #111827;
+}
+.dark .prose pre::-webkit-scrollbar-thumb, .dark .prose code::-webkit-scrollbar-thumb {
+    background-color: rgb(71 85 105);
+}
 
 .html-format {
     max-width: unset;
@@ -390,6 +394,33 @@ h1:hover .header-anchor, h1 .header-anchor:focus, h2:hover .header-anchor, h2 .h
     font-weight: 600;
 }
 
+pre {
+    overflow-x: auto;
+    font-weight: 400;
+    font-size: .875em;
+    line-height: 1.7142857;
+    margin-top: 1.7142857em;
+    margin-bottom: 1.7142857em;
+    border-radius: .375rem;
+    padding: .8571429em 1.1428571em;
+    max-width: calc(100vw - 1rem);
+    min-width: fit-content;
+    background-color: #282c34;
+}
+pre code.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 1em;
+}
+.message pre {
+    max-width: 100%;
+    min-width: auto;
+}
+.message pre code.hljs {
+    overflow-x: unset;
+    width: 100%;
+}
+
 /* highlight.js - vs.css */
 .hljs {background:white;color:black}
 .hljs-comment,.hljs-quote,.hljs-variable{color:#008000}
@@ -413,38 +444,25 @@ pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5p
 .hljs-built_in,.hljs-class .hljs-title,.hljs-title.class_{color:#e6c07b}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}
 .hljs-link{text-decoration:underline}
 
-/*highlightjs*/
-.hljs, .prose :where(pre):not(:where([class~="not-prose"] *)) .hljs {
-    color: #e5e7eb !important;
-    background-color: #282c34 !important;
+/* Dark mode overrides for Chat-specific styles */
+.dark .prose blockquote {
+    border-left-color: #374151;
+    color: #9ca3af;
+}
+.dark .prose th,
+.dark .prose td {
+    border-color: #374151;
+}
+.dark .prose th {
+    background-color: #1f2937;
+}
+.dark .prose td {
+    background-color: #111827;
 }
 .hljs-comment, .hljs-quote {
     color: rgb(148 163 184); /*text-slate-400*/
 }
-
-pre {
-    overflow-x: auto;
-    font-weight: 400;
-    font-size: .875em;
-    line-height: 1.7142857;
-    margin-top: 1.7142857em;
-    margin-bottom: 1.7142857em;
-    border-radius: .375rem;
-    padding: .8571429em 1.1428571em;
-    max-width: calc(100vw - 1rem);
-    min-width: fit-content;
-    background-color: #282c34 !important;
-}
-pre code.hljs {
-    display: block;
-    overflow-x: auto;
-    padding: 1em;
-}
-.message pre {
-    max-width: 100%;
-    min-width: auto;
-}
-.message pre code.hljs {
-    overflow-x: unset;
-    width: 100%;
+.dark .prose > pre, .dark .prose pre code.hljs {
+    background-color: #111827 !important;
+    color: #f3f4f6;
 }

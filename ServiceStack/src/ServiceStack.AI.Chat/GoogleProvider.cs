@@ -276,7 +276,7 @@ public class GoogleProvider(ILogger log, IHttpClientFactory factory) : OpenAiPro
             }
         }
         
-        return response;
+        return ToResponse(response, request, startedAt);
     }
 
     public static OpenAiProviderBase? Create(ILogger log, IHttpClientFactory factory, Dictionary<string, object?> definition)

@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Web;
 
@@ -12,11 +13,6 @@ public class ChatCompletionLog : IMeta
     /// Unique user-specified or system generated GUID for Job
     /// </summary>
     [Index(Unique = true)] public virtual string? RefId { get; set; }
-
-    /// <summary>
-    /// Associate Job with a tag group
-    /// </summary>
-    public virtual string? Tag { get; set; }
 
     /// <summary>
     /// The ASP .NET Identity Auth User Id to populate the IRequest Context ClaimsPrincipal and User Session
@@ -52,13 +48,55 @@ public class ChatCompletionLog : IMeta
 
     [Index] public virtual DateTime CreatedDate { get; set; }
 
+    /// <summary>
+    /// Associate Request with a tag group
+    /// </summary>
+    public virtual string? Tag { get; set; }
+
+    public virtual string? ThreadId { get; set; }
+
     public virtual int? DurationMs { get; set; }
 
-    public int? PromptTokens { get; set; }
+    public virtual int? PromptTokens { get; set; }
+    public virtual int? CompletionTokens { get; set; }
+    
+    public virtual decimal Cost { get; set; }
 
-    public int? CompletionTokens { get; set; }
+    public virtual string? ProviderRef { get; set; }
 
+    public virtual string? ProviderModel { get; set; }
+
+    public virtual string? FinishReason { get; set; }
+
+    public virtual ModelUsage? Usage { get; set; }
+    
     public virtual Dictionary<string, string>? Meta { get; set; }    
+}
+
+[DataContract]
+public class ModelUsage
+{
+    [DataMember]
+    public string? Cost { get; set; }
+    [DataMember]
+    public string? Input { get; set; }
+    [DataMember]
+    public string? Output { get; set; }
+    [DataMember]
+    public int? Duration { get; set; }
+    public int? PromptTokens { get; set; }
+    [DataMember(Name = "completion_tokens")]
+    public int? CompletionTokens { get; set; }
+    [DataMember]
+    public int? InputCachedTokens { get; set; }
+    [DataMember]
+    public int? OutputCachedTokens { get; set; }
+    [DataMember(Name = "audio_tokens")]
+    public int? AudioTokens { get; set; }
+    [DataMember(Name = "reasoning_tokens")]
+    public int? ReasoningTokens { get; set; }
+    [DataMember]
+    public int? TotalTokens { get; set; }
 }
 
 public static class ChatCompletionLogUtils
@@ -74,7 +112,8 @@ public static class ChatCompletionLogUtils
         userId ??= req.GetSession()?.UserAuthId;
         var duration = req.GetElapsed();
         
-        return new ChatCompletionLog
+        var usage = response.Usage;
+        var ret = new ChatCompletionLog
         {
             RefId = refId ?? req.GetTraceId() ?? Guid.NewGuid().ToString("N"),
             UserId = userId,
@@ -89,6 +128,21 @@ public static class ChatCompletionLogUtils
             PromptTokens = response.Usage?.PromptTokens,
             CompletionTokens = response.Usage?.CompletionTokens,
         };
+        ret.Usage = new()
+        {
+            // Cost = usage.Cost,
+            // Input = usage.Input,
+            // Output = usage.Output,
+            Duration = ret.DurationMs,
+            PromptTokens = usage.PromptTokens,
+            CompletionTokens = usage.CompletionTokens,
+            InputCachedTokens = usage.PromptTokensDetails?.CachedTokens,
+            ReasoningTokens = usage.CompletionTokensDetails?.ReasoningTokens,
+            AudioTokens = usage.CompletionTokensDetails?.AudioTokens,
+            TotalTokens = usage.TotalTokens,
+        };
+        
+        return ret;
     }
 
     public static ChatCompletionLog ToChatCompletionLog(this IRequest req, ChatCompletion request, Exception ex, string? refId = null)

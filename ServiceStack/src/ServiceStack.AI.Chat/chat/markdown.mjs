@@ -26,7 +26,7 @@ export const marked = (() => {
 export function renderMarkdown(content) {
     if (content) {
         content = content
-            .replaceAll(`\\[ \\boxed{`,'\n<span class="inline-block text-xl text-blue-500 bg-blue-50 px-3 py-1 rounded">')
+            .replaceAll(`\\[ \\boxed{`,'\n<span class="inline-block text-xl text-blue-500 bg-blue-50 dark:text-blue-400 dark:bg-blue-950 px-3 py-1 rounded">')
             .replaceAll('} \\]','</span>\n')
     }
     return marked.parse(content)
@@ -160,19 +160,19 @@ function thinkTag() {
 
             // Create the expandable, scrollable component with Tailwind CSS
             return `
-    <div class="my-4 border border-gray-200 rounded-lg shadow-sm">
-      <button 
+    <div class="my-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+      <button type="button"
         id="${uniqueId}-toggle"
-        class="flex justify-between items-center w-full py-2 px-4 text-left text-gray-700 font-medium hover:bg-gray-50 focus:outline-none"
+        class="flex justify-between items-center w-full py-2 px-4 text-left text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
         onclick="toggleThink('${uniqueId}')">
         <span>Thinking</span>
-        <svg id="${uniqueId}-icon" class="h-5 w-5 text-gray-500 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg id="${uniqueId}-icon" class="h-5 w-5 text-gray-500 dark:text-gray-400 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
-      <div 
-        id="${uniqueId}-content" 
-        class="hidden overflow-auto max-h-64 px-4 border-t border-gray-200 bg-gray-50"
+      <div
+        id="${uniqueId}-content"
+        class="hidden overflow-auto max-h-64 px-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
         style="max-height:16rem;">
         ${parsedContent}
       </div>

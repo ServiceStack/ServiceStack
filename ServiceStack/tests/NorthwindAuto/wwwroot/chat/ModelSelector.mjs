@@ -1,6 +1,6 @@
+import { ref, onMounted, onUnmounted } from "vue"
 import ProviderStatus from "./ProviderStatus.mjs"
 import ProviderIcon from "./ProviderIcon.mjs"
-import { useFormatters } from "@servicestack/vue"
 
 export default {
     components: {
@@ -10,28 +10,29 @@ export default {
     template:`
         <!-- Model Selector -->
         <div class="pl-1 flex space-x-2">
-            <Autocomplete id="model" :options="models" label=""
+            <Autocomplete ref="refSelector" id="model" :options="models" label=""
                 :modelValue="modelValue" @update:modelValue="$emit('update:modelValue', $event)"
                 class="w-72 xl:w-84"
                 :match="(x, value) => x.id.toLowerCase().includes(value.toLowerCase())"
                 placeholder="Select Model...">
                 <template #item="{ id, provider, provider_model, pricing }">
-                    <div :key="id + provider + provider_model" class="group truncate max-w-72 flex justify-between">
+                    <div :key="id + provider + provider_model" 
+                        class="group truncate max-w-68 xl:max-w-72 flex justify-between">
                         <span :title="id">{{id}}</span>
-                        <span class="flex items-center space-x-1">
+                        <div class="hidden md:flex items-center space-x-1">
                             <span v-if="pricing && (parseFloat(pricing.input) == 0 && parseFloat(pricing.input) == 0)">
-                                <span class="text-xs text-gray-500" title="Free to use">FREE</span>                            
+                                <span class="text-xs text-gray-500 dark:text-gray-400" title="Free to use">FREE</span>
                             </span>
-                            <span v-else-if="pricing" class="text-xs text-gray-500" 
+                            <span v-else-if="pricing" class="text-xs text-gray-500 dark:text-gray-400"
                                 :title="'Estimated Cost per token: ' + pricing.input + ' input | ' + pricing.output + ' output'">
                               {{tokenPrice(pricing.input)}}
                               &#183;
                               {{tokenPrice(pricing.output)}} M
                             </span>
-                            <span :title="provider_model + ' from ' + provider">    
-                                <ProviderIcon :provider="provider" />
+                            <span class="min-w-6" :title="provider_model + ' from ' + provider">
+                                <ProviderIcon class="hidden xl:inline" :provider="provider" />
                             </span>
-                        </span>
+                        </div>
                     </div>
                 </template>
             </Autocomplete>
@@ -53,8 +54,25 @@ export default {
             return ret.endsWith('.00') ? ret.slice(0, -3) : ret
         }
 
+        const refSelector = ref()
+    
+        function collapse(e) {
+            // call toggle when clicking outside of the Autocomplete component
+            if (refSelector.value && !refSelector.value.$el.contains(e.target)) {
+                refSelector.value.toggle(false)
+            }
+        }
+
+        onMounted(() => {
+            document.addEventListener('click', collapse)
+        })
+        onUnmounted(() => {
+            document.removeEventListener('click', collapse)
+        })
+
         return {
-            tokenPrice
+            refSelector,
+            tokenPrice,
         }
     }
 }

@@ -1,14 +1,40 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
+using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack;
 
 public static class PostgresUtils
 {
+    public static void CreatePartitionTableIfNotExists<T>(IDbConnection db, Expression<Func<T, DateTime>> dateField)
+    {
+        var dialect = db.GetDialectProvider();
+        var modelDef = ModelDefinition<T>.Definition;
+        
+        var member = dateField.Body as MemberExpression;
+        var unary = dateField.Body as UnaryExpression;
+        var dateFieldExpr = member ?? unary?.Operand as MemberExpression;
+        var dateFieldName = dateFieldExpr?.Member.Name
+            ?? throw new NotSupportedException("Expected Property Expression");
+        var fieldDef = modelDef.GetFieldDefinition(dateFieldName);
+        var sql = CreatePartitionTableSql(dialect, typeof(T), fieldDef);
+        db.ExecuteSql(sql);
+    }
+    
     public static string CreatePartitionTableSql(IOrmLiteDialectProvider dialect, Type modelType, string dateField)
+    {
+        var modelDef = modelType.GetModelMetadata();
+        var createdFieldDef = modelDef.GetFieldDefinition(dateField)
+            ?? throw new Exception($"Field {dateField} not found on {modelType.Name}");
+        return CreatePartitionTableSql(dialect, modelType, createdFieldDef);
+    }
+
+    public static string CreatePartitionTableSql(IOrmLiteDialectProvider dialect, Type modelType, FieldDefinition dateField)
     {
         var modelDef = modelType.GetModelMetadata();
         var createTableSql = dialect.ToCreateTableStatement(modelType);
@@ -16,9 +42,7 @@ public static class PostgresUtils
             .Replace("CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ")
             .Replace(" PRIMARY KEY", "").LastLeftPart(')').Trim();
         var idField = dialect.GetQuotedColumnName(modelDef.PrimaryKey);
-        var createdFieldDef = modelDef.GetFieldDefinition(dateField)
-                              ?? throw new Exception($"Field {dateField} not found on {modelType.Name}");
-        var createdField = dialect.GetQuotedColumnName(createdFieldDef);
+        var createdField = dialect.GetQuotedColumnName(dateField);
         var newSql = rawSql +
                      $"""
                       ,
@@ -105,6 +129,21 @@ public static class PostgresUtils
         {
             db.ExecuteSql($"DROP TABLE IF EXISTS {partitionName} CASCADE;");
         }
+    }
+    
+    static ConcurrentDictionary<string, bool> monthDbs = new();
+    
+    public static IDbConnection OpenMonthDb<T>(IDbConnectionFactory dbFactory, DateTime createdDate, Action<IDbConnection>? configure=null)
+    {
+        var db = dbFactory.Open();
+        var dialect = db.GetDialectProvider();
+        var partTableName = GetMonthTableName(dialect, typeof(T), createdDate);
+        configure?.Invoke(db);
+        if (monthDbs.TryAdd(partTableName, true))
+        {
+            db.ExecuteSql(CreatePartitionSql(dialect, typeof(T), createdDate));
+        }
+        return db;
     }
 
 }

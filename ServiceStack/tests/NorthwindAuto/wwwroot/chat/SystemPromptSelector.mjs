@@ -1,12 +1,13 @@
+import { ref, onMounted, onUnmounted } from "vue"
 export default {
     template:`
         <button v-if="modelValue" type="button" title="Clear System Prompt" @click="$emit('update:modelValue', null)">
-            <svg class="size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"/></svg>
+            <svg class="size-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"/></svg>
         </button>
-        
-        <Autocomplete id="prompt" :options="prompts" label=""
+
+        <Autocomplete ref="refSelector" id="prompt" :options="prompts" label=""
             :modelValue="modelValue" @update:modelValue="$emit('update:modelValue', $event)"
-            class="w-72 xl:w-84"
+            class="w-68 xl:w-84"
             :match="(x, value) => x.name.toLowerCase().includes(value.toLowerCase())"
             placeholder="Select a System Prompt...">
             <template #item="{ value }">
@@ -17,8 +18,8 @@ export default {
         <!-- Toggle System Prompt Visibility -->
         <button type="button"
             @click="$emit('toggle')"
-            :class="show ? 'text-blue-700' : 'text-gray-600'"
-            class="p-1 rounded-md hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            :class="show ? 'text-blue-700 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'"
+            class="p-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             :title="show ? 'Hide system prompt' : 'Show system prompt'"
         >
             <svg v-if="!show" class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><path fill="currentColor" d="M33.62 17.53c-3.37-6.23-9.28-10-15.82-10S5.34 11.3 2 17.53l-.28.47l.26.48c3.37 6.23 9.28 10 15.82 10s12.46-3.72 15.82-10l.26-.48Zm-15.82 8.9C12.17 26.43 7 23.29 4 18c3-5.29 8.17-8.43 13.8-8.43S28.54 12.72 31.59 18c-3.05 5.29-8.17 8.43-13.79 8.43"/><path fill="currentColor" d="M18.09 11.17A6.86 6.86 0 1 0 25 18a6.86 6.86 0 0 0-6.91-6.83m0 11.72A4.86 4.86 0 1 1 23 18a4.87 4.87 0 0 1-4.91 4.89"/><path fill="none" d="M0 0h36v36H0z"/></svg>
@@ -32,5 +33,24 @@ export default {
         show: Boolean,
     },
     setup() {
+        const refSelector = ref()
+    
+        function collapse(e) {
+            // call toggle when clicking outside of the Autocomplete component
+            if (refSelector.value && !refSelector.value.$el.contains(e.target)) {
+                refSelector.value.toggle(false)
+            }
+        }
+
+        onMounted(() => {
+            document.addEventListener('click', collapse)
+        })
+        onUnmounted(() => {
+            document.removeEventListener('click', collapse)
+        })
+
+        return {
+            refSelector,
+        }
     }
 }

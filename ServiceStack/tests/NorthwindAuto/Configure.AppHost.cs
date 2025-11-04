@@ -6,8 +6,10 @@ using ServiceStack.Admin;
 using ServiceStack.AI;
 using ServiceStack.AspNetCore.OpenApi;
 using ServiceStack.Configuration;
+using ServiceStack.Data;
 using ServiceStack.HtmlModules;
 using ServiceStack.IO;
+using ServiceStack.OrmLite;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using TalentBlazor.ServiceModel;
 using GetAccessTokenResponse = ServiceStack.GetAccessTokenResponse;
@@ -91,14 +93,6 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
                     }
                     return null;
                 };
-            });
-            
-            services.AddPlugin(new ChatFeature {
-                ConfigJson = vfs.GetFile("wwwroot/chat/llms.json").ReadAllText(),
-                ValidateRequest = async req => null,
-                // EnableProviders = [
-                //     "ollama"
-                // ]
             });
         });
 

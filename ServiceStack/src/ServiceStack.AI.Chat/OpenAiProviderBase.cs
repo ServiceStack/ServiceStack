@@ -201,6 +201,17 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
         }
     }
     
+    public string? GetProviderModel(string model)
+    {
+        return Models.GetValueOrDefault(model);
+    }
+    
+    public ModelPrice? GetModelPricing(string model)
+    {
+        var providerModel = GetProviderModel(model) ?? model;
+        return Pricing.GetValueOrDefault(providerModel, DefaultPricing);
+    }
+    
     public virtual Task LoadAsync(CancellationToken token=default) => Task.CompletedTask;
 
     public virtual bool IsUrl(string url) => url.StartsWith("http://") || url.StartsWith("https://");
@@ -404,6 +415,17 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
             }
         }
     }
+    public virtual ChatResponse ToResponse(ChatResponse response, ChatCompletion chat, DateTime startedAt)
+    {
+        response.Metadata ??= new();
+        response.Metadata["duration"] = ((long)(DateTime.UtcNow - startedAt).TotalMilliseconds).ToString();
+        var pricing = GetModelPricing(chat.Model);
+        if (pricing is { Input: not null, Output: not null })
+        {
+            response.Metadata["pricing"] = $"{pricing.Input}/{pricing.Output}";
+        }
+        return response;
+    }
 
     public virtual async Task<ChatResponse> ChatAsync(ChatCompletion request, CancellationToken token=default)
     {
@@ -422,8 +444,14 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
         {
             httpReq.WithHeader(entry.Key, entry.Value);
         }
+
+        var startedAt = DateTime.UtcNow;
         var httpRes = await client.SendAsync(httpReq, token).ConfigAwait();
+        // Conflict's with some providers Z.ai
+        var hold = request.Metadata;
+        request.Metadata = null;
         var json = await httpRes.Content.ReadAsStringAsync(token).ConfigAwait();
+        request.Metadata = hold;
         if (!httpRes.IsSuccessStatusCode)
         {
             Log.LogError("Chat Error: {Message}", json);
@@ -440,6 +468,6 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
         if (Log.IsEnabled(LogLevel.Debug))
             Log.LogDebug("Response:\n{Response}", ClientConfig.ToSystemJson(dto));
 
-        return dto;
+        return ToResponse(dto, request, startedAt);
     }
 }

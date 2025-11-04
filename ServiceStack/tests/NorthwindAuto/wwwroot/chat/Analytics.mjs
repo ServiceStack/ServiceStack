@@ -24,16 +24,17 @@ export const colors = [
 
 const MonthSelector = {
     template:`
-    <div class="flex gap-4 items-center">
+    <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center w-full sm:w-auto">
         <!-- Months Row -->
-        <div class="flex gap-2 flex-wrap justify-center">
+        <div class="flex gap-1 sm:gap-2 flex-wrap justify-center overflow-x-auto">
             <template v-for="month in availableMonthsForYear" :key="month">
                 <span v-if="selectedMonth === month"
-                    class="text-xs leading-5 font-semibold bg-indigo-600 text-white rounded-full py-1 px-3 flex items-center space-x-2">
-                    {{ new Date(selectedYear + '-' + month.toString().padStart(2,'0') + '-01').toLocaleString('default', { month: 'long' }) }}
+                    class="text-xs leading-5 font-semibold bg-indigo-600 text-white rounded-full py-1 px-2 sm:px-3 flex items-center space-x-2 whitespace-nowrap">
+                    <span class="hidden sm:inline">{{ new Date(selectedYear + '-' + month.toString().padStart(2,'0') + '-01').toLocaleString('default', { month: 'long' }) }}</span>
+                    <span class="sm:hidden">{{ new Date(selectedYear + '-' + month.toString().padStart(2,'0') + '-01').toLocaleString('default', { month: 'short' }) }}</span>
                 </span>
                 <button v-else type="button"
-                    class="text-xs leading-5 font-semibold bg-slate-400/10 rounded-full py-1 px-3 flex items-center space-x-2 hover:bg-slate-400/20 dark:highlight-white/5"
+                    class="text-xs leading-5 font-semibold bg-slate-400/10 rounded-full py-1 px-2 sm:px-3 flex items-center space-x-2 hover:bg-slate-400/20 dark:highlight-white/5 whitespace-nowrap"
                     @click="updateSelection(selectedYear, month)">
                     {{ new Date(selectedYear + '-' + month.toString().padStart(2,'0') + '-01').toLocaleString('default', { month: 'short' }) }}
                 </button>
@@ -42,7 +43,7 @@ const MonthSelector = {
 
         <!-- Year Dropdown -->
         <select :value="selectedYear" @change="(e) => updateSelection(parseInt(e.target.value), selectedMonth)"
-            class="border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-shrink-0">
             <option v-for="year in availableYears" :key="year" :value="year">
                 {{ year }}
             </option>
@@ -115,9 +116,11 @@ export default {
     template: `
         <div class="flex flex-col h-full w-full">
             <!-- Header -->
-            <div class="border-b border-gray-200 bg-white px-4 py-3 min-h-16">
-                <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
-                    <h2 class="text-lg font-semibold text-gray-900">
+            <div class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 sm:px-4 py-3">
+                <div
+                :class="!$ai.isSidebarOpen ? 'pl-3' : ''"
+                class="max-w-6xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex-shrink-0">
                         <RouterLink to="/analytics">Analytics</RouterLink>
                     </h2>
                     <MonthSelector :dailyData="allDailyData" />
@@ -125,67 +128,67 @@ export default {
             </div>
 
             <!-- Tabs -->
-            <div class="border-b border-gray-200 bg-white px-4">
+            <div class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4">
                 <div class="max-w-6xl mx-auto flex gap-8">
                     <button type="button"
                         @click="activeTab = 'cost'"
                         :class="['py-3 px-1 border-b-2 font-medium text-sm transition-colors',
                                  activeTab === 'cost'
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900']">
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200']">
                         Cost Analysis
                     </button>
                     <button type="button"
                         @click="activeTab = 'tokens'"
                         :class="['py-3 px-1 border-b-2 font-medium text-sm transition-colors',
                                  activeTab === 'tokens'
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900']">
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200']">
                         Token Usage
                     </button>
                     <button type="button"
                         @click="activeTab = 'activity'"
                         :class="['py-3 px-1 border-b-2 font-medium text-sm transition-colors',
                                  activeTab === 'activity'
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900']">
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200']">
                         Activity
                     </button>
                 </div>
             </div>
 
             <!-- Content -->
-            <div class="flex-1 overflow-auto bg-gray-50" :class="activeTab === 'activity' ? 'p-0' : 'p-4'">
+            <div class="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900" :class="activeTab === 'activity' ? 'p-0' : 'p-4'">
 
                 <div :class="activeTab === 'activity' ? 'h-full' : 'max-w-6xl mx-auto'">
                     <!-- Stats Summary (hidden for Activity tab) -->
                     <div v-if="activeTab !== 'activity'" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-white rounded-lg shadow p-4">
-                            <div class="text-sm font-medium text-gray-600">Total Cost</div>
-                            <div class="text-2xl font-bold text-gray-900 mt-1">{{ formatCost(totalCost) }}</div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Cost</div>
+                            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ formatCost(totalCost) }}</div>
                         </div>
-                        <div class="bg-white rounded-lg shadow p-4">
-                            <div class="text-sm font-medium text-gray-600">Total Requests</div>
-                            <div class="text-2xl font-bold text-gray-900 mt-1">{{ totalRequests }}</div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Requests</div>
+                            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ totalRequests }}</div>
                         </div>
-                        <div class="bg-white rounded-lg shadow p-4">
-                            <div class="text-sm font-medium text-gray-600">Total Input Tokens</div>
-                            <div class="text-2xl font-bold text-gray-900 mt-1">{{ humanifyNumber(totalInputTokens) }}</div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Input Tokens</div>
+                            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ humanifyNumber(totalInputTokens) }}</div>
                         </div>
-                        <div class="bg-white rounded-lg shadow p-4">
-                            <div class="text-sm font-medium text-gray-600">Total Output Tokens</div>
-                            <div class="text-2xl font-bold text-gray-900 mt-1">{{ humanifyNumber(totalOutputTokens) }}</div>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+                            <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Output Tokens</div>
+                            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ humanifyNumber(totalOutputTokens) }}</div>
                         </div>
                     </div>
 
                     <!-- Cost Analysis Tab -->
-                    <div v-if="activeTab === 'cost'" class="bg-white rounded-lg shadow p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900">Daily Costs</h3>
-                            <h3 class="text-lg font-semibold text-gray-900">
+                    <div v-if="activeTab === 'cost'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Daily Costs</h3>
+                            <h3 class="text-sm sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                                 {{ new Date(selectedDay).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) }}
                             </h3>
-                            <select v-model="costChartType" class="px-3 pr-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            <select v-model="costChartType" class="px-3 pr-6 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex-shrink-0">
                                 <option value="bar">Bar Chart</option>
                                 <option value="line">Line Chart</option>
                             </select>
@@ -194,16 +197,16 @@ export default {
                         <div v-if="chartData.labels.length > 0" class="relative h-96">
                             <canvas ref="costChartCanvas"></canvas>
                         </div>
-                        <div v-else class="flex items-center justify-center h-96 text-gray-500">
+                        <div v-else class="flex items-center justify-center h-96 text-gray-500 dark:text-gray-400">
                             <p>No request data available</p>
                         </div>
                     </div>
 
                     <!-- Token Usage Tab -->
-                    <div v-if="activeTab === 'tokens'" class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-6 flex justify-between items-center">
+                    <div v-if="activeTab === 'tokens'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <span>Daily Token Usage</span>
-                            <span>
+                            <span class="text-sm sm:text-base">
                                 {{ new Date(selectedDay).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) }}
                             </span>
                         </h3>
@@ -211,48 +214,48 @@ export default {
                         <div v-if="tokenChartData.labels.length > 0" class="relative h-96">
                             <canvas ref="tokenChartCanvas"></canvas>
                         </div>
-                        <div v-else class="flex items-center justify-center h-96 text-gray-500">
+                        <div v-else class="flex items-center justify-center h-96 text-gray-500 dark:text-gray-400">
                             <p>No request data available</p>
                         </div>
                     </div>
 
-                    <div v-if="allDailyData[selectedDay]?.requests && ['cost', 'tokens'].includes(activeTab)" class="mt-8 px-2 text-gray-700 font-medium flex items-center justify-between">
+                    <div v-if="allDailyData[selectedDay]?.requests && ['cost', 'tokens'].includes(activeTab)" class="mt-8 px-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 font-medium flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <div>
-                            {{ new Date(selectedDay).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) }} 
+                            {{ new Date(selectedDay).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) }}
                         </div>
-                        <div>
-                           {{ formatCost(allDailyData[selectedDay]?.cost || 0) }}
-                           &#183;
-                           {{ allDailyData[selectedDay]?.requests || 0 }} Requests
-                           &#183;
-                           {{ humanifyNumber(allDailyData[selectedDay]?.inputTokens || 0) }} -> {{ humanifyNumber(allDailyData[selectedDay]?.outputTokens || 0) }} Tokens
+                        <div class="flex flex-wrap gap-x-2 gap-y-1">
+                           <span>{{ formatCost(allDailyData[selectedDay]?.cost || 0) }}</span>
+                           <span>&#183;</span>
+                           <span>{{ allDailyData[selectedDay]?.requests || 0 }} Requests</span>
+                           <span>&#183;</span>
+                           <span>{{ humanifyNumber(allDailyData[selectedDay]?.inputTokens || 0) }} -> {{ humanifyNumber(allDailyData[selectedDay]?.outputTokens || 0) }} Tokens</span>
                         </div>
                     </div>
 
                     <!-- Pie Charts for Selected Day -->
                     <div v-if="allDailyData[selectedDay]?.requests && activeTab === 'cost' && selectedDay" class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Model Pie Chart -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                                 Cost by Model
                             </h3>
                             <div v-if="modelPieData.labels.length > 0" class="relative h-80">
                                 <canvas ref="modelPieCanvas"></canvas>
                             </div>
-                            <div v-else class="flex items-center justify-center h-80 text-gray-500">
+                            <div v-else class="flex items-center justify-center h-80 text-gray-500 dark:text-gray-400">
                                 <p>No data for selected day</p>
                             </div>
                         </div>
 
                         <!-- Provider Pie Chart -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                                 Cost by Provider
                             </h3>
                             <div v-if="providerPieData.labels.length > 0" class="relative h-80">
                                 <canvas ref="providerPieCanvas"></canvas>
                             </div>
-                            <div v-else class="flex items-center justify-center h-80 text-gray-500">
+                            <div v-else class="flex items-center justify-center h-80 text-gray-500 dark:text-gray-400">
                                 <p>No data for selected day</p>
                             </div>
                         </div>
@@ -261,39 +264,39 @@ export default {
                     <!-- Token Pie Charts for Selected Day -->
                     <div v-if="allDailyData[selectedDay]?.requests && activeTab === 'tokens' && selectedDay" class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Token Model Pie Chart -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                                 Tokens by Model
                             </h3>
                             <div v-if="tokenModelPieData.labels.length > 0" class="relative h-80">
                                 <canvas ref="tokenModelPieCanvas"></canvas>
                             </div>
-                            <div v-else class="flex items-center justify-center h-80 text-gray-500">
+                            <div v-else class="flex items-center justify-center h-80 text-gray-500 dark:text-gray-400">
                                 <p>No data for selected day</p>
                             </div>
                         </div>
 
                         <!-- Token Provider Pie Chart -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                                 Tokens by Provider
                             </h3>
                             <div v-if="tokenProviderPieData.labels.length > 0" class="relative h-80">
                                 <canvas ref="tokenProviderPieCanvas"></canvas>
                             </div>
-                            <div v-else class="flex items-center justify-center h-80 text-gray-500">
+                            <div v-else class="flex items-center justify-center h-80 text-gray-500 dark:text-gray-400">
                                 <p>No data for selected day</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Activity Tab - Full Page Layout -->
-                    <div v-if="activeTab === 'activity'" class="h-full flex flex-col bg-white">
+                    <div v-if="activeTab === 'activity'" class="h-full flex flex-col bg-white dark:bg-gray-800">
                         <!-- Filters Bar -->
-                        <div class="flex-shrink-0 border-b border-gray-200 bg-white px-6 py-4">
-                            <div class="flex flex-wrap gap-4 items-end">
-                                <div class="flex flex-col">
-                                    <select v-model="selectedModel" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 sm:px-6 py-4">
+                            <div class="flex flex-wrap gap-2 sm:gap-4 items-end">
+                                <div class="flex flex-col flex-1 min-w-[120px] sm:flex-initial">
+                                    <select v-model="selectedModel" class="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
                                         <option value="">All Models</option>
                                         <option v-for="model in filterOptions.models" :key="model" :value="model">
                                             {{ model }}
@@ -301,8 +304,8 @@ export default {
                                     </select>
                                 </div>
 
-                                <div class="flex flex-col">
-                                    <select v-model="selectedProvider" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <div class="flex flex-col flex-1 min-w-[120px] sm:flex-initial">
+                                    <select v-model="selectedProvider" class="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
                                         <option value="">All Providers</option>
                                         <option v-for="provider in filterOptions.providers" :key="provider" :value="provider">
                                             {{ provider }}
@@ -310,8 +313,8 @@ export default {
                                     </select>
                                 </div>
 
-                                <div class="flex flex-col">
-                                    <select v-model="sortBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <div class="flex flex-col flex-1 min-w-[140px] sm:flex-initial">
+                                    <select v-model="sortBy" class="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
                                         <option value="created">Date (Newest)</option>
                                         <option value="cost">Cost (Highest)</option>
                                         <option value="duration">Duration (Longest)</option>
@@ -319,7 +322,7 @@ export default {
                                     </select>
                                 </div>
 
-                                <button v-if="hasActiveFilters" @click="clearActivityFilters" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors">
+                                <button v-if="hasActiveFilters" @click="clearActivityFilters" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors whitespace-nowrap">
                                     Clear Filters
                                 </button>
                             </div>
@@ -330,61 +333,61 @@ export default {
                             <div v-if="isActivityLoading && activityRequests.length === 0" class="flex items-center justify-center h-full">
                                 <div class="text-center">
                                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                                    <p class="mt-4 text-gray-600">Loading requests...</p>
+                                    <p class="mt-4 text-gray-600 dark:text-gray-400">Loading requests...</p>
                                 </div>
                             </div>
 
                             <div v-else-if="activityRequests.length === 0" class="flex items-center justify-center h-full">
-                                <p class="text-gray-500">No requests found</p>
+                                <p class="text-gray-500 dark:text-gray-400">No requests found</p>
                             </div>
 
-                            <div v-else class="divide-y divide-gray-200">
-                                <div v-for="request in activityRequests" :key="request.id" class="px-6 py-4 hover:bg-gray-50 transition-colors">
-                                    <div class="flex items-start justify-between gap-4">
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex justify-between">
-                                                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">{{ request.model }}</span>
-                                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-800 rounded font-medium">{{ request.provider }}</span>
-                                                    <span v-if="request.providerRef" class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded font-medium">{{ request.providerRef }}</span>
-                                                    <span v-if="request.finishReason" class="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded font-medium">{{ request.finishReason }}</span>
+                            <div v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <div v-for="request in activityRequests" :key="request.id" class="px-3 sm:px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <div class="flex flex-col lg:flex-row items-start justify-between gap-4">
+                                        <div class="flex-1 min-w-0 w-full">
+                                            <div class="flex flex-col sm:flex-row justify-between gap-2 mb-2">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded font-medium">{{ request.model }}</span>
+                                                    <span class="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded font-medium">{{ request.provider }}</span>
+                                                    <span v-if="request.providerRef" class="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded font-medium">{{ request.providerRef }}</span>
+                                                    <span v-if="request.finishReason" class="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded font-medium">{{ request.finishReason }}</span>
                                                 </div>
-                                                <div class="text-xs text-gray-500">
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                                     {{ formatActivityDate(request.created) }}
                                                 </div>
                                             </div>
-                                            <div class="text-sm font-semibold text-gray-900 truncate">
+                                            <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate mb-3">
                                                 {{ request.title }}
                                             </div>
 
-                                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-3">
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                                                 <div :title="request.cost">
-                                                    <div class="text-xs text-gray-500 font-medium">Cost</div>
-                                                    <div class="text-sm font-semibold text-gray-900">{{ formatCost(request.cost) }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Cost</div>
+                                                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCost(request.cost) }}</div>
                                                 </div>
-                                                <div>
-                                                    <div class="text-xs text-gray-500 font-medium">Tokens</div>
-                                                    <div class="text-sm font-semibold text-gray-900">
+                                                <div class="col-span-2 sm:col-span-1">
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Tokens</div>
+                                                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                                         {{ humanifyNumber(request.inputTokens) }} -> {{ humanifyNumber(request.outputTokens) }}
-                                                        <span v-if="request.inputCachedTokens" class="ml-1 text-xs text-gray-500">({{ humanifyNumber(request.inputCachedTokens) }} cached)</span>
+                                                        <span v-if="request.inputCachedTokens" class="ml-1 text-xs text-gray-500 dark:text-gray-400">({{ humanifyNumber(request.inputCachedTokens) }} cached)</span>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <div class="text-xs text-gray-500 font-medium">Duration</div>
-                                                    <div class="text-sm font-semibold text-gray-900">{{ request.duration ? humanifyMs(request.duration) : '—' }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Duration</div>
+                                                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ request.duration ? humanifyMs(request.duration) : '—' }}</div>
                                                 </div>
                                                 <div>
-                                                    <div class="text-xs text-gray-500 font-medium">Speed</div>
-                                                    <div class="text-sm font-semibold text-gray-900">{{ request.duration && request.outputTokens ? (request.outputTokens / (request.duration / 1000)).toFixed(1) + ' tok/s' : '—' }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Speed</div>
+                                                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ request.duration && request.outputTokens ? (request.outputTokens / (request.duration / 1000)).toFixed(1) + ' tok/s' : '—' }}</div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="flex flex-col gap-2">
-                                            <button type="button" v-if="threadExists(request.threadId)" @click="openThread(request.threadId)" class="flex-shrink-0 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-300 rounded hover:bg-blue-50 transition-colors whitespace-nowrap">
-                                                View<span class="hidden lg:inline"> Thread</span>
+                                        <div class="flex flex-row lg:flex-col gap-2 w-full lg:w-auto">
+                                            <button type="button" v-if="threadExists(request.threadId)" @click="openThread(request.threadId)" class="flex-1 lg:flex-initial px-3 sm:px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors whitespace-nowrap">
+                                                View<span class="hidden sm:inline"> Thread</span>
                                             </button>
-                                            <button type="button" @click="deleteRequestLog(request.id)" class="flex-shrink-0 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 border border-red-300 rounded hover:bg-red-50 transition-colors whitespace-nowrap">
-                                                Delete<span class="hidden lg:inline"> Request</span>
+                                            <button type="button" @click="deleteRequestLog(request.id)" class="flex-1 lg:flex-initial px-3 sm:px-4 py-2 text-sm font-medium text-red-600 dark:text-red-500 hover:text-red-800 dark:hover:text-red-400 border border-red-300 dark:border-red-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors whitespace-nowrap">
+                                                Delete<span class="hidden sm:inline"> Request</span>
                                             </button>
                                         </div>
                                     </div>
@@ -394,7 +397,7 @@ export default {
                                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                                 </div>
 
-                                <div v-if="!activityHasMore && activityRequests.length > 0" class="px-6 py-8 text-center text-gray-500 text-sm">
+                                <div v-if="!activityHasMore && activityRequests.length > 0" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
                                     No more requests to load
                                 </div>
                             </div>
@@ -1021,7 +1024,9 @@ export default {
 
                         // Only display label if percentage > 1%
                         if (parseFloat(percentage) > 1) {
-                            chartCtx.fillStyle = '#000'
+                            // Use white color in dark mode, black in light mode
+                            const isDarkMode = document.documentElement.classList.contains('dark')
+                            chartCtx.fillStyle = isDarkMode ? '#fff' : '#000'
                             chartCtx.font = 'bold 12px Arial'
                             chartCtx.textAlign = 'center'
                             chartCtx.textBaseline = 'middle'
@@ -1078,7 +1083,9 @@ export default {
 
                         // Only display label if percentage > 1%
                         if (parseFloat(percentage) > 1) {
-                            chartCtx.fillStyle = '#000'
+                            // Use white color in dark mode, black in light mode
+                            const isDarkMode = document.documentElement.classList.contains('dark')
+                            chartCtx.fillStyle = isDarkMode ? '#fff' : '#000'
                             chartCtx.font = 'bold 12px Arial'
                             chartCtx.textAlign = 'center'
                             chartCtx.textBaseline = 'middle'
@@ -1135,7 +1142,9 @@ export default {
 
                         // Only display label if percentage > 1%
                         if (parseFloat(percentage) > 1) {
-                            chartCtx.fillStyle = '#000'
+                            // Use white color in dark mode, black in light mode
+                            const isDarkMode = document.documentElement.classList.contains('dark')
+                            chartCtx.fillStyle = isDarkMode ? '#fff' : '#000'
                             chartCtx.font = 'bold 12px Arial'
                             chartCtx.textAlign = 'center'
                             chartCtx.textBaseline = 'middle'
@@ -1192,7 +1201,9 @@ export default {
 
                         // Only display label if percentage > 1%
                         if (parseFloat(percentage) > 1) {
-                            chartCtx.fillStyle = '#000'
+                            // Use white color in dark mode, black in light mode
+                            const isDarkMode = document.documentElement.classList.contains('dark')
+                            chartCtx.fillStyle = isDarkMode ? '#fff' : '#000'
                             chartCtx.font = 'bold 12px Arial'
                             chartCtx.textAlign = 'center'
                             chartCtx.textBaseline = 'middle'
