@@ -12,6 +12,7 @@ FILES=(
   "Main.mjs"
   "markdown.mjs"
   "ModelSelector.mjs"
+  "OAuthSignIn.mjs"
   "ProviderIcon.mjs"
   "ProviderStatus.mjs"
   "Recents.mjs"
