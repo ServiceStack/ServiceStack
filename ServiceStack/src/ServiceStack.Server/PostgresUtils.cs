@@ -133,9 +133,8 @@ public static class PostgresUtils
     
     static ConcurrentDictionary<string, bool> monthDbs = new();
     
-    public static IDbConnection OpenMonthDb<T>(IDbConnectionFactory dbFactory, DateTime createdDate, Action<IDbConnection>? configure=null)
+    public static IDbConnection OpenMonthDb<T>(IDbConnection db, DateTime createdDate, Action<IDbConnection>? configure=null)
     {
-        var db = dbFactory.Open();
         var dialect = db.GetDialectProvider();
         var partTableName = GetMonthTableName(dialect, typeof(T), createdDate);
         configure?.Invoke(db);

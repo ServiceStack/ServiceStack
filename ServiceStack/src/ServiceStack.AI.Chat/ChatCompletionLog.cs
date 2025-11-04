@@ -25,7 +25,6 @@ public class ChatCompletionLog : IMeta
     public virtual string? ApiKey { get; set; }
 
     public string Model { get; set; }
-
     public string? UserPrompt { get; set; }
 
     public string? Answer { get; set; }
@@ -127,12 +126,12 @@ public static class ChatCompletionLogUtils
             DurationMs = duration != TimeSpan.Zero ? (int)duration.TotalMilliseconds : null,
             PromptTokens = response.Usage?.PromptTokens,
             CompletionTokens = response.Usage?.CompletionTokens,
+            ThreadId = request.Metadata?.TryGetValue("threadId", out var threadId) == true
+                ? threadId
+                : null,
         };
         ret.Usage = new()
         {
-            // Cost = usage.Cost,
-            // Input = usage.Input,
-            // Output = usage.Output,
             Duration = ret.DurationMs,
             PromptTokens = usage.PromptTokens,
             CompletionTokens = usage.CompletionTokens,
@@ -141,7 +140,21 @@ public static class ChatCompletionLogUtils
             AudioTokens = usage.CompletionTokensDetails?.AudioTokens,
             TotalTokens = usage.TotalTokens,
         };
-        
+        if (response.Metadata != null)
+        {
+            if (response.Metadata.TryGetValue("duration", out var durationStr)
+                && int.TryParse(durationStr, out var durationMs))
+            {
+                ret.DurationMs = durationMs;
+            }
+            if (response.Metadata.TryGetValue("pricing", out var pricingStr))
+            {
+                ret.Usage.Input = pricingStr.LeftPart('/');
+                ret.Usage.Output = pricingStr.RightPart('/');
+                ret.Cost = (usage.PromptTokens * decimal.Parse(ret.Usage.Input) + 
+                            usage.CompletionTokens * decimal.Parse(ret.Usage.Output));
+            }
+        }
         return ret;
     }
 

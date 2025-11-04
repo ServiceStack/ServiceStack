@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -25,6 +26,11 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
         set => UiConfig = (Dictionary<string, object>)JSON.parse(value);
     }
 
+    public List<Type> ExcludeRequestDtoTypes { get; set; } =
+    [
+        typeof(ChatStaticFile)
+    ];
+    
     public List<string> EnableProviders { get; set; } = [];
 
     public Dictionary<string, string> Variables { get; set; } = [];
@@ -46,6 +52,15 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
     public Func<OpenAiProviderBase, string, Task<(string base64, string mimeType)>>? DownloadUrlAsBase64Async { get; set; }
     
     public Action<string>? ValidateUrl { get; set; }
+
+    /// <summary>
+    /// Default take, if none is specified
+    /// </summary>
+    public int DefaultLimit { get; set; } = 100;
+
+    public bool AutoInitSchema { get; set; } = true;
+    
+    public bool DisableAdminUi { get; set; }
 
     public ChatFeature()
     {
@@ -80,6 +95,18 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
             new ChatClients(c.GetRequiredService<ILogger<ChatClients>>(), this));
         services.TryAddSingleton<IChatClient>(c => 
             c.GetRequiredService<IChatClients>());
+
+        if (!DisableAdminUi)
+        {
+            services.RegisterService<AdminChatServices>();
+        }
+        if (ExcludeRequestDtoTypes.Count > 0)
+        {
+            services.ConfigurePlugin<RequestLogsFeature>(feature =>
+            {
+                feature.ExcludeRequestDtoTypes.AddDistinctRange(ExcludeRequestDtoTypes);
+            });
+        }
     }
     
     public ILogger<ChatFeature> Log { get; set; }
@@ -126,7 +153,27 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
         
         appHost.ScriptContext.Args[nameof(Chat)] = new Chat(this);
 
-        ChatStore?.InitSchema();
+        if (ChatStore != null)
+        {
+            if (AutoInitSchema)
+            {
+                ChatStore.InitSchema();
+            }
+            
+            using var db = ChatStore.OpenDb();
+            var months = ChatStore.GetAvailableMonths(db)
+                .Map(x => x.ToString("yyyy-MM"));
+
+            appHost.AddToAppMetadata(meta => {
+                meta.Plugins.AdminChat = new AdminChatInfo {
+                    AccessRole = RoleNames.Admin,
+                    DefaultLimit = DefaultLimit,
+                    Analytics = new AiChatAnalytics {
+                        Months = months,
+                    }
+                };
+            });
+        }
     }
     
     public class Chat(ChatFeature feature)
