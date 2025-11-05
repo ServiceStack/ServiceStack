@@ -401,7 +401,7 @@ export const AdminChat = {
             </div>
 
             <!-- Content -->
-            <div class="flex-1 overflow-auto p-4">
+            <div ref="scrollableContent" tabindex="0" class="flex-1 overflow-auto p-4 focus:outline-none">
                 <div class="max-w-6xl mx-auto">
                     <!-- Cost Analysis Tab -->
                     <div v-if="!routes.tab || routes.tab === 'cost'" class="space-y-6">
@@ -613,6 +613,9 @@ export const AdminChat = {
         const server = inject('server')
         const client = useClient()
         const selectedLog = ref(null)
+
+        // Scrollable content ref for keyboard navigation
+        const scrollableContent = ref(null)
 
         // Data refs
         const analytics = ref(null)
@@ -1324,6 +1327,10 @@ export const AdminChat = {
         onMounted(() => {
             loadData()
             updateCharts()
+            // Focus the scrollable content to enable keyboard navigation (Page Up/Down, Home/End)
+            nextTick(() => {
+                scrollableContent.value?.focus()
+            })
         })
 
         onUnmounted(() => {
@@ -1372,6 +1379,7 @@ export const AdminChat = {
             months,
             selectedDay,
             dailyAnalytics,
+            scrollableContent,
             refDailyCosts,
             refCostsByModel,
             refCostsByProvider,
