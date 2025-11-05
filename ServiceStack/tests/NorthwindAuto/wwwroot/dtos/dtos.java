@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-03-28 01:55:02
-Version: 8.61
+Date: 2025-11-05 18:02:26
+Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -124,6 +124,490 @@ public class dtos
     {
         
         private static Object responseType = AdminDashboardResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet
+    {
+        @DataMember(Order=1)
+        public Integer id = null;
+
+        @DataMember(Order=2)
+        public String apiKey = null;
+
+        @DataMember(Order=3)
+        public String search = null;
+
+        @DataMember(Order=4)
+        public String userId = null;
+
+        @DataMember(Order=5)
+        public String userName = null;
+
+        @DataMember(Order=6)
+        public String orderBy = null;
+
+        @DataMember(Order=7)
+        public Integer skip = null;
+
+        @DataMember(Order=8)
+        public Integer take = null;
+        
+        public Integer getId() { return id; }
+        public AdminQueryApiKeys setId(Integer value) { this.id = value; return this; }
+        public String getApiKey() { return apiKey; }
+        public AdminQueryApiKeys setApiKey(String value) { this.apiKey = value; return this; }
+        public String getSearch() { return search; }
+        public AdminQueryApiKeys setSearch(String value) { this.search = value; return this; }
+        public String getUserId() { return userId; }
+        public AdminQueryApiKeys setUserId(String value) { this.userId = value; return this; }
+        public String getUserName() { return userName; }
+        public AdminQueryApiKeys setUserName(String value) { this.userName = value; return this; }
+        public String getOrderBy() { return orderBy; }
+        public AdminQueryApiKeys setOrderBy(String value) { this.orderBy = value; return this; }
+        public Integer getSkip() { return skip; }
+        public AdminQueryApiKeys setSkip(Integer value) { this.skip = value; return this; }
+        public Integer getTake() { return take; }
+        public AdminQueryApiKeys setTake(Integer value) { this.take = value; return this; }
+        private static Object responseType = AdminApiKeysResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminCreateApiKey implements IReturn<AdminApiKeyResponse>, IPost
+    {
+        @DataMember(Order=1)
+        public String name = null;
+
+        @DataMember(Order=2)
+        public String userId = null;
+
+        @DataMember(Order=3)
+        public String userName = null;
+
+        @DataMember(Order=4)
+        public ArrayList<String> scopes = null;
+
+        @DataMember(Order=5)
+        public ArrayList<String> features = null;
+
+        @DataMember(Order=6)
+        public ArrayList<String> restrictTo = null;
+
+        @DataMember(Order=7)
+        public Date expiryDate = null;
+
+        @DataMember(Order=8)
+        public String notes = null;
+
+        @DataMember(Order=9)
+        public Integer refId = null;
+
+        @DataMember(Order=10)
+        public String refIdStr = null;
+
+        @DataMember(Order=11)
+        public HashMap<String,String> meta = null;
+        
+        public String getName() { return name; }
+        public AdminCreateApiKey setName(String value) { this.name = value; return this; }
+        public String getUserId() { return userId; }
+        public AdminCreateApiKey setUserId(String value) { this.userId = value; return this; }
+        public String getUserName() { return userName; }
+        public AdminCreateApiKey setUserName(String value) { this.userName = value; return this; }
+        public ArrayList<String> getScopes() { return scopes; }
+        public AdminCreateApiKey setScopes(ArrayList<String> value) { this.scopes = value; return this; }
+        public ArrayList<String> getFeatures() { return features; }
+        public AdminCreateApiKey setFeatures(ArrayList<String> value) { this.features = value; return this; }
+        public ArrayList<String> getRestrictTo() { return restrictTo; }
+        public AdminCreateApiKey setRestrictTo(ArrayList<String> value) { this.restrictTo = value; return this; }
+        public Date getExpiryDate() { return expiryDate; }
+        public AdminCreateApiKey setExpiryDate(Date value) { this.expiryDate = value; return this; }
+        public String getNotes() { return notes; }
+        public AdminCreateApiKey setNotes(String value) { this.notes = value; return this; }
+        public Integer getRefId() { return refId; }
+        public AdminCreateApiKey setRefId(Integer value) { this.refId = value; return this; }
+        public String getRefIdStr() { return refIdStr; }
+        public AdminCreateApiKey setRefIdStr(String value) { this.refIdStr = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public AdminCreateApiKey setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+        private static Object responseType = AdminApiKeyResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
+    {
+        @DataMember(Order=1)
+        @Validate(Validator="GreaterThan(0)")
+        public Integer id = null;
+
+        @DataMember(Order=2)
+        public String name = null;
+
+        @DataMember(Order=3)
+        public String userId = null;
+
+        @DataMember(Order=4)
+        public String userName = null;
+
+        @DataMember(Order=5)
+        public ArrayList<String> scopes = null;
+
+        @DataMember(Order=6)
+        public ArrayList<String> features = null;
+
+        @DataMember(Order=7)
+        public ArrayList<String> restrictTo = null;
+
+        @DataMember(Order=8)
+        public Date expiryDate = null;
+
+        @DataMember(Order=9)
+        public Date cancelledDate = null;
+
+        @DataMember(Order=10)
+        public String notes = null;
+
+        @DataMember(Order=11)
+        public Integer refId = null;
+
+        @DataMember(Order=12)
+        public String refIdStr = null;
+
+        @DataMember(Order=13)
+        public HashMap<String,String> meta = null;
+
+        @DataMember(Order=14)
+        public ArrayList<String> reset = null;
+        
+        public Integer getId() { return id; }
+        public AdminUpdateApiKey setId(Integer value) { this.id = value; return this; }
+        public String getName() { return name; }
+        public AdminUpdateApiKey setName(String value) { this.name = value; return this; }
+        public String getUserId() { return userId; }
+        public AdminUpdateApiKey setUserId(String value) { this.userId = value; return this; }
+        public String getUserName() { return userName; }
+        public AdminUpdateApiKey setUserName(String value) { this.userName = value; return this; }
+        public ArrayList<String> getScopes() { return scopes; }
+        public AdminUpdateApiKey setScopes(ArrayList<String> value) { this.scopes = value; return this; }
+        public ArrayList<String> getFeatures() { return features; }
+        public AdminUpdateApiKey setFeatures(ArrayList<String> value) { this.features = value; return this; }
+        public ArrayList<String> getRestrictTo() { return restrictTo; }
+        public AdminUpdateApiKey setRestrictTo(ArrayList<String> value) { this.restrictTo = value; return this; }
+        public Date getExpiryDate() { return expiryDate; }
+        public AdminUpdateApiKey setExpiryDate(Date value) { this.expiryDate = value; return this; }
+        public Date getCancelledDate() { return cancelledDate; }
+        public AdminUpdateApiKey setCancelledDate(Date value) { this.cancelledDate = value; return this; }
+        public String getNotes() { return notes; }
+        public AdminUpdateApiKey setNotes(String value) { this.notes = value; return this; }
+        public Integer getRefId() { return refId; }
+        public AdminUpdateApiKey setRefId(Integer value) { this.refId = value; return this; }
+        public String getRefIdStr() { return refIdStr; }
+        public AdminUpdateApiKey setRefIdStr(String value) { this.refIdStr = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public AdminUpdateApiKey setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+        public ArrayList<String> getReset() { return reset; }
+        public AdminUpdateApiKey setReset(ArrayList<String> value) { this.reset = value; return this; }
+        private static Object responseType = EmptyResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    @DataContract
+    public static class AdminDeleteApiKey implements IReturn<EmptyResponse>, IDelete
+    {
+        @DataMember(Order=1)
+        @Validate(Validator="GreaterThan(0)")
+        public Integer id = null;
+        
+        public Integer getId() { return id; }
+        public AdminDeleteApiKey setId(Integer value) { this.id = value; return this; }
+        private static Object responseType = EmptyResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    /**
+    * Chat Completions API (OpenAI-Compatible)
+    */
+    @Route(Path="/v1/chat/completions", Verbs="POST")
+    @DataContract
+    public static class ChatCompletion implements IReturn<ChatResponse>, IPost
+    {
+        /**
+        * The messages to generate chat completions for.
+        */
+        @DataMember(Name="messages")
+        @SerializedName("messages")
+        public ArrayList<AiMessage> messages = new ArrayList<AiMessage>();
+
+        /**
+        * ID of the model to use. See the model endpoint compatibility table for details on which models work with the Chat API
+        */
+        @DataMember(Name="model")
+        @SerializedName("model")
+        public String model = null;
+
+        /**
+        * Parameters for audio output. Required when audio output is requested with modalities: [audio]
+        */
+        @DataMember(Name="audio")
+        @SerializedName("audio")
+        public AiChatAudio audio = null;
+
+        /**
+        * Modify the likelihood of specified tokens appearing in the completion.
+        */
+        @DataMember(Name="logit_bias")
+        @SerializedName("logit_bias")
+        public HashMap<Integer,Integer> logitBias = null;
+
+        /**
+        * Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.
+        */
+        @DataMember(Name="metadata")
+        @SerializedName("metadata")
+        public HashMap<String,String> metadata = null;
+
+        /**
+        * Constrains effort on reasoning for reasoning models. Currently supported values are minimal, low, medium, and high (none, default). Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
+        */
+        @DataMember(Name="reasoning_effort")
+        @SerializedName("reasoning_effort")
+        public String reasoningEffort = null;
+
+        /**
+        * An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`. Setting Type to ResponseFormat.JsonObject enables JSON mode, which guarantees the message the model generates is valid JSON.
+        */
+        @DataMember(Name="response_format")
+        @SerializedName("response_format")
+        public AiResponseFormat responseFormat = null;
+
+        /**
+        * Specifies the processing type used for serving the request.
+        */
+        @DataMember(Name="service_tier")
+        @SerializedName("service_tier")
+        public String serviceTier = null;
+
+        /**
+        * A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.
+        */
+        @DataMember(Name="safety_identifier")
+        @SerializedName("safety_identifier")
+        public String safetyIdentifier = null;
+
+        /**
+        * Up to 4 sequences where the API will stop generating further tokens.
+        */
+        @DataMember(Name="stop")
+        @SerializedName("stop")
+        public ArrayList<String> stop = null;
+
+        /**
+        * Output types that you would like the model to generate. Most models are capable of generating text, which is the default:
+        */
+        @DataMember(Name="modalities")
+        @SerializedName("modalities")
+        public ArrayList<String> modalities = null;
+
+        /**
+        * Used by OpenAI to cache responses for similar requests to optimize your cache hit rates.
+        */
+        @DataMember(Name="prompt_cache_key")
+        @SerializedName("prompt_cache_key")
+        public String promptCacheKey = null;
+
+        /**
+        * A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
+        */
+        @DataMember(Name="tools")
+        @SerializedName("tools")
+        public ArrayList<Tool> tools = null;
+
+        /**
+        * Constrains the verbosity of the model's response. Lower values will result in more concise responses, while higher values will result in more verbose responses. Currently supported values are low, medium, and high.
+        */
+        @DataMember(Name="verbosity")
+        @SerializedName("verbosity")
+        public String verbosity = null;
+
+        /**
+        * What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+        */
+        @DataMember(Name="temperature")
+        @SerializedName("temperature")
+        public Double temperature = null;
+
+        /**
+        * An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.
+        */
+        @DataMember(Name="max_completion_tokens")
+        @SerializedName("max_completion_tokens")
+        public Integer maxCompletionTokens = null;
+
+        /**
+        * An integer between 0 and 20 specifying the number of most likely tokens to return at each token position, each with an associated log probability. logprobs must be set to true if this parameter is used.
+        */
+        @DataMember(Name="top_logprobs")
+        @SerializedName("top_logprobs")
+        public Integer topLogprobs = null;
+
+        /**
+        * An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+        */
+        @DataMember(Name="top_p")
+        @SerializedName("top_p")
+        public Double topP = null;
+
+        /**
+        * Number between `-2.0` and `2.0`. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
+        */
+        @DataMember(Name="frequency_penalty")
+        @SerializedName("frequency_penalty")
+        public Double frequencyPenalty = null;
+
+        /**
+        * Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+        */
+        @DataMember(Name="presence_penalty")
+        @SerializedName("presence_penalty")
+        public Double presencePenalty = null;
+
+        /**
+        * This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.
+        */
+        @DataMember(Name="seed")
+        @SerializedName("seed")
+        public Integer seed = null;
+
+        /**
+        * How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs.
+        */
+        @DataMember(Name="n")
+        @SerializedName("n")
+        public Integer n = null;
+
+        /**
+        * Whether or not to store the output of this chat completion request for use in our model distillation or evals products.
+        */
+        @DataMember(Name="store")
+        @SerializedName("store")
+        public Boolean store = null;
+
+        /**
+        * Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message.
+        */
+        @DataMember(Name="logprobs")
+        @SerializedName("logprobs")
+        public Boolean logprobs = null;
+
+        /**
+        * Whether to enable parallel function calling during tool use.
+        */
+        @DataMember(Name="parallel_tool_calls")
+        @SerializedName("parallel_tool_calls")
+        public Boolean parallelToolCalls = null;
+
+        /**
+        * Whether to enable thinking mode for some Qwen models and providers.
+        */
+        @DataMember(Name="enable_thinking")
+        @SerializedName("enable_thinking")
+        public Boolean enableThinking = null;
+
+        /**
+        * If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message.
+        */
+        @DataMember(Name="stream")
+        @SerializedName("stream")
+        public Boolean stream = null;
+        
+        public ArrayList<AiMessage> getMessages() { return messages; }
+        public ChatCompletion setMessages(ArrayList<AiMessage> value) { this.messages = value; return this; }
+        public String getModel() { return model; }
+        public ChatCompletion setModel(String value) { this.model = value; return this; }
+        public AiChatAudio getAudio() { return audio; }
+        public ChatCompletion setAudio(AiChatAudio value) { this.audio = value; return this; }
+        public HashMap<Integer,Integer> getLogitBias() { return logitBias; }
+        public ChatCompletion setLogitBias(HashMap<Integer,Integer> value) { this.logitBias = value; return this; }
+        public HashMap<String,String> getMetadata() { return metadata; }
+        public ChatCompletion setMetadata(HashMap<String,String> value) { this.metadata = value; return this; }
+        public String getReasoningEffort() { return reasoningEffort; }
+        public ChatCompletion setReasoningEffort(String value) { this.reasoningEffort = value; return this; }
+        public AiResponseFormat getResponseFormat() { return responseFormat; }
+        public ChatCompletion setResponseFormat(AiResponseFormat value) { this.responseFormat = value; return this; }
+        public String getServiceTier() { return serviceTier; }
+        public ChatCompletion setServiceTier(String value) { this.serviceTier = value; return this; }
+        public String getSafetyIdentifier() { return safetyIdentifier; }
+        public ChatCompletion setSafetyIdentifier(String value) { this.safetyIdentifier = value; return this; }
+        public ArrayList<String> getStop() { return stop; }
+        public ChatCompletion setStop(ArrayList<String> value) { this.stop = value; return this; }
+        public ArrayList<String> getModalities() { return modalities; }
+        public ChatCompletion setModalities(ArrayList<String> value) { this.modalities = value; return this; }
+        public String getPromptCacheKey() { return promptCacheKey; }
+        public ChatCompletion setPromptCacheKey(String value) { this.promptCacheKey = value; return this; }
+        public ArrayList<Tool> getTools() { return tools; }
+        public ChatCompletion setTools(ArrayList<Tool> value) { this.tools = value; return this; }
+        public String getVerbosity() { return verbosity; }
+        public ChatCompletion setVerbosity(String value) { this.verbosity = value; return this; }
+        public Double getTemperature() { return temperature; }
+        public ChatCompletion setTemperature(Double value) { this.temperature = value; return this; }
+        public Integer getMaxCompletionTokens() { return maxCompletionTokens; }
+        public ChatCompletion setMaxCompletionTokens(Integer value) { this.maxCompletionTokens = value; return this; }
+        public Integer getTopLogprobs() { return topLogprobs; }
+        public ChatCompletion setTopLogprobs(Integer value) { this.topLogprobs = value; return this; }
+        public Double getTopP() { return topP; }
+        public ChatCompletion setTopP(Double value) { this.topP = value; return this; }
+        public Double getFrequencyPenalty() { return frequencyPenalty; }
+        public ChatCompletion setFrequencyPenalty(Double value) { this.frequencyPenalty = value; return this; }
+        public Double getPresencePenalty() { return presencePenalty; }
+        public ChatCompletion setPresencePenalty(Double value) { this.presencePenalty = value; return this; }
+        public Integer getSeed() { return seed; }
+        public ChatCompletion setSeed(Integer value) { this.seed = value; return this; }
+        public Integer getN() { return n; }
+        public ChatCompletion setN(Integer value) { this.n = value; return this; }
+        public Boolean isStore() { return store; }
+        public ChatCompletion setStore(Boolean value) { this.store = value; return this; }
+        public Boolean isLogprobs() { return logprobs; }
+        public ChatCompletion setLogprobs(Boolean value) { this.logprobs = value; return this; }
+        public Boolean isParallelToolCalls() { return parallelToolCalls; }
+        public ChatCompletion setParallelToolCalls(Boolean value) { this.parallelToolCalls = value; return this; }
+        public Boolean isEnableThinking() { return enableThinking; }
+        public ChatCompletion setEnableThinking(Boolean value) { this.enableThinking = value; return this; }
+        public Boolean isStream() { return stream; }
+        public ChatCompletion setStream(Boolean value) { this.stream = value; return this; }
+        private static Object responseType = ChatResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    public static class AdminQueryChatCompletionLogs extends QueryDb<ChatCompletionLog> implements IReturn<QueryResponse<ChatCompletionLog>>
+    {
+        public Date month = null;
+        
+        public Date getMonth() { return month; }
+        public AdminQueryChatCompletionLogs setMonth(Date value) { this.month = value; return this; }
+        private static Object responseType = new TypeToken<QueryResponse<ChatCompletionLog>>(){}.getType();
+        public Object getResponseType() { return responseType; }
+    }
+
+    public static class AdminMonthlyChatCompletionAnalytics implements IReturn<AdminMonthlyChatCompletionAnalyticsResponse>, IGet
+    {
+        public Date month = null;
+        
+        public Date getMonth() { return month; }
+        public AdminMonthlyChatCompletionAnalytics setMonth(Date value) { this.month = value; return this; }
+        private static Object responseType = AdminMonthlyChatCompletionAnalyticsResponse.class;
+        public Object getResponseType() { return responseType; }
+    }
+
+    public static class AdminDailyChatCompletionAnalytics implements IReturn<AdminDailyChatCompletionAnalyticsResponse>, IGet
+    {
+        public Date day = null;
+        
+        public Date getDay() { return day; }
+        public AdminDailyChatCompletionAnalytics setDay(Date value) { this.day = value; return this; }
+        private static Object responseType = AdminDailyChatCompletionAnalyticsResponse.class;
         public Object getResponseType() { return responseType; }
     }
 
@@ -504,206 +988,6 @@ public class dtos
         public String getRequestJson() { return requestJson; }
         public ExecuteCommand setRequestJson(String value) { this.requestJson = value; return this; }
         private static Object responseType = ExecuteCommandResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    @DataContract
-    public static class AdminQueryApiKeys implements IReturn<AdminApiKeysResponse>, IGet
-    {
-        @DataMember(Order=1)
-        public Integer id = null;
-
-        @DataMember(Order=2)
-        public String apiKey = null;
-
-        @DataMember(Order=3)
-        public String search = null;
-
-        @DataMember(Order=4)
-        public String userId = null;
-
-        @DataMember(Order=5)
-        public String userName = null;
-
-        @DataMember(Order=6)
-        public String orderBy = null;
-
-        @DataMember(Order=7)
-        public Integer skip = null;
-
-        @DataMember(Order=8)
-        public Integer take = null;
-        
-        public Integer getId() { return id; }
-        public AdminQueryApiKeys setId(Integer value) { this.id = value; return this; }
-        public String getApiKey() { return apiKey; }
-        public AdminQueryApiKeys setApiKey(String value) { this.apiKey = value; return this; }
-        public String getSearch() { return search; }
-        public AdminQueryApiKeys setSearch(String value) { this.search = value; return this; }
-        public String getUserId() { return userId; }
-        public AdminQueryApiKeys setUserId(String value) { this.userId = value; return this; }
-        public String getUserName() { return userName; }
-        public AdminQueryApiKeys setUserName(String value) { this.userName = value; return this; }
-        public String getOrderBy() { return orderBy; }
-        public AdminQueryApiKeys setOrderBy(String value) { this.orderBy = value; return this; }
-        public Integer getSkip() { return skip; }
-        public AdminQueryApiKeys setSkip(Integer value) { this.skip = value; return this; }
-        public Integer getTake() { return take; }
-        public AdminQueryApiKeys setTake(Integer value) { this.take = value; return this; }
-        private static Object responseType = AdminApiKeysResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    @DataContract
-    public static class AdminCreateApiKey implements IReturn<AdminApiKeyResponse>, IPost
-    {
-        @DataMember(Order=1)
-        public String name = null;
-
-        @DataMember(Order=2)
-        public String userId = null;
-
-        @DataMember(Order=3)
-        public String userName = null;
-
-        @DataMember(Order=4)
-        public ArrayList<String> scopes = null;
-
-        @DataMember(Order=5)
-        public ArrayList<String> features = null;
-
-        @DataMember(Order=6)
-        public ArrayList<String> restrictTo = null;
-
-        @DataMember(Order=7)
-        public Date expiryDate = null;
-
-        @DataMember(Order=8)
-        public String notes = null;
-
-        @DataMember(Order=9)
-        public Integer refId = null;
-
-        @DataMember(Order=10)
-        public String refIdStr = null;
-
-        @DataMember(Order=11)
-        public HashMap<String,String> meta = null;
-        
-        public String getName() { return name; }
-        public AdminCreateApiKey setName(String value) { this.name = value; return this; }
-        public String getUserId() { return userId; }
-        public AdminCreateApiKey setUserId(String value) { this.userId = value; return this; }
-        public String getUserName() { return userName; }
-        public AdminCreateApiKey setUserName(String value) { this.userName = value; return this; }
-        public ArrayList<String> getScopes() { return scopes; }
-        public AdminCreateApiKey setScopes(ArrayList<String> value) { this.scopes = value; return this; }
-        public ArrayList<String> getFeatures() { return features; }
-        public AdminCreateApiKey setFeatures(ArrayList<String> value) { this.features = value; return this; }
-        public ArrayList<String> getRestrictTo() { return restrictTo; }
-        public AdminCreateApiKey setRestrictTo(ArrayList<String> value) { this.restrictTo = value; return this; }
-        public Date getExpiryDate() { return expiryDate; }
-        public AdminCreateApiKey setExpiryDate(Date value) { this.expiryDate = value; return this; }
-        public String getNotes() { return notes; }
-        public AdminCreateApiKey setNotes(String value) { this.notes = value; return this; }
-        public Integer getRefId() { return refId; }
-        public AdminCreateApiKey setRefId(Integer value) { this.refId = value; return this; }
-        public String getRefIdStr() { return refIdStr; }
-        public AdminCreateApiKey setRefIdStr(String value) { this.refIdStr = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public AdminCreateApiKey setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-        private static Object responseType = AdminApiKeyResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    @DataContract
-    public static class AdminUpdateApiKey implements IReturn<EmptyResponse>, IPatch
-    {
-        @DataMember(Order=1)
-        @Validate(Validator="GreaterThan(0)")
-        public Integer id = null;
-
-        @DataMember(Order=2)
-        public String name = null;
-
-        @DataMember(Order=3)
-        public String userId = null;
-
-        @DataMember(Order=4)
-        public String userName = null;
-
-        @DataMember(Order=5)
-        public ArrayList<String> scopes = null;
-
-        @DataMember(Order=6)
-        public ArrayList<String> features = null;
-
-        @DataMember(Order=7)
-        public ArrayList<String> restrictTo = null;
-
-        @DataMember(Order=8)
-        public Date expiryDate = null;
-
-        @DataMember(Order=9)
-        public Date cancelledDate = null;
-
-        @DataMember(Order=10)
-        public String notes = null;
-
-        @DataMember(Order=11)
-        public Integer refId = null;
-
-        @DataMember(Order=12)
-        public String refIdStr = null;
-
-        @DataMember(Order=13)
-        public HashMap<String,String> meta = null;
-
-        @DataMember(Order=14)
-        public ArrayList<String> reset = null;
-        
-        public Integer getId() { return id; }
-        public AdminUpdateApiKey setId(Integer value) { this.id = value; return this; }
-        public String getName() { return name; }
-        public AdminUpdateApiKey setName(String value) { this.name = value; return this; }
-        public String getUserId() { return userId; }
-        public AdminUpdateApiKey setUserId(String value) { this.userId = value; return this; }
-        public String getUserName() { return userName; }
-        public AdminUpdateApiKey setUserName(String value) { this.userName = value; return this; }
-        public ArrayList<String> getScopes() { return scopes; }
-        public AdminUpdateApiKey setScopes(ArrayList<String> value) { this.scopes = value; return this; }
-        public ArrayList<String> getFeatures() { return features; }
-        public AdminUpdateApiKey setFeatures(ArrayList<String> value) { this.features = value; return this; }
-        public ArrayList<String> getRestrictTo() { return restrictTo; }
-        public AdminUpdateApiKey setRestrictTo(ArrayList<String> value) { this.restrictTo = value; return this; }
-        public Date getExpiryDate() { return expiryDate; }
-        public AdminUpdateApiKey setExpiryDate(Date value) { this.expiryDate = value; return this; }
-        public Date getCancelledDate() { return cancelledDate; }
-        public AdminUpdateApiKey setCancelledDate(Date value) { this.cancelledDate = value; return this; }
-        public String getNotes() { return notes; }
-        public AdminUpdateApiKey setNotes(String value) { this.notes = value; return this; }
-        public Integer getRefId() { return refId; }
-        public AdminUpdateApiKey setRefId(Integer value) { this.refId = value; return this; }
-        public String getRefIdStr() { return refIdStr; }
-        public AdminUpdateApiKey setRefIdStr(String value) { this.refIdStr = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public AdminUpdateApiKey setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-        public ArrayList<String> getReset() { return reset; }
-        public AdminUpdateApiKey setReset(ArrayList<String> value) { this.reset = value; return this; }
-        private static Object responseType = EmptyResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    @DataContract
-    public static class AdminDeleteApiKey implements IReturn<EmptyResponse>, IDelete
-    {
-        @DataMember(Order=1)
-        @Validate(Validator="GreaterThan(0)")
-        public Integer id = null;
-        
-        public Integer getId() { return id; }
-        public AdminDeleteApiKey setId(Integer value) { this.id = value; return this; }
-        private static Object responseType = EmptyResponse.class;
         public Object getResponseType() { return responseType; }
     }
 
@@ -1183,6 +1467,205 @@ public class dtos
     }
 
     @DataContract
+    public static class AdminApiKeysResponse
+    {
+        @DataMember(Order=1)
+        public ArrayList<PartialApiKey> results = null;
+
+        @DataMember(Order=2)
+        public ResponseStatus responseStatus = null;
+        
+        public ArrayList<PartialApiKey> getResults() { return results; }
+        public AdminApiKeysResponse setResults(ArrayList<PartialApiKey> value) { this.results = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public AdminApiKeysResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    @DataContract
+    public static class AdminApiKeyResponse
+    {
+        @DataMember(Order=1)
+        public String result = null;
+
+        @DataMember(Order=2)
+        public ResponseStatus responseStatus = null;
+        
+        public String getResult() { return result; }
+        public AdminApiKeyResponse setResult(String value) { this.result = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public AdminApiKeyResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    @DataContract
+    public static class EmptyResponse
+    {
+        @DataMember(Order=1)
+        public ResponseStatus responseStatus = null;
+        
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public EmptyResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    @DataContract
+    public static class ChatResponse
+    {
+        /**
+        * A unique identifier for the chat completion.
+        */
+        @DataMember(Name="id")
+        @SerializedName("id")
+        public String id = null;
+
+        /**
+        * A list of chat completion choices. Can be more than one if n is greater than 1.
+        */
+        @DataMember(Name="choices")
+        @SerializedName("choices")
+        public ArrayList<Choice> choices = new ArrayList<Choice>();
+
+        /**
+        * The Unix timestamp (in seconds) of when the chat completion was created.
+        */
+        @DataMember(Name="created")
+        @SerializedName("created")
+        public Long created = null;
+
+        /**
+        * The model used for the chat completion.
+        */
+        @DataMember(Name="model")
+        @SerializedName("model")
+        public String model = null;
+
+        /**
+        * This fingerprint represents the backend configuration that the model runs with.
+        */
+        @DataMember(Name="system_fingerprint")
+        @SerializedName("system_fingerprint")
+        public String systemFingerprint = null;
+
+        /**
+        * The object type, which is always chat.completion.
+        */
+        @DataMember(Name="object")
+        @SerializedName("object")
+        public String object = null;
+
+        /**
+        * Specifies the processing type used for serving the request.
+        */
+        @DataMember(Name="service_tier")
+        @SerializedName("service_tier")
+        public String serviceTier = null;
+
+        /**
+        * Usage statistics for the completion request.
+        */
+        @DataMember(Name="usage")
+        @SerializedName("usage")
+        public AiUsage usage = null;
+
+        /**
+        * The provider used for the chat completion.
+        */
+        @DataMember(Name="provider")
+        @SerializedName("provider")
+        public String provider = null;
+
+        /**
+        * Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.
+        */
+        @DataMember(Name="metadata")
+        @SerializedName("metadata")
+        public HashMap<String,String> metadata = null;
+
+        @DataMember(Name="responseStatus")
+        @SerializedName("responseStatus")
+        public ResponseStatus responseStatus = null;
+        
+        public String getId() { return id; }
+        public ChatResponse setId(String value) { this.id = value; return this; }
+        public ArrayList<Choice> getChoices() { return choices; }
+        public ChatResponse setChoices(ArrayList<Choice> value) { this.choices = value; return this; }
+        public Long getCreated() { return created; }
+        public ChatResponse setCreated(Long value) { this.created = value; return this; }
+        public String getModel() { return model; }
+        public ChatResponse setModel(String value) { this.model = value; return this; }
+        public String getSystemFingerprint() { return systemFingerprint; }
+        public ChatResponse setSystemFingerprint(String value) { this.systemFingerprint = value; return this; }
+        public String getObject() { return object; }
+        public ChatResponse setObject(String value) { this.object = value; return this; }
+        public String getServiceTier() { return serviceTier; }
+        public ChatResponse setServiceTier(String value) { this.serviceTier = value; return this; }
+        public AiUsage getUsage() { return usage; }
+        public ChatResponse setUsage(AiUsage value) { this.usage = value; return this; }
+        public String getProvider() { return provider; }
+        public ChatResponse setProvider(String value) { this.provider = value; return this; }
+        public HashMap<String,String> getMetadata() { return metadata; }
+        public ChatResponse setMetadata(HashMap<String,String> value) { this.metadata = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public ChatResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    @DataContract
+    public static class QueryResponse<T>
+    {
+        @DataMember(Order=1)
+        public Integer offset = null;
+
+        @DataMember(Order=2)
+        public Integer total = null;
+
+        @DataMember(Order=3)
+        public ArrayList<ChatCompletionLog> results = new ArrayList<ChatCompletionLog>();
+
+        @DataMember(Order=4)
+        public HashMap<String,String> meta = null;
+
+        @DataMember(Order=5)
+        public ResponseStatus responseStatus = null;
+        
+        public Integer getOffset() { return offset; }
+        public QueryResponse<T> setOffset(Integer value) { this.offset = value; return this; }
+        public Integer getTotal() { return total; }
+        public QueryResponse<T> setTotal(Integer value) { this.total = value; return this; }
+        public ArrayList<ChatCompletionLog> getResults() { return results; }
+        public QueryResponse<T> setResults(ArrayList<ChatCompletionLog> value) { this.results = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public QueryResponse<T> setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public QueryResponse<T> setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
+    public static class AdminMonthlyChatCompletionAnalyticsResponse
+    {
+        public String month = null;
+        public ArrayList<ChatCompletionStat> modelStats = new ArrayList<ChatCompletionStat>();
+        public ArrayList<ChatCompletionStat> providerStats = new ArrayList<ChatCompletionStat>();
+        public ArrayList<ChatCompletionStat> dailyStats = new ArrayList<ChatCompletionStat>();
+        
+        public String getMonth() { return month; }
+        public AdminMonthlyChatCompletionAnalyticsResponse setMonth(String value) { this.month = value; return this; }
+        public ArrayList<ChatCompletionStat> getModelStats() { return modelStats; }
+        public AdminMonthlyChatCompletionAnalyticsResponse setModelStats(ArrayList<ChatCompletionStat> value) { this.modelStats = value; return this; }
+        public ArrayList<ChatCompletionStat> getProviderStats() { return providerStats; }
+        public AdminMonthlyChatCompletionAnalyticsResponse setProviderStats(ArrayList<ChatCompletionStat> value) { this.providerStats = value; return this; }
+        public ArrayList<ChatCompletionStat> getDailyStats() { return dailyStats; }
+        public AdminMonthlyChatCompletionAnalyticsResponse setDailyStats(ArrayList<ChatCompletionStat> value) { this.dailyStats = value; return this; }
+    }
+
+    public static class AdminDailyChatCompletionAnalyticsResponse
+    {
+        public ArrayList<ChatCompletionStat> modelStats = new ArrayList<ChatCompletionStat>();
+        public ArrayList<ChatCompletionStat> providerStats = new ArrayList<ChatCompletionStat>();
+        
+        public ArrayList<ChatCompletionStat> getModelStats() { return modelStats; }
+        public AdminDailyChatCompletionAnalyticsResponse setModelStats(ArrayList<ChatCompletionStat> value) { this.modelStats = value; return this; }
+        public ArrayList<ChatCompletionStat> getProviderStats() { return providerStats; }
+        public AdminDailyChatCompletionAnalyticsResponse setProviderStats(ArrayList<ChatCompletionStat> value) { this.providerStats = value; return this; }
+    }
+
+    @DataContract
     public static class AuthenticateResponse implements IHasSessionId, IHasBearerToken
     {
         @DataMember(Order=1)
@@ -1367,36 +1850,6 @@ public class dtos
         public AdminDeleteUserResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
 
-    @DataContract
-    public static class QueryResponse<T>
-    {
-        @DataMember(Order=1)
-        public Integer offset = null;
-
-        @DataMember(Order=2)
-        public Integer total = null;
-
-        @DataMember(Order=3)
-        public ArrayList<RequestLog> results = null;
-
-        @DataMember(Order=4)
-        public HashMap<String,String> meta = null;
-
-        @DataMember(Order=5)
-        public ResponseStatus responseStatus = null;
-        
-        public Integer getOffset() { return offset; }
-        public QueryResponse<T> setOffset(Integer value) { this.offset = value; return this; }
-        public Integer getTotal() { return total; }
-        public QueryResponse<T> setTotal(Integer value) { this.total = value; return this; }
-        public ArrayList<RequestLog> getResults() { return results; }
-        public QueryResponse<T> setResults(ArrayList<RequestLog> value) { this.results = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public QueryResponse<T> setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public QueryResponse<T> setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
     public static class AdminProfilingResponse
     {
         public ArrayList<DiagnosticEntry> results = new ArrayList<DiagnosticEntry>();
@@ -1482,46 +1935,6 @@ public class dtos
         public ExecuteCommandResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
 
-    @DataContract
-    public static class AdminApiKeysResponse
-    {
-        @DataMember(Order=1)
-        public ArrayList<PartialApiKey> results = null;
-
-        @DataMember(Order=2)
-        public ResponseStatus responseStatus = null;
-        
-        public ArrayList<PartialApiKey> getResults() { return results; }
-        public AdminApiKeysResponse setResults(ArrayList<PartialApiKey> value) { this.results = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public AdminApiKeysResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    @DataContract
-    public static class AdminApiKeyResponse
-    {
-        @DataMember(Order=1)
-        public String result = null;
-
-        @DataMember(Order=2)
-        public ResponseStatus responseStatus = null;
-        
-        public String getResult() { return result; }
-        public AdminApiKeyResponse setResult(String value) { this.result = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public AdminApiKeyResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    @DataContract
-    public static class EmptyResponse
-    {
-        @DataMember(Order=1)
-        public ResponseStatus responseStatus = null;
-        
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public EmptyResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
     public static class AdminJobDashboardResponse
     {
         public ArrayList<JobStatSummary> commands = new ArrayList<JobStatSummary>();
@@ -1544,12 +1957,12 @@ public class dtos
 
     public static class AdminJobInfoResponse
     {
-        public ArrayList<Date> monthDbs = new ArrayList<Date>();
-        public HashMap<String,Integer> tableCounts = new HashMap<String,Integer>();
-        public ArrayList<WorkerStats> workerStats = new ArrayList<WorkerStats>();
-        public HashMap<String,Integer> queueCounts = new HashMap<String,Integer>();
-        public HashMap<String,Integer> workerCounts = new HashMap<String,Integer>();
-        public HashMap<BackgroundJobState,Integer> stateCounts = new HashMap<BackgroundJobState,Integer>();
+        public ArrayList<Date> monthDbs = null;
+        public HashMap<String,Integer> tableCounts = null;
+        public ArrayList<WorkerStats> workerStats = null;
+        public HashMap<String,Integer> queueCounts = null;
+        public HashMap<String,Integer> workerCounts = null;
+        public HashMap<BackgroundJobState,Integer> stateCounts = null;
         public ResponseStatus responseStatus = null;
         
         public ArrayList<Date> getMonthDbs() { return monthDbs; }
@@ -1732,6 +2145,202 @@ public class dtos
         public Property setValue(String value) { this.value = value; return this; }
     }
 
+    /**
+    * A list of messages comprising the conversation so far.
+    */
+    @DataContract
+    public static class AiMessage
+    {
+        /**
+        * The contents of the message.
+        */
+        @DataMember(Name="content")
+        @SerializedName("content")
+        public ArrayList<AiContent> content = null;
+
+        /**
+        * The role of the author of this message. Valid values are `system`, `user`, `assistant` and `tool`.
+        */
+        @DataMember(Name="role")
+        @SerializedName("role")
+        public String role = null;
+
+        /**
+        * An optional name for the participant. Provides the model information to differentiate between participants of the same role.
+        */
+        @DataMember(Name="name")
+        @SerializedName("name")
+        public String name = null;
+
+        /**
+        * The tool calls generated by the model, such as function calls.
+        */
+        @DataMember(Name="tool_calls")
+        @SerializedName("tool_calls")
+        public ArrayList<ToolCall> toolCalls = null;
+
+        /**
+        * Tool call that this message is responding to.
+        */
+        @DataMember(Name="tool_call_id")
+        @SerializedName("tool_call_id")
+        public String toolCallId = null;
+        
+        public ArrayList<AiContent> getContent() { return content; }
+        public AiMessage setContent(ArrayList<AiContent> value) { this.content = value; return this; }
+        public String getRole() { return role; }
+        public AiMessage setRole(String value) { this.role = value; return this; }
+        public String getName() { return name; }
+        public AiMessage setName(String value) { this.name = value; return this; }
+        public ArrayList<ToolCall> getToolCalls() { return toolCalls; }
+        public AiMessage setToolCalls(ArrayList<ToolCall> value) { this.toolCalls = value; return this; }
+        public String getToolCallId() { return toolCallId; }
+        public AiMessage setToolCallId(String value) { this.toolCallId = value; return this; }
+    }
+
+    /**
+    * Parameters for audio output. Required when audio output is requested with modalities: [audio]
+    */
+    @DataContract
+    public static class AiChatAudio
+    {
+        /**
+        * Specifies the output audio format. Must be one of wav, mp3, flac, opus, or pcm16.
+        */
+        @DataMember(Name="format")
+        @SerializedName("format")
+        public String format = null;
+
+        /**
+        * The voice the model uses to respond. Supported voices are alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, and shimmer.
+        */
+        @DataMember(Name="voice")
+        @SerializedName("voice")
+        public String voice = null;
+        
+        public String getFormat() { return format; }
+        public AiChatAudio setFormat(String value) { this.format = value; return this; }
+        public String getVoice() { return voice; }
+        public AiChatAudio setVoice(String value) { this.voice = value; return this; }
+    }
+
+    @DataContract
+    public static class AiResponseFormat
+    {
+        /**
+        * An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
+        */
+        @DataMember(Name="response_format")
+        @SerializedName("response_format")
+        public ResponseFormat type = null;
+        
+        public ResponseFormat getType() { return type; }
+        public AiResponseFormat setType(ResponseFormat value) { this.type = value; return this; }
+    }
+
+    @DataContract
+    public static class Tool
+    {
+        /**
+        * The type of the tool. Currently, only function is supported.
+        */
+        @DataMember(Name="type")
+        @SerializedName("type")
+        public ToolType type = null;
+        
+        public ToolType getType() { return type; }
+        public Tool setType(ToolType value) { this.type = value; return this; }
+    }
+
+    public static class QueryDb<T> extends QueryBase
+    {
+        
+    }
+
+    public static class ChatCompletionLog
+    {
+        public Long id = null;
+        public String refId = null;
+        public String userId = null;
+        public String apiKey = null;
+        public String model = null;
+        public String provider = null;
+        public String userPrompt = null;
+        public String answer = null;
+        @StringLength(MaximumLength=2147483647)
+        public String requestBody = null;
+
+        @StringLength(MaximumLength=2147483647)
+        public String responseBody = null;
+
+        public String errorCode = null;
+        public ResponseStatus error = null;
+        public Date createdDate = null;
+        public String tag = null;
+        public Integer durationMs = null;
+        public Integer promptTokens = null;
+        public Integer completionTokens = null;
+        public BigDecimal cost = null;
+        public String providerRef = null;
+        public String providerModel = null;
+        public String finishReason = null;
+        public ModelUsage usage = null;
+        public String threadId = null;
+        public String title = null;
+        public HashMap<String,String> meta = null;
+        
+        public Long getId() { return id; }
+        public ChatCompletionLog setId(Long value) { this.id = value; return this; }
+        public String getRefId() { return refId; }
+        public ChatCompletionLog setRefId(String value) { this.refId = value; return this; }
+        public String getUserId() { return userId; }
+        public ChatCompletionLog setUserId(String value) { this.userId = value; return this; }
+        public String getApiKey() { return apiKey; }
+        public ChatCompletionLog setApiKey(String value) { this.apiKey = value; return this; }
+        public String getModel() { return model; }
+        public ChatCompletionLog setModel(String value) { this.model = value; return this; }
+        public String getProvider() { return provider; }
+        public ChatCompletionLog setProvider(String value) { this.provider = value; return this; }
+        public String getUserPrompt() { return userPrompt; }
+        public ChatCompletionLog setUserPrompt(String value) { this.userPrompt = value; return this; }
+        public String getAnswer() { return answer; }
+        public ChatCompletionLog setAnswer(String value) { this.answer = value; return this; }
+        public String getRequestBody() { return requestBody; }
+        public ChatCompletionLog setRequestBody(String value) { this.requestBody = value; return this; }
+        public String getResponseBody() { return responseBody; }
+        public ChatCompletionLog setResponseBody(String value) { this.responseBody = value; return this; }
+        public String getErrorCode() { return errorCode; }
+        public ChatCompletionLog setErrorCode(String value) { this.errorCode = value; return this; }
+        public ResponseStatus getError() { return error; }
+        public ChatCompletionLog setError(ResponseStatus value) { this.error = value; return this; }
+        public Date getCreatedDate() { return createdDate; }
+        public ChatCompletionLog setCreatedDate(Date value) { this.createdDate = value; return this; }
+        public String getTag() { return tag; }
+        public ChatCompletionLog setTag(String value) { this.tag = value; return this; }
+        public Integer getDurationMs() { return durationMs; }
+        public ChatCompletionLog setDurationMs(Integer value) { this.durationMs = value; return this; }
+        public Integer getPromptTokens() { return promptTokens; }
+        public ChatCompletionLog setPromptTokens(Integer value) { this.promptTokens = value; return this; }
+        public Integer getCompletionTokens() { return completionTokens; }
+        public ChatCompletionLog setCompletionTokens(Integer value) { this.completionTokens = value; return this; }
+        public BigDecimal getCost() { return cost; }
+        public ChatCompletionLog setCost(BigDecimal value) { this.cost = value; return this; }
+        public String getProviderRef() { return providerRef; }
+        public ChatCompletionLog setProviderRef(String value) { this.providerRef = value; return this; }
+        public String getProviderModel() { return providerModel; }
+        public ChatCompletionLog setProviderModel(String value) { this.providerModel = value; return this; }
+        public String getFinishReason() { return finishReason; }
+        public ChatCompletionLog setFinishReason(String value) { this.finishReason = value; return this; }
+        public ModelUsage getUsage() { return usage; }
+        public ChatCompletionLog setUsage(ModelUsage value) { this.usage = value; return this; }
+        public String getThreadId() { return threadId; }
+        public ChatCompletionLog setThreadId(String value) { this.threadId = value; return this; }
+        public String getTitle() { return title; }
+        public ChatCompletionLog setTitle(String value) { this.title = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public ChatCompletionLog setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+    }
+
     @DataContract
     public static class AdminUserBase
     {
@@ -1787,11 +2396,6 @@ public class dtos
         public AdminUserBase setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
-    public static class QueryDb<T> extends QueryBase
-    {
-        
-    }
-
     public static class RequestLog
     {
         public Long id = null;
@@ -1817,8 +2421,12 @@ public class dtos
         public HashMap<String,String> items = new HashMap<String,String>();
         public HashMap<String,String> responseHeaders = null;
         public String response = null;
+        @StringLength(MaximumLength=2147483647)
         public String responseBody = null;
+
+        @StringLength(MaximumLength=2147483647)
         public String sessionBody = null;
+
         public ResponseStatus error = null;
         public String exceptionSource = null;
         public String exceptionDataBody = null;
@@ -2136,10 +2744,12 @@ public class dtos
     public static class UiInfo
     {
         public ImageInfo brandIcon = null;
+        public ImageInfo userIcon = null;
         public ArrayList<String> hideTags = null;
         public ArrayList<String> modules = null;
         public ArrayList<String> alwaysHideTags = null;
         public ArrayList<LinkInfo> adminLinks = null;
+        public ArrayList<String> adminLinksOrder = null;
         public ThemeInfo theme = null;
         public LocodeUi locode = null;
         public ExplorerUi explorer = null;
@@ -2149,6 +2759,8 @@ public class dtos
         
         public ImageInfo getBrandIcon() { return brandIcon; }
         public UiInfo setBrandIcon(ImageInfo value) { this.brandIcon = value; return this; }
+        public ImageInfo getUserIcon() { return userIcon; }
+        public UiInfo setUserIcon(ImageInfo value) { this.userIcon = value; return this; }
         public ArrayList<String> getHideTags() { return hideTags; }
         public UiInfo setHideTags(ArrayList<String> value) { this.hideTags = value; return this; }
         public ArrayList<String> getModules() { return modules; }
@@ -2157,6 +2769,8 @@ public class dtos
         public UiInfo setAlwaysHideTags(ArrayList<String> value) { this.alwaysHideTags = value; return this; }
         public ArrayList<LinkInfo> getAdminLinks() { return adminLinks; }
         public UiInfo setAdminLinks(ArrayList<LinkInfo> value) { this.adminLinks = value; return this; }
+        public ArrayList<String> getAdminLinksOrder() { return adminLinksOrder; }
+        public UiInfo setAdminLinksOrder(ArrayList<String> value) { this.adminLinksOrder = value; return this; }
         public ThemeInfo getTheme() { return theme; }
         public UiInfo setTheme(ThemeInfo value) { this.theme = value; return this; }
         public LocodeUi getLocode() { return locode; }
@@ -2198,6 +2812,7 @@ public class dtos
         public AdminIdentityUsersInfo adminIdentityUsers = null;
         public AdminRedisInfo adminRedis = null;
         public AdminDatabaseInfo adminDatabase = null;
+        public AdminChatInfo adminChat = null;
         public HashMap<String,String> meta = null;
         
         public ArrayList<String> getLoaded() { return loaded; }
@@ -2228,6 +2843,8 @@ public class dtos
         public PluginInfo setAdminRedis(AdminRedisInfo value) { this.adminRedis = value; return this; }
         public AdminDatabaseInfo getAdminDatabase() { return adminDatabase; }
         public PluginInfo setAdminDatabase(AdminDatabaseInfo value) { this.adminDatabase = value; return this; }
+        public AdminChatInfo getAdminChat() { return adminChat; }
+        public PluginInfo setAdminChat(AdminChatInfo value) { this.adminChat = value; return this; }
         public HashMap<String,String> getMeta() { return meta; }
         public PluginInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
@@ -2287,6 +2904,206 @@ public class dtos
         public ServerStats setMqDescription(String value) { this.mqDescription = value; return this; }
         public HashMap<String,Long> getMqWorkers() { return mqWorkers; }
         public ServerStats setMqWorkers(HashMap<String,Long> value) { this.mqWorkers = value; return this; }
+    }
+
+    @DataContract
+    public static class PartialApiKey
+    {
+        @DataMember(Order=1)
+        public Integer id = null;
+
+        @DataMember(Order=2)
+        public String name = null;
+
+        @DataMember(Order=3)
+        public String userId = null;
+
+        @DataMember(Order=4)
+        public String userName = null;
+
+        @DataMember(Order=5)
+        public String visibleKey = null;
+
+        @DataMember(Order=6)
+        public String environment = null;
+
+        @DataMember(Order=7)
+        public Date createdDate = null;
+
+        @DataMember(Order=8)
+        public Date expiryDate = null;
+
+        @DataMember(Order=9)
+        public Date cancelledDate = null;
+
+        @DataMember(Order=10)
+        public Date lastUsedDate = null;
+
+        @DataMember(Order=11)
+        public ArrayList<String> scopes = null;
+
+        @DataMember(Order=12)
+        public ArrayList<String> features = null;
+
+        @DataMember(Order=13)
+        public ArrayList<String> restrictTo = null;
+
+        @DataMember(Order=14)
+        public String notes = null;
+
+        @DataMember(Order=15)
+        public Integer refId = null;
+
+        @DataMember(Order=16)
+        public String refIdStr = null;
+
+        @DataMember(Order=17)
+        public HashMap<String,String> meta = null;
+
+        @DataMember(Order=18)
+        public Boolean active = null;
+        
+        public Integer getId() { return id; }
+        public PartialApiKey setId(Integer value) { this.id = value; return this; }
+        public String getName() { return name; }
+        public PartialApiKey setName(String value) { this.name = value; return this; }
+        public String getUserId() { return userId; }
+        public PartialApiKey setUserId(String value) { this.userId = value; return this; }
+        public String getUserName() { return userName; }
+        public PartialApiKey setUserName(String value) { this.userName = value; return this; }
+        public String getVisibleKey() { return visibleKey; }
+        public PartialApiKey setVisibleKey(String value) { this.visibleKey = value; return this; }
+        public String getEnvironment() { return environment; }
+        public PartialApiKey setEnvironment(String value) { this.environment = value; return this; }
+        public Date getCreatedDate() { return createdDate; }
+        public PartialApiKey setCreatedDate(Date value) { this.createdDate = value; return this; }
+        public Date getExpiryDate() { return expiryDate; }
+        public PartialApiKey setExpiryDate(Date value) { this.expiryDate = value; return this; }
+        public Date getCancelledDate() { return cancelledDate; }
+        public PartialApiKey setCancelledDate(Date value) { this.cancelledDate = value; return this; }
+        public Date getLastUsedDate() { return lastUsedDate; }
+        public PartialApiKey setLastUsedDate(Date value) { this.lastUsedDate = value; return this; }
+        public ArrayList<String> getScopes() { return scopes; }
+        public PartialApiKey setScopes(ArrayList<String> value) { this.scopes = value; return this; }
+        public ArrayList<String> getFeatures() { return features; }
+        public PartialApiKey setFeatures(ArrayList<String> value) { this.features = value; return this; }
+        public ArrayList<String> getRestrictTo() { return restrictTo; }
+        public PartialApiKey setRestrictTo(ArrayList<String> value) { this.restrictTo = value; return this; }
+        public String getNotes() { return notes; }
+        public PartialApiKey setNotes(String value) { this.notes = value; return this; }
+        public Integer getRefId() { return refId; }
+        public PartialApiKey setRefId(Integer value) { this.refId = value; return this; }
+        public String getRefIdStr() { return refIdStr; }
+        public PartialApiKey setRefIdStr(String value) { this.refIdStr = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public PartialApiKey setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+        public Boolean isActive() { return active; }
+        public PartialApiKey setActive(Boolean value) { this.active = value; return this; }
+    }
+
+    @DataContract
+    public static class Choice
+    {
+        /**
+        * The reason the model stopped generating tokens. This will be stop if the model hit a natural stop point or a provided stop sequence, length if the maximum number of tokens specified in the request was reached, content_filter if content was omitted due to a flag from our content filters, tool_calls if the model called a tool
+        */
+        @DataMember(Name="finish_reason")
+        @SerializedName("finish_reason")
+        public String finishReason = null;
+
+        /**
+        * The index of the choice in the list of choices.
+        */
+        @DataMember(Name="index")
+        @SerializedName("index")
+        public Integer index = null;
+
+        /**
+        * A chat completion message generated by the model.
+        */
+        @DataMember(Name="message")
+        @SerializedName("message")
+        public ChoiceMessage message = null;
+        
+        public String getFinishReason() { return finishReason; }
+        public Choice setFinishReason(String value) { this.finishReason = value; return this; }
+        public Integer getIndex() { return index; }
+        public Choice setIndex(Integer value) { this.index = value; return this; }
+        public ChoiceMessage getMessage() { return message; }
+        public Choice setMessage(ChoiceMessage value) { this.message = value; return this; }
+    }
+
+    /**
+    * Usage statistics for the completion request.
+    */
+    @DataContract
+    public static class AiUsage
+    {
+        /**
+        * Number of tokens in the generated completion.
+        */
+        @DataMember(Name="completion_tokens")
+        @SerializedName("completion_tokens")
+        public Integer completionTokens = null;
+
+        /**
+        * Number of tokens in the prompt.
+        */
+        @DataMember(Name="prompt_tokens")
+        @SerializedName("prompt_tokens")
+        public Integer promptTokens = null;
+
+        /**
+        * Total number of tokens used in the request (prompt + completion).
+        */
+        @DataMember(Name="total_tokens")
+        @SerializedName("total_tokens")
+        public Integer totalTokens = null;
+
+        /**
+        * Breakdown of tokens used in a completion.
+        */
+        @DataMember(Name="completion_tokens_details")
+        @SerializedName("completion_tokens_details")
+        public AiCompletionUsage completionTokensDetails = null;
+
+        /**
+        * Breakdown of tokens used in the prompt.
+        */
+        @DataMember(Name="prompt_tokens_details")
+        @SerializedName("prompt_tokens_details")
+        public AiPromptUsage promptTokensDetails = null;
+        
+        public Integer getCompletionTokens() { return completionTokens; }
+        public AiUsage setCompletionTokens(Integer value) { this.completionTokens = value; return this; }
+        public Integer getPromptTokens() { return promptTokens; }
+        public AiUsage setPromptTokens(Integer value) { this.promptTokens = value; return this; }
+        public Integer getTotalTokens() { return totalTokens; }
+        public AiUsage setTotalTokens(Integer value) { this.totalTokens = value; return this; }
+        public AiCompletionUsage getCompletionTokensDetails() { return completionTokensDetails; }
+        public AiUsage setCompletionTokensDetails(AiCompletionUsage value) { this.completionTokensDetails = value; return this; }
+        public AiPromptUsage getPromptTokensDetails() { return promptTokensDetails; }
+        public AiUsage setPromptTokensDetails(AiPromptUsage value) { this.promptTokensDetails = value; return this; }
+    }
+
+    public static class ChatCompletionStat
+    {
+        public String name = null;
+        public Integer requests = null;
+        public Integer inputTokens = null;
+        public Integer outputTokens = null;
+        public BigDecimal cost = null;
+        
+        public String getName() { return name; }
+        public ChatCompletionStat setName(String value) { this.name = value; return this; }
+        public Integer getRequests() { return requests; }
+        public ChatCompletionStat setRequests(Integer value) { this.requests = value; return this; }
+        public Integer getInputTokens() { return inputTokens; }
+        public ChatCompletionStat setInputTokens(Integer value) { this.inputTokens = value; return this; }
+        public Integer getOutputTokens() { return outputTokens; }
+        public ChatCompletionStat setOutputTokens(Integer value) { this.outputTokens = value; return this; }
+        public BigDecimal getCost() { return cost; }
+        public ChatCompletionStat setCost(BigDecimal value) { this.cost = value; return this; }
     }
 
     public static class DiagnosticEntry
@@ -2527,101 +3344,6 @@ public class dtos
         public CommandResult setAttempt(Integer value) { this.attempt = value; return this; }
         public ResponseStatus getError() { return error; }
         public CommandResult setError(ResponseStatus value) { this.error = value; return this; }
-    }
-
-    @DataContract
-    public static class PartialApiKey
-    {
-        @DataMember(Order=1)
-        public Integer id = null;
-
-        @DataMember(Order=2)
-        public String name = null;
-
-        @DataMember(Order=3)
-        public String userId = null;
-
-        @DataMember(Order=4)
-        public String userName = null;
-
-        @DataMember(Order=5)
-        public String visibleKey = null;
-
-        @DataMember(Order=6)
-        public String environment = null;
-
-        @DataMember(Order=7)
-        public Date createdDate = null;
-
-        @DataMember(Order=8)
-        public Date expiryDate = null;
-
-        @DataMember(Order=9)
-        public Date cancelledDate = null;
-
-        @DataMember(Order=10)
-        public Date lastUsedDate = null;
-
-        @DataMember(Order=11)
-        public ArrayList<String> scopes = null;
-
-        @DataMember(Order=12)
-        public ArrayList<String> features = null;
-
-        @DataMember(Order=13)
-        public ArrayList<String> restrictTo = null;
-
-        @DataMember(Order=14)
-        public String notes = null;
-
-        @DataMember(Order=15)
-        public Integer refId = null;
-
-        @DataMember(Order=16)
-        public String refIdStr = null;
-
-        @DataMember(Order=17)
-        public HashMap<String,String> meta = null;
-
-        @DataMember(Order=18)
-        public Boolean active = null;
-        
-        public Integer getId() { return id; }
-        public PartialApiKey setId(Integer value) { this.id = value; return this; }
-        public String getName() { return name; }
-        public PartialApiKey setName(String value) { this.name = value; return this; }
-        public String getUserId() { return userId; }
-        public PartialApiKey setUserId(String value) { this.userId = value; return this; }
-        public String getUserName() { return userName; }
-        public PartialApiKey setUserName(String value) { this.userName = value; return this; }
-        public String getVisibleKey() { return visibleKey; }
-        public PartialApiKey setVisibleKey(String value) { this.visibleKey = value; return this; }
-        public String getEnvironment() { return environment; }
-        public PartialApiKey setEnvironment(String value) { this.environment = value; return this; }
-        public Date getCreatedDate() { return createdDate; }
-        public PartialApiKey setCreatedDate(Date value) { this.createdDate = value; return this; }
-        public Date getExpiryDate() { return expiryDate; }
-        public PartialApiKey setExpiryDate(Date value) { this.expiryDate = value; return this; }
-        public Date getCancelledDate() { return cancelledDate; }
-        public PartialApiKey setCancelledDate(Date value) { this.cancelledDate = value; return this; }
-        public Date getLastUsedDate() { return lastUsedDate; }
-        public PartialApiKey setLastUsedDate(Date value) { this.lastUsedDate = value; return this; }
-        public ArrayList<String> getScopes() { return scopes; }
-        public PartialApiKey setScopes(ArrayList<String> value) { this.scopes = value; return this; }
-        public ArrayList<String> getFeatures() { return features; }
-        public PartialApiKey setFeatures(ArrayList<String> value) { this.features = value; return this; }
-        public ArrayList<String> getRestrictTo() { return restrictTo; }
-        public PartialApiKey setRestrictTo(ArrayList<String> value) { this.restrictTo = value; return this; }
-        public String getNotes() { return notes; }
-        public PartialApiKey setNotes(String value) { this.notes = value; return this; }
-        public Integer getRefId() { return refId; }
-        public PartialApiKey setRefId(Integer value) { this.refId = value; return this; }
-        public String getRefIdStr() { return refIdStr; }
-        public PartialApiKey setRefIdStr(String value) { this.refIdStr = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public PartialApiKey setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-        public Boolean isActive() { return active; }
-        public PartialApiKey setActive(Boolean value) { this.active = value; return this; }
     }
 
     public static class JobStatSummary
@@ -2915,6 +3637,66 @@ public class dtos
     }
 
     @DataContract
+    public static class AiContent
+    {
+        /**
+        * The type of the content part.
+        */
+        @DataMember(Name="type")
+        @SerializedName("type")
+        public String type = null;
+        
+        public String getType() { return type; }
+        public AiContent setType(String value) { this.type = value; return this; }
+    }
+
+    /**
+    * The tool calls generated by the model, such as function calls.
+    */
+    @DataContract
+    public static class ToolCall
+    {
+        /**
+        * The ID of the tool call.
+        */
+        @DataMember(Name="id")
+        @SerializedName("id")
+        public String id = null;
+
+        /**
+        * The type of the tool. Currently, only `function` is supported.
+        */
+        @DataMember(Name="type")
+        @SerializedName("type")
+        public String type = null;
+
+        /**
+        * The function that the model called.
+        */
+        @DataMember(Name="function")
+        @SerializedName("function")
+        public String function = null;
+        
+        public String getId() { return id; }
+        public ToolCall setId(String value) { this.id = value; return this; }
+        public String getType() { return type; }
+        public ToolCall setType(String value) { this.type = value; return this; }
+        public String getFunction() { return function; }
+        public ToolCall setFunction(String value) { this.function = value; return this; }
+    }
+
+    public static enum ResponseFormat
+    {
+        Text,
+        JsonObject;
+    }
+
+    public static enum ToolType
+    {
+        Function;
+    }
+
+    @DataContract
     public static class QueryBase
     {
         @DataMember(Order=1)
@@ -2954,6 +3736,64 @@ public class dtos
         public QueryBase setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
+    @DataContract
+    public static class ModelUsage
+    {
+        @DataMember
+        public String cost = null;
+
+        @DataMember
+        public String input = null;
+
+        @DataMember
+        public String output = null;
+
+        @DataMember
+        public Integer duration = null;
+
+        @DataMember(Name="completion_tokens")
+        @SerializedName("completion_tokens")
+        public Integer completionTokens = null;
+
+        @DataMember
+        public Integer inputCachedTokens = null;
+
+        @DataMember
+        public Integer outputCachedTokens = null;
+
+        @DataMember(Name="audio_tokens")
+        @SerializedName("audio_tokens")
+        public Integer audioTokens = null;
+
+        @DataMember(Name="reasoning_tokens")
+        @SerializedName("reasoning_tokens")
+        public Integer reasoningTokens = null;
+
+        @DataMember
+        public Integer totalTokens = null;
+        
+        public String getCost() { return cost; }
+        public ModelUsage setCost(String value) { this.cost = value; return this; }
+        public String getInput() { return input; }
+        public ModelUsage setInput(String value) { this.input = value; return this; }
+        public String getOutput() { return output; }
+        public ModelUsage setOutput(String value) { this.output = value; return this; }
+        public Integer getDuration() { return duration; }
+        public ModelUsage setDuration(Integer value) { this.duration = value; return this; }
+        public Integer getCompletionTokens() { return completionTokens; }
+        public ModelUsage setCompletionTokens(Integer value) { this.completionTokens = value; return this; }
+        public Integer getInputCachedTokens() { return inputCachedTokens; }
+        public ModelUsage setInputCachedTokens(Integer value) { this.inputCachedTokens = value; return this; }
+        public Integer getOutputCachedTokens() { return outputCachedTokens; }
+        public ModelUsage setOutputCachedTokens(Integer value) { this.outputCachedTokens = value; return this; }
+        public Integer getAudioTokens() { return audioTokens; }
+        public ModelUsage setAudioTokens(Integer value) { this.audioTokens = value; return this; }
+        public Integer getReasoningTokens() { return reasoningTokens; }
+        public ModelUsage setReasoningTokens(Integer value) { this.reasoningTokens = value; return this; }
+        public Integer getTotalTokens() { return totalTokens; }
+        public ModelUsage setTotalTokens(Integer value) { this.totalTokens = value; return this; }
+    }
+
     public static class BackgroundJobBase
     {
         public Long id = null;
@@ -2971,10 +3811,14 @@ public class dtos
         public String requestType = null;
         public String command = null;
         public String request = null;
+        @StringLength(MaximumLength=2147483647)
         public String requestBody = null;
+
         public String userId = null;
         public String response = null;
+        @StringLength(MaximumLength=2147483647)
         public String responseBody = null;
+
         public BackgroundJobState state = null;
         public Date startedDate = null;
         public Date completedDate = null;
@@ -2985,7 +3829,9 @@ public class dtos
         public Integer timeoutSecs = null;
         public Double progress = null;
         public String status = null;
+        @StringLength(MaximumLength=2147483647)
         public String logs = null;
+
         public Date lastActivityDate = null;
         public String replyTo = null;
         public String errorCode = null;
@@ -3212,19 +4058,25 @@ public class dtos
     {
         public ApiCss css = null;
         public AppTags tags = null;
+        public String jsConfig = null;
         
         public ApiCss getCss() { return css; }
         public ExplorerUi setCss(ApiCss value) { this.css = value; return this; }
         public AppTags getTags() { return tags; }
         public ExplorerUi setTags(AppTags value) { this.tags = value; return this; }
+        public String getJsConfig() { return jsConfig; }
+        public ExplorerUi setJsConfig(String value) { this.jsConfig = value; return this; }
     }
 
     public static class AdminUi
     {
         public ApiCss css = null;
+        public ArrayList<PageInfo> pages = null;
         
         public ApiCss getCss() { return css; }
         public AdminUi setCss(ApiCss value) { this.css = value; return this; }
+        public ArrayList<PageInfo> getPages() { return pages; }
+        public AdminUi setPages(ArrayList<PageInfo> value) { this.pages = value; return this; }
     }
 
     public static class ApiFormat
@@ -3570,10 +4422,26 @@ public class dtos
         public AdminDatabaseInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
+    public static class AdminChatInfo
+    {
+        public String accessRole = null;
+        public Integer defaultLimit = null;
+        public AiChatAnalytics analytics = null;
+        public HashMap<String,String> meta = null;
+        
+        public String getAccessRole() { return accessRole; }
+        public AdminChatInfo setAccessRole(String value) { this.accessRole = value; return this; }
+        public Integer getDefaultLimit() { return defaultLimit; }
+        public AdminChatInfo setDefaultLimit(Integer value) { this.defaultLimit = value; return this; }
+        public AiChatAnalytics getAnalytics() { return analytics; }
+        public AdminChatInfo setAnalytics(AiChatAnalytics value) { this.analytics = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public AdminChatInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+    }
+
     public static class MetadataTypesConfig
     {
         public String baseUrl = null;
-        public String usePath = null;
         public Boolean makePartial = null;
         public Boolean makeVirtual = null;
         public Boolean makeInternal = null;
@@ -3618,8 +4486,6 @@ public class dtos
         
         public String getBaseUrl() { return baseUrl; }
         public MetadataTypesConfig setBaseUrl(String value) { this.baseUrl = value; return this; }
-        public String getUsePath() { return usePath; }
-        public MetadataTypesConfig setUsePath(String value) { this.usePath = value; return this; }
         public Boolean isMakePartial() { return makePartial; }
         public MetadataTypesConfig setMakePartial(Boolean value) { this.makePartial = value; return this; }
         public Boolean isMakeVirtual() { return makeVirtual; }
@@ -3835,6 +4701,153 @@ public class dtos
         public MetadataOperationType setTags(ArrayList<String> value) { this.tags = value; return this; }
         public ApiUiInfo getUi() { return ui; }
         public MetadataOperationType setUi(ApiUiInfo value) { this.ui = value; return this; }
+    }
+
+    @DataContract
+    public static class ChoiceMessage
+    {
+        /**
+        * The contents of the message.
+        */
+        @DataMember(Name="content")
+        @SerializedName("content")
+        public String content = null;
+
+        /**
+        * The refusal message generated by the model.
+        */
+        @DataMember(Name="refusal")
+        @SerializedName("refusal")
+        public String refusal = null;
+
+        /**
+        * The reasoning process used by the model.
+        */
+        @DataMember(Name="reasoning")
+        @SerializedName("reasoning")
+        public String reasoning = null;
+
+        /**
+        * The role of the author of this message.
+        */
+        @DataMember(Name="role")
+        @SerializedName("role")
+        public String role = null;
+
+        /**
+        * Annotations for the message, when applicable, as when using the web search tool.
+        */
+        @DataMember(Name="annotations")
+        @SerializedName("annotations")
+        public ArrayList<ChoiceAnnotation> annotations = null;
+
+        /**
+        * If the audio output modality is requested, this object contains data about the audio response from the model.
+        */
+        @DataMember(Name="audio")
+        @SerializedName("audio")
+        public ChoiceAudio audio = null;
+
+        /**
+        * The tool calls generated by the model, such as function calls.
+        */
+        @DataMember(Name="tool_calls")
+        @SerializedName("tool_calls")
+        public ArrayList<ToolCall> toolCalls = null;
+        
+        public String getContent() { return content; }
+        public ChoiceMessage setContent(String value) { this.content = value; return this; }
+        public String getRefusal() { return refusal; }
+        public ChoiceMessage setRefusal(String value) { this.refusal = value; return this; }
+        public String getReasoning() { return reasoning; }
+        public ChoiceMessage setReasoning(String value) { this.reasoning = value; return this; }
+        public String getRole() { return role; }
+        public ChoiceMessage setRole(String value) { this.role = value; return this; }
+        public ArrayList<ChoiceAnnotation> getAnnotations() { return annotations; }
+        public ChoiceMessage setAnnotations(ArrayList<ChoiceAnnotation> value) { this.annotations = value; return this; }
+        public ChoiceAudio getAudio() { return audio; }
+        public ChoiceMessage setAudio(ChoiceAudio value) { this.audio = value; return this; }
+        public ArrayList<ToolCall> getToolCalls() { return toolCalls; }
+        public ChoiceMessage setToolCalls(ArrayList<ToolCall> value) { this.toolCalls = value; return this; }
+    }
+
+    /**
+    * Usage statistics for the completion request.
+    */
+    @DataContract
+    public static class AiCompletionUsage
+    {
+        /**
+        * When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.
+        */
+        @DataMember(Name="accepted_prediction_tokens")
+        @SerializedName("accepted_prediction_tokens")
+        public Integer acceptedPredictionTokens = null;
+
+        /**
+        * Audio input tokens generated by the model.
+        */
+        @DataMember(Name="audio_tokens")
+        @SerializedName("audio_tokens")
+        public Integer audioTokens = null;
+
+        /**
+        * Tokens generated by the model for reasoning.
+        */
+        @DataMember(Name="reasoning_tokens")
+        @SerializedName("reasoning_tokens")
+        public Integer reasoningTokens = null;
+
+        /**
+        * When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion.
+        */
+        @DataMember(Name="rejected_prediction_tokens")
+        @SerializedName("rejected_prediction_tokens")
+        public Integer rejectedPredictionTokens = null;
+        
+        public Integer getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
+        public AiCompletionUsage setAcceptedPredictionTokens(Integer value) { this.acceptedPredictionTokens = value; return this; }
+        public Integer getAudioTokens() { return audioTokens; }
+        public AiCompletionUsage setAudioTokens(Integer value) { this.audioTokens = value; return this; }
+        public Integer getReasoningTokens() { return reasoningTokens; }
+        public AiCompletionUsage setReasoningTokens(Integer value) { this.reasoningTokens = value; return this; }
+        public Integer getRejectedPredictionTokens() { return rejectedPredictionTokens; }
+        public AiCompletionUsage setRejectedPredictionTokens(Integer value) { this.rejectedPredictionTokens = value; return this; }
+    }
+
+    /**
+    * Breakdown of tokens used in the prompt.
+    */
+    @DataContract
+    public static class AiPromptUsage
+    {
+        /**
+        * When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.
+        */
+        @DataMember(Name="accepted_prediction_tokens")
+        @SerializedName("accepted_prediction_tokens")
+        public Integer acceptedPredictionTokens = null;
+
+        /**
+        * Audio input tokens present in the prompt.
+        */
+        @DataMember(Name="audio_tokens")
+        @SerializedName("audio_tokens")
+        public Integer audioTokens = null;
+
+        /**
+        * Cached tokens present in the prompt.
+        */
+        @DataMember(Name="cached_tokens")
+        @SerializedName("cached_tokens")
+        public Integer cachedTokens = null;
+        
+        public Integer getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
+        public AiPromptUsage setAcceptedPredictionTokens(Integer value) { this.acceptedPredictionTokens = value; return this; }
+        public Integer getAudioTokens() { return audioTokens; }
+        public AiPromptUsage setAudioTokens(Integer value) { this.audioTokens = value; return this; }
+        public Integer getCachedTokens() { return cachedTokens; }
+        public AiPromptUsage setCachedTokens(Integer value) { this.cachedTokens = value; return this; }
     }
 
     public static class MetadataDataMember
@@ -4069,6 +5082,74 @@ public class dtos
         public RequestSummary setApiKeys(HashMap<String,Long> value) { this.apiKeys = value; return this; }
     }
 
+    /**
+    * Text content part
+    */
+    @DataContract
+    public static class AiTextContent extends AiContent
+    {
+        /**
+        * The text content.
+        */
+        @DataMember(Name="text")
+        @SerializedName("text")
+        public String text = null;
+        
+        public String getText() { return text; }
+        public AiTextContent setText(String value) { this.text = value; return this; }
+    }
+
+    /**
+    * Image content part
+    */
+    @DataContract
+    public static class AiImageContent extends AiContent
+    {
+        /**
+        * The image for this content.
+        */
+        @DataMember(Name="image_url")
+        @SerializedName("image_url")
+        public AiImageUrl imageUrl = null;
+        
+        public AiImageUrl getImageUrl() { return imageUrl; }
+        public AiImageContent setImageUrl(AiImageUrl value) { this.imageUrl = value; return this; }
+    }
+
+    /**
+    * Audio content part
+    */
+    @DataContract
+    public static class AiAudioContent extends AiContent
+    {
+        /**
+        * The audio input for this content.
+        */
+        @DataMember(Name="input_audio")
+        @SerializedName("input_audio")
+        public AiInputAudio inputAudio = null;
+        
+        public AiInputAudio getInputAudio() { return inputAudio; }
+        public AiAudioContent setInputAudio(AiInputAudio value) { this.inputAudio = value; return this; }
+    }
+
+    /**
+    * File content part
+    */
+    @DataContract
+    public static class AiFileContent extends AiContent
+    {
+        /**
+        * The file input for this content.
+        */
+        @DataMember(Name="file")
+        @SerializedName("file")
+        public AiFile file = null;
+        
+        public AiFile getFile() { return file; }
+        public AiFileContent setFile(AiFile value) { this.file = value; return this; }
+    }
+
     public static class ApiCss
     {
         public String form = null;
@@ -4092,6 +5173,17 @@ public class dtos
         public AppTags setDefault(String value) { this.Default = value; return this; }
         public String getOther() { return other; }
         public AppTags setOther(String value) { this.other = value; return this; }
+    }
+
+    public static class PageInfo
+    {
+        public String page = null;
+        public String component = null;
+        
+        public String getPage() { return page; }
+        public PageInfo setPage(String value) { this.page = value; return this; }
+        public String getComponent() { return component; }
+        public PageInfo setComponent(String value) { this.component = value; return this; }
     }
 
     public static class MetaAuthProvider
@@ -4273,6 +5365,14 @@ public class dtos
         public DatabaseInfo setSchemas(ArrayList<SchemaInfo> value) { this.schemas = value; return this; }
     }
 
+    public static class AiChatAnalytics
+    {
+        public ArrayList<String> months = null;
+        
+        public ArrayList<String> getMonths() { return months; }
+        public AiChatAnalytics setMonths(ArrayList<String> value) { this.months = value; return this; }
+    }
+
     public static class MetadataTypeName
     {
         public String name = null;
@@ -4332,6 +5432,76 @@ public class dtos
         public ApiUiInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
+    /**
+    * Annotations for the message, when applicable, as when using the web search tool.
+    */
+    @DataContract
+    public static class ChoiceAnnotation
+    {
+        /**
+        * The type of the URL citation. Always url_citation.
+        */
+        @DataMember(Name="type")
+        @SerializedName("type")
+        public String type = null;
+
+        /**
+        * A URL citation when using web search.
+        */
+        @DataMember(Name="url_citation")
+        @SerializedName("url_citation")
+        public UrlCitation urlCitation = null;
+        
+        public String getType() { return type; }
+        public ChoiceAnnotation setType(String value) { this.type = value; return this; }
+        public UrlCitation getUrlCitation() { return urlCitation; }
+        public ChoiceAnnotation setUrlCitation(UrlCitation value) { this.urlCitation = value; return this; }
+    }
+
+    /**
+    * If the audio output modality is requested, this object contains data about the audio response from the model.
+    */
+    @DataContract
+    public static class ChoiceAudio
+    {
+        /**
+        * Base64 encoded audio bytes generated by the model, in the format specified in the request.
+        */
+        @DataMember(Name="data")
+        @SerializedName("data")
+        public String data = null;
+
+        /**
+        * The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.
+        */
+        @DataMember(Name="expires_at")
+        @SerializedName("expires_at")
+        public Integer expiresAt = null;
+
+        /**
+        * Unique identifier for this audio response.
+        */
+        @DataMember(Name="id")
+        @SerializedName("id")
+        public String id = null;
+
+        /**
+        * Transcript of the audio generated by the model.
+        */
+        @DataMember(Name="transcript")
+        @SerializedName("transcript")
+        public String transcript = null;
+        
+        public String getData() { return data; }
+        public ChoiceAudio setData(String value) { this.data = value; return this; }
+        public Integer getExpiresAt() { return expiresAt; }
+        public ChoiceAudio setExpiresAt(Integer value) { this.expiresAt = value; return this; }
+        public String getId() { return id; }
+        public ChoiceAudio setId(String value) { this.id = value; return this; }
+        public String getTranscript() { return transcript; }
+        public ChoiceAudio setTranscript(String value) { this.transcript = value; return this; }
+    }
+
     public static class FieldCss
     {
         public String field = null;
@@ -4344,6 +5514,81 @@ public class dtos
         public FieldCss setInput(String value) { this.input = value; return this; }
         public String getLabel() { return label; }
         public FieldCss setLabel(String value) { this.label = value; return this; }
+    }
+
+    @DataContract
+    public static class AiImageUrl
+    {
+        /**
+        * Either a URL of the image or the base64 encoded image data.
+        */
+        @DataMember(Name="url")
+        @SerializedName("url")
+        public String url = null;
+        
+        public String getUrl() { return url; }
+        public AiImageUrl setUrl(String value) { this.url = value; return this; }
+    }
+
+    /**
+    * Audio content part
+    */
+    @DataContract
+    public static class AiInputAudio
+    {
+        /**
+        * URL or Base64 encoded audio data.
+        */
+        @DataMember(Name="data")
+        @SerializedName("data")
+        public String data = null;
+
+        /**
+        * The format of the encoded audio data. Currently supports 'wav' and 'mp3'.
+        */
+        @DataMember(Name="format")
+        @SerializedName("format")
+        public String format = null;
+        
+        public String getData() { return data; }
+        public AiInputAudio setData(String value) { this.data = value; return this; }
+        public String getFormat() { return format; }
+        public AiInputAudio setFormat(String value) { this.format = value; return this; }
+    }
+
+    /**
+    * File content part
+    */
+    @DataContract
+    public static class AiFile
+    {
+        /**
+        * The URL or base64 encoded file data, used when passing the file to the model as a string.
+        */
+        @DataMember(Name="file_data")
+        @SerializedName("file_data")
+        public String fileData = null;
+
+        /**
+        * The name of the file, used when passing the file to the model as a string.
+        */
+        @DataMember(Name="filename")
+        @SerializedName("filename")
+        public String filename = null;
+
+        /**
+        * The ID of an uploaded file to use as input.
+        */
+        @DataMember(Name="file_id")
+        @SerializedName("file_id")
+        public String fileId = null;
+        
+        public String getFileData() { return fileData; }
+        public AiFile setFileData(String value) { this.fileData = value; return this; }
+        public String getFilename() { return filename; }
+        public AiFile setFilename(String value) { this.filename = value; return this; }
+        public String getFileId() { return fileId; }
+        public AiFile setFileId(String value) { this.fileId = value; return this; }
     }
 
     public static class NavItem
@@ -4396,6 +5641,50 @@ public class dtos
         public SchemaInfo setName(String value) { this.name = value; return this; }
         public ArrayList<String> getTables() { return tables; }
         public SchemaInfo setTables(ArrayList<String> value) { this.tables = value; return this; }
+    }
+
+    /**
+    * Annotations for the message, when applicable, as when using the web search tool.
+    */
+    @DataContract
+    public static class UrlCitation
+    {
+        /**
+        * The index of the last character of the URL citation in the message.
+        */
+        @DataMember(Name="end_index")
+        @SerializedName("end_index")
+        public Integer endIndex = null;
+
+        /**
+        * The index of the first character of the URL citation in the message.
+        */
+        @DataMember(Name="start_index")
+        @SerializedName("start_index")
+        public Integer startIndex = null;
+
+        /**
+        * The title of the web resource.
+        */
+        @DataMember(Name="title")
+        @SerializedName("title")
+        public String title = null;
+
+        /**
+        * The URL of the web resource.
+        */
+        @DataMember(Name="url")
+        @SerializedName("url")
+        public String url = null;
+        
+        public Integer getEndIndex() { return endIndex; }
+        public UrlCitation setEndIndex(Integer value) { this.endIndex = value; return this; }
+        public Integer getStartIndex() { return startIndex; }
+        public UrlCitation setStartIndex(Integer value) { this.startIndex = value; return this; }
+        public String getTitle() { return title; }
+        public UrlCitation setTitle(String value) { this.title = value; return this; }
+        public String getUrl() { return url; }
+        public UrlCitation setUrl(String value) { this.url = value; return this; }
     }
 
 }

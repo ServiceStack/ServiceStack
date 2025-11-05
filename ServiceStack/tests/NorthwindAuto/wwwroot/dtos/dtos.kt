@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-03-28 01:55:02
-Version: 8.61
+Date: 2025-11-05 18:02:26
+Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -94,6 +94,354 @@ open class AdminDashboard : IReturn<AdminDashboardResponse>, IGet
 {
     companion object { private val responseType = AdminDashboardResponse::class.java }
     override fun getResponseType(): Any? = AdminDashboard.responseType
+}
+
+@DataContract
+open class AdminQueryApiKeys : IReturn<AdminApiKeysResponse>, IGet
+{
+    @DataMember(Order=1)
+    open var id:Int? = null
+
+    @DataMember(Order=2)
+    open var apiKey:String? = null
+
+    @DataMember(Order=3)
+    open var search:String? = null
+
+    @DataMember(Order=4)
+    open var userId:String? = null
+
+    @DataMember(Order=5)
+    open var userName:String? = null
+
+    @DataMember(Order=6)
+    open var orderBy:String? = null
+
+    @DataMember(Order=7)
+    open var skip:Int? = null
+
+    @DataMember(Order=8)
+    open var take:Int? = null
+    companion object { private val responseType = AdminApiKeysResponse::class.java }
+    override fun getResponseType(): Any? = AdminQueryApiKeys.responseType
+}
+
+@DataContract
+open class AdminCreateApiKey : IReturn<AdminApiKeyResponse>, IPost
+{
+    @DataMember(Order=1)
+    open var name:String? = null
+
+    @DataMember(Order=2)
+    open var userId:String? = null
+
+    @DataMember(Order=3)
+    open var userName:String? = null
+
+    @DataMember(Order=4)
+    open var scopes:ArrayList<String>? = null
+
+    @DataMember(Order=5)
+    open var features:ArrayList<String>? = null
+
+    @DataMember(Order=6)
+    open var restrictTo:ArrayList<String>? = null
+
+    @DataMember(Order=7)
+    open var expiryDate:Date? = null
+
+    @DataMember(Order=8)
+    open var notes:String? = null
+
+    @DataMember(Order=9)
+    open var refId:Int? = null
+
+    @DataMember(Order=10)
+    open var refIdStr:String? = null
+
+    @DataMember(Order=11)
+    open var meta:HashMap<String,String>? = null
+    companion object { private val responseType = AdminApiKeyResponse::class.java }
+    override fun getResponseType(): Any? = AdminCreateApiKey.responseType
+}
+
+@DataContract
+open class AdminUpdateApiKey : IReturn<EmptyResponse>, IPatch
+{
+    @DataMember(Order=1)
+    @Validate(Validator="GreaterThan(0)")
+    open var id:Int? = null
+
+    @DataMember(Order=2)
+    open var name:String? = null
+
+    @DataMember(Order=3)
+    open var userId:String? = null
+
+    @DataMember(Order=4)
+    open var userName:String? = null
+
+    @DataMember(Order=5)
+    open var scopes:ArrayList<String>? = null
+
+    @DataMember(Order=6)
+    open var features:ArrayList<String>? = null
+
+    @DataMember(Order=7)
+    open var restrictTo:ArrayList<String>? = null
+
+    @DataMember(Order=8)
+    open var expiryDate:Date? = null
+
+    @DataMember(Order=9)
+    open var cancelledDate:Date? = null
+
+    @DataMember(Order=10)
+    open var notes:String? = null
+
+    @DataMember(Order=11)
+    open var refId:Int? = null
+
+    @DataMember(Order=12)
+    open var refIdStr:String? = null
+
+    @DataMember(Order=13)
+    open var meta:HashMap<String,String>? = null
+
+    @DataMember(Order=14)
+    open var reset:ArrayList<String>? = null
+    companion object { private val responseType = EmptyResponse::class.java }
+    override fun getResponseType(): Any? = AdminUpdateApiKey.responseType
+}
+
+@DataContract
+open class AdminDeleteApiKey : IReturn<EmptyResponse>, IDelete
+{
+    @DataMember(Order=1)
+    @Validate(Validator="GreaterThan(0)")
+    open var id:Int? = null
+    companion object { private val responseType = EmptyResponse::class.java }
+    override fun getResponseType(): Any? = AdminDeleteApiKey.responseType
+}
+
+/**
+* Chat Completions API (OpenAI-Compatible)
+*/
+@Route(Path="/v1/chat/completions", Verbs="POST")
+@DataContract
+open class ChatCompletion : IReturn<ChatResponse>, IPost
+{
+    /**
+    * The messages to generate chat completions for.
+    */
+    @DataMember(Name="messages")
+    @SerializedName("messages")
+    open var messages:ArrayList<AiMessage> = ArrayList<AiMessage>()
+
+    /**
+    * ID of the model to use. See the model endpoint compatibility table for details on which models work with the Chat API
+    */
+    @DataMember(Name="model")
+    @SerializedName("model")
+    open var model:String? = null
+
+    /**
+    * Parameters for audio output. Required when audio output is requested with modalities: [audio]
+    */
+    @DataMember(Name="audio")
+    @SerializedName("audio")
+    open var audio:AiChatAudio? = null
+
+    /**
+    * Modify the likelihood of specified tokens appearing in the completion.
+    */
+    @DataMember(Name="logit_bias")
+    @SerializedName("logit_bias")
+    open var logitBias:HashMap<Int,Int>? = null
+
+    /**
+    * Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.
+    */
+    @DataMember(Name="metadata")
+    @SerializedName("metadata")
+    open var metadata:HashMap<String,String>? = null
+
+    /**
+    * Constrains effort on reasoning for reasoning models. Currently supported values are minimal, low, medium, and high (none, default). Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
+    */
+    @DataMember(Name="reasoning_effort")
+    @SerializedName("reasoning_effort")
+    open var reasoningEffort:String? = null
+
+    /**
+    * An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`. Setting Type to ResponseFormat.JsonObject enables JSON mode, which guarantees the message the model generates is valid JSON.
+    */
+    @DataMember(Name="response_format")
+    @SerializedName("response_format")
+    open var responseFormat:AiResponseFormat? = null
+
+    /**
+    * Specifies the processing type used for serving the request.
+    */
+    @DataMember(Name="service_tier")
+    @SerializedName("service_tier")
+    open var serviceTier:String? = null
+
+    /**
+    * A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.
+    */
+    @DataMember(Name="safety_identifier")
+    @SerializedName("safety_identifier")
+    open var safetyIdentifier:String? = null
+
+    /**
+    * Up to 4 sequences where the API will stop generating further tokens.
+    */
+    @DataMember(Name="stop")
+    @SerializedName("stop")
+    open var stop:ArrayList<String>? = null
+
+    /**
+    * Output types that you would like the model to generate. Most models are capable of generating text, which is the default:
+    */
+    @DataMember(Name="modalities")
+    @SerializedName("modalities")
+    open var modalities:ArrayList<String>? = null
+
+    /**
+    * Used by OpenAI to cache responses for similar requests to optimize your cache hit rates.
+    */
+    @DataMember(Name="prompt_cache_key")
+    @SerializedName("prompt_cache_key")
+    open var promptCacheKey:String? = null
+
+    /**
+    * A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
+    */
+    @DataMember(Name="tools")
+    @SerializedName("tools")
+    open var tools:ArrayList<Tool>? = null
+
+    /**
+    * Constrains the verbosity of the model's response. Lower values will result in more concise responses, while higher values will result in more verbose responses. Currently supported values are low, medium, and high.
+    */
+    @DataMember(Name="verbosity")
+    @SerializedName("verbosity")
+    open var verbosity:String? = null
+
+    /**
+    * What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+    */
+    @DataMember(Name="temperature")
+    @SerializedName("temperature")
+    open var temperature:Double? = null
+
+    /**
+    * An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.
+    */
+    @DataMember(Name="max_completion_tokens")
+    @SerializedName("max_completion_tokens")
+    open var maxCompletionTokens:Int? = null
+
+    /**
+    * An integer between 0 and 20 specifying the number of most likely tokens to return at each token position, each with an associated log probability. logprobs must be set to true if this parameter is used.
+    */
+    @DataMember(Name="top_logprobs")
+    @SerializedName("top_logprobs")
+    open var topLogprobs:Int? = null
+
+    /**
+    * An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+    */
+    @DataMember(Name="top_p")
+    @SerializedName("top_p")
+    open var topP:Double? = null
+
+    /**
+    * Number between `-2.0` and `2.0`. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
+    */
+    @DataMember(Name="frequency_penalty")
+    @SerializedName("frequency_penalty")
+    open var frequencyPenalty:Double? = null
+
+    /**
+    * Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+    */
+    @DataMember(Name="presence_penalty")
+    @SerializedName("presence_penalty")
+    open var presencePenalty:Double? = null
+
+    /**
+    * This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.
+    */
+    @DataMember(Name="seed")
+    @SerializedName("seed")
+    open var seed:Int? = null
+
+    /**
+    * How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs.
+    */
+    @DataMember(Name="n")
+    @SerializedName("n")
+    open var n:Int? = null
+
+    /**
+    * Whether or not to store the output of this chat completion request for use in our model distillation or evals products.
+    */
+    @DataMember(Name="store")
+    @SerializedName("store")
+    open var store:Boolean? = null
+
+    /**
+    * Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message.
+    */
+    @DataMember(Name="logprobs")
+    @SerializedName("logprobs")
+    open var logprobs:Boolean? = null
+
+    /**
+    * Whether to enable parallel function calling during tool use.
+    */
+    @DataMember(Name="parallel_tool_calls")
+    @SerializedName("parallel_tool_calls")
+    open var parallelToolCalls:Boolean? = null
+
+    /**
+    * Whether to enable thinking mode for some Qwen models and providers.
+    */
+    @DataMember(Name="enable_thinking")
+    @SerializedName("enable_thinking")
+    open var enableThinking:Boolean? = null
+
+    /**
+    * If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message.
+    */
+    @DataMember(Name="stream")
+    @SerializedName("stream")
+    open var stream:Boolean? = null
+    companion object { private val responseType = ChatResponse::class.java }
+    override fun getResponseType(): Any? = ChatCompletion.responseType
+}
+
+open class AdminQueryChatCompletionLogs : QueryDb<ChatCompletionLog>(), IReturn<QueryResponse<ChatCompletionLog>>
+{
+    open var month:Date? = null
+    companion object { private val responseType = object : TypeToken<QueryResponse<ChatCompletionLog>>(){}.type }
+    override fun getResponseType(): Any? = AdminQueryChatCompletionLogs.responseType
+}
+
+open class AdminMonthlyChatCompletionAnalytics : IReturn<AdminMonthlyChatCompletionAnalyticsResponse>, IGet
+{
+    open var month:Date? = null
+    companion object { private val responseType = AdminMonthlyChatCompletionAnalyticsResponse::class.java }
+    override fun getResponseType(): Any? = AdminMonthlyChatCompletionAnalytics.responseType
+}
+
+open class AdminDailyChatCompletionAnalytics : IReturn<AdminDailyChatCompletionAnalyticsResponse>, IGet
+{
+    open var day:Date? = null
+    companion object { private val responseType = AdminDailyChatCompletionAnalyticsResponse::class.java }
+    override fun getResponseType(): Any? = AdminDailyChatCompletionAnalytics.responseType
 }
 
 /**
@@ -326,134 +674,6 @@ open class ExecuteCommand : IReturn<ExecuteCommandResponse>, IPost
     open var requestJson:String? = null
     companion object { private val responseType = ExecuteCommandResponse::class.java }
     override fun getResponseType(): Any? = ExecuteCommand.responseType
-}
-
-@DataContract
-open class AdminQueryApiKeys : IReturn<AdminApiKeysResponse>, IGet
-{
-    @DataMember(Order=1)
-    open var id:Int? = null
-
-    @DataMember(Order=2)
-    open var apiKey:String? = null
-
-    @DataMember(Order=3)
-    open var search:String? = null
-
-    @DataMember(Order=4)
-    open var userId:String? = null
-
-    @DataMember(Order=5)
-    open var userName:String? = null
-
-    @DataMember(Order=6)
-    open var orderBy:String? = null
-
-    @DataMember(Order=7)
-    open var skip:Int? = null
-
-    @DataMember(Order=8)
-    open var take:Int? = null
-    companion object { private val responseType = AdminApiKeysResponse::class.java }
-    override fun getResponseType(): Any? = AdminQueryApiKeys.responseType
-}
-
-@DataContract
-open class AdminCreateApiKey : IReturn<AdminApiKeyResponse>, IPost
-{
-    @DataMember(Order=1)
-    open var name:String? = null
-
-    @DataMember(Order=2)
-    open var userId:String? = null
-
-    @DataMember(Order=3)
-    open var userName:String? = null
-
-    @DataMember(Order=4)
-    open var scopes:ArrayList<String>? = null
-
-    @DataMember(Order=5)
-    open var features:ArrayList<String>? = null
-
-    @DataMember(Order=6)
-    open var restrictTo:ArrayList<String>? = null
-
-    @DataMember(Order=7)
-    open var expiryDate:Date? = null
-
-    @DataMember(Order=8)
-    open var notes:String? = null
-
-    @DataMember(Order=9)
-    open var refId:Int? = null
-
-    @DataMember(Order=10)
-    open var refIdStr:String? = null
-
-    @DataMember(Order=11)
-    open var meta:HashMap<String,String>? = null
-    companion object { private val responseType = AdminApiKeyResponse::class.java }
-    override fun getResponseType(): Any? = AdminCreateApiKey.responseType
-}
-
-@DataContract
-open class AdminUpdateApiKey : IReturn<EmptyResponse>, IPatch
-{
-    @DataMember(Order=1)
-    @Validate(Validator="GreaterThan(0)")
-    open var id:Int? = null
-
-    @DataMember(Order=2)
-    open var name:String? = null
-
-    @DataMember(Order=3)
-    open var userId:String? = null
-
-    @DataMember(Order=4)
-    open var userName:String? = null
-
-    @DataMember(Order=5)
-    open var scopes:ArrayList<String>? = null
-
-    @DataMember(Order=6)
-    open var features:ArrayList<String>? = null
-
-    @DataMember(Order=7)
-    open var restrictTo:ArrayList<String>? = null
-
-    @DataMember(Order=8)
-    open var expiryDate:Date? = null
-
-    @DataMember(Order=9)
-    open var cancelledDate:Date? = null
-
-    @DataMember(Order=10)
-    open var notes:String? = null
-
-    @DataMember(Order=11)
-    open var refId:Int? = null
-
-    @DataMember(Order=12)
-    open var refIdStr:String? = null
-
-    @DataMember(Order=13)
-    open var meta:HashMap<String,String>? = null
-
-    @DataMember(Order=14)
-    open var reset:ArrayList<String>? = null
-    companion object { private val responseType = EmptyResponse::class.java }
-    override fun getResponseType(): Any? = AdminUpdateApiKey.responseType
-}
-
-@DataContract
-open class AdminDeleteApiKey : IReturn<EmptyResponse>, IDelete
-{
-    @DataMember(Order=1)
-    @Validate(Validator="GreaterThan(0)")
-    open var id:Int? = null
-    companion object { private val responseType = EmptyResponse::class.java }
-    override fun getResponseType(): Any? = AdminDeleteApiKey.responseType
 }
 
 open class AdminJobDashboard : IReturn<AdminJobDashboardResponse>, IGet
@@ -753,6 +973,144 @@ open class AdminDashboardResponse
 }
 
 @DataContract
+open class AdminApiKeysResponse
+{
+    @DataMember(Order=1)
+    open var results:ArrayList<PartialApiKey>? = null
+
+    @DataMember(Order=2)
+    open var responseStatus:ResponseStatus? = null
+}
+
+@DataContract
+open class AdminApiKeyResponse
+{
+    @DataMember(Order=1)
+    open var result:String? = null
+
+    @DataMember(Order=2)
+    open var responseStatus:ResponseStatus? = null
+}
+
+@DataContract
+open class EmptyResponse
+{
+    @DataMember(Order=1)
+    open var responseStatus:ResponseStatus? = null
+}
+
+@DataContract
+open class ChatResponse
+{
+    /**
+    * A unique identifier for the chat completion.
+    */
+    @DataMember(Name="id")
+    @SerializedName("id")
+    open var id:String? = null
+
+    /**
+    * A list of chat completion choices. Can be more than one if n is greater than 1.
+    */
+    @DataMember(Name="choices")
+    @SerializedName("choices")
+    open var choices:ArrayList<Choice> = ArrayList<Choice>()
+
+    /**
+    * The Unix timestamp (in seconds) of when the chat completion was created.
+    */
+    @DataMember(Name="created")
+    @SerializedName("created")
+    open var created:Long? = null
+
+    /**
+    * The model used for the chat completion.
+    */
+    @DataMember(Name="model")
+    @SerializedName("model")
+    open var model:String? = null
+
+    /**
+    * This fingerprint represents the backend configuration that the model runs with.
+    */
+    @DataMember(Name="system_fingerprint")
+    @SerializedName("system_fingerprint")
+    open var systemFingerprint:String? = null
+
+    /**
+    * The object type, which is always chat.completion.
+    */
+    @DataMember(Name="object")
+    @SerializedName("object")
+    open var Object:String? = null
+
+    /**
+    * Specifies the processing type used for serving the request.
+    */
+    @DataMember(Name="service_tier")
+    @SerializedName("service_tier")
+    open var serviceTier:String? = null
+
+    /**
+    * Usage statistics for the completion request.
+    */
+    @DataMember(Name="usage")
+    @SerializedName("usage")
+    open var usage:AiUsage? = null
+
+    /**
+    * The provider used for the chat completion.
+    */
+    @DataMember(Name="provider")
+    @SerializedName("provider")
+    open var provider:String? = null
+
+    /**
+    * Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.
+    */
+    @DataMember(Name="metadata")
+    @SerializedName("metadata")
+    open var metadata:HashMap<String,String>? = null
+
+    @DataMember(Name="responseStatus")
+    @SerializedName("responseStatus")
+    open var responseStatus:ResponseStatus? = null
+}
+
+@DataContract
+open class QueryResponse<T>
+{
+    @DataMember(Order=1)
+    open var offset:Int? = null
+
+    @DataMember(Order=2)
+    open var total:Int? = null
+
+    @DataMember(Order=3)
+    open var results:ArrayList<ChatCompletionLog> = ArrayList<ChatCompletionLog>()
+
+    @DataMember(Order=4)
+    open var meta:HashMap<String,String>? = null
+
+    @DataMember(Order=5)
+    open var responseStatus:ResponseStatus? = null
+}
+
+open class AdminMonthlyChatCompletionAnalyticsResponse
+{
+    open var month:String? = null
+    open var modelStats:ArrayList<ChatCompletionStat> = ArrayList<ChatCompletionStat>()
+    open var providerStats:ArrayList<ChatCompletionStat> = ArrayList<ChatCompletionStat>()
+    open var dailyStats:ArrayList<ChatCompletionStat> = ArrayList<ChatCompletionStat>()
+}
+
+open class AdminDailyChatCompletionAnalyticsResponse
+{
+    open var modelStats:ArrayList<ChatCompletionStat> = ArrayList<ChatCompletionStat>()
+    open var providerStats:ArrayList<ChatCompletionStat> = ArrayList<ChatCompletionStat>()
+}
+
+@DataContract
 open class AuthenticateResponse : IHasSessionId, IHasBearerToken
 {
     @DataMember(Order=1)
@@ -869,25 +1227,6 @@ open class AdminDeleteUserResponse
     open var responseStatus:ResponseStatus? = null
 }
 
-@DataContract
-open class QueryResponse<T>
-{
-    @DataMember(Order=1)
-    open var offset:Int? = null
-
-    @DataMember(Order=2)
-    open var total:Int? = null
-
-    @DataMember(Order=3)
-    open var results:ArrayList<RequestLog>? = null
-
-    @DataMember(Order=4)
-    open var meta:HashMap<String,String>? = null
-
-    @DataMember(Order=5)
-    open var responseStatus:ResponseStatus? = null
-}
-
 open class AdminProfilingResponse
 {
     open var results:ArrayList<DiagnosticEntry> = ArrayList<DiagnosticEntry>()
@@ -928,33 +1267,6 @@ open class ExecuteCommandResponse
     open var responseStatus:ResponseStatus? = null
 }
 
-@DataContract
-open class AdminApiKeysResponse
-{
-    @DataMember(Order=1)
-    open var results:ArrayList<PartialApiKey>? = null
-
-    @DataMember(Order=2)
-    open var responseStatus:ResponseStatus? = null
-}
-
-@DataContract
-open class AdminApiKeyResponse
-{
-    @DataMember(Order=1)
-    open var result:String? = null
-
-    @DataMember(Order=2)
-    open var responseStatus:ResponseStatus? = null
-}
-
-@DataContract
-open class EmptyResponse
-{
-    @DataMember(Order=1)
-    open var responseStatus:ResponseStatus? = null
-}
-
 open class AdminJobDashboardResponse
 {
     open var commands:ArrayList<JobStatSummary> = ArrayList<JobStatSummary>()
@@ -966,12 +1278,12 @@ open class AdminJobDashboardResponse
 
 open class AdminJobInfoResponse
 {
-    open var monthDbs:ArrayList<Date> = ArrayList<Date>()
-    open var tableCounts:HashMap<String,Int> = HashMap<String,Int>()
-    open var workerStats:ArrayList<WorkerStats> = ArrayList<WorkerStats>()
-    open var queueCounts:HashMap<String,Int> = HashMap<String,Int>()
-    open var workerCounts:HashMap<String,Int> = HashMap<String,Int>()
-    open var stateCounts:HashMap<BackgroundJobState,Int> = HashMap<BackgroundJobState,Int>()
+    open var monthDbs:ArrayList<Date>? = null
+    open var tableCounts:HashMap<String,Int>? = null
+    open var workerStats:ArrayList<WorkerStats>? = null
+    open var queueCounts:HashMap<String,Int>? = null
+    open var workerCounts:HashMap<String,Int>? = null
+    open var stateCounts:HashMap<BackgroundJobState,Int>? = null
     open var responseStatus:ResponseStatus? = null
 }
 
@@ -1068,6 +1380,128 @@ open class Property
     open var value:String? = null
 }
 
+/**
+* A list of messages comprising the conversation so far.
+*/
+@DataContract
+open class AiMessage
+{
+    /**
+    * The contents of the message.
+    */
+    @DataMember(Name="content")
+    @SerializedName("content")
+    open var content:ArrayList<AiContent>? = null
+
+    /**
+    * The role of the author of this message. Valid values are `system`, `user`, `assistant` and `tool`.
+    */
+    @DataMember(Name="role")
+    @SerializedName("role")
+    open var role:String? = null
+
+    /**
+    * An optional name for the participant. Provides the model information to differentiate between participants of the same role.
+    */
+    @DataMember(Name="name")
+    @SerializedName("name")
+    open var name:String? = null
+
+    /**
+    * The tool calls generated by the model, such as function calls.
+    */
+    @DataMember(Name="tool_calls")
+    @SerializedName("tool_calls")
+    open var toolCalls:ArrayList<ToolCall>? = null
+
+    /**
+    * Tool call that this message is responding to.
+    */
+    @DataMember(Name="tool_call_id")
+    @SerializedName("tool_call_id")
+    open var toolCallId:String? = null
+}
+
+/**
+* Parameters for audio output. Required when audio output is requested with modalities: [audio]
+*/
+@DataContract
+open class AiChatAudio
+{
+    /**
+    * Specifies the output audio format. Must be one of wav, mp3, flac, opus, or pcm16.
+    */
+    @DataMember(Name="format")
+    @SerializedName("format")
+    open var format:String? = null
+
+    /**
+    * The voice the model uses to respond. Supported voices are alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, and shimmer.
+    */
+    @DataMember(Name="voice")
+    @SerializedName("voice")
+    open var voice:String? = null
+}
+
+@DataContract
+open class AiResponseFormat
+{
+    /**
+    * An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
+    */
+    @DataMember(Name="response_format")
+    @SerializedName("response_format")
+    open var Type:ResponseFormat? = null
+}
+
+@DataContract
+open class Tool
+{
+    /**
+    * The type of the tool. Currently, only function is supported.
+    */
+    @DataMember(Name="type")
+    @SerializedName("type")
+    open var Type:ToolType? = null
+}
+
+open class QueryDb<T> : QueryBase()
+{
+}
+
+open class ChatCompletionLog
+{
+    open var id:Long? = null
+    open var refId:String? = null
+    open var userId:String? = null
+    open var apiKey:String? = null
+    open var model:String? = null
+    open var provider:String? = null
+    open var userPrompt:String? = null
+    open var answer:String? = null
+    @StringLength(MaximumLength=2147483647)
+    open var requestBody:String? = null
+
+    @StringLength(MaximumLength=2147483647)
+    open var responseBody:String? = null
+
+    open var errorCode:String? = null
+    open var error:ResponseStatus? = null
+    open var createdDate:Date? = null
+    open var tag:String? = null
+    open var durationMs:Int? = null
+    open var promptTokens:Int? = null
+    open var completionTokens:Int? = null
+    open var cost:BigDecimal? = null
+    open var providerRef:String? = null
+    open var providerModel:String? = null
+    open var finishReason:String? = null
+    open var usage:ModelUsage? = null
+    open var threadId:String? = null
+    open var title:String? = null
+    open var meta:HashMap<String,String>? = null
+}
+
 @DataContract
 open class AdminUserBase
 {
@@ -1102,10 +1536,6 @@ open class AdminUserBase
     open var meta:HashMap<String,String>? = null
 }
 
-open class QueryDb<T> : QueryBase()
-{
-}
-
 open class RequestLog
 {
     open var id:Long? = null
@@ -1131,8 +1561,12 @@ open class RequestLog
     open var items:HashMap<String,String> = HashMap<String,String>()
     open var responseHeaders:HashMap<String,String>? = null
     open var response:String? = null
+    @StringLength(MaximumLength=2147483647)
     open var responseBody:String? = null
+
+    @StringLength(MaximumLength=2147483647)
     open var sessionBody:String? = null
+
     open var error:ResponseStatus? = null
     open var exceptionSource:String? = null
     open var exceptionDataBody:String? = null
@@ -1253,10 +1687,12 @@ open class AppInfo
 open class UiInfo
 {
     open var brandIcon:ImageInfo? = null
+    open var userIcon:ImageInfo? = null
     open var hideTags:ArrayList<String>? = null
     open var modules:ArrayList<String>? = null
     open var alwaysHideTags:ArrayList<String>? = null
     open var adminLinks:ArrayList<LinkInfo>? = null
+    open var adminLinksOrder:ArrayList<String>? = null
     open var theme:ThemeInfo? = null
     open var locode:LocodeUi? = null
     open var explorer:ExplorerUi? = null
@@ -1287,6 +1723,7 @@ open class PluginInfo
     open var adminIdentityUsers:AdminIdentityUsersInfo? = null
     open var adminRedis:AdminRedisInfo? = null
     open var adminDatabase:AdminDatabaseInfo? = null
+    open var adminChat:AdminChatInfo? = null
     open var meta:HashMap<String,String>? = null
 }
 
@@ -1317,6 +1754,140 @@ open class ServerStats
     open var serverEvents:HashMap<String,String>? = null
     open var mqDescription:String? = null
     open var mqWorkers:HashMap<String,Long>? = null
+}
+
+@DataContract
+open class PartialApiKey
+{
+    @DataMember(Order=1)
+    open var id:Int? = null
+
+    @DataMember(Order=2)
+    open var name:String? = null
+
+    @DataMember(Order=3)
+    open var userId:String? = null
+
+    @DataMember(Order=4)
+    open var userName:String? = null
+
+    @DataMember(Order=5)
+    open var visibleKey:String? = null
+
+    @DataMember(Order=6)
+    open var environment:String? = null
+
+    @DataMember(Order=7)
+    open var createdDate:Date? = null
+
+    @DataMember(Order=8)
+    open var expiryDate:Date? = null
+
+    @DataMember(Order=9)
+    open var cancelledDate:Date? = null
+
+    @DataMember(Order=10)
+    open var lastUsedDate:Date? = null
+
+    @DataMember(Order=11)
+    open var scopes:ArrayList<String>? = null
+
+    @DataMember(Order=12)
+    open var features:ArrayList<String>? = null
+
+    @DataMember(Order=13)
+    open var restrictTo:ArrayList<String>? = null
+
+    @DataMember(Order=14)
+    open var notes:String? = null
+
+    @DataMember(Order=15)
+    open var refId:Int? = null
+
+    @DataMember(Order=16)
+    open var refIdStr:String? = null
+
+    @DataMember(Order=17)
+    open var meta:HashMap<String,String>? = null
+
+    @DataMember(Order=18)
+    open var active:Boolean? = null
+}
+
+@DataContract
+open class Choice
+{
+    /**
+    * The reason the model stopped generating tokens. This will be stop if the model hit a natural stop point or a provided stop sequence, length if the maximum number of tokens specified in the request was reached, content_filter if content was omitted due to a flag from our content filters, tool_calls if the model called a tool
+    */
+    @DataMember(Name="finish_reason")
+    @SerializedName("finish_reason")
+    open var finishReason:String? = null
+
+    /**
+    * The index of the choice in the list of choices.
+    */
+    @DataMember(Name="index")
+    @SerializedName("index")
+    open var index:Int? = null
+
+    /**
+    * A chat completion message generated by the model.
+    */
+    @DataMember(Name="message")
+    @SerializedName("message")
+    open var message:ChoiceMessage? = null
+}
+
+/**
+* Usage statistics for the completion request.
+*/
+@DataContract
+open class AiUsage
+{
+    /**
+    * Number of tokens in the generated completion.
+    */
+    @DataMember(Name="completion_tokens")
+    @SerializedName("completion_tokens")
+    open var completionTokens:Int? = null
+
+    /**
+    * Number of tokens in the prompt.
+    */
+    @DataMember(Name="prompt_tokens")
+    @SerializedName("prompt_tokens")
+    open var promptTokens:Int? = null
+
+    /**
+    * Total number of tokens used in the request (prompt + completion).
+    */
+    @DataMember(Name="total_tokens")
+    @SerializedName("total_tokens")
+    open var totalTokens:Int? = null
+
+    /**
+    * Breakdown of tokens used in a completion.
+    */
+    @DataMember(Name="completion_tokens_details")
+    @SerializedName("completion_tokens_details")
+    open var completionTokensDetails:AiCompletionUsage? = null
+
+    /**
+    * Breakdown of tokens used in the prompt.
+    */
+    @DataMember(Name="prompt_tokens_details")
+    @SerializedName("prompt_tokens_details")
+    open var promptTokensDetails:AiPromptUsage? = null
+}
+
+open class ChatCompletionStat
+{
+    open var name:String? = null
+    open var requests:Int? = null
+    open var inputTokens:Int? = null
+    open var outputTokens:Int? = null
+    open var cost:BigDecimal? = null
 }
 
 open class DiagnosticEntry
@@ -1411,64 +1982,6 @@ open class CommandResult
     open var retries:Int? = null
     open var attempt:Int? = null
     open var error:ResponseStatus? = null
-}
-
-@DataContract
-open class PartialApiKey
-{
-    @DataMember(Order=1)
-    open var id:Int? = null
-
-    @DataMember(Order=2)
-    open var name:String? = null
-
-    @DataMember(Order=3)
-    open var userId:String? = null
-
-    @DataMember(Order=4)
-    open var userName:String? = null
-
-    @DataMember(Order=5)
-    open var visibleKey:String? = null
-
-    @DataMember(Order=6)
-    open var environment:String? = null
-
-    @DataMember(Order=7)
-    open var createdDate:Date? = null
-
-    @DataMember(Order=8)
-    open var expiryDate:Date? = null
-
-    @DataMember(Order=9)
-    open var cancelledDate:Date? = null
-
-    @DataMember(Order=10)
-    open var lastUsedDate:Date? = null
-
-    @DataMember(Order=11)
-    open var scopes:ArrayList<String>? = null
-
-    @DataMember(Order=12)
-    open var features:ArrayList<String>? = null
-
-    @DataMember(Order=13)
-    open var restrictTo:ArrayList<String>? = null
-
-    @DataMember(Order=14)
-    open var notes:String? = null
-
-    @DataMember(Order=15)
-    open var refId:Int? = null
-
-    @DataMember(Order=16)
-    open var refIdStr:String? = null
-
-    @DataMember(Order=17)
-    open var meta:HashMap<String,String>? = null
-
-    @DataMember(Order=18)
-    open var active:Boolean? = null
 }
 
 open class JobStatSummary
@@ -1616,6 +2129,56 @@ open class AnalyticsReports
 }
 
 @DataContract
+open class AiContent
+{
+    /**
+    * The type of the content part.
+    */
+    @DataMember(Name="type")
+    @SerializedName("type")
+    open var Type:String? = null
+}
+
+/**
+* The tool calls generated by the model, such as function calls.
+*/
+@DataContract
+open class ToolCall
+{
+    /**
+    * The ID of the tool call.
+    */
+    @DataMember(Name="id")
+    @SerializedName("id")
+    open var id:String? = null
+
+    /**
+    * The type of the tool. Currently, only `function` is supported.
+    */
+    @DataMember(Name="type")
+    @SerializedName("type")
+    open var Type:String? = null
+
+    /**
+    * The function that the model called.
+    */
+    @DataMember(Name="function")
+    @SerializedName("function")
+    open var function:String? = null
+}
+
+enum class ResponseFormat
+{
+    Text,
+    JsonObject,
+}
+
+enum class ToolType
+{
+    Function,
+}
+
+@DataContract
 open class QueryBase
 {
     @DataMember(Order=1)
@@ -1640,6 +2203,43 @@ open class QueryBase
     open var meta:HashMap<String,String>? = null
 }
 
+@DataContract
+open class ModelUsage
+{
+    @DataMember
+    open var cost:String? = null
+
+    @DataMember
+    open var input:String? = null
+
+    @DataMember
+    open var output:String? = null
+
+    @DataMember
+    open var duration:Int? = null
+
+    @DataMember(Name="completion_tokens")
+    @SerializedName("completion_tokens")
+    open var completionTokens:Int? = null
+
+    @DataMember
+    open var inputCachedTokens:Int? = null
+
+    @DataMember
+    open var outputCachedTokens:Int? = null
+
+    @DataMember(Name="audio_tokens")
+    @SerializedName("audio_tokens")
+    open var audioTokens:Int? = null
+
+    @DataMember(Name="reasoning_tokens")
+    @SerializedName("reasoning_tokens")
+    open var reasoningTokens:Int? = null
+
+    @DataMember
+    open var totalTokens:Int? = null
+}
+
 open class BackgroundJobBase
 {
     open var id:Long? = null
@@ -1657,10 +2257,14 @@ open class BackgroundJobBase
     open var requestType:String? = null
     open var command:String? = null
     open var request:String? = null
+    @StringLength(MaximumLength=2147483647)
     open var requestBody:String? = null
+
     open var userId:String? = null
     open var response:String? = null
+    @StringLength(MaximumLength=2147483647)
     open var responseBody:String? = null
+
     open var state:BackgroundJobState? = null
     open var startedDate:Date? = null
     open var completedDate:Date? = null
@@ -1671,7 +2275,9 @@ open class BackgroundJobBase
     open var timeoutSecs:Int? = null
     open var progress:Double? = null
     open var status:String? = null
+    @StringLength(MaximumLength=2147483647)
     open var logs:String? = null
+
     open var lastActivityDate:Date? = null
     open var replyTo:String? = null
     open var errorCode:String? = null
@@ -1745,11 +2351,13 @@ open class ExplorerUi
 {
     open var css:ApiCss? = null
     open var tags:AppTags? = null
+    open var jsConfig:String? = null
 }
 
 open class AdminUi
 {
     open var css:ApiCss? = null
+    open var pages:ArrayList<PageInfo>? = null
 }
 
 open class ApiFormat
@@ -1899,10 +2507,17 @@ open class AdminDatabaseInfo
     open var meta:HashMap<String,String>? = null
 }
 
+open class AdminChatInfo
+{
+    open var accessRole:String? = null
+    open var defaultLimit:Int? = null
+    open var analytics:AiChatAnalytics? = null
+    open var meta:HashMap<String,String>? = null
+}
+
 open class MetadataTypesConfig
 {
     open var baseUrl:String? = null
-    open var usePath:String? = null
     open var makePartial:Boolean? = null
     open var makeVirtual:Boolean? = null
     open var makeInternal:Boolean? = null
@@ -1993,6 +2608,122 @@ open class MetadataOperationType
     open var requiresAnyPermission:ArrayList<String>? = null
     open var tags:ArrayList<String>? = null
     open var ui:ApiUiInfo? = null
+}
+
+@DataContract
+open class ChoiceMessage
+{
+    /**
+    * The contents of the message.
+    */
+    @DataMember(Name="content")
+    @SerializedName("content")
+    open var content:String? = null
+
+    /**
+    * The refusal message generated by the model.
+    */
+    @DataMember(Name="refusal")
+    @SerializedName("refusal")
+    open var refusal:String? = null
+
+    /**
+    * The reasoning process used by the model.
+    */
+    @DataMember(Name="reasoning")
+    @SerializedName("reasoning")
+    open var reasoning:String? = null
+
+    /**
+    * The role of the author of this message.
+    */
+    @DataMember(Name="role")
+    @SerializedName("role")
+    open var role:String? = null
+
+    /**
+    * Annotations for the message, when applicable, as when using the web search tool.
+    */
+    @DataMember(Name="annotations")
+    @SerializedName("annotations")
+    open var annotations:ArrayList<ChoiceAnnotation>? = null
+
+    /**
+    * If the audio output modality is requested, this object contains data about the audio response from the model.
+    */
+    @DataMember(Name="audio")
+    @SerializedName("audio")
+    open var audio:ChoiceAudio? = null
+
+    /**
+    * The tool calls generated by the model, such as function calls.
+    */
+    @DataMember(Name="tool_calls")
+    @SerializedName("tool_calls")
+    open var toolCalls:ArrayList<ToolCall>? = null
+}
+
+/**
+* Usage statistics for the completion request.
+*/
+@DataContract
+open class AiCompletionUsage
+{
+    /**
+    * When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.
+    */
+    @DataMember(Name="accepted_prediction_tokens")
+    @SerializedName("accepted_prediction_tokens")
+    open var acceptedPredictionTokens:Int? = null
+
+    /**
+    * Audio input tokens generated by the model.
+    */
+    @DataMember(Name="audio_tokens")
+    @SerializedName("audio_tokens")
+    open var audioTokens:Int? = null
+
+    /**
+    * Tokens generated by the model for reasoning.
+    */
+    @DataMember(Name="reasoning_tokens")
+    @SerializedName("reasoning_tokens")
+    open var reasoningTokens:Int? = null
+
+    /**
+    * When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion.
+    */
+    @DataMember(Name="rejected_prediction_tokens")
+    @SerializedName("rejected_prediction_tokens")
+    open var rejectedPredictionTokens:Int? = null
+}
+
+/**
+* Breakdown of tokens used in the prompt.
+*/
+@DataContract
+open class AiPromptUsage
+{
+    /**
+    * When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.
+    */
+    @DataMember(Name="accepted_prediction_tokens")
+    @SerializedName("accepted_prediction_tokens")
+    open var acceptedPredictionTokens:Int? = null
+
+    /**
+    * Audio input tokens present in the prompt.
+    */
+    @DataMember(Name="audio_tokens")
+    @SerializedName("audio_tokens")
+    open var audioTokens:Int? = null
+
+    /**
+    * Cached tokens present in the prompt.
+    */
+    @DataMember(Name="cached_tokens")
+    @SerializedName("cached_tokens")
+    open var cachedTokens:Int? = null
 }
 
 open class MetadataDataMember
@@ -2105,6 +2836,62 @@ open class RequestSummary
     open var apiKeys:HashMap<String,Long>? = null
 }
 
+/**
+* Text content part
+*/
+@DataContract
+open class AiTextContent : AiContent()
+{
+    /**
+    * The text content.
+    */
+    @DataMember(Name="text")
+    @SerializedName("text")
+    open var text:String? = null
+}
+
+/**
+* Image content part
+*/
+@DataContract
+open class AiImageContent : AiContent()
+{
+    /**
+    * The image for this content.
+    */
+    @DataMember(Name="image_url")
+    @SerializedName("image_url")
+    open var imageUrl:AiImageUrl? = null
+}
+
+/**
+* Audio content part
+*/
+@DataContract
+open class AiAudioContent : AiContent()
+{
+    /**
+    * The audio input for this content.
+    */
+    @DataMember(Name="input_audio")
+    @SerializedName("input_audio")
+    open var inputAudio:AiInputAudio? = null
+}
+
+/**
+* File content part
+*/
+@DataContract
+open class AiFileContent : AiContent()
+{
+    /**
+    * The file input for this content.
+    */
+    @DataMember(Name="file")
+    @SerializedName("file")
+    open var file:AiFile? = null
+}
+
 open class ApiCss
 {
     open var form:String? = null
@@ -2116,6 +2903,12 @@ open class AppTags
 {
     @SerializedName("default") open var Default:String? = null
     open var other:String? = null
+}
+
+open class PageInfo
+{
+    open var page:String? = null
+    open var component:String? = null
 }
 
 open class MetaAuthProvider
@@ -2201,6 +2994,11 @@ open class DatabaseInfo
     open var schemas:ArrayList<SchemaInfo>? = null
 }
 
+open class AiChatAnalytics
+{
+    open var months:ArrayList<String>? = null
+}
+
 open class MetadataTypeName
 {
     open var name:String? = null
@@ -2230,11 +3028,127 @@ open class ApiUiInfo
     open var meta:HashMap<String,String>? = null
 }
 
+/**
+* Annotations for the message, when applicable, as when using the web search tool.
+*/
+@DataContract
+open class ChoiceAnnotation
+{
+    /**
+    * The type of the URL citation. Always url_citation.
+    */
+    @DataMember(Name="type")
+    @SerializedName("type")
+    open var Type:String? = null
+
+    /**
+    * A URL citation when using web search.
+    */
+    @DataMember(Name="url_citation")
+    @SerializedName("url_citation")
+    open var urlCitation:UrlCitation? = null
+}
+
+/**
+* If the audio output modality is requested, this object contains data about the audio response from the model.
+*/
+@DataContract
+open class ChoiceAudio
+{
+    /**
+    * Base64 encoded audio bytes generated by the model, in the format specified in the request.
+    */
+    @DataMember(Name="data")
+    @SerializedName("data")
+    open var Data:String? = null
+
+    /**
+    * The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.
+    */
+    @DataMember(Name="expires_at")
+    @SerializedName("expires_at")
+    open var expiresAt:Int? = null
+
+    /**
+    * Unique identifier for this audio response.
+    */
+    @DataMember(Name="id")
+    @SerializedName("id")
+    open var id:String? = null
+
+    /**
+    * Transcript of the audio generated by the model.
+    */
+    @DataMember(Name="transcript")
+    @SerializedName("transcript")
+    open var transcript:String? = null
+}
+
 open class FieldCss
 {
     open var field:String? = null
     open var input:String? = null
     open var label:String? = null
+}
+
+@DataContract
+open class AiImageUrl
+{
+    /**
+    * Either a URL of the image or the base64 encoded image data.
+    */
+    @DataMember(Name="url")
+    @SerializedName("url")
+    open var url:String? = null
+}
+
+/**
+* Audio content part
+*/
+@DataContract
+open class AiInputAudio
+{
+    /**
+    * URL or Base64 encoded audio data.
+    */
+    @DataMember(Name="data")
+    @SerializedName("data")
+    open var Data:String? = null
+
+    /**
+    * The format of the encoded audio data. Currently supports 'wav' and 'mp3'.
+    */
+    @DataMember(Name="format")
+    @SerializedName("format")
+    open var format:String? = null
+}
+
+/**
+* File content part
+*/
+@DataContract
+open class AiFile
+{
+    /**
+    * The URL or base64 encoded file data, used when passing the file to the model as a string.
+    */
+    @DataMember(Name="file_data")
+    @SerializedName("file_data")
+    open var fileData:String? = null
+
+    /**
+    * The name of the file, used when passing the file to the model as a string.
+    */
+    @DataMember(Name="filename")
+    @SerializedName("filename")
+    open var filename:String? = null
+
+    /**
+    * The ID of an uploaded file to use as input.
+    */
+    @DataMember(Name="file_id")
+    @SerializedName("file_id")
+    open var fileId:String? = null
 }
 
 open class NavItem
@@ -2257,4 +3171,39 @@ open class SchemaInfo
     open var alias:String? = null
     open var name:String? = null
     open var tables:ArrayList<String>? = null
+}
+
+/**
+* Annotations for the message, when applicable, as when using the web search tool.
+*/
+@DataContract
+open class UrlCitation
+{
+    /**
+    * The index of the last character of the URL citation in the message.
+    */
+    @DataMember(Name="end_index")
+    @SerializedName("end_index")
+    open var endIndex:Int? = null
+
+    /**
+    * The index of the first character of the URL citation in the message.
+    */
+    @DataMember(Name="start_index")
+    @SerializedName("start_index")
+    open var startIndex:Int? = null
+
+    /**
+    * The title of the web resource.
+    */
+    @DataMember(Name="title")
+    @SerializedName("title")
+    open var title:String? = null
+
+    /**
+    * The URL of the web resource.
+    */
+    @DataMember(Name="url")
+    @SerializedName("url")
+    open var url:String? = null
 }
