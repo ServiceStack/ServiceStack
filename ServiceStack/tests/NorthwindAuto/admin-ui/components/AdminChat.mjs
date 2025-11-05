@@ -337,7 +337,7 @@ const LogDetailDialog = {
     `,
     props: ['log'],
     emits: ['close'],
-    setup() {
+    setup(props, { emit }) {
         function formatJson(json) {
             try {
                 return JSON.stringify(JSON.parse(json), null, 2)
@@ -345,6 +345,21 @@ const LogDetailDialog = {
                 return json
             }
         }
+
+        // Handle Esc key to close dialog
+        function handleKeydown(event) {
+            if (event.key === 'Escape') {
+                emit('close')
+            }
+        }
+
+        onMounted(() => {
+            document.addEventListener('keydown', handleKeydown)
+        })
+
+        onUnmounted(() => {
+            document.removeEventListener('keydown', handleKeydown)
+        })
 
         return {
             formatCost,
@@ -554,28 +569,52 @@ export const AdminChat = {
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-900">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Date
+                                        <th scope="col" @click="toggleSort('createdDate')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Date
+                                                <span v-if="sortBy === 'createdDate'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-createdDate'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Model
+                                        <th scope="col" @click="toggleSort('model')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Model
+                                                <span v-if="sortBy === 'model'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-model'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Provider
+                                        <th scope="col" @click="toggleSort('provider')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Provider
+                                                <span v-if="sortBy === 'provider'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-provider'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Tokens
+                                        <th scope="col" @click="toggleSort('completionTokens')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Tokens
+                                                <span v-if="sortBy === 'completionTokens'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-completionTokens'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Cost
+                                        <th scope="col" @click="toggleSort('cost')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Cost
+                                                <span v-if="sortBy === 'cost'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-cost'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Duration
+                                        <th scope="col" @click="toggleSort('durationMs')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Duration
+                                                <span v-if="sortBy === 'durationMs'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-durationMs'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <tr v-for="log in sortedLogs" :key="log.id"
+                                    <tr v-for="log in logs" :key="log.id"
                                         @click="selectedLog = log"
                                         class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
@@ -588,7 +627,7 @@ export const AdminChat = {
                                             {{ log.provider }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ humanifyNumber((log.promptTokens || 0) + (log.completionTokens || 0)) }}
+                                            {{ humanifyNumber(log.completionTokens || 0) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ formatCost(log.cost) }}
@@ -599,6 +638,81 @@ export const AdminChat = {
                                     </tr>
                                 </tbody>
                             </table>
+
+                            <!-- Pagination Controls -->
+                            <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+                                <div class="flex-1 flex justify-between sm:hidden">
+                                    <button @click="previousPage" :disabled="currentPage === 1"
+                                        :class="['relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md',
+                                                 currentPage === 1
+                                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                        Previous
+                                    </button>
+                                    <button @click="nextPage" :disabled="!hasMorePages"
+                                        :class="['ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md',
+                                                 !hasMorePages
+                                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                        Next
+                                    </button>
+                                </div>
+                                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                                            Showing
+                                            <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span>
+                                            to
+                                            <span class="font-medium">{{ Math.min(currentPage * pageSize, (currentPage - 1) * pageSize + logs.length) }}</span>
+                                            <span v-if="totalCount > 0">
+                                                of
+                                                <span class="font-medium">{{ totalCount }}</span>
+                                                results
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                            <button type="button" @click="previousPage" :disabled="currentPage === 1"
+                                                :class="['relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 text-sm font-medium',
+                                                         currentPage === 1
+                                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                            : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                                <span class="sr-only">Previous</span>
+                                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+
+                                            <!-- Page Numbers -->
+                                            <template v-for="page in visiblePages" :key="page">
+                                                <button type="button" v-if="page === '...'" disabled
+                                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    ...
+                                                </button>
+                                                <button type="button" v-else @click="goToPage(page)"
+                                                    :class="['relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium',
+                                                             page === currentPage
+                                                                ? 'z-10 bg-indigo-50 dark:bg-indigo-900 border-indigo-500 text-indigo-600 dark:text-indigo-300'
+                                                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                                    {{ page }}
+                                                </button>
+                                            </template>
+
+                                            <button @click="nextPage" :disabled="!hasMorePages"
+                                                :class="['relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 text-sm font-medium',
+                                                         !hasMorePages
+                                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                            : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                                <span class="sr-only">Next</span>
+                                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -622,6 +736,10 @@ export const AdminChat = {
         const dailyAnalytics = ref(null)
         const logs = ref([])
         const months = ref(server.plugins.adminChat?.analytics?.months ?? [])
+        const sortBy = ref('-id')
+        const currentPage = ref(1)
+        const pageSize = ref(25)
+        const totalCount = ref(0)
         const selectedDay = computed(() => {
             if (routes.day) {
                 return routes.day
@@ -629,6 +747,56 @@ export const AdminChat = {
             // Default to today
             const today = new Date()
             return today.toISOString().split('T')[0]
+        })
+
+        const hasMorePages = computed(() => {
+            return logs.value.length === pageSize.value
+        })
+
+        const totalPages = computed(() => {
+            if (totalCount.value === 0) return 1
+            return Math.ceil(totalCount.value / pageSize.value)
+        })
+
+        const visiblePages = computed(() => {
+            const total = totalPages.value
+            const current = currentPage.value
+            const delta = 2
+            const pages = []
+
+            if (total <= 7) {
+                // Show all pages if 7 or fewer
+                for (let i = 1; i <= total; i++) {
+                    pages.push(i)
+                }
+            } else {
+                // Always show first page
+                pages.push(1)
+
+                // Calculate range around current page
+                let start = Math.max(2, current - delta)
+                let end = Math.min(total - 1, current + delta)
+
+                // Add ellipsis after first page if needed
+                if (start > 2) {
+                    pages.push('...')
+                }
+
+                // Add pages around current
+                for (let i = start; i <= end; i++) {
+                    pages.push(i)
+                }
+
+                // Add ellipsis before last page if needed
+                if (end < total - 1) {
+                    pages.push('...')
+                }
+
+                // Always show last page
+                pages.push(total)
+            }
+
+            return pages
         })
 
         // Chart refs
@@ -655,10 +823,43 @@ export const AdminChat = {
         let dailyTokensByModelChart = null
         let dailyTokensByProviderChart = null
 
-        const sortedLogs = computed(() => {
-            if (!logs.value) return []
-            return [...logs.value].sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
-        })
+        // Toggle sort column
+        function toggleSort(column) {
+            if (sortBy.value === column) {
+                // Currently ascending, switch to descending
+                sortBy.value = `-${column}`
+            } else if (sortBy.value === `-${column}`) {
+                // Currently descending, switch to ascending
+                sortBy.value = column
+            } else {
+                // New column, default to descending
+                sortBy.value = `-${column}`
+            }
+            currentPage.value = 1 // Reset to first page when sorting changes
+            loadData({ orderBy: sortBy.value })
+        }
+
+        // Pagination functions
+        function nextPage() {
+            if (hasMorePages.value) {
+                currentPage.value++
+                loadData()
+            }
+        }
+
+        function previousPage() {
+            if (currentPage.value > 1) {
+                currentPage.value--
+                loadData()
+            }
+        }
+
+        function goToPage(page) {
+            if (page !== '...' && page !== currentPage.value) {
+                currentPage.value = page
+                loadData()
+            }
+        }
 
         // Load data from API
         async function loadData(args={}) {
@@ -667,12 +868,17 @@ export const AdminChat = {
             }))
             analytics.value = apiAnalytics.response || null
 
+            const skip = (currentPage.value - 1) * pageSize.value
             const apiLogs = await client.api(new AdminQueryChatCompletionLogs({
                 month: routes.month,
-                orderBy: '-id',
+                include: 'total',
+                orderBy: sortBy.value,
+                skip: skip,
+                take: pageSize.value,
                 ...args,
             }))
             logs.value = apiLogs.response?.results || []
+            totalCount.value = apiLogs.response?.total || 0
 
             // Always show a day - either current day or the latest day with data
             if (analytics.value?.dailyStats?.length > 0 && analytics.value.month) {
@@ -1375,7 +1581,18 @@ export const AdminChat = {
         return {
             routes,
             selectedLog,
-            sortedLogs,
+            logs,
+            sortBy,
+            toggleSort,
+            currentPage,
+            pageSize,
+            totalCount,
+            hasMorePages,
+            totalPages,
+            visiblePages,
+            nextPage,
+            previousPage,
+            goToPage,
             months,
             selectedDay,
             dailyAnalytics,
