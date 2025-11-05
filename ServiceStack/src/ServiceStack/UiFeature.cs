@@ -25,7 +25,8 @@ public enum AdminUiFeature
     Commands       = 1 << 8,
     ApiKeys        = 1 << 9,
     BackgroundJobs = 1 << 10,
-    All = Users | Roles | Validation | Logging | Analytics | Profiling | Redis | Database | Commands | ApiKeys | BackgroundJobs,
+    Dynamic        = 1 << 11,
+    All = Users | Roles | Validation | Logging | Analytics | Profiling | Redis | Database | Commands | ApiKeys | BackgroundJobs | Dynamic,
 }
 
 public class AnalyticsConfig
@@ -159,8 +160,8 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
         Icon = Svg.ImageSvg(Svg.Create(Svg.Body.Home)),
     };
 
-    public List<IHtmlModulesHandler> Handlers { get; set; } = new()
-    {
+    public List<IHtmlModulesHandler> Handlers { get; set; } =
+    [
         new SharedFolder("shared", "/modules/shared", ".html"),
         new SharedFolder("shared/js", "/modules/shared/js", ".js"),
         new SharedFolder("plugins", "/modules/shared/plugins", ".js"),
@@ -168,8 +169,8 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
         {
             Header = FilesTransformer.ModuleHeader,
             Footer = FilesTransformer.ModuleFooter,
-        },
-    };
+        }
+    ];
 
     public HtmlModulesFeature Module { get; } = new HtmlModulesFeature {
             IgnoreIfError = true,
@@ -187,7 +188,7 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
         nameof(ComputedAttribute)
     ];
 
-    // Defaults to browsers navigator.languages
+    //Defaults to browsers navigator.languages
     //Locale = Thread.CurrentThread.CurrentCulture.Name,
 
     public void AddAdminLink(AdminUiFeature feature, LinkInfo link)
@@ -200,6 +201,14 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
         roleLinks.Add(link.ToAdminRoleLink());
 
         Info.AdminLinks.Add(link);
+    }
+    
+    public void AddAdminComponent(string page, string component)
+    {
+        Info.Admin.Pages.Add(new() {
+            Page = page,
+            Component = component,
+        });
     }
 
     public void Configure(IServiceCollection services)

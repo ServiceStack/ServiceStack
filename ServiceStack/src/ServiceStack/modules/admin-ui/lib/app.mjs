@@ -87,7 +87,7 @@ export let routes = usePageRoutes(app, {
     page:'admin',
     queryKeys: ('tab,provider,db,schema,table,q,page,sort,new,edit,op,skip,' +
         'show,orderBy,operationName,userAuthId,sessionId,pathInfo,ipAddress,referer,forwardedFor,hasResponse,withErrors,' +
-        'source,threadId,eventType,traceId,userId,tag,body,type,dialog,period,year,month,ip,apiKey,apiKeyId').split(','),
+        'source,threadId,eventType,traceId,userId,tag,body,type,dialog,period,year,month,day,ip,apiKey,apiKeyId').split(','),
     handlers: {
         nav(state) { console.debug('nav', state) } /*debug*/
     },

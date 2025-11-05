@@ -14,6 +14,9 @@ using ServiceStack.OrmLite;
 using ServiceStack.Text;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using ServiceStack.AI;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NetCoreTests;
@@ -188,6 +191,13 @@ public class PublishTasks
         var chatMessages = source.GetFile("components/ChatMessages.mjs");
         var txt = await chatMessages.ReadAllTextAsync();
         await target.WriteFileAsync("modules/ui/components/ChatMessages.mjs", txt);
+        // Move AdminChat.mjs to ServiceStack.AI.Chat/js
+        source = new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui"));
+        target = new FileSystemVirtualFiles(ToChatBaseDir);
+        var adminChat = source.GetFile("components/AdminChat.mjs");
+        txt = await adminChat.ReadAllTextAsync();
+        await target.WriteFileAsync("modules/admin-ui/components/AdminChat.mjs", txt);
+        source.DeleteFile("components/AdminChat.mjs");
     }
 
     [Test]
@@ -238,6 +248,19 @@ public class PublishTasks
     class AppHost : AppSelfHostBase
     {
         public AppHost() : base(nameof(PublishTasks), typeof(MetadataAppService), typeof(UiServices), typeof(AdminServices)) {}
+
+        public override void Configure(IServiceCollection services)
+        {
+            services.AddHttpUtilsClient();
+            var apiKeys = new ApiKeysFeature();
+            services.AddPlugin(apiKeys);
+            services.AddPlugin(new ChatFeature {
+                ChatStore = new DbChatStore(NullLogger<DbChatStore>.Instance, new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider))
+            });
+            //if (Services.GetService<IApiKeySource>() == null || Services.GetService<IApiKeyResolver>() == null)
+            services.AddSingleton<IApiKeySource>(new ApiKeysFeatureSource(apiKeys));
+            services.AddSingleton<IApiKeyResolver>(new ApiKeyResolver(apiKeys));
+        }
         public override void Configure(Container container)
         {
             Metadata.ForceInclude =
@@ -248,6 +271,9 @@ public class PublishTasks
 
                 typeof(AdminGetRoles),typeof(AdminGetRolesResponse),typeof(AdminGetRole),typeof(AdminGetRoleResponse),
                 typeof(AdminCreateRole),typeof(AdminUpdateRole),typeof(AdminDeleteRole),
+                
+                typeof(AdminQueryRequestLogs),typeof(RequestLog),
+                typeof(AdminQueryChatCompletionLogs),typeof(AdminMonthlyChatCompletionAnalytics),typeof(AdminDailyChatCompletionAnalytics),typeof(ChatCompletionLog),
 
                 typeof(GetCrudEvents),
                 typeof(GetValidationRules),
@@ -294,7 +320,8 @@ public class PublishTasks
             Plugins.Add(new AdminUsersFeature());
             Plugins.Add(new AutoQueryFeature());
             Plugins.Add(new RequestLogsFeature {
-                RequestLogger = new SqliteRequestLogger()
+                RequestLogger = new SqliteRequestLogger(),
+                // RequestLogger = new DbRequestLogger(),
             });
             Plugins.Add(new ProfilingFeature());
             Plugins.Add(new AdminRedisFeature());
@@ -414,6 +441,7 @@ public class AdminMetadataTypes : IGet, IReturn<MetadataTypes> {}
 
 public class UiServices : Service
 {
+    // If Type isn't being included in generation, check it has a namespace
     public static Type[] AutoQueryTypes =
     [
         typeof(AdminQueryBackgroundJobs),
@@ -450,7 +478,7 @@ public class UiServices : Service
     ];
 
     // APIs using AutoForm APIs
-    public static Type[] AdminAuthTypes =
+    public static Type[] AdminServiceTypes =
     [
         typeof(AdminCreateRole),
         typeof(AdminUpdateRole),
@@ -468,7 +496,7 @@ public class UiServices : Service
             meta.Add(typeof(AdminJobServices), requestType, responseType);
         }
 
-        foreach (var requestType in AdminAuthTypes)
+        foreach (var requestType in AdminServiceTypes)
         {
             var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
             var responseType = returnMarker?.GetGenericArguments()[0];
@@ -489,9 +517,11 @@ public class UiServices : Service
             ExportAttributes = [],
             IgnoreTypesInNamespaces = [],
         };
+
         var generator = new MetadataTypesGenerator(meta, config);
         var to = generator.GetMetadataTypes(Request);
         to.Config = null;
+
         return to;
     }
 }
@@ -526,13 +556,14 @@ import { App, Meta, Forms, Routes, Breakpoints, Transition, MetadataOperationTyp
         {
             ["ts"] = new FileTransformerOptions
             {
-                LineTransformers = new()
-                {
-                    new RemoveLineStartingWith(new[] { "import " }, ignoreWhiteSpace:false, Run.Always),
-                    new RemoveLineStartingWith("export {};", ignoreWhiteSpace:false, Run.Always),
+                LineTransformers =
+                [
+                    new RemoveLineStartingWith(["import "], ignoreWhiteSpace: false, Run.Always),
+                    new RemoveLineStartingWith("export {};", ignoreWhiteSpace: false, Run.Always),
                     new RemoveLineContaining("= import(", Run.Always),
-                    new ApplyToLineContaining(": import(", line => $"{line.LeftPart(':')}:{line.LastRightPart('.')}".AsMemory(), Run.Always),
-                },
+                    new ApplyToLineContaining(": import(",
+                        line => $"{line.LeftPart(':')}:{line.LastRightPart('.')}".AsMemory(), Run.Always)
+                ],
             },
         }
     };

@@ -68,26 +68,22 @@ export default {
         {
           "name": "RefId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Worker",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Tag",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "BatchId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "CreatedDate",
@@ -98,8 +94,7 @@ export default {
         {
           "name": "CreatedBy",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "RequestType",
@@ -110,8 +105,7 @@ export default {
         {
           "name": "Command",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Request",
@@ -122,20 +116,17 @@ export default {
         {
           "name": "Response",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "UserId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Callback",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "StartedDate",
@@ -177,14 +168,12 @@ export default {
         {
           "name": "ErrorCode",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "ErrorMessage",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         }
       ]
     },
@@ -218,8 +207,7 @@ export default {
         {
           "name": "CronExpression",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "RequestType",
@@ -230,8 +218,7 @@ export default {
         {
           "name": "Command",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Request",
@@ -248,8 +235,7 @@ export default {
         {
           "name": "Options",
           "type": "BackgroundJobOptions",
-          "namespace": "ServiceStack.Jobs",
-          "isRequired": false
+          "namespace": "ServiceStack.Jobs"
         },
         {
           "name": "LastRun",
@@ -297,7 +283,7 @@ export default {
     },
     {
       "name": "RequestLog",
-      "namespace": "ServiceStack.Jobs",
+      "namespace": "ServiceStack",
       "implements": [],
       "properties": [
         {
@@ -334,68 +320,57 @@ export default {
         {
           "name": "StatusDescription",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "HttpMethod",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "AbsoluteUri",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "PathInfo",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Request",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "RequestBody",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "UserAuthId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "SessionId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "IpAddress",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "ForwardedFor",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Referer",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Headers",
@@ -414,8 +389,7 @@ export default {
           "genericArgs": [
             "String",
             "String"
-          ],
-          "isRequired": false
+          ]
         },
         {
           "name": "Items",
@@ -434,44 +408,37 @@ export default {
           "genericArgs": [
             "String",
             "String"
-          ],
-          "isRequired": false
+          ]
         },
         {
           "name": "Response",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "ResponseBody",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "SessionBody",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Error",
           "type": "ResponseStatus",
-          "namespace": "ServiceStack",
-          "isRequired": false
+          "namespace": "ServiceStack"
         },
         {
           "name": "ExceptionSource",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "ExceptionDataBody",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "RequestDuration",
@@ -486,8 +453,7 @@ export default {
           "genericArgs": [
             "String",
             "String"
-          ],
-          "isRequired": false
+          ]
         }
       ]
     },
@@ -503,7 +469,8 @@ export default {
           "namespace": "System",
           "dataMember": {
             "order": 1
-          }
+          },
+          "isRequired": true
         },
         {
           "name": "Value",
@@ -511,7 +478,8 @@ export default {
           "namespace": "System",
           "dataMember": {
             "order": 2
-          }
+          },
+          "isRequired": true
         }
       ]
     },
@@ -527,7 +495,8 @@ export default {
           "namespace": "System",
           "dataMember": {
             "order": 1
-          }
+          },
+          "isRequired": true
         },
         {
           "name": "Message",
@@ -607,7 +576,8 @@ export default {
           ],
           "dataMember": {
             "order": 3
-          }
+          },
+          "isRequired": true
         },
         {
           "name": "Meta",
@@ -672,6 +642,7 @@ export default {
           "input": {
             "id": "OrderBy",
             "type": "tag",
+            "required": false,
             "options": "{ allowableValues:$dataModelFields }"
           }
         },
@@ -685,6 +656,7 @@ export default {
           "input": {
             "id": "OrderByDesc",
             "type": "tag",
+            "required": false,
             "options": "{ allowableValues:$dataModelFields }"
           }
         },
@@ -698,6 +670,7 @@ export default {
           "input": {
             "id": "Include",
             "type": "tag",
+            "required": false,
             "options": "{ allowableValues:[\u0027total\u0027] }"
           }
         },
@@ -711,6 +684,7 @@ export default {
           "input": {
             "id": "Fields",
             "type": "tag",
+            "required": false,
             "options": "{ allowableValues:$dataModelFields }",
             "css": {
               "field": "col-span-12"
@@ -770,32 +744,27 @@ export default {
         {
           "name": "RefId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Worker",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Tag",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "BatchId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Callback",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "DependsOn",
@@ -824,14 +793,12 @@ export default {
         {
           "name": "CreatedBy",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "RequestId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "RequestType",
@@ -842,8 +809,7 @@ export default {
         {
           "name": "Command",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Request",
@@ -860,20 +826,17 @@ export default {
         {
           "name": "UserId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Response",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "ResponseBody",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "State",
@@ -951,14 +914,12 @@ export default {
         {
           "name": "Status",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Logs",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "LastActivityDate",
@@ -972,20 +933,17 @@ export default {
         {
           "name": "ReplyTo",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "ErrorCode",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Error",
           "type": "ResponseStatus",
-          "namespace": "ServiceStack",
-          "isRequired": false
+          "namespace": "ServiceStack"
         },
         {
           "name": "Args",
@@ -994,8 +952,7 @@ export default {
           "genericArgs": [
             "String",
             "String"
-          ],
-          "isRequired": false
+          ]
         },
         {
           "name": "Meta",
@@ -1004,8 +961,7 @@ export default {
           "genericArgs": [
             "String",
             "String"
-          ],
-          "isRequired": false
+          ]
         }
       ]
     },
@@ -1017,8 +973,7 @@ export default {
         {
           "name": "RefId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "ParentId",
@@ -1032,8 +987,7 @@ export default {
         {
           "name": "Worker",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "RunAfter",
@@ -1047,8 +1001,7 @@ export default {
         {
           "name": "Callback",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "DependsOn",
@@ -1062,8 +1015,7 @@ export default {
         {
           "name": "UserId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "RetryLimit",
@@ -1077,26 +1029,22 @@ export default {
         {
           "name": "ReplyTo",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "Tag",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "BatchId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "CreatedBy",
           "type": "String",
-          "namespace": "System",
-          "isRequired": false
+          "namespace": "System"
         },
         {
           "name": "TimeoutSecs",
@@ -1123,8 +1071,7 @@ export default {
           "genericArgs": [
             "String",
             "String"
-          ],
-          "isRequired": false
+          ]
         },
         {
           "name": "RunCommand",
@@ -1149,7 +1096,8 @@ export default {
           "namespace": "System",
           "dataMember": {
             "order": 1
-          }
+          },
+          "isRequired": true
         },
         {
           "name": "FieldName",
@@ -1157,7 +1105,8 @@ export default {
           "namespace": "System",
           "dataMember": {
             "order": 2
-          }
+          },
+          "isRequired": true
         },
         {
           "name": "Message",
@@ -1165,7 +1114,8 @@ export default {
           "namespace": "System",
           "dataMember": {
             "order": 3
-          }
+          },
+          "isRequired": true
         },
         {
           "name": "Meta",
@@ -1186,7 +1136,7 @@ export default {
     {
       "request": {
         "name": "AdminQueryBackgroundJobs",
-        "namespace": "ServiceStack.Jobs",
+        "namespace": "ServiceStack",
         "inherits": {
           "name": "QueryDb\u00601",
           "namespace": "ServiceStack",
@@ -1212,8 +1162,7 @@ export default {
           {
             "name": "RefId",
             "type": "String",
-            "namespace": "System",
-            "isRequired": false
+            "namespace": "System"
           }
         ]
       },
@@ -1256,7 +1205,8 @@ export default {
             ],
             "dataMember": {
               "order": 3
-            }
+            },
+            "isRequired": true
           },
           {
             "name": "Meta",
@@ -1306,7 +1256,7 @@ export default {
     {
       "request": {
         "name": "AdminQueryJobSummary",
-        "namespace": "ServiceStack.Jobs",
+        "namespace": "ServiceStack",
         "inherits": {
           "name": "QueryDb\u00601",
           "namespace": "ServiceStack",
@@ -1332,8 +1282,7 @@ export default {
           {
             "name": "RefId",
             "type": "String",
-            "namespace": "System",
-            "isRequired": false
+            "namespace": "System"
           }
         ]
       },
@@ -1376,7 +1325,8 @@ export default {
             ],
             "dataMember": {
               "order": 3
-            }
+            },
+            "isRequired": true
           },
           {
             "name": "Meta",
@@ -1426,7 +1376,7 @@ export default {
     {
       "request": {
         "name": "AdminQueryScheduledTasks",
-        "namespace": "ServiceStack.Jobs",
+        "namespace": "ServiceStack",
         "inherits": {
           "name": "QueryDb\u00601",
           "namespace": "ServiceStack",
@@ -1472,7 +1422,8 @@ export default {
             ],
             "dataMember": {
               "order": 3
-            }
+            },
+            "isRequired": true
           },
           {
             "name": "Meta",
@@ -1522,7 +1473,7 @@ export default {
     {
       "request": {
         "name": "AdminQueryCompletedJobs",
-        "namespace": "ServiceStack.Jobs",
+        "namespace": "ServiceStack",
         "inherits": {
           "name": "QueryDb\u00601",
           "namespace": "ServiceStack",
@@ -1585,7 +1536,8 @@ export default {
             ],
             "dataMember": {
               "order": 3
-            }
+            },
+            "isRequired": true
           },
           {
             "name": "Meta",
@@ -1635,7 +1587,7 @@ export default {
     {
       "request": {
         "name": "AdminQueryFailedJobs",
-        "namespace": "ServiceStack.Jobs",
+        "namespace": "ServiceStack",
         "inherits": {
           "name": "QueryDb\u00601",
           "namespace": "ServiceStack",
@@ -1698,7 +1650,8 @@ export default {
             ],
             "dataMember": {
               "order": 3
-            }
+            },
+            "isRequired": true
           },
           {
             "name": "Meta",
@@ -1748,7 +1701,7 @@ export default {
     {
       "request": {
         "name": "AdminQueryRequestLogs",
-        "namespace": "ServiceStack.Jobs",
+        "namespace": "ServiceStack",
         "inherits": {
           "name": "QueryDb\u00601",
           "namespace": "ServiceStack",
@@ -1805,7 +1758,8 @@ export default {
             ],
             "dataMember": {
               "order": 3
-            }
+            },
+            "isRequired": true
           },
           {
             "name": "Meta",
@@ -1840,11 +1794,11 @@ export default {
       },
       "dataModel": {
         "name": "RequestLog",
-        "namespace": "ServiceStack.Jobs"
+        "namespace": "ServiceStack"
       },
       "viewModel": {
         "name": "RequestLog",
-        "namespace": "ServiceStack.Jobs"
+        "namespace": "ServiceStack"
       },
       "tags": [
         "admin"
@@ -1880,7 +1834,8 @@ export default {
             "isPrimaryKey": true,
             "dataMember": {
               "order": 1
-            }
+            },
+            "isRequired": true
           },
           {
             "name": "ResponseStatus",
@@ -1978,7 +1933,8 @@ export default {
             "isPrimaryKey": true,
             "dataMember": {
               "order": 1
-            }
+            },
+            "isRequired": true
           },
           {
             "name": "ResponseStatus",
