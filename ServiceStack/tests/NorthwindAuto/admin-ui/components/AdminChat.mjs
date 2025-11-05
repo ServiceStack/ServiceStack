@@ -3,6 +3,7 @@ import { useClient, useFormatters } from "@servicestack/vue"
 import { leftPart } from '@servicestack/client'
 import { Chart, registerables } from "chart.js"
 import { QueryDb, QueryResponse } from "dtos"
+import { Marked } from "marked"
 
 Chart.register(...registerables)
 
@@ -303,8 +304,19 @@ const LogDetailDialog = {
 
                                     <!-- Answer -->
                                     <div v-if="log.answer">
-                                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Answer</h3>
-                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.answer }}</div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Answer</h3>
+                                            <div class="flex space-x-2">
+                                                <!-- code icon -->
+                                                <svg @click="preview = false" :class="['cursor-pointer size-4', !preview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M5.536 15.536L2 12l3.536-3.536m12.928 7.072L22 12l-3.536-3.536M14 4l-4 16"/></svg>
+                                                <!-- preview icon -->
+                                                <svg @click="preview = true" :class="['cursor-pointer size-4', preview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26"><path fill="currentColor" d="M4 0C1.8 0 0 1.8 0 4v17c0 2.2 1.8 4 4 4h11c.4 0 .7-.094 1-.094c-1.4-.3-2.594-1.006-3.594-1.906H4c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h6.313c.7.2.687 1.1.687 2v3c0 .6.4 1 1 1h3c1 0 2 0 2 1v1h.5c.5 0 1 .088 1.5.188V8c0-1.1-.988-2.112-2.688-3.813c-.3-.2-.512-.487-.812-.687c-.2-.3-.488-.513-.688-.813C13.113.988 12.1 0 11 0zm13.5 12c-3 0-5.5 2.5-5.5 5.5s2.5 5.5 5.5 5.5c1.273 0 2.435-.471 3.375-1.219l.313.313a.955.955 0 0 0 .125 1.218l2.5 2.5c.4.4.975.4 1.375 0l.5-.5c.4-.4.4-1.006 0-1.406l-2.5-2.5a.935.935 0 0 0-1.157-.156l-.281-.313c.773-.948 1.25-2.14 1.25-3.437c0-3-2.5-5.5-5.5-5.5m0 1.5c2.2 0 4 1.8 4 4s-1.8 4-4 4s-4-1.8-4-4s1.8-4 4-4"/></svg>
+                                            </div>
+                                        </div>
+                                        <!-- Code view (default) -->
+                                        <div v-if="!preview" class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.answer?.trim() }}</div>
+                                        <!-- Preview view (rendered markdown) -->
+                                        <div v-else class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 prose dark:prose-invert max-w-none" v-html="renderMarkdown(log.answer?.trim())"></div>
                                     </div>
 
                                     <!-- Error -->
@@ -335,9 +347,18 @@ const LogDetailDialog = {
             </div>
         </div>
     `,
-    props: ['log'],
+    props: ['log', 'logs', 'routes'],
     emits: ['close'],
     setup(props, { emit }) {
+        // Load preview preference from localStorage, default to false
+        const savedPreview = localStorage.getItem('adminChat.preview')
+        const preview = ref(savedPreview === 'true')
+
+        // Watch for changes and save to localStorage
+        watch(preview, (newValue) => {
+            localStorage.setItem('adminChat.preview', newValue.toString())
+        })
+
         function formatJson(json) {
             try {
                 return JSON.stringify(JSON.parse(json), null, 2)
@@ -346,10 +367,38 @@ const LogDetailDialog = {
             }
         }
 
-        // Handle Esc key to close dialog
+        // Navigate to next/previous log
+        function navigateToLog(direction) {
+            if (!props.logs || !props.log) return
+
+            const currentIndex = props.logs.findIndex(log => log.id === props.log.id)
+            if (currentIndex === -1) return
+
+            let nextIndex
+            if (direction === 'next') {
+                nextIndex = currentIndex + 1
+                if (nextIndex >= props.logs.length) return // At the end
+            } else {
+                nextIndex = currentIndex - 1
+                if (nextIndex < 0) return // At the beginning
+            }
+
+            const nextLog = props.logs[nextIndex]
+            if (nextLog) {
+                props.routes.to({ show: nextLog.id })
+            }
+        }
+
+        // Handle keyboard navigation
         function handleKeydown(event) {
             if (event.key === 'Escape') {
                 emit('close')
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault()
+                navigateToLog('next')
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault()
+                navigateToLog('prev')
             }
         }
 
@@ -366,6 +415,8 @@ const LogDetailDialog = {
             humanifyMs,
             humanifyNumber,
             formatJson,
+            preview,
+            renderMarkdown,
         }
     }
 }
@@ -615,7 +666,7 @@ export const AdminChat = {
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr v-for="log in logs" :key="log.id"
-                                        @click="selectedLog = log"
+                                        @click="routes.to({ show:log.id })"
                                         class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ new Date(log.createdDate).toLocaleString() }}
@@ -719,7 +770,7 @@ export const AdminChat = {
             </div>
 
             <!-- Log Detail Dialog -->
-            <LogDetailDialog v-if="selectedLog" :log="selectedLog" @close="selectedLog = null" />
+            <LogDetailDialog v-if="selectedLog" :log="selectedLog" :logs="logs" :routes="routes" @close="routes.to({ show:undefined })" />
         </div>
     `,
     setup() {
@@ -727,6 +778,7 @@ export const AdminChat = {
         const server = inject('server')
         const client = useClient()
         const selectedLog = ref(null)
+        const preview = ref(false)
 
         // Scrollable content ref for keyboard navigation
         const scrollableContent = ref(null)
@@ -1530,9 +1582,10 @@ export const AdminChat = {
             })
         }
 
-        onMounted(() => {
-            loadData()
+        onMounted(async () => {
+            await loadData()
             updateCharts()
+            selectedLog.value = logs.value.find(log => log.id === parseInt(routes.show))
             // Focus the scrollable content to enable keyboard navigation (Page Up/Down, Home/End)
             nextTick(() => {
                 scrollableContent.value?.focus()
@@ -1577,6 +1630,9 @@ export const AdminChat = {
             dailyAnalytics.value = null
             loadData()
         })
+        watch(() => routes.show, () => {
+            selectedLog.value = logs.value.find(log => log.id === parseInt(routes.show))
+        })
 
         return {
             routes,
@@ -1610,6 +1666,127 @@ export const AdminChat = {
             formatCost,
             humanifyNumber,
             humanifyMs,
+            preview,
         }
     }
+}
+
+const hljs = globalThis.hljs
+export const marked = (() => {
+    const aliases = {
+        vue: 'html',
+    }
+    const ret = new Marked(
+        markedHighlight({
+            langPrefix: 'hljs language-',
+            highlight(code, lang, info) {
+                if (aliases[lang]) {
+                    lang = aliases[lang]
+                }
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value
+                }
+                // Return plain code without highlighting if language is not recognized
+                return code
+            }
+        })
+    )
+    return ret
+})();
+
+export function renderMarkdown(content) {
+    if (content) {
+        content = content
+            .replaceAll(`\\[ \\boxed{`,'\n<span class="inline-block text-xl text-blue-500 bg-blue-50 dark:text-blue-400 dark:bg-blue-950 px-3 py-1 rounded">')
+            .replaceAll('} \\]','</span>\n')
+    }
+    return marked.parse(content)
+}
+
+export function markedHighlight(options) {
+    if (typeof options === 'function') {
+        options = {
+            highlight: options
+        }
+    }
+
+    if (!options || typeof options.highlight !== 'function') {
+        throw new Error('Must provide highlight function')
+    }
+
+    if (typeof options.langPrefix !== 'string') {
+        options.langPrefix = 'language-'
+    }
+
+    return {
+        async: !!options.async,
+        walkTokens(token) {
+            if (token.type !== 'code') {
+                return
+            }
+
+            const lang = getLang(token.lang)
+
+            if (options.async) {
+                return Promise.resolve(options.highlight(token.text, lang, token.lang || '')).then(updateToken(token))
+            }
+
+            const code = options.highlight(token.text, lang, token.lang || '')
+            if (code instanceof Promise) {
+                throw new Error('markedHighlight is not set to async but the highlight function is async. Set the async option to true on markedHighlight to await the async highlight function.')
+            }
+            updateToken(token)(code)
+        },
+        renderer: {
+            code(code, infoString) {
+                const lang = getLang(infoString)
+                let text = code.text
+                const classAttr = lang
+                    ? ` class="${options.langPrefix}${escape(lang)}"`
+                    : ' class="hljs"';
+                text = text.replace(/\n$/, '')
+                return `<pre><code${classAttr}>${code.escaped ? text : escape(text, true)}\n</code></pre>`
+            }
+        }
+    }
+}
+
+function getLang(lang) {
+    return (lang || '').match(/\S*/)[0]
+}
+
+function updateToken(token) {
+    return code => {
+        if (typeof code === 'string' && code !== token.text) {
+            token.escaped = true
+            token.text = code
+        }
+    }
+}
+
+// copied from marked helpers
+const escapeTest = /[&<>"']/
+const escapeReplace = new RegExp(escapeTest.source, 'g')
+const escapeTestNoEncode = /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/
+const escapeReplaceNoEncode = new RegExp(escapeTestNoEncode.source, 'g')
+const escapeReplacements = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+}
+const getEscapeReplacement = ch => escapeReplacements[ch]
+function escape(html, encode) {
+    if (encode) {
+        if (escapeTest.test(html)) {
+            return html.replace(escapeReplace, getEscapeReplacement)
+        }
+    } else {
+        if (escapeTestNoEncode.test(html)) {
+            return html.replace(escapeReplaceNoEncode, getEscapeReplacement)
+        }
+    }
+
+    return html
 }

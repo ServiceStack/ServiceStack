@@ -3,6 +3,7 @@ import { useClient, useFormatters } from "@servicestack/vue"
 import { leftPart } from '@servicestack/client'
 import { Chart, registerables } from "chart.js"
 import { QueryDb, QueryResponse } from "dtos"
+import { Marked } from "marked"
 
 Chart.register(...registerables)
 
@@ -303,8 +304,19 @@ const LogDetailDialog = {
 
                                     <!-- Answer -->
                                     <div v-if="log.answer">
-                                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Answer</h3>
-                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.answer }}</div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Answer</h3>
+                                            <div class="flex space-x-2">
+                                                <!-- code icon -->
+                                                <svg @click="preview = false" :class="['cursor-pointer size-4', !preview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M5.536 15.536L2 12l3.536-3.536m12.928 7.072L22 12l-3.536-3.536M14 4l-4 16"/></svg>
+                                                <!-- preview icon -->
+                                                <svg @click="preview = true" :class="['cursor-pointer size-4', preview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26"><path fill="currentColor" d="M4 0C1.8 0 0 1.8 0 4v17c0 2.2 1.8 4 4 4h11c.4 0 .7-.094 1-.094c-1.4-.3-2.594-1.006-3.594-1.906H4c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h6.313c.7.2.687 1.1.687 2v3c0 .6.4 1 1 1h3c1 0 2 0 2 1v1h.5c.5 0 1 .088 1.5.188V8c0-1.1-.988-2.112-2.688-3.813c-.3-.2-.512-.487-.812-.687c-.2-.3-.488-.513-.688-.813C13.113.988 12.1 0 11 0zm13.5 12c-3 0-5.5 2.5-5.5 5.5s2.5 5.5 5.5 5.5c1.273 0 2.435-.471 3.375-1.219l.313.313a.955.955 0 0 0 .125 1.218l2.5 2.5c.4.4.975.4 1.375 0l.5-.5c.4-.4.4-1.006 0-1.406l-2.5-2.5a.935.935 0 0 0-1.157-.156l-.281-.313c.773-.948 1.25-2.14 1.25-3.437c0-3-2.5-5.5-5.5-5.5m0 1.5c2.2 0 4 1.8 4 4s-1.8 4-4 4s-4-1.8-4-4s1.8-4 4-4"/></svg>
+                                            </div>
+                                        </div>
+                                        <!-- Code view (default) -->
+                                        <div v-if="!preview" class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.answer?.trim() }}</div>
+                                        <!-- Preview view (rendered markdown) -->
+                                        <div v-else class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 prose dark:prose-invert max-w-none" v-html="renderMarkdown(log.answer?.trim())"></div>
                                     </div>
 
                                     <!-- Error -->
@@ -335,9 +347,18 @@ const LogDetailDialog = {
             </div>
         </div>
     `,
-    props: ['log'],
+    props: ['log', 'logs', 'routes'],
     emits: ['close'],
-    setup() {
+    setup(props, { emit }) {
+        // Load preview preference from localStorage, default to false
+        const savedPreview = localStorage.getItem('adminChat.preview')
+        const preview = ref(savedPreview === 'true')
+
+        // Watch for changes and save to localStorage
+        watch(preview, (newValue) => {
+            localStorage.setItem('adminChat.preview', newValue.toString())
+        })
+
         function formatJson(json) {
             try {
                 return JSON.stringify(JSON.parse(json), null, 2)
@@ -346,11 +367,56 @@ const LogDetailDialog = {
             }
         }
 
+        // Navigate to next/previous log
+        function navigateToLog(direction) {
+            if (!props.logs || !props.log) return
+
+            const currentIndex = props.logs.findIndex(log => log.id === props.log.id)
+            if (currentIndex === -1) return
+
+            let nextIndex
+            if (direction === 'next') {
+                nextIndex = currentIndex + 1
+                if (nextIndex >= props.logs.length) return // At the end
+            } else {
+                nextIndex = currentIndex - 1
+                if (nextIndex < 0) return // At the beginning
+            }
+
+            const nextLog = props.logs[nextIndex]
+            if (nextLog) {
+                props.routes.to({ show: nextLog.id })
+            }
+        }
+
+        // Handle keyboard navigation
+        function handleKeydown(event) {
+            if (event.key === 'Escape') {
+                emit('close')
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault()
+                navigateToLog('next')
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault()
+                navigateToLog('prev')
+            }
+        }
+
+        onMounted(() => {
+            document.addEventListener('keydown', handleKeydown)
+        })
+
+        onUnmounted(() => {
+            document.removeEventListener('keydown', handleKeydown)
+        })
+
         return {
             formatCost,
             humanifyMs,
             humanifyNumber,
             formatJson,
+            preview,
+            renderMarkdown,
         }
     }
 }
@@ -401,7 +467,7 @@ export const AdminChat = {
             </div>
 
             <!-- Content -->
-            <div class="flex-1 overflow-auto p-4">
+            <div ref="scrollableContent" tabindex="0" class="flex-1 overflow-auto p-4 focus:outline-none">
                 <div class="max-w-6xl mx-auto">
                     <!-- Cost Analysis Tab -->
                     <div v-if="!routes.tab || routes.tab === 'cost'" class="space-y-6">
@@ -554,29 +620,53 @@ export const AdminChat = {
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-900">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Date
+                                        <th scope="col" @click="toggleSort('createdDate')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Date
+                                                <span v-if="sortBy === 'createdDate'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-createdDate'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Model
+                                        <th scope="col" @click="toggleSort('model')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Model
+                                                <span v-if="sortBy === 'model'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-model'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Provider
+                                        <th scope="col" @click="toggleSort('provider')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Provider
+                                                <span v-if="sortBy === 'provider'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-provider'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Tokens
+                                        <th scope="col" @click="toggleSort('completionTokens')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Tokens
+                                                <span v-if="sortBy === 'completionTokens'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-completionTokens'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Cost
+                                        <th scope="col" @click="toggleSort('cost')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Cost
+                                                <span v-if="sortBy === 'cost'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-cost'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            Duration
+                                        <th scope="col" @click="toggleSort('durationMs')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                            <div class="flex items-center gap-1">
+                                                Duration
+                                                <span v-if="sortBy === 'durationMs'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-durationMs'" class="text-gray-400">↑</span>
+                                            </div>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <tr v-for="log in sortedLogs" :key="log.id"
-                                        @click="selectedLog = log"
+                                    <tr v-for="log in logs" :key="log.id"
+                                        @click="routes.to({ show:log.id })"
                                         class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ new Date(log.createdDate).toLocaleString() }}
@@ -588,7 +678,7 @@ export const AdminChat = {
                                             {{ log.provider }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ humanifyNumber((log.promptTokens || 0) + (log.completionTokens || 0)) }}
+                                            {{ humanifyNumber(log.completionTokens || 0) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ formatCost(log.cost) }}
@@ -599,13 +689,88 @@ export const AdminChat = {
                                     </tr>
                                 </tbody>
                             </table>
+
+                            <!-- Pagination Controls -->
+                            <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+                                <div class="flex-1 flex justify-between sm:hidden">
+                                    <button @click="previousPage" :disabled="currentPage === 1"
+                                        :class="['relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md',
+                                                 currentPage === 1
+                                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                        Previous
+                                    </button>
+                                    <button @click="nextPage" :disabled="!hasMorePages"
+                                        :class="['ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md',
+                                                 !hasMorePages
+                                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                        Next
+                                    </button>
+                                </div>
+                                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                                            Showing
+                                            <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span>
+                                            to
+                                            <span class="font-medium">{{ Math.min(currentPage * pageSize, (currentPage - 1) * pageSize + logs.length) }}</span>
+                                            <span v-if="totalCount > 0">
+                                                of
+                                                <span class="font-medium">{{ totalCount }}</span>
+                                                results
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                            <button type="button" @click="previousPage" :disabled="currentPage === 1"
+                                                :class="['relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 text-sm font-medium',
+                                                         currentPage === 1
+                                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                            : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                                <span class="sr-only">Previous</span>
+                                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+
+                                            <!-- Page Numbers -->
+                                            <template v-for="page in visiblePages" :key="page">
+                                                <button type="button" v-if="page === '...'" disabled
+                                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    ...
+                                                </button>
+                                                <button type="button" v-else @click="goToPage(page)"
+                                                    :class="['relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium',
+                                                             page === currentPage
+                                                                ? 'z-10 bg-indigo-50 dark:bg-indigo-900 border-indigo-500 text-indigo-600 dark:text-indigo-300'
+                                                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                                    {{ page }}
+                                                </button>
+                                            </template>
+
+                                            <button @click="nextPage" :disabled="!hasMorePages"
+                                                :class="['relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 text-sm font-medium',
+                                                         !hasMorePages
+                                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                                                            : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700']">
+                                                <span class="sr-only">Next</span>
+                                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Log Detail Dialog -->
-            <LogDetailDialog v-if="selectedLog" :log="selectedLog" @close="selectedLog = null" />
+            <LogDetailDialog v-if="selectedLog" :log="selectedLog" :logs="logs" :routes="routes" @close="routes.to({ show:undefined })" />
         </div>
     `,
     setup() {
@@ -613,12 +778,20 @@ export const AdminChat = {
         const server = inject('server')
         const client = useClient()
         const selectedLog = ref(null)
+        const preview = ref(false)
+
+        // Scrollable content ref for keyboard navigation
+        const scrollableContent = ref(null)
 
         // Data refs
         const analytics = ref(null)
         const dailyAnalytics = ref(null)
         const logs = ref([])
         const months = ref(server.plugins.adminChat?.analytics?.months ?? [])
+        const sortBy = ref('-id')
+        const currentPage = ref(1)
+        const pageSize = ref(25)
+        const totalCount = ref(0)
         const selectedDay = computed(() => {
             if (routes.day) {
                 return routes.day
@@ -626,6 +799,56 @@ export const AdminChat = {
             // Default to today
             const today = new Date()
             return today.toISOString().split('T')[0]
+        })
+
+        const hasMorePages = computed(() => {
+            return logs.value.length === pageSize.value
+        })
+
+        const totalPages = computed(() => {
+            if (totalCount.value === 0) return 1
+            return Math.ceil(totalCount.value / pageSize.value)
+        })
+
+        const visiblePages = computed(() => {
+            const total = totalPages.value
+            const current = currentPage.value
+            const delta = 2
+            const pages = []
+
+            if (total <= 7) {
+                // Show all pages if 7 or fewer
+                for (let i = 1; i <= total; i++) {
+                    pages.push(i)
+                }
+            } else {
+                // Always show first page
+                pages.push(1)
+
+                // Calculate range around current page
+                let start = Math.max(2, current - delta)
+                let end = Math.min(total - 1, current + delta)
+
+                // Add ellipsis after first page if needed
+                if (start > 2) {
+                    pages.push('...')
+                }
+
+                // Add pages around current
+                for (let i = start; i <= end; i++) {
+                    pages.push(i)
+                }
+
+                // Add ellipsis before last page if needed
+                if (end < total - 1) {
+                    pages.push('...')
+                }
+
+                // Always show last page
+                pages.push(total)
+            }
+
+            return pages
         })
 
         // Chart refs
@@ -652,10 +875,43 @@ export const AdminChat = {
         let dailyTokensByModelChart = null
         let dailyTokensByProviderChart = null
 
-        const sortedLogs = computed(() => {
-            if (!logs.value) return []
-            return [...logs.value].sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
-        })
+        // Toggle sort column
+        function toggleSort(column) {
+            if (sortBy.value === column) {
+                // Currently ascending, switch to descending
+                sortBy.value = `-${column}`
+            } else if (sortBy.value === `-${column}`) {
+                // Currently descending, switch to ascending
+                sortBy.value = column
+            } else {
+                // New column, default to descending
+                sortBy.value = `-${column}`
+            }
+            currentPage.value = 1 // Reset to first page when sorting changes
+            loadData({ orderBy: sortBy.value })
+        }
+
+        // Pagination functions
+        function nextPage() {
+            if (hasMorePages.value) {
+                currentPage.value++
+                loadData()
+            }
+        }
+
+        function previousPage() {
+            if (currentPage.value > 1) {
+                currentPage.value--
+                loadData()
+            }
+        }
+
+        function goToPage(page) {
+            if (page !== '...' && page !== currentPage.value) {
+                currentPage.value = page
+                loadData()
+            }
+        }
 
         // Load data from API
         async function loadData(args={}) {
@@ -664,12 +920,17 @@ export const AdminChat = {
             }))
             analytics.value = apiAnalytics.response || null
 
+            const skip = (currentPage.value - 1) * pageSize.value
             const apiLogs = await client.api(new AdminQueryChatCompletionLogs({
                 month: routes.month,
-                orderBy: '-id',
+                include: 'total',
+                orderBy: sortBy.value,
+                skip: skip,
+                take: pageSize.value,
                 ...args,
             }))
             logs.value = apiLogs.response?.results || []
+            totalCount.value = apiLogs.response?.total || 0
 
             // Always show a day - either current day or the latest day with data
             if (analytics.value?.dailyStats?.length > 0 && analytics.value.month) {
@@ -1321,9 +1582,14 @@ export const AdminChat = {
             })
         }
 
-        onMounted(() => {
-            loadData()
+        onMounted(async () => {
+            await loadData()
             updateCharts()
+            selectedLog.value = logs.value.find(log => log.id === parseInt(routes.show))
+            // Focus the scrollable content to enable keyboard navigation (Page Up/Down, Home/End)
+            nextTick(() => {
+                scrollableContent.value?.focus()
+            })
         })
 
         onUnmounted(() => {
@@ -1364,14 +1630,29 @@ export const AdminChat = {
             dailyAnalytics.value = null
             loadData()
         })
+        watch(() => routes.show, () => {
+            selectedLog.value = logs.value.find(log => log.id === parseInt(routes.show))
+        })
 
         return {
             routes,
             selectedLog,
-            sortedLogs,
+            logs,
+            sortBy,
+            toggleSort,
+            currentPage,
+            pageSize,
+            totalCount,
+            hasMorePages,
+            totalPages,
+            visiblePages,
+            nextPage,
+            previousPage,
+            goToPage,
             months,
             selectedDay,
             dailyAnalytics,
+            scrollableContent,
             refDailyCosts,
             refCostsByModel,
             refCostsByProvider,
@@ -1385,6 +1666,127 @@ export const AdminChat = {
             formatCost,
             humanifyNumber,
             humanifyMs,
+            preview,
         }
     }
+}
+
+const hljs = globalThis.hljs
+export const marked = (() => {
+    const aliases = {
+        vue: 'html',
+    }
+    const ret = new Marked(
+        markedHighlight({
+            langPrefix: 'hljs language-',
+            highlight(code, lang, info) {
+                if (aliases[lang]) {
+                    lang = aliases[lang]
+                }
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value
+                }
+                // Return plain code without highlighting if language is not recognized
+                return code
+            }
+        })
+    )
+    return ret
+})();
+
+export function renderMarkdown(content) {
+    if (content) {
+        content = content
+            .replaceAll(`\\[ \\boxed{`,'\n<span class="inline-block text-xl text-blue-500 bg-blue-50 dark:text-blue-400 dark:bg-blue-950 px-3 py-1 rounded">')
+            .replaceAll('} \\]','</span>\n')
+    }
+    return marked.parse(content)
+}
+
+export function markedHighlight(options) {
+    if (typeof options === 'function') {
+        options = {
+            highlight: options
+        }
+    }
+
+    if (!options || typeof options.highlight !== 'function') {
+        throw new Error('Must provide highlight function')
+    }
+
+    if (typeof options.langPrefix !== 'string') {
+        options.langPrefix = 'language-'
+    }
+
+    return {
+        async: !!options.async,
+        walkTokens(token) {
+            if (token.type !== 'code') {
+                return
+            }
+
+            const lang = getLang(token.lang)
+
+            if (options.async) {
+                return Promise.resolve(options.highlight(token.text, lang, token.lang || '')).then(updateToken(token))
+            }
+
+            const code = options.highlight(token.text, lang, token.lang || '')
+            if (code instanceof Promise) {
+                throw new Error('markedHighlight is not set to async but the highlight function is async. Set the async option to true on markedHighlight to await the async highlight function.')
+            }
+            updateToken(token)(code)
+        },
+        renderer: {
+            code(code, infoString) {
+                const lang = getLang(infoString)
+                let text = code.text
+                const classAttr = lang
+                    ? ` class="${options.langPrefix}${escape(lang)}"`
+                    : ' class="hljs"';
+                text = text.replace(/\n$/, '')
+                return `<pre><code${classAttr}>${code.escaped ? text : escape(text, true)}\n</code></pre>`
+            }
+        }
+    }
+}
+
+function getLang(lang) {
+    return (lang || '').match(/\S*/)[0]
+}
+
+function updateToken(token) {
+    return code => {
+        if (typeof code === 'string' && code !== token.text) {
+            token.escaped = true
+            token.text = code
+        }
+    }
+}
+
+// copied from marked helpers
+const escapeTest = /[&<>"']/
+const escapeReplace = new RegExp(escapeTest.source, 'g')
+const escapeTestNoEncode = /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/
+const escapeReplaceNoEncode = new RegExp(escapeTestNoEncode.source, 'g')
+const escapeReplacements = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+}
+const getEscapeReplacement = ch => escapeReplacements[ch]
+function escape(html, encode) {
+    if (encode) {
+        if (escapeTest.test(html)) {
+            return html.replace(escapeReplace, getEscapeReplacement)
+        }
+    } else {
+        if (escapeTestNoEncode.test(html)) {
+            return html.replace(escapeReplaceNoEncode, getEscapeReplacement)
+        }
+    }
+
+    return html
 }
