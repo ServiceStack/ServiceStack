@@ -397,7 +397,7 @@ public static class ApiKeysExtensions
 }
 
 
-class ApiKeyResolver(ApiKeysFeature feature) : IApiKeyResolver
+public class ApiKeyResolver(ApiKeysFeature feature) : IApiKeyResolver
 {
     public string? GetApiKeyToken(IRequest req)
     {

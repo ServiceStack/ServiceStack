@@ -352,6 +352,10 @@ public class ChatResponse
     [Description("Usage statistics for the completion request.")]
     [DataMember(Name = "usage")]
     public AiUsage Usage { get; set; }
+
+    [Description("The provider used for the chat completion.")]
+    [DataMember(Name = "provider")]
+    public string? Provider { get; set; }
     
     [Description("Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.")]
     [DataMember(Name = "metadata")]

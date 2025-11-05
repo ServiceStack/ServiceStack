@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
@@ -82,12 +83,16 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
         var provider = Providers.GetValueOrDefault(providerId);
         if (provider == null)
             throw new ArgumentException($"Chat Provider '{providerId}' is not available");
+        provider.Id = providerId;
         return (T)provider;
     }
     public OpenAiProvider GetOpenAiProvider(string providerId) => GetRequiredProvider<OpenAiProvider>(providerId);
     public OllamaProvider GetOllamaProvider(string providerId) => GetRequiredProvider<OllamaProvider>(providerId);
     public GoogleProvider GetGoogleProvider(string providerId) => GetRequiredProvider<GoogleProvider>(providerId);
 
+    public static string SvgIcon =
+        "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path fill='currentColor' d='M14 5H4v13.385L5.763 17H20v-6h2v7a1 1 0 0 1-1 1H6.454L2 22.5V4a1 1 0 0 1 1-1h11zm5.53-3.68a.507.507 0 0 1 .94 0l.254.61a4.37 4.37 0 0 0 2.25 2.327l.717.32a.53.53 0 0 1 0 .962l-.758.338a4.36 4.36 0 0 0-2.22 2.25l-.246.566a.506.506 0 0 1-.934 0l-.247-.565a4.36 4.36 0 0 0-2.219-2.251l-.76-.338a.53.53 0 0 1 0-.963l.718-.32a4.37 4.37 0 0 0 2.251-2.325z'/></svg>";
+    
     public void Configure(IServiceCollection services)
     {
         services.RegisterService<ChatServices>();
@@ -99,6 +104,16 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
         if (!DisableAdminUi)
         {
             services.RegisterService<AdminChatServices>();
+            services.ConfigurePlugin<UiFeature>(feature =>
+            {
+                feature.AddAdminLink(AdminUiFeature.Dynamic, new LinkInfo {
+                    Id = "chat",
+                    Label = "AI Chat",
+                    Icon = Svg.ImageSvg(SvgIcon),
+                    Show = $"role:{RoleNames.Admin}",
+                });
+                feature.AddAdminComponent("chat", "AdminChat");
+            });
         }
         if (ExcludeRequestDtoTypes.Count > 0)
         {
@@ -238,6 +253,7 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
                 };
                 if (p != null)
                 {
+                    p.Id = entry.Key;
                     p.VirtualFiles = VirtualFiles;
                     p.DownloadUrlAsBase64Async = DownloadUrlAsBase64Async;
                     Providers[entry.Key] = p;
@@ -346,8 +362,8 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
     }
 
     public Func<ChatCompletion, IRequest, Task<ChatResponse>> ChatCompletionAsync { get; set; }
-    public Func<ChatCompletion, ChatResponse, IRequest, Task>? OnChatCompletionSuccessAsync { get; set; }
-    public Func<ChatCompletion, Exception, IRequest, Task>? OnChatCompletionFailedAsync { get; set; }
+    public Func<OpenAiProviderBase, ChatCompletion, ChatResponse, IRequest, Task>? OnChatCompletionSuccessAsync { get; set; }
+    public Func<OpenAiProviderBase, ChatCompletion, Exception, IRequest, Task>? OnChatCompletionFailedAsync { get; set; }
 
     public async Task<ChatResponse> DefaultChatCompletionAsync(ChatCompletion request, IRequest req)
     {
@@ -360,6 +376,7 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
         }
 
         Exception? firstEx = null;
+        OpenAiProviderBase? firstProvider = null;
         var i = 0;
         var chatRequest = request;
         foreach (var entry in candidateProviders)
@@ -371,10 +388,10 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
                 chatRequest.Model = request.Model;
                 var ret = await provider.ChatAsync(chatRequest).ConfigAwait();
                 if (ChatStore != null)
-                    await ChatStore.ChatCompletedAsync(chatRequest, ret, req).ConfigAwait();
+                    await ChatStore.ChatCompletedAsync(provider, chatRequest, ret, req).ConfigAwait();
                 var onSuccess = OnChatCompletionSuccessAsync;
                 if (onSuccess != null)
-                    await onSuccess(chatRequest, ret, req).ConfigAwait();
+                    await onSuccess(provider, chatRequest, ret, req).ConfigAwait();
                 return ret;
             }
             catch (Exception ex)
@@ -382,15 +399,18 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
                 Log.LogError(ex, "Error calling {Name} ({CandidateIndex}/{CandidatesTotal}): {Message}", 
                     i, candidateProviders.Count, entry.Key, ex.Message);
                 firstEx ??= ex;
+                firstProvider ??= entry.Value;
             }
         }
 
         firstEx ??= HttpError.NotFound($"Model {request.Model} not found");
+        firstProvider ??= new OpenAiProvider(NullLogger.Instance, HttpClientFactory) { Id = "unknown" };
+        
         if (ChatStore != null)
-            await ChatStore.ChatFailedAsync(chatRequest, firstEx, req).ConfigAwait();
+            await ChatStore.ChatFailedAsync(firstProvider, chatRequest, firstEx, req).ConfigAwait();
         var onFailed = OnChatCompletionFailedAsync; 
         if (onFailed != null)
-            await onFailed(request, firstEx, req).ConfigAwait();
+            await onFailed(firstProvider, request, firstEx, req).ConfigAwait();
         throw firstEx;
     }
 

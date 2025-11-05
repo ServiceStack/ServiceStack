@@ -269,9 +269,9 @@ public class GoogleProvider(ILogger log, IHttpClientFactory factory) : OpenAiPro
             {
                 response.Usage = new AiUsage
                 {
+                    PromptTokens = (int) usageMetadata.GetValueOrDefault("promptTokenCount", 0),
                     CompletionTokens = (int) usageMetadata.GetValueOrDefault("candidatesTokenCount", 0),
                     TotalTokens = (int) usageMetadata.GetValueOrDefault("totalTokenCount", 0),
-                    PromptTokens = (int) usageMetadata.GetValueOrDefault("promptTokenCount", 0),
                 };
             }
         }

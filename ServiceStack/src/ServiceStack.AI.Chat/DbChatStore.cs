@@ -43,18 +43,20 @@ public class DbChatStore(ILogger<DbChatStore> log, IDbConnectionFactory dbFactor
         return ret;
     }
 
-    public async Task ChatCompletedAsync(ChatCompletion request, ChatResponse response, IRequest req)
+    public async Task ChatCompletedAsync(OpenAiProviderBase provider, ChatCompletion request, ChatResponse response, IRequest req)
     {
-        using var db = OpenDb();
         log.LogDebug("ChatCompletedAsync:\n{Request}\nAnswer: {Answer}", ClientConfig.ToSystemJson(request), response.GetAnswer());
-        await db.InsertAsync(req.ToChatCompletionLog(request, response));
+        var date = DateTime.UtcNow;
+        using var db = OpenMonthDb(date);
+        await db.InsertAsync(req.ToChatCompletionLog(provider, request, response));
     }
 
-    public async Task ChatFailedAsync(ChatCompletion request, Exception ex, IRequest req)
+    public async Task ChatFailedAsync(OpenAiProviderBase provider, ChatCompletion request, Exception ex, IRequest req)
     {
-        using var db = OpenDb();
         log.LogWarning(ex, "ChatFailedAsync:\n{Request}", ClientConfig.ToSystemJson(request));
-        await db.InsertAsync(req.ToChatCompletionLog(request, ex));
+        var date = DateTime.UtcNow;
+        using var db = OpenMonthDb(date);
+        await db.InsertAsync(req.ToChatCompletionLog(provider, request, ex));
     }
 
     public void InitSchema()

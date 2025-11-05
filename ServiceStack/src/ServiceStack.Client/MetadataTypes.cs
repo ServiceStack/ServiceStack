@@ -750,6 +750,15 @@ public class AdminUi
     /// Customize Admin Users FormLayout
     /// </summary>
     public ApiCss Css { get; set; }
+
+    public List<PageInfo> Pages { get; set; } = [];
+}
+
+[Exclude(Feature.Soap | Feature.ApiExplorer)]
+public class PageInfo
+{
+    public string Page { get; set; }
+    public string Component { get; set; }
 }
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]
@@ -1891,7 +1900,7 @@ public static class AppMetadataUtils
         var requiredProp = pi.FirstAttribute<RequiredAttribute>();
         if (requiredProp != null)
             property.IsRequired = true;
-
+        
         var apiAllowableValues = pi.FirstAttribute<ApiAllowableValuesAttribute>();
         if (apiAllowableValues != null)
         {
@@ -1927,6 +1936,9 @@ public static class AppMetadataUtils
             if (pi.GetSetMethod() == null) //ReadOnly is bool? to minimize serialization
                 property.ReadOnly = true;
         }
+        if (property.IsRequired != true)
+            property.IsRequired = null;
+        
         return property;
     }
 

@@ -25,6 +25,7 @@ public class ChatCompletionLog : IMeta
     public virtual string? ApiKey { get; set; }
 
     public string Model { get; set; }
+    public string Provider { get; set; }
     public string? UserPrompt { get; set; }
 
     public string? Answer { get; set; }
@@ -51,14 +52,9 @@ public class ChatCompletionLog : IMeta
     /// Associate Request with a tag group
     /// </summary>
     public virtual string? Tag { get; set; }
-
-    public virtual string? ThreadId { get; set; }
-
     public virtual int? DurationMs { get; set; }
-
     public virtual int? PromptTokens { get; set; }
     public virtual int? CompletionTokens { get; set; }
-    
     public virtual decimal Cost { get; set; }
 
     public virtual string? ProviderRef { get; set; }
@@ -68,7 +64,9 @@ public class ChatCompletionLog : IMeta
     public virtual string? FinishReason { get; set; }
 
     public virtual ModelUsage? Usage { get; set; }
-    
+    public virtual string? ThreadId { get; set; }
+
+    public string? Title { get; set; }
     public virtual Dictionary<string, string>? Meta { get; set; }    
 }
 
@@ -100,7 +98,7 @@ public class ModelUsage
 
 public static class ChatCompletionLogUtils
 {
-    public static ChatCompletionLog ToChatCompletionLog(this IRequest req, ChatCompletion request, ChatResponse response, string? refId = null)
+    public static ChatCompletionLog ToChatCompletionLog(this IRequest req, OpenAiProviderBase provider, ChatCompletion request, ChatResponse response, string? refId = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(response);
@@ -108,7 +106,7 @@ public static class ChatCompletionLogUtils
         var userId = req.GetClaimsPrincipal()?.GetUserId();
         var apiKey = req.GetApiKey();
         userId ??= apiKey?.UserAuthId;
-        userId ??= req.GetSession()?.UserAuthId;
+        userId ??= req.GetClaimsPrincipal().GetUserId();
         var duration = req.GetElapsed();
         
         var usage = response.Usage;
@@ -117,7 +115,8 @@ public static class ChatCompletionLogUtils
             RefId = refId ?? req.GetTraceId() ?? Guid.NewGuid().ToString("N"),
             UserId = userId,
             ApiKey = apiKey?.Key,
-            Model = request.Model,
+            Model = provider.GetModelId(request.Model) ?? request.Model,
+            Provider = provider.Id,
             UserPrompt = request.GetUserPrompt(),
             Answer = response.GetAnswer(),
             RequestBody = request.ToJson(),
@@ -129,6 +128,9 @@ public static class ChatCompletionLogUtils
             ThreadId = request.Metadata?.TryGetValue("threadId", out var threadId) == true
                 ? threadId
                 : null,
+            ProviderRef = response.Provider,
+            ProviderModel = response.Model,
+            FinishReason = response.Choices?.FirstOrDefault()?.FinishReason?.ToLower(),
         };
         ret.Usage = new()
         {
@@ -154,11 +156,21 @@ public static class ChatCompletionLogUtils
                 ret.Cost = (usage.PromptTokens * decimal.Parse(ret.Usage.Input) + 
                             usage.CompletionTokens * decimal.Parse(ret.Usage.Output));
             }
+
+            // store any additional response.Metadata other than duration,pricing
+            var keys = response.Metadata.Keys.ToList();
+            string[] ignoreKeys = ["duration", "pricing"];
+            if (keys.Any(x => !ignoreKeys.Contains(x)))
+            {
+                ret.Meta = response.Metadata
+                    .Where(x => !ignoreKeys.Contains(x.Key))
+                    .ToDictionary(x => x.Key, x => x.Value);
+            }
         }
         return ret;
     }
 
-    public static ChatCompletionLog ToChatCompletionLog(this IRequest req, ChatCompletion request, Exception ex, string? refId = null)
+    public static ChatCompletionLog ToChatCompletionLog(this IRequest req, OpenAiProviderBase provider, ChatCompletion request, Exception ex, string? refId = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(ex);
@@ -176,13 +188,17 @@ public static class ChatCompletionLogUtils
             RefId = refId ?? req.GetTraceId() ?? Guid.NewGuid().ToString("N"),
             UserId = userId,
             ApiKey = apiKey?.Key,
-            Model = request.Model,
+            Model = provider.GetModelId(request.Model) ?? request.Model,
+            Provider = provider.Id,
             UserPrompt = request.GetUserPrompt(),
             RequestBody = request.ToJson(),
-            ErrorCode = status.ErrorCode,
-            Error = status,
             CreatedDate = DateTime.UtcNow,
             DurationMs = duration != TimeSpan.Zero ? (int)duration.TotalMilliseconds : null,
+            ThreadId = request.Metadata?.TryGetValue("threadId", out var threadId) == true
+                ? threadId
+                : null,
+            ErrorCode = status.ErrorCode,
+            Error = status,
         };
     }
 }

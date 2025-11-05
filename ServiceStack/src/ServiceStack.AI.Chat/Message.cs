@@ -119,45 +119,4 @@ public static class MessageUtils
         var ret = StringBuilderCache.ReturnAndFree(sb);
         return string.IsNullOrEmpty(ret) ? null : ret;
     }
-
-    public class CreateChatCompletion : ChatCompletion, IPost, IReturn<ChatResponse>
-    {
-    }
-
-    /// <summary>
-    /// Convert to OpenAI Chat Completion DTO to avoid sending unnecessary fields
-    /// </summary>
-    public static ChatCompletion ToChatCompletion(this CreateChatCompletion from)
-    {
-        return new ChatCompletion
-        {
-            Messages = from.Messages,
-            Model = from.Model,
-            Audio = from.Audio,
-            FrequencyPenalty = from.FrequencyPenalty,
-            LogitBias = from.LogitBias,
-            Logprobs = from.Logprobs,
-            MaxCompletionTokens = from.MaxCompletionTokens,
-            Metadata = from.Metadata,
-            Modalities = from.Modalities,
-            N = from.N,
-            ParallelToolCalls = from.ParallelToolCalls,
-            PresencePenalty = from.PresencePenalty,
-            PromptCacheKey = from.PromptCacheKey,
-            ReasoningEffort = from.ReasoningEffort,
-            ResponseFormat = from.ResponseFormat,
-            SafetyIdentifier = from.SafetyIdentifier,
-            Seed = from.Seed,
-            ServiceTier = from.ServiceTier,
-            Stop = from.Stop,
-            Store = from.Store,
-            Stream = from.Stream,
-            Temperature = from.Temperature,
-            Tools = from.Tools,
-            TopLogprobs = from.TopLogprobs,
-            TopP = from.TopP,
-            Verbosity = from.Verbosity,
-            EnableThinking = from.EnableThinking,
-        };
-    }
 }

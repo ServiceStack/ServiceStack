@@ -2,8 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using ServiceStack;
 using ServiceStack.DataAnnotations;
+
+namespace ServiceStack;
 
 /// <summary>
 /// Request Log Data Model for (SqliteRequestLogger, DbLogger)

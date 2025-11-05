@@ -33,18 +33,21 @@ public class PostgresChatStore(ILogger<PostgresChatStore> log, IDbConnectionFact
         return PostgresUtils.GetTableMonths(dialect, db, typeof(ChatCompletionLog));
     }
 
-    public async Task ChatCompletedAsync(ChatCompletion request, ChatResponse response, IRequest req)
+    public async Task ChatCompletedAsync(OpenAiProviderBase provider, ChatCompletion request, ChatResponse response, IRequest req)
     {
         log.LogDebug("ChatCompletedAsync:\n{Request}\nAnswer: {Answer}", ClientConfig.ToSystemJson(request), response.GetAnswer());
-        using var db = OpenMonthDb();
-        await db.InsertAsync(req.ToChatCompletionLog(request, response));
+        var date = DateTime.UtcNow;
+        using var db = OpenMonthDb(date);
+        var entry = req.ToChatCompletionLog(provider, request, response);
+        await db.InsertAsync(entry);
     }
 
-    public async Task ChatFailedAsync(ChatCompletion request, Exception ex, IRequest req)
+    public async Task ChatFailedAsync(OpenAiProviderBase provider, ChatCompletion request, Exception ex, IRequest req)
     {
         log.LogWarning(ex, "ChatFailedAsync:\n{Request}", ClientConfig.ToSystemJson(request));
-        using var db = OpenMonthDb();
-        await db.InsertAsync(req.ToChatCompletionLog(request, ex));
+        var date = DateTime.UtcNow;
+        using var db = OpenMonthDb(date);
+        await db.InsertAsync(req.ToChatCompletionLog(provider, request, ex));
     }
 
     public void InitSchema()

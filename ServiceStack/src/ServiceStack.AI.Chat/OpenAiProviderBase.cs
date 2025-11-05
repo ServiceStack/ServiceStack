@@ -6,6 +6,7 @@ namespace ServiceStack.AI;
 
 public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory) : IChatClient
 {
+    public string Id { get; set; }
     public string BaseUrl { get; set; }
     public string? ChatUrl { get; set; }
     public string? ApiKey { get; set; }
@@ -438,8 +439,16 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
             Log.LogDebug("POST {ChatUrl}\n{Request}", ChatUrl, ChatSummaryJson(request));
 
         var httpReq = new HttpRequestMessage(HttpMethod.Post, ChatUrl);
+
+        // Conflict's with some providers Z.ai
+        var hold = request.Metadata;
+        request.Metadata = null;
+
         var jsonRequest = request.ToJson();
         httpReq.Content = new StringContent(jsonRequest);
+
+        request.Metadata = hold;
+
         foreach (var entry in Headers)
         {
             httpReq.WithHeader(entry.Key, entry.Value);
@@ -447,11 +456,8 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
 
         var startedAt = DateTime.UtcNow;
         var httpRes = await client.SendAsync(httpReq, token).ConfigAwait();
-        // Conflict's with some providers Z.ai
-        var hold = request.Metadata;
-        request.Metadata = null;
+
         var json = await httpRes.Content.ReadAsStringAsync(token).ConfigAwait();
-        request.Metadata = hold;
         if (!httpRes.IsSuccessStatusCode)
         {
             Log.LogError("Chat Error: {Message}", json);
@@ -469,5 +475,18 @@ public abstract class OpenAiProviderBase(ILogger log, IHttpClientFactory factory
             Log.LogDebug("Response:\n{Response}", ClientConfig.ToSystemJson(dto));
 
         return ToResponse(dto, request, startedAt);
+    }
+
+    public virtual string? GetModelId(string providerModel)
+    {
+        foreach (var entry in Models)
+        {
+            if (entry.Value == providerModel)
+            {
+                log.LogDebug("USING model ID: {Model} for {ProviderModel} in {Provider}", entry.Key, providerModel, Id);
+                return entry.Key;
+            }
+        }
+        return null;
     }
 }

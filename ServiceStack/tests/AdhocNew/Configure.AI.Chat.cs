@@ -16,15 +16,8 @@ public class ConfigureAiChat : IHostingStartup
                 // ValidateRequest = async (req) => req.GetApiKey()?.HasScope(RoleNames.Admin) == true 
                 //     ? null 
                 //     : HttpResult.Redirect("/admin-ui"),
-                OnChatCompletionSuccessAsync = async (request, response, req) => {
-                    using var db = await req.Resolve<IDbConnectionFactory>().OpenAsync();
-                    await db.InsertAsync(req.ToChatCompletionLog(request, response));
-                },
-                OnChatCompletionFailedAsync = async (request, exception, req) => {
-                    using var db = await req.Resolve<IDbConnectionFactory>().OpenAsync();
-                    await db.InsertAsync(req.ToChatCompletionLog(request, exception));
-                },
             });
+            services.AddSingleton<IChatStore,PostgresChatStore>();
              
             services.ConfigurePlugin<MetadataFeature>(feature => {
                 feature.AddPluginLink("/chat", "AI Chat");
