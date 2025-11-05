@@ -988,7 +988,7 @@ public partial class DbJobs : IBackgroundJobs
                 .GroupBy(x => new { x.Command, x.Worker })
                 .Select(x => new {
                     Command = Sql.Custom($"CASE WHEN {columns.Worker} is null THEN {columns.Command} ELSE {sqlCommandWorker} END"), 
-                    DurationMs = Sql.Sum(columns.DurationMs),
+                    DurationMs = Sql.Custom($"CASE WHEN SUM({columns.DurationMs}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({columns.DurationMs}) END"),
                 }));
         lastCommandDurations = new(commandDurations);
         
@@ -1004,7 +1004,7 @@ public partial class DbJobs : IBackgroundJobs
                 .GroupBy(x => new { x.Command, x.Worker })
                 .Select(x => new {
                     Command = Sql.Custom($"CASE WHEN {columns.Worker} is null THEN {columns.Command} ELSE {sqlCommandWorker} END"), 
-                    DurationMs = Sql.Sum(columns.DurationMs),
+                    DurationMs = Sql.Custom($"CASE WHEN SUM({columns.DurationMs}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({columns.DurationMs}) END"),
                 }));
         lastApiDurations = new(apiDurations);
 
