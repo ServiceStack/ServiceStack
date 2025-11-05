@@ -3,8 +3,11 @@ import { useClient, useFormatters } from "@servicestack/vue"
 import { leftPart } from '@servicestack/client'
 import { Chart, registerables } from "chart.js"
 import { QueryDb, QueryResponse } from "dtos"
+
 Chart.register(...registerables)
+
 const { humanifyNumber, humanifyMs } = useFormatters()
+
 export class AdminQueryChatCompletionLogs extends QueryDb {
     /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
@@ -106,6 +109,7 @@ export class AdminDailyChatCompletionAnalyticsResponse {
     /** @type {ChatCompletionStat[]} */
     providerStats = [];
 }
+
 export class ChatCompletionStat {
     /** @param {{name?:string,requests?:number,inputTokens?:number,outputTokens?:number,cost?:number}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -120,12 +124,14 @@ export class ChatCompletionStat {
     /** @type {number} */
     cost;
 }
+
 function formatCost(cost) {
     if (!cost) return '$0.00'
     const numFmt = new Intl.NumberFormat(undefined,{style:'currency',currency:'USD', maximumFractionDigits:6})
     var ret = numFmt.format(parseFloat(cost))
     return ret.endsWith('.00') ? ret.slice(0, -3) : ret
 }
+
 export const colors = [
     { background: 'rgba(54, 162, 235, 0.2)',  border: 'rgb(54, 162, 235)' }, //blue
     { background: 'rgba(255, 99, 132, 0.2)',  border: 'rgb(255, 99, 132)' },
@@ -138,6 +144,7 @@ export const colors = [
     { background: 'rgba(75, 192, 192, 0.2)',  border: 'rgb(75, 192, 192)' },
     { background: 'rgba(201, 203, 207, 0.2)', border: 'rgb(201, 203, 207)' },
 ]
+
 const MonthSelector = {
     template:`
     <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center w-full sm:w-auto">
@@ -156,6 +163,7 @@ const MonthSelector = {
                 </button>
             </template>
         </div>
+
         <!-- Year Dropdown -->
         <select :value="selectedYear" @change="(e) => updateSelection(parseInt(e.target.value), selectedMonth)"
             class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-shrink-0">
@@ -171,16 +179,20 @@ const MonthSelector = {
     setup(props) {
         const routes = inject('routes')
         const now = new Date()
+
         const selectedMonth = computed(() => {
             return routes.month ? parseInt(routes.month.split('-')[1]) : now.getMonth() + 1
         })
+
         const selectedYear = computed(() => {
             return routes.month ? parseInt(routes.month.split('-')[0]) : now.getFullYear()
         })
+
         const updateSelection = (year, month) => {
             const monthStr = `${year}-${month.toString().padStart(2, '0')}`
             routes.to({ month: monthStr, day:undefined })
         }
+
         const availableYears = computed(() => {
             if (!props.months) return []
             const yearsSet = new Set()
@@ -190,6 +202,7 @@ const MonthSelector = {
             })
             return Array.from(yearsSet).sort((a, b) => a - b)
         })
+
         const availableMonthsForYear = computed(() => {
             if (!props.months) return []
             const monthsSet = new Set()
@@ -201,6 +214,7 @@ const MonthSelector = {
             })
             return Array.from(monthsSet).sort((a, b) => a - b)
         })
+
         return {
             selectedMonth,
             selectedYear,
@@ -210,6 +224,7 @@ const MonthSelector = {
         }
     }
 }
+
 const LogDetailDialog = {
     template: `
         <div v-if="log" class="fixed inset-0 z-50 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
@@ -279,16 +294,19 @@ const LogDetailDialog = {
                                             </div>
                                         </dl>
                                     </div>
+
                                     <!-- User Prompt -->
                                     <div v-if="log.userPrompt">
                                         <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">User Prompt</h3>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.userPrompt }}</div>
                                     </div>
+
                                     <!-- Answer -->
                                     <div v-if="log.answer">
                                         <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Answer</h3>
                                         <div class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.answer }}</div>
                                     </div>
+
                                     <!-- Error -->
                                     <div v-if="log.error">
                                         <h3 class="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Error</h3>
@@ -297,11 +315,13 @@ const LogDetailDialog = {
                                             <div>{{ log.error.message || JSON.stringify(log.error) }}</div>
                                         </div>
                                     </div>
+
                                     <!-- Request Body -->
                                     <div v-if="log.requestBody">
                                         <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Request Body</h3>
                                         <pre class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-xs text-gray-900 dark:text-gray-100 overflow-x-auto">{{ formatJson(log.requestBody) }}</pre>
                                     </div>
+
                                     <!-- Response Body -->
                                     <div v-if="log.responseBody">
                                         <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Response Body</h3>
@@ -325,6 +345,7 @@ const LogDetailDialog = {
                 return json
             }
         }
+
         return {
             formatCost,
             humanifyMs,
@@ -333,6 +354,7 @@ const LogDetailDialog = {
         }
     }
 }
+
 export const AdminChat = {
     components: {
         MonthSelector,
@@ -347,6 +369,7 @@ export const AdminChat = {
                     <MonthSelector :months="months" />
                 </div>
             </div>
+
             <!-- Tabs -->
             <div class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4">
                 <div class="max-w-6xl mx-auto flex gap-8">
@@ -376,6 +399,7 @@ export const AdminChat = {
                     </button>
                 </div>
             </div>
+
             <!-- Content -->
             <div class="flex-1 overflow-auto p-4">
                 <div class="max-w-6xl mx-auto">
@@ -390,6 +414,7 @@ export const AdminChat = {
                                     <canvas ref="refCostsByModel"></canvas>
                                 </div>
                             </div>
+
                             <!-- Monthly Costs by Provider -->
                             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                                 <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Monthly Costs by Provider</h3>
@@ -398,6 +423,7 @@ export const AdminChat = {
                                 </div>
                             </div>
                         </div>
+
                         <!-- Daily Costs Bar Chart -->
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                             <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
@@ -407,6 +433,7 @@ export const AdminChat = {
                                 <canvas ref="refDailyCosts"></canvas>
                             </div>
                         </div>
+
                         <!-- Daily Breakdown Pie Charts -->
                         <div v-if="selectedDay && dailyAnalytics">
                             <!-- Title with Date and Stats -->
@@ -422,6 +449,7 @@ export const AdminChat = {
                                     </div>
                                 </div>
                             </div>
+
                             <!-- Pie Charts -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Daily Costs by Model -->
@@ -433,6 +461,7 @@ export const AdminChat = {
                                         <canvas ref="refDailyCostsByModel"></canvas>
                                     </div>
                                 </div>
+
                                 <!-- Daily Costs by Provider -->
                                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                                     <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
@@ -444,7 +473,9 @@ export const AdminChat = {
                                 </div>
                             </div>
                         </div>
+
                     </div>
+
                     <!-- Token Usage Tab -->
                     <div v-if="routes.tab === 'tokens'" class="space-y-6">
                         <!-- Pie Charts Row -->
@@ -456,6 +487,7 @@ export const AdminChat = {
                                     <canvas ref="refTokensByModel"></canvas>
                                 </div>
                             </div>
+
                             <!-- Monthly Tokens by Provider -->
                             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                                 <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Monthly Tokens by Provider</h3>
@@ -464,6 +496,7 @@ export const AdminChat = {
                                 </div>
                             </div>
                         </div>
+
                         <!-- Daily Token Usage Bar Chart -->
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                             <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
@@ -473,6 +506,7 @@ export const AdminChat = {
                                 <canvas ref="refDailyTokens"></canvas>
                             </div>
                         </div>
+
                         <!-- Daily Breakdown Pie Charts -->
                         <div v-if="selectedDay && dailyAnalytics">
                             <!-- Title with Date and Stats -->
@@ -488,6 +522,7 @@ export const AdminChat = {
                                     </div>
                                 </div>
                             </div>
+
                             <!-- Pie Charts -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Daily Tokens by Model -->
@@ -499,6 +534,7 @@ export const AdminChat = {
                                         <canvas ref="refDailyTokensByModel"></canvas>
                                     </div>
                                 </div>
+
                                 <!-- Daily Tokens by Provider -->
                                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                                     <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">
@@ -511,6 +547,7 @@ export const AdminChat = {
                             </div>
                         </div>
                     </div>
+
                     <!-- Activity Tab -->
                     <div v-if="routes.tab === 'activity'">
                         <div class="bg-white dark:bg-gray-800 shadow overflow-hidden rounded-lg">
@@ -566,6 +603,7 @@ export const AdminChat = {
                     </div>
                 </div>
             </div>
+
             <!-- Log Detail Dialog -->
             <LogDetailDialog v-if="selectedLog" :log="selectedLog" @close="selectedLog = null" />
         </div>
@@ -575,6 +613,7 @@ export const AdminChat = {
         const server = inject('server')
         const client = useClient()
         const selectedLog = ref(null)
+
         // Data refs
         const analytics = ref(null)
         const dailyAnalytics = ref(null)
@@ -588,6 +627,7 @@ export const AdminChat = {
             const today = new Date()
             return today.toISOString().split('T')[0]
         })
+
         // Chart refs
         const refDailyCosts = ref(null)
         const refCostsByModel = ref(null)
@@ -599,6 +639,7 @@ export const AdminChat = {
         const refDailyCostsByProvider = ref(null)
         const refDailyTokensByModel = ref(null)
         const refDailyTokensByProvider = ref(null)
+
         // Chart instances
         let dailyCostsChart = null
         let costsByModelChart = null
@@ -610,22 +651,26 @@ export const AdminChat = {
         let dailyCostsByProviderChart = null
         let dailyTokensByModelChart = null
         let dailyTokensByProviderChart = null
+
         const sortedLogs = computed(() => {
             if (!logs.value) return []
             return [...logs.value].sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
         })
+
         // Load data from API
         async function loadData(args={}) {
             const apiAnalytics = await client.api(new AdminMonthlyChatCompletionAnalytics({
                 month: routes.month,
             }))
             analytics.value = apiAnalytics.response || null
+
             const apiLogs = await client.api(new AdminQueryChatCompletionLogs({
                 month: routes.month,
                 orderBy: '-id',
                 ...args,
             }))
             logs.value = apiLogs.response?.results || []
+
             // Always show a day - either current day or the latest day with data
             if (analytics.value?.dailyStats?.length > 0 && analytics.value.month) {
                 const today = new Date()
@@ -635,6 +680,7 @@ export const AdminChat = {
                 await loadDailyData(selectedDay.value)
             }
         }
+
         // Load daily analytics data
         async function loadDailyData(day) {
             const apiDailyAnalytics = await client.api(new AdminDailyChatCompletionAnalytics({
@@ -642,13 +688,16 @@ export const AdminChat = {
             }))
             dailyAnalytics.value = apiDailyAnalytics.response || null
         }
+
         // Create Daily Costs Bar Chart
         function createDailyCostsChart() {
             if (!analytics.value?.dailyStats || !refDailyCosts.value) return
+
             // Sort by day number
             const sortedStats = [...analytics.value.dailyStats].sort((a, b) => parseInt(a.name) - parseInt(b.name))
             const labels = sortedStats.map(stat => stat.name)
             const data = sortedStats.map(stat => stat.cost)
+
             // Determine background colors based on selected day
             const backgroundColor = labels.map(day => {
                 if (selectedDay.value) {
@@ -666,6 +715,7 @@ export const AdminChat = {
                 }
                 return 'rgb(54, 162, 235)'
             })
+
             dailyCostsChart?.destroy()
             dailyCostsChart = new Chart(refDailyCosts.value, {
                 type: 'bar',
@@ -699,6 +749,7 @@ export const AdminChat = {
                                     const dayLabel = context.label
                                     const dayStat = sortedStats.find(s => s.name === dayLabel)
                                     if (!dayStat) return formatCost(context.raw)
+
                                     return [
                                         `Cost: ${formatCost(dayStat.cost || 0)}`,
                                         `Requests: ${dayStat.requests || 0}`,
@@ -730,13 +781,16 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Costs by Model Pie Chart
         function createCostsByModelChart() {
             if (!analytics.value?.modelStats || !refCostsByModel.value) return
+
             const labels = analytics.value.modelStats.map(stat => stat.name)
             const data = analytics.value.modelStats.map(stat => stat.cost)
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
             const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
             costsByModelChart?.destroy()
             costsByModelChart = new Chart(refCostsByModel.value, {
                 type: 'pie',
@@ -776,13 +830,16 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Costs by Provider Pie Chart
         function createCostsByProviderChart() {
             if (!analytics.value?.providerStats || !refCostsByProvider.value) return
+
             const labels = analytics.value.providerStats.map(stat => stat.name)
             const data = analytics.value.providerStats.map(stat => stat.cost)
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
             const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
             costsByProviderChart?.destroy()
             costsByProviderChart = new Chart(refCostsByProvider.value, {
                 type: 'pie',
@@ -822,14 +879,17 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Daily Tokens Bar Chart
         function createDailyTokensChart() {
             if (!analytics.value?.dailyStats || !refDailyTokens.value) return
+
             // Sort by day number
             const sortedStats = [...analytics.value.dailyStats].sort((a, b) => parseInt(a.name) - parseInt(b.name))
             const labels = sortedStats.map(stat => stat.name)
             const inputTokensData = sortedStats.map(stat => stat.inputTokens || 0)
             const outputTokensData = sortedStats.map(stat => stat.outputTokens || 0)
+
             // Determine background colors based on selected day
             const inputBackgroundColor = labels.map(day => {
                 if (selectedDay.value) {
@@ -863,6 +923,7 @@ export const AdminChat = {
                 }
                 return 'rgb(75, 192, 192)'
             })
+
             dailyTokensChart?.destroy()
             dailyTokensChart = new Chart(refDailyTokens.value, {
                 type: 'bar',
@@ -903,6 +964,7 @@ export const AdminChat = {
                                     const dayLabel = context[0].label
                                     const dayStat = sortedStats.find(s => s.name === dayLabel)
                                     if (!dayStat) return []
+
                                     return [
                                         `Cost: ${formatCost(dayStat.cost || 0)}`,
                                         `Requests: ${dayStat.requests || 0}`,
@@ -942,13 +1004,16 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Tokens by Model Pie Chart
         function createTokensByModelChart() {
             if (!analytics.value?.modelStats || !refTokensByModel.value) return
+
             const labels = analytics.value.modelStats.map(stat => stat.name)
             const data = analytics.value.modelStats.map(stat => (stat.inputTokens || 0) + (stat.outputTokens || 0))
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
             const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
             tokensByModelChart?.destroy()
             tokensByModelChart = new Chart(refTokensByModel.value, {
                 type: 'pie',
@@ -987,13 +1052,16 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Tokens by Provider Pie Chart
         function createTokensByProviderChart() {
             if (!analytics.value?.providerStats || !refTokensByProvider.value) return
+
             const labels = analytics.value.providerStats.map(stat => stat.name)
             const data = analytics.value.providerStats.map(stat => (stat.inputTokens || 0) + (stat.outputTokens || 0))
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
             const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
             tokensByProviderChart?.destroy()
             tokensByProviderChart = new Chart(refTokensByProvider.value, {
                 type: 'pie',
@@ -1032,13 +1100,16 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Daily Costs by Model Pie Chart
         function createDailyCostsByModelChart() {
             if (!dailyAnalytics.value?.modelStats || !refDailyCostsByModel.value) return
+
             const labels = dailyAnalytics.value.modelStats.map(stat => stat.name)
             const data = dailyAnalytics.value.modelStats.map(stat => stat.cost)
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
             const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
             dailyCostsByModelChart?.destroy()
             dailyCostsByModelChart = new Chart(refDailyCostsByModel.value, {
                 type: 'pie',
@@ -1078,13 +1149,16 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Daily Costs by Provider Pie Chart
         function createDailyCostsByProviderChart() {
             if (!dailyAnalytics.value?.providerStats || !refDailyCostsByProvider.value) return
+
             const labels = dailyAnalytics.value.providerStats.map(stat => stat.name)
             const data = dailyAnalytics.value.providerStats.map(stat => stat.cost)
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
             const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
             dailyCostsByProviderChart?.destroy()
             dailyCostsByProviderChart = new Chart(refDailyCostsByProvider.value, {
                 type: 'pie',
@@ -1124,13 +1198,16 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Daily Tokens by Model Pie Chart
         function createDailyTokensByModelChart() {
             if (!dailyAnalytics.value?.modelStats || !refDailyTokensByModel.value) return
+
             const labels = dailyAnalytics.value.modelStats.map(stat => stat.name)
             const data = dailyAnalytics.value.modelStats.map(stat => (stat.inputTokens || 0) + (stat.outputTokens || 0))
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
             const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
             dailyTokensByModelChart?.destroy()
             dailyTokensByModelChart = new Chart(refDailyTokensByModel.value, {
                 type: 'pie',
@@ -1169,13 +1246,16 @@ export const AdminChat = {
                 }
             })
         }
+
         // Create Daily Tokens by Provider Pie Chart
         function createDailyTokensByProviderChart() {
             if (!dailyAnalytics.value?.providerStats || !refDailyTokensByProvider.value) return
+
             const labels = dailyAnalytics.value.providerStats.map(stat => stat.name)
             const data = dailyAnalytics.value.providerStats.map(stat => (stat.inputTokens || 0) + (stat.outputTokens || 0))
             const backgroundColor = labels.map((_, i) => colors[i % colors.length].background)
             const borderColor = labels.map((_, i) => colors[i % colors.length].border)
+
             dailyTokensByProviderChart?.destroy()
             dailyTokensByProviderChart = new Chart(refDailyTokensByProvider.value, {
                 type: 'pie',
@@ -1214,6 +1294,7 @@ export const AdminChat = {
                 }
             })
         }
+
         function updateCharts() {
             nextTick(() => {
                 if (!routes.tab || routes.tab === 'cost') {
@@ -1227,6 +1308,7 @@ export const AdminChat = {
                 }
             })
         }
+
         function updateDailyCharts() {
             nextTick(() => {
                 if (!routes.tab || routes.tab === 'cost') {
@@ -1238,10 +1320,12 @@ export const AdminChat = {
                 }
             })
         }
+
         onMounted(() => {
             loadData()
             updateCharts()
         })
+
         onUnmounted(() => {
             [
                 dailyCostsChart,
@@ -1256,6 +1340,7 @@ export const AdminChat = {
                 dailyTokensByProviderChart,
             ].forEach(chart => chart?.destroy())
         })
+
         watch(() => routes.tab, () => {
             updateCharts()
             updateDailyCharts()
@@ -1279,6 +1364,7 @@ export const AdminChat = {
             dailyAnalytics.value = null
             loadData()
         })
+
         return {
             routes,
             selectedLog,

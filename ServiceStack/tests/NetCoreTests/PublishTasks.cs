@@ -197,7 +197,8 @@ public class PublishTasks
         var adminChat = source.GetFile("components/AdminChat.mjs");
         txt = await adminChat.ReadAllTextAsync();
         await target.WriteFileAsync("modules/admin-ui/components/AdminChat.mjs", txt);
-        source.DeleteFile("components/AdminChat.mjs");
+        var toModules = new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui"));
+        toModules.DeleteFile("components/AdminChat.mjs");
     }
 
     [Test]
