@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-11-05 18:02:26
+Date: 2025-11-06 11:47:33
 SwiftVersion: 6.0
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
@@ -1309,6 +1309,7 @@ public class ChatResponse : Codable
 public class AdminMonthlyChatCompletionAnalyticsResponse : Codable
 {
     public var month:String?
+    public var availableMonths:[String] = []
     public var modelStats:[ChatCompletionStat] = []
     public var providerStats:[ChatCompletionStat] = []
     public var dailyStats:[ChatCompletionStat] = []
@@ -2074,7 +2075,6 @@ public class PluginInfo : Codable
     public var adminIdentityUsers:AdminIdentityUsersInfo?
     public var adminRedis:AdminRedisInfo?
     public var adminDatabase:AdminDatabaseInfo?
-    public var adminChat:AdminChatInfo?
     public var meta:[String:String]?
 
     required public init(){}
@@ -2911,16 +2911,6 @@ public class AdminDatabaseInfo : Codable
     required public init(){}
 }
 
-public class AdminChatInfo : Codable
-{
-    public var accessRole:String?
-    public var defaultLimit:Int?
-    public var analytics:AiChatAnalytics?
-    public var meta:[String:String]?
-
-    required public init(){}
-}
-
 public class MetadataTypesConfig : Codable
 {
     public var baseUrl:String?
@@ -3500,13 +3490,6 @@ public class DatabaseInfo : Codable
     public var alias:String?
     public var name:String?
     public var schemas:[SchemaInfo]?
-
-    required public init(){}
-}
-
-public class AiChatAnalytics : Codable
-{
-    public var months:[String]?
 
     required public init(){}
 }

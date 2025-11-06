@@ -1,5 +1,5 @@
 """ Options:
-Date: 2025-11-05 18:02:25
+Date: 2025-11-06 11:47:32
 Version: 8.91
 Tip: To override a DTO option, remove "#" prefix before updating
 BaseUrl: http://localhost:20000
@@ -947,21 +947,6 @@ class AdminDatabaseInfo:
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
-class AiChatAnalytics:
-    months: Optional[List[str]] = None
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
-@dataclass
-class AdminChatInfo:
-    access_role: Optional[str] = None
-    default_limit: int = 0
-    analytics: Optional[AiChatAnalytics] = None
-    meta: Optional[Dict[str, str]] = None
-
-
-@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
-@dataclass
 class PluginInfo:
     loaded: Optional[List[str]] = None
     auth: Optional[AuthInfo] = None
@@ -977,7 +962,6 @@ class PluginInfo:
     admin_identity_users: Optional[AdminIdentityUsersInfo] = None
     admin_redis: Optional[AdminRedisInfo] = None
     admin_database: Optional[AdminDatabaseInfo] = None
-    admin_chat: Optional[AdminChatInfo] = None
     meta: Optional[Dict[str, str]] = None
 
 
@@ -1742,6 +1726,7 @@ class ChatResponse:
 @dataclass
 class AdminMonthlyChatCompletionAnalyticsResponse:
     month: Optional[str] = None
+    available_months: List[str] = field(default_factory=list)
     model_stats: List[ChatCompletionStat] = field(default_factory=list)
     provider_stats: List[ChatCompletionStat] = field(default_factory=list)
     daily_stats: List[ChatCompletionStat] = field(default_factory=list)

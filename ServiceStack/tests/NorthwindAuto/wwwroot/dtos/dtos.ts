@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-11-05 18:02:25
+Date: 2025-11-06 11:47:32
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1159,23 +1159,6 @@ export class AdminDatabaseInfo
     public constructor(init?: Partial<AdminDatabaseInfo>) { (Object as any).assign(this, init); }
 }
 
-export class AiChatAnalytics
-{
-    public months: string[];
-
-    public constructor(init?: Partial<AiChatAnalytics>) { (Object as any).assign(this, init); }
-}
-
-export class AdminChatInfo
-{
-    public accessRole: string;
-    public defaultLimit: number;
-    public analytics: AiChatAnalytics;
-    public meta: { [index:string]: string; };
-
-    public constructor(init?: Partial<AdminChatInfo>) { (Object as any).assign(this, init); }
-}
-
 export class PluginInfo
 {
     public loaded: string[];
@@ -1192,7 +1175,6 @@ export class PluginInfo
     public adminIdentityUsers: AdminIdentityUsersInfo;
     public adminRedis: AdminRedisInfo;
     public adminDatabase: AdminDatabaseInfo;
-    public adminChat: AdminChatInfo;
     public meta: { [index:string]: string; };
 
     public constructor(init?: Partial<PluginInfo>) { (Object as any).assign(this, init); }
@@ -2126,6 +2108,7 @@ export class ChatResponse
 export class AdminMonthlyChatCompletionAnalyticsResponse
 {
     public month: string;
+    public availableMonths: string[] = [];
     public modelStats: ChatCompletionStat[] = [];
     public providerStats: ChatCompletionStat[] = [];
     public dailyStats: ChatCompletionStat[] = [];

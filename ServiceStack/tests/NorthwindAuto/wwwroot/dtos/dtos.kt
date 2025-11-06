@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-11-05 18:02:26
+Date: 2025-11-06 11:47:32
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1099,6 +1099,7 @@ open class QueryResponse<T>
 open class AdminMonthlyChatCompletionAnalyticsResponse
 {
     open var month:String? = null
+    open var availableMonths:ArrayList<String> = ArrayList<String>()
     open var modelStats:ArrayList<ChatCompletionStat> = ArrayList<ChatCompletionStat>()
     open var providerStats:ArrayList<ChatCompletionStat> = ArrayList<ChatCompletionStat>()
     open var dailyStats:ArrayList<ChatCompletionStat> = ArrayList<ChatCompletionStat>()
@@ -1723,7 +1724,6 @@ open class PluginInfo
     open var adminIdentityUsers:AdminIdentityUsersInfo? = null
     open var adminRedis:AdminRedisInfo? = null
     open var adminDatabase:AdminDatabaseInfo? = null
-    open var adminChat:AdminChatInfo? = null
     open var meta:HashMap<String,String>? = null
 }
 
@@ -2507,14 +2507,6 @@ open class AdminDatabaseInfo
     open var meta:HashMap<String,String>? = null
 }
 
-open class AdminChatInfo
-{
-    open var accessRole:String? = null
-    open var defaultLimit:Int? = null
-    open var analytics:AiChatAnalytics? = null
-    open var meta:HashMap<String,String>? = null
-}
-
 open class MetadataTypesConfig
 {
     open var baseUrl:String? = null
@@ -2992,11 +2984,6 @@ open class DatabaseInfo
     open var alias:String? = null
     open var name:String? = null
     open var schemas:ArrayList<SchemaInfo>? = null
-}
-
-open class AiChatAnalytics
-{
-    open var months:ArrayList<String>? = null
 }
 
 open class MetadataTypeName

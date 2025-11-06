@@ -1,5 +1,5 @@
 ' Options:
-'Date: 2025-11-05 18:02:26
+'Date: 2025-11-06 11:47:33
 'Version: 8.91
 'Tip: To override a DTO option, remove "''" prefix before updating
 'BaseUrl: http://localhost:20000
@@ -54,6 +54,7 @@ Namespace Global
 
         Public Partial Class AdminMonthlyChatCompletionAnalyticsResponse
             Public Overridable Property Month As String
+            Public Overridable Property AvailableMonths As List(Of String) = New List(Of String)
             Public Overridable Property ModelStats As List(Of ChatCompletionStat) = New List(Of ChatCompletionStat)
             Public Overridable Property ProviderStats As List(Of ChatCompletionStat) = New List(Of ChatCompletionStat)
             Public Overridable Property DailyStats As List(Of ChatCompletionStat) = New List(Of ChatCompletionStat)

@@ -1,5 +1,5 @@
 (* Options:
-Date: 2025-11-05 18:02:26
+Date: 2025-11-06 11:47:33
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -621,6 +621,7 @@ open ServiceStack.DataAnnotations
     [<AllowNullLiteral>]
     type AdminMonthlyChatCompletionAnalyticsResponse() = 
         member val Month:String = null with get,set
+        member val AvailableMonths:ResizeArray<String> = null with get,set
         member val ModelStats:ResizeArray<ChatCompletionStat> = null with get,set
         member val ProviderStats:ResizeArray<ChatCompletionStat> = null with get,set
         member val DailyStats:ResizeArray<ChatCompletionStat> = null with get,set

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-11-05 18:02:26
+Date: 2025-11-06 11:47:32
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1640,12 +1640,15 @@ public class dtos
     public static class AdminMonthlyChatCompletionAnalyticsResponse
     {
         public String month = null;
+        public ArrayList<String> availableMonths = new ArrayList<String>();
         public ArrayList<ChatCompletionStat> modelStats = new ArrayList<ChatCompletionStat>();
         public ArrayList<ChatCompletionStat> providerStats = new ArrayList<ChatCompletionStat>();
         public ArrayList<ChatCompletionStat> dailyStats = new ArrayList<ChatCompletionStat>();
         
         public String getMonth() { return month; }
         public AdminMonthlyChatCompletionAnalyticsResponse setMonth(String value) { this.month = value; return this; }
+        public ArrayList<String> getAvailableMonths() { return availableMonths; }
+        public AdminMonthlyChatCompletionAnalyticsResponse setAvailableMonths(ArrayList<String> value) { this.availableMonths = value; return this; }
         public ArrayList<ChatCompletionStat> getModelStats() { return modelStats; }
         public AdminMonthlyChatCompletionAnalyticsResponse setModelStats(ArrayList<ChatCompletionStat> value) { this.modelStats = value; return this; }
         public ArrayList<ChatCompletionStat> getProviderStats() { return providerStats; }
@@ -2812,7 +2815,6 @@ public class dtos
         public AdminIdentityUsersInfo adminIdentityUsers = null;
         public AdminRedisInfo adminRedis = null;
         public AdminDatabaseInfo adminDatabase = null;
-        public AdminChatInfo adminChat = null;
         public HashMap<String,String> meta = null;
         
         public ArrayList<String> getLoaded() { return loaded; }
@@ -2843,8 +2845,6 @@ public class dtos
         public PluginInfo setAdminRedis(AdminRedisInfo value) { this.adminRedis = value; return this; }
         public AdminDatabaseInfo getAdminDatabase() { return adminDatabase; }
         public PluginInfo setAdminDatabase(AdminDatabaseInfo value) { this.adminDatabase = value; return this; }
-        public AdminChatInfo getAdminChat() { return adminChat; }
-        public PluginInfo setAdminChat(AdminChatInfo value) { this.adminChat = value; return this; }
         public HashMap<String,String> getMeta() { return meta; }
         public PluginInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
@@ -4422,23 +4422,6 @@ public class dtos
         public AdminDatabaseInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
-    public static class AdminChatInfo
-    {
-        public String accessRole = null;
-        public Integer defaultLimit = null;
-        public AiChatAnalytics analytics = null;
-        public HashMap<String,String> meta = null;
-        
-        public String getAccessRole() { return accessRole; }
-        public AdminChatInfo setAccessRole(String value) { this.accessRole = value; return this; }
-        public Integer getDefaultLimit() { return defaultLimit; }
-        public AdminChatInfo setDefaultLimit(Integer value) { this.defaultLimit = value; return this; }
-        public AiChatAnalytics getAnalytics() { return analytics; }
-        public AdminChatInfo setAnalytics(AiChatAnalytics value) { this.analytics = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public AdminChatInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-    }
-
     public static class MetadataTypesConfig
     {
         public String baseUrl = null;
@@ -5363,14 +5346,6 @@ public class dtos
         public DatabaseInfo setName(String value) { this.name = value; return this; }
         public ArrayList<SchemaInfo> getSchemas() { return schemas; }
         public DatabaseInfo setSchemas(ArrayList<SchemaInfo> value) { this.schemas = value; return this; }
-    }
-
-    public static class AiChatAnalytics
-    {
-        public ArrayList<String> months = null;
-        
-        public ArrayList<String> getMonths() { return months; }
-        public AiChatAnalytics setMonths(ArrayList<String> value) { this.months = value; return this; }
     }
 
     public static class MetadataTypeName

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-11-05 18:02:25
+Date: 2025-11-06 11:47:32
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -2769,55 +2769,6 @@ class AdminDatabaseInfo implements IConvertible
     TypeContext? context = _ctx;
 }
 
-class AiChatAnalytics implements IConvertible
-{
-    List<String>? months;
-
-    AiChatAnalytics({this.months});
-    AiChatAnalytics.fromJson(Map<String, dynamic> json) { fromMap(json); }
-
-    fromMap(Map<String, dynamic> json) {
-        months = JsonConverters.fromJson(json['months'],'List<String>',context!);
-        return this;
-    }
-
-    Map<String, dynamic> toJson() => {
-        'months': JsonConverters.toJson(months,'List<String>',context!)
-    };
-
-    getTypeName() => "AiChatAnalytics";
-    TypeContext? context = _ctx;
-}
-
-class AdminChatInfo implements IConvertible
-{
-    String? accessRole;
-    int? defaultLimit;
-    AiChatAnalytics? analytics;
-    Map<String,String?>? meta;
-
-    AdminChatInfo({this.accessRole,this.defaultLimit,this.analytics,this.meta});
-    AdminChatInfo.fromJson(Map<String, dynamic> json) { fromMap(json); }
-
-    fromMap(Map<String, dynamic> json) {
-        accessRole = json['accessRole'];
-        defaultLimit = json['defaultLimit'];
-        analytics = JsonConverters.fromJson(json['analytics'],'AiChatAnalytics',context!);
-        meta = JsonConverters.toStringMap(json['meta']);
-        return this;
-    }
-
-    Map<String, dynamic> toJson() => {
-        'accessRole': accessRole,
-        'defaultLimit': defaultLimit,
-        'analytics': JsonConverters.toJson(analytics,'AiChatAnalytics',context!),
-        'meta': meta
-    };
-
-    getTypeName() => "AdminChatInfo";
-    TypeContext? context = _ctx;
-}
-
 class PluginInfo implements IConvertible
 {
     List<String>? loaded;
@@ -2834,10 +2785,9 @@ class PluginInfo implements IConvertible
     AdminIdentityUsersInfo? adminIdentityUsers;
     AdminRedisInfo? adminRedis;
     AdminDatabaseInfo? adminDatabase;
-    AdminChatInfo? adminChat;
     Map<String,String?>? meta;
 
-    PluginInfo({this.loaded,this.auth,this.apiKey,this.commands,this.autoQuery,this.validation,this.sharpPages,this.requestLogs,this.profiling,this.filesUpload,this.adminUsers,this.adminIdentityUsers,this.adminRedis,this.adminDatabase,this.adminChat,this.meta});
+    PluginInfo({this.loaded,this.auth,this.apiKey,this.commands,this.autoQuery,this.validation,this.sharpPages,this.requestLogs,this.profiling,this.filesUpload,this.adminUsers,this.adminIdentityUsers,this.adminRedis,this.adminDatabase,this.meta});
     PluginInfo.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
@@ -2855,7 +2805,6 @@ class PluginInfo implements IConvertible
         adminIdentityUsers = JsonConverters.fromJson(json['adminIdentityUsers'],'AdminIdentityUsersInfo',context!);
         adminRedis = JsonConverters.fromJson(json['adminRedis'],'AdminRedisInfo',context!);
         adminDatabase = JsonConverters.fromJson(json['adminDatabase'],'AdminDatabaseInfo',context!);
-        adminChat = JsonConverters.fromJson(json['adminChat'],'AdminChatInfo',context!);
         meta = JsonConverters.toStringMap(json['meta']);
         return this;
     }
@@ -2875,7 +2824,6 @@ class PluginInfo implements IConvertible
         'adminIdentityUsers': JsonConverters.toJson(adminIdentityUsers,'AdminIdentityUsersInfo',context!),
         'adminRedis': JsonConverters.toJson(adminRedis,'AdminRedisInfo',context!),
         'adminDatabase': JsonConverters.toJson(adminDatabase,'AdminDatabaseInfo',context!),
-        'adminChat': JsonConverters.toJson(adminChat,'AdminChatInfo',context!),
         'meta': meta
     };
 
@@ -4942,15 +4890,17 @@ class ChatResponse implements IConvertible
 class AdminMonthlyChatCompletionAnalyticsResponse implements IConvertible
 {
     String? month;
+    List<String>? availableMonths = [];
     List<ChatCompletionStat>? modelStats = [];
     List<ChatCompletionStat>? providerStats = [];
     List<ChatCompletionStat>? dailyStats = [];
 
-    AdminMonthlyChatCompletionAnalyticsResponse({this.month,this.modelStats,this.providerStats,this.dailyStats});
+    AdminMonthlyChatCompletionAnalyticsResponse({this.month,this.availableMonths,this.modelStats,this.providerStats,this.dailyStats});
     AdminMonthlyChatCompletionAnalyticsResponse.fromJson(Map<String, dynamic> json) { fromMap(json); }
 
     fromMap(Map<String, dynamic> json) {
         month = json['month'];
+        availableMonths = JsonConverters.fromJson(json['availableMonths'],'List<String>',context!);
         modelStats = JsonConverters.fromJson(json['modelStats'],'List<ChatCompletionStat>',context!);
         providerStats = JsonConverters.fromJson(json['providerStats'],'List<ChatCompletionStat>',context!);
         dailyStats = JsonConverters.fromJson(json['dailyStats'],'List<ChatCompletionStat>',context!);
@@ -4959,6 +4909,7 @@ class AdminMonthlyChatCompletionAnalyticsResponse implements IConvertible
 
     Map<String, dynamic> toJson() => {
         'month': month,
+        'availableMonths': JsonConverters.toJson(availableMonths,'List<String>',context!),
         'modelStats': JsonConverters.toJson(modelStats,'List<ChatCompletionStat>',context!),
         'providerStats': JsonConverters.toJson(providerStats,'List<ChatCompletionStat>',context!),
         'dailyStats': JsonConverters.toJson(dailyStats,'List<ChatCompletionStat>',context!)
@@ -7310,8 +7261,6 @@ TypeContext _ctx = TypeContext(library: 'localhost', types: <String, TypeInfo> {
     'List<SchemaInfo>': TypeInfo(TypeOf.Class, create:() => <SchemaInfo>[]),
     'AdminDatabaseInfo': TypeInfo(TypeOf.Class, create:() => AdminDatabaseInfo()),
     'List<DatabaseInfo>': TypeInfo(TypeOf.Class, create:() => <DatabaseInfo>[]),
-    'AiChatAnalytics': TypeInfo(TypeOf.Class, create:() => AiChatAnalytics()),
-    'AdminChatInfo': TypeInfo(TypeOf.Class, create:() => AdminChatInfo()),
     'PluginInfo': TypeInfo(TypeOf.Class, create:() => PluginInfo()),
     'CustomPluginInfo': TypeInfo(TypeOf.Class, create:() => CustomPluginInfo()),
     'MetadataTypesConfig': TypeInfo(TypeOf.Class, create:() => MetadataTypesConfig()),

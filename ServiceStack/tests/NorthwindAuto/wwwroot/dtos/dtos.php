@@ -1,6 +1,6 @@
 <?php namespace dtos;
 /* Options:
-Date: 2025-11-05 18:02:25
+Date: 2025-11-06 11:47:32
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -3544,62 +3544,6 @@ class AdminDatabaseInfo implements JsonSerializable
     }
 }
 
-class AiChatAnalytics implements JsonSerializable
-{
-    public function __construct(
-        /** @var array<string>|null */
-        public ?array $months=null
-    ) {
-    }
-
-    /** @throws Exception */
-    public function fromMap($o): void {
-        if (isset($o['months'])) $this->months = JsonConverters::fromArray('string', $o['months']);
-    }
-    
-    /** @throws Exception */
-    public function jsonSerialize(): mixed
-    {
-        $o = [];
-        if (isset($this->months)) $o['months'] = JsonConverters::toArray('string', $this->months);
-        return empty($o) ? new class(){} : $o;
-    }
-}
-
-class AdminChatInfo implements JsonSerializable
-{
-    public function __construct(
-        /** @var string|null */
-        public ?string $accessRole=null,
-        /** @var int */
-        public int $defaultLimit=0,
-        /** @var AiChatAnalytics|null */
-        public ?AiChatAnalytics $analytics=null,
-        /** @var array<string,string>|null */
-        public ?array $meta=null
-    ) {
-    }
-
-    /** @throws Exception */
-    public function fromMap($o): void {
-        if (isset($o['accessRole'])) $this->accessRole = $o['accessRole'];
-        if (isset($o['defaultLimit'])) $this->defaultLimit = $o['defaultLimit'];
-        if (isset($o['analytics'])) $this->analytics = JsonConverters::from('AiChatAnalytics', $o['analytics']);
-        if (isset($o['meta'])) $this->meta = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','string']), $o['meta']);
-    }
-    
-    /** @throws Exception */
-    public function jsonSerialize(): mixed
-    {
-        $o = [];
-        if (isset($this->accessRole)) $o['accessRole'] = $this->accessRole;
-        if (isset($this->defaultLimit)) $o['defaultLimit'] = $this->defaultLimit;
-        if (isset($this->analytics)) $o['analytics'] = JsonConverters::to('AiChatAnalytics', $this->analytics);
-        if (isset($this->meta)) $o['meta'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','string']), $this->meta);
-        return empty($o) ? new class(){} : $o;
-    }
-}
-
 class PluginInfo implements JsonSerializable
 {
     public function __construct(
@@ -3631,8 +3575,6 @@ class PluginInfo implements JsonSerializable
         public ?AdminRedisInfo $adminRedis=null,
         /** @var AdminDatabaseInfo|null */
         public ?AdminDatabaseInfo $adminDatabase=null,
-        /** @var AdminChatInfo|null */
-        public ?AdminChatInfo $adminChat=null,
         /** @var array<string,string>|null */
         public ?array $meta=null
     ) {
@@ -3654,7 +3596,6 @@ class PluginInfo implements JsonSerializable
         if (isset($o['adminIdentityUsers'])) $this->adminIdentityUsers = JsonConverters::from('AdminIdentityUsersInfo', $o['adminIdentityUsers']);
         if (isset($o['adminRedis'])) $this->adminRedis = JsonConverters::from('AdminRedisInfo', $o['adminRedis']);
         if (isset($o['adminDatabase'])) $this->adminDatabase = JsonConverters::from('AdminDatabaseInfo', $o['adminDatabase']);
-        if (isset($o['adminChat'])) $this->adminChat = JsonConverters::from('AdminChatInfo', $o['adminChat']);
         if (isset($o['meta'])) $this->meta = JsonConverters::from(JsonConverters::context('Dictionary',genericArgs:['string','string']), $o['meta']);
     }
     
@@ -3676,7 +3617,6 @@ class PluginInfo implements JsonSerializable
         if (isset($this->adminIdentityUsers)) $o['adminIdentityUsers'] = JsonConverters::to('AdminIdentityUsersInfo', $this->adminIdentityUsers);
         if (isset($this->adminRedis)) $o['adminRedis'] = JsonConverters::to('AdminRedisInfo', $this->adminRedis);
         if (isset($this->adminDatabase)) $o['adminDatabase'] = JsonConverters::to('AdminDatabaseInfo', $this->adminDatabase);
-        if (isset($this->adminChat)) $o['adminChat'] = JsonConverters::to('AdminChatInfo', $this->adminChat);
         if (isset($this->meta)) $o['meta'] = JsonConverters::to(JsonConverters::context('Dictionary',genericArgs:['string','string']), $this->meta);
         return empty($o) ? new class(){} : $o;
     }
@@ -5973,6 +5913,8 @@ class AdminMonthlyChatCompletionAnalyticsResponse implements JsonSerializable
     public function __construct(
         /** @var string */
         public string $month='',
+        /** @var array<string>|null */
+        public ?array $availableMonths=null,
         /** @var array<ChatCompletionStat>|null */
         public ?array $modelStats=null,
         /** @var array<ChatCompletionStat>|null */
@@ -5985,6 +5927,7 @@ class AdminMonthlyChatCompletionAnalyticsResponse implements JsonSerializable
     /** @throws Exception */
     public function fromMap($o): void {
         if (isset($o['month'])) $this->month = $o['month'];
+        if (isset($o['availableMonths'])) $this->availableMonths = JsonConverters::fromArray('string', $o['availableMonths']);
         if (isset($o['modelStats'])) $this->modelStats = JsonConverters::fromArray('ChatCompletionStat', $o['modelStats']);
         if (isset($o['providerStats'])) $this->providerStats = JsonConverters::fromArray('ChatCompletionStat', $o['providerStats']);
         if (isset($o['dailyStats'])) $this->dailyStats = JsonConverters::fromArray('ChatCompletionStat', $o['dailyStats']);
@@ -5995,6 +5938,7 @@ class AdminMonthlyChatCompletionAnalyticsResponse implements JsonSerializable
     {
         $o = [];
         if (isset($this->month)) $o['month'] = $this->month;
+        if (isset($this->availableMonths)) $o['availableMonths'] = JsonConverters::toArray('string', $this->availableMonths);
         if (isset($this->modelStats)) $o['modelStats'] = JsonConverters::toArray('ChatCompletionStat', $this->modelStats);
         if (isset($this->providerStats)) $o['providerStats'] = JsonConverters::toArray('ChatCompletionStat', $this->providerStats);
         if (isset($this->dailyStats)) $o['dailyStats'] = JsonConverters::toArray('ChatCompletionStat', $this->dailyStats);
