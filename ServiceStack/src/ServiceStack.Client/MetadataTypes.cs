@@ -163,7 +163,6 @@ public class PluginInfo : IMeta
     public AdminIdentityUsersInfo AdminIdentityUsers { get; set; }
     public AdminRedisInfo AdminRedis { get; set; }
     public AdminDatabaseInfo AdminDatabase { get; set; }
-    public AdminChatInfo AdminChat { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 
@@ -422,21 +421,6 @@ public class SchemaInfo
     public string Name { get; set; }
     public List<string> Tables { get; set; }
 }
-
-
-[Exclude(Feature.Soap | Feature.ApiExplorer)]
-public class AdminChatInfo : IMeta
-{
-    public string AccessRole { get; set; }
-    public int DefaultLimit { get; set; }
-    public AiChatAnalytics Analytics { get; set; }
-    public Dictionary<string, string> Meta { get; set; }
-}
-public class AiChatAnalytics
-{
-    public List<string> Months { get; set; }
-}
-
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]
 public class ApiKeyInfo : IMeta

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2025-11-05 18:02:25
+Date: 2025-11-06 11:47:32
 Version: 8.91
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
@@ -1377,26 +1377,8 @@ export class AdminDatabaseInfo {
     /** @type {{ [index:string]: string; }} */
     meta;
 }
-export class AiChatAnalytics {
-    /** @param {{months?:string[]}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string[]} */
-    months;
-}
-export class AdminChatInfo {
-    /** @param {{accessRole?:string,defaultLimit?:number,analytics?:AiChatAnalytics,meta?:{ [index:string]: string; }}} [init] */
-    constructor(init) { Object.assign(this, init) }
-    /** @type {string} */
-    accessRole;
-    /** @type {number} */
-    defaultLimit;
-    /** @type {AiChatAnalytics} */
-    analytics;
-    /** @type {{ [index:string]: string; }} */
-    meta;
-}
 export class PluginInfo {
-    /** @param {{loaded?:string[],auth?:AuthInfo,apiKey?:ApiKeyInfo,commands?:CommandsInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,adminChat?:AdminChatInfo,meta?:{ [index:string]: string; }}} [init] */
+    /** @param {{loaded?:string[],auth?:AuthInfo,apiKey?:ApiKeyInfo,commands?:CommandsInfo,autoQuery?:AutoQueryInfo,validation?:ValidationInfo,sharpPages?:SharpPagesInfo,requestLogs?:RequestLogsInfo,profiling?:ProfilingInfo,filesUpload?:FilesUploadInfo,adminUsers?:AdminUsersInfo,adminIdentityUsers?:AdminIdentityUsersInfo,adminRedis?:AdminRedisInfo,adminDatabase?:AdminDatabaseInfo,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     loaded;
@@ -1426,8 +1408,6 @@ export class PluginInfo {
     adminRedis;
     /** @type {AdminDatabaseInfo} */
     adminDatabase;
-    /** @type {AdminChatInfo} */
-    adminChat;
     /** @type {{ [index:string]: string; }} */
     meta;
 }
@@ -2370,10 +2350,12 @@ export class ChatResponse {
     responseStatus;
 }
 export class AdminMonthlyChatCompletionAnalyticsResponse {
-    /** @param {{month?:string,modelStats?:ChatCompletionStat[],providerStats?:ChatCompletionStat[],dailyStats?:ChatCompletionStat[]}} [init] */
+    /** @param {{month?:string,availableMonths?:string[],modelStats?:ChatCompletionStat[],providerStats?:ChatCompletionStat[],dailyStats?:ChatCompletionStat[]}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     month;
+    /** @type {string[]} */
+    availableMonths = [];
     /** @type {ChatCompletionStat[]} */
     modelStats = [];
     /** @type {ChatCompletionStat[]} */

@@ -174,20 +174,6 @@ public class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPre
             {
                 ChatStore.InitSchema();
             }
-            
-            using var db = ChatStore.OpenDb();
-            var months = ChatStore.GetAvailableMonths(db)
-                .Map(x => x.ToString("yyyy-MM"));
-
-            appHost.AddToAppMetadata(meta => {
-                meta.Plugins.AdminChat = new AdminChatInfo {
-                    AccessRole = RoleNames.Admin,
-                    DefaultLimit = DefaultLimit,
-                    Analytics = new AiChatAnalytics {
-                        Months = months,
-                    }
-                };
-            });
         }
     }
     

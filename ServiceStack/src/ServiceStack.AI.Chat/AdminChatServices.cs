@@ -18,6 +18,7 @@ public class AdminMonthlyChatCompletionAnalytics : IGet, IReturn<AdminMonthlyCha
 public class AdminMonthlyChatCompletionAnalyticsResponse
 {
     public string Month { get; set; }
+    public List<string> AvailableMonths { get; set; }
     public List<ChatCompletionStat> ModelStats { get; set; }
     public List<ChatCompletionStat> ProviderStats { get; set; }
     public List<ChatCompletionStat> DailyStats { get; set; }
@@ -55,6 +56,23 @@ public class AdminChatServices(IAutoQueryDb autoQuery)
         return (feature, chatStore);
     }
 
+    public static List<string> AvailableMonths { get; set; } = [];
+
+    public List<string> GetAvailableMonths(IChatStore chatStore)
+    {
+        using var db = chatStore.OpenDb();
+        var currentMonth = DateTime.UtcNow.ToString("yyyy-MM");
+        if (AvailableMonths.Count == 0 || !AvailableMonths.Contains(currentMonth))
+        {
+            var months = chatStore.GetAvailableMonths(db)
+                .Map(x => x.ToString("yyyy-MM"));
+            if (months.Count == 0)
+                months.Add(currentMonth);
+            AvailableMonths = months;
+        }
+        return AvailableMonths;
+    }
+    
     public async Task<object> Any(AdminQueryChatCompletionLogs request)
     {
         var (feature, chatStore) = AssertRequiredRole();
@@ -107,8 +125,11 @@ public class AdminChatServices(IAutoQueryDb autoQuery)
                 Cost = Sql.Sum(x.Cost),
             }));
         
+        var availableMonths = GetAvailableMonths(chatStore);
+        
         return new AdminMonthlyChatCompletionAnalyticsResponse
         {
+            AvailableMonths = availableMonths,
             Month = month.ToString("yyyy-MM"),
             ModelStats = modelStats,
             ProviderStats = providerStats,

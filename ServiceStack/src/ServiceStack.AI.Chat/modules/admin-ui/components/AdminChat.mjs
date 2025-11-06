@@ -82,10 +82,12 @@ export class AdminMonthlyChatCompletionAnalytics {
     createResponse() { return new AdminMonthlyChatCompletionAnalyticsResponse() }
 }
 export class AdminMonthlyChatCompletionAnalyticsResponse {
-    /** @param {{month?:string,modelStats?:ChatCompletionStat[],providerStats?:ChatCompletionStat[],dailyStats?:ChatCompletionStat[]}} [init] */
+    /** @param {{month?:string,availableMonths?:string[],modelStats?:ChatCompletionStat[],providerStats?:ChatCompletionStat[],dailyStats?:ChatCompletionStat[]}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     month;
+    /** @type {string[]} */
+    availableMonths = [];
     /** @type {ChatCompletionStat[]} */
     modelStats = [];
     /** @type {ChatCompletionStat[]} */
@@ -501,7 +503,7 @@ export const AdminChat = {
                         </div>
 
                         <!-- Daily Breakdown Pie Charts -->
-                        <div v-if="selectedDay && dailyAnalytics">
+                        <div v-if="selectedDay && dailyAnalytics && (dailyAnalytics.modelStats || []).reduce((sum, s) => sum + (s.requests || 0), 0) > 0">
                             <!-- Title with Date and Stats -->
                             <div class="p-3 mb-3">
                                 <div class="flex items-center justify-between">
@@ -574,7 +576,7 @@ export const AdminChat = {
                         </div>
 
                         <!-- Daily Breakdown Pie Charts -->
-                        <div v-if="selectedDay && dailyAnalytics">
+                        <div v-if="selectedDay && dailyAnalytics && (dailyAnalytics.modelStats || []).reduce((sum, s) => sum + (s.requests || 0), 0) > 0">
                             <!-- Title with Date and Stats -->
                             <div class="p-3 mb-3">
                                 <div class="flex items-center justify-between">
@@ -786,8 +788,8 @@ export const AdminChat = {
         // Data refs
         const analytics = ref(null)
         const dailyAnalytics = ref(null)
+        const months = computed(() => analytics.value?.availableMonths ?? [])
         const logs = ref([])
-        const months = ref(server.plugins.adminChat?.analytics?.months ?? [])
         const sortBy = ref('-id')
         const currentPage = ref(1)
         const pageSize = ref(25)

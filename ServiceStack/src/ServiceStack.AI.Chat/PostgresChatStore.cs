@@ -17,7 +17,7 @@ public class PostgresChatStore(ILogger<PostgresChatStore> log, IDbConnectionFact
     public Action<IDbConnection> Configure { get; set; } = DefaultConfigureDb;
     public static void DefaultConfigureDb(IDbConnection db) => db.WithTag(nameof(DbChatStore));
     public IDbConnection OpenDb() => NamedConnection != null 
-        ? dbFactory.Open(NamedConnection)
+        ? dbFactory.Open(NamedConnection, Configure)
         : dbFactory.Open(Configure);
     
     public IDbConnection OpenMonthDb(DateTime? month=null)

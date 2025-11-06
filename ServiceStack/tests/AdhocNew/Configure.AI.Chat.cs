@@ -16,8 +16,12 @@ public class ConfigureAiChat : IHostingStartup
                 // ValidateRequest = async (req) => req.GetApiKey()?.HasScope(RoleNames.Admin) == true 
                 //     ? null 
                 //     : HttpResult.Redirect("/admin-ui"),
+                Variables = {
+                    ["GOOGLE_API_KEY"] = Environment.GetEnvironmentVariable("GOOGLE_FREE_API_KEY")!
+                }
             });
-            services.AddSingleton<IChatStore,PostgresChatStore>();
+            // services.AddSingleton<IChatStore,PostgresChatStore>();
+            services.AddSingleton<IChatStore,DbChatStore>();
              
             services.ConfigurePlugin<MetadataFeature>(feature => {
                 feature.AddPluginLink("/chat", "AI Chat");
