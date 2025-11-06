@@ -138,7 +138,7 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
                 if (!Queues.Contains(routingKey))
                 {
                     Channel.RegisterQueueByName(routingKey);
-                    Queues = new HashSet<string>(Queues) { routingKey };
+                    Queues = [..Queues, routingKey];
                 }
 
                 Channel.BasicPublish(exchange, routingKey, basicProperties, body);

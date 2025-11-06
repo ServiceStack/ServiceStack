@@ -20,7 +20,7 @@ public class SharedQueue<T> : IEnumerable<T>
     ///accessing this field. See the implementation of Enqueue,
     ///Dequeue.
     ///</remarks>
-    protected Queue<T> m_queue = new Queue<T>();
+    protected Queue<T> m_queue = new();
 
     ///<summary>Close the queue. Causes all further Enqueue()
     ///operations to throw EndOfStreamException, and all pending
