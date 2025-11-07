@@ -1728,22 +1728,22 @@ public static class AutoQueryExtensions
         };
     }
 
-    public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest request)
+    public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest? request)
     {
         return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
     }
 
-    public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest request, IDbConnection? db)
+    public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest? request, IDbConnection? db)
     {
         return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
     }
 
-    public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From, Into> model, IRequest request)
+    public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From, Into> model, IRequest? request)
     {
         return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
     }
 
-    public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From, Into> model, IRequest request, IDbConnection db)
+    public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From, Into> model, IRequest? request, IDbConnection db)
     {
         return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
     }
