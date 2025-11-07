@@ -19,9 +19,9 @@ public class ConfigureAiChat : IHostingStartup
             services.AddPlugin(new ChatFeature {
                 ConfigJson = vfs.GetFile("wwwroot/chat/llms.json").ReadAllText(),
                 ValidateRequest = async req => null,
-                // EnableProviders = [
-                //     "openrouter"
-                // ]
+                EnableProviders = [
+                    "servicestack"
+                ]
             });
             
             // Persist Chat History

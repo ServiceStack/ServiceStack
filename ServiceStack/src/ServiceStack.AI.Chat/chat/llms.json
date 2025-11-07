@@ -882,6 +882,7 @@
         "glm-4.5-air": "z-ai/glm-4.5-air",
         "minimax-m2": "minimax/minimax-m2",
         "kimi-k2": "moonshotai/kimi-k2",
+        "kimi-k2-thinking": "moonshotai/kimi-k2-thinking",
         "deepseek-v3.1:671b": "deepseek/deepseek-chat",
         "deepseek-v3.2-exp": "deepseek/deepseek-v3.2-exp",
         "deepseek-chat-v3.1:671b": "deepseek/deepseek-chat-v3.1",
@@ -1151,6 +1152,24 @@
           "input": "0.00000015",
           "output": "0.0000006"
         }
+      }
+    },
+    "servicestack": {
+      "enabled": true,
+      "type": "OpenAiProvider",
+      "base_url": "http://okai.servicestack.com",
+      "api_key": "$SERVICESTACK_LICENSE",
+      "models": {
+        "gemini-flash-latest": "gemini-flash-latest",
+        "gemini-flash-lite-latest": "gemini-flash-lite-latest",
+        "kimi-k2": "kimi-k2",
+        "kimi-k2-thinking": "kimi-k2-thinking",
+        "minimax-m2": "minimax-m2",
+        "glm-4.6": "glm-4.6",
+        "gpt-oss:20b": "gpt-oss:20b",
+        "gpt-oss:120b": "gpt-oss:120b",
+        "llama4:400b": "llama4:400b",
+        "mistral-small3.2:24b": "mistral-small3.2:24b"
       }
     }
   }
