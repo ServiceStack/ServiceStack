@@ -138,6 +138,7 @@ public class HostConfig
             MetadataVisibility = RequestAttributes.Any,
             Return204NoContentForEmptyResponse = true,
             AllowJsConfig = true,
+            JsonpContentType = MimeTypes.JavaScript,
             AllowPartialResponses = true,
             AllowAclUrlReservation = true,
             AddRedirectParamsToQueryString = false,
@@ -260,6 +261,7 @@ public class HostConfig
         this.UseHttpOnlyCookies = instance.UseHttpOnlyCookies;
         this.UseSameSiteCookies = instance.UseSameSiteCookies;
         this.AllowJsConfig = instance.AllowJsConfig;
+        this.JsonpContentType = instance.JsonpContentType;
         this.AllowPartialResponses = instance.AllowPartialResponses;
         this.IgnoreWarningsOnAllProperties = instance.IgnoreWarningsOnAllProperties;
         this.IgnoreWarningsOnAutoQueryApis = instance.IgnoreWarningsOnAutoQueryApis;
@@ -302,6 +304,7 @@ public class HostConfig
     public List<string> PreferredContentTypes { get; set; }
     internal string[] PreferredContentTypesArray = TypeConstants.EmptyStringArray; //use array at runtime
     public bool AllowJsonpRequests { get; set; }
+    public string JsonpContentType { get; set; }
     public bool AllowRouteContentTypeExtensions { get; set; }
     public bool BufferSyncSerializers { get; set; }
 

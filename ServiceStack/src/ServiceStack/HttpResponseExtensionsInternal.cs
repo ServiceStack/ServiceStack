@@ -545,6 +545,7 @@ public static class HttpResponseExtensionsInternal
         if (doJsonp)
         {
             httpRes.StatusCode = 200;
+            httpRes.ContentType = hostConfig.JsonpContentType;
             await httpRes.OutputStream.WriteAsync(DataCache.CreateJsonpPrefix(callback));
         }
 
