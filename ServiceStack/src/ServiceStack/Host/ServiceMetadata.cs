@@ -183,6 +183,8 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
         HashSet<string> internalServiceNames =
         [
+            "ServiceStack.AI",
+            "ServiceStack.AI.Chat",
             "ServiceStack.Api.OpenApi.OpenApiService",
             // ServiceStack.Server
             "ServiceStack.GetCrudEventsService",
