@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "npx esbuild highlight.mjs --bundle --format=esm --outfile=dist/highlight.mjs --minify && npm run copy",
+    "copy": "cp dist/highlight.mjs ../../../src/ServiceStack/js/highlight.mjs"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1"
+  }
+}
