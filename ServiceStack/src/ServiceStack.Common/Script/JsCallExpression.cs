@@ -150,7 +150,7 @@ public class JsCallExpression : JsExpression
                     if (targetValue == StopExecution.Value)
                         return targetValue;
 
-                    value = result.InvokeFilter(invoker, filter, new[]{ targetValue }, name);
+                    value = result.InvokeFilter(invoker, filter, [targetValue], name);
                     return value;
                 }
 
@@ -161,7 +161,7 @@ public class JsCallExpression : JsExpression
                     if (targetValue == StopExecution.Value)
                         return targetValue;
 
-                    value = result.InvokeFilter(invoker, filter, new[]{ scope, targetValue }, name);
+                    value = result.InvokeFilter(invoker, filter, [scope, targetValue], name);
                     return value;
                 }
             }
@@ -216,7 +216,7 @@ public class JsCallExpression : JsExpression
                         return targetValue;
 
                     var fnArgValues = EvaluateArgumentValues(scope, Arguments);
-                    fnArgValues.InsertRange(0, new[] { scope, targetValue });
+                    fnArgValues.InsertRange(0, [scope, targetValue]);
                     value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
                     return value;
                 }
