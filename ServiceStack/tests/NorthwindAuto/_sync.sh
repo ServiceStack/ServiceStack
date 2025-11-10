@@ -44,7 +44,7 @@ done
 
 # Add okai provider to llms.json
 OKAI_PROVIDER='{
- "enabled": true,
+ "enabled": false,
  "type": "OpenAiProvider",
  "base_url": "http://okai.servicestack.com",
  "api_key": "$SERVICESTACK_LICENSE",
