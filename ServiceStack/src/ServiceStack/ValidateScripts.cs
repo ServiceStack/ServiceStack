@@ -65,10 +65,10 @@ public class ValidateScripts : ScriptMethods
     public ITypeValidator IsAuthenticated() => new IsAuthenticatedValidator();
     public ITypeValidator IsAuthenticated(string provider) => new IsAuthenticatedValidator(provider);
     public ITypeValidator HasRole(string role) => new HasRolesValidator(role);
-    public ITypeValidator HasRoles(string[] roles) => new HasRolesValidator(roles);
-    public ITypeValidator HasAnyRole(string[] roles) => new HasAnyRoleValidator(roles);
+    public ITypeValidator HasRoles(string roles) => new HasRolesValidator(roles.Split(','));
+    public ITypeValidator HasAnyRole(string roles) => new HasAnyRoleValidator(roles.Split(','));
     public ITypeValidator HasPermission(string permission) => new HasPermissionsValidator(permission);
-    public ITypeValidator HasPermissions(string[] permission) => new HasPermissionsValidator(permission);
+    public ITypeValidator HasPermissions(string permissions) => new HasPermissionsValidator(permissions.Split(','));
     public ITypeValidator HasClaim(string type, string value) => new HasClaimValidator(type, value);
     public ITypeValidator HasScope(string scope) => new HasClaimValidator(JwtClaimTypes.Scope, scope) {
         DefaultMessage = "`'${Value}' scope is Required`"

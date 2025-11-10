@@ -83,7 +83,7 @@ public class HasRolesValidator : TypeValidator, IAuthTypeValidator
 
 public class HasAnyRoleValidator : TypeValidator, IAuthTypeValidator
 {
-    public static string DefaultErrorMessage { get; set; } = "`${Roles.join(', ')} Any Role${Roles.length > 1 ? 's' : ''} Required`";
+    public static string DefaultErrorMessage { get; set; } = "`Any of ${Roles.join(', ')} Role${Roles.length > 1 ? 's' : ''} Required`";
 
     public string[] Roles { get; }
     public HasAnyRoleValidator(string[] roles)

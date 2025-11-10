@@ -110,6 +110,7 @@ public class CreateBooking : ICreateDb<Booking>, IReturn<IdResponse>
 [Notes("Find out how to quickly create a <a class='svg-external' target='_blank' href='https://youtu.be/nhc4MZufkcM'>C# Bookings App from Scratch</a>")]
 [Route("/booking/{Id}", "PATCH")]
 [ValidateHasRole("Employee")]
+[ValidateHasRole("Manager")]
 [AutoApply(Behavior.AuditModify)]
 public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 {
@@ -132,7 +133,7 @@ public class UpdateBooking : IPatchDb<Booking>, IReturn<IdResponse>
 
 [Tag("bookings"), Description("Delete a Booking")]
 [Route("/booking/{Id}", "DELETE")]
-[ValidateHasRole("Manager")]
+[ValidateHasAnyRole(["Manager","Employee"])]
 [AutoApply(Behavior.AuditSoftDelete)]
 public class DeleteBooking : IDeleteDb<Booking>, IReturnVoid
 {

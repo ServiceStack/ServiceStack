@@ -59,7 +59,7 @@ public class RequiresAnyRoleAttribute : AuthenticateAttribute
         var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
         await using (authRepo as IAsyncDisposable)
         {
-            return await session.HasAllRolesAsync(requiredRoles, authRepo, req, token).ConfigAwait();
+            return await session.HasAnyRolesAsync(requiredRoles, authRepo, req, token).ConfigAwait();
         }
     }
 

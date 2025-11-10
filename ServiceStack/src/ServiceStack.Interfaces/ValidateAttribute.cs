@@ -104,10 +104,25 @@ public class ValidateHasRoleAttribute(string role) : ValidateRequestAttribute("H
     public string Role => role;
 };
 
+public class ValidateHasRolesAttribute(string[] roles) : ValidateRequestAttribute("HasRoles(`" + string.Join(",", roles) + "`)"), IRequireAuthentication
+{
+    public string[] Roles => roles;
+};
+
+public class ValidateHasAnyRoleAttribute(string[] roles) : ValidateRequestAttribute("HasAnyRole(`" + string.Join(",", roles) + "`)"), IRequireAuthentication
+{
+    public string[] Roles => roles;
+};
+
 public class ValidateHasPermissionAttribute(string permission) : ValidateRequestAttribute("HasPermission(`" + permission + "`)"), IRequireAuthentication
 {
     public string Permission => permission;
 }
+
+public class ValidateHasPermissionsAttribute(string[] permissions) : ValidateRequestAttribute("HasPermissions(`" + string.Join(",", permissions) + "`)"), IRequireAuthentication
+{
+    public string[] Roles => permissions;
+};
 
 public class ValidateHasClaimAttribute(string type, string value) : ValidateRequestAttribute("HasClaim(`" + type + "`,`" + value + "`)"), IRequireAuthentication
 {
