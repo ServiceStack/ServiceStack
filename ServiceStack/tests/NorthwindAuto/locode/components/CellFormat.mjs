@@ -1,13 +1,17 @@
-/**: override's @servicestack/vue `CellFormat` to linkify related results */ 
+/**: override's @servicestack/vue `CellFormat` to linkify related results */
 import { h, inject } from "vue"
 import ServiceStackVue, { useMetadata } from "@servicestack/vue"
 import { mapGet } from "@servicestack/client"
 
+//NOTE: Keep outside of component otherwise fails with 'RangeError: Maximum call stack size exceeded'
+const originalComponent = ServiceStackVue.component('CellFormat')
+
 export const CellFormat = {
     props:['type','propType','modelValue'],
     setup(props) {
+        const router = inject('router')
+
         return () => {
-            const originalComponent = ServiceStackVue.component('CellFormat')
             const { type, propType, modelValue } = props
             const hOrig = h(originalComponent, { type, propType, modelValue })
 
@@ -16,32 +20,35 @@ export const CellFormat = {
                 return hOrig
 
             const { Apis, isComplexProp } = useMetadata()
-            
+
             const apis = Apis.forType(ref.model)
             if (!apis.AnyQuery)
                 return hOrig
 
-            const routes = inject('routes')
             const value = mapGet(modelValue, propType.name)
-            
-            return h('span', { 
+
+            return h('span', {
                 'class':'text-blue-600 hover:text-blue-800 cursor-pointer',
                 title:`${ref.model} ${value}`,
                 onClick: (e) => {
                     e.stopPropagation()
-                    const $qs = {}
+                    const query = {}
                     if (ref.selfId) {
                         const selfId = mapGet(modelValue, ref.selfId)
-                        $qs[ref.refId] = selfId 
+                        query[ref.refId] = selfId
                     } else {
                         if (isComplexProp(propType)) {
                             const refValue = mapGet(value, ref.refId)
-                            $qs[ref.refId] = refValue
+                            query[ref.refId] = refValue
                         } else {
-                            $qs[ref.refId] = value
+                            query[ref.refId] = value
                         }
                     }
-                    routes.to({ op: apis.AnyQuery.request.name, $qs })
+                    router.push({
+                        name: 'operation',
+                        params: { op: apis.AnyQuery.request.name },
+                        query
+                    })
                 }
             }, [
                 hOrig

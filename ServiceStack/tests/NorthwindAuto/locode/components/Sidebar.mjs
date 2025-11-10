@@ -14,14 +14,19 @@ const SidebarNav = {
                 {{nav.tag}}
             </button>
             <div v-if="nav.expanded" class="space-y-1">
-                <a v-for="op in nav.operations" v-href="{ op:op.request.name, provider:'', skip:'', preview:'', new:'', edit:'' }" :title="op.request.name"
-                   :class="[op.request.name === routes.op ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
-                    'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
-                    <Icon :image="getIcon({op})" class="w-5 h-5 mr-1" />
-                    <span class="nav-item flex-grow mb-0.5">{{store.config.sidebar.label(op)}}</span>
-                    <span v-if="op.requiresAuth" class="svg-lock w-5 h-5"></span>
-                    <span v-else-if="op.requiresApiKey" class="svg-key w-5 h-5"></span>
-                </a>
+                <router-link v-for="op in nav.operations"
+                   :to="{ name: 'operation', params: { op: op.request.name } }"
+                   :title="op.request.name"
+                   custom v-slot="{ navigate, isActive }">
+                    <a @click="navigate"
+                       :class="[isActive ? 'bg-indigo-50 border-indigo-600 text-indigo-600' :
+                        'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium cursor-pointer']">
+                        <Icon :image="getIcon({op})" class="w-5 h-5 mr-1" />
+                        <span class="nav-item flex-grow mb-0.5">{{store.config.sidebar.label(op)}}</span>
+                        <span v-if="op.requiresAuth" class="svg-lock w-5 h-5"></span>
+                        <span v-else-if="op.requiresApiKey" class="svg-key w-5 h-5"></span>
+                    </a>
+                </router-link>
             </div>
         </div>
     </nav>
@@ -29,7 +34,7 @@ const SidebarNav = {
     setup(props) {
         const store = inject('store')
         const routes = inject('routes')
-        
+
         return {
             store,
             routes,

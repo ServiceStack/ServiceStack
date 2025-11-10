@@ -1,4 +1,5 @@
-import { reactive } from "vue"
+import { reactive, h } from "vue"
+import { createRouter, createWebHistory } from "vue-router"
 import {
     JsonServiceClient,
     map,
@@ -10,7 +11,7 @@ import {
     sanitize,
 } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useAuth, useConfig } from "@servicestack/vue"
-import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
+import { App, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
 const { setConfig } = useConfig()
 const { invalidAccessMessage, toAuth } = useAuth()
@@ -85,39 +86,118 @@ function urlWithState(url) {
 }
 export const breakpoints = useBreakpoints(app, {
     handlers: {
-        change({ previous, current }) { console.debug('breakpoints.change', previous, current) } /*debug*/
+        //change({ previous, current }) { console.debug('breakpoints.change', previous, current) } /*debug*/
     }
 })
-export const routes = usePageRoutes(app, {
-    page: 'op',
-    queryKeys: 'tab,provider,preview,body,doc,skip,new,edit,dialog'.split(','),
-    handlers: {
-        nav(state) {
-            console.debug('nav', state) /*debug*/
-            this.update()
-        }
-    },
-    /** @type LocodeRoutesExtend */
-    extend: {
-        uiHref(args) {
-            return this.op && globalThis.Server.ui.modules.indexOf('/ui') >= 0
-                ? urlWithState(appendQueryString(`/ui/${this.op}`, args || {}))
-                : ''
+// Create Vue Router instance
+export const router = createRouter({
+    history: createWebHistory('/locode'),
+    routes: [
+        {
+            path: '/',
+            name: 'welcome',
+            component: {
+                setup() {
+                    return () => h(app.component('Welcome'))
+                }
+            }
         },
-        onEditChange(fn) {
-            AppData.onRoutesEditChange = fn
-            if (fn == null) AppData.lastEditState = null
-            this.update()
-        },
-        update() {
-            if (this.edit && AppData.onRoutesEditChange) {
-                let newState = `${this.op}:${this.edit}`
-                if (AppData.lastEditState == null || newState !== AppData.lastEditState) {
-                    AppData.lastEditState = newState
-                    AppData.onRoutesEditChange()
+        {
+            path: '/:op',
+            name: 'operation',
+            component: {
+                setup() {
+                    return () => h(app.component('OperationPage'))
                 }
             }
         }
+    ]
+})
+// Reactive routes object for backward compatibility
+export const routes = reactive({
+    // Current route params
+    get op() { return router.currentRoute.value.params.op || '' },
+    get tab() { return router.currentRoute.value.query.tab || '' },
+    get provider() { return router.currentRoute.value.query.provider || '' },
+    get preview() { return router.currentRoute.value.query.preview || '' },
+    get body() { return router.currentRoute.value.query.body || '' },
+    get doc() { return router.currentRoute.value.query.doc || '' },
+    get skip() { return router.currentRoute.value.query.skip || '' },
+    get new() { return router.currentRoute.value.query.new || '' },
+    get edit() { return router.currentRoute.value.query.edit || '' },
+    get dialog() { return router.currentRoute.value.query.dialog || '' },
+    // Navigation methods
+    to(args) {
+        const op = args.$page !== undefined ? args.$page : (args.op || this.op)
+        const query = {}
+        const queryKeys = ['tab', 'provider', 'preview', 'body', 'doc', 'skip', 'new', 'edit', 'dialog']
+        queryKeys.forEach(key => {
+            if (args[key] !== undefined) {
+                query[key] = args[key]
+            } else if (!args.$clear && this[key]) {
+                query[key] = this[key]
+            }
+        })
+        // Remove empty query params
+        Object.keys(query).forEach(key => {
+            if (!query[key]) delete query[key]
+        })
+        if (op) {
+            router.push({ name: 'operation', params: { op }, query })
+        } else {
+            router.push({ name: 'welcome', query })
+        }
+    },
+    href(args) {
+        const op = args?.$page !== undefined ? args.$page : (args?.op || this.op)
+        const query = { ...router.currentRoute.value.query }
+        if (args) {
+            Object.keys(args).forEach(key => {
+                if (key !== '$page' && key !== 'op') {
+                    query[key] = args[key]
+                }
+            })
+        }
+        // Remove empty query params
+        Object.keys(query).forEach(key => {
+            if (!query[key]) delete query[key]
+        })
+        if (op) {
+            return router.resolve({ name: 'operation', params: { op }, query }).href
+        } else {
+            return router.resolve({ name: 'welcome', query }).href
+        }
+    },
+    get state() {
+        return {
+            op: this.op,
+            tab: this.tab,
+            provider: this.provider,
+            preview: this.preview,
+            body: this.body,
+            doc: this.doc,
+            skip: this.skip,
+            new: this.new,
+            edit: this.edit,
+            dialog: this.dialog
+        }
+    },
+    // UI Explorer link (if available)
+    uiHref(args) {
+        if (!this.op || !globalThis.Server.ui.modules.includes('/ui')) {
+            return ''
+        }
+        const query = args ? { ...args } : {}
+        let qs = Object.keys(query).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(query[k])}`).join('&')
+        return `/ui/${this.op}${qs ? '?' + qs : ''}`
+    }
+})
+// Add v-href directive for backward compatibility
+app.directive('href', function(el, binding) {
+    el.href = routes.href(binding.value)
+    el.onclick = e => {
+        e.preventDefault()
+        routes.to(binding.value)
     }
 })
 /** Manage users query & filter preferences in the Users browsers localStorage
@@ -289,7 +369,12 @@ let store = {
     /** @return {string} */
     get opDesc() { return this.op && (this.op.request.description || humanify(this.op.request.name)) },
     /** @return {string} */
-    get opDataModel() { return this.op && this.op.dataModel && this.op.dataModel.name },
+    get opDataModel() {
+        const result = this.op && this.op.dataModel && this.op.dataModel.name
+        console.log('opDataModel accessed:', result)
+        console.trace('opDataModel stack')
+        return result
+    },
     /** @return {string} */
     get opViewModel() { return this.op && this.op.viewModel && this.op.viewModel.name },
     /** @return {boolean} */
@@ -379,18 +464,27 @@ let store = {
 }
 store = reactive(store)
 export { store }
-app.events.subscribe('route:nav', args => store.init())
+// Initialize store when route changes
+router.afterEach((to, from) => {
+    store.init()
+    app.events.publish('route:nav', { op: to.params.op, ...to.query })
+})
 app.use(ServiceStackVue)
+app.use(router)
 app.component('RouterLink', ServiceStackVue.component('RouterLink'))
-app.provides({ app, client, store, routes, breakpoints, settings, server:globalThis.Server })
-           
+app.provides({ app, client, store, routes, router, breakpoints, settings, server:globalThis.Server })
 setConfig({
     navigate: (url) => {
         console.debug('navigate', url)
-        if (url.startsWith('/signin')) {
-            routes.to({ op:'', provider:'', skip:'', preview:'', new:'', edit:'' })
-        } else {
-            location.href = url
+        if (typeof url === 'string') {
+            if (url.startsWith('/signin')) {
+                router.push({ name: 'welcome', query: {} })
+            } else {
+                location.href = url
+            }
+        } else if (url && typeof url === 'object') {
+            // Handle object-based navigation (e.g., { name: 'welcome' })
+            router.push(url)
         }
     }
 })

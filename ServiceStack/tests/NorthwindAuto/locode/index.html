@@ -22,7 +22,9 @@ DEBUG = true /*debug*/
 {
     "imports": {
         "vue": "../js/vue.mjs",  
-        "@servicestack/vue": "../js/servicestack-vue.mjs",
+        "vue-router": "../js/vue-router.mjs",  
+        "@servicestack/vue2": "../js/servicestack-vue.mjs",
+        "@servicestack/vue": "../lib/mjs/servicestack-vue.mjs",
         "@servicestack/client": "../js/servicestack-client.mjs",
         "core": "../js/core.mjs",
         "app": "./lib/app.mjs",
@@ -69,36 +71,7 @@ DEBUG = true /*debug*/
                     </div>
                     <auth-nav v-if="store.plugins.auth" :auth="store.auth" :logout="store.logout"></auth-nav>
                 </div>
-                <div v-if="store.op">
-                    <div>
-                        <div class="w-full md:w-sidebar border-b border-gray-200 bg-white flex">
-                            <h1 class="flex max-w-screen-sm lg:max-w-screen-md py-2.5 px-4 text-2xl" aria-label="Tabs" :title="store.opName">
-                                {{store.opDesc}}
-                            </h1>
-                        </div>
-                        <div class="pt-2 sm:mx-2 lg:mx-4">
-                            <alert v-if="store.op.requiresApiKey && !(store.apikey || ['apikey','authsecret'].includes(store.auth?.authProvider))" class="pt-4 px-4">
-                                This API Requires an <a v-href="{ dialog:'apikey' }" target="_blank" class="underline">API Key</a>
-                            </alert>
-                            <div v-else>
-                                <component v-if="store.pageComponentFor(store.opDataModel)" :key="`${store.opDataModel}Grid`" :is="store.pageComponentFor(store.opDataModel)" :type="store.opDataModel"></component>
-                                <auto-query-grid v-else :key="store.opDataModel" ref="grid" :type="store.opDataModel">
-                                    <template #formfooter="{ form, type, apis, model, id }">
-                                        <audit-events v-if="form === 'edit' && canAccessCrudEvents" class="mt-4" :key="id" :type="type" :id="id"></audit-events>
-                                    </template>
-                                    <template v-if="app.component(`New${store.opDataModel}`)" #createform="{ type, configure, done, save }">
-                                        <component :is="app.component(`New${store.opDataModel}`)" :type="type" :configure="configure" @save="save" @done="done" />
-                                    </template>
-                                    <template v-if="app.component(`Edit${store.opDataModel}`)" #editform="{ model, type, deleteType, configure, done, save }">
-                                        <component :is="app.component(`Edit${store.opDataModel}`)" :model="model" :type="type" :deleteType="deleteType"
-                                                   :configure="configure" @save="save" @done="done" />
-                                    </template>
-                                </auto-query-grid>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <welcome v-else class="fixed w-body md:w-body top-top-nav h-top-nav overflow-auto z-10"></welcome>
+                <router-view></router-view>
             </div>
         </main>
     </div>
@@ -124,6 +97,7 @@ const { signIn, toAuth } = useAuth()
 
 globalThis.AUTH = toAuth(globalThis.AUTH)
 loadMetadata()
+
 signIn(globalThis.AUTH)
 setBodyClass({ auth:globalThis.AUTH })
 
@@ -159,29 +133,12 @@ const App = {
         const app = inject('app')
         const store = inject('store')
         const routes = inject('routes')
+        const router = inject('router')
         const server = inject('server')
-        
-        const showSidebar = ref(true)
-        
-        const grid = ref()
-        let sub = null
-        let lastOp = null
-        
-        onMounted(() => {
-            sub = app.events.subscribe('route:nav', args => {
-                // need to refresh to update when navigating to the same op/page 
-                if (args.op && args.op === lastOp) {
-                    // console.log('route:nav', JSON.stringify(args))
-                    grid.value?.update()
-                }
-                lastOp = args.op
-            })
-        })
 
-        const canAccessCrudEvents = computed(() => 
-            server.plugins.autoQuery.crudEventsServices && store.hasRole(server.plugins.autoQuery.accessRole)) 
-        
-        return { app, store, routes, grid, showSidebar, canAccessCrudEvents }
+        const showSidebar = ref(true)
+
+        return { app, store, routes, router, showSidebar }
     }
 }
 
