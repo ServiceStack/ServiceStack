@@ -1,87 +1,84 @@
 ﻿<!doctype html>
 <html lang="en" style="">
 <head>
-<title>${Title}</title>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<base href="${BaseUrl}">
-<link href="css/ui-highlight.css" rel="stylesheet">
-<link href="css/ui.css" rel="stylesheet">
-<script type="importmap">
-{
-    "imports": {
-        "vue": "./js/vue.mjs",  
-        "@servicestack/vue": "./js/servicestack-vue.mjs",
-        "@servicestack/client": "./js/servicestack-client.mjs",
-        "core": "./js/core.mjs"
-    }
-}
-</script>
-<style>
-#header a { text-decoration: underline; font-weight: 600 }
-#header i { font-style: normal; font-weight: 600 }
-</style>
-${MvcIncludes}
+    <title>${Title}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="${BaseUrl}">
+    <link href="css/ui-highlight.css" rel="stylesheet">
+    <link href="css/ui.css" rel="stylesheet">
+    <script type="importmap">
+        {
+            "imports": {
+                "vue": "./js/vue.mjs",  
+                "@servicestack/vue": "./js/servicestack-vue.mjs",
+                "@servicestack/client": "./js/servicestack-client.mjs",
+                "highlight.js": "./js/highlight.mjs",  
+                "core": "./js/core.mjs"
+            }
+        }
+    </script>
+    <style>
+        #header a { text-decoration: underline; font-weight: 600 }
+        #header i { font-style: normal; font-weight: 600 }
+    </style>
+    ${MvcIncludes}
 </head>
 <body>
 <script>
-window.BaseUrl = "${BaseUrl}"
-window.ServiceUrl = "${ServiceUrl}"
-window.RequestName = "${RequestName}"
+    window.BaseUrl = "${BaseUrl}"
+    window.ServiceUrl = "${ServiceUrl}"
+    window.RequestName = "${RequestName}"
 </script>
 <script>window.RequestDto = ${RequestDto}</script>
 <script>window.Dto = ${Dto}</script>
 <script>window.ServerInfo = ${ServerInfo}</script>
-
 <div id="app"></div>
-
 <template id="app-template">
-<div class="h-screen flex flex-col">
-    <div v-if="showHeader" id="header" class="flex items-center gap-x-6 bg-gray-50 border-b py-2.5 px-6 sm:px-3.5 sm:before:flex-1">
-        <p class="leading-6 text-gray-700">
-            ${Header}
-        </p>
-        <div class="flex flex-1 justify-end">
-            <button type="button" class="-m-3 p-3 focus-visible:outline-offset-[-4px]" @click="showHeader=false" title="close banner">
-                <span class="sr-only">Dismiss</span>
-                <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                </svg>
-            </button>
-        </div>        
+    <div class="h-screen flex flex-col">
+        <div v-if="showHeader" id="header" class="flex items-center gap-x-6 bg-gray-50 border-b py-2.5 px-6 sm:px-3.5 sm:before:flex-1">
+            <p class="leading-6 text-gray-700">
+                ${Header}
+            </p>
+            <div class="flex flex-1 justify-end">
+                <button type="button" class="-m-3 p-3 focus-visible:outline-offset-[-4px]" @click="showHeader=false" title="close banner">
+                    <span class="sr-only">Dismiss</span>
+                    <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <tabs class="flex-grow flex flex-col" :tabs="tabs" tab-class="uppercase" body-class="flex flex-grow"></tabs>
     </div>
-    <tabs class="flex-grow flex flex-col" :tabs="tabs" tab-class="uppercase" body-class="flex flex-grow"></tabs>
-</div>
 </template>
-
 <script type="module">
-import { computed, createApp, onMounted, ref } from "vue"
-import {
-    JsonApiClient, JsonServiceClient, ApiResult, HttpMethods,
-    $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, mapGet, leftPart, rightPart
-} from "@servicestack/client"
-import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
-import Code from "./js/components/Code.mjs"
-import CopyIcon from "./js/components/CopyIcon.mjs"
-import CopyLine from "./js/components/CopyLine.mjs"
-
-const qs = queryString(location.search)
-const value = globalThis.Dto
-const BaseUrl = globalThis.BaseUrl
-const RequestName = globalThis.RequestName
-const Usages = globalThis.Usages
-const ServerInfo = globalThis.ServerInfo
-const client = ServerInfo.jsonApiRoute === "/api/{Request}"
-    ? JsonApiClient.create(BaseUrl)
-    : new JsonServiceClient(BaseUrl)
-let headers = []
-client.responseFilter = res => {
-    headers = Object.entries(res.headers)
-}
-const Cache = {}
-
-const Preview = {
-    template:`
+    import { computed, createApp, onMounted, ref } from "vue"
+    import {
+        JsonApiClient, JsonServiceClient, ApiResult, HttpMethods,
+        $1, queryString, combinePaths, appendQueryString, humanize, map, enc, parseCookie, mapGet, leftPart, rightPart
+    } from "@servicestack/client"
+    import ServiceStackVue, { useMetadata, useClient, css, useUtils } from "@servicestack/vue"
+    import hljs from "highlight.js"
+    import Code from "./js/components/Code.mjs"
+    import CopyIcon from "./js/components/CopyIcon.mjs"
+    import CopyLine from "./js/components/CopyLine.mjs"
+    const qs = queryString(location.search)
+    const value = globalThis.Dto
+    const BaseUrl = globalThis.BaseUrl
+    const RequestName = globalThis.RequestName
+    const Usages = globalThis.Usages
+    const ServerInfo = globalThis.ServerInfo
+    const client = ServerInfo.jsonApiRoute === "/api/{Request}"
+        ? JsonApiClient.create(BaseUrl)
+        : new JsonServiceClient(BaseUrl)
+    let headers = []
+    client.responseFilter = res => {
+        headers = Object.entries(res.headers)
+    }
+    const Cache = {}
+    const Preview = {
+        template:`
       <div v-if="error" class="p-4">
           <div>
             <h3 class="text-2xl text-red-700 mb-3">{{error.errorCode}}</h3>
@@ -96,14 +93,12 @@ const Preview = {
             <div class="flex mr-1">
               <a v-for="(href,format) in formats" :href="href" :class="['mr-2',css.a.indigo]" :title="'view in ' + format">{{format}}</a>
             </div>
-
             <div v-if="uiHref" class="flex items-center mr-2">
               <a title="View in API Explorer" :href="uiHref"
                  class="p-1 inline-flex items-center border border-transparent hover:border-gray-400 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 32"><g fill="currentColor"><path d="M27.464 2.314a.501.501 0 0 0-.698-.257L14.86 8.339a.499.499 0 0 0-.233.621l.245.641l-6.873 3.769a.5.5 0 0 0-.222.63l.228.549l-7.299 3.488a.5.5 0 0 0-.246.643l1.498 3.61a.5.5 0 0 0 .629.28l7.625-2.701l.228.549a.5.5 0 0 0 .601.289l7.276-2.097l.218.569a.497.497 0 0 0 .612.299l13-4a.498.498 0 0 0 .317-.663l-5-12.501zM2.7 21.469l-1.134-2.734l6.823-3.261l1.439 3.47L2.7 21.469zm8.491-1.846l-.238-.574l-1.843-4.445l-.238-.573l6.336-3.475l2.374 6.134l.375.981l-6.766 1.952zm8.109-1.238l-.203-.531c-.003-.011-.001-.024-.006-.035l-.618-1.597l-2.754-7.206l11.023-5.815l4.592 11.48L19.3 18.385z"/><path d="M28.964.314a.5.5 0 0 0-.929.371l6 15a.502.502 0 0 0 .651.279a.501.501 0 0 0 .279-.65l-6.001-15z"/><path d="M18 21h-3c-1.14 0-2 .86-2 2v1.315l-5.879 6.859a.5.5 0 1 0 .758.651L13.73 25H16v6.5a.5.5 0 0 0 1 0V25h2.27l5.85 6.825a.497.497 0 0 0 .705.054a.5.5 0 0 0 .054-.705L20 24.315v-1.24C20 21.912 19.122 21 18 21zm1 3h-5v-1c0-.589.411-1 1-1h3c.57 0 1 .462 1 1.075V24z"/></g></svg>
               </a>
             </div>
-
             <div v-if="locodeHref" class="flex items-center mr-1">
               <a title="View in Locode" :href="locodeHref"
                  class="p-1 inline-flex items-center border border-transparent hover:border-gray-400 hover:shadow-sm text-sm rounded bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -116,55 +111,48 @@ const Preview = {
           </div>
       </div>
     `,
-    setup() {
-        
-        const { apiOf, Crud } = useMetadata()
-        
-        const op = apiOf(RequestName)
-        
-        const uiHref = op ? combinePaths(document.baseURI, `/ui/${RequestName}?tab=details`) : '' 
-        const locodeHref = op && Crud.isQuery(op) 
-            ? combinePaths(document.baseURI, `/locode/${RequestName}`)
-            : ''
-        
-        const url = location.href
-        const hasQs = url.includes('?')
-        const formats = {
-            json:  hasQs ? appendQueryString(url, { format:'json' })  : `${url}.json`,
-            csv:   hasQs ? appendQueryString(url, { format:'csv' })   : `${url}.csv`,
-            jsonl: hasQs ? appendQueryString(url, { format:'jsonl' }) : `${url}.jsonl`,
-            jsv:   hasQs ? appendQueryString(url, { format:'jsv' })   : `${url}.jsv`,
-            xml:   hasQs ? appendQueryString(url, { format:'xml' })   : `${url}.xml`,
+        setup() {
+            const { apiOf, Crud } = useMetadata()
+            const op = apiOf(RequestName)
+            const uiHref = op ? combinePaths(document.baseURI, `/ui/${RequestName}?tab=details`) : ''
+            const locodeHref = op && Crud.isQuery(op)
+                ? combinePaths(document.baseURI, `/locode/${RequestName}`)
+                : ''
+            const url = location.href
+            const hasQs = url.includes('?')
+            const formats = {
+                json:  hasQs ? appendQueryString(url, { format:'json' })  : `${url}.json`,
+                csv:   hasQs ? appendQueryString(url, { format:'csv' })   : `${url}.csv`,
+                jsonl: hasQs ? appendQueryString(url, { format:'jsonl' }) : `${url}.jsonl`,
+                jsv:   hasQs ? appendQueryString(url, { format:'jsv' })   : `${url}.jsv`,
+                xml:   hasQs ? appendQueryString(url, { format:'xml' })   : `${url}.xml`,
+            }
+            const status = mapGet(Dto, 'responseStatus')
+            const errorCode = status ? mapGet(status, 'errorCode') : null
+            const error = errorCode
+                ? { errorCode,
+                    message: mapGet(status, 'message'),
+                    stackTrace: mapGet(status, 'stackTrace'),
+                    errors: mapGet(status, 'errors'),
+                    meta: mapGet(status, 'meta'),
+                } : null
+            return { Dto, error, formats, uiHref, locodeHref, css }
         }
-        
-        const status = mapGet(Dto, 'responseStatus')
-        const errorCode = status ? mapGet(status, 'errorCode') : null
-        const error = errorCode 
-            ? { errorCode, 
-                message: mapGet(status, 'message'),
-                stackTrace: mapGet(status, 'stackTrace'),
-                errors: mapGet(status, 'errors'),
-                meta: mapGet(status, 'meta'),
-            } : null
-        
-        return { Dto, error, formats, uiHref, locodeHref, css }
     }
-}
-const Json = {
-    template:`
+    const Json = {
+        template:`
       <div class="p-4">
           <CopyIcon v-if="json" :text="json" class="absolute right-4" />
           <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="json"></code></pre>
       </div>
     `,
-    setup() {
-        const json = JSON.stringify(Dto, undefined, 4)
-        return { json }
+        setup() {
+            const json = JSON.stringify(Dto, undefined, 4)
+            return { json }
+        }
     }
-}
-
-const ApiResponse = {
-    template: `
+    const ApiResponse = {
+        template: `
     <div class="mt-2 border-t">
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-4 pl-2" aria-label="Tabs">
@@ -174,7 +162,6 @@ const ApiResponse = {
                 </a>
             </nav>
         </div>
-    
         <div v-if="routes.response === ''" class="p-2">
             <span class="relative z-0 inline-flex shadow-sm rounded-md">
               <a v-for="(tab,name) in {Pretty:'',Preview:'preview'}" @click="routes.body = tab"
@@ -195,48 +182,43 @@ const ApiResponse = {
             <Alert>HttpOnly Cookies are not shown</Alert>
         </div>
     </div>`,
-    props:['api'],
-    setup(props) {
-        const { asKvps } = useMetadata()
-        const json = computed(() => JSON.stringify(props.api.response, null, 4))
-        const response = computed(() => props.api.response || props.api.error)
-        const routes = ref({
-            body: '',
-            response: '',
-        })
-        
-        function fieldAttrs(id) {
-            let useId = id.replace(/\s+/g,'').toLowerCase()
-            return useId === 'stacktrace'
-                ? { 'class': 'whitespace-pre overflow-x-auto' }
-                : {}
-        }
-
-        let cookies = parseCookie(document.cookie) || {}
-
-        const cookiesLabel = computed(() =>  `Cookies (${Object.keys(cookies).length})`)
-        const tabs = computed(() => {
-            let tabs = { Body:'' }
-            tabs[cookiesLabel.value] = 'cookies'
-            return tabs
-        })
-
-        return {
-            routes,
-            json,
-            response,
-            cookies,
-            asKvps,
-            cookiesLabel,
-            tabs,
-            fieldAttrs,
+        props:['api'],
+        setup(props) {
+            const { asKvps } = useMetadata()
+            const json = computed(() => JSON.stringify(props.api.response, null, 4))
+            const response = computed(() => props.api.response || props.api.error)
+            const routes = ref({
+                body: '',
+                response: '',
+            })
+            function fieldAttrs(id) {
+                let useId = id.replace(/\s+/g,'').toLowerCase()
+                return useId === 'stacktrace'
+                    ? { 'class': 'whitespace-pre overflow-x-auto' }
+                    : {}
+            }
+            let cookies = parseCookie(document.cookie) || {}
+            const cookiesLabel = computed(() =>  `Cookies (${Object.keys(cookies).length})`)
+            const tabs = computed(() => {
+                let tabs = { Body:'' }
+                tabs[cookiesLabel.value] = 'cookies'
+                return tabs
+            })
+            return {
+                routes,
+                json,
+                response,
+                cookies,
+                asKvps,
+                cookiesLabel,
+                tabs,
+                fieldAttrs,
+            }
         }
     }
-}
-
-const Form = {
-    components: { ApiResponse },
-    template:`
+    const Form = {
+        components: { ApiResponse },
+        template:`
         <div v-if="!requestType" class="w-full"><Alert>Could not find metadata for '{{RequestName}}'</Alert></div>
         <div v-else class="pt-4 flex flex-col w-full">
             <div class="flex justify-center w-full">
@@ -247,10 +229,8 @@ const Form = {
                       <h3 :class="card.headingClass">{{ title }}</h3>
                       <p v-if="requestType?.notes" :class="['notes',card.subHeadingClass]" v-html="requestType?.notes"></p>
                     </div>
-
                     <input type="submit" class="hidden">
                     <AutoFormFields :modelValue="model" :api="api" />
-
                   </div>
                   <div :class="form.buttonsClass">
                     <div class="flex w-full justify-between">
@@ -271,134 +251,111 @@ const Form = {
             <ApiResponse v-if="api.response" :api="api" class="mt-4" />
         </div>
     `,
-    setup() {
-        const type = RequestName
-        const { card, form } = css
-
-        const { typeOf, apiOf, createDto, typeProperties, formValues } = useMetadata()
-        const { copyText } = useUtils()
-        
-        const requestType = typeOf(RequestName)
-        
-        const title = computed(() => requestType?.description || humanize(RequestName))
-
-        const api = ref(new ApiResult({ response:Dto }))
-        const model = ref(createDto(RequestName, RequestDto))
-        const method = map(model.value?.['getMethod'], fn => typeof fn =='function' ? fn() : null) || 'POST'
-        const copiedApiUrl = ref(false)
-
-        const client = useClient()
-        const loading = computed(() => client.loading.value)
-        
-        function createApiUrl(ext = "json") {
-            const args = model.value
-            const url = `/api/${RequestName}`
-            const absoluteUrl = combinePaths(BaseUrl, appendQueryString(url, { ...args, jsconfig: "eccn,edv"}))
-            const formatUrl = absoluteUrl.indexOf('?') >= 0
-                ? leftPart(absoluteUrl, '?') + "." + ext + "?" + rightPart(absoluteUrl, '?')
-                : absoluteUrl + ".json"
-            return formatUrl
-        }
-        function copyApiUrl() {
-            const apiUrl = createApiUrl("json")
-            copyText(apiUrl)
-            copiedApiUrl.value = true
-            setTimeout(() => copiedApiUrl.value = false, 3000)
-        }
-
-        async function submit(e) {
-            /** @type {HTMLFormElement} */
-            const form = e.target
-
-            const returnsVoid = map(model.value?.['createResponse'], fn => typeof fn == 'function' ? fn() : null) == null
-
-            if (HttpMethods.hasRequestBody(method)) {
-                const requestDto = new model.value.constructor()
-                const formData = new FormData(form)
-                if (!returnsVoid) {
-                    api.value = await client.apiForm(requestDto, formData, { jsconfig: 'eccn' })
+        setup() {
+            const type = RequestName
+            const { card, form } = css
+            const { typeOf, apiOf, createDto, typeProperties, formValues } = useMetadata()
+            const { copyText } = useUtils()
+            const requestType = typeOf(RequestName)
+            const title = computed(() => requestType?.description || humanize(RequestName))
+            const api = ref(new ApiResult({ response:Dto }))
+            const model = ref(createDto(RequestName, RequestDto))
+            const method = map(model.value?.['getMethod'], fn => typeof fn =='function' ? fn() : null) || 'POST'
+            const copiedApiUrl = ref(false)
+            const client = useClient()
+            const loading = computed(() => client.loading.value)
+            function createApiUrl(ext = "json") {
+                const args = model.value
+                const url = `/api/${RequestName}`
+                const absoluteUrl = combinePaths(BaseUrl, appendQueryString(url, { ...args, jsconfig: "eccn,edv"}))
+                const formatUrl = absoluteUrl.indexOf('?') >= 0
+                    ? leftPart(absoluteUrl, '?') + "." + ext + "?" + rightPart(absoluteUrl, '?')
+                    : absoluteUrl + ".json"
+                return formatUrl
+            }
+            function copyApiUrl() {
+                const apiUrl = createApiUrl("json")
+                copyText(apiUrl)
+                copiedApiUrl.value = true
+                setTimeout(() => copiedApiUrl.value = false, 3000)
+            }
+            async function submit(e) {
+                /** @type {HTMLFormElement} */
+                const form = e.target
+                const returnsVoid = map(model.value?.['createResponse'], fn => typeof fn == 'function' ? fn() : null) == null
+                if (HttpMethods.hasRequestBody(method)) {
+                    const requestDto = new model.value.constructor()
+                    const formData = new FormData(form)
+                    if (!returnsVoid) {
+                        api.value = await client.apiForm(requestDto, formData, { jsconfig: 'eccn' })
+                    } else {
+                        api.value = await client.apiFormVoid(requestDto, formData, { jsconfig: 'eccn' })
+                    }
                 } else {
-                    api.value = await client.apiFormVoid(requestDto, formData, { jsconfig: 'eccn' })
+                    const fieldValues = formValues(form, typeProperties(requestType))
+                    const requestDto = new model.value.constructor(fieldValues)
+                    if (!returnsVoid) {
+                        api.value = await client.api(requestDto, { jsconfig: 'eccn,edv' })
+                    } else {
+                        api.value = await client.apiVoid(requestDto, { jsconfig: 'eccn,edv' })
+                    }
                 }
-            } else {
-                const fieldValues = formValues(form, typeProperties(requestType))
-                const requestDto = new model.value.constructor(fieldValues)
-                if (!returnsVoid) {
-                    api.value = await client.api(requestDto, { jsconfig: 'eccn,edv' })
+                if (api.value.succeeded) {
+                    //form.reset()
                 } else {
-                    api.value = await client.apiVoid(requestDto, { jsconfig: 'eccn,edv' })
                 }
             }
-
-            if (api.value.succeeded) {
-                //form.reset()
-            } else {
-            }
-            
+            return { RequestName, requestType, type, card, form, submit, title, model, api, loading, method, copiedApiUrl, copyApiUrl }
         }
-        
-        return { RequestName, requestType, type, card, form, submit, title, model, api, loading, method, copiedApiUrl, copyApiUrl }
     }
-}
-
- 
-const App = {
-    template:$1('#app-template'),
-    setup() {
-        const tabs = {
-            preview: Preview,
-            json: Json,
-            form: Form,
-            code: {
-                template: `<Code :op="op"/>`,
-                setup() {
-                    return { op: RequestName }
-                }
-            },
-        }
-        const showHeader = ref(true)
-
-        function setFavIconSrc(src) {
-            let link = $1("link[rel~='icon']")
-            if (!link) {
-                link = document.createElement('link')
-                link.rel = 'icon'
-                $1('head').appendChild(link)
+    const App = {
+        template:$1('#app-template'),
+        setup() {
+            const tabs = {
+                preview: Preview,
+                json: Json,
+                form: Form,
+                code: {
+                    template: `<Code :op="op"/>`,
+                    setup() {
+                        return { op: RequestName }
+                    }
+                },
             }
-            link.href = src
+            const showHeader = ref(true)
+            function setFavIconSrc(src) {
+                let link = $1("link[rel~='icon']")
+                if (!link) {
+                    link = document.createElement('link')
+                    link.rel = 'icon'
+                    $1('head').appendChild(link)
+                }
+                link.href = src
+            }
+            onMounted(() => {
+                const { loadMetadata } = useMetadata()
+                loadMetadata({ olderThan: location.search.includes('clear=metadata') ? 0 : 60 * 60 * 1000 })
+                    .then(server => {
+                        setFavIconSrc(server.ui.brandIcon?.uri || combinePaths(BaseUrl, '/metadata/svg/servicestack.datauri'))
+                    })
+            })
+            return { tabs, showHeader }
         }
-
-        onMounted(() => {
-            const { loadMetadata } = useMetadata()
-            loadMetadata({ olderThan: location.search.includes('clear=metadata') ? 0 : 60 * 60 * 1000 })
-                .then(server => {
-                    setFavIconSrc(server.ui.brandIcon?.uri || combinePaths(BaseUrl, '/metadata/svg/servicestack.datauri'))
-                })
+    }
+    const app = createApp(App)
+        .use(ServiceStackVue)
+        .component('RouterLink', ServiceStackVue.component('RouterLink'))
+        .provide('client', client)
+        .directive('highlightjs', (el, binding) => {
+            if (binding.value) {
+                //el.className = ''
+                el.innerHTML = enc(binding.value)
+                hljs.highlightElement(el)
+            }
         })
-        
-        return { tabs, showHeader }
-    }
-}
-
-const app = createApp(App)
-    .use(ServiceStackVue)
-    .component('RouterLink', ServiceStackVue.component('RouterLink'))
-    .provide('client', client)
-    .directive('highlightjs', (el, binding) => {
-        if (binding.value) {
-            //el.className = ''
-            el.innerHTML = enc(binding.value)
-            globalThis.hljs.highlightElement(el)
-        }
-    })
-
-const components = { Preview, Json, Form, Code, CopyIcon, CopyLine }
-Object.keys(components).forEach(k => app.component(k, components[k]))
-
-app.mount('#app')
-
+    const components = { Preview, Json, Form, Code, CopyIcon, CopyLine }
+    Object.keys(components).forEach(k => app.component(k, components[k]))
+    app.mount('#app')
 </script>
-
-<script src="js/highlight.js"></script>
 </body>
 </html>

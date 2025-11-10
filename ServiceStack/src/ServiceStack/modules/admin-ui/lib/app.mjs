@@ -1,6 +1,7 @@
 import { reactive } from "vue"
 import { JsonServiceClient, map, lastLeftPart, trimEnd, queryString, enc, sanitize, } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useAuth, useConfig, useUtils } from "@servicestack/vue"
+import hljs from "highlight.js"
 import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
 const { setConfig } = useConfig()
@@ -316,7 +317,7 @@ app.directive('highlightjs', (el, binding) => {
     if (binding.value) {
         //el.className = ''
         el.innerHTML = enc(binding.value)
-        globalThis.hljs.highlightElement(el)
+        hljs.highlightElement(el)
     }
 })
 setConfig({

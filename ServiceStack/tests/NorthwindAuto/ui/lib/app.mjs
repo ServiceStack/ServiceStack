@@ -10,6 +10,8 @@ import {
     sanitize
 } from "@servicestack/client"
 import ServiceStackVue, { useMetadata, useAuth, useConfig } from "@servicestack/vue"
+import hljs from "highlight.js"
+
 import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
 
@@ -435,7 +437,7 @@ app.directive('highlightjs', (el, binding) => {
     if (binding.value) {
         //el.className = ''
         el.innerHTML = enc(binding.value)
-        globalThis.hljs.highlightElement(el)
+        hljs.highlightElement(el)
     }
 })
 app.directive('hash', (el,binding) => {

@@ -206,11 +206,16 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
                 try
                 {
                     var src = metadataTypes.GenerateSourceCode(queryLang, httpReq, c => c.WithoutOptions = true);
-                    sb.AppendLine($"<link href=\"{httpReq.ResolveAbsoluteUrl("~/css/ui-highlight.css")}\" rel=\"stylesheet\" />");
-                    sb.AppendLine($"<pre style=\"padding-left:1rem;\"><code class=\"language-{queryLang}\" lang=\"{queryLang}\">{src.HtmlEncodeLite()}</code></pre>");
-                    sb.AppendLine($"<p><a href=\"{httpReq.ResolveAbsoluteUrl($"~/types/{queryLang}?IncludeTypes={op.Name}.*")}\">{queryLangName} {op.Name} DTOs</a></p>");
-                    sb.AppendLine($"<script type=\"text/javascript\" src=\"{httpReq.ResolveAbsoluteUrl("~/js/highlight.js")}\"></script>");
-                    sb.AppendLine("<script>hljs.highlightAll()</script>");
+                    sb.AppendLine(
+                        $"""
+                        <link href="{httpReq.ResolveAbsoluteUrl("~/css/ui-highlight.css")}" rel="stylesheet" />
+                        <pre style="padding-left:1rem;"><code class="language-{queryLang}" lang="{queryLang}">{src.HtmlEncodeLite()}</code></pre>
+                        <p><a href="{httpReq.ResolveAbsoluteUrl($"~/types/{queryLang}?IncludeTypes={op.Name}.*")}">{queryLangName} {op.Name} DTOs</a></p>
+                        <script type="module">
+                        import hljs from "{httpReq.ResolveAbsoluteUrl("~/js/highlight.mjs")}"
+                        hljs.highlightAll()
+                        </script>
+                        """);
                 }
                 catch (Exception e)
                 {
