@@ -4,6 +4,7 @@ import { leftPart } from '@servicestack/client'
 import { Chart, registerables } from "chart.js"
 import { QueryDb, QueryResponse } from "dtos"
 import { Marked } from "marked"
+import hljs from "highlight.js"
 
 Chart.register(...registerables)
 
@@ -318,7 +319,7 @@ const LogDetailDialog = {
                                         <!-- Code view (default) -->
                                         <div v-if="!preview" class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.answer?.trim() }}</div>
                                         <!-- Preview view (rendered markdown) -->
-                                        <div v-else class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 prose dark:prose-invert max-w-none" v-html="renderMarkdown(log.answer?.trim())"></div>
+                                        <div v-else class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 prose prose-sm dark:prose-invert max-w-none" v-html="renderMarkdown(log.answer?.trim())"></div>
                                     </div>
 
                                     <!-- Error -->
@@ -333,13 +334,13 @@ const LogDetailDialog = {
                                     <!-- Request Body -->
                                     <div v-if="log.requestBody">
                                         <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Request Body</h3>
-                                        <pre class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-xs text-gray-900 dark:text-gray-100 overflow-x-auto">{{ formatJson(log.requestBody) }}</pre>
+                                        <pre class="whitespace-pre-wrap"><code :key="log.id" lang="json" class="language-json text-sm" v-highlightjs="formatJson(log.requestBody)"></code></pre>
                                     </div>
 
                                     <!-- Response Body -->
                                     <div v-if="log.responseBody">
                                         <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Response Body</h3>
-                                        <pre class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-xs text-gray-900 dark:text-gray-100 overflow-x-auto">{{ formatJson(log.responseBody) }}</pre>
+                                        <pre class="whitespace-pre-wrap"><code :key="log.id" lang="json" class="language-json text-sm" v-highlightjs="formatJson(log.responseBody)"></code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -389,6 +390,7 @@ const LogDetailDialog = {
             if (nextLog) {
                 props.routes.to({ show: nextLog.id })
             }
+            hljs.highlightAll()
         }
 
         // Handle keyboard navigation
@@ -1673,7 +1675,6 @@ export const AdminChat = {
     }
 }
 
-const hljs = globalThis.hljs
 export const marked = (() => {
     const aliases = {
         vue: 'html',
