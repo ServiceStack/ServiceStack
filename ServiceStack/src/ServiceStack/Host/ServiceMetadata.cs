@@ -183,8 +183,6 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
         HashSet<string> internalServiceNames =
         [
-            "ServiceStack.AI",
-            "ServiceStack.AI.Chat",
             "ServiceStack.Api.OpenApi.OpenApiService",
             // ServiceStack.Server
             "ServiceStack.GetCrudEventsService",
@@ -208,7 +206,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
             .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
                 && x.ServiceType.FullName != null
                 && !internalServiceNames.Contains(x.ServiceType.FullName)
-                && !x.ServiceType.FullName.StartsWith("ServiceStack.Auth.")
+                && !x.ServiceType.FullName.StartsWith("ServiceStack.")
                 && x.ServiceType.Name != "__AutoQueryServices"
                 && x.ServiceType.Name != "__AutoQueryDataServices");
 
