@@ -160,7 +160,7 @@ export const NewUser = {
 
 const Analytics = {
     template:`
-      <div class="mt-8 pt-4 border-t border-gray-900/10 px-4 sm:px-6">
+      <div class="not-prose mt-8 pt-4 border-t border-gray-900/10 px-4 sm:px-6">
         <h2 class="float-left mb-3 text-lg font-medium text-gray-900 dark:text-gray-50" id="SlideOver-title">Analytics</h2>
         <div>
           <div class="mb-2 flex flex-wrap justify-center">
