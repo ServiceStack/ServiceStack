@@ -21,7 +21,6 @@
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
     <PackageReference Include="MongoDB.Bson" Version="3.5.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.5.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
