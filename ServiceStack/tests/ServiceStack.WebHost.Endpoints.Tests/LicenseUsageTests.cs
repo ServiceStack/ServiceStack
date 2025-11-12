@@ -13,143 +13,183 @@ using ServiceStack.Messaging;
 using ServiceStack.RabbitMq;
 using ServiceStack.Redis;
 using ServiceStack.Text;
+using Custom;
+using ServiceStack;
 
-namespace ServiceStack.WebHost.Endpoints.Tests;
-
-[TestFixture]
-public class FreeLicenseUsageServiceClientTests : LicenseUsageTests
+namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [SetUp]
-    public void SetUp()
+    [TestFixture]
+    public class FreeLicenseUsageServiceClientTests : LicenseUsageTests
     {
-        LicenseUtils.RemoveLicense();
-        JsConfig.Reset();
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-//            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
-        Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
-    }
-
-    [Test]
-    public void Allows_registration_of_10_operations()
-    {
-        using var appHost = new LicenseTestsAppHost(typeof(Services10));
-        appHost.Init();
-        appHost.Start(Config.ListeningOn);
-
-        appHost.Metadata.GetOperationDtos().Map(x => x.Name).PrintDump();
-        Assert.That(appHost.Metadata.GetOperationDtos().Count, Is.EqualTo(10));
-    }
-
-    [Test]
-    public void Throws_on_registration_of_11_operations()
-    {
-        using var appHost = new NoLicenseTestsAppHost(typeof(Services10), typeof(Service1));
-        Assert.Throws(Is.TypeOf<LicenseException>()
-                .Or.TypeOf<TargetInvocationException>()
-                .With.Property("InnerException").TypeOf<LicenseException>(),
-            () => {
-                appHost.Init();
-                appHost.Start(Config.ListeningOn);
-            });
-    }
-
-    [Ignore("TODO: Ignore reason"), Test]
-    public void Allows_MegaDto_through_ServiceClient()
-    {
-        using var appHost = new LicenseTestsAppHost(typeof(MegaDtoService));
-        appHost.Init();
-        appHost.Start(Config.ListeningOn);
-
-        var client = new JsonServiceClient(Config.AbsoluteBaseUri);
-
-        var request = MegaDto.Create();
-
-        var response = client.Post(request);
-        Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
-
-        Assert.Throws<LicenseException>(() =>
-            request.ToJson());
-
-        response = client.Post(request);
-        Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
-
-        Assert.Throws<LicenseException>(() =>
-            MegaDto.Create().ToJson());
-    }
-}
-
-[TestFixture]
-public class FreeUsageRabbitMqClientTests : LicenseUsageTests
-{
-    [Ignore("Integration Test"), Test]
-    public void Allows_MegaDto_through_RabbitMqClients()
-    {
-        var mqFactory = new RabbitMqMessageFactory(connectionString: Config.RabbitMQConnString);
-
-        var request = MegaDto.Create();
-
-        using (var mqClient = mqFactory.CreateMessageProducer())
+        [SetUp]
+        public void SetUp()
         {
-            mqClient.Publish(request);
+            LicenseUtils.RemoveLicense();
+            JsConfig.Reset();
         }
 
-        using (var mqClient = mqFactory.CreateMessageQueueClient())
+        [TearDown]
+        public void TearDown()
         {
-            var msg = mqClient.Get<MegaDto>(QueueNames<MegaDto>.In);
-            var response = msg.GetBody();
+    //            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
+            Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
+        }
 
+        [Test]
+        public void Allows_registration_of_10_operations()
+        {
+            using var appHost = new LicenseTestsAppHost(typeof(Services10));
+            appHost.Init();
+            appHost.Start(Config.ListeningOn);
+
+            appHost.Metadata.GetOperationDtos().Map(x => x.Name).PrintDump();
+            Assert.That(appHost.Metadata.GetOperationDtos().Count, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void Throws_on_registration_of_11_operations()
+        {
+            using var appHost = new NoLicenseTestsAppHost(typeof(Services10), typeof(Service1));
+            Assert.Throws(Is.TypeOf<LicenseException>()
+                    .Or.TypeOf<TargetInvocationException>()
+                    .With.Property("InnerException").TypeOf<LicenseException>(),
+                () => {
+                    appHost.Init();
+                    appHost.Start(Config.ListeningOn);
+                });
+        }
+
+        [Ignore("TODO: Ignore reason"), Test]
+        public void Allows_MegaDto_through_ServiceClient()
+        {
+            using var appHost = new LicenseTestsAppHost(typeof(MegaDtoService));
+            appHost.Init();
+            appHost.Start(Config.ListeningOn);
+
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var request = MegaDto.Create();
+
+            var response = client.Post(request);
             Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
-        }
-    }
-}
 
-[TestFixture]
-public class FreeUsageRedisMqClientTests : LicenseUsageTests
-{
-    [Test]
-    public void Allows_MegaDto_through_RedisMqClients()
-    {
-        var mqFactory = new RedisMessageFactory(new BasicRedisClientManager());
+            Assert.Throws<LicenseException>(() =>
+                request.ToJson());
 
-        var request = MegaDto.Create();
-
-        using (var mqClient = mqFactory.CreateMessageProducer())
-        {
-            mqClient.Publish(request);
-        }
-
-        using (var mqClient = mqFactory.CreateMessageQueueClient())
-        {
-            var msg = mqClient.Get<MegaDto>(QueueNames<MegaDto>.In);
-            var response = msg.GetBody();
-
+            response = client.Post(request);
             Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
+
+            Assert.Throws<LicenseException>(() =>
+                MegaDto.Create().ToJson());
+        }
+    }
+
+    [TestFixture]
+    public class FreeUsageRabbitMqClientTests : LicenseUsageTests
+    {
+        [Ignore("Integration Test"), Test]
+        public void Allows_MegaDto_through_RabbitMqClients()
+        {
+            var mqFactory = new RabbitMqMessageFactory(connectionString: Config.RabbitMQConnString);
+
+            var request = MegaDto.Create();
+
+            using (var mqClient = mqFactory.CreateMessageProducer())
+            {
+                mqClient.Publish(request);
+            }
+
+            using (var mqClient = mqFactory.CreateMessageQueueClient())
+            {
+                var msg = mqClient.Get<MegaDto>(QueueNames<MegaDto>.In);
+                var response = msg.GetBody();
+
+                Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
+            }
+        }
+    }
+
+    [TestFixture]
+    public class FreeUsageRedisMqClientTests : LicenseUsageTests
+    {
+        [Test]
+        public void Allows_MegaDto_through_RedisMqClients()
+        {
+            var mqFactory = new RedisMessageFactory(new BasicRedisClientManager());
+
+            var request = MegaDto.Create();
+
+            using (var mqClient = mqFactory.CreateMessageProducer())
+            {
+                mqClient.Publish(request);
+            }
+
+            using (var mqClient = mqFactory.CreateMessageQueueClient())
+            {
+                var msg = mqClient.Get<MegaDto>(QueueNames<MegaDto>.In);
+                var response = msg.GetBody();
+
+                Assert.That(request.T01.Id, Is.EqualTo(response.T01.Id));
+            }
+        }
+    }
+
+    [TestFixture]
+    public class RegisteredLicenseUsageTests : LicenseUsageTests
+    {
+        [Test]
+        public void Allows_registration_of_11_operations()
+        {
+    //            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
+            Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
+
+            using var appHost = new LicenseTestsAppHost(typeof(Services10), typeof(Service1));
+            appHost.Init();
+            appHost.Start(Config.ListeningOn);
+
+            Assert.That(appHost.Metadata.GetOperationDtos().Count, Is.EqualTo(11));
+        }
+    }
+
+    public class LicenseUsageTests
+    {
+        protected class LicenseTestsAppHost : AppHostHttpListenerBase
+        {
+            private readonly List<Type> services;
+            public LicenseTestsAppHost(params Type[] services)
+                : base(nameof(LicenseTestsAppHost))
+            {
+                this.services = new List<Type>(services);
+            }
+
+            protected override ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
+            {
+                return new ServiceController(this, () => services);
+            }
+
+            public override void Configure(Container container)
+            {
+                Plugins.RemoveAll(x => x is NativeTypesFeature);
+                Plugins.RemoveAll(x => x is UiFeature);
+                GetPlugin<MetadataFeature>().ServiceRoutes.Clear();
+            }
+        }
+
+        protected class NoLicenseTestsAppHost : LicenseTestsAppHost
+        {
+            public NoLicenseTestsAppHost(params Type[] services)
+                : base(services) {}
+
+            public override void OnConfigLoad()
+            {
+                base.OnConfigLoad();
+                LicenseUtils.RemoveLicense();
+            }
         }
     }
 }
 
-[TestFixture]
-public class RegisteredLicenseUsageTests : LicenseUsageTests
-{
-    [Test]
-    public void Allows_registration_of_11_operations()
-    {
-//            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
-        Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
-
-        using var appHost = new LicenseTestsAppHost(typeof(Services10), typeof(Service1));
-        appHost.Init();
-        appHost.Start(Config.ListeningOn);
-
-        Assert.That(appHost.Metadata.GetOperationDtos().Count, Is.EqualTo(11));
-    }
-}
-
-public class LicenseUsageTests
+namespace Custom
 {
     public class T01 { public int Id { get; set; } }
     public class T02 { public int Id { get; set; } }
@@ -252,38 +292,5 @@ public class LicenseUsageTests
             return request;
         }
     }
-
-    protected class LicenseTestsAppHost : AppHostHttpListenerBase
-    {
-        private readonly List<Type> services;
-        public LicenseTestsAppHost(params Type[] services)
-            : base(nameof(LicenseTestsAppHost))
-        {
-            this.services = new List<Type>(services);
-        }
-
-        protected override ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
-        {
-            return new ServiceController(this, () => services);
-        }
-
-        public override void Configure(Container container)
-        {
-            Plugins.RemoveAll(x => x is NativeTypesFeature);
-            Plugins.RemoveAll(x => x is UiFeature);
-            GetPlugin<MetadataFeature>().ServiceRoutes.Clear();
-        }
-    }
-
-    protected class NoLicenseTestsAppHost : LicenseTestsAppHost
-    {
-        public NoLicenseTestsAppHost(params Type[] services)
-            : base(services) {}
-
-        public override void OnConfigLoad()
-        {
-            base.OnConfigLoad();
-            LicenseUtils.RemoveLicense();
-        }
-    }
 }
+
