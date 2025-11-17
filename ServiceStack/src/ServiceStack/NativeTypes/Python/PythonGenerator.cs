@@ -734,7 +734,13 @@ public class PythonGenerator : ILangGenerator
         var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
         isNullable = propType.EndsWith("?");
         if (isNullable)
+        {
             propType = propType.Substring(0, propType.Length - 1);
+        }
+        else
+        {
+            isNullable = prop.IsRequired != true;
+        }
         return propType;
     }
 

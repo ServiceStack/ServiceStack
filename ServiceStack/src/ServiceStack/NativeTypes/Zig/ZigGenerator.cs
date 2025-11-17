@@ -201,24 +201,6 @@ public class ZigGenerator : ILangGenerator
     public static Func<ZigGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
         DefaultIsPropertyOptional;
 
-    /// <summary>
-    /// Helper to make Nullable properties
-    /// </summary>
-    public static bool UseNullableProperties
-    {
-        set
-        {
-            if (value)
-            {
-                IsPropertyOptional = (gen, type, prop) => false;
-                PropertyTypeFilter = (gen, type, prop) => 
-                    prop.IsRequired == true
-                        ? gen.GetPropertyType(prop, out _)
-                        : gen.GetPropertyType(prop, out _) + "|null";
-            }
-        }
-    }
-
     public void Init(MetadataTypes metadata)
     {
         var includeList = metadata.RemoveIgnoredTypes(Config);
@@ -518,7 +500,13 @@ public class ZigGenerator : ILangGenerator
         var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
         isNullable = propType.EndsWith("?");
         if (isNullable)
+        {
             propType = propType.Substring(0, propType.Length - 1);
+        }
+        else
+        {
+            isNullable = prop.IsRequired != true;
+        }
         return propType;
     }
 
@@ -546,7 +534,7 @@ public class ZigGenerator : ILangGenerator
                 PrePropertyFilter?.Invoke(sb, prop, type);
 
                 // In Zig, optional fields use ?Type syntax (no default values allowed in struct definitions)
-                var zigType = optional ? $"?{propType}" : propType;
+                var zigType = optional && !propType.StartsWith("?") ? $"?{propType}" : propType;
 
                 sb.AppendLine("{0}: {1},".Fmt(GetPropertyName(prop), zigType));
                 PostPropertyFilter?.Invoke(sb, prop, type);

@@ -785,9 +785,13 @@ public class PhpGenerator : ILangGenerator
         var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
         isNullable = propType.EndsWith("?");
         if (isNullable)
+        {
             propType = propType.Substring(0, propType.Length - 1);
-        if (!isNullable)
-            isNullable = prop.Type == "Nullable`1" || prop.IsValueType != true;
+        }
+        else
+        {
+            isNullable = prop.IsRequired != true;
+        }
         return propType;
     }
 

@@ -50,24 +50,6 @@ public class CSharpGenerator : ILangGenerator
 
     public static Func<CSharpGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
-    /// <summary>
-    /// Helper to make Nullable Reference Type Annotations
-    /// </summary>
-    [Obsolete("Use ConfigurePlugin<NativeTypesFeature>(feature => feature.MetadataTypesConfig.AddNullableAnnotations = true);")]
-    public static bool UseNullableAnnotations
-    {
-        set
-        {
-            if (value)
-            {
-                PropertyTypeFilter = (gen, type, prop) => 
-                    prop.IsRequired == true || prop.PropertyInfo?.PropertyType.IsValueType == true
-                        ? gen.GetPropertyType(prop)
-                        : gen.GetPropertyType(prop).EnsureSuffix('?');
-            }
-        }
-    }
-
     public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
     public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
@@ -522,8 +504,8 @@ public class CSharpGenerator : ILangGenerator
     }
 
     public static Dictionary<string,string[]> AttributeConstructorArgs { get; set; } = new() {
-        ["ValidateRequest"] = new[] { nameof(ValidateRequestAttribute.Validator) },
-        ["Validate"] = new[] { nameof(ValidateRequestAttribute.Validator) },
+        ["ValidateRequest"] = [nameof(ValidateRequestAttribute.Validator)],
+        ["Validate"] = [nameof(ValidateRequestAttribute.Validator)],
     };
 
     public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

@@ -1,3 +1,5 @@
+using MyApp.ServiceModel;
+
 namespace MyApp.ServiceInterface;
 
 public class SearchRootSummary : QueryDb<RootSummary>
@@ -12,4 +14,6 @@ public class QueryDbRootService(IAutoQueryDb autoQuery) : Service
         using var db = autoQuery.GetDb<RootSummary>(Request);
         return new();
     }
+    
+    public object Any(TestNullable request) => request.ConvertTo<TestNullableResponse>();
 }

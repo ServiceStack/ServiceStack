@@ -56,6 +56,29 @@ public class QueryBookings : QueryDb<Booking>
     public int? Id { get; set; }
 }
 
+public class TestNullable : IGet, IReturn<TestNullableResponse>
+{
+    public int? Id { get; set; }
+    public int RequiredId { get; set; }
+    public int[]? Ids { get; set; }
+    public int[] RequiredIds { get; set; } = [];
+    public List<string>? Names { get; set; }
+    public List<string> RequiredNames { get; set; } = [];
+    public List<int>? RoomNumbers { get; set; }
+    public List<int> RequiredRoomNumbers { get; set; } = [];
+}
+public class TestNullableResponse
+{
+    public int? Id { get; set; }
+    public int RequiredId { get; set; }
+    public int[]? Ids { get; set; }
+    public int[] RequiredIds { get; set; } = [];
+    public List<string>? Names { get; set; }
+    public List<string> RequiredNames { get; set; } = [];
+    public List<int>? RoomNumbers { get; set; }
+    public List<int> RequiredRoomNumbers { get; set; } = [];
+}
+
 // Uncomment below to enable DeletedBookings API to view deleted bookings:
 // [Route("/bookings/deleted")]
 // [AutoFilter(QueryTerm.Ensure, nameof(AuditBase.DeletedDate), Template = SqlTemplate.IsNotNull)]

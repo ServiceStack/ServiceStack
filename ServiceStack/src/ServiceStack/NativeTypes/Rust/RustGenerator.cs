@@ -486,7 +486,13 @@ public class RustGenerator : ILangGenerator
         var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
         isNullable = propType.EndsWith("?");
         if (isNullable)
+        {
             propType = propType.Substring(0, propType.Length - 1);
+        }
+        else
+        {
+            isNullable = prop.IsRequired != true;
+        }
         return propType;
     }
 
@@ -527,7 +533,7 @@ public class RustGenerator : ILangGenerator
                 }
 
                 // Handle optional fields with Option<T>
-                if (isOptional)
+                if (isOptional && !propType.StartsWith("Option<"))
                 {
                     propType = $"Option<{propType}>";
                 }

@@ -68,7 +68,8 @@ public class DartGenerator : ILangGenerator
         {"Type", "String"},
     };
     private static string declaredEmptyString = "\"\"";
-    private static readonly Dictionary<string, string> defaultValues = new() {
+
+    public static readonly Dictionary<string, string> DefaultValues = new() {
         {"String", declaredEmptyString},
         {"string", declaredEmptyString},
         {"Boolean", "false"},
@@ -99,7 +100,8 @@ public class DartGenerator : ILangGenerator
         {"DateTimeOffset", "DateTime(0)"},
     };
         
-    static HashSet<string> BasicJsonTypes = new() {
+    static HashSet<string> BasicJsonTypes =
+    [
         nameof(String),
         nameof(Boolean),
         nameof(Guid),
@@ -116,8 +118,8 @@ public class DartGenerator : ILangGenerator
         nameof(Decimal),
         "int",
         "bool",
-        "Dictionary<String,String>",
-    };
+        "Dictionary<String,String>"
+    ];
         
     public static Dictionary<string,string> DartToJsonConverters = new() {
         { "double", "toDouble" },
@@ -567,7 +569,7 @@ public class DartGenerator : ILangGenerator
                         returnType = "dynamic";
 
                     // This is to avoid invalid syntax such as "return new string()"
-                    responseTypeExpression = defaultValues.TryGetValue(returnType, out var newReturnInstance)
+                    responseTypeExpression = DefaultValues.TryGetValue(returnType, out var newReturnInstance)
                         ? $"createResponse() => {newReturnInstance};"
                         : $"createResponse() => {DartLiteral(returnType + "()")};";
                     responseTypeName = $"getResponseTypeName() => \"{returnType}\";";
@@ -880,7 +882,7 @@ public class DartGenerator : ILangGenerator
             return;
 
         var csharpType = CSharpPropertyType(prop);
-        var factoryFn = defaultValues.TryGetValue(csharpType, out string defaultValue)
+        var factoryFn = DefaultValues.TryGetValue(csharpType, out string defaultValue)
             ? $"() => {defaultValue}"
             : null;
         
@@ -934,7 +936,7 @@ public class DartGenerator : ILangGenerator
 
                     var genericArg = RawType(genericArgNode);
 
-                    var genericArgFactoryFn = defaultValues.TryGetValue(genericArg, out string defaultValue)
+                    var genericArgFactoryFn = DefaultValues.TryGetValue(genericArg, out string defaultValue)
                         ? $"() => {defaultValue}"
                         : null;
 
@@ -1022,15 +1024,30 @@ public class DartGenerator : ILangGenerator
 
                 sb.Emit(prop, Lang.Dart);
                 PrePropertyFilter?.Invoke(sb, prop, type);
+
+                var isRequired = prop.Type != "Nullable`1" 
+                     && (prop.IsRequired == true)
+                     && Config.AddNullableAnnotations
+                     && !prop.IsInterface();
+                string initializer = "";
+                if (isRequired)
+                {
+                    if (prop.IsEnumerable() && feature.ShouldInitializeCollection(type))
+                    {
+                        initializer = prop.IsDictionary()
+                            ? " = {}"
+                            : " = []";
+                    }
+                    else if (DefaultValues.TryGetValue(propType, out var defaultValue))
+                    {
+                        initializer = " = " + defaultValue;
+                    }
+                }
+                propType = isRequired 
+                    ? propType 
+                    : propType + "?";
                 
-                var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
-                        && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
-                    ? prop.IsDictionary()
-                        ? " = {}"
-                        : " = []"
-                    : "";
-                
-                sb.AppendLine($"{propType}? {GetSafePropertyName(prop)}{initializer};");
+                sb.AppendLine($"{propType} {GetSafePropertyName(prop)}{initializer};");
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
         }

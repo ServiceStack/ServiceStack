@@ -35,7 +35,7 @@ public class MetadataTypesConfig
         bool addPropertyAccessors = true,
         bool excludeGenericBaseTypes = false,
         bool settersReturnThis = true,
-        bool addNullableAnnotations = false,
+        bool addNullableAnnotations = true,
         bool makePropertiesOptional = false,
         bool makeDataContractsExtensible = false,
         bool initializeCollections = false,

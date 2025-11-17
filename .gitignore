@@ -85,3 +85,4 @@ src/ServiceStack.userprefs
 src/ServiceStack.sln.DotSettings
 ServiceStack/tests/NorthwindAuto/Configure.secrets.cs
 ServiceStack/tests/NorthwindAuto/App_Data/chinook.sqlite
+mise.toml
