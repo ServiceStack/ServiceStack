@@ -13,7 +13,7 @@ namespace ServiceStack.Text.Tests.DynamicModels.DataModel
             var strValue = this.Value as string;
             if (strValue != null)
             {
-                var unescapedValue = strValue.FromCsvField();
+                var unescapedValue = strValue.FromCsvField().ToString();
                 return TypeSerializer.DeserializeFromString(unescapedValue, this.Type);
             }
             return Value;

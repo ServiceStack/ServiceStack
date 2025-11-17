@@ -22,7 +22,7 @@ internal static class ParseMethodUtilities
     public static ParseStringDelegate GetParseFn<T>(string parseMethod)
     {
         // Get the static Parse(string) method on the type supplied
-        var parseMethodInfo = typeof(T).GetStaticMethod(parseMethod, new[] { typeof(string) });
+        var parseMethodInfo = typeof(T).GetStaticMethod(parseMethod, [typeof(string)]);
         if (parseMethodInfo == null)
             return null;
 
@@ -46,7 +46,7 @@ internal static class ParseMethodUtilities
         }
 
         if (parseDelegate != null)
-            return value => parseDelegate(value.FromCsvField());
+            return value => parseDelegate(value.FromCsvField().ToString());
 
         return null;
     }
@@ -80,7 +80,7 @@ internal static class ParseMethodUtilities
         }
 
         if (parseDelegate != null)
-            return value => parseDelegate(value.ToString().FromCsvField().AsSpan());
+            return value => parseDelegate(value.ToString().FromCsvField());
 
         return null;
     }

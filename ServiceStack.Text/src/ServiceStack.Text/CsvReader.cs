@@ -71,7 +71,8 @@ public class CsvReader
         while (++i <= len)
         {
             var value = EatValue(line, ref i);
-            to.Add(parseFn != null ? parseFn(value.FromCsvField()) : value.FromCsvField());
+            var fieldValue = value == null ? null : value.FromCsvField().Value();
+            to.Add(parseFn != null ? parseFn(fieldValue) : fieldValue);
         }
 
         return to;

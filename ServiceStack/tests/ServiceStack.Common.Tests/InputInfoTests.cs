@@ -152,7 +152,7 @@ public class InputTests
         Assert.That(mediaRules.MinVisibleSize(nameof(UserAuth.DisplayName)), Is.EqualTo(MediaSizes.ExtraSmall));
         Assert.That(mediaRules.MinVisibleSize(nameof(UserAuth.CreatedDate)), Is.EqualTo(MediaSizes.Small));
         Assert.That(mediaRules.MinVisibleSize(nameof(UserAuth.Nickname)), Is.EqualTo(MediaSizes.Medium));
-        
-        Assert.That(mediaRules.Reverse().MinVisibleSize(nameof(UserAuth.Id)), Is.EqualTo(MediaSizes.ExtraSmall));
+
+        Assert.That(mediaRules.AsEnumerable().Reverse().MinVisibleSize(nameof(UserAuth.Id)), Is.EqualTo(MediaSizes.ExtraSmall));
     }
 }

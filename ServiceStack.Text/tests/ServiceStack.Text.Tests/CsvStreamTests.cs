@@ -87,33 +87,33 @@ public class CsvStreamTests
     [Test]
     public void Can_convert_from_csv_field()
     {
-        Assert.That("1".FromCsvField(), Is.EqualTo("1"));
-        Assert.That("\"3\"\"\"".FromCsvField(), Is.EqualTo("3\""));
-        Assert.That("\"5\"\"five,six\"\"\"".FromCsvField(), Is.EqualTo("5\"five,six\""));
-        Assert.That("\"7,7.1\"".FromCsvField(), Is.EqualTo("7,7.1"));
-        Assert.That("\"\"\"7,7.1\"\"\"".FromCsvField(), Is.EqualTo("\"7,7.1\""));
+        Assert.That("1".FromCsvField().ToString(), Is.EqualTo("1"));
+        Assert.That("\"3\"\"\"".FromCsvField().ToString(), Is.EqualTo("3\""));
+        Assert.That("\"5\"\"five,six\"\"\"".FromCsvField().ToString(), Is.EqualTo("5\"five,six\""));
+        Assert.That("\"7,7.1\"".FromCsvField().ToString(), Is.EqualTo("7,7.1"));
+        Assert.That("\"\"\"7,7.1\"\"\"".FromCsvField().ToString(), Is.EqualTo("\"7,7.1\""));
     }
 
     [Test]
     public void Can_convert_from_csv_field_pipe_separator()
     {
         CsvConfig.ItemSeperatorString = "|";
-        Assert.That("1".FromCsvField(), Is.EqualTo("1"));
-        Assert.That("\"3\"\"\"".FromCsvField(), Is.EqualTo("3\""));
-        Assert.That("\"5\"\"five,six\"\"\"".FromCsvField(), Is.EqualTo("5\"five,six\""));
-        Assert.That("\"7,7.1\"".FromCsvField(), Is.EqualTo("7,7.1"));
-        Assert.That("7,7.1".FromCsvField(), Is.EqualTo("7,7.1"));
-        Assert.That("\"\"\"7,7.1\"\"\"".FromCsvField(), Is.EqualTo("\"7,7.1\""));
+        Assert.That("1".FromCsvField().ToString(), Is.EqualTo("1"));
+        Assert.That("\"3\"\"\"".FromCsvField().ToString(), Is.EqualTo("3\""));
+        Assert.That("\"5\"\"five,six\"\"\"".FromCsvField().ToString(), Is.EqualTo("5\"five,six\""));
+        Assert.That("\"7,7.1\"".FromCsvField().ToString(), Is.EqualTo("7,7.1"));
+        Assert.That("7,7.1".FromCsvField().ToString(), Is.EqualTo("7,7.1"));
+        Assert.That("\"\"\"7,7.1\"\"\"".FromCsvField().ToString(), Is.EqualTo("\"7,7.1\""));
     }
 
     [Test]
     public void Can_convert_from_csv_field_pipe_delimiter()
     {
         CsvConfig.ItemDelimiterString = "|";
-        Assert.That("1".FromCsvField(), Is.EqualTo("1"));
-        Assert.That("3\"".FromCsvField(), Is.EqualTo("3\""));
-        Assert.That("|5\"five,six\"|".FromCsvField(), Is.EqualTo("5\"five,six\""));
-        Assert.That("|7,7.1|".FromCsvField(), Is.EqualTo("7,7.1"));
-        Assert.That("|\"7,7.1\"|".FromCsvField(), Is.EqualTo("\"7,7.1\""));
+        Assert.That("1".FromCsvField().ToString(), Is.EqualTo("1"));
+        Assert.That("3\"".FromCsvField().ToString(), Is.EqualTo("3\""));
+        Assert.That("|5\"five,six\"|".FromCsvField().ToString(), Is.EqualTo("5\"five,six\""));
+        Assert.That("|7,7.1|".FromCsvField().ToString(), Is.EqualTo("7,7.1"));
+        Assert.That("|\"7,7.1\"|".FromCsvField().ToString(), Is.EqualTo("\"7,7.1\""));
     }
 }

@@ -21,14 +21,14 @@ namespace ServiceStack.Text.Tests
         public void Can_LeftPart_and_LeftPart_char_needle()
         {
             var str = "user:pass@w:rd";
-            Assert.That(str.LeftPart(':'), Is.EqualTo("user"));
+            Assert.That(str.LeftPart(':').ToString(), Is.EqualTo("user"));
             Assert.That(str.SplitOnFirst(':')[0], Is.EqualTo("user"));
-            Assert.That(str.RightPart(':'), Is.EqualTo("pass@w:rd"));
+            Assert.That(str.RightPart(':').ToString(), Is.EqualTo("pass@w:rd"));
             Assert.That(str.SplitOnFirst(':').Last(), Is.EqualTo("pass@w:rd"));
 
-            Assert.That(str.LeftPart('|'), Is.EqualTo("user:pass@w:rd"));
+            Assert.That(str.LeftPart('|').ToString(), Is.EqualTo("user:pass@w:rd"));
             Assert.That(str.SplitOnFirst('|')[0], Is.EqualTo("user:pass@w:rd"));
-            Assert.That(str.RightPart('|'), Is.EqualTo("user:pass@w:rd"));
+            Assert.That(str.RightPart('|').ToString(), Is.EqualTo("user:pass@w:rd"));
             Assert.That(str.SplitOnFirst('|').Last(), Is.EqualTo("user:pass@w:rd"));
         }
 
@@ -44,14 +44,14 @@ namespace ServiceStack.Text.Tests
         public void Can_LeftPart_and_RightPart_string_needle()
         {
             var str = "user::pass@w:rd";
-            Assert.That(str.LeftPart("::"), Is.EqualTo("user"));
+            Assert.That(str.LeftPart("::").ToString(), Is.EqualTo("user"));
             Assert.That(str.SplitOnFirst("::")[0], Is.EqualTo("user"));
-            Assert.That(str.RightPart("::"), Is.EqualTo("pass@w:rd"));
+            Assert.That(str.RightPart("::").ToString(), Is.EqualTo("pass@w:rd"));
             Assert.That(str.SplitOnFirst("::").Last(), Is.EqualTo("pass@w:rd"));
 
-            Assert.That(str.LeftPart("||"), Is.EqualTo("user::pass@w:rd"));
+            Assert.That(str.LeftPart("||").ToString(), Is.EqualTo("user::pass@w:rd"));
             Assert.That(str.SplitOnFirst("||")[0], Is.EqualTo("user::pass@w:rd"));
-            Assert.That(str.RightPart("||"), Is.EqualTo("user::pass@w:rd"));
+            Assert.That(str.RightPart("||").ToString(), Is.EqualTo("user::pass@w:rd"));
             Assert.That(str.SplitOnFirst("||").Last(), Is.EqualTo("user::pass@w:rd"));
         }
 
@@ -67,14 +67,14 @@ namespace ServiceStack.Text.Tests
         public void Can_LastLeftPart_and_LastRightPart_char_needle()
         {
             var str = "user:name:pass@word";
-            Assert.That(str.LastLeftPart(':'), Is.EqualTo("user:name"));
+            Assert.That(str.LastLeftPart(':').ToString(), Is.EqualTo("user:name"));
             Assert.That(str.SplitOnLast(':')[0], Is.EqualTo("user:name"));
-            Assert.That(str.LastRightPart(':'), Is.EqualTo("pass@word"));
+            Assert.That(str.LastRightPart(':').ToString(), Is.EqualTo("pass@word"));
             Assert.That(str.SplitOnLast(':').Last(), Is.EqualTo("pass@word"));
 
-            Assert.That(str.LastLeftPart('|'), Is.EqualTo("user:name:pass@word"));
+            Assert.That(str.LastLeftPart('|').ToString(), Is.EqualTo("user:name:pass@word"));
             Assert.That(str.SplitOnLast('|')[0], Is.EqualTo("user:name:pass@word"));
-            Assert.That(str.LastRightPart('|'), Is.EqualTo("user:name:pass@word"));
+            Assert.That(str.LastRightPart('|').ToString(), Is.EqualTo("user:name:pass@word"));
             Assert.That(str.SplitOnLast('|').Last(), Is.EqualTo("user:name:pass@word"));
         }
 
@@ -90,14 +90,14 @@ namespace ServiceStack.Text.Tests
         public void Can_LastLeftPart_and_LastRightPart_string_needle()
         {
             var str = "user::name::pass@word";
-            Assert.That(str.LastLeftPart("::"), Is.EqualTo("user::name"));
+            Assert.That(str.LastLeftPart("::").ToString(), Is.EqualTo("user::name"));
             Assert.That(str.SplitOnLast("::")[0], Is.EqualTo("user::name"));
-            Assert.That(str.LastRightPart("::"), Is.EqualTo("pass@word"));
+            Assert.That(str.LastRightPart("::").ToString(), Is.EqualTo("pass@word"));
             Assert.That(str.SplitOnLast("::").Last(), Is.EqualTo("pass@word"));
 
-            Assert.That(str.LastLeftPart("||"), Is.EqualTo("user::name::pass@word"));
+            Assert.That(str.LastLeftPart("||").ToString(), Is.EqualTo("user::name::pass@word"));
             Assert.That(str.SplitOnLast("||")[0], Is.EqualTo("user::name::pass@word"));
-            Assert.That(str.LastRightPart("||"), Is.EqualTo("user::name::pass@word"));
+            Assert.That(str.LastRightPart("||").ToString(), Is.EqualTo("user::name::pass@word"));
             Assert.That(str.SplitOnLast("||").Last(), Is.EqualTo("user::name::pass@word"));
         }
 
@@ -109,14 +109,14 @@ namespace ServiceStack.Text.Tests
         {
             var dirSep = DirSep;
             var filePath = "path{0}to{0}file".FormatWith(dirSep);
-            Assert.That(filePath.ParentDirectory(), Is.EqualTo("path{0}to".FormatWith(dirSep)));
-            Assert.That(filePath.ParentDirectory().ParentDirectory(), Is.EqualTo("path".FormatWith(dirSep)));
-            Assert.That(filePath.ParentDirectory().ParentDirectory().ParentDirectory(), Is.Null);
+            Assert.That(filePath.ParentDirectory().ToString(), Is.EqualTo("path{0}to".FormatWith(dirSep)));
+            Assert.That(filePath.ParentDirectory().ToString().ParentDirectory().ToString(), Is.EqualTo("path".FormatWith(dirSep)));
+            Assert.That(filePath.ParentDirectory().ToString().ParentDirectory().ToString().ParentDirectory().ToString(), Is.EqualTo(""));
 
             var filePathWithExt = "path{0}to{0}file/".FormatWith(dirSep);
-            Assert.That(filePathWithExt.ParentDirectory(), Is.EqualTo("path{0}to".FormatWith(dirSep)));
-            Assert.That(filePathWithExt.ParentDirectory().ParentDirectory(), Is.EqualTo("path".FormatWith(dirSep)));
-            Assert.That(filePathWithExt.ParentDirectory().ParentDirectory().ParentDirectory(), Is.Null);
+            Assert.That(filePathWithExt.ParentDirectory().ToString(), Is.EqualTo("path{0}to".FormatWith(dirSep)));
+            Assert.That(filePathWithExt.ParentDirectory().ToString().ParentDirectory().ToString(), Is.EqualTo("path".FormatWith(dirSep)));
+            Assert.That(filePathWithExt.ParentDirectory().ToString().ParentDirectory().ToString().ParentDirectory().ToString(), Is.EqualTo(""));
         }
 
         [Test]
@@ -124,26 +124,26 @@ namespace ServiceStack.Text.Tests
         {
             var dirSep = AltDirSep;
             var filePath = "path{0}to{0}file".FormatWith(dirSep);
-            Assert.That(filePath.ParentDirectory(), Is.EqualTo("path{0}to".FormatWith(dirSep)));
-            Assert.That(filePath.ParentDirectory().ParentDirectory(), Is.EqualTo("path".FormatWith(dirSep)));
-            Assert.That(filePath.ParentDirectory().ParentDirectory().ParentDirectory(), Is.Null);
+            Assert.That(filePath.ParentDirectory().ToString(), Is.EqualTo("path{0}to".FormatWith(dirSep)));
+            Assert.That(filePath.ParentDirectory().ToString().ParentDirectory().ToString(), Is.EqualTo("path".FormatWith(dirSep)));
+            Assert.That(filePath.ParentDirectory().ToString().ParentDirectory().ToString().ParentDirectory().ToString(), Is.EqualTo(""));
 
             var filePathWithExt = "path{0}to{0}file{0}".FormatWith(dirSep);
-            Assert.That(filePathWithExt.ParentDirectory(), Is.EqualTo("path{0}to".FormatWith(dirSep)));
-            Assert.That(filePathWithExt.ParentDirectory().ParentDirectory(), Is.EqualTo("path".FormatWith(dirSep)));
-            Assert.That(filePathWithExt.ParentDirectory().ParentDirectory().ParentDirectory(), Is.Null);
+            Assert.That(filePathWithExt.ParentDirectory().ToString(), Is.EqualTo("path{0}to".FormatWith(dirSep)));
+            Assert.That(filePathWithExt.ParentDirectory().ToString().ParentDirectory().ToString(), Is.EqualTo("path".FormatWith(dirSep)));
+            Assert.That(filePathWithExt.ParentDirectory().ToString().ParentDirectory().ToString().ParentDirectory().ToString(), Is.EqualTo(""));
         }
 
         [Test]
         public void Does_not_alter_filepath_without_extension()
         {
             var path = "path/dir.with.dot/to/file";
-            Assert.That(path.WithoutExtension(), Is.EqualTo(path));
+            Assert.That(path.WithoutExtension().ToString(), Is.EqualTo(path));
 
-            Assert.That("path/to/file.ext".WithoutExtension(), Is.EqualTo("path/to/file"));
+            Assert.That("path/to/file.ext".WithoutExtension().ToString(), Is.EqualTo("path/to/file"));
         }
 
-        [TestCase(null, null)]
+        [TestCase(null, "")]
         [TestCase("/", "")]
         [TestCase("/a", "")]
         [TestCase("/a.b", ".b")]
@@ -152,8 +152,8 @@ namespace ServiceStack.Text.Tests
         [TestCase("/:=#%$@{a.b}.c", ".c")]
         public void Does_get_Path_extension(string actual, string expected)
         {
-            Assert.That(actual.GetExtension(), Is.EqualTo(Path.GetExtension(actual)));
-            Assert.That(actual.GetExtension(), Is.EqualTo(expected));
+            Assert.That(actual.GetExtension().ToString(), Is.EqualTo(Path.GetExtension(actual) ?? ""));
+            Assert.That(actual.GetExtension().ToString(), Is.EqualTo(expected));
         }
 
         //         0         1
@@ -315,19 +315,19 @@ namespace ServiceStack.Text.Tests
         {
 
             var input = "TestString";
-            Assert.That(input.SafeSubstring(0), Is.EqualTo("TestString"));
-            Assert.That(input.SafeSubstring(2), Is.EqualTo("stString"));
-            Assert.That(input.SafeSubstring(20), Is.EqualTo(""));
+            Assert.That(input.SafeSubstring(0).ToString(), Is.EqualTo("TestString"));
+            Assert.That(input.SafeSubstring(2).ToString(), Is.EqualTo("stString"));
+            Assert.That(input.SafeSubstring(20).ToString(), Is.EqualTo(""));
         }
 
         [Test]
         public void Can_SafeSubstring_with_length()
         {
             var input = "TestString";
-            Assert.That(input.SafeSubstring(0, 4), Is.EqualTo("Test"));
-            Assert.That(input.SafeSubstring(2, 4), Is.EqualTo("stSt"));
-            Assert.That(input.SafeSubstring(20, 4), Is.EqualTo(""));
-            Assert.That(input.SafeSubstring(0, 20), Is.EqualTo("TestString"));
+            Assert.That(input.SafeSubstring(0, 4).ToString(), Is.EqualTo("Test"));
+            Assert.That(input.SafeSubstring(2, 4).ToString(), Is.EqualTo("stSt"));
+            Assert.That(input.SafeSubstring(20, 4).ToString(), Is.EqualTo(""));
+            Assert.That(input.SafeSubstring(0, 20).ToString(), Is.EqualTo("TestString"));
         }
 
         [Test]

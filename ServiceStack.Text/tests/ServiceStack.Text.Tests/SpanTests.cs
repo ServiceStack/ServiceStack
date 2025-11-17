@@ -111,10 +111,13 @@ namespace ServiceStack.Text.Tests
                 Assert.That(bytes.ToArray(), Is.EquivalentTo(test.expectedBytes));
 
                 ReadOnlyMemory<char> chars = bytes.FromUtf8();
+                var withoutBomSpan = test.expectedString.WithoutBom();
+                var withoutBom = new string(withoutBomSpan.ToArray());
                 Assert.That(chars.Length, Is.EqualTo(test.expectedString.Length)
-                    .Or.EqualTo(test.expectedString.WithoutBom().Length));
-                Assert.That(chars.ToString(), Is.EqualTo(test.expectedString)
-                    .Or.EqualTo(test.expectedString.WithoutBom()));
+                    .Or.EqualTo(withoutBom.Length));
+                var charsString = new string(chars.Span.ToArray());
+                Assert.That(charsString, Is.EqualTo(test.expectedString)
+                    .Or.EqualTo(withoutBom));
             }
         }
 
@@ -133,12 +136,15 @@ namespace ServiceStack.Text.Tests
 
                 Memory<char> charBuff = CharPool.GetBuffer(MemoryProvider.Instance.GetUtf8CharCount(bytes.Span));
                 var charsWritten = MemoryProvider.Instance.FromUtf8(bytes.Span, charBuff.Span);
-                chars = charBuff.Slice(0, charsWritten).Span;
+                var charsResult = charBuff.Slice(0, charsWritten);
 
-                Assert.That(chars.Length, Is.EqualTo(test.expectedString.Length)
-                    .Or.EqualTo(test.expectedString.WithoutBom().Length));
-                Assert.That(chars.ToString(), Is.EqualTo(test.expectedString)
-                    .Or.EqualTo(test.expectedString.WithoutBom()));
+                var withoutBomSpan = test.expectedString.WithoutBom();
+                var withoutBom = new string(withoutBomSpan.ToArray());
+                Assert.That(charsResult.Length, Is.EqualTo(test.expectedString.Length)
+                    .Or.EqualTo(withoutBom.Length));
+                var charsResultString = new string(charsResult.Span.ToArray());
+                Assert.That(charsResultString, Is.EqualTo(test.expectedString)
+                    .Or.EqualTo(withoutBom));
             }
         }
 

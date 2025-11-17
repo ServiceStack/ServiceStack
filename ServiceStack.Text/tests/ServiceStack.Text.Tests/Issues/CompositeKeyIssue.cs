@@ -21,8 +21,8 @@ namespace ServiceStack.Text.Tests.Issues
 
         public CompositeKey(string jsonKey)
         {
-            Name = jsonKey.LeftPart(':');
-            Value = jsonKey.RightPart(':').ConvertTo<bool>();
+            Name = jsonKey.LeftPart(':').ToString();
+            Value = jsonKey.RightPart(':').ToString().ConvertTo<bool>();
         }
 
         public bool Equals(CompositeKey other) => 

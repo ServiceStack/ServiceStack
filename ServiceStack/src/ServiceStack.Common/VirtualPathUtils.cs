@@ -25,8 +25,8 @@ public static class VirtualPathUtils
         if (string.IsNullOrEmpty(str))
             return new Stack<string>();
 
-        var tokens = str.Split(new[] { virtualPathSeparator }, StringSplitOptions.RemoveEmptyEntries);
-        return new Stack<string>(tokens.Reverse());
+        var tokens = str.Split([virtualPathSeparator], StringSplitOptions.RemoveEmptyEntries);
+        return new Stack<string>(((IEnumerable<string>)tokens).Reverse());
     }
 
     public static Stack<string> TokenizeResourcePath(this string str, char pathSeparator = '.')
@@ -35,14 +35,14 @@ public static class VirtualPathUtils
             return new Stack<string>();
 
         var n = str.Count(c => c == pathSeparator);
-        var tokens = str.Split(new[] { pathSeparator }, n);
+        var tokens = str.Split([pathSeparator], n);
 
-        return new Stack<string>(tokens.Reverse());
+        return new Stack<string>(((IEnumerable<string>)tokens).Reverse());
     }
 
     public static IEnumerable<IGrouping<string, string[]>> GroupByFirstToken(this IEnumerable<string> resourceNames, char pathSeparator = '.')
     {
-        return resourceNames.Select(n => n.Split(new[] { pathSeparator }, 2))
+        return resourceNames.Select(n => n.Split([pathSeparator], 2))
             .GroupBy(t => t[0]);
     }
 

@@ -306,7 +306,7 @@ public struct JsvTypeSerializer
 
     public string UnescapeSafeString(string value) => JsState.IsCsv
         ? value
-        : value.FromCsvField();
+        : value.FromCsvField().ToString();
 
     public ReadOnlySpan<char> UnescapeSafeString(ReadOnlySpan<char> value) => JsState.IsCsv
         ? value // already unescaped in CsvReader.ParseFields()
@@ -314,11 +314,11 @@ public struct JsvTypeSerializer
 
     public string ParseRawString(string value) => value;
 
-    public string ParseString(string value) => value.FromCsvField();
+    public string ParseString(string value) => value.FromCsvField().ToString();
 
-    public string ParseString(ReadOnlySpan<char> value) => value.ToString().FromCsvField();
+    public string ParseString(ReadOnlySpan<char> value) => value.ToString().FromCsvField().ToString();
 
-    public string UnescapeString(string value) => value.FromCsvField();
+    public string UnescapeString(string value) => value.FromCsvField().ToString();
 
     public ReadOnlySpan<char> UnescapeString(ReadOnlySpan<char> value) => value.FromCsvField();
 

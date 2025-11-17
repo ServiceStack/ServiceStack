@@ -38,7 +38,7 @@ namespace ServiceStack.Text.Tests.DynamicModels.DataModel
                 return idx < 0 ? null :
                     (
                         this[idx].Value is string
-                        ? new Uri(((string)this[idx].Value).FromCsvField())
+                        ? new Uri(((string)this[idx].Value).FromCsvField().ToString())
                         : this[idx].Value as Uri
                     );
             }
@@ -59,7 +59,7 @@ namespace ServiceStack.Text.Tests.DynamicModels.DataModel
                 return idx < 0 ? null :
                     (
                         this[idx].Value is string
-                        ? AssemblyUtils.FindType(((string)this[idx].Value).FromCsvField())
+                        ? AssemblyUtils.FindType(((string)this[idx].Value).FromCsvField().ToString())
                         : this[idx].Value as Type
                     );
             }

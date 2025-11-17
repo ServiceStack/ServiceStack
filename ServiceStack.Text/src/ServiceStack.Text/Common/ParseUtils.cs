@@ -34,7 +34,7 @@ internal static class ParseUtils
     public static ParseStringDelegate GetSpecialParseMethod(Type type)
     {
         if (type == typeof(Uri))
-            return x => new Uri(x.FromCsvField());
+            return x => new Uri(x.FromCsvField().ToString());
 
         //Warning: typeof(object).IsInstanceOfType(typeof(Type)) == True??
         if (type.IsInstanceOfType(typeof(Type)))
@@ -51,7 +51,7 @@ internal static class ParseUtils
 
     public static Type ParseType(string assemblyQualifiedName)
     {
-        return AssemblyUtils.FindType(assemblyQualifiedName.FromCsvField());
+        return AssemblyUtils.FindType(assemblyQualifiedName.FromCsvField().ToString());
     }
 
     public static object TryParseEnum(Type enumType, string str)

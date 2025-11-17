@@ -120,10 +120,13 @@ namespace ServiceStack.Text.Tests
                 Assert.That(bytes.ToArray(), Is.EquivalentTo(test.expectedBytes));
 
                 ReadOnlyMemory<char> chars = bytes.FromUtf8();
+                var withoutBomSpan = test.expectedString.WithoutBom();
+                var withoutBom = new string(withoutBomSpan.ToArray());
                 Assert.That(chars.Length, Is.EqualTo(test.expectedString.Length)
-                    .Or.EqualTo(test.expectedString.WithoutBom().Length));
-                Assert.That(chars.ToString(), Is.EqualTo(test.expectedString)
-                    .Or.EqualTo(test.expectedString.WithoutBom()));
+                    .Or.EqualTo(withoutBom.Length));
+                var charsString = new string(chars.Span.ToArray());
+                Assert.That(charsString, Is.EqualTo(test.expectedString)
+                    .Or.EqualTo(withoutBom));
             }
         }
 
