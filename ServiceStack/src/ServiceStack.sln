@@ -131,6 +131,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.AI.Chat", "Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdhocNew", "..\tests\AdhocNew\AdhocNew.csproj", "{0E5DB4A9-89A0-4F0A-A14D-E776FE4C21D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Desktop", "ServiceStack.Desktop\ServiceStack.Desktop.csproj", "{6FFE8429-51F7-45C5-9402-FBA0FC216B85}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -795,6 +797,18 @@ Global
 		{0E5DB4A9-89A0-4F0A-A14D-E776FE4C21D5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0E5DB4A9-89A0-4F0A-A14D-E776FE4C21D5}.Release|x86.ActiveCfg = Release|Any CPU
 		{0E5DB4A9-89A0-4F0A-A14D-E776FE4C21D5}.Release|x86.Build.0 = Release|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Debug|x86.Build.0 = Debug|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Release|x86.ActiveCfg = Release|Any CPU
+		{6FFE8429-51F7-45C5-9402-FBA0FC216B85}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

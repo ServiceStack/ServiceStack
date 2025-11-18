@@ -155,9 +155,9 @@
              Properties="Configuration=$(Configuration)" />
 
     <!-- ServiceStack.Desktop -->
-    <!-- <MSBuild Projects="$(SrcDir)/ServiceStack.Desktop/ServiceStack.Desktop.csproj"
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Desktop/ServiceStack.Desktop.csproj"
              Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" /> -->
+             Properties="Configuration=$(Configuration)" />
 
 
     <!-- Copy all *.nupkg to /NuGet -->
