@@ -70,16 +70,6 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.OrmLite.Sqlite.Cil -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.Sqlite.Cil/ServiceStack.OrmLite.Sqlite.Cil.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.OrmLite.Sqlite.Windows -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.Sqlite.Windows/ServiceStack.OrmLite.Sqlite.Windows.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
     <!-- ServiceStack.OrmLite.SqlServer -->
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.OrmLite.SqlServer/ServiceStack.OrmLite.SqlServer.csproj"
              Targets="Build;Pack"

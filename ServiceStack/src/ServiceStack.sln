@@ -87,8 +87,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckGrpc", "..\tests\Check
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckCoreApi", "..\tests\CheckCoreApi\CheckCoreApi.csproj", "{E0AF102A-4503-4768-A15F-AE3CFE05DD50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Desktop", "ServiceStack.Desktop\ServiceStack.Desktop.csproj", "{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NorthwindAuto", "..\tests\NorthwindAuto\NorthwindAuto.csproj", "{4087FC9D-F03D-43FC-8AE0-78B0E3AF0007}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Text", "..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj", "{A7070566-EEE2-46D3-B8BF-A2C79873D267}"
@@ -533,18 +531,6 @@ Global
 		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|x86.ActiveCfg = Release|Any CPU
 		{E0AF102A-4503-4768-A15F-AE3CFE05DD50}.Release|x86.Build.0 = Release|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Debug|x86.Build.0 = Debug|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Release|x86.ActiveCfg = Release|Any CPU
-		{6DD5C1E3-14AF-401D-98A3-105EE78D4FEF}.Release|x86.Build.0 = Release|Any CPU
 		{4087FC9D-F03D-43FC-8AE0-78B0E3AF0007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4087FC9D-F03D-43FC-8AE0-78B0E3AF0007}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4087FC9D-F03D-43FC-8AE0-78B0E3AF0007}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
