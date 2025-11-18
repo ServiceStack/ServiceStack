@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Mvc</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
     <Title>MVC Adapters for integrating with ServiceStack webservices</Title>
     <PackageDescription>
     MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
@@ -17,10 +17,13 @@
     <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0_OR_GREATER;NET10_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
@@ -41,13 +44,5 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.3.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.2.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 </Project>

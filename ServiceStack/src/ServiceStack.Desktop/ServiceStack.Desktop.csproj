@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
         <Title>ServiceStack.Desktop</Title>
         <PackageDescription>
             Desktop Assets, Vue and React Framework libraries, Bootstrap, Material Design SVGs, Font Awesome and Win32 APIs for ServiceStack CEF .NET Core Desktop Apps

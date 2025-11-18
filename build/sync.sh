@@ -33,6 +33,3 @@ cp build/*.* ../ServiceStack.Stripe/build/
 cp src/*.* ../ServiceStack.Text/src/
 cp tests/*.* ../ServiceStack.Text/tests/
 cp build/*.* ../ServiceStack.Text/build/
-
-cp src/*.* ../ServiceStack.Core/src/
-cp build/*.* ../ServiceStack.Core/build/

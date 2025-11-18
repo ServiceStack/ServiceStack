@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Redis</PackageId>
     <AssemblyName>ServiceStack.Redis</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0;net10.0</TargetFrameworks>
     <Title>C# Redis client for the Redis NoSQL DB</Title>
     <PackageDescription>
       C# Redis Client for the worlds fastest distributed NoSQL datastore.
@@ -22,7 +22,10 @@
     <DefineConstants>$(DefineConstants);NETCORE;NET6_0</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0_OR_GREATER;NET10_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,18 +36,6 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Net.Security" Version="4.3.2" />
-    <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
-    <PackageReference Include="System.Collections.NonGeneric" Version="4.3.0" />
-    <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
-    <PackageReference Include="System.Data.Common" Version="4.3.0" />
-    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
-    <!-- note: not needed from netstandard2.1 or netcoreapp3.0 onwards -->
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
   
 </Project>

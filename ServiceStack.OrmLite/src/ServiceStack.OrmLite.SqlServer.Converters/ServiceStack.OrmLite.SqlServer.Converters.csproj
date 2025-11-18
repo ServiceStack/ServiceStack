@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.OrmLite.SqlServer.Converters</PackageId>
     <AssemblyName>ServiceStack.OrmLite.SqlServer.Converters</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0;net10.0</TargetFrameworks>
     <Title>OrmLite.SqlServer.Converters - Converters for SQL Server Types</Title>
     <PackageDescription>
       Add OrmLite Converters for SQL Servers SqlGeography and SqlGeometry Types

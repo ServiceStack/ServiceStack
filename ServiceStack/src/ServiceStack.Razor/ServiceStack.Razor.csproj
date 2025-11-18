@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Razor</PackageId>
     <AssemblyName>ServiceStack.Razor</AssemblyName>
-    <TargetFrameworks>net472</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <Title>ServiceStack.Razor - ServiceStack's HTML story including MVC Razor</Title>
     <PackageDescription>
       ServiceStack Razor Documentation: https://razor.netcore.io

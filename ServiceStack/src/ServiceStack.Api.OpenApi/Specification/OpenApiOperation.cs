@@ -1,6 +1,9 @@
-﻿using ServiceStack.Api.OpenApi.Support;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+
+#if !NET10_0_OR_GREATER
+using ServiceStack.Api.OpenApi.Support;
+#endif
 
 namespace ServiceStack.Api.OpenApi.Specification
 {

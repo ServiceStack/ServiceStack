@@ -2,7 +2,7 @@
     <PropertyGroup>
         <PackageId>ServiceStack.Jobs</PackageId>
         <AssemblyName>ServiceStack.Jobs</AssemblyName>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
         <Title>ServiceStack Background Jobs, Workers and Loggers</Title>
         <PackageDescription>
             Background Job Feature and Workers

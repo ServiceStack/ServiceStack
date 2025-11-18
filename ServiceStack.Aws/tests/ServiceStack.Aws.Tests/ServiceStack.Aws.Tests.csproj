@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net10.0;net472</TargetFrameworks>
+    <TargetFramework  Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.Aws.Tests</AssemblyName>
     <OutputType>Library</OutputType>
@@ -31,7 +32,5 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Web" />
     <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 </Project>

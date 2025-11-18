@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
 <!-- TODO GET AutoQuery CRUD to work after existing tests have been resolved -->
         <DefineConstants>$(DefineConstants);AUTOQUERY_CRUD</DefineConstants>
     </PropertyGroup>
@@ -38,8 +38,8 @@
         <PackageReference Include="Grpc.Core" Version="2.46.6" />
         <PackageReference Include="Google.Protobuf" Version="3.32.1" />
         <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.*" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.*" />
     </ItemGroup>

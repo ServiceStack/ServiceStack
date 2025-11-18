@@ -10,8 +10,11 @@ using ServiceStack.Host;
 using ServiceStack.NativeTypes;
 using ServiceStack.Text;
 using ServiceStack.Web;
-using ServiceStack.Api.OpenApi.Support;
 using ServiceStack.Api.OpenApi.Specification;
+
+#if !NET10_0_OR_GREATER
+using ServiceStack.Api.OpenApi.Support;
+#endif
 
 namespace ServiceStack.Api.OpenApi
 {

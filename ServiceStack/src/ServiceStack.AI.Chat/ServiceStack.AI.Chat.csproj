@@ -4,7 +4,7 @@
         <PackageId>ServiceStack.AI.Chat</PackageId>
         <AssemblyName>ServiceStack.AI.Chat</AssemblyName>
         <RootNamespace>ServiceStack.AI</RootNamespace>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Title>ServiceStack functionality for OpenAI, Client, Server and UI</Title>
@@ -12,9 +12,6 @@
             ServiceStack functionality for OpenAI, Client, Server and UI
         </PackageDescription>
         <PackageTags>AI;GPT;OpenAI</PackageTags>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

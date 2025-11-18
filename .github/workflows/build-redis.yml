@@ -20,11 +20,11 @@ jobs:
         ports:
           - 6379:6379
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '8.0.100'
+          dotnet-version: 10.0.x
           
           
       - name: Build
@@ -37,7 +37,7 @@ jobs:
         
       - name: Test Without Integration
         working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net8.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory\!=Integration --logger 'trx;LogFileName=non-integration-results.trx'
 
       - name: Non-Integration Tests Report
         uses: dorny/test-reporter@v1
@@ -52,7 +52,7 @@ jobs:
       - name: Test With Integration
         id: test_integration
         working-directory: ServiceStack.Redis/tests
-        run: dotnet test --framework net8.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack.Redis.Tests/ServiceStack.Redis.Tests.csproj --filter TestCategory=Integration --logger 'trx;LogFileName=integration-results.trx'
 
       - name: Integration Tests Report
         uses: dorny/test-reporter@v1

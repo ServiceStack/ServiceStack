@@ -26,4 +26,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
     <PackageReference Include="Npgsql" Version="9.0.4" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+    <PackageReference Include="Npgsql" Version="9.0.4" />
+  </ItemGroup>
 </Project>

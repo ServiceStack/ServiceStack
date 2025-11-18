@@ -23,11 +23,11 @@ jobs:
         ports:
           - 48101:3050
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '8.0.100'
+          dotnet-version: 10.0.x
           
 
       - name: Build
@@ -45,7 +45,7 @@ jobs:
           ORMLITE_DIALECT: Firebird
           FIREBIRD_CONNECTION: User=test;Password=Test!tesT;Database=/firebird/data/test.gdb;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;
           EnableLegacyClientAuth: true
-        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+        run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
 
       - name: Test Firebird OrmLite
         working-directory: ServiceStack.OrmLite/tests
@@ -55,7 +55,7 @@ jobs:
           FIREBIRD_CONNECTION: User=test;Password=Test!tesT;Database=/firebird/data/test.gdb;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;
           EnableLegacyClientAuth: true
         run: |
-          dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx' --filter "FullyQualifiedName=ServiceStack.OrmLite.Tests.OrderByTests"
+          dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx' --filter "FullyQualifiedName=ServiceStack.OrmLite.Tests.OrderByTests"
 
       - name: Test Report
         uses: dorny/test-reporter@v1

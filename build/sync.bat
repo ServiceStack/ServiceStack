@@ -33,6 +33,3 @@ COPY build\*.* ..\ServiceStack.Stripe\build\
 COPY src\*.* ..\ServiceStack.Text\src\
 COPY tests\*.* ..\ServiceStack.Text\tests\
 COPY build\*.* ..\ServiceStack.Text\build\
-
-COPY src\*.* ..\ServiceStack.Core\src\
-COPY build\*.* ..\ServiceStack.Core\build\

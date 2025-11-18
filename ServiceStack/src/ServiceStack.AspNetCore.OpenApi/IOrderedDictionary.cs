@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !NET10_0_OR_GREATER
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
@@ -55,3 +57,5 @@ public interface IOrderedDictionary<TKey, TValue>
         set;
     }
 }
+
+#endif

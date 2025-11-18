@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Caching.Memcached</PackageId>
     <AssemblyName>ServiceStack.Caching.Memcached</AssemblyName>
-    <TargetFrameworks>net472</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <Title>Memcached ServiceStack Caching Provider</Title>
     <PackageDescription>
       An Memcached cache client implementing ServiceStack's ICacheClient:

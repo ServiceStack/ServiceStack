@@ -39,11 +39,11 @@ jobs:
         ports:
           - 48303:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '8.0.100'
+          dotnet-version: 10.0.x
           
           
       - name: Build
@@ -60,7 +60,7 @@ jobs:
           echo "GOOGLE_FREE_API_KEY=${{ secrets.GOOGLE_FREE_API_KEY }}" >> $GITHUB_ENV
 
       - name: Test Extensions
-        run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.Extensions.Tests/ServiceStack.Extensions.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack/tests/ServiceStack.Extensions.Tests/ServiceStack.Extensions.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -72,7 +72,7 @@ jobs:
           reporter: dotnet-trx
 
       - name: Test Common
-        run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack/tests/ServiceStack.Common.Tests/ServiceStack.Common.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -84,7 +84,7 @@ jobs:
           reporter: dotnet-trx
 
       - name: Test ServiceModels
-        run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/ServiceStack.ServiceModel.Tests.csproj --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack/tests/ServiceStack.ServiceModel.Tests/ServiceStack.ServiceModel.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -99,7 +99,7 @@ jobs:
         env:
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-        run: dotnet test --framework net8.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx' --logger 'console;verbosity=detailed'
+        run: dotnet test --framework net10.0 ./ServiceStack/tests/ServiceStack.WebHost.Endpoints.Tests/ServiceStack.WebHost.Endpoints.Tests.csproj --logger 'trx;LogFileName=results.trx' --logger 'console;verbosity=detailed'
 
       - name: Test Report
         uses: dorny/test-reporter@v1

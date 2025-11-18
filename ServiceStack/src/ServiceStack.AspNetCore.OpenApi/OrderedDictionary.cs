@@ -1,4 +1,6 @@
-﻿#pragma warning disable CS1734
+﻿#if !NET10_0_OR_GREATER
+
+#pragma warning disable CS1734
 
 using System;
 using System.Collections;
@@ -637,3 +639,5 @@ public class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey, TValue>
         return Remove(item.Key);
     }
 }
+
+#endif

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.MsgPack</PackageId>
     <AssemblyName>ServiceStack.MsgPack</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0;net10.0</TargetFrameworks>
     <Title>Message Pack support for ServiceStack. Includes typed MsgPack Client</Title>
     <PackageDescription>
       Add the MsgPack binary format and endpoint to a ServiceStack web service host.

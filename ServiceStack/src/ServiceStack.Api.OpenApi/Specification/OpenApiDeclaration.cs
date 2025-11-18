@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack.Api.OpenApi.Support;
 using ServiceStack.DataAnnotations;
+
+#if !NET10_0_OR_GREATER
+using ServiceStack.Api.OpenApi.Support;
+#endif
 
 namespace ServiceStack.Api.OpenApi.Specification
 {

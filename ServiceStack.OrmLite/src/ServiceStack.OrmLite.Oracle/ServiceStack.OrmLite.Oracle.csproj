@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0;net10.0</TargetFrameworks>
     <AssemblyName>ServiceStack.OrmLite.Oracle</AssemblyName>
     <PackageId>ServiceStack.OrmLite.Oracle</PackageId>
     <Title>OrmLite.Oracle - Fast, code-first, config-free POCO ORM</Title>
@@ -18,7 +18,7 @@
     <PackageReference Include="Oracle.ManagedDataAccess" Version="23.9.1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net10.0' ">
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.9.1" />
   </ItemGroup>
 

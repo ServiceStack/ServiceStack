@@ -41,7 +41,7 @@ namespace ServiceStack.Azure.Tests.Messaging
         }
         public AzureServiceBusMqServerAppHostTests()
         {
-#if !NETCORE_SUPPORT            
+#if !NETCORE            
             NamespaceManager nm = NamespaceManager.CreateFromConnectionString(ConnectionString);
             Parallel.ForEach(nm.GetQueues(), qd =>
             {

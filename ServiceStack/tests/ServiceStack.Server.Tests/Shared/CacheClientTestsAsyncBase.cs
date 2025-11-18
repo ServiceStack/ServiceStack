@@ -7,7 +7,7 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.OrmLite;
-using ServiceStack.Text;
+using AsyncEnumerableExtensions = System.Linq.AsyncEnumerable;
 
 namespace ServiceStack.Server.Tests.Shared
 {
@@ -242,7 +242,7 @@ namespace ServiceStack.Server.Tests.Shared
         [Test]
         public async Task Can_retrieve_IAuthSession_with_global_ExcludeTypeInfo_set()
         {
-            JsConfig.ExcludeTypeInfo = true;
+            Text.JsConfig.ExcludeTypeInfo = true;
 
             IAuthSession session = new CustomAuthSession
             {
@@ -261,7 +261,7 @@ namespace ServiceStack.Server.Tests.Shared
             Assert.That(typedSession, Is.Not.Null);
             Assert.That(typedSession.Custom, Is.EqualTo("custom"));
 
-            JsConfig.Reset();
+            Text.JsConfig.Reset();
         }
 
         [Test]
@@ -284,7 +284,7 @@ namespace ServiceStack.Server.Tests.Shared
             if (!(Cache is ICacheClientExtended))
                 return;
 
-            JsConfig.ExcludeTypeInfo = true;
+            Text.JsConfig.ExcludeTypeInfo = true;
 
             for (int i = 0; i < 5; i++)
             {
@@ -302,7 +302,7 @@ namespace ServiceStack.Server.Tests.Shared
 
             var sessionPattern = IdUtils.CreateUrn<IAuthSession>("");
             Assert.That(sessionPattern, Is.EqualTo("urn:iauthsession:"));
-#if !NETFX            
+#if !NETFX
             var sessionKeys = await Cache.GetKeysStartingWithAsync(sessionPattern).ToListAsync();
 
             Assert.That(sessionKeys.Count, Is.EqualTo(5));
@@ -311,16 +311,16 @@ namespace ServiceStack.Server.Tests.Shared
             var allSessions = await Cache.GetAllAsync<IAuthSession>(sessionKeys);
             Assert.That(allSessions.Values.Count(x => x != null), Is.EqualTo(sessionKeys.Count));
 
-            var allKeys = (await Cache.GetAllKeysAsync().ToListAsync()).ToList();
+            var allKeys = await Cache.GetAllKeysAsync().ToListAsync();
             Assert.That(allKeys.Count, Is.EqualTo(10));
 #endif
-            JsConfig.Reset();
+            Text.JsConfig.Reset();
         }
 
         [Test]
         public async Task Can_Cache_AllFields()
         {
-            JsConfig.DateHandler = DateHandler.ISO8601;
+            Text.JsConfig.DateHandler = Text.DateHandler.ISO8601;
 
             var dto = new AllFields
             {
@@ -350,7 +350,7 @@ namespace ServiceStack.Server.Tests.Shared
 
             Assert.That(fromCache.Equals(dto));
 
-            JsConfig.Reset();
+            Text.JsConfig.Reset();
         }
         
 #if !NETFX            
@@ -362,12 +362,12 @@ namespace ServiceStack.Server.Tests.Shared
             await cache.SetAsync("test_QUERY_Deposit__Query_Deposit_10_1", "A");
             await cache.SetAsync("test_QUERY_Deposit__0_1___CUSTOM", "B");
 
-            var keys = (await cache.GetKeysStartingWithAsync("test_QUERY_Deposit").ToListAsync()).ToList();
+            var keys = await System.Linq.AsyncEnumerable.ToListAsync(cache.GetKeysStartingWithAsync("test_QUERY_Deposit"));
             Assert.That(keys.Count, Is.EqualTo(2));
 
             await cache.RemoveAllAsync(keys);
 
-            var newKeys = (await cache.GetKeysStartingWithAsync("test_QUERY_Deposit").ToListAsync()).ToList();
+            var newKeys = await System.Linq.AsyncEnumerable.ToListAsync(cache.GetKeysStartingWithAsync("test_QUERY_Deposit"));
             Assert.That(newKeys.Count, Is.EqualTo(0));
         }
 #endif

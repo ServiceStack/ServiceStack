@@ -3,13 +3,13 @@
   <PropertyGroup>
     <PackageId>ServiceStack.HttpClient</PackageId>
     <AssemblyName>ServiceStack.HttpClient</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0;net10.0</TargetFrameworks>
     <Title>Common libraries for ServiceStack projects</Title>
     <PackageDescription>Typed .NET Core and .NET Framework ServiceClients based on .NET's HttpClient</PackageDescription>
     <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NET6_0;NET6_0_OR_GREATER</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net10.0' ">
+    <DefineConstants>$(DefineConstants);NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,9 +29,6 @@
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
   </ItemGroup>
 
 </Project>

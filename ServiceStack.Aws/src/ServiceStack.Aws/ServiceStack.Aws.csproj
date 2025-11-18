@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Aws</PackageId>
     <AssemblyName>ServiceStack.Aws</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0;net10.0</TargetFrameworks>
     <Title>ServiceStack integration for Amazon Web Services (AWS)</Title>
     <PackageDescription>
       ServiceStack integration for Amazon Web Services (AWS) including:
@@ -21,10 +21,13 @@
     <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0_OR_GREATER;NET10_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -46,13 +49,6 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
     <PackageReference Include="System.Linq.Async" Version="5.1.0" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-    <PackageReference Include="System.Text.Json" Version="8.0.6" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Linq.Async" Version="6.0.3" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.6" />
   </ItemGroup>

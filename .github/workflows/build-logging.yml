@@ -13,11 +13,11 @@ jobs:
   build-logging:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '8.0.100'
+          dotnet-version: 10.0.x
           
 
       - name: Build
@@ -30,7 +30,7 @@ jobs:
           
 # net472 only package, need to upgrade if possible to run tests or use different runner.
 #      - name: Logging Tests
-#        run: dotnet test --framework net8.0 ./ServiceStack.Logging/tests/ServiceStack.Logging.Tests/ServiceStack.Logging.Tests.csproj  --logger 'trx;LogFileName=results.trx'
+#        run: dotnet test --framework net10.0 ./ServiceStack.Logging/tests/ServiceStack.Logging.Tests/ServiceStack.Logging.Tests.csproj  --logger 'trx;LogFileName=results.trx'
 
 
 #      - name: Test Report

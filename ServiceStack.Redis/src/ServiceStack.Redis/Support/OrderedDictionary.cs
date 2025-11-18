@@ -1,3 +1,4 @@
+#if !NET10_0_OR_GREATER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -635,3 +636,4 @@ public class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey, TValue>
         return Remove(item.Key);
     }
 }
+#endif

@@ -41,10 +41,14 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <DefineConstants>$(DefineConstants);NET8_0;NET6_0_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineConstants);NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+    <DefineConstants>$(DefineConstants);NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER;NET10_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net10.0' ">
     <DefineConstants>$(DefineConstants);NETCORE;NETCORE_SUPPORT</DefineConstants>
   </PropertyGroup>
 

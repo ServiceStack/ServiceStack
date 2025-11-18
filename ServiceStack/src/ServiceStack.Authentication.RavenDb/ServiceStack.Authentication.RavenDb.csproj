@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Authentication.RavenDb</PackageId>
     <AssemblyName>ServiceStack.Authentication.RavenDb</AssemblyName>
-    <TargetFrameworks>net472;netstandard2.0;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0;net10.0</TargetFrameworks>
     <Title>A RavenDB IUserAuthRepository to persist User registration and auth info in a NoSQL Raven DB</Title>
     <PackageDescription>
       A RavenDB IUserAuthRepository to persist User registration and auth info in a NoSQL Raven DB.
