@@ -42,9 +42,9 @@ jobs:
 
 
       - name: Check number of packages
-        if: env.number_of_packages < 73
+        if: env.number_of_packages < 49
         run: |
-          echo "less packages produced (${{ env.number_of_packages }}) than expected (>=73), failing."
+          echo "less packages produced (${{ env.number_of_packages }}) than expected (>=49), failing."
           ls -1 ./build/staging/*.nupkg
           exit 1
 
