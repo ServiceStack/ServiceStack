@@ -32,25 +32,25 @@ public class PrerenderTasks
         FileSystemVirtualFiles.RecreateDirectory(PrerenderDir);
     }
 
-    void Render<T>(params ComponentParameter[] parameters) where T : IComponent
-    {
-        WriteLine($"Rendering: {typeof(T).FullName}...");
-        var component = Context.RenderComponent<T>(parameters);
-        var route = typeof(T).GetCustomAttribute<RouteAttribute>()?.Template;
-        if (string.IsNullOrEmpty(route))
-            throw new Exception($"Couldn't infer @page for component {typeof(T).Name}");
-
-        var fileName = route.EndsWith("/") ? route + "index.html" : $"{route}.html";
-
-        var writeTo = Path.GetFullPath(PrerenderDir.CombineWith(fileName));
-        WriteLine($"Written to {writeTo}");
-        File.WriteAllText(writeTo, component.Markup);
-    }
+    // void Render<T>(params ComponentParameter[] parameters) where T : IComponent
+    // {
+    //     WriteLine($"Rendering: {typeof(T).FullName}...");
+    //     var component = Context.RenderComponent<T>(parameters);
+    //     var route = typeof(T).GetCustomAttribute<RouteAttribute>()?.Template;
+    //     if (string.IsNullOrEmpty(route))
+    //         throw new Exception($"Couldn't infer @page for component {typeof(T).Name}");
+    //
+    //     var fileName = route.EndsWith("/") ? route + "index.html" : $"{route}.html";
+    //
+    //     var writeTo = Path.GetFullPath(PrerenderDir.CombineWith(fileName));
+    //     WriteLine($"Written to {writeTo}");
+    //     File.WriteAllText(writeTo, component.Markup);
+    // }
 
     [Test]
     public void PrerenderPages()
     {
-        Render<Client.Pages.Index>();
+        // Render<Client.Pages.Index>();
     }
 
     [Test]

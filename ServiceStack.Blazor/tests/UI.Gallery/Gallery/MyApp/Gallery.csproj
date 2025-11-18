@@ -17,27 +17,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Bogus" Version="34.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.*" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.*" />
-        <PackageReference Include="Markdig" Version="0.42.*" />
-    </ItemGroup>
-
-<!--    <ItemGroup>-->
-<!--        <PackageReference Include="ServiceStack" Version="8.*" />-->
-<!--        <PackageReference Include="ServiceStack.Blazor" Version="8.*" />-->
-<!--        <PackageReference Include="ServiceStack.Mvc" Version="8.*" />-->
-<!--        <PackageReference Include="ServiceStack.OrmLite.Sqlite.Data" Version="8.*" />-->
-<!--        <PackageReference Include="ServiceStack.Extensions" Version="8.*" />-->
-<!--        <PackageReference Include="ServiceStack.Server" Version="8.*" />-->
-<!--    </ItemGroup>-->
-
-    <ItemGroup>
-        <Folder Include="App_Data\" />
+        <PackageReference Include="Bogus" Version="34.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.*" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.*" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.*" />
+        <PackageReference Include="Markdig" Version="0.43.*" />
     </ItemGroup>
 
     <ItemGroup>
