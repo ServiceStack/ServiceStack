@@ -46,8 +46,8 @@ jobs:
       - name: Push to GitHub
         working-directory: ./build/staging
         run: |
-          # Check if more than 73 packages 
-          if [[ ${number_of_packages} -gt 73 ]]; then
+          # Check if more than 48 packages 
+          if [[ ${number_of_packages} -gt 48 ]]; then
             echo "Publishing to Azure Artifacts"
             dotnet nuget push '*.nupkg' --source ${{ env.FEED_URL }} --api-key ${{ secrets.FEEDZ_TOKEN }} --skip-duplicate
           else

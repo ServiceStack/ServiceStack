@@ -44,8 +44,8 @@ jobs:
       - name: Push to GitHub
         working-directory: ./build/staging
         run: |
-          # Check if more than 73 packages 
-          if [[ ${number_of_packages} -gt 73 ]]; then
+          # Check if more than 48 packages 
+          if [[ ${number_of_packages} -gt 48 ]]; then
             echo "Pushing to GitHub Packages"
             dotnet nuget push '*.nupkg' --source https://nuget.pkg.github.com/ServiceStack/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
           else

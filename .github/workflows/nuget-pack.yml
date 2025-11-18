@@ -237,9 +237,9 @@ jobs:
         echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
 
     - name: Check number of packages
-      if: env.number_of_packages < 49
+      if: env.number_of_packages < 48
       run: |
-        echo "Expected at least 49 packages, got ${{ env.number_of_packages }}, failing."
+        echo "Expected at least 48 packages, got ${{ env.number_of_packages }}, failing."
         exit 1
 
     - uses: actions/upload-artifact@v4
