@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-<!--    <TargetFrameworks>net472;net6.0</TargetFrameworks>-->
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net10.0;net472</TargetFrameworks>
+    <TargetFramework  Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.OrmLite.MySql.Tests</AssemblyName>
     <OutputType>Library</OutputType>

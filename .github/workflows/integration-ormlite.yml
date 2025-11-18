@@ -48,7 +48,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.100'
+          dotnet-version: 10.0.x
           
 
       - name: Build
@@ -63,7 +63,7 @@ jobs:
         working-directory: ServiceStack.OrmLite/tests
         env:
           ORMLITE_DIALECT: Sqlite
-        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -80,7 +80,7 @@ jobs:
         env:
           ORMLITE_DIALECT: PostgreSql11
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
-        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+        run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
 
       - name: Test Postgres OrmLite
         working-directory: ServiceStack.OrmLite/tests
@@ -88,7 +88,7 @@ jobs:
         env:
           ORMLITE_DIALECT: PostgreSql11
           PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
-        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -105,7 +105,7 @@ jobs:
         env:
           ORMLITE_DIALECT: SqlServer2017
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+        run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
 
 
       - name: Test SQL Server OrmLite
@@ -114,7 +114,7 @@ jobs:
         env:
           ORMLITE_DIALECT: SqlServer2017
           MSSQL_CONNECTION: Server=localhost,48501;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;
-        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -131,7 +131,7 @@ jobs:
         env:
           ORMLITE_DIALECT: MySql
           MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=Test!tesT;AllowLoadLocalInfile=true;Convert Zero Datetime=True
-        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
+        run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
 
       - name: Test MySql OrmLite
         working-directory: ServiceStack.OrmLite/tests
@@ -139,7 +139,7 @@ jobs:
         env:
           ORMLITE_DIALECT: MySql
           MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=Test!tesT
-        run: dotnet test --framework net8.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
+        run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
         uses: dorny/test-reporter@v1
