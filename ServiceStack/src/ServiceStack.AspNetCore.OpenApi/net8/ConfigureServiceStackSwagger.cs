@@ -1,4 +1,4 @@
-#if NET10_0_OR_GREATER
+#if !NET10_0_OR_GREATER
 using Microsoft.Extensions.Options;
 using ServiceStack.AspNetCore.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
