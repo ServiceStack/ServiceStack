@@ -1,14 +1,16 @@
-﻿using System.Collections.Concurrent;
+﻿#if NET10_0_OR_GREATER
+using System.Collections.Concurrent;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using ServiceStack.Host;
 using ServiceStack.NativeTypes;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using OpenApiReference = Microsoft.OpenApi.BaseOpenApiReference;
 
 namespace ServiceStack.AspNetCore.OpenApi;
 
@@ -17,15 +19,8 @@ public static class OpenApiSecurity
     public static OpenApiSecurityRequirement BasicAuth { get; } = new()
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = BasicAuthenticationHandler.Scheme
-                }
-            },
-            Array.Empty<string>()
+            new OpenApiSecuritySchemeReference(BasicAuthenticationHandler.Scheme),
+            []
         }
     };
     public static OpenApiSecurityScheme BasicAuthScheme { get; set; } = new()
@@ -40,14 +35,7 @@ public static class OpenApiSecurity
     public static OpenApiSecurityRequirement JwtBearer { get; } = new()
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = JwtBearerDefaults.AuthenticationScheme,
-                }
-            },
+            new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme),
             []
         }
     };
@@ -60,18 +48,11 @@ public static class OpenApiSecurity
         BearerFormat = "JWT",
         Scheme = JwtBearerDefaults.AuthenticationScheme,
     };
-    
+
     public static OpenApiSecurityRequirement ApiKey { get; } = new()
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "ApiKey",
-                }
-            },
+            new OpenApiSecuritySchemeReference("ApiKey"),
             []
         }
     };
@@ -208,7 +189,7 @@ public class OpenApiMetadata
                             : TypeProperties.Get(operation.RequestType).GetPublicProperty(entry.Key)?.Name
                               ?? throw new ArgumentException($"Could not find property '{entry.Key}' for route '{route}' in Request {operation.RequestType.Name}");
                         inPaths.Add(entry.Key);
-                        OpenApiSchema? prop = entry.Value;
+                        IOpenApiSchema prop = entry.Value;
                         op.Parameters.Add(new OpenApiParameter
                         {
                             Name = propNameUsed,
@@ -220,21 +201,22 @@ public class OpenApiMetadata
                         });
                     }
                 }
-                
-                var formType = new OpenApiMediaType
-                {
-                    Schema = new(openApiType),
-                };
+
+                var formSchema = openApiType.CreateShallowCopy();
                 foreach (var propName in inPaths)
                 {
-                    formType.Schema.Properties.Remove(propName);
+                    formSchema.Properties.Remove(propName);
                 }
-                
-                foreach (var entry in formType.Schema.Properties)
+
+                var formType = new OpenApiMediaType
+                {
+                    Schema = formSchema,
+                };
+                foreach (var entry in formSchema.Properties)
                 {
                     formType.Encoding[entry.Key] = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = false };
                 }
-                op.RequestBody = new()
+                op.RequestBody = new OpenApiRequestBody
                 {
                     Content = {
                         [MimeTypes.MultiPartFormData] = formType
@@ -244,10 +226,7 @@ public class OpenApiMetadata
                 {
                     op.RequestBody.Content[MimeTypes.Json] = new OpenApiMediaType
                     {
-                        Schema = new()
-                        {
-                            Reference = ToOpenApiReference(operation.RequestType),
-                        }
+                        Schema = ToOpenApiSchemaReference(operation.RequestType)
                     };
                 }
                 SchemaFilter?.Invoke(op, openApiType);
@@ -268,9 +247,9 @@ public class OpenApiMetadata
         var userTags = operation.RequestType.AllAttributes<TagAttribute>().Map(x => x.Name);
         if (userTags.Count > 0)
         {
-            // Clear the endpoint out of the first (ServiceName) tag, so the API only appears once under its custom tag 
+            // Clear the endpoint out of the first (ServiceName) tag, so the API only appears once under its custom tag
             op.Tags.Clear();
-            userTags.Each(tag => op.Tags.Add(new OpenApiTag { Name = tag }));
+            userTags.Each(tag => op.Tags.Add(new OpenApiTagReference(tag)));
         }
 
         OperationFilter?.Invoke(verb, op, operation);
@@ -278,11 +257,8 @@ public class OpenApiMetadata
         return op;
     }
 
-    internal static OpenApiReference ToOpenApiReference(Type type) =>
-        new() {
-            Type = ReferenceType.Schema,
-            Id = GetSchemaDefinitionRef(type),
-        };
+    internal static IOpenApiSchema ToOpenApiSchemaReference(Type type) =>
+        new OpenApiSchemaReference(GetSchemaDefinitionRef(type));
 
     private static bool IsKeyValuePairType(Type type)
     {
@@ -319,19 +295,27 @@ public class OpenApiMetadata
             return null;
 
         var listItemType = GetListElementType(schemaType);
+        IOpenApiSchema? items = null;
+        if (listItemType != null)
+        {
+            if (IsSwaggerScalarType(listItemType))
+            {
+                items = new OpenApiSchema
+                {
+                    Type = OpenApiType.ToJsonSchemaType(GetSwaggerTypeName(listItemType))
+                };
+            }
+            else
+            {
+                items = ToOpenApiSchemaReference(listItemType);
+            }
+        }
+
         return new OpenApiSchema
         {
             Title = GetSchemaTypeName(schemaType),
-            Type = OpenApiType.Array,
-            Items = new()
-            {
-                Type = listItemType != null && IsSwaggerScalarType(listItemType)
-                    ? GetSwaggerTypeName(listItemType) 
-                    : null, 
-                Reference = listItemType != null && !IsSwaggerScalarType(listItemType)
-                    ? ToOpenApiReference(listItemType)
-                    : null,
-            },
+            Type = OpenApiType.ToJsonSchemaType(OpenApiType.Array),
+            Items = items,
         };
     }
 
@@ -355,7 +339,7 @@ public class OpenApiMetadata
         return new OpenApiSchema
         {
             Title = GetSchemaTypeName(schemaType),
-            Type = OpenApiType.Object,
+            Type = OpenApiType.ToJsonSchemaType(OpenApiType.Object),
             Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
             AdditionalProperties = GetOpenApiProperty(valueType)
         };
@@ -371,10 +355,10 @@ public class OpenApiMetadata
 
         return new OpenApiSchema
         {
-            Type = OpenApiType.Object,
+            Type = OpenApiType.ToJsonSchemaType(OpenApiType.Object),
             Title = GetSchemaTypeName(schemaType),
             Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-            Properties = new OrderedDictionary<string, OpenApiSchema>
+            Properties = new OrderedDictionary<string, IOpenApiSchema>
             {
                 ["Key"] = GetOpenApiProperty(keyType),
                 ["Value"] = GetOpenApiProperty(valueType),
@@ -522,24 +506,31 @@ public class OpenApiMetadata
             {
                 In = paramLocation,
                 Name = paramName,
-                Reference = ToOpenApiReference(propType),
+                Schema = CreateEnumSchema(propType),
                 Required = paramLocation == ParameterLocation.Path,
             };
         }
         
         if (IsSwaggerScalarType(propType))
         {
+            var schema = new OpenApiSchema
+            {
+                Type = OpenApiType.ToJsonSchemaType(GetSwaggerTypeName(propType)),
+                Format = GetSwaggerTypeFormat(propType),
+            };
+            if (enumValues != null && enumValues.Length > 0)
+            {
+                schema.Enum = enumValues.Select(x => (JsonNode)System.Text.Json.Nodes.JsonValue.Create(x)).ToList();
+            }
+            if (!IsRequiredType(propType))
+            {
+                ApplyNullable(schema, true);
+            }
             return new OpenApiParameter
             {
                 In = paramLocation,
                 Name = paramName,
-                Schema = new()
-                {
-                    Type = GetSwaggerTypeName(propType), 
-                    Enum = enumValues?.Select(x => new OpenApiString(x)).Cast<IOpenApiAny>().ToList() ?? [],
-                    Nullable = !IsRequiredType(propType),
-                    Format = GetSwaggerTypeFormat(propType), 
-                },
+                Schema = schema,
                 Required = paramLocation == ParameterLocation.Path,
             };
         }
@@ -550,9 +541,9 @@ public class OpenApiMetadata
             {
                 In = paramLocation,
                 Name = paramName,
-                Schema = new()
+                Schema = new OpenApiSchema
                 {
-                    Type = OpenApiType.String,
+                    Type = OpenApiType.ToJsonSchemaType(OpenApiType.String),
                 },
                 Required = paramLocation == ParameterLocation.Path,
             };
@@ -573,7 +564,7 @@ public class OpenApiMetadata
             return CreateArrayParameter(propType, paramName, paramLocation);
         }
 
-        OpenApiSchema openApiSchema;
+        IOpenApiSchema openApiSchema;
 
         if (IsInlineSchema(propType))
         {
@@ -581,9 +572,7 @@ public class OpenApiMetadata
         }
         else
         {
-            openApiSchema = new OpenApiSchema {
-                Reference = ToOpenApiReference(propType)
-            };
+            openApiSchema = ToOpenApiSchemaReference(propType);
         }
 
         return new OpenApiParameter
@@ -612,20 +601,28 @@ public class OpenApiMetadata
         ParameterLocation? paramLocation)
     {
         var listItemType = GetListElementType(listType);
+        IOpenApiSchema? items = null;
+        if (listItemType != null)
+        {
+            if (IsSwaggerScalarType(listItemType))
+            {
+                items = new OpenApiSchema
+                {
+                    Type = OpenApiType.ToJsonSchemaType(GetSwaggerTypeName(listItemType))
+                };
+            }
+            else
+            {
+                items = ToOpenApiSchemaReference(listItemType);
+            }
+        }
+
         var parameter = new OpenApiParameter
         {
             In = paramLocation,
-            Schema = new() {
-                Type = OpenApiType.Array,
-                Items = new()
-                {
-                    Type = listItemType != null && IsSwaggerScalarType(listItemType)
-                        ? GetSwaggerTypeName(listItemType) 
-                        : null, 
-                    Reference = listItemType != null && !IsSwaggerScalarType(listItemType)
-                        ? ToOpenApiReference(listItemType)
-                        : null,
-                }
+            Schema = new OpenApiSchema {
+                Type = OpenApiType.ToJsonSchemaType(OpenApiType.Array),
+                Items = items
             },
             Description = listType.GetDescription(),
             Name = paramName,
@@ -638,48 +635,51 @@ public class OpenApiMetadata
 
     private static string GetSchemaDefinitionRef(Type schemaType) => GetSchemaTypeName(schemaType);
 
-    private OpenApiSchema GetOpenApiProperty(PropertyInfo pi)
+    private IOpenApiSchema GetOpenApiProperty(PropertyInfo pi)
     {
         var schema = GetOpenApiProperty(pi.PropertyType);
-        schema.Nullable = pi.IsAssignableToNull();
+        if (schema is OpenApiSchema openApiSchema && pi.IsAssignableToNull())
+        {
+            openApiSchema.Type = openApiSchema.Type.HasValue
+                ? openApiSchema.Type.Value | JsonSchemaType.Null
+                : JsonSchemaType.Null;
+        }
         return schema;
     }
-    
-    private OpenApiSchema GetOpenApiProperty(Type propertyType)
-    {
-        var schemaProp = new OpenApiSchema {
-            Nullable = propertyType.IsNullableType(),
-        };
 
+    private IOpenApiSchema GetOpenApiProperty(Type propertyType)
+    {
+        var isNullable = propertyType.IsNullableType();
         propertyType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
-        
+
         if (IsKeyValuePairType(propertyType))
         {
             if (IsInlineSchema(propertyType))
             {
+                var schemaProp = new OpenApiSchema();
                 var schema = CreateSchema(propertyType);
                 if (schema != null) InlineSchema(schema, schemaProp);
+                return ApplyNullable(schemaProp, isNullable);
             }
             else
             {
-                schemaProp.Reference = ToOpenApiReference(propertyType);
+                return ToOpenApiSchemaReference(propertyType);
             }
         }
         else if (IsListType(propertyType))
         {
-            schemaProp.Type = OpenApiType.Array;
+            var schemaProp = new OpenApiSchema
+            {
+                Type = OpenApiType.ToJsonSchemaType(OpenApiType.Array)
+            };
             var listItemType = GetListElementType(propertyType);
-            if (listItemType == null) return schemaProp;
+            if (listItemType == null) return ApplyNullable(schemaProp, isNullable);
             if (IsSwaggerScalarType(listItemType))
             {
                 schemaProp.Items = new OpenApiSchema {
-                    Type = GetSwaggerTypeName(listItemType),
+                    Type = OpenApiType.ToJsonSchemaType(GetSwaggerTypeName(listItemType)),
                     Format = GetSwaggerTypeFormat(listItemType),
                 };
-                if (IsRequiredType(listItemType))
-                {
-                    schemaProp.Nullable = false;
-                }
             }
             else if (IsInlineSchema(listItemType))
             {
@@ -688,39 +688,50 @@ public class OpenApiMetadata
             }
             else
             {
-                schemaProp.Items = new OpenApiSchema
-                {
-                    Reference = ToOpenApiReference(listItemType)
-                };
+                schemaProp.Items = ToOpenApiSchemaReference(listItemType);
             }
+            return ApplyNullable(schemaProp, isNullable);
         }
         else if (IsDictionaryType(propertyType))
         {
-            schemaProp = CreateDictionarySchema(propertyType);
+            var schemaProp = CreateDictionarySchema(propertyType);
+            return ApplyNullable(schemaProp, isNullable);
         }
         else if (propertyType.IsEnum)
         {
-            schemaProp.Reference = ToOpenApiReference(propertyType);
+            return ToOpenApiSchemaReference(propertyType);
         }
         else if (IsSwaggerScalarType(propertyType))
         {
-            schemaProp.Type = GetSwaggerTypeName(propertyType);
-            schemaProp.Format = GetSwaggerTypeFormat(propertyType);
-            schemaProp.Nullable = !IsRequiredType(propertyType);
-            //schemaProp.Required = IsRequiredType(propertyType) ? true : (bool?)null;
+            var schemaProp = new OpenApiSchema
+            {
+                Type = OpenApiType.ToJsonSchemaType(GetSwaggerTypeName(propertyType)),
+                Format = GetSwaggerTypeFormat(propertyType),
+            };
+            var nullable = isNullable || !IsRequiredType(propertyType);
+            return ApplyNullable(schemaProp, nullable);
         }
         else if (IsInlineSchema(propertyType))
         {
+            var schemaProp = new OpenApiSchema();
             var schema = CreateSchema(propertyType);
             if (schema != null) InlineSchema(schema, schemaProp);
+            return ApplyNullable(schemaProp, isNullable);
         }
         else
         {
             //CreateSchema(propertyType, route, verb);
-            schemaProp.Reference = ToOpenApiReference(propertyType);
+            return ToOpenApiSchemaReference(propertyType);
         }
+    }
 
-        return schemaProp;
+    private static IOpenApiSchema ApplyNullable(OpenApiSchema schema, bool isNullable)
+    {
+        if (isNullable && schema.Type.HasValue)
+        {
+            schema.Type = schema.Type.Value | JsonSchemaType.Null;
+        }
+        return schema;
     }
 
     public static OpenApiSchema CreateEnumSchema(Type propertyType)
@@ -728,18 +739,18 @@ public class OpenApiMetadata
         var enumType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
         if (!enumType.IsEnum)
             throw new ArgumentException(propertyType.Name + " is not an enum", nameof(propertyType));
-        
+
         var schema = new OpenApiSchema();
         if (enumType.IsNumericType())
         {
             var underlyingType = Enum.GetUnderlyingType(enumType);
-            schema.Type = GetSwaggerTypeName(underlyingType);
+            schema.Type = OpenApiType.ToJsonSchemaType(GetSwaggerTypeName(underlyingType));
             schema.Format = GetSwaggerTypeFormat(underlyingType);
             schema.Enum = GetNumericValues(enumType, underlyingType).ToOpenApiEnums();
         }
         else
         {
-            schema.Type = OpenApiType.String;
+            schema.Type = OpenApiType.ToJsonSchemaType(OpenApiType.String);
             schema.Enum = Enum.GetNames(enumType).ToOpenApiEnums();
         }
         return schema;
@@ -759,32 +770,29 @@ public class OpenApiMetadata
         schemaProp.MinLength = schema?.MinLength ?? schemaProp.MinLength;
         schemaProp.Pattern = schema?.Pattern ?? schemaProp.Pattern;
         schemaProp.MultipleOf = schema?.MultipleOf ?? schemaProp.MultipleOf;
-        schemaProp.Default = OpenApiAnyCloneHelper.CloneFromCopyConstructor(schema?.Default);
+        schemaProp.Default = schema?.Default?.DeepClone();
         schemaProp.ReadOnly = schema?.ReadOnly ?? schemaProp.ReadOnly;
         schemaProp.WriteOnly = schema?.WriteOnly ?? schemaProp.WriteOnly;
-        schemaProp.AllOf = schema?.AllOf != null ? new List<OpenApiSchema>(schema.AllOf) : null;
-        schemaProp.OneOf = schema?.OneOf != null ? new List<OpenApiSchema>(schema.OneOf) : null;
-        schemaProp.AnyOf = schema?.AnyOf != null ? new List<OpenApiSchema>(schema.AnyOf) : null;
-        schemaProp.Not = schema?.Not != null ? new(schema.Not) : null;
+        schemaProp.AllOf = schema?.AllOf != null ? new List<IOpenApiSchema>(schema.AllOf) : null;
+        schemaProp.OneOf = schema?.OneOf != null ? new List<IOpenApiSchema>(schema.OneOf) : null;
+        schemaProp.AnyOf = schema?.AnyOf != null ? new List<IOpenApiSchema>(schema.AnyOf) : null;
+        schemaProp.Not = schema?.Not?.CreateShallowCopy();
         schemaProp.Required = schema?.Required != null ? new HashSet<string>(schema.Required) : null;
-        schemaProp.Items = schema?.Items != null ? new(schema.Items) : null;
+        schemaProp.Items = schema?.Items?.CreateShallowCopy();
         schemaProp.MaxItems = schema?.MaxItems ?? schemaProp.MaxItems;
         schemaProp.MinItems = schema?.MinItems ?? schemaProp.MinItems;
         schemaProp.UniqueItems = schema?.UniqueItems ?? schemaProp.UniqueItems;
-        schemaProp.Properties = schema?.Properties != null ? new Dictionary<string, OpenApiSchema>(schema.Properties) : null;
+        schemaProp.Properties = schema?.Properties != null ? new Dictionary<string, IOpenApiSchema>(schema.Properties) : null;
         schemaProp.MaxProperties = schema?.MaxProperties ?? schemaProp.MaxProperties;
         schemaProp.MinProperties = schema?.MinProperties ?? schemaProp.MinProperties;
         schemaProp.AdditionalPropertiesAllowed = schema?.AdditionalPropertiesAllowed ?? schemaProp.AdditionalPropertiesAllowed;
-        schemaProp.AdditionalProperties = new(schema?.AdditionalProperties);
+        schemaProp.AdditionalProperties = schema?.AdditionalProperties?.CreateShallowCopy();
         schemaProp.Discriminator = schema?.Discriminator != null ? new(schema.Discriminator) : null;
-        schemaProp.Example = OpenApiAnyCloneHelper.CloneFromCopyConstructor(schema?.Example);
-        schemaProp.Enum = schema?.Enum != null ? new List<IOpenApiAny>(schema.Enum) : null;
-        schemaProp.Nullable = schema?.Nullable ?? schemaProp.Nullable;
+        schemaProp.Example = schema?.Example?.DeepClone();
+        schemaProp.Enum = schema?.Enum != null ? new List<JsonNode>(schema.Enum) : null;
         schemaProp.ExternalDocs = schema?.ExternalDocs != null ? new(schema.ExternalDocs) : null;
         schemaProp.Deprecated = schema?.Deprecated ?? schemaProp.Deprecated;
         schemaProp.Xml = schema?.Xml != null ? new(schema.Xml) : null;
-        schemaProp.UnresolvedReference = schema?.UnresolvedReference ?? schemaProp.UnresolvedReference;
-        schemaProp.Reference = schema?.Reference != null ? new(schema.Reference) : null;
     }
 
     private bool IsInlineSchema(Type schemaType)
@@ -821,17 +829,18 @@ public class OpenApiMetadata
             {
                 schema = new OpenApiSchema
                 {
-                    Type = OpenApiType.Object,
+                    Type = OpenApiType.ToJsonSchemaType(OpenApiType.Object),
                     Title = GetSchemaTypeName(schemaType),
                     Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-                    Properties = new OrderedDictionary<string, OpenApiSchema>()
+                    Properties = new OrderedDictionary<string, IOpenApiSchema>()
                 };
                 parseProperties = schemaType.IsUserType();
             }
-            
+
             if (allTypes != null && schemaType.BaseType != null && allTypes.Contains(schemaType.BaseType))
             {
-                schema.AllOf.Add(new OpenApiSchema { Reference = ToOpenApiReference(schemaType.BaseType) });
+                schema.AllOf ??= new List<IOpenApiSchema>();
+                schema.AllOf.Add(ToOpenApiSchemaReference(schemaType.BaseType));
             }
         }
         Schemas[schemaId] = schema;
@@ -887,47 +896,50 @@ public class OpenApiMetadata
                 var schemaProperty = GetOpenApiProperty(prop);
                 var schemaPropertyName = GetSchemaPropertyName(prop);
 
-                schemaProperty.Description = prop.GetDescription() ?? apiDoc?.Description;
-
-                var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
-                var validateAttrs = prop.AllAttributes<ValidateAttribute>();
-
-                var isRequired = propAttr?.IsRequired == true
-                    || validateAttrs.Any(x => RequiredValidators.Contains(x.Validator))
-                    || (prop.PropertyType.IsNumericType() && validateAttrs.Any(attr => attr.Validator?.StartsWith("GreaterThan") == true));
-                
-                if (propAttr != null)
+                if (schemaProperty is OpenApiSchema openApiSchema)
                 {
-                    if (propAttr.DataType != null)
-                        schemaProperty.Type = propAttr.DataType;
+                    openApiSchema.Description = prop.GetDescription() ?? apiDoc?.Description;
 
-                    if (propAttr.Format != null)
-                        schemaProperty.Format = propAttr.Format;
-                }
-                
-                if (isRequired)
-                {
-                    schema.Required.Add(schemaPropertyName);
-                }
+                    var propAttr = prop.FirstAttribute<ApiMemberAttribute>();
+                    var validateAttrs = prop.AllAttributes<ValidateAttribute>();
 
-                var uploadTo = prop.FirstAttribute<UploadToAttribute>();
-                if (uploadTo != null)
-                {
-                    schemaProperty.Reference = null;
-                    if (schemaProperty.Type != OpenApiType.Array)
+                    var isRequired = propAttr?.IsRequired == true
+                        || validateAttrs.Any(x => RequiredValidators.Contains(x.Validator))
+                        || (prop.PropertyType.IsNumericType() && validateAttrs.Any(attr => attr.Validator?.StartsWith("GreaterThan") == true));
+
+                    if (propAttr != null)
                     {
-                        schemaProperty.Type = "file";
+                        if (propAttr.DataType != null)
+                            openApiSchema.Type = OpenApiType.ToJsonSchemaType(propAttr.DataType);
+
+                        if (propAttr.Format != null)
+                            openApiSchema.Format = propAttr.Format;
                     }
-                    schemaProperty.Items = new OpenApiSchema
+
+                    if (isRequired)
                     {
-                        Type = OpenApiType.String,
-                        Format = OpenApiTypeFormat.Binary,
-                    };
+                        schema.Required ??= new HashSet<string>();
+                        schema.Required.Add(schemaPropertyName);
+                    }
+
+                    var uploadTo = prop.FirstAttribute<UploadToAttribute>();
+                    if (uploadTo != null)
+                    {
+                        if (openApiSchema.Type != OpenApiType.ToJsonSchemaType(OpenApiType.Array))
+                        {
+                            openApiSchema.Type = JsonSchemaType.String; // "file" type doesn't exist in JsonSchemaType
+                        }
+                        openApiSchema.Items = new OpenApiSchema
+                        {
+                            Type = OpenApiType.ToJsonSchemaType(OpenApiType.String),
+                            Format = OpenApiTypeFormat.Binary,
+                        };
+                    }
+
+                    openApiSchema.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>()).ToOpenApiEnums();
+
+                    SchemaPropertyFilter?.Invoke(openApiSchema);
                 }
-
-                schemaProperty.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>()).ToOpenApiEnums();
-
-                SchemaPropertyFilter?.Invoke(schemaProperty);
                 schema.Properties[schemaPropertyName] = schemaProperty;
             }
         }
@@ -972,8 +984,8 @@ public class OpenApiMetadata
             }
         }
 
-        return new OpenApiSchema { 
-            Type = OpenApiType.Object,
+        return new OpenApiSchema {
+            Type = OpenApiType.ToJsonSchemaType(OpenApiType.Object),
         };
     }
 
@@ -985,19 +997,37 @@ public class OpenApiMetadata
             return null;
         }
 
-        var schema = CreateDictionarySchema(schemaType)
+        OpenApiSchema? schema = CreateDictionarySchema(schemaType)
             ?? GetKeyValuePairSchema(schemaType)
-            ?? GetListSchema(schemaType)
-            ?? (IsSwaggerScalarType(schemaType)
-                ? new OpenApiSchema
+            ?? GetListSchema(schemaType);
+
+        if (schema == null)
+        {
+            if (IsSwaggerScalarType(schemaType))
+            {
+                schema = new OpenApiSchema
                 {
                     Title = GetSchemaTypeName(schemaType),
-                    Type = GetSwaggerTypeName(schemaType),
+                    Type = OpenApiType.ToJsonSchemaType(GetSwaggerTypeName(schemaType)),
                     Format = GetSwaggerTypeFormat(schemaType)
-                }
-            : IsInlineSchema(schemaType)
-                ? CreateSchema(schemaType)
-                : new OpenApiSchema { Reference = ToOpenApiReference(schemaType) });
+                };
+            }
+            else if (IsInlineSchema(schemaType))
+            {
+                schema = CreateSchema(schemaType);
+            }
+            else
+            {
+                // For references, we need to return a schema that references the type
+                // In v3.0, we can't use OpenApiSchema with Reference property
+                // Instead, we should use OpenApiSchemaReference, but since the return type is OpenApiSchema?,
+                // we'll create a schema with AllOf containing the reference
+                schema = new OpenApiSchema
+                {
+                    AllOf = new List<IOpenApiSchema> { ToOpenApiSchemaReference(schemaType) }
+                };
+            }
+        }
 
         schemaDescription = schema?.Description ?? schemaType.GetDescription() ?? string.Empty;
 
@@ -1053,5 +1083,7 @@ public class OpenApiMetadata
 
         return responses;
     }
-
+    
 }
+
+#endif

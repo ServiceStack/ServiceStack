@@ -1,3 +1,4 @@
+#if NET10_0_OR_GREATER
 namespace ServiceStack.AspNetCore.OpenApi;
 
 public static class OpenApiTypeFormat
@@ -13,3 +14,4 @@ public static class OpenApiTypeFormat
     public const string Long = "int64";
     public const string Password = "password";
 }
+#endif
