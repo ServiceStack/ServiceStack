@@ -97,6 +97,8 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         {"Since%",          SqlTemplate.GreaterThanOrEqual},
         {"Start%",          SqlTemplate.GreaterThanOrEqual},
         {"%Higher%",        SqlTemplate.GreaterThanOrEqual},
+        {"Min%",            SqlTemplate.GreaterThanOrEqual},
+        {"Minimum%",        SqlTemplate.GreaterThanOrEqual},
         {">%",              SqlTemplate.GreaterThanOrEqual},
         {"%>",              SqlTemplate.GreaterThan},
         {"%!",              SqlTemplate.NotEqual},
@@ -119,6 +121,8 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         {"Stop%",           SqlTemplate.LessThanOrEqual},
         {"To%",             SqlTemplate.LessThanOrEqual},
         {"Until%",          SqlTemplate.LessThanOrEqual},
+        {"Max%",            SqlTemplate.LessThanOrEqual},
+        {"Maximum%",        SqlTemplate.LessThanOrEqual},
         {"%<",              SqlTemplate.LessThanOrEqual},
         {"<%",              SqlTemplate.LessThan},
 
