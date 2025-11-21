@@ -1,10 +1,7 @@
-﻿using System.ComponentModel;
-using System.Reflection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi;
 using MyApp.Data;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Scalar.AspNetCore;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureOpenApi))]
 
@@ -16,42 +13,61 @@ public class ConfigureOpenApi : IHostingStartup
         .ConfigureServices((context, services) => {
             if (context.HostingEnvironment.IsDevelopment())
             {
-                services.AddEndpointsApiExplorer();
-                services.AddSwaggerGen(options =>
+                services.AddOpenApi(options =>
                 {
-                    options.OperationFilter<OpenApiDisplayNameOperationFilter>();
+                    options.AddOperationTransformer<OpenApiDisplayNameOperationTransformer>();
                 });
 
-                services.AddServiceStackSwagger();
-                services.AddBasicAuth<ApplicationUser>();
-                //services.AddJwtAuth();
-            
-                services.AddTransient<IStartupFilter,StartupFilter>();
+                services.AddServiceStackOpenApi(configure: metadata =>
+                {
+                    // metadata.AddBasicAuth();
+                    // metadata.AddJwtBearer();
+                });
+            }
+        })
+        .Configure((context, app) => {
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                app.UseRouting();
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapOpenApi();
+                    endpoints.MapScalarApiReference();
+                });
             }
         });
+}
 
-    public class StartupFilter : IStartupFilter
+public class OpenApiDisplayNameOperationTransformer : IOpenApiOperationTransformer
+{
+    public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
+        if (context.Description.ActionDescriptor.EndpointMetadata.FirstOrDefault(x =>
+                x is OpenApiDisplayNameAttribute) is OpenApiDisplayNameAttribute attr)
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            next(app);
-        };
-    }
-    
-    public class OpenApiDisplayNameOperationFilter : IOperationFilter
-    {
-        public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        {
-            if (context.ApiDescription.ActionDescriptor.EndpointMetadata.FirstOrDefault(x =>
-                    x is OpenApiDisplayNameAttribute) is OpenApiDisplayNameAttribute attr)
-            {        
-                operation.AddExtension("x-displayName", new OpenApiString(attr.DisplayName));
-            }
+            operation.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+            operation.Extensions["x-displayName"] = new OpenApiStringExtension(attr.DisplayName);
         }
+        return Task.CompletedTask;
     }
 }
+
+// Custom IOpenApiExtension implementation for string values
+public class OpenApiStringExtension : IOpenApiExtension
+{
+    private readonly string _value;
+
+    public OpenApiStringExtension(string value)
+    {
+        _value = value;
+    }
+
+    public void Write(IOpenApiWriter writer, OpenApiSpecVersion specVersion)
+    {
+        writer.WriteValue(_value);
+    }
+}
+
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 public class OpenApiDisplayNameAttribute : Attribute
 {

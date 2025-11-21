@@ -22,8 +22,8 @@
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.*" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" GeneratePathProperty="true" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,11 +31,18 @@
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi\ServiceStack.AspNetCore.OpenApi.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi.Microsoft\ServiceStack.AspNetCore.OpenApi.Microsoft.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     </ItemGroup>
+
+  <!-- Disable the XML comment source generator to avoid compatibility issues with Microsoft.OpenApi 3.0.1 -->
+  <Target Name="DisableCompileTimeOpenApiXmlGenerator" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="$(PkgMicrosoft_AspNetCore_OpenApi)\analyzers\dotnet\cs\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" />
+    </ItemGroup>
+  </Target>
 
 </Project>
