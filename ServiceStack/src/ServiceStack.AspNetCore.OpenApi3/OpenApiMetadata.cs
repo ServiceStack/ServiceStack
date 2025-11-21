@@ -218,9 +218,13 @@ public class OpenApiMetadata
                 {
                     Schema = formSchema,
                 };
-                foreach (var entry in formSchema.Properties)
+                if (formSchema.Properties.Count > 0)
                 {
-                    formType.Encoding[entry.Key] = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = false };
+                    formType.Encoding ??= new OrderedDictionary<string, OpenApiEncoding>();
+                    foreach (var entry in formSchema.Properties)
+                    {
+                        formType.Encoding[entry.Key] = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = false };
+                    }
                 }
                 var requestBody = new OpenApiRequestBody
                 {
