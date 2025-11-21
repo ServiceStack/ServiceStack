@@ -1,4 +1,5 @@
 ﻿using MyApp.Data;
+using Scalar.AspNetCore;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureOpenApi))]
 
@@ -10,24 +11,23 @@ public class ConfigureOpenApi : IHostingStartup
         .ConfigureServices((context, services) => {
             if (context.HostingEnvironment.IsDevelopment())
             {
-                services.AddEndpointsApiExplorer();
-                services.AddSwaggerGen();
-
-                services.AddServiceStackSwagger();
-                services.AddBasicAuth<ApplicationUser>();
-                //services.AddJwtAuth();
-            
-                services.AddTransient<IStartupFilter,StartupFilter>();
+                services.AddOpenApi();
+                services.AddServiceStackOpenApi(configure: metadata =>
+                {
+                    metadata.AddBasicAuth();
+                    //metadata.AddJwtBearer();
+                });
+            }
+        })
+        .Configure((context, app) => {
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                app.UseRouting();
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapOpenApi();
+                    endpoints.MapScalarApiReference();
+                });
             }
         });
-
-    public class StartupFilter : IStartupFilter
-    {
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            next(app);
-        };
-    }
 }
