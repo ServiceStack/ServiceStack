@@ -59,13 +59,25 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
         {
             foreach (var restPath in restPathList)
             {
-                var verbs = new List<string>();
-                verbs.AddRange(restPath.AllowsAllVerbs
-                    ? new[] { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete }
-                    : restPath.Verbs);
-
                 var routePath = restPath.Path.Replace("*", string.Empty);
                 var requestType = restPath.RequestType;
+
+                // Only register the primary HTTP method for each endpoint
+                var primaryMethod = ServiceClientUtils.GetHttpMethod(requestType);
+                var verbs = new List<string>();
+                if (primaryMethod != null)
+                {
+                    verbs.Add(primaryMethod);
+                }
+                else if (!restPath.AllowsAllVerbs)
+                {
+                    verbs.AddRange(restPath.Verbs);
+                }
+                else
+                {
+                    // Fallback to POST if no primary method can be determined
+                    verbs.Add(HttpMethods.Post);
+                }
                 if (!HostContext.Metadata.OperationsMap.TryGetValue(requestType, out var opMeta))
                     continue;
 
