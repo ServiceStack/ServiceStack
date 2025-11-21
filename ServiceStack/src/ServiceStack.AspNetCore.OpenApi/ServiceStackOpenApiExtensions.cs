@@ -1,10 +1,9 @@
-#if NET10_0_OR_GREATER
-using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Any;
 using ServiceStack.AspNetCore.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -74,7 +73,6 @@ public static class ServiceStackOpenApiExtensions
     public static void AddApiKeys(this SwaggerGenOptions options) =>
         options.AddSecurityDefinition(OpenApiSecurity.ApiKeyScheme.Scheme, OpenApiSecurity.ApiKeyScheme);
 
-    internal static List<JsonNode> ToOpenApiEnums(this IEnumerable<string>? enums) =>
-        enums.Safe().Map(x => (JsonNode)JsonValue.Create(x));
+    internal static List<IOpenApiAny> ToOpenApiEnums(this IEnumerable<string>? enums) =>
+        enums.Safe().Map(x => (IOpenApiAny)new OpenApiString(x));
 }
-#endif

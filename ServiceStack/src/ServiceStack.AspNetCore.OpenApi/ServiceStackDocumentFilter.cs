@@ -1,6 +1,5 @@
-#if NET10_0_OR_GREATER
 using System.Text.Json.Serialization;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using ServiceStack.Host;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -102,4 +101,3 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
         && !type.IsGenericTypeDefinition
         && !(type.ExcludesFeature(Feature.Metadata) || type.ExcludesFeature(Feature.ApiExplorer));
 }
-#endif

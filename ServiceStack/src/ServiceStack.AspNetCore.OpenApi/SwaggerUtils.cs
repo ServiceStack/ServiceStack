@@ -1,4 +1,3 @@
-#if NET10_0_OR_GREATER
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -15,4 +14,3 @@ public static class SwaggerUtils
             or Swashbuckle.AspNetCore.Annotations.SwaggerIgnoreAttribute);
     }
 }
-#endif

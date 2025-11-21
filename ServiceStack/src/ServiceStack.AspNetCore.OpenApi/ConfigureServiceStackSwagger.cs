@@ -1,4 +1,3 @@
-#if NET10_0_OR_GREATER
 using Microsoft.Extensions.Options;
 using ServiceStack.AspNetCore.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -34,4 +33,3 @@ public class ConfigureServiceStackSwagger(OpenApiMetadata metadata) :
         options.WithOpenApi();
     }
 }
-#endif
