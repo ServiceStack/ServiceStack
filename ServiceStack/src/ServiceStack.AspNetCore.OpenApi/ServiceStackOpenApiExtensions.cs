@@ -43,15 +43,40 @@ public static class ServiceStackOpenApiExtensions
 
     public static void AddServiceStackSwagger(this IServiceCollection services, Action<OpenApiMetadata>? configure = null)
     {
-        configure?.Invoke(OpenApiMetadata.Instance);
-
-        services.AddSingleton(OpenApiMetadata.Instance);
-        services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
-        services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
+        try
+        {
+            configure?.Invoke(OpenApiMetadata.Instance);
+            services.AddSingleton(OpenApiMetadata.Instance);
+            services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
+            services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
         
-        services.ConfigurePlugin<MetadataFeature>(feature => {
-            feature.AddPluginLink("/swagger/index.html", "Swagger UI");
-        });
+            services.ConfigurePlugin<MetadataFeature>(feature => {
+                feature.AddPluginLink("/swagger/index.html", "Swagger UI");
+            });
+        }
+        catch (TypeInitializationException e)
+        {
+            Console.WriteLine(
+                """
+                
+                
+                Possible package version conflict detected.
+                If using .NET 10, only these major versions of the following packages should be used: 
+                <PackageReference Include="Microsoft.OpenApi" Version="1.*" />
+                <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
+                <PackageReference Include="Swashbuckle.AspNetCore" Version="8.*" />
+                
+                To use the latest versions of these packages switch to:
+                <PackageReference Include="ServiceStack.AspNetCore.OpenApi3" Version="10.*" />
+
+                Which instead uses:
+                <PackageReference Include="Microsoft.OpenApi" Version="3.*" />
+                <PackageReference Include="Swashbuckle.AspNetCore" Version="10.*" />
+                
+                
+                """);
+            throw;
+        }
     }
         
     public static AuthenticationBuilder AddBasicAuth<TUser>(this IServiceCollection services)

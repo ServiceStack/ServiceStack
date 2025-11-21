@@ -6,8 +6,15 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace ServiceStack.AspNetCore.OpenApi;
 
 // Last OpenApi Filter to run
-public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFilter
+public class ServiceStackDocumentFilter : IDocumentFilter
 {
+    private readonly OpenApiMetadata metadata;
+
+    public ServiceStackDocumentFilter(OpenApiMetadata metadata)
+    {
+        this.metadata = metadata;
+    }
+
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
         //Console.WriteLine(GetType().Name + "...");

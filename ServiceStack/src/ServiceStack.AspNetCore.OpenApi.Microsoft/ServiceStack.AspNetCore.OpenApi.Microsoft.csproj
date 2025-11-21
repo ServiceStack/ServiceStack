@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>ServiceStack.AspNetCore.OpenApi</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.OpenApi" Version="3.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" GeneratePathProperty="true" />
+    </ItemGroup>
+
+    <!-- Disable the XML comment source generator to avoid compatibility issues with Microsoft.OpenApi 3.0.1 -->
+    <Target Name="DisableCompileTimeOpenApiXmlGenerator" BeforeTargets="CoreCompile">
+        <ItemGroup>
+            <Analyzer Remove="$(PkgMicrosoft_AspNetCore_OpenApi)\analyzers\dotnet\cs\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+        <ProjectReference Include="..\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+        <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>OpenApi3Swashbuckle</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="OpenApi3Swashbuckle" />
+    <Using Include="ServiceStack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi3\ServiceStack.AspNetCore.OpenApi3.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
+  </ItemGroup>
+
+</Project>
+
