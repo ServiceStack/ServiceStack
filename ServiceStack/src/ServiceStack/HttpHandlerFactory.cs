@@ -77,7 +77,6 @@ public class HttpHandlerFactory : IHttpHandlerFactory
 
             if (DefaultHttpHandler == null && !string.IsNullOrEmpty(config.MetadataRedirectPath))
             {
-                DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
                 NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
             }
 
