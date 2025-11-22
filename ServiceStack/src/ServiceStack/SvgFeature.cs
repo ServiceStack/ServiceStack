@@ -369,30 +369,7 @@ public static class Svg
         return svg;
     }
 
-    public static string Encode(string svg)
-    {
-        if (string.IsNullOrEmpty(svg))
-            return null;
-
-        //['%','#','<','>','?','[','\\',']','^','`','{','|','}'].map(x => `.Replace("${x}","` + encodeURIComponent(x) + `")`).join('')
-        return svg.Replace("\r", " ").Replace("\n", "")                
-            .Replace("\"","'")
-            .Replace("%","%25")
-            .Replace("#","%23")
-            .Replace("<","%3C")
-            .Replace(">","%3E")
-            .Replace("?","%3F")
-            .Replace("[","%5B")
-            .Replace("\\","%5C")
-            .Replace("]","%5D")
-            .Replace("^","%5E")
-            .Replace("`","%60")
-            .Replace("{","%7B")
-            .Replace("|","%7C")
-            .Replace("}","%7D");
-    }
-
-    public static string ToDataUri(string svg) => "data:image/svg+xml," + Encode(svg);
+    public static string ToDataUri(string svg) => SvgCreator.ToDataUri(svg);
     public static string GetBackgroundImageCss(string name) => InBackgroundImageCss(GetImage(name));
     public static string GetBackgroundImageCss(string name, string fillColor) => InBackgroundImageCss(GetImage(name, fillColor));
 
