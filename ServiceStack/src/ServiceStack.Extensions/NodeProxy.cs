@@ -10,29 +10,39 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace ServiceStack;
 
 public class NodeProxy
 {
     public HttpClient Client { get; set; }
-    public bool Verbose { get; set; } = true;
-    public string LogPrefix { get; set; } = "[node] ";
+    public ILogger? Log { get; set; }
+
+    /// <summary>
+    /// Maximum size in bytes for an individual file to be cached (default: 5 MB)
+    /// </summary>
+    public long MaxFileSizeBytes { get; set; } = 5 * 1024 * 1024; // 5 MB
+
+    /// <summary>
+    /// Maximum total cache size in bytes (default: 100 MB)
+    /// </summary>
+    public long MaxCacheSizeBytes { get; set; } = 100 * 1024 * 1024; // 100 MB
 
     public List<string> CacheFileExtensions { get; set; } = [
-        ".js", 
-        ".css", 
-        ".ico", 
-        ".png", 
-        ".jpg", 
-        ".jpeg", 
-        ".gif", 
-        ".svg", 
-        ".woff", 
-        ".woff2", 
-        ".ttf", 
-        ".eot", 
-        ".otf", 
+        ".js",
+        ".css",
+        ".ico",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".svg",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".eot",
+        ".otf",
         ".map"
     ];
 
@@ -64,7 +74,34 @@ public class NodeProxy
         return false;
     }
 
-    public ConcurrentDictionary<string, (string mimeType, byte[] data, string? encoding)> Cache { get; } = new();
+    private class CacheEntry(string mimeType, byte[] data, string? encoding, DateTime lastAccessTime)
+    {
+        public string MimeType { get; } = mimeType;
+        public byte[] Data { get; } = data;
+        public string? Encoding { get; } = encoding;
+        public DateTime LastAccessTime { get; set; } = lastAccessTime;
+        public long Size => Data.Length;
+    }
+
+    private readonly ConcurrentDictionary<string, CacheEntry> _cache = new();
+    private long _totalCacheSize = 0;
+    private long _cacheHits = 0;
+    private long _cacheMisses = 0;
+    private readonly object _cacheLock = new();
+
+    public ConcurrentDictionary<string, (string mimeType, byte[] data, string? encoding)> Cache
+    {
+        get
+        {
+            // Provide backward compatibility by converting internal cache to old format
+            var result = new ConcurrentDictionary<string, (string mimeType, byte[] data, string? encoding)>();
+            foreach (var kvp in _cache)
+            {
+                result[kvp.Key] = (kvp.Value.MimeType, kvp.Value.Data, kvp.Value.Encoding);
+            }
+            return result;
+        }
+    }
 
     public NodeProxy(HttpClient client)
     {
@@ -91,6 +128,92 @@ public class NodeProxy
         Client = client;
         ShouldCache = DefaultShouldCache;
     }
+    
+    public bool LogDebug => Log != null && Log.IsEnabled(LogLevel.Debug);
+
+    private void AddToCache(string key, CacheEntry entry)
+    {
+        lock (_cacheLock)
+        {
+            // Check if we need to evict entries to make room
+            var newSize = _totalCacheSize + entry.Size;
+
+            // If adding this entry exceeds the limit, evict LRU entries
+            while (newSize > MaxCacheSizeBytes && _cache.Count > 0)
+            {
+                // Find the least recently used entry
+                var lruKey = _cache.OrderBy(x => x.Value.LastAccessTime).First().Key;
+                if (_cache.TryRemove(lruKey, out var removed))
+                {
+                    _totalCacheSize -= removed.Size;
+                    newSize = _totalCacheSize + entry.Size;
+                    Log?.LogInformation("Cache evicted (LRU): {LruKey} |size| {Size}", lruKey, removed.Size);
+                }
+            }
+
+            // Only add if it fits within the total cache limit
+            if (entry.Size <= MaxCacheSizeBytes)
+            {
+                // Remove old entry if updating
+                if (_cache.TryRemove(key, out var oldEntry))
+                {
+                    _totalCacheSize -= oldEntry.Size;
+                }
+
+                _cache[key] = entry;
+                _totalCacheSize += entry.Size;
+            }
+            else
+            {
+                Log?.LogInformation("Cache skip (exceeds total limit): {Key} |size| {Size} |limit| {MaxCacheSizeBytes}",
+                    key, entry.Size, MaxCacheSizeBytes);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Get cache statistics
+    /// </summary>
+    public (long hits, long misses, double hitRate, int entryCount, long totalSize) GetCacheStats()
+    {
+        var hits = Interlocked.Read(ref _cacheHits);
+        var misses = Interlocked.Read(ref _cacheMisses);
+        var total = hits + misses;
+        var hitRate = total > 0 ? (double)hits / total : 0.0;
+
+        lock (_cacheLock)
+        {
+            return (hits, misses, hitRate, _cache.Count, _totalCacheSize);
+        }
+    }
+
+    /// <summary>
+    /// Clear all cache entries
+    /// </summary>
+    public void ClearCache()
+    {
+        lock (_cacheLock)
+        {
+            _cache.Clear();
+            _totalCacheSize = 0;
+        }
+    }
+
+    /// <summary>
+    /// Remove a specific cache entry
+    /// </summary>
+    public bool RemoveCacheEntry(string key)
+    {
+        lock (_cacheLock)
+        {
+            if (_cache.TryRemove(key, out var entry))
+            {
+                _totalCacheSize -= entry.Size;
+                return true;
+            }
+            return false;
+        }
+    }
 
     public bool TryStartNode(string workingDirectory, out Process process)
     {
@@ -109,24 +232,18 @@ public class NodeProxy
         };
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true;
-        if (Verbose)
+        if (LogDebug)
         {
-            var logPrefixTrimmed = LogPrefix.TrimEnd();
             process.OutputDataReceived += (s, e) => {
                 if (e.Data != null)
                 {
-                    if (!string.IsNullOrEmpty(logPrefixTrimmed))
-                    {
-                        Console.Write(logPrefixTrimmed + ":");
-                    }
-                    Console.WriteLine(e.Data);
+                    Log?.LogDebug(e.Data);
                 }
             };
             process.ErrorDataReceived += (s, e) => {
                 if (e.Data != null)
                 {
-                    Console.Write(LogPrefix + "ERROR:");
-                    Console.WriteLine(e.Data);
+                    Log?.LogError(e.Data);
                 }
             };
         }
@@ -160,24 +277,27 @@ public class NodeProxy
         {
             if (qs.Contains("?clear=all"))
             {
-                Cache.Clear();
+                ClearCache();
             }
             else
             {
-                Cache.TryRemove(cacheKey, out _);
+                RemoveCacheEntry(cacheKey);
             }
         }
 
         var shouldCache = ShouldCache(context);
-        if (shouldCache && Cache.TryGetValue(cacheKey, out var cached))
+        if (shouldCache && _cache.TryGetValue(cacheKey, out var cached))
         {
-            if (Verbose) Console.WriteLine($"Cache hit: {cacheKey} |mimeType| {cached.mimeType} |encoding| {cached.encoding} |size| {cached.data.Length}");
-            context.Response.ContentType = cached.mimeType;
-            if (!string.IsNullOrEmpty(cached.encoding))
+            Interlocked.Increment(ref _cacheHits);
+            cached.LastAccessTime = DateTime.UtcNow;
+            if (LogDebug) Log?.LogDebug("Cache hit: {CacheKey} |mimeType| {MimeType} |encoding| {Encoding} |size| {Size}",
+                cacheKey, cached.MimeType, cached.Encoding, cached.Size);
+            context.Response.ContentType = cached.MimeType;
+            if (!string.IsNullOrEmpty(cached.Encoding))
             {
-                context.Response.Headers["Content-Encoding"] = cached.encoding;
+                context.Response.Headers["Content-Encoding"] = cached.Encoding;
             }
-            await context.Response.Body.WriteAsync(cached.data, context.RequestAborted);
+            await context.Response.Body.WriteAsync(cached.Data, context.RequestAborted);
             return;
         }
 
@@ -240,11 +360,28 @@ public class NodeProxy
                 var bytes = await response.Content.ReadAsByteArrayAsync();
                 if (bytes.Length > 0)
                 {
+                    Interlocked.Increment(ref _cacheMisses);
+
+                    // Check if file size exceeds individual file limit
+                    if (bytes.Length > MaxFileSizeBytes)
+                    {
+                        Log?.LogInformation("Cache skip (too large): {CacheKey} |size| {Length} |limit| {MaxFileSizeBytes}",
+                            cacheKey, bytes.Length, MaxFileSizeBytes);
+                        await context.Response.Body.WriteAsync(bytes, context.RequestAborted);
+                        return;
+                    }
+
                     var mimeType = response.Content.Headers.ContentType?.ToString()
                         ?? ServiceStack.MimeTypes.GetMimeType(cacheKey);
                     var encoding = response.Content.Headers.ContentEncoding.FirstOrDefault();
-                    Cache[cacheKey] = (mimeType, bytes, encoding);
-                    if (Verbose) Console.WriteLine($"Cache miss: {cacheKey} |mimeType| {mimeType} |encoding| {encoding} |size| {bytes.Length}");
+
+                    var entry = new CacheEntry(mimeType, bytes, encoding, DateTime.UtcNow);
+
+                    // Add to cache with size management
+                    AddToCache(cacheKey, entry);
+
+                    Log?.LogInformation("Cache miss: {CacheKey} |mimeType| {MimeType} |encoding| {Encoding} |size| {Bytes}",
+                        cacheKey, mimeType, encoding, bytes.Length);
                     await context.Response.Body.WriteAsync(bytes, context.RequestAborted);
                     return;
                 }
@@ -300,10 +437,10 @@ public static class ProxyExtensions
             {
                 var fileProvider = app.Environment.WebRootFileProvider;
                 var fileInfo = fileProvider.GetFileInfo(path + ".html");
-                if (fileInfo.Exists && !fileInfo.IsDirectory)
+                if (fileInfo is { Exists: true, IsDirectory: false })
                 {
                     context.Response.ContentType = "text/html";
-                    using var stream = fileInfo.CreateReadStream();
+                    await using var stream = fileInfo.CreateReadStream();
                     await stream.CopyToAsync(context.Response.Body); // Serve the HTML file directly
                     return; // Don't call next(), we've handled the request
                 }
@@ -414,14 +551,13 @@ public static class ProxyExtensions
         bool registerExitHandler=true)
     {
         var process = app.StartNodeProcess(proxy, lockFile, workingDirectory, registerExitHandler);
-        var logPrefix = proxy.LogPrefix;
         if (process != null)
         {
-            Console.WriteLine(logPrefix + "Started Next.js dev server");
+            proxy.Log?.LogInformation("Started Next.js dev server");
         }
         else
         {
-            Console.WriteLine(logPrefix + "Next.js dev server already running");
+            proxy.Log?.LogInformation("Next.js dev server already running");
         }
         return process;
     }
@@ -437,10 +573,8 @@ public static class ProxyExtensions
             if (!proxy.TryStartNode(workingDirectory, out var process))
                 return null;
 
-            var verbose = proxy.Verbose;
-            var logPrefix = string.IsNullOrEmpty(proxy.LogPrefix) ? "" : proxy.LogPrefix + " ";
             process.Exited += (s, e) => {
-                if (verbose) Console.WriteLine(logPrefix + "Exited: " + process.ExitCode);
+                proxy.Log?.LogDebug("Exited: " + process.ExitCode);
                 File.Delete(lockFile);
             };
 
@@ -449,7 +583,7 @@ public static class ProxyExtensions
                 app.Lifetime.ApplicationStopping.Register(() => {
                     if (!process.HasExited)
                     {
-                        if (verbose) Console.WriteLine(logPrefix + "Teminating process: " + process.Id);
+                        proxy.Log?.LogDebug("Terminating process: " + process.Id);
                         process.Kill(entireProcessTree: true);
                     }
                 });
