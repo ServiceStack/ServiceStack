@@ -6,6 +6,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ServiceStack
 {
@@ -16,11 +18,13 @@ namespace ServiceStack
     // The unit tests for the ExpressionUtil.* types are in the System.Web.Mvc.Test project.
     public static class CachedExpressionCompiler
     {
-        private static readonly ParameterExpression _unusedParameterExpr = Expression.Parameter(typeof(object), "_unused");
+        private static readonly ParameterExpression _unusedParameterExpr =
+            Expression.Parameter(typeof(object), "_unused");
 
         // Implements caching around LambdaExpression.Compile() so that equivalent expression trees only have to be
         // compiled once.
-        public static Func<TModel, TValue> Compile<TModel, TValue>(this Expression<Func<TModel, TValue>> lambdaExpression)
+        public static Func<TModel, TValue> Compile<TModel, TValue>(
+            this Expression<Func<TModel, TValue>> lambdaExpression)
         {
             if (lambdaExpression == null)
                 throw new ArgumentNullException(nameof(lambdaExpression));
@@ -40,7 +44,8 @@ namespace ServiceStack
 
         private static Func<object, object> Wrap(Expression arg)
         {
-            Expression<Func<object, object>> lambdaExpr = Expression.Lambda<Func<object, object>>(Expression.Convert(arg, typeof(object)), _unusedParameterExpr);
+            Expression<Func<object, object>> lambdaExpr =
+                Expression.Lambda<Func<object, object>>(Expression.Convert(arg, typeof(object)), _unusedParameterExpr);
             return ExpressionUtil.CachedExpressionCompiler.Process(lambdaExpr);
         }
     }
@@ -48,10 +53,130 @@ namespace ServiceStack
 
 namespace ServiceStack.ExpressionUtil
 {
+    public static class ExpressionCacheKey
+    {
+        public static bool TryGetKey(LambdaExpression expr, out string key)
+        {
+            try
+            {
+                if (!CanCache(expr))
+                {
+                    key = null;
+                    return false;
+                }
+
+                var sb = new StringBuilder();
+                new CanonicalExpressionPrinter(sb).Visit(expr);
+                key = sb.ToString();
+                return true;
+            }
+            catch
+            {
+                key = null;
+                return false;
+            }
+        }
+
+        public static bool CanCache(Expression expr)
+            => CacheableExpressionVisitor.IsCacheable(expr);
+
+        private static string Hash(string input)
+        {
+            using var sha = SHA256.Create();
+            return Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(input)));
+        }
+
+        private sealed class CanonicalExpressionPrinter(StringBuilder sb) : ExpressionVisitor
+        {
+            protected override Expression VisitConstant(ConstantExpression node)
+            {
+                // Remove closure object identity
+                if (node.Type.Name.Contains("DisplayClass"))
+                {
+                    sb.Append($"CONST(closure:{node.Type.FullName})");
+                    return node;
+                }
+
+                // Normal constants
+                sb.Append($"CONST({node.Value})");
+                return node;
+            }
+
+            protected override Expression VisitMember(MemberExpression node)
+            {
+                if (node.Expression is ConstantExpression c &&
+                    c.Type.Name.Contains("DisplayClass"))
+                {
+                    // Include the closure declaring type + member type to handle array/ref struct differences
+                    sb.Append("CLOSURE_MEMBER(");
+                    sb.Append(c.Type.FullName);
+                    sb.Append(".");
+                    sb.Append(node.Member.Name);
+                    sb.Append(":");
+                    sb.Append(node.Type.FullName);
+                    sb.Append(")");
+                    return node;
+                }
+                sb.Append($"MEMBER({node.Member.DeclaringType}.{node.Member.Name}:{node.Type.FullName})");
+                return base.VisitMember(node);
+            }
+
+            protected override Expression VisitLambda<T>(Expression<T> node)
+            {
+                sb.Append("LAMBDA(");
+                foreach (var p in node.Parameters)
+                    sb.Append(p.Type.FullName + ";");
+                sb.Append(")=>");
+                return base.VisitLambda(node);
+            }
+
+            protected override Expression VisitBinary(BinaryExpression node)
+            {
+                sb.Append($"BIN({node.NodeType})");
+                return base.VisitBinary(node);
+            }
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                sb.Append($"PARAM({node.Type.FullName})");
+                return node;
+            }
+        }
+
+        private sealed class CacheableExpressionVisitor : ExpressionVisitor
+        {
+            public bool Cacheable { get; private set; } = true;
+
+            public static bool IsCacheable(Expression expr)
+            {
+                var v = new CacheableExpressionVisitor();
+                v.Visit(expr);
+                return v.Cacheable;
+            }
+
+            protected override Expression VisitInvocation(InvocationExpression node)
+            {
+                // Cannot reliably cache invocation expressions
+                Cacheable = false;
+                return node;
+            }
+
+            protected override Expression VisitRuntimeVariables(RuntimeVariablesExpression node)
+            {
+                Cacheable = false;
+                return node;
+            }
+
+            protected override Expression VisitTry(TryExpression node)
+            {
+                // Safe but unusual — allow it
+                return base.VisitTry(node);
+            }
+        }
+    }
 
     // BinaryExpression fingerprint class
     // Useful for things like array[index]
-
     internal sealed class BinaryExpressionFingerprint : ExpressionFingerprint
     {
         public BinaryExpressionFingerprint(ExpressionType nodeType, Type type, MethodInfo method)
@@ -101,15 +226,13 @@ namespace ServiceStack.ExpressionUtil
         private static class Compiler<TIn, TOut>
         {
             private static Func<TIn, TOut> _identityFunc;
+            private static readonly ConcurrentDictionary<MemberInfo, Func<TIn, TOut>> _simpleMemberAccessDict = new();
+            private static readonly ConcurrentDictionary<MemberInfo, Func<object, TOut>> _constMemberAccessDict = new();
 
-            private static readonly ConcurrentDictionary<MemberInfo, Func<TIn, TOut>> _simpleMemberAccessDict =
-                new ConcurrentDictionary<MemberInfo, Func<TIn, TOut>>();
+            private static readonly ConcurrentDictionary<ExpressionFingerprintChain, Hoisted<TIn, TOut>>
+                _fingerprintedCache = new();
 
-            private static readonly ConcurrentDictionary<MemberInfo, Func<object, TOut>> _constMemberAccessDict =
-                new ConcurrentDictionary<MemberInfo, Func<object, TOut>>();
-
-            private static readonly ConcurrentDictionary<ExpressionFingerprintChain, Hoisted<TIn, TOut>> _fingerprintedCache =
-                new ConcurrentDictionary<ExpressionFingerprintChain, Hoisted<TIn, TOut>>();
+            private static readonly ConcurrentDictionary<string, Func<TIn, TOut>> _slowCompileCache = new();
 
             public static Func<TIn, TOut> Compile(Expression<Func<TIn, TOut>> expr)
             {
@@ -117,7 +240,7 @@ namespace ServiceStack.ExpressionUtil
                        ?? CompileFromConstLookup(expr)
                        ?? CompileFromMemberAccess(expr)
                        ?? CompileFromFingerprint(expr)
-                       ?? CompileSlow(expr);
+                       ?? CachedCompileSlow(expr);
             }
 
             private static Func<TIn, TOut> CompileFromConstLookup(Expression<Func<TIn, TOut>> expr)
@@ -153,7 +276,8 @@ namespace ServiceStack.ExpressionUtil
 
             private static Func<TIn, TOut> CompileFromFingerprint(Expression<Func<TIn, TOut>> expr)
             {
-                ExpressionFingerprintChain fingerprint = FingerprintingExpressionVisitor.GetFingerprintChain(expr, out var capturedConstants);
+                ExpressionFingerprintChain fingerprint =
+                    FingerprintingExpressionVisitor.GetFingerprintChain(expr, out var capturedConstants);
 
                 if (fingerprint != null)
                 {
@@ -197,7 +321,8 @@ namespace ServiceStack.ExpressionUtil
                             var constParamExpr = Expression.Parameter(typeof(object), "capturedLocal");
                             var constCastExpr = Expression.Convert(constParamExpr, memberExpr.Member.DeclaringType);
                             var newMemberAccessExpr = memberExpr.Update(constCastExpr);
-                            var newLambdaExpr = Expression.Lambda<Func<object, TOut>>(newMemberAccessExpr, constParamExpr);
+                            var newLambdaExpr =
+                                Expression.Lambda<Func<object, TOut>>(newMemberAccessExpr, constParamExpr);
                             return newLambdaExpr.Compile();
                         });
 
@@ -209,21 +334,28 @@ namespace ServiceStack.ExpressionUtil
                 return null;
             }
 
+            private static Func<TIn, TOut> CachedCompileSlow(Expression<Func<TIn, TOut>> expr)
+            {
+                if (ExpressionCacheKey.TryGetKey(expr, out var key))
+                {
+                    return _slowCompileCache.GetOrAdd(key, _ => CompileSlow(expr));
+                }
+                return CompileSlow(expr);
+            }
+
             private static Func<TIn, TOut> CompileSlow(Expression<Func<TIn, TOut>> expr)
             {
+#if DEBUG
+                Console.WriteLine("SlowCompile");
+#endif
+
                 // fallback compilation system - just compile the expression directly
                 try
                 {
-                    return expr.Compile();
-                }
-                catch (Exception)
-                {
-                    // Try to recover from invalid ref struct boxing (e.g. Span<T> implicit conversion)
-                    if (expr.Body is UnaryExpression u 
-                        && u.NodeType == ExpressionType.Convert 
+                    // Try to handle invalid ref struct boxing (e.g. Span<T> implicit conversion)
+                    if (expr.Body is UnaryExpression { NodeType: ExpressionType.Convert } u
                         && u.Type == typeof(object)
-                        && u.Operand is MethodCallExpression m
-                        && m.Method.Name == "op_Implicit")
+                        && u.Operand is MethodCallExpression { Method.Name: "op_Implicit" } m)
                     {
                         var returnType = m.Method.ReturnType;
                         bool isRefStruct = false;
@@ -235,7 +367,7 @@ namespace ServiceStack.ExpressionUtil
 
                         if (isRefStruct)
                         {
-                            try 
+                            try
                             {
                                 // Strip the implicit conversion and try compiling the inner expression
                                 var inner = m.Arguments[0];
@@ -250,20 +382,21 @@ namespace ServiceStack.ExpressionUtil
                         }
                     }
 
+                    return expr.Compile();
+                }
+                catch (Exception)
+                {
                     throw;
                 }
             }
         }
     }
 
-    internal sealed class ConditionalExpressionFingerprint : ExpressionFingerprint
+    internal sealed class ConditionalExpressionFingerprint(ExpressionType nodeType, Type type)
+        : ExpressionFingerprint(nodeType, type)
     {
-        public ConditionalExpressionFingerprint(ExpressionType nodeType, Type type)
-            : base(nodeType, type)
-        {
-            // There are no properties on ConditionalExpression that are worth including in
-            // the fingerprint.
-        }
+        // There are no properties on ConditionalExpression that are worth including in
+        // the fingerprint.
 
         public override bool Equals(object obj)
         {
@@ -278,14 +411,11 @@ namespace ServiceStack.ExpressionUtil
         }
     }
 
-    internal sealed class ConstantExpressionFingerprint : ExpressionFingerprint
+    internal sealed class ConstantExpressionFingerprint(ExpressionType nodeType, Type type)
+        : ExpressionFingerprint(nodeType, type)
     {
-        public ConstantExpressionFingerprint(ExpressionType nodeType, Type type)
-            : base(nodeType, type)
-        {
-            // There are no properties on ConstantExpression that are worth including in
-            // the fingerprint.
-        }
+        // There are no properties on ConstantExpression that are worth including in
+        // the fingerprint.
 
         public override bool Equals(object obj)
         {
@@ -300,14 +430,11 @@ namespace ServiceStack.ExpressionUtil
         }
     }
 
-    internal sealed class DefaultExpressionFingerprint : ExpressionFingerprint
+    internal sealed class DefaultExpressionFingerprint(ExpressionType nodeType, Type type)
+        : ExpressionFingerprint(nodeType, type)
     {
-        public DefaultExpressionFingerprint(ExpressionType nodeType, Type type)
-            : base(nodeType, type)
-        {
-            // There are no properties on DefaultExpression that are worth including in
-            // the fingerprint.
-        }
+        // There are no properties on DefaultExpression that are worth including in
+        // the fingerprint.
 
         public override bool Equals(object obj)
         {
@@ -322,19 +449,13 @@ namespace ServiceStack.ExpressionUtil
         }
     }
 
-    internal abstract class ExpressionFingerprint
+    internal abstract class ExpressionFingerprint(ExpressionType nodeType, Type type)
     {
-        protected ExpressionFingerprint(ExpressionType nodeType, Type type)
-        {
-            NodeType = nodeType;
-            Type = type;
-        }
-
         // the type of expression node, e.g. OP_ADD, MEMBER_ACCESS, etc.
-        public ExpressionType NodeType { get; private set; }
+        public ExpressionType NodeType { get; private set; } = nodeType;
 
         // the CLR type resulting from this expression, e.g. int, string, etc.
-        public Type Type { get; private set; }
+        public Type Type { get; private set; } = type;
 
         internal virtual void AddToHashCodeCombiner(HashCodeCombiner combiner)
         {
@@ -364,31 +485,22 @@ namespace ServiceStack.ExpressionUtil
 
     internal sealed class ExpressionFingerprintChain : IEquatable<ExpressionFingerprintChain>
     {
-        public readonly List<ExpressionFingerprint> Elements = new List<ExpressionFingerprint>();
-
+        public readonly List<ExpressionFingerprint> Elements = new();
         public bool Equals(ExpressionFingerprintChain other)
         {
             // Two chains are considered equal if two elements appearing in the same index in
             // each chain are equal (value equality, not referential equality).
-
             if (other == null)
-            {
                 return false;
-            }
 
             if (this.Elements.Count != other.Elements.Count)
-            {
                 return false;
-            }
 
             for (int i = 0; i < this.Elements.Count; i++)
             {
                 if (!Equals(this.Elements[i], other.Elements[i]))
-                {
                     return false;
-                }
             }
-
             return true;
         }
 
@@ -401,7 +513,6 @@ namespace ServiceStack.ExpressionUtil
         {
             HashCodeCombiner combiner = new HashCodeCombiner();
             Elements.ForEach(combiner.AddFingerprint);
-
             return combiner.CombinedHash;
         }
     }
@@ -427,7 +538,8 @@ namespace ServiceStack.ExpressionUtil
 
         // Returns the fingerprint chain + captured constants list for this expression, or null
         // if the expression couldn't be fingerprinted.
-        public static ExpressionFingerprintChain GetFingerprintChain(Expression expr, out List<object> capturedConstants)
+        public static ExpressionFingerprintChain GetFingerprintChain(Expression expr,
+            out List<object> capturedConstants)
         {
             FingerprintingExpressionVisitor visitor = new FingerprintingExpressionVisitor();
             visitor.Visit(expr);
@@ -463,6 +575,7 @@ namespace ServiceStack.ExpressionUtil
             {
                 return node;
             }
+
             _currentChain.Elements.Add(new BinaryExpressionFingerprint(node.NodeType, node.Type, node.Method));
             return base.VisitBinary(node);
         }
@@ -483,6 +596,7 @@ namespace ServiceStack.ExpressionUtil
             {
                 return node;
             }
+
             _currentChain.Elements.Add(new ConditionalExpressionFingerprint(node.NodeType, node.Type));
             return base.VisitConditional(node);
         }
@@ -510,6 +624,7 @@ namespace ServiceStack.ExpressionUtil
             {
                 return node;
             }
+
             _currentChain.Elements.Add(new DefaultExpressionFingerprint(node.NodeType, node.Type));
             return base.VisitDefault(node);
         }
@@ -540,6 +655,7 @@ namespace ServiceStack.ExpressionUtil
             {
                 return node;
             }
+
             _currentChain.Elements.Add(new IndexExpressionFingerprint(node.NodeType, node.Type, node.Indexer));
             return base.VisitIndex(node);
         }
@@ -565,6 +681,7 @@ namespace ServiceStack.ExpressionUtil
             {
                 return node;
             }
+
             _currentChain.Elements.Add(new LambdaExpressionFingerprint(node.NodeType, node.Type));
             return base.VisitLambda(node);
         }
@@ -585,6 +702,7 @@ namespace ServiceStack.ExpressionUtil
             {
                 return node;
             }
+
             _currentChain.Elements.Add(new MemberExpressionFingerprint(node.NodeType, node.Type, node.Member));
             return base.VisitMember(node);
         }
@@ -694,6 +812,7 @@ namespace ServiceStack.ExpressionUtil
             {
                 return node;
             }
+
             _currentChain.Elements.Add(new TypeBinaryExpressionFingerprint(node.NodeType, node.Type, node.TypeOperand));
             return base.VisitTypeBinary(node);
         }
@@ -750,6 +869,7 @@ namespace ServiceStack.ExpressionUtil
                     AddObject(o);
                     count++;
                 }
+
                 AddInt32(count);
             }
         }
@@ -770,7 +890,9 @@ namespace ServiceStack.ExpressionUtil
 
     internal sealed class HoistingExpressionVisitor<TIn, TOut> : ExpressionVisitor
     {
-        private static readonly ParameterExpression _hoistedConstantsParamExpr = Expression.Parameter(typeof(List<object>), "hoistedConstants");
+        private static readonly ParameterExpression _hoistedConstantsParamExpr =
+            Expression.Parameter(typeof(List<object>), "hoistedConstants");
+
         private int _numConstantsProcessed;
 
         // factory will create instance
@@ -784,14 +906,18 @@ namespace ServiceStack.ExpressionUtil
 
             var visitor = new HoistingExpressionVisitor<TIn, TOut>();
             var rewrittenBodyExpr = visitor.Visit(expr.Body);
-            var rewrittenLambdaExpr = Expression.Lambda<Hoisted<TIn, TOut>>(rewrittenBodyExpr, expr.Parameters[0], _hoistedConstantsParamExpr);
+            var rewrittenLambdaExpr =
+                Expression.Lambda<Hoisted<TIn, TOut>>(rewrittenBodyExpr, expr.Parameters[0],
+                    _hoistedConstantsParamExpr);
             return rewrittenLambdaExpr;
         }
 
         protected override Expression VisitConstant(ConstantExpression node)
         {
             // rewrite the constant expression as (TConst)hoistedConstants[i];
-            return Expression.Convert(Expression.Property(_hoistedConstantsParamExpr, "Item", Expression.Constant(_numConstantsProcessed++)), node.Type);
+            return Expression.Convert(
+                Expression.Property(_hoistedConstantsParamExpr, "Item", Expression.Constant(_numConstantsProcessed++)),
+                node.Type);
         }
     }
 

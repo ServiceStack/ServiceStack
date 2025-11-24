@@ -34,21 +34,11 @@ public class PrimaryExpressionsTest(DialectContext context) : ExpressionsTestBas
         }
     }
 
-    private struct TestStruct<T>
+    private struct TestStruct<T>(T value)
     {
-        public T Property => field;
-
-        public readonly T field;
-
-        public T Method()
-        {
-            return field;
-        }
-
-        public TestStruct(T value)
-        {
-            field = value;
-        }
+        public T Property => this.TheField;
+        public readonly T TheField = value;
+        public T Method() => this.TheField;
     }
 
     [Test]
@@ -227,7 +217,7 @@ public class PrimaryExpressionsTest(DialectContext context) : ExpressionsTestBas
 
         using (var db = OpenDbConnection())
         {
-            var actual = db.Select<TestType>(q => q.IntColumn == tmp.field);
+            var actual = db.Select<TestType>(q => q.IntColumn == tmp.TheField);
 
             Assert.IsNotNull(actual);
             Assert.AreEqual(1, actual.Count);
@@ -238,6 +228,7 @@ public class PrimaryExpressionsTest(DialectContext context) : ExpressionsTestBas
     [Test]
     public void Can_select_struct_int_property_expression()
     {
+        OrmLiteUtils.PrintSql();
         var tmp = new TestStruct<int>(12);
 
         var expected = new TestType

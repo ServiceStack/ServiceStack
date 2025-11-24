@@ -2537,6 +2537,12 @@ namespace ServiceStack.OrmLite
                 return ret;
             }
 
+            // In C# 14, array.Contains() can resolve to MemoryExtensions.Contains (extension method)
+            // which should be treated as a collection Contains (SQL IN) not string Contains (SQL LIKE)
+            // Check this FIRST before other Contains checks
+            if (IsSpanContainsOnArray(m))
+                return VisitSpanContainsMethodCall(m);
+
             if (IsStaticArrayMethod(m))
                 return VisitStaticArrayMethodCall(m);
 
@@ -2795,9 +2801,40 @@ namespace ServiceStack.OrmLite
 
         protected virtual bool IsStaticArrayMethod(MethodCallExpression m)
         {
-            return (m.Object == null 
-                && m.Method.Name == "Contains"
-                && m.Arguments.Count == 2);
+            if (m.Method.Name != "Contains" || m.Arguments.Count != 2)
+                return false;
+
+            // In C# 14, array.Contains() can resolve to different methods due to span conversions
+            // We need to check if this is a collection Contains (for SQL IN) vs string Contains (for SQL LIKE)
+            // Static array methods have m.Object == null
+            if (m.Object != null)
+                return false;
+
+            // Check if the declaring type is a collection-related type (not string-related)
+            var declaringType = m.Method.DeclaringType;
+            if (declaringType == null)
+                return false;
+
+            // Exclude string/span Contains methods that should use LIKE
+            if (declaringType == typeof(string) ||
+                declaringType.Name == "MemoryExtensions" ||
+                declaringType.FullName?.StartsWith("System.MemoryExtensions") == true)
+                return false;
+
+            // Check if first argument is a collection type (not string)
+            if (m.Arguments.Count > 0)
+            {
+                var firstArgType = m.Arguments[0].Type;
+                if (firstArgType == typeof(string))
+                    return false;
+
+                // Accept if it's an array or implements IEnumerable<>
+                if (firstArgType.IsArray ||
+                    firstArgType.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>)))
+                    return true;
+            }
+
+            return false;
         }
 
         protected virtual object VisitStaticArrayMethodCall(MethodCallExpression m)
@@ -2821,11 +2858,70 @@ namespace ServiceStack.OrmLite
 
         private static bool IsEnumerableMethod(MethodCallExpression m)
         {
-            return m.Object != null
-                && m.Object.Type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
-                && m.Object.Type != typeof(string)
-                && m.Method.Name == "Contains"
-                && m.Arguments.Count == 1;
+            if (m.Method.Name != "Contains" || m.Arguments.Count != 1 || m.Object == null)
+                return false;
+
+            var objectType = m.Object.Type;
+
+            // Exclude string Contains (should use LIKE)
+            if (objectType == typeof(string))
+                return false;
+
+            // In C# 14, need to exclude span-based Contains methods
+            var declaringType = m.Method.DeclaringType;
+            if (declaringType != null &&
+                (declaringType.Name == "MemoryExtensions" ||
+                 declaringType.FullName?.StartsWith("System.MemoryExtensions") == true))
+                return false;
+
+            // Accept collection Contains (should use IN)
+            return objectType.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>));
+        }
+
+        private static bool IsSpanContainsOnArray(MethodCallExpression m)
+        {
+            // In C# 14, array.Contains() can resolve to MemoryExtensions.Contains<T>(ReadOnlySpan<T>, T)
+            // This is a static extension method where:
+            // - m.Object is null (static method)
+            // - m.Arguments[0] is the collection/array (converted to span)
+            // - m.Arguments[1] is the value to search for
+
+            if (m.Method.Name != "Contains")
+                return false;
+
+            // Must be a static method (extension method)
+            if (m.Object != null)
+                return false;
+
+            // Must have 2 or 3 arguments (2 for basic Contains, 3 for Contains with comparer)
+            if (m.Arguments.Count != 2 && m.Arguments.Count != 3)
+                return false;
+
+            var declaringType = m.Method.DeclaringType;
+            if (declaringType == null)
+                return false;
+
+            // Check if this is MemoryExtensions.Contains
+            var isMemoryExtensions = declaringType.Name == "MemoryExtensions" ||
+                                     declaringType.FullName?.StartsWith("System.MemoryExtensions") == true;
+
+            if (!isMemoryExtensions)
+                return false;
+
+            // Check the second argument type to determine if this is string/char Contains or collection Contains
+            var secondArgType = m.Arguments[1].Type;
+
+            // If the second argument is a string or ReadOnlySpan<char>, this is string Contains (should use LIKE)
+            if (secondArgType == typeof(string) || secondArgType == typeof(char))
+                return false;
+
+            if (secondArgType.Name == "ReadOnlySpan`1" && secondArgType.GenericTypeArguments.Length > 0 &&
+                secondArgType.GenericTypeArguments[0] == typeof(char))
+                return false;
+
+            // Otherwise, this is a collection Contains (should use IN)
+            // The second argument is the value being searched for (e.g., x.Id)
+            return true;
         }
 
         protected virtual object VisitEnumerableMethodCall(MethodCallExpression m)
@@ -2836,6 +2932,26 @@ namespace ServiceStack.OrmLite
                     List<object> args = this.VisitExpressionList(m.Arguments);
                     object quotedColName = args[0];
                     return ToInPartialString(m.Object, quotedColName);
+
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        protected virtual object VisitSpanContainsMethodCall(MethodCallExpression m)
+        {
+            // Handle MemoryExtensions.Contains<T>(ReadOnlySpan<T>, T) which is used in C# 14
+            // for array.Contains() calls. This is a static extension method where:
+            // - m.Arguments[0] is the collection/array (converted to span)
+            // - m.Arguments[1] is the value to search for
+            switch (m.Method.Name)
+            {
+                case "Contains":
+                    List<object> args = this.VisitExpressionList(m.Arguments);
+                    // args[0] is the collection, args[1] is the column/value to check
+                    object quotedColName = args[1];
+                    Expression collectionExpr = m.Arguments[0];
+                    return ToInPartialString(collectionExpr, quotedColName);
 
                 default:
                     throw new NotSupportedException();
