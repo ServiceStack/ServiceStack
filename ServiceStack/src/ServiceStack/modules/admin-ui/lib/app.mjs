@@ -111,11 +111,12 @@ export function isInput(e) {
 export function keydown(e, ctx) {
     const { unRefs } = useUtils()
     const { canPrev, canNext, nextSkip, take, results, selected, clearFilters } = unRefs(ctx)
-    if (hasModifierKey(e) || isInput(e.target) || results.length === 0) return
+    const show = ctx.show || 'show'
     if (e.key === 'Escape') {
         clearFilters()
         return
     }
+    if (hasModifierKey(e) || isInput(e.target) || results.length === 0) return
     if (e.key === 'ArrowLeft' && canPrev) {
         routes.to({ skip:nextSkip(-take) })
         return
@@ -124,7 +125,7 @@ export function keydown(e, ctx) {
         return
     }
     let row = selected
-    if (!row) return routes.to({ show:map(results[0], x => x.id) || '' })
+    if (!row) return routes.to({ [show]: map(results[0], x => x.id) || '' })
     let activeIndex = results.findIndex(x => x.id === row.id)
     let navs = {
         ArrowUp:   activeIndex - 1,
@@ -135,7 +136,7 @@ export function keydown(e, ctx) {
     let nextIndex = navs[e.key]
     if (nextIndex != null) {
         if (nextIndex === -1) nextIndex = results.length - 1
-        routes.to({ show: map(results[nextIndex % results.length], x => x.id) })
+        routes.to({ [show]: map(results[nextIndex % results.length], x => x.id) })
         if (e.key.startsWith('Arrow')) {
             e.preventDefault()
         }
@@ -315,7 +316,6 @@ app.component('RouterLink', ServiceStackVue.component('RouterLink'))
 app.provides({ app, server, client, store, routes, breakpoints, settings })
 app.directive('highlightjs', (el, binding) => {
     if (binding.value) {
-        //el.className = ''
         el.innerHTML = enc(binding.value)
         hljs.highlightElement(el)
     }

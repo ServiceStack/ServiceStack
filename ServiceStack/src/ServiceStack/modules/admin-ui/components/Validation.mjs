@@ -271,8 +271,27 @@ const EditValidationRule = {
 }
 export const Validation = {
     components: { ApiSelector, EditValidationRule },
-    template:/*html*/`
-    <section class="">
+    template:`
+    <section v-if="!plugin">
+      <div class="p-4 max-w-3xl">
+        <Alert type="info">ValidationSource is not enabled</Alert>
+        <div class="my-4">
+          <div>
+            <p>
+                An <b>IValidationSource</b> needs to be configured with your App
+                <a href="https://docs.servicestack.net/admin-ui-validation" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                   Learn more <span aria-hidden="true">&rarr;</span>
+                </a>
+            </p>
+          </div>
+        </div>
+        <div>
+            <p class="text-sm text-gray-700 mb-2">Quick start:</p>
+            <CopyLine text="x mix validation-source" />
+        </div>
+      </div>
+    </section>
+    <section v-else>
         <ApiSelector class="mt-4" />
         
         <ErrorSummary />

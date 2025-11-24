@@ -104,8 +104,27 @@ const NewKey = {
 
 export const Redis = {
     components: { NewKey },
-    template:/*html*/`
-<section class="">
+    template:`
+<section v-if="!plugin">
+  <div class="p-4 max-w-3xl">
+    <Alert type="info">Redis Admin UI is not enabled</Alert>
+    <div class="my-4">
+      <div>
+        <p>
+            The <b>AdminRedisFeature</b> plugin needs to be configured with your App
+            <a href="https://docs.servicestack.net/admin-ui-redis" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+               Learn more <span aria-hidden="true">&rarr;</span>
+            </a>
+        </p>
+      </div>
+    </div>
+    <div>
+        <p class="text-sm text-gray-700 mb-2">Quick start:</p>
+        <CopyLine text="x mix redis" />
+    </div>
+  </div>
+</section>
+<section v-else>
 <div>
   <div class="sm:hidden">
     <label for="redis-tabs" class="sr-only">Select a tab</label>
@@ -500,7 +519,7 @@ export const Redis = {
         const tabs = { 'Info':'', 'Search':'search', 'Command':'command' }
         const relatedResults = computed(() => apiRelated.value?.response?.searchResults.sort((x,y) => x.id > y.id ? 1 : -1) || [])
         const connectionString = computed(() => endpoint.value.host ? `${endpoint.value.host}:${endpoint.value.port}` : '')
-        const modifiableConnection = computed(() => plugin.modifiableConnection)
+        const modifiableConnection = computed(() => plugin?.modifiableConnection)
         const itemType = computed(() => item.value?.type || '')
         const itemValue = computed(() => item.value?.value || '')
 
@@ -619,8 +638,8 @@ export const Redis = {
         let plugin = server.plugins.adminRedis
         let cloneEndpoint = endpoint => Object.assign({}, { host:'localhost',port:6379,ssl:false,username:'',password:'' }, endpoint)
 
-        const endpoint = ref(cloneEndpoint(plugin.endpoint))
-        const editEndpoint = ref(cloneEndpoint(plugin.endpoint))
+        const endpoint = ref(cloneEndpoint(plugin?.endpoint))
+        const editEndpoint = ref(cloneEndpoint(plugin?.endpoint))
         
         /** @param {*?} args
          * @returns {AdminRedis} */

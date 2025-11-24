@@ -413,8 +413,23 @@ export const EditUser = {
 
 export const Users = {
     components: { NewUser, EditUser },
-    template:/*html*/`
-<section id="admin-users" @keydown="onKeyDown">
+    template:`
+<section v-if="!plugin">
+  <div class="p-4 max-w-3xl">
+    <Alert type="info">AdminUsersFeature is not enabled</Alert>
+    <div class="my-4">
+      <div>
+        <p>
+            The <b>AdminUsersFeature</b> plugin needs to be configured with your App
+            <a href="https://docs.servicestack.net/admin-ui-users" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+               Learn more <span aria-hidden="true">&rarr;</span>
+            </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+<section v-else id="admin-users" @keydown="onKeyDown">
     <form @submit.prevent="formSearch" class="mb-3">
         <div class="flex items-center">
             <TextInput id="query" type="search" v-model="request.query" label="" placeholder="Search Users" @search="formSearch" class="-mt-1" />
@@ -507,12 +522,14 @@ export const Users = {
     `,
     setup() {
         const routes = inject('routes')
+        const server = inject('server')
         const store = inject('store')
         const client = useClient()
         const refreshKey = ref(1)
         
+        const plugin = server.plugins.adminUsers
         const request = ref(new AdminQueryUsers({ query:routes.q }))
-        /** @type {Ref<ApiResult<AdminQueryUsersResponse>>>} */
+        /** @type {Ref<ApiResult<AdminQueryUsersResponse>>} */
         const api = ref(new ApiResult())
 
         const results = computed(() => api.value?.response?.results || [])
@@ -558,7 +575,8 @@ export const Users = {
         
         return {
             client,
-            store, 
+            store,
+            plugin,
             routes,
             refreshKey,
             link,

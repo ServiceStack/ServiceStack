@@ -6,8 +6,23 @@ import { AdminDatabase } from "dtos"
 import { prettyJson } from "core"
 
 export const Database = {
-    template:/*html*/`
-    <section class="">
+    template:`
+    <section v-if="!plugin">
+      <div class="p-4 max-w-3xl">
+        <Alert type="info">Database Admin UI is not enabled</Alert>
+        <div class="my-4">
+          <div>
+            <p>
+                The <b>AdminDatabaseFeature</b> plugin needs to be configured with your App
+                <a href="https://docs.servicestack.net/admin-ui-database" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                   Learn more <span aria-hidden="true">&rarr;</span>
+                </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section v-else>
         <div v-if="!routes.table" class="flex flex-wrap">
             <nav v-for="db in databases" class="flex-1 space-y-1 bg-white pb-4 md:pb-scroll" aria-label="Tables">
                 <div class="">

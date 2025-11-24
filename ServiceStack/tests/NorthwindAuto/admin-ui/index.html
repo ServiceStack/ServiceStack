@@ -96,6 +96,7 @@ DEBUG = true /*debug*/
         "vue": "../js/vue.mjs",  
         "color.js": "../js/color.js",
         "chart.js": "../js/chart.js",
+        "highlight.js": "../js/highlight.mjs",
         "@servicestack/vue": "../js/servicestack-vue.mjs",
         "@servicestack/client": "../js/servicestack-client.mjs",
         "highlight.js": "../js/highlight.mjs",
@@ -152,6 +153,14 @@ DEBUG = true /*debug*/
                                 <validation v-else-if="routes.admin === 'validation'"></validation>
                                 <redis v-else-if="routes.admin === 'redis'"></redis>
                                 <database v-else-if="routes.admin === 'database'"></database>
+                                <div v-else>
+                                    <alert type="info">
+                                        This Admin UI feature is not currently installed or enabled in your ServiceStack application.
+                                        <a href="https://docs.servicestack.net/admin-ui" target="_blank" class="whitespace-nowrap font-medium text-blue-700 hover:text-blue-600">
+                                            Learn more <span aria-hidden="true">&rarr;</span>
+                                        </a>
+                                    </alert>
+                                </div>
                             </div>
                         </div>
                     </div>

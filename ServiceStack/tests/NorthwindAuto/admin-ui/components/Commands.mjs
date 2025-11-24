@@ -7,8 +7,23 @@ import { Chart, registerables } from 'chart.js'
 Chart.register(...registerables)
 
 export const Commands = {
-    template:/*html*/`
-    <section class="">
+    template:`
+    <section v-if="!plugin">
+      <div class="p-4 max-w-3xl">
+        <Alert type="info">Admin Commands UI is not enabled</Alert>
+        <div class="my-4">
+          <div>
+            <p>
+                The <b>CommandsFeature</b> plugin needs to be configured with your App
+                <a href="https://docs.servicestack.net/commands#command-admin-ui" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                   Learn more <span aria-hidden="true">&rarr;</span>
+                </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section v-else>
       <div>
         <div class="sm:hidden">
           <label for="redis-tabs" class="sr-only">Select a tab</label>
@@ -246,6 +261,7 @@ export const Commands = {
         const routes = inject('routes')
         const server = inject('server')
         const client = inject('client')
+        const plugin = server.plugins.commands
         const {
             time,
             relativeTime,
@@ -282,7 +298,7 @@ export const Commands = {
         }
 
         const model = ref({})
-        const commandInfos = server.plugins.commands.commands
+        const commandInfos = plugin.commands
         const navs = ref(Array.from(new Set(commandInfos.map(x => x.tag ?? 'other')))
             .map(x => ({
                 tag: x,
@@ -543,8 +559,8 @@ export const Commands = {
             ].filter(x => !!x).join('\n')
         }
 
-        return { 
-            routes, api, commandTotals, tabs, elChart, bottom, loadingMore, q, type, 
+        return {
+            plugin, routes, api, commandTotals, tabs, elChart, bottom, loadingMore, q, type, 
             refresh, headerSelected, rowSelected,
             selectedError, selectedClean, prettyJson, toggleError, rowSelectedError,
             toDate, time, altError,

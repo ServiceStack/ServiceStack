@@ -5,7 +5,26 @@ import { AdminQueryApiKeys } from "dtos"
 
 export const ApiKeys = {
     template:`
-      <section id="apikeys">
+      <section v-if="!plugin">
+          <div class="p-4 max-w-3xl">
+            <Alert type="info">API Keys Admin UI is not enabled</Alert>
+            <div class="my-4">
+              <div>
+                <p>
+                    The <b>ApiKeysFeature</b> plugin needs to be configured with your App
+                    <a href="https://docs.servicestack.net/auth/apikeys" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                       Learn more <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </p>
+              </div>
+            </div>
+            <div>
+                <p class="text-sm text-gray-700 mb-2">Quick start:</p>
+                <CopyLine text="x mix apikeys" />
+            </div>
+          </div>
+      </section>
+      <section v-else id="apikeys">
         <form @submit.prevent="formSearch" class="mb-3">
           <div class="flex items-center">
             <TextInput id="query" type="search" v-model="request.search" label="" placeholder="Search API Keys" @search="formSearch" class="-mt-1" />
@@ -94,6 +113,7 @@ export const ApiKeys = {
         const routes = inject('routes')
         const store = inject('store')
         const server = inject('server')
+        const plugin = server.plugins.apiKey
         const client = useClient()
         const { formatDate, relativeTime } = useFormatters()
         const renderKey = ref(1)
@@ -103,10 +123,10 @@ export const ApiKeys = {
 
         const results = computed(() => api.value?.response?.results || [])
         const columns = 'id,userName,name,visibleKey,createdDate,expiryDate'.split(',')
-        if (server.plugins.apiKey.scopes.length) {
+        if (plugin.scopes.length) {
             columns.push('scopes')
         }
-        if (server.plugins.apiKey.features.length) {
+        if (plugin.features.length) {
             columns.push('features')
         }
         columns.push('lastUsedDate')
@@ -190,6 +210,7 @@ export const ApiKeys = {
             client,
             store,
             server,
+            plugin,
             routes,
             renderKey,
             link,

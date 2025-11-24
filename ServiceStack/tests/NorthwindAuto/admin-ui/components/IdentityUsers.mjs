@@ -673,7 +673,22 @@ export const EditUser = {
 export const IdentityUsers = {
     components: { NewUser, EditUser },
     template:/*html*/`
-<section id="admin-users">
+<section v-if="!plugin">
+  <div class="p-4 max-w-3xl">
+    <Alert type="info">AdminUsersFeature is not enabled</Alert>
+    <div class="my-4">
+      <div>
+        <p>
+            The <b>AdminUsersFeature</b> plugin needs to be configured with your App
+            <a href="https://docs.servicestack.net/admin-ui-identity-users" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+               Learn more <span aria-hidden="true">&rarr;</span>
+            </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+<section v-else id="admin-users">
     <form @submit.prevent="formSearch" class="mb-3">
         <div class="flex items-center">
             <TextInput id="query" type="search" v-model="request.query" label="" placeholder="Search Users" @search="formSearch" class="-mt-1" />
@@ -759,9 +774,11 @@ export const IdentityUsers = {
     setup() {
         const routes = inject('routes')
         const store = inject('store')
+        const server = inject('server')
         const client = useClient()
         const refreshKey = ref(1)
 
+        const plugin = server.plugins.adminIdentityUsers
         const request = ref(new AdminQueryUsers({ query:routes.q }))
         /** @type {Ref<ApiResult<AdminUsersResponse>>} */
         const api = ref(new ApiResult())
@@ -833,6 +850,7 @@ export const IdentityUsers = {
         return {
             client,
             store,
+            plugin,
             routes,
             refreshKey,
             link,

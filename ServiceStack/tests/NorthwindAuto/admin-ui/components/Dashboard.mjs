@@ -199,6 +199,7 @@ export const Dashboard = {
             validation:'Validation', 
             database:'Database', 
             redis:'Redis',
+            aichat:'AI Chat',
         }))
         
         function isRegistered(id) {

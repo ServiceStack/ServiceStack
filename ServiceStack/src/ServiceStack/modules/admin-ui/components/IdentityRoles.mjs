@@ -240,7 +240,22 @@ export const EditRole = {
 export const IdentityRoles = {
     components: { NewRole, EditRole },
     template:/*html*/`
-<section id="admin-users">
+<section v-if="!plugin">
+  <div class="p-4 max-w-3xl">
+    <Alert type="info">AdminUsersFeature is not enabled</Alert>
+    <div class="my-4">
+      <div>
+        <p>
+            The <b>AdminUsersFeature</b> plugin needs to be configured with your App
+            <a href="https://docs.servicestack.net/admin-ui-identity-roles" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+               Learn more <span aria-hidden="true">&rarr;</span>
+            </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+<section v-else id="admin-users">
   <a v-href="{ new:1,edit:null }" class="inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
     New
     <span class="hidden md:ml-1 md:inline">Role</span>
@@ -287,8 +302,10 @@ export const IdentityRoles = {
     setup() {
         const routes = inject('routes')
         const store = inject('store')
+        const server = inject('server')
         const client = useClient()
         const refreshKey = ref(1)
+        const plugin = server.plugins.adminIdentityUsers
         const request = ref(new AdminGetRoles())
         /** @type {Ref<ApiResult<AdminGetRolesResponse>>} */
         const api = ref(new ApiResult())
@@ -348,6 +365,7 @@ export const IdentityRoles = {
         return {
             client,
             store,
+            plugin,
             routes,
             refreshKey,
             link,

@@ -431,7 +431,26 @@ export const AdminChat = {
         LogDetailDialog,
     },
     template: `
-        <div class="flex flex-col h-full w-full bg-gray-50 dark:bg-gray-900">
+        <section v-if="!plugin">
+          <div class="p-4 max-w-3xl">
+            <Alert type="info">Admin Chat UI is not enabled</Alert>
+            <div class="my-4">
+              <div>
+                <p>
+                    The <b>ChatFeature</b> plugin needs to be configured with your App
+                    <a href="https://docs.servicestack.net/ai-chat-api" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                       Learn more <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </p>
+              </div>
+            </div>
+            <div>
+                <p class="text-sm text-gray-700 my-2">Quick start:</p>
+                <CopyLine text="x mix chat" />
+            </div>
+          </div>
+        </section>
+        <div v-else class="flex flex-col h-full w-full bg-gray-50 dark:bg-gray-900">
             <!-- Header with Title and Month Selector -->
             <div class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 sm:px-4 py-3">
                 <div class="max-w-6xl mx-auto flex items-center justify-between">
@@ -780,6 +799,7 @@ export const AdminChat = {
     setup() {
         const routes = inject('routes')
         const server = inject('server')
+        const plugin = server.plugins.loaded.includes('aichat')
         const client = useClient()
         const selectedLog = ref(null)
         const preview = ref(false)
@@ -1639,6 +1659,7 @@ export const AdminChat = {
         })
 
         return {
+            plugin,
             routes,
             selectedLog,
             logs,

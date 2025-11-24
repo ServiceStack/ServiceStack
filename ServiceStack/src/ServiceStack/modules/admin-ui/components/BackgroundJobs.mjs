@@ -997,10 +997,31 @@ export const BackgroundJobs = {
         ScheduledTasks,
     },
     template: `
-        <Tabs :tabs="tabs" :label="tabLabel" :clearQuery="true" />
+        <section v-if="!plugin">
+          <div class="p-4 max-w-3xl">
+            <Alert type="info">Background Jobs Admin UI is not enabled</Alert>
+            <div class="my-4">
+              <div>
+                <p>
+                    The <b>DatabaseJobFeature</b> plugin needs to be configured with your App
+                    <a href="https://docs.servicestack.net/rdbms-background-jobs" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                       Learn more <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </p>
+              </div>
+            </div>
+            <div>
+                <p class="text-sm text-gray-700 mb-2">Quick start:</p>
+                <CopyLine text="x mix db-jobs" />
+            </div>
+          </div>
+        </section>
+        <Tabs v-else :tabs="tabs" :label="tabLabel" :clearQuery="true" />
     `,
     setup() {
         const client = useClient()
+        const server = inject('server')
+        const plugin = server.plugins.loaded.includes('backgroundjobs')
         
         const tabs = {
             Dashboard,
@@ -1044,6 +1065,7 @@ export const BackgroundJobs = {
             clearTimeout(updateStatsTimeout)
         })
         return {
+            plugin,
             info,
             tabs,
             tabLabel,

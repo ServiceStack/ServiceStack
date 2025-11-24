@@ -1719,7 +1719,28 @@ export const Analytics = {
         IpAnalytics,
     },
     template: `
-      <div class="container mx-auto">
+      <section v-if="!plugin">
+          <div class="p-4 max-w-3xl">
+            <Alert type="info">Admin Analytics UI is not enabled</Alert>
+            <div class="my-4">
+              <div>
+                <p>
+                    The <b>RequestLogsFeature</b> plugin needs to be configured with your App's RDBMS
+                    <a href="https://docs.servicestack.net/admin-ui-rdbms-analytics" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                       Learn more <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </p>
+              </div>
+            </div>
+            <div>
+                <p class="text-sm text-gray-700 my-2">For ASP.NET Identity Auth Projects:</p>
+                <CopyLine text="x mix db-identity" />
+                <p class="text-sm text-gray-700 my-2">For other ASP.NET Core Projects:</p>
+                <CopyLine text="x mix db-requestlogs" />
+            </div>
+          </div>
+      </section>
+      <div v-else class="container mx-auto">
         <ErrorSummary v-if="api.error" :status="api.error" />
         <div>
             <div class="relative">
@@ -1764,13 +1785,14 @@ export const Analytics = {
     setup(props) {
         const routes = inject('routes')
         const server = inject('server')
+        const plugin = server.plugins.requestLogs
         const client = useClient()
         const analytics = ref(null)
         const loading = ref(false)
         const error = ref(null)
         const api = ref(new ApiResult())
-        const tabs = ref(server.plugins.requestLogs?.analytics?.tabs ?? {APIs: ''})
-        const months = ref(server.plugins.requestLogs?.analytics?.months ?? [])
+        const tabs = ref(plugin?.analytics?.tabs ?? {APIs: ''})
+        const months = ref(plugin?.analytics?.months ?? [])
         const years = computed(() =>
             Array.from(new Set(months.value.map(x => leftPart(x, '-')))).toReversed())
         async function update() {
@@ -1807,6 +1829,7 @@ export const Analytics = {
             nextTick(update)
         })
         return {
+            plugin,
             routes,
             api,
             analytics,
