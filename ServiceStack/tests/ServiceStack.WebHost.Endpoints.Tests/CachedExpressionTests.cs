@@ -64,6 +64,6 @@ public class CachedExpressionTests
             ? q.Limit(request.Skip, take)
             : q.Limit(take);
         
-        var results = db.Select(q);        
+        Assert.That(q.WhereExpression, Is.EqualTo("WHERE \"Id\" IN (@0,@1,@2)"));
     }
 }

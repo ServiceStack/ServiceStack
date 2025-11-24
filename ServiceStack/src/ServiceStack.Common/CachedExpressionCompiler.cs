@@ -212,7 +212,46 @@ namespace ServiceStack.ExpressionUtil
             private static Func<TIn, TOut> CompileSlow(Expression<Func<TIn, TOut>> expr)
             {
                 // fallback compilation system - just compile the expression directly
-                return expr.Compile();
+                try
+                {
+                    return expr.Compile();
+                }
+                catch (Exception)
+                {
+                    // Try to recover from invalid ref struct boxing (e.g. Span<T> implicit conversion)
+                    if (expr.Body is UnaryExpression u 
+                        && u.NodeType == ExpressionType.Convert 
+                        && u.Type == typeof(object)
+                        && u.Operand is MethodCallExpression m
+                        && m.Method.Name == "op_Implicit")
+                    {
+                        var returnType = m.Method.ReturnType;
+                        bool isRefStruct = false;
+#if NET6_0_OR_GREATER
+                        isRefStruct = returnType.IsByRefLike;
+#else
+                        isRefStruct = returnType.Name.Contains("Span");
+#endif
+
+                        if (isRefStruct)
+                        {
+                            try 
+                            {
+                                // Strip the implicit conversion and try compiling the inner expression
+                                var inner = m.Arguments[0];
+                                var newBody = Expression.Convert(inner, typeof(object));
+                                var newLambda = Expression.Lambda<Func<TIn, TOut>>(newBody, expr.Parameters);
+                                return newLambda.Compile();
+                            }
+                            catch
+                            {
+                                // If recovery fails, ignore and throw original
+                            }
+                        }
+                    }
+
+                    throw;
+                }
             }
         }
     }
@@ -575,12 +614,27 @@ namespace ServiceStack.ExpressionUtil
             return GiveUp(node);
         }
 
+        private bool IsRefStruct(Type type)
+        {
+#if NET6_0_OR_GREATER
+            return type.IsByRefLike;
+#else
+            return type.Name.Contains("Span");
+#endif
+        }
+
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             if (_gaveUp)
             {
                 return node;
             }
+
+            if (IsRefStruct(node.Type))
+            {
+                return GiveUp(node);
+            }
+
             _currentChain.Elements.Add(new MethodCallExpressionFingerprint(node.NodeType, node.Type, node.Method));
             return base.VisitMethodCall(node);
         }
@@ -650,6 +704,12 @@ namespace ServiceStack.ExpressionUtil
             {
                 return node;
             }
+
+            if (IsRefStruct(node.Type))
+            {
+                return GiveUp(node);
+            }
+
             _currentChain.Elements.Add(new UnaryExpressionFingerprint(node.NodeType, node.Type, node.Method));
             return base.VisitUnary(node);
         }
