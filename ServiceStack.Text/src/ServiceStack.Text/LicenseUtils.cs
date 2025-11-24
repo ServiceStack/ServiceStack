@@ -490,8 +490,10 @@ public static class LicenseUtils
 
     public static void ApprovedUsage(int allowedUsage, int actualUsage, string message)
     {
+#if !DEBUG        
         if (actualUsage > allowedUsage)
             throw new LicenseException(message.Fmt(allowedUsage)).Trace();
+#endif
     }
 
     // Only used for testing license validation
