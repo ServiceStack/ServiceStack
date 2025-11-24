@@ -337,6 +337,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
         var take = request.Take ?? MaxLimit;
         
         var q = db.From<RequestLog>();
+        var Headers = q.DialectProvider.GetQuotedColumnName(nameof(RequestLog.Headers));
         if (request.BeforeSecs.HasValue)
             q = q.Where(x => (now - x.DateTime) <= TimeSpan.FromSeconds(request.BeforeSecs.Value));
         if (request.AfterSecs.HasValue)
@@ -356,7 +357,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
         if (!request.PathInfo.IsNullOrEmpty())
             q = q.Where(x => x.PathInfo == request.PathInfo);
         if (!request.BearerToken.IsNullOrEmpty())
-            q = q.Where("Headers LIKE {0}", $"%Bearer {request.BearerToken.SqlVerifyFragment()}%");
+            q = q.Where(Headers + " LIKE {0}", $"%Bearer {request.BearerToken.SqlVerifyFragment()}%");
         if (!request.Ids.IsEmpty())
             q = q.Where(x => request.Ids.Contains(x.Id));
         if (request.BeforeId.HasValue)

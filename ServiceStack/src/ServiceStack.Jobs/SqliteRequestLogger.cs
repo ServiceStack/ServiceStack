@@ -126,6 +126,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         var take = request.Take ?? MaxLimit;
         
         var q = db.From<RequestLog>();
+        var Headers = q.DialectProvider.GetQuotedColumnName(nameof(RequestLog.Headers));
         if (request.BeforeSecs.HasValue)
             q = q.Where(x => (now - x.DateTime) <= TimeSpan.FromSeconds(request.BeforeSecs.Value));
         if (request.AfterSecs.HasValue)
@@ -145,7 +146,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         if (!request.PathInfo.IsNullOrEmpty())
             q = q.Where(x => x.PathInfo == request.PathInfo);
         if (!request.BearerToken.IsNullOrEmpty())
-            q = q.Where("Headers LIKE {0}", $"%Bearer {request.BearerToken.SqlVerifyFragment()}%");
+            q = q.Where(Headers + " LIKE {0}", $"%Bearer {request.BearerToken.SqlVerifyFragment()}%");
         if (!request.Ids.IsEmpty())
             q = q.Where(x => request.Ids.Contains(x.Id));
         if (request.BeforeId.HasValue)
@@ -597,11 +598,12 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         apiKey.SqlVerifyFragment();
         
         using var db = OpenMonthDb(month);
+        var Headers = db.GetDialectProvider().GetQuotedColumnName(nameof(RequestLog.Headers));
 
         var tableExists = db.TableExists<ApiKeyAnalytics>();
         var lastLogId = tableExists
             ? db.Single(db.From<RequestLog>()
-                .And("Headers LIKE {0}", $"%Bearer {apiKey}%")
+                .And(Headers + " LIKE {0}", $"%Bearer {apiKey}%")
                 .OrderByDescending(x => x.Id).Limit(1))?.Id
             : null;
 
@@ -625,7 +627,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
             batch = db.Select(
                 db.From<RequestLog>()
                     .Where(x => x.Id > lastPk)
-                    .And("Headers LIKE {0}", $"%Bearer {apiKey}%")
+                    .And(Headers + " LIKE {0}", $"%Bearer {apiKey}%")
                     .OrderBy(x => x.Id)
                     .Limit(config.BatchSize));
             
