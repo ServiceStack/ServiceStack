@@ -465,6 +465,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				WsdlServiceNamespace = "http://www.servicestack.net/types",
 				DebugMode = true,
                 PreferredContentTypes = { MimeTypes.ProtoBuf },
+                DefaultRedirectPath = "/metadata"
 			});
 
 			this.RegisterRequestBinder<CustomRequestBinder>(
@@ -535,6 +536,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				},
                 WsdlServiceNamespace = "http://www.servicestack.net/types",
                 DebugMode = true,
+                DefaultRedirectPath = "/metadata"
             });
 
             this.RegisterRequestBinder<CustomRequestBinder>(
