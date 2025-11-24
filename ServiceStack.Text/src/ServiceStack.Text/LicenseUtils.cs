@@ -490,7 +490,7 @@ public static class LicenseUtils
 
     public static void ApprovedUsage(int allowedUsage, int actualUsage, string message)
     {
-#if !DEBUG        
+#if !DEBUG || true
         if (actualUsage > allowedUsage)
             throw new LicenseException(message.Fmt(allowedUsage)).Trace();
 #endif
