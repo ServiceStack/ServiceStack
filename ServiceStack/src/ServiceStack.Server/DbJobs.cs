@@ -790,29 +790,35 @@ public partial class DbJobs : IBackgroundJobs
         var now = DateTime.UtcNow;
         var requestId = Guid.NewGuid().ToString("N");
         var completedJob = job.PopulateJob(new CompletedJob());
+
+        // Archive to monthly database (separate connection, no transaction needed)
+        using (var dbMonth = feature.OpenMonthDb(job.CreatedDate))
+        {
+            try
+            {
+                dbMonth.Insert(completedJob);
+            }
+            catch (Exception e)
+            {
+                var existingJob = dbMonth.SingleById<CompletedJob>(completedJob.Id);
+                if (existingJob != null)
+                {
+                    log.LogWarning("Existing CompletedJob {Id} already exists, updating instead", completedJob.Id);
+                    dbMonth.Update(completedJob);
+                }
+                else
+                {
+                    log.LogError(e, "Failed to Insert CompletedJob {Id}: {Message}", completedJob.Id, e.Message);
+                }
+            }
+        }
+
+        // Update main database with transaction
         using var db = feature.OpenDb();
         using var trans = db.OpenTransaction();
-        
-        using var dbMonth = feature.OpenMonthDb(job.CreatedDate);
-        try
-        {
-            dbMonth.Insert(completedJob);
-        }
-        catch (Exception e)
-        {
-            var existingJob = dbMonth.SingleById<CompletedJob>(completedJob.Id);
-            if (existingJob != null)
-            {
-                log.LogWarning("Existing CompletedJob {Id} already exists, updating instead", completedJob.Id);
-                dbMonth.Update(completedJob);
-            }
-            else
-            {
-                log.LogError(e, "Failed to Insert CompletedJob {Id}: {Message}", completedJob.Id, e.Message);
-            }
-        }
+
         db.DeleteById<BackgroundJob>(job.Id);
-        
+
         // Execute any jobs depending on this job
         db.UpdateOnly(() => new BackgroundJob {
             RequestId = requestId,
@@ -821,10 +827,11 @@ public partial class DbJobs : IBackgroundJobs
             State = BackgroundJobState.Queued,
             ParentId = job.Id,
         }, where:x => x.CompletedDate == null && x.RequestId == null && x.DependsOn == job.Id);
-        
-        trans.Commit();
-        
+
         var dispatchJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
+
+        trans.Commit();
+
         if (dispatchJobs.Count > 0)
         {
             log.LogInformation("JOBS Queued {Count} Jobs dependent on {JobId}", dispatchJobs.Count, job.Id);
