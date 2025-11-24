@@ -78,7 +78,12 @@ namespace ServiceStack.ExpressionUtil
         }
 
         public static bool CanCache(Expression expr)
-            => CacheableExpressionVisitor.IsCacheable(expr);
+        {
+            if (ClosureSafety.HasMutableClosure(expr))
+                return false;
+
+            return CacheableExpressionVisitor.IsCacheable(expr);
+        }
 
         private static string Hash(string input)
         {
@@ -173,6 +178,100 @@ namespace ServiceStack.ExpressionUtil
                 return base.VisitTry(node);
             }
         }
+        
+        public static class ClosureSafety
+        {
+            public static bool HasMutableClosure(Expression expr)
+            {
+                var detector = new MutableClosureDetector();
+                detector.Visit(expr);
+                return detector.Result;
+            }
+
+            private sealed class MutableClosureDetector : ExpressionVisitor
+            {
+                public bool Result { get; private set; }
+
+                public override Expression Visit(Expression node)
+                {
+                    if (Result || node is null)
+                        return node;
+
+                    return base.Visit(node);
+                }
+
+                protected override Expression VisitMember(MemberExpression node)
+                {
+                    if (Result)
+                        return node;
+
+                    // Identify DisplayClass closure (C# compiler generated)
+                    if (node.Expression is ConstantExpression c &&
+                        c.Type.IsNestedPrivate &&
+                        c.Type.Name.Contains("DisplayClass"))
+                    {
+                        Type capturedType = node.Type;
+
+                        if (IsMutableType(capturedType))
+                            Result = true;
+                    }
+
+                    return base.VisitMember(node);
+                }
+
+                private static bool IsMutableType(Type type)
+                {
+                    // Arrays are always mutable
+                    if (type.IsArray)
+                        return true;
+
+                    // ref structs and Span<T> are stack-only, must never be cached
+                    if (type.IsRefStruct())
+                        return true;
+
+                    // Classes are mutable unless proven otherwise
+                    if (!type.IsValueType)
+                        return true;
+
+                    // Enums are immutable
+                    if (type.IsEnum)
+                        return false;
+
+                    // Primitive value types are immutable
+                    if (type.IsPrimitive)
+                        return false;
+
+                    // Decimal, DateTime, Guid are immutable structs
+                    if (type == typeof(decimal) ||
+                        type == typeof(DateTime) ||
+                        type == typeof(Guid) ||
+                        type == typeof(TimeSpan))
+                        return false;
+
+                    // Nullable<T> → check underlying type
+                    if (Nullable.GetUnderlyingType(type) is Type underlying)
+                        return IsMutableType(underlying);
+
+                    // Structs are mutable unless all fields are readonly, and those fields are immutable
+                    return StructIsMutable(type);
+                }
+
+                private static bool StructIsMutable(Type type)
+                {
+                    foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+                    {
+                        if (!field.IsInitOnly)
+                            return true; // mutable field
+
+                        if (IsMutableType(field.FieldType))
+                            return true; // immutable wrapper around mutable type
+                    }
+
+                    return false; // readonly struct of immutable fields
+                }
+            }
+        }
+        
     }
 
     // BinaryExpression fingerprint class
@@ -358,14 +457,7 @@ namespace ServiceStack.ExpressionUtil
                         && u.Operand is MethodCallExpression { Method.Name: "op_Implicit" } m)
                     {
                         var returnType = m.Method.ReturnType;
-                        bool isRefStruct = false;
-#if NET6_0_OR_GREATER
-                        isRefStruct = returnType.IsByRefLike;
-#else
-                        isRefStruct = returnType.Name.Contains("Span");
-#endif
-
-                        if (isRefStruct)
+                        if (returnType.IsRefStruct())
                         {
                             try
                             {
@@ -732,15 +824,6 @@ namespace ServiceStack.ExpressionUtil
             return GiveUp(node);
         }
 
-        private bool IsRefStruct(Type type)
-        {
-#if NET6_0_OR_GREATER
-            return type.IsByRefLike;
-#else
-            return type.Name.Contains("Span");
-#endif
-        }
-
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             if (_gaveUp)
@@ -748,7 +831,7 @@ namespace ServiceStack.ExpressionUtil
                 return node;
             }
 
-            if (IsRefStruct(node.Type))
+            if (node.Type.IsRefStruct())
             {
                 return GiveUp(node);
             }
@@ -824,7 +907,7 @@ namespace ServiceStack.ExpressionUtil
                 return node;
             }
 
-            if (IsRefStruct(node.Type))
+            if (node.Type.IsRefStruct())
             {
                 return GiveUp(node);
             }
@@ -837,11 +920,7 @@ namespace ServiceStack.ExpressionUtil
     internal class HashCodeCombiner
     {
         private long _combinedHash64 = 0x1505L;
-
-        public int CombinedHash
-        {
-            get { return _combinedHash64.GetHashCode(); }
-        }
+        public int CombinedHash => _combinedHash64.GetHashCode();
 
         public void AddFingerprint(ExpressionFingerprint fingerprint)
         {

@@ -9,12 +9,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests;
 
 public class CachedExpressionTests
 {
-    void AssertExpr(Action<SqlExpression<RequestLog>> fn, string expected)
+    void AssertExpr(Action<SqlExpression<RequestLog>> fn, string expected, object[] paramValues = null)
     {
         var q = new OrmLite.Sqlite.SqliteExpression<RequestLog>(SqliteDialect.Provider);
         Console.WriteLine($"Running: {expected}");
         fn(q);
         Assert.That(q.WhereExpression, Is.EqualTo(expected));
+        if (paramValues != null)
+        {
+            Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(paramValues));
+        }
     }
 
     [Test]
@@ -22,6 +26,24 @@ public class CachedExpressionTests
     {
         Can_compile_cached_expressions();
         Can_compile_cached_expressions();
+    }
+
+    [Test]
+    public void Does_not_cache_array_expressions()
+    {
+        var request = new RequestLogs
+        {
+            Ids = [1,2,3]
+        };
+        AssertExpr(q => q.Where(x => request.Ids.Contains(x.Id)), 
+            "WHERE \"Id\" IN (@0,@1,@2)", [1,2,3]); 
+
+        request = new RequestLogs
+        {
+            Ids = [4,5,6]
+        };
+        AssertExpr(q => q.Where(x => request.Ids.Contains(x.Id)), 
+            "WHERE \"Id\" IN (@0,@1,@2)", [4,5,6]); 
     }
     
     [Test]

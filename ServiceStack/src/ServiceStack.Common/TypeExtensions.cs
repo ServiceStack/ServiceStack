@@ -432,4 +432,13 @@ public static class TypeExtensions
             paramInstance);
         return lambda;
     }
+        
+    public static bool IsRefStruct(this Type type)
+    {
+#if NET6_0_OR_GREATER
+        return type.IsByRefLike;
+#else
+            return type.Name.Contains("Span");
+#endif
+    }
 }
