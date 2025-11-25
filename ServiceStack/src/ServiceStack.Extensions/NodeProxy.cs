@@ -470,11 +470,44 @@ public static class ProxyExtensions
     }
 
     /// <summary>
+    /// Map Vite HMR WebSocket requests
+    /// </summary>
+    public static void MapViteHmr(this WebApplication app, NodeProxy proxy)
+    {
+        app.Use(async (context, next) =>
+        {
+            // Vite HMR uses WebSocket connections on the root path
+            // Check if this is a WebSocket upgrade request
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                await WebSocketToNode(context, proxy.Client.BaseAddress!);
+            }
+            else
+            {
+                await next();
+            }
+        });
+    }
+
+    /// <summary>
     /// Proxy WebSocket requests to Node.js
     /// </summary>
     public static async Task WebSocketToNode(HttpContext context, Uri nextServerBase, bool allowInvalidCerts=true)
     {
-        using var clientSocket = await context.WebSockets.AcceptWebSocketAsync();
+        // Handle WebSocket subprotocol if requested (Vite HMR uses this)
+        string? requestedProtocol = null;
+        if (context.Request.Headers.TryGetValue("Sec-WebSocket-Protocol", out var protocolValues))
+        {
+            requestedProtocol = protocolValues.ToString();
+        }
+
+        var acceptOptions = string.IsNullOrEmpty(requestedProtocol)
+            ? null
+            : new WebSocketAcceptContext { SubProtocol = requestedProtocol };
+
+        using var clientSocket = acceptOptions != null
+            ? await context.WebSockets.AcceptWebSocketAsync(acceptOptions)
+            : await context.WebSockets.AcceptWebSocketAsync();
 
         using var nextSocket = new ClientWebSocket();
         if (allowInvalidCerts && nextServerBase.Scheme == "https")
@@ -485,6 +518,12 @@ public static class ProxyExtensions
         if (context.Request.Headers.TryGetValue("Cookie", out var cookieValues))
         {
             nextSocket.Options.SetRequestHeader("Cookie", cookieValues.ToString());
+        }
+
+        // Add WebSocket subprotocol if requested
+        if (!string.IsNullOrEmpty(requestedProtocol))
+        {
+            nextSocket.Options.AddSubProtocol(requestedProtocol);
         }
 
         var builder = new UriBuilder(nextServerBase)
