@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using ServiceStack.Host;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -6,15 +5,8 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace ServiceStack.AspNetCore.OpenApi;
 
 // Last OpenApi Filter to run
-public class ServiceStackDocumentFilter : IDocumentFilter
+public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFilter
 {
-    private readonly OpenApiMetadata metadata;
-
-    public ServiceStackDocumentFilter(OpenApiMetadata metadata)
-    {
-        this.metadata = metadata;
-    }
-
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
         //Console.WriteLine(GetType().Name + "...");
