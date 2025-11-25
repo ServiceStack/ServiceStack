@@ -1734,9 +1734,9 @@ export const Analytics = {
             </div>
             <div>
                 <p class="text-sm text-gray-700 my-2">For ASP.NET Identity Auth Projects:</p>
-                <CopyLine text="x mix db-identity" />
+                <CopyLine text="npx add-in db-identity" />
                 <p class="text-sm text-gray-700 my-2">For other ASP.NET Core Projects:</p>
-                <CopyLine text="x mix db-requestlogs" />
+                <CopyLine text="npx add-in db-requestlogs" />
             </div>
           </div>
       </section>

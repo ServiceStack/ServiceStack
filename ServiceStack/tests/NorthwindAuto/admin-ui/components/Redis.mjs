@@ -120,7 +120,7 @@ export const Redis = {
     </div>
     <div>
         <p class="text-sm text-gray-700 mb-2">Quick start:</p>
-        <CopyLine text="x mix redis" />
+        <CopyLine text="npx add-in redis" />
     </div>
   </div>
 </section>

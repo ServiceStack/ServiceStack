@@ -446,7 +446,7 @@ export const AdminChat = {
             </div>
             <div>
                 <p class="text-sm text-gray-700 my-2">Quick start:</p>
-                <CopyLine text="x mix chat" />
+                <CopyLine text="npx add-in chat" />
             </div>
           </div>
         </section>

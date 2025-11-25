@@ -312,7 +312,7 @@ export const Validation = {
         </div>
         <div>
             <p class="text-sm text-gray-700 mb-2">Quick start:</p>
-            <CopyLine text="x mix validation-source" />
+            <CopyLine text="npx add-in validation-source" />
         </div>
       </div>
     </section>

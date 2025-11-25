@@ -23,11 +23,11 @@ export const Logging = {
             </div>
             <div>
                 <p class="text-sm text-gray-700 my-2">Quick start:</p>
-                <CopyLine text="x mix requestlogs" />
+                <CopyLine text="npx add-in requestlogs" />
                 <p class="text-sm text-gray-700 my-2">To store in SQLite:</p>
-                <CopyLine text="x mix sqlitelogs" />
+                <CopyLine text="npx add-in sqlitelogs" />
                 <p class="text-sm text-gray-700 my-2">To store in PostgreSQL, MySQL or SQL Server:</p>
-                <CopyLine text="x mix db-requestlogs" />
+                <CopyLine text="npx add-in db-requestlogs" />
             </div>
           </div>
       </section>

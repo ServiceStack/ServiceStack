@@ -24,7 +24,7 @@ export const Profiling = {
     </div>
     <div>
         <p class="text-sm text-gray-700 my-2">Quick start:</p>
-        <CopyLine text="x mix profiling" />
+        <CopyLine text="npx add-in profiling" />
     </div>
   </div>
 </section>

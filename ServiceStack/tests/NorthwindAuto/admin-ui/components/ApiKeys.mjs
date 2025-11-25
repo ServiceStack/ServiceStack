@@ -20,7 +20,7 @@ export const ApiKeys = {
             </div>
             <div>
                 <p class="text-sm text-gray-700 mb-2">Quick start:</p>
-                <CopyLine text="x mix apikeys" />
+                <CopyLine text="npx add-in apikeys" />
             </div>
           </div>
       </section>

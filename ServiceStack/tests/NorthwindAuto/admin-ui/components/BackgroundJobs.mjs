@@ -1058,7 +1058,7 @@ export const BackgroundJobs = {
             </div>
             <div>
                 <p class="text-sm text-gray-700 mb-2">Quick start:</p>
-                <CopyLine text="x mix db-jobs" />
+                <CopyLine text="npx add-in db-jobs" />
             </div>
           </div>
         </section>
