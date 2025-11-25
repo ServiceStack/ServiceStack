@@ -154,7 +154,26 @@ DEBUG = true /*debug*/
                                 <redis v-else-if="routes.admin === 'redis'"></redis>
                                 <database v-else-if="routes.admin === 'database'"></database>
                                 <div v-else>
-                                    <alert type="info">
+                                    <section v-if="routes.admin === 'chat'">
+                                        <div class="p-4 max-w-3xl">
+                                            <alert type="info">Admin Chat UI is not enabled</alert>
+                                            <div class="my-4">
+                                                <div>
+                                                    <p>
+                                                        The <b>ChatFeature</b> plugin needs to be configured with your App
+                                                        <a href="https://docs.servicestack.net/ai-chat-api" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                                                            Learn more <span aria-hidden="true">&rarr;</span>
+                                                        </a>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-700 my-2">Quick start:</p>
+                                                <copy-line text="x mix chat"></copy-line>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <alert v-else type="info">
                                         This Admin UI feature is not currently installed or enabled in your ServiceStack application.
                                         <a href="https://docs.servicestack.net/admin-ui" target="_blank" class="whitespace-nowrap font-medium text-blue-700 hover:text-blue-600">
                                             Learn more <span aria-hidden="true">&rarr;</span>
