@@ -70,8 +70,10 @@ public static class Env
             SupportsDynamic = true;
             IsNetCore21 = true;
 #endif
-#if NET8_0_OR_GREATER
-            IsNet8 = true;
+#if NET10_0_OR_GREATER
+        IsNet10 = true;
+#elif NET8_0_OR_GREATER
+        IsNet8 = true;
 #elif NET6_0_OR_GREATER
             IsNet6 = true;
 #endif
@@ -128,7 +130,7 @@ public static class Env
                           + PclExport.Instance.PlatformName
                           + (IsLinux ? "/Linux" : IsOSX ? "/macOS" : IsUnix ? "/Unix" : IsWindows ? "/Windows" : "/UnknownOS")
                           + (IsIOS ? "/iOS" : IsAndroid ? "/Android" : IsUWP ? "/UWP" : "")
-                          + (IsNet8 ? "/net8" : IsNet6 ? "/net6" : IsNetStandard20 ? "/std2.0" : IsNetFramework ? "/netfx" : "") + (IsMono ? "/Mono" : "")
+                          + (IsNet10 ? "/net10" : IsNet8 ? "/net8" : IsNet6 ? "/net6" : IsNetStandard20 ? "/std2.0" : IsNetFramework ? "/netfx" : "") + (IsMono ? "/Mono" : "")
                           + $"/{LicenseUtils.Info}";
     }
 
@@ -159,6 +161,7 @@ public static class Env
     public static bool IsNetCore21 { get; set; }
     public static bool IsNet6 { get; set; }
     public static bool IsNet8 { get; set; }
+    public static bool IsNet10 { get; set; }
     public static bool IsNetStandard20 { get; set; }
 
     public static bool IsNetFramework { get; set; }

@@ -10,7 +10,13 @@ public class Net6PclExport : NetStandardPclExport
 {
     public Net6PclExport()
     {
+#if NET10_0_OR_GREATER
+        this.PlatformName = Platforms.Net10;
+#elif NET8_0_OR_GREATER
+        this.PlatformName = Platforms.Net8;
+#else
         this.PlatformName = Platforms.Net6;
+#endif
         ReflectionOptimizer.Instance = EmitReflectionOptimizer.Provider;            
     }
 

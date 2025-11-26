@@ -23,6 +23,8 @@ public abstract class PclExport
     {
         public const string NetStandard = "NETStd";
         public const string Net6 = "NET6";
+        public const string Net8 = "NET8";
+        public const string Net10 = "NET10";
         public const string NetFX = "NETFX";
     }
 
