@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using MyApp.Data;
-using OpenApi3Swashbuckle.ServiceInterface;
+using MyApp.ServiceInterface;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;

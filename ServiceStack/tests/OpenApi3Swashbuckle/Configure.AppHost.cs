@@ -1,9 +1,9 @@
 using ServiceStack;
-using OpenApi3Swashbuckle.ServiceInterface;
+using MyApp.ServiceInterface;
 
-[assembly: HostingStartup(typeof(OpenApi3Swashbuckle.AppHost))]
+[assembly: HostingStartup(typeof(MyApp.AppHost))]
 
-namespace OpenApi3Swashbuckle;
+namespace MyApp;
 
 public class AppHost() : AppHostBase("OpenApi3Swashbuckle", typeof(MyServices).Assembly), IHostingStartup
 {

@@ -1,7 +1,7 @@
-using OpenApi3Swashbuckle.ServiceModel;
+using MyApp.ServiceModel;
 using ServiceStack;
 
-namespace OpenApi3Swashbuckle.ServiceInterface;
+namespace MyApp.ServiceInterface;
 
 public class MyServices : Service
 {

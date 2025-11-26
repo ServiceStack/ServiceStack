@@ -1,6 +1,6 @@
 using ServiceStack;
 
-namespace OpenApi3Swashbuckle.ServiceModel;
+namespace MyApp.ServiceModel;
 
 [Tag("hello")]
 [Route("/hello", "GET")]
