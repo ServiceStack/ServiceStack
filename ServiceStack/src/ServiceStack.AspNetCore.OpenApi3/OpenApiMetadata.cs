@@ -15,13 +15,6 @@ namespace ServiceStack.AspNetCore.OpenApi;
 
 public static class OpenApiSecurity
 {
-    public static OpenApiSecurityRequirement BasicAuth { get; } = new()
-    {
-        {
-            new OpenApiSecuritySchemeReference(BasicAuthenticationHandler.Scheme),
-            []
-        }
-    };
     public static OpenApiSecurityScheme BasicAuthScheme { get; set; } = new()
     {
         In = ParameterLocation.Header,
@@ -31,13 +24,6 @@ public static class OpenApiSecurity
         Scheme = BasicAuthenticationHandler.Scheme,
     };
 
-    public static OpenApiSecurityRequirement JwtBearer { get; } = new()
-    {
-        {
-            new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme),
-            []
-        }
-    };
     public static OpenApiSecurityScheme JwtBearerScheme { get; set; } = new()
     {
         In = ParameterLocation.Header,
@@ -48,13 +34,6 @@ public static class OpenApiSecurity
         Scheme = JwtBearerDefaults.AuthenticationScheme,
     };
 
-    public static OpenApiSecurityRequirement ApiKey { get; } = new()
-    {
-        {
-            new OpenApiSecuritySchemeReference("ApiKey"),
-            []
-        }
-    };
     public static OpenApiSecurityScheme ApiKeyScheme { get; set; } = new()
     {
         Description = "API Key authorization header using the Bearer scheme in the format `Bearer <ApiKey>`",
@@ -63,6 +42,18 @@ public static class OpenApiSecurity
         Type = SecuritySchemeType.ApiKey,
         Scheme = "ApiKey"
     };
+
+    /// <summary>
+    /// Create a security requirement for the given scheme that will serialize correctly.
+    /// The hostDocument is required for the OpenApiSecuritySchemeReference to resolve its Target.
+    /// </summary>
+    public static OpenApiSecurityRequirement CreateSecurityRequirement(string schemeId, OpenApiDocument hostDocument)
+    {
+        return new OpenApiSecurityRequirement
+        {
+            { new OpenApiSecuritySchemeReference(schemeId, hostDocument), [] }
+        };
+    }
 }
 
 public class OpenApiMetadata
@@ -125,11 +116,9 @@ public class OpenApiMetadata
     internal static List<string> InlineSchemaTypesInNamespaces { get; set; } = new();
     
     public OpenApiSecurityScheme? SecurityDefinition { get; set; }
-    public OpenApiSecurityRequirement? SecurityRequirement { get; set; }
-    
+
     public OpenApiSecurityScheme? ApiKeySecurityDefinition { get; set; }
-    public OpenApiSecurityRequirement? ApiKeySecurityRequirement { get; set; }
-    
+
     /// <summary>
     /// Exclude showing Request DTO APIs in Open API metadata and Swagger UI
     /// </summary>
@@ -138,22 +127,19 @@ public class OpenApiMetadata
     public void AddBasicAuth()
     {
         SecurityDefinition = OpenApiSecurity.BasicAuthScheme;
-        SecurityRequirement = OpenApiSecurity.BasicAuth;
     }
 
     public void AddJwtBearer()
     {
         SecurityDefinition = OpenApiSecurity.JwtBearerScheme;
-        SecurityRequirement = OpenApiSecurity.JwtBearer;
     }
 
     public void AddApiKeys()
     {
         ApiKeySecurityDefinition = OpenApiSecurity.ApiKeyScheme;
-        ApiKeySecurityRequirement = OpenApiSecurity.ApiKey;
     }
 
-    public OpenApiOperation AddOperation(OpenApiOperation op, Operation operation, string verb, string route)
+    public OpenApiOperation AddOperation(OpenApiOperation op, Operation operation, string verb, string route, OpenApiDocument? hostDocument = null)
     {
         if (ExcludeRequestTypes.Contains(operation.RequestType))
             return op;
@@ -245,18 +231,18 @@ public class OpenApiMetadata
 
         if (operation.RequiresAuthentication)
         {
-            if (SecurityRequirement != null)
+            if (SecurityDefinition != null && hostDocument != null)
             {
                 op.Security ??= new List<OpenApiSecurityRequirement>();
-                op.Security.Add(SecurityRequirement);
+                op.Security.Add(OpenApiSecurity.CreateSecurityRequirement(SecurityDefinition.Scheme, hostDocument));
             }
         }
         if (operation.RequiresApiKey)
         {
-            if (ApiKeySecurityDefinition != null)
+            if (ApiKeySecurityDefinition != null && hostDocument != null)
             {
                 op.Security ??= new List<OpenApiSecurityRequirement>();
-                op.Security.Add(ApiKeySecurityRequirement);
+                op.Security.Add(OpenApiSecurity.CreateSecurityRequirement(ApiKeySecurityDefinition.Scheme, hostDocument));
             }
         }
 

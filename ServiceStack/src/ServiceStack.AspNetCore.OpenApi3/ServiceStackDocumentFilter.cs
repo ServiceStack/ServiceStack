@@ -12,14 +12,17 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
         //Console.WriteLine(GetType().Name + "...");
+
+        // Use AddComponent to properly register security schemes with the workspace
+        // This is required for OpenApiSecuritySchemeReference.Target to resolve correctly
         if (metadata.SecurityDefinition != null)
         {
-            swaggerDoc.Components.SecuritySchemes[metadata.SecurityDefinition.Scheme] = metadata.SecurityDefinition;
+            swaggerDoc.AddComponent(metadata.SecurityDefinition.Scheme, metadata.SecurityDefinition);
         }
 
         if (metadata.ApiKeySecurityDefinition != null)
         {
-            swaggerDoc.Components.SecuritySchemes[metadata.ApiKeySecurityDefinition.Scheme] = metadata.ApiKeySecurityDefinition;
+            swaggerDoc.AddComponent(metadata.ApiKeySecurityDefinition.Scheme, metadata.ApiKeySecurityDefinition);
         }
 
         // Ensure we have a Paths collection to populate
@@ -107,7 +110,7 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
                         OperationId = $"{requestType.Name}{verb}{swaggerPath.Replace("/", "_").Replace("{", "_").Replace("}", string.Empty)}",
                     };
 
-                    openApiOp = metadata.AddOperation(openApiOp, opMeta, verb, routePath);
+                    openApiOp = metadata.AddOperation(openApiOp, opMeta, verb, routePath, swaggerDoc);
 
                     // Responses
                     var responses = GetResponses(metadata, restPath, requestType);
