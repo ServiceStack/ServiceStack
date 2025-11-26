@@ -215,7 +215,7 @@ public class OpenApiMetadata
                 var requestBody = new OpenApiRequestBody
                 {
                 };
-                var content = requestBody.Content ??= new OrderedDictionary<string, IOpenApiMediaType>();
+                var content = requestBody.Content ??= new Dictionary<string, OpenApiMediaType>();
                 content[MimeTypes.MultiPartFormData] = formType;
                 if (apiAttr?.BodyParameter != GenerateBodyParameter.Never)
                 {
@@ -1054,7 +1054,7 @@ public class OpenApiMetadata
         {
             Description = !string.IsNullOrEmpty(schemaDescription) ? schemaDescription : "Success"
         };
-        var content = response.Content ??= new OrderedDictionary<string, IOpenApiMediaType>();
+        var content = response.Content ??= new Dictionary<string, OpenApiMediaType>();
         content[MimeTypes.Json] = new OpenApiMediaType
         {
             Schema = responseSchema,
@@ -1069,7 +1069,7 @@ public class OpenApiMetadata
             {
                 Description = attr.Description ?? apiSchemaDescription
             };
-            var apiContent = apiResponse.Content ??= new OrderedDictionary<string, IOpenApiMediaType>();
+            var apiContent = apiResponse.Content ??= new Dictionary<string, OpenApiMediaType>();
             apiContent[MimeTypes.Json] = new OpenApiMediaType
             {
                 Schema = attr.ResponseType != null
