@@ -7,6 +7,7 @@
         <RootNamespace>MyApp</RootNamespace>
         <UserSecretsId>aspnet-MyApp-7b2ab71a-0b50-423f-969d-e35a9402b1b5</UserSecretsId>
         <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+        <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,7 +26,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" GeneratePathProperty="true" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
     </ItemGroup>
 
@@ -53,12 +53,5 @@
       <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     </ItemGroup>
-
-  <!-- Disable the XML comment source generator to avoid compatibility issues with Microsoft.OpenApi 3.0.1 -->
-  <Target Name="DisableCompileTimeOpenApiXmlGenerator" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <Analyzer Remove="$(PkgMicrosoft_AspNetCore_OpenApi)\analyzers\dotnet\cs\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" />
-    </ItemGroup>
-  </Target>
 
 </Project>
