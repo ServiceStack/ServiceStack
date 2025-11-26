@@ -143,11 +143,8 @@ public class RabbitMqServer : IMessageService
     private IConnection connection;
     private IConnection Connection => connection ??= ConnectionFactory.CreateConnection();
 
-    private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
-        = new Dictionary<Type, IMessageHandlerFactory>();
-
-    private readonly Dictionary<Type, int> handlerThreadCountMap
-        = new Dictionary<Type, int>();
+    private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap = new();
+    private readonly Dictionary<Type, int> handlerThreadCountMap = new();
 
     private RabbitMqWorker[] workers;
     private Dictionary<string, int[]> queueWorkerIndexMap;
