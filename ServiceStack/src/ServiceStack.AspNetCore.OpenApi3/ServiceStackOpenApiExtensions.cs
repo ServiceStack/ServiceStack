@@ -42,8 +42,14 @@ public static class ServiceStackOpenApiExtensions
         return new AuthenticationBuilder(services).AddBasicAuth<TUser,string>();
     }
 
-    public static void AddJwtAuth(this IServiceCollection services) {
+    public static IServiceCollection AddApiKeys(this IServiceCollection services) {
+        OpenApiMetadata.Instance.AddApiKeys();
+        return services;
+    }
+
+    public static IServiceCollection AddJwtAuth(this IServiceCollection services) {
         OpenApiMetadata.Instance.AddJwtBearer();
+        return services;
     }
 
     public static void AddBasicAuth(this SwaggerGenOptions options) =>
