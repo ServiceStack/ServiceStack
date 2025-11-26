@@ -18,18 +18,16 @@ public class ServiceStackDocumentTransformer(OpenApiMetadata metadata) : IOpenAp
             return Task.CompletedTask;
         }
 
+        // Use AddComponent to properly register security schemes with the workspace
+        // This is required for OpenApiSecuritySchemeReference.Target to resolve correctly
         if (metadata.SecurityDefinition != null)
         {
-            document.Components ??= new OpenApiComponents();
-            document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
-            document.Components.SecuritySchemes[metadata.SecurityDefinition.Scheme] = metadata.SecurityDefinition;
+            document.AddComponent(metadata.SecurityDefinition.Scheme, metadata.SecurityDefinition);
         }
 
         if (metadata.ApiKeySecurityDefinition != null)
         {
-            document.Components ??= new OpenApiComponents();
-            document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
-            document.Components.SecuritySchemes[metadata.ApiKeySecurityDefinition.Scheme] = metadata.ApiKeySecurityDefinition;
+            document.AddComponent(metadata.ApiKeySecurityDefinition.Scheme, metadata.ApiKeySecurityDefinition);
         }
 
         // Ensure we have a Paths collection to populate
@@ -119,7 +117,7 @@ public class ServiceStackDocumentTransformer(OpenApiMetadata metadata) : IOpenAp
                         OperationId = $"{requestType.Name}{verb}{swaggerPath.Replace("/", "_").Replace("{", "_").Replace("}", string.Empty)}",
                     };
 
-                    openApiOp = metadata.AddOperation(openApiOp, opMeta, verb, routePath);
+                    openApiOp = metadata.AddOperation(openApiOp, opMeta, verb, routePath, document);
 
                     // Responses
                     var responses = GetResponses(metadata, restPath, requestType);
