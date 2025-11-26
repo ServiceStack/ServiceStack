@@ -1,11 +1,11 @@
 using ServiceStack;
-using OpenApiScalar.ServiceInterface;
+using MyApp.ServiceInterface;
 
-[assembly: HostingStartup(typeof(OpenApiScalar.AppHost))]
+[assembly: HostingStartup(typeof(MyApp.AppHost))]
 
-namespace OpenApiScalar;
+namespace MyApp;
 
-public class AppHost() : AppHostBase("OpenApiScalar", typeof(MyServices).Assembly), IHostingStartup
+public class AppHost() : AppHostBase("OpenApi3Swashbuckle", typeof(MyServices).Assembly), IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices(services =>
@@ -22,3 +22,4 @@ public class AppHost() : AppHostBase("OpenApiScalar", typeof(MyServices).Assembl
         });
     }
 }
+

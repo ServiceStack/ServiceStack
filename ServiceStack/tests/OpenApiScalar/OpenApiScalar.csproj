@@ -1,39 +1,52 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>OpenApiScalar</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>MyApp</RootNamespace>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Using Include="OpenApiScalar" />
-    <Using Include="ServiceStack" />
-  </ItemGroup>
-
-  <ItemGroup>
-      <PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
-      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" GeneratePathProperty="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi.Microsoft\ServiceStack.AspNetCore.OpenApi.Microsoft.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
-  </ItemGroup>
-
-  <!-- Disable the XML comment source generator to avoid compatibility issues with Microsoft.OpenApi 3.0.1 -->
-  <Target Name="DisableCompileTimeOpenApiXmlGenerator" BeforeTargets="CoreCompile">
     <ItemGroup>
-      <Analyzer Remove="$(PkgMicrosoft_AspNetCore_OpenApi)\analyzers\dotnet\cs\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" />
+        <Using Include="MyApp"/>
+        <Using Include="ServiceStack"/>
     </ItemGroup>
-  </Target>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.*"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.*"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.11.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" GeneratePathProperty="true"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi.Microsoft\ServiceStack.AspNetCore.OpenApi.Microsoft.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj"/>
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj"/>
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj"/>
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="App_Data\"/>
+    </ItemGroup>
+
+    <!-- Disable the XML comment source generator to avoid compatibility issues with Microsoft.OpenApi 3.0.1 -->
+    <Target Name="DisableCompileTimeOpenApiXmlGenerator" BeforeTargets="CoreCompile">
+        <ItemGroup>
+            <Analyzer Remove="$(PkgMicrosoft_AspNetCore_OpenApi)\analyzers\dotnet\cs\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll"/>
+        </ItemGroup>
+    </Target>
 
 </Project>
 
