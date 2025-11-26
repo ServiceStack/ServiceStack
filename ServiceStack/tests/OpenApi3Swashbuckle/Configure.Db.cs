@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using MyApp.Data;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureDb))]
 

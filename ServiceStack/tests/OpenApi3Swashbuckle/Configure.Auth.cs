@@ -1,3 +1,4 @@
+using ServiceStack;
 using ServiceStack.Auth;
 using MyApp.Data;
 

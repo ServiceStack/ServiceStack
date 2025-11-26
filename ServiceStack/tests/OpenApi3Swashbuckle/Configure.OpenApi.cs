@@ -1,3 +1,5 @@
+using ServiceStack;
+
 [assembly: HostingStartup(typeof(MyApp.ConfigureOpenApi))]
 
 namespace MyApp;
@@ -29,4 +31,3 @@ public class ConfigureOpenApi : IHostingStartup
         };
     }
 }
-

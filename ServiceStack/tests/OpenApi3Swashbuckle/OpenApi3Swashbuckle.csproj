@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <Using Include="MyApp"/>
-        <Using Include="ServiceStack"/>
     </ItemGroup>
 
     <ItemGroup>

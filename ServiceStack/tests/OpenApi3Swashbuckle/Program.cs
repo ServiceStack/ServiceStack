@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using ServiceStack;
 using MyApp.Data;
 using MyApp.ServiceInterface;
 
