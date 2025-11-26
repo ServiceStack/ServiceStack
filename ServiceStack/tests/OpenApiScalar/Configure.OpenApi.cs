@@ -1,4 +1,5 @@
 using Scalar.AspNetCore;
+using ServiceStack;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureOpenApi))]
 
@@ -34,4 +35,3 @@ public class ConfigureOpenApi : IHostingStartup
         };
     }
 }
-

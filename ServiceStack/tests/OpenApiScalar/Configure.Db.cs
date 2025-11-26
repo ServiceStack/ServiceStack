@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ServiceStack;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using MyApp.Data;
