@@ -1,31 +1,44 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>OpenApi3Swashbuckle</RootNamespace>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>OpenApi3Swashbuckle</RootNamespace>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Using Include="OpenApi3Swashbuckle" />
-    <Using Include="ServiceStack" />
-  </ItemGroup>
+    <ItemGroup>
+        <Using Include="OpenApi3Swashbuckle"/>
+        <Using Include="ServiceStack"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.*" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.*"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.*"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi3\ServiceStack.AspNetCore.OpenApi3.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
-    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.*"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi3\ServiceStack.AspNetCore.OpenApi3.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj"/>
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj"/>
+        <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="App_Data\" />
+    </ItemGroup>
 
 </Project>
 

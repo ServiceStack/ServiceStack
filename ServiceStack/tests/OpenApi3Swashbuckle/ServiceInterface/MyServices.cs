@@ -9,5 +9,15 @@ public class MyServices : Service
     {
         Result = $"Hello, {request.Name ?? "World"}!"
     };
+    
+    public object Any(HelloSecure request) => new HelloResponse
+    {
+        Result = $"Hello, {request.Name ?? "World"}!"
+    };
+
+    public object Any(HelloApiKey request) => new HelloResponse
+    {
+        Result = $"Hello, {request.Name ?? "World"}!"
+    };
 }
 
