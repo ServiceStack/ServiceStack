@@ -61,12 +61,12 @@ public class ApiKeyCredentialsProvider : AuthProvider
             {
                 if (appHost.Config.AdminAuthSecret == authSession.RequestTokenSecret)
                 {
-                    req.Items[Keywords.AuthSecret] = appHost.Config.AdminAuthSecret;
-                    req.Items[Keywords.Authorization] = "Bearer " + appHost.Config.AdminAuthSecret;
+                    req.SetItem(Keywords.AuthSecret, appHost.Config.AdminAuthSecret);
+                    req.SetItem(Keywords.Authorization, "Bearer " + appHost.Config.AdminAuthSecret);
                 }
                 if (ValidApiKeys.TryGetValue(authSession.RequestTokenSecret, out var _))
                 {
-                    req.Items[Keywords.Authorization] = "Bearer " + authSession.RequestTokenSecret;
+                    req.SetItem(Keywords.Authorization, "Bearer " + authSession.RequestTokenSecret);
                 }
             }
         });
@@ -160,7 +160,7 @@ public class ApiKeyCredentialsProvider : AuthProvider
     async Task SaveSessionAsync(IAuthSession session, IRequest httpReq, CancellationToken token)
     {
         session.LastModified = DateTime.UtcNow;
-        httpReq.Items[Keywords.Session] = session;
+        httpReq.SetItem(Keywords.Session, session);
         
         var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
         await httpReq.GetCacheClientAsync().CacheSetAsync(sessionKey, session, SessionFeature.DefaultSessionExpiry, token);

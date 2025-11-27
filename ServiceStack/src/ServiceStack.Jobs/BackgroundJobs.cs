@@ -303,7 +303,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             var session = await userResolver.CreateAuthSessionAsync(reqCtx, user, token);
             if (session != null)
             {
-                reqCtx.Items[Keywords.Session] = session;
+                reqCtx.SetItem(Keywords.Session, session);
             }
         }
         return reqCtx;

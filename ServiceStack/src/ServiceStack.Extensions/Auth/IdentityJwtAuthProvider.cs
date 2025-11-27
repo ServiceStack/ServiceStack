@@ -328,7 +328,7 @@ public class IdentityJwtAuthProvider<TUser,TRole,TKey> :
                     Options!.TokenValidationParameters, out SecurityToken validatedToken);
             }
             var session = CreateSessionFromClaims(req, user);
-            req.Items[Keywords.Session] = session;
+            req.SetItem(Keywords.Session, session);
         }
         return Task.CompletedTask;
     }

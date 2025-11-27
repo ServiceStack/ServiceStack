@@ -241,12 +241,12 @@ public class CacheResponseTests
                 if (roleHeader == null)
                     return;
 
-                req.Items[Keywords.Session] = new AuthUserSession
+                req.SetItem(Keywords.Session, new AuthUserSession
                 {
                     UserAuthId = "1",
                     UserAuthName = "test",
                     Roles = [roleHeader]
-                };
+                });
             });
 
             ServiceExceptionHandlers.Add((req, dto, ex) =>

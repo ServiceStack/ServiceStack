@@ -314,12 +314,12 @@ public class AuthUserSession : IAuthSessionExtended, IMeta
 
     public virtual async Task<List<Claim>> AsClaimsAsync(IAuthRepositoryAsync authRepo)
     {
-        List<Claim> claims = new() {
+        List<Claim> claims = [
             new Claim(ClaimTypes.NameIdentifier, UserAuthId),
             new Claim(ClaimTypes.Name, DisplayName),
             new Claim(ClaimTypes.Email, Email == null || UserAuthName.Contains('@') ? UserAuthName : Email),
-            new Claim(JwtClaimTypes.Picture, ProfileUrl ?? JwtClaimTypes.DefaultProfileUrl),
-        };
+            new Claim(JwtClaimTypes.Picture, ProfileUrl ?? JwtClaimTypes.DefaultProfileUrl)
+        ];
 
         var roles = (FromToken
             ? Roles

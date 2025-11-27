@@ -131,7 +131,7 @@ public class CrudEventsExecutor<T> : ICrudEventsExecutor<T>
             session.Roles ??= result.Roles?.ToList();
             session.Permissions ??= result.Permissions?.ToList();
 
-            req.Items[Keywords.Session] = session;
+            req.SetItem(Keywords.Session, session);
         }
 
         req.Items[Keywords.IgnoreEvent] = bool.TrueString; //don't record AutoCrudEvent

@@ -39,7 +39,7 @@ public class AuthSecretAuthProvider(string? authSecret=null)
         if (HostContext.Config.AdminAuthSecret != null && HostContext.Config.AdminAuthSecret == authSecret)
         {
             session = HostContext.AssertPlugin<AuthFeature>().AuthSecretSession;
-            req.Items[Keywords.Session] = session;
+            req.SetItem(Keywords.Session, session);
 
             return Task.FromResult((object?)new AuthenticateResponse
             {
@@ -58,7 +58,7 @@ public class AuthSecretAuthProvider(string? authSecret=null)
         var authSecret = req.GetAuthSecret() ?? req.GetBearerToken();
         if (HostContext.Config.AdminAuthSecret != null && HostContext.Config.AdminAuthSecret == authSecret)
         {
-            req.Items[Keywords.Session] = HostContext.AssertPlugin<AuthFeature>().AuthSecretSession;
+            req.SetItem(Keywords.Session, HostContext.AssertPlugin<AuthFeature>().AuthSecretSession);
         }
         return Task.CompletedTask;
     }

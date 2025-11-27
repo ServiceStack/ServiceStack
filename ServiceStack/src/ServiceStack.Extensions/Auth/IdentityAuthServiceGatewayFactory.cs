@@ -16,7 +16,7 @@ public class IdentityAuthServiceGatewayFactory : IServiceGatewayFactory
                 user);
         }
 
-        request.Items[Keywords.Session] = session;
+        request.SetItem(Keywords.Session, session);
         var gateway = new InProcessServiceGateway(request);
         return gateway;
     }

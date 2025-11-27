@@ -135,7 +135,7 @@ public class IdentityApplicationAuthProvider<TUser,TRole,TKey> : IdentityAuthPro
         session = SessionFeature.CreateNewSession(req, sessionId);
         await PopulateSessionAsync(req, session, claimsPrincipal, source);
 
-        req.Items[Keywords.Session] = session;
+        req.SetItem(Keywords.Session, session);
     }
     
     public virtual void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null)
