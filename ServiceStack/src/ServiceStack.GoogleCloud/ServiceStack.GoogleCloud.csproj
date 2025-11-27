@@ -11,9 +11,6 @@
         </PackageDescription>
         <PackageTags>ServiceStack;AWS;Amazon;WebServices;DynamoDb;S3;SQS;Cache;CacheClient</PackageTags>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <DefineConstants>$(DefineConstants);NETCORE;NETSTANDARD2_0</DefineConstants>
-    </PropertyGroup>
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER</DefineConstants>
     </PropertyGroup>

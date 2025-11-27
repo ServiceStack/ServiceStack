@@ -23,9 +23,6 @@
     <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.3" />
     </ItemGroup>
-    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.3" />
-    </ItemGroup>
     <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.3" />
     </ItemGroup>
