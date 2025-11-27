@@ -133,13 +133,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdhocNew", "..\tests\AdhocN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Desktop", "ServiceStack.Desktop\ServiceStack.Desktop.csproj", "{6FFE8429-51F7-45C5-9402-FBA0FC216B85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.AspNetCore.OpenApi3", "ServiceStack.AspNetCore.OpenApi3\ServiceStack.AspNetCore.OpenApi3.csproj", "{D712182C-B0C3-4797-A576-3AF725F13660}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OpenApi.Swashbuckle", "ServiceStack.OpenApi.Swashbuckle\ServiceStack.OpenApi.Swashbuckle.csproj", "{D712182C-B0C3-4797-A576-3AF725F13660}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenApi3Swashbuckle", "..\tests\OpenApi3Swashbuckle\OpenApi3Swashbuckle.csproj", "{ABE5BD4B-D33A-4E1C-AFC1-1087323491DD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenApiScalar", "..\tests\OpenApiScalar\OpenApiScalar.csproj", "{D0024195-711E-4B32-8F39-40D34BFDB57B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.AspNetCore.OpenApi.Microsoft", "ServiceStack.AspNetCore.OpenApi.Microsoft\ServiceStack.AspNetCore.OpenApi.Microsoft.csproj", "{03EDA213-6C39-4DB9-BF03-DEB67BDF3286}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OpenApi.Microsoft", "ServiceStack.OpenApi.Microsoft\ServiceStack.OpenApi.Microsoft.csproj", "{03EDA213-6C39-4DB9-BF03-DEB67BDF3286}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

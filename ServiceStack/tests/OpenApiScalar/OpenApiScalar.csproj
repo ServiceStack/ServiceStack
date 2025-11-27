@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi.Microsoft\ServiceStack.AspNetCore.OpenApi.Microsoft.csproj"/>
+        <ProjectReference Include="..\..\src\ServiceStack.OpenApi.Microsoft\ServiceStack.OpenApi.Microsoft.csproj" />
         <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj"/>
         <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj"/>
         <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>

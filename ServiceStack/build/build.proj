@@ -144,13 +144,13 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.AspNetCore.OpenApi3 -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.AspNetCore.OpenApi3/ServiceStack.AspNetCore.OpenApi3.csproj"
+    <!-- ServiceStack.OpenApi.Swashbuckle -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.OpenApi.Swashbuckle/ServiceStack.OpenApi.Swashbuckle.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.AspNetCore.OpenApi.Microsoft -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.AspNetCore.OpenApi.Microsoft/ServiceStack.AspNetCore.OpenApi.Microsoft.csproj"
+    <!-- ServiceStack.OpenApi.Microsoft -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.OpenApi.Microsoft/ServiceStack.OpenApi.Microsoft.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 

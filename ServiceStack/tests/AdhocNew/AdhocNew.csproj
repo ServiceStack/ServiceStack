@@ -46,7 +46,7 @@
       <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.AI.Chat\ServiceStack.AI.Chat.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi.Microsoft\ServiceStack.AspNetCore.OpenApi.Microsoft.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.OpenApi.Microsoft\ServiceStack.OpenApi.Microsoft.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />

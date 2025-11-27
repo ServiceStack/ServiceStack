@@ -31,7 +31,7 @@
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
       <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
-      <ProjectReference Include="..\..\src\ServiceStack.AspNetCore.OpenApi.Microsoft\ServiceStack.AspNetCore.OpenApi.Microsoft.csproj" />
+      <ProjectReference Include="..\..\src\ServiceStack.OpenApi.Microsoft\ServiceStack.OpenApi.Microsoft.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />

@@ -67,10 +67,10 @@ public static class ServiceStackOpenApiExtensions
                 <PackageReference Include="Swashbuckle.AspNetCore" Version="8.*" />
                 
                 To use the latest versions of these packages switch to:
-                <PackageReference Include="ServiceStack.AspNetCore.OpenApi3" Version="10.*" />
+                <PackageReference Include="ServiceStack.OpenApi.Swashbuckle" Version="10.*" />
 
                 Which instead uses:
-                <PackageReference Include="Microsoft.OpenApi" Version="3.*" />
+                <PackageReference Include="Microsoft.OpenApi" Version="2.*" />
                 <PackageReference Include="Swashbuckle.AspNetCore" Version="10.*" />
                 
                 
