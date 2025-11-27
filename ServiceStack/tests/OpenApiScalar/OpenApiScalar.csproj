@@ -40,7 +40,8 @@
         <Folder Include="App_Data\"/>
     </ItemGroup>
 
-    <!-- Disable the XML comment source generator to avoid compatibility issues with Microsoft.OpenApi 3.0.1 -->
+    <!-- Disable the XML comment source generator to avoid compatibility issues with Microsoft.OpenApi -->
+    <!-- or <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces> -->
     <Target Name="DisableCompileTimeOpenApiXmlGenerator" BeforeTargets="CoreCompile">
         <ItemGroup>
             <Analyzer Remove="$(PkgMicrosoft_AspNetCore_OpenApi)\analyzers\dotnet\cs\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll"/>
