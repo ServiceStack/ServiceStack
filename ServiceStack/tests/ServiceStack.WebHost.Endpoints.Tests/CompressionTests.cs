@@ -86,10 +86,10 @@ public class CompressionTests
 
 			var compressedResult = new CompressedResult(simpleDtoZip);
 
-			var reponseWasAutoHandled = mockResponse.WriteToResponse(
+			var responseWasAutoHandled = mockResponse.WriteToResponse(
 				compressedResult, CompressionTypes.Deflate);
 
-			Assert.That(reponseWasAutoHandled.Result, Is.True);
+			Assert.That(responseWasAutoHandled.Result, Is.True);
 
 			//var bytesToWriteToResponseStream = new byte[simpleDtoZip.Length - 4];
 			//Array.Copy(simpleDtoZip, CompressedResult.Adler32ChecksumLength, bytesToWriteToResponseStream, 0, bytesToWriteToResponseStream.Length);
