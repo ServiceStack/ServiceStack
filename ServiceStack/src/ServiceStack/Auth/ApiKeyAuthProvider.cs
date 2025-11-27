@@ -246,7 +246,7 @@ namespace ServiceStack.Auth
                 if (response != null)
                     return response;
 
-                authService.Request.Items[Keywords.ApiKey] = apiKey;
+                authService.Request.SetItem(Keywords.ApiKey, apiKey);
 
                 return new AuthenticateResponse
                 {
@@ -321,7 +321,7 @@ namespace ServiceStack.Auth
             var apiSessionKey = GetSessionKey(apiKey.Id);
             if (await HasCachedSessionAsync(req, apiSessionKey).ConfigAwait())
             {
-                req.Items[Keywords.ApiKey] = apiKey;
+                req.SetItem(Keywords.ApiKey, apiKey);
                 return;
             }
 
@@ -350,7 +350,7 @@ namespace ServiceStack.Auth
 
                 if (session != null)
                 {
-                    req.Items[Keywords.Session] = session;
+                    req.SetItem(Keywords.Session, session);
                     return true;
                 }
             }

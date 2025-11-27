@@ -224,9 +224,43 @@ public static class RequestExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SetItem(this IRequest httpReq, string key, object value)
     {
-        if (httpReq == null) return;
+        httpReq?.Items[key] = value;
+    }
 
-        httpReq.Items[key] = value;
+    /// <summary>
+    /// Mark an entry in the IRequest.Items Dictionary as true
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetTrue(this IRequest httpReq, string key)
+    {
+        httpReq?.Items[key] = bool.TrueString;
+    }
+
+    /// <summary>
+    /// Mark an entry in the IResponse.Items Dictionary as true
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetTrue(this IResponse httpRes, string key)
+    {
+        httpRes?.Items[key] = bool.TrueString;
+    }
+
+    /// <summary>
+    /// Whether an entry exists in the IRequest.Items Dictionary
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsSet(this IRequest httpReq, string key)
+    {
+        return httpReq != null && httpReq.Items.ContainsKey(key);
+    }
+
+    /// <summary>
+    /// Whether an entry exists in the IResponse.Items Dictionary
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsSet(this IResponse httpRes, string key)
+    {
+        return httpRes != null && httpRes.Items.ContainsKey(key);
     }
 
     /// <summary>
@@ -323,7 +357,7 @@ public static class RequestExtensions
             {
                 key = typeName + (++i);
             }
-            request.Items[key] = disposable;
+            request.SetItem(key, disposable);
 #endif
     }
 
@@ -375,7 +409,7 @@ public static class RequestExtensions
         if (req.Items.TryGetValue(Keywords.TraceId, out var traceId))
             return (string)traceId;
         var newId = Guid.NewGuid().ToString();
-        req.Items[Keywords.TraceId] = newId;
+        req.SetItem(Keywords.TraceId, newId);
         return newId;
     }
 
@@ -394,7 +428,7 @@ public static class RequestExtensions
 
     public static void CompletedAuthentication(this IRequest req)
     {
-        req.Items[Keywords.DidAuthenticate] = true;
+        req.SetTrue(Keywords.DidAuthenticate);
     }
 
     public static Dictionary<string, string> GetRequestParams(this IRequest request) =>

@@ -870,7 +870,7 @@ public class ServiceController : IServiceController
 
             var firstDto = dtosList[0];
 
-            req.Items[Keywords.AutoBatchIndex] = 0;
+            req.SetItem(Keywords.AutoBatchIndex, 0);
 
             var firstResponse = await handlerFnAsync(req, firstDto).ConfigAwait();
             if (firstResponse is Exception)
@@ -890,7 +890,7 @@ public class ServiceController : IServiceController
                 for (var i = 1; i < dtosList.Count; i++)
                 {
                     var dto = dtosList[i];
-                    req.Items[Keywords.AutoBatchIndex] = i;
+                    req.SetItem(Keywords.AutoBatchIndex, i);
                     var response = await handlerFnAsync(req, dto).ConfigAwait();
                     //short-circuit on first error
                     if (response is Exception)
@@ -914,7 +914,7 @@ public class ServiceController : IServiceController
             {
                 try
                 {
-                    req.Items[Keywords.AutoBatchIndex] = i;
+                    req.SetItem(Keywords.AutoBatchIndex, i);
                     var dto = dtosList[i];
 
                     var task = handlerFnAsync(req, dto);

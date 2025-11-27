@@ -809,11 +809,10 @@ public static class ServiceStackScriptUtils
             return (HashSet<string>)oAttrs;
                 
         var authSession = request.GetSession();
-        var attrs = authSession?.GetUserAttributes(request) ?? new HashSet<string> {
-            HostContext.DebugMode ? When.Development : When.Production
-        };
+        var attrs = authSession?.GetUserAttributes(request) ??
+            [HostContext.DebugMode ? When.Development : When.Production];
 
-        request.Items[Keywords.Attributes] = attrs;
+        request.SetItem(Keywords.Attributes, attrs);
             
         return attrs;            
     }

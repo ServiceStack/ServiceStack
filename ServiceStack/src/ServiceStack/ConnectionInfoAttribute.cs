@@ -10,11 +10,11 @@ public class ConnectionInfoAttribute : RequestFilterAttribute
 
     public override void Execute(IRequest req, IResponse res, object requestDto)
     {
-        req.Items[Keywords.DbInfo] = new ConnectionInfo
+        req.SetItem(Keywords.DbInfo, new ConnectionInfo
         {
             ConnectionString = ConnectionString,
             NamedConnection = NamedConnection,
             ProviderName = ProviderName,
-        };            
+        });
     }
 }

@@ -897,7 +897,7 @@ public partial class AutoQuery : IAutoCrudDb
         
     private object? ExecAndReturnResponse<Table>(CrudContext context, Func<CrudContext,ExecValue> fn)
     {
-        var ignoreEvent = context.Request.Items.ContainsKey(Keywords.IgnoreEvent);
+        var ignoreEvent = context.Request.IsSet(Keywords.IgnoreEvent);
         var trans = context.Events != null && !ignoreEvent && !context.Db.InTransaction()
             ? context.Db.OpenTransaction()
             : null;
@@ -958,7 +958,7 @@ public partial class AutoQuery : IAutoCrudDb
 
     private async Task<object?> ExecAndReturnResponseAsync<Table>(CrudContext context, Func<CrudContext,Task<ExecValue>> fn)
     {
-        var ignoreEvent = context.Request.Items.ContainsKey(Keywords.IgnoreEvent);
+        var ignoreEvent = context.Request.IsSet(Keywords.IgnoreEvent);
         var trans = context.Events != null && !ignoreEvent && !context.Db.InTransaction()
             ? context.Db.OpenTransaction()
             : null;

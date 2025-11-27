@@ -45,7 +45,7 @@ public class WebSudoFeature : AuthEvents, IPlugin, Model.IHasStringId
         {
             var copy = AuthenticateService.CurrentSessionFactory().PopulateWith(session);
 
-            request.Items[SessionCopyRequestItemKey] = copy;
+            request.SetItem(SessionCopyRequestItemKey, copy);
 
             // clear details to allow credentials to be rechecked, 
             // otherwise IsAuthorized will just return, bypassing the auth provider's Authenticate method
@@ -57,8 +57,8 @@ public class WebSudoFeature : AuthEvents, IPlugin, Model.IHasStringId
 
     private async Task OnRequestEndAsync(IRequest request, IResponse response, object dto)
     {
-        if (!request.Items.ContainsKey(SessionCopyRequestItemKey)) return;
-        if (!(request.Items[SessionCopyRequestItemKey] is IWebSudoAuthSession copy)) return;
+        if (!request.IsSet(SessionCopyRequestItemKey)) return;
+        if (request.Items[SessionCopyRequestItemKey] is not IWebSudoAuthSession copy) return;
 
         var session = await request.GetSessionAsync().ConfigAwait();
         if (!session.IsAuthenticated)
@@ -73,8 +73,8 @@ public class WebSudoFeature : AuthEvents, IPlugin, Model.IHasStringId
 
     public override void OnCreated(IRequest httpReq, IAuthSession session)
     {
-        if (!httpReq.Items.ContainsKey(SessionCopyRequestItemKey)) return;
-        if (!(httpReq.Items[SessionCopyRequestItemKey] is IWebSudoAuthSession copy)) return;
+        if (!httpReq.IsSet(SessionCopyRequestItemKey)) return;
+        if (httpReq.Items[SessionCopyRequestItemKey] is not IWebSudoAuthSession copy) return;
 
         var id = session.Id;
         var created = session.CreatedAt;

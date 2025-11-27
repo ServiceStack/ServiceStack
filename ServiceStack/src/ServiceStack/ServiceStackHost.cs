@@ -846,7 +846,7 @@ public abstract partial class ServiceStackHost
             
         var evalCodeValue = EvalScript(new PageResult(cachedCodePage), req, args);
         if (!scriptValue.NoCache && req != null)
-            req.Items[evalCacheKey] = evalCodeValue;
+            req.SetItem(evalCacheKey, evalCodeValue);
 
         return evalCodeValue;
     }
@@ -873,7 +873,7 @@ public abstract partial class ServiceStackHost
             
         var evalCodeValue = await EvalScriptAsync(new PageResult(cachedCodePage), req, args).ConfigAwait();
         if (!scriptValue.NoCache && req != null)
-            req.Items[evalCacheKey] = evalCodeValue;
+            req.SetItem(evalCacheKey, evalCodeValue);
 
         return evalCodeValue;
     }
@@ -968,7 +968,7 @@ public abstract partial class ServiceStackHost
     /// </summary>
     public virtual async Task OnGatewayException(IRequest httpReq, object request, Exception ex)
     {
-        httpReq.Items[nameof(OnGatewayException)] = bool.TrueString;
+        httpReq.SetTrue(nameof(OnGatewayException));
 
         foreach (var errorHandler in GatewayExceptionHandlers)
         {
@@ -986,7 +986,7 @@ public abstract partial class ServiceStackHost
     /// </summary>
     public virtual async Task<object> OnServiceException(IRequest httpReq, object request, Exception ex)
     {
-        httpReq.Items[nameof(OnServiceException)] = bool.TrueString;
+        httpReq.SetTrue(nameof(OnServiceException));
             
         object lastError = null;
         foreach (var errorHandler in ServiceExceptionHandlers)
@@ -1462,10 +1462,10 @@ public abstract partial class ServiceStackHost
         {
             if (request != null)
             {
-                if (request.Items.ContainsKey(nameof(OnEndRequest)))
+                if (request.IsSet(nameof(OnEndRequest)))
                     return;
 
-                request.Items[nameof(OnEndRequest)] = bool.TrueString;
+                request.SetTrue(nameof(OnEndRequest));
             }
                 
             var disposables = RequestContext.Instance.Items.Values;

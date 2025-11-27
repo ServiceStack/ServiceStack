@@ -610,7 +610,7 @@ public static class HttpRequestExtensions
             return cachedItem;
 
         var item = resolveFn(httpReq);
-        httpReq.Items[itemKey] = item;
+        httpReq.SetItem(itemKey, item);
 
         return item;
     }
@@ -1007,7 +1007,7 @@ public static class HttpRequestExtensions
 
     public static void SetRoute(this IRequest req, RestPath route)
     {
-        req.Items[Keywords.Route] = route;
+        req.SetItem(Keywords.Route, route);
     }
 
     public static RestPath GetRoute(this IRequest req)
@@ -1053,7 +1053,7 @@ public static class HttpRequestExtensions
 
         requests.Each((i, dto) =>
         {
-            httpReq.Items[Keywords.AutoBatchIndex] = i;
+            httpReq.SetItem(Keywords.AutoBatchIndex, i);
             action(dto);
         });
 

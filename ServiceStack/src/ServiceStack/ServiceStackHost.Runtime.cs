@@ -81,8 +81,8 @@ public abstract partial class ServiceStackHost
     /// </summary>
     public virtual async Task ApplyPreAuthenticateFiltersAsync(IRequest httpReq, IResponse httpRes)
     {
-        httpReq.Items[Keywords.HasPreAuthenticated] = bool.TrueString;
-            
+        httpReq.SetTrue(Keywords.HasPreAuthenticated);
+        
         foreach (var authProvider in AuthenticateService.AuthWithRequestProviders.Safe())
         {
             await authProvider.PreAuthenticateAsync(httpReq, httpRes).ConfigAwaitNetCore();
@@ -152,7 +152,7 @@ public abstract partial class ServiceStackHost
 
         foreach (var dto in dtos)
         {
-            req.Items[Keywords.AutoBatchIndex] = i;
+            req.SetItem(Keywords.AutoBatchIndex, i);
             await ApplyRequestFiltersSingleAsync(req, res, dto).ConfigAwaitNetCore();
             HostContext.AppHost.OnAfterAwait(req);
             if (res.IsClosed)
@@ -275,7 +275,7 @@ public abstract partial class ServiceStackHost
 
         foreach (var dto in batchResponse)
         {
-            req.Items[Keywords.AutoBatchIndex] = i;
+            req.SetItem(Keywords.AutoBatchIndex, i);
 
             await ApplyResponseFiltersSingleAsync(req, res, dto).ConfigAwaitNetCore();
             HostContext.AppHost.OnAfterAwait(req);
@@ -895,7 +895,7 @@ public abstract partial class ServiceStackHost
             return; 
 
         session.LastModified = DateTime.UtcNow;
-        httpReq.Items[Keywords.Session] = session;
+        httpReq.SetItem(Keywords.Session, session);
         if (!HasPlugin<SessionFeature>())
             return;
 
@@ -912,7 +912,7 @@ public abstract partial class ServiceStackHost
             return TypeConstants.EmptyTask;
 
         session.LastModified = DateTime.UtcNow;
-        httpReq.Items[Keywords.Session] = session;
+        httpReq.SetItem(Keywords.Session, session);
         if (!HasPlugin<SessionFeature>())
             return Task.CompletedTask;
         

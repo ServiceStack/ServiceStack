@@ -155,13 +155,13 @@ public static class ServiceExtensions
         
         httpReq.Items.Remove(Keywords.Session);
 
-        if (httpReq.Items.ContainsKey(Keywords.HasClearedSession))
+        if (httpReq.IsSet(Keywords.HasClearedSession))
             return; // already cleared session
 
         var sessionKey = SessionFeature.GetSessionKey(sessionId);
         await httpReq.GetCacheClientAsync().RemoveAsync(sessionKey, token).ConfigAwait();
         
-        httpReq.Items[Keywords.HasClearedSession] = true; // reset pre-authenticated state
+        httpReq.SetTrue(Keywords.HasClearedSession); // reset pre-authenticated state
     }
 
     public static IAuthSession GetSession(this IServiceBase service, bool reload = false)
@@ -252,7 +252,7 @@ public static class ServiceExtensions
             oSession = null;
 
         var appHost = HostContext.AppHost;
-        if (oSession == null && !httpReq.Items.ContainsKey(Keywords.HasPreAuthenticated))
+        if (oSession == null && !httpReq.IsSet(Keywords.HasPreAuthenticated))
         {
             try
             {
@@ -298,7 +298,7 @@ public static class ServiceExtensions
             session = appHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
         }
 
-        httpReq.Items[Keywords.Session] = session;
+        httpReq.SetItem(Keywords.Session, session);
         return session;
     }
 

@@ -373,7 +373,7 @@ public class AuthenticateService : Service
                     ReferrerUrl = referrerUrl,
                     Session = session,
                     AlreadyAuthenticated = alreadyAuthenticated,
-                    DidAuthenticate = Request.Items.ContainsKey(Keywords.DidAuthenticate),
+                    DidAuthenticate = Request.IsSet(Keywords.DidAuthenticate),
                 };
 
                 foreach (var responseFilter in AuthResponseFilters)

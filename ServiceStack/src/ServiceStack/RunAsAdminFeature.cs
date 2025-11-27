@@ -19,7 +19,7 @@ public class RunAsAdminFeature : IPlugin, Model.IHasStringId
         ]));
         
         appHost.PreRequestFilters.Add((req, res) => {
-            req.Items[Keywords.Session] = appHost.GetPlugin<AuthFeature>().AuthSecretSession;
+            req.SetItem(Keywords.Session, appHost.GetPlugin<AuthFeature>().AuthSecretSession);
         });
 
         if (RedirectTo != null)

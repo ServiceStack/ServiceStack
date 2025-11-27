@@ -111,10 +111,10 @@ public class AuthenticateAttribute : RequestFilterAsyncAttribute
 
         req.PopulateFromRequestIfHasSessionId(requestDto);
 
-        if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
+        if (!req.IsSet(Keywords.HasPreAuthenticated))
         {
             var mockResponse = new BasicRequest().Response;
-            req.Items[Keywords.HasPreAuthenticated] = true;
+            req.SetTrue(Keywords.HasPreAuthenticated);
             foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
             {
                 authWithRequest.PreAuthenticateAsync(req, mockResponse).Wait();
@@ -148,11 +148,11 @@ public class AuthenticateAttribute : RequestFilterAsyncAttribute
 
         req.PopulateFromRequestIfHasSessionId(requestDto);
 
-        if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
+        if (!req.IsSet(Keywords.HasPreAuthenticated))
         {
             //Unauthorized or invalid requests will terminate the response and return false
             var mockResponse = new BasicRequest().Response;
-            req.Items[Keywords.HasPreAuthenticated] = true;
+            req.SetTrue(Keywords.HasPreAuthenticated);
             foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
             {
                 await authWithRequest.PreAuthenticateAsync(req, mockResponse).ConfigAwait();
@@ -210,9 +210,9 @@ public class AuthenticateAttribute : RequestFilterAsyncAttribute
         }
 
         //Call before GetSession so Exceptions can bubble
-        if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
+        if (!req.IsSet(Keywords.HasPreAuthenticated))
         {
-            req.Items[Keywords.HasPreAuthenticated] = true;
+            req.SetTrue(Keywords.HasPreAuthenticated);
             foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
             {
                 await authWithRequest.PreAuthenticateAsync(req, req.Response).ConfigAwait();
@@ -232,7 +232,7 @@ public class AuthenticateAttribute : RequestFilterAsyncAttribute
         HttpStatusCode statusCode, string statusDescription=null)
     {
         if (HtmlRedirect != null)
-            req.Items[nameof(AuthFeature.HtmlRedirect)] = HtmlRedirect;
+            req.SetItem(nameof(AuthFeature.HtmlRedirect), HtmlRedirect);
 
         return HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto, statusCode, statusDescription);
     }

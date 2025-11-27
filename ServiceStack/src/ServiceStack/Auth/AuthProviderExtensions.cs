@@ -66,7 +66,7 @@ public static class AuthProviderExtensions
         }
         else
         {
-            authService.Request.Items[Keywords.Session] = session;
+            authService.Request.SetItem(Keywords.Session, session);
         }
     }
 
@@ -79,7 +79,7 @@ public static class AuthProviderExtensions
         }
         else
         {
-            authService.Request.Items[Keywords.Session] = session;
+            authService.Request.SetItem(Keywords.Session, session);
         }
     }
 

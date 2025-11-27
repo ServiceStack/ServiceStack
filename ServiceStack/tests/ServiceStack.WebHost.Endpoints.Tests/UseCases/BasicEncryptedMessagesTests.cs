@@ -30,7 +30,7 @@ public class BasicEncryptedMessagesAppHost : AppSelfHostBase
         });
 
         ResponseConverters.Add((req, response) => {
-            if (!req.Items.ContainsKey("_encrypt"))
+            if (!req.IsSet("_encrypt"))
                 return TypeConstants.EmptyTask;
 
             var encResponse = RsaUtils.Encrypt(response.ToJson(), SecureConfig.PublicKeyXml);

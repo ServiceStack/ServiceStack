@@ -176,7 +176,7 @@ public static class JobUtils
         };
     }
 
-    public static void SetCancellationToken(this IRequest req, CancellationToken token) => req.Items[nameof(CancellationToken)] = token;
+    public static void SetCancellationToken(this IRequest req, CancellationToken token) => req.SetItem(nameof(CancellationToken), token);
 
     public static CancellationToken GetCancellationToken(this IRequest? req) =>
         req?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
@@ -186,7 +186,8 @@ public static class JobUtils
     public static BackgroundJob GetBackgroundJob(this IRequest? req) => req.TryGetBackgroundJob()
         ?? throw new Exception("BackgroundJob not found");
 
-    public static void SetBackgroundJob(this IRequest req, BackgroundJob job) => req.Items[nameof(BackgroundJob)] = job;
+    public static void SetBackgroundJob(this IRequest req, BackgroundJob job) => req.SetItem(nameof(BackgroundJob), job);
+
     public static BackgroundJob? TryGetBackgroundJob(this IRequest? req)
     {
         return req?.Items.TryGetValue(nameof(BackgroundJob), out var oJob) == true

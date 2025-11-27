@@ -128,7 +128,7 @@ public class CacheResponseAttribute : RequestFilterAsyncAttribute
         if (await req.HandleValidCache(cacheInfo).ConfigAwait())
             return;
 
-        req.Items[Keywords.CacheInfo] = cacheInfo;
+        req.SetItem(Keywords.CacheInfo, cacheInfo);
     }
 }
 

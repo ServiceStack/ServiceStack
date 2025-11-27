@@ -278,7 +278,7 @@ public class CustomAuthAttrService : Service
 {
     public CustomAuthAttrResponse Any(CustomAuthAttr request)
     {
-        if (!Request.Items.ContainsKey("TriedMyOwnAuthFirst"))
+        if (!Request.IsSet("TriedMyOwnAuthFirst"))
             throw new InvalidOperationException("TriedMyOwnAuthFirst not present.");
 
         return new CustomAuthAttrResponse { Result = request.Name };

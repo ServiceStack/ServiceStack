@@ -292,13 +292,13 @@ public class RazorFormat : IPlugin, Html.IViewEngine, Model.IHasStringId
         if (explicitView == null && (req.Dto == null || dto == null))
             return false;
 
-        if (req.Items.ContainsKey(RenderException))
+        if (req.IsSet(RenderException))
             return false;
 
         var errorStatus = dto.GetResponseStatus() ?? 
             (dto is Exception ex ? ex.ToResponseStatus() : null);
         if (errorStatus?.ErrorCode != null)
-            req.Items[Keywords.ErrorStatus] = errorStatus;
+            req.SetItem(Keywords.ErrorStatus, errorStatus);
 
         var viewNames = new List<string>();
         if (explicitView != null)

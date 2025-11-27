@@ -207,12 +207,12 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
 
     private void LogRequest(IRequest req, object requestDto, object response)
     {
-        if (req.IsInProcessRequest() || req.Items.ContainsKey(Keywords.HasLogged))
+        if (req.IsInProcessRequest() || req.IsSet(Keywords.HasLogged))
             return;
 
         try
         {
-            req.Items[Keywords.HasLogged] = true;
+            req.SetTrue(Keywords.HasLogged);
             var logDto = !req.IsMultiRequest() ? requestDto : req.Dto;
             if (logDto != null)
             {

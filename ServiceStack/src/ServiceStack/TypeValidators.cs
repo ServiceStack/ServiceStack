@@ -261,7 +261,7 @@ public class ApiKeyValidator(Func<IApiKeySource> factory, Func<IApiKeyResolver> 
                 if (!isValid)
                     return false;
                 
-                request.Items[Keywords.ApiKey] = apiKey;
+                request.SetItem(Keywords.ApiKey, apiKey);
                 return true;
             }
         }

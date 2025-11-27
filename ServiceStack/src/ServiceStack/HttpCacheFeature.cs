@@ -116,9 +116,9 @@ public class HttpCacheFeature : IPlugin, Model.IHasStringId
         if (response is HttpResult customResult)
         {
             if (customResult.View != null)
-                req.Items[Keywords.View] = customResult.View;
+                req.SetItem(Keywords.View, customResult.View);
             if (customResult.Template != null)
-                req.Items[Keywords.Template] = customResult.Template;
+                req.SetItem(Keywords.Template, customResult.Template);
         }
 
         using (httpResult?.ResultScope?.Invoke())

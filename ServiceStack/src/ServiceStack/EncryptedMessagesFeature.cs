@@ -145,7 +145,7 @@ public class EncryptedMessagesFeature : IPlugin, IConfigureServices, Model.IHasS
                     .Each(entry => nonceCache.TryRemove(entry.Key, out _));
 
                 parts = parts[1].SplitOnFirst(' ');
-                req.Items[Keywords.InvokeVerb] = parts[0];
+                req.SetItem(Keywords.InvokeVerb, parts[0]);
 
                 parts = parts[1].SplitOnFirst(' ');
                 var operationName = parts[0];
@@ -159,9 +159,9 @@ public class EncryptedMessagesFeature : IPlugin, IConfigureServices, Model.IHasS
 
                 req.RequestAttributes |= RequestAttributes.Secure;
                 req.RequestAttributes &= ~RequestAttributes.InSecure;
-                req.Items[RequestItemsCryptKey] = cryptKey;
-                req.Items[RequestItemsAuthKey] = authKey;
-                req.Items[RequestItemsIv] = iv;
+                req.SetItem(RequestItemsCryptKey, cryptKey);
+                req.SetItem(RequestItemsAuthKey, authKey);
+                req.SetItem(RequestItemsIv, iv);
 
                 return request;
             }
@@ -262,7 +262,7 @@ public static class EncryptedMessagesFeatureExtensions
 {
     public static bool IsEncryptedMessage(this IRequest req)
     {
-        return req.Items.ContainsKey(EncryptedMessagesFeature.RequestItemsCryptKey)
-               && req.Items.ContainsKey(EncryptedMessagesFeature.RequestItemsIv);
+        return req.IsSet(EncryptedMessagesFeature.RequestItemsCryptKey)
+            && req.IsSet(EncryptedMessagesFeature.RequestItemsIv);
     }
 }

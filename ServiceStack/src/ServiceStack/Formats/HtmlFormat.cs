@@ -69,7 +69,7 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
             if (res.StatusCode >= 400)
             {
                 var responseStatus = response.GetResponseStatus();
-                req.Items[Keywords.ErrorStatus] = responseStatus;
+                req.SetItem(Keywords.ErrorStatus, responseStatus);
             }
 
             if (response is CompressedResult)

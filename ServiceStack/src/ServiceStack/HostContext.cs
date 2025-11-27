@@ -259,7 +259,7 @@ public static class HostContext
 
     public static async Task RaiseAndHandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
     {
-        if (!httpReq.Items.ContainsKey(nameof(ServiceStackHost.OnServiceException)))
+        if (!httpReq.IsSet(nameof(ServiceStackHost.OnServiceException)))
             await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex).ConfigAwait();
 
         if (httpRes.IsClosed)

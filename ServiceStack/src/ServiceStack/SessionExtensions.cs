@@ -39,7 +39,7 @@ public static class SessionExtensions
             ? SessionFeature.PermanentSessionId
             : SessionFeature.SessionId;
 
-        req.Items[sessionKey] = sessionId;
+        req.SetItem(sessionKey, sessionId);
     }
 
     public static string GetSessionId(this IRequest req)
@@ -161,7 +161,7 @@ public static class SessionExtensions
                 HostContext.Config.UseSecureCookies && req.IsSecureConnection);
         }
 
-        req.Items[sessionKey] = sessionId;
+        req.SetItem(sessionKey, sessionId);
         return sessionId;
     }
     public static string CreateTemporarySessionId(this IRequest req, string sessionId) =>
@@ -225,7 +225,7 @@ public static class SessionExtensions
         var httpRes = req.Response as IHttpResponse;
         httpRes?.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
 
-        req.Items[SessionFeature.SessionOptionsKey] = strOptions;
+        req.SetItem(SessionFeature.SessionOptionsKey, strOptions);
 
         return existingOptions;
     }
@@ -384,7 +384,7 @@ public static class SessionExtensions
             ? permId
             : tempId;
 
-        req.Items[Keywords.Session] = session;
+        req.SetItem(Keywords.Session, session);
     }
 
     public static AuthUserSession ToAuthUserSession(this IAuthSession session)

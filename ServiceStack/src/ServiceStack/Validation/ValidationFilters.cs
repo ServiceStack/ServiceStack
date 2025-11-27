@@ -99,7 +99,7 @@ public static class ValidationFilters
                 // If the response is null, it means the request is sent from the InProcessServiceGateway
                 if (res == null)
                 {
-                    req.Items[Keywords.ResponseStatus] = errorResponse.GetResponseStatus();
+                    req.SetItem(Keywords.ResponseStatus, errorResponse.GetResponseStatus());
                 }
                 else
                 {
@@ -116,7 +116,7 @@ public static class ValidationFilters
                 // If the response is null, it means the request is sent from the InProcessServiceGateway
                 if (res == null)
                 {
-                    req.Items[Keywords.ResponseStatus] = errorResponse.GetResponseStatus();
+                    req.SetItem(Keywords.ResponseStatus, errorResponse.GetResponseStatus());
                 }
                 else
                 {
@@ -134,11 +134,11 @@ public static class ValidationFilters
     public static async Task ResponseFilterAsync(IRequest req, IResponse res, object requestDto)
     {
         IHasResponseStatus response;
-        if (requestDto is IHasResponseStatus)
+        if (requestDto is IHasResponseStatus dto)
         {
-            response = (IHasResponseStatus)requestDto;
+            response = dto;
         }
-        else if (req.Items.ContainsKey(Keywords.ResponseStatus) && req.Items[Keywords.ResponseStatus] is IHasResponseStatus)
+        else if (req.IsSet(Keywords.ResponseStatus) && req.Items[Keywords.ResponseStatus] is IHasResponseStatus)
         {
             response = (IHasResponseStatus)req.Items[Keywords.ResponseStatus];
         }

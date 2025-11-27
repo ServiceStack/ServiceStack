@@ -584,7 +584,7 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
                 }
 
                 var session = await CreateSessionFromPayloadAsync(req, jwtPayload);
-                req.Items[Keywords.Session] = session;
+                req.SetItem(Keywords.Session, session);
                 return true;
             }
 
@@ -604,7 +604,7 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
                 }
 
                 var session = await CreateSessionFromPayloadAsync(req, jwtPayload);
-                req.Items[Keywords.Session] = session;
+                req.SetItem(Keywords.Session, session);
                 return true;
             }
         }

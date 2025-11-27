@@ -127,7 +127,7 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
             return;
 
         session = await ConvertPrincipalToSessionAsync(req, claimsPrincipal).ConfigAwait();
-        req.Items[Keywords.Session] = session;
+        req.SetItem(Keywords.Session, session);
     }
 
     public async Task<IAuthSession> ConvertPrincipalToSessionAsync(IRequest req, ClaimsPrincipal claimsPrincipal, CancellationToken token=default)

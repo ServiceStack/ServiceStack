@@ -471,7 +471,7 @@ public class SharpPagesFeature : ScriptContext, IPlugin, IViewEngine, Model.IHas
                               ? ex.ToResponseStatus()
                               : null);
         if (errorStatus?.ErrorCode != null)
-            req.Items[Keywords.ErrorStatus] = errorStatus;
+            req.SetItem(Keywords.ErrorStatus, errorStatus);
 
         var viewNames = new List<string>();
         if (explicitView != null)

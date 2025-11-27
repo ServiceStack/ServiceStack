@@ -78,7 +78,8 @@ class CancellableRequest : ICancellableRequest
 
         this.feature.UnregisterCancellableRequest(this.requestTag);
 
-        req.Items[nameof(CancellableRequest)] = feature.RequestsMap[tag] = this;
+        feature.RequestsMap[tag] = this;
+        req.SetItem(nameof(CancellableRequest), this);
     }
 
     public TimeSpan Elapsed => stopwatch.Elapsed;

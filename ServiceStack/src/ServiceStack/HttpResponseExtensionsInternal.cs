@@ -179,7 +179,9 @@ public static class HttpResponseExtensionsInternal
                 if (result is Exception)
                 {
                     if (response.Request.Items.TryGetValue(Keywords.ErrorView, out var oErrorView))
-                        response.Request.Items[Keywords.View] = oErrorView;
+                    {
+                        response.Request.SetItem(Keywords.View, oErrorView);
+                    }
                 }
 
                 var httpResult = result as IHttpResult;
@@ -574,11 +576,11 @@ public static class HttpResponseExtensionsInternal
                                ?? HostContext.AppHost.GlobalHtmlErrorHttpHandler;
             if (errorHandler != null)
             {
-                httpReq.Items[Keywords.Model] = errorDto;
-                httpReq.Items[Keywords.ErrorStatus] = errorDto.GetResponseStatus();
+                httpReq.SetItem(Keywords.Model, errorDto);
+                httpReq.SetItem(Keywords.ErrorStatus, errorDto.GetResponseStatus());
                 if (ex != null)
                 {
-                    httpReq.Items[Keywords.Error] = ex;
+                    httpReq.SetItem(Keywords.Error, ex);
                 }
                 await errorHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
                 return true;
@@ -589,9 +591,9 @@ public static class HttpResponseExtensionsInternal
 
     public static bool ShouldWriteGlobalHeaders(IResponse httpRes)
     {
-        if (!httpRes.HasStarted && HostContext.Config != null && !httpRes.Items.ContainsKey(Keywords.HasGlobalHeaders))
+        if (!httpRes.HasStarted && HostContext.Config != null && !httpRes.IsSet(Keywords.HasGlobalHeaders))
         {
-            httpRes.Items[Keywords.HasGlobalHeaders] = bool.TrueString;
+            httpRes.SetTrue(Keywords.HasGlobalHeaders);
             return true;
         }
         return false;

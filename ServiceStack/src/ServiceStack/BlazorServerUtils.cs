@@ -118,7 +118,7 @@ public static class BlazorServerUtils
             RawUrl = hostState.AbsoluteUri,
             PathInfo = "/",
         });
-        to.Items[Keywords.Session] = hostState.Session.FromAuthUserSession();
+        to.SetItem(Keywords.Session, hostState.Session.FromAuthUserSession());
         foreach (var cookie in hostState.Cookies)
         {
             to.Cookies.Add(new(cookie.Name, cookie.ToCookie()));
