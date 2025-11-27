@@ -219,6 +219,19 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         return to;
     }
 
+    public Auth.IAuthSession ToAuthUserSession(IApiKey apiKey)
+    {
+        var clone = HostContext.Config.CloneAuthSecretSession();
+        clone.UserAuthId = apiKey.UserAuthId;
+        clone.AuthProvider = Keywords.ApiKeyParam;
+        if (apiKey is ApiKey x)
+        {
+            clone.UserName = x.UserName ?? clone.UserName;
+            clone.UserAuthName = x.UserName ?? clone.UserAuthName;
+        }
+        return clone;
+    }
+
     public async Task RequestFilterAsync(IRequest req, IResponse res, object requestDto)
     {
         var apiKeyToken = GetApiKeyToken(req); 
@@ -227,7 +240,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         var authSecret = HostContext.Config.AdminAuthSecret;
         if (authSecret != null && authSecret == apiKeyToken)
         {
-            req.Items[Keywords.Session] = HostContext.Config.AuthSecretSession;
+            req.SetItem(Keywords.Session, HostContext.Config.AuthSecretSession);
             return;
         }
         
@@ -237,10 +250,13 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         {
             if (entry.dateTime + CacheDuration > DateTime.UtcNow)
             {
-                req.Items[Keywords.ApiKey] = entry.apiKey;
+                req.SetItem(Keywords.ApiKey, entry.apiKey);
                 if (entry.apiKey.HasScope(RoleNames.Admin))
                 {
-                    req.Items[Keywords.Session] = HostContext.Config.AuthSecretSession;
+                    if (!req.GetClaimsPrincipal().HasRole(RoleNames.Admin))
+                    {
+                        req.SetItem(Keywords.Session, ToAuthUserSession(entry.apiKey));
+                    }
                 }
                 RecordUsage(entry.apiKey);
                 return;
@@ -252,10 +268,13 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         var apiKey = await source.GetApiKeyAsync(apiKeyToken);
         if (apiKey != null)
         {
-            req.Items[Keywords.ApiKey] = apiKey;
+            req.SetItem(Keywords.ApiKey, apiKey);
             if (apiKey.HasScope(RoleNames.Admin))
             {
-                req.Items[Keywords.Session] = HostContext.Config.AuthSecretSession;
+                if (!req.GetClaimsPrincipal().HasRole(RoleNames.Admin))
+                {
+                    req.SetItem(Keywords.Session, ToAuthUserSession(apiKey));
+                }
             }
             if (CacheDuration != null)
             {

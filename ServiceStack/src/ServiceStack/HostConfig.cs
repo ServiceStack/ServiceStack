@@ -429,6 +429,19 @@ public class HostConfig
         
     public IAuthSession AuthSecretSession { get; set; }
 
+    public IAuthSession CloneAuthSecretSession() => new AuthUserSession
+    {
+        Id = AuthSecretSession.Id,
+        DisplayName = AuthSecretSession.DisplayName,
+        UserName = AuthSecretSession.UserName,
+        UserAuthName = AuthSecretSession.UserAuthName,
+        AuthProvider = AuthSecretSession.AuthProvider,
+        IsAuthenticated = AuthSecretSession.IsAuthenticated,
+        Roles = [..AuthSecretSession.Roles],
+        Permissions = [..AuthSecretSession.Permissions],
+        UserAuthId = AuthSecretSession.UserAuthId,
+    };
+    
     public FallbackRestPathDelegate FallbackRestPath { get; set; }
 
     private HashSet<string> razorNamespaces;
