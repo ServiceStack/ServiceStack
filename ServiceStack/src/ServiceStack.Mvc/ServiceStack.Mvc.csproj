@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Mvc</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
-    <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0;net10.0</TargetFrameworks>
     <Title>MVC Adapters for integrating with ServiceStack webservices</Title>
     <PackageDescription>
     MVC Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC.
