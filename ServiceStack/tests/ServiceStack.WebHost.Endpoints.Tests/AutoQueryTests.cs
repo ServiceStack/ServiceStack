@@ -547,6 +547,7 @@ public class Movie
     public DateTime ReleaseDate { get; set; }
     public string TagLine { get; set; }
     public List<string> Genres { get; set; }
+    public string CreatedBy { get; set; }
 }
 
 public class StreamMovies : QueryDb<Movie>
@@ -841,8 +842,6 @@ public class AutoQueryUnitTests
         {
             using var db = AutoQuery.GetDb(query, base.Request);
             var q = AutoQuery.CreateQuery(query, base.Request, db);
-            var userId = Request.GetClaimsPrincipal().GetUserId();
-            q.Where(x => x.Rating == "PG-13");
             return await AutoQuery.ExecuteAsync(query, q, base.Request, db);
         }
     }
