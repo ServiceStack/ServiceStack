@@ -547,7 +547,6 @@ public class Movie
     public DateTime ReleaseDate { get; set; }
     public string TagLine { get; set; }
     public List<string> Genres { get; set; }
-    public string CreatedBy { get; set; }
 }
 
 public class StreamMovies : QueryDb<Movie>
