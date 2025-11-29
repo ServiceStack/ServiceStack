@@ -790,6 +790,13 @@ export const AdminChat = {
                         </div>
                     </div>
                 </div>
+                
+                <div class="mt-4 flex justify-center">
+                    <SecondaryButton href="/chat">
+                        Chat
+                        <svg class="size-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="m19 12l12 12l-12 12"/></svg>
+                    </SecondaryButton>
+                </div>
             </div>
 
             <!-- Log Detail Dialog -->
