@@ -7,10 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
-		..\build\build.bat = ..\build\build.bat
-		..\build\build.proj = ..\build\build.proj
-		Directory.Build.props = Directory.Build.props
-		..\tests\Directory.Build.props = ..\tests\Directory.Build.props
+		..\..\build\src\Directory.Build.props = ..\..\build\src\Directory.Build.props
+		..\..\build\tests\Directory.Build.props = ..\..\build\tests\Directory.Build.props
+		..\..\build\sync.sh = ..\..\build\sync.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{515043B6-1FFD-4CBF-8916-23B82C67CF8C}"
