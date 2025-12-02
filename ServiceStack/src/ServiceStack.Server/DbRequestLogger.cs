@@ -589,6 +589,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
                 Logger?.LogWarning(e, "GetAnalyticsReports(): SELECT RequestLog WHERE Id > {LastPk}: {Message}", 
                     lastPk, e.Message);
                 lastPk += config.BatchSize; // avoid infinite loops
+                continue;
             }
             
             foreach (var requestLog in batch)
@@ -650,6 +651,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
                 Logger?.LogWarning(e, "GetApiAnalytics(): SELECT RequestLog WHERE Id > {LastPk} AND OperationName = {Op}: {Message}", 
                     lastPk, op, e.Message);
                 lastPk += config.BatchSize; // avoid infinite loops
+                continue;
             }
             
             foreach (var requestLog in batch)
@@ -723,6 +725,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
                 Logger?.LogWarning(e, "GetUserAnalytics(): SELECT RequestLog WHERE Id > {LastPk} AND UserAuthId = {UserId}: {Message}", 
                     lastPk, userId, e.Message);
                 lastPk += config.BatchSize; // avoid infinite loops
+                continue;
             }
             
             foreach (var requestLog in batch)
@@ -801,6 +804,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
                 Logger?.LogWarning(e, "GetApiKeyAnalytics(): SELECT RequestLog WHERE Id > {LastPk}: {Message}", 
                     lastPk, e.Message);
                 lastPk += config.BatchSize; // avoid infinite loops
+                continue;
             }
             
             foreach (var requestLog in batch)
@@ -876,6 +880,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
                 Logger?.LogWarning(e, "GetIpAnalytics(): SELECT RequestLog WHERE Id > {LastPk} AND IpAddress = {Ip}: {Message}", 
                     lastPk, ip, e.Message);
                 lastPk += config.BatchSize; // avoid infinite loops
+                continue;
             }
             
             foreach (var requestLog in batch)
