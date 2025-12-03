@@ -217,43 +217,60 @@ public class NodeProxy
 
     public bool TryStartNode(string workingDirectory, out Process process)
     {
-        process = new Process 
+        // Convert relative path to absolute path for Windows compatibility
+        var absoluteWorkingDir = Path.GetFullPath(workingDirectory);
+       
+        // On Windows, npm is a batch file, so we need to use cmd.exe
+        var isWindows = OperatingSystem.IsWindows();
+        var fileName = isWindows ? "cmd.exe" : "npm";
+        var arguments = isWindows ? "/c npm run dev" : "run dev";
+       
+        process = new Process
         {
             StartInfo = new() {
-                FileName = "npm",
-                Arguments = "run dev",
-                WorkingDirectory = workingDirectory,
+                FileName = fileName,
+                Arguments = arguments,
+                WorkingDirectory = absoluteWorkingDir,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true
-            }, 
+            },
             EnableRaisingEvents = true,
         };
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true;
-        if (LogDebug)
+        process.OutputDataReceived += (s, e) => {
+            if (e.Data != null)
+            {
+                Log?.LogDebug(e.Data);
+            }
+        };
+        process.ErrorDataReceived += (s, e) => {
+            if (e.Data != null)
+            {
+                Log?.LogError(e.Data);
+            }
+        };
+       
+        try
         {
-            process.OutputDataReceived += (s, e) => {
-                if (e.Data != null)
-                {
-                    Log?.LogDebug(e.Data);
-                }
-            };
-            process.ErrorDataReceived += (s, e) => {
-                if (e.Data != null)
-                {
-                    Log?.LogError(e.Data);
-                }
-            };
+            Log?.LogInformation($"Starting Node.js dev server in: {absoluteWorkingDir}");
+            if (!process.Start())
+            {
+                Log?.LogError("Failed to start Node.js process");
+                return false;
+            }
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            Log?.LogInformation("Node.js dev server started successfully");
+            return true;
         }
-        if (!process.Start())
+        catch (Exception ex)
         {
+            Log?.LogError(ex, "Error starting Node.js process");
             return false;
         }
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();        
-        return true;
     }
 
     static bool IsHopByHopHeader(string headerName)
