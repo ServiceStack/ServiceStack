@@ -18,6 +18,13 @@ public class NodeProxy
 {
     public HttpClient Client { get; set; }
     public ILogger? Log { get; set; }
+    
+    public string ProcessFileName { get; set; }
+    public string ProcessArguments { get; set; }
+    public Action<Process>? ConfigureProcess { get; set; }
+    public Action<Process>? ConfigureLinuxProcess { get; set; }
+    public Action<Process>? ConfigureMacProcess { get; set; }
+    public Action<Process>? ConfigureWindowsProcess { get; set; }
 
     /// <summary>
     /// Maximum size in bytes for an individual file to be cached (default: 5 MB)
@@ -127,6 +134,11 @@ public class NodeProxy
     {
         Client = client;
         ShouldCache = DefaultShouldCache;
+
+        // On Windows, npm is a batch file, so we need to use cmd.exe
+        var isWindows = OperatingSystem.IsWindows();
+        ProcessFileName = isWindows ? "cmd.exe" : "npm";
+        ProcessArguments = isWindows ? "/c npm run dev" : "run dev";
     }
     
     public bool LogDebug => Log != null && Log.IsEnabled(LogLevel.Debug);
@@ -220,16 +232,11 @@ public class NodeProxy
         // Convert relative path to absolute path for Windows compatibility
         var absoluteWorkingDir = Path.GetFullPath(workingDirectory);
        
-        // On Windows, npm is a batch file, so we need to use cmd.exe
-        var isWindows = OperatingSystem.IsWindows();
-        var fileName = isWindows ? "cmd.exe" : "npm";
-        var arguments = isWindows ? "/c npm run dev" : "run dev";
-       
         process = new Process
         {
             StartInfo = new() {
-                FileName = fileName,
-                Arguments = arguments,
+                FileName = ProcessFileName,
+                Arguments = ProcessArguments,
                 WorkingDirectory = absoluteWorkingDir,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
@@ -255,6 +262,23 @@ public class NodeProxy
        
         try
         {
+            if (ConfigureProcess != null)
+            {
+                ConfigureProcess(process);
+            }
+            if (ConfigureWindowsProcess != null && OperatingSystem.IsWindows())
+            {
+                ConfigureWindowsProcess(process);
+            }
+            else if (ConfigureMacProcess != null && OperatingSystem.IsMacOS())
+            {
+                ConfigureMacProcess(process);
+            }
+            else if (ConfigureLinuxProcess != null && OperatingSystem.IsLinux())
+            {
+                ConfigureLinuxProcess(process);
+            }
+            
             Log?.LogInformation($"Starting Node.js dev server in: {absoluteWorkingDir}");
             if (!process.Start())
             {
