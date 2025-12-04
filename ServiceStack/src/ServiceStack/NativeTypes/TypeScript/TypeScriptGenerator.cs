@@ -144,32 +144,19 @@ public class TypeScriptGenerator : ILangGenerator
 
     public string DictionaryDeclaration { get; set; } = "export class Dictionary<T> { [Key: string]: T; }";
         
-    public HashSet<string> AddedDeclarations { get; set; } = new HashSet<string>();
+    public HashSet<string> AddedDeclarations { get; set; } = [];
 
     public static Func<TypeScriptGenerator, MetadataType, MetadataPropertyType, string> PropertyTypeFilter { get; set; }
 
     /// <summary>
     /// Whether property should be marked optional
     /// </summary>
-    public static Func<TypeScriptGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
-        DefaultIsPropertyOptional;
-
-    /// <summary>
-    /// Helper to make Nullable properties
-    /// </summary>
-    public static bool UseNullableProperties
+    public static Func<TypeScriptGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static bool DefaultIsPropertyOptional(TypeScriptGenerator generator, MetadataType type, MetadataPropertyType prop)
     {
-        set
-        {
-            if (value)
-            {
-                IsPropertyOptional = (gen, type, prop) => false;
-                PropertyTypeFilter = (gen, type, prop) => 
-                    prop.IsRequired == true
-                        ? gen.GetPropertyType(prop, out _)
-                        : gen.GetPropertyType(prop, out _) + "|null";
-            }
-        }
+        if (generator.Config.MakePropertiesOptional)
+            return true;
+        return !prop.IsRequired();
     }
 
     public void Init(MetadataTypes metadata)
@@ -616,7 +603,7 @@ public class TypeScriptGenerator : ILangGenerator
                 var propType = GetPropertyType(prop, out var optionalProperty);
                 propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
-                var optional = IsPropertyOptional(this, type, prop) ?? optionalProperty
+                var optional = IsPropertyOptional(this, type, prop)
                     ? "?"
                     : "";
 
@@ -646,16 +633,6 @@ public class TypeScriptGenerator : ILangGenerator
             sb.AppendLine(modifier + "{0}{1}: ResponseStatus;".Fmt(
                 GetPropertyName(nameof(ResponseStatus)), Config.ExportAsTypes ? "" : "?"));
         }
-    }
-
-    public static bool? DefaultIsPropertyOptional(TypeScriptGenerator generator, MetadataType type, MetadataPropertyType prop)
-    {
-        if (generator.Config.MakePropertiesOptional)
-            return true;
-
-        return prop.IsRequired == null
-            ? null
-            : !prop.IsRequired.Value;
     }
 
     public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

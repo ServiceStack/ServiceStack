@@ -198,8 +198,11 @@ public class ZigGenerator : ILangGenerator
     /// <summary>
     /// Whether property should be marked optional
     /// </summary>
-    public static Func<ZigGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
-        DefaultIsPropertyOptional;
+    public static Func<ZigGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static bool DefaultIsPropertyOptional(ZigGenerator generator, MetadataType type, MetadataPropertyType prop)
+    {
+        return !prop.IsRequired();
+    }
 
     public void Init(MetadataTypes metadata)
     {
@@ -524,7 +527,7 @@ public class ZigGenerator : ILangGenerator
                 var propType = GetPropertyType(prop, out var optionalProperty);
                 propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
-                var optional = IsPropertyOptional(this, type, prop) ?? optionalProperty;
+                var optional = IsPropertyOptional(this, type, prop);
 
                 wasAdded = AppendComments(sb, prop.Description);
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -548,16 +551,6 @@ public class ZigGenerator : ILangGenerator
             AppendDataMember(sb, null, dataMemberIndex++);
             sb.AppendLine("{0}: ?ResponseStatus,".Fmt(GetPropertyName(nameof(ResponseStatus))));
         }
-    }
-
-    public static bool? DefaultIsPropertyOptional(ZigGenerator generator, MetadataType type, MetadataPropertyType prop)
-    {
-        if (generator.Config.MakePropertiesOptional)
-            return true;
-
-        return prop.IsRequired == null
-            ? null
-            : !prop.IsRequired.Value;
     }
 
     public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

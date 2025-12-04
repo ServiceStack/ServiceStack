@@ -1465,6 +1465,10 @@ public static class AppMetadataUtils
 
     public static string GetSerializedAlias(this MetadataPropertyType prop) =>
         prop.DataMember?.Name?.SafeVarName();
+    
+    public static bool IsRequired(this MetadataPropertyType prop) => 
+        prop.IsRequired == true 
+        || (prop.IsValueType == true && prop.Type != "Nullable`1");
 
     public static MetadataPropertyType GetPrimaryKey(this List<MetadataPropertyType> props) =>
         props.FirstOrDefault(c => c.IsPrimaryKey == true);

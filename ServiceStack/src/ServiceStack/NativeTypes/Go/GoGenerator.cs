@@ -170,8 +170,11 @@ public class GoGenerator : ILangGenerator
     /// <summary>
     /// Whether property should be marked optional (pointer types in Go)
     /// </summary>
-    public static Func<GoGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
-        DefaultIsPropertyOptional;
+    public static Func<GoGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static bool DefaultIsPropertyOptional(GoGenerator generator, MetadataType type, MetadataPropertyType prop)
+    {
+        return !prop.IsRequired();
+    }
 
     public void Init(MetadataTypes metadata)
     {
@@ -475,7 +478,7 @@ public class GoGenerator : ILangGenerator
                 propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
                 // In Go, use pointer types for optional/nullable properties
-                var usePointer = IsPropertyOptional(this, type, prop) ?? isNullable;
+                var usePointer = IsPropertyOptional(this, type, prop);
                 if (usePointer && !propType.StartsWith("*") && !propType.StartsWith("[]") && !propType.StartsWith("map["))
                 {
                     propType = "*" + propType;
@@ -507,16 +510,6 @@ public class GoGenerator : ILangGenerator
         {
             sb.AppendLine($"ResponseStatus *ResponseStatus `json:\"responseStatus,omitempty\"`");
         }
-    }
-
-    public static bool? DefaultIsPropertyOptional(GoGenerator generator, MetadataType type, MetadataPropertyType prop)
-    {
-        if (generator.Config.MakePropertiesOptional)
-            return true;
-
-        return prop.IsRequired == null
-            ? null
-            : !prop.IsRequired.Value;
     }
 
     public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

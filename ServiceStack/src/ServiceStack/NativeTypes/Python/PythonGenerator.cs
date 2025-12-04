@@ -280,8 +280,11 @@ public class PythonGenerator : ILangGenerator
     /// <summary>
     /// Whether property should be marked optional
     /// </summary>
-    public static Func<PythonGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
-        DefaultIsPropertyOptional;
+    public static Func<PythonGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static bool DefaultIsPropertyOptional(PythonGenerator generator, MetadataType type, MetadataPropertyType prop)
+    {
+        return !prop.IsRequired();
+    }
 
     public void Init(MetadataTypes metadata)
     {
@@ -778,7 +781,7 @@ public class PythonGenerator : ILangGenerator
                         ? " = field(default_factory=dict)"
                         : " = field(default_factory=list)";
                 }
-                else if (IsPropertyOptional(this, type, prop) ?? optionalProperty)
+                else if (IsPropertyOptional(this, type, prop))
                 {
                     propType = asOptional(propType);
                 }
@@ -818,16 +821,6 @@ public class PythonGenerator : ILangGenerator
             AppendDataMember(sb, null, dataMemberIndex++);
             sb.AppendLine($"{modifier}{GetPropertyName(nameof(ResponseStatus))}: ResponseStatus = None");
         }
-    }
-
-    public static bool? DefaultIsPropertyOptional(PythonGenerator generator, MetadataType type, MetadataPropertyType prop)
-    {
-        if (generator.Config.MakePropertiesOptional)
-            return true;
-
-        return prop.IsRequired == null
-            ? null
-            : !prop.IsRequired.Value;
     }
 
     public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

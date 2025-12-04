@@ -18,7 +18,7 @@ public class Todo
 {
     [AutoIncrement]
     public long Id { get; set; }
-    public string Text { get; set; } = string.Empty;
+    public required string Text { get; set; }
     public bool IsFinished { get; set; }
 }
 
@@ -60,8 +60,8 @@ public class UpdateTodo : IUpdateDb<Todo>, IReturn<Todo>
 [Route("/todos/{Id}", "DELETE")]
 public class DeleteTodos : IDeleteDb<Todo>, IReturnVoid
 {
-    public long Id { get; set; }
-    public List<long> Ids { get; set; } = new();
+    public long? Id { get; set; }
+    public List<long>? Ids { get; set; } = [];
 }
 
 [ValidateApiKey]
@@ -69,5 +69,4 @@ public class DeleteTodos : IDeleteDb<Todo>, IReturnVoid
 public class DeleteTodo : IDeleteDb<Todo>, IReturnVoid
 {
     public long Id { get; set; }
-    public List<long> Ids { get; set; } = new();
 }

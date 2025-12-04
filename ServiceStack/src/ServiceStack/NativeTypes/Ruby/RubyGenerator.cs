@@ -256,8 +256,11 @@ public class RubyGenerator : ILangGenerator
     /// <summary>
     /// Whether property should be marked optional
     /// </summary>
-    public static Func<RubyGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
-        DefaultIsPropertyOptional;
+    public static Func<RubyGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static bool DefaultIsPropertyOptional(RubyGenerator generator, MetadataType type, MetadataPropertyType prop)
+    {
+        return !prop.IsRequired();
+    }
 
     public void Init(MetadataTypes metadata)
     {
@@ -279,14 +282,6 @@ public class RubyGenerator : ILangGenerator
 
         ConflictTypeNames.Add(typeof(QueryDb<,>).Name);
         ConflictTypeNames.Add(typeof(QueryData<,>).Name);
-    }
-
-    public static bool? DefaultIsPropertyOptional(RubyGenerator generator, MetadataType type, MetadataPropertyType prop)
-    {
-        if (prop.IsRequired == true)
-            return false;
-
-        return null;
     }
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)

@@ -312,10 +312,12 @@ public class CSharpGenerator : ILangGenerator
                     var memberValue = type.GetEnumMemberValue(i);
                     if (memberValue != null)
                     {
-                        AppendAttributes(sb, new List<MetadataAttribute> {
-                            new MetadataAttribute {
+                        AppendAttributes(sb, [
+                            new MetadataAttribute
+                            {
                                 Name = "EnumMember",
-                                Args = [
+                                Args =
+                                [
                                     new()
                                     {
                                         Name = "Value",
@@ -324,7 +326,7 @@ public class CSharpGenerator : ILangGenerator
                                     }
                                 ]
                             }
-                        });
+                        ]);
                     }
                     sb.AppendLine(value == null 
                         ? $"{name},"
@@ -449,10 +451,9 @@ public class CSharpGenerator : ILangGenerator
                     
                 if (Config.AddNullableAnnotations)
                 {
-                    if (prop.IsRequired != true && (prop.PropertyInfo?.PropertyType.IsValueType) != true)
-                    {
-                        propType = GetPropertyType(prop).EnsureSuffix('?');
-                    }
+                    propType = prop.IsRequired()
+                        ? GetPropertyType(prop).TrimEnd('?')
+                        : GetPropertyType(prop).EnsureSuffix('?');
                 }    
 
                 wasAdded = AppendComments(sb, prop.Description);

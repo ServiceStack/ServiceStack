@@ -32,6 +32,12 @@ public class DartGenerator : ILangGenerator
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
+    public static Func<DartGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static bool DefaultIsPropertyOptional(DartGenerator generator, MetadataType type, MetadataPropertyType prop)
+    {
+        return !(prop.IsRequired() && !prop.IsInterface());
+    }
+
     public static List<string> DefaultImports = new() {
 //            "dart:collection",  Required for inheriting List<T> / ListBase 
 //            "dart:typed_data",  Required for byte[] / Uint8List
@@ -1025,10 +1031,7 @@ public class DartGenerator : ILangGenerator
                 sb.Emit(prop, Lang.Dart);
                 PrePropertyFilter?.Invoke(sb, prop, type);
 
-                var isRequired = prop.Type != "Nullable`1" 
-                     && (prop.IsRequired == true)
-                     && Config.AddNullableAnnotations
-                     && !prop.IsInterface();
+                var isRequired = !IsPropertyOptional(this, type, prop);
                 string initializer = "";
                 if (isRequired)
                 {

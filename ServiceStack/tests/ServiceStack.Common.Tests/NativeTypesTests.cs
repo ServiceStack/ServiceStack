@@ -254,7 +254,7 @@ public class NativeTypesTests
 
         StringAssert.Contains("class DtoRequestWithStructProperty", src);
         StringAssert.Contains("public virtual string StructType { get; set; }", src);
-        StringAssert.Contains("public virtual string NullableStructType { get; set; }", src);
+        StringAssert.Contains("public virtual string? NullableStructType { get; set; }", src);
     }
 
     [Test]
@@ -396,6 +396,79 @@ public class NativeTypesTests
         var firstRef = src.IndexOf("ToolCall", StringComparison.Ordinal);
         Assert.That(toolsIndex, Is.LessThan(firstRef));
     }
+
+    [Test]
+    public void Does_generate_typescript_optionals()
+    {
+        var src = (string) appHost.ExecuteService(new TypesTypeScript { IncludeTypes = ["OptionalTest"] });
+        Assert.That(src, Does.Contain("int: number;"));
+        Assert.That(src, Does.Contain("nInt?: number;"));
+        Assert.That(src, Does.Contain("nRequiredInt: number;"));
+        Assert.That(src, Does.Contain("string: string;"));
+        Assert.That(src, Does.Contain("nString?: string;"));
+        Assert.That(src, Does.Contain("nRequiredString: string;"));
+        Assert.That(src, Does.Contain("optionalClass: OptionalClass;"));
+        Assert.That(src, Does.Contain("nOptionalClass?: OptionalClass;"));
+        Assert.That(src, Does.Contain("nRequiredOptionalClass: OptionalClass;"));
+        Assert.That(src, Does.Contain("optionalEnum: OptionalEnum;"));
+        Assert.That(src, Does.Contain("nOptionalEnum?: OptionalEnum;"));
+        Assert.That(src, Does.Contain("nRequiredOptionalEnum: OptionalEnum;"));
+    }
+
+    [Test]
+    public void Does_generate_csharp_optionals()
+    {
+        var src = (string) appHost.ExecuteService(new TypesCSharp { IncludeTypes = ["OptionalTest"] });
+        Assert.That(src, Does.Contain("int Int { get; set; }"));
+        Assert.That(src, Does.Contain("int? NInt { get; set; }"));
+        Assert.That(src, Does.Contain("int NRequiredInt { get; set; }"));
+        Assert.That(src, Does.Contain("string String { get; set; }"));
+        Assert.That(src, Does.Contain("string? NString { get; set; }"));
+        Assert.That(src, Does.Contain("string NRequiredString { get; set; }"));
+        Assert.That(src, Does.Contain("OptionalClass OptionalClass { get; set; }"));
+        Assert.That(src, Does.Contain("OptionalClass? NOptionalClass { get; set; }"));
+        Assert.That(src, Does.Contain("OptionalClass NRequiredOptionalClass { get; set; }"));
+        Assert.That(src, Does.Contain("OptionalEnum OptionalEnum { get; set; }"));
+        Assert.That(src, Does.Contain("OptionalEnum? NOptionalEnum { get; set; }"));
+        Assert.That(src, Does.Contain("OptionalEnum NRequiredOptionalEnum { get; set; }"));
+    }
+
+    [Test]
+    public void Does_generate_dart_optionals()
+    {
+        var src = (string) appHost.ExecuteService(new TypesDart { IncludeTypes = ["OptionalTest"] });
+        Assert.That(src, Does.Contain("int Int = 0;"));
+        Assert.That(src, Does.Contain("int? nInt;"));
+        Assert.That(src, Does.Contain("int nRequiredInt = 0;"));
+        Assert.That(src, Does.Contain("String string = \"\";"));
+        Assert.That(src, Does.Contain("String? nString;"));
+        Assert.That(src, Does.Contain("String nRequiredString = \"\";"));
+        Assert.That(src, Does.Contain("OptionalClass optionalClass;"));
+        Assert.That(src, Does.Contain("OptionalClass? nOptionalClass;"));
+        Assert.That(src, Does.Contain("OptionalClass nRequiredOptionalClass;"));
+        Assert.That(src, Does.Contain("OptionalEnum optionalEnum;"));
+        Assert.That(src, Does.Contain("OptionalEnum? nOptionalEnum;"));
+        Assert.That(src, Does.Contain("OptionalEnum nRequiredOptionalEnum;"));
+    }
+
+    [Test]
+    public void Does_generate_swift_optionals()
+    {
+        // TODO: Investigate making it more typed
+        var src = (string) appHost.ExecuteService(new TypesPython { IncludeTypes = ["OptionalTest"] });
+        Assert.That(src, Does.Contain("int_: int"));
+        Assert.That(src, Does.Contain("n_int: Optional[int] = None"));
+        Assert.That(src, Does.Contain("n_required_int: Optional[int] = None"));
+        Assert.That(src, Does.Contain("string: Optional[str] = None"));
+        Assert.That(src, Does.Contain("n_string: Optional[str] = None"));
+        Assert.That(src, Does.Contain("n_required_string: Optional[str] = None"));
+        Assert.That(src, Does.Contain("optional_class: Optional[OptionalClass] = None"));
+        Assert.That(src, Does.Contain("n_optional_class: Optional[OptionalClass] = None"));
+        Assert.That(src, Does.Contain("n_required_optional_class: Optional[OptionalClass] = None"));
+        Assert.That(src, Does.Contain("optional_enum: Optional[OptionalEnum] = None"));
+        Assert.That(src, Does.Contain("n_optional_enum: Optional[OptionalEnum] = None"));
+        Assert.That(src, Does.Contain("n_required_optional_enum: Optional[OptionalEnum] = None"));
+    }
 }
 
 public class NativeTypesTestService : Service
@@ -420,6 +493,35 @@ public class CollectionTestService : Service
     public void Any(DeleteItem request) {}
 }
 
+public record class OptionalClass(int Id);
+public enum OptionalEnum { Value1 }
+
+public class OptionalTest : IReturn<OptionalTest>
+{
+    public int Int { get; set; }
+    public int? NInt { get; set; }
+    [ValidateNotNull]
+    public int? NRequiredInt { get; set; }
+    public string String { get; set; }
+    public string? NString { get; set; }
+    [ValidateNotEmpty]
+    public string? NRequiredString { get; set; }
+    
+    public OptionalClass OptionalClass { get; set; }
+    public OptionalClass? NOptionalClass { get; set; }
+    [ValidateNotNull]
+    public OptionalClass? NRequiredOptionalClass { get; set; }
+    
+    public OptionalEnum OptionalEnum { get; set; }
+    public OptionalEnum? NOptionalEnum { get; set; }
+    [ValidateNotNull]
+    public OptionalEnum? NRequiredOptionalEnum { get; set; }
+}
+public class OptionalService : Service
+{
+    public object Any(OptionalTest request) => request;
+}
+
 public class Dto : IReturn<DtoResponse>
 {
     public EmbeddedResponse ReferencedType { get; set; }
@@ -433,7 +535,6 @@ public class DtoResponse
 
 public class EmbeddedResponse { }
 public class EmbeddedRequest { }
-
 
 [Route("/Request1/", "GET")]
 public partial class GetRequest1 : IReturn<List<ReturnedDto>>, IGet { }
@@ -466,108 +567,80 @@ public struct StructType
 [Route("/v1/chat/completions", "POST")]
 public class OpenAiChatCompletion : OpenAiChat, IPost, IReturn<OpenAiChatResponse>
 {
-
     public string? RefId { get; set; }
-    
-
     public string? Provider { get; set; }
-    
-
     public string? Tag { get; set; }
 }
     
 [DataContract]
 public class OpenAiChat
 {
-
     [DataMember(Name = "messages")]
     public List<OpenAiMessage> Messages { get; set; }
-        
 
     [DataMember(Name = "model")]
     public string Model { get; set; }
-        
 
     [DataMember(Name = "frequency_penalty")]
     public double? FrequencyPenalty { get; set; }
 
-
     [DataMember(Name = "logit_bias")]
     public Dictionary<int,int>? LogitBias { get; set; }
-        
 
     [DataMember(Name = "logprobs")]
     public bool? LogProbs { get; set; }
 
-
     [DataMember(Name = "top_logprobs")]
     public int? TopLogProbs { get; set; }
 
-
     [DataMember(Name = "max_tokens")]
     public int? MaxTokens { get; set; }
-        
 
     [DataMember(Name = "n")]
     public int? N { get; set; }
-        
 
     [DataMember(Name = "presence_penalty")]
     public double? PresencePenalty { get; set; }
-        
 
     [DataMember(Name = "response_format")]
     public OpenAiResponseFormat? ResponseFormat { get; set; }
-        
 
     [DataMember(Name = "seed")]
     public int? Seed { get; set; }
-        
 
     [DataMember(Name = "stop")]
     public List<string>? Stop { get; set; }
-        
 
     [DataMember(Name = "stream")]
     public bool? Stream { get; set; }
-        
 
     [DataMember(Name = "temperature")]
     public double? Temperature { get; set; }
-        
 
     [DataMember(Name = "top_p")]
     public double? TopP { get; set; }
-        
 
     [DataMember(Name = "tools")]
     public List<OpenAiTools>? Tools { get; set; }
-
 
     [DataMember(Name = "user")]
     public string? User { get; set; }
 }
 
-
 [DataContract]
 public class OpenAiMessage
 {
-        
     [DataMember(Name = "content")]
     public string Content { get; set; }
-        
         
     [DataMember(Name = "role")]
     public string Role { get; set; }
         
-        
     [DataMember(Name = "name")]
     public string? Name { get; set; }
         
-        
     [DataMember(Name = "tool_calls")]
     public ToolCall[]? ToolCalls { get; set; }
-        
         
     [DataMember(Name = "tool_call_id")]
     public string? ToolCallId { get; set; }
@@ -576,7 +649,6 @@ public class OpenAiMessage
 [DataContract]
 public class OpenAiTools
 {
-        
     [DataMember(Name = "type")]
     public OpenAiToolType Type { get; set; }
 }
@@ -590,14 +662,11 @@ public enum OpenAiToolType
 [DataContract]
 public class OpenAiToolFunction
 {
-        
     [DataMember(Name = "name")]
     public string? Name { get; set; }
-
         
     [DataMember(Name = "description")]
     public string? Description { get; set; }
-        
         
     [DataMember(Name = "parameters")]
     public Dictionary<string,string>? Parameters { get; set; }
@@ -624,30 +693,23 @@ public enum ResponseFormat
 [DataContract]
 public class OpenAiChatResponse
 {
-
     [DataMember(Name = "id")]
     public string Id { get; set; }
-        
 
     [DataMember(Name = "choices")]
     public List<Choice> Choices { get; set; }
-        
 
     [DataMember(Name = "created")]
     public long Created { get; set; }
-        
 
     [DataMember(Name = "model")]
     public string Model { get; set; }
-        
 
     [DataMember(Name = "system_fingerprint")]
     public string SystemFingerprint { get; set; }
-        
 
     [DataMember(Name = "object")]
     public string Object { get; set; }
-        
 
     [DataMember(Name = "usage")]
     public OpenAiUsage Usage { get; set; }
@@ -656,18 +718,14 @@ public class OpenAiChatResponse
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
-
 [DataContract]
 public class OpenAiUsage
 {
-
     [DataMember(Name = "completion_tokens")]
     public int CompletionTokens { get; set; }
 
-
     [DataMember(Name = "prompt_tokens")]
     public int PromptTokens { get; set; }
-        
 
     [DataMember(Name = "total_tokens")]
     public int TotalTokens { get; set; }
@@ -675,14 +733,11 @@ public class OpenAiUsage
 
 public class Choice
 {
-
     [DataMember(Name = "finish_reason")]
     public string FinishReason { get; set; }
 
-
     [DataMember(Name = "index")]
     public int Index { get; set; }
-        
 
     [DataMember(Name = "message")]
     public ChoiceMessage Message { get; set; }
@@ -691,79 +746,61 @@ public class Choice
 [DataContract]
 public class ChoiceMessage
 {
-
     [DataMember(Name = "content")]
     public string Content { get; set; }
-        
 
     [DataMember(Name = "tool_calls")]
     public ToolCall[] ToolCalls { get; set; }
-
 
     [DataMember(Name = "role")]
     public string Role { get; set; }
 }
 
-
 [DataContract]
 public class ToolCall
 {
-
     [DataMember(Name = "id")]
     public string Id { get; set; }
-        
 
     [DataMember(Name = "type")]
     public string Type { get; set; }
-        
 
     [DataMember(Name = "function")]
     public string Function { get; set; }
 }
 
-
 [DataContract]
 public class ToolFunction
 {
-
     [DataMember(Name = "name")]
     public string Name { get; set; }
-
 
     [DataMember(Name = "arguments")]
     public string Arguments { get; set; }
 }
 
-
 [DataContract]
 public class Logprobs
 {
-
     [DataMember(Name = "content")]
     public LogprobItem[] Content { get; set; }
 }
 
-
 [DataContract]
 public class LogprobItem
 {
-        
     [DataMember(Name = "token")]
     public string Token { get; set; }
-
         
     [DataMember(Name = "logprob")]
     public double Logprob { get; set; }
         
-        
     [DataMember(Name = "bytes")]
     public byte[] Bytes { get; set; }
-        
         
     [DataMember(Name = "top_logprobs")]
     public LogprobItem[] TopLogprobs { get; set; }
 }
-
 
 public class Items
 {

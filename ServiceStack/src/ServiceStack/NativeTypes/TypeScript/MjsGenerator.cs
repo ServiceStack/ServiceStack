@@ -394,7 +394,7 @@ public class MjsGenerator : ILangGenerator
             {
                 var propType = Gen.GetPropertyType(prop, out var optionalProperty);
                 propType = TypeScriptGenerator.PropertyTypeFilter?.Invoke(Gen, type, prop) ?? propType;
-                var optional = TypeScriptGenerator.IsPropertyOptional(Gen, type, prop) ?? optionalProperty
+                var optional = TypeScriptGenerator.IsPropertyOptional(Gen, type, prop)
                     ? "?"
                     : "";
                 if (Config.AddDescriptionAsComments && !string.IsNullOrEmpty(prop.Description))

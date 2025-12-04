@@ -32,7 +32,7 @@ public class PhpGenerator : ILangGenerator
         
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
-        
+
     public static List<string> DefaultImports = new() {
     };
 
@@ -228,25 +228,10 @@ public class PhpGenerator : ILangGenerator
     /// <summary>
     /// Whether property should be marked optional
     /// </summary>
-    public static Func<PhpGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
-        DefaultIsPropertyOptional;
-
-    /// <summary>
-    /// Helper to make Nullable properties
-    /// </summary>
-    public static bool UseNullableProperties
+    public static Func<PhpGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static bool DefaultIsPropertyOptional(PhpGenerator generator, MetadataType type, MetadataPropertyType prop)
     {
-        set
-        {
-            if (value)
-            {
-                IsPropertyOptional = (gen, type, prop) => false;
-                PropertyTypeFilter = (gen, type, prop) => 
-                    prop.IsRequired == true
-                        ? gen.GetPropertyType(prop, out _)
-                        : gen.GetPropertyType(prop, out _) + "|null";
-            }
-        }
+        return !prop.IsRequired();
     }
 
     public void Init(MetadataTypes metadata)
@@ -627,7 +612,7 @@ public class PhpGenerator : ILangGenerator
                     {
                         var propType = GetPropertyType(prop, out var optionalProperty);
                         propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
-                        if (IsPropertyOptional(this, type, prop) ?? optionalProperty)
+                        if (IsPropertyOptional(this, type, prop))
                         {
                             propType += "|null";
                         }
@@ -852,7 +837,7 @@ public class PhpGenerator : ILangGenerator
                         basePropNames.Add(propName);
                         var propType = GetPropertyType(prop, out var optionalProperty);
                         propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
-                        var isOptional = IsPropertyOptional(this, type, prop) ?? optionalProperty;
+                        var isOptional = IsPropertyOptional(this, type, prop);
                         var defaultValue = (!isOptional ? GetDefaultInitializer(propType) : null) ?? "null";
 
                         sb.Emit(prop, Lang.Php);
@@ -891,7 +876,7 @@ public class PhpGenerator : ILangGenerator
                     if (wasAdded) sb.AppendLine();
                     var propType = GetPropertyType(prop, out var optionalProperty);
                     propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
-                    var isOptional = IsPropertyOptional(this, type, prop) ?? optionalProperty;
+                    var isOptional = IsPropertyOptional(this, type, prop);
                     var defaultValue = (!isOptional ? GetDefaultInitializer(propType) : null) ?? "null";
 
                     wasAdded = AppendComments(sb, prop.Description);
@@ -1056,16 +1041,6 @@ public class PhpGenerator : ILangGenerator
         }
         
         return propType;
-    }
-
-    public static bool? DefaultIsPropertyOptional(PhpGenerator generator, MetadataType type, MetadataPropertyType prop)
-    {
-        if (generator.Config.MakePropertiesOptional)
-            return true;
-
-        return prop.IsRequired == null
-            ? null
-            : !prop.IsRequired.Value;
     }
 
     public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)

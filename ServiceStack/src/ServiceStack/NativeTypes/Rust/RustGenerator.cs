@@ -196,8 +196,11 @@ public class RustGenerator : ILangGenerator
     /// <summary>
     /// Whether property should be marked optional
     /// </summary>
-    public static Func<RustGenerator, MetadataType, MetadataPropertyType, bool?> IsPropertyOptional { get; set; } =
-        DefaultIsPropertyOptional;
+    public static Func<RustGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static bool DefaultIsPropertyOptional(RustGenerator generator, MetadataType type, MetadataPropertyType prop)
+    {
+        return !prop.IsRequired();
+    }
 
     /// <summary>
     /// Helper to make Nullable properties
@@ -508,7 +511,7 @@ public class RustGenerator : ILangGenerator
                 var propType = GetPropertyType(prop, out var optionalProperty);
                 propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
 
-                var isOptional = IsPropertyOptional(this, type, prop) ?? optionalProperty;
+                var isOptional = IsPropertyOptional(this, type, prop);
 
                 wasAdded = AppendComments(sb, prop.Description);
                 wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
@@ -567,16 +570,6 @@ public class RustGenerator : ILangGenerator
                 sb.AppendLine($"pub _phantom{(i > 0 ? i.ToString() : "")}: std::marker::PhantomData<{type.GenericArgs[i]}>,");
             }
         }
-    }
-
-    public static bool? DefaultIsPropertyOptional(RustGenerator generator, MetadataType type, MetadataPropertyType prop)
-    {
-        if (generator.Config.MakePropertiesOptional)
-            return true;
-
-        return prop.IsRequired == null
-            ? null
-            : !prop.IsRequired.Value;
     }
 
     public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
