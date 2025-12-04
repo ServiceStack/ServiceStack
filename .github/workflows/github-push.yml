@@ -47,7 +47,7 @@ jobs:
           # Check if more than 48 packages 
           if [[ ${number_of_packages} -gt 48 ]]; then
             echo "Pushing to GitHub Packages"
-            dotnet nuget push '*.nupkg' --source https://nuget.pkg.github.com/ServiceStack/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+            dotnet nuget push '*.nupkg' --source https://nuget.pkg.github.com/ServiceStack/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
           else
             echo 'Less files than expected, skipping push'
             exit 1
