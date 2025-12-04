@@ -349,6 +349,9 @@ public static class HostContext
 
         return -1;
     }
+    
+    public static bool IsPortAvailable(int port) => System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties()
+        .GetActiveTcpListeners().All(x => x.Port != port);
 
     public static void ConfigureServices(Action<IServiceCollection> configure)
     {

@@ -226,6 +226,27 @@ public class NodeProxy
             return false;
         }
     }
+    
+    public bool IsPortAvailable() => HostContext.IsPortAvailable(Client.BaseAddress!.Port);
+
+    public bool WaitUntilAvailable(TimeSpan timeout)
+    {
+        var baseUrl = Client.BaseAddress!.ToString();
+        var startedAt = DateTime.UtcNow;
+        while (DateTime.UtcNow - startedAt < timeout)
+        {
+            try
+            {
+                var response = baseUrl.GetStringFromUrl();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Thread.Sleep(200);
+            }
+        }
+        return false;
+    }
 
     public bool TryStartNode(string workingDirectory, out Process process)
     {
@@ -622,7 +643,7 @@ public static class ProxyExtensions
     }
 
     /// <summary>
-    /// Run Next.js dev server if not already running
+    /// Run Next.js dev server if not already running by checking for lock file
     /// </summary>
     public static System.Diagnostics.Process? RunNodeProcess(this WebApplication app,
         NodeProxy proxy,
@@ -671,6 +692,52 @@ public static class ProxyExtensions
             return process;
         }
 
+        return null;
+    }
+
+
+    /// <summary>
+    /// Run Next.js dev server if not already running by checking for port availability
+    /// </summary>
+    public static System.Diagnostics.Process? RunNodeProcess(this WebApplication app,
+        NodeProxy proxy,
+        string workingDirectory, 
+        bool registerExitHandler=true)
+    {
+        var process = app.StartNodeProcess(proxy, workingDirectory);
+        if (process != null)
+        {
+            proxy.Log?.LogInformation("Started Next.js dev server");
+        }
+        else
+        {
+            proxy.Log?.LogInformation("Next.js dev server already running");
+        }
+        return process;
+    }
+
+    public static System.Diagnostics.Process? StartNodeProcess(this WebApplication app, 
+        NodeProxy proxy,
+        string workingDirectory)
+    {
+        if (proxy.IsPortAvailable())
+        {
+            if (!proxy.TryStartNode(workingDirectory, out var process))
+                return null;
+
+            process.Exited += (s, e) => {
+                proxy.Log?.LogDebug("Exited: " + process.ExitCode);
+            };
+
+            app.Lifetime.ApplicationStopping.Register(() => {
+                if (!process.HasExited)
+                {
+                    proxy.Log?.LogDebug("Terminating process: " + process.Id);
+                    process.Kill(entireProcessTree: true);
+                }
+            });
+            return process;
+        }
         return null;
     }
     
