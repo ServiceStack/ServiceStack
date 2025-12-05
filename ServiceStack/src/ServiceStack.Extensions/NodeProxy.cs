@@ -745,7 +745,16 @@ public static class ProxyExtensions
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                await WebSocketToNode(context, proxy.Client.BaseAddress!);
+                try
+                {
+                    await WebSocketToNode(context, proxy.Client.BaseAddress!);
+                }
+                catch (WebSocketException ex) when (ex.InnerException is HttpRequestException { InnerException: SocketException })
+                {
+                    context.Response.StatusCode = 503;
+                    context.Response.ContentType = "text/html";
+                    await context.Response.WriteAsync(proxy.ConnectingHtml);
+                }
             }
             else
             {
@@ -767,7 +776,16 @@ public static class ProxyExtensions
             // Check if this is a WebSocket upgrade request
             if (context.WebSockets.IsWebSocketRequest)
             {
-                await WebSocketToNode(context, proxy.Client.BaseAddress!);
+                try
+                {
+                    await WebSocketToNode(context, proxy.Client.BaseAddress!);
+                }
+                catch (WebSocketException ex) when (ex.InnerException is HttpRequestException { InnerException: SocketException })
+                {
+                    context.Response.StatusCode = 503;
+                    context.Response.ContentType = "text/html";
+                    await context.Response.WriteAsync(proxy.ConnectingHtml);
+                }
             }
             else
             {
@@ -974,7 +992,7 @@ public static class ProxyExtensions
             {
                 await proxy.HttpToNode(context);
             }
-            catch (SocketException)
+            catch (HttpRequestException ex) when (ex.InnerException is SocketException)
             {
                 context.Response.StatusCode = 503;
                 context.Response.ContentType = "text/html";
