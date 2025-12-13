@@ -119,8 +119,8 @@ public class TypeScriptGenerator : ILangGenerator
     public static Func<List<MetadataType>, List<MetadataType>> FilterTypes { get; set; } = DefaultFilterTypes;
 
     public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types.OrderTypesByDeps();
-        
-    public static bool InsertTsNoCheck { get; set; }
+
+    public static bool InsertTsNoCheck { get; set; } = true;
         
     /// <summary>
     /// Add Code to top of generated code
