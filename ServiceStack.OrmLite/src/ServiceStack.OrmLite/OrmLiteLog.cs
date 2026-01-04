@@ -17,7 +17,7 @@ public static class OrmLiteLog
 #if NET8_0_OR_GREATER
         if (log.IsDebugEnabled)
         {
-            if (cmd is OrmLite.OrmLiteCommand ormCmd)
+            if (cmd is OrmLite.OrmLiteCommand { StartTimestamp: > 0 } ormCmd)
             {
                 var elapsed = ormCmd.GetElapsedTime();
                 if (elapsed == TimeSpan.Zero)
