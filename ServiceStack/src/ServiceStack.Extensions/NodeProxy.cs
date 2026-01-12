@@ -332,6 +332,14 @@ public class NodeProxy
     {
         var request = context.Request;
 
+        // WebSocket requests should not be handled by HTTP proxy
+        if (context.WebSockets.IsWebSocketRequest)
+        {
+            throw new InvalidOperationException(
+                "WebSocket requests should be handled by WebSocketToNode, not HttpToNode. " +
+                "Ensure MapViteHmr or MapNextHmr middleware is registered before MapFallbackToNode.");
+        }
+
         var cacheKey = request.Path.Value ?? string.Empty;
 
         // Handle ?clear commands even if this request itself isn't cacheable
@@ -702,9 +710,27 @@ public static class ProxyExtensions
                     return;
                 }
 
-                // Clear the 404 and let Next handle it
+                // Clear the 404 and let Node handle it
                 context.Response.Clear();
-                await proxy.HttpToNode(context);
+
+                // Handle WebSocket requests
+                if (context.WebSockets.IsWebSocketRequest)
+                {
+                    try
+                    {
+                        await WebSocketToNode(context, proxy.Client.BaseAddress!);
+                    }
+                    catch (WebSocketException ex) when (ex.InnerException is HttpRequestException { InnerException: SocketException })
+                    {
+                        context.Response.StatusCode = 503;
+                        context.Response.ContentType = "text/html";
+                        await context.Response.WriteAsync(proxy.ConnectingHtml);
+                    }
+                }
+                else
+                {
+                    await proxy.HttpToNode(context);
+                }
             }
         });
     }
@@ -988,6 +1014,23 @@ public static class ProxyExtensions
     {
         return app.MapFallback(async (HttpContext context) =>
         {
+            // Handle WebSocket requests
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                try
+                {
+                    await WebSocketToNode(context, proxy.Client.BaseAddress!);
+                }
+                catch (WebSocketException ex) when (ex.InnerException is HttpRequestException { InnerException: SocketException })
+                {
+                    context.Response.StatusCode = 503;
+                    context.Response.ContentType = "text/html";
+                    await context.Response.WriteAsync(proxy.ConnectingHtml);
+                }
+                return;
+            }
+
+            // Handle HTTP requests
             try
             {
                 await proxy.HttpToNode(context);
