@@ -280,7 +280,7 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
             {
                 await using (authRepo as IAsyncDisposable)
                 {
-                    var roles = await authRepo.GetRolesAsync(session.UserAuthId.ToInt(), token: token).ConfigAwait();
+                    var roles = await authRepo.GetRolesAsync(session.UserAuthId, token: token).ConfigAwait();
                     foreach (var role in roles)
                     {
                         claims.Add(new Claim(RoleClaimType, role, Issuer));
