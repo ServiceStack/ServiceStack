@@ -981,8 +981,8 @@ public partial class DbJobs : IBackgroundJobs
         using var db = feature.OpenDb();
         var requestId = Guid.NewGuid().ToString("N");
         var now = DateTime.UtcNow;
-        var sqlCommandWorker = feature.Dialect.SqlConcat([columns.Command, "'.'", columns.Worker]);
 
+        var sqlCommandWorker = feature.Dialect.SqlConcat([columns.Command, "'.'", columns.Worker]);
         var commandDurations = db.Dictionary<string, int>(
             db.From<JobSummary>()
                 .Where(j => Sql.In(j.Id,
@@ -999,18 +999,19 @@ public partial class DbJobs : IBackgroundJobs
                 }));
         lastCommandDurations = new(commandDurations);
         
+        var sqlRequestWorker = feature.Dialect.SqlConcat([columns.Request, "'.'", columns.Worker]);
         var apiDurations = db.Dictionary<string, int>(
             db.From<JobSummary>()
                 .Where(j => Sql.In(j.Id,
                     db.From<JobSummary>()
                         .Where(x => x.State == BackgroundJobState.Completed
-                                    && x.DurationMs > 0
-                                    && x.RequestType == CommandResult.Api)
-                        .GroupBy(x => new { x.Id, x.Command, x.Worker })
+                            && x.DurationMs > 0
+                            && x.RequestType == CommandResult.Api)
+                        .GroupBy(x => new { x.Id, x.Request, x.Worker })
                         .SelectDistinct(x => x.Id)))
-                .GroupBy(x => new { x.Command, x.Worker })
+                .GroupBy(x => new { x.Request, x.Worker })
                 .Select(x => new {
-                    Command = Sql.Custom($"CASE WHEN {columns.Worker} is null THEN {columns.Command} ELSE {sqlCommandWorker} END"), 
+                    Request = Sql.Custom($"CASE WHEN {columns.Worker} is null THEN {columns.Request} ELSE {sqlRequestWorker} END"), 
                     DurationMs = Sql.Custom($"CASE WHEN SUM({columns.DurationMs}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({columns.DurationMs}) END"),
                 }));
         lastApiDurations = new(apiDurations);

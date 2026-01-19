@@ -983,8 +983,8 @@ public partial class BackgroundJobs : IBackgroundJobs
                 .Where(j => Sql.In(j.Id,
                     db.From<JobSummary>()
                         .Where(x => x.State == BackgroundJobState.Completed
-                                    && x.DurationMs > 0
-                                    && x.RequestType == CommandResult.Command)
+                            && x.DurationMs > 0
+                            && x.RequestType == CommandResult.Command)
                         .GroupBy(x => new { x.Id, x.Command, x.Worker })
                         .SelectDistinct(x => x.Id)))
                 .GroupBy(x => new { x.Command, x.Worker })
@@ -999,13 +999,13 @@ public partial class BackgroundJobs : IBackgroundJobs
                 .Where(j => Sql.In(j.Id,
                     db.From<JobSummary>()
                         .Where(x => x.State == BackgroundJobState.Completed
-                                    && x.DurationMs > 0
-                                    && x.RequestType == CommandResult.Api)
-                        .GroupBy(x => new { x.Id, x.Command, x.Worker })
+                            && x.DurationMs > 0
+                            && x.RequestType == CommandResult.Api)
+                        .GroupBy(x => new { x.Id, x.Request, x.Worker })
                         .SelectDistinct(x => x.Id)))
-                .GroupBy(x => new { x.Command, x.Worker })
+                .GroupBy(x => new { x.Request, x.Worker })
                 .Select(x => new {
-                    Command = Sql.Custom($"IIF({columns.Worker} is null, {columns.Command}, {columns.Command} || '.' || {columns.Worker})"), 
+                    Request = Sql.Custom($"IIF({columns.Worker} is null, {columns.Request}, {columns.Request} || '.' || {columns.Worker})"), 
                     DurationMs = Sql.Custom($"CASE WHEN SUM({columns.DurationMs}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({columns.DurationMs}) END"),
                 }));
         lastApiDurations = new(apiDurations);
