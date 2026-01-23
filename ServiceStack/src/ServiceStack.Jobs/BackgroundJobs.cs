@@ -509,17 +509,8 @@ public partial class BackgroundJobs : IBackgroundJobs
 
         lock (db.GetWriteLock())
         {
-            var jobMetadata = typeof(BackgroundJob).GetModelMetadata();
-            try
-            {
-                jobMetadata.PrimaryKey.AutoIncrement = false;
-                db.Insert(requeueJob);
-                monthDb.DeleteById<FailedJob>(failedJob.Id);
-            }
-            finally
-            {
-                jobMetadata.PrimaryKey.AutoIncrement = true;
-            }
+            db.Insert(requeueJob, enableIdentityInsert:true);
+            monthDb.DeleteById<FailedJob>(failedJob.Id);
         }
     }
 
