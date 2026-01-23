@@ -511,17 +511,8 @@ public partial class DbJobs : IBackgroundJobs
         requeueJob.DurationMs = 0;
         requeueJob.StartedDate = requeueJob.LastActivityDate = DateTime.UtcNow;
 
-        var jobMetadata = typeof(BackgroundJob).GetModelMetadata();
-        try
-        {
-            jobMetadata.PrimaryKey.AutoIncrement = false;
-            db.Insert(requeueJob);
-            monthDb.DeleteById<FailedJob>(failedJob.Id);
-        }
-        finally
-        {
-            jobMetadata.PrimaryKey.AutoIncrement = true;
-        }
+        db.Insert(requeueJob, enableIdentityInsert:true);
+        monthDb.DeleteById<FailedJob>(failedJob.Id);
     }
 
     public void FailJob(BackgroundJob job, Exception ex)
