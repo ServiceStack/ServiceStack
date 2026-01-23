@@ -1,0 +1,42 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Error</PageTitle>
+
+<div class="mx-auto">
+    <section class="text-center mt-16 mb-16 md:mb-12">
+        <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-gray-50 sm:text-5xl md:text-6xl">
+            Error.
+        </h1>
+        <Heading2 class="text-danger">An error occurred while processing your request.</Heading2>
+    </section>
+    <div class="mx-auto prose lg:prose-xl mb-24">
+        @if (ShowRequestId)
+        {
+            <p>
+                <strong>Request ID:</strong> <code>@RequestId</code>
+            </p>
+        }
+
+        <h3>Development Mode</h3>
+        <p>
+            Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
+        </p>
+        <p>
+            <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
+            It can result in displaying sensitive information from exceptions to end users.
+            For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
+            and restarting the app.
+        </p>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    public string? RequestId { get; set; }
+    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>MyApp</RootNamespace>
+        <UserSecretsId>aspnet-MyApp-7b2ab71a-0b50-423f-969d-e35a9402b1b5</UserSecretsId>
+        <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+        <PublishProfile>DefaultContainer</PublishProfile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ContainerLabel Include="service" Value="my-app" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="MyApp" />
+        <Using Include="ServiceStack" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.*" />
+        <PackageReference Include="Markdig" Version="0.44.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\ServiceStack.Blazor\src\ServiceStack.Blazor\ServiceStack.Blazor.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite.Data\ServiceStack.OrmLite.Sqlite.Data.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
+        <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Jobs\ServiceStack.Jobs.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.OpenApi.Microsoft\ServiceStack.OpenApi.Microsoft.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Extensions\ServiceStack.Extensions.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+        <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="_pages\**" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="_videos\**" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <DefaultItemExcludes>$(DefaultItemExcludes);App_Data\**;node_modules\**</DefaultItemExcludes>
+    </PropertyGroup>
+
+    <Target Name="CreateWwwrootFolderBuild" AfterTargets="AfterBuild">
+        <MakeDir Directories="$(BuildDir)wwwroot" Condition="!Exists('$(BuildDir)wwwroot')" />
+    </Target>
+
+    <Target Name="CreateAppDataFolder" BeforeTargets="Publish">
+        <MakeDir Directories="$(PublishDir)App_Data" Condition="!Exists('$(PublishDir)App_Data')" />
+        <Exec Command="npm install" />
+        <Exec Command="npm run ui:build" />
+        <RemoveDir Directories="$(PublishDir)wwwroot" />
+        <ItemGroup>
+            <CopyDist Include="./wwwroot/**/*.*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(CopyDist)"
+            DestinationFiles="@(CopyDist->'$(PublishDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </Target>
+
+</Project>

@@ -1,0 +1,62 @@
+/* highlight.js - vs.css */
+.hljs {background:white;color:black}
+.hljs-comment,.hljs-quote,.hljs-variable{color:#008000}
+.hljs-keyword,.hljs-selector-tag,.hljs-built_in,.hljs-name,.hljs-tag{color:#00f}
+.hljs-string,.hljs-title,.hljs-section,.hljs-attribute,.hljs-literal,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-addition{color:#a31515}
+.hljs-deletion,.hljs-selector-attr,.hljs-selector-pseudo,.hljs-meta{color:#2b91af}
+.hljs-doctag{color:#808080}
+.hljs-attr{color: #f00}
+.hljs-symbol,.hljs-bullet,.hljs-link{color:#00b0e8}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:bold}
+
+/* https://unpkg.com/@highlightjs/cdn-assets/styles/atom-one-dark.min.css */
+pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}.hljs{color:#abb2bf;background:#282c34}
+.hljs-comment,.hljs-quote{color:#5c6370;font-style:italic}.hljs-doctag,.hljs-formula,.hljs-keyword{color:#c678dd}
+.hljs-deletion,.hljs-name,.hljs-section,.hljs-selector-tag,.hljs-subst,.hljs-tag{color:#e06c75}
+.hljs-literal{color:#56b6c2}
+.hljs-addition,.hljs-attribute,.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#98c379}
+.hljs-attr,.hljs-number,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-pseudo,.hljs-template-variable,.hljs-type,.hljs-variable{color:#d19a66}
+.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-symbol,.hljs-title{color:#61aeee}
+.hljs-built_in,.hljs-class .hljs-title,.hljs-title.class_{color:#e6c07b}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}
+.hljs-link{text-decoration:underline}
+
+/*highlightjs*/
+.hljs, .prose :where(pre):not(:where([class~="not-prose"] *)) .hljs {
+    color: #e5e7eb !important;
+    background-color: #282c34 !important;
+}
+.hljs-comment, .hljs-quote {
+    color: rgb(148 163 184); /*text-slate-400*/
+}
+
+pre {
+    overflow-x: auto;
+    font-weight: 400;
+    font-size: .875em;
+    line-height: 1.7142857;
+    margin-top: 1.7142857em;
+    margin-bottom: 1.7142857em;
+    border-radius: .375rem;
+    padding: .8571429em 1.1428571em;    
+    max-width: calc(100vw - 1rem);
+    min-width: fit-content;
+    background-color: #282c34 !important;
+}
+pre code.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 1em;
+}
+
+/*  atom-one-dark */
+pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}.hljs{color:#abb2bf;background:#282c34}
+.hljs-comment,.hljs-quote{color:#5c6370;font-style:italic}.hljs-doctag,.hljs-formula,.hljs-keyword{color:#c678dd}
+.hljs-deletion,.hljs-name,.hljs-section,.hljs-selector-tag,.hljs-subst{color:#e06c75}.hljs-literal{color:#56b6c2}
+.hljs-addition,.hljs-attribute,.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#98c379}
+.hljs-attr,.hljs-number,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-pseudo,.hljs-template-variable,.hljs-type,.hljs-variable{color:#d19a66}
+.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-symbol,.hljs-title{color:#61aeee}
+.hljs-built_in,.hljs-class .hljs-title,.hljs-title.class_{color:#e6c07b}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-link{text-decoration:underline}
