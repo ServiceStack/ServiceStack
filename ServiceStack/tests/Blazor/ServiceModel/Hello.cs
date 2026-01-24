@@ -4,7 +4,7 @@ using MyApp;
 namespace MyApp.ServiceModel;
 
 [Route("/hello")]
-[Route("/hello/{Name}")]
+[Route("/hello/{**Name}")]
 public class Hello : IGet, IReturn<HelloResponse>
 {
     public string? Name { get; set; }
