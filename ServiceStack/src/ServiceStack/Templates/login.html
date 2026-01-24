@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <title>Sign In</title>
-<link rel="stylesheet" href="${BaseUrl}/css/bootstrap.css">
-<link rel="stylesheet" href="${BaseUrl}/css/buttons-svg.css">
-<link rel="stylesheet" href="${BaseUrl}/css/buttons.css">
-<link rel="stylesheet" href="${BaseUrl}/css/svg-auth.css">
-<script src="${BaseUrl}/js/servicestack-client.js"></script>
+<link rel="stylesheet" href="${HtmlBaseUrl}/css/bootstrap.css">
+<link rel="stylesheet" href="${HtmlBaseUrl}/css/buttons-svg.css">
+<link rel="stylesheet" href="${HtmlBaseUrl}/css/buttons.css">
+<link rel="stylesheet" href="${HtmlBaseUrl}/css/svg-auth.css">
+<script src="${HtmlBaseUrl}/js/servicestack-client.js"></script>
 <style>
 body {
     margin: 0;
@@ -68,7 +68,7 @@ h1 {
         <div class="row">
             <div class="col-5">
 
-                <form action="${BaseUrl}/auth/credentials" method="post">
+                <form action="${HtmlBaseUrl}/auth/credentials" method="post">
                     <div class="form-row">
                         <div class="form-group" data-validation-summary="userName,password"></div>
                     </div>

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using ServiceStack;
 
 namespace ServiceStack.Templates;
 
@@ -35,8 +36,10 @@ public static class HtmlTemplates
     public static string GetLoginTemplate()
     {
         var appHost = HostContext.AppHost;
+        var baseUrl = appHost.ResolveStaticBaseUrl();
         return LoadTemplate("login.html")
-            .Replace("${BaseUrl}", appHost.ResolveStaticBaseUrl())
+            .Replace("${BaseUrl}", Formats.HtmlFormat.EncodeForJavaScriptString(baseUrl))
+            .Replace("${HtmlBaseUrl}", Formats.HtmlFormat.EncodeForHtmlAttribute(baseUrl))
             .Replace("${ServiceName}", appHost.ServiceName);
     }
 
@@ -60,7 +63,7 @@ public static class HtmlTemplates
     public static string GetHtmlRedirectTemplate(string url)
     {
         var html = LoadTemplate("Redirect.html");
-        return html.Replace("{Url}", url);
+        return html.Replace("{Url}", Formats.HtmlFormat.EncodeForJavaScriptString(url));
     }
 
     public static string Format(string template, params object[] args)

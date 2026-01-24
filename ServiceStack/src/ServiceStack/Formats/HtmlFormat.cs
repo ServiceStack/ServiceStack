@@ -138,6 +138,7 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
                     .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
                     .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
                     .Replace("${ServiceUrl}", EncodeForJavaScriptString(url))
+                    .Replace("${HtmlServiceUrl}", EncodeForHtmlAttribute(url))
                     .Replace("${Humanize}", Humanize.ToString().ToLower())
                 ;
         }
@@ -152,13 +153,20 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
 
         html = html
                 .Replace("${BaseUrl}", EncodeForJavaScriptString(req.GetBaseUrl().WithTrailingSlash()))
+                .Replace("${HtmlBaseUrl}", EncodeForHtmlAttribute(req.GetBaseUrl().WithTrailingSlash()))
                 .Replace("${AuthRedirect}",  EncodeForJavaScriptString(req.ResolveAbsoluteUrl(HostContext.AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect)))
                 .Replace("${AllowOrigins}", EncodeForJavaScriptString(HostContext.AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";")))
                 .Replace("${NoProfileImgUrl}", EncodeForJavaScriptString(req.TryResolve<IAuthMetadataProvider>()?.GetProfileUrl(null)) ?? JwtClaimTypes.DefaultProfileUrl)
             ;
         return html;
     }
-    
+
+    /// <summary>
+    /// Encodes a string so it can be safely embedded within HTML attributes.
+    /// This process ensures that special characters are properly escaped to prevent XSS vulnerabilities.
+    /// </summary>
+    public static string EncodeForHtmlAttribute(string input) => string.IsNullOrEmpty(input) ? "" : input.HtmlEncode();
+
     /// <summary>
     /// Encodes a string so it can be safely embedded within double-quoted JavaScript strings.
     /// Handles escape sequences, Unicode characters, and line breaks.
