@@ -102,7 +102,10 @@ public class NetCoreLog(ILogger logger) : ILog, ILogTrace
 
     public virtual void Error(object message)
     {
-        Log.LogError(message.ToString());
+        if (message is Exception ex)
+            Log.LogError(ex, ex.GetType().Name);
+        else
+            Log.LogError(message.ToString());
     }
 
     public virtual void Error(object message, Exception exception)
@@ -117,7 +120,10 @@ public class NetCoreLog(ILogger logger) : ILog, ILogTrace
 
     public virtual void Fatal(object message)
     {
-        Log.LogCritical(message.ToString());
+        if (message is Exception ex)
+            Log.LogCritical(ex, ex.GetType().Name);
+        else
+            Log.LogCritical(message.ToString());
     }
 
     public virtual void Fatal(object message, Exception exception)
@@ -147,7 +153,10 @@ public class NetCoreLog(ILogger logger) : ILog, ILogTrace
 
     public virtual void Warn(object message)
     {
-        Log.LogWarning(message.ToString());
+        if (message is Exception ex)
+            Log.LogWarning(ex, ex.GetType().Name);
+        else
+            Log.LogWarning(message.ToString());
     }
 
     public virtual void Warn(object message, Exception exception)
