@@ -18,6 +18,9 @@ using ServiceStack.Api.OpenApi.Support;
 
 namespace ServiceStack.Api.OpenApi
 {
+    #if NET8_0_OR_GREATER
+    [SystemJson(UseSystemJson.Never)]
+    #endif
     [DataContract]
     [ExcludeMetadata]
     public class OpenApiSpecification : IReturn<OpenApiDeclaration>
