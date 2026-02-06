@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Text.Tests.DynamicModels.DataModel;
 
@@ -558,7 +556,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-        public void Can_deserialize_ordereddictionary()
+        public void Can_deserialize_OrderedDictionary()
         {
             var original = new OrderedDictionary {
                 {"Key1", "Value1"},
@@ -579,7 +577,7 @@ namespace ServiceStack.Text.Tests
         }
 
         [Test]
-        public void Can_deserialize_ordereddictionary_subclass()
+        public void Can_deserialize_OrderedDictionary_subclass()
         {
             var original = new OrderedDictionarySub {
                 {"Key1", "Value1"},
