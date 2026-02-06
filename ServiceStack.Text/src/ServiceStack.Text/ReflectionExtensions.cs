@@ -87,6 +87,17 @@ public static class ReflectionExtensions
         return null;
     }
 
+    public static bool TreatAsList(this Type type)
+    {
+#if NET10_0_OR_GREATER
+        // Prevent de/serializing .NET 10 new OrderedDictionary as a List (to preserve behavior with .NET 8 embedded OrderedDictionary)
+        return type.IsOrHasGenericInterfaceTypeOf(typeof(IList<>)) &&
+               !type.IsOrHasGenericInterfaceTypeOf(typeof(OrderedDictionary<,>));
+#else
+        return type.IsOrHasGenericInterfaceTypeOf(typeof(IList<>));
+#endif
+    }
+
     public static bool IsOrHasGenericInterfaceTypeOf(this Type type, Type genericTypeDefinition) =>
         type.IsOrHasGenericTypeOf(genericTypeDefinition);
 

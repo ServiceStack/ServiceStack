@@ -422,7 +422,7 @@ public class JsWriter<TSerializer>
         if (typeof(T).HasGenericType() ||
             typeof(T).HasInterface(typeof(IDictionary<string, object>))) // is ExpandoObject?
         {
-            if (typeof(T).IsOrHasGenericInterfaceTypeOf(typeof(IList<>)))
+            if (typeof(T).TreatAsList())
                 return WriteLists<T, TSerializer>.Write;
 
             var mapInterface = typeof(T).GetTypeWithGenericTypeDefinitionOf(typeof(IDictionary<,>));

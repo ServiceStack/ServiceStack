@@ -70,7 +70,7 @@ public class JsReader<TSerializer>
 
         if (type.HasGenericType())
         {
-            if (type.IsOrHasGenericInterfaceTypeOf(typeof(IList<>)))
+            if (type.TreatAsList())
                 return DeserializeList<T, TSerializer>.ParseStringSpan;
 
             if (type.IsOrHasGenericInterfaceTypeOf(typeof(IDictionary<,>)))
