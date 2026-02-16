@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
@@ -351,9 +352,24 @@ public static class Svg
         public const string Failed  = "failed";
     }
 
+    private static readonly Regex ValidCssColorRegex = new(
+        @"^(#[0-9a-fA-F]{3,8}|[a-zA-Z]{1,30}|rgba?\(\s*[\d.%,\s/]+\)|hsla?\(\s*[\d.%,\s/deg]+\))$",
+        RegexOptions.Compiled);
+
+    public static bool IsValidCssColor(string color)
+    {
+        return ValidCssColorRegex.IsMatch(color);
+    }
+
     public static string Fill(string svg, string fillColor)
     {
-        if (string.IsNullOrEmpty(svg) || string.IsNullOrEmpty(fillColor)) 
+        if (string.IsNullOrEmpty(svg) || string.IsNullOrEmpty(fillColor))
+            return svg;
+
+        fillColor = fillColor.Trim();
+
+        // Validate fillColor is a safe CSS color value (prevent injection)
+        if (!IsValidCssColor(fillColor))
             return svg;
 
         foreach (var color in FillColors)
@@ -362,13 +378,13 @@ public static class Svg
             if (color[0] == '#' || fillColor[0] == '#')
             {
                 svg = svg.Replace(
-                    color[0] == '#' ? "%23" + color.Substring(1) : color, 
+                    color[0] == '#' ? "%23" + color.Substring(1) : color,
                     fillColor[0] == '#' ? "%23" + fillColor.Substring(1) : fillColor);
             }
         }
         return svg;
     }
-
+    
     public static string ToDataUri(string svg) => SvgCreator.ToDataUri(svg);
     public static string GetBackgroundImageCss(string name) => InBackgroundImageCss(GetImage(name));
     public static string GetBackgroundImageCss(string name, string fillColor) => InBackgroundImageCss(GetImage(name, fillColor));
