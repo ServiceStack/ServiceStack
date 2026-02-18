@@ -16,49 +16,48 @@ namespace ServiceStack.OrmLite.Firebird
     {
         private readonly bool usesCompactGuid;
 
-        public new static List<string> RESERVED =
-        [
-            "ADD", "ADMIN", "ALL", "ALTER", "AND", "ANY", "AS", "AT", "AVG", "BEGIN", "BETWEEN", "BIGINT", "BIT_LENGTH",
-            "BLOB", "BOTH", "BY", "CASE", "CAST",
-            "CHAR", "CHAR_LENGTH", "CHARACTER", "CHARACTER_LENGTH", "CHECK", "CLOSE", "COLLATE", "COLUMN", "COMMIT",
-            "CONNECT", "CONSTRAINT", "COUNT", "CREATE",
-            "CROSS", "CURRENT", "CURRENT_CONNECTION", "CURRENT_DATE", "CURRENT_ROLE", "CURRENT_TIME",
-            "CURRENT_TIMESTAMP", "CURRENT_TRANSACTION", "CURRENT_USER",
-            "CURSOR", "DATE", "DAY", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DELETE", "DISCONNECT", "DISTINCT",
-            "DOUBLE", "DROP", "ELSE", "END", "ESCAPE",
-            "EXECUTE", "EXISTS", "EXTERNAL", "EXTRACT", "FETCH", "FILTER", "FLOAT", "FOR", "FOREIGN", "FROM", "FULL",
-            "FUNCTION", "GDSCODE", "GLOBAL", "GRANT", "GROUP",
-            "HAVING", "HOUR", "IN", "INDEX", "INNER", "INSENSITIVE", "INSERT", "INT", "INTEGER", "INTO", "IS", "JOIN",
-            "LEADING", "LEFT", "LIKE", "LONG", "LOWER", "MAX",
-            "MAXIMUM_SEGMENT", "MERGE", "MIN", "MINUTE", "MONTH", "NATIONAL", "NATURAL", "NCHAR", "NO", "NOT", "NULL",
-            "NUMERIC", "OCTET_LENGTH", "OF", "ON", "ONLY",
-            "OPEN", "OR", "ORDER", "OUTER", "PARAMETER", "PLAN", "POSITION", "POST_EVENT", "PRECISION", "PRIMARY",
-            "PROCEDURE", "RDB$DB_KEY", "REAL", "RECORD_VERSION",
-            "RECREATE", "RECURSIVE", "REFERENCES", "RELEASE", "RETURNING_VALUES", "RETURNS", "REVOKE", "RIGHT",
-            "ROLLBACK", "ROW_COUNT", "ROWS", "SAVEPOINT", "SECOND",
-            "SELECT", "SENSITIVE", "SET", "SIMILAR", "SMALLINT", "SOME", "SQLCODE", "SQLSTATE", "START", "SUM", "TABLE",
-            "THEN", "TIME", "TIMESTAMP", "TO", "TRAILING",
-            "TRIGGER", "TRIM", "UNION", "UNIQUE", "UPDATE", "UPPER", "USER", "USING", "VALUE", "VALUES", "VARCHAR",
-            "VARIABLE", "VARYING", "VIEW", "WHEN", "WHERE", "WHILE",
-            "WITH", "YEAR",
-            "PASSWORD", "ACTIVE", "LEFT", "DATETIME", "TYPE", "KEY",
-            // new in FB3
-            "INSERTING", "UPDATING", "DELETING", "REGR_AVGX", "SCROLL", "CORR", "REGR_AVGY", "COVAR_POP", "REGR_COUNT",
-            "STDDEV_POP",
-            "COVAR_SAMP", "REGR_INTERCEPT", "STDDEV_SAMP", "REGR_R2", "TRUE", "DETERMINISTIC", "REGR_SLOPE", "UNKNOWN",
-            "FALSE", "REGR_SXX",
-            "REGR_SXY", "VAR_POP", "OFFSET", "REGR_SYY", "VAR_SAMP", "OVER", "RETURN", "RDB$RECORD_VERSION", "ROW",
-            "BOOLEAN",
-            // new in FB4
-            "BINARY", "VARBINARY", "DECFLOAT"
-        ];
-
         public new static Firebird4OrmLiteDialectProvider Instance = new();
 
         public Firebird4OrmLiteDialectProvider() : this(true) { }
 
         public Firebird4OrmLiteDialectProvider(bool compactGuid): base(compactGuid)
         {
+            RESERVED = new List<string>(new[] {
+	            "ADD", "ADMIN", "ALL", "ALTER", "AND", "ANY", "AS", "AT", "AVG", "BEGIN", "BETWEEN", "BIGINT", "BIT_LENGTH",
+	            "BLOB", "BOTH", "BY", "CASE", "CAST",
+	            "CHAR", "CHAR_LENGTH", "CHARACTER", "CHARACTER_LENGTH", "CHECK", "CLOSE", "COLLATE", "COLUMN", "COMMIT",
+	            "CONNECT", "CONSTRAINT", "COUNT", "CREATE",
+	            "CROSS", "CURRENT", "CURRENT_CONNECTION", "CURRENT_DATE", "CURRENT_ROLE", "CURRENT_TIME",
+	            "CURRENT_TIMESTAMP", "CURRENT_TRANSACTION", "CURRENT_USER",
+	            "CURSOR", "DATE", "DAY", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DELETE", "DISCONNECT", "DISTINCT",
+	            "DOUBLE", "DROP", "ELSE", "END", "ESCAPE",
+	            "EXECUTE", "EXISTS", "EXTERNAL", "EXTRACT", "FETCH", "FILTER", "FLOAT", "FOR", "FOREIGN", "FROM", "FULL",
+	            "FUNCTION", "GDSCODE", "GLOBAL", "GRANT", "GROUP",
+	            "HAVING", "HOUR", "IN", "INDEX", "INNER", "INSENSITIVE", "INSERT", "INT", "INTEGER", "INTO", "IS", "JOIN",
+	            "LEADING", "LEFT", "LIKE", "LONG", "LOWER", "MAX",
+	            "MAXIMUM_SEGMENT", "MERGE", "MIN", "MINUTE", "MONTH", "NATIONAL", "NATURAL", "NCHAR", "NO", "NOT", "NULL",
+	            "NUMERIC", "OCTET_LENGTH", "OF", "ON", "ONLY",
+	            "OPEN", "OR", "ORDER", "OUTER", "PARAMETER", "PLAN", "POSITION", "POST_EVENT", "PRECISION", "PRIMARY",
+	            "PROCEDURE", "RDB$DB_KEY", "REAL", "RECORD_VERSION",
+	            "RECREATE", "RECURSIVE", "REFERENCES", "RELEASE", "RETURNING_VALUES", "RETURNS", "REVOKE", "RIGHT",
+	            "ROLLBACK", "ROW_COUNT", "ROWS", "SAVEPOINT", "SECOND",
+	            "SELECT", "SENSITIVE", "SET", "SIMILAR", "SMALLINT", "SOME", "SQLCODE", "SQLSTATE", "START", "SUM", "TABLE",
+	            "THEN", "TIME", "TIMESTAMP", "TO", "TRAILING",
+	            "TRIGGER", "TRIM", "UNION", "UNIQUE", "UPDATE", "UPPER", "USER", "USING", "VALUE", "VALUES", "VARCHAR",
+	            "VARIABLE", "VARYING", "VIEW", "WHEN", "WHERE", "WHILE",
+	            "WITH", "YEAR",
+	            "PASSWORD", "ACTIVE", "LEFT", "DATETIME", "TYPE", "KEY",
+	            // new in FB3
+	            "INSERTING", "UPDATING", "DELETING", "REGR_AVGX", "SCROLL", "CORR", "REGR_AVGY", "COVAR_POP", "REGR_COUNT",
+	            "STDDEV_POP",
+	            "COVAR_SAMP", "REGR_INTERCEPT", "STDDEV_SAMP", "REGR_R2", "TRUE", "DETERMINISTIC", "REGR_SLOPE", "UNKNOWN",
+	            "FALSE", "REGR_SXX",
+	            "REGR_SXY", "VAR_POP", "OFFSET", "REGR_SYY", "VAR_SAMP", "OVER", "RETURN", "RDB$RECORD_VERSION", "ROW",
+	            "BOOLEAN",
+	            // new in FB4
+	            "BINARY","VARBINARY","DECFLOAT","LOCALTIMESTAMP"
+            });
+            
             usesCompactGuid = compactGuid;
 
             // FB4 now has identity columns
@@ -69,7 +68,7 @@ namespace ServiceStack.OrmLite.Firebird
 
             this.Variables = new Dictionary<string, string>
             {
-                { OrmLiteVariables.SystemUtc, "CURRENT_TIMESTAMP" },
+                { OrmLiteVariables.SystemUtc, "LOCALTIMESTAMP" },
                 { OrmLiteVariables.MaxText, "VARCHAR(1000)" },
                 { OrmLiteVariables.MaxTextUnicode, "VARCHAR(2048)" },
                 { OrmLiteVariables.True, SqlBool(true) },                
@@ -245,8 +244,7 @@ namespace ServiceStack.OrmLite.Firebird
                 GetQuotedTableName(modelDef), 
                 StringBuilderCache.ReturnAndFree(sbColumnNames), 
                 StringBuilderCacheAlt.ReturnAndFree(sbColumnValues),
-                strReturning.Length > 0 
-                    ? "RETURNING " + strReturning : "");
+                strReturning.Length > 0 ? "RETURNING " + strReturning : "");
         }
 
         public override string GetLastInsertIdSqlSuffix<T>()

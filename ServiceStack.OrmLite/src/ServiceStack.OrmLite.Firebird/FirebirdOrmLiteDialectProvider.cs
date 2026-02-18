@@ -21,12 +21,9 @@ namespace ServiceStack.OrmLite.Firebird
                 begin
                     execute statement 'CREATE SEQUENCE {sequence};';
                 end
-            END";  
-        
-        public static List<string> RESERVED = new List<string>(new[] {
-            "USER","ORDER","PASSWORD", "ACTIVE","LEFT","DOUBLE", "FLOAT", "DECIMAL","STRING", "DATE","DATETIME", "TYPE","TIMESTAMP",
-            "INDEX","UNIQUE", "PRIMARY", "KEY", "ALTER", "DROP", "CREATE", "DELETE", "VALUES", "FUNCTION", "INT", "LONG", "CHAR", "VALUE", "TIME"
-        });
+            END";
+
+        public static List<string> RESERVED = null;
 
         public static FirebirdOrmLiteDialectProvider Instance = new FirebirdOrmLiteDialectProvider();
 
@@ -38,6 +35,11 @@ namespace ServiceStack.OrmLite.Firebird
 
         public FirebirdOrmLiteDialectProvider(bool compactGuid)
         {
+            RESERVED = new List<string>(new[] {
+                "USER","ORDER","PASSWORD", "ACTIVE","LEFT","DOUBLE", "FLOAT", "DECIMAL","STRING", "DATE","DATETIME", "TYPE","TIMESTAMP",
+                "INDEX","UNIQUE", "PRIMARY", "KEY", "ALTER", "DROP", "CREATE", "DELETE", "VALUES", "FUNCTION", "INT", "LONG", "CHAR", "VALUE", "TIME"
+            });        
+            
             base.AutoIncrementDefinition = string.Empty;
             DefaultValueFormat = " DEFAULT {0}";
             NamingStrategy = new FirebirdNamingStrategy();

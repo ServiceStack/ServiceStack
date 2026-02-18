@@ -112,5 +112,20 @@ namespace ServiceStack.OrmLite.FirebirdTests
 			}
 		}
 
-	}
+        [Test]
+        public void Can_select_from_ModelWithReservedWords_table()
+        {
+			using var db = new OrmLiteConnectionFactory(ConnectionString, FirebirdDialect.Provider).Open();
+            db.CreateTable<ModelWithReservedWords>(true);
+
+            var rowIds = new List<int>(new[] { 1, 2, 3 });
+
+            rowIds.ForEach(x => db.Insert(new ModelWithReservedWords() { Group = 1, User = 1, Name = $"Test{x}" }));
+
+            var list = db.Select<ModelWithReservedWords>();
+
+            Assert.That(list.Count, Is.EqualTo(3));
+        }
+
+    }
 }
