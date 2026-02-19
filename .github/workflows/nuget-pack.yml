@@ -27,7 +27,7 @@ jobs:
         ports:
           - 48303:5432
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd #v5
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
         with:
@@ -206,7 +206,7 @@ jobs:
     needs: build-test-all
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd #v5
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
@@ -242,7 +242,7 @@ jobs:
         echo "Expected at least 48 packages, got ${{ env.number_of_packages }}, failing."
         exit 1
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
       with:
         name: ServiceStack Packages
         retention-days: 1
