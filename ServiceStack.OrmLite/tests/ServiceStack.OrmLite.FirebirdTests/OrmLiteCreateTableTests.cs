@@ -53,7 +53,14 @@ namespace ServiceStack.OrmLite.FirebirdTests
 			db.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 		}
 
-		[Test]
+        [Test]
+        public void Can_create_ModelWithReservedWords_table()
+        {
+            using var db = new OrmLiteConnectionFactory(ConnectionString, FirebirdDialect.Provider).Open();
+            db.CreateTable<ModelWithReservedWords>(true);
+        }
+
+        [Test]
 		public void Can_preserve_ModelWithIdOnly_table()
 		{
 			using var db = new OrmLiteConnectionFactory(ConnectionString, FirebirdDialect.Provider).Open();

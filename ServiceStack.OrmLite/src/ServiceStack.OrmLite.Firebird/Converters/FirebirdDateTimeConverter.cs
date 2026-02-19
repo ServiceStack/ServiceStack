@@ -7,7 +7,7 @@ namespace ServiceStack.OrmLite.Firebird.Converters
     {
         public override string ColumnDefinition
         {
-            get { return "TIMESTAMP"; }
+            get { return "LOCALTIME"; }
         }
 
         public override string ToQuotedString(Type fieldType, object value)
