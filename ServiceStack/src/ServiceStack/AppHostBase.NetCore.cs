@@ -348,30 +348,31 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                         {
                             handler(pathBuilder, operation, routeVerb, route.Path);
                         }
-                    }
-                    
-                    // Add /custom/path.{format} routes for GET requests
-                    if (routeVerbs.Contains(HttpMethods.Get) && !route.Path.Contains('.') && !route.Path.Contains('*'))
-                    {
-                        var routePath = route.Path + ".{format}";
-                        if (existingRoutes.TryGetValue(routePath, out var prevRoute))
-                        {
-                            LogManager.GetLogger(GetType()).WarnFormat("Ignoring registering duplicate route: {0} for {1} and {2}", 
-                                routePath,
-                                route.RequestType.FullName,
-                                prevRoute.RequestType.FullName);
-                        }
-                        else
-                        {
-                            routeRule = $"[GET] {routePath}";
-                            existingRoutes[routePath] = route;
-                            var pathBuilder = routeBuilder.MapMethods(routePath, EndpointVerbs[HttpMethods.Get], 
-                                (string format, HttpResponse response, HttpContext httpContext) =>
-                                    HandleRequestAsync(requestType, httpContext));
                         
-                            ConfigureOperationEndpoint(pathBuilder, operation, options)
-                                .WithMetadata<string>(routePath);
+                        // Add /custom/path.{format} routes
+                        if (!route.Path.Contains('.') && !route.Path.Contains('*'))
+                        {
+                            var routePath = route.Path + ".{format}";
+                            if (existingRoutes.TryGetValue(routePath, out var prevRoute))
+                            {
+                                LogManager.GetLogger(GetType()).WarnFormat("Ignoring registering duplicate route: {0} for {1} and {2}", 
+                                    routePath,
+                                    route.RequestType.FullName,
+                                    prevRoute.RequestType.FullName);
+                            }
+                            else
+                            {
+                                routeRule = $"[{verb}] {routePath}";
+                                existingRoutes[routePath] = route;
+                                var pathBuilderFmt = routeBuilder.MapMethods(routePath, verb, 
+                                    (string format, HttpResponse response, HttpContext httpContext) =>
+                                        HandleRequestAsync(requestType, httpContext));
+                        
+                                ConfigureOperationEndpoint(pathBuilderFmt, operation, options)
+                                    .WithMetadata<string>(routePath);
+                            }
                         }
+
                     }
                 }
                 catch (Exception e)

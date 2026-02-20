@@ -32,6 +32,8 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
-app.UseServiceStack(new AppHost());
+app.UseServiceStack(new AppHost(), options => {
+    options.MapEndpoints();
+});
 
 app.Run();

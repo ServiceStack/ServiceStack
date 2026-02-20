@@ -19,5 +19,10 @@ public class MyServices : Service
     {
         Result = $"Hello, {request.Name ?? "World"}!"
     };
+
+    public object Any(HelloPost request) => new HelloResponse
+    {
+        Result = $"Hello, {request.Name ?? "World"}!"
+    };
 }
 

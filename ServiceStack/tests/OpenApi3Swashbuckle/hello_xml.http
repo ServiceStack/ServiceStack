@@ -1,0 +1,20 @@
+### POST hello_post.xml
+POST https://localhost:5001/hello_post.xml
+Content-Type: application/xml
+
+<HelloPost xmlns:i="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://schemas.datacontract.org/2004/07/MyApp.ServiceModel">
+    <Name>John Doe</Name>
+</HelloPost>
+###
+
+### POST /api/HelloPost.xml
+POST https://localhost:5001/api/HelloPost.xml
+Content-Type: application/xml
+
+<HelloPost xmlns:i="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://schemas.datacontract.org/2004/07/MyApp.ServiceModel">
+    <Name>John Doe</Name>
+</HelloPost>
+###
+
