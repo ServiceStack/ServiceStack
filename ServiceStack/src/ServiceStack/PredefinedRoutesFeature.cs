@@ -182,6 +182,22 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
                     apis.MapGet("{name}." + entry.Key, (string name, HttpContext httpContext) => 
                             httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:name))
                         .WithMetadata<string>(contentType:entry.Value);
+                    
+                    apis.MapPost("{name}." + entry.Key, (string name, HttpContext httpContext) => 
+                            httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:name))
+                        .WithMetadata<string>(contentType:entry.Value);
+                    
+                    apis.MapPut("{name}." + entry.Key, (string name, HttpContext httpContext) => 
+                            httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:name))
+                        .WithMetadata<string>(contentType:entry.Value);
+                    
+                    apis.MapPatch("{name}." + entry.Key, (string name, HttpContext httpContext) => 
+                            httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:name))
+                        .WithMetadata<string>(contentType:entry.Value);
+                    
+                    apis.MapDelete("{name}." + entry.Key, (string name, HttpContext httpContext) => 
+                            httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:name))
+                        .WithMetadata<string>(contentType:entry.Value);
                 }
             });
 #endif
