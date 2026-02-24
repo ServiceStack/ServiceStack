@@ -477,7 +477,7 @@ public class IdentityJwtAuthProvider<TUser,TRole,TKey> :
         if (req != null)
         {
             var jti = ResolveJwtId?.Invoke(req);
-            if (jti != null)
+            if (jti != null && userClaims.All(x => x.Type != JwtRegisteredClaimNames.Jti))
                 userClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
 
             OnTokenCreated?.Invoke(req, user, userClaims);
