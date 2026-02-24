@@ -473,10 +473,6 @@ public class IdentityJwtAuthProvider<TUser,TRole,TKey> :
     public string CreateJwtBearerToken(TUser user, ClaimsPrincipal principal, IRequest? req = null)
     {
         var userClaims = CreateUserClaims(user, principal);
-        foreach (var claim in principal.Claims)
-        {
-            userClaims.Add(claim);
-        }
 
         if (req != null)
         {
