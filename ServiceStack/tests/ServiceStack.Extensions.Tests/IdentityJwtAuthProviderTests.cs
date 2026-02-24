@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -272,6 +273,7 @@ public class IdentityJwtAuthProviderTests
             {
                 x.ExtendRefreshTokenExpiryAfterUsage = TimeSpan.FromDays(90);
                 x.IncludeConvertSessionToTokenService = true;
+                x.ResolveJwtId = null;
             });
         })));
 
@@ -550,6 +552,41 @@ public class IdentityJwtAuthProviderTests
         
         users = await IdentityUsers.GetByEmailsAsync(db, emails);
         Assert.That(users.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Can_Serialize_and_Validate_JWT()
+    {
+        var authFeature = ServiceStackHost.Instance.GetPlugin<AuthFeature>();
+        var authManager = ServiceStackHost.Instance.GetApplicationServices()
+            .GetRequiredService<IIdentityAuthContextManager>();
+        var manager = (IdentityAuthContextManager<ApplicationUser, IdentityRole, string>)authManager;
+        Console.WriteLine(manager);
+        
+        using var db = await ServiceStackHost.Instance.GetApplicationServices().GetRequiredService<IDbConnectionFactory>().OpenAsync();
+        var identityUser = await IdentityUsers.GetByUserNameAsync(db, Username);
+        Console.WriteLine(identityUser);
+        
+        var (adminUser,principal) = await manager.GetUserClaimsPrincipalByNameAsync(Username);
+        Console.WriteLine(adminUser);
+
+        var identity = new ClaimsIdentity(principal.Claims.Concat([new Claim("jti", "1")]), principal.Identity?.AuthenticationType);
+        var newPrincipal = new ClaimsPrincipal(identity);
+        var bearerToken = manager.Context.AuthJwt.CreateJwtBearerToken(adminUser, newPrincipal);
+        Console.WriteLine(bearerToken);
+        
+        var fromToken = new JwtSecurityTokenHandler().ValidateToken(bearerToken,
+            manager.Context.AuthJwt!.TokenValidationParameters, out SecurityToken validatedToken);
+        
+        Assert.That(fromToken.FindFirstValue("jti"), Is.EqualTo("1"));
+        Assert.That(fromToken.FindFirstValue("preferred_username"), Is.EqualTo("admin@email.com"));
+        Assert.That(fromToken.FindFirstValue("name"), Is.EqualTo("Admin User"));
+        
+        Console.WriteLine(fromToken.Identity.Name);
+        foreach (var claim in fromToken.Claims)
+        {
+            Console.WriteLine($"{claim.Type}: {claim.Value}");
+        }
     }
 }
 
