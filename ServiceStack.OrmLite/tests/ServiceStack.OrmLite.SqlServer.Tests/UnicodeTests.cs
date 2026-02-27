@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.OrmLite.SqlServerTests;
@@ -10,11 +13,28 @@ namespace ServiceStack.OrmLite.SqlServerTests;
 class UnicodeTests : OrmLiteTestBase
 {
     [Test]
+    public void Can_UseSqlServer_with_Unicode()
+    {
+        var services = new ServiceCollection();
+        services.AddOrmLite(options => options.UseSqlServer(GetConnectionString(), dialect =>
+        {
+            dialect.GetStringConverter().UseUnicode = true;
+        }));
+        
+        var provider = services.BuildServiceProvider();
+        var dbFactory = provider.GetService<IDbConnectionFactory>();
+        Assert.That(dbFactory, Is.Not.Null);
+        
+        using var db = dbFactory.Open();
+        Assert.That(db.Scalar<string>("SELECT 'Hello World'"), Is.EqualTo("Hello World"));
+    }
+    
+    [Test]
     public void can_insert_and_retrieve_unicode_values()
     {
         //save and restore state, so it doesn't mess with other tests
         var stringConverter = OrmLiteConfig.DialectProvider.GetStringConverter();
-        bool prevUnicodestate = stringConverter.UseUnicode;
+        bool prevUnicodeState = stringConverter.UseUnicode;
         try {
             stringConverter.UseUnicode = true;
 
@@ -64,7 +84,7 @@ Ancient	Modern
 
             CollectionAssert.AreEquivalent(testData, fromDb);
         }
-        finally { stringConverter.UseUnicode = prevUnicodestate; }
+        finally { stringConverter.UseUnicode = prevUnicodeState; }
     }
 
 
