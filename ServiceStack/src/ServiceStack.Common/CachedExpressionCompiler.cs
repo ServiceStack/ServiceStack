@@ -93,17 +93,40 @@ namespace ServiceStack.ExpressionUtil
 
         private sealed class CanonicalExpressionPrinter(StringBuilder sb) : ExpressionVisitor
         {
+            public override Expression Visit(Expression node)
+            {
+                if (node == null)
+                {
+                    sb.Append("NULL");
+                    return null;
+                }
+
+                sb.Append("NODE(");
+                sb.Append(node.NodeType);
+                sb.Append(":");
+                AppendType(node.Type);
+                sb.Append(")");
+
+                return base.Visit(node);
+            }
+
             protected override Expression VisitConstant(ConstantExpression node)
             {
                 // Remove closure object identity
                 if (node.Type.Name.Contains("DisplayClass"))
                 {
-                    sb.Append($"CONST(closure:{node.Type.FullName})");
+                    sb.Append("CONST(closure:");
+                    AppendType(node.Type);
+                    sb.Append(")");
                     return node;
                 }
 
                 // Normal constants
-                sb.Append($"CONST({node.Value})");
+                sb.Append("CONST(");
+                sb.Append(node.Value);
+                sb.Append(":");
+                AppendType(node.Type);
+                sb.Append(")");
                 return node;
             }
 
@@ -114,15 +137,21 @@ namespace ServiceStack.ExpressionUtil
                 {
                     // Include the closure declaring type + member type to handle array/ref struct differences
                     sb.Append("CLOSURE_MEMBER(");
-                    sb.Append(c.Type.FullName);
+                    AppendType(c.Type);
                     sb.Append(".");
                     sb.Append(node.Member.Name);
                     sb.Append(":");
-                    sb.Append(node.Type.FullName);
+                    AppendType(node.Type);
                     sb.Append(")");
                     return node;
                 }
-                sb.Append($"MEMBER({node.Member.DeclaringType}.{node.Member.Name}:{node.Type.FullName})");
+                sb.Append("MEMBER(");
+                AppendType(node.Member.DeclaringType);
+                sb.Append(".");
+                sb.Append(node.Member.Name);
+                sb.Append(":");
+                AppendType(node.Type);
+                sb.Append(")");
                 return base.VisitMember(node);
             }
 
@@ -130,21 +159,113 @@ namespace ServiceStack.ExpressionUtil
             {
                 sb.Append("LAMBDA(");
                 foreach (var p in node.Parameters)
-                    sb.Append(p.Type.FullName + ";");
+                {
+                    AppendType(p.Type);
+                    sb.Append(";");
+                }
+                sb.Append("):");
+                AppendType(node.ReturnType);
                 sb.Append(")=>");
                 return base.VisitLambda(node);
             }
 
             protected override Expression VisitBinary(BinaryExpression node)
             {
-                sb.Append($"BIN({node.NodeType})");
+                sb.Append("BIN(");
+                sb.Append(node.NodeType);
+                sb.Append(":");
+                AppendType(node.Type);
+                if (node.Method != null)
+                {
+                    sb.Append(":");
+                    AppendMethod(node.Method);
+                }
+                sb.Append(")");
                 return base.VisitBinary(node);
             }
 
             protected override Expression VisitParameter(ParameterExpression node)
             {
-                sb.Append($"PARAM({node.Type.FullName})");
+                sb.Append("PARAM(");
+                AppendType(node.Type);
+                sb.Append(")");
                 return node;
+            }
+
+            protected override Expression VisitMethodCall(MethodCallExpression node)
+            {
+                sb.Append("CALL(");
+                AppendMethod(node.Method);
+                sb.Append(":");
+                AppendType(node.Type);
+                sb.Append(")");
+                return base.VisitMethodCall(node);
+            }
+
+            protected override Expression VisitNew(NewExpression node)
+            {
+                sb.Append("NEW(");
+                AppendType(node.Type);
+                if (node.Constructor != null)
+                {
+                    sb.Append(":");
+                    AppendConstructor(node.Constructor);
+                }
+                sb.Append(")");
+                return base.VisitNew(node);
+            }
+
+            protected override Expression VisitUnary(UnaryExpression node)
+            {
+                sb.Append("UNARY(");
+                sb.Append(node.NodeType);
+                sb.Append(":");
+                AppendType(node.Type);
+                if (node.Method != null)
+                {
+                    sb.Append(":");
+                    AppendMethod(node.Method);
+                }
+                sb.Append(")");
+                return base.VisitUnary(node);
+            }
+
+            private void AppendConstructor(ConstructorInfo constructor)
+            {
+                AppendType(constructor.DeclaringType);
+                sb.Append("(");
+                var parameters = constructor.GetParameters();
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (i > 0)
+                        sb.Append(",");
+
+                    AppendType(parameters[i].ParameterType);
+                }
+                sb.Append(")");
+            }
+
+            private void AppendMethod(MethodInfo method)
+            {
+                AppendType(method.DeclaringType);
+                sb.Append(".");
+                sb.Append(method.Name);
+                sb.Append("(");
+                var parameters = method.GetParameters();
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (i > 0)
+                        sb.Append(",");
+
+                    AppendType(parameters[i].ParameterType);
+                }
+                sb.Append("):");
+                AppendType(method.ReturnType);
+            }
+
+            private void AppendType(Type type)
+            {
+                sb.Append(type?.ToString() ?? "<null>");
             }
         }
 
