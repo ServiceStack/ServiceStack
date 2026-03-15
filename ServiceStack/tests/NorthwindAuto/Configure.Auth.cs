@@ -17,6 +17,7 @@ public class ConfigureAuth : IHostingStartup
     public static List<ApiKeysFeature.ApiKey> ApiKeys = [
         new() { Key = "ak-4357089af5a446cab0fdc44830e03617", UserId = "CB923F42-AE84-4B77-B2A8-5C6E71F29DF4", UserName = "Admin", Scopes = [RoleNames.Admin] },
         new() { Key = "ak-1359a079e98841a2a0c52419433d207f", UserId = "A8BBBFDB-1DA6-44E6-96D9-93995A7CBCEF", UserName = "System" },
+        new() { Key = "ak-a9a59940972947968c6d0feff3448c42", UserId = "F2F0F6A0-5F0A-4F6C-9F0B-8F6F5E7F6F5E", UserName = "Manager" },
     ];
 
     public void ConfigureApiKeys(IWebHostBuilder builder) => builder
