@@ -9,7 +9,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack
 {
-    public class GetPublicKey : IReturn<string> { }
+    public class GetPublicKey : IGet, IReturn<string> { }
 
     public class EncryptedMessage : IReturn<EncryptedMessageResponse>
     {

@@ -14,3 +14,7 @@ public class GetAccountResponse
     public string DisplayName { get; set; }
     public string[] Roles { get; set; }
 }
+
+public class GetKey : IGet, IReturn<string>
+{
+}

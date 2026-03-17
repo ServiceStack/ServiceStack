@@ -59,6 +59,8 @@ services.AddCors(options => {
     });
 });
 
+services.AddJsonApiClient("http://localhost:5000");
+
 services.AddHttpUtilsClient();
 
 services.AddEndpointsApiExplorer();
@@ -88,7 +90,7 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();

@@ -8,7 +8,7 @@ using ServiceStack.Configuration;
 
 namespace MyApp.ServiceInterface;
 
-public class AccountServices(IIdentityAuthContextManager userManager) : Service
+public class AccountServices(IIdentityAuthContextManager userManager, JsonApiClient client) : Service
 {
     public async Task<object> Any(GetAccount request)
     {
@@ -33,4 +33,10 @@ public class AccountServices(IIdentityAuthContextManager userManager) : Service
             Roles = user.GetRoles()
         }; 
     }
+
+    public async Task<object> Any(GetKey request)
+    {
+        var api = await client.ApiAsync(new GetPublicKey());
+        return api.Response;
+    } 
 }
