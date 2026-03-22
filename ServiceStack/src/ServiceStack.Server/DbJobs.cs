@@ -1093,7 +1093,7 @@ public partial class DbJobs : IBackgroundJobs
         }
 
         var requestId = Guid.NewGuid().ToString("N");
-        var requeudJobsCount = 0;
+        var requeuedJobsCount = 0;
         var allIds = new HashSet<long>();
         allIds.AddDistinctRanges(dependentJobIds, scheduledJobIds);
 
@@ -1103,7 +1103,7 @@ public partial class DbJobs : IBackgroundJobs
         // Requeue any expired jobs
         if (expiredJobIds.Count > 0)
         {
-            requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
+            requeuedJobsCount += db.UpdateOnly(() => new BackgroundJob {
                 RequestId = requestId,
                 LastActivityDate = now,
             }, where:x => expiredJobIds.Contains(x.Id));
@@ -1112,13 +1112,13 @@ public partial class DbJobs : IBackgroundJobs
         // Queue any eligible scheduled or dependent jobs
         if (allIds.Count > 0)
         {
-            requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
+            requeuedJobsCount += db.UpdateOnly(() => new BackgroundJob {
                 RequestId = requestId,
                 LastActivityDate = now,
             }, where:x => allIds.Contains(x.Id) && x.RequestId == null);
         }
         
-        if (requeudJobsCount > 0)
+        if (requeuedJobsCount > 0)
         {
             var requeudJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
             if (requeudJobs.Count > 0)
