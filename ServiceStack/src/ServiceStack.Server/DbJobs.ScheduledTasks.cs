@@ -126,7 +126,26 @@ public partial class DbJobs
 
     private void EnqueueNewJobForScheduledTask(ScheduledTask task)
     {
-        BackgroundJobRef? jobRef;
+        var expectedLastRun = task.LastRun;
+        var now = DateTime.UtcNow;
+
+        // Optimistically claim this scheduled task tick before enqueuing.
+        // With multiple instances polling on the same interval, two instances can both observe
+        // the same stale LastRun and both decide the task is due. By making the DB update the
+        // claim step (conditional on LastRun still matching what we observed), only the first
+        // instance to reach the DB wins — the loser gets 0 rows updated and returns without
+        // enqueuing, eliminating duplicate jobs across instances.
+        using var db = feature.OpenDb();
+        var claimed = db.UpdateOnly(() => new ScheduledTask {
+            LastRun = now,
+        }, where: x => x.Id == task.Id && (x.LastRun == null || x.LastRun == expectedLastRun));
+
+        if (claimed == 0)
+            return; // Another instance already claimed this scheduled task tick
+
+        task.LastRun = now;
+
+        BackgroundJobRef? jobRef = null;
         if (task.RequestType == CommandResult.Command)
         {
             var request = CreateRequestForCommand(task.Command!, task.Request, task.RequestBody);
@@ -148,13 +167,12 @@ public partial class DbJobs
         }
         else throw new NotSupportedException("Unsupported RequestType: " + task.RequestType);
 
-        task.LastRun = DateTime.UtcNow;
-        using var db = feature.OpenDb();
-        db.UpdateOnly(() => new ScheduledTask
+        if (task.LastJobId != null)
         {
-            LastRun = task.LastRun,
-            LastJobId = task.LastJobId,
-        }, where: x => x.Id == task.Id);
+            db.UpdateOnly(() => new ScheduledTask {
+                LastJobId = task.LastJobId,
+            }, where: x => x.Id == task.Id);
+        }
     }
 
     public void ClearScheduledTasks()
