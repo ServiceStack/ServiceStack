@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack;
 using System.Runtime.Serialization;
@@ -149,6 +150,12 @@ namespace ServiceStack.Text.Tests
     [TestFixture]
     public class RuntimeAttributesTests
     {
+        [SetUp]
+        public void SetUp() => PlatformExtensions.ClearRuntimeAttributes();
+
+        [TearDown]
+        public void TearDown() => PlatformExtensions.ClearRuntimeAttributes();
+
         [Test]
         public void Can_add_to_Multiple_Default_Attributes()
         {
@@ -215,6 +222,35 @@ namespace ServiceStack.Text.Tests
                 "/path:", "/path/2:", "/path:GET", "/path:POST", 
                 "/path-add:", "/path-add:GET",
             }));
+        }
+
+        [Test]
+        public void Concurrent_runtime_attribute_updates_do_not_corrupt_reflection_state()
+        {
+            var type = typeof(ConcurrentRuntimeAttributeTarget);
+            var nameProp = type.GetProperty(nameof(ConcurrentRuntimeAttributeTarget.Name));
+
+            var tasks = Enumerable.Range(0, 8).Select(worker => Task.Run(() =>
+            {
+                for (var i = 0; i < 1000; i++)
+                {
+                    type.AddAttributes(new DataContractAttribute());
+                    nameProp.AddAttributes(new DataMemberAttribute());
+
+                    _ = type.GetAllSerializableProperties();
+
+                    _ = new ConcurrentRuntimeAttributeTarget
+                    {
+                        Name = $"name-{worker}-{i}",
+                        Age = i,
+                    }.ToObjectDictionary();
+                }
+            })).ToArray();
+
+            Task.WaitAll(tasks);
+
+            Assert.That(type.AllAttributes<DataContractAttribute>().Length, Is.GreaterThan(0));
+            Assert.That(nameProp.GetAttributes<DataMemberAttribute>().Count, Is.GreaterThan(0));
         }
     }
 
@@ -338,6 +374,12 @@ namespace ServiceStack.Text.Tests
         }
 
         public string Custom { get; set; }
+    }
+
+    public class ConcurrentRuntimeAttributeTarget
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
     }
 
 }

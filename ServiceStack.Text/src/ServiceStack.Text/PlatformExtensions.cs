@@ -254,15 +254,14 @@ public static class PlatformExtensions
     public static PropertyInfo[] AllProperties(this Type type) => 
         type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-    //Should only register Runtime Attributes on StartUp, So using non-ThreadSafe Dictionary is OK
-    static Dictionary<string, List<Attribute>> propertyAttributesMap = new();
+    static readonly ConcurrentDictionary<string, Attribute[]> propertyAttributesMap = new();
 
-    static Dictionary<Type, List<Attribute>> typeAttributesMap = new();
+    static readonly ConcurrentDictionary<Type, Attribute[]> typeAttributesMap = new();
 
     public static void ClearRuntimeAttributes()
     {
-        propertyAttributesMap = new Dictionary<string, List<Attribute>>();
-        typeAttributesMap = new Dictionary<Type, List<Attribute>>();
+        propertyAttributesMap.Clear();
+        typeAttributesMap.Clear();
     }
 
     internal static string UniqueKey(this PropertyInfo pi)
@@ -275,42 +274,37 @@ public static class PlatformExtensions
 
     public static Type AddAttributes(this Type type, params Attribute[] attrs)
     {
-        if (!typeAttributesMap.TryGetValue(type, out var typeAttrs))
-            typeAttributesMap[type] = typeAttrs = new List<Attribute>();
-
-        typeAttrs.AddRange(attrs);
+        typeAttributesMap.AddOrUpdate(type,
+            _ => attrs.ToArray(),
+            (_, existing) => existing.Concat(attrs).ToArray());
         return type;
     }
 
     /// <summary>
     /// Add a Property attribute at runtime. 
-    /// <para>Not threadsafe, should only add attributes on Startup.</para>
     /// </summary>
     public static PropertyInfo AddAttributes(this PropertyInfo propertyInfo, params Attribute[] attrs)
     {
         var key = propertyInfo.UniqueKey();
-        if (!propertyAttributesMap.TryGetValue(key, out var propertyAttrs))
-            propertyAttributesMap[key] = propertyAttrs = new List<Attribute>();
-
-        propertyAttrs.AddRange(attrs);
+        propertyAttributesMap.AddOrUpdate(key,
+            _ => attrs.ToArray(),
+            (_, existing) => existing.Concat(attrs).ToArray());
 
         return propertyInfo;
     }
 
     /// <summary>
     /// Add a Property attribute at runtime. 
-    /// <para>Not threadsafe, should only add attributes on Startup.</para>
     /// </summary>
     public static PropertyInfo ReplaceAttribute(this PropertyInfo propertyInfo, Attribute attr)
     {
         var key = propertyInfo.UniqueKey();
 
-        if (!propertyAttributesMap.TryGetValue(key, out var propertyAttrs))
-            propertyAttributesMap[key] = propertyAttrs = new List<Attribute>();
-
-        propertyAttrs.RemoveAll(x => x.GetType() == attr.GetType());
-
-        propertyAttrs.Add(attr);
+        propertyAttributesMap.AddOrUpdate(key,
+            _ => new[] { attr },
+            (_, existing) => existing.Where(x => x.GetType() != attr.GetType())
+                .Concat(new[] { attr })
+                .ToArray());
 
         return propertyInfo;
     }
@@ -445,12 +439,12 @@ public static class PlatformExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static IEnumerable<T> GetRuntimeAttributes<T>(this Type type) => typeAttributesMap.TryGetValue(type, out var attrs)
         ? attrs.OfType<T>()
-        : new List<T>();
+        : Array.Empty<T>();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static IEnumerable<Attribute> GetRuntimeAttributes(this Type type, Type attrType = null) => typeAttributesMap.TryGetValue(type, out var attrs)
         ? attrs.Where(x => attrType == null || attrType.IsInstanceOf(x.GetType()))
-        : new List<Attribute>();
+        : Array.Empty<Attribute>();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAttr[] AllAttributes<TAttr>(this Type type)
