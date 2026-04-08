@@ -105,7 +105,42 @@ public class DartGenerator : ILangGenerator
         {"DateOnly", "DateTime(0)"},
         {"DateTimeOffset", "DateTime(0)"},
     };
-        
+
+    // Default values that are compile-time constants in Dart (safe for constructor params)
+    public static readonly HashSet<string> ConstDefaultValues =
+    [
+        "0", "false", declaredEmptyString,
+    ];
+
+    /// Returns a const-safe default value for a required property, or null if none exists.
+    /// Used for field initializers and constructor params where only compile-time constants are valid.
+    /// When forConstructor is true, collection defaults are prefixed with "const".
+    string GetConstDefault(MetadataPropertyType prop, MetadataType type, bool forConstructor = false)
+    {
+        var propType = GetPropertyType(prop);
+        propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
+        if (prop.IsEnumerable() && feature.ShouldInitializeCollection(type))
+        {
+            var val = prop.IsDictionary() ? "{}" : "[]";
+            return forConstructor ? $"const {val}" : val;
+        }
+        if (DefaultValues.TryGetValue(propType, out var defaultValue) && ConstDefaultValues.Contains(defaultValue))
+            return defaultValue;
+        return null;
+    }
+
+    /// Returns a runtime default value for a required property in fromMap deserialization, or null if none exists.
+    /// Unlike GetConstDefault, this allows non-const values like DateTime(0).
+    string GetRuntimeDefault(MetadataPropertyType prop)
+    {
+        var propType = GetPropertyType(prop);
+        if (DefaultValues.TryGetValue(propType, out var dv))
+            return dv;
+        if (prop.IsEnumerable())
+            return prop.IsDictionary() ? "{}" : "[]";
+        return null;
+    }
+
     static HashSet<string> BasicJsonTypes =
     [
         nameof(String),
@@ -391,9 +426,10 @@ public class DartGenerator : ILangGenerator
         {
             defaultImports.AddIfNotExists("dart:collection");
         }
-        if (allTypes.Any(x => x.Properties?.Any(p => p.Type == "Byte[]") == true)
-            || requestTypes.Any(x => x.RequestType?.ReturnType?.Name == "Byte[]")
-            || responseTypes.Any(x => x.Name == "Byte[]"))
+        var uint8ListTypes = new[] { "Byte[]", "Stream", "HttpWebResponse" };
+        if (allTypes.Any(x => x.Properties?.Any(p => uint8ListTypes.Contains(p.Type)) == true)
+            || requestTypes.Any(x => uint8ListTypes.Contains(x.RequestType?.ReturnType?.Name))
+            || responseTypes.Any(x => uint8ListTypes.Contains(x.Name)))
         {
             defaultImports.AddIfNotExists("dart:typed_data");
         }
@@ -711,24 +747,29 @@ public class DartGenerator : ILangGenerator
                     sb.AppendLine($"void operator []=(int index, {genericArg} value) {{ l[index] = value; }}");
                 }
 
-                var sbBody = StringBuilderCacheAlt.Allocate();
                 if (props.Count > 0)
                 {
+                    var ctorParams = new List<string>();
                     foreach (var prop in props)
                     {
-                        if (sbBody.Length == 0)
-                            sbBody.Append(typeNameWithoutGenericArgs + "({");
-                        else
-                            sbBody.Append(",");
-                        sbBody.Append($"this.{GetSafePropertyName(prop)}");
+                        var paramName = $"this.{GetSafePropertyName(prop)}";
                         if (!string.IsNullOrEmpty(prop.Value))
                         {
-                            sbBody.Append("=" + prop.Value);
+                            ctorParams.Add($"{paramName}={prop.Value}");
+                        }
+                        else
+                        {
+                            var constDefault = !IsPropertyOptional(this, type, prop) ? GetConstDefault(prop, type, forConstructor: true) : null;
+                            ctorParams.Add(constDefault != null ? $"{paramName}={constDefault}" : paramName);
                         }
                     }
-                    if (sbBody.Length > 0)
+                    if (ctorParams.Count > 0)
                     {
-                        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody) + "});");
+                        sb.AppendLine($"{typeNameWithoutGenericArgs}({{{ctorParams.Join(",")}}});");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"{typeNameWithoutGenericArgs}();");
                     }
                 }
                 else
@@ -738,19 +779,19 @@ public class DartGenerator : ILangGenerator
 
                 if (props.Count > 0)
                 {
-                    sbBody = StringBuilderCacheAlt.Allocate();
-                    sbBody.Append(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json)");
-                    sbBody.Append(" { fromMap(json); }");
-                    sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody));
+                    var sbFromJson = StringBuilderCacheAlt.Allocate();
+                    sbFromJson.Append(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json)");
+                    sbFromJson.Append(" { fromMap(json); }");
+                    sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbFromJson));
                     sb.AppendLine();
                 }
                 else
                 {
-                    sb.AppendLine(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json) : " + 
+                    sb.AppendLine(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json) : " +
                                   (hasDtoBaseClass ? "super.fromJson(json);" : "super();"));
                 }
 
-                sbBody = StringBuilderCacheAlt.Allocate();
+                var sbBody = StringBuilderCacheAlt.Allocate();
                 sbBody.AppendLine("fromMap(Map<String, dynamic> json) {");
                 if (hasDtoBaseClass)
                     sbBody.AppendLine("        super.fromMap(json);");
@@ -759,6 +800,8 @@ public class DartGenerator : ILangGenerator
                     var propType = GetPropertyType(prop);
                     var jsonName = prop.Name.PropertyStyle();
                     var propName = GetSafePropertyName(prop);
+                    var runtimeDefault = !IsPropertyOptional(this, type, prop) ? GetRuntimeDefault(prop) : null;
+                    var defaultSuffix = runtimeDefault != null ? $" ?? {runtimeDefault}" : "";
                     if (UseTypeConversion(prop))
                     {
                         bool registerType = true;
@@ -781,18 +824,18 @@ public class DartGenerator : ILangGenerator
                         {
                             RegisterPropertyType(prop, propType);
                         }
-                            
-                        sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',context!);");
+
+                        sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',context!){defaultSuffix};");
                     }
                     else
                     {
                         if (DartToJsonConverters.TryGetValue(propType, out var conversionFn))
                         {
-                            sbBody.AppendLine($"        {propName} = JsonConverters.{conversionFn}(json['{jsonName}']);");
+                            sbBody.AppendLine($"        {propName} = JsonConverters.{conversionFn}(json['{jsonName}']){defaultSuffix};");
                         }
                         else
                         {
-                            sbBody.AppendLine($"        {propName} = json['{jsonName}'];");
+                            sbBody.AppendLine($"        {propName} = json['{jsonName}']{defaultSuffix};");
                         }
                     }
                 }
@@ -1032,24 +1075,12 @@ public class DartGenerator : ILangGenerator
                 PrePropertyFilter?.Invoke(sb, prop, type);
 
                 var isRequired = !IsPropertyOptional(this, type, prop);
-                string initializer = "";
-                if (isRequired)
-                {
-                    if (prop.IsEnumerable() && feature.ShouldInitializeCollection(type))
-                    {
-                        initializer = prop.IsDictionary()
-                            ? " = {}"
-                            : " = []";
-                    }
-                    else if (DefaultValues.TryGetValue(propType, out var defaultValue))
-                    {
-                        initializer = " = " + defaultValue;
-                    }
-                }
-                propType = isRequired 
-                    ? propType 
-                    : propType + "?";
-                
+                var constDefault = isRequired ? GetConstDefault(prop, type) : null;
+                var initializer = constDefault != null ? $" = {constDefault}" : "";
+                if (isRequired && constDefault == null)
+                    isRequired = false; // No const-safe default available, fall back to nullable
+                propType = isRequired ? propType : propType + "?";
+
                 sb.AppendLine($"{propType} {GetSafePropertyName(prop)}{initializer};");
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
