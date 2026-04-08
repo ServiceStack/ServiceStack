@@ -443,12 +443,65 @@ public class NativeTypesTests
         Assert.That(src, Does.Contain("String string = \"\";"));
         Assert.That(src, Does.Contain("String? nString;"));
         Assert.That(src, Does.Contain("String nRequiredString = \"\";"));
-        Assert.That(src, Does.Contain("OptionalClass optionalClass;"));
+        Assert.That(src, Does.Contain("OptionalClass? optionalClass;"));
         Assert.That(src, Does.Contain("OptionalClass? nOptionalClass;"));
-        Assert.That(src, Does.Contain("OptionalClass nRequiredOptionalClass;"));
-        Assert.That(src, Does.Contain("OptionalEnum optionalEnum;"));
+        Assert.That(src, Does.Contain("OptionalClass? nRequiredOptionalClass;"));
+        Assert.That(src, Does.Contain("OptionalEnum? optionalEnum;"));
         Assert.That(src, Does.Contain("OptionalEnum? nOptionalEnum;"));
-        Assert.That(src, Does.Contain("OptionalEnum nRequiredOptionalEnum;"));
+        Assert.That(src, Does.Contain("OptionalEnum? nRequiredOptionalEnum;"));
+    }
+
+    [Test]
+    public void Does_generate_dart_constructor_with_correct_nullability()
+    {
+        var src = (string) appHost.ExecuteService(new TypesDart { IncludeTypes = ["DartConstructorTest"] });
+
+        // Non-nullable value type fields should have default initializers
+        Assert.That(src, Does.Contain("double latitude = 0;"));
+        Assert.That(src, Does.Contain("double longitude = 0;"));
+        Assert.That(src, Does.Contain("int count = 0;"));
+
+        // Non-nullable string field should have default initializer
+        Assert.That(src, Does.Contain("String name = \"\";"));
+
+        // Nullable fields should have ? suffix and no initializer
+        Assert.That(src, Does.Contain("String? notes;"));
+        Assert.That(src, Does.Contain("double? score;"));
+        Assert.That(src, Does.Contain("bool? cancelled;"));
+
+        // Nullable class should have ? suffix
+        Assert.That(src, Does.Contain("OptionalClass? nOptionalClass;"));
+
+        // Non-nullable class/enum/DateTime with no const default falls back to nullable
+        Assert.That(src, Does.Contain("OptionalClass? optionalClass;"));
+        Assert.That(src, Does.Contain("DateTime? timestamp;"));
+        Assert.That(src, Does.Contain("DateTime? nTimestamp;"));
+
+        // Constructor: non-nullable value types should have const defaults in constructor params
+        Assert.That(src, Does.Contain("this.latitude=0"));
+        Assert.That(src, Does.Contain("this.longitude=0"));
+        Assert.That(src, Does.Contain("this.count=0"));
+        Assert.That(src, Does.Contain("this.name=\"\""));
+
+        // Constructor: nullable types should NOT have defaults (implicit null is fine)
+        Assert.That(src, Does.Contain("this.notes,") | Does.Contain("this.notes}"));
+        Assert.That(src, Does.Contain("this.score,") | Does.Contain("this.score}"));
+        Assert.That(src, Does.Contain("this.cancelled,") | Does.Contain("this.cancelled}"));
+
+        // Constructor: collections should use const default
+        Assert.That(src, Does.Contain("this.tags=const []"));
+
+        // Constructor: types without const default are nullable, included as optional params
+        Assert.That(src, Does.Not.Contain("required this."));
+        Assert.That(src, Does.Contain("this.optionalClass,") | Does.Contain("this.optionalClass}"));
+        Assert.That(src, Does.Contain("this.timestamp,") | Does.Contain("this.timestamp}"));
+
+        // fromMap: non-nullable fields with converters should use ?? default
+        Assert.That(src, Does.Contain("JsonConverters.toDouble(json['latitude']) ?? 0;"));
+        Assert.That(src, Does.Contain("JsonConverters.toDouble(json['longitude']) ?? 0;"));
+        // fromMap: nullable fields should NOT have ?? default
+        Assert.That(src, Does.Not.Contain("json['notes']) ?? "));
+        Assert.That(src, Does.Not.Contain("json['score']) ?? "));
     }
 
     [Test]
@@ -520,6 +573,47 @@ public class OptionalTest : IReturn<OptionalTest>
 public class OptionalService : Service
 {
     public object Any(OptionalTest request) => request;
+    public object Any(DartConstructorTest request) => request;
+}
+
+[DataContract]
+public class DartConstructorTest : IReturn<DartConstructorTest>
+{
+    [DataMember(Name = "latitude")]
+    public double Latitude { get; set; }
+
+    [DataMember(Name = "longitude")]
+    public double Longitude { get; set; }
+
+    [DataMember(Name = "name")]
+    public string Name { get; set; }
+
+    [DataMember(Name = "count")]
+    public int Count { get; set; }
+
+    [DataMember(Name = "notes")]
+    public string? Notes { get; set; }
+
+    [DataMember(Name = "score")]
+    public double? Score { get; set; }
+
+    [DataMember(Name = "cancelled")]
+    public bool? Cancelled { get; set; }
+
+    [DataMember(Name = "tags")]
+    public List<string> Tags { get; set; }
+
+    [DataMember(Name = "timestamp")]
+    public DateTime Timestamp { get; set; }
+
+    [DataMember(Name = "nTimestamp")]
+    public DateTime? NTimestamp { get; set; }
+
+    [DataMember(Name = "optionalClass")]
+    public OptionalClass OptionalClass { get; set; }
+
+    [DataMember(Name = "nOptionalClass")]
+    public OptionalClass? NOptionalClass { get; set; }
 }
 
 public class Dto : IReturn<DtoResponse>
