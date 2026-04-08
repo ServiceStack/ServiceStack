@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 
@@ -180,4 +181,9 @@ public interface IRequest : IResolver, IServiceProvider
     /// The value of the Referrer, null if not available
     /// </summary>
     Uri UrlReferrer { get; }
+    
+    /// <summary>
+    /// Notifies when the connection underlying this request is aborted and thus request operations should be cancelled.
+    /// </summary>
+    CancellationToken RequestAborted { get; }
 }

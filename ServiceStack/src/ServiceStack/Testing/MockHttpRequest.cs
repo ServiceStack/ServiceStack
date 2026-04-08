@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -55,6 +56,8 @@ public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
     public object OriginalRequest => null;
 
     public IResponse Response { get; }
+
+    public CancellationToken RequestAborted => CancellationToken.None;
 
     public T TryResolve<T>()
     {

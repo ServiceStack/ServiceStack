@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
@@ -13,6 +14,7 @@ class HttpRequestMock : IHttpRequest
     public object OriginalRequest => throw new NotImplementedException();
 
     public IResponse Response { get; private set; }
+    public CancellationToken RequestAborted => CancellationToken.None;
 
     public string OperationName { get; set; }
 

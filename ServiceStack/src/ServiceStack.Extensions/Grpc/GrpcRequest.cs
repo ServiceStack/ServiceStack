@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -154,6 +155,8 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
     private IRequestPreferences requestPreferences;
 
     public IRequestPreferences RequestPreferences => requestPreferences ??= new RequestPreferences(this);
+
+    public CancellationToken RequestAborted => Context.CancellationToken;
 
     public string ContentType { get; set; }
 

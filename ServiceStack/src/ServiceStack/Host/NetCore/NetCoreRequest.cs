@@ -1,6 +1,7 @@
 ﻿
 
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 #if NETCORE
 using System;
@@ -67,6 +68,7 @@ public class NetCoreRequest :
 
     private IResponse response;
     public IResponse Response => response ??= new NetCoreResponse(this, context.Response);
+    public CancellationToken RequestAborted => context.RequestAborted;
 
     public string OperationName { get; set; }
     public string Verb => HttpMethod;

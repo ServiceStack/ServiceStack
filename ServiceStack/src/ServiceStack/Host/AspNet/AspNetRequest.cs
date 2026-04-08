@@ -1,6 +1,7 @@
 
 
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 #if !NETCORE
 
@@ -77,6 +78,8 @@ public class AspNetRequest
     public IResponse Response => response;
 
     public IHttpResponse HttpResponse => response;
+
+    public CancellationToken RequestAborted => CancellationToken.None;
 
     public ClaimsPrincipal User => request.RequestContext?.HttpContext.User as ClaimsPrincipal;
 

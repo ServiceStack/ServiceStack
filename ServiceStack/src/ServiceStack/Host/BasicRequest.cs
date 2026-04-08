@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
@@ -22,6 +23,7 @@ public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IHasClaims
     public IMessage Message { get; set; }
     public object OriginalRequest { get; protected set; }
     public IResponse Response { get; set; }
+    public CancellationToken RequestAborted => CancellationToken.None;
     
 #if NETCORE
     public Microsoft.Extensions.DependencyInjection.IServiceScope ServiceScope { get; set; }

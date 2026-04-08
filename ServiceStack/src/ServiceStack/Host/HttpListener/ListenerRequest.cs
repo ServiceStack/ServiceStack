@@ -1,6 +1,7 @@
 
 
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 #if !NETCORE 
 
@@ -75,6 +76,8 @@ public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFi
     public IResponse Response => response;
 
     public IHttpResponse HttpResponse => response;
+
+    public CancellationToken RequestAborted => CancellationToken.None;
 
     public ClaimsPrincipal User => httpContext.User as ClaimsPrincipal;
     public RequestAttributes RequestAttributes { get; set; }

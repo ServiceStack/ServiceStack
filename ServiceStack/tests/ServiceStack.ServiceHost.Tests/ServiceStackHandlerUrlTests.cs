@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -32,6 +33,7 @@ public class ServiceStackHandlerUrlTests
         }
 
         public object OriginalRequest => throw new NotImplementedException();
+        public CancellationToken RequestAborted => CancellationToken.None;
 
         public IResponse Response { get; private set; }
 
