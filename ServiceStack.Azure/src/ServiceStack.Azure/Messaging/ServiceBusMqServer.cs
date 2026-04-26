@@ -2,12 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using ServiceStack.Text;
 #if NETCORE
-using Microsoft.Azure.ServiceBus.Management;
+using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
 #else
 using Microsoft.ServiceBus;
 #endif
@@ -53,10 +50,10 @@ public class ServiceBusMqServer : IMessageService
         
 #if NETCORE
     /// <summary>
-    /// Exposes the <see cref="Microsoft.Azure.ServiceBus.Management.ManagementClient"/> which can be used to perform
+    /// Exposes the ServiceBusAdministrationClient which can be used to perform
     /// management operations on ServiceBus entities.
     /// </summary>
-    public ManagementClient ManagementClient => messageFactory!.managementClient;
+    public ServiceBusAdministrationClient ManagementClient => messageFactory!.managementClient!;
 #else
     /// <summary>
     /// Exposes the <see cref="Microsoft.ServiceBus.NamespaceManager"/> which can be used in managing entities,
@@ -105,17 +102,17 @@ public class ServiceBusMqServer : IMessageService
 
         
 #if NETCORE
-    public Action<Microsoft.Azure.ServiceBus.Message,IMessage> PublishMessageFilter 
+    public Action<ServiceBusMessage, IMessage> PublishMessageFilter
     {
         get => messageFactory!.PublishMessageFilter;
         set => messageFactory!.PublishMessageFilter = value;
     }
 #else
-        public Action<Microsoft.ServiceBus.Messaging.BrokeredMessage,IMessage> PublishMessageFilter 
-        {
-            get => messageFactory.PublishMessageFilter;
-            set => messageFactory.PublishMessageFilter = value;
-        }
+    public Action<Microsoft.ServiceBus.Messaging.BrokeredMessage, IMessage> PublishMessageFilter
+    {
+        get => messageFactory.PublishMessageFilter;
+        set => messageFactory.PublishMessageFilter = value;
+    }
 #endif
         
     public void Dispose()

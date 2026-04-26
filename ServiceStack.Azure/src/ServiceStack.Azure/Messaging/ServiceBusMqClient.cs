@@ -1,15 +1,11 @@
-﻿using ServiceStack.Messaging;
+using ServiceStack.Messaging;
 using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 #if NETCORE
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
+using Azure.Messaging.ServiceBus;
 #else
+using System.IO;
 using Microsoft.ServiceBus.Messaging;
 #endif
 
@@ -37,21 +33,21 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
             throw new ArgumentException(QueueNameMeta);
 
         var lockToken = message.Meta[LockTokenMeta];
+#if NETCORE
+        if (parentFactory!.pendingAcks.TryRemove(lockToken, out var complete))
+            complete().GetAwaiter().GetResult();
+#else
         var queueName = message.Meta[QueueNameMeta];
-
-        var sbClient = parentFactory.GetOrCreateClient(queueName);
+        var sbClient = parentFactory!.GetOrCreateClient(queueName);
         try
         {
-#if NETCORE
-            sbClient.CompleteAsync(lockToken).GetAwaiter().GetResult();
-#else
             sbClient.Complete(Guid.Parse(lockToken));
-#endif
         }
         catch (Exception)
         {
             throw;
         }
+#endif
     }
 
     public IMessage<T>? CreateMessage<T>(object mqResponse)
@@ -60,36 +56,48 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
             return (IMessage<T>)mqResponse;
 
 #if NETCORE
-        if (mqResponse is not Microsoft.Azure.ServiceBus.Message msg)
+        if (mqResponse is not ServiceBusReceivedMessage msg)
             return null;
-        var msgBody = msg.Body.FromMessageBody();
+        var msgBody = msg.Body.ToArray().FromMessageBody();
 #else
         if (!(mqResponse is BrokeredMessage msg))
             return null;
         var msgBody = msg.GetBody<Stream>().FromMessageBody();
 #endif
 
-        var iMessage = (IMessage)JsonSerializer.DeserializeFromString(msgBody, typeof(IMessage));
-        return (IMessage<T>)iMessage;
+        var iMessage = (IMessage<T>)JsonSerializer.DeserializeFromString<IMessage>(msgBody);
+        return iMessage;
     }
 
     public override void Dispose()
     {
-        // All dispose done in base class
     }
 
-    public IMessage<T> Get<T>(string queueName, TimeSpan? timeout = default)
+    public IMessage<T> Get<T>(string queueName, TimeSpan? timeout = null)
     {
         queueName = queueName.SafeQueueName()!;
 
-        var sbClient = parentFactory.GetOrCreateClient(queueName);
+#if NETCORE
+        var receiver = parentFactory!.GetOrCreateReceiver(queueName);
+        ServiceBusReceivedMessage? msg;
         string? lockToken = null;
 
-#if NETCORE
-        var msg = Task.Run(() => sbClient.ReceiveAsync(timeout)).GetAwaiter().GetResult();
-        if (msg != null)
-            lockToken = msg.SystemProperties.LockToken;
+        // ReceiveAndDelete mode: messages are auto-removed on receipt; no explicit Ack needed.
+        // Loop discards stale/unrecognised messages and retries within the remaining timeout.
+        var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(60));
+        while (true)
+        {
+            var remaining = deadline - DateTime.UtcNow;
+            if (remaining <= TimeSpan.Zero) { msg = null; break; }
+            msg = receiver.ReceiveMessageAsync(remaining).GetAwaiter().GetResult();
+            if (msg == null) break;
+            if (CreateMessage<T>(msg) != null) { lockToken = msg.LockToken; break; }
+            // Unrecognised format: already deleted by ReceiveAndDelete; just retry
+            msg = null;
+        }
 #else
+        var sbClient = parentFactory!.GetOrCreateClient(queueName);
+        string? lockToken = null;
         var msg = timeout.HasValue
             ? sbClient.Receive(timeout.Value)
             : sbClient.Receive();
@@ -110,45 +118,6 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
         return iMessage;
     }
 
-#if NETCORE
-    private async Task<Microsoft.Azure.ServiceBus.Message> GetMessageFromReceiver(MessageReceiver messageReceiver, TimeSpan? timeout)
-    {
-        var msg = timeout.HasValue
-            ? await messageReceiver.ReceiveAsync(timeout.Value)
-            : await messageReceiver.ReceiveAsync();
-
-        await messageReceiver.CompleteAsync(msg.SystemProperties.LockToken);
-        return msg;
-    }
-
-    private async Task<Microsoft.Azure.ServiceBus.Message> GetMessageFromClient(QueueClient sbClient, TimeSpan? timeout)
-    {
-        var tcs = new TaskCompletionSource<Microsoft.Azure.ServiceBus.Message>();
-        var task = tcs.Task;
-
-        sbClient.RegisterMessageHandler(
-            async (message, token) =>
-            {
-                tcs.SetResult(message);
-                await sbClient.CompleteAsync(message.SystemProperties.LockToken);
-            },
-            (eventArgs) => Task.CompletedTask);
-
-        if (timeout.HasValue)
-        {
-            await Task.WhenAny(task, Task.Delay((int)timeout.Value.TotalMilliseconds));
-
-            if (!task.IsCompleted)
-                throw new TimeoutException("Reached timeout while getting message from client");
-        } else
-        {
-            await task;
-        }
-
-        return task.Result;
-    }
-#endif
-
     public IMessage<T> GetAsync<T>(string queueName) => Get<T>(queueName);
 
     public string GetTempQueueName()
@@ -158,19 +127,17 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
 
     public void Nak(IMessage message, bool requeue, Exception exception = null)
     {
-        // If don't requeue, post message to DLQ
         var queueName = requeue
             ? message.ToInQueueName()
             : message.ToDlqQueueName();
 
         Publish(queueName, message);
-
         Ack(message);
     }
 
     public void Notify(string queueName, IMessage message)
     {
-        if (parentFactory.MqServer.DisableNotifyMessages)
+        if (parentFactory is { MqServer.DisableNotifyMessages: true })
             return;
 
         Publish(queueName, message);

@@ -12,9 +12,7 @@ using ServiceStack.Text;
 using ServiceStack.Azure.Messaging;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
-#if NETCORE
-using QueueClient = Microsoft.Azure.ServiceBus.QueueClient;
-#else
+#if !NETCORE
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 #endif

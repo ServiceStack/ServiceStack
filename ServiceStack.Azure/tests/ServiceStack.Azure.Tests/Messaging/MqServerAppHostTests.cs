@@ -12,9 +12,7 @@ using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Validation;
-#if NETCORE
-using QueueClient = Microsoft.Azure.ServiceBus.QueueClient;
-#else
+#if !NETCORE
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 #endif
