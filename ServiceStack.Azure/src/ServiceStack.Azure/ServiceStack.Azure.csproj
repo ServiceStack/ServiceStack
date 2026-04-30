@@ -35,17 +35,17 @@
     <PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.49.1" />
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.18.4" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
     <PackageReference Include="Azure.Storage.Common" Version="12.26.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="System.Text.Json" Version="8.0.6" />
+    <PackageReference Include="System.Text.Json" Version="10.0.7" />
   </ItemGroup>
 
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
-    <PackageReference Include="System.Linq.Async" Version="6.0.3" />
+    <PackageReference Include="System.Linq.Async" Version="7.0.1" />
   </ItemGroup>
   
 </Project>

@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
-    <PackageReference Include="System.Linq.Async" Version="6.0.3" />
+    <PackageReference Include="System.Linq.Async" Version="7.0.1" />
   </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
