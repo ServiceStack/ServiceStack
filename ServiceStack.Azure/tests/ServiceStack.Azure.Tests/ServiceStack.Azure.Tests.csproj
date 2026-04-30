@@ -38,8 +38,8 @@
     <PackageReference Include="Microsoft.Azure.KeyVault.Core" Version="3.0.5" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="System.Linq.Async" Version="5.1.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
+    <PackageReference Include="System.Linq.Async" Version="6.0.3" />
   </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">

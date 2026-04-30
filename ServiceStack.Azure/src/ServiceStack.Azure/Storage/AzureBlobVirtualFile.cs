@@ -2,33 +2,34 @@
 using System;
 using System.IO;
 using ServiceStack.VirtualPath;
-using Microsoft.WindowsAzure.Storage.Blob;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 
 namespace ServiceStack.Azure.Storage;
 
 public class AzureBlobVirtualFile : AbstractVirtualFileBase
 {
     private readonly AzureBlobVirtualFiles pathProvider;
-    private readonly CloudBlobContainer container;
 
-    public CloudBlockBlob Blob { get; private set; }
+    public BlobClient Blob { get; private set; }
+    private BlobProperties properties;
 
     public AzureBlobVirtualFile(AzureBlobVirtualFiles owningProvider, IVirtualDirectory directory)
         : base(owningProvider, directory)
     {
         this.pathProvider = owningProvider;
-        this.container = pathProvider.Container;
     }
 
-    public AzureBlobVirtualFile Init(CloudBlockBlob blob)
+    public AzureBlobVirtualFile Init(BlobClient blob, BlobProperties properties)
     {
-        this.Blob = blob;
+        Blob = blob;
+        this.properties = properties;
         return this;
     }
 
-    public override DateTime LastModified => Blob.Properties.LastModified?.UtcDateTime ?? DateTime.MinValue;
+    public override DateTime LastModified => properties.LastModified.UtcDateTime;
 
-    public override long Length => Blob.Properties.Length;
+    public override long Length => properties.ContentLength;
 
     public override string Name => Blob.Name.Contains(pathProvider.VirtualPathSeparator)
         ? Blob.Name.SplitOnLast(pathProvider.VirtualPathSeparator)[1]
@@ -36,23 +37,20 @@ public class AzureBlobVirtualFile : AbstractVirtualFileBase
 
     public string FilePath => Blob.Name;
 
-    public string ContentType => Blob.Properties.ContentType;
+    public string ContentType => properties.ContentType;
 
     public override string VirtualPath => FilePath;
 
     public string DirPath => base.Directory.VirtualPath;
 
-    public override Stream OpenRead()
-    {
-        return Blob.OpenRead();
-    }
+    public override Stream OpenRead() => Blob.OpenRead();
 
     public override void Refresh()
     {
-        var blob = pathProvider.Container.GetBlockBlobReference(Blob.Name);
-        if (!blob.Exists())
+        var blob = pathProvider.Container.GetBlobClient(Blob.Name);
+        if (!blob.Exists().Value)
             return;
 
-        Init(blob);
+        Init(blob, blob.GetProperties().Value);
     }
 }

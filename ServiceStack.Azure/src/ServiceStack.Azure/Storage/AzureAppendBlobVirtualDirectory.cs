@@ -1,9 +1,9 @@
-﻿using ServiceStack.IO;
+using ServiceStack.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.WindowsAzure.Storage.Blob;
 using ServiceStack.VirtualPath;
+using Azure.Storage.Blobs.Specialized;
 
 namespace ServiceStack.Azure.Storage;
 
@@ -35,16 +35,14 @@ public class AzureAppendBlobVirtualDirectory : AbstractVirtualDirectoryBase
     {
         get
         {
-            var blobs = PathProvider.Container.ListBlobs(DirPath == null
+            var blobs = AzureBlobVirtualFilesHelpers.ListBlobsByHierarchy(PathProvider.Container, DirPath == null
                 ? null
-                : DirPath + PathProvider.RealPathSeparator);
-
-            return blobs.Where(q => q.GetType() == typeof(CloudBlobDirectory))
-                .Select(q =>
-                {
-                    var blobDir = (CloudBlobDirectory)q;
-                    return new AzureAppendBlobVirtualDirectory(PathProvider, blobDir.Prefix.Trim(PathProvider.RealPathSeparator[0]));
-                });
+                : $"{DirPath}{PathProvider.RealPathSeparator}");
+            
+            return blobs
+                .Where(static q => q.IsPrefix)
+                .Select(q => 
+                    new AzureAppendBlobVirtualDirectory(PathProvider, q.Prefix.Trim(PathProvider.RealPathSeparator[0])));
         }
     }
 
@@ -52,24 +50,17 @@ public class AzureAppendBlobVirtualDirectory : AbstractVirtualDirectoryBase
 
     public override IEnumerable<IVirtualFile> Files => PathProvider.GetImmediateFiles(this.DirPath);
 
-    // Azure Blob storage directories only exist if there are contents beneath them
     public bool Exists()
     {
-        var ret = PathProvider.Container
-            .ListBlobs(this.DirPath, false)
-            .Any(q => q.GetType() == typeof(CloudBlobDirectory));
-        return ret;
-
+        var prefix = DirPath == null ? null : $"{DirPath}/";
+        return AzureBlobVirtualFilesHelpers.ListBlobs(PathProvider.Container, prefix).Any();
     }
 
     public override string? Name => DirPath?.SplitOnLast(PathProvider.RealPathSeparator).Last();
 
     public override string? VirtualPath => DirPath;
 
-    public override IEnumerator<IVirtualNode> GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
+    public override IEnumerator<IVirtualNode> GetEnumerator() => throw new NotImplementedException();
 
     protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fileName)
     {
@@ -79,36 +70,33 @@ public class AzureAppendBlobVirtualDirectory : AbstractVirtualDirectoryBase
 
     protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
     {
-        var dir = (this.DirPath == null) ? null : this.DirPath + PathProvider.RealPathSeparator;
-
-        var ret = PathProvider.Container.ListBlobs(dir)
-            .Where(q => q.GetType() == typeof(CloudAppendBlob))
-            .Where(q =>
+        var prefix = DirPath == null ? null : $"{DirPath}{PathProvider.RealPathSeparator}";
+        return AzureBlobVirtualFilesHelpers.ListBlobsByHierarchy(PathProvider.Container, prefix)
+            .Where(static x => x.IsBlob)
+            .Where(x => x.Blob.Name.Glob(globPattern))
+            .Select(x =>
             {
-                var x = ((CloudAppendBlob)q).Name.Glob(globPattern);
-                return x;
-            })
-            .Select(q => new AzureAppendBlobVirtualFile(PathProvider, this).Init(q as CloudAppendBlob));
-        return ret;
+                var blobClient = PathProvider.Container.GetAppendBlobClient(x.Blob.Name);
+                var props = AzureBlobVirtualFilesHelpers.MakeBlobProperties(x.Blob, x.Blob.Properties.CreatedOn ?? default);
+                return new AzureAppendBlobVirtualFile(PathProvider, this).Init(blobClient, props);
+            });
     }
 
-    protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
-    {
-        return new AzureAppendBlobVirtualDirectory(this.PathProvider, PathProvider.SanitizePath(DirPath.CombineWith(directoryName)));
-    }
-        
+    protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName) =>
+        new AzureAppendBlobVirtualDirectory(this.PathProvider, PathProvider.SanitizePath(DirPath.CombineWith(directoryName)));
+
     public override IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = int.MaxValue)
     {
         if (IsRoot)
         {
-            return PathProvider.EnumerateFiles().Where(x => 
-                (x.DirPath == null || x.DirPath.CountOccurrencesOf('/') < maxDepth-1)
+            return PathProvider.EnumerateFiles().Where(x =>
+                (x.DirPath == null || x.DirPath.CountOccurrencesOf(VirtualPathProvider.RealPathSeparator) < maxDepth - 1)
                 && x.Name.Glob(globPattern));
         }
-            
-        return PathProvider.EnumerateFiles(DirPath).Where(x => 
+
+        return PathProvider.EnumerateFiles(DirPath).Where(x =>
             x.DirPath != null
-            && x.DirPath.CountOccurrencesOf('/') < maxDepth-1
+            && x.DirPath.CountOccurrencesOf(VirtualPathProvider.RealPathSeparator) < maxDepth - 1
             && x.DirPath.StartsWith(DirPath)
             && x.Name.Glob(globPattern));
     }

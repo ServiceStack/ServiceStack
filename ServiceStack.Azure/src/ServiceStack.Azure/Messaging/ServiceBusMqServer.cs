@@ -2,12 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if NETCORE
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
-#else
-using Microsoft.ServiceBus;
-#endif
 
 namespace ServiceStack.Azure.Messaging;
 
@@ -48,19 +44,11 @@ public class ServiceBusMqServer : IMessageService
     public Func<object, object> ResponseFilter { get; set; }
         
         
-#if NETCORE
     /// <summary>
     /// Exposes the ServiceBusAdministrationClient which can be used to perform
     /// management operations on ServiceBus entities.
     /// </summary>
     public ServiceBusAdministrationClient ManagementClient => messageFactory!.managementClient!;
-#else
-    /// <summary>
-    /// Exposes the <see cref="Microsoft.ServiceBus.NamespaceManager"/> which can be used in managing entities,
-    /// such as queues, topics, subscriptions, and rules, in your service namespace.
-    /// </summary>
-    public NamespaceManager NamespaceManager => messageFactory.namespaceManager;
-#endif
 
     private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap = new();
 
@@ -100,20 +88,11 @@ public class ServiceBusMqServer : IMessageService
     /// </summary>
     public bool DisableNotifyMessages { get; set; }
 
-        
-#if NETCORE
     public Action<ServiceBusMessage, IMessage> PublishMessageFilter
     {
         get => messageFactory!.PublishMessageFilter;
         set => messageFactory!.PublishMessageFilter = value;
     }
-#else
-    public Action<Microsoft.ServiceBus.Messaging.BrokeredMessage, IMessage> PublishMessageFilter
-    {
-        get => messageFactory.PublishMessageFilter;
-        set => messageFactory.PublishMessageFilter = value;
-    }
-#endif
         
     public void Dispose()
     {

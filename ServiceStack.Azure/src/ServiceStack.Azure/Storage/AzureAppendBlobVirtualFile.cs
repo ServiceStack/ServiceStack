@@ -1,34 +1,36 @@
-﻿using ServiceStack.IO;
+using ServiceStack.IO;
 using System;
 using System.IO;
 using ServiceStack.VirtualPath;
-using Microsoft.WindowsAzure.Storage.Blob;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Blobs.Models;
 
 namespace ServiceStack.Azure.Storage;
 
 public class AzureAppendBlobVirtualFile : AbstractVirtualFileBase
 {
     private readonly AzureAppendBlobVirtualFiles pathProvider;
-    private readonly CloudBlobContainer container;
 
-    public CloudAppendBlob Blob { get; private set; }
+    public AppendBlobClient Blob { get; private set; }
+    private BlobProperties properties;
 
     public AzureAppendBlobVirtualFile(AzureAppendBlobVirtualFiles owningProvider, IVirtualDirectory directory)
         : base(owningProvider, directory)
     {
         this.pathProvider = owningProvider;
-        this.container = pathProvider.Container;
     }
 
-    public AzureAppendBlobVirtualFile Init(CloudAppendBlob blob)
+    public AzureAppendBlobVirtualFile Init(AppendBlobClient blob, BlobProperties properties)
     {
-        this.Blob = blob;
+        Blob = blob;
+        this.properties = properties;
         return this;
     }
 
-    public override DateTime LastModified => Blob.Properties.LastModified?.UtcDateTime ?? DateTime.MinValue;
+    public override DateTime LastModified =>
+        (properties.CreatedOn != default ? properties.CreatedOn : properties.LastModified).UtcDateTime;
 
-    public override long Length => Blob.Properties.Length;
+    public override long Length => properties.ContentLength;
 
     public override string Name => Blob.Name.Contains(pathProvider.VirtualPathSeparator)
         ? Blob.Name.SplitOnLast(pathProvider.VirtualPathSeparator)[1]
@@ -36,23 +38,20 @@ public class AzureAppendBlobVirtualFile : AbstractVirtualFileBase
 
     public string FilePath => Blob.Name;
 
-    public string ContentType => Blob.Properties.ContentType;
+    public string ContentType => properties.ContentType;
 
     public override string VirtualPath => FilePath;
 
     public string? DirPath => base.Directory.VirtualPath;
 
-    public override Stream OpenRead()
-    {
-        return Blob.OpenRead();
-    }
+    public override Stream OpenRead() => Blob.OpenRead();
 
     public override void Refresh()
     {
-        var blob = pathProvider.Container.GetAppendBlobReference(Blob.Name);
-        if (!blob.Exists()) 
+        var blob = pathProvider.Container.GetAppendBlobClient(Blob.Name);
+        if (!blob.Exists().Value)
             return;
 
-        Init(blob);
+        Init(blob, blob.GetProperties().Value);
     }
 }

@@ -1,18 +1,15 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System;
-using System.Text;
-using System.Threading.Tasks;
 using ServiceStack.Caching;
 using ServiceStack.Logging;
-using Microsoft.WindowsAzure.Storage;
 using ServiceStack.Support;
 using ServiceStack.Text;
-using Microsoft.WindowsAzure.Storage.Table;
 using ServiceStack.DataAnnotations;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Threading;
+using Azure.Data.Tables;
+using Azure;
 
 namespace ServiceStack.Azure.Storage;
 
@@ -34,71 +31,69 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
     protected override ILog Log => LogManager.GetLogger(GetType());
     public bool FlushOnDispose { get; set; }
 
-    string? connectionString;
-    string? partitionKey = "";
-    CloudTable? table = null;
+    private readonly string? connectionString;
+    private readonly string? partitionKey = "";
+    private readonly TableClient? tableClient;
     IStringSerializer? serializer;
 
-    public AzureTableCacheClient(string? ConnectionString, string tableName = "Cache")
+    public AzureTableCacheClient(string? connectionString, string tableName = "Cache")
     {
-        connectionString = ConnectionString;
-        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
-        CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-        table = tableClient.GetTableReference(tableName);
-        table.CreateIfNotExists();
-
+        this.connectionString = connectionString;
+        tableClient = new TableClient(this.connectionString, tableName);
+        tableClient.CreateIfNotExists();
         serializer = new JsonStringSerializer();
     }
 
     private bool TryGetValue(string key, out TableCacheEntry? entry)
     {
         entry = null;
-
-        var op = TableOperation.Retrieve<TableCacheEntry>(partitionKey, key);
-        var retrievedResult = table.Execute(op);
-
-        if (retrievedResult.Result != null)
+        try
         {
-            entry = retrievedResult.Result as TableCacheEntry;
+            entry = tableClient!.GetEntity<TableCacheEntry>(partitionKey, key).Value;
             return true;
         }
-
-        return false;
+        catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+        {
+            return false;
+        }
     }
 
     public void Dispose()
     {
         if (!FlushOnDispose) return;
-
         FlushAll();
     }
 
     public bool Add<T>(string key, T value)
     {
-        var sVal = serializer!.SerializeToString<T>(value);
-
+        var sVal = serializer!.SerializeToString(value);
         var entry = CreateTableEntry(key, sVal, null);
         return AddInternal(key, entry);
     }
 
     public bool Add<T>(string key, T value, TimeSpan expiresIn)
     {
-        return Add<T>(key, value, DateTime.UtcNow.Add(expiresIn));
+        return Add(key, value, DateTime.UtcNow.Add(expiresIn));
     }
 
     public bool Add<T>(string key, T value, DateTime expiresAt)
     {
-        var sVal = serializer!.SerializeToString<T>(value);
-
+        var sVal = serializer!.SerializeToString(value);
         var entry = CreateTableEntry(key, sVal, null, expiresAt);
         return AddInternal(key, entry);
     }
 
     public bool AddInternal(string key, TableCacheEntry entry)
     {
-        var op = TableOperation.Insert(entry);
-        var result = table.Execute(op);
-        return result.HttpStatusCode == 200;
+        try
+        {
+            tableClient!.AddEntity(entry);
+            return true;
+        }
+        catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
+        {
+            return false;
+        }
     }
 
     public long Decrement(string key, uint amount)
@@ -121,28 +116,26 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
                 entry = CreateTableEntry(key, Serialize(count));
                 try
                 {
-                    updated = table.Execute(TableOperation.Insert(entry)).HttpStatusCode == (int)HttpStatusCode.NoContent;
+                    tableClient!.AddEntity(entry);
+                    updated = true;
                 }
-                catch (StorageException ex)
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
                 {
-                    if (!ex.HasStatus(HttpStatusCode.Conflict))
-                        throw;
+                    // another writer beat us, retry
                 }
             }
             else
             {
                 count = Deserialize<long>(entry.Data) + amount;
-                entry.Data = Serialize<long>(count);
-                var op = TableOperation.Replace(entry);
+                entry.Data = Serialize(count);
                 try
                 {
-                    var result = table.Execute(op).HttpStatusCode;
-                    updated = result == (int)HttpStatusCode.OK || result == (int)HttpStatusCode.NoContent;
+                    tableClient!.UpdateEntity(entry, entry.ETag, TableUpdateMode.Replace);
+                    updated = true;
                 }
-                catch (StorageException ex)
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)
                 {
-                    if (!ex.HasStatus(HttpStatusCode.PreconditionFailed))
-                        throw;
+                    // concurrent modification, retry
                 }
             }
 
@@ -197,19 +190,17 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
 
     public bool Remove(string key)
     {
-        var entry = CreateTableEntry(key);
-        entry.ETag = "*";   // Avoids concurrency
-        var op = TableOperation.Delete(entry);
+        if (!TryGetValue(key, out _))
+            return false;
+
         try
         {
-            TableResult result = table.Execute(op);
-            return result.HttpStatusCode == 200 || result.HttpStatusCode == 204;
+            tableClient!.DeleteEntity(partitionKey, key, ETag.All);
+            return true;
         }
-        catch (Microsoft.WindowsAzure.Storage.StorageException ex)
+        catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
         {
-            if (ex.RequestInformation.HttpStatusCode == (int)System.Net.HttpStatusCode.NotFound)
-                return false;
-            throw;
+            return false;
         }
     }
 
@@ -235,14 +226,12 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
 
     private bool ReplaceInternal(string key, string value, DateTime? expiresAt = null)
     {
-        if (TryGetValue(key, out var entry))
-        {
-            entry = CreateTableEntry(key, value, null, expiresAt);
-            var op = TableOperation.Replace(entry);
-            var result = table.Execute(op);
-            return result.HttpStatusCode == 200;
-        }
-        return false;
+        if (!TryGetValue(key, out _))
+            return false;
+
+        var entry = CreateTableEntry(key, value, null, expiresAt);
+        tableClient!.UpdateEntity(entry, ETag.All, TableUpdateMode.Replace);
+        return true;
     }
 
     public bool Set<T>(string key, T value)
@@ -266,9 +255,8 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
 
     internal bool SetInternal(TableCacheEntry entry)
     {
-        var op = TableOperation.InsertOrReplace(entry);
-        var result = table.Execute(op);
-        return result.HttpStatusCode == 200 || result.HttpStatusCode == 204;    // Success or "No content"
+        tableClient!.UpsertEntity(entry, TableUpdateMode.Replace);
+        return true;
     }
 
     public void SetAll<T>(IDictionary<string, T> values)
@@ -294,12 +282,9 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
 
     public IEnumerable<string> GetKeysByPattern(string pattern)
     {
-        // Very inefficient - query all keys and do client-side filter
-        var query = new TableQuery<TableCacheEntry>();
-
-        return table.ExecuteQuery<TableCacheEntry>(query)
+        return tableClient!.Query<TableCacheEntry>()
             .Where(q => q.RowKey.Glob(pattern))
-            .Select(q => q.RowKey);
+            .Select(static q => q.RowKey);
     }
 
     public void RemoveExpiredEntries()
@@ -310,30 +295,26 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
 
     public IEnumerable<string> GetKeysByRegex(string regex)
     {
-        // Very inefficient - query all keys and do client-side filter
-        var query = new TableQuery<TableCacheEntry>();
-
         var re = new Regex(regex, RegexOptions.Compiled | RegexOptions.Singleline);
-
-        return table.ExecuteQuery(query)
+        return tableClient!.Query<TableCacheEntry>()
             .Where(q => re.IsMatch(q.RowKey))
-            .Select(q => q.RowKey);
+            .Select(static q => q.RowKey);
     }
 
     private string Serialize<T>(T value)
     {
-        using (JsConfig.With(new Text.Config {ExcludeTypeInfo = false}))
+        using (JsConfig.With(new Text.Config { ExcludeTypeInfo = false }))
         {
-            return serializer.SerializeToString<T>(value);
+            return serializer!.SerializeToString<T>(value);
         }
     }
 
-    private T Deserialize<T>(string text)
+    private T Deserialize<T>(string? text)
     {
-        using (JsConfig.With(new Text.Config {ExcludeTypeInfo = false}))
+        using (JsConfig.With(new Text.Config { ExcludeTypeInfo = false }))
         {
-            return (text.IsNullOrEmpty()) ? default(T) :
-                serializer.DeserializeFromString<T>(text);
+            return text.IsNullOrEmpty() ? default(T) :
+                serializer!.DeserializeFromString<T>(text);
         }
     }
 
@@ -347,15 +328,20 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
         RemoveAll(GetKeysByRegex(regex));
     }
 
-    public class TableCacheEntry : TableEntity
+    public class TableCacheEntry : ITableEntity
     {
         public TableCacheEntry(string key)
         {
-            this.PartitionKey = "";
-            this.RowKey = key;
+            PartitionKey = "";
+            RowKey = key;
         }
 
         public TableCacheEntry() { }
+
+        public string PartitionKey { get; set; } = string.Empty;
+        public string RowKey { get; set; } = string.Empty;
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
 
         [StringLength(1024 * 2014 /* 1 MB max */
                       - 1024 /* partition key max size*/
@@ -372,7 +358,10 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
 
         public DateTime ModifiedDate { get; set; }
 
-        internal bool HasExpired => ExpiryDate != null && ExpiryDate < DateTime.UtcNow;
+        // ToUniversalTime() normalises Kind (Azure.Data.Tables may return Utc, Local, or Unspecified).
+        // The 200ms grace absorbs the network roundtrip time between when ExpiryDate is computed
+        // (before the Set call) and when HasExpired is evaluated (after a subsequent Get call).
+        internal bool HasExpired => ExpiryDate != null &&
+            ExpiryDate.Value.ToUniversalTime() < DateTime.UtcNow.AddMilliseconds(-200);
     }
-
 }

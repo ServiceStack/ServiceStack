@@ -2,12 +2,7 @@ using ServiceStack.Messaging;
 using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
-#if NETCORE
 using Azure.Messaging.ServiceBus;
-#else
-using System.IO;
-using Microsoft.ServiceBus.Messaging;
-#endif
 
 namespace ServiceStack.Azure.Messaging;
 
@@ -33,21 +28,8 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
             throw new ArgumentException(QueueNameMeta);
 
         var lockToken = message.Meta[LockTokenMeta];
-#if NETCORE
         if (parentFactory!.pendingAcks.TryRemove(lockToken, out var complete))
             complete().GetAwaiter().GetResult();
-#else
-        var queueName = message.Meta[QueueNameMeta];
-        var sbClient = parentFactory!.GetOrCreateClient(queueName);
-        try
-        {
-            sbClient.Complete(Guid.Parse(lockToken));
-        }
-        catch (Exception)
-        {
-            throw;
-        }
-#endif
     }
 
     public IMessage<T>? CreateMessage<T>(object mqResponse)
@@ -55,15 +37,9 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
         if (mqResponse is IMessage)
             return (IMessage<T>)mqResponse;
 
-#if NETCORE
         if (mqResponse is not ServiceBusReceivedMessage msg)
             return null;
         var msgBody = msg.Body.ToArray().FromMessageBody();
-#else
-        if (!(mqResponse is BrokeredMessage msg))
-            return null;
-        var msgBody = msg.GetBody<Stream>().FromMessageBody();
-#endif
 
         var iMessage = (IMessage<T>)JsonSerializer.DeserializeFromString<IMessage>(msgBody);
         return iMessage;
@@ -77,43 +53,36 @@ public class ServiceBusMqClient : ServiceBusMqMessageProducer, IMessageQueueClie
     {
         queueName = queueName.SafeQueueName()!;
 
-#if NETCORE
         var receiver = parentFactory!.GetOrCreateReceiver(queueName);
-        ServiceBusReceivedMessage? msg;
+        ServiceBusReceivedMessage? msg = null;
         string? lockToken = null;
+        IMessage<T>? iMessage = null;
 
-        // ReceiveAndDelete mode: messages are auto-removed on receipt; no explicit Ack needed.
-        // Loop discards stale/unrecognised messages and retries within the remaining timeout.
         var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(60));
         while (true)
         {
             var remaining = deadline - DateTime.UtcNow;
-            if (remaining <= TimeSpan.Zero) { msg = null; break; }
-            msg = receiver.ReceiveMessageAsync(remaining).GetAwaiter().GetResult();
-            if (msg == null) break;
-            if (CreateMessage<T>(msg) != null) { lockToken = msg.LockToken; break; }
-            // Unrecognised format: already deleted by ReceiveAndDelete; just retry
-            msg = null;
-        }
-#else
-        var sbClient = parentFactory!.GetOrCreateClient(queueName);
-        string? lockToken = null;
-        var msg = timeout.HasValue
-            ? sbClient.Receive(timeout.Value)
-            : sbClient.Receive();
-        if (msg != null)
-            lockToken = msg.LockToken.ToString();
-#endif
-
-        var iMessage = CreateMessage<T>(msg);
-        if (iMessage != null)
-        {
-            iMessage.Meta = new Dictionary<string, string>
+            if (remaining <= TimeSpan.Zero) break;
+            var candidate = receiver.ReceiveMessageAsync(remaining).GetAwaiter().GetResult();
+            if (candidate == null) break;
+            iMessage = CreateMessage<T>(candidate);
+            if (iMessage != null)
             {
-                [LockTokenMeta] = lockToken!,
-                [QueueNameMeta] = queueName
-            };
+                msg = candidate;
+                lockToken = candidate.LockToken;
+                break;
+            }
         }
+
+        if (iMessage == null) 
+            return iMessage;
+        
+        parentFactory!.pendingAcks[lockToken!] = () => receiver.CompleteMessageAsync(msg);
+        iMessage.Meta = new Dictionary<string, string>
+        {
+            [LockTokenMeta] = lockToken!,
+            [QueueNameMeta] = queueName
+        };
 
         return iMessage;
     }

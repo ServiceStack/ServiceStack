@@ -1,19 +1,10 @@
 using System;
-using System.IO;
 
 namespace ServiceStack.Azure.Messaging;
 
 public static class QueueClientExtensions
 {
     public static string FromMessageBody(this byte[] messageBody) => messageBody.FromUtf8Bytes().FromMessageBody();
-
-    public static string FromMessageBody(this Stream messageBody)
-    {
-        using (messageBody)
-        {
-            return messageBody.ReadToEnd().FromMessageBody();
-        }
-    }
 
     public static string FromMessageBody(this string strMessage)
     {

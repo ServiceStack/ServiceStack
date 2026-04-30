@@ -7,15 +7,8 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using ServiceStack.Text;
-
-#if NETCORE
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
-#else
-using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-#endif
-
 
 namespace ServiceStack.Azure.Messaging;
 
@@ -28,24 +21,15 @@ public class ServiceBusMqMessageFactory : IMessageFactory
     private int noOfContinuousErrors = 0;
     private readonly string? lastExMsg = null;
 
-#if NETCORE
     public Action<ServiceBusMessage, IMessage> PublishMessageFilter { get; set; }
-#else
-    public Action<BrokeredMessage,IMessage> PublishMessageFilter { get; set; }
-#endif
 
     protected internal readonly string address;
-#if NETCORE
     internal readonly ServiceBusClient? sbClient;
     internal ServiceBusAdministrationClient? managementClient;
     private readonly ConcurrentDictionary<string, ServiceBusSender> senders = new();
     private readonly ConcurrentDictionary<string, ServiceBusReceiver> receivers = new();
     private readonly ConcurrentDictionary<string, ServiceBusProcessor> processors = new();
     internal readonly ConcurrentDictionary<string, Func<Task>> pendingAcks = new();
-#else
-    protected internal readonly NamespaceManager namespaceManager;
-    private static readonly ConcurrentDictionary<string, QueueClient> sbClients = new();
-#endif
 
     internal Dictionary<Type, IMessageHandlerFactory> handlerMap;
     Dictionary<string, Type> queueMap;
@@ -56,13 +40,9 @@ public class ServiceBusMqMessageFactory : IMessageFactory
     {
         this.MqServer = mqServer;
         this.address = address;
-#if NETCORE
         JsConfig.AllowRuntimeType = _ => true;
         this.sbClient = new ServiceBusClient(address);
         this.managementClient = new ServiceBusAdministrationClient(address);
-#else
-        this.namespaceManager = NamespaceManager.CreateFromConnectionString(address);
-#endif
     }
 
     public IMessageProducer CreateMessageProducer()
@@ -107,13 +87,7 @@ public class ServiceBusMqMessageFactory : IMessageFactory
                 if (!queueMap.ContainsKey(queueName))
                     queueMap.Add(queueName, type);
 
-#if NETCORE
                 EnsureQueueExists(queueName);
-#else
-                var mqDesc = new QueueDescription(queueName);
-                if (!namespaceManager.QueueExists(queueName))
-                    namespaceManager.CreateQueue(mqDesc);
-#endif
             }
 
             var mqNames = new QueueNames(type);
@@ -123,12 +97,10 @@ public class ServiceBusMqMessageFactory : IMessageFactory
         this.status = WorkerStatus.Started;
     }
 
-    List<ServiceBusMqWorker> workers = new();
+    private readonly List<ServiceBusMqWorker> workers = [];
     private void AddQueueHandler(Type queueType, string queueName, int threadCount = 1)
     {
         queueName = queueName.SafeQueueName()!;
-
-#if NETCORE
         var processor = sbClient!.CreateProcessor(queueName, new ServiceBusProcessorOptions
         {
             MaxConcurrentCalls = threadCount,
@@ -137,7 +109,10 @@ public class ServiceBusMqMessageFactory : IMessageFactory
         });
         var messageHandler = this.GetMessageHandler(queueType);
         var sbWorker = new ServiceBusMqWorker(messageHandler, CreateMessageQueueClient(), queueName, this);
-        workers.Add(sbWorker);
+        lock (workers)
+        {
+            workers.Add(sbWorker);
+        }
         processor.ProcessMessageAsync += sbWorker.HandleMessageAsync;
         processor.ProcessErrorAsync += args =>
         {
@@ -173,27 +148,13 @@ public class ServiceBusMqMessageFactory : IMessageFactory
         };
         processor.StartProcessingAsync().GetAwaiter().GetResult();
         processors.GetOrAdd(queueName, processor);
-#else
-        var sbClient = QueueClient.CreateFromConnectionString(address, queueName, ReceiveMode.PeekLock);
-        var options = new OnMessageOptions
-        {
-            AutoComplete = false,
-            MaxConcurrentCalls = threadCount
-        };
-
-        var messageHandler = this.GetMessageHandler(queueType);
-        var sbWorker = new ServiceBusMqWorker(messageHandler, CreateMessageQueueClient(), queueName, sbClient);
-        workers.Add(sbWorker);
-        sbClient.OnMessage(sbWorker.HandleMessage, options);
-        sbClients.GetOrAdd(queueName, sbClient);
-#endif
     }
 
     protected internal void StopQueues()
     {
         this.status = WorkerStatus.Stopping;
-#if NETCORE
         Task.WhenAll(processors.Values.Select(p => p.StopProcessingAsync())).GetAwaiter().GetResult();
+        Task.WhenAll(processors.Values.Select(p => p.DisposeAsync().AsTask())).GetAwaiter().GetResult();
         Task.WhenAll(senders.Values.Select(s => s.DisposeAsync().AsTask())).GetAwaiter().GetResult();
         Task.WhenAll(receivers.Values.Select(r => r.DisposeAsync().AsTask())).GetAwaiter().GetResult();
         sbClient?.DisposeAsync().AsTask().GetAwaiter().GetResult();
@@ -201,14 +162,9 @@ public class ServiceBusMqMessageFactory : IMessageFactory
         senders.Clear();
         receivers.Clear();
         pendingAcks.Clear();
-#else
-        sbClients.Each(kvp => kvp.Value.Close());
-        sbClients.Clear();
-#endif
         this.status = WorkerStatus.Stopped;
     }
 
-#if NETCORE
     internal ServiceBusSender GetOrCreateSender(string queueName)
     {
         queueName = queueName.SafeQueueName()!;
@@ -221,7 +177,7 @@ public class ServiceBusMqMessageFactory : IMessageFactory
         queueName = queueName.SafeQueueName()!;
         EnsureQueueExists(queueName);
         return receivers.GetOrAdd(queueName, _ => sbClient!.CreateReceiver(queueName,
-            new ServiceBusReceiverOptions { ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete }));
+            new ServiceBusReceiverOptions { ReceiveMode = ServiceBusReceiveMode.PeekLock }));
     }
 
     private void EnsureQueueExists(string queueName)
@@ -235,29 +191,6 @@ public class ServiceBusMqMessageFactory : IMessageFactory
             catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.MessagingEntityAlreadyExists) { }
         }
     }
-#else
-    protected internal QueueClient GetOrCreateClient(string queueName)
-    {
-        queueName = queueName.SafeQueueName()!;
-
-        if (sbClients.ContainsKey(queueName))
-            return sbClients[queueName];
-
-        var qd = new QueueDescription(queueName);
-
-        if (!namespaceManager.QueueExists(queueName))
-        {
-            try
-            {
-                namespaceManager.CreateQueue(qd);
-            }
-            catch (MessagingEntityAlreadyExistsException) { }
-        }
-        var sbClient = QueueClient.CreateFromConnectionString(address, qd.Path);
-        sbClient = sbClients.GetOrAdd(queueName, sbClient);
-        return sbClient;
-    }
-#endif
 
     public IMessageHandlerStats GetStats()
     {
