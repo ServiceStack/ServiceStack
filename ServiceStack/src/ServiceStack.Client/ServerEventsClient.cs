@@ -177,13 +177,12 @@ public partial class ServerEventsClient : IDisposable
     /// </summary>
     public Action<HttpRequestMessage> AllRequestFilters { get; set; }
     HttpClient httpClient;
-    public Func<IServiceClient,HttpClientHandler> HttpClientHandlerFactory { get; set; } = client => new()
+    public Func<IServiceClient,HttpClientHandler> HttpClientHandlerFactory { get; set; } = client =>
     {
-        UseCookies = true,
-        CookieContainer = ((IHasCookieContainer)client).CookieContainer,
-        UseDefaultCredentials = true,
-        AutomaticDecompression =
-            DecompressionMethods.Brotli | DecompressionMethods.Deflate | DecompressionMethods.GZip,
+        var ret = HttpUtils.HttpClientHandlerFactory();
+        ret.UseCookies = true;
+        ret.CookieContainer = ((IHasCookieContainer)client).CookieContainer;
+        return ret;
     };
 #else
     public Action<WebRequest> EventStreamRequestFilter { get; set; }
