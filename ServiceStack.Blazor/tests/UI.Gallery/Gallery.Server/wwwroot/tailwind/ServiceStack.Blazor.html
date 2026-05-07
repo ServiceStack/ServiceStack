@@ -153,54 +153,6 @@ class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm t
 </div>
 </div>
 @namespace ServiceStack.Blazor.Components.Tailwind
-@inherits UiComponentBase
-<ModalDialog Id=@Id Show=@Show Close="Done" SizeClass="w-full sm:max-w-prose">
-<div class="bg-white dark:bg-black px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-<div class="">
-<div class="mt-3 text-center sm:mt-0 sm:mx-4 sm:text-left">
-<h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Query Preferences</h3>
-<div class="mt-4">
-<label for=@($"{Id}-take") class="block text-sm font-medium text-gray-700 dark:text-gray-300">Results per page</label>
-<select id=@($"{Id}-take") @bind="Model.Take"
-class="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-black border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-@foreach (var take in allTakes)
-{
-<option class="text-black dark:text-white" value=@take>@take</option>
-}
-</select>
-</div>
-<div class="mt-4 flex items-center py-4 border-b border-gray-200 dark:border-gray-800">
-<input type="radio" id=@($"{Id}-allColumns") @onclick=@(_ => Model.SelectedColumns.Clear()) checked=@(Model.SelectedColumns.Count == 0)
-class="focus:ring-indigo-500 h-4 w-4 bg-white dark:bg-black text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-700">
-<label class="ml-3 block text-gray-700 dark:text-gray-300" for=@($"{Id}-allColumns")>View all columns</label>
-</div>
-<div class="mt-4">
-<div class="pb-2 px-4">
-<div class="">
-@foreach (var c in Columns)
-{
-<div key=@c.Name class="flex items-center">
-<input type="checkbox" id=@c.Name checked=@Model.SelectedColumns.Contains(c.Name) @oninput="x => columnSelected(c, x.Value)"
-class="h-4 w-4 bg-white dark:bg-black border-gray-300 dark:border-gray-700 rounded text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500">
-<label for=@c.Name class="ml-3 dark:text-gray-50">@c.Name</label>
-</div>
-}
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-<PrimaryButton @onclick="save" Style="ButtonStyle.Red" class="ml-2">
-Save
-</PrimaryButton>
-<SecondaryButton @onclick="async _ => await Done.InvokeAsync()">
-Cancel
-</SecondaryButton>
-</div>
-</ModalDialog>
-@namespace ServiceStack.Blazor.Components.Tailwind
 @typeparam Model
 @inherits UiComponentBase
 <div class="flex">
@@ -221,6 +173,54 @@ else if (Column.Settings.SortOrder == SortOrder.Descending)
 <svg class="w-4 h-4" v-else-if="sort==='DESC'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><g fill="none"><path d="M10.002 15.29l2.645-2.644a.5.5 0 0 1 .707.707L9.886 16.82a.5.5 0 0 1-.384.179h-.001a.5.5 0 0 1-.354-.147l-.01-.01l-3.49-3.49a.5.5 0 1 1 .707-.707l2.648 2.649V3.5a.5.5 0 0 1 1 0v11.79z" fill="currentColor" /></g></svg>
 }
 </div>
+@namespace ServiceStack.Blazor.Components.Tailwind
+@inherits UiComponentBase
+<ModalDialog Id=@Id Show=@Show Close="Done" SizeClass="w-full sm:max-w-prose">
+<div class="bg-white dark:bg-black px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+<div class="">
+<div class="mt-3 text-center sm:mt-0 sm:mx-4 sm:text-left">
+<h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Query Preferences</h3>
+<div class="mt-4">
+<label for=@($"{Id}-take") class="block text-sm font-medium text-gray-700 dark:text-gray-300">Results per page</label>
+<select id=@($"{Id}-take") @bind="Model.Take"
+class="mt-1 block w-full pl-3 pr-10 py-2 text-base dark:bg-black border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+@foreach (var take in allTakes)
+{
+<option class="text-black dark:text-white" value=@take>@take</option>
+}
+</select>
+</div>
+<div class="mt-4 flex items-center py-4 border-b border-gray-200 dark:border-gray-800">
+<input type="radio" id=@($"{Id}-allColumns") @onclick=@(_ => Model.SelectedColumns.Clear()) checked=@(Model.SelectedColumns.Count == 0)
+class="focus:ring-indigo-500 h-4 w-4 dark:bg-black text-indigo-600 dark:text-indigo-400 border-gray-300 dark:border-gray-700">
+<label class="ml-3 block text-gray-700 dark:text-gray-300" for=@($"{Id}-allColumns")>View all columns</label>
+</div>
+<div class="mt-4">
+<div class="pb-2 px-4">
+<div class="">
+@foreach (var c in Columns)
+{
+<div key=@c.Name class="flex items-center">
+<input type="checkbox" id=@c.Name checked=@Model.SelectedColumns.Contains(c.Name) @oninput="x => columnSelected(c, x.Value)"
+class="h-4 w-4 dark:bg-black border-gray-300 dark:border-gray-700 rounded text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500">
+<label for=@c.Name class="ml-3 dark:text-gray-50">@c.Name</label>
+</div>
+}
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+<PrimaryButton @onclick="save" Style="ButtonStyle.Red" class="ml-2">
+Save
+</PrimaryButton>
+<SecondaryButton @onclick="async _ => await Done.InvokeAsync()">
+Cancel
+</SecondaryButton>
+</div>
+</ModalDialog>
 @inherits UiComponentBase
 <div class=@ClassNames(BackgroundColor, BorderColor, "border-l-4 p-4", Class) @attributes="AdditionalAttributes">
 <div class="flex">
@@ -1414,32 +1414,6 @@ else if (ErrorFieldMessage != null)
 </div>
 <DynamicModalLookup @ref="LocalModalLookup" AppMetadata=@AppMetadata />
 }
-@inherits UiComponentBase
-<div @onclick="Close" id=@Id aria-labelledby="modal-title" role="dialog" aria-modal="true" class=@ClassNames("relative z-10", DialogTransition.DisplayClass)>
-<div class=@ClassNames("fixed inset-0 bg-gray-500 dark:bg-gray-400/75 transition-opacity", DialogTransition.Class)></div>
-<div class="fixed inset-0 z-10 overflow-y-auto">
-<div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-<!-- This element is to trick the browser into centering the modal contents. -->
-<span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-<div class=@ClassNames("relative transform overflow-hidden rounded-lg bg-white dark:bg-black text-left shadow-xl transition-all sm:my-8", SizeClass,
-ContentTransition.DisplayClass)>
-<div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4" @onclick="Close">
-<button type="button" @onclick="Close"
-class="bg-white dark:bg-black rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-<span class="sr-only">Close</span>
-<!-- Heroicon name: outline/x -->
-<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-</svg>
-</button>
-</div>
-<div @onclick:stopPropagation="true">
-@ChildContent
-</div>
-</div>
-</div>
-</div>
-</div>
 @typeparam Model
 @inherits ModalLookup
 <ModalDialog @ref="ModalDialog" Id=@Id Show=@Show Close="Close">
@@ -1983,6 +1957,32 @@ else if (!string.IsNullOrEmpty(UseHelp))
 @code {
 public static string Classes { get; set; } = "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200";
 }
+@inherits UiComponentBase
+<div @onclick="Close" id=@Id aria-labelledby="modal-title" role="dialog" aria-modal="true" class=@ClassNames("relative z-10", DialogTransition.DisplayClass)>
+<div class=@ClassNames("fixed inset-0 bg-gray-500/75 dark:bg-gray-400/75 transition-opacity", DialogTransition.Class)></div>
+<div class="fixed inset-0 z-10 overflow-y-auto">
+<div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+<!-- This element is to trick the browser into centering the modal contents. -->
+<span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+<div class=@ClassNames("relative transform overflow-hidden rounded-lg bg-white dark:bg-black text-left shadow-xl transition-all sm:my-8", SizeClass,
+ContentTransition.DisplayClass)>
+<div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4" @onclick="Close">
+<button type="button" @onclick="Close"
+class="bg-white dark:bg-black rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+<span class="sr-only">Close</span>
+<!-- Heroicon name: outline/x -->
+<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+<div @onclick:stopPropagation="true">
+@ChildContent
+</div>
+</div>
+</div>
+</div>
+</div>
 using ServiceStack.Blazor.Components;
 namespace ServiceStack.Blazor;
 /// <summary>
