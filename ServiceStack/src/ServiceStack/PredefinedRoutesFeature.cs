@@ -58,7 +58,7 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
             var tags = op.Tags?.Count > 0 ? op.Tags : defaultTags;
             foreach (var tag in tags)
             {
-                var tagOps = to.GetOrAdd(tag, _ => new List<ApiDescription>());
+                var tagOps = to.GetOrAdd(tag, _ => []);
                 var resType = op.ResponseType;
 
                 var apiDesc = new ApiDescription {
