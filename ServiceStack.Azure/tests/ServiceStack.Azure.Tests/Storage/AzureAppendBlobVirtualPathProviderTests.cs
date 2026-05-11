@@ -1,13 +1,9 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Testing;
-using ServiceStack.Text;
-using ServiceStack.VirtualPath;
-using Microsoft.WindowsAzure.Storage;
+using Azure.Storage.Blobs;
 using ServiceStack.Azure.Storage;
 
 namespace ServiceStack.Azure.Tests.Storage
@@ -18,26 +14,23 @@ namespace ServiceStack.Azure.Tests.Storage
     {
         public const string ContainerName = "ss-ci-test-append";
 
-        // you must provide an azure account to run these tests
-        private readonly CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AZURE_BLOB_CONNECTION_STRING"));
+        // Requires 'Azurite' or Azure Storage Emulator running
+        private BlobContainerClient GetContainer() =>
+            new BlobContainerClient("UseDevelopmentStorage=true;", ContainerName);
 
-        public override IVirtualPathProvider GetPathProvider()
-        {
-            var client = storageAccount.CreateCloudBlobClient();
-            var container = client.GetContainerReference(ContainerName);
-            return new AzureAppendBlobVirtualFiles(container);
-        }
+        public override IVirtualPathProvider GetPathProvider() =>
+            new AzureAppendBlobVirtualFiles(GetContainer());
 
         [OneTimeSetUp]
         public void Setup()
         {
-            storageAccount.CreateCloudBlobClient().GetContainerReference(ContainerName).CreateIfNotExists();
+            GetContainer().CreateIfNotExists();
         }
 
         [OneTimeTearDown]
         public void Teardown()
         {
-            storageAccount.CreateCloudBlobClient().GetContainerReference(ContainerName).DeleteIfExists();
+            GetContainer().DeleteIfExists();
         }
 
         [Test]
@@ -128,7 +121,7 @@ namespace ServiceStack.Azure.Tests.Storage
                 file.Refresh();
             }
 
-            Assert.That(file.LastModified, Is.Not.EqualTo(prevLastModified));
+            Assert.That(file.LastModified.TimeOfDay, Is.Not.EqualTo(prevLastModified.TimeOfDay));
 
             pathProvider.DeleteFolder("dir");
         }

@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Messaging;
 using ServiceStack.Azure.Messaging;
@@ -55,11 +54,20 @@ namespace ServiceStack.Azure.Tests.Messaging
 		{
 			var timesCalled = 0;
 			using var mqHost = new ServiceBusMqServer(ConnectionString);
+			
 			var queueNames = QueueNames<Wait>.AllQueueNames.Select(SafeQueueName).ToList();
 #if NETCORE
-			queueNames.ForEach(q => mqHost.ManagementClient.DeleteQueueAsync(q).GetAwaiter().GetResult());
+			queueNames.ForEach(async void (q) => {
+				if (await mqHost.ManagementClient.QueueExistsAsync(q))
+				{
+					await mqHost.ManagementClient.DeleteQueueAsync(q);
+				}
+			});
 #else
-			queueNames.ForEach(q => mqHost.NamespaceManager.DeleteQueue(q));
+			queueNames.ForEach(q => {
+				if (mqHost.NamespaceManager.QueueExists(q))
+					mqHost.NamespaceManager.DeleteQueue(q);
+			});
 #endif
 			
 			mqHost.RegisterHandler<Wait>(m => {

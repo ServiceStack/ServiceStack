@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Testing;
-using ServiceStack.Text;
-using ServiceStack.VirtualPath;
-using Microsoft.WindowsAzure.Storage;
+using Azure.Storage.Blobs;
 using ServiceStack.Azure.Storage;
 
 namespace ServiceStack.Azure.Tests.Storage
@@ -19,26 +17,23 @@ namespace ServiceStack.Azure.Tests.Storage
     {
         public const string ContainerName = "ss-ci-test";
 
-        // Requires 'Microsoft Azure Storage Emulator' running
-        private readonly CloudStorageAccount storageAccount = CloudStorageAccount.DevelopmentStorageAccount;
+        // Requires 'Azurite' or Azure Storage Emulator running
+        private BlobContainerClient GetContainer() =>
+            new BlobContainerClient("UseDevelopmentStorage=true;", ContainerName);
 
-        public override IVirtualPathProvider GetPathProvider()
-        {
-            var client = storageAccount.CreateCloudBlobClient();
-            var container = client.GetContainerReference(ContainerName);
-            return new AzureBlobVirtualFiles(container);
-        }
+        public override IVirtualPathProvider GetPathProvider() =>
+            new AzureBlobVirtualFiles(GetContainer());
 
         [OneTimeSetUp]
         public void Setup()
         {
-            storageAccount.CreateCloudBlobClient().GetContainerReference(ContainerName).CreateIfNotExists();
+            GetContainer().CreateIfNotExists();
         }
 
         [OneTimeTearDown]
         public void Teardown()
         {
-            storageAccount.CreateCloudBlobClient().GetContainerReference(ContainerName).DeleteIfExists();
+            GetContainer().DeleteIfExists();
         }
 
         [Test]

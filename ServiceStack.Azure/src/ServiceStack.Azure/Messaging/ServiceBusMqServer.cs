@@ -2,15 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using ServiceStack.Text;
-#if NETCORE
-using Microsoft.Azure.ServiceBus.Management;
-#else
-using Microsoft.ServiceBus;
-#endif
+using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
 
 namespace ServiceStack.Azure.Messaging;
 
@@ -51,19 +44,11 @@ public class ServiceBusMqServer : IMessageService
     public Func<object, object> ResponseFilter { get; set; }
         
         
-#if NETCORE
     /// <summary>
-    /// Exposes the <see cref="Microsoft.Azure.ServiceBus.Management.ManagementClient"/> which can be used to perform
+    /// Exposes the ServiceBusAdministrationClient which can be used to perform
     /// management operations on ServiceBus entities.
     /// </summary>
-    public ManagementClient ManagementClient => messageFactory!.managementClient;
-#else
-    /// <summary>
-    /// Exposes the <see cref="Microsoft.ServiceBus.NamespaceManager"/> which can be used in managing entities,
-    /// such as queues, topics, subscriptions, and rules, in your service namespace.
-    /// </summary>
-    public NamespaceManager NamespaceManager => messageFactory.namespaceManager;
-#endif
+    public ServiceBusAdministrationClient ManagementClient => messageFactory!.managementClient!;
 
     private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap = new();
 
@@ -103,20 +88,11 @@ public class ServiceBusMqServer : IMessageService
     /// </summary>
     public bool DisableNotifyMessages { get; set; }
 
-        
-#if NETCORE
-    public Action<Microsoft.Azure.ServiceBus.Message,IMessage> PublishMessageFilter 
+    public Action<ServiceBusMessage, IMessage> PublishMessageFilter
     {
         get => messageFactory!.PublishMessageFilter;
         set => messageFactory!.PublishMessageFilter = value;
     }
-#else
-        public Action<Microsoft.ServiceBus.Messaging.BrokeredMessage,IMessage> PublishMessageFilter 
-        {
-            get => messageFactory.PublishMessageFilter;
-            set => messageFactory.PublishMessageFilter = value;
-        }
-#endif
         
     public void Dispose()
     {

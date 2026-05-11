@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
@@ -10,16 +9,8 @@ using ServiceStack.Messaging;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.Azure.Messaging;
-using System.Threading.Tasks;
 using ServiceStack.Configuration;
-#if NETCORE
-using QueueClient = Microsoft.Azure.ServiceBus.QueueClient;
-#else
-using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-#endif
 using ServiceStack.Logging;
-
 
 namespace ServiceStack.Azure.Tests.Messaging
 {
@@ -43,17 +34,6 @@ namespace ServiceStack.Azure.Tests.Messaging
 
         public AzureServiceBusMqServerIntroTests()
         {
-#if !NETCORE            
-            NamespaceManager nm = NamespaceManager.CreateFromConnectionString(ConnectionString);
-            Parallel.ForEach(nm.GetQueues(), qd =>
-            {
-                var sbClient = QueueClient.CreateFromConnectionString(ConnectionString, qd.Path, ReceiveMode.ReceiveAndDelete);
-                BrokeredMessage msg = null;
-                while ((msg = sbClient.Receive(new TimeSpan(0, 0, 1))) != null)
-                {
-                }
-            });
-#endif
         }
 
         public override IMessageService CreateMqServer(int retryCount = 1)

@@ -12,7 +12,7 @@ using ServiceStack.VirtualPath;
 
 namespace ServiceStack.VirtualPath
 {
-    public abstract class AbstractVirtualFileBase : IVirtualFile
+    public abstract class AbstractVirtualFileBase : IVirtualFile    
     {
         public static List<string> ScanSkipPaths { get; set; } = new List<string>();
 

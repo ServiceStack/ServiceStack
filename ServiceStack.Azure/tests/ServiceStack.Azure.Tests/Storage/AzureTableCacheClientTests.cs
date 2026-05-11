@@ -1,8 +1,5 @@
 ﻿using ServiceStack.Azure.Tests.Shared;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.Caching;
 using ServiceStack.Azure.Storage;

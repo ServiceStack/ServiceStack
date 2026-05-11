@@ -1,23 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
-using Microsoft.WindowsAzure.Storage.Queue.Protocol;
 using NUnit.Framework;
 using ServiceStack.Azure.Messaging;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Validation;
-#if NETCORE
-using QueueClient = Microsoft.Azure.ServiceBus.QueueClient;
-#else
-using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-#endif
 
 namespace ServiceStack.Azure.Tests.Messaging
 {
@@ -41,17 +33,6 @@ namespace ServiceStack.Azure.Tests.Messaging
         }
         public AzureServiceBusMqServerAppHostTests()
         {
-#if !NETCORE            
-            NamespaceManager nm = NamespaceManager.CreateFromConnectionString(ConnectionString);
-            Parallel.ForEach(nm.GetQueues(), qd =>
-            {
-                var sbClient = QueueClient.CreateFromConnectionString(ConnectionString, qd.Path, ReceiveMode.ReceiveAndDelete);
-                BrokeredMessage msg = null;
-                while ((msg = sbClient.Receive(new TimeSpan(0, 0, 1))) != null)
-                {
-                }
-            });
-#endif
         }
 
         public override IMessageService CreateMqServer(int retryCount = 1)
