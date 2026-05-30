@@ -13,6 +13,7 @@ namespace ServiceStack.Aws.Tests.S3
     public class S3VirtualFilesTests : VirtualPathProviderTests
     {
         private IAmazonS3 client = AwsConfig.CreateAmazonS3Client();
+        
         public const string BucketName = "ss-ci-test";
 
         public override IVirtualPathProvider GetPathProvider()
