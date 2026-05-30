@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -109,6 +110,70 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override bool SupportsSchema => false;
     public override bool SupportsConcurrentWrites => false;
 
+    protected virtual bool ShouldReturnOnInsert(ModelDefinition modelDef, FieldDefinition fieldDef) =>
+        fieldDef.ReturnOnInsert || (fieldDef.IsPrimaryKey && fieldDef.AutoIncrement && HasInsertReturnValues(modelDef));
+
+    public override bool HasInsertReturnValues(ModelDefinition modelDef) =>
+        modelDef.FieldDefinitions.Any(x => x.ReturnOnInsert);
+
+    public override void PrepareParameterizedInsertStatement<T>(IDbCommand cmd, ICollection<string>? insertFields = null, 
+        Func<FieldDefinition,bool>? shouldInclude=null)
+    {
+        var sbColumnNames = StringBuilderCache.Allocate();
+        var sbColumnValues = StringBuilderCacheAlt.Allocate();
+        var sbReturningColumns = StringBuilderCacheAlt.Allocate();
+        var modelDef = OrmLiteUtils.GetModelDefinition(typeof(T));
+
+        cmd.Parameters.Clear();
+
+        var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields);
+        foreach (var fieldDef in fieldDefs)
+        {
+            if (ShouldReturnOnInsert(modelDef, fieldDef))
+            {
+                sbReturningColumns.Append(sbReturningColumns.Length == 0 ? " RETURNING " : ",");
+                sbReturningColumns.Append(GetQuotedColumnName(fieldDef));
+            }
+
+            if ((ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
+                && shouldInclude?.Invoke(fieldDef) != true)
+                continue;
+
+            if (sbColumnNames.Length > 0)
+                sbColumnNames.Append(",");
+            if (sbColumnValues.Length > 0)
+                sbColumnValues.Append(",");
+
+            try
+            {
+                sbColumnNames.Append(GetQuotedColumnName(fieldDef));
+
+                sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName),fieldDef.CustomInsert));
+                AddParameter(cmd, fieldDef);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("ERROR in PrepareParameterizedInsertStatement(): " + ex.Message, ex);
+                throw;
+            }
+        }
+
+        foreach (var fieldDef in modelDef.AutoIdFields) // need to include any AutoId fields that weren't included 
+        {
+            if (fieldDefs.Contains(fieldDef))
+                continue;
+
+            sbReturningColumns.Append(sbReturningColumns.Length == 0 ? " RETURNING " : ",");
+            sbReturningColumns.Append(GetQuotedColumnName(fieldDef));
+        }
+
+        var strReturning = StringBuilderCacheAlt.ReturnAndFree(sbReturningColumns);
+        cmd.CommandText = sbColumnNames.Length > 0
+            ? $"INSERT INTO {GetQuotedTableName(modelDef)} ({StringBuilderCache.ReturnAndFree(sbColumnNames)}) " +
+              $"VALUES ({StringBuilderCacheAlt.ReturnAndFree(sbColumnValues)}){strReturning}"
+            : $"INSERT INTO {GetQuotedTableName(modelDef)} DEFAULT VALUES{strReturning}";
+    }
+
     public override string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string>? insertFields = null)
     {
         var modelDef = ModelDefinition<T>.Definition;
@@ -157,7 +222,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         return sql;
     }
 
-    public override string ToPostDropTableStatement(ModelDefinition modelDef)
+    public override string? ToPostDropTableStatement(ModelDefinition modelDef)
     {
         if (modelDef.RowVersion != null)
         {
@@ -173,7 +238,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         return RowVersionTriggerFormat.Fmt(GetTableNameOnly(new(modelDef)));
     }
 
-    public override string ToPostCreateTableStatement(ModelDefinition modelDef)
+    public override string? ToPostCreateTableStatement(ModelDefinition modelDef)
     {
         if (modelDef.RowVersion != null)
         {

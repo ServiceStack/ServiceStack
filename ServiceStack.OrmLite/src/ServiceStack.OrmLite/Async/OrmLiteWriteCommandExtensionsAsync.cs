@@ -462,44 +462,50 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             
         IDbTransaction dbTrans = null;
 
-        if (dbCmd.Transaction == null)
-            dbCmd.Transaction = dbTrans = dbCmd.Connection.BeginTransaction();
-
-        var dialectProvider = dbCmd.GetDialectProvider();
-        if (enableIdentityInsert)
-        {
-            await dialectProvider.EnableIdentityInsertAsync<T>(dbCmd, token);
-        }
         try
         {
-            foreach (var obj in objs)
+            if (dbCmd.Transaction == null)
+                dbCmd.Transaction = dbTrans = dbCmd.Connection.BeginTransaction();
+
+            var dialectProvider = dbCmd.GetDialectProvider();
+            if (enableIdentityInsert)
             {
-                OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
-
-                var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
-                if (!enableIdentityInsert || pkField is not { AutoIncrement: true })
+                await dialectProvider.EnableIdentityInsertAsync<T>(dbCmd, token);
+            }
+            try
+            {
+                foreach (var obj in objs)
                 {
-                    dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
-                        insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj));
-                }
-                else
-                {
-                    dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
-                        insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj),
-                        shouldInclude: f => f == pkField);
-                }
+                    OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
 
-                await InsertInternalAsync<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity:false, token);
+                    var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
+                    if (!enableIdentityInsert || pkField is not { AutoIncrement: true })
+                    {
+                        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+                            insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj));
+                    }
+                    else
+                    {
+                        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+                            insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj),
+                            shouldInclude: f => f == pkField);
+                    }
+
+                    await InsertInternalAsync<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity:false, token);
+                }
+            }
+            finally
+            {
+                if (enableIdentityInsert)
+                {
+                    await dialectProvider.DisableIdentityInsertAsync<T>(dbCmd, token);
+                }
             }
         }
         finally
         {
-            if (enableIdentityInsert)
-            {
-                await dialectProvider.DisableIdentityInsertAsync<T>(dbCmd, token);
-            }
+            dbTrans?.Commit();
         }
-        dbTrans?.Commit();
     }
 
     internal static Task<int> SaveAsync<T>(this IDbCommand dbCmd, CancellationToken token, params T[] objs)
