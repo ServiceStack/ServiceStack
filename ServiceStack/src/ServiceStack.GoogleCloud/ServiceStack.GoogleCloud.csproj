@@ -22,8 +22,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Cloud.Speech.V2" Version="1.6.0" />
-        <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
+        <PackageReference Include="Google.Cloud.Speech.V2" Version="1.8.0" />
+        <PackageReference Include="Google.Cloud.Storage.V1" Version="4.14.0" />
     </ItemGroup>
 
     <ItemGroup>

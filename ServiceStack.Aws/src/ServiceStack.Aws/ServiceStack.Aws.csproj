@@ -36,18 +36,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="4.0.1" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.7.2" />
-    <PackageReference Include="AWSSDK.S3" Version="4.0.7.9" />
-    <PackageReference Include="AWSSDK.SQS" Version="4.0.1.10" />
-    <PackageReference Include="AWSSDK.TranscribeService" Version="4.0.3.11" />
+      <PackageReference Include="AWSSDK.Core" Version="4.0.7.4" />
+      <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.18.6" />
+      <PackageReference Include="AWSSDK.S3" Version="4.0.23.5" />
+      <PackageReference Include="AWSSDK.SQS" Version="4.0.2.33" />
+      <PackageReference Include="AWSSDK.TranscribeService" Version="4.0.6.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
     <PackageReference Include="System.Linq.Async" Version="5.1.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.8" />
-    <PackageReference Include="System.Text.Json" Version="8.0.6" />
+    <PackageReference Include="System.Text.Json" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
