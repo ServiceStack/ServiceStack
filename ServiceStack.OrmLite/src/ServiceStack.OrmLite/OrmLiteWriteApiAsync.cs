@@ -129,9 +129,9 @@ public static class OrmLiteWriteApiAsync
     /// Insert a collection of POCOs in a transaction. E.g:
     /// <para>db.InsertAllAsync(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
     /// </summary>
-    public static Task InsertAllAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, CancellationToken token = default)
+    public static Task InsertAllAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, bool enableIdentityInsert=false, CancellationToken token = default)
     {
-        return dbConn.Exec(dbCmd => dbCmd.InsertAllAsync(objs, commandFilter:null, token:token));
+        return dbConn.Exec(dbCmd => dbCmd.InsertAllAsync(objs, commandFilter:null, enableIdentityInsert:enableIdentityInsert, token:token));
     }
 
     /// <summary>
@@ -139,9 +139,9 @@ public static class OrmLiteWriteApiAsync
     /// <para>db.InsertAllAsync(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } },</para>
     /// <para>                  dbCmd => applyFilter(dbCmd))</para>
     /// </summary>
-    public static Task InsertAllAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, Action<IDbCommand> commandFilter, CancellationToken token = default)
+    public static Task InsertAllAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, Action<IDbCommand> commandFilter, bool enableIdentityInsert=false, CancellationToken token = default)
     {
-        return dbConn.Exec(dbCmd => dbCmd.InsertAllAsync(objs, commandFilter:commandFilter, token:token));
+        return dbConn.Exec(dbCmd => dbCmd.InsertAllAsync(objs, commandFilter:commandFilter, enableIdentityInsert:enableIdentityInsert, token:token));
     }
 
     /// <summary>

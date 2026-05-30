@@ -155,7 +155,7 @@ public class FieldDefinition
     public bool IgnoreOnInsert { get; set; }
 
     public bool ReturnOnInsert { get; set; }
-
+    
     public override string ToString() => Name;
 
     public bool ShouldSkipInsert() => IgnoreOnInsert || AutoIncrement || (IsComputed && !IsPersisted) || IsRowVersion;

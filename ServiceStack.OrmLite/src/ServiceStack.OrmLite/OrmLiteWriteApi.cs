@@ -212,9 +212,9 @@ public static class OrmLiteWriteApi
     /// Insert a collection of POCOs in a transaction. E.g:
     /// <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
     /// </summary>
-    public static void InsertAll<T>(this IDbConnection dbConn, IEnumerable<T> objs)
+    public static void InsertAll<T>(this IDbConnection dbConn, IEnumerable<T> objs, bool enableIdentityInsert=false)
     {
-        dbConn.Exec(dbCmd => dbCmd.InsertAll(objs, commandFilter:null));
+        dbConn.Exec(dbCmd => dbCmd.InsertAll(objs, commandFilter:null, enableIdentityInsert:enableIdentityInsert));
     }
 
     /// <summary>
@@ -222,9 +222,9 @@ public static class OrmLiteWriteApi
     /// <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } },</para>
     /// <para>             dbCmd => applyFilter(dbCmd))</para>
     /// </summary>
-    public static void InsertAll<T>(this IDbConnection dbConn, IEnumerable<T> objs, Action<IDbCommand> commandFilter)
+    public static void InsertAll<T>(this IDbConnection dbConn, IEnumerable<T> objs, Action<IDbCommand> commandFilter, bool enableIdentityInsert=false)
     {
-        dbConn.Exec(dbCmd => dbCmd.InsertAll(objs, commandFilter: commandFilter));
+        dbConn.Exec(dbCmd => dbCmd.InsertAll(objs, commandFilter: commandFilter, enableIdentityInsert:enableIdentityInsert));
     }
 
     /// <summary>
