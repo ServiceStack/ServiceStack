@@ -46,7 +46,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
     <PackageReference Include="System.Linq.Async" Version="5.1.0" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.8" />
     <PackageReference Include="System.Text.Json" Version="8.0.6" />
   </ItemGroup>
 

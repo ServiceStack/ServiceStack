@@ -51,9 +51,9 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
-    <PackageReference Include="Mysql.Data" Version="9.5.0" />
+    <PackageReference Include="Mysql.Data" Version="9.7.0" />
     <PackageReference Include="AWSSDK.Core" Version="4.0.1" />
     <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.2.8" />
     <PackageReference Include="System.Memory" Version="4.6.3" />

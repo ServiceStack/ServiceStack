@@ -35,7 +35,7 @@
     <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
         <Reference Include="System.Net" />
         <PackageReference Include="System.Linq.Async" Version="5.1.0" />
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.8" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">

@@ -352,7 +352,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
                     CreateEntry(entry.Key, db.Serialize(entry.Value)))
                 .ToList();
 
-            await db.InsertAllAsync(rows, token).ConfigAwait();
+            await db.InsertAllAsync(rows, token:token).ConfigAwait();
         }, token).ConfigAwait();
     }
 
