@@ -149,7 +149,11 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
                 sbColumnNames.Append(GetQuotedColumnName(fieldDef));
 
                 sbColumnValues.Append(this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName),fieldDef.CustomInsert));
-                AddParameter(cmd, fieldDef);
+                var p = AddParameter(cmd, fieldDef);
+                if (fieldDef.AutoId)
+                {
+                    p.Value = GetInsertDefaultValue(fieldDef);
+                }
             }
             catch (Exception ex)
             {
