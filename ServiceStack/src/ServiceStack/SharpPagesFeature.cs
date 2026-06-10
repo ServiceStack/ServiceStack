@@ -813,8 +813,7 @@ Plugins:
         html = html.Replace("{0}", defaultTemplate);
 
         var authSecret = Request.GetAuthSecret();
-        if (HostContext.Config.AdminAuthSecret != null &&
-            HostContext.Config.AdminAuthSecret == authSecret)
+        if (HostContext.Config.EqualsAuthSecret(authSecret))
         {
             html = html.Replace("{ template: template }", 
                 "{ template: template, authsecret:" + feature.DefaultMethods.jsQuotedString(authSecret).ToRawString() + " }");

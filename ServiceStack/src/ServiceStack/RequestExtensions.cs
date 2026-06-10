@@ -490,7 +490,7 @@ public static class RequestUtils
     {
         if (!HostContext.DebugMode)
         {
-            if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
+            if (!HostContext.Config.EqualsAuthSecret(authSecret))
             {
                 await RequiredRoleAttribute.AssertRequiredRoleAsync(req, accessRole, token);
             }
@@ -500,7 +500,7 @@ public static class RequestUtils
     [Obsolete("Use AssertAccessRoleAsync")]
     public static void AssertAccessRole(IRequest req, string accessRole=null, string authSecret=null)
     {
-        if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
+        if (!HostContext.Config.EqualsAuthSecret(authSecret))
         {
             RequiredRoleAttribute.AssertRequiredRoles(req, accessRole);
         }
@@ -508,7 +508,7 @@ public static class RequestUtils
 
     public static async Task AssertAccessRoleAsync(IRequest req, string accessRole=null, string authSecret=null, RequireApiKey requireApiKey=null, CancellationToken token=default)
     {
-        if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != authSecret)
+        if (!HostContext.Config.EqualsAuthSecret(authSecret))
         {
             if (requireApiKey != null)
             {

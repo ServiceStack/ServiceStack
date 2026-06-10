@@ -36,7 +36,7 @@ public class AuthSecretAuthProvider(string? authSecret=null)
     {
         var req = authService.Request;
         var authSecret = req.GetAuthSecret() ?? req.GetBearerToken();
-        if (HostContext.Config.AdminAuthSecret != null && HostContext.Config.AdminAuthSecret == authSecret)
+        if (HostContext.Config.EqualsAuthSecret(authSecret))
         {
             session = HostContext.AssertPlugin<AuthFeature>().AuthSecretSession;
             req.SetItem(Keywords.Session, session);
@@ -56,7 +56,7 @@ public class AuthSecretAuthProvider(string? authSecret=null)
     public Task PreAuthenticateAsync(IRequest req, IResponse res)
     {
         var authSecret = req.GetAuthSecret() ?? req.GetBearerToken();
-        if (HostContext.Config.AdminAuthSecret != null && HostContext.Config.AdminAuthSecret == authSecret)
+        if (HostContext.Config.EqualsAuthSecret(authSecret))
         {
             req.SetItem(Keywords.Session, HostContext.AssertPlugin<AuthFeature>().AuthSecretSession);
         }

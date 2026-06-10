@@ -59,10 +59,10 @@ public class ApiKeyCredentialsProvider : AuthProvider
             var session = req.GetSession();
             if (session.IsAuthenticated && session is AuthUserSession { RequestTokenSecret: not null } authSession)
             {
-                if (appHost.Config.AdminAuthSecret == authSession.RequestTokenSecret)
+                if (appHost.Config.EqualsAuthSecret(authSession.RequestTokenSecret))
                 {
-                    req.SetItem(Keywords.AuthSecret, appHost.Config.AdminAuthSecret);
-                    req.SetItem(Keywords.Authorization, "Bearer " + appHost.Config.AdminAuthSecret);
+                    req.SetItem(Keywords.AuthSecret, authSession.RequestTokenSecret);
+                    req.SetItem(Keywords.Authorization, "Bearer " + authSession.RequestTokenSecret);
                 }
                 if (ValidApiKeys.TryGetValue(authSession.RequestTokenSecret, out var _))
                 {
@@ -78,7 +78,7 @@ public class ApiKeyCredentialsProvider : AuthProvider
         var authSecret = request.Password;
         var sessionId = session?.Id ?? Guid.NewGuid().ToString("n");
         session = null;
-        if (HostContext.Config.AdminAuthSecret != null && HostContext.Config.AdminAuthSecret == authSecret)
+        if (HostContext.Config.EqualsAuthSecret(authSecret))
         {
             var authSession = HostContext.AssertPlugin<AuthFeature>().AuthSecretSession; 
             session = new AuthUserSession {
@@ -169,7 +169,7 @@ public class ApiKeyCredentialsProvider : AuthProvider
     public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate? request = null)
     {
         if (session is AuthUserSession { RequestTokenSecret: not null } userSession)
-            return HostContext.Config.AdminAuthSecret == userSession.RequestTokenSecret 
+            return HostContext.Config.EqualsAuthSecret(userSession.RequestTokenSecret) 
                    || ValidApiKeys.ContainsKey(userSession.RequestTokenSecret);
         return false;
     }

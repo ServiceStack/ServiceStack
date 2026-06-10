@@ -3,12 +3,57 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
 using ServiceStack.Text;
 
 namespace ServiceStack;
+
+public static class CryptUtils
+{
+    /// <summary>
+    /// Constant Time byte[] comparison, use when comparing secrets to prevent timing attacks
+    /// Equivalent to CryptographicOperations.FixedTimeEquals
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+    public static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
+    {
+        // NoOptimization because we want this method to be exactly as non-short-circuiting
+        // as written.
+        // NoInlining because the NoOptimization would get lost if the method got inlined.
+
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        int length = left.Length;
+        int accum = 0;
+
+        for (int i = 0; i < length; i++)
+        {
+            accum |= left[i] - right[i];
+        }
+
+        return accum == 0;
+    }
+
+    /// <summary>
+    /// Constant Time string comparison, use when comparing secrets to prevent timing attacks
+    /// </summary>
+    public static bool FixedTimeEquals(string left, string right)
+    {
+        if (left == null || right == null)
+            return left == right;
+
+        var leftBytes = Encoding.UTF8.GetBytes(left);
+        var rightBytes = Encoding.UTF8.GetBytes(right);
+
+        return FixedTimeEquals(leftBytes.AsSpan(), rightBytes.AsSpan());
+    }
+}
 
 public enum RsaKeyLengths
 {
@@ -546,4 +591,3 @@ public static class PlatformRsaUtils
         return xml;
     }
 }
-

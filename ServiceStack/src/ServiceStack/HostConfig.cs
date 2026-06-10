@@ -12,6 +12,7 @@ using ServiceStack.Logging;
 using ServiceStack.Metadata;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Security.Cryptography;
 
 namespace ServiceStack;
 
@@ -424,8 +425,11 @@ public class HostConfig
     public bool UseJsObject { get; set; }
     public bool EnableOptimizations { get; set; }
     public bool TreatNonNullableRefTypesAsRequired { get; set; }
-
     public string AdminAuthSecret { get; set; }
+    
+    public bool EqualsAuthSecret(string authSecret) => 
+        AdminAuthSecret != null && authSecret != null &&
+        CryptUtils.FixedTimeEquals(AdminAuthSecret, authSecret);
         
     public IAuthSession AuthSecretSession { get; set; }
 
