@@ -96,8 +96,16 @@ public static class HashExtensions
         return bytes == null || bytes.Length == 0 ? null : _.ComputeHash(bytes).ToHex();
     }
 
+    /// <summary>
+    ///  Returns the SHA-1 hash of the string as a hex string.
+    ///  Do not use for passwords, tokens, or signatures.
+    /// </summary>
     public static string ToSha1Hash(this string value) => HexHash(TextConfig.CreateSha(), value);
 
+    /// <summary>
+    /// Returns the SHA-1 hash of the byte array as a hex string.
+    /// Do not use for passwords, tokens, or signatures.
+    /// </summary>
     public static byte[] ToSha1HashBytes(this byte[] bytes)
     {
         using var hash = TextConfig.CreateSha();
@@ -105,6 +113,11 @@ public static class HashExtensions
     }
 
     public static string ToSha256Hash(this string value) => HexHash(SHA256.Create(), value);
+
+    /// <summary>
+    ///  Returns the MD5 hash of the stream as a hex string.
+    ///  Do not use for passwords, tokens, or signatures.
+    /// </summary>
     public static string ToMd5Hash(this string value) => HexHash(MD5.Create(), value);
 
     public static byte[] ToSha256HashBytes(this byte[] bytes)

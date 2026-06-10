@@ -472,8 +472,16 @@ public static class StreamExtensions
         return System.Security.Cryptography.MD5.Create().ComputeHash(stream);
     }
 
+    /// <summary>
+    ///  Returns the MD5 hash of the stream as a hex string.
+    ///  Do not use for passwords, tokens, or signatures.
+    /// </summary>
     public static string ToMd5Hash(this Stream stream) => ToMd5Bytes(stream).ToHex();
 
+    /// <summary>
+    ///  Returns the MD5 hash of the stream as a hex string.
+    ///  Do not use for passwords, tokens, or signatures.
+    /// </summary>
     public static string ToMd5Hash(this byte[] bytes) =>
         System.Security.Cryptography.MD5.Create().ComputeHash(bytes).ToHex();
 
