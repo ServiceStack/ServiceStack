@@ -974,6 +974,17 @@ public partial class DbJobs : IBackgroundJobs
         var now = DateTime.UtcNow;
 
         var sqlCommandWorker = feature.Dialect.SqlConcat([columns.Command, "'.'", columns.Worker]);
+        var isSqlServer = db.GetDialectProvider().GetType().Name.StartsWith("SqlServer");
+        var durationColumn = isSqlServer ? $"CAST({columns.DurationMs} AS BIGINT)" : columns.DurationMs;
+
+        // Use CASE WHEN to prevent SUM() from overflowing INT.MaxValue
+        var sqlDurationSum = $"CASE WHEN SUM({durationColumn}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({durationColumn}) END";
+        if (isSqlServer)
+        {
+            // SQL Server SUM() returns BIGINT, so we need to cast it back to INT
+            sqlDurationSum = $"CAST({sqlDurationSum} AS INT)";
+        }
+        
         var commandDurations = db.Dictionary<string, int>(
             db.From<JobSummary>()
                 .Where(j => Sql.In(j.Id,
@@ -985,11 +996,11 @@ public partial class DbJobs : IBackgroundJobs
                         .SelectDistinct(x => x.Id)))
                 .GroupBy(x => new { x.Command, x.Worker })
                 .Select(x => new {
-                    Command = Sql.Custom($"CASE WHEN {columns.Worker} is null THEN {columns.Command} ELSE {sqlCommandWorker} END"), 
-                    DurationMs = Sql.Custom($"CASE WHEN SUM({columns.DurationMs}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({columns.DurationMs}) END"),
+                    Command = Sql.Custom($"CASE WHEN {columns.Worker} is null THEN {columns.Command} ELSE {sqlCommandWorker} END"),
+                    DurationMs = Sql.Custom(sqlDurationSum),
                 }));
         lastCommandDurations = new(commandDurations);
-        
+
         var sqlRequestWorker = feature.Dialect.SqlConcat([columns.Request, "'.'", columns.Worker]);
         var apiDurations = db.Dictionary<string, int>(
             db.From<JobSummary>()
@@ -1002,8 +1013,8 @@ public partial class DbJobs : IBackgroundJobs
                         .SelectDistinct(x => x.Id)))
                 .GroupBy(x => new { x.Request, x.Worker })
                 .Select(x => new {
-                    Request = Sql.Custom($"CASE WHEN {columns.Worker} is null THEN {columns.Request} ELSE {sqlRequestWorker} END"), 
-                    DurationMs = Sql.Custom($"CASE WHEN SUM({columns.DurationMs}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({columns.DurationMs}) END"),
+                    Request = Sql.Custom($"CASE WHEN {columns.Worker} is null THEN {columns.Request} ELSE {sqlRequestWorker} END"),
+                    DurationMs = Sql.Custom(sqlDurationSum),
                 }));
         lastApiDurations = new(apiDurations);
 
