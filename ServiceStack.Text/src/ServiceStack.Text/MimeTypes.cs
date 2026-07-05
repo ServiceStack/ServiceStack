@@ -47,6 +47,8 @@ public static class MimeTypes
     public const string MsWord = "application/msword";
     public const string Cert = "application/x-x509-ca-cert";
 
+    public const string ImageWebp = "image/webp";
+    public const string ImageAvif = "image/avif";
     public const string ImagePng = "image/png";
     public const string ImageGif = "image/gif";
     public const string ImageJpg = "image/jpeg";
