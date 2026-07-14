@@ -1580,9 +1580,9 @@ public static class AutoQueryDataExtensions
         var pi = fieldExpr.ToPropertyInfo();
         q.AddCondition(QueryTerm.Or, pi, condition, value);
     }
-        
+
     public static T WithAudit<T>(this T row, IRequest req, DateTime? date = null) where T : AuditBase =>
-        row.WithAudit(req.GetSession().UserAuthId, date);   
+        row.WithAudit(req.GetRequiredUserId(), date);
 
     public static T WithAudit<T>(this T row, string by, DateTime? date = null) where T : AuditBase
     {

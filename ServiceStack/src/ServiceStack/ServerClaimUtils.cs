@@ -14,9 +14,12 @@ public static class ServerClaimUtils
         if (apiKeyUserId != null)
             return apiKeyUserId;
         var user = req.GetClaimsPrincipal();
-        return user.IsAuthenticated()
-            ? user.GetUserId()
-            : null;
+        if (user.IsAuthenticated())
+            return user.GetUserId();
+        var session = req.GetSession();
+        if (session?.IsAuthenticated == true)
+            return session.UserAuthId;
+        return  null;
     }
 
     /// <summary>
