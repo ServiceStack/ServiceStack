@@ -64,7 +64,10 @@ namespace ServiceStack.OrmLite.Firebird
             base.AutoIncrementDefinition = " GENERATED ALWAYS AS IDENTITY ";
             NamingStrategy = new Firebird4NamingStrategy();
 
-            base.RemoveConverter<bool>();
+            // FB3+ has a native BOOLEAN type; use it so a .NET bool binds natively (the base INTEGER converter
+            // can't bind a bool into an INTEGER param). Previously this just removed the bool converter, leaving a
+            // broken core fallback (bool -> wrong column type + InvalidCast on insert).
+            base.RegisterConverter<bool>(new FirebirdBooleanConverter());
 
             this.Variables = new Dictionary<string, string>
             {
