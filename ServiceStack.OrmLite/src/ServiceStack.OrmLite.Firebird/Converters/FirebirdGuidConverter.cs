@@ -33,20 +33,21 @@ namespace ServiceStack.OrmLite.Firebird.Converters
             get { return "CHAR(16) CHARACTER SET OCTETS"; }
         }
 
+        // Literal must match the parameterized octet order (Guid.ToByteArray()), else it disagrees with ToDbValue.
         public override string ToQuotedString(Type fieldType, object value)
         {
-            return "X'" + ((Guid)value).ToString("N") + "'";
+            return "X'" + BitConverter.ToString(((Guid)value).ToByteArray()).Replace("-", "") + "'";
         }
 
-        public override object FromDbValue(Type fieldType, object value)
+        // Previous impl applied a NetworkToHostOrder swap on READ that the WRITE side never applied -> the returned
+        // Guid didn't match the stored one (round-trip mismatch). The client already round-trips CHAR(16) OCTETS
+        // symmetrically via Guid.ToByteArray()/new Guid(bytes), so just pass the value through.
+        public override object FromDbValue(Type fieldType, object value) => value switch
         {
-            //BitConverter.IsLittleEndian // TODO: check big endian
-
-            byte[] raw = ((Guid)value).ToByteArray();
-            return new Guid(System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt32(raw, 0)),
-                System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(raw, 4)),
-                System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(raw, 6)),
-                raw[8], raw[9], raw[10], raw[11], raw[12], raw[13], raw[14], raw[15]);
-        }
+            Guid g => g,
+            byte[] b when b.Length == 16 => new Guid(b),
+            string s => new Guid(s),
+            _ => base.FromDbValue(fieldType, value),
+        };
     }
 }

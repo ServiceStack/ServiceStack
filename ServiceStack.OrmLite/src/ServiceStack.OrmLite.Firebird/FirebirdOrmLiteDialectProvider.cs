@@ -53,6 +53,10 @@ namespace ServiceStack.OrmLite.Firebird
 
             base.RegisterConverter<DateTime>(new FirebirdDateTimeConverter());
             base.RegisterConverter<DateTimeOffset>(new FirebirdDateTimeOffsetConverter());
+#if NET6_0_OR_GREATER
+            base.RegisterConverter<DateOnly>(new FirebirdDateOnlyConverter()); // DATE (core maps DateOnly -> invalid DATETIME)
+            base.RegisterConverter<TimeOnly>(new FirebirdTimeOnlyConverter()); // TIME (core maps TimeOnly -> BIGINT ticks)
+#endif
 
             base.RegisterConverter<bool>(new FirebirdBoolConverter());
             base.RegisterConverter<string>(new FirebirdStringConverter());
