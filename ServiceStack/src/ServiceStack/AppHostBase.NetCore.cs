@@ -320,7 +320,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             var requestType = entry.Key;
             var operation = entry.Value;
 
-            if (!EndpointVerbs.TryGetValue(operation.Method, out var verb))
+            if (!EndpointVerbs.TryGetValue(operation.Method, out var verbs))
                 continue;
 
             foreach (var route in operation.Routes.Safe())
@@ -334,15 +334,15 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                 {
                     foreach (var routeVerb in routeVerbs)
                     {
-                        if (!EndpointVerbs.TryGetValue(routeVerb, out verb))
+                        if (!EndpointVerbs.TryGetValue(routeVerb, out verbs))
                             continue;
-                        if (verb.IsEmpty())
+                        if (verbs.IsEmpty())
                             continue;
 
-                        var verbStr = string.Join(",", verb);
+                        var verbStr = string.Join(",", verbs);
                         routeRule = $"[{verbStr}] {route.Path}";
                         existingRoutes[routeRule] = route;
-                        var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
+                        var pathBuilder = routeBuilder.MapMethods(route.Path, verbs, (HttpResponse response, HttpContext httpContext) =>
                             HandleRequestAsync(requestType, httpContext));
                         
                         ConfigureOperationEndpoint(pathBuilder, operation, options);
@@ -352,27 +352,31 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                             handler(pathBuilder, operation, routeVerb, route.Path);
                         }
                         
-                        // Add /custom/path.{format} routes
+                        // Add GET /custom/path.{format} routes
                         if (!route.Path.Contains('.') && !route.Path.Contains('*'))
                         {
-                            var routePath = route.Path + ".{format}";
-                            routeRule = $"[{verbStr}] {routePath}";
-                            if (existingRoutes.TryGetValue(routeRule, out var prevRoute))
+                            foreach (var verb in verbs)
                             {
-                                LogManager.GetLogger(GetType()).WarnFormat("Ignoring registering duplicate route: {0} for {1} and {2}", 
-                                    routeRule,
-                                    route.RequestType.FullName,
-                                    prevRoute.RequestType.FullName);
-                            }
-                            else
-                            {
-                                existingRoutes[routeRule] = route;
-                                var pathBuilderFmt = routeBuilder.MapMethods(routePath, verb, 
-                                    (string format, HttpResponse response, HttpContext httpContext) =>
-                                        HandleRequestAsync(requestType, httpContext));
-                        
-                                ConfigureOperationEndpoint(pathBuilderFmt, operation, options)
-                                    .WithMetadata<string>(routePath);
+                                if (verb != "GET") continue;
+                                var routePath = route.Path + ".{format}";
+                                routeRule = $"[{verb}] {routePath}";
+                                if (existingRoutes.TryGetValue(routeRule, out var prevRoute))
+                                {
+                                    LogManager.GetLogger(GetType()).WarnFormat("Ignoring registering duplicate route: {0} for {1} and {2}", 
+                                        routeRule,
+                                        route.RequestType.FullName,
+                                        prevRoute.RequestType.FullName);
+                                }
+                                else
+                                {
+                                    existingRoutes[routeRule] = route;
+                                    var pathBuilderFmt = routeBuilder.MapMethods(routePath, [verb], 
+                                        (string format, HttpResponse response, HttpContext httpContext) =>
+                                            HandleRequestAsync(requestType, httpContext));
+                            
+                                    ConfigureOperationEndpoint(pathBuilderFmt, operation, options)
+                                        .WithMetadata<string>(routePath);
+                                }
                             }
                         }
 
