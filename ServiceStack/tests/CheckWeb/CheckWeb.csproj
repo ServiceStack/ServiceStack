@@ -168,7 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.7" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.10" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="NUnit" Version="3.*" />
     <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj">

@@ -37,9 +37,9 @@
         <PackageReference Include="NUnit" Version="3.*" />
         <PackageReference Include="Grpc.Net.Client" Version="2.80.0" />
         <PackageReference Include="Grpc.Core" Version="2.46.6" />
-        <PackageReference Include="Google.Protobuf" Version="3.32.1" />
+        <PackageReference Include="Google.Protobuf" Version="3.35.1" />
         <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.22" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.29" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
     </ItemGroup>
 
