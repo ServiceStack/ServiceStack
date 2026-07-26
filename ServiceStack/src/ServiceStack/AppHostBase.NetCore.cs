@@ -336,8 +336,11 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                     {
                         if (!EndpointVerbs.TryGetValue(routeVerb, out verb))
                             continue;
+                        if (verb.IsEmpty())
+                            continue;
 
-                        routeRule = $"[{verb}] {route.Path}";
+                        var verbStr = string.Join(",", verb);
+                        routeRule = $"[{verbStr}] {route.Path}";
                         existingRoutes[routeRule] = route;
                         var pathBuilder = routeBuilder.MapMethods(route.Path, verb, (HttpResponse response, HttpContext httpContext) =>
                             HandleRequestAsync(requestType, httpContext));
@@ -353,7 +356,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                         if (!route.Path.Contains('.') && !route.Path.Contains('*'))
                         {
                             var routePath = route.Path + ".{format}";
-                            routeRule = $"[{verb}] {routePath}";
+                            routeRule = $"[{verbStr}] {routePath}";
                             if (existingRoutes.TryGetValue(routeRule, out var prevRoute))
                             {
                                 LogManager.GetLogger(GetType()).WarnFormat("Ignoring registering duplicate route: {0} for {1} and {2}", 
