@@ -336,6 +336,39 @@ public class GenerateCrudServices : IGenerateCrudServices
         { nameof(RequestLogEntry), typeof(RequestLogEntry) },
     };
         
+    /// <summary>
+    /// Assemblies of the App's registered DTOs + its Service Assemblies, i.e. the same "existing App Types"
+    /// ResolveMetadataTypes uses to decide a Data Model already exists and doesn't need generating.
+    /// Includes Plugin Assemblies (e.g. ServiceStack.AI.Chat) whose DTOs the App has registered.
+    /// </summary>
+    private static List<Assembly> GetAppAssemblies()
+    {
+        var to = new HashSet<Assembly>();
+        foreach (var op in ServiceStackHost.GetOrCreateMetadata().Operations)
+        {
+            to.Add(op.RequestType.Assembly);
+            if (op.ResponseType != null)
+                to.Add(op.ResponseType.Assembly);
+        }
+        foreach (var asm in ServiceStackHost.TryGetServiceAssemblies())
+        {
+            to.Add(asm);
+        }
+        return to.Where(x => !x.IsDynamic).ToList();
+    }
+
+    private static Type[] GetLoadableTypes(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException e)
+        {
+            return e.Types.Where(x => x != null).ToArray()!;
+        }
+    }
+
     private static Type? ResolveType(string typeName, Dictionary<Tuple<string?, string>, Type> generatedTypes)
     {
         if (ServiceStackModelTypes.TryGetValue(typeName, out var ssType))
@@ -353,7 +386,16 @@ public class GenerateCrudServices : IGenerateCrudServices
             if (type != null)
                 return type;
         }
-            
+
+        // ResolveMetadataTypes skips generating a Data Model when a type of that name already exists
+        // in any App Assembly (incl. the assemblies of Plugin DTOs), so those need resolving here too
+        foreach (var asm in GetAppAssemblies())
+        {
+            var type = GetLoadableTypes(asm).FirstOrDefault(x => x.Name == typeName);
+            if (type != null)
+                return type;
+        }
+
         var ssInterfacesType = typeof(IQuery).Assembly.GetTypes().FirstOrDefault(x => x.Name == typeName);
         if (ssInterfacesType != null)
             return ssInterfacesType;
