@@ -57,7 +57,7 @@ public class NetCoreResponse : IHttpResponse, IHasHeaders
             }
             else
             {
-                response.Headers.Add(name, new StringValues(value));
+                response.Headers[name] = new StringValues(value);
             }
         }
         catch (Exception ex)
