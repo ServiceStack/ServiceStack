@@ -67,7 +67,7 @@ public class GrpcIdentityAuthTests
         builder.WebHost.ConfigureKestrel(options =>
         {
             // options.ListenAnyIP(8080);
-            options.ListenAnyIP(TestsConfig.Port, listenOptions =>
+            options.ListenLocalhost(TestsConfig.Port, listenOptions =>
             {
                 listenOptions.Protocols = HttpProtocols.Http2;
             });
@@ -151,7 +151,7 @@ public class GrpcIdentityAuthTests
         app.MapAdditionalIdentityEndpoints();
         app.UseServiceStack(new AppHost(), options => { options.MapEndpoints(); });
 
-        app.StartAsync(TestsConfig.ListeningOn);
+        app.StartAsync(TestsConfig.ListeningOn).GetAwaiter().GetResult();
     }
 
     [OneTimeTearDown]
