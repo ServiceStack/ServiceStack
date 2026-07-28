@@ -1,0 +1,135 @@
+div.cm-s-ctp-mocha.CodeMirror {
+  --bg0: #1e1e2e;
+  --bg1: #7f849c;
+  --bg4: #6c7086;
+  --fg: #cdd6f4;
+  --fg3: #a6adc8;
+  --gray: #bac2de;
+  --blue: #89b4fa;
+  --yellow: #f9e2af;
+  --aqua: #89b4fa;
+  --orange: #fab387;
+  --primary-bg: #1e1e2e;
+  --current-line: #313244;
+  --selection: #585b70;
+  --atom: #b4befe;
+  --cursor: #7f849c;
+  --keyword: #f38ba8;
+  --operator: #89dceb;
+  --number: #fab387;
+  --definition: #89b4fa;
+  --string: #a6e3a1;
+}
+
+.cm-s-ctp-mocha.CodeMirror,
+.cm-s-ctp-mocha .CodeMirror-gutters {
+  background-color: var(--primary-bg);
+  color: var(--fg3);
+}
+
+.cm-s-ctp-mocha .CodeMirror-gutters {
+  background: var(--primary-bg);
+  border-right: 0px;
+}
+
+.cm-s-ctp-mocha .CodeMirror-linenumber {
+  color: var(--bg4);
+}
+
+.cm-s-ctp-mocha .CodeMirror-cursor {
+  border-left: 1px solid var(--fg);
+}
+
+.cm-s-ctp-mocha.cm-fat-cursor .CodeMirror-cursor {
+  background-color: var(--cursor) !important;
+}
+
+.cm-s-ctp-mocha .cm-animate-fat-cursor {
+  background-color: var(--cursor) !important;
+}
+
+.cm-s-ctp-mocha div.CodeMirror-selected {
+  background: var(--selection);
+}
+
+.cm-s-ctp-mocha span.cm-meta {
+  color: var(--blue);
+}
+
+.cm-s-ctp-mocha span.cm-comment {
+  color: var(--gray);
+}
+
+.cm-s-ctp-mocha span.cm-number {
+  color: var(--number);
+}
+
+.cm-s-ctp-mocha span.cm-atom {
+  color: var(--atom);
+}
+
+.cm-s-ctp-mocha span.cm-keyword {
+  color: var(--keyword);
+}
+
+.cm-s-ctp-mocha span.cm-variable {
+  color: var(--fg);
+}
+
+.cm-s-ctp-mocha span.cm-variable-2 {
+  color: var(--fg);
+}
+
+.cm-s-ctp-mocha span.cm-variable-3,
+.cm-s-ctp-mocha .cm-s-gruvbox-dark span.cm-type {
+  color: var(--yellow);
+}
+
+.cm-s-ctp-mocha span.cm-operator {
+  color: var(--operator);
+}
+
+.cm-s-ctp-mocha span.cm-callee {
+  color: var(--fg);
+}
+
+.cm-s-ctp-mocha span.cm-def {
+  color: var(--definition);
+}
+
+.cm-s-ctp-mocha span.cm-property {
+  color: var(--fg);
+}
+
+.cm-s-ctp-mocha span.cm-string {
+  color: var(--string);
+}
+
+.cm-s-ctp-mocha span.cm-string-2 {
+  color: var(--aqua);
+}
+
+.cm-s-ctp-mocha span.cm-qualifier {
+  color: var(--aqua);
+}
+
+.cm-s-ctp-mocha span.cm-attribute {
+  color: var(--aqua);
+}
+
+.cm-s-ctp-mocha .CodeMirror-activeline-background {
+  background: var(--current-line);
+}
+
+.cm-s-ctp-mocha .CodeMirror-matchingbracket {
+  background: var(--gray);
+  color: var(--bg0) !important;
+}
+
+.cm-s-ctp-mocha span.cm-builtin {
+  color: var(--orange);
+}
+
+.cm-s-ctp-mocha span.cm-tag {
+  color: var(--orange);
+}

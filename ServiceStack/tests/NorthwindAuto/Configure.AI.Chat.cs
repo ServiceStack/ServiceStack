@@ -1,38 +1,36 @@
-using System.Data;
 using ServiceStack;
 using ServiceStack.AI;
-using ServiceStack.Data;
-using ServiceStack.IO;
-using ServiceStack.OrmLite;
-using ServiceStack.Web;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAiChat))]
 
 namespace MyApp;
 
+/// <summary>
+/// AI Chat using this host's ASP.NET Identity users, signed in with the Chat UI's own
+/// username/password form (AuthType=Credentials installs the 'credentials' extension, which
+/// authenticates with the Authenticate API). Set RequireAuth = false for open access, where all
+/// chat data is stored under the "default" user, matching llms-py's behaviour with no auth
+/// extension installed.
+/// </summary>
 public class ConfigureAiChat : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices((context, services) => {
-            
-            var vfs = new FileSystemVirtualFiles(context.HostingEnvironment.ContentRootPath);
+
             services.AddPlugin(new ChatFeature {
-                ConfigJson = vfs.GetFile("wwwroot/chat/llms.json").ReadAllText(),
-                ValidateRequest = async req => null,
-                EnableProviders = [
-                    "servicestack"
-                ]
+                // RequireAuth = false, // open access, runs as the "default" user
+                RequireAuth = true,
+                ToolsConfig =
+                {
+                    EnableCodeExecution = true,
+                    EnableFilesystemTools = true,
+                    AllowedDirectories =
+                    {
+                        Path.Combine(context.HostingEnvironment.ContentRootPath, "App_Data", "chat")
+                    },
+                }
             });
-            
-            // Persist Chat History
-            // services.AddSingleton<IChatStore, DbChatStore>();
-            services.AddSingleton<IChatStore>(c => new PostgresChatStore(
-                c.GetRequiredService<ILogger<PostgresChatStore>>(), 
-                c.GetRequiredService<IDbConnectionFactory>())
-            {
-                NamedConnection = "northwind"
-            });
-             
+
             services.ConfigurePlugin<MetadataFeature>(feature => {
                 feature.AddPluginLink("/chat", "AI Chat");
             });

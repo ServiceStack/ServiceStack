@@ -1,6 +1,4 @@
 #nullable enable
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using ServiceStack.AI;
 
@@ -8,21 +6,26 @@ namespace ServiceStack.Extensions.Tests;
 
 public class AiChatParsingTests
 {
-    const string FullProviderJson = 
+    // llms.json v3-format merged provider definition (models.dev entry + overrides)
+    const string FullProviderJson =
         """
         {
-            "enabled": false,
-            "type": "OpenAiProvider",
-            "base_url": "https://api.z.ai/api/paas/v4",
+            "id": "zai",
+            "npm": "@ai-sdk/openai-compatible",
+            "api": "https://api.z.ai/api/paas/v4/",
             "api_key": "$ZAI_API_KEY",
+            "env": ["ZAI_API_KEY"],
             "models": {
-                "glm-4.6": "glm-4.6",
-                "glm-4.5": "glm-4.5",
-                "glm-4.5-air": "glm-4.5-air",
-                "glm-4.5-x": "glm-4.5-x",
-                "glm-4.5-airx": "glm-4.5-airx",
-                "glm-4.5-flash": "glm-4.5-flash",
-                "glm-4:32b": "glm-4-32b-0414-128k"
+                "glm-4.6": {
+                    "id": "glm-4.6",
+                    "name": "GLM-4.6",
+                    "cost": { "input": 0.6, "output": 2.2 }
+                },
+                "glm-4.5-air": {
+                    "id": "glm-4.5-air",
+                    "name": "GLM-4.5-Air",
+                    "cost": { "input": 0.2, "output": 1.1 }
+                }
             },
             "temperature": 0.7,
             "headers": {
@@ -30,7 +33,6 @@ public class AiChatParsingTests
                 "User-Agent": "llms.py/1.0"
             },
             "frequency_penalty": 1,
-            "logprobs": true,
             "max_completion_tokens": 1024,
             "n": 1,
             "parallel_tool_calls": true,
@@ -40,33 +42,32 @@ public class AiChatParsingTests
             "safety_identifier": "safety-identifier",
             "seed": 1,
             "service_tier": "service-tier",
-            "stop": [
-                "stop1",
-                "stop2"
-            ],
+            "stop": ["stop1", "stop2"],
             "store": true,
             "top_logprobs": 1,
             "top_p": 1,
             "verbosity": "verbosity",
-            "enable_thinking": true
+            "enable_thinking": true,
+            "stream": false,
+            "server_tools": ["web_search"]
         }
         """;
 
     [Test]
-    public void Can_create_full_OpenAiProvider_Json()
+    public void Can_populate_full_provider_definition()
     {
-        var obj = (Dictionary<string, object?>) JSON.parse(FullProviderJson);
-        var provider = OpenAiProvider.Create(NullLogger.Instance, null!, obj)!;
-        Assert.That(provider, Is.Not.Null);
-        Assert.That(provider.BaseUrl, Is.EqualTo("https://api.z.ai/api/paas/v4"));
+        var provider = new OpenAiCompatibleProvider();
+        provider.Populate(ChatJson.ParseObject(FullProviderJson));
+
+        Assert.That(provider.Id, Is.EqualTo("zai"));
+        Assert.That(provider.Api, Is.EqualTo("https://api.z.ai/api/paas/v4"));
+        Assert.That(provider.ChatUrl, Is.EqualTo("https://api.z.ai/api/paas/v4/chat/completions"));
         Assert.That(provider.ApiKey, Is.EqualTo("$ZAI_API_KEY"));
+        Assert.That(provider.Env, Is.EquivalentTo(new[] { "ZAI_API_KEY" }));
         Assert.That(provider.Temperature, Is.EqualTo(0.7));
-        Assert.That(provider.Models, Is.Not.Null);
-        Assert.That(provider.Models.Count, Is.GreaterThan(0));
-        Assert.That(provider.Headers, Is.Not.Null);
-        Assert.That(provider.Headers.Keys, Is.EquivalentTo(new[] { "Content-Type", "User-Agent", "Authorization" })); 
+        Assert.That(provider.Models.Count, Is.EqualTo(2));
+        Assert.That(provider.Headers.Keys, Is.EquivalentTo(new[] { "Content-Type", "User-Agent", "Authorization" }));
         Assert.That(provider.FrequencyPenalty, Is.EqualTo(1));
-        Assert.That(provider.LogProbs, Is.True);
         Assert.That(provider.MaxCompletionTokens, Is.EqualTo(1024));
         Assert.That(provider.N, Is.EqualTo(1));
         Assert.That(provider.ParallelToolCalls, Is.True);
@@ -76,94 +77,118 @@ public class AiChatParsingTests
         Assert.That(provider.SafetyIdentifier, Is.EqualTo("safety-identifier"));
         Assert.That(provider.Seed, Is.EqualTo(1));
         Assert.That(provider.ServiceTier, Is.EqualTo("service-tier"));
-        Assert.That(provider.Stop, Is.Not.Null);
-        Assert.That(provider.Stop.Count, Is.EqualTo(2));
+        Assert.That(provider.Stop!.AsArray().Count, Is.EqualTo(2));
         Assert.That(provider.Store, Is.True);
         Assert.That(provider.TopLogprobs, Is.EqualTo(1));
         Assert.That(provider.TopP, Is.EqualTo(1));
         Assert.That(provider.Verbosity, Is.EqualTo("verbosity"));
         Assert.That(provider.EnableThinking, Is.True);
+        Assert.That(provider.Stream, Is.False);
+        Assert.That(provider.ServerTools, Is.EquivalentTo(new[] { "web_search" }));
     }
 
     [Test]
-    public void Can_get_different_numeric_values()
+    public void Stream_defaults_to_true()
     {
-        var obj = (Dictionary<string, object?>) JSON.parse(FullProviderJson);
-        if (obj.TryGetValue("temperature", out int i))
-        {
-            Assert.That(i, Is.EqualTo(1));
-        } 
-        if (obj.TryGetValue("temperature", out int l))
-        {
-            Assert.That(l, Is.EqualTo(1));
-        } 
-        if (obj.TryGetValue("seed", out double d))
-        {
-            Assert.That(d, Is.EqualTo(1));
-        } 
-        if (obj.TryGetValue("seed", out int lSeed))
-        {
-            Assert.That(lSeed, Is.EqualTo(1));
-        } 
+        var provider = new OpenAiCompatibleProvider();
+        provider.Populate(ChatJson.ParseObject(
+            """{"id":"test","api":"https://example.org/v1"}"""));
+        Assert.That(provider.Stream, Is.True);
+        Assert.That(provider.Name, Is.EqualTo("Test"));
     }
 
     [Test]
-    public void Can_use_TryGetValue_on_Object_and_Lists()
+    public void Can_resolve_provider_models_case_insensitively()
     {
-        var obj = (Dictionary<string, object?>) JSON.parse(FullProviderJson);
-        if (obj.TryGetValue("headers", out Dictionary<string, object?> headers))
-        {
-            Assert.That(headers, Is.Not.Null);
-            Assert.That(headers.Count, Is.EqualTo(2));
-        }
-        else Assert.Fail("Failed to get headers");
-        if (obj.TryGetValue("stop", out List<object> stop))
-        {
-            Assert.That(stop, Is.Not.Null);
-            Assert.That(stop.Count, Is.EqualTo(2));
-        }
-        else Assert.Fail("Failed to get stops");
+        var provider = new OpenAiCompatibleProvider();
+        provider.Populate(ChatJson.ParseObject(FullProviderJson));
+
+        Assert.That(provider.ProviderModel("glm-4.6"), Is.EqualTo("glm-4.6"));
+        Assert.That(provider.ProviderModel("GLM-4.6"), Is.EqualTo("glm-4.6"));
+        Assert.That(provider.ProviderModel("GLM-4.5-Air"), Is.EqualTo("glm-4.5-air"));
+        Assert.That(provider.ProviderModel("zai/glm-4.6"), Is.EqualTo("glm-4.6"));
+        Assert.That(provider.ProviderModel("unknown-model"), Is.Null);
+
+        Assert.That(provider.ModelInfo("glm-4.6")!["name"]!.GetValue<string>(), Is.EqualTo("GLM-4.6"));
+        Assert.That(provider.ModelCost("glm-4.6")!["input"]!.GetValue<double>(), Is.EqualTo(0.6));
     }
-    
-    const string GoogleProviderJson = 
-        """
-        {
-            "enabled": false,
-            "type": "GoogleProvider",
-            "api_key": "$GOOGLE_API_KEY",
-            "models": {
-                "gemini-flash-latest": "gemini-flash-latest",
-                "gemini-flash-lite-latest": "gemini-flash-lite-latest",
-                "gemini-2.5-pro": "gemini-2.5-pro",
-                "gemini-2.5-flash": "gemini-2.5-flash",
-                "gemini-2.5-flash-lite": "gemini-2.5-flash-lite"
-            },
-            "safety_settings": [
-                {
-                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                    "threshold": "BLOCK_ONLY_HIGH"
-                }
-            ],
-            "thinking_config": {
-                "thinkingBudget": 1024,
-                "includeThoughts": true
+
+    [Test]
+    public void Map_models_filters_and_maps()
+    {
+        var provider = new OpenAiCompatibleProvider();
+        provider.Populate(ChatJson.ParseObject(
+            """
+            {
+                "id": "test",
+                "api": "https://example.org/v1",
+                "models": {
+                    "model-a": { "id": "model-a", "name": "Model A" },
+                    "model-b": { "id": "model-b", "name": "Model B" }
+                },
+                "map_models": { "my-model": "model-a" }
             }
-        }
-        """;
+            """));
+
+        Assert.That(provider.Models.Keys, Is.EquivalentTo(new[] { "model-a" }));
+        Assert.That(provider.ProviderModel("my-model"), Is.EqualTo("model-a"));
+        Assert.That(provider.ProviderModel("model-a"), Is.EqualTo("model-a"));
+    }
 
     [Test]
-    public void Can_create_GoogleProvider_Json()
+    public void Include_and_exclude_model_regex_filters()
     {
-        var obj = (Dictionary<string, object?>) JSON.parse(GoogleProviderJson);
-        var provider = (GoogleProvider)GoogleProvider.Create(NullLogger.Instance, null!, obj)!;
-        Assert.That(provider, Is.Not.Null);
-        Assert.That(provider.ApiKey, Is.EqualTo("$GOOGLE_API_KEY"));
-        Assert.That(provider.Models, Is.Not.Null);
-        Assert.That(provider.Models.Count, Is.GreaterThan(0));
-        Assert.That(provider.SafetySettings, Is.Not.Null);
-        Assert.That(provider.SafetySettings!.Count, Is.EqualTo(1));
-        Assert.That(provider.ThinkingConfig, Is.Not.Null);
-        Assert.That(provider.ThinkingConfig!.Count, Is.EqualTo(2));
+        const string json =
+            """
+            {
+                "id": "test",
+                "api": "https://example.org/v1",
+                "models": {
+                    "gpt-4o": { "id": "gpt-4o", "name": "GPT-4o" },
+                    "gpt-4o-mini": { "id": "gpt-4o-mini", "name": "GPT-4o mini" },
+                    "o1-preview": { "id": "o1-preview", "name": "o1 preview" }
+                }
+            }
+            """;
+
+        var include = new OpenAiCompatibleProvider();
+        var includeDef = ChatJson.ParseObject(json);
+        includeDef["include_models"] = "^gpt";
+        include.Populate(includeDef);
+        Assert.That(include.Models.Keys, Is.EquivalentTo(new[] { "gpt-4o", "gpt-4o-mini" }));
+
+        var exclude = new OpenAiCompatibleProvider();
+        var excludeDef = ChatJson.ParseObject(json);
+        excludeDef["exclude_models"] = "mini";
+        exclude.Populate(excludeDef);
+        Assert.That(exclude.Models.Keys, Is.EquivalentTo(new[] { "gpt-4o", "o1-preview" }));
     }
-    
+
+    [Test]
+    public void Validate_requires_api_key()
+    {
+        var provider = new OpenAiCompatibleProvider();
+        provider.Populate(ChatJson.ParseObject(
+            """{"id":"test","api":"https://example.org/v1","env":["TEST_API_KEY"]}"""));
+        Assert.That(provider.Validate(), Does.Contain("TEST_API_KEY"));
+        Assert.That(provider.Test(), Is.False);
+
+        var withKey = new OpenAiCompatibleProvider();
+        withKey.Populate(ChatJson.ParseObject(
+            """{"id":"test","api":"https://example.org/v1","api_key":"sk-123"}"""));
+        Assert.That(withKey.Validate(), Is.Null);
+        Assert.That(withKey.Test(), Is.True);
+        Assert.That(withKey.Headers["Authorization"], Is.EqualTo("Bearer sk-123"));
+    }
+
+    [Test]
+    public void Ollama_provider_uses_v1_chat_endpoint_and_no_api_key()
+    {
+        var provider = new OllamaProvider();
+        provider.Populate(ChatJson.ParseObject(
+            """{"id":"ollama","api":"http://localhost:11434"}"""));
+        Assert.That(provider.ChatUrl, Is.EqualTo("http://localhost:11434/v1/chat/completions"));
+        Assert.That(provider.Validate(), Is.Null);
+        Assert.That(provider.Test(), Is.True);
+    }
 }

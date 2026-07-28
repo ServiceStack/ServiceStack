@@ -1,80 +1,51 @@
-using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.AI;
 
 /// <summary>
-/// Chat Client that can call OpenAI ChatCompletion API
+/// In-process client for the OpenAI-compatible Chat Completions API — the same pipeline that backs
+/// POST /v1/chat/completions (provider selection, retry/failover, the tool-execution loop, usage
+/// and cost accounting, extension filters) without the HTTP round-trip.
 /// </summary>
 public interface IChatClient
 {
-    Task<ChatResponse> ChatAsync(ChatCompletion request, CancellationToken token = default);
+    Task<ChatResponse> ChatAsync(ChatCompletion request, CancellationToken token=default);
 }
 
-/// <summary>
-/// OpenAI Chat service that manages and interacts with multiple OpenAI Chat providers
-/// </summary>
-public interface IChatClients : IChatClient
-{
-    IChatClient? GetClient(string providerId);
-}
-
-/// <summary>
-/// OpenAI Chat service that manages and interacts with multiple OpenAI Chat providers
-/// </summary>
-public class ChatClients(ILogger<ChatClients> log, ChatFeature feature) : IChatClients
+public class ChatClient(ChatFeature feature) : IChatClient
 {
     /// <summary>
-    /// Get a specific OpenAI Chat Provider by Id
-    /// </summary>
-    public IChatClient? GetClient(string providerId) => 
-        feature.Providers.GetValueOrDefault(providerId);
-
-    /// <summary>
-    /// Call ChatCompletion on all available providers and return the first successful response
+    /// Run a completion through the chat pipeline. Throws on failure — the same exceptions the
+    /// service surfaces, e.g. HttpError.NotFound when no configured provider serves the model.
     /// </summary>
     public async Task<ChatResponse> ChatAsync(ChatCompletion request, CancellationToken token = default)
     {
-        var candidateProviders = feature.GetModelProviders(request);
+        var chat = ToChatJson(request);
 
-        Exception? firstEx = null;
-        var i = 0;
-        var chatRequest = request;
-        foreach (var entry in candidateProviders)
-        {
-            i++;
-            try
-            {
-                var provider = entry.Value;
-                chatRequest.Model = request.Model;
-                var ret = await provider.ChatAsync(chatRequest, token).ConfigAwait();
-                return ret;
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "Error calling {Name} ({CandidateIndex}/{CandidatesTotal}): {Message}", 
-                    i, candidateProviders.Count, entry.Key, ex.Message);
-                firstEx ??= ex;
-            }
-        }
+        // there's no IRequest to authenticate, so in-process callers opt into a user with
+        // metadata["user"]; null attributes threads/usage to the "default" user, matching how the
+        // feature behaves with RequireAuth = false
+        var user = request.Metadata?.GetValueOrDefault("user");
 
-        firstEx ??= HttpError.NotFound($"Model {request.Model} not found");
-        throw firstEx;
+        var context = ChatContext.FromChat(chat, user, token);
+        var response = await feature.ChatCompletionAsync(chat, context).ConfigAwait();
+
+        return FromChatJson(response);
     }
-}
 
-public static class ChatFeatureExtensions
-{
-    public static IChatClient GetRequiredClient(this IChatClients clients, string providerId) => 
-        clients.GetClient(providerId)
-        ?? throw new Exception($"Chat Provider '{providerId}' is not available");
-    public static T GetRequiredClient<T>(this IChatClients clients, string providerId) => 
-        (T)(clients.GetClient(providerId)
-            ?? throw new Exception($"Chat Provider '{providerId}' is not available"));
-    public static OpenAiProvider GetOpenAiProvider(this IChatClients clients, string providerId) => 
-        clients.GetRequiredClient<OpenAiProvider>(providerId);
-    public static OllamaProvider GetOllamaProvider(this IChatClients clients, string providerId) => 
-        clients.GetRequiredClient<OllamaProvider>(providerId);
-    public static GoogleProvider GetGoogleProvider(this IChatClients clients, string providerId) => 
-        clients.GetRequiredClient<GoogleProvider>(providerId);
+    /// <summary>
+    /// Typed request -> the OpenAI JSON the pipeline operates on. ServiceStack.Text honours the
+    /// DTOs' [DataMember] names and omits nulls, so this already is snake_case wire format, with
+    /// polymorphic content parts (text/image_url/input_audio/file) written as their own shapes.
+    /// </summary>
+    public static JsonObject ToChatJson(ChatCompletion request) =>
+        ChatJson.ParseObject(request.ToJson());
+
+    /// <summary>
+    /// Provider JSON -> typed response. The wire response is richer than the DTO models (providers
+    /// add their own fields), so anything unmapped is dropped here; the HTTP service returns the
+    /// JSON verbatim instead, which is why it doesn't go through this.
+    /// </summary>
+    public static ChatResponse FromChatJson(JsonObject response) =>
+        response.ToJsonString(ChatJson.Options).FromJson<ChatResponse>();
 }

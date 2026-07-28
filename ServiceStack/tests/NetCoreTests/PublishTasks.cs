@@ -259,9 +259,9 @@ public class PublishTasks
             services.AddHttpUtilsClient();
             var apiKeys = new ApiKeysFeature();
             services.AddPlugin(apiKeys);
-            services.AddPlugin(new ChatFeature {
-                ChatStore = new DbChatStore(NullLogger<DbChatStore>.Instance, new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider))
-            });
+            // services.AddPlugin(new ChatFeature {
+            //     ChatStore = new DbChatStore(NullLogger<DbChatStore>.Instance, new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider))
+            // });
             //if (Services.GetService<IApiKeySource>() == null || Services.GetService<IApiKeyResolver>() == null)
             services.AddSingleton<IApiKeySource>(new ApiKeysFeatureSource(apiKeys));
             services.AddSingleton<IApiKeyResolver>(new ApiKeyResolver(apiKeys));
@@ -278,7 +278,7 @@ public class PublishTasks
                 typeof(AdminCreateRole),typeof(AdminUpdateRole),typeof(AdminDeleteRole),
                 
                 typeof(AdminQueryRequestLogs),typeof(RequestLog),
-                typeof(AdminQueryChatCompletionLogs),typeof(AdminMonthlyChatCompletionAnalytics),typeof(AdminDailyChatCompletionAnalytics),typeof(ChatCompletionLog),
+                // typeof(AdminQueryChatCompletionLogs),typeof(AdminMonthlyChatCompletionAnalytics),typeof(AdminDailyChatCompletionAnalytics),typeof(ChatCompletionLog),
 
                 typeof(GetCrudEvents),
                 typeof(GetValidationRules),

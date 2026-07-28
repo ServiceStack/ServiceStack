@@ -1,0 +1,881 @@
+{
+    "fireworks-ai": {
+        "models": {
+            "fireworks/flux-kontext-pro": {
+                "name": "FLUX.1 Kontext Pro",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.04,
+                    "type": "request"
+                }
+            },
+            "fireworks/flux-kontext-max": {
+                "name": "FLUX.1 Kontext Max",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.08,
+                    "type": "request"
+                }
+            },
+            "fireworks/flux-1-dev-fp8": {
+                "name": "FLUX.1 Dev FP8",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.0005,
+                    "type": "per_step"
+                }
+            },
+            "fireworks/flux-1-schnell-fp8": {
+                "name": "FLUX.1 [schnell] FP8",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.00035,
+                    "type": "per_step"
+                }
+            }
+        }
+    },
+    "google": {
+        "models": {
+            "gemini-3.1-flash-image-preview": {
+                "name": "Nano Banana 2 (Gemini 3.1 Flash Image)",
+                "release_date": "2026-02-26",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0.25,
+                    "output": 1.50
+                }
+            }
+        }
+    },
+    "openrouter": {
+        "models": {
+            "microsoft/mai-image-2.5-pro": {
+                "name": "MAI-Image-2.5 Pro",
+                "release_date": "2026-07-24",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0.0,
+                    "output": 5.0
+                }
+            },
+            "microsoft/mai-voice-2-flash": {
+                "name": "MAI-Voice-2-Flash",
+                "release_date": "2026-07-23",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "speech"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 22
+                },
+                "voices": [
+                    "en-US-Harper:MAI-Voice-2",
+                    "es-MX-Valeria:MAI-Voice-2",
+                    "fr-FR-Soleil:MAI-Voice-2",
+                    "de-DE-Klaus:MAI-Voice-2"
+                ],
+                "defaults": {
+                    "voice": "en-US-Harper:MAI-Voice-2"
+                }
+            },
+            "microsoft/mai-voice-2": {
+                "name": "MAI-Voice-2",
+                "release_date": "2026-06-03",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "speech"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 22
+                },
+                "voices": [
+                    "en-US-Harper:MAI-Voice-2",
+                    "es-MX-Valeria:MAI-Voice-2",
+                    "fr-FR-Soleil:MAI-Voice-2",
+                    "de-DE-Klaus:MAI-Voice-2"
+                ],
+                "defaults": {
+                    "voice": "en-US-Harper:MAI-Voice-2"
+                }
+            },
+            "x-ai/grok-voice-tts-1.0": {
+                "name": "Grok Voice TTS 1.0",
+                "release_date": "2026-05-15",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "speech"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 15
+                },
+                "voices": [
+                    "eve",
+                    "ara",
+                    "rex",
+                    "sal",
+                    "leo"
+                ],
+                "defaults": {
+                    "voice": "eve"
+                }
+            },
+            "google/gemini-3.1-flash-tts-preview": {
+                "name": "Gemini 3.1 Flash TTS",
+                "release_date": "2026-04-24",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "speech"
+                    ]
+                },
+                "cost": {
+                    "input": 1,
+                    "output": 22
+                },
+                "voices": [
+                    "Zephyr",
+                    "Puck",
+                    "Charon",
+                    "Kore",
+                    "Fenrir",
+                    "Leda",
+                    "Orus",
+                    "Aoede",
+                    "Callirrhoe",
+                    "Autonoe",
+                    "Enceladus",
+                    "Iapetus",
+                    "Umbriel",
+                    "Algieba",
+                    "Despina",
+                    "Erinome",
+                    "Algenib",
+                    "Rasalgethi",
+                    "Laomedeia",
+                    "Achernar",
+                    "Alnilam",
+                    "Schedar",
+                    "Gacrux",
+                    "Pulcherrima",
+                    "Achird",
+                    "Zubenelgenubi",
+                    "Vindemiatrix",
+                    "Sadachbia",
+                    "Sadaltager",
+                    "Sulafat"
+                ],
+                "defaults": {
+                    "voice": "Kore",
+                    "response_format": "pcm"
+                }
+            },
+            "mistralai/voxtral-mini-tts-2603": {
+                "name": "Voxtral Mini TTS",
+                "release_date": "2026-03-26",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "speech"
+                    ]
+                },
+                "cost": {
+                    "input": 0.05,
+                    "output": 0.20
+                },
+                "voices": [
+                    "en_paul_sad",
+                    "en_paul_neutral",
+                    "en_paul_happy",
+                    "en_paul_frustrated",
+                    "en_paul_excited",
+                    "en_paul_confident",
+                    "en_paul_cheerful",
+                    "en_paul_angry",
+                    "gb_oliver_neutral",
+                    "gb_oliver_sad",
+                    "gb_oliver_excited",
+                    "gb_oliver_curious",
+                    "gb_oliver_confident",
+                    "gb_oliver_cheerful",
+                    "gb_oliver_angry",
+                    "gb_jane_sarcasm",
+                    "gb_jane_confused",
+                    "gb_jane_shameful",
+                    "gb_jane_sad",
+                    "gb_jane_neutral",
+                    "gb_jane_jealousy",
+                    "gb_jane_frustrated",
+                    "gb_jane_curious",
+                    "gb_jane_confident",
+                    "fr_marie_sad",
+                    "fr_marie_neutral",
+                    "fr_marie_happy",
+                    "fr_marie_excited",
+                    "fr_marie_curious",
+                    "fr_marie_angry"
+                ],
+                "defaults": {
+                    "voice": "en_paul_cheerful"
+                }
+            },
+            "recraft/recraft-v4.1-pro-vector": {
+                "name": "Recraft V4.1 Pro Vector",
+                "release_date": "2026-05-14",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.30,
+                    "type": "request"
+                }
+            },
+            "recraft/recraft-v4.1-vector": {
+                "name": "Recraft V4.1 Vector",
+                "release_date": "2026-05-14",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.08,
+                    "type": "request"
+                }
+            },
+            "recraft/recraft-v4.1-pro": {
+                "name": "Recraft V4.1 Pro",
+                "release_date": "2026-05-14",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.25,
+                    "type": "request"
+                }
+            },
+            "recraft/recraft-v4.1": {
+                "name": "Recraft V4.1",
+                "release_date": "2026-05-14",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.04,
+                    "type": "request"
+                }
+            },
+            "recraft/recraft-v3": {
+                "name": "Recraft V3",
+                "release_date": "2026-05-06",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.04,
+                    "type": "request"
+                }
+            },
+            "google/gemini-3.1-flash-image-preview": {
+                "name": "Gemini 3.1 Flash Image (Nano Banana 2)",
+                "release_date": "2026-02-26",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0.25,
+                    "output": 1.50
+                }
+            },
+            "google/gemini-2.5-flash-image": {
+                "name": "Gemini 2.5 Flash Image (Nano Banana)",
+                "release_date": "2025-10-07",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0.30,
+                    "output": 2.50
+                }
+            },
+            "google/gemini-3-pro-image-preview": {
+                "name": "Google: Nano Banana Pro Preview (Gemini 3 Pro)",
+                "release_date": "2025-11-20",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 2.0,
+                    "output": 12.0
+                }
+            },
+            "sourceful/riverflow-v2.5-pro": {
+                "name": "Sourceful: Riverflow V2.5 Pro",
+                "release_date": "2026-06-04",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.24,
+                    "type": "request"
+                }
+            },
+            "sourceful/riverflow-v2.5-fast": {
+                "name": "Sourceful: Riverflow V2 Fast",
+                "release_date": "2026-06-04",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.02,
+                    "type": "request"
+                }
+            },
+            "sourceful/riverflow-v2-standard-preview": {
+                "name": "Sourceful: Riverflow V2 Standard Preview",
+                "release_date": "2025-12-09",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 8.38
+                }
+            },
+            "sourceful/riverflow-v2-max-preview": {
+                "name": "Sourceful: Riverflow V2 Max Preview",
+                "release_date": "2025-12-09",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 17.96
+                }
+            },
+            "openai/gpt-5.4-image-2": {
+                "name": "OpenAI: GPT-5.4 Image 2",
+                "release_date": "2026-04-22",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 8.0,
+                    "output": 15.0
+                }
+            },
+            "openai/gpt-5-image": {
+                "name": "OpenAI: GPT-5 Image",
+                "release_date": "2025-10-14",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 10.0,
+                    "output": 10.0
+                }
+            },
+            "openai/gpt-5-image-mini": {
+                "name": "OpenAI: GPT-5 Image Mini",
+                "release_date": "2025-10-16",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 2.50,
+                    "output": 2
+                }
+            },
+            "black-forest-labs/flux.2-max": {
+                "name": "Black Forest Labs: FLUX.2 Max",
+                "release_date": "2025-12-16",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 7.32,
+                    "output": 7.32
+                }
+            },
+            "black-forest-labs/flux.2-pro": {
+                "name": "Black Forest Labs: FLUX.2 Pro",
+                "release_date": "2025-11-25",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 3.66,
+                    "output": 3.66
+                }
+            },
+            "black-forest-labs/flux.2-flex": {
+                "name": "Black Forest Labs: FLUX.2 Flex",
+                "release_date": "2025-11-25",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 14.64,
+                    "output": 14.64
+                }
+            },
+            "google/lyria-3-clip-preview": {
+                "name": "Lyria 3 Clip Preview",
+                "release_date": "2026-05-14",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "audio"
+                    ]
+                },
+                "cost": {
+                    "input": 0.04,
+                    "output": 0.0,
+                    "type": "request"
+                }
+            },
+            "google/lyria-3-pro-preview": {
+                "name": "Lyria 3 Pro Preview",
+                "release_date": "2026-05-14",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "audio"
+                    ]
+                },
+                "cost": {
+                    "input": 0.08,
+                    "output": 0.0,
+                    "type": "request"
+                }
+            }
+        }
+    },
+    "openai": {
+        "models": {
+            "chatgpt-image-latest": {
+                "name": "ChatGPT Image Latest",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 5.0,
+                    "output": 32.0
+                }
+            },
+            "gpt-image-1-mini": {
+                "name": "GPT Image 1 Mini",
+                "release_date": "2025-10-16",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 5.0,
+                    "output": 8.0
+                }
+            },
+            "gpt-image-2": {
+                "name": "GPT Image 2",
+                "release_date": "2026-04-22",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 8.0,
+                    "output": 15.0
+                }
+            },
+            "gpt-image-1.5": {
+                "name": "GPT Image 1.5",
+                "release_date": "2025-10-16",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 5.0,
+                    "output": 32.0
+                }
+            },
+            "gpt-image-1": {
+                "name": "GPT Image 1",
+                "release_date": "2025-10-14",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 5.0,
+                    "output": 40.0
+                }
+            }
+        }
+    },
+    "chutes": {
+        "models": {
+            "z-image-turbo": {
+                "name": "Z Image Turbo",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                }
+            },
+            "Qwen-Image-2512": {
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                }
+            },
+            "Qwen-Image-Edit-2511": {
+                "name": "Qwen Image Edit",
+                "modalities": {
+                    "input": [
+                        "text",
+                        "image"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                }
+            },
+            "flux": {
+                "name": "FLUX",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                }
+            },
+            "dreamshaper": {
+                "name": "Dreamshaper",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                }
+            },
+            "juggernaut": {
+                "name": "Juggernaut",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                }
+            },
+            "ilustmix": {
+                "name": "Ilustmix",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                }
+            }
+        }
+    },
+    "zai": {
+        "models": {
+            "glm-image": {
+                "name": "GLM-Image",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.015
+                }
+            }
+        }
+    },
+    "zai-coding-plan": {
+        "models": {
+            "glm-image": {
+                "name": "GLM-Image",
+                "modalities": {
+                    "input": [
+                        "text"
+                    ],
+                    "output": [
+                        "image"
+                    ]
+                },
+                "cost": {
+                    "input": 0,
+                    "output": 0.015
+                }
+            }
+        }
+    },
+    "mistral": {
+        "models": {
+            "voxtral-mini-latest": {
+                "id": "voxtral-mini-latest",
+                "name": "Voxtral Mini Chat",
+                "family": "mistral",
+                "attachment": false,
+                "reasoning": false,
+                "tool_call": true,
+                "temperature": true,
+                "release_date": "2026-02-01",
+                "last_updated": "2026-02-01",
+                "modalities": {
+                    "input": [
+                        "audio",
+                        "text"
+                    ],
+                    "output": [
+                        "text"
+                    ]
+                },
+                "open_weights": false,
+                "cost": {
+                    "input": 0.04,
+                    "output": 0.04
+                },
+                "limit": {
+                    "context": 16384,
+                    "output": 16384
+                }
+            },
+            "voxtral-mini-transcription": {
+                "id": "voxtral-mini-transcription",
+                "name": "Voxtral Mini Transcription",
+                "family": "mistral",
+                "attachment": false,
+                "reasoning": false,
+                "tool_call": false,
+                "temperature": false,
+                "release_date": "2026-02-01",
+                "last_updated": "2026-02-01",
+                "modalities": {
+                    "input": [
+                        "audio"
+                    ],
+                    "output": [
+                        "text"
+                    ]
+                },
+                "open_weights": false,
+                "cost": {
+                    "input": 0.003,
+                    "output": 0
+                },
+                "limit": {
+                    "context": 16384,
+                    "output": 16384
+                }
+            }
+        }
+    }
+}

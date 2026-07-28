@@ -8,7 +8,6 @@ namespace ServiceStack.AI;
 /// </summary>
 [Tag("AI")]
 [DataContract]
-[ValidateApiKey]
 [Description("Chat Completions API (OpenAI-Compatible)")]
 [Notes("The industry-standard, message-based interface for interfacing with Large Language Models.")]
 [Route("/v1/chat/completions", "POST"),SystemJson(UseSystemJson.Never)]
@@ -16,7 +15,6 @@ public class ChatCompletion : IPost, IReturn<ChatResponse>
 {
     [Description("The messages to generate chat completions for.")]
     [DataMember(Name = "messages")]
-    [Input(Type = "ChatMessages", Label=""), FieldCss(Field = "col-span-12")]
     public List<AiMessage> Messages { get; set; } = [];
     
     [Description("ID of the model to use. See the model endpoint compatibility table for details on which models work with the Chat API")]
@@ -164,6 +162,7 @@ public class AiChatAudio
 [System.Text.Json.Serialization.JsonDerivedType(typeof(AiImageContent), typeDiscriminator: "image_url")]
 [System.Text.Json.Serialization.JsonDerivedType(typeof(AiAudioContent), typeDiscriminator: "input_audio")]
 [System.Text.Json.Serialization.JsonDerivedType(typeof(AiFileContent),  typeDiscriminator: "file")]
+[System.Text.Json.Serialization.JsonDerivedType(typeof(AiAudioUrlContent), typeDiscriminator: "audio_url")]
 public abstract class AiContent
 {
     [System.Text.Json.Serialization.JsonIgnore]
@@ -204,6 +203,23 @@ public class AiAudioContent : AiContent
     [Description("The audio input for this content.")]
     [DataMember(Name = "input_audio")]
     public AiInputAudio InputAudio { get; set; }
+}
+
+[DataContract]
+[Description("Generated audio content part, referenced by URL (emitted by tool calls and audio models)")]
+public class AiAudioUrlContent : AiContent
+{
+    [Description("The audio for this content.")]
+    [DataMember(Name = "audio_url")]
+    public AiAudioUrl AudioUrl { get; set; }
+}
+
+[DataContract]
+public class AiAudioUrl
+{
+    [Description("Either a URL of the audio or the base64 encoded audio data.")]
+    [DataMember(Name = "url")]
+    public string Url { get; set; }
 }
 
 [DataContract]
@@ -267,6 +283,22 @@ public class AiMessage
     [Description("Tool call that this message is responding to.")]
     [DataMember(Name = "tool_call_id")]
     public string? ToolCallId { get; set; }
+
+    [Description("The reasoning an assistant message was generated with, normalized per provider when replayed as history.")]
+    [DataMember(Name = "reasoning")]
+    public string? Reasoning { get; set; }
+
+    [Description("The reasoning an assistant message was generated with, as emitted by Gemini and most OpenAI-compatible providers.")]
+    [DataMember(Name = "reasoning_content")]
+    public string? ReasoningContent { get; set; }
+
+    [Description("Unix timestamp (in milliseconds) the message was generated.")]
+    [DataMember(Name = "timestamp")]
+    public long? Timestamp { get; set; }
+
+    [Description("Images attached to the message. Folded into `content` parts before sending to a provider.")]
+    [DataMember(Name = "images")]
+    public List<AiContent>? Images { get; set; }
 }
 
 [DataContract]
@@ -275,6 +307,10 @@ public class Tool
     [Description("The type of the tool. Currently, only function is supported.")]
     [DataMember(Name = "type")]
     public ToolType Type { get; set; }
+
+    [Description("The function definition the model may call.")]
+    [DataMember(Name = "function")]
+    public AiToolFunction? Function { get; set; }
 }
 
 public enum ToolType
@@ -296,7 +332,7 @@ public class AiToolFunction
     
     [Description("The parameters the functions accepts, described as a JSON Schema object. See the guide for examples, and the JSON Schema reference for documentation about the format.")]
     [DataMember(Name = "parameters")]
-    public Dictionary<string,string>? Parameters { get; set; }
+    public Dictionary<string,object>? Parameters { get; set; }
 }
 
 [DataContract]
@@ -306,7 +342,7 @@ public class AiResponseFormat
     public const string JsonObject = "json_object";
     
     [Description("An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.")]
-    [DataMember(Name = "response_format")]
+    [DataMember(Name = "type")]
     public ResponseFormat Type { get; set; }
 }
 
@@ -356,6 +392,14 @@ public class ChatResponse
     [Description("The provider used for the chat completion.")]
     [DataMember(Name = "provider")]
     public string? Provider { get; set; }
+
+    [Description("Total cost of the completion in USD, accumulated across every request in the tool loop.")]
+    [DataMember(Name = "cost")]
+    public double? Cost { get; set; }
+
+    [Description("The assistant and tool messages exchanged during the tool-execution loop, in order.")]
+    [DataMember(Name = "tool_history")]
+    public List<ChoiceMessage>? ToolHistory { get; set; }
     
     [Description("Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.")]
     [DataMember(Name = "metadata")]
@@ -384,15 +428,15 @@ public class AiUsage
 {
     [Description("Number of tokens in the generated completion.")]
     [DataMember(Name = "completion_tokens")]
-    public int CompletionTokens { get; set; }
+    public long CompletionTokens { get; set; }
 
     [Description("Number of tokens in the prompt.")]
     [DataMember(Name = "prompt_tokens")]
-    public int PromptTokens { get; set; }
+    public long PromptTokens { get; set; }
     
     [Description("Total number of tokens used in the request (prompt + completion).")]
     [DataMember(Name = "total_tokens")]
-    public int TotalTokens { get; set; }
+    public long TotalTokens { get; set; }
     
     [Description("Breakdown of tokens used in a completion.")]
     [DataMember(Name = "completion_tokens_details")]
@@ -401,6 +445,10 @@ public class AiUsage
     [Description("Breakdown of tokens used in the prompt.")]
     [DataMember(Name = "prompt_tokens_details")]
     public AiPromptUsage? PromptTokensDetails { get; set; }
+
+    [Description("Seconds spent servicing the completion, including every request in the tool loop.")]
+    [DataMember(Name = "duration")]
+    public long? Duration { get; set; }
 }
 
 [DataContract]
@@ -409,19 +457,19 @@ public class AiCompletionUsage
 {
     [Description("When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.\n\n")]
     [DataMember(Name = "accepted_prediction_tokens")]
-    public int AcceptedPredictionTokens { get; set; }
+    public long AcceptedPredictionTokens { get; set; }
 
     [Description("Audio input tokens generated by the model.")]
     [DataMember(Name = "audio_tokens")]
-    public int AudioTokens { get; set; }
+    public long AudioTokens { get; set; }
 
     [Description("Tokens generated by the model for reasoning.")]
     [DataMember(Name = "reasoning_tokens")]
-    public int ReasoningTokens { get; set; }
+    public long ReasoningTokens { get; set; }
     
     [Description("When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion.")]
     [DataMember(Name = "rejected_prediction_tokens")]
-    public int RejectedPredictionTokens { get; set; }
+    public long RejectedPredictionTokens { get; set; }
 }
 
 [DataContract]
@@ -430,15 +478,15 @@ public class AiPromptUsage
 {
     [Description("When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.\n\n")]
     [DataMember(Name = "accepted_prediction_tokens")]
-    public int AcceptedPredictionTokens { get; set; }
+    public long AcceptedPredictionTokens { get; set; }
 
     [Description("Audio input tokens present in the prompt.")]
     [DataMember(Name = "audio_tokens")]
-    public int AudioTokens { get; set; }
+    public long AudioTokens { get; set; }
 
     [Description("Cached tokens present in the prompt.")]
     [DataMember(Name = "cached_tokens")]
-    public int CachedTokens { get; set; }
+    public long CachedTokens { get; set; }
 }
 
 [DataContract]
@@ -455,6 +503,10 @@ public class Choice
     [Description("A chat completion message generated by the model.")]
     [DataMember(Name = "message")]
     public ChoiceMessage Message { get; set; }
+
+    [Description("Log probability information for the choice.")]
+    [DataMember(Name = "logprobs")]
+    public Logprobs? Logprobs { get; set; }
 }
 
 [DataContract]
@@ -471,10 +523,38 @@ public class ChoiceMessage
     [Description("The reasoning process used by the model.")]
     [DataMember(Name = "reasoning")]
     public string? Reasoning { get; set; }
-    
+
+    [Description("The reasoning process used by the model, as emitted by Gemini and most OpenAI-compatible providers.")]
+    [DataMember(Name = "reasoning_content")]
+    public string? ReasoningContent { get; set; }
+
+    [Description("The reasoning process used by the model, as emitted by Anthropic.")]
+    [DataMember(Name = "thinking")]
+    public string? Thinking { get; set; }
+
     [Description("The role of the author of this message.")]
     [DataMember(Name = "role")]
     public string Role { get; set; }
+
+    [Description("Unix timestamp (in milliseconds) the message was generated.")]
+    [DataMember(Name = "timestamp")]
+    public long? Timestamp { get; set; }
+
+    [Description("The tool call this message is responding to, set on `tool` role messages in tool_history.")]
+    [DataMember(Name = "tool_call_id")]
+    public string? ToolCallId { get; set; }
+
+    [Description("Images generated by the model or produced by a tool call.")]
+    [DataMember(Name = "images")]
+    public List<AiContent>? Images { get; set; }
+
+    [Description("Audio generated by the model or produced by a tool call.")]
+    [DataMember(Name = "audios")]
+    public List<AiContent>? Audios { get; set; }
+
+    [Description("Files produced by a tool call.")]
+    [DataMember(Name = "files")]
+    public List<AiContent>? Files { get; set; }
 
     [Description("Annotations for the message, when applicable, as when using the web search tool.")]
     [DataMember(Name = "annotations")]
@@ -533,7 +613,7 @@ public class ChoiceAudio
 
     [Description("The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.")]
     [DataMember(Name = "expires_at")]
-    public int ExpiresAt { get; set; }
+    public long ExpiresAt { get; set; }
     
     [Description("Unique identifier for this audio response.")]
     [DataMember(Name = "id")]
@@ -558,7 +638,7 @@ public class ToolCall
     
     [Description("The function that the model called.")]
     [DataMember(Name = "function")]
-    public string Function { get; set; }
+    public ToolFunction Function { get; set; }
 }
 
 [DataContract]

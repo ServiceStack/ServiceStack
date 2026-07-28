@@ -1,38 +1,44 @@
+using ServiceStack;
 using ServiceStack.AI;
-using ServiceStack.Configuration;
-using ServiceStack.Data;
-using ServiceStack.OrmLite;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAiChat))]
 
 namespace MyApp;
 
+/// <summary>
+/// AI Chat using ASP.NET Identity Auth: the signed-in username partitions all chat data and
+/// /v1/chat/completions additionally accepts Bearer API Keys (this host registers ApiKeysFeature).
+/// Chat history is persisted with OrmLite to the host's registered IDbConnectionFactory.
+/// </summary>
 public class ConfigureAiChat : IHostingStartup
 {
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices(services => {
             services.AddPlugin(new ChatFeature
             {
-                // ValidateRequest = async (req) => req.GetApiKey()?.HasScope(RoleNames.Admin) == true 
-                //     ? null 
-                //     : HttpResult.Redirect("/admin-ui"),
+                RequireAuth = true,
+                AuthType = ChatAuthType.OAuth,   // sign in with Identity Auth
+                SignInUrl = "/Account/Login",
+
+                // only enable providers we have API Keys for (default: all enabled in llms.json)
                 EnableProviders = [
-                    "servicestack",
                     "groq",
-                    "openrouter_free",
+                    "google",
+                    "anthropic",
+                    "openai",
+                    "openrouter",
                 ],
-                // Variables = {
-                //     ["GOOGLE_API_KEY"] = Environment.GetEnvironmentVariable("GOOGLE_FREE_API_KEY")!
-                // }
+
+                // Server-side code execution + filesystem tools are opt-in, e.g:
+                // ToolsConfig = new() {
+                //     EnableCodeExecution = true,
+                //     EnableFilesystemTools = true,
+                //     AllowedDirectories = [Path.Combine(Path.GetTempPath(), "chat-workspace")],
+                // },
             });
-            // services.AddSingleton<IChatStore,PostgresChatStore>();
-            services.AddSingleton<IChatStore,DbChatStore>();
-             
+
             services.ConfigurePlugin<MetadataFeature>(feature => {
                 feature.AddPluginLink("/chat", "AI Chat");
             });
-       }).ConfigureAppHost(appHost => {
-            using var db = appHost.Resolve<IDbConnectionFactory>().Open();
-            db.CreateTableIfNotExists<ChatCompletionLog>();
        });
 }

@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="chat\**\*.*;js\**\*.*;modules\**\*.*;" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+        <EmbeddedResource Include="chat\**\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
     </ItemGroup>
 
 </Project>

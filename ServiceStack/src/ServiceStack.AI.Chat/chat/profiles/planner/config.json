@@ -1,0 +1,60 @@
+{
+    "theme": "dark",
+    "model": "GLM-5.2",
+    "onlyTools": [
+        "get_current_time",
+        "calc",
+        "run_python",
+        "run_typescript",
+        "run_javascript",
+        "run_csharp",
+        "skill",
+        "run_bash",
+        "open",
+        "edit",
+        "computer",
+        "read_text_file",
+        "read_media_file",
+        "read_multiple_files",
+        "write_file",
+        "edit_file",
+        "create_directory",
+        "list_directory",
+        "list_directory_with_sizes",
+        "directory_tree",
+        "move_file",
+        "search_files",
+        "get_file_info",
+        "list_allowed_directories"
+    ],
+    "onlySkills": [
+        "create_plan"
+    ],
+    "actions": {
+        "Execute Plan": {
+            "profile": "coder",
+            "condition": {
+                "type": "file",
+                "glob": "PLAN.md",
+                "exists": false
+            }
+        },
+        "Save to PLAN.md": {
+            "message": "Save to PLAN.md",
+            "condition": {
+                "type": "file",
+                "glob": "PLAN.md",
+                "exists": false
+            }
+        },
+        "Execute PLAN.md": {
+            "message": "Execute PLAN.md",
+            "profile": "coder",
+            "condition": {
+                "type": "file",
+                "glob": "PLAN.md",
+                "exists": true
+            }
+        }
+    }
+}

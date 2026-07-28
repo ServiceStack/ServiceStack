@@ -10,112 +10,149 @@ Chart.register(...registerables)
 
 const { humanifyNumber, humanifyMs } = useFormatters()
 
-export class AdminQueryChatCompletionLogs extends QueryDb {
-    /** @param {{month?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
+export class AdminQueryChatRequests extends QueryDb {
+    /** @param {{month?:string,day?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {?string} */
     month;
-    getTypeName() { return 'AdminQueryChatCompletionLogs' }
+    /** @type {?string} */
+    day;
+    getTypeName() { return 'AdminQueryChatRequests' }
     getMethod() { return 'GET' }
     createResponse() { return new QueryResponse() }
 }
-export class ChatCompletionLog {
-    /** @param {{id?:number,refId?:string,userId?:string,apiKey?:string,model?:string,provider?:string,userPrompt?:string,answer?:string,requestBody?:string,responseBody?:string,errorCode?:string,error?:ResponseStatus,createdDate?:string,tag?:string,durationMs?:number,promptTokens?:number,completionTokens?:number,cost?:number,providerRef?:string,providerModel?:string,finishReason?:string,usage?:ModelUsage,threadId?:string,title?:string,meta?:{ [index:string]: string; }}} [init] */
+export class ChatRequest {
+    /** @param {{id?:number,user?:string,threadId?:number,createdAt?:string,updatedAt?:string,title?:string,model?:string,duration?:number,cost?:number,inputPrice?:number,inputTokens?:number,inputCachedTokens?:number,outputPrice?:number,outputTokens?:number,totalTokens?:number,usage?:string,provider?:string,providerModel?:string,providerRef?:string,finishReason?:string,startedAt?:string,completedAt?:string,error?:string,stackTrace?:string,ref?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
     /** @type {string} */
-    refId;
+    user;
+    /** @type {?number} */
+    threadId;
     /** @type {string} */
-    userId;
+    createdAt;
     /** @type {string} */
-    apiKey;
+    updatedAt;
+    /** @type {string} */
+    title;
     /** @type {string} */
     model;
+    /** @type {?number} Duration in seconds */
+    duration;
+    /** @type {?number} */
+    cost;
+    /** @type {?number} */
+    inputPrice;
+    /** @type {?number} */
+    inputTokens;
+    /** @type {?number} */
+    inputCachedTokens;
+    /** @type {?number} */
+    outputPrice;
+    /** @type {?number} */
+    outputTokens;
+    /** @type {?number} */
+    totalTokens;
+    /** @type {string} Provider usage JSON */
+    usage;
     /** @type {string} */
     provider;
     /** @type {string} */
-    userPrompt;
-    /** @type {string} */
-    answer;
-    /** @type {string} */
-    requestBody;
-    /** @type {string} */
-    responseBody;
-    /** @type {string} */
-    errorCode;
-    /** @type {ResponseStatus} */
-    error;
-    /** @type {string} */
-    createdDate;
-    /** @type {string} */
-    tag;
-    /** @type {?number} */
-    durationMs;
-    /** @type {?number} */
-    promptTokens;
-    /** @type {?number} */
-    completionTokens;
-    /** @type {number} */
-    cost;
+    providerModel;
     /** @type {string} */
     providerRef;
     /** @type {string} */
-    providerModel;
-    /** @type {string} */
     finishReason;
-    /** @type {ModelUsage} */
-    usage;
+    /** @type {?string} */
+    startedAt;
+    /** @type {?string} */
+    completedAt;
     /** @type {string} */
-    threadId;
+    error;
     /** @type {string} */
-    title;
-    /** @type {{ [index:string]: string; }} */
-    meta;
+    stackTrace;
+    /** @type {string} */
+    ref;
 }
-export class AdminMonthlyChatCompletionAnalytics {
+export class AdminMonthlyChatAnalytics {
     /** @param {{month?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?string} */
     month;
-    getTypeName() { return 'AdminMonthlyChatCompletionAnalytics' }
+    getTypeName() { return 'AdminMonthlyChatAnalytics' }
     getMethod() { return 'GET' }
-    createResponse() { return new AdminMonthlyChatCompletionAnalyticsResponse() }
+    createResponse() { return new AdminMonthlyChatAnalyticsResponse() }
 }
-export class AdminMonthlyChatCompletionAnalyticsResponse {
-    /** @param {{month?:string,availableMonths?:string[],modelStats?:ChatCompletionStat[],providerStats?:ChatCompletionStat[],dailyStats?:ChatCompletionStat[]}} [init] */
+export class AdminMonthlyChatAnalyticsResponse {
+    /** @param {{month?:string,availableMonths?:string[],modelStats?:ChatRequestStat[],providerStats?:ChatRequestStat[],dailyStats?:ChatRequestStat[]}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     month;
     /** @type {string[]} */
     availableMonths = [];
-    /** @type {ChatCompletionStat[]} */
+    /** @type {ChatRequestStat[]} */
     modelStats = [];
-    /** @type {ChatCompletionStat[]} */
+    /** @type {ChatRequestStat[]} */
     providerStats = [];
-    /** @type {ChatCompletionStat[]} */
+    /** @type {ChatRequestStat[]} */
     dailyStats = [];
 }
-export class AdminDailyChatCompletionAnalytics {
+export class AdminDailyChatAnalytics {
     /** @param {{day?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?string} */
     day;
-    getTypeName() { return 'AdminDailyChatCompletionAnalytics' }
+    getTypeName() { return 'AdminDailyChatAnalytics' }
     getMethod() { return 'GET' }
-    createResponse() { return new AdminDailyChatCompletionAnalyticsResponse() }
+    createResponse() { return new AdminDailyChatAnalyticsResponse() }
 }
-export class AdminDailyChatCompletionAnalyticsResponse {
-    /** @param {{modelStats?:ChatCompletionStat[],providerStats?:ChatCompletionStat[]}} [init] */
+export class AdminDailyChatAnalyticsResponse {
+    /** @param {{modelStats?:ChatRequestStat[],providerStats?:ChatRequestStat[]}} [init] */
     constructor(init) { Object.assign(this, init) }
-    /** @type {ChatCompletionStat[]} */
+    /** @type {ChatRequestStat[]} */
     modelStats = [];
-    /** @type {ChatCompletionStat[]} */
+    /** @type {ChatRequestStat[]} */
     providerStats = [];
 }
+export class AdminGetChatThread {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    getTypeName() { return 'AdminGetChatThread' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetChatThreadResponse() }
+}
+export class AdminGetChatThreadResponse {
+    /** @param {{id?:number,user?:string,title?:string,model?:string,provider?:string,systemPrompt?:string,messages?:ChatThreadMessage[]}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    user;
+    /** @type {string} */
+    title;
+    /** @type {string} */
+    model;
+    /** @type {string} */
+    provider;
+    /** @type {string} */
+    systemPrompt;
+    /** @type {ChatThreadMessage[]} */
+    messages = [];
+}
+export class ChatThreadMessage {
+    /** @param {{role?:string,content?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    role;
+    /** @type {string} */
+    content;
+}
 
-export class ChatCompletionStat {
-    /** @param {{name?:string,requests?:number,inputTokens?:number,outputTokens?:number,cost?:number}} [init] */
+export class ChatRequestStat {
+    /** @param {{name?:string,requests?:number,inputTokens?:number,outputTokens?:number,cost?:number,duration?:number}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     name;
@@ -127,6 +164,8 @@ export class ChatCompletionStat {
     outputTokens;
     /** @type {number} */
     cost;
+    /** @type {number} Total duration in seconds */
+    duration;
 }
 
 function formatCost(cost) {
@@ -134,6 +173,11 @@ function formatCost(cost) {
     const numFmt = new Intl.NumberFormat(undefined,{style:'currency',currency:'USD', maximumFractionDigits:6})
     var ret = numFmt.format(parseFloat(cost))
     return ret.endsWith('.00') ? ret.slice(0, -3) : ret
+}
+
+/** ChatRequest.Duration is recorded in seconds (ChatOrchestrator) */
+function formatDuration(secs) {
+    return secs ? humanifyMs(secs * 1000) : '—'
 }
 
 export const colors = [
@@ -270,7 +314,7 @@ const LogDetailDialog = {
                                             </div>
                                             <div>
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Provider</dt>
-                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ log.provider }}</dd>
+                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ log.provider || '—' }}</dd>
                                             </div>
                                             <div>
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cost</dt>
@@ -278,37 +322,45 @@ const LogDetailDialog = {
                                             </div>
                                             <div>
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Duration</dt>
-                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ log.durationMs ? humanifyMs(log.durationMs) : '—' }}</dd>
+                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ formatDuration(log.duration) }}</dd>
                                             </div>
                                             <div>
-                                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Prompt Tokens</dt>
-                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ humanifyNumber(log.promptTokens || 0) }}</dd>
+                                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Input Tokens</dt>
+                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                                    {{ humanifyNumber(log.inputTokens || 0) }}
+                                                    <span v-if="log.inputCachedTokens" class="text-gray-500 dark:text-gray-400">({{ humanifyNumber(log.inputCachedTokens) }} cached)</span>
+                                                </dd>
                                             </div>
                                             <div>
-                                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Completion Tokens</dt>
-                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ humanifyNumber(log.completionTokens || 0) }}</dd>
+                                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Output Tokens</dt>
+                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ humanifyNumber(log.outputTokens || 0) }}</dd>
+                                            </div>
+                                            <div v-if="log.user">
+                                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User</dt>
+                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ log.user }}</dd>
                                             </div>
                                             <div v-if="log.finishReason">
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Finish Reason</dt>
                                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ log.finishReason }}</dd>
                                             </div>
-                                            <div v-if="log.createdDate">
+                                            <div v-if="log.providerModel">
+                                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Provider Model</dt>
+                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ log.providerModel }}</dd>
+                                            </div>
+                                            <div v-if="log.createdAt">
                                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Created</dt>
-                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ new Date(log.createdDate).toLocaleString() }}</dd>
+                                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ new Date(log.createdAt).toLocaleString() }}</dd>
                                             </div>
                                         </dl>
                                     </div>
 
-                                    <!-- User Prompt -->
-                                    <div v-if="log.userPrompt">
-                                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">User Prompt</h3>
-                                        <div class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.userPrompt }}</div>
-                                    </div>
-
-                                    <!-- Answer -->
-                                    <div v-if="log.answer">
+                                    <!-- Conversation -->
+                                    <div v-if="log.threadId">
                                         <div class="flex justify-between items-center mb-2">
-                                            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Answer</h3>
+                                            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                Conversation
+                                                <span v-if="thread?.title" class="ml-1 font-normal text-gray-500 dark:text-gray-400">{{ thread.title }}</span>
+                                            </h3>
                                             <div class="flex space-x-2">
                                                 <!-- code icon -->
                                                 <svg @click="preview = false" :class="['cursor-pointer size-4', !preview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M5.536 15.536L2 12l3.536-3.536m12.928 7.072L22 12l-3.536-3.536M14 4l-4 16"/></svg>
@@ -316,31 +368,33 @@ const LogDetailDialog = {
                                                 <svg @click="preview = true" :class="['cursor-pointer size-4', preview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26"><path fill="currentColor" d="M4 0C1.8 0 0 1.8 0 4v17c0 2.2 1.8 4 4 4h11c.4 0 .7-.094 1-.094c-1.4-.3-2.594-1.006-3.594-1.906H4c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h6.313c.7.2.687 1.1.687 2v3c0 .6.4 1 1 1h3c1 0 2 0 2 1v1h.5c.5 0 1 .088 1.5.188V8c0-1.1-.988-2.112-2.688-3.813c-.3-.2-.512-.487-.812-.687c-.2-.3-.488-.513-.688-.813C13.113.988 12.1 0 11 0zm13.5 12c-3 0-5.5 2.5-5.5 5.5s2.5 5.5 5.5 5.5c1.273 0 2.435-.471 3.375-1.219l.313.313a.955.955 0 0 0 .125 1.218l2.5 2.5c.4.4.975.4 1.375 0l.5-.5c.4-.4.4-1.006 0-1.406l-2.5-2.5a.935.935 0 0 0-1.157-.156l-.281-.313c.773-.948 1.25-2.14 1.25-3.437c0-3-2.5-5.5-5.5-5.5m0 1.5c2.2 0 4 1.8 4 4s-1.8 4-4 4s-4-1.8-4-4s1.8-4 4-4"/></svg>
                                             </div>
                                         </div>
-                                        <!-- Code view (default) -->
-                                        <div v-if="!preview" class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ log.answer?.trim() }}</div>
-                                        <!-- Preview view (rendered markdown) -->
-                                        <div v-else class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 prose prose-sm dark:prose-invert max-w-none" v-html="renderMarkdown(log.answer?.trim())"></div>
+                                        <div v-if="loadingThread" class="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
+                                        <div v-else-if="!messages.length" class="text-sm text-gray-500 dark:text-gray-400">This conversation is no longer available</div>
+                                        <div v-else class="space-y-3">
+                                            <div v-for="(msg,i) in messages" :key="i">
+                                                <div class="text-xs font-medium uppercase tracking-wider mb-1"
+                                                     :class="msg.role === 'user' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">
+                                                    {{ msg.role }}
+                                                </div>
+                                                <div v-if="!preview" class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ msg.content?.trim() }}</div>
+                                                <div v-else class="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm text-gray-900 dark:text-gray-100 prose prose-sm dark:prose-invert max-w-none" v-html="renderMarkdown(msg.content?.trim())"></div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <!-- Error -->
                                     <div v-if="log.error">
                                         <h3 class="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Error</h3>
                                         <div class="bg-red-50 dark:bg-red-900/20 rounded-md p-3 text-sm text-red-900 dark:text-red-100">
-                                            <div v-if="log.errorCode" class="font-medium mb-1">{{ log.errorCode }}</div>
-                                            <div>{{ log.error.message || JSON.stringify(log.error) }}</div>
+                                            <div class="whitespace-pre-wrap">{{ log.error }}</div>
+                                            <div v-if="log.stackTrace" class="mt-2 pt-2 border-t border-red-200 dark:border-red-800 text-xs whitespace-pre-wrap opacity-80">{{ log.stackTrace }}</div>
                                         </div>
                                     </div>
 
-                                    <!-- Request Body -->
-                                    <div v-if="log.requestBody">
-                                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Request Body</h3>
-                                        <pre class="whitespace-pre-wrap"><code :key="log.id" lang="json" class="language-json text-sm" v-highlightjs="formatJson(log.requestBody)"></code></pre>
-                                    </div>
-
-                                    <!-- Response Body -->
-                                    <div v-if="log.responseBody">
-                                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Response Body</h3>
-                                        <pre class="whitespace-pre-wrap"><code :key="log.id" lang="json" class="language-json text-sm" v-highlightjs="formatJson(log.responseBody)"></code></pre>
+                                    <!-- Usage -->
+                                    <div v-if="log.usage">
+                                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Usage</h3>
+                                        <pre class="whitespace-pre-wrap"><code :key="log.id" lang="json" class="language-json text-sm" v-highlightjs="formatJson(log.usage)"></code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -353,6 +407,8 @@ const LogDetailDialog = {
     props: ['log', 'logs', 'routes'],
     emits: ['close'],
     setup(props, { emit }) {
+        const client = useClient()
+
         // Load preview preference from localStorage, default to false
         const savedPreview = localStorage.getItem('adminChat.preview')
         const preview = ref(savedPreview === 'true')
@@ -361,6 +417,28 @@ const LogDetailDialog = {
         watch(preview, (newValue) => {
             localStorage.setItem('adminChat.preview', newValue.toString())
         })
+
+        // The request only records its thread, the conversation is loaded on demand
+        const thread = ref(null)
+        const loadingThread = ref(false)
+        // the system prompt can dwarf the conversation, it's omitted from the transcript along with
+        // content-less messages (an assistant turn that only made tool calls)
+        const messages = computed(() => (thread.value?.messages ?? [])
+            .filter(x => x.role !== 'system' && x.content?.trim()))
+
+        async function loadThread(threadId) {
+            thread.value = null
+            if (!threadId) return
+            loadingThread.value = true
+            try {
+                const api = await client.api(new AdminGetChatThread({ id: threadId }))
+                thread.value = api.response ?? null
+            } finally {
+                loadingThread.value = false
+            }
+        }
+
+        watch(() => props.log?.threadId, threadId => loadThread(threadId), { immediate: true })
 
         function formatJson(json) {
             try {
@@ -416,11 +494,15 @@ const LogDetailDialog = {
 
         return {
             formatCost,
+            formatDuration,
             humanifyMs,
             humanifyNumber,
             formatJson,
             preview,
             renderMarkdown,
+            thread,
+            loadingThread,
+            messages,
         }
     }
 }
@@ -643,11 +725,11 @@ export const AdminChat = {
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-900">
                                     <tr>
-                                        <th scope="col" @click="toggleSort('createdDate')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                        <th scope="col" @click="toggleSort('createdAt')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
                                             <div class="flex items-center gap-1">
                                                 Date
-                                                <span v-if="sortBy === 'createdDate'" class="text-gray-400">↓</span>
-                                                <span v-else-if="sortBy === '-createdDate'" class="text-gray-400">↑</span>
+                                                <span v-if="sortBy === 'createdAt'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-createdAt'" class="text-gray-400">↑</span>
                                             </div>
                                         </th>
                                         <th scope="col" @click="toggleSort('model')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
@@ -664,11 +746,14 @@ export const AdminChat = {
                                                 <span v-else-if="sortBy === '-provider'" class="text-gray-400">↑</span>
                                             </div>
                                         </th>
-                                        <th scope="col" @click="toggleSort('completionTokens')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Prompt
+                                        </th>
+                                        <th scope="col" @click="toggleSort('outputTokens')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
                                             <div class="flex items-center gap-1">
                                                 Tokens
-                                                <span v-if="sortBy === 'completionTokens'" class="text-gray-400">↓</span>
-                                                <span v-else-if="sortBy === '-completionTokens'" class="text-gray-400">↑</span>
+                                                <span v-if="sortBy === 'outputTokens'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-outputTokens'" class="text-gray-400">↑</span>
                                             </div>
                                         </th>
                                         <th scope="col" @click="toggleSort('cost')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
@@ -678,11 +763,11 @@ export const AdminChat = {
                                                 <span v-else-if="sortBy === '-cost'" class="text-gray-400">↑</span>
                                             </div>
                                         </th>
-                                        <th scope="col" @click="toggleSort('durationMs')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+                                        <th scope="col" @click="toggleSort('duration')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
                                             <div class="flex items-center gap-1">
                                                 Duration
-                                                <span v-if="sortBy === 'durationMs'" class="text-gray-400">↓</span>
-                                                <span v-else-if="sortBy === '-durationMs'" class="text-gray-400">↑</span>
+                                                <span v-if="sortBy === 'duration'" class="text-gray-400">↓</span>
+                                                <span v-else-if="sortBy === '-duration'" class="text-gray-400">↑</span>
                                             </div>
                                         </th>
                                     </tr>
@@ -692,22 +777,25 @@ export const AdminChat = {
                                         @click="routes.to({ show:log.id })"
                                         class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ new Date(log.createdDate).toLocaleString() }}
+                                            {{ new Date(log.createdAt).toLocaleString() }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ log.model }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ log.provider }}
+                                            {{ log.provider || '—' }}
+                                        </td>
+                                        <td class="px-6 py-4 max-w-xs truncate text-sm text-gray-500 dark:text-gray-400" :title="log.title">
+                                            {{ log.title }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ humanifyNumber(log.completionTokens || 0) }}
+                                            {{ humanifyNumber(log.outputTokens || 0) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {{ formatCost(log.cost) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {{ log.durationMs ? humanifyMs(log.durationMs) : '—' }}
+                                            {{ formatDuration(log.duration) }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -946,13 +1034,13 @@ export const AdminChat = {
 
         // Load data from API
         async function loadData(args={}) {
-            const apiAnalytics = await client.api(new AdminMonthlyChatCompletionAnalytics({
+            const apiAnalytics = await client.api(new AdminMonthlyChatAnalytics({
                 month: routes.month,
             }))
             analytics.value = apiAnalytics.response || null
 
             const skip = (currentPage.value - 1) * pageSize.value
-            const apiLogs = await client.api(new AdminQueryChatCompletionLogs({
+            const apiLogs = await client.api(new AdminQueryChatRequests({
                 month: routes.month,
                 include: 'total',
                 orderBy: sortBy.value,
@@ -975,7 +1063,7 @@ export const AdminChat = {
 
         // Load daily analytics data
         async function loadDailyData(day) {
-            const apiDailyAnalytics = await client.api(new AdminDailyChatCompletionAnalytics({
+            const apiDailyAnalytics = await client.api(new AdminDailyChatAnalytics({
                 day: day,
             }))
             dailyAnalytics.value = apiDailyAnalytics.response || null
@@ -1657,8 +1745,9 @@ export const AdminChat = {
             }
         })
         watch(() => routes.month, () => {
-            selectedDay.value = null
+            // selectedDay is derived from routes.day, which MonthSelector clears when the month changes
             dailyAnalytics.value = null
+            currentPage.value = 1
             loadData()
         })
         watch(() => routes.show, () => {
@@ -1696,6 +1785,7 @@ export const AdminChat = {
             refDailyTokensByModel,
             refDailyTokensByProvider,
             formatCost,
+            formatDuration,
             humanifyNumber,
             humanifyMs,
             preview,

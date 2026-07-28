@@ -1,0 +1,1919 @@
+[
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://openrouter/web_search",
+        "title": "OpenRouter Web Search Tool",
+        "description": "Configuration schema for the OpenRouter web_search server tool",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "openrouter:web_search",
+                "title": "Tool Type",
+                "description": "The tool type identifier",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "parameters": {
+                "type": "object",
+                "title": "Search Parameters",
+                "description": "Optional parameters to customize search behavior",
+                "properties": {
+                    "engine": {
+                        "type": "string",
+                        "title": "Search Engine",
+                        "description": "Search engine to use",
+                        "default": "auto",
+                        "enum": [
+                            "auto",
+                            "native",
+                            "exa",
+                            "firecrawl",
+                            "parallel",
+                            "perplexity"
+                        ],
+                        "ui": {
+                            "widget": "select",
+                            "order": 1
+                        }
+                    },
+                    "max_results": {
+                        "type": "integer",
+                        "title": "Max Results",
+                        "description": "Maximum results per search call. Applies to Exa, Firecrawl, Parallel, and Perplexity engines; ignored with native provider search.",
+                        "default": 5,
+                        "minimum": 1,
+                        "maximum": 25,
+                        "ui": {
+                            "widget": "number",
+                            "order": 2,
+                            "help": "Range: 1–25 (1–20 for Perplexity)"
+                        }
+                    },
+                    "max_total_results": {
+                        "type": "integer",
+                        "title": "Max Total Results",
+                        "description": "Maximum total results across all search calls in a single request. Useful for controlling cost and context size in agentic loops.",
+                        "minimum": 1,
+                        "ui": {
+                            "widget": "number",
+                            "order": 3
+                        }
+                    },
+                    "search_context_size": {
+                        "type": "string",
+                        "title": "Search Context Size",
+                        "description": "How much context to retrieve per result. For Exa, pins a fixed per-result character cap (5K/15K/30K); when omitted, Exa picks adaptively (~2–4K per result). For Parallel, controls total characters across all results. For Perplexity, maps to the Search API's native search_context_size parameter. Ignored with native provider search and Firecrawl. Overridden by max_characters when both are set.",
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high"
+                        ],
+                        "ui": {
+                            "widget": "radio",
+                            "order": 4,
+                            "enumDescriptions": {
+                                "low": "~5K chars per result (Exa)",
+                                "medium": "~15K chars per result (Exa) / default for Parallel",
+                                "high": "~30K chars per result (Exa)"
+                            }
+                        }
+                    },
+                    "max_characters": {
+                        "type": "integer",
+                        "title": "Max Characters",
+                        "description": "Exact maximum characters of content per result. Applies to Exa, Parallel, and Perplexity; ignored with native provider search and Firecrawl. For Exa, caps highlight content per result. For Parallel, caps excerpt content per result (default 1,500 when omitted). For Perplexity, converted to a token budget via max_tokens_per_page and trimmed to the exact character cap. When both max_characters and search_context_size are set, max_characters takes precedence.",
+                        "minimum": 1,
+                        "maximum": 100000,
+                        "ui": {
+                            "widget": "number",
+                            "order": 5,
+                            "help": "Range: 1–100,000. Overrides search_context_size when set."
+                        }
+                    },
+                    "user_location": {
+                        "type": "object",
+                        "title": "User Location",
+                        "description": "Approximate user location for location-biased results. Currently only supported by native provider search; ignored with Exa, Firecrawl, Parallel, and Perplexity.",
+                        "properties": {
+                            "country": {
+                                "type": "string",
+                                "title": "Country",
+                                "description": "ISO 3166-1 alpha-2 country code (e.g. \"AU\")"
+                            },
+                            "region": {
+                                "type": "string",
+                                "title": "Region / State",
+                                "description": "Region or state name"
+                            },
+                            "city": {
+                                "type": "string",
+                                "title": "City",
+                                "description": "City name"
+                            }
+                        },
+                        "ui": {
+                            "widget": "fieldset",
+                            "order": 6,
+                            "applicableEngines": [
+                                "native"
+                            ]
+                        }
+                    },
+                    "allowed_domains": {
+                        "type": "array",
+                        "title": "Allowed Domains",
+                        "description": "Limit results to these domains. Supported by Exa, Firecrawl, Parallel, Perplexity, and most native providers.",
+                        "items": {
+                            "type": "string",
+                            "format": "hostname",
+                            "title": "Domain"
+                        },
+                        "ui": {
+                            "widget": "tag-input",
+                            "order": 7,
+                            "placeholder": "e.g. example.com"
+                        }
+                    },
+                    "excluded_domains": {
+                        "type": "array",
+                        "title": "Excluded Domains",
+                        "description": "Exclude results from these domains. Supported by Exa, Firecrawl, Parallel, Perplexity, and some native providers.",
+                        "items": {
+                            "type": "string",
+                            "format": "hostname",
+                            "title": "Domain"
+                        },
+                        "ui": {
+                            "widget": "tag-input",
+                            "order": 8,
+                            "placeholder": "e.g. reddit.com"
+                        }
+                    }
+                }
+            }
+        },
+        "required": [
+            "type"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "engine",
+                    "label": "Engine",
+                    "fields": [
+                        "parameters.engine"
+                    ]
+                },
+                {
+                    "id": "results",
+                    "label": "Result Limits",
+                    "fields": [
+                        "parameters.max_results",
+                        "parameters.max_total_results"
+                    ]
+                },
+                {
+                    "id": "context",
+                    "label": "Context & Content",
+                    "fields": [
+                        "parameters.search_context_size",
+                        "parameters.max_characters"
+                    ]
+                },
+                {
+                    "id": "filtering",
+                    "label": "Domain Filtering",
+                    "fields": [
+                        "parameters.allowed_domains",
+                        "parameters.excluded_domains"
+                    ]
+                },
+                {
+                    "id": "location",
+                    "label": "Location Bias",
+                    "fields": [
+                        "parameters.user_location"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://openrouter/datetime",
+        "title": "OpenRouter Datetime Tool",
+        "description": "Configuration schema for the OpenRouter datetime server tool",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "openrouter:datetime",
+                "title": "Tool Type",
+                "description": "The tool type identifier",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "parameters": {
+                "type": "object",
+                "title": "Datetime Parameters",
+                "description": "Optional parameters to customize datetime behavior",
+                "properties": {
+                    "timezone": {
+                        "type": "string",
+                        "title": "Timezone",
+                        "description": "IANA timezone name used to determine the current date and time.",
+                        "default": "UTC",
+                        "examples": [
+                            "America/New_York",
+                            "Europe/London",
+                            "Asia/Tokyo",
+                            "Australia/Perth",
+                            "UTC"
+                        ],
+                        "ui": {
+                            "widget": "timezone-select",
+                            "order": 1,
+                            "placeholder": "e.g. America/New_York",
+                            "help": "Must be a valid IANA timezone name (e.g. \"America/New_York\", \"Europe/London\", \"Asia/Tokyo\")"
+                        }
+                    }
+                }
+            }
+        },
+        "required": [
+            "type"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "datetime",
+                    "label": "Datetime Settings",
+                    "fields": [
+                        "parameters.timezone"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://openrouter/image_generation",
+        "title": "OpenRouter Image Generation Tool",
+        "description": "Configuration schema for the OpenRouter image_generation server tool",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "openrouter:image_generation",
+                "title": "Tool Type",
+                "description": "The tool type identifier",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "parameters": {
+                "type": "object",
+                "title": "Image Generation Parameters",
+                "description": "Optional parameters to customize image generation output",
+                "properties": {
+                    "model": {
+                        "type": "string",
+                        "title": "Model",
+                        "description": "Which image generation model to use.",
+                        "default": "openai/gpt-5-image",
+                        "examples": [
+                            "openai/gpt-5-image",
+                            "openai/dall-e-3",
+                            "stability-ai/stable-diffusion-3",
+                            "black-forest-labs/flux-1-schnell",
+                            "black-forest-labs/flux-1-dev"
+                        ],
+                        "ui": {
+                            "widget": "combobox",
+                            "order": 1,
+                            "placeholder": "e.g. openai/gpt-5-image",
+                            "help": "See available image models in OpenRouter docs"
+                        }
+                    },
+                    "quality": {
+                        "type": "string",
+                        "title": "Quality",
+                        "description": "Image quality level. Available values are model-dependent.",
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high"
+                        ],
+                        "ui": {
+                            "widget": "radio",
+                            "order": 2,
+                            "help": "Model-dependent; not all models support all quality levels"
+                        }
+                    },
+                    "size": {
+                        "type": "string",
+                        "title": "Size",
+                        "description": "Image dimensions as widthxheight.",
+                        "examples": [
+                            "1024x1024",
+                            "512x512",
+                            "1792x1024",
+                            "1024x1792"
+                        ],
+                        "ui": {
+                            "widget": "combobox",
+                            "order": 3,
+                            "placeholder": "e.g. 1024x1024"
+                        }
+                    },
+                    "aspect_ratio": {
+                        "type": "string",
+                        "title": "Aspect Ratio",
+                        "description": "Desired aspect ratio of the generated image.",
+                        "examples": [
+                            "1:1",
+                            "16:9",
+                            "4:3",
+                            "3:2",
+                            "9:16"
+                        ],
+                        "ui": {
+                            "widget": "combobox",
+                            "order": 4,
+                            "placeholder": "e.g. 16:9",
+                            "help": "May be mutually exclusive with size depending on the model"
+                        }
+                    },
+                    "background": {
+                        "type": "string",
+                        "title": "Background",
+                        "description": "Background style of the generated image.",
+                        "enum": [
+                            "transparent",
+                            "opaque"
+                        ],
+                        "ui": {
+                            "widget": "radio",
+                            "order": 5
+                        }
+                    },
+                    "output_format": {
+                        "type": "string",
+                        "title": "Output Format",
+                        "description": "File format of the returned image.",
+                        "enum": [
+                            "png",
+                            "jpeg",
+                            "webp"
+                        ],
+                        "ui": {
+                            "widget": "radio",
+                            "order": 6
+                        }
+                    },
+                    "output_compression": {
+                        "type": "number",
+                        "title": "Output Compression",
+                        "description": "Compression level for lossy output formats (jpeg, webp). Has no effect on png.",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "ui": {
+                            "widget": "slider",
+                            "order": 7,
+                            "help": "Range: 0–100. Only applies to lossy formats (jpeg, webp).",
+                            "showWhen": {
+                                "field": "parameters.output_format",
+                                "in": [
+                                    "jpeg",
+                                    "webp"
+                                ]
+                            }
+                        }
+                    },
+                    "moderation": {
+                        "type": "string",
+                        "title": "Moderation",
+                        "description": "Content moderation level applied to the generation request.",
+                        "enum": [
+                            "auto",
+                            "low"
+                        ],
+                        "ui": {
+                            "widget": "radio",
+                            "order": 8
+                        }
+                    }
+                }
+            }
+        },
+        "required": [
+            "type"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "model",
+                    "label": "Model",
+                    "fields": [
+                        "parameters.model"
+                    ]
+                },
+                {
+                    "id": "dimensions",
+                    "label": "Dimensions",
+                    "fields": [
+                        "parameters.size",
+                        "parameters.aspect_ratio"
+                    ]
+                },
+                {
+                    "id": "quality",
+                    "label": "Quality & Style",
+                    "fields": [
+                        "parameters.quality",
+                        "parameters.background"
+                    ]
+                },
+                {
+                    "id": "output",
+                    "label": "Output",
+                    "fields": [
+                        "parameters.output_format",
+                        "parameters.output_compression"
+                    ]
+                },
+                {
+                    "id": "safety",
+                    "label": "Safety",
+                    "fields": [
+                        "parameters.moderation"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://openrouter/web_fetch",
+        "title": "OpenRouter Web Fetch Tool",
+        "description": "Configuration schema for the OpenRouter web_fetch server tool",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "openrouter:web_fetch",
+                "title": "Tool Type",
+                "description": "The tool type identifier",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "parameters": {
+                "type": "object",
+                "title": "Web Fetch Parameters",
+                "description": "Optional parameters to customize web fetch behavior",
+                "properties": {
+                    "engine": {
+                        "type": "string",
+                        "title": "Fetch Engine",
+                        "description": "Fetch engine to use.",
+                        "default": "auto",
+                        "enum": [
+                            "auto",
+                            "native",
+                            "exa",
+                            "openrouter",
+                            "firecrawl",
+                            "parallel"
+                        ],
+                        "ui": {
+                            "widget": "select",
+                            "order": 1
+                        }
+                    },
+                    "max_uses": {
+                        "type": "integer",
+                        "title": "Max Uses",
+                        "description": "Maximum number of fetches per request. Once exceeded, the tool returns an error.",
+                        "minimum": 1,
+                        "ui": {
+                            "widget": "number",
+                            "order": 2,
+                            "placeholder": "e.g. 10"
+                        }
+                    },
+                    "max_content_tokens": {
+                        "type": "integer",
+                        "title": "Max Content Tokens",
+                        "description": "Maximum content length in approximate tokens. Content exceeding this limit is truncated.",
+                        "minimum": 1,
+                        "ui": {
+                            "widget": "number",
+                            "order": 3,
+                            "placeholder": "e.g. 100000"
+                        }
+                    },
+                    "allowed_domains": {
+                        "type": "array",
+                        "title": "Allowed Domains",
+                        "description": "Only fetch from these domains. Requests to any other domain will be blocked.",
+                        "items": {
+                            "type": "string",
+                            "format": "hostname",
+                            "title": "Domain"
+                        },
+                        "ui": {
+                            "widget": "tag-input",
+                            "order": 4,
+                            "placeholder": "e.g. docs.example.com"
+                        }
+                    },
+                    "blocked_domains": {
+                        "type": "array",
+                        "title": "Blocked Domains",
+                        "description": "Never fetch from these domains. Requests to these domains will always be blocked.",
+                        "items": {
+                            "type": "string",
+                            "format": "hostname",
+                            "title": "Domain"
+                        },
+                        "ui": {
+                            "widget": "tag-input",
+                            "order": 5,
+                            "placeholder": "e.g. private.example.com"
+                        }
+                    }
+                }
+            }
+        },
+        "required": [
+            "type"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "engine",
+                    "label": "Engine",
+                    "fields": [
+                        "parameters.engine"
+                    ]
+                },
+                {
+                    "id": "limits",
+                    "label": "Limits",
+                    "fields": [
+                        "parameters.max_uses",
+                        "parameters.max_content_tokens"
+                    ]
+                },
+                {
+                    "id": "filtering",
+                    "label": "Domain Filtering",
+                    "fields": [
+                        "parameters.allowed_domains",
+                        "parameters.blocked_domains"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://openrouter/fusion",
+        "title": "OpenRouter Fusion Tool",
+        "description": "Configuration schema for the OpenRouter fusion server tool — runs a panel of models in parallel with web_search and web_fetch enabled, then synthesizes results via a judge model.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "openrouter:fusion",
+                "title": "Tool Type",
+                "description": "The tool type identifier",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "parameters": {
+                "type": "object",
+                "title": "Fusion Parameters",
+                "description": "Optional parameters to override fusion defaults",
+                "properties": {
+                    "analysis_models": {
+                        "type": "array",
+                        "title": "Analysis Models",
+                        "description": "Models that form the panel. Each runs in parallel with openrouter:web_search and openrouter:web_fetch enabled. Defaults to a quality preset (~anthropic/claude-opus-latest, ~openai/gpt-latest, ~google/gemini-pro-latest).",
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "items": {
+                            "type": "string",
+                            "title": "Model ID"
+                        },
+                        "default": [
+                            "~anthropic/claude-opus-latest",
+                            "~openai/gpt-latest",
+                            "~google/gemini-pro-latest"
+                        ],
+                        "examples": [
+                            "~google/gemini-flash-latest",
+                            "deepseek/deepseek-v3.2",
+                            "~moonshotai/kimi-latest",
+                            "~anthropic/claude-opus-latest",
+                            "~openai/gpt-latest"
+                        ],
+                        "ui": {
+                            "widget": "tag-input",
+                            "order": 1,
+                            "placeholder": "e.g. ~anthropic/claude-opus-latest",
+                            "help": "1–8 models allowed. Each model runs in parallel with web_search and web_fetch."
+                        }
+                    },
+                    "model": {
+                        "type": "string",
+                        "title": "Judge Model",
+                        "description": "The model that produces the structured analysis JSON from the panel responses. Defaults to the same model handling your outer request.",
+                        "examples": [
+                            "~anthropic/claude-opus-latest",
+                            "~openai/gpt-latest",
+                            "~google/gemini-pro-latest"
+                        ],
+                        "ui": {
+                            "widget": "combobox",
+                            "order": 2,
+                            "placeholder": "Defaults to your outer model",
+                            "help": "The judge always runs at temperature 0."
+                        }
+                    },
+                    "max_tool_calls": {
+                        "type": "integer",
+                        "title": "Max Tool Calls",
+                        "description": "Maximum tool-calling steps each panel model and the judge may take in their web_search / web_fetch loop before they must return text.",
+                        "default": 8,
+                        "minimum": 1,
+                        "maximum": 16,
+                        "ui": {
+                            "widget": "slider",
+                            "order": 3,
+                            "help": "Range: 1–16. Applies to each panel model and the judge independently."
+                        }
+                    },
+                    "max_completion_tokens": {
+                        "type": "integer",
+                        "title": "Max Completion Tokens",
+                        "description": "Maximum output tokens (including reasoning) per inner panel or judge call. Keeps reasoning-heavy models from exhausting their budget before producing visible text.",
+                        "minimum": 1,
+                        "ui": {
+                            "widget": "number",
+                            "order": 4,
+                            "placeholder": "Provider default"
+                        }
+                    },
+                    "reasoning": {
+                        "type": "object",
+                        "title": "Reasoning Config",
+                        "description": "Reasoning configuration forwarded to both panel and judge calls.",
+                        "properties": {
+                            "effort": {
+                                "type": "string",
+                                "title": "Effort",
+                                "description": "Reasoning effort level.",
+                                "enum": [
+                                    "low",
+                                    "medium",
+                                    "high"
+                                ],
+                                "ui": {
+                                    "widget": "radio"
+                                }
+                            },
+                            "max_tokens": {
+                                "type": "integer",
+                                "title": "Max Reasoning Tokens",
+                                "description": "Maximum tokens allocated for reasoning.",
+                                "minimum": 1,
+                                "ui": {
+                                    "widget": "number",
+                                    "placeholder": "Provider default"
+                                }
+                            }
+                        },
+                        "ui": {
+                            "widget": "fieldset",
+                            "order": 5,
+                            "help": "Forwarded to panel and judge calls. Provider default if omitted."
+                        }
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature",
+                        "description": "Temperature forwarded to the panel model calls. The judge always runs at temperature 0 regardless of this setting.",
+                        "minimum": 0,
+                        "maximum": 2,
+                        "ui": {
+                            "widget": "slider",
+                            "order": 6,
+                            "step": 0.1,
+                            "placeholder": "Provider default",
+                            "help": "Range: 0–2. Only applies to panel models; judge is always 0."
+                        }
+                    }
+                }
+            }
+        },
+        "required": [
+            "type"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "panel",
+                    "label": "Panel Models",
+                    "fields": [
+                        "parameters.analysis_models"
+                    ]
+                },
+                {
+                    "id": "judge",
+                    "label": "Judge Model",
+                    "fields": [
+                        "parameters.model"
+                    ]
+                },
+                {
+                    "id": "limits",
+                    "label": "Limits",
+                    "fields": [
+                        "parameters.max_tool_calls",
+                        "parameters.max_completion_tokens"
+                    ]
+                },
+                {
+                    "id": "inference",
+                    "label": "Inference",
+                    "fields": [
+                        "parameters.reasoning",
+                        "parameters.temperature"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://openrouter/advisor",
+        "title": "OpenRouter Advisor Tool",
+        "description": "Configuration schema for the OpenRouter advisor server tool — consults a sub-agent model that can optionally use OpenRouter server tools and see the parent conversation.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "openrouter:advisor",
+                "title": "Tool Type",
+                "description": "The tool type identifier",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "parameters": {
+                "type": "object",
+                "title": "Advisor Parameters",
+                "description": "Optional parameters to configure the advisor sub-agent",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name",
+                        "description": "Optional name for this advisor. The model sees one tool per named advisor (plus one default for an entry with no name). Names must be unique across entries.",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[A-Za-z0-9 _-]+$",
+                        "ui": {
+                            "widget": "text",
+                            "order": 1,
+                            "placeholder": "Default advisor",
+                            "help": "Letters, digits, spaces, underscores, and dashes only. 1–64 chars. Must be unique across advisor entries."
+                        }
+                    },
+                    "model": {
+                        "type": "string",
+                        "title": "Advisor Model",
+                        "description": "The advisor model to consult. Any OpenRouter model is supported. Defaults to the outer request model.",
+                        "examples": [
+                            "~anthropic/claude-opus-latest",
+                            "~openai/gpt-latest",
+                            "~google/gemini-pro-latest",
+                            "deepseek/deepseek-v3.2",
+                            "~moonshotai/kimi-latest"
+                        ],
+                        "ui": {
+                            "widget": "combobox",
+                            "order": 2,
+                            "placeholder": "Outer request model"
+                        }
+                    },
+                    "instructions": {
+                        "type": "string",
+                        "title": "Instructions",
+                        "description": "System instructions for the advisor sub-agent.",
+                        "ui": {
+                            "widget": "textarea",
+                            "order": 3,
+                            "placeholder": "e.g. You are a senior staff engineer. Be decisive.",
+                            "rows": 4
+                        }
+                    },
+                    "tools": {
+                        "type": "array",
+                        "title": "Advisor Tools",
+                        "description": "Tools made available to the advisor sub-agent. Only OpenRouter server tools are supported (e.g. openrouter:web_search). Function tools are rejected with a 400 error. The advisor may not list itself.",
+                        "items": {
+                            "type": "object",
+                            "title": "Tool",
+                            "required": [
+                                "type"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "title": "Tool Type",
+                                    "enum": [
+                                        "openrouter:web_search",
+                                        "openrouter:web_fetch",
+                                        "openrouter:datetime",
+                                        "openrouter:image_generation"
+                                    ],
+                                    "ui": {
+                                        "widget": "select"
+                                    }
+                                }
+                            }
+                        },
+                        "ui": {
+                            "widget": "tool-list",
+                            "order": 4,
+                            "help": "Only OpenRouter server tools supported. The advisor cannot list itself as a tool."
+                        }
+                    },
+                    "forward_transcript": {
+                        "type": "boolean",
+                        "title": "Forward Transcript",
+                        "description": "When true, the full parent conversation is forwarded to the advisor (and the tool-call prompt, if given, is appended as a final user turn). When false, the advisor sees only the prompt.",
+                        "default": false,
+                        "ui": {
+                            "widget": "toggle",
+                            "order": 5
+                        }
+                    },
+                    "stream": {
+                        "type": "boolean",
+                        "title": "Stream",
+                        "description": "When true, advice streams incrementally as it is produced. Responses API only.",
+                        "default": false,
+                        "ui": {
+                            "widget": "toggle",
+                            "order": 6
+                        }
+                    },
+                    "max_tool_calls": {
+                        "type": "integer",
+                        "title": "Max Tool Calls",
+                        "description": "Maximum tool-calling steps the advisor sub-agent may take. Only relevant when the advisor has tools.",
+                        "minimum": 1,
+                        "maximum": 25,
+                        "ui": {
+                            "widget": "slider",
+                            "order": 7,
+                            "help": "Range: 1–25. Only applies when advisor tools are configured.",
+                            "showWhen": {
+                                "field": "parameters.tools",
+                                "notEmpty": true
+                            }
+                        }
+                    },
+                    "max_completion_tokens": {
+                        "type": "integer",
+                        "title": "Max Completion Tokens",
+                        "description": "Maximum output tokens (including reasoning) for the advisor call.",
+                        "minimum": 1,
+                        "ui": {
+                            "widget": "number",
+                            "order": 8,
+                            "placeholder": "Provider default"
+                        }
+                    },
+                    "reasoning": {
+                        "type": "object",
+                        "title": "Reasoning Config",
+                        "description": "Reasoning configuration forwarded to the advisor call.",
+                        "properties": {
+                            "effort": {
+                                "type": "string",
+                                "title": "Effort",
+                                "description": "Reasoning effort level.",
+                                "enum": [
+                                    "low",
+                                    "medium",
+                                    "high"
+                                ],
+                                "ui": {
+                                    "widget": "radio"
+                                }
+                            },
+                            "max_tokens": {
+                                "type": "integer",
+                                "title": "Max Reasoning Tokens",
+                                "description": "Maximum tokens allocated for reasoning.",
+                                "minimum": 1,
+                                "ui": {
+                                    "widget": "number",
+                                    "placeholder": "Provider default"
+                                }
+                            }
+                        },
+                        "ui": {
+                            "widget": "fieldset",
+                            "order": 9,
+                            "help": "Forwarded to the advisor call. Provider default if omitted."
+                        }
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature",
+                        "description": "Sampling temperature forwarded to the advisor call.",
+                        "minimum": 0,
+                        "maximum": 2,
+                        "ui": {
+                            "widget": "slider",
+                            "order": 10,
+                            "step": 0.1,
+                            "placeholder": "Provider default",
+                            "help": "Range: 0–2."
+                        }
+                    }
+                }
+            }
+        },
+        "required": [
+            "type"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "identity",
+                    "label": "Identity",
+                    "fields": [
+                        "parameters.name",
+                        "parameters.model",
+                        "parameters.instructions"
+                    ]
+                },
+                {
+                    "id": "tools",
+                    "label": "Advisor Tools",
+                    "fields": [
+                        "parameters.tools"
+                    ]
+                },
+                {
+                    "id": "context",
+                    "label": "Context",
+                    "fields": [
+                        "parameters.forward_transcript",
+                        "parameters.stream"
+                    ]
+                },
+                {
+                    "id": "limits",
+                    "label": "Limits",
+                    "fields": [
+                        "parameters.max_tool_calls",
+                        "parameters.max_completion_tokens"
+                    ]
+                },
+                {
+                    "id": "inference",
+                    "label": "Inference",
+                    "fields": [
+                        "parameters.reasoning",
+                        "parameters.temperature"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://openrouter/subagent",
+        "title": "OpenRouter Subagent Tool",
+        "description": "Configuration schema for the OpenRouter subagent server tool — delegates tasks to a worker model that is typically smaller, cheaper, and faster than the delegating model.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "openrouter:subagent",
+                "title": "Tool Type",
+                "description": "The tool type identifier",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "parameters": {
+                "type": "object",
+                "title": "Subagent Parameters",
+                "description": "Optional parameters to configure the subagent worker",
+                "properties": {
+                    "model": {
+                        "type": "string",
+                        "title": "Worker Model",
+                        "description": "The worker model that executes delegated tasks. Any OpenRouter model is supported. Typically smaller, cheaper, and faster than the delegating model. Defaults to the outer request model.",
+                        "examples": [
+                            "~anthropic/claude-haiku-latest",
+                            "~openai/gpt-4o-mini-latest",
+                            "~google/gemini-flash-latest",
+                            "deepseek/deepseek-v3.2",
+                            "~meta-llama/llama-3-8b-instruct"
+                        ],
+                        "ui": {
+                            "widget": "combobox",
+                            "order": 1,
+                            "placeholder": "Outer request model",
+                            "help": "Typically a smaller, faster model than the one making the outer request."
+                        }
+                    },
+                    "instructions": {
+                        "type": "string",
+                        "title": "Instructions",
+                        "description": "System instructions for the worker sub-agent.",
+                        "ui": {
+                            "widget": "textarea",
+                            "order": 2,
+                            "placeholder": "e.g. You are a fast, focused worker. Complete the task efficiently.",
+                            "rows": 4
+                        }
+                    },
+                    "tools": {
+                        "type": "array",
+                        "title": "Worker Tools",
+                        "description": "Tools made available to the worker. Only OpenRouter server tools are supported (e.g. openrouter:web_search). Function tools are rejected with a 400 error. The subagent may not list itself.",
+                        "items": {
+                            "type": "object",
+                            "title": "Tool",
+                            "required": [
+                                "type"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "title": "Tool Type",
+                                    "enum": [
+                                        "openrouter:web_search",
+                                        "openrouter:web_fetch",
+                                        "openrouter:datetime",
+                                        "openrouter:image_generation"
+                                    ],
+                                    "ui": {
+                                        "widget": "select"
+                                    }
+                                }
+                            }
+                        },
+                        "ui": {
+                            "widget": "tool-list",
+                            "order": 3,
+                            "help": "Only OpenRouter server tools supported. The subagent cannot list itself as a tool."
+                        }
+                    },
+                    "max_tool_calls": {
+                        "type": "integer",
+                        "title": "Max Tool Calls",
+                        "description": "Maximum tool-calling steps the worker may take. Only relevant when the worker has tools. Accepted and validated but not yet enforced on the worker call.",
+                        "minimum": 1,
+                        "maximum": 25,
+                        "ui": {
+                            "widget": "slider",
+                            "order": 4,
+                            "help": "Range: 1–25. Only applies when worker tools are configured. Not yet enforced on the worker call.",
+                            "showWhen": {
+                                "field": "parameters.tools",
+                                "notEmpty": true
+                            }
+                        }
+                    },
+                    "max_completion_tokens": {
+                        "type": "integer",
+                        "title": "Max Completion Tokens",
+                        "description": "Maximum output tokens (including reasoning) for the worker call.",
+                        "minimum": 1,
+                        "ui": {
+                            "widget": "number",
+                            "order": 5,
+                            "placeholder": "Provider default"
+                        }
+                    },
+                    "reasoning": {
+                        "type": "object",
+                        "title": "Reasoning Config",
+                        "description": "Reasoning configuration for the worker call. effort is forwarded to the worker; max_tokens is accepted and validated but not yet forwarded.",
+                        "properties": {
+                            "effort": {
+                                "type": "string",
+                                "title": "Effort",
+                                "description": "Reasoning effort level forwarded to the worker.",
+                                "enum": [
+                                    "low",
+                                    "medium",
+                                    "high"
+                                ],
+                                "ui": {
+                                    "widget": "radio"
+                                }
+                            },
+                            "max_tokens": {
+                                "type": "integer",
+                                "title": "Max Reasoning Tokens",
+                                "description": "Maximum tokens allocated for reasoning. Accepted and validated but not yet forwarded to the worker.",
+                                "minimum": 1,
+                                "ui": {
+                                    "widget": "number",
+                                    "placeholder": "Provider default",
+                                    "help": "Note: accepted and validated but not yet forwarded to the worker call."
+                                }
+                            }
+                        },
+                        "ui": {
+                            "widget": "fieldset",
+                            "order": 6,
+                            "help": "effort is forwarded; max_tokens is validated but not yet forwarded."
+                        }
+                    },
+                    "temperature": {
+                        "type": "number",
+                        "title": "Temperature",
+                        "description": "Sampling temperature forwarded to the worker call.",
+                        "minimum": 0,
+                        "maximum": 2,
+                        "ui": {
+                            "widget": "slider",
+                            "order": 7,
+                            "step": 0.1,
+                            "placeholder": "Provider default",
+                            "help": "Range: 0–2."
+                        }
+                    }
+                }
+            }
+        },
+        "required": [
+            "type"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "worker",
+                    "label": "Worker",
+                    "fields": [
+                        "parameters.model",
+                        "parameters.instructions"
+                    ]
+                },
+                {
+                    "id": "tools",
+                    "label": "Worker Tools",
+                    "fields": [
+                        "parameters.tools",
+                        "parameters.max_tool_calls"
+                    ]
+                },
+                {
+                    "id": "limits",
+                    "label": "Limits",
+                    "fields": [
+                        "parameters.max_completion_tokens"
+                    ]
+                },
+                {
+                    "id": "inference",
+                    "label": "Inference",
+                    "fields": [
+                        "parameters.reasoning",
+                        "parameters.temperature"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://anthropic/web_search",
+        "title": "Anthropic Web Search Tool",
+        "description": "Gives Claude real-time web access with cited sources. Executes server-side on Anthropic infrastructure.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "title": "Tool Version",
+                "description": "Versioned type string. Use the latest unless you need a specific capability.",
+                "enum": [
+                    "web_search_20260318",
+                    "web_search_20260209",
+                    "web_search_20250305"
+                ],
+                "default": "web_search_20260318",
+                "ui": {
+                    "widget": "select",
+                    "order": 0,
+                    "enumDescriptions": {
+                        "web_search_20260318": "Latest — dynamic filtering + response_inclusion control",
+                        "web_search_20260209": "Dynamic filtering (requires code_execution tool)",
+                        "web_search_20250305": "Basic search"
+                    }
+                }
+            },
+            "name": {
+                "type": "string",
+                "const": "web_search",
+                "title": "Tool Name",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "max_uses": {
+                "type": "integer",
+                "title": "Max Uses",
+                "description": "Maximum number of searches per request. If exceeded, further searches return a max_uses_exceeded error. Omit to allow unlimited searches.",
+                "minimum": 1,
+                "ui": {
+                    "widget": "number",
+                    "order": 1,
+                    "placeholder": "Unlimited",
+                    "help": "Simple queries: 1–3. Comparative research: 10–20. Latency-sensitive: set to 3."
+                }
+            },
+            "allowed_domains": {
+                "type": "array",
+                "title": "Allowed Domains",
+                "description": "Restrict results to only these domains.",
+                "items": {
+                    "type": "string",
+                    "format": "hostname"
+                },
+                "ui": {
+                    "widget": "tag-input",
+                    "order": 2,
+                    "placeholder": "e.g. example.com"
+                }
+            },
+            "blocked_domains": {
+                "type": "array",
+                "title": "Blocked Domains",
+                "description": "Never include results from these domains.",
+                "items": {
+                    "type": "string",
+                    "format": "hostname"
+                },
+                "ui": {
+                    "widget": "tag-input",
+                    "order": 3,
+                    "placeholder": "e.g. reddit.com"
+                }
+            },
+            "user_location": {
+                "type": "object",
+                "title": "User Location",
+                "description": "Localize search results to an approximate user location.",
+                "required": [
+                    "type"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "approximate",
+                        "ui": {
+                            "widget": "hidden"
+                        }
+                    },
+                    "city": {
+                        "type": "string",
+                        "title": "City",
+                        "ui": {
+                            "widget": "text",
+                            "placeholder": "e.g. San Francisco"
+                        }
+                    },
+                    "region": {
+                        "type": "string",
+                        "title": "Region / State",
+                        "ui": {
+                            "widget": "text",
+                            "placeholder": "e.g. California"
+                        }
+                    },
+                    "country": {
+                        "type": "string",
+                        "title": "Country",
+                        "description": "ISO 3166-1 alpha-2 code.",
+                        "ui": {
+                            "widget": "text",
+                            "placeholder": "e.g. US"
+                        }
+                    },
+                    "timezone": {
+                        "type": "string",
+                        "title": "Timezone",
+                        "description": "IANA timezone ID.",
+                        "ui": {
+                            "widget": "timezone-select",
+                            "placeholder": "e.g. America/Los_Angeles"
+                        }
+                    }
+                },
+                "ui": {
+                    "widget": "fieldset",
+                    "order": 4
+                }
+            },
+            "response_inclusion": {
+                "type": "string",
+                "title": "Response Inclusion",
+                "description": "Controls whether search result blocks consumed by a completed code_execution call are included in the response. Use 'excluded' to reduce output token costs in agentic workflows. Requires web_search_20260318.",
+                "enum": [
+                    "full",
+                    "excluded"
+                ],
+                "default": "full",
+                "ui": {
+                    "widget": "radio",
+                    "order": 5,
+                    "showWhen": {
+                        "field": "type",
+                        "in": [
+                            "web_search_20260318"
+                        ]
+                    }
+                }
+            }
+        },
+        "required": [
+            "type",
+            "name"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "version",
+                    "label": "Version",
+                    "fields": [
+                        "type"
+                    ]
+                },
+                {
+                    "id": "limits",
+                    "label": "Limits",
+                    "fields": [
+                        "max_uses"
+                    ]
+                },
+                {
+                    "id": "filtering",
+                    "label": "Domain Filtering",
+                    "fields": [
+                        "allowed_domains",
+                        "blocked_domains"
+                    ]
+                },
+                {
+                    "id": "location",
+                    "label": "Localization",
+                    "fields": [
+                        "user_location"
+                    ]
+                },
+                {
+                    "id": "advanced",
+                    "label": "Advanced",
+                    "fields": [
+                        "response_inclusion"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://anthropic/web_fetch",
+        "title": "Anthropic Web Fetch Tool",
+        "description": "Fetches full content from specific URLs (HTML pages and PDFs). Executes server-side on Anthropic infrastructure. Does not support JavaScript-rendered pages.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "title": "Tool Version",
+                "description": "Versioned type string. Use the latest unless you need a specific capability.",
+                "enum": [
+                    "web_fetch_20260318",
+                    "web_fetch_20260309",
+                    "web_fetch_20260209",
+                    "web_fetch_20250910"
+                ],
+                "default": "web_fetch_20260318",
+                "ui": {
+                    "widget": "select",
+                    "order": 0,
+                    "enumDescriptions": {
+                        "web_fetch_20260318": "Latest — dynamic filtering + cache bypass + response_inclusion control",
+                        "web_fetch_20260309": "Dynamic filtering + cache bypass",
+                        "web_fetch_20260209": "Dynamic filtering (requires code_execution tool)",
+                        "web_fetch_20250910": "Basic fetch"
+                    }
+                }
+            },
+            "name": {
+                "type": "string",
+                "const": "web_fetch",
+                "title": "Tool Name",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "max_uses": {
+                "type": "integer",
+                "title": "Max Uses",
+                "description": "Maximum number of fetches per request.",
+                "minimum": 1,
+                "ui": {
+                    "widget": "number",
+                    "order": 1,
+                    "placeholder": "Unlimited"
+                }
+            },
+            "max_content_tokens": {
+                "type": "integer",
+                "title": "Max Content Tokens",
+                "description": "Maximum content length in approximate tokens. Content exceeding this limit is truncated. Note: the actual token count may vary slightly.",
+                "minimum": 1,
+                "ui": {
+                    "widget": "number",
+                    "order": 2,
+                    "placeholder": "e.g. 100000"
+                }
+            },
+            "allowed_domains": {
+                "type": "array",
+                "title": "Allowed Domains",
+                "description": "Only fetch from these domains.",
+                "items": {
+                    "type": "string",
+                    "format": "hostname"
+                },
+                "ui": {
+                    "widget": "tag-input",
+                    "order": 3,
+                    "placeholder": "e.g. docs.example.com"
+                }
+            },
+            "blocked_domains": {
+                "type": "array",
+                "title": "Blocked Domains",
+                "description": "Never fetch from these domains.",
+                "items": {
+                    "type": "string",
+                    "format": "hostname"
+                },
+                "ui": {
+                    "widget": "tag-input",
+                    "order": 4,
+                    "placeholder": "e.g. private.example.com"
+                }
+            },
+            "citations": {
+                "type": "object",
+                "title": "Citations",
+                "description": "Enable citations for fetched content.",
+                "properties": {
+                    "enabled": {
+                        "type": "boolean",
+                        "title": "Enable Citations",
+                        "default": false,
+                        "ui": {
+                            "widget": "toggle"
+                        }
+                    }
+                },
+                "ui": {
+                    "widget": "fieldset",
+                    "order": 5
+                }
+            },
+            "response_inclusion": {
+                "type": "string",
+                "title": "Response Inclusion",
+                "description": "Controls whether fetch result blocks consumed by a completed code_execution call are included in the response. Use 'excluded' to reduce output token costs in agentic workflows. Requires web_fetch_20260318.",
+                "enum": [
+                    "full",
+                    "excluded"
+                ],
+                "default": "full",
+                "ui": {
+                    "widget": "radio",
+                    "order": 6,
+                    "showWhen": {
+                        "field": "type",
+                        "in": [
+                            "web_fetch_20260318"
+                        ]
+                    }
+                }
+            }
+        },
+        "required": [
+            "type",
+            "name"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "groups": [
+                {
+                    "id": "version",
+                    "label": "Version",
+                    "fields": [
+                        "type"
+                    ]
+                },
+                {
+                    "id": "limits",
+                    "label": "Limits",
+                    "fields": [
+                        "max_uses",
+                        "max_content_tokens"
+                    ]
+                },
+                {
+                    "id": "filtering",
+                    "label": "Domain Filtering",
+                    "fields": [
+                        "allowed_domains",
+                        "blocked_domains"
+                    ]
+                },
+                {
+                    "id": "output",
+                    "label": "Output",
+                    "fields": [
+                        "citations",
+                        "response_inclusion"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://anthropic/code_execution",
+        "title": "Anthropic Code Execution Tool",
+        "description": "Runs Bash commands and manipulates files in a secure sandboxed container (Python 3.11, 5GiB RAM, 5GiB disk, no internet). Executes server-side on Anthropic infrastructure. Free when used alongside web_search_20260209+ or web_fetch_20260209+.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "title": "Tool Version",
+                "description": "Versioned type string.",
+                "enum": [
+                    "code_execution_20260521",
+                    "code_execution_20260120",
+                    "code_execution_20250825"
+                ],
+                "default": "code_execution_20260521",
+                "ui": {
+                    "widget": "select",
+                    "order": 0,
+                    "enumDescriptions": {
+                        "code_execution_20260521": "Latest — same runtime as 20260120, discloses 90s per-cell time limit in tool description",
+                        "code_execution_20260120": "REPL state persistence + programmatic tool calling from within sandbox",
+                        "code_execution_20250825": "Bash commands + file operations (broadest model support)"
+                    }
+                }
+            },
+            "name": {
+                "type": "string",
+                "const": "code_execution",
+                "title": "Tool Name",
+                "ui": {
+                    "widget": "hidden"
+                }
+            }
+        },
+        "required": [
+            "type",
+            "name"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "info": "The code execution tool takes no additional parameters. Once enabled, Claude automatically gains access to bash_code_execution (shell commands) and text_editor_code_execution (file view/create/edit) sub-tools.",
+            "groups": [
+                {
+                    "id": "version",
+                    "label": "Version",
+                    "fields": [
+                        "type"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://anthropic/advisor",
+        "title": "Anthropic Advisor Tool",
+        "description": "Pairs a faster executor model with a higher-intelligence advisor model. The advisor receives the full conversation transcript and returns a strategic plan; the executor continues at its lower cost. Beta: requires header 'advisor-tool-2026-03-01'.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "advisor_20260301",
+                "title": "Tool Type",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "name": {
+                "type": "string",
+                "const": "advisor",
+                "title": "Tool Name",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "model": {
+                "type": "string",
+                "title": "Advisor Model",
+                "description": "The higher-intelligence model that provides strategic guidance. Must be at least as capable as the executor model (set via the top-level 'model' field of the API request).",
+                "enum": [
+                    "claude-opus-4-8",
+                    "claude-opus-4-7",
+                    "claude-fable-5",
+                    "claude-mythos-5"
+                ],
+                "ui": {
+                    "widget": "select",
+                    "order": 1,
+                    "help": "Billed at advisor model rates for each sub-inference. Valid executor/advisor pairs are enforced by the API."
+                }
+            },
+            "max_uses": {
+                "type": "integer",
+                "title": "Max Uses (per request)",
+                "description": "Maximum advisor calls allowed in a single request. Once reached, further calls return max_uses_exceeded and the executor continues without advice. Note: this is per-request, not per-conversation — track conversation-level limits client-side.",
+                "minimum": 1,
+                "ui": {
+                    "widget": "number",
+                    "order": 2,
+                    "placeholder": "Unlimited"
+                }
+            },
+            "max_tokens": {
+                "type": "integer",
+                "title": "Max Advisor Output Tokens",
+                "description": "Caps the advisor's total output (thinking + text) per call. The server also informs the advisor of its remaining budget so it can shape its response. Minimum: 1024. Recommended starting point: 2048.",
+                "minimum": 1024,
+                "ui": {
+                    "widget": "number",
+                    "order": 3,
+                    "placeholder": "Advisor model cap",
+                    "help": "2048 reduces mean output ~7x with near-zero truncation. 1024 reduces ~10x but truncates ~10% of calls."
+                }
+            },
+            "caching": {
+                "type": "object",
+                "title": "Advisor-side Prompt Caching",
+                "description": "Enables prompt caching for the advisor's own transcript across calls within a conversation. Breaks even at ~3 advisor calls per conversation; beneficial for longer agent loops.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "ephemeral",
+                        "ui": {
+                            "widget": "hidden"
+                        }
+                    },
+                    "ttl": {
+                        "type": "string",
+                        "title": "Cache TTL",
+                        "description": "How long the cache entry lives.",
+                        "enum": [
+                            "5m",
+                            "1h"
+                        ],
+                        "default": "5m",
+                        "ui": {
+                            "widget": "radio",
+                            "enumDescriptions": {
+                                "5m": "5 minutes — for rapid turn-by-turn conversations",
+                                "1h": "1 hour — for longer-running agent sessions"
+                            }
+                        }
+                    }
+                },
+                "ui": {
+                    "widget": "fieldset",
+                    "order": 4,
+                    "help": "Enable only if you expect 3+ advisor calls per conversation. Keep it consistent — toggling mid-conversation causes cache misses."
+                }
+            }
+        },
+        "required": [
+            "type",
+            "name",
+            "model"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "beta": "advisor-tool-2026-03-01",
+            "groups": [
+                {
+                    "id": "model",
+                    "label": "Advisor Model",
+                    "fields": [
+                        "model"
+                    ]
+                },
+                {
+                    "id": "limits",
+                    "label": "Limits",
+                    "fields": [
+                        "max_uses",
+                        "max_tokens"
+                    ]
+                },
+                {
+                    "id": "caching",
+                    "label": "Caching",
+                    "fields": [
+                        "caching"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://anthropic/tool_search",
+        "title": "Anthropic Tool Search Tool",
+        "description": "Lets Claude search across hundreds or thousands of deferred tool definitions without loading them all into context upfront. Tools marked defer_loading:true are excluded from the initial system prompt and loaded on demand when tool search returns a tool_reference for them. Requires beta header 'tool-search-tool-2025-10-19'.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "title": "Search Algorithm",
+                "description": "Two variants are available, representing different search algorithms — neither supersedes the other.",
+                "enum": [
+                    "tool_search_tool_regex_20251119",
+                    "tool_search_tool_bm25_20251119"
+                ],
+                "default": "tool_search_tool_bm25_20251119",
+                "ui": {
+                    "widget": "radio",
+                    "order": 0,
+                    "enumDescriptions": {
+                        "tool_search_tool_bm25_20251119": "BM25 — keyword relevance ranking, best for natural language tool descriptions",
+                        "tool_search_tool_regex_20251119": "Regex — pattern matching, best for structured tool names"
+                    }
+                }
+            },
+            "name": {
+                "type": "string",
+                "const": "tool_search",
+                "title": "Tool Name",
+                "ui": {
+                    "widget": "hidden"
+                }
+            }
+        },
+        "required": [
+            "type",
+            "name"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "beta": "tool-search-tool-2025-10-19",
+            "info": "To use tool search, mark tools you want deferred with defer_loading:true. Tool search finds and loads them on demand, preserving your prompt cache.",
+            "groups": [
+                {
+                    "id": "algorithm",
+                    "label": "Search Algorithm",
+                    "fields": [
+                        "type"
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "tool://anthropic/mcp_toolset",
+        "title": "Anthropic MCP Connector",
+        "description": "Connects Claude to remote Model Context Protocol (MCP) servers, making their tools available server-side without client-side execution. Not date-versioned — versioning is carried in the anthropic-beta header. Requires beta header 'mcp-client-2025-11-20'.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "const": "mcp_toolset",
+                "title": "Tool Type",
+                "ui": {
+                    "widget": "hidden"
+                }
+            },
+            "server_url": {
+                "type": "string",
+                "title": "MCP Server URL",
+                "description": "The URL of the remote MCP server to connect to.",
+                "format": "uri",
+                "ui": {
+                    "widget": "text",
+                    "order": 1,
+                    "placeholder": "https://mcp.example.com/sse"
+                }
+            },
+            "server_name": {
+                "type": "string",
+                "title": "Server Name",
+                "description": "A human-readable name for this MCP server (used in tool descriptions shown to Claude).",
+                "ui": {
+                    "widget": "text",
+                    "order": 2,
+                    "placeholder": "e.g. my-database-mcp"
+                }
+            },
+            "allowed_tools": {
+                "type": "array",
+                "title": "Allowed Tools",
+                "description": "Restrict which tools from the MCP server Claude can call. If omitted, all tools from the server are available.",
+                "items": {
+                    "type": "string",
+                    "title": "Tool Name"
+                },
+                "ui": {
+                    "widget": "tag-input",
+                    "order": 3,
+                    "placeholder": "e.g. query_database"
+                }
+            },
+            "headers": {
+                "type": "object",
+                "title": "Auth Headers",
+                "description": "HTTP headers to include when connecting to the MCP server (e.g. Authorization).",
+                "additionalProperties": {
+                    "type": "string"
+                },
+                "ui": {
+                    "widget": "key-value",
+                    "order": 4,
+                    "placeholder": {
+                        "key": "Authorization",
+                        "value": "Bearer <token>"
+                    }
+                }
+            }
+        },
+        "required": [
+            "type",
+            "server_url"
+        ],
+        "ui": {
+            "submitLabel": "Save Tool Configuration",
+            "beta": "mcp-client-2025-11-20",
+            "info": "mcp_toolset is not date-versioned. The MCP connector does not support strict:true or defer_loading.",
+            "groups": [
+                {
+                    "id": "server",
+                    "label": "MCP Server",
+                    "fields": [
+                        "server_url",
+                        "server_name"
+                    ]
+                },
+                {
+                    "id": "auth",
+                    "label": "Authentication",
+                    "fields": [
+                        "headers"
+                    ]
+                },
+                {
+                    "id": "filtering",
+                    "label": "Tool Filtering",
+                    "fields": [
+                        "allowed_tools"
+                    ]
+                }
+            ]
+        }
+    }
+]

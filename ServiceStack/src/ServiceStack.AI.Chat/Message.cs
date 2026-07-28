@@ -21,7 +21,7 @@ public static class Message
             }; 
             return text == null
                 ? [image]
-                : [image, new AiTextContent { Type = "text", Text = text }];
+                : [new AiTextContent { Type = "text", Text = text }, image];
         }
         
         public static List<AiContent> Audio(string data, string format="mp3", string? text = null)
@@ -98,9 +98,7 @@ public static class MessageUtils
     {
         var textContents = request.Messages
             .Where(x => x.Role is "user" or null)
-            .SelectMany(x => x.Content ?? [])
-            .Where(x => x is AiTextContent)
-            .Cast<AiTextContent>()
+            .SelectMany(x => x.Content ?? []).OfType<AiTextContent>()
             .ToList();
         
         return textContents.LastOrDefault()?.Text;
