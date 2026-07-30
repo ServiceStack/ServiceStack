@@ -12,6 +12,13 @@ public class ChatTool
     public required ChatToolHandler Handler { get; init; }
     public string? Group { get; init; }
 
+    /// <summary>
+    /// How much damage a call can do, when the tool says. Kept off the wire definition — providers
+    /// reject unknown fields inside "function" — and surfaced to Agents that model it, e.g. as MCP
+    /// tool annotations.
+    /// </summary>
+    public ToolSafety Safety { get; init; }
+
     public string Name => Definition.GetObject("function").GetString("name")
         ?? throw new ArgumentException("Tool definition missing function.name");
 }

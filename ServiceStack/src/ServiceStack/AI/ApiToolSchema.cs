@@ -67,7 +67,9 @@ public static class ApiToolSchema
     {
         var schema = TypeSchema(pi.PropertyType, depth, seen);
 
-        var description = apiMember?.Description ?? pi.FirstAttribute<DescriptionAttribute>()?.Description;
+        // GetDescription() covers [ApiMember], System.ComponentModel's [Description] and
+        // ServiceStack.DataAnnotations' — a schema that ignores two of the three reads as undocumented
+        var description = apiMember?.Description ?? pi.GetDescription();
         if (!string.IsNullOrEmpty(description))
             schema["description"] = description;
 

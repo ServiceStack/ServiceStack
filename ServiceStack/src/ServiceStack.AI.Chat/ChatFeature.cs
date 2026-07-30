@@ -103,6 +103,12 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     /// </summary>
     public ApiToolsConfig ApiTools { get; set; } = new();
 
+    /// <summary>
+    /// Which Chat tools external AI Agents can use over MCP at {RoutePrefix}/mcp. Nothing is
+    /// exposed until ToolGroups/Tools names something.
+    /// </summary>
+    public McpConfig Mcp { get; set; } = new();
+
     /// <summary>Optional server-side request validation for all Chat UI + API requests</summary>
     public Func<IRequest, Task<IHttpResult?>>? ValidateRequest { get; set; }
 
@@ -239,6 +245,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new KatexExtension(),
             new AnalyticsExtension(),
             new ApiToolsExtension(),
+            new McpExtension(),
             new IdentityUiExtension(),
             new CredentialsExtension(),
         ];
@@ -877,6 +884,7 @@ public class ChatExtension
     public const string Gemini = "gemini";
     public const string Katex = "katex";
     public const string Analytics = "analytics";
+    public const string Mcp = "mcp";
     public const string Identity = "identity";
     public const string Credentials = "credentials";
 }

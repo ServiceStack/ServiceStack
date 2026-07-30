@@ -65,6 +65,19 @@ public class ExtensionContext(ChatFeature feature, string name)
     public void RegisterTool(JsonObject definition, ChatToolHandler handler, string? group = null) =>
         feature.Tools.Register(new ChatTool { Definition = definition, Handler = handler, Group = group ?? name });
 
+    /// <summary>
+    /// Register a ServiceStack Command as a tool: the Command's request type becomes the tool's
+    /// JSON Schema and calls run through CommandsFeature, so a tool call is executed, validated,
+    /// retried and logged exactly like any other command. Name it with [Tool(Name)], describe it
+    /// with [Description] and [Tool(WhenToUse)].
+    /// </summary>
+    public void RegisterTool<TCommand>(string? group = null) where TCommand : IAsyncCommand =>
+        RegisterTool(typeof(TCommand), group);
+
+    /// <summary>Register a Command as a tool, for a Command type only known at runtime</summary>
+    public void RegisterTool(Type commandType, string? group = null) =>
+        feature.Tools.Register(CommandTool.Create(commandType, feature, group ?? name));
+
     public JsonObject? GetToolDefinition(string toolName) => feature.Tools.GetToolDefinition(toolName);
 
     // ── Providers ──
