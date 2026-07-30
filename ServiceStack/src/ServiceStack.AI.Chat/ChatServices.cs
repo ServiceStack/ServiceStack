@@ -28,7 +28,7 @@ public class ChatServices : Service
             ? rawChat
             : ChatJson.ParseObject(request.ToJson());
 
-        var context = ChatContext.FromChat(chat, feature.ChatAuth.GetUserName(Request!));
+        var context = ChatContext.FromChat(chat, feature.ChatAuth.GetUserName(Request!), request: Request);
 
         var response = await feature.ChatCompletionAsync(chat, context).ConfigAwait();
         // write the provider's JSON verbatim (re-serializing would lose provider-specific fields)

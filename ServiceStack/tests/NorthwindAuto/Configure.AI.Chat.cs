@@ -24,10 +24,9 @@ public class ConfigureAiChat : IHostingStartup
                 {
                     EnableCodeExecution = true,
                     EnableFilesystemTools = true,
-                    AllowedDirectories =
-                    {
-                        Path.Combine(context.HostingEnvironment.ContentRootPath, "App_Data", "chat")
-                    },
+                },
+                ApiTools = {
+                    IncludeTags = ["todos"]
                 }
             });
 

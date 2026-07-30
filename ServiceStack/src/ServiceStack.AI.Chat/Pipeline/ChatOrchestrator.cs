@@ -294,6 +294,7 @@ public partial class ChatFeature
             {
                 Chat = context.Chat,
                 User = context.User,
+                Request = context.Request,
                 ThreadId = context.ThreadId,
                 Tools = context.Tools,
                 Provider = context.Provider,

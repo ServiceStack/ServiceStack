@@ -30,6 +30,9 @@ public class ChatToolsConfig
     /// <summary>Directories LLM filesystem/code tools may access</summary>
     public List<string> AllowedDirectories { get; set; } = [];
     public TimeSpan ToolTimeout { get; set; } = TimeSpan.FromSeconds(60);
+
+    /// <summary>Let LLM tools discover and call this App's own ServiceStack APIs. OFF by default.</summary>
+    public bool EnableApiTools { get; set; } = true;
 }
 
 /// <summary>llms.json "limits" (Python DEFAULT_LIMITS + max_iterations)</summary>
@@ -93,6 +96,12 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public Dictionary<string, string> Variables { get; set; } = [];
 
     public ChatToolsConfig ToolsConfig { get; set; } = new();
+
+    /// <summary>
+    /// Which APIs EnableApiTools exposes. [Tool] APIs are always included; use IncludeTags to
+    /// expose APIs in bulk. Shared with any other Agent transport (e.g. MCP) the host adds.
+    /// </summary>
+    public ApiToolsConfig ApiTools { get; set; } = new();
 
     /// <summary>Optional server-side request validation for all Chat UI + API requests</summary>
     public Func<IRequest, Task<IHttpResult?>>? ValidateRequest { get; set; }
@@ -209,7 +218,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public string? NamedConnection { get; set; }
 
     public string SvgIcon =
-        "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path fill='currentColor' d='M14 5H4v13.385L5.763 17H20v-6h2v7a1 1 0 0 1-1 1H6.454L2 22.5V4a1 1 0 0 1 1-1h11zm5.53-3.68a.507.507 0 0 1 .94 0l.254.61a4.37 4.37 0 0 0 2.25 2.327l.717.32a.53.53 0 0 1 0 .962l-.758.338a4.36 4.36 0 0 0-2.22 2.25l-.246.566a.506.506 0 0 1-.934 0l-.247-.565a4.36 4.36 0 0 0-2.219-2.251l-.76-.338a.53.53 0 0 1 0-.963l.718-.32a4.37 4.37 0 0 0 2.251-2.325z'/></svg>";
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 16 16\"><path fill=\"currentColor\" d=\"M8 2.19c3.13 0 5.68 2.25 5.68 5s-2.55 5-5.68 5a5.7 5.7 0 0 1-1.89-.29l-.75-.26l-.56.56a14 14 0 0 1-2 1.55a.13.13 0 0 1-.07 0v-.06a6.58 6.58 0 0 0 .15-4.29a5.25 5.25 0 0 1-.55-2.16c0-2.77 2.55-5 5.68-5M8 .94c-3.83 0-6.93 2.81-6.93 6.27a6.4 6.4 0 0 0 .64 2.64a5.53 5.53 0 0 1-.18 3.48a1.32 1.32 0 0 0 2 1.5a15 15 0 0 0 2.16-1.71a6.8 6.8 0 0 0 2.31.36c3.83 0 6.93-2.81 6.93-6.27S11.83.94 8 .94\"></path><ellipse cx=\"5.2\" cy=\"7.7\" fill=\"currentColor\" rx=\".8\" ry=\".75\"></ellipse><ellipse cx=\"8\" cy=\"7.7\" fill=\"currentColor\" rx=\".8\" ry=\".75\"></ellipse><ellipse cx=\"10.8\" cy=\"7.7\" fill=\"currentColor\" rx=\".8\" ry=\".75\"></ellipse></svg>";
 
     public ChatFeature()
     {
@@ -229,6 +238,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new GeminiExtension(),
             new KatexExtension(),
             new AnalyticsExtension(),
+            new ApiToolsExtension(),
             new IdentityUiExtension(),
             new CredentialsExtension(),
         ];
@@ -273,6 +283,11 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         if (ChatDb == null && Services.GetService<Data.IDbConnectionFactory>() is { } dbFactory)
         {
             ChatDb = new ChatDb(dbFactory, NamedConnection);
+        }
+
+        if (ToolsConfig.AllowedDirectories.Count == 0)
+        {
+            ToolsConfig.AllowedDirectories.Add(AppData.BasePath.CombineWith("workspace").AssertDir());
         }
 
         LoadConfig(appHost);

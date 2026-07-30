@@ -13,6 +13,13 @@ public class ChatContext
     public JsonObject? Chat { get; set; }
     public string? User { get; set; }
     public long? ThreadId { get; set; }
+
+    /// <summary>
+    /// The HTTP request this completion is running under, when there is one. Tools that act on the
+    /// user's behalf (e.g. calling the App's own APIs) need it to execute as that user — without it
+    /// they can only refuse, since a username alone can't authorize anything.
+    /// </summary>
+    public IRequest? Request { get; set; }
     /// <summary>Tool selector: "all" | "none" | csv of tool/group names</summary>
     public string Tools { get; set; } = "all";
     public bool NoStore { get; set; }
@@ -34,7 +41,8 @@ public class ChatContext
     /// identically. `user` is always supplied by the caller — it is never read from the request,
     /// so a client can't select which user's data a completion is attributed to.
     /// </summary>
-    public static ChatContext FromChat(JsonObject chat, string? user, CancellationToken token = default)
+    public static ChatContext FromChat(JsonObject chat, string? user, CancellationToken token = default,
+        IRequest? request = null)
     {
         var metadata = chat.GetObject("metadata");
         var noStore = MetaBool(metadata, "nostore");
@@ -42,12 +50,26 @@ public class ChatContext
         {
             Chat = chat,
             User = user,
+            Request = request,
             ThreadId = metadata.GetLong("threadId"),
             Tools = metadata.GetString("tools") ?? "all",
             NoStore = noStore,
             NoHistory = MetaBool(metadata, "nohistory") || noStore,
             CancellationToken = token,
         };
+    }
+
+    /// <summary>
+    /// A detached copy of a request for background completions. A queued completion outlives the
+    /// HTTP request that queued it, so the live IRequest is gone by the time its tools run — this
+    /// carries over the resolved session, which is all a tool acting as the user needs.
+    /// </summary>
+    public static IRequest DetachRequest(IRequest request)
+    {
+        var to = new Host.BasicRequest();
+        if (request.GetSession() is { } session)
+            to.SetItem(Keywords.Session, session);
+        return to;
     }
 
     /// <summary>

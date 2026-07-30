@@ -190,6 +190,8 @@ public partial class AppExtension : IChatExtension
         {
             Chat = chat,
             User = user,
+            // the completion runs on a background task, outliving this HTTP request
+            Request = ChatContext.DetachRequest(req.Request),
             ThreadId = id,
             Tools = metadata.GetString("tools") ?? "all",
             CancellationToken = cts.Token,

@@ -56,7 +56,7 @@ public class ToolsExtension : IChatExtension
                 }
             }
 
-            var context = new ChatContext { User = req.UserName };
+            var context = new ChatContext { User = req.UserName, Request = req.Request };
             var (text, resources) = await ctx.Feature.ExecToolAsync(name, functionArgs, context).ConfigAwait();
 
             var results = new JsonArray();
