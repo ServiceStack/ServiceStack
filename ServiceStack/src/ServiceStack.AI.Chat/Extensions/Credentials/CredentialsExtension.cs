@@ -15,18 +15,13 @@ namespace ServiceStack.AI;
 /// Installed when RequireAuth is enabled and AuthType is Credentials; user management is the host's
 /// (Identity's AdminUsersFeature) rather than the --adduser CLI of the Python extension.
 /// </summary>
-public class CredentialsExtension : IChatExtension
+public class CredentialsExtension() : ChatExtension("credentials")
 {
-    public string Name => ChatExtension.Credentials;
-
-    ChatFeature feature = null!;
-
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        feature = ctx.Feature;
-        if (!ctx.IsAuthEnabled || feature.AuthType != ChatAuthType.Credentials)
+        if (!ctx.IsAuthEnabled || Feature.AuthType != ChatAuthType.Credentials)
         {
-            ctx.Log.LogInformation("AuthType is {AuthType}, skipping credentials SignIn", feature.AuthType);
+            ctx.Log.LogInformation("AuthType is {AuthType}, skipping credentials SignIn", Feature.AuthType);
             ctx.Disabled = true;
             return;
         }
@@ -63,12 +58,12 @@ public class CredentialsExtension : IChatExtension
         }
         catch (Exception e)
         {
-            feature.Log.LogInformation("Credentials sign in failed for '{UserName}': {Message}", userName, e.Message);
+            Log.LogInformation("Credentials sign in failed for '{UserName}': {Message}", userName, e.Message);
             return ChatResult.Json(ChatJson.ToErrorResponse(e), e.ToStatusCode());
         }
 
         // signing in populates the request's ClaimsPrincipal, so /auth's payload can be reused
-        var authInfo = await feature.ChatAuth.GetAuthInfoAsync(ctx.Request).ConfigAwait();
+        var authInfo = await Feature.ChatAuth.GetAuthInfoAsync(ctx.Request).ConfigAwait();
         if (authInfo != null)
             return authInfo;
 

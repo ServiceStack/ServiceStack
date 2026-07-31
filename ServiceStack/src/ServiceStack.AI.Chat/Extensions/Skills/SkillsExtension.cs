@@ -12,20 +12,15 @@ namespace ServiceStack.AI;
 /// the bundled set on first run); per-user skills under App_Data/chat/user/&lt;user&gt;/skills.
 /// The localhost-only roots (~/.claude/skills, ./.agent/skills) are not scanned on a web host.
 /// </summary>
-public partial class SkillsExtension : IChatExtension
+public partial class SkillsExtension() : ChatExtension("skills")
 {
-    public string Name => ChatExtension.Skills;
-
-    ExtensionContext ctx = null!;
     JsonArray availableSkills = [];
 
-    string HomeSkillsPath => ctx.GetHomePath(Path.Combine(".agent", "skills"));
-    string UserSkillsPath(string user) => Path.Combine(ctx.GetUserPath(user), "skills");
+    string HomeSkillsPath => Ctx.GetHomePath(Path.Combine(".agent", "skills"));
+    string UserSkillsPath(string user) => Path.Combine(Ctx.GetUserPath(user), "skills");
 
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
-
         SeedBundledSkills();
         LoadAvailableSkills();
 
@@ -194,7 +189,7 @@ public partial class SkillsExtension : IChatExtension
     {
         if (Directory.Exists(HomeSkillsPath))
             return;
-        ctx.Log.LogInformation("Creating initial skills folder: {Path}", HomeSkillsPath);
+        Log.LogInformation("Creating initial skills folder: {Path}", HomeSkillsPath);
         var bundled = HostContext.VirtualFileSources.GetDirectory("chat/ext/skills/skills");
         if (bundled == null)
             return;
@@ -246,7 +241,7 @@ public partial class SkillsExtension : IChatExtension
             ?? throw new Exception($"Skill '{id}' has no source repository");
 
         var writePath = ResolveSkillsWritePath(req.UserName);
-        ctx.Log.LogInformation("Installing skill '{Id}' from '{Source}' to '{Path}'", id, source, writePath);
+        Log.LogInformation("Installing skill '{Id}' from '{Source}' to '{Path}'", id, source, writePath);
 
         var tempDir = Path.Combine(Path.GetTempPath(), "skill-install-" + Guid.NewGuid().ToString("n")[..8]);
         try
@@ -345,7 +340,7 @@ public partial class SkillsExtension : IChatExtension
                         files.Add(Path.GetRelativePath(skillDir, file));
                     }
 
-                    var writable = ctx.IsAuthEnabled
+                    var writable = Ctx.IsAuthEnabled
                         ? user != null && IsSafePath(UserSkillsPath(user), skillDir)
                         : IsSafePath(HomeSkillsPath, skillDir);
 
@@ -357,7 +352,7 @@ public partial class SkillsExtension : IChatExtension
                 }
                 catch (Exception e)
                 {
-                    ctx.Log.LogInformation("Failed to load skill {Name}: {Message}",
+                    Log.LogInformation("Failed to load skill {Name}: {Message}",
                         Path.GetFileName(entryPath), e.Message);
                 }
             }
@@ -406,7 +401,7 @@ public partial class SkillsExtension : IChatExtension
 
     void AssertValidLocation(string location, string? user)
     {
-        if (ctx.IsAuthEnabled && user == null)
+        if (Ctx.IsAuthEnabled && user == null)
             throw new UnauthorizedAccessException("Unauthorized");
         if (user != null)
         {

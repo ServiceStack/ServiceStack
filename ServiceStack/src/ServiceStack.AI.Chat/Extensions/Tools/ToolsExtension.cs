@@ -9,21 +9,87 @@ namespace ServiceStack.AI;
 /// definitions for the UI's tools panel, executes tools directly, and serves the server-tools
 /// config (user override &gt; default user &gt; bundled chat/ext/tools/server-tools.json).
 /// </summary>
-public class ToolsExtension : IChatExtension
+public class ToolsExtension() : ChatExtension("tools")
 {
-    public string Name => ChatExtension.Tools;
+    /// <summary>Allow LLM tools to execute code on the server (core_tools run_*, computer run_bash). OFF by default.</summary>
+    public bool EnableCodeExecution { get; set; }
+    /// <summary>Allow LLM filesystem tools (computer extension). OFF by default.</summary>
+    public bool EnableFilesystemTools { get; set; }
+    /// <summary>Directories LLM filesystem/code tools may access</summary>
+    public List<string> AllowedDirectories { get; set; } = [];
+    public TimeSpan ToolTimeout { get; set; } = TimeSpan.FromSeconds(60);
 
-    public void Install(ExtensionContext ctx)
+    /// <summary>Let LLM tools discover and call this App's own ServiceStack APIs. OFF by default.</summary>
+    public bool EnableApiTools { get; set; } = true;
+
+    /// <summary>
+    /// Tools registry
+    /// </summary>
+    public Dictionary<string, ChatTool> Tools { get; } = [];
+    public Dictionary<string, List<string>> Groups { get; } = [];
+
+    public void Register(ChatTool tool)
     {
+        var name = tool.Name;
+        Tools[name] = tool;
+        if (tool.Group != null)
+        {
+            var group = Groups.GetOrAdd(tool.Group, _ => []);
+            group.AddIfNotExists(name);
+        }
+    }
+
+    public ChatTool? GetTool(string name) => Tools.GetValueOrDefault(name);
+
+    public JsonObject? GetToolDefinition(string name) => GetTool(name)?.Definition;
+
+    /// <summary>
+    /// Resolve a tool selector ("all" | "none" | csv of tool or group names) to tool definitions
+    /// (port of AppExtensions.create_chat_with_tools selector logic).
+    /// </summary>
+    public List<ChatTool> SelectTools(string? use)
+    {
+        use ??= "all";
+        if (use == "none")
+            return [];
+        if (use == "all")
+            return Tools.Values.ToList();
+
+        var ret = new List<ChatTool>();
+        foreach (var name in use.Split(',').Select(x => x.Trim()).Where(x => x.Length > 0))
+        {
+            if (Groups.TryGetValue(name, out var groupTools))
+            {
+                foreach (var toolName in groupTools)
+                {
+                    if (Tools.TryGetValue(toolName, out var groupTool) && !ret.Contains(groupTool))
+                        ret.Add(groupTool);
+                }
+            }
+            else if (Tools.TryGetValue(name, out var tool) && !ret.Contains(tool))
+            {
+                ret.Add(tool);
+            }
+        }
+        return ret;
+    }
+
+    public override void Install(ExtensionContext ctx)
+    {
+        if (AllowedDirectories.Count == 0)
+        {
+            AllowedDirectories.Add(ctx.AppData.BasePath.CombineWith("workspace").AssertDir());
+        }
+        
         ctx.AddGet("", _ =>
         {
             var groups = new JsonObject();
-            foreach (var entry in ctx.Feature.Tools.Groups)
+            foreach (var entry in Groups)
             {
                 groups[entry.Key] = new JsonArray(entry.Value.Select(x => (JsonNode)x).ToArray());
             }
             var definitions = new JsonArray();
-            foreach (var tool in ctx.Feature.Tools.Tools.Values)
+            foreach (var tool in Tools.Values)
             {
                 definitions.Add(tool.Definition.Clone());
             }
@@ -39,7 +105,7 @@ public class ToolsExtension : IChatExtension
             var name = req.GetPathParam("name");
             var args = await req.GetJsonBodyAsync().ConfigAwait();
 
-            var toolDef = ctx.GetToolDefinition(name)
+            var toolDef = Ctx.GetToolDefinition(name)
                 ?? throw new Exception($"Tool '{name}' not found");
             var type = toolDef.GetString("type");
             if (type != "function")
@@ -93,7 +159,7 @@ public class ToolsExtension : IChatExtension
                 }
                 catch (Exception e)
                 {
-                    ctx.Log.LogError(e, "Error reading tools from {Path}", path);
+                    Log.LogError(e, "Error reading tools from {Path}", path);
                 }
             }
 

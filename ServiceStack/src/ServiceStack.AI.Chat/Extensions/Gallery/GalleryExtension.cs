@@ -9,16 +9,12 @@ namespace ServiceStack.AI;
 /// to the content-addressed cache is recorded in the ChatMedia table via the cache_saved filter,
 /// queryable by the gallery UI.
 /// </summary>
-public class GalleryExtension : IChatExtension, IMediaApi
+public class GalleryExtension() : ChatExtension("gallery"), IMediaApi
 {
-    public string Name => ChatExtension.Gallery;
-
-    ExtensionContext ctx = null!;
     ChatDb db = null!;
 
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
         db = ctx.Feature.ChatDb ?? throw new Exception(
             "ChatFeature.ChatDb is required by the gallery extension — register an IDbConnectionFactory");
 
@@ -63,7 +59,7 @@ public class GalleryExtension : IChatExtension, IMediaApi
     JsonObject ToClientDto(ChatMedia x)
     {
         var dto = x.ToDto();
-        dto["url"] = ctx.Feature.ResolveClientUrl(x.Url);
+        dto["url"] = Ctx.Feature.ResolveClientUrl(x.Url);
         return dto;
     }
 
@@ -75,7 +71,7 @@ public class GalleryExtension : IChatExtension, IMediaApi
             var info = context.Info;
             var mimeType = info.GetString("type") ?? "";
             var mediaType = mimeType.LeftPart('/');
-            ctx.Log.LogInformation("cache saved: {Url}", context.Url);
+            Log.LogInformation("cache saved: {Url}", context.Url);
 
             var media = new ChatMedia
             {
@@ -117,7 +113,7 @@ public class GalleryExtension : IChatExtension, IMediaApi
         }
         catch (Exception e)
         {
-            ctx.Log.LogError(e, "Failed to record media for {Url}", context.Url);
+            Log.LogError(e, "Failed to record media for {Url}", context.Url);
         }
     }
 

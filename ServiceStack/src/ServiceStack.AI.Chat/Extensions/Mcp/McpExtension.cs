@@ -20,10 +20,42 @@ namespace ServiceStack.AI;
 /// APIs with that user's access rather than as the App itself.
 /// </para>
 /// </summary>
-public class McpExtension : IChatExtension
+public class McpExtension() : ChatExtension("mcp")
 {
-    public string Name => ChatExtension.Mcp;
+    /// <summary>
+    /// Which Chat tools external AI Agents can use over MCP at {RoutePrefix}/mcp. Nothing is
+    /// exposed until ToolGroups/Tools names something.
+    /// </summary>
+    /// <summary>Tool groups to expose, e.g. "api_tools", "core_tools". Empty disables the endpoint.</summary>
+    public List<string> ToolGroups { get; set; } = [];
 
+    /// <summary>Individual tools to expose, in addition to whole <see cref="ToolGroups"/></summary>
+    public List<string> Tools { get; set; } = [];
+
+    /// <summary>Server name reported to MCP Clients in initialize</summary>
+    public string ServerName { get; set; } = "servicestack-ai-chat";
+
+    /// <summary>Server version reported to MCP Clients (defaults to the ServiceStack version)</summary>
+    public string? ServerVersion { get; set; }
+
+    /// <summary>Optional usage hint Clients can add to their system prompt</summary>
+    public string? Instructions { get; set; }
+
+    /// <summary>
+    /// Largest image/audio result inlined as base64 in a tool result. Larger resources are
+    /// returned as a link instead — an Agent can't stream a 40MB wav through its context.
+    /// </summary>
+    public int MaxInlineResourceBytes { get; set; } = 4 * 1024 * 1024;
+
+    /// <summary>Whether the host has opted in to exposing anything over MCP</summary>
+    public bool IsEnabled => ToolGroups.Count > 0 || Tools.Count > 0;
+
+    /// <summary>ToolGroups + Tools as a <see cref="ToolRegistry.SelectTools"/> selector</summary>
+    public string ToolSelector => ToolGroups.Contains("all") || Tools.Contains("all")
+        ? "all"
+        : string.Join(",", ToolGroups.Union(Tools));
+
+    
     /// <summary>Protocol revision used when a Client asks for one we don't know</summary>
     public const string LatestProtocolVersion = "2025-06-18";
 
@@ -38,13 +70,9 @@ public class McpExtension : IChatExtension
     public const int InvalidParams = -32602;
     public const int InternalError = -32603;
 
-    ExtensionContext ctx = null!;
-    McpConfig Config => ctx.Feature.Mcp;
-
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
-        if (!ctx.Feature.Mcp.IsEnabled)
+        if (ctx.Feature.Tools.Disabled)
         {
             ctx.Disabled = true;
             return;
@@ -58,13 +86,13 @@ public class McpExtension : IChatExtension
         ctx.AddGet("/mcp", _ => Task.FromResult<object?>(MethodNotAllowed()));
         ctx.AddDelete("/mcp", _ => Task.FromResult<object?>(MethodNotAllowed()));
 
-        ctx.Log.LogInformation("MCP Server enabled at {Path}/mcp exposing: {Tools}",
-            ctx.Feature.RoutePrefix, Config.ToolSelector);
+        Log.LogInformation("MCP Server enabled at {Path}/mcp exposing: {Tools}",
+            ctx.Feature.RoutePrefix, ToolSelector);
     }
 
     async Task<object?> HandleAsync(ChatRequestContext req)
     {
-        if (ctx.Feature.ChatAuth.IsEnabled && req.UserName == null)
+        if (Ctx.Feature.ChatAuth.IsEnabled && req.UserName == null)
             return Unauthorized();
 
         JsonNode? body;
@@ -128,7 +156,7 @@ public class McpExtension : IChatExtension
         }
         catch (Exception e)
         {
-            ctx.Log.LogError(e, "MCP {Method} failed: {Message}", method, e.Message);
+            Log.LogError(e, "MCP {Method} failed: {Message}", method, e.Message);
             return isNotification ? null : ErrorResponse(id, InternalError, ChatJson.ToErrorMessage(e));
         }
     }
@@ -152,17 +180,17 @@ public class McpExtension : IChatExtension
             },
             ["serverInfo"] = new JsonObject
             {
-                ["name"] = Config.ServerName,
-                ["version"] = Config.ServerVersion ?? Env.VersionString,
+                ["name"] = ServerName,
+                ["version"] = ServerVersion ?? Env.VersionString,
             },
         };
-        if (!string.IsNullOrEmpty(Config.Instructions))
-            to["instructions"] = Config.Instructions;
+        if (!string.IsNullOrEmpty(Instructions))
+            to["instructions"] = Instructions;
         return to;
     }
 
     /// <summary>Only the tools the host exposed, never the whole registry</summary>
-    List<ChatTool> SelectedTools() => ctx.Feature.Tools.SelectTools(Config.ToolSelector);
+    List<ChatTool> SelectedTools() => Ctx.Feature.Tools.SelectTools(ToolSelector);
 
     JsonObject ListTools()
     {
@@ -224,11 +252,11 @@ public class McpExtension : IChatExtension
                 toolArgs[entry.Key] = entry.Value?.DeepClone();
         }
 
-        ctx.Log.LogInformation("MCP tools/call {Tool} as {User}", name, req.UserName);
+        Log.LogInformation("MCP tools/call {Tool} as {User}", name, req.UserName);
         var context = new ChatContext { User = req.UserName, Request = req.Request };
         // tool errors come back as result text (ExecToolAsync never throws), which is what an
         // Agent wants to read anyway — isError is reserved for what it couldn't attempt
-        var (text, resources) = await ctx.Feature.ExecToolAsync(name!, toolArgs, context).ConfigAwait();
+        var (text, resources) = await Ctx.Feature.ExecToolAsync(name!, toolArgs, context).ConfigAwait();
 
         var content = new JsonArray();
         if (!string.IsNullOrEmpty(text))
@@ -290,20 +318,20 @@ public class McpExtension : IChatExtension
             return null;
         try
         {
-            var path = ctx.AppData.GetCachePath(url[cachePrefix.Length..]);
-            if (!File.Exists(path) || new FileInfo(path).Length > Config.MaxInlineResourceBytes)
+            var path = Ctx.AppData.GetCachePath(url[cachePrefix.Length..]);
+            if (!File.Exists(path) || new FileInfo(path).Length > MaxInlineResourceBytes)
                 return null;
             return File.ReadAllBytes(path);
         }
         catch (Exception e)
         {
-            ctx.Log.LogDebug(e, "Could not read cached resource {Url}", url);
+            Log.LogDebug(e, "Could not read cached resource {Url}", url);
             return null;
         }
     }
 
     string AbsoluteUrl(string url, IRequest req) =>
-        req.GetBaseUrl().CombineWith(ctx.Feature.RoutePrefix, url);
+        req.GetBaseUrl().CombineWith(Ctx.Feature.RoutePrefix, url);
 
     // ── JSON-RPC + HTTP plumbing ──
 
@@ -340,7 +368,7 @@ public class McpExtension : IChatExtension
     {
         Status = 401,
         ContentType = MimeTypes.Json,
-        Text = ctx.Feature.ErrorAuthRequired().ToJsonString(ChatJson.Options),
+        Text = Ctx.Feature.ErrorAuthRequired().ToJsonString(ChatJson.Options),
         Headers = new Dictionary<string, string> { ["WWW-Authenticate"] = "Bearer" },
     };
 }

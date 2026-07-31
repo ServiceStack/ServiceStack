@@ -14,17 +14,11 @@ namespace ServiceStack.AI;
 /// The desktop-only tools (open, screen control, Anthropic editor) are not ported — they don't
 /// apply to a web host; edit_file covers file editing.
 /// </summary>
-public class ComputerExtension : IChatExtension
+public class ComputerExtension() : ChatExtension("computer")
 {
-    public string Name => ChatExtension.Computer;
-
-    ExtensionContext ctx = null!;
-
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
-
-        if (ctx.Feature.ToolsConfig.EnableCodeExecution)
+        if (ctx.Tools.EnableCodeExecution)
         {
             ctx.RegisterTool(Def("run_bash", "A tool that allows the agent to run bash commands.",
                     new JsonObject
@@ -35,7 +29,7 @@ public class ComputerExtension : IChatExtension
                 "computer");
         }
 
-        if (!ctx.Feature.ToolsConfig.EnableFilesystemTools)
+        if (!ctx.Tools.EnableFilesystemTools)
             return;
 
         const string fs = "filesystem";
@@ -212,7 +206,7 @@ public class ComputerExtension : IChatExtension
     }
 
     List<string> AllowedDirs(JsonObject args, ChatContext c) =>
-        ctx.ResolveAllowedDirectories(args.GetString("user") ?? c.User);
+        Ctx.ResolveAllowedDirectories(args.GetString("user") ?? c.User);
 
     string ValidatePath(JsonObject args, ChatContext c) => ValidatePath(args.GetString("path"), args, c);
 
@@ -473,8 +467,8 @@ public class ComputerExtension : IChatExtension
         if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
             throw new NotSupportedException("run_bash is only supported on Linux/macOS hosts");
 
-        var cwd = ctx.ResolveAllowedDirectories(c.User).FirstOrDefault()
-            ?? ctx.GetUserPath(c.User);
+        var cwd = Ctx.ResolveAllowedDirectories(c.User).FirstOrDefault()
+            ?? Ctx.GetUserPath(c.User);
         Directory.CreateDirectory(cwd);
 
         var psi = new ProcessStartInfo

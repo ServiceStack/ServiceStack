@@ -21,20 +21,6 @@ public enum ChatAuthType
     Credentials,
 }
 
-public class ChatToolsConfig
-{
-    /// <summary>Allow LLM tools to execute code on the server (core_tools run_*, computer run_bash). OFF by default.</summary>
-    public bool EnableCodeExecution { get; set; }
-    /// <summary>Allow LLM filesystem tools (computer extension). OFF by default.</summary>
-    public bool EnableFilesystemTools { get; set; }
-    /// <summary>Directories LLM filesystem/code tools may access</summary>
-    public List<string> AllowedDirectories { get; set; } = [];
-    public TimeSpan ToolTimeout { get; set; } = TimeSpan.FromSeconds(60);
-
-    /// <summary>Let LLM tools discover and call this App's own ServiceStack APIs. OFF by default.</summary>
-    public bool EnableApiTools { get; set; } = true;
-}
-
 /// <summary>llms.json "limits" (Python DEFAULT_LIMITS + max_iterations)</summary>
 public class ChatLimits
 {
@@ -95,20 +81,6 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     /// <summary>$VAR substitutions for api keys etc. (checked before environment variables)</summary>
     public Dictionary<string, string> Variables { get; set; } = [];
 
-    public ChatToolsConfig ToolsConfig { get; set; } = new();
-
-    /// <summary>
-    /// Which APIs EnableApiTools exposes. [Tool] APIs are always included; use IncludeTags to
-    /// expose APIs in bulk. Shared with any other Agent transport (e.g. MCP) the host adds.
-    /// </summary>
-    public ApiToolsConfig ApiTools { get; set; } = new();
-
-    /// <summary>
-    /// Which Chat tools external AI Agents can use over MCP at {RoutePrefix}/mcp. Nothing is
-    /// exposed until ToolGroups/Tools names something.
-    /// </summary>
-    public McpConfig Mcp { get; set; } = new();
-
     /// <summary>Optional server-side request validation for all Chat UI + API requests</summary>
     public Func<IRequest, Task<IHttpResult?>>? ValidateRequest { get; set; }
 
@@ -125,7 +97,6 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
 
     public RouteRegistry Routes { get; } = new();
     public ChatFilters Filters { get; } = new();
-    public ToolRegistry Tools { get; } = new();
     public Dictionary<string, string> ImportMaps { get; set; } = new()
     {
         ["vue-prod"] = "/ui/lib/vue.min.mjs",
@@ -181,9 +152,9 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     /// <summary>Live (enabled + configured) providers — Python g_handlers</summary>
     public Dictionary<string, ChatProvider> Providers { get; set; } = [];
 
-    public List<IChatExtension> Extensions { get; set; } = [];
+    public List<ChatExtension> Extensions { get; set; } = [];
     
-    readonly List<(IChatExtension Extension, ExtensionContext Ctx)> installedExtensions = [];
+    readonly List<(ChatExtension Extension, ExtensionContext Ctx)> installedExtensions = [];
     public List<string> InstalledExtensionNames => installedExtensions.Map(x => x.Extension.Name);
 
     public IThreadApi ThreadApi { get; set; } = new NullThreadApi();
@@ -208,6 +179,8 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         ["5:4"] = "1152×896", ["9:16"] = "768×1344", ["16:9"] = "1344×768",
         ["21:9"] = "1536×672",
     };
+    
+    public static readonly Dictionary<string, string> AspectRatiosReverse = AspectRatios.ToDictionary(x => x.Value, x => x.Key);
 
     // ── Runtime services ──
 
@@ -226,6 +199,8 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public string SvgIcon =
         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 16 16\"><path fill=\"currentColor\" d=\"M8 2.19c3.13 0 5.68 2.25 5.68 5s-2.55 5-5.68 5a5.7 5.7 0 0 1-1.89-.29l-.75-.26l-.56.56a14 14 0 0 1-2 1.55a.13.13 0 0 1-.07 0v-.06a6.58 6.58 0 0 0 .15-4.29a5.25 5.25 0 0 1-.55-2.16c0-2.77 2.55-5 5.68-5M8 .94c-3.83 0-6.93 2.81-6.93 6.27a6.4 6.4 0 0 0 .64 2.64a5.53 5.53 0 0 1-.18 3.48a1.32 1.32 0 0 0 2 1.5a15 15 0 0 0 2.16-1.71a6.8 6.8 0 0 0 2.31.36c3.83 0 6.93-2.81 6.93-6.27S11.83.94 8 .94\"></path><ellipse cx=\"5.2\" cy=\"7.7\" fill=\"currentColor\" rx=\".8\" ry=\".75\"></ellipse><ellipse cx=\"8\" cy=\"7.7\" fill=\"currentColor\" rx=\".8\" ry=\".75\"></ellipse><ellipse cx=\"10.8\" cy=\"7.7\" fill=\"currentColor\" rx=\".8\" ry=\".75\"></ellipse></svg>";
 
+    public Action<ChatFeature>? Setup { get; set; }
+    
     public ChatFeature()
     {
         Extensions =
@@ -250,6 +225,31 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new CredentialsExtension(),
         ];
     }
+
+    public T AssertExtension<T>() where T : ChatExtension
+    {
+        var ext = Extensions.OfType<T>().FirstOrDefault();
+        return ext ?? throw new InvalidOperationException($"Extension of type {typeof(T).Name} not found");
+    }
+    
+    public SystemPromptsExtension SystemPrompts => AssertExtension<SystemPromptsExtension>();
+    public AppExtension App => AssertExtension<AppExtension>();
+    public AgentsExtension Agents => AssertExtension<AgentsExtension>();
+    public ProjectsExtension Projects => AssertExtension<ProjectsExtension>();
+    public ToolsExtension Tools => AssertExtension<ToolsExtension>();
+    public CoreToolsExtension CoreTools => AssertExtension<CoreToolsExtension>();
+    public ComputerExtension Computer => AssertExtension<ComputerExtension>();
+    public GalleryExtension Gallery => AssertExtension<GalleryExtension>();
+    public SkillsExtension Skills => AssertExtension<SkillsExtension>();
+    public VoiceExtension Voice => AssertExtension<VoiceExtension>();
+    public PublishExtension Publish => AssertExtension<PublishExtension>();
+    public GeminiExtension Gemini => AssertExtension<GeminiExtension>();
+    public KatexExtension Katex => AssertExtension<KatexExtension>();
+    public AnalyticsExtension Analytics => AssertExtension<AnalyticsExtension>();
+    public ApiToolsExtension ApiTools => AssertExtension<ApiToolsExtension>();
+    public McpExtension Mcp => AssertExtension<McpExtension>();
+    public IdentityUiExtension IdentityUi => AssertExtension<IdentityUiExtension>();
+    public CredentialsExtension Credentials => AssertExtension<CredentialsExtension>();
 
     public void Configure(IServiceCollection services)
     {
@@ -292,23 +292,20 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             ChatDb = new ChatDb(dbFactory, NamedConnection);
         }
 
-        if (ToolsConfig.AllowedDirectories.Count == 0)
-        {
-            ToolsConfig.AllowedDirectories.Add(AppData.BasePath.CombineWith("workspace").AssertDir());
-        }
-
         LoadConfig(appHost);
         CreateProviders();
 
+        RegisterCoreRoutes();
+
+        Setup?.Invoke(this);
+        InstallExtensions(appHost);
+
         // seed the "default" user's allowed directories before extensions install, so the projects
         // extension inherits them as the baseline when a user has no active project
-        if (ToolsConfig.AllowedDirectories.Count > 0)
+        if (Tools.AllowedDirectories.Count > 0)
         {
-            SetAllowedDirectories(ToolsConfig.AllowedDirectories);
+            SetAllowedDirectories(Tools.AllowedDirectories);
         }
-
-        RegisterCoreRoutes();
-        InstallExtensions(appHost);
 
         // extensions register cleanup with ctx.RegisterShutdownHandler; run it when the AppHost is
         // disposed (before the IOC is), which also covers hosts recreated in-process (e.g. tests)
@@ -648,22 +645,23 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     {
         foreach (var extension in Extensions)
         {
-            if (DisableExtensions.Contains(extension.Name))
+            if (DisableExtensions.Contains(extension.Name) || extension.Disabled)
             {
                 Log.LogInformation("Extension {Name} is disabled", extension.Name);
                 continue;
             }
-            var ctx = new ExtensionContext(this, extension.Name);
+            
+            extension.Ctx = new ExtensionContext(this, extension.Name); 
             try
             {
-                extension.Install(ctx);
+                extension.Install(extension.Ctx);
             }
             catch (Exception e)
             {
                 Log.LogError(e, "Failed to install extension {Name}", extension.Name);
                 continue;
             }
-            if (ctx.Disabled)
+            if (extension.Ctx.Disabled)
             {
                 Log.LogInformation("Extension {Name} was disabled", extension.Name);
                 continue;
@@ -673,13 +671,13 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             var uiDir = appHost.VirtualFileSources.GetDirectory($"chat/ext/{extension.Name}");
             if (uiDir != null)
             {
-                ctx.AddStaticFiles();
+                extension.Ctx.AddStaticFiles();
                 if (appHost.VirtualFileSources.GetFile($"chat/ext/{extension.Name}/index.mjs") != null)
                 {
-                    ctx.RegisterUiExtension();
+                    extension.Ctx.RegisterUiExtension();
                 }
             }
-            installedExtensions.Add((extension, ctx));
+            installedExtensions.Add((extension, extension.Ctx));
             Log.LogInformation("Extension {Name} installed", extension.Name);
         }
     }
@@ -866,27 +864,6 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         }
         return false;
     }
-}
-    
-public class ChatExtension
-{
-    public const string SystemPrompts = "system_prompts";
-    public const string App = "app";
-    public const string Agents = "agents";
-    public const string Projects = "projects";
-    public const string Tools = "tools";
-    public const string CoreTools = "core_tools";
-    public const string Computer = "computer";
-    public const string Gallery = "gallery";
-    public const string Skills = "skills";
-    public const string Voice = "voice";
-    public const string Publish = "publish";
-    public const string Gemini = "gemini";
-    public const string Katex = "katex";
-    public const string Analytics = "analytics";
-    public const string Mcp = "mcp";
-    public const string Identity = "identity";
-    public const string Credentials = "credentials";
 }
 
 public class ChatApiKey

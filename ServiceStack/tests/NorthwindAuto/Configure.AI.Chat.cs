@@ -24,8 +24,11 @@ public class ConfigureAiChat : IHostingStartup
 
             services.AddPlugin(new ChatFeature {
                 // RequireAuth = false, // open access, runs as the "default" user
+                Extensions = {
+                    new BookingToolsExtension(),
+                },
                 RequireAuth = true,
-                ToolsConfig =
+                Tools =
                 {
                     EnableCodeExecution = true,
                     EnableFilesystemTools = true,
@@ -34,13 +37,13 @@ public class ConfigureAiChat : IHostingStartup
                     IncludeTags = ["todos"]
                 },
                 // Add this App's own tools to the built-in extensions
-                Extensions = {
-                    new BookingToolsExtension(),
-                },
                 // Expose these tools to external AI Agents over MCP at /chat/mcp
                 Mcp = {
-                    ToolGroups = ["api_tools", "core_tools", "booking_tools"],
-                }
+                    ToolGroups = ["api_tools", "core_tools", "bookings"],
+                },
+                Setup = (ctx => {
+                    // ctx.Mcp.ToolGroups = ["api_tools", "core_tools", "booking_tools"];
+                }),
             });
 
             services.ConfigurePlugin<MetadataFeature>(feature => {
@@ -54,14 +57,13 @@ public class ConfigureAiChat : IHostingStartup
 /// then available to the Chat UI's tool loop, and to external AI Agents over MCP when their
 /// group is named in ChatFeature.Mcp.
 /// </summary>
-public class BookingToolsExtension : IChatExtension
+public class BookingToolsExtension() : ChatExtension("booking_tools")
 {
-    /// <summary>Extension id, also the default group name for tools registered without one</summary>
-    public string Name => "booking_tools";
+    /// <summary>Extension Name, is also the default group name for tools registered without one</summary>
 
     IDbConnectionFactory dbFactory = null!;
 
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
         // Install() runs after the App's services are available
         dbFactory = ctx.Feature.Services.GetRequiredService<IDbConnectionFactory>();
@@ -104,7 +106,7 @@ public class BookingToolsExtension : IChatExtension
 
         // Or implement the tool as a ServiceStack Command: its request type generates the same
         // schema, [Tool]/[Description] describe it, and calls run through CommandsFeature
-        ctx.RegisterTool<BookingSummaryCommand>();
+        ctx.RegisterTool<BookingSummaryCommand>("bookings");
     }
 
     /// <summary>

@@ -289,7 +289,7 @@ public partial class ChatFeature
             }
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
-            cts.CancelAfter(ToolsConfig.ToolTimeout);
+            cts.CancelAfter(Tools.ToolTimeout);
             var toolContext = new ChatContext
             {
                 Chat = context.Chat,

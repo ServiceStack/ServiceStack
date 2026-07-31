@@ -14,9 +14,22 @@ namespace ServiceStack.AI;
 /// and only the APIs an Agent actually uses cost it their schema.
 /// </para>
 /// </summary>
-public class ApiToolsExtension : IChatExtension
+public class ApiToolsExtension() : ChatExtension("api_tools")
 {
-    public string Name => "api_tools";
+    /// <summary>
+    /// Which APIs EnableApiTools exposes. [Tool] APIs are always included; use IncludeTags to
+    /// expose APIs in bulk. Shared with any other Agent transport (e.g. MCP) the host adds.
+    /// </summary>
+    /// <summary>Expose every API with these [Tag]s, without annotating each Request DTO with [Tool]</summary>
+    public List<string> IncludeTags { get; set; } = [];
+    /// <summary>Expose these Request DTOs by name, for APIs you can't annotate with [Tool]</summary>
+    public List<string> IncludeTypes { get; set; } = [];
+    /// <summary>Never expose these Request DTOs, whatever else includes them</summary>
+    public List<string> ExcludeTypes { get; set; } = [];
+    /// <summary>Rows returned when neither the Agent nor [Tool(Take)] specifies a limit</summary>
+    public int DefaultTake { get; set; } = 25;
+    /// <summary>Maximum rows an Agent can ask for, whatever it requests</summary>
+    public int MaxTake { get; set; } = 100;
 
     /// <summary>Result JSON longer than this is truncated — one query mustn't eat the context window</summary>
     public int MaxResultLength { get; set; } = 32 * 1024;
@@ -24,15 +37,22 @@ public class ApiToolsExtension : IChatExtension
     ExtensionContext ctx = null!;
     ApiToolRegistry registry = null!;
 
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
         this.ctx = ctx;
-        if (!ctx.Feature.ToolsConfig.EnableApiTools)
+        if (!ctx.Tools.EnableApiTools)
         {
-            ctx.Disabled = true;
+            Disabled = true;
             return;
         }
-        registry = new ApiToolRegistry(ctx.Feature.ApiTools);
+        registry = new ApiToolRegistry(new()
+        {
+            IncludeTags = IncludeTags,
+            IncludeTypes = IncludeTypes,
+            ExcludeTypes = ExcludeTypes,
+            DefaultTake = DefaultTake,
+            MaxTake = MaxTake,
+        });
 
         const string group = "api_tools";
 
@@ -170,7 +190,7 @@ public class ApiToolsExtension : IChatExtension
             return $"Error: API '{name}' not found or not available to you. Use api_search to find one.";
 
         var argsJson = args["args"] is JsonObject dtoArgs ? dtoArgs.ToJsonString(ChatJson.Options) : null;
-        ctx.Log.LogInformation("api_call {Api} as {User}", tool.RequestType, context.User);
+        Log.LogInformation("api_call {Api} as {User}", tool.RequestType, context.User);
 
         var response = await registry.ExecuteAsync(tool, argsJson, req).ConfigAwait();
         var json = response.ToJson() ?? "null";

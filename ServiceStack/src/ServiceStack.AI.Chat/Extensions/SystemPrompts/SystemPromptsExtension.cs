@@ -6,11 +6,9 @@ namespace ServiceStack.AI;
 /// System prompt library (port of extensions/system_prompts): GET /ext/system_prompts/prompts.json
 /// resolves user prompts &gt; default-user prompts &gt; bundled chat/ext/system_prompts/prompts.json.
 /// </summary>
-public class SystemPromptsExtension : IChatExtension
+public class SystemPromptsExtension() : ChatExtension("system_prompts")
 {
-    public string Name => ChatExtension.SystemPrompts;
-
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
         ctx.AddGet("prompts.json", ChatRequestContext =>
         {

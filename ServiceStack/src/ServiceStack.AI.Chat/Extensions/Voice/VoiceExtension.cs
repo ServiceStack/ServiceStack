@@ -12,16 +12,12 @@ namespace ServiceStack.AI;
 /// (voxtype/transcribe local CLIs + ffmpeg, or Mistral's voxtral API).
 /// Self-disables when none are available, like Python.
 /// </summary>
-public class VoiceExtension : IChatExtension
+public class VoiceExtension() : ChatExtension("voice")
 {
-    public string Name => ChatExtension.Voice;
-
-    ExtensionContext ctx = null!;
     string? mode;
 
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
         var voiceOptions = (Environment.GetEnvironmentVariable("LLMS_VOICE")
             ?? "voxtype,transcribe,voxtral-mini-latest").Split(',');
 
@@ -31,7 +27,7 @@ public class VoiceExtension : IChatExtension
             {
                 if (Which(opt) == null)
                 {
-                    ctx.Log.LogDebug("Cannot use {Opt} - {Opt} not installed", opt, opt);
+                    Log.LogDebug("Cannot use {Opt} - not installed", opt);
                     continue;
                 }
                 mode = opt;
@@ -43,7 +39,7 @@ public class VoiceExtension : IChatExtension
                 var apiKey = ctx.Feature.ResolveVariable("$MISTRAL_API_KEY");
                 if (mistral == null || !mistral.GetBool("enabled") || string.IsNullOrEmpty(apiKey))
                 {
-                    ctx.Log.LogDebug("Cannot use {Opt} - Mistral not enabled", opt);
+                    Log.LogDebug("Cannot use {Opt} - Mistral not enabled", opt);
                     continue;
                 }
                 mode = opt;
@@ -53,7 +49,7 @@ public class VoiceExtension : IChatExtension
 
         if (mode is "voxtype" or "transcribe" && Which("ffmpeg") == null)
         {
-            ctx.Log.LogDebug("Cannot use {Mode} - ffmpeg not installed", mode);
+            Log.LogDebug("Cannot use {Mode} - ffmpeg not installed", mode);
             mode = null;
         }
 
@@ -63,7 +59,7 @@ public class VoiceExtension : IChatExtension
             return;
         }
 
-        ctx.Log.LogInformation("Using {Mode} for voice", mode);
+        Log.LogInformation("Using {Mode} for voice", mode);
         ctx.AddPost("/transcribe", TranscribeAsync);
     }
 
@@ -121,17 +117,17 @@ public class VoiceExtension : IChatExtension
     /// <summary>Transcribe via Mistral's voxtral API, reusing the provider's transcription generator</summary>
     async Task<JsonObject> TranscribeMistralAsync(byte[] audioBytes, string filename)
     {
-        var apiKey = ctx.Feature.ResolveVariable("$MISTRAL_API_KEY")
+        var apiKey = Ctx.Feature.ResolveVariable("$MISTRAL_API_KEY")
             ?? throw new Exception("MISTRAL_API_KEY not configured");
         var model = mode == "voxtral" ? "voxtral-mini-latest" : mode!;
 
         // prefer the live provider's generator so config/headers stay in one place
-        var generator = ctx.Feature.Providers.Values.OfType<MistralProvider>().FirstOrDefault()?.Transcription
+        var generator = Ctx.Feature.Providers.Values.OfType<MistralProvider>().FirstOrDefault()?.Transcription
             ?? new MistralTranscriptionGenerator
             {
-                Log = ctx.Log,
-                HttpClientFactory = ctx.Feature.HttpClientFactory,
-                Feature = ctx.Feature,
+                Log = Ctx.Log,
+                HttpClientFactory = Ctx.Feature.HttpClientFactory,
+                Feature = Ctx.Feature,
             };
         return await generator.TranscribeAsync(audioBytes, filename, model, apiKey).ConfigAwait();
     }

@@ -11,37 +11,32 @@ namespace ServiceStack.AI;
 /// OpenAI-shaped `file_search` tool, which <see cref="GoogleProvider"/> forwards to Gemini.
 /// Self-disables when no Gemini API key is configured.
 /// </summary>
-public class GeminiExtension : IChatExtension
+public class GeminiExtension() : ChatExtension("gemini")
 {
-    public string Name => ChatExtension.Gemini;
-
     /// <summary>Url prefix of the content-addressed cache documents are stored in</summary>
     public const string CacheUrlBase = "/~cache/";
 
-    ExtensionContext ctx = null!;
     GeminiDb db = null!;
     GeminiClient client = null!;
     GeminiStores stores = null!;
     GeminiUploadWorker? worker;
 
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
-
         // GEMINI_API_KEY (Python parity), falling back to whatever the google provider resolved
         var apiKey = ctx.Feature.ResolveVariable("$GEMINI_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
             apiKey = ctx.Feature.Providers.GetValueOrDefault("google")?.ApiKey;
         if (string.IsNullOrEmpty(apiKey))
         {
-            ctx.Log.LogInformation("GEMINI_API_KEY is not configured");
+            Log.LogInformation("GEMINI_API_KEY is not configured");
             ctx.Disabled = true;
             return;
         }
 
         if (ctx.Feature.ChatDb is not { } chatDb)
         {
-            ctx.Log.LogInformation("ChatFeature.ChatDb is required by the gemini extension "
+            Log.LogInformation("ChatFeature.ChatDb is required by the gemini extension "
                 + "— register an IDbConnectionFactory");
             ctx.Disabled = true;
             return;
@@ -110,7 +105,7 @@ public class GeminiExtension : IChatExtension
         if (string.IsNullOrEmpty(displayName))
             throw new ArgumentException("displayName is required");
 
-        ctx.Log.LogInformation("Creating filestore {DisplayName} in Gemini...", displayName);
+        Log.LogInformation("Creating filestore {DisplayName} in Gemini...", displayName);
         var result = await client.CreateFileSearchStoreAsync(displayName).ConfigAwait();
         if (result.GetString("name") == null)
             throw new Exception("Failed to create filestore in Gemini");
@@ -137,19 +132,19 @@ public class GeminiExtension : IChatExtension
 
         if (filestore.Name is { } name)
         {
-            ctx.Log.LogInformation("Deleting filestore {Name} in Gemini...", name);
+            Log.LogInformation("Deleting filestore {Name} in Gemini...", name);
             try
             {
                 await client.DeleteFileSearchStoreAsync(name).ConfigAwait();
             }
             catch (GeminiApiException e) when (e.StatusCode == 404)
             {
-                ctx.Log.LogInformation("Filestore {Name} was already deleted in Gemini", name);
+                Log.LogInformation("Filestore {Name} was already deleted in Gemini", name);
             }
         }
         else
         {
-            ctx.Log.LogInformation("Filestore {Id} has no name, skipping Gemini deletion...", id);
+            Log.LogInformation("Filestore {Id} has no name, skipping Gemini deletion...", id);
         }
 
         db.DeleteFilestore(id, user);
@@ -203,7 +198,7 @@ public class GeminiExtension : IChatExtension
         var user = UserOf(req);
         var id = IdOf(req);
         var category = req.QueryString("category");
-        ctx.Log.LogInformation("Uploading to filestore {Id} {User}", id, user);
+        Log.LogInformation("Uploading to filestore {Id} {User}", id, user);
 
         if (db.GetFilestore(id, user) == null)
             throw new Exception("Filestore does not exist");
@@ -235,7 +230,7 @@ public class GeminiExtension : IChatExtension
             // 2 char sub dir keeps the cache directories from growing unbounded
             var saveFilename = $"{hash}.{ext}";
             var relativePath = $"{hash[..2]}/{saveFilename}";
-            var fullPath = ctx.GetCachePath(relativePath);
+            var fullPath = Ctx.GetCachePath(relativePath);
             var url = CacheUrlBase + relativePath;
 
             // re-uploading identical content replaces the existing document
@@ -245,12 +240,12 @@ public class GeminiExtension : IChatExtension
                 {
                     try
                     {
-                        ctx.Log.LogInformation("Deleting existing document {Name} from filestore...", existingName);
+                        Log.LogInformation("Deleting existing document {Name} from filestore...", existingName);
                         await client.DeleteDocumentAsync(existingName).ConfigAwait();
                     }
                     catch (Exception e)
                     {
-                        ctx.Log.LogError(e, "Could not delete document {Name}", existingName);
+                        Log.LogError(e, "Could not delete document {Name}", existingName);
                     }
                 }
                 db.DeleteDocument(existing.Id, user);
@@ -315,7 +310,7 @@ public class GeminiExtension : IChatExtension
             }
             catch (GeminiApiException e) when (e.StatusCode == 404)
             {
-                ctx.Log.LogInformation("Document {Name} already deleted in Gemini", name);
+                Log.LogInformation("Document {Name} already deleted in Gemini", name);
             }
         }
 
@@ -341,12 +336,12 @@ public class GeminiExtension : IChatExtension
         {
             try
             {
-                ctx.Log.LogInformation("Deleting existing document {Name} from filestore...", name);
+                Log.LogInformation("Deleting existing document {Name} from filestore...", name);
                 await client.DeleteDocumentAsync(name).ConfigAwait();
             }
             catch (Exception e)
             {
-                ctx.Log.LogError(e, "Could not delete document {Name}", name);
+                Log.LogError(e, "Could not delete document {Name}", name);
             }
         }
 
@@ -388,7 +383,7 @@ public class GeminiExtension : IChatExtension
             if (doc.Name != null)
                 localByName[doc.Name] = doc;
         }
-        ctx.Log.LogInformation("Found {Count} local documents ({Hashes} hashes)",
+        Log.LogInformation("Found {Count} local documents ({Hashes} hashes)",
             localDocs.Count, localByHash.Count);
 
         var localMissing = new List<GeminiRemoteDocument>();   // in Gemini, unknown locally
@@ -410,13 +405,13 @@ public class GeminiExtension : IChatExtension
 
             if (local == null)
             {
-                ctx.Log.LogDebug("Remote doc not found locally: {Name}", remote.Name);
+                Log.LogDebug("Remote doc not found locally: {Name}", remote.Name);
                 localMissing.Add(remote);
                 continue;
             }
             if (remote.MetadataHash == null || remote.MetadataId == null)
             {
-                ctx.Log.LogDebug("Remote doc missing metadata: {Name}", remote.Name);
+                Log.LogDebug("Remote doc missing metadata: {Name}", remote.Name);
                 missingMetadata.Add(local);
                 continue;
             }
@@ -427,7 +422,7 @@ public class GeminiExtension : IChatExtension
             var diff = remote.Diff(local);
             if (diff.Count > 0)
             {
-                ctx.Log.LogDebug("Updating local doc {Doc} unmatched fields: {Fields}",
+                Log.LogDebug("Updating local doc {Doc} unmatched fields: {Fields}",
                     FileNameOf(local), string.Join(", ", diff));
                 unmatched.Add(local);
                 remote.ApplyTo(local);
@@ -436,7 +431,7 @@ public class GeminiExtension : IChatExtension
 
             if (local.Id != remote.MetadataId || local.Hash != remote.MetadataHash)
             {
-                ctx.Log.LogDebug("Metadata mismatch: id={LocalId}|{RemoteId}, hash={LocalHash}|{RemoteHash}",
+                Log.LogDebug("Metadata mismatch: id={LocalId}|{RemoteId}, hash={LocalHash}|{RemoteHash}",
                     local.Id, remote.MetadataId, local.Hash, remote.MetadataHash);
                 metadataMismatch.Add(local);
             }
@@ -465,7 +460,7 @@ public class GeminiExtension : IChatExtension
 
         await stores.RefreshAsync(filestore).ConfigAwait();
 
-        ctx.Log.LogInformation(
+        Log.LogInformation(
             "Sync complete: remote={Remote}, local={Local}, matched={Matched}, missing_metadata={MissingMetadata}, unmatched={Unmatched}",
             remoteDocs.Count, localDocs.Count, matchedByHash, missingMetadata.Count, localMissing.Count);
 

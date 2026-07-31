@@ -11,19 +11,13 @@ namespace ServiceStack.AI;
 /// Publish threads/media/projects to a remote llms.py site (port of llms-py's "publish" extension).
 /// Connection config is stored per user at App_Data/chat/user/&lt;user&gt;/publish/config.json.
 /// </summary>
-public partial class PublishExtension : IChatExtension
+public partial class PublishExtension() : ChatExtension("publish")
 {
-    public string Name => ChatExtension.Publish;
-
     const string DefaultPublishBaseUrl = "https://ai.llmspy.org";
     const string RegisterPath = "/embed/register.html?domain=llmspy.org";
 
-    ExtensionContext ctx = null!;
-
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
-
         ctx.AddGet("config.json", req =>
             Task.FromResult<object?>(GetPublishConfig(req.UserName)));
 
@@ -71,7 +65,7 @@ public partial class PublishExtension : IChatExtension
     // ── Config ──
 
     string ConfigPath(string? user) =>
-        Path.Combine(ctx.GetUserPath(user), "publish", "config.json");
+        Path.Combine(Ctx.GetUserPath(user), "publish", "config.json");
 
     JsonObject GetPublishConfig(string? user, bool obscure = true)
     {
@@ -115,10 +109,10 @@ public partial class PublishExtension : IChatExtension
 
     JsonObject? ActiveProject(string? user)
     {
-        var activeProject = ctx.GetUserPref("project", user)?.GetValue<string>();
+        var activeProject = Ctx.GetUserPref("project", user)?.GetValue<string>();
         if (activeProject == null)
             return null;
-        return ctx.Projects.GetUserProjects(user)
+        return Ctx.Projects.GetUserProjects(user)
             .FirstOrDefault(p => p.GetString("name") == activeProject);
     }
 
@@ -129,7 +123,7 @@ public partial class PublishExtension : IChatExtension
         if (project == null)
             return new JsonObject { ["dist"] = "" };
 
-        var projectDir = ProjectsExtension.GetProjectDir(ctx.GetUserPath(user), project);
+        var projectDir = ProjectsExtension.GetProjectDir(Ctx.GetUserPath(user), project);
         var publish = ProjectsExtension.SanitizePublishPath(project.GetString("publish"), projectDir);
         if (publish.Length > 0)
             return new JsonObject { ["dist"] = publish };
@@ -149,13 +143,13 @@ public partial class PublishExtension : IChatExtension
 
         var activeProject = !string.IsNullOrEmpty(projectParam)
             ? projectParam
-            : ctx.GetUserPref("project", user)?.GetValue<string>();
+            : Ctx.GetUserPref("project", user)?.GetValue<string>();
 
-        var userPath = Path.GetFullPath(ctx.GetUserPath(user));
+        var userPath = Path.GetFullPath(Ctx.GetUserPath(user));
         JsonObject? project = null;
         if (!string.IsNullOrEmpty(activeProject))
         {
-            project = ctx.Projects.GetUserProjects(user).FirstOrDefault(p =>
+            project = Ctx.Projects.GetUserProjects(user).FirstOrDefault(p =>
                 p.GetString("name") == activeProject || p.GetString("folder") == activeProject);
         }
         var projectDir = project != null
@@ -225,8 +219,8 @@ public partial class PublishExtension : IChatExtension
 
     HttpClient CreateClient()
     {
-        var client = ctx.Feature.HttpClientFactory.CreateClient();
-        client.Timeout = TimeSpan.FromSeconds(ctx.Limits.ClientTimeout);
+        var client = Ctx.Feature.HttpClientFactory.CreateClient();
+        client.Timeout = TimeSpan.FromSeconds(Ctx.Limits.ClientTimeout);
         // llms-py sets this per-request; the remote content-negotiates on it (Vary: Accept) and
         // serves HTML — or a 302 to its login page — to clients that don't ask for JSON, which we
         // then fail to parse and silently drop the publishedUrl it returned.
@@ -244,7 +238,7 @@ public partial class PublishExtension : IChatExtension
         var user = req.UserName;
         var config = GetPublishConfig(user, obscure: false);
         var threadId = long.Parse(req.GetPathParam("id"));
-        var thread = ctx.Threads.GetThread(threadId, user)
+        var thread = Ctx.Threads.GetThread(threadId, user)
             ?? throw new Exception("Thread not found");
 
         var apiKey = RequireApiKey(config);
@@ -262,7 +256,7 @@ public partial class PublishExtension : IChatExtension
             await UploadCacheFileAsync(client, apiKey, baseUrl, tail, user).ConfigAwait();
         }
 
-        ctx.Log.LogInformation("Publishing thread {ThreadId} '{Title}' to {Url}",
+        Ctx.Log.LogInformation("Publishing thread {ThreadId} '{Title}' to {Url}",
             threadId, thread.GetString("title"), baseUrl + "/publish/thread");
 
         var httpReq = new HttpRequestMessage(HttpMethod.Post, baseUrl + "/publish/thread");
@@ -279,7 +273,7 @@ public partial class PublishExtension : IChatExtension
 
         var now = DateTime.Now;
         data["publishedAt"] = now.ToString("O");
-        await ctx.Threads.UpdateThreadAsync(threadId, new JsonObject
+        await Ctx.Threads.UpdateThreadAsync(threadId, new JsonObject
         {
             ["publishedAt"] = ChatDb.ToDateString(now),
             ["publishedUrl"] = data.GetString("publishedUrl"),
@@ -292,7 +286,7 @@ public partial class PublishExtension : IChatExtension
 
     async Task UploadCacheFileAsync(HttpClient client, string apiKey, string baseUrl, string tail, string? user)
     {
-        var filePath = ctx.GetCachePath(tail);
+        var filePath = Ctx.GetCachePath(tail);
         if (!File.Exists(filePath))
             return;
 
@@ -309,7 +303,7 @@ public partial class PublishExtension : IChatExtension
             media = sidecar;
         }
         var hash = Path.GetFileName(filePath).LeftPart('.');
-        var medias = ctx.Media.QueryMedia(new JsonObject { ["hash"] = hash }, user);
+        var medias = Ctx.Media.QueryMedia(new JsonObject { ["hash"] = hash }, user);
         if (medias.Count > 0)
         {
             foreach (var entry in medias[0])
@@ -328,14 +322,14 @@ public partial class PublishExtension : IChatExtension
 
         try
         {
-            ctx.Log.LogDebug("Uploading cache file {Path}", filePath);
+            Ctx.Log.LogDebug("Uploading cache file {Path}", filePath);
             using var res = await client.SendAsync(httpReq).ConfigAwait();
             if (!res.IsSuccessStatusCode)
-                ctx.Log.LogError("Failed to upload cache file {Path}, status: {Status}", filePath, (int)res.StatusCode);
+                Ctx.Log.LogError("Failed to upload cache file {Path}, status: {Status}", filePath, (int)res.StatusCode);
         }
         catch (Exception e)
         {
-            ctx.Log.LogError(e, "Exception during cache file upload {Path}", filePath);
+            Ctx.Log.LogError(e, "Exception during cache file upload {Path}", filePath);
         }
     }
 
@@ -352,9 +346,9 @@ public partial class PublishExtension : IChatExtension
 
         var uploads = new List<(string Profile, string? Path)>();
         if (!avatars.ContainsKey("user"))
-            uploads.Add(("user", FindAvatarFile(ctx.GetUserPath(user), "avatar")));
+            uploads.Add(("user", FindAvatarFile(Ctx.GetUserPath(user), "avatar")));
         if (!avatars.ContainsKey(profile))
-            uploads.Add((profile, FindAvatarFile(ctx.GetUserPath(user), "agent")));
+            uploads.Add((profile, FindAvatarFile(Ctx.GetUserPath(user), "agent")));
 
         foreach (var (avatarProfile, avatarPath) in uploads)
         {
@@ -382,7 +376,7 @@ public partial class PublishExtension : IChatExtension
             }
             catch (Exception e)
             {
-                ctx.Log.LogError(e, "Failed to upload avatar {Profile}", avatarProfile);
+                Ctx.Log.LogError(e, "Failed to upload avatar {Profile}", avatarProfile);
             }
         }
     }
@@ -397,7 +391,7 @@ public partial class PublishExtension : IChatExtension
     {
         var user = req.UserName;
         var name = req.GetPathParam("name");
-        var project = ctx.Projects.GetUserProjects(user).FirstOrDefault(p => p.GetString("name") == name)
+        var project = Ctx.Projects.GetUserProjects(user).FirstOrDefault(p => p.GetString("name") == name)
             ?? throw new Exception("Project not found");
 
         var config = GetPublishConfig(user, obscure: false);
@@ -408,7 +402,7 @@ public partial class PublishExtension : IChatExtension
         if (!project.TryGetPropertyValue("publish", out var publishNode) || publishNode == null)
             throw new Exception("No publish directory configured for the project");
 
-        var projectDir = ProjectsExtension.GetProjectDir(ctx.GetUserPath(user), project);
+        var projectDir = ProjectsExtension.GetProjectDir(Ctx.GetUserPath(user), project);
         var publishDir = ProjectsExtension.SanitizePublishPath(project.GetString("publish"), projectDir);
         var resolvedDir = Path.GetFullPath(Path.Combine(projectDir, publishDir));
         if (!ProjectsExtension.IsWithin(resolvedDir, projectDir))
@@ -432,7 +426,7 @@ public partial class PublishExtension : IChatExtension
         httpReq.Headers.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
         httpReq.Content = form;
 
-        ctx.Log.LogDebug("Publishing project {Name} from {Dir}", name, resolvedDir);
+        Ctx.Log.LogDebug("Publishing project {Name} from {Dir}", name, resolvedDir);
         using var client = CreateClient();
         using var res = await client.SendAsync(httpReq).ConfigAwait();
         var text = await res.Content.ReadAsStringAsync().ConfigAwait();
@@ -444,13 +438,13 @@ public partial class PublishExtension : IChatExtension
         if (res.IsSuccessStatusCode && data.GetString("publishedUrl") is { } publishedUrl)
         {
             project["publishedUrl"] = publishedUrl;
-            var projects = ctx.Projects.GetUserProjects(user);
+            var projects = Ctx.Projects.GetUserProjects(user);
             var arr = new JsonArray();
             foreach (var p in projects)
             {
                 arr.Add((p.GetString("name") == name ? project : p).Clone());
             }
-            var writePath = Path.Combine(ctx.GetUserPath(user), "projects", "projects.json");
+            var writePath = Path.Combine(Ctx.GetUserPath(user), "projects", "projects.json");
             Directory.CreateDirectory(Path.GetDirectoryName(writePath)!);
             await File.WriteAllTextAsync(writePath, arr.ToJsonString(ChatJson.Indented)).ConfigAwait();
         }
@@ -463,7 +457,7 @@ public partial class PublishExtension : IChatExtension
         var user = req.UserName;
         var id = long.Parse(req.GetPathParam("id"));
 
-        var rows = ctx.Media.QueryMedia(new JsonObject { ["id"] = id }, user);
+        var rows = Ctx.Media.QueryMedia(new JsonObject { ["id"] = id }, user);
         if (rows.Count == 0)
             return ChatResult.Json(ChatJson.CreateErrorResponse("Media not found", "NotFound"), 404);
         var media = rows[0];
@@ -476,7 +470,7 @@ public partial class PublishExtension : IChatExtension
             ?? throw new Exception("Media URL not found");
         if (!mediaUrl.StartsWith("/~cache/"))
             throw new Exception("Invalid cache URL format");
-        var filePath = ctx.GetCachePath(mediaUrl["/~cache/".Length..]);
+        var filePath = Ctx.GetCachePath(mediaUrl["/~cache/".Length..]);
         if (!File.Exists(filePath))
             return ChatResult.Json(ChatJson.CreateErrorResponse($"Cached file not found: {filePath}", "NotFound"), 404);
 
@@ -490,7 +484,7 @@ public partial class PublishExtension : IChatExtension
         httpReq.Headers.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
         httpReq.Content = form;
 
-        ctx.Log.LogDebug("Publishing media {Id} from {Path}", id, filePath);
+        Ctx.Log.LogDebug("Publishing media {Id} from {Path}", id, filePath);
         using var client = CreateClient();
         using var res = await client.SendAsync(httpReq).ConfigAwait();
         var text = await res.Content.ReadAsStringAsync().ConfigAwait();
@@ -501,7 +495,7 @@ public partial class PublishExtension : IChatExtension
 
         var now = DateTime.Now;
         data["publishedAt"] = now.ToString("O");
-        await ctx.Media.UpdateMediaAsync(id, new JsonObject
+        await Ctx.Media.UpdateMediaAsync(id, new JsonObject
         {
             ["publishedAt"] = ChatDb.ToDateString(now),
             ["publishedUrl"] = data.GetString("publishedUrl"),

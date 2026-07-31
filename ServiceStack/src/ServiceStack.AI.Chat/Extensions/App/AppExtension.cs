@@ -9,18 +9,14 @@ namespace ServiceStack.AI;
 /// background completions, the long-poll update channel that streams responses to the browser,
 /// and the chat filters that record token/cost accounting.
 /// </summary>
-public partial class AppExtension : IChatExtension
+public partial class AppExtension() : ChatExtension("app")
 {
-    public string Name => ChatExtension.App;
-
     public ChatDb Db { get; private set; } = null!;
     public ThreadUpdates Updates { get; } = new();
-    ExtensionContext ctx = null!;
     DbThreadApi threadApi = null!;
 
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
         Db = ctx.Feature.ChatDb ?? throw new Exception(
             "ChatFeature.ChatDb is required by the app extension — register an IDbConnectionFactory");
         if (ctx.Feature.AutoInitSchema)
@@ -112,9 +108,9 @@ public partial class AppExtension : IChatExtension
     /// </summary>
     async Task<object?> QueueChatAsync(ChatRequestContext req)
     {
-        var (isAuthenticated, _) = ctx.CheckAuth(req.Request);
+        var (isAuthenticated, _) = Ctx.CheckAuth(req.Request);
         if (!isAuthenticated)
-            return ChatResult.Unauthorized(ctx.Feature.ErrorAuthRequired());
+            return ChatResult.Unauthorized(Ctx.Feature.ErrorAuthRequired());
 
         var id = ThreadId(req);
         var user = req.UserName;
@@ -201,15 +197,15 @@ public partial class AppExtension : IChatExtension
         {
             try
             {
-                await ctx.ChatCompletionAsync(chat, context).ConfigAwait();
+                await Ctx.ChatCompletionAsync(chat, context).ConfigAwait();
             }
             catch (OperationCanceledException)
             {
-                ctx.Log.LogDebug("Chat cancelled for thread {ThreadId}", id);
+                Ctx.Log.LogDebug("Chat cancelled for thread {ThreadId}", id);
             }
             catch (Exception e)
             {
-                ctx.Log.LogError(e, "Chat failed for thread {ThreadId}", id);
+                Ctx.Log.LogError(e, "Chat failed for thread {ThreadId}", id);
                 // chat_error filter normally records this; ensure the thread isn't left running
                 var current = Db.GetThread(id, user);
                 if (current != null && current.Error == null)
@@ -295,7 +291,7 @@ public partial class AppExtension : IChatExtension
         var user = req.UserName;
         var thread = Db.GetThread(id, user)?.ToDto() ?? throw new Exception("Thread not found");
 
-        var compactTemplate = ctx.GetConfigDefaults().GetObject("compact")
+        var compactTemplate = Ctx.GetConfigDefaults().GetObject("compact")
             ?? throw new Exception("No 'compact' template configured in llms.json defaults");
 
         var messages = thread.GetArray("messages") ?? new JsonArray();
@@ -306,7 +302,7 @@ public partial class AppExtension : IChatExtension
         // the bundled template names a specific model; fall back to the thread's own model
         // when that provider isn't enabled on this host
         if (chat.GetString("model") is not { } compactModel
-            || !ctx.Feature.Providers.Values.Any(x => x.ProviderModel(compactModel) != null))
+            || !Ctx.Feature.Providers.Values.Any(x => x.ProviderModel(compactModel) != null))
         {
             chat["model"] = thread.GetString("model");
         }
@@ -321,7 +317,7 @@ public partial class AppExtension : IChatExtension
         SubstituteVars(chat, vars);
 
         var context = new ChatContext { Chat = chat, User = user, Tools = "none", NoHistory = true, NoStore = true };
-        var response = await ctx.ChatCompletionAsync(chat, context).ConfigAwait();
+        var response = await Ctx.ChatCompletionAsync(chat, context).ConfigAwait();
 
         var summary = response.GetArray("choices") is { Count: > 0 } choices
             ? (choices[0] as JsonObject).GetObject("message").GetString("content")
@@ -347,10 +343,10 @@ public partial class AppExtension : IChatExtension
 
     void RegisterRequestRoutes(ExtensionContext ctx)
     {
-        ctx.AddGet("requests/summary", req =>
+        Ctx.AddGet("requests/summary", req =>
             Task.FromResult<object?>(BuildSummary(Db.GetRequestsForSummary(req.UserName))));
 
-        ctx.AddGet("requests/summary/{day}", req =>
+        Ctx.AddGet("requests/summary/{day}", req =>
         {
             var day = req.GetPathParam("day");
             var rows = Db.GetRequestsForSummary(req.UserName)
@@ -359,13 +355,13 @@ public partial class AppExtension : IChatExtension
             return Task.FromResult<object?>(BuildDailySummary(rows));
         });
 
-        ctx.AddGet("requests", req =>
+        Ctx.AddGet("requests", req =>
         {
             var rows = Db.QueryRequests(QueryOf(req), req.UserName);
             return Task.FromResult<object?>(rows.ToDtos(x => x.ToDto()));
         });
 
-        ctx.AddDelete("requests/{id}", req =>
+        Ctx.AddDelete("requests/{id}", req =>
         {
             if (long.TryParse(req.GetPathParam("id"), out var id))
                 Db.DeleteRequest(id, req.UserName);
@@ -460,7 +456,7 @@ public partial class AppExtension : IChatExtension
             return;
         await threadApi.UpdateThreadAsync(threadId, new JsonObject
         {
-            ["status"] = ctx.NextLoadingMessage(),
+            ["status"] = Ctx.NextLoadingMessage(),
             ["streamingMessage"] = null, // a previous attempt's partial is stale now
         }, context.User).ConfigAwait();
     }
@@ -472,7 +468,7 @@ public partial class AppExtension : IChatExtension
         await threadApi.UpdateThreadAsync(threadId, new JsonObject
         {
             ["messages"] = chat.GetArray("messages")?.Clone() ?? new JsonArray(),
-            ["status"] = ctx.NextLoadingMessage(),
+            ["status"] = Ctx.NextLoadingMessage(),
         }, context.User).ConfigAwait();
 
         var completedAt = Db.GetThreadColumn<DateTime?>(threadId, nameof(ChatThread.CompletedAt), context.User);

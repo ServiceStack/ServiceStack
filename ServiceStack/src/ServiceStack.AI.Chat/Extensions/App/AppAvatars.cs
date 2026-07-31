@@ -14,13 +14,13 @@ public partial class AppExtension
     void RegisterAvatarRoutes(ExtensionContext ctx)
     {
         // leading '/' escapes the /ext/app prefix
-        ctx.AddGet("/avatar/user", req => Task.FromResult(GetAvatar(req, isAgent: false))!);
-        ctx.AddGet("/agents/avatar", req => Task.FromResult(GetAvatar(req, isAgent: true))!);
-        ctx.AddPost("/user/avatar", req => UploadAvatarAsync(req, "avatar"));
-        ctx.AddPost("/agents/avatar", req => UploadAvatarAsync(req, "agent"));
+        Ctx.AddGet("/avatar/user", req => Task.FromResult(GetAvatar(req, isAgent: false))!);
+        Ctx.AddGet("/agents/avatar", req => Task.FromResult(GetAvatar(req, isAgent: true))!);
+        Ctx.AddPost("/user/avatar", req => UploadAvatarAsync(req, "avatar"));
+        Ctx.AddPost("/agents/avatar", req => UploadAvatarAsync(req, "agent"));
 
-        ctx.AddGet("/themes", req => Task.FromResult<object?>(GetThemes(req)));
-        ctx.AddGet("/themes/{theme}/ui/{file_name}", req =>
+        Ctx.AddGet("/themes", req => Task.FromResult<object?>(GetThemes(req)));
+        Ctx.AddGet("/themes/{theme}/ui/{file_name}", req =>
         {
             var theme = req.GetPathParam("theme");
             var fileName = req.GetPathParam("file_name");
@@ -46,10 +46,10 @@ public partial class AppExtension
     /// <summary>Filesystem theme dirs, lowest precedence first (bundled themes come from the VFS)</summary>
     List<string> ThemeRoots(ChatRequestContext req)
     {
-        var roots = new List<string> { Path.Combine(ctx.GetUserPath(), "themes") };
+        var roots = new List<string> { Path.Combine(Ctx.GetUserPath(), "themes") };
         var user = req.UserName;
         if (user != null)
-            roots.Add(Path.Combine(ctx.GetUserPath(user), "themes"));
+            roots.Add(Path.Combine(Ctx.GetUserPath(user), "themes"));
         return roots;
     }
 
@@ -61,7 +61,7 @@ public partial class AppExtension
     /// </summary>
     JsonObject RebaseThemeUrls(JsonObject config)
     {
-        var prefix = ctx.Feature.RoutePrefix;
+        var prefix = Ctx.Feature.RoutePrefix;
         if (prefix.Length == 0 || config.GetObject("vars") is not { } vars)
             return config;
 
@@ -160,16 +160,16 @@ public partial class AppExtension
         if (user != null)
         {
             foreach (var filename in filenames)
-                yield return Path.Combine(ctx.GetUserPath(user), filename);
+                yield return Path.Combine(Ctx.GetUserPath(user), filename);
         }
         foreach (var filename in filenames)
-            yield return Path.Combine(ctx.GetUserPath(), filename);
+            yield return Path.Combine(Ctx.GetUserPath(), filename);
     }
 
     async Task<object?> UploadAvatarAsync(ChatRequestContext req, string prefix)
     {
         var user = req.UserName;
-        var userPath = ctx.GetUserPath(prefix == "agent" ? null : user);
+        var userPath = Ctx.GetUserPath(prefix == "agent" ? null : user);
         Directory.CreateDirectory(userPath);
 
         var file = req.Request.Files.FirstOrDefault(x => x.Name == "file")

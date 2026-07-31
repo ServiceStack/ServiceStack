@@ -17,6 +17,9 @@ public class ExtensionContext(ChatFeature feature, string name)
     /// <summary>Set to true inside Install() to disable the extension (e.g. voice without ffmpeg)</summary>
     public bool Disabled { get; set; }
 
+    public ToolsExtension Tools => Feature.Tools;
+    public McpExtension Mcp => Feature.Mcp;
+
     public ILogger Log => feature.Log;
 
     // ── Routing (paths auto-prefixed with /ext/<name>; a leading '/' escapes the prefix) ──

@@ -10,15 +10,10 @@ namespace ServiceStack.AI;
 /// always available; the run_* code-execution tools require the host to opt in via
 /// ChatFeature.ToolsConfig.EnableCodeExecution (a web host is not a localhost sandbox).
 /// </summary>
-public class CoreToolsExtension : IChatExtension
+public class CoreToolsExtension() : ChatExtension("core_tools")
 {
-    public string Name => ChatExtension.CoreTools;
-
-    ExtensionContext ctx = null!;
-
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
         const string group = "core_tools";
 
         ctx.RegisterTool(ToolDef("get_current_time", "Get current time in ISO-8601 format.",
@@ -39,7 +34,7 @@ public class CoreToolsExtension : IChatExtension
                 }, required: ["expression"]),
             (args, _) => Task.FromResult<object?>(Calculator.Evaluate(args.GetString("expression") ?? "")), group);
 
-        if (ctx.Feature.ToolsConfig.EnableCodeExecution)
+        if (ctx.Tools.EnableCodeExecution)
         {
             RegisterRunTool(group, "run_python", "Execute Python code in a temporary sandboxed environment.", "python");
             RegisterRunTool(group, "run_typescript", "Execute TypeScript code in a temporary sandboxed environment using bun or tsx.", "typescript");
@@ -49,7 +44,7 @@ public class CoreToolsExtension : IChatExtension
 
         ctx.AddPost("code/{language}/run", async req =>
         {
-            if (!ctx.Feature.ToolsConfig.EnableCodeExecution)
+            if (!ctx.Tools.EnableCodeExecution)
                 return ChatResult.Json(ChatJson.CreateErrorResponse(
                     "Code execution is disabled. Enable with ChatFeature.ToolsConfig.EnableCodeExecution", "Forbidden"), 403);
 
@@ -113,7 +108,7 @@ public class CoreToolsExtension : IChatExtension
 
     void RegisterRunTool(string group, string name, string description, string language)
     {
-        ctx.RegisterTool(ToolDef(name, description,
+        Ctx.RegisterTool(ToolDef(name, description,
                 new JsonObject { ["code"] = new JsonObject { ["type"] = "string" } }, required: ["code"]),
             async (args, _) => await ExecLanguageAsync(language, args.GetString("code") ?? "").ConfigAwait(), group);
     }
@@ -218,7 +213,7 @@ public class CoreToolsExtension : IChatExtension
         }
         catch (Exception e)
         {
-            ctx.Log.LogError(e, "Failed to execute {Language} code", language);
+            Log.LogError(e, "Failed to execute {Language} code", language);
             return RunResult("", $"Error: {e.Message}", -1);
         }
         finally

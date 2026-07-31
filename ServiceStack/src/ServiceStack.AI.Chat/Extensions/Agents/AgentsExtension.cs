@@ -9,16 +9,10 @@ namespace ServiceStack.AI;
 /// (chat, coder, planner) are synced to chat/profiles/**; per-user profiles live under
 /// App_Data/chat/user/&lt;user&gt;/profiles/ and override bundled ones of the same name.
 /// </summary>
-public class AgentsExtension : IChatExtension
+public class AgentsExtension() : ChatExtension("agents")
 {
-    public string Name => ChatExtension.Agents;
-
-    ExtensionContext ctx = null!;
-
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
-
         ctx.AddGet("", req => Task.FromResult<object?>(GetProfiles(req)));
         ctx.AddGet("{profile}/system", req => Task.FromResult(GetProfileSystemPrompt(req))!);
         ctx.AddGet("{profile}/avatar", req => Task.FromResult(GetProfileAvatar(req))!);
@@ -28,9 +22,9 @@ public class AgentsExtension : IChatExtension
     /// <summary>Filesystem profile roots, lowest precedence first (bundled profiles come from the VFS)</summary>
     List<string> ProfileRoots(ChatRequestContext req)
     {
-        var roots = new List<string> { Path.Combine(ctx.GetUserPath(), "profiles") };
+        var roots = new List<string> { Path.Combine(Ctx.GetUserPath(), "profiles") };
         if (req.UserName is { } user)
-            roots.Add(Path.Combine(ctx.GetUserPath(user), "profiles"));
+            roots.Add(Path.Combine(Ctx.GetUserPath(user), "profiles"));
         return roots;
     }
 
@@ -230,7 +224,7 @@ public class AgentsExtension : IChatExtension
 
             if (type != "file")
             {
-                ctx.Log.LogInformation("Unknown condition type: {Type}", type);
+                Ctx.Log.LogInformation("Unknown condition type: {Type}", type);
                 continue;
             }
 
@@ -244,7 +238,7 @@ public class AgentsExtension : IChatExtension
 
     bool GlobExists(string match, string? user)
     {
-        foreach (var dir in ctx.ResolveAllowedDirectories(user))
+        foreach (var dir in Ctx.ResolveAllowedDirectories(user))
         {
             if (!Directory.Exists(dir))
                 continue;
@@ -265,7 +259,7 @@ public class AgentsExtension : IChatExtension
             }
             catch (Exception e)
             {
-                ctx.Log.LogDebug("glob '{Match}' in '{Dir}' failed: {Message}", match, dir, e.Message);
+                Ctx.Log.LogDebug("glob '{Match}' in '{Dir}' failed: {Message}", match, dir, e.Message);
             }
         }
         return false;

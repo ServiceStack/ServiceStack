@@ -11,16 +11,10 @@ namespace ServiceStack.AI;
 /// The project list is file-backed per user at user/&lt;user&gt;/projects/projects.json and the active
 /// project is a user pref.
 /// </summary>
-public partial class ProjectsExtension : IChatExtension, IProjectsApi
+public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsApi
 {
-    public string Name => ChatExtension.Projects;
-
-    ExtensionContext ctx = null!;
-
-    public void Install(ExtensionContext ctx)
+    public override void Install(ExtensionContext ctx)
     {
-        this.ctx = ctx;
-
         ctx.AddGet("projects.json", req =>
             Task.FromResult<object?>(GetUserProjectsJson(req.UserName)));
 
@@ -34,7 +28,7 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
             var user = ctx.GetUserName(request);
             var activeProject = ctx.GetUserPref("project", user)?.GetValue<string>();
             var paths = SetProjectDirectories(activeProject, user);
-            ctx.Log.LogInformation("Projects [{User}] {Project}: {Paths}",
+            Log.LogInformation("Projects [{User}] {Project}: {Paths}",
                 user ?? "default", activeProject ?? "(none)", string.Join(", ", paths));
             return Task.CompletedTask;
         });
@@ -69,7 +63,7 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
     public static string GetProjectDir(string userPath, JsonObject project) =>
         Path.GetFullPath(Path.Combine(userPath, "projects", GetProjectFolder(project)));
 
-    string UserProjectDir(string? user, JsonObject project) => GetProjectDir(ctx.GetUserPath(user), project);
+    string UserProjectDir(string? user, JsonObject project) => GetProjectDir(Ctx.GetUserPath(user), project);
 
     /// <summary>
     /// Coerce a publish directory to a relative path inside the project folder (port of
@@ -136,7 +130,7 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
     // ── Persistence ──
 
     string ProjectsPath(string? user) =>
-        Path.Combine(ctx.GetUserPath(user), "projects", "projects.json");
+        Path.Combine(Ctx.GetUserPath(user), "projects", "projects.json");
 
     JsonArray GetUserProjectsJson(string? user)
     {
@@ -161,7 +155,7 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
             }
             catch (Exception e)
             {
-                ctx.Log.LogError(e, "Failed to parse projects.json");
+                Log.LogError(e, "Failed to parse projects.json");
             }
         }
         return [];
@@ -196,12 +190,12 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
             if (!Directory.Exists(projectDir))
             {
                 Directory.CreateDirectory(projectDir);
-                ctx.Log.LogInformation("Created directory: {Dir}", projectDir);
+                Log.LogInformation("Created directory: {Dir}", projectDir);
             }
         }
         catch (Exception e)
         {
-            ctx.Log.LogError(e, "Failed to create directory {Dir}", projectDir);
+            Log.LogError(e, "Failed to create directory {Dir}", projectDir);
         }
     }
 
@@ -219,13 +213,13 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
         WriteProjects(user, projects);
 
         // if the active project was deleted, reset the preference
-        var activeProject = ctx.GetUserPref("project", user)?.GetValue<string>();
+        var activeProject = Ctx.GetUserPref("project", user)?.GetValue<string>();
         if (activeProject != null
             && !projects.OfType<JsonObject>().Any(p => p.GetString("name") == activeProject))
         {
-            ctx.SetUserPref("project", null, user);
+            Ctx.SetUserPref("project", null, user);
             SetProjectDirectories(null, user);
-            ctx.Log.LogInformation("Active project '{Project}' was deleted, resetting active project", activeProject);
+            Log.LogInformation("Active project '{Project}' was deleted, resetting active project", activeProject);
         }
         return projects.Clone();
     }
@@ -254,14 +248,14 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
         WriteProjects(user, projects);
 
         // follow a rename of the active project
-        var activeProject = ctx.GetUserPref("project", user)?.GetValue<string>();
+        var activeProject = Ctx.GetUserPref("project", user)?.GetValue<string>();
         if (activeProject == name)
         {
             var newName = projectData.GetString("name");
             if (newName != null && newName != activeProject)
             {
-                ctx.SetUserPref("project", newName, user);
-                ctx.Log.LogInformation("Renamed active project from '{Old}' to '{New}'", activeProject, newName);
+                Ctx.SetUserPref("project", newName, user);
+                Log.LogInformation("Renamed active project from '{Old}' to '{New}'", activeProject, newName);
             }
             // the folder may have changed even when the name didn't
             SetProjectDirectories(newName ?? activeProject, user);
@@ -277,18 +271,18 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
 
         if (name == null)
         {
-            ctx.SetUserPref("project", null, user);
+            Ctx.SetUserPref("project", null, user);
             SetProjectDirectories(null, user);
-            ctx.Log.LogInformation("Unselected active project");
+            Log.LogInformation("Unselected active project");
             return JsonValue.Create((string?)null);
         }
 
         var project = GetUserProjects(user).FirstOrDefault(p => p.GetString("name") == name)
             ?? throw new Exception($"Project '{name}' not found");
 
-        ctx.SetUserPref("project", name, user);
+        Ctx.SetUserPref("project", name, user);
         var paths = SetProjectDirectories(name, user);
-        ctx.Log.LogInformation("Switched active project to '{Name}': {Paths}", name, string.Join(", ", paths));
+        Log.LogInformation("Switched active project to '{Name}': {Paths}", name, string.Join(", ", paths));
         return project.Clone();
     }
 
@@ -300,13 +294,13 @@ public partial class ProjectsExtension : IChatExtension, IProjectsApi
     /// </summary>
     List<string> SetProjectDirectories(string? projectName, string? user)
     {
-        var paths = ctx.Feature.ToolsConfig.AllowedDirectories.ToList();
+        var paths = Ctx.Tools.AllowedDirectories.ToList();
         if (projectName != null)
         {
             var project = GetUserProjects(user).FirstOrDefault(p => p.GetString("name") == projectName);
             paths = project != null ? [UserProjectDir(user, project)] : [];
         }
-        ctx.SetAllowedDirectories(paths, user);
+        Ctx.SetAllowedDirectories(paths, user);
         return paths;
     }
 }
