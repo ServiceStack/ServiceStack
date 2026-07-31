@@ -121,7 +121,8 @@ public class AiChatProjectsTests
         {
             var feature = new ChatFeature { AppData = new ChatAppData(appDataPath) };
             var ext = new ProjectsExtension();
-            ext.Install(new ExtensionContext(feature, ext.Name));
+            ext.Ctx = new ExtensionContext(feature, ext.Name);
+            ext.Install(ext.Ctx);
 
             var userProjects = Path.Combine(feature.AppData.GetUserPath("bob"), "projects");
             Directory.CreateDirectory(userProjects);
