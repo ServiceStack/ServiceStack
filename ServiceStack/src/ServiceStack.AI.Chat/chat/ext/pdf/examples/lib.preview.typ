@@ -14,12 +14,19 @@
 Body copy with *bold*, _italic_, #underline[underlined] and #strike[struck out] words, a
 #link("https://typst.app/docs")[link to the typst docs], and some `raw text`.
 
-- A bullet list
-- with a second item
-  - and a nested one
-
-+ A numbered list
-+ with a second item
+#grid(
+  columns: (1fr, 1fr),
+  gutter: 2em,
+  [
+    - A bullet list
+    - with a second item
+      - and a nested one
+  ],
+  [
+    + A numbered list
+    + with a second item
+  ],
+)
 
 #hrule()
 
@@ -40,6 +47,8 @@ Column one is bold via a `show` rule in the theme, so tables never need to repea
 #field("Total due", money(1500 + 165 * 34 + 15), weight: "bold")
 
 #hrule()
+
+== field-table
 
 #field-table((
 	("Header 1","Cell 1"),

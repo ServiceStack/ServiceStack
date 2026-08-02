@@ -22,6 +22,8 @@ const BTN_GROUP =
 const BTN_ON = 'bg-indigo-600 text-white'
 const BTN_OFF = 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
 const AI_HISTORY_MAX = 10
+// how many times the model gets to fix its own output before we stop and show the errors
+const MAX_FIX_ATTEMPTS = 3
 const IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico', '.avif']
 // editor key for generated code, so it never collides with a real file of the same name
 const GEN_PREFIX = 'generated:'
@@ -29,7 +31,8 @@ const GEN_PREFIX = 'generated:'
 const SAVED_DIR = 'saved'
 
 // files a typst template pulls in: json("x.json"), image("logo.png"), #include "part.typ", ...
-const RESOURCE_RE = /\b(?:json|yaml|toml|csv|xml|cbor|read|image|bibliography)\s*\(\s*"([^"]+)"|#?\b(?:include|import)\s+"([^"]+)"/g
+// lib.typ's load-data() counts too, since that's how every bundled template reaches its .json
+const RESOURCE_RE = /\b(?:json|yaml|toml|csv|xml|cbor|read|image|bibliography|load-data)\s*\(\s*"([^"]+)"|#?\b(?:include|import)\s+"([^"]+)"/g
 
 function baseName(path) {
     return path ? path.split('/').pop() : ''
@@ -331,7 +334,7 @@ const PdfContextMenu = {
 /** Small inline prompt/confirm used for new, rename and delete */
 const PdfPrompt = {
     template: `
-    <div class="absolute inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="$emit('cancel')">
+    <div class="absolute inset-0 z-100 flex items-center justify-center bg-black/40" @click.self="$emit('cancel')">
         <div class="w-full max-w-md mx-4 p-4" :class="$styles.dialog">
             <h3 class="text-sm font-semibold mb-2">{{ title }}</h3>
             <p v-if="message" class="text-xs mb-3" :class="$styles.muted">{{ message }}</p>
@@ -979,8 +982,10 @@ const PdfImagePicker = {
             }
         }
 
-        return { file, name, shared, width, over, busy, fileInput, attachedName, targetPath,
-                 onPick, onDrop, onPaste, upload, imageDir: IMAGE_DIR, baseName }
+        return {
+            file, name, shared, width, over, busy, fileInput, attachedName, targetPath,
+            onPick, onDrop, onPaste, upload, imageDir: IMAGE_DIR, baseName
+        }
     },
 }
 
@@ -1118,7 +1123,18 @@ const PdfDesigner = {
                         </p>
                         <button type="button" @click="generateSchema" class="px-3 py-1.5 text-xs" :class="$styles.primaryButton">Generate form schema</button>
                     </div>
-                    <JsonSchemaForm v-else :schema="formSchema" :data="formData" :show-title="false" class="p-3" @change="onFormChange" />
+                    <template v-else>
+                        <div class="flex items-center justify-end px-3 pt-2">
+                            <button type="button" @click="generateSchema()" :disabled="schemaBusy"
+                                class="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs rounded disabled:opacity-40"
+                                :class="[$styles.muted, $styles.mutedHover]"
+                                :title="'Rebuild ' + baseName(schemaOf(activeTab)) + ' from the current data - use it after changing the shape of the data'">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                Regenerate form
+                            </button>
+                        </div>
+                        <JsonSchemaForm :schema="formSchema" :data="formData" :show-title="false" class="px-3 pb-3" @change="onFormChange" />
+                    </template>
                 </div>
                 <div v-show="!activeIsImage && !showForm" ref="editorEl" class="h-full text-sm">
                     <textarea v-if="!hasCodeMirror" :value="editorContent" :readonly="!!langFile" @input="onTextareaInput" spellcheck="false"
@@ -1156,7 +1172,12 @@ const PdfDesigner = {
                         Drop a screenshot or PDF to build the template from
                     </div>
                     <div class="flex-1 overflow-y-auto px-2 pt-2 min-h-0">
-                        <div v-if="aiError" class="px-2 py-1.5 text-xs rounded border bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">{{ aiError }}</div>
+                        <div v-if="aiError" class="px-2 py-1.5 text-xs rounded border bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
+                            <div class="flex items-start gap-2">
+                                <span class="flex-1">{{ aiError }}</span>
+                                <button v-if="aiUndo" type="button" @click="undoAiEdit" class="flex-shrink-0 px-1.5 py-0.5 rounded hover:bg-red-100" title="Restore the previous contents">Undo</button>
+                            </div>
+                        </div>
                         <div v-else-if="aiResult" class="px-2 py-1.5 text-xs rounded" :class="$styles.bgPopover">
                             <div v-if="aiResult.message" class="mb-1.5 whitespace-pre-wrap" :class="$styles.muted">{{ aiResult.message }}</div>
                             <div v-if="aiResult.paths.length" class="flex flex-wrap items-center gap-1">
@@ -1194,7 +1215,7 @@ const PdfDesigner = {
                             </svg>
                         </button>
                         <textarea ref="aiInput" v-model="aiPrompt" :disabled="aiBusy" @paste="onAiPaste"
-                            @keydown.enter.exact.prevent="sendAiEdit"
+                            @keydown.enter.exact.prevent="sendAiEdit()"
                             @keydown.up="cycleHistory(-1, $event)"
                             @keydown.down="cycleHistory(1, $event)"
                             @input="historyIndex = -1"
@@ -1202,7 +1223,7 @@ const PdfDesigner = {
                             class="flex-1 min-w-0 px-2 py-1.5 text-xs rounded-md border resize-none disabled:opacity-50"
                             :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"></textarea>
                         <div class="flex flex-col items-end gap-1 flex-shrink-0">
-                            <button type="button" @click="sendAiEdit" :disabled="aiBusy || !aiPrompt.trim() || !entry"
+                            <button type="button" @click="sendAiEdit()" :disabled="aiBusy || !aiPrompt.trim() || !entry"
                                 class="px-3 py-1.5 text-xs disabled:opacity-40" :class="$styles.primaryButton">
                                 {{ aiBusy ? 'Working…' : 'Send' }}
                             </button>
@@ -1243,9 +1264,18 @@ const PdfDesigner = {
                 </button>
             </div>
 
-            <div v-if="diagnostics.length" style="max-height:8rem" class="flex-shrink-0 overflow-y-auto px-3 py-2 text-xs font-mono border-b bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
-                <div v-for="(d, i) in diagnostics" :key="i" @click="goToDiagnostic(d)" class="truncate cursor-pointer" :title="d.message">
-                    <span v-if="d.line" class="opacity-70 mr-2">{{ d.file }}:{{ d.line }}:{{ d.col }}</span>{{ d.message }}
+            <div v-if="diagnostics.length" style="max-height:8rem" class="flex-shrink-0 overflow-y-auto pl-3 pr-1 py-1 text-xs font-mono border-b bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 min-w-0">
+                        <div v-for="(d, i) in diagnostics" :key="i" @click="goToDiagnostic(d)" class="truncate cursor-pointer" :title="d.message">
+                            <span v-if="d.line" class="opacity-70 mr-2">{{ d.file }}:{{ d.line }}:{{ d.col }}</span>{{ d.message }}
+                        </div>
+                    </div>
+                    <button v-if="errorDiagnostics.length" type="button" @click="fixWithAi" :disabled="aiBusy"
+                        class="flex-shrink-0 px-2 py-0.5 rounded border font-sans border-red-300 dark:border-red-700 hover:bg-red-100 disabled:opacity-40"
+                        :title="'Ask ' + (aiModel || 'the model') + ' to fix ' + errorDiagnostics.length + ' error' + (errorDiagnostics.length === 1 ? '' : 's')">
+                        {{ aiBusy ? 'Fixing…' : 'Fix' }}
+                    </button>
                 </div>
             </div>
 
@@ -1349,7 +1379,7 @@ const PdfDesigner = {
         const aiBusy = ref(false)
         const aiError = ref('')
         const aiResult = ref(null)
-        let aiUndo = null
+        const aiUndo = ref(null) // { path: previous content } from the last AI run, for one click Undo
 
         const editorEl = ref(null)
         const previewEl = ref(null)
@@ -1926,10 +1956,10 @@ const PdfDesigner = {
             const order = TYPE_LANGUAGES.some(l => l.id === preferred)
                 ? [preferred, 'form', 'code', 'typ']
                 : preferred === 'form'
-                  ? ['form', 'code', 'typ']
-                  : preferred === 'code'
-                    ? ['code', 'typ']
-                    : ['typ', 'code']
+                    ? ['form', 'code', 'typ']
+                    : preferred === 'code'
+                        ? ['code', 'typ']
+                        : ['typ', 'code']
 
             for (const step of order) {
                 if (step === 'typ' && typ) return { view: 'typ', typ }
@@ -2094,10 +2124,10 @@ const PdfDesigner = {
         }
 
         function promptDelete(node) {
-            const hasSidecar = node.ext === '.typ' && filePaths.value.includes(sidecarOf(node.path))
+            const others = companionsOf(node.path).map(baseName)
             prompt.value = {
                 title: `Delete ${node.name}?`,
-                message: hasSidecar ? `${baseName(sidecarOf(node.path))} will be deleted too` : '',
+                message: others.length ? `${others.join(', ')} will be deleted too` : '',
                 okText: 'Delete',
                 danger: true,
                 confirmOnly: true,
@@ -2195,7 +2225,8 @@ const PdfDesigner = {
                 return
             }
             const path = schemaOf(dataPath)
-            if (!filePaths.value.includes(path)) {
+            // a freshly generated schema is only an unsaved buffer, so it won't be in the file list yet
+            if (!buffers[path] && !filePaths.value.includes(path)) {
                 formSchema.value = null
                 return
             }
@@ -2218,13 +2249,12 @@ const PdfDesigner = {
             docs.get(dataPath)?.setValue(json)
         }
 
-        async function generateSchema() {
-            const dataPath = activeTab.value
-            if (!dataPath || schemaBusy.value) return
+        async function generateSchema(dataPath = activeTab.value, { quiet = false } = {}) {
+            if (!dataPath || schemaBusy.value) return false
             formError.value = ''
             if (!aiModel.value) {
-                formError.value = 'Select a model first, then generate the form schema.'
-                return
+                if (!quiet) formError.value = 'Select a model first, then generate the form schema.'
+                return false
             }
             schemaBusy.value = true
             try {
@@ -2234,18 +2264,20 @@ const PdfDesigner = {
                     content: buffers[dataPath]?.content,
                 })
                 if (api.error) {
-                    formError.value = api.error.message ?? 'Schema generation failed'
-                    return
+                    if (!quiet) formError.value = api.error.message ?? 'Schema generation failed'
+                    return false
                 }
                 const path = schemaOf(dataPath)
                 const { content } = api.response
                 buffers[path] = { content, saved: null } // unsaved, like every other generated file
                 docs.get(path)?.setValue(content)
                 if (!extraTabs.value.includes(path)) extraTabs.value = [...extraTabs.value, path]
-                formSchema.value = JSON.parse(content)
+                if (dataPath === activeTab.value) formSchema.value = JSON.parse(content)
                 ext.toast(`Generated ${baseName(path)} - Save to keep it`)
+                return true
             } catch (e) {
-                formError.value = `${e.message ?? e}`
+                if (!quiet) formError.value = `${e.message ?? e}`
+                return false
             } finally {
                 schemaBusy.value = false
             }
@@ -2383,9 +2415,32 @@ const PdfDesigner = {
             nextTick(() => aiInput.value?.focus())
         }
 
-        async function sendAiEdit() {
+        const errorDiagnostics = computed(() => diagnostics.value.filter(d => d.severity !== 'warning'))
+
+        /** Hand the model exactly what typst said, positions and all */
+        function buildFixPrompt(errors) {
+            const lines = errors.map(d =>
+                d.line ? `${d.file ?? entry.value}:${d.line}:${d.col ?? 1}: ${d.message}` : d.message,
+            )
+            return (
+                `This does not compile. typst reports:\n\n${lines.join('\n')}\n\n` +
+                'Fix the errors and return the complete corrected files.'
+            )
+        }
+
+        /** The Fix button: same request the auto-repair makes, but started by hand */
+        async function fixWithAi() {
+            if (!errorDiagnostics.value.length || aiBusy.value) return
+            ext.setPrefs({ showAi: true })
+            aiPrompt.value = buildFixPrompt(errorDiagnostics.value)
+            await sendAiEdit()
+        }
+
+        async function sendAiEdit({ fixAttempt = 0 } = {}) {
             const request = aiPrompt.value.trim()
-            if (!request || aiBusy.value || !entry.value) return
+            if (!request || !entry.value) return
+            // a retry runs inside the original call, so it has to be allowed past the busy guard
+            if (aiBusy.value && !fixAttempt) return
 
             aiError.value = ''
             if (!aiModel.value) {
@@ -2428,20 +2483,57 @@ const PdfDesigner = {
                     return
                 }
                 const edits = api.response.files ?? {}
-                // keep the previous contents so the edit can be undone in one click
-                aiUndo = Object.fromEntries(Object.keys(edits).map(path => [path, buffers[path]?.content ?? null]))
+                // keep the previous contents so the edit can be undone in one click. On a retry the
+                // earlier snapshot wins, so Undo reverts the whole chain rather than the last attempt.
+                const before = Object.fromEntries(Object.keys(edits).map(path => [path, buffers[path]?.content ?? null]))
+                aiUndo.value = fixAttempt ? { ...before, ...aiUndo.value } : before
                 applyAiEdits(edits)
                 aiResult.value = { message: api.response.message, paths: Object.keys(edits) }
-                rememberPrompt(request)
+                if (!fixAttempt) rememberPrompt(request) // a generated fix prompt isn't worth recalling
                 aiImages.value = []
                 aiPrompt.value = ''
                 historyIndex.value = -1
                 historyDraft = ''
+                if (Object.keys(edits).length) await verifyOrFix(fixAttempt)
+                // only the outer call, and only once it compiles - a broken template isn't worth a schema
+                if (!fixAttempt && !errorDiagnostics.value.length) await ensureSchema()
             } catch (e) {
                 aiError.value = `${e.message ?? e}`
             } finally {
                 aiBusy.value = false
             }
+        }
+
+        /**
+         * A template that renders is worth a form. Generate the schema the first time one is missing,
+         * so the Form tab works without the user having to ask for it.
+         */
+        async function ensureSchema() {
+            const dataPath = sidecarOf(entry.value ?? '')
+            if (!dataPath || !buffers[dataPath] || filePaths.value.includes(schemaOf(dataPath))) return
+            if (buffers[schemaOf(dataPath)]) return // already generated this session, just unsaved
+            await generateSchema(dataPath, { quiet: true })
+        }
+
+        /**
+         * Compile what the model just wrote and, if typst rejects it, hand the errors straight back -
+         * up to MAX_FIX_ATTEMPTS times before leaving it to the user.
+         */
+        async function verifyOrFix(fixAttempt) {
+            clearTimeout(renderTimer) // the buffer watcher queued one; render now so we can read the result
+            await render()
+            const errors = errorDiagnostics.value
+            if (!errors.length) return
+            if (fixAttempt >= MAX_FIX_ATTEMPTS) {
+                aiError.value = `Still not compiling after ${MAX_FIX_ATTEMPTS} attempts - fix the errors above, or try again.`
+                return
+            }
+            aiPrompt.value = buildFixPrompt(errors)
+            aiResult.value = {
+                message: `Attempt ${fixAttempt + 1} of ${MAX_FIX_ATTEMPTS}: asking ${aiModel.value} to fix ${errors.length} error${errors.length === 1 ? '' : 's'}…`,
+                paths: [],
+            }
+            await sendAiEdit({ fixAttempt: fixAttempt + 1 })
         }
 
         /** Land AI edits as unsaved buffers so they re-render live and can be reviewed before saving */
@@ -2457,13 +2549,13 @@ const PdfDesigner = {
         }
 
         function undoAiEdit() {
-            if (!aiUndo) return
-            for (const [path, content] of Object.entries(aiUndo)) {
+            if (!aiUndo.value) return
+            for (const [path, content] of Object.entries(aiUndo.value)) {
                 if (content === null) continue
                 if (buffers[path]) buffers[path].content = content
                 docs.get(path)?.setValue(content)
             }
-            aiUndo = null
+            aiUndo.value = null
             aiResult.value = null
         }
 
@@ -2759,8 +2851,9 @@ const PdfDesigner = {
             typeLanguages, selectLanguage, langFile, copyEditor, copied, editorContent,
             btnGroup: BTN_GROUP, btnOn: BTN_ON, btnOff: BTN_OFF,
             formSchema, formData, formError, schemaBusy, generateSchema, onFormChange, schemaOf,
-            aiPrompt, aiInput, aiBusy, aiError, aiResult, aiModel, sendAiEdit, undoAiEdit,
+            aiPrompt, aiInput, aiBusy, aiError, aiResult, aiUndo, aiModel, sendAiEdit, undoAiEdit,
             aiImages, aiAttaching, aiDragging, onAiFiles, onAiDrop, onAiPaste, removeAiImage, maxPdfPages: MAX_PDF_PAGES,
+            errorDiagnostics, fixWithAi,
             aiHistory, historyIndex, cycleHistory,
             editorEl, previewEl, canvasEls, hasCodeMirror,
             loadFiles, onNodeSelect, openTab, selectTab, closeTab, save, download, promptSavePdf, zoom, fitToWidth, goToDiagnostic,

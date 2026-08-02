@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
 
@@ -15,6 +16,10 @@ namespace ServiceStack.AI;
 /// </summary>
 public partial class PdfExtension() : ChatExtension("pdf")
 {
+    /// <summary>A template importing the shared library, e.g. #import "../lib.typ"</summary>
+    [GeneratedRegex(@"#(?:import|include)\s+""(?:\.\./)*lib\.typ""")]
+    private static partial Regex ImportsLibRegex();
+
     /// <summary>Path to the typst CLI, resolved on install</summary>
     public string? TypstPath { get; set; }
 
@@ -258,10 +263,15 @@ public partial class PdfExtension() : ChatExtension("pdf")
         Log.LogInformation("Seeded example templates in {Path}", root);
     }
 
-    /// <summary>Every template imports lib.typ, so put it back if it isn't there — along with its preview</summary>
+    /// <summary>
+    /// Templates don't compile without the library they import, so put it back if it goes missing —
+    /// but only while something still imports it. Renaming lib.typ shouldn't conjure up a second copy.
+    /// </summary>
     void SeedLibrary(string root, Dictionary<string, IO.IVirtualFile> examples)
     {
         if (File.Exists(Path.Combine(root, LibName)))
+            return;
+        if (!AllTemplates(root).Any(rel => ImportsLibRegex().IsMatch(File.ReadAllText(Path.Combine(root, rel)))))
             return;
         foreach (var name in new[] { LibName, LibPreview })
         {
@@ -428,38 +438,156 @@ public partial class PdfExtension() : ChatExtension("pdf")
         return new JsonObject { ["path"] = relPath, ["data"] = withData ? relData : null };
     }
 
-    /// <summary>Rename a .typ template, taking its sidecar .json with it</summary>
+    /// <summary>Siblings that belong to the same document: invoice.json, invoice.ui.json, lib.preview.typ</summary>
+    public static List<string> Companions(string root, string relPath)
+    {
+        var fileName = Path.GetFileName(relPath);
+        var relDir = ParentDir(relPath);
+        var fullDir = Path.GetDirectoryName(Resolve(root, relPath));
+        if (fullDir == null || !Directory.Exists(fullDir))
+            return [];
+
+        var stem = fileName.LeftPart('.');
+        return Directory.EnumerateFiles(fullDir)
+            .Select(Path.GetFileName)
+            .Where(name => name != fileName && name!.StartsWith(stem + ".", StringComparison.Ordinal))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .Select(name => relDir.Length > 0 ? $"{relDir}/{name}" : name!)
+            .ToList();
+    }
+
+    /// <summary>Every .typ in the folder, relative to it</summary>
+    public static List<string> AllTemplates(string root)
+    {
+        var to = new List<string>();
+        Walk(root, "");
+        to.Sort(StringComparer.Ordinal);
+        return to;
+
+        void Walk(string dir, string prefix)
+        {
+            foreach (var file in Directory.EnumerateFiles(dir, "*.typ"))
+            {
+                to.Add(prefix + Path.GetFileName(file));
+            }
+            foreach (var subDir in Directory.EnumerateDirectories(dir))
+            {
+                var name = Path.GetFileName(subDir);
+                if (!name.StartsWith('.'))
+                    Walk(subDir, $"{prefix}{name}/");
+            }
+        }
+    }
+
+    static string ParentDir(string relPath)
+    {
+        var path = relPath.Replace('\\', '/');
+        var at = path.LastIndexOf('/');
+        return at <= 0 ? "" : path[..at];
+    }
+
+    /// <summary>
+    /// Point a template at renamed files: json("invoice.json"), #import "lib.typ".
+    /// <para>
+    /// The renamed template gets every quoted reference updated — its own data and schema. Other
+    /// templates only get their #import/#include lines touched, since a mention of another
+    /// document's data file is almost always an example in a comment rather than a real reference.
+    /// </para>
+    /// </summary>
+    static bool RetargetReferences(string root, string relPath, List<(string From, string To)> renames,
+        bool importsOnly = false)
+    {
+        var fullPath = Resolve(root, relPath);
+        var text = File.ReadAllText(fullPath);
+        var updated = text;
+
+        foreach (var (oldRel, newRel) in renames)
+        {
+            var refs = new List<(string Old, string New)> { (TypstRef(oldRel), TypstRef(newRel)) };
+            var (oldName, newName) = (Path.GetFileName(oldRel), Path.GetFileName(newRel));
+            if (oldName != refs[0].Old)
+                refs.Add((oldName, newName));
+
+            foreach (var (oldRef, newRef) in refs)
+            {
+                if (oldRef == newRef)
+                    continue;
+                updated = importsOnly
+                    ? Regex.Replace(updated,
+                        @"(#(?:import|include)\s+"")" + Regex.Escape(oldRef) + @"("")",
+                        "$1" + newRef.Replace("$", "$$") + "$2")
+                    // only inside a string literal, so prose that happens to say the name is left alone
+                    : updated.Replace($"\"{oldRef}\"", $"\"{newRef}\"");
+            }
+        }
+
+        if (updated == text)
+            return false;
+        WriteText(fullPath, updated);
+        return true;
+    }
+
+    /// <summary>Rename a template along with the files that belong to it, fixing the references between them</summary>
     async Task<object?> RenameAsync(ChatRequestContext req)
     {
         var root = PdfRoot(req.AssertUserName());
         var body = await req.GetJsonBodyAsync().ConfigAwait();
         var relFrom = body.GetString("from");
         var relTo = body.GetString("to");
-        var fromPath = Resolve(root, relFrom, mustExist: true);
+        Resolve(root, relFrom, mustExist: true); // validates it exists and stays inside the folder
         var toPath = Resolve(root, relTo);
         if (File.Exists(toPath) || Directory.Exists(toPath))
             return Conflict(relTo);
 
-        Directory.CreateDirectory(Path.GetDirectoryName(toPath)!);
-        if (Directory.Exists(fromPath))
-            Directory.Move(fromPath, toPath);
-        else
-            File.Move(fromPath, toPath);
-
-        string? renamedData = null;
+        var renames = new List<(string From, string To)> { (relFrom!, relTo!) };
         if (relFrom!.EndsWith(".typ", StringComparison.OrdinalIgnoreCase)
             && relTo!.EndsWith(".typ", StringComparison.OrdinalIgnoreCase))
         {
-            var dataFrom = Resolve(root, SidecarPath(relFrom));
-            var dataTo = Resolve(root, SidecarPath(relTo));
-            if (File.Exists(dataFrom) && !File.Exists(dataTo))
+            var toStem = Path.GetFileName(relTo)[..^".typ".Length];
+            var toDir = ParentDir(relTo);
+            var fromStemLength = Path.GetFileName(relFrom).LeftPart('.').Length;
+            foreach (var relOther in Companions(root, relFrom))
             {
-                File.Move(dataFrom, dataTo);
-                renamedData = SidecarPath(relTo);
+                // invoice.ui.json keeps everything after the stem, so .ui.json and .preview.typ survive
+                var suffix = Path.GetFileName(relOther)[fromStemLength..];
+                var relOtherTo = toDir.Length > 0 ? $"{toDir}/{toStem}{suffix}" : toStem + suffix;
+                var otherToPath = Resolve(root, relOtherTo);
+                if (!File.Exists(otherToPath) && !Directory.Exists(otherToPath))
+                    renames.Add((relOther, relOtherTo));
             }
         }
 
-        return new JsonObject { ["path"] = relTo, ["data"] = renamedData };
+        Directory.CreateDirectory(Path.GetDirectoryName(toPath)!);
+        foreach (var (oldRel, newRel) in renames)
+        {
+            var from = Resolve(root, oldRel);
+            var to = Resolve(root, newRel);
+            Directory.CreateDirectory(Path.GetDirectoryName(to)!);
+            if (Directory.Exists(from))
+                Directory.Move(from, to);
+            else
+                File.Move(from, to);
+        }
+
+        // the renamed templates in full, every other one's imports — so a renamed lib.typ doesn't
+        // break the documents importing it
+        var renamedPaths = renames.Select(x => x.To).ToHashSet(StringComparer.Ordinal);
+        var updated = AllTemplates(root)
+            .Where(rel => RetargetReferences(root, rel, renames, importsOnly: !renamedPaths.Contains(rel)))
+            .ToList();
+
+        return new JsonObject
+        {
+            ["path"] = relTo,
+            ["data"] = renames
+                .Where(x => x.To.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                            && !x.To.EndsWith(CoreToolsExtension.SchemaSuffix, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.To)
+                .FirstOrDefault(),
+            ["renamed"] = new JsonArray(renames
+                .Select(x => (JsonNode)new JsonObject { ["from"] = x.From, ["to"] = x.To }).ToArray()),
+            ["updated"] = new JsonArray(updated.Select(x => (JsonNode)x).ToArray()),
+        };
     }
 
     object Delete(ChatRequestContext req)
@@ -476,13 +604,17 @@ public partial class PdfExtension() : ChatExtension("pdf")
         else
         {
             File.Delete(fullPath);
+            // the whole document goes with it: its data, schema, preview, any <stem>.* image
             if (req.QueryString("sidecar") == "true" && relPath!.EndsWith(".typ", StringComparison.OrdinalIgnoreCase))
             {
-                var dataPath = Resolve(root, SidecarPath(relPath));
-                if (File.Exists(dataPath))
+                foreach (var relOther in Companions(root, relPath))
                 {
-                    File.Delete(dataPath);
-                    deleted.Add(SidecarPath(relPath));
+                    var other = Resolve(root, relOther);
+                    if (File.Exists(other))
+                    {
+                        File.Delete(other);
+                        deleted.Add(relOther);
+                    }
                 }
             }
         }

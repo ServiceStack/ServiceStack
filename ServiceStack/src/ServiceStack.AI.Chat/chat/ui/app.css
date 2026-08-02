@@ -9597,6 +9597,15 @@
       }
     }
   }
+  .dark\:hover\:bg-red-900 {
+    &:where(.dark, .dark *) {
+      &:hover {
+        @media (hover: hover) {
+          background-color: var(--color-red-900);
+        }
+      }
+    }
+  }
   .dark\:hover\:bg-red-900\/20 {
     &:where(.dark, .dark *) {
       &:hover {
@@ -9641,6 +9650,15 @@
           @supports (color: color-mix(in lab, red, red)) {
             background-color: color-mix(in oklab, var(--color-red-900) 50%, transparent);
           }
+        }
+      }
+    }
+  }
+  .dark\:hover\:bg-red-950 {
+    &:where(.dark, .dark *) {
+      &:hover {
+        @media (hover: hover) {
+          background-color: var(--color-red-950);
         }
       }
     }
