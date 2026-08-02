@@ -39,6 +39,13 @@ public class ExtensionContext(ChatFeature feature, string name)
         feature.Routes.AddGet($"{ExtPrefix}/{{path:.*}}", ctx =>
             feature.ServeEmbeddedFileAsync(ctx, $"chat/ext/{name}", ctx.GetPathParam("path")));
 
+    /// <summary>
+    /// Read one of this extension's bundled files (chat/ext/&lt;name&gt;/&lt;path&gt;), e.g. the AI
+    /// prompts and starter templates synced from llms-py alongside its UI.
+    /// </summary>
+    public string? GetBundledText(string path) =>
+        HostContext.VirtualFileSources.GetFile($"chat/ext/{name}/{path}")?.ReadAllText();
+
     /// <summary>Register in the /ext list so the UI dynamically imports /ext/&lt;name&gt;/index.mjs</summary>
     public void RegisterUiExtension(string index = "index.mjs") =>
         feature.UiExtensions.Add(new JsonObject { ["id"] = name, ["path"] = $"{ExtPrefix}/{index}" });

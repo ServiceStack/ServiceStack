@@ -1,7 +1,32 @@
-import { ref, computed, onMounted, watch, inject, nextTick } from "vue"
+import { ref, reactive, computed, onMounted, watch, inject, nextTick } from "vue"
 import { ApiResult, createErrorStatus } from "@servicestack/client"
+import { JsonSchemaForm } from "/ui/components/JsonSchemaForm.mjs"
+import { generateTypes } from "/ui/components/jsonTypes.mjs"
 
 let ext
+
+// the JSON tab keeps one document, plus the schema generated from it, in localStorage. Typed classes are
+// regenerated on demand instead - they're instant to produce, so there's nothing worth storing or saving.
+const JSON_NAME = 'data.json'
+
+const ARTIFACTS = [
+    { id: 'json', label: 'Code', file: JSON_NAME, mime: 'application/json' },
+    { id: 'ui', label: 'Schema', file: 'data.ui.json', mime: 'application/json', gen: 'schema' },
+    { id: 'cs', label: 'C#', file: 'data.cs', mime: 'text/x-csharp', gen: 'types', language: 'csharp' },
+    { id: 'py', label: 'Python', file: 'data.py', mime: 'text/x-python', gen: 'types', language: 'python' },
+    { id: 'ts', label: 'TS', file: 'data.ts', mime: 'text/typescript', gen: 'types', language: 'typescript' },
+    { id: 'js', label: 'JS', file: 'data.js', mime: 'text/javascript', gen: 'types', language: 'javascript' },
+]
+const artifactKey = id => (id === 'json' ? 'llms.tools.json' : `llms.tools.json.${id}`)
+const isTypes = id => ARTIFACTS.some(a => a.id === id && a.gen === 'types')
+
+// joined segmented button group, same as the pdf designer's sub toolbar
+const BTN_GROUP =
+    'inline-flex rounded-md shadow-sm overflow-hidden border border-gray-300 dark:border-gray-600 ' +
+    'divide-x divide-gray-200 dark:divide-gray-700'
+const BTN_ON = 'bg-indigo-600 text-white'
+const BTN_OFF = 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+const BTN_NEW = 'bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
 
 const languages = {
     python: {
@@ -28,6 +53,22 @@ const languages = {
         default: 'Console.WriteLine("Hello, C#!");\n',
         tool: 'run_csharp',
     },
+    json: {
+        name: 'JSON',
+        mime: 'application/json',
+        // not runnable - this tab generates a form UI and typed classes from the document instead
+        default: JSON.stringify({
+            name: 'Acme Widgets',
+            founded: 2019,
+            active: true,
+            contact: { email: 'hi@acme.example', phone: '+61 2 5555 0100' },
+            products: [
+                { sku: 'W-100', title: 'Widget', price: 19.95, tags: ['popular'] },
+                { sku: 'W-200', title: 'Widget Pro', price: 49.5, tags: [] },
+            ],
+        }, null, 2) + '\n',
+        tool: null,
+    },
 }
 
 const CodePage = {
@@ -47,7 +88,10 @@ const CodePage = {
                         {{ languages[lang].name }}
                     </button>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div v-if="isJson" class="flex items-center gap-2">
+                    <span v-if="genError" class="px-2 py-1 text-xs rounded-md border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-200">{{ genError }}</span>
+                </div>
+                <div v-else class="flex items-center space-x-2">
                     <button type="button" @click="toggleOutput" class="p-1 rounded" :class="[$styles.mutedIcon,$styles.mutedIconHover]" :title="showOutput ? 'Hide Output' : 'Show Output'">
                         <svg v-if="showOutput" xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24"><path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 16H3v-3h18zm0-5H3V5h18z"/></svg>
                         <svg v-else xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24"><path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 16H3V5h18z"/></svg>
@@ -65,14 +109,56 @@ const CodePage = {
 
             <!-- Main Content -->
             <div class="flex-1 flex flex-col min-h-0">
+                <!-- views of the JSON document: its source, the generated form, and each generated artifact -->
+                <div v-if="isJson" class="flex items-center gap-2 px-2 py-1 border-b shrink-0 overflow-x-auto" :class="[$styles.chromeBorder, $styles.bgSidebar]">
+                    <div :class="btnGroup">
+                        <button v-for="v in dataViews" :key="v.id" type="button" @click="selectView(v.id)"
+                            class="px-3 py-1 text-xs font-medium" :class="view === v.id ? btnOn : btnOff">
+                            {{ v.label }}
+                        </button>
+                    </div>
+                    <div :class="btnGroup">
+                        <button v-for="a in generatable" :key="a.id" type="button" @click="selectView(a.id)"
+                            :disabled="!!genBusy" :title="(artifacts[a.id] && !isTypes(a.id) ? 'Open ' : 'Generate ') + a.file"
+                            class="px-3 py-1 text-xs font-medium inline-flex items-center gap-1 disabled:opacity-40"
+                            :class="view === a.id ? btnOn : (artifacts[a.id] || isTypes(a.id) ? btnOff : btnNew)">
+                            <svg v-if="genBusy === a.id" class="animate-spin size-3 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            <span v-else-if="!artifacts[a.id] && !isTypes(a.id)" class="text-xs">+</span>
+                            {{ a.label }}
+                        </button>
+                    </div>
+                    <div class="flex-1"></div>
+                    <span class="text-xs truncate" :class="$styles.muted">{{ viewFile }}</span>
+                    <button v-if="!showForm" type="button" @click="copyEditor" class="px-2 py-1 text-xs inline-flex items-center gap-1 shrink-0" :class="$styles.secondaryButton" title="Copy to clipboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                        {{ copied ? 'Copied' : 'Copy' }}
+                    </button>
+                </div>
+
                 <!-- Code Editor -->
                 <div class="flex-1 overflow-hidden relative">
                     <!-- The div CodeMirror attaches to. We use absolute positioning to ensure it takes full space of parent -->
-                    <div ref="refInput" class="absolute inset-0 h-full w-full text-base"></div>
+                    <div v-show="!showForm" ref="refInput" class="absolute inset-0 h-full w-full text-base"></div>
+                    <div v-if="showForm" class="absolute inset-0 overflow-y-auto p-4" :class="$styles.bgInput">
+                        <div v-if="!schema" class="h-full flex flex-col items-center justify-center gap-3 text-center">
+                            <p class="text-xs max-w-sm" :class="$styles.muted">
+                                No <span class="font-mono">data.ui.json</span> yet. Generate a JSON Schema for this document
+                                and it will be rendered as a form.
+                            </p>
+                            <button type="button" @click="generate(schemaArtifact)" class="px-3 py-1.5 text-xs" :class="$styles.primaryButton">Generate form schema</button>
+                        </div>
+                        <p v-else-if="formError" class="text-xs" :class="$styles.muted">{{ formError }}</p>
+                        <JsonSchemaForm v-else :schema="schema" :data="formData" :status="formStatus" @change="onFormChange" />
+                    </div>
                 </div>
 
                 <!-- Output Pane -->
-                <div v-if="showOutput" class="h-1/3 min-h-[150px] border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col font-mono text-sm overflow-hidden shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-10">
+                <div v-if="showOutput && !isJson" class="h-1/3 min-h-[150px] border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col font-mono text-sm overflow-hidden shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-10">
                     <div class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-500 uppercase flex justify-between items-center select-none">
                         <span>Output</span>
                         <div class="flex items-center">
@@ -108,6 +194,159 @@ const CodePage = {
         const resultStatusColor = ref('')
         const showOutput = ref(true)
 
+        // --- JSON tab: one document, plus a form schema and typed classes generated from it -----------
+        const ctx = inject('ctx')
+        const isJson = computed(() => language.value === 'json')
+        const VIEW_IDS = ['code', 'form', ...ARTIFACTS.filter(a => a.gen).map(a => a.id)]
+        const stored = localStorage.getItem('llms.tools.json.view')
+        const view = ref(VIEW_IDS.includes(stored) ? stored : 'code')
+        /** which artifact the editor is showing (the form has no editor) */
+        const artifact = computed(() => (view.value === 'code' || view.value === 'form' ? 'json' : view.value))
+        const artifacts = reactive(
+            Object.fromEntries(ARTIFACTS.map(a => [a.id, isTypes(a.id) ? null : (localStorage.getItem(artifactKey(a.id)) ?? null)])),
+        )
+        // typed classes used to be cached here - drop any left from an earlier version
+        ARTIFACTS.filter(a => isTypes(a.id)).forEach(a => localStorage.removeItem(artifactKey(a.id)))
+        const genBusy = ref('')
+        const genError = ref('')
+        const formError = ref('')
+        const formData = ref(null)
+        const formStatus = ref(null)
+        let formSource = null
+
+        const dataViews = [
+            { id: 'code', label: 'Code' },
+            { id: 'form', label: 'Form' },
+        ]
+        const generatable = computed(() => ARTIFACTS.filter(a => a.gen))
+        const viewFile = computed(() => ARTIFACTS.find(a => a.id === artifact.value)?.file ?? JSON_NAME)
+        const schemaArtifact = ARTIFACTS.find(a => a.id === 'ui')
+        const schema = computed(() => {
+            try {
+                return artifacts.ui ? JSON.parse(artifacts.ui) : null
+            } catch {
+                return null
+            }
+        })
+        const showForm = computed(() => isJson.value && view.value === 'form')
+
+        const copied = ref(false)
+        let copiedTimer = null
+
+        async function copyEditor() {
+            const text = cm?.getValue() ?? ''
+            try {
+                await navigator.clipboard.writeText(text)
+            } catch {
+                // clipboard is blocked outside a secure context - fall back to a temporary selection
+                const el = document.createElement('textarea')
+                el.value = text
+                document.body.appendChild(el)
+                el.select()
+                document.execCommand('copy')
+                el.remove()
+            }
+            copied.value = true
+            clearTimeout(copiedTimer)
+            copiedTimer = setTimeout(() => (copied.value = false), 1500)
+        }
+
+        function jsonDoc() {
+            return artifacts.json ?? localStorage.getItem('llms.tools.json') ?? languages.json.default
+        }
+
+        function setView(next) {
+            const previous = artifact.value
+            if (cm && previous && view.value !== 'form' && !isTypes(previous)) {
+                // keep whatever is in the editor before switching away
+                artifacts[previous] = cm.getValue()
+                localStorage.setItem(artifactKey(previous), cm.getValue())
+            }
+            view.value = next
+            localStorage.setItem('llms.tools.json.view', next)
+            if (next === 'form') {
+                loadForm()
+                return
+            }
+            nextTick(() => {
+                if (!cm) return
+                const meta = ARTIFACTS.find(a => a.id === artifact.value)
+                cm.setOption('mode', meta.mime)
+                cm.setOption('readOnly', isTypes(artifact.value))
+                cm.setValue(artifacts[artifact.value] ?? (artifact.value === 'json' ? jsonDoc() : ''))
+                cm.refresh()
+            })
+        }
+
+        /** typed classes regenerate on every click; the schema costs a model call, so it's kept */
+        async function selectView(id) {
+            const target = ARTIFACTS.find(a => a.id === id)
+            if (!target?.gen || (artifacts[id] && !isTypes(id))) return setView(id)
+            await generate(target)
+        }
+
+        function loadForm() {
+            formError.value = ''
+            const raw = jsonDoc()
+            try {
+                formData.value = JSON.parse(raw || '{}')
+                formSource = raw
+            } catch (e) {
+                formData.value = null
+                formError.value = `This document isn't valid JSON yet - fix it in the Code view. (${e.message})`
+            }
+        }
+
+        /** form edits write back to the document and localStorage, so both views stay in step */
+        function onFormChange() {
+            const json = JSON.stringify(formData.value, null, 2) + '\n'
+            formSource = json
+            artifacts.json = json
+            localStorage.setItem('llms.tools.json', json)
+            if (artifact.value === 'json' && cm) {
+                code.value = json
+                cm.setValue(json)
+            }
+        }
+
+        async function generate(target) {
+            if (genBusy.value) return
+            genError.value = ''
+            const content = artifact.value === 'json' && cm ? cm.getValue() : jsonDoc()
+            genBusy.value = target.id
+            try {
+                let generated
+                if (target.gen === 'types') {
+                    // deterministic and local - the schema, when generated, sharpens the output
+                    generated = generateTypes({
+                        name: JSON_NAME,
+                        json: content || '{}',
+                        schema: artifacts.ui || undefined,
+                        language: target.language,
+                    }).content
+                } else {
+                    const model = ctx?.state?.selectedModel
+                    if (!model) {
+                        genError.value = 'Select a model first'
+                        return
+                    }
+                    const api = await ext.postJson('/schema', { name: JSON_NAME, model, content })
+                    if (api.error) {
+                        genError.value = api.error.message ?? 'Generation failed'
+                        return
+                    }
+                    generated = api.response.content
+                }
+                artifacts[target.id] = generated
+                if (!isTypes(target.id)) localStorage.setItem(artifactKey(target.id), generated)
+                setView(target.id)
+            } catch (e) {
+                genError.value = `${e.message ?? e}`
+            } finally {
+                genBusy.value = ''
+            }
+        }
+
         const loadCode = (lang) => {
             const saved = localStorage.getItem(`llms.tools.${lang}`)
             // Default snippets if empty
@@ -139,6 +378,12 @@ const CodePage = {
             stdout.value = ''
             stderr.value = ''
             resultStatus.value = ''
+            genError.value = ''
+            if (newLang === 'json') {
+                if (view.value === 'form') loadForm()
+                else if (isTypes(view.value)) selectView(view.value)
+                else setView(view.value)
+            }
         })
 
         function setError(status) {
@@ -232,8 +477,8 @@ const CodePage = {
                 theme: 'ctp-mocha', // using the theme from existing code
                 value: code.value,
                 extraKeys: {
-                    "Ctrl-Enter": () => runCode(),
-                    "Cmd-Enter": () => runCode(), // Mac support
+                    "Ctrl-Enter": () => !isJson.value && runCode(),
+                    "Cmd-Enter": () => !isJson.value && runCode(), // Mac support
                 },
                 tabSize: 4,
                 indentUnit: 4,
@@ -242,13 +487,26 @@ const CodePage = {
 
             cm.on('change', () => {
                 code.value = cm.getValue()
-                localStorage.setItem(`llms.tools.${language.value}`, code.value)
+                if (isJson.value) {
+                    if (isTypes(artifact.value)) return
+                    artifacts[artifact.value] = code.value
+                    localStorage.setItem(artifactKey(artifact.value), code.value)
+                } else {
+                    localStorage.setItem(`llms.tools.${language.value}`, code.value)
+                }
             })
 
             // Fix layout issues when resizing
             window.addEventListener('resize', () => {
                 cm.refresh()
             })
+
+            // a restored view has nothing cached behind it - rebuild whatever it was showing
+            if (isJson.value) {
+                if (view.value === 'form') loadForm()
+                else if (isTypes(view.value)) selectView(view.value)
+                else setView(view.value)
+            }
         })
 
         return {
@@ -264,6 +522,11 @@ const CodePage = {
             showOutput,
             toggleOutput,
             runCode,
+            isJson, view, setView, selectView, dataViews, artifact, artifacts, generatable, schemaArtifact, viewFile,
+            isTypes, copyEditor, copied,
+            schema, showForm, formData, formError, formStatus, onFormChange,
+            genBusy, genError, generate,
+            btnGroup: BTN_GROUP, btnOn: BTN_ON, btnOff: BTN_OFF, btnNew: BTN_NEW,
         }
     }
 }
@@ -632,7 +895,10 @@ export default {
     install(ctx) {
         ext = ctx.scope('core_tools')
 
-        const LANGUAGE_TOOLS = Object.values(languages).map(x => x.tool)
+        // shared component, also used by the pdf designer - register it here so /code works standalone
+        ctx.components({ JsonSchemaForm })
+
+        const LANGUAGE_TOOLS = Object.values(languages).map(x => x.tool).filter(Boolean)
         ctx.setLeftIcons({
             code: {
                 component: {

@@ -25,6 +25,11 @@ HOME_EXT="gemini"
 # identity + credentials are C#-only, gemini is synced from $LLMS_HOME above
 KEEP_EXT="identity credentials gemini"
 
+# clear stale config files
+rm ../../tests/NorthwindAuto/App_Data/chat/llms.json
+rm ../../tests/NorthwindAuto/App_Data/chat/providers.json
+rm ../../tests/NorthwindAuto/App_Data/chat/providers-extra.json
+
 echo "Syncing from $LLMS"
 
 # Core UI (verbatim, incl. ai.mjs)
@@ -37,6 +42,10 @@ cp "$LLMS/llms.json" chat/llms.json
 cp "$LLMS/providers.json" chat/providers.json
 cp "$LLMS/providers-extra.json" chat/providers-extra.json
 
+# Server-side assets the C# ports read at runtime the same way Python does, e.g. the AI prompts
+# and the pdf starter templates. Synced after ui/ because that rsync --deletes anything else in the dir.
+SERVER_ASSETS="prompts examples"
+
 # Extension UIs -> chat/ext/<name>/
 for ext in "$LLMS"/extensions/*/; do
     name=$(basename "$ext")
@@ -45,6 +54,12 @@ for ext in "$LLMS"/extensions/*/; do
         mkdir -p "chat/ext/$name"
         rsync -a --delete "$ext/ui/" "chat/ext/$name/"
     fi
+    for asset in $SERVER_ASSETS; do
+        if [ -d "$ext/$asset" ]; then
+            mkdir -p "chat/ext/$name/$asset"
+            rsync -a --delete "$ext/$asset/" "chat/ext/$name/$asset/"
+        fi
+    done
 done
 
 # User extension UIs (llms-home) -> chat/ext/<name>/
@@ -75,3 +90,4 @@ rsync -a --delete "$LLMS/extensions/agents/profiles/" chat/profiles/
 
 VERSION=$(grep -o "version: '[^']*'" chat/ui/ai.mjs | head -1 | cut -d"'" -f2)
 echo "Synced llms-py v$VERSION"
+

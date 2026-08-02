@@ -1,0 +1,51 @@
+{
+  "invoice": {
+    "number": "#150306",
+    "date": "15 March 2025",
+    "due": "2026-08-03",
+    "currency": "$"
+  },
+  "from": {
+    "name": "Acme, Co.",
+    "lines": [
+      "123 Anywhere St., Any City",
+      "123 Anywhere St., Any City",
+      "Any City",
+      "hello@reallygreatsite.com"
+    ]
+  },
+  "to": {
+    "name": "HONEY BEE",
+    "lines": [
+      "+123-456-7890",
+      "123 Anywhere St., Any City",
+      "Any City"
+    ]
+  },
+  "items": [
+    {
+      "description": "Dining Table",
+      "qty": 1,
+      "rate": 850,
+      "unitPrice": "850.00"
+    },
+    {
+      "description": "Kitchen Set",
+      "qty": 1,
+      "rate": 625,
+      "unitPrice": "625.00"
+    },
+    {
+      "description": "Lamp",
+      "qty": 2,
+      "rate": 75,
+      "unitPrice": "75.00"
+    }
+  ],
+  "taxRate": 0.1,
+  "notes": "",
+  "paymentBank": "Brule Bank",
+  "paymentAccountName": "Bluebyruby",
+  "paymentAccountNumber": "+123-456-7890",
+  "paymentDue": "15 March 2025"
+}

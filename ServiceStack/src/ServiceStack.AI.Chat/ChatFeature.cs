@@ -218,6 +218,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new PublishExtension(),
             new GeminiExtension(),
             new KatexExtension(),
+            new PdfExtension(),
             new AnalyticsExtension(),
             new ApiToolsExtension(),
             new McpExtension(),
@@ -245,6 +246,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public PublishExtension Publish => AssertExtension<PublishExtension>();
     public GeminiExtension Gemini => AssertExtension<GeminiExtension>();
     public KatexExtension Katex => AssertExtension<KatexExtension>();
+    public PdfExtension Pdf => AssertExtension<PdfExtension>();
     public AnalyticsExtension Analytics => AssertExtension<AnalyticsExtension>();
     public ApiToolsExtension ApiTools => AssertExtension<ApiToolsExtension>();
     public McpExtension Mcp => AssertExtension<McpExtension>();

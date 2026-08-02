@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Invoice",
+  "description": "Details, parties, line items, tax, and notes for an invoice.",
+  "type": "object",
+  "properties": {
+    "invoice": {
+      "title": "Invoice details",
+      "description": "Basic identifying and payment details for the invoice.",
+      "type": "object",
+      "default": {},
+      "properties": {
+        "number": {
+          "title": "Invoice number",
+          "type": "string",
+          "default": ""
+        },
+        "date": {
+          "title": "Invoice date",
+          "description": "The date the invoice was issued.",
+          "type": "string",
+          "format": "date",
+          "default": ""
+        },
+        "due": {
+          "title": "Due date",
+          "description": "The date payment is due.",
+          "type": "string",
+          "format": "date",
+          "default": ""
+        },
+        "currency": {
+          "title": "Currency symbol",
+          "type": "string",
+          "enum": [
+            "$",
+            "\u20ac",
+            "\u00a3",
+            "\u00a5"
+          ],
+          "default": "$"
+        }
+      },
+      "required": [
+        "number",
+        "date",
+        "due",
+        "currency"
+      ]
+    },
+    "from": {
+      "title": "From",
+      "description": "The business or person issuing the invoice.",
+      "type": "object",
+      "default": {},
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "default": ""
+        },
+        "lines": {
+          "title": "Address and contact lines",
+          "description": "Enter one address or contact detail per line.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "title": "Address or contact line",
+            "default": ""
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name",
+        "lines"
+      ]
+    },
+    "to": {
+      "title": "Bill to",
+      "description": "The customer or organisation being billed.",
+      "type": "object",
+      "default": {},
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "default": ""
+        },
+        "lines": {
+          "title": "Address lines",
+          "description": "Enter one address detail per line.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "title": "Address line",
+            "default": ""
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "name",
+        "lines"
+      ]
+    },
+    "items": {
+      "title": "Line items",
+      "description": "Products or services included in the invoice.",
+      "type": "array",
+      "items": {
+        "title": "Line item",
+        "type": "object",
+        "x-titleKey": "description",
+        "default": {},
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "default": ""
+          },
+          "qty": {
+            "title": "Quantity",
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "rate": {
+            "title": "Unit rate",
+            "description": "The price charged for one unit of this item.",
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.01,
+            "default": 0
+          }
+        },
+        "required": [
+          "description",
+          "qty",
+          "rate"
+        ]
+      },
+      "default": []
+    },
+    "taxRate": {
+      "title": "Tax rate",
+      "description": "Enter the tax rate as a fraction, such as 0.1 for 10%.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "multipleOf": 0.01,
+      "default": 0
+    },
+    "notes": {
+      "title": "Notes",
+      "description": "Optional payment instructions or additional information shown on the invoice.",
+      "type": "string",
+      "format": "textarea",
+      "default": ""
+    }
+  },
+  "required": [
+    "invoice",
+    "from",
+    "to",
+    "items",
+    "taxRate"
+  ]
+}

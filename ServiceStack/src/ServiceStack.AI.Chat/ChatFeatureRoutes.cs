@@ -382,17 +382,6 @@ public partial class ChatFeature
 
         var html = file.ReadAllText();
 
-        var imports = new JsonObject();
-        foreach (var entry in ImportMaps)
-        {
-            imports[entry.Key] = entry.Value.StartsWith('/')
-                ? RoutePrefix + entry.Value
-                : entry.Value;
-        }
-        var importMaps = new JsonObject { ["imports"] = imports };
-        html = html.Replace("<script type=\"importmap\"></script>",
-            "<script type=\"importmap\">\n" + importMaps.ToJsonString(ChatJson.Indented) + "\n</script>");
-
         if (IndexHeaders.Count > 0)
         {
             html = html.Replace("</head>", string.Join("", IndexHeaders) + "\n</head>");
@@ -411,6 +400,28 @@ public partial class ChatFeature
                        .Replace("\"/ext/", $"\"{RoutePrefix}/ext/")
                        .Replace("'/ext/", $"'{RoutePrefix}/ext/");
         }
+
+        // injected last: its keys are the *unprefixed* paths modules import by, which the rewrite
+        // above would otherwise mangle into "{prefix}/ui/" mapping to itself
+        var imports = new JsonObject();
+        if (RoutePrefix.Length > 0)
+        {
+            // Synced modules import shared UI by its site-root path (llms-py mounts the UI at "/"),
+            // e.g. ext/pdf/index.mjs: import { JsonSchemaForm } from '/ui/components/JsonSchemaForm.mjs'.
+            // An import specifier isn't resolved at runtime the way ai.resolveUrl handles fetches, so
+            // remap the prefix here — a trailing-slash key maps every path under it.
+            imports["/ui/"] = RoutePrefix + "/ui/";
+            imports["/ext/"] = RoutePrefix + "/ext/";
+        }
+        foreach (var entry in ImportMaps)
+        {
+            imports[entry.Key] = entry.Value.StartsWith('/')
+                ? RoutePrefix + entry.Value
+                : entry.Value;
+        }
+        var importMaps = new JsonObject { ["imports"] = imports };
+        html = html.Replace("<script type=\"importmap\"></script>",
+            "<script type=\"importmap\">\n" + importMaps.ToJsonString(ChatJson.Indented) + "\n</script>");
 
         return Task.FromResult<object?>(ChatResult.Html(html));
     }

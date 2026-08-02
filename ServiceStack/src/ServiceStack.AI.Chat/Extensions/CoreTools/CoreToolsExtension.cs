@@ -72,6 +72,9 @@ public class CoreToolsExtension() : ChatExtension("core_tools")
             return new JsonObject { ["result"] = Calculator.Evaluate(code ?? "") };
         });
 
+        // JSON -> typed classes / UI schema, used by the /code json tab and the pdf designer
+        ctx.AddPost("schema", GenerateUiSchemaAsync);
+
         ctx.AddIndexFooter($"""
 
             <link rel="stylesheet" href="{ctx.ExtPrefix}/codemirror/codemirror.css">
@@ -83,6 +86,69 @@ public class CoreToolsExtension() : ChatExtension("core_tools")
             <script src="{ctx.ExtPrefix}/codemirror/addon/edit/matchbrackets.js"></script>
             <script src="{ctx.ExtPrefix}/codemirror/addon/selection/active-line.js"></script>
             """);
+    }
+
+    // ── JSON -> JSON Schema generation ──
+
+    /// <summary>The schema file that belongs to a data file: invoice.json -> invoice.ui.json</summary>
+    public const string SchemaSuffix = ".ui.json";
+
+    /// <summary>invoice.json / invoice.ui.json -> invoice</summary>
+    public static string JsonStem(string? name)
+    {
+        var baseName = Path.GetFileName(name ?? "data.json");
+        if (baseName.EndsWith(SchemaSuffix, StringComparison.OrdinalIgnoreCase))
+            return baseName[..^SchemaSuffix.Length];
+        var stem = Path.GetFileNameWithoutExtension(baseName);
+        return stem.Length > 0 ? stem : "data";
+    }
+
+    /// <summary>Turn a JSON document into a JSON Schema that JsonSchemaForm renders</summary>
+    async Task<object?> GenerateUiSchemaAsync(ChatRequestContext req)
+    {
+        var user = req.AssertUserName();
+        var body = await req.GetJsonBodyAsync().ConfigAwait();
+
+        // every codegen request carries the JSON document itself, so nothing touches the filesystem
+        var name = body.GetString("name") ?? body.GetString("path") ?? "data.json";
+        var content = body.GetString("content");
+        var model = body.GetString("model");
+        if (string.IsNullOrEmpty(model))
+            throw new ArgumentException("No model selected");
+        if (string.IsNullOrWhiteSpace(content))
+            throw new ArgumentException("No JSON content supplied");
+        try
+        {
+            ChatJson.Parse(content!);
+        }
+        catch (System.Text.Json.JsonException e)
+        {
+            throw new ArgumentException($"'{Path.GetFileName(name)}' is not valid JSON: {e.Message}");
+        }
+        ModelPrompt.AssertTextModel(Feature, model!, "");
+
+        var systemPrompt = Ctx.GetBundledText("prompts/generate-ui-schema.md")
+            ?? throw new Exception("Missing prompts/generate-ui-schema.md");
+
+        var outName = JsonStem(name) + SchemaSuffix;
+        var (answer, usage) = await ModelPrompt.AskAsync(Feature, user, model!,
+            ModelPrompt.Messages(systemPrompt,
+                $"Data file: `{Path.GetFileName(name)}`\nSchema file: `{outName}`\n\n```json\n{content}\n```"),
+            req.Request).ConfigAwait();
+
+        var schemaText = ModelPrompt.FirstCodeBlock(answer);
+        if (ChatJson.TryParseObject(schemaText) is not { } schema)
+            throw new Exception("The model did not return valid JSON Schema");
+        if (!schema.ContainsKey("properties"))
+            throw new Exception("The model's schema has no 'properties'");
+
+        return new JsonObject
+        {
+            ["path"] = outName,
+            ["content"] = schema.ToJsonString(ChatJson.Indented) + "\n",
+            ["model"] = model,
+            ["usage"] = usage,
+        };
     }
 
     static JsonObject ToolDef(string name, string description, JsonObject properties, string[]? required = null)

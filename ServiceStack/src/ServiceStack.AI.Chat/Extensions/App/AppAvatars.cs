@@ -139,8 +139,9 @@ public partial class AppExtension
         var user = isAgent ? null : req.UserName;
         string[] filenames =
         [
-            $"{prefix}.{mode}.webp", $"{prefix}.{mode}.png", $"{prefix}.{mode}.svg",
-            $"{prefix}.webp", $"{prefix}.png", $"{prefix}.svg",
+            $"{prefix}.{mode}.webp", $"{prefix}.{mode}.png", $"{prefix}.{mode}.jpg", $"{prefix}.{mode}.jpeg",
+            $"{prefix}.{mode}.svg",
+            $"{prefix}.webp", $"{prefix}.png", $"{prefix}.jpg", $"{prefix}.jpeg", $"{prefix}.svg",
         ];
         foreach (var candidate in AvatarCandidates(user, filenames))
         {
