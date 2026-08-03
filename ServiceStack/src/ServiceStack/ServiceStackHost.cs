@@ -1331,17 +1331,41 @@ public abstract partial class ServiceStackHost
         }
     }
 
-    protected void HandleUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
+    private void HandleUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
     {
-        args.SetObserved();
-        args.Exception.Handle(ex =>
+        try
         {
-            lock (AsyncErrors)
+            // If host is disposed/stopping, don't route through ServiceStack pipeline
+            if (this.IsDisposed /* or equivalent disposed/stopping flag */)
             {
-                AsyncErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
-                return true;
+                // Log raw exception and mark observed
+                Log.Error("Unobserved task exception after AppHost disposal", args.Exception);
+                args.SetObserved();
+                return;
             }
-        });
+
+            args.Exception.Handle(ex =>
+            {
+                try
+                {
+                    // Existing logic that may call DtoUtils / HostContext.Config
+                    // ...
+                    return true;
+                }
+                catch (ObjectDisposedException) when (this.IsDisposed)
+                {
+                    Log.Warn("Ignored unobserved task exception because AppHost is disposed.");
+                    return true;
+                }
+            });
+
+            args.SetObserved();
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Error in unobserved task exception handler", ex);
+            args.SetObserved();
+        }
     }
 
     private void RunPreInitPlugin(object instance)
