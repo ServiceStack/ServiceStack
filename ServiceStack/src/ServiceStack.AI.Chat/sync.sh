@@ -26,9 +26,9 @@ HOME_EXT="gemini"
 KEEP_EXT="identity credentials gemini"
 
 # clear stale config files
-rm ../../tests/NorthwindAuto/App_Data/chat/llms.json
-rm ../../tests/NorthwindAuto/App_Data/chat/providers.json
-rm ../../tests/NorthwindAuto/App_Data/chat/providers-extra.json
+rm -f ../../tests/NorthwindAuto/App_Data/chat/llms.json
+rm -f ../../tests/NorthwindAuto/App_Data/chat/providers.json
+rm -f ../../tests/NorthwindAuto/App_Data/chat/providers-extra.json
 
 echo "Syncing from $LLMS"
 
