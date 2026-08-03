@@ -54,8 +54,11 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     /// <summary>Path the Chat UI + APIs are mounted at. "" mounts at root (full llms-py fidelity).</summary>
     public string RoutePrefix { get; set; } = "/chat";
 
-    /// <summary>When false everything runs as the "default" user without authentication (Python parity)</summary>
+    /// <summary>When false everything runs as the "default" user without authentication</summary>
     public bool RequireAuth { get; set; } = true;
+    
+    /// <summary>When set, only users with this role can access the Chat UI + APIs</summary>
+    public string? RequiredRole { get; set; }
 
     public ChatAuthType AuthType { get; set; } = ChatAuthType.Credentials;
 
