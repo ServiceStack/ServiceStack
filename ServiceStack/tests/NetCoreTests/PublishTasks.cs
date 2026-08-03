@@ -34,9 +34,7 @@ public class PublishTasks
     ];
     string[] IgnoreAdminUiFiles = [];
 
-    private string FromChatDir = Path.GetFullPath("../../../../NorthwindAuto/wwwroot/chat");
     private string ToChatBaseDir = Path.GetFullPath("../../../../../src/ServiceStack.AI.Chat");
-    private string ToChatDir = Path.GetFullPath("../../../../../src/ServiceStack.AI.Chat/chat");
 
     FilesTransformer transformOptions => FilesTransformer.Defaults(debugMode: true);
 
@@ -46,10 +44,7 @@ public class PublishTasks
         Directory.SetCurrentDirectory(ProjectDir);
         FromModulesDir.Print();
         ToModulesDir.Print();
-     
-        "".Print();
-        FromChatDir.Print();
-        ToChatDir.Print();
+        ToChatBaseDir.Print();
     }
 
     [Test]
@@ -180,26 +175,11 @@ public class PublishTasks
             cleanTarget: true,
             afterCopy: (file, contents) => $"{file.VirtualPath} ({contents.Length})".Print());
         
-        // Copy ServiceStack.AI.Chat
-        var source = new FileSystemVirtualFiles(FromChatDir);
-        var target = new FileSystemVirtualFiles(ToChatDir);
-        foreach (var file in source.GetAllFiles())
-        {
-            var contents = await file.ReadAllTextAsync();
-            await target.WriteFileAsync(file.VirtualPath, contents);
-            $"{file.VirtualPath} ({contents.Length})".Print();
-        }
-        // Move ChatMessages.mjs to ServiceStack.AI.Chat/js
-        source = new FileSystemVirtualFiles(FromModulesDir.CombineWith("ui"));
-        target = new FileSystemVirtualFiles(ToChatBaseDir);
-        var chatMessages = source.GetFile("components/ChatMessages.mjs");
-        var txt = await chatMessages.ReadAllTextAsync();
-        await target.WriteFileAsync("modules/ui/components/ChatMessages.mjs", txt);
         // Move AdminChat.mjs to ServiceStack.AI.Chat/js
-        source = new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui"));
-        target = new FileSystemVirtualFiles(ToChatBaseDir);
+        var source = new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui"));
+        var target = new FileSystemVirtualFiles(ToChatBaseDir);
         var adminChat = source.GetFile("components/AdminChat.mjs");
-        txt = await adminChat.ReadAllTextAsync();
+        var txt = await adminChat.ReadAllTextAsync();
         await target.WriteFileAsync("modules/admin-ui/components/AdminChat.mjs", txt);
         var toModules = new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui"));
         toModules.DeleteFile("components/AdminChat.mjs");

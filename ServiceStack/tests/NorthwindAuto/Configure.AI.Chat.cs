@@ -49,6 +49,10 @@ public class ConfigureAiChat : IHostingStartup
             services.ConfigurePlugin<MetadataFeature>(feature => {
                 feature.AddPluginLink("/chat", "AI Chat");
             });
+            
+            services.AddPlugin(new PdfFeature {
+                
+            });
        });
 }
 
