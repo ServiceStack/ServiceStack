@@ -306,7 +306,7 @@ public partial class SkillsExtension() : ChatExtension("skills")
     }
 
     /// <summary>All visible skills keyed by name (port of resolve_all_skills)</summary>
-    JsonObject ResolveAllSkills(string? user)
+    public JsonObject ResolveAllSkills(string? user)
     {
         var skillRoots = new Dictionary<string, string>
         {

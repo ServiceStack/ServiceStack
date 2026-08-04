@@ -9,7 +9,7 @@ namespace ServiceStack.AI;
 /// (chat, coder, planner) are synced to chat/profiles/**; per-user profiles live under
 /// App_Data/chat/user/&lt;user&gt;/profiles/ and override bundled ones of the same name.
 /// </summary>
-public class AgentsExtension() : ChatExtension("agents")
+public partial class AgentsExtension() : ChatExtension("agents")
 {
     public override void Install(ExtensionContext ctx)
     {
@@ -17,6 +17,19 @@ public class AgentsExtension() : ChatExtension("agents")
         ctx.AddGet("{profile}/system", req => Task.FromResult(GetProfileSystemPrompt(req))!);
         ctx.AddGet("{profile}/avatar", req => Task.FromResult(GetProfileAvatar(req))!);
         ctx.AddGet("{profile}/actions", req => Task.FromResult<object?>(GetProfileActions(req)));
+
+        // Profile Manager: add and edit profiles in the user's own profiles folder. Bundled
+        // profiles stay read-only until the user saves their own copy of the same name.
+        ctx.AddPost("", CreateProfileAsync);
+        ctx.AddDelete("{profile}", req => Task.FromResult(DeleteProfile(req))!);
+        ctx.AddGet("tools-skills", req => Task.FromResult<object?>(GetToolsAndSkills(req)));
+        ctx.AddPost("{profile}/config", UpdateProfileConfigAsync);
+        ctx.AddGet("{profile}/files", req => Task.FromResult(ListProfileFiles(req))!);
+        ctx.AddPost("{profile}/files", CreateProfileFileAsync);
+        ctx.AddGet("{profile}/files/{filename}", req => Task.FromResult(GetProfileFile(req))!);
+        ctx.AddPut("{profile}/files/{filename}", SaveProfileFileAsync);
+        ctx.AddDelete("{profile}/files/{filename}", req => Task.FromResult(DeleteProfileFile(req))!);
+        ctx.AddPost("{profile}/avatar", UploadProfileAvatarAsync);
     }
 
     /// <summary>Filesystem profile roots, lowest precedence first (bundled profiles come from the VFS)</summary>
@@ -45,8 +58,9 @@ public class AgentsExtension() : ChatExtension("agents")
     JsonObject GetProfiles(ChatRequestContext req)
     {
         var ret = new JsonObject();
+        var userRoot = UserProfilesRoot(req);
 
-        void AddProfile(string name, string? configJson)
+        void AddProfile(string name, string? configJson, bool isBuiltIn, List<string> files)
         {
             if (ChatJson.TryParseObject(configJson) is not { } config)
                 return;
@@ -56,6 +70,9 @@ public class AgentsExtension() : ChatExtension("agents")
                 ret.Remove(name);
                 return;
             }
+            // a bundled profile stops being read-only once the user has one of the same name
+            config["isBuiltIn"] = isBuiltIn && !Directory.Exists(Path.Combine(userRoot, name));
+            config["files"] = new JsonArray(files.Select(x => (JsonNode)x).ToArray());
             ret[name] = config;
         }
 
@@ -63,7 +80,8 @@ public class AgentsExtension() : ChatExtension("agents")
         foreach (var dir in HostContext.VirtualFileSources.GetDirectory("chat/profiles")?.Directories ?? [])
         {
             AddProfile(dir.Name,
-                HostContext.VirtualFileSources.GetFile($"chat/profiles/{dir.Name}/config.json")?.ReadAllText());
+                HostContext.VirtualFileSources.GetFile($"chat/profiles/{dir.Name}/config.json")?.ReadAllText(),
+                isBuiltIn: true, BundledProfileFiles(dir.Name));
         }
 
         // user profiles override bundled ones
@@ -75,7 +93,10 @@ public class AgentsExtension() : ChatExtension("agents")
             {
                 var configPath = Path.Combine(profileDir, "config.json");
                 if (File.Exists(configPath))
-                    AddProfile(Path.GetFileName(profileDir), File.ReadAllText(configPath));
+                {
+                    AddProfile(Path.GetFileName(profileDir), File.ReadAllText(configPath),
+                        isBuiltIn: false, DiskProfileFiles(profileDir));
+                }
             }
         }
         return ret;
@@ -145,7 +166,8 @@ public class AgentsExtension() : ChatExtension("agents")
     {
         var profile = req.GetPathParam("profile");
         var profilePath = ResolveProfilePath(req, profile);
-        const string cacheControl = "public, max-age=3600";
+        // an uploaded avatar replaces the old one in place, so this can't be cached
+        const string cacheControl = "no-cache";
 
         if (profilePath != null)
         {
@@ -177,16 +199,11 @@ public class AgentsExtension() : ChatExtension("agents")
             }
         }
 
-        // fall back to the extension's default avatar
-        var defaultAvatar = HostContext.VirtualFileSources.GetFile("chat/ext/agents/avatar.svg");
-        return defaultAvatar != null
-            ? new ChatResult
-            {
-                Body = defaultAvatar.ReadAllBytes(),
-                ContentType = "image/svg+xml",
-                Headers = new() { ["Cache-Control"] = cacheControl },
-            }
-            : ChatResult.NotFound();
+        // no avatar of its own: draw the profile's initial on its own colour
+        var configJson = profilePath != null && File.Exists(Path.Combine(profilePath, "config.json"))
+            ? File.ReadAllText(Path.Combine(profilePath, "config.json"))
+            : HostContext.VirtualFileSources.GetFile($"chat/profiles/{profile}/config.json")?.ReadAllText();
+        return GeneratedAvatar(ChatJson.TryParseObject(configJson).GetString("name") ?? profile);
     }
 
     /// <summary>

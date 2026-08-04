@@ -179,10 +179,14 @@ public class PublishTasks
         var source = new FileSystemVirtualFiles(FromModulesDir.CombineWith("admin-ui"));
         var target = new FileSystemVirtualFiles(ToChatBaseDir);
         var adminChat = source.GetFile("components/AdminChat.mjs");
-        var txt = await adminChat.ReadAllTextAsync();
-        await target.WriteFileAsync("modules/admin-ui/components/AdminChat.mjs", txt);
+        var adminPdf = source.GetFile("components/AdminPdf.mjs");
+
+        await target.WriteFileAsync("modules/admin-ui/components/AdminChat.mjs", await adminChat.ReadAllTextAsync());
+        await target.WriteFileAsync("modules/admin-ui/components/AdminPdf.mjs", await adminPdf.ReadAllTextAsync());
+        
         var toModules = new FileSystemVirtualFiles(ToModulesDir.CombineWith("admin-ui"));
         toModules.DeleteFile("components/AdminChat.mjs");
+        toModules.DeleteFile("components/AdminPdf.mjs");
     }
 
     [Test]

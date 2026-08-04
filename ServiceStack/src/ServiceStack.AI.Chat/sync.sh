@@ -91,3 +91,5 @@ rsync -a --delete "$LLMS/extensions/agents/profiles/" chat/profiles/
 VERSION=$(grep -o "version: '[^']*'" chat/ui/ai.mjs | head -1 | cut -d"'" -f2)
 echo "Synced llms-py v$VERSION"
 
+cp -f ./chat/ui/components/* ../../tests/NorthwindAuto/wwwroot/js/components
+

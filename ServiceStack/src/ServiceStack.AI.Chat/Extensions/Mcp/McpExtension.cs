@@ -78,6 +78,23 @@ public class McpExtension() : ChatExtension("mcp")
             return;
         }
 
+        ctx.AddGet("", _ =>
+        {
+            var selectedTools = SelectedTools();
+            var toolNames = selectedTools.Select(x => x.Name).ToList();
+            var mcpUrl = ctx.Feature.ResolveClientUrl("/mcp") ?? "/mcp";
+            return Task.FromResult<object?>(new JsonObject
+            {
+                ["serverName"] = ServerName,
+                ["serverVersion"] = ServerVersion ?? Env.VersionString,
+                ["instructions"] = Instructions ?? "",
+                ["isEnabled"] = IsEnabled,
+                ["url"] = mcpUrl,
+                ["toolGroups"] = new JsonArray(ToolGroups.Select(x => (JsonNode)x!).ToArray()),
+                ["tools"] = new JsonArray(toolNames.Select(x => (JsonNode)x!).ToArray()),
+            });
+        });
+
         // '/' escapes the /ext/<name> prefix: MCP Clients are configured with this URL by hand,
         // so it's worth keeping short (default /chat/mcp)
         ctx.AddPost("/mcp", HandleAsync);

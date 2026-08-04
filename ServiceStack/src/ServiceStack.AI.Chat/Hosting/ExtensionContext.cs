@@ -46,9 +46,12 @@ public class ExtensionContext(ChatFeature feature, string name)
     public string? GetBundledText(string path) =>
         HostContext.VirtualFileSources.GetFile($"chat/ext/{name}/{path}")?.ReadAllText();
 
-    /// <summary>Register in the /ext list so the UI dynamically imports /ext/&lt;name&gt;/index.mjs</summary>
+    /// <summary>
+    /// Register in the /ext list so the UI dynamically imports /ext/&lt;name&gt;/index.mjs
+    /// (a leading '/' escapes the prefix, e.g. "/custom/index.mjs")
+    /// </summary>
     public void RegisterUiExtension(string index = "index.mjs") =>
-        feature.UiExtensions.Add(new JsonObject { ["id"] = name, ["path"] = $"{ExtPrefix}/{index}" });
+        feature.UiExtensions.Add(new JsonObject { ["id"] = name, ["path"] = WebPath(index) });
 
     public void AddImportMaps(Dictionary<string, string> maps)
     {

@@ -159,6 +159,21 @@ export class AppContext {
         this.top = {}
         this.left = {}
         this.leftTop = {}
+        this.pdf = {
+            previewActions: reactive({}),
+            setPreviewActions: (components) => {
+                if (!components) return
+                Object.entries(components).forEach(([id, def]) => {
+                    if (def && typeof def === 'object' && !def.component && (def.template || def.setup || def.render)) {
+                        this.pdf.previewActions[id] = { id, component: markRaw(def) }
+                    } else if (def && typeof def === 'object' && def.component) {
+                        this.pdf.previewActions[id] = { id, ...def, component: markRaw(def.component) }
+                    } else if (def) {
+                        this.pdf.previewActions[id] = { id, component: markRaw(def) }
+                    }
+                })
+            }
+        }
         this.layout = reactive(storageObject(`llms.layout`))
 
         const oldPrefsKey = ai.prefsKey
@@ -273,33 +288,52 @@ export class AppContext {
     getPrefsKey() {
         return this.ai.prefsKey + '.' + this.state.profile
     }
-    changeProfile(profile) {
+    changeProfile(profile, force = false) {
         console.log('changeProfile', profile ? JSON.stringify(Object.assign({}, profile, { prompt: profile.prompt?.substring(0, 100) }), null, 2) : 'default')
-        if (!profile) {
-            this.state.profile = 'default'
-            Object.assign(this.prefs, storageObject(this.getPrefsKey()))
-            this.setState({
-                selectedModel: this.prefs.model,
-            })
-            this.selectTheme(this.prefs.theme)
+        const profileId = profile?.id || 'default'
+        
+        if (!force && this.state.profile === profileId) {
+            localStorage.setItem('llms.profile', profileId)
             return
         }
 
-        const profileId = profile?.id || 'default'
-        if (this.state.profile == profileId) return
         this.state.profile = profileId
+        localStorage.setItem('llms.profile', profileId)
         Object.assign(this.prefs, storageObject(this.getPrefsKey()))
-        this.selectTheme(profile?.theme)
+
+        const override = this.agents?.getProfileOverride ? this.agents.getProfileOverride(profileId) : null
+
+        if (!profile) {
+            const targetModel = override?.model || this.prefs.model
+            if (targetModel) {
+                this.setState({ selectedModel: targetModel })
+                this.setPrefs({ model: targetModel })
+            }
+            const targetTheme = override?.theme || this.prefs.theme
+            if (targetTheme) {
+                this.selectTheme(targetTheme)
+            }
+            return
+        }
+
         const prefs = this.prefs
+        const targetTheme = override?.theme || profile.overrideTheme || profile.theme || prefs.theme
+        if (targetTheme) {
+            this.selectTheme(targetTheme)
+        }
+
+        const targetModel = override?.model || profile.overrideModel || profile.model || prefs.model
         const profilePrefs = {
-            model: profile.model || prefs.model,
+            model: targetModel,
             onlyTools: profile.onlyTools !== undefined ? profile.onlyTools : prefs.onlyTools,
             onlySkills: profile.onlySkills !== undefined ? profile.onlySkills : prefs.onlySkills,
         }
         this.setPrefs(profilePrefs)
-        this.setState({
-            selectedModel: profile.model || this.state.selectedModel,
-        })
+        if (targetModel) {
+            this.setState({
+                selectedModel: targetModel,
+            })
+        }
     }
     getPrefs() {
         return this.prefs
