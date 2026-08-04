@@ -35,7 +35,7 @@ async function loadDocumentsWithDisplayNames(filestoreId, displayNames) {
     })
 }
 
-function getGeminiModel() {
+function getDefaultGeminiModel() {
     const geminiModels = [
         'gemini-flash-lite-latest',
         'gemini-flash-latest',
@@ -46,14 +46,23 @@ function getGeminiModel() {
     ]
     for (const modelId of geminiModels) {
         const model = ctx.state.models
-            .find(x => x.id === modelId && x.provider === 'google')
+            ?.find(x => x.id === modelId && x.provider === 'google')
         if (model) return model
     }
     for (const modelId of geminiModels) {
-        const model = ctx.state.models.find(x => x.id === modelId)
+        const model = ctx.state.models?.find(x => x.id === modelId)
         if (model) return model
     }
     return null
+}
+
+function getGeminiModel() {
+    const prefs = ext.getPrefs()
+    if (prefs.model) {
+        const model = ctx.state.models?.find(x => x.name === prefs.model || x.id === prefs.model)
+        if (model) return model
+    }
+    return getDefaultGeminiModel()
 }
 
 function createNewChat(filestoreId, { category, document } = {}) {
@@ -226,17 +235,301 @@ const SyncReport = {
     }
 }
 
+const GeminiModelSelector = {
+    template: `
+        <div class="flex items-center space-x-2">
+            <button type="button" @click="openModelPicker"
+                class="flex items-center justify-between rounded-lg px-3.5 py-2 border shadow-sm transition-colors text-sm cursor-pointer"
+                :class="[$styles.dropdownButton, $styles.chromeBorder]">
+                <span class="flex items-center space-x-2 truncate">
+                    <ProviderIcon v-if="selectedModelObj?.provider" :provider="selectedModelObj.provider" class="size-4 shrink-0" />
+                    <span class="font-medium truncate">
+                        {{ overrideModelName ? selectedModelName : ('Default (' + defaultModelDisplay + ')') }}
+                    </span>
+                </span>
+                <svg class="size-4 opacity-70 shrink-0 ml-2" :class="$styles.icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <button v-if="overrideModelName" type="button" @click="clearModelOverride"
+                class="px-2.5 py-2 text-xs font-medium text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 border border-gray-300 dark:border-gray-600 rounded-md transition-colors cursor-pointer shrink-0"
+                title="Clear model override">
+                Clear Override
+            </button>
+        </div>
+
+        <!-- Inner Model Selection Sub-Dialog -->
+        <Teleport to="body">
+            <div v-if="isModelPickerOpen" class="fixed inset-0 z-[200] !z-[200] overflow-hidden text-gray-900 dark:text-gray-100" @keydown.escape.stop="isModelPickerOpen = false">
+                <div class="fixed inset-0 bg-black/60 transition-opacity" @click="isModelPickerOpen = false"></div>
+                <div class="fixed inset-4 md:inset-10 lg:inset-16 flex items-center justify-center">
+                    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full h-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold">Select Model</h3>
+                                <p class="text-xs" :class="$styles.muted">Select a model for Gemini File Stores requests</p>
+                            </div>
+                            <button type="button" @click="isModelPickerOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                                <svg class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 space-y-3">
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="relative flex-1">
+                                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                                    </svg>
+                                    <input type="text" v-model="modelSearchQuery" placeholder="Search models by name or ID..."
+                                        class="w-full pl-10 pr-8 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+                                    <button v-if="modelSearchQuery" type="button" @click="modelSearchQuery = ''"
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-0.5 rounded-full cursor-pointer"
+                                        title="Clear search">
+                                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Sort by:</label>
+                                    <select v-model="modelSortBy"
+                                        class="px-3 py-2 pr-8 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                                        <option v-for="opt in modelSortOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
+                                    </select>
+                                    <button type="button" @click="modelSortAsc = !modelSortAsc"
+                                        class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                        :title="modelSortAsc ? 'Ascending' : 'Descending'">
+                                        <svg v-if="modelSortAsc" class="size-5 text-gray-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M19 7h3l-4-4l-4 4h3v14h2M2 17h10v2H2M6 5v2H2V5m0 6h7v2H2z"/>
+                                        </svg>
+                                        <svg v-else class="size-5 text-gray-600 dark:text-gray-400" style="transform: scaleY(-1)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M19 7h3l-4-4l-4 4h3v14h2M2 17h10v2H2M6 5v2H2V5m0 6h7v2H2z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4">
+                            <div v-if="filteredModelList.length === 0" class="text-center py-12 text-gray-500 dark:text-gray-400 text-sm">
+                                No models found matching your search.
+                            </div>
+                            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <button v-for="m in filteredModelList" :key="m.id + '-' + m.provider"
+                                    type="button"
+                                    @click="selectModelOverride(m.name || m.id)"
+                                    :class="[
+                                        'text-left p-3.5 rounded-lg border transition-all cursor-pointer group hover:scale-[1.01]',
+                                        overrideModelName === (m.name || m.id)
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-500/50'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                    ]">
+                                    <div class="flex items-start justify-between mb-1.5">
+                                        <div class="flex items-center space-x-2 min-w-0">
+                                            <ProviderIcon :provider="m.provider" class="size-4 shrink-0" />
+                                            <span class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{{ m.name }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-[11px] text-gray-500 dark:text-gray-400 font-mono truncate mb-2">{{ m.id }}</div>
+                                    <div class="flex flex-wrap gap-1 text-[10px] text-gray-600 dark:text-gray-400">
+                                        <span v-if="m.limit?.context" class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 font-mono" :title="(m.limit.context ? m.limit.context.toLocaleString() : '') + ' token context limit'">
+                                            {{ formatShortNumber(m.limit.context) }}
+                                        </span>
+                                        <span v-if="m.release_date" class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 font-mono">
+                                            {{ m.release_date }}
+                                        </span>
+                                        <span v-if="isFreeModel(m)" class="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 font-medium">
+                                            Free
+                                        </span>
+                                        <span v-else-if="m.cost && (m.cost.input != null || m.cost.output != null)" class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 font-mono" :title="'Input: $' + formatCostNum(m.cost.input) + ' / Output: $' + formatCostNum(m.cost.output) + ' per 1M tokens'">
+                                            {{ formatCostNum(m.cost.input) }}/{{ formatCostNum(m.cost.output) }}
+                                        </span>
+                                        <span v-if="m.reasoning" class="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300">reasoning</span>
+                                        <span v-if="m.tool_call" class="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">tools</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center text-xs">
+                            <span :class="$styles.muted">{{ filteredModelList.length }} models</span>
+                            <button type="button" @click="isModelPickerOpen = false"
+                                class="px-4 py-1.5 font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+    `,
+    setup() {
+        const isModelPickerOpen = ref(false)
+        const modelSearchQuery = ref('')
+        const modelSortBy = ref('release_date')
+        const modelSortAsc = ref(false)
+        const modelSortOptions = [
+            { id: 'release_date', label: 'Release Date' },
+            { id: 'name', label: 'Name' },
+            { id: 'knowledge', label: 'Knowledge Cutoff' },
+            { id: 'last_updated', label: 'Last Updated' },
+            { id: 'cost_input', label: 'Cost (Input)' },
+            { id: 'cost_output', label: 'Cost (Output)' },
+            { id: 'context', label: 'Context Limit' },
+        ]
+
+        const overrideModelName = computed(() => ext.getPrefs()?.model || '')
+        const defaultModelObj = computed(() => getDefaultGeminiModel())
+        const defaultModelDisplay = computed(() => defaultModelObj.value?.name || defaultModelObj.value?.id || 'gemini-flash-latest')
+
+        const selectedModelObj = computed(() => {
+            const override = overrideModelName.value
+            if (override) {
+                return ctx.state.models?.find(x => x.name === override || x.id === override) || { name: override, provider: 'google' }
+            }
+            return defaultModelObj.value
+        })
+
+        const selectedModelName = computed(() => selectedModelObj.value?.name || overrideModelName.value)
+
+        function openModelPicker() {
+            modelSearchQuery.value = 'Gemini'
+            isModelPickerOpen.value = true
+        }
+
+        function selectModelOverride(modelName) {
+            const prefs = ext.getPrefs()
+            prefs.model = modelName
+            ext.setPrefs(prefs)
+            isModelPickerOpen.value = false
+        }
+
+        function clearModelOverride() {
+            const prefs = ext.getPrefs()
+            prefs.model = ''
+            ext.setPrefs(prefs)
+        }
+
+        const excludedSubstrings = [
+            '-model',
+            '-tts',
+            '-embedding',
+            '-customtools',
+            '-robotics',
+            '-computer-use',
+            '-image',
+            '-translate',
+            '-omni',
+            '-research',
+            'gemma-',
+            'lyria-',
+            'veo-',
+        ]
+
+        const filteredModelList = computed(() => {
+            let list = ctx.state.models || []
+            // Only allow google provider models for Gemini File Stores
+            list = list.filter(m => m.provider === 'google')
+
+            // Exclude non-valid / non-chat models with specified substrings in model id
+            list = list.filter(m => {
+                if (!m.id) return true
+                const lowerId = m.id.toLowerCase()
+                return !excludedSubstrings.some(sub => lowerId.includes(sub))
+            })
+
+            if (modelSearchQuery.value?.trim()) {
+                const q = modelSearchQuery.value.trim().toLowerCase()
+                list = list.filter(m =>
+                    (m.name && m.name.toLowerCase().includes(q)) ||
+                    (m.id && m.id.toLowerCase().includes(q))
+                )
+            }
+            list = [...list]
+            list.sort((a, b) => {
+                let cmp = 0
+                switch (modelSortBy.value) {
+                    case 'release_date':
+                        cmp = (a.release_date || '').localeCompare(b.release_date || '')
+                        break
+                    case 'name':
+                        cmp = (a.name || '').localeCompare(b.name || '')
+                        break
+                    case 'knowledge':
+                        cmp = (a.knowledge || '').localeCompare(b.knowledge || '')
+                        break
+                    case 'last_updated':
+                        cmp = (a.last_updated || '').localeCompare(b.last_updated || '')
+                        break
+                    case 'cost_input':
+                        cmp = (parseFloat(a.cost?.input) || 0) - (parseFloat(b.cost?.input) || 0)
+                        break
+                    case 'cost_output':
+                        cmp = (parseFloat(a.cost?.output) || 0) - (parseFloat(b.cost?.output) || 0)
+                        break
+                    case 'context':
+                        cmp = (a.limit?.context || 0) - (b.limit?.context || 0)
+                        break
+                }
+                return modelSortAsc.value ? cmp : -cmp
+            })
+            return list
+        })
+
+        function formatShortNumber(num) {
+            if (num == null) return '-'
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
+            if (num >= 1000) return (num / 1000).toFixed(0) + 'K'
+            return num.toLocaleString()
+        }
+
+        function formatCostNum(val) {
+            if (val == null) return '0'
+            const num = parseFloat(val)
+            return num === 0 ? 'Free' : '$' + num.toFixed(2)
+        }
+
+        function isFreeModel(m) {
+            return m.cost && parseFloat(m.cost.input) === 0 && parseFloat(m.cost.output) === 0
+        }
+
+        return {
+            isModelPickerOpen,
+            modelSearchQuery,
+            modelSortBy,
+            modelSortAsc,
+            modelSortOptions,
+            overrideModelName,
+            defaultModelObj,
+            defaultModelDisplay,
+            selectedModelObj,
+            selectedModelName,
+            openModelPicker,
+            selectModelOverride,
+            clearModelOverride,
+            filteredModelList,
+            formatShortNumber,
+            formatCostNum,
+            isFreeModel,
+        }
+    }
+}
+
 const FileStoreList = {
+    components: { GeminiModelSelector },
     template: `
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                    <h1 class="text-2xl font-bold" :class="[$styles.heading]">File Stores</h1>
                    <p class="text-sm" :class="[$styles.muted]">Manage your file stores for Gemini search grounding</p>
                 </div>
-                <button type="button" @click="showCreate = true" class="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium" :class="[$styles.primaryButton]">
-                    New Store
-                </button>
+                <div class="flex items-center gap-3">
+                    <GeminiModelSelector />
+                    <button type="button" @click="showCreate = true" class="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium shrink-0" :class="[$styles.primaryButton]">
+                        New Store
+                    </button>
+                </div>
             </div>
 
             <div v-if="showCreate" class="mb-8 bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
@@ -343,12 +636,12 @@ const FileStoreList = {
 }
 
 const FileStoreDetails = {
-    components: { SyncReport },
+    components: { SyncReport, GeminiModelSelector },
     props: ['storeId'],
 
     template: `
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" v-if="store">
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                  <div class="flex items-center gap-4">
                      <button type="button"
                         @click="$emit('back')"
@@ -362,12 +655,13 @@ const FileStoreDetails = {
                         <p class="text-sm" :class="$styles.muted">Upload documents to this store</p>
                      </div>
                  </div>
-                 <div class="flex items-center gap-2">
+                 <div class="flex items-center gap-3">
+                     <GeminiModelSelector />
                      <input type="file" ref="fileInput" class="hidden" multiple @change="handleFileUpload">
                      <button type="button" 
                         @click="createNewChat(storeId)"
                         :disabled="uploading"
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium" :class="[$styles.primaryButton]">
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium shrink-0" :class="[$styles.primaryButton]">
                         <span v-if="uploading">Uploading...</span>
                         <span v-else>New Chat</span>
                      </button>
@@ -1149,6 +1443,8 @@ const GeminiFooter = {
 }
 
 export default {
+    order: -70,
+
     install(context) {
         ext = context.scope('gemini')
         ctx = context
