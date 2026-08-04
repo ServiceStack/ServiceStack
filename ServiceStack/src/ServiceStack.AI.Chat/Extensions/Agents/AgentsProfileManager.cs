@@ -373,8 +373,9 @@ public partial class AgentsExtension
         var hash = MD5.HashData(Encoding.UTF8.GetBytes(name));
         // the Python takes the whole md5 as one big-endian integer; its last byte decides the
         // colour whenever the palette length divides 256 evenly, but keep the full value to match
+        var reversedHash = hash.AsEnumerable().Reverse().Concat([(byte)0]).ToArray();
         var value = System.Numerics.BigInteger.Abs(
-            new System.Numerics.BigInteger(hash.Reverse().Append((byte)0).ToArray()));
+            new System.Numerics.BigInteger(reversedHash));
         return colors[(int)(value % colors.Length)];
     }
 
