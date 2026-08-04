@@ -185,7 +185,7 @@ public partial class PdfPublisher(PdfFeature feature)
             throw new ArgumentException($"'{name}' is the shared library, not a template");
 
         var manifest = GetManifest();
-        var files = ManifestFiles(manifest.GetObject(name));
+        var files = GetManifestFiles(manifest.GetObject(name));
         // Support manifests created before the files list existed, while still protecting files
         // claimed by any other template below.
         if (files.Count == 0 && Directory.Exists(PdfPath))
@@ -198,7 +198,7 @@ public partial class PdfPublisher(PdfFeature feature)
         foreach (var other in manifest.Where(x => !x.Key.Equals(name, StringComparison.OrdinalIgnoreCase)))
         {
             if (other.Value is JsonObject otherEntry)
-                usedByOthers.UnionWith(ManifestFiles(otherEntry));
+                usedByOthers.UnionWith(GetManifestFiles(otherEntry));
         }
 
         var deleted = new List<string>();
@@ -221,7 +221,7 @@ public partial class PdfPublisher(PdfFeature feature)
         return deleted;
     }
 
-    static HashSet<string> ManifestFiles(JsonObject? entry) => entry?.GetArray("files")?
+    public static HashSet<string> GetManifestFiles(JsonObject? entry) => entry?.GetArray("files")?
         .OfType<JsonValue>()
         .Select(x => x.TryGetValue<string>(out var file) ? file : null)
         .Where(x => !string.IsNullOrEmpty(x))
@@ -306,7 +306,7 @@ public partial class PdfPublisher(PdfFeature feature)
     /// </summary>
     static List<Reference> FindReferences(string source, string relPath)
     {
-        var dir = ParentDir(relPath);
+        var dir = GetParentDir(relPath);
         var to = new List<Reference>();
         foreach (Match match in ResourceRegex().Matches(source))
         {
@@ -356,7 +356,7 @@ public partial class PdfPublisher(PdfFeature feature)
     static string RewriteReferences(string source, string relPath, Dictionary<string, string> flatMap,
         List<string> warnings)
     {
-        var dir = ParentDir(relPath);
+        var dir = GetParentDir(relPath);
         return ResourceRegex().Replace(source, match =>
         {
             var isCall = match.Groups["fn"].Success;
@@ -378,7 +378,7 @@ public partial class PdfPublisher(PdfFeature feature)
 
     // ── Paths ──
 
-    static string ParentDir(string relPath)
+    public static string GetParentDir(string relPath)
     {
         var path = relPath.Replace('\\', '/');
         var at = path.LastIndexOf('/');

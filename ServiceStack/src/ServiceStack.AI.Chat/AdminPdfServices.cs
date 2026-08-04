@@ -104,6 +104,19 @@ public class AdminPublishPdfTemplateResponse
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
+[ExcludeMetadata, Tag(TagNames.Admin)]
+public class AdminEditPdfTemplate : IPost, IReturn<AdminEditPdfTemplateResponse>
+{
+    public string Name { get; set; } = null!;
+}
+
+public class AdminEditPdfTemplateResponse
+{
+    public string EditUrl { get; set; } = null!;
+    public List<string> Copied { get; set; } = [];
+    public ResponseStatus? ResponseStatus { get; set; }
+}
+
 /// <summary>
 /// Admin APIs behind /admin-ui/pdf: browse the templates published to App_Data/pdf, render them with
 /// arbitrary data, unpublish them, and publish new ones out of the Chat PDF Designer.
@@ -200,6 +213,100 @@ public class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Servi
         return new AdminDeletePdfTemplateResponse
         {
             Deleted = Publisher.Unpublish(System.IO.Path.GetFileNameWithoutExtension(request.Name)),
+        };
+    }
+
+    public object Any(AdminEditPdfTemplate request)
+    {
+        AssertFeature();
+        ResolveTemplate(request.Name);
+        var name = System.IO.Path.GetFileNameWithoutExtension(request.Name);
+        var publisher = Publisher;
+        var manifest = publisher.GetManifest();
+        var entry = manifest.GetObject(name);
+        var source = entry.GetString("source");
+        var editUrl = $"{feature.ChatRoutePrefix}/pdf?template={(source ?? name + ".typ").UrlEncode()}";
+
+        var chat = HostContext.GetPlugin<ChatFeature>();
+        if (chat == null)
+            return new AdminEditPdfTemplateResponse { EditUrl = editUrl };
+
+        var user = chat.ChatAuth.GetUserName(Request);
+        var userRoot = chat.AppData.GetUserFilePath(user, "pdf");
+        Directory.CreateDirectory(userRoot);
+
+        var files = PdfPublisher.GetManifestFiles(entry);
+        var copied = new List<string>();
+        var sourcePath = source ?? name + ".typ";
+        var sourceStem = System.IO.Path.GetFileName(sourcePath).LeftPart('.');
+        var sourceDir = PdfPublisher.GetParentDir(sourcePath);
+
+        foreach (var flatFile in files)
+        {
+            // Skip thumbnails — they don't belong in the designer
+            if (flatFile.EndsWith(".preview.png", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            // Reverse-flatten: map the published flat filename back to its original relative path
+            string targetRel;
+            if (flatFile.Equals(PdfExtension.LibName, StringComparison.OrdinalIgnoreCase))
+            {
+                targetRel = PdfExtension.LibName;
+            }
+            else if (flatFile.Equals(name + ".typ", StringComparison.OrdinalIgnoreCase))
+            {
+                targetRel = sourcePath;
+            }
+            else if (flatFile.StartsWith(name + ".", StringComparison.Ordinal))
+            {
+                // e.g. "invoice.json" → stem suffix is ".json", target is "reports/quote.json"
+                // e.g. "invoice.logo.png" → stem suffix is ".logo.png"
+                var suffix = flatFile[name.Length..]; // e.g. ".json" or ".logo.png"
+                var stemSuffix = sourceStem + suffix; // e.g. "quote.json" or "quote.logo.png"
+
+                // If the suffix starts with the source stem's extension pattern (e.g. .json, .ui.json),
+                // it's a companion; otherwise it's a prefixed asset — strip the name prefix
+                if (flatFile.StartsWith(name + "." + sourceStem + ".", StringComparison.Ordinal)
+                    || suffix.StartsWith("." + sourceStem + ".", StringComparison.Ordinal))
+                {
+                    // Prefixed asset: "invoice.logo.png" → "logo.png" in source dir
+                    var assetName = flatFile[(name.Length + 1)..];
+                    targetRel = sourceDir.Length > 0 ? $"{sourceDir}/{assetName}" : assetName;
+                }
+                else
+                {
+                    // Stem companion: "invoice.json" → "quote.json" in source dir
+                    targetRel = sourceDir.Length > 0 ? $"{sourceDir}/{stemSuffix}" : stemSuffix;
+                }
+            }
+            else
+            {
+                // Unexpected file in the manifest — place it as-is in the source dir
+                targetRel = sourceDir.Length > 0 ? $"{sourceDir}/{flatFile}" : flatFile;
+            }
+
+            var targetPath = System.IO.Path.Combine(userRoot, targetRel.Replace('/', System.IO.Path.DirectorySeparatorChar));
+            if (!PdfExtension.IsSafePath(userRoot, targetPath))
+                continue;
+            if (File.Exists(targetPath))
+                continue;
+
+            var srcPath = System.IO.Path.Combine(publisher.PdfPath, flatFile);
+            if (!File.Exists(srcPath))
+                continue;
+
+            var targetDir = System.IO.Path.GetDirectoryName(targetPath);
+            if (targetDir != null)
+                Directory.CreateDirectory(targetDir);
+
+            File.Copy(srcPath, targetPath, overwrite: false);
+            copied.Add(targetRel);
+        }
+
+        return new AdminEditPdfTemplateResponse
+        {
+            EditUrl = editUrl,
+            Copied = copied,
         };
     }
 

@@ -71,12 +71,12 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
         if (feature.RequiredRole != null)
         {
             var user = GetClaimsPrincipal(request);
-            if (user != null)    
+            if (user != null && !user.HasRole(feature.RequiredRole))
                 throw new UnauthorizedAccessException($"Authentication required: role '{feature.RequiredRole}'");
             var apiKey = request.GetApiKey();
             if (apiKey != null && !apiKey.HasScope(feature.RequiredRole))
                 throw new UnauthorizedAccessException($"Authentication required: scope '{feature.RequiredRole}'");
-            if (user == null || apiKey == null)
+            if (user == null && apiKey == null)
                 throw new UnauthorizedAccessException("Authentication required");
         }
         return GetUserName(request)

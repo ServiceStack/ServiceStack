@@ -5,6 +5,7 @@ import { useClient } from '@servicestack/vue'
 class AdminPdfTemplates { getTypeName() { return 'AdminPdfTemplates' }; getMethod() { return 'GET' }; createResponse() { return {} } }
 class AdminGetPdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminGetPdfTemplate' }; getMethod() { return 'GET' }; createResponse() { return {} } }
 class AdminDeletePdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminDeletePdfTemplate' }; getMethod() { return 'POST' }; createResponse() { return {} } }
+class AdminEditPdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminEditPdfTemplate' }; getMethod() { return 'POST' }; createResponse() { return {} } }
 
 const json = value => {
     try { return value ? JSON.parse(value) : {} } catch { return {} }
@@ -23,10 +24,11 @@ export const AdminPdf = {
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776"/></svg>
                 Open
             </button>
-            <a v-if="selected?.editUrl" :href="selected.editUrl" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-colors">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
-                Edit
-            </a>
+            <button v-if="selected?.editUrl" type="button" @click="edit" :disabled="editing" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-colors disabled:opacity-50">
+                <svg v-if="editing" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
+                {{ editing ? 'Opening…' : 'Edit' }}
+            </button>
             <button v-if="selected" type="button" @click="unpublish" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 shadow-sm transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                 Unpublish
@@ -110,7 +112,7 @@ export const AdminPdf = {
         const client = useClient(), routes = inject('routes')
         const humanifyBytes = bytes => bytes == null ? '—' : bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`
         const templates = ref([]), selected = ref(null), pdfPath = ref(''), chatBase = ref('/chat'), typstAvailable = ref(false)
-        const loading = ref(false), rendering = ref(false), openDialog = ref(false), search = ref(''), sort = ref('name'), raw = ref(false), error = ref(null)
+        const loading = ref(false), rendering = ref(false), editing = ref(false), openDialog = ref(false), search = ref(''), sort = ref('name'), raw = ref(false), error = ref(null)
         const data = ref({}), initialData = ref({}), dataText = ref('{}'), schema = ref({}), pdfView = shallowRef(null), pages = ref(0), scale = ref(1), pdfBytes = ref(null), previewEl = ref(null), textareaEl = ref(null), canvases = []
         const autoResize = () => nextTick(() => { const el = textareaEl.value; if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } })
         watch([dataText, raw], autoResize)
@@ -148,7 +150,21 @@ export const AdminPdf = {
         const select = async (name, close = true) => {
             error.value = null
             const api = await client.api(new AdminGetPdfTemplate({ name }))
-            if (api.error) { error.value = api.error; return }
+            if (api.error) {
+                if (routes.origin === 'chat' || new URLSearchParams(location.search).get('origin') === 'chat') {
+                    selected.value = null
+                    error.value = null
+                    routes.to({ template: undefined })
+                    if (location.search.includes('origin=')) {
+                        const url = new URL(location.href)
+                        url.searchParams.delete('origin')
+                        url.searchParams.delete('template')
+                        history.replaceState(null, '', url.pathname + (url.search ? url.search : ''))
+                    }
+                    return
+                }
+                error.value = api.error; return
+            }
             const r = api.response; selected.value = r.template; initialData.value = json(r.data); data.value = cloneData(initialData.value); dataText.value = r.data || '{}'; schema.value = json(r.schema); pages.value = 0; pdfBytes.value = null
             if (close) openDialog.value = false
             // Keep the selected template addressable without adding a duplicate history entry
@@ -172,6 +188,7 @@ export const AdminPdf = {
         const fit = async () => { const size = await pdfView.value?.pageSize(1); if (size && previewEl.value) { scale.value = Math.max(.25, (previewEl.value.clientWidth - 32) / size.width); await renderCanvases() } }
         const download = () => { if (!pdfBytes.value) return; const url = URL.createObjectURL(new Blob([pdfBytes.value], { type: 'application/pdf' })); const a = Object.assign(document.createElement('a'), { href: url, download: selected.value.name + '.pdf' }); a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) }
         const unpublish = async () => { if (!selected.value || !confirm(`Unpublish ${selected.value.name}?`)) return; const api = await client.api(new AdminDeletePdfTemplate({ name: selected.value.name })); if (api.error) return error.value = api.error; selected.value = null; routes.to({ template: undefined }); await refresh() }
+        const edit = async () => { if (!selected.value) return; editing.value = true; error.value = null; try { const api = await client.api(new AdminEditPdfTemplate({ name: selected.value.name })); if (api.error) { error.value = api.error; return } location.href = api.response.editUrl } catch (e) { error.value = e } finally { editing.value = false } }
         watch(() => routes.template, name => {
             if (name && name !== selected.value?.name) {
                 select(name, false)
@@ -184,6 +201,6 @@ export const AdminPdf = {
             }
         })
         onMounted(refresh); onUnmounted(() => { clearTimeout(renderTimer); pdfView.value?.destroy() })
-        return { templates, selected, pdfPath, chatBase, typstAvailable, loading, rendering, openDialog, search, sort, raw, error, data, dataText, schema, pages, scale, pdfBytes, previewEl, textareaEl, canvases, filtered, humanifyBytes, formatDate, onCodeInput, onFormChange, resetData, select, render, zoom, fit, download, unpublish }
+        return { templates, selected, pdfPath, chatBase, typstAvailable, loading, rendering, editing, openDialog, search, sort, raw, error, data, dataText, schema, pages, scale, pdfBytes, previewEl, textareaEl, canvases, filtered, humanifyBytes, formatDate, onCodeInput, onFormChange, resetData, select, render, zoom, fit, download, unpublish, edit }
     },
 }

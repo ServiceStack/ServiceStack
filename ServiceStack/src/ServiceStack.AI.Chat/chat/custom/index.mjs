@@ -450,10 +450,21 @@ export default {
                     props: ['entry', 'buffers', 'rendering', 'save'],
                     template: `
                         <button type="button" @click="publish" :disabled="!entry || rendering || publishing"
-                            title="Publish this template to App_Data/pdf"
+                            title="Publish this template to PDF Admin UI"
                             class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs disabled:opacity-40 mr-1 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md">
                             {{ publishing ? 'Publishing…' : 'Publish' }}
-                        </button>`,
+                        </button>
+                        
+                        <a :href="'/admin-ui/pdf?template=' + entry + '&origin=chat'" title="View template in Admin UI"
+                            class="inline-flex items-center justify-center p-1 rounded-md text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <g fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21.544 11.045c.304.426.456.64.456.955c0 .316-.152.529-.456.955C20.178 14.871 16.689 19 12 19c-4.69 0-8.178-4.13-9.544-6.045C2.152 12.529 2 12.315 2 12c0-.316.152-.529.456-.955C3.822 9.129 7.311 5 12 5c4.69 0 8.178 4.13 9.544 6.045Z" />
+                                    <path d="M15 12a3 3 0 1 0-6 0a3 3 0 0 0 6 0Z" />
+                                </g>
+                            </svg>
+                        </a>`,
                     setup(props) {
                         const publishing = ref(false)
                         const hasUnsavedChanges = () => Object.values(props.buffers || {})

@@ -2887,7 +2887,7 @@ const PdfDesigner = {
 }
 
 export default {
-    order: 30 - 100,
+    order: -71,
 
     install(ctx) {
         ext = ctx.scope('pdf')
