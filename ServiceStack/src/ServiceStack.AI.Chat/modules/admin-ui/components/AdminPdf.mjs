@@ -55,7 +55,7 @@ export const AdminPdf = {
         </section>
 
         <div v-if="selected" class="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            <section class="rounded-lg border border-gray-200 dark:border-gray-700 min-w-0">
+            <section class="rounded-lg border border-gray-200 dark:border-gray-700 min-w-0 overflow-hidden">
                 <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
                     <h2 class="text-sm font-medium text-gray-700 dark:text-gray-200">Data</h2>
                     <div class="flex items-center gap-2">
@@ -71,7 +71,7 @@ export const AdminPdf = {
                     <JsonSchemaForm v-else :schema="schema" :data="data" :show-title="false" class="block w-full p-3" @change="onFormChange" />
                 </div>
             </section>
-            <section class="rounded-lg border border-gray-200 dark:border-gray-700 min-w-0 flex flex-col">
+            <section class="rounded-lg border border-gray-200 dark:border-gray-700 min-w-0 flex flex-col overflow-hidden">
                 <div class="flex justify-between items-center px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
                     <div class="flex flex-wrap items-center gap-1.5">
                         <button type="button" @click="zoom(-.15)" class="px-2 py-1 text-xs font-medium border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">−</button><span class="text-xs w-10 text-center text-gray-600 dark:text-gray-300 tabular-nums">{{ Math.round(scale * 100) }}%</span><button type="button" @click="zoom(.15)" class="px-2 py-1 text-xs font-medium border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">+</button>
