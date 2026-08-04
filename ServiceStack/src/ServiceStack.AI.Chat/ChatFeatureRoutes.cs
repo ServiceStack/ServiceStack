@@ -47,6 +47,9 @@ public partial class ChatFeature
         });
         Routes.AddGet("/~cache/{tail:.*}", CacheHandlerAsync);
         Routes.AddGet("/ui/{path:.*}", ctx => ServeEmbeddedFileAsync(ctx, "chat/ui", ctx.GetPathParam("path")));
+        // C#-only UI assets, served like an extension's own files. Nothing under chat/custom/ is
+        // synced from llms-py, so it's the place to extend the UI without sync.sh overwriting it.
+        Routes.AddGet("/custom/{path:.*}", ctx => ServeEmbeddedFileAsync(ctx, "chat/custom", ctx.GetPathParam("path")));
         Routes.AddGet("/config", ConfigHandlerAsync);
         Routes.AddGet("/prefs", ctx => Task.FromResult<object?>(AppData.GetUserPrefs(ctx.UserName)));
         Routes.AddGet("/favicon.ico", _ => Task.FromResult<object?>(ChatResult.NotFound()));

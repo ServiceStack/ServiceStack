@@ -1262,6 +1262,11 @@ const PdfDesigner = {
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                     PDF
                 </button>
+                <template v-for="action in previewActions" :key="action.id">
+                    <component v-if="(!action.isVisible || action.isVisible(previewContext)) && (!action.show || action.show(previewContext))"
+                               :is="action.component"
+                               v-bind="previewContext" />
+                </template>
             </div>
 
             <div v-if="diagnostics.length" style="max-height:8rem" class="flex-shrink-0 overflow-y-auto pl-3 pr-1 py-1 text-xs font-mono border-b bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
@@ -1348,6 +1353,23 @@ const PdfDesigner = {
         const root = ref('')
         const files = ref([])
         const entry = ref(null) // the .typ being compiled
+
+        const previewActions = computed(() => {
+            const actions = ctx?.pdf?.previewActions || {}
+            return Object.values(actions)
+        })
+        const previewContext = computed(() => ({
+            pdfBlob: pdfBlob.value,
+            entry: entry.value,
+            files: files.value,
+            buffers,
+            pages: pages.value,
+            rendering: rendering.value,
+            save,
+            download,
+            promptSavePdf,
+            root: root.value,
+        }))
         const activeTab = ref(null)
         const buffers = reactive({}) // path -> { content, saved }
         const extraTabs = ref([]) // files opened from the explorer that the template doesn't reference
@@ -2859,6 +2881,7 @@ const PdfDesigner = {
             loadFiles, onNodeSelect, openTab, selectTab, closeTab, save, download, promptSavePdf, zoom, fitToWidth, goToDiagnostic,
             promptNewTemplate, promptNewFile, promptNewFolder, openMenu, onMenuPick,
             toggleExplorer, toggleAi, startDragSplit, startDragAi, onTextareaInput, rawUrl, baseName,
+            previewActions, previewContext,
         }
     },
 }
@@ -2896,7 +2919,7 @@ export default {
 
         ctx.setLeftIcons({
             pdf: {
-                title: 'PDF Designer',
+                title: 'PDF Studio',
                 component: {
                     template: `
                     <svg @click="$ctx.togglePath('/pdf', { left:false })" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1792"><path d="M0 0h1536v1792H0z" fill="none" /><path fill="currentColor" d="M1468 380q28 28 48 76t20 88v1152q0 40-28 68t-68 28H96q-40 0-68-28t-28-68V96q0-40 28-68T96 0h896q40 0 88 20t76 48zm-444-244v376h376q-10-29-22-41l-313-313q-12-12-41-22m384 1528V640H992q-40 0-68-28t-28-68V128H128v1536zm-514-593q33 26 84 56q59-7 117-7q147 0 177 49q16 22 2 52q0 1-1 2l-2 2v1q-6 38-71 38q-48 0-115-20t-130-53q-221 24-392 83q-153 262-242 262q-15 0-28-7l-24-12q-1-1-6-5q-10-10-6-36q9-40 56-91.5t132-96.5q14-9 23 6q2 2 2 4q52-85 107-197q68-136 104-262q-24-82-30.5-159.5T657 552q11-40 42-40h22q23 0 35 15q18 21 9 68q-2 6-4 8q1 3 1 8v30q-2 123-14 192q55 164 146 238m-576 411q52-24 137-158q-51 40-87.5 84t-49.5 74m398-920q-15 42-2 132q1-7 7-44q0-3 7-43q1-4 4-8q-1-1-1-2q-1-2-1-3q-1-22-13-36q0 1-1 2zm-124 661q135-54 284-81q-2-1-13-9.5t-16-13.5q-76-67-127-176q-27 86-83 197q-30 56-45 83m646-16q-24-24-140-24q76 28 124 28q14 0 18-1q0-1-2-3" /></svg>
@@ -2908,6 +2931,6 @@ export default {
             },
         })
 
-        ctx.routes.push({ path: '/pdf', component: PdfDesigner, meta: { title: 'PDF Designer' } })
+        ctx.routes.push({ path: '/pdf', component: PdfDesigner, meta: { title: 'PDF Studio' } })
     },
 }
