@@ -1,12 +1,13 @@
 // This file is intentionally C#-owned: sync.sh does not replace chat/custom/**.
 import { ref, computed, inject, onMounted } from 'vue'
+import hljs from 'highlight.js'
 
 let ext
 let mcpExt
 
 const McpToolPageHeader = {
     template: `
-    <div class="text-sm flex flex-col items-end mb-4">
+    <div class="text-sm flex flex-col items-end mb-8">
         <!-- Collapsed Header -->
         <div
             @click="toggleExpanded"
@@ -22,74 +23,192 @@ const McpToolPageHeader = {
             <span class="font-medium" :class="[$styles.mutedActive,$styles.mutedHover]">
                 MCP Server
             </span>
-            <span v-if="info.isEnabled && enabledCount > 0" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" :class="[$styles.bgSuccess]"
-                :title="(info.tools || []).join('\\n')">
-                {{ enabledCount }} {{ enabledCount === 1 ? 'tool' : 'tools' }} exposed
+            <span v-if="info.isEnabled && (enabledCount > 0 || apiCount > 0)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" :class="[$styles.bgSuccess]">
+                {{ enabledCount + apiCount }} {{ (enabledCount + apiCount) === 1 ? 'tool' : 'tools' }}
             </span>
             <span v-else-if="!info.isEnabled" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                 Disabled
             </span>
-            <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" :class="[$styles.bgWarning]">
-                No tools exposed
-            </span>
         </div>
 
-        <!-- Expanded Content -->
-        <div v-if="isExpanded" class="mt-3 pb-2 space-y-3 w-full text-left">
-            <div class="relative rounded-lg p-4 border" :class="[$styles.infoCard]">
-                <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700/60">
-                    <div class="flex items-center gap-2">
-                        <span :class="info.isEnabled ? 'bg-green-500' : 'bg-gray-400'" class="inline-block w-2.5 h-2.5 rounded-full"></span>
-                        <span class="font-bold text-base" :class="[$styles.heading]">{{ info.serverName || 'servicestack-ai-chat' }}</span>
-                        <span v-if="info.serverVersion" class="text-xs px-1.5 py-0.5 rounded font-mono" :class="[$styles.codeTag]">v{{ info.serverVersion }}</span>
-                    </div>
-                    <div class="text-xs" :class="[$styles.muted]">
-                        Streamable HTTP MCP Endpoint
-                    </div>
+        <!-- Expanded Details -->
+        <div
+            v-if="isExpanded"
+            class="w-full mt-3 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 text-left"
+            :class="[$styles.bgCard]"
+        >
+            <div class="flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold text-gray-800 dark:text-gray-200">
+                        {{ info.serverName || 'servicestack-ai-chat' }} (v{{ info.serverVersion }})
+                    </span>
+                    <span v-if="info.isEnabled" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" :class="[$styles.bgSuccess]">
+                        Enabled
+                    </span>
                 </div>
 
-                <div class="space-y-3 text-xs">
-                    <!-- Endpoint URL -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <span class="w-24 flex-shrink-0 font-medium" :class="[$styles.muted]">Endpoint URL:</span>
-                        <div class="flex items-center gap-2 flex-1 min-w-0">
-                            <code class="px-2 py-1 rounded font-mono text-xs truncate flex-1" :class="[$styles.codeTagStrong]">{{ mcpUrl }}</code>
-                            <button type="button"
-                                @click.stop="copyUrl"
-                                class="px-2.5 py-1 text-xs font-medium rounded border transition-colors inline-flex items-center gap-1 shrink-0"
-                                :class="[$styles.secondaryButton]"
-                                :title="copying ? 'Copied!' : 'Copy MCP Server URL'"
-                            >
-                                <svg v-if="copying" class="size-3.5 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m9.55 18l-5.7-5.7l1.425-1.425L9.55 15.15l9.175-9.175L20.15 7.4z"/></svg>
-                                <svg v-else class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z"/></svg>
-                                <span>{{ copying ? 'Copied!' : 'Copy URL' }}</span>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Streamable HTTP MCP Endpoint
+                </div>
+
+                <!-- Detail Metadata Table -->
+                <table class="w-full text-xs border-separate border-spacing-y-3.5">
+                    <tbody>
+                        <!-- Endpoint URL -->
+                        <tr>
+                            <td class="font-medium whitespace-nowrap pr-4 align-top pt-1 w-1" :class="[$styles.muted]">Endpoint URL:</td>
+                            <td class="align-top py-1">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <code class="px-2 py-1 rounded font-mono text-xs overflow-x-auto" :class="[$styles.codeTag]">
+                                        {{ mcpUrl }}
+                                    </code>
+                                    <button
+                                        @click="copyUrl"
+                                        type="button"
+                                        class="px-2.5 py-1 text-xs font-medium rounded border transition-colors inline-flex items-center gap-1.5 shrink-0 cursor-pointer"
+                                        :class="[$styles.secondaryButton]"
+                                        :title="copying ? 'Copied to clipboard' : 'Copy MCP Server URL'"
+                                    >
+                                        <svg v-if="copying" class="w-3.5 h-3.5 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m9.55 18l-5.7-5.7l1.425-1.425L9.55 15.15l9.175-9.175L20.15 7.4z"/></svg>
+                                        <svg v-else class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z"/></svg>
+                                        <span>{{ copying ? 'Copied!' : 'Copy URL' }}</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Exposed Tools -->
+                        <tr v-if="info.tools?.length">
+                            <td class="font-medium whitespace-nowrap pr-4 align-top pt-1 w-1" :class="[$styles.muted]">Exposed Tools:</td>
+                            <td class="align-top py-1">
+                                <div class="flex flex-wrap gap-1.5 min-w-0">
+                                    <button
+                                        v-for="tool in info.tools"
+                                        :key="tool"
+                                        type="button"
+                                        @click="selectTool(tool)"
+                                        title="Click to view/execute tool"
+                                        class="font-mono px-2 py-0.5 rounded text-xs transition-colors cursor-pointer"
+                                        :class="$ctx.tools?.selectedTool === tool ? $styles.tagButtonActive : $styles.tagButton"
+                                    >
+                                        {{ tool }}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Exposed APIs -->
+                        <tr v-if="info.apiTools?.length">
+                            <td class="font-medium whitespace-nowrap pr-4 align-top pt-1 w-1" :class="[$styles.muted]">Exposed APIs:</td>
+                            <td class="align-top py-1">
+                                <div class="flex flex-wrap gap-1.5 min-w-0">
+                                    <button
+                                        v-for="api in info.apiTools"
+                                        :key="api"
+                                        type="button"
+                                        @click="inspectingApi === api ? closeInspectApi() : inspectApi(api)"
+                                        title="Click to view API schema & simulate call"
+                                        class="font-mono px-2 py-0.5 rounded text-xs transition-colors cursor-pointer select-none border"
+                                        :class="inspectingApi === api ? $styles.tagButtonActive : $styles.tagButton"
+                                    >
+                                        {{ api }}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Instructions -->
+                        <tr v-if="info.instructions">
+                            <td class="font-medium whitespace-nowrap pr-4 align-top pt-1 w-1" :class="[$styles.muted]">Instructions:</td>
+                            <td class="align-top py-1 text-gray-600 dark:text-gray-300 italic">
+                                {{ info.instructions }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Inline Exposed API Tab Panel -->
+                <div v-if="inspectingApi" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700/60 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
+                    <div class="rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 overflow-hidden">
+                        <!-- Tab Bar Header -->
+                        <div class="px-4 py-2.5 bg-blue-100/50 dark:bg-blue-950/60 border-b border-blue-200 dark:border-blue-900/60 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="font-mono font-bold text-xs text-blue-700 dark:text-blue-300">API: {{ inspectingApi }}</span>
+                                <div class="inline-flex rounded-md shadow-xs overflow-hidden border border-gray-300 dark:border-gray-600 divide-x divide-gray-200 dark:divide-gray-700">
+                                    <button type="button" @click="inspectTab = 'describe'"
+                                        class="px-3 py-1 text-xs font-medium transition-colors cursor-pointer"
+                                        :class="inspectTab === 'describe'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'">
+                                        Schema (api_describe)
+                                    </button>
+                                    <button type="button" @click="inspectTab = 'invoke'"
+                                        class="px-3 py-1 text-xs font-medium transition-colors cursor-pointer"
+                                        :class="inspectTab === 'invoke'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'">
+                                        Simulate Call (api_call)
+                                    </button>
+                                </div>
+                            </div>
+                            <button @click="closeInspectApi" type="button" class="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-blue-200/50 dark:hover:bg-blue-900/50 transition-colors cursor-pointer" title="Close API details">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
                             </button>
                         </div>
-                    </div>
 
-                    <!-- Exposed Tools -->
-                    <div v-if="info.tools?.length" class="flex flex-col sm:flex-row sm:items-start gap-2 pt-1">
-                        <span class="w-24 flex-shrink-0 font-medium pt-0.5" :class="[$styles.muted]">Exposed Tools:</span>
-                        <div class="flex flex-wrap gap-1.5 flex-1">
-                            <button
-                                v-for="tool in info.tools"
-                                :key="tool"
-                                type="button"
-                                @click="selectTool(tool)"
-                                title="Click to view/execute tool"
-                                class="font-mono px-2 py-0.5 rounded text-xs transition-colors cursor-pointer"
-                                :class="$ctx.tools?.selectedTool === tool ? $styles.tagButtonActive : $styles.tagButton"
-                            >
-                                {{ tool }}
-                            </button>
-                        </div>
-                    </div>
+                        <!-- Tab Panel Content -->
+                        <div class="p-4 space-y-3 text-xs">
+                            <!-- Tab 1: Describe Schema -->
+                            <div v-if="inspectTab === 'describe'" class="space-y-2">
+                                <div v-if="loadingDescribe" class="flex items-center gap-2 text-gray-500 italic py-2">
+                                    <svg class="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Fetching API schema from api_describe...
+                                </div>
+                                <div v-else-if="describeError" class="p-3 rounded-md bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 font-mono">
+                                    {{ describeError }}
+                                </div>
+                                <div v-else class="space-y-2">
+                                    <p class="text-gray-500 dark:text-gray-400">
+                                        Schema visible to AI Assistants when calling <code class="font-mono bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">api_describe</code>:
+                                    </p>
+                                    <pre class="p-3 rounded-lg bg-gray-900 font-mono text-xs overflow-x-auto select-all max-h-80 whitespace-pre-wrap hljs"><code class="language-json" v-html="describeResultHtml"></code></pre>
+                                </div>
+                            </div>
 
-                    <!-- Instructions / Description if present -->
-                    <div v-if="info.instructions" class="flex flex-col sm:flex-row sm:items-start gap-2 pt-1">
-                        <span class="w-24 flex-shrink-0 font-medium" :class="[$styles.muted]">Instructions:</span>
-                        <div class="flex-1 text-gray-600 dark:text-gray-300 italic">
-                            {{ info.instructions }}
+                            <!-- Tab 2: Simulate Invoke -->
+                            <div v-if="inspectTab === 'invoke'" class="space-y-3">
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-gray-500 dark:text-gray-400">
+                                        Simulate calling <code class="font-mono bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">api_call</code> with custom JSON arguments:
+                                    </p>
+                                    <button type="button" @click="executeInvoke" :disabled="loadingInvoke || invokeArgsObj === undefined"
+                                        class="px-3.5 py-1.5 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 transition-colors inline-flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0">
+                                        <svg v-if="loadingInvoke" class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>{{ loadingInvoke ? 'Executing...' : 'Run api_call' }}</span>
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[11px] font-medium mb-1 text-gray-700 dark:text-gray-300">Arguments (JSON):</label>
+                                    <JsonInput v-model="invokeArgsObj" />
+                                </div>
+
+                                <div v-if="invokeResult !== null || invokeError" class="space-y-1.5 pt-2 border-t border-gray-200 dark:border-gray-700/60">
+                                    <span class="font-medium text-gray-700 dark:text-gray-300 text-[11px]">API Result Payload:</span>
+                                    <div v-if="invokeError" class="p-3 rounded-md bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 font-mono whitespace-pre-wrap">
+                                        {{ invokeError }}
+                                    </div>
+                                    <pre v-else class="p-3 rounded-lg bg-gray-900 font-mono text-xs overflow-x-auto select-all max-h-80 whitespace-pre-wrap hljs"><code class="language-json" v-html="invokeResultHtml"></code></pre>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -102,7 +221,70 @@ const McpToolPageHeader = {
         const copying = ref(false)
         const info = computed(() => mcpExt?.state.info || {})
         const enabledCount = computed(() => (info.value.isEnabled && info.value.tools) ? info.value.tools.length : 0)
-        const isExpanded = computed(() => !!mcpExt?.prefs.expanded)
+        const apiCount = computed(() => (info.value.isEnabled && info.value.apiTools) ? info.value.apiTools.length : 0)
+        const isExpanded = computed(() => mcpExt?.prefs.expanded !== false)
+
+        const inspectingApi = ref(null)
+        const inspectTab = ref('describe')
+        const loadingDescribe = ref(false)
+        const describeResult = ref('')
+        const describeError = ref(null)
+
+        const invokeArgsObj = ref({})
+        const loadingInvoke = ref(false)
+        const invokeResult = ref(null)
+        const invokeError = ref(null)
+
+        function formatToolResult(data) {
+            if (data == null) return ''
+            let payload = data
+            if (Array.isArray(payload) && payload.length === 1 && payload[0]?.type === 'text' && typeof payload[0].text === 'string') {
+                const text = payload[0].text.trim()
+                if ((text.startsWith('{') && text.endsWith('}')) || (text.startsWith('[') && text.endsWith(']'))) {
+                    try {
+                        payload = JSON.parse(text)
+                    } catch (e) {
+                        payload = text
+                    }
+                } else {
+                    payload = text
+                }
+            }
+            if (typeof payload === 'string') {
+                const trimmed = payload.trim()
+                if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                    try {
+                        return JSON.stringify(JSON.parse(trimmed), null, 2)
+                    } catch (e) {
+                        return payload
+                    }
+                }
+                return payload
+            }
+            return JSON.stringify(payload, null, 2)
+        }
+
+        function highlight(code, lang = 'json') {
+            if (!code) return ''
+            try {
+                const text = typeof code === 'string' ? code : JSON.stringify(code, null, 2)
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+                return hljs.highlight(text, { language }).value
+            } catch (e) {
+                console.error('Highlight error:', e)
+                return typeof code === 'string' ? code : JSON.stringify(code, null, 2)
+            }
+        }
+
+        const describeResultHtml = computed(() => {
+            if (!describeResult.value) return ''
+            return highlight(describeResult.value, 'json')
+        })
+
+        const invokeResultHtml = computed(() => {
+            if (!invokeResult.value) return ''
+            return highlight(invokeResult.value, 'json')
+        })
 
         const mcpUrl = computed(() => {
             const rel = info.value.url || '/mcp'
@@ -111,12 +293,12 @@ const McpToolPageHeader = {
 
         function toggleExpanded() {
             if (mcpExt) {
-                mcpExt.setPrefs({ expanded: !mcpExt.prefs.expanded })
+                mcpExt.setPrefs({ expanded: !isExpanded.value })
             }
         }
 
         async function fetchInfo() {
-            if (mcpExt && !mcpExt.state.info) {
+            if (mcpExt) {
                 try {
                     const api = await mcpExt.getJson('')
                     if (api.response) {
@@ -130,6 +312,9 @@ const McpToolPageHeader = {
 
         onMounted(() => {
             fetchInfo()
+            if (mcpExt?.prefs?.selectedApi) {
+                inspectApi(mcpExt.prefs.selectedApi)
+            }
         })
 
         async function copyUrl() {
@@ -139,6 +324,10 @@ const McpToolPageHeader = {
         }
 
         function selectTool(tool) {
+            if (ctx.tools?.selectedTool === tool) {
+                ctx.tools?.selectTool({ group: ctx.tools?.selectedGroup || 'All', tool: null })
+                return
+            }
             let group = 'All'
             if (ctx.state.tool?.groups) {
                 for (const [gName, gTools] of Object.entries(ctx.state.tool.groups)) {
@@ -151,16 +340,94 @@ const McpToolPageHeader = {
             ctx.tools?.selectTool({ group, tool })
         }
 
+        async function inspectApi(apiName) {
+            if (inspectingApi.value === apiName && describeResult.value) {
+                closeInspectApi()
+                return
+            }
+            inspectingApi.value = apiName
+            if (mcpExt) {
+                mcpExt.setPrefs({ selectedApi: apiName })
+            }
+            inspectTab.value = 'describe'
+            invokeArgsObj.value = {}
+            invokeResult.value = null
+            invokeError.value = null
+            describeError.value = null
+            describeResult.value = ''
+            loadingDescribe.value = true
+            try {
+                const toolsExt = ctx.scope('tools')
+                const res = await toolsExt.postJson('/exec/api_describe', { names: [apiName] })
+                if (res.error) {
+                    describeError.value = res.error.message || String(res.error)
+                } else {
+                    describeResult.value = formatToolResult(res.response)
+                }
+            } catch (e) {
+                describeError.value = e.message || String(e)
+            } finally {
+                loadingDescribe.value = false
+            }
+        }
+
+        function closeInspectApi() {
+            inspectingApi.value = null
+            if (mcpExt) {
+                mcpExt.setPrefs({ selectedApi: null })
+            }
+        }
+
+        async function executeInvoke() {
+            if (!inspectingApi.value) return
+            if (invokeArgsObj.value === undefined) {
+                invokeError.value = 'Invalid JSON arguments'
+                return
+            }
+            loadingInvoke.value = true
+            invokeResult.value = null
+            invokeError.value = null
+            try {
+                const parsedArgs = invokeArgsObj.value || {}
+                const toolsExt = ctx.scope('tools')
+                const res = await toolsExt.postJson('/exec/api_call', { name: inspectingApi.value, args: parsedArgs })
+                if (res.error) {
+                    invokeError.value = res.error.message || String(res.error)
+                } else {
+                    invokeResult.value = formatToolResult(res.response)
+                }
+            } catch (e) {
+                invokeError.value = e.message || String(e)
+            } finally {
+                loadingInvoke.value = false
+            }
+        }
+
         return {
             mcpExt,
             info,
             enabledCount,
+            apiCount,
             isExpanded,
             toggleExpanded,
             mcpUrl,
             copying,
             copyUrl,
             selectTool,
+            inspectingApi,
+            inspectTab,
+            loadingDescribe,
+            describeResult,
+            describeError,
+            invokeArgsObj,
+            loadingInvoke,
+            invokeResult,
+            invokeError,
+            inspectApi,
+            closeInspectApi,
+            executeInvoke,
+            describeResultHtml,
+            invokeResultHtml,
         }
     }
 }

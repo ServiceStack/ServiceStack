@@ -58,9 +58,10 @@ public class ToolsExtension() : ChatExtension("tools")
         var ret = new List<ChatTool>();
         foreach (var name in use.Split(',').Select(x => x.Trim()).Where(x => x.Length > 0))
         {
-            if (Groups.TryGetValue(name, out var groupTools))
+            var matchedGroup = FindGroup(name);
+            if (matchedGroup != null)
             {
-                foreach (var toolName in groupTools)
+                foreach (var toolName in matchedGroup)
                 {
                     if (Tools.TryGetValue(toolName, out var groupTool) && !ret.Contains(groupTool))
                         ret.Add(groupTool);
@@ -72,6 +73,19 @@ public class ToolsExtension() : ChatExtension("tools")
             }
         }
         return ret;
+    }
+
+    List<string>? FindGroup(string name)
+    {
+        if (Groups.TryGetValue(name, out var tools))
+            return tools;
+
+        var key = Groups.Keys.FirstOrDefault(k =>
+            k.EqualsIgnoreCase(name) ||
+            k.EqualsIgnoreCase(name + "_tools") ||
+            (name.EndsWith('s') && (k.EqualsIgnoreCase(name[..^1]) || k.EqualsIgnoreCase(name[..^1] + "_tools"))));
+
+        return key != null ? Groups[key] : null;
     }
 
     public override void Install(ExtensionContext ctx)

@@ -39,7 +39,7 @@ public class ConfigureAiChat : IHostingStartup
                 // Add this App's own tools to the built-in extensions
                 // Expose these tools to external AI Agents over MCP at /chat/mcp
                 Mcp = {
-                    ToolGroups = ["api_tools", "core_tools", "bookings"],
+                    ToolGroups = ["api_tools", "bookings"],
                 },
                 Setup = (ctx => {
                     // ctx.Mcp.ToolGroups = ["api_tools", "core_tools", "booking_tools"];

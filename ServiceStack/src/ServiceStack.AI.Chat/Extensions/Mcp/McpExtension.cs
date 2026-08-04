@@ -33,7 +33,7 @@ public class McpExtension() : ChatExtension("mcp")
     public List<string> Tools { get; set; } = [];
 
     /// <summary>Server name reported to MCP Clients in initialize</summary>
-    public string ServerName { get; set; } = "servicestack-ai-chat";
+    public string? ServerName { get; set; }
 
     /// <summary>Server version reported to MCP Clients (defaults to the ServiceStack version)</summary>
     public string? ServerVersion { get; set; }
@@ -69,6 +69,9 @@ public class McpExtension() : ChatExtension("mcp")
     public const int MethodNotFound = -32601;
     public const int InvalidParams = -32602;
     public const int InternalError = -32603;
+    
+    public string GetServerName() => ServerName ?? HostContext.ServiceName ?? "servicestack-ai-chat";
+    public string GetServerVersion() => ServerVersion ?? Env.VersionString;
 
     public override void Install(ExtensionContext ctx)
     {
@@ -78,21 +81,32 @@ public class McpExtension() : ChatExtension("mcp")
             return;
         }
 
-        ctx.AddGet("", _ =>
+        ctx.AddGet("", req =>
         {
             var selectedTools = SelectedTools();
             var toolNames = selectedTools.Select(x => x.Name).ToList();
             var mcpUrl = ctx.Feature.ResolveClientUrl("/mcp") ?? "/mcp";
-            return Task.FromResult<object?>(new JsonObject
+
+            var apiToolsExt = ctx.Feature.ApiTools;
+            var apiTags = apiToolsExt?.IncludeTags;
+            var apiTools = apiToolsExt?.Registry?.GetAll().Select(x => x.Name).ToList();
+
+            var res = new JsonObject
             {
-                ["serverName"] = ServerName,
-                ["serverVersion"] = ServerVersion ?? Env.VersionString,
+                ["serverName"] = GetServerName(),
+                ["serverVersion"] = GetServerVersion(),
                 ["instructions"] = Instructions ?? "",
                 ["isEnabled"] = IsEnabled,
                 ["url"] = mcpUrl,
                 ["toolGroups"] = new JsonArray(ToolGroups.Select(x => (JsonNode)x!).ToArray()),
                 ["tools"] = new JsonArray(toolNames.Select(x => (JsonNode)x!).ToArray()),
-            });
+            };
+            if (apiTags is { Count: > 0 })
+                res["apiTags"] = new JsonArray(apiTags.Select(x => (JsonNode)x!).ToArray());
+            if (apiTools is { Count: > 0 })
+                res["apiTools"] = new JsonArray(apiTools.Select(x => (JsonNode)x!).ToArray());
+
+            return Task.FromResult<object?>(res);
         });
 
         // '/' escapes the /ext/<name> prefix: MCP Clients are configured with this URL by hand,
@@ -197,8 +211,8 @@ public class McpExtension() : ChatExtension("mcp")
             },
             ["serverInfo"] = new JsonObject
             {
-                ["name"] = ServerName,
-                ["version"] = ServerVersion ?? Env.VersionString,
+                ["name"] = GetServerName(),
+                ["version"] = GetServerVersion(),
             },
         };
         if (!string.IsNullOrEmpty(Instructions))

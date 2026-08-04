@@ -165,10 +165,10 @@ const JsonInput = {
                 v-model="localJson" 
                 @input="validate"
                 rows="5"
-                class="w-full p-2 font-mono text-xs border rounded-md resize-y focus:outline-none focus:ring-2 transition-colors"
+                class="w-full p-2 font-mono text-xs rounded-md resize-y focus:outline-none focus:ring-2 transition-colors"
                 :class="[$styles.bgInput, $styles.textInput, error 
-                    ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 focus:ring-red-500' 
-                    : 'focus:ring-blue-500']"
+                    ? 'border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 focus:ring-red-500' 
+                    : $styles.borderInput]"
                 spellcheck="false"
             ></textarea>
             <div v-if="isValid" class="absolute bottom-2 right-2 text-green-500 bg-white dark:bg-gray-800 rounded-full p-1 shadow-sm">

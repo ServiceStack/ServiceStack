@@ -36,6 +36,7 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
 
     ExtensionContext ctx = null!;
     ApiToolRegistry registry = null!;
+    public ApiToolRegistry? Registry => registry;
 
     public override void Install(ExtensionContext ctx)
     {

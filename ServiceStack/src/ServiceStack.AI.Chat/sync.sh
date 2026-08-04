@@ -30,6 +30,9 @@ rm -f ../../tests/NorthwindAuto/App_Data/chat/llms.json
 rm -f ../../tests/NorthwindAuto/App_Data/chat/providers.json
 rm -f ../../tests/NorthwindAuto/App_Data/chat/providers-extra.json
 
+# copy custom components to include in css
+cp ./chat/custom/*.* $LLMS/ui/tailwind/
+
 echo "Syncing from $LLMS"
 
 # Core UI (verbatim, incl. ai.mjs)
@@ -93,3 +96,5 @@ echo "Synced llms-py v$VERSION"
 
 cp -f ./chat/ui/components/* ../../tests/NorthwindAuto/wwwroot/js/components
 
+# remove unnecessary tailwind
+rm -rf ./chat/ui/tailwind/
