@@ -1,8 +1,7 @@
-mod client;
 mod dtos;
 
-use client::JsonServiceClient;
 use dtos::*;
+use servicestack::blocking::JsonServiceClient;
 use serde_json::json;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -22,7 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ..Default::default()
     };
 
-    let response: ChatResponse = client.post(&request)?;
+    let response = client.send(&request)?;
     println!("{}", serde_json::to_string_pretty(&response)?);
 
     Ok(())

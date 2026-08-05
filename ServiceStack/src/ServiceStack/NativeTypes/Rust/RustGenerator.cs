@@ -89,6 +89,59 @@ public class RustGenerator : ILangGenerator
         "std::collections::HashMap",
     };
 
+    /// <summary>
+    /// The Rust crate of the ServiceStack Client Library that generated DTOs reference
+    /// </summary>
+    public static string LibraryCrate { get; set; } = "servicestack";
+
+    /// <summary>
+    /// Built-in ServiceStack Types implemented in the servicestack crate which
+    /// are referenced instead of being emitted in generated DTOs
+    /// </summary>
+    public static HashSet<string> LibraryTypes { get; set; } =
+    [
+        nameof(ResponseStatus),
+        nameof(ResponseError),
+        nameof(EmptyResponse),
+        nameof(IdResponse),
+        nameof(StringResponse),
+        nameof(StringsResponse),
+        nameof(AuditBase),
+        nameof(QueryBase),
+        "QueryData",
+        "QueryDb",
+        "QueryResponse",
+        nameof(Authenticate),
+        nameof(AuthenticateResponse),
+        nameof(Register),
+        nameof(RegisterResponse),
+        nameof(AssignRoles),
+        nameof(AssignRolesResponse),
+        nameof(UnAssignRoles),
+        nameof(UnAssignRolesResponse),
+        nameof(ConvertSessionToToken),
+        nameof(ConvertSessionToTokenResponse),
+        nameof(GetAccessToken),
+        nameof(GetAccessTokenResponse),
+        nameof(GetApiKeys),
+        nameof(GetApiKeysResponse),
+        nameof(RegenerateApiKeys),
+        nameof(RegenerateApiKeysResponse),
+        nameof(UserApiKey),
+        nameof(NavItem),
+        nameof(GetNavItems),
+        nameof(GetNavItemsResponse),
+    ];
+
+    /// <summary>
+    /// Library Types that are non-generic in Rust, i.e. their type args are dropped
+    /// </summary>
+    public static HashSet<string> NonGenericLibraryTypes { get; set; } =
+    [
+        "QueryDb",
+        "QueryData",
+    ];
+
     public static Dictionary<string, string> TypeAliases = new() {
         {"String", "String"},
         {"Object", "Value"},
@@ -235,11 +288,37 @@ public class RustGenerator : ILangGenerator
 
     private bool resolvingPropertyType;
 
+    /// <summary>
+    /// Library Types referenced by the generated DTOs, resolved in Init()
+    /// </summary>
+    public HashSet<string> UseLibraryTypes { get; set; } = new();
+
+    private bool usesLibrary;
+
+    /// <summary>
+    /// Whether the Type Name refers to a Type implemented in the servicestack crate
+    /// </summary>
+    public bool IsLibraryType(string typeName) => UseLibraryTypes.Contains(typeName);
+
     public void Init(MetadataTypes metadata)
     {
         var includeList = metadata.RemoveIgnoredTypes(Config);
         AllTypes = metadata.GetAllTypesOrdered();
         AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+
+        //Interfaces are only used as markers in .NET, they're not needed in Rust
+        AllTypes.RemoveAll(x => x.IsInterface == true);
+
+        //Only use Library Types when they're not shadowed by a User-defined Type of the same name
+        var userTypeNames = AllTypes
+            .Where(x => x.Namespace != nameof(ServiceStack))
+            .Map(x => x.Name.LeftPart('`'))
+            .ToSet();
+        UseLibraryTypes = LibraryTypes.Where(x => !userTypeNames.Contains(x)).ToSet();
+
+        //Library Types are implemented in the servicestack crate
+        AllTypes.RemoveAll(x => UseLibraryTypes.Contains(x.Name.LeftPart('`')));
+
         AllTypes = FilterTypes(AllTypes);
 
         //Properties of abstract Types with sub types can only be represented as serde_json::Value
@@ -322,15 +401,11 @@ public class RustGenerator : ILangGenerator
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
 
-        foreach (var import in defaultImports)
-        {
-            sb.AppendLine($"use {import};");
-        }
-
-        if (defaultImports.Count > 0)
-        {
-            sb.AppendLine();
-        }
+        // Types are generated first so only the imports they use are emitted
+        var sbTypesInner = StringBuilderCacheAlt.Allocate();
+        var sbTypes = new StringBuilderWrapper(sbTypesInner);
+        var sbAll = sb;
+        sb = sbTypes;
 
         var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
         if (insertCode != null)
@@ -410,7 +485,27 @@ public class RustGenerator : ILangGenerator
         var addCode = AddCodeFilter?.Invoke(AllTypes, Config);
         if (addCode != null)
             sb.AppendLine(addCode);
-        
+
+        sb = sbAll;
+
+        // Only import the crates used by the generated Types
+        if (usesLibrary && request.QueryString["DefaultImports"].IsNullOrEmpty())
+        {
+            defaultImports.AddIfNotExists($"{LibraryCrate}::*");
+        }
+
+        foreach (var import in defaultImports)
+        {
+            sb.AppendLine($"use {import};");
+        }
+
+        if (defaultImports.Count > 0)
+        {
+            sb.AppendLine();
+        }
+
+        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbTypesInner).TrimEnd());
+
         var ret = StringBuilderCache.ReturnAndFree(sbInner);
         return formatter != null ? formatter.Transform(ret, this, request) : ret;
     }
@@ -497,6 +592,15 @@ public class RustGenerator : ILangGenerator
             sb = sb.Indent();
             InnerTypeFilter?.Invoke(sb, type);
 
+            // Rust doesn't support sub classing, inherited properties are flattened into the Type
+            if (type.Inherits != null)
+            {
+                var baseType = Type(type.Inherits.Name, type.Inherits.GenericArgs);
+                var baseFieldName = GetPropertyName(type.Inherits.Name.LeftPart('`'));
+                sb.AppendLine("#[serde(flatten)]");
+                sb.AppendLine($"pub {baseFieldName}: {baseType},");
+            }
+
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
             if (addVersionInfo)
             {
@@ -510,11 +614,62 @@ public class RustGenerator : ILangGenerator
 
             sb = sb.UnIndent();
             sb.AppendLine("}");
+
+            if (options.IsRequest)
+            {
+                AppendRequestImpls(sb, type, typeName, options.Op);
+            }
         }
 
         PostTypeFilter?.Invoke(sb, type);
             
         return lastNS;
+    }
+
+    /// <summary>
+    /// Generate the impls of the servicestack crate's client traits, which lets the
+    /// Response Type and HTTP Method of a Request DTO be resolved from the Request DTO, e.g:
+    ///
+    ///     impl IRequest for Hello {
+    ///         const NAME: &amp;'static str = "Hello";
+    ///         const VERB: &amp;'static str = "GET";
+    ///     }
+    ///     impl IReturn for Hello { type Response = HelloResponse; }
+    /// </summary>
+    public void AppendRequestImpls(StringBuilderWrapper sb, MetadataType type, string typeName, MetadataOperationType op)
+    {
+        if (op == null)
+            return;
+
+        usesLibrary = true;
+        var method = op.Method ?? op.Routes?.FirstOrDefault(x => !string.IsNullOrEmpty(x.Verbs))?.Verbs.LeftPart(',');
+        method = string.IsNullOrEmpty(method) || method == "ANY" ? "POST" : method.ToUpper();
+
+        sb.AppendLine();
+        sb.AppendLine($"impl IRequest for {typeName} {{");
+        sb = sb.Indent();
+        sb.AppendLine($"const NAME: &'static str = \"{type.Name.LeftPart('`')}\";");
+        sb.AppendLine($"const VERB: &'static str = \"{method}\";");
+        sb = sb.UnIndent();
+        sb.AppendLine("}");
+
+        var returnsVoid = op.ReturnsVoid == true || (op.ReturnType == null && op.Response == null);
+        if (returnsVoid)
+        {
+            sb.AppendLine($"impl IReturnVoid for {typeName} {{}}");
+        }
+        else
+        {
+            var responseType = op.ReturnType != null
+                ? Type(op.ReturnType.Name, op.ReturnType.GenericArgs)
+                : Type(op.Response.Name, op.Response.GenericArgs);
+
+            // A Request DTO can't return itself as it would recurse in its own impl
+            if (responseType != typeName)
+            {
+                sb.AppendLine($"impl IReturn for {typeName} {{ type Response = {responseType}; }}");
+            }
+        }
     }
 
     public virtual string GetPropertyType(MetadataPropertyType prop, out bool isNullable)
@@ -756,19 +911,27 @@ public class RustGenerator : ILangGenerator
                 var parts = type.Split('`');
                 if (parts.Length > 1)
                 {
-                    var args = StringBuilderCacheAlt.Allocate();
-                    foreach (var arg in genericArgs)
-                    {
-                        if (args.Length > 0)
-                            args.Append(", ");
-
-                        args.Append(GenericArg(arg));
-                    }
-                    var genericArgsList = StringBuilderCacheAlt.ReturnAndFree(args);
-
                     var typeName = TypeAlias(type);
 
-                    cooked = $"{typeName}<{genericArgsList}>";
+                    // Library Types that aren't generic in Rust, e.g. QueryDb<Booking> -> QueryDb
+                    if (IsLibraryType(parts[0]) && NonGenericLibraryTypes.Contains(parts[0]))
+                    {
+                        cooked = typeName;
+                    }
+                    else
+                    {
+                        var args = StringBuilderCacheAlt.Allocate();
+                        foreach (var arg in genericArgs)
+                        {
+                            if (args.Length > 0)
+                                args.Append(", ");
+
+                            args.Append(GenericArg(arg));
+                        }
+                        var genericArgsList = StringBuilderCacheAlt.ReturnAndFree(args);
+
+                        cooked = $"{typeName}<{genericArgsList}>";
+                    }
                 }
             }
 
@@ -809,6 +972,10 @@ public class RustGenerator : ILangGenerator
         var cooked = typeAlias ?? NameOnly(type);
         if (resolvingPropertyType && PolymorphicTypes.Contains(cooked))
             return TypeAliases["Object"];
+
+        // Types implemented in the servicestack crate are imported with `use servicestack::*`
+        if (IsLibraryType(cooked))
+            usesLibrary = true;
 
         return CookedTypeFilter?.Invoke(cooked) ?? cooked;
     }

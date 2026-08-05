@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-08-06 04:41:45
+Date: 2026-08-06 06:36:43
 Version: 10.09
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5000
@@ -18,19 +18,8 @@ IncludeTypes: ChatCompletion.*
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
 use std::collections::HashMap;
+use servicestack::*;
 
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-#[serde(default)]
-pub struct IReturn<T> {
-    #[serde(skip)]
-    pub _phantom: std::marker::PhantomData<T>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-#[serde(default)]
-pub struct IPost {
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(default)]
@@ -316,38 +305,12 @@ pub struct AiUsage {
     pub duration: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-#[serde(default)]
-pub struct ResponseError {
-    #[serde(rename = "errorCode")]
-    pub error_code: String,
-    #[serde(rename = "fieldName")]
-    pub field_name: String,
-    pub message: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub meta: Option<HashMap<String, String>>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-#[serde(default)]
-pub struct ResponseStatus {
-    #[serde(rename = "errorCode")]
-    pub error_code: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub message: Option<String>,
-    #[serde(rename = "stackTrace")]
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub stack_trace: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub errors: Option<Vec<ResponseError>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub meta: Option<HashMap<String, String>>,
-}
-
 /// Text content part
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(default)]
 pub struct AiTextContent {
+    #[serde(flatten)]
+    pub ai_content: AiContent,
     /// The text content.
     pub text: String,
 }
@@ -363,6 +326,8 @@ pub struct AiImageUrl {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(default)]
 pub struct AiImageContent {
+    #[serde(flatten)]
+    pub ai_content: AiContent,
     /// The image for this content.
     pub image_url: AiImageUrl,
 }
@@ -381,6 +346,8 @@ pub struct AiInputAudio {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(default)]
 pub struct AiAudioContent {
+    #[serde(flatten)]
+    pub ai_content: AiContent,
     /// The audio input for this content.
     pub input_audio: AiInputAudio,
 }
@@ -402,6 +369,8 @@ pub struct AiFile {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(default)]
 pub struct AiFileContent {
+    #[serde(flatten)]
+    pub ai_content: AiContent,
     /// The file input for this content.
     pub file: AiFile,
 }
@@ -417,6 +386,8 @@ pub struct AiAudioUrl {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(default)]
 pub struct AiAudioUrlContent {
+    #[serde(flatten)]
+    pub ai_content: AiContent,
     /// The audio for this content.
     pub audio_url: AiAudioUrl,
 }
@@ -544,3 +515,9 @@ pub struct ChatCompletion {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub stream: Option<bool>,
 }
+
+impl IRequest for ChatCompletion {
+    const NAME: &'static str = "ChatCompletion";
+    const VERB: &'static str = "POST";
+}
+impl IReturn for ChatCompletion { type Response = ChatResponse; }
