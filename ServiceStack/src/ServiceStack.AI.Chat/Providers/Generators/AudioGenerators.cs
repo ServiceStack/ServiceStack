@@ -153,7 +153,7 @@ public abstract class AudioGeneratorBase : GeneratorProvider
 
         var metadata = new JsonObject
         {
-            ["duration"] = (long)(DateTimeOffset.UtcNow - startedAt).TotalMilliseconds,
+            ["duration"] = ((long)(DateTimeOffset.UtcNow - startedAt).TotalMilliseconds).ToString(),
         };
         if (pricingInfo != null)
             metadata["pricing"] = pricingInfo;

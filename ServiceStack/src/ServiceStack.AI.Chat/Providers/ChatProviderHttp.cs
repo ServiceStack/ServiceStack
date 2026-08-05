@@ -132,7 +132,7 @@ public partial class OpenAiCompatibleProvider
             metadata = new JsonObject();
             response["metadata"] = metadata;
         }
-        metadata["duration"] = (long)(DateTimeOffset.UtcNow - startedAt).TotalMilliseconds;
+        metadata["duration"] = ((long)(DateTimeOffset.UtcNow - startedAt).TotalMilliseconds).ToString();
         if (chat.GetString("model") is { } model)
         {
             var pricing = ModelCost(model);

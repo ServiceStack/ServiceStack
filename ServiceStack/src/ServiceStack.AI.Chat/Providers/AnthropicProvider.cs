@@ -402,7 +402,7 @@ public class AnthropicProvider : OpenAiCompatibleProvider
     {
         var metadata = new JsonObject
         {
-            ["duration"] = (long)(DateTimeOffset.UtcNow - startedAt).TotalMilliseconds,
+            ["duration"] = ((long)(DateTimeOffset.UtcNow - startedAt).TotalMilliseconds).ToString(),
         };
         if (chat.GetString("model") is { } model && ModelCost(model) is { } cost
             && cost.GetDouble("input") is { } input && cost.GetDouble("output") is { } output)
