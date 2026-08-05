@@ -204,12 +204,34 @@ public class ZigGenerator : ILangGenerator
         return !prop.IsRequired();
     }
 
+    /// <summary>
+    /// Whether properties of abstract Types with sub types are emitted as std.json.Value.
+    /// Zig doesn't support sub classing so a property of an abstract Type can only ever
+    /// hold the abstract Type's own properties, losing the sub types data
+    /// </summary>
+    public static bool PolymorphicPropertiesAsAny { get; set; } = true;
+
+    /// <summary>
+    /// Abstract Types with sub types in the generated DTOs, resolved in Init()
+    /// </summary>
+    public HashSet<string> PolymorphicTypes { get; set; } = new();
+
+    private bool resolvingPropertyType;
+
     public void Init(MetadataTypes metadata)
     {
         var includeList = metadata.RemoveIgnoredTypes(Config);
         AllTypes = metadata.GetAllTypesOrdered();
         AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
         AllTypes = FilterTypes(AllTypes);
+
+        //Properties of abstract Types with sub types can only be represented as std.json.Value
+        PolymorphicTypes = !PolymorphicPropertiesAsAny
+            ? new HashSet<string>()
+            : AllTypes.Where(x => x.IsAbstract == true)
+                .Map(x => x.Name.LeftPart('`'))
+                .Where(name => AllTypes.Any(x => x.Inherits?.Name.LeftPart('`') == name))
+                .ToSet();
 
         //TypeScript doesn't support reusing same type name with different generic airity
         var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
@@ -504,7 +526,17 @@ public class ZigGenerator : ILangGenerator
 
     public virtual string GetPropertyType(MetadataPropertyType prop, out bool isNullable)
     {
-        var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
+        //Only properties reference abstract Types as std.json.Value, sub types still flatten them
+        resolvingPropertyType = true;
+        string propType;
+        try
+        {
+            propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
+        }
+        finally
+        {
+            resolvingPropertyType = false;
+        }
         isNullable = propType.EndsWith("?");
         if (isNullable)
         {
@@ -745,6 +777,9 @@ public class ZigGenerator : ILangGenerator
         TypeAliases.TryGetValue(type, out var typeAlias);
 
         var cooked = typeAlias ?? NameOnly(type);
+        if (resolvingPropertyType && PolymorphicTypes.Contains(cooked))
+            return TypeAliases["Object"];
+
         return CookedTypeFilter?.Invoke(cooked) ?? cooked;
     }
 
