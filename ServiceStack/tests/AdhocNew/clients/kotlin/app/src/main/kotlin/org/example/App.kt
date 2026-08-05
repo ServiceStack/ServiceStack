@@ -11,7 +11,7 @@ fun main() {
 
     // Create request
     val request = ChatCompletion().apply {
-        model = "gemini-flash-latest"
+        model = "openai/gpt-oss-120b"
         messages = arrayListOf(
             AiMessage().apply {
                 role = "user"

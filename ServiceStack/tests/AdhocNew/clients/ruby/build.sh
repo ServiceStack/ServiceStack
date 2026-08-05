@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -f dtos.rb && npx get-dtos ruby https://localhost:5001
+rm -f dtos.rb && npx get-dtos ruby http://localhost:5000
 
 # Check dtos.rb for syntax errors
 echo "Checking dtos.rb for syntax errors..."
@@ -13,7 +13,7 @@ else
     exit 1
 fi
 
-rm -f dtos.rb && npx get-dtos ruby https://localhost:5001 --include "ChatCompletion.*"
+rm -f dtos.rb && npx get-dtos ruby http://localhost:5000 --include "ChatCompletion.*"
 
 # Check dtos.rb for syntax errors
 echo "Checking dtos.rb for syntax errors..."

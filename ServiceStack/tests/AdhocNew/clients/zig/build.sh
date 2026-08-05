@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Generate the DTOs
-rm -f dtos.zig && npx get-dtos zig https://localhost:5001
+rm -f dtos.zig && npx get-dtos zig http://localhost:5000
 
 # Verify the generated dtos.zig has no syntax or build errors
 if [ -f dtos.zig ]; then
@@ -18,7 +18,7 @@ else
     exit 1
 fi
 
-rm -f dtos.zig && npx get-dtos zig https://localhost:5001 --include "ChatCompletion.*"
+rm -f dtos.zig && npx get-dtos zig http://localhost:5000 --include "ChatCompletion.*"
 
 # Verify the generated dtos.zig has no syntax or build errors
 if [ -f dtos.zig ]; then

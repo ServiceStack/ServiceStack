@@ -10,12 +10,12 @@ func main() {
     print("======================================\n")
 
     // Create a ServiceStack client
-    let client = JsonServiceClient(baseUrl: "https://localhost:5001")
+    let client = JsonServiceClient(baseUrl: "http://localhost:5000")
     client.bearerToken = "ak-87949de37e894627a9f6173154e7cafa"
 
     // Create a ChatCompletion request
     let request = ChatCompletion()
-    request.model = "gemini-flash-latest"
+    request.model = "openai/gpt-oss-120b"
 
     let message = AiMessage()
     message.role = "user"
@@ -30,7 +30,7 @@ func main() {
 
     // Make the request
     do {
-        let response: ChatResponse = try client.send(request)
+        let response: ChatCompletionResponse = try client.send(request)
         print("Response received:")
         Inspect.printDump(response)
     } catch {

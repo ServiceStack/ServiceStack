@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -f dtos.rs && npx get-dtos rust https://localhost:5001
+rm -f dtos.rs && npx get-dtos rust http://localhost:5000
 
 # Check dtos.rs for syntax errors
 echo "Checking dtos.rs for syntax errors..."
@@ -19,7 +19,7 @@ else
     exit 1
 fi
 
-rm -f dtos.rs && npx get-dtos rust https://localhost:5001 --include "ChatCompletion.*"
+rm -f dtos.rs && npx get-dtos rust http://localhost:5000 --include "ChatCompletion.*"
 
 # Build the library
 BUILD_OUTPUT=$(cargo build 2>&1)

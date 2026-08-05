@@ -7,11 +7,11 @@ import 'package:servicestack/inspect.dart';
 import 'package:my_dart/dtos.dart';
 
 Future<void> main() async {
-    var client = ClientFactory.api("https://localhost:5001");
+    var client = ClientFactory.api("http://localhost:5000");
     client.bearerToken = "ak-87949de37e894627a9f6173154e7cafa";
     
     var response = await client.send(ChatCompletion()
-        ..model = "gemini-flash-latest"
+        ..model = "openai/gpt-oss-120b"
         ..messages = [
             AiMessage()
                 ..role = "user"

@@ -4,11 +4,11 @@ Imports ServiceStack.AI
 
 Module Program
     Sub Main(args As String())
-        Dim client = New JsonApiClient("https://localhost:5001")
+        Dim client = New JsonApiClient("http://localhost:5000")
         client.BearerToken = "ak-87949de37e894627a9f6173154e7cafa"
 
         Dim api = client.Api(New ChatCompletion With {
-            .Model = "gemini-flash-latest",
+            .Model = "openai/gpt-oss-120b",
             .Messages = New List(Of AiMessage) From {
                 New AiMessage With {
                     .Role = "user",

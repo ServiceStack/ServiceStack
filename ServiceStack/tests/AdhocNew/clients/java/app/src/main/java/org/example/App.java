@@ -12,15 +12,15 @@ public class App {
         var client = new JsonServiceClient("http://localhost:5000");
         client.setBearerToken("ak-87949de37e894627a9f6173154e7cafa");
 
-        // Create request
+        // Create request4
         var request = new dtos.ChatCompletion();
-        request.setModel("gemini-flash-latest")
+        request.setModel("openai/gpt-oss-120b")
             .setMessages(Utils.createList(
                 new dtos.AiMessage()
                     .setRole("user")
                     .setContent(Utils.createList(
                         new dtos.AiTextContent()
-                            .setText("What's the capital of France?")
+                            .setText("Capital of France?")
                             .setType("text")
                     ))
                 ))

@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-10-14 12:39:42
-Version: 8.81
+Date: 2026-08-06 02:13:22
+Version: 10.09
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5000
 
@@ -9,7 +9,7 @@ Package: org.example
 //AddResponseStatus: False
 //AddImplicitVersion: 
 //AddDescriptionAsComments: True
-//IncludeTypes: 
+IncludeTypes: {AI}
 //ExcludeTypes: 
 //InitializeCollections: False
 //TreatTypesAsStrings: 
@@ -25,20 +25,6 @@ import net.servicestack.client.*
 import com.google.gson.annotations.*
 import com.google.gson.reflect.*
 
-
-@Route(Path="/hello/{Name}")
-open class Hello : IReturn<HelloResponse>, IGet
-{
-    open var name:String? = null
-    companion object { private val responseType = HelloResponse::class.java }
-    override fun getResponseType(): Any? = Hello.responseType
-}
-
-open class AdminData : IReturn<AdminDataResponse>, IGet
-{
-    companion object { private val responseType = AdminDataResponse::class.java }
-    override fun getResponseType(): Any? = AdminData.responseType
-}
 
 /**
 * Chat Completions API (OpenAI-Compatible)
@@ -239,243 +225,6 @@ open class ChatCompletion : IReturn<ChatResponse>, IPost
     override fun getResponseType(): Any? = ChatCompletion.responseType
 }
 
-/**
-* Sign In
-*/
-@Route(Path="/auth", Verbs="GET,POST")
-// @Route(Path="/auth/{provider}", Verbs="POST")
-@Api(Description="Sign In")
-@DataContract
-open class Authenticate : IReturn<AuthenticateResponse>, IPost
-{
-    /**
-    * AuthProvider, e.g. credentials
-    */
-    @DataMember(Order=1)
-    open var provider:String? = null
-
-    @DataMember(Order=2)
-    open var userName:String? = null
-
-    @DataMember(Order=3)
-    open var password:String? = null
-
-    @DataMember(Order=4)
-    open var rememberMe:Boolean? = null
-
-    @DataMember(Order=5)
-    open var accessToken:String? = null
-
-    @DataMember(Order=6)
-    open var accessTokenSecret:String? = null
-
-    @DataMember(Order=7)
-    open var returnUrl:String? = null
-
-    @DataMember(Order=8)
-    open var errorView:String? = null
-
-    @DataMember(Order=9)
-    open var meta:HashMap<String,String>? = null
-    companion object { private val responseType = AuthenticateResponse::class.java }
-    override fun getResponseType(): Any? = Authenticate.responseType
-}
-
-/**
-* Find Bookings
-*/
-@Route(Path="/bookings", Verbs="GET")
-// @Route(Path="/bookings/{Id}", Verbs="GET")
-open class QueryBookings : QueryDb<Booking>(), IReturn<QueryResponse<Booking>>
-{
-    open var id:Int? = null
-    companion object { private val responseType = object : TypeToken<QueryResponse<Booking>>(){}.type }
-    override fun getResponseType(): Any? = QueryBookings.responseType
-}
-
-/**
-* Find Coupons
-*/
-@Route(Path="/coupons", Verbs="GET")
-open class QueryCoupons : QueryDb<Coupon>(), IReturn<QueryResponse<Coupon>>
-{
-    open var id:String? = null
-    companion object { private val responseType = object : TypeToken<QueryResponse<Coupon>>(){}.type }
-    override fun getResponseType(): Any? = QueryCoupons.responseType
-}
-
-@ValidateRequest(Validator="IsAdmin")
-open class QueryUsers : QueryDb<User>(), IReturn<QueryResponse<User>>
-{
-    open var id:String? = null
-    companion object { private val responseType = object : TypeToken<QueryResponse<User>>(){}.type }
-    override fun getResponseType(): Any? = QueryUsers.responseType
-}
-
-/**
-* Create a new Booking
-*/
-@Route(Path="/bookings", Verbs="POST")
-@ValidateRequest(Validator="HasRole(`Employee`)")
-open class CreateBooking : IReturn<IdResponse>, ICreateDb<Booking>
-{
-    /**
-    * Name this Booking is for
-    */
-    @Validate(Validator="NotEmpty")
-    open var name:String? = null
-
-    open var roomType:RoomType? = null
-    @Validate(Validator="GreaterThan(0)")
-    open var roomNumber:Int? = null
-
-    @Validate(Validator="GreaterThan(0)")
-    open var cost:BigDecimal? = null
-
-    @Required()
-    open var bookingStartDate:Date? = null
-
-    open var bookingEndDate:Date? = null
-    open var notes:String? = null
-    open var couponId:String? = null
-    companion object { private val responseType = IdResponse::class.java }
-    override fun getResponseType(): Any? = CreateBooking.responseType
-}
-
-/**
-* Update an existing Booking
-*/
-@Route(Path="/booking/{Id}", Verbs="PATCH")
-@ValidateRequest(Validator="HasRole(`Employee`)")
-open class UpdateBooking : IReturn<IdResponse>, IPatchDb<Booking>
-{
-    open var id:Int? = null
-    open var name:String? = null
-    open var roomType:RoomType? = null
-    @Validate(Validator="GreaterThan(0)")
-    open var roomNumber:Int? = null
-
-    @Validate(Validator="GreaterThan(0)")
-    open var cost:BigDecimal? = null
-
-    open var bookingStartDate:Date? = null
-    open var bookingEndDate:Date? = null
-    open var notes:String? = null
-    open var couponId:String? = null
-    open var cancelled:Boolean? = null
-    companion object { private val responseType = IdResponse::class.java }
-    override fun getResponseType(): Any? = UpdateBooking.responseType
-}
-
-/**
-* Delete a Booking
-*/
-@Route(Path="/booking/{Id}", Verbs="DELETE")
-@ValidateRequest(Validator="HasRole(`Manager`)")
-open class DeleteBooking : IReturnVoid, IDeleteDb<Booking>
-{
-    open var id:Int? = null
-}
-
-@Route(Path="/coupons", Verbs="POST")
-@ValidateRequest(Validator="HasRole(`Employee`)")
-open class CreateCoupon : IReturn<IdResponse>, ICreateDb<Coupon>
-{
-    @Validate(Validator="NotEmpty")
-    open var id:String? = null
-
-    @Validate(Validator="NotEmpty")
-    open var description:String? = null
-
-    @Validate(Validator="GreaterThan(0)")
-    open var discount:Int? = null
-
-    @Validate(Validator="NotNull")
-    open var expiryDate:Date? = null
-    companion object { private val responseType = IdResponse::class.java }
-    override fun getResponseType(): Any? = CreateCoupon.responseType
-}
-
-@Route(Path="/coupons/{Id}", Verbs="PATCH")
-@ValidateRequest(Validator="HasRole(`Employee`)")
-open class UpdateCoupon : IReturn<IdResponse>, IPatchDb<Coupon>
-{
-    open var id:String? = null
-    @Validate(Validator="NotEmpty")
-    open var description:String? = null
-
-    @Validate(Validator="NotNull")
-    // @Validate(Validator="GreaterThan(0)")
-    open var discount:Int? = null
-
-    @Validate(Validator="NotNull")
-    open var expiryDate:Date? = null
-    companion object { private val responseType = IdResponse::class.java }
-    override fun getResponseType(): Any? = UpdateCoupon.responseType
-}
-
-/**
-* Delete a Coupon
-*/
-@Route(Path="/coupons/{Id}", Verbs="DELETE")
-@ValidateRequest(Validator="HasRole(`Manager`)")
-open class DeleteCoupon : IReturnVoid, IDeleteDb<Coupon>
-{
-    open var id:String? = null
-}
-
-@DataContract
-open class GetAnalyticsInfo : IReturn<GetAnalyticsInfoResponse>, IGet
-{
-    @DataMember(Order=1)
-    open var month:Date? = null
-
-    @DataMember(Order=2)
-    @SerializedName("type") open var Type:String? = null
-
-    @DataMember(Order=3)
-    open var op:String? = null
-
-    @DataMember(Order=4)
-    open var apiKey:String? = null
-
-    @DataMember(Order=5)
-    open var userId:String? = null
-
-    @DataMember(Order=6)
-    open var ip:String? = null
-    companion object { private val responseType = GetAnalyticsInfoResponse::class.java }
-    override fun getResponseType(): Any? = GetAnalyticsInfo.responseType
-}
-
-@DataContract
-open class GetAnalyticsReports : IReturn<GetAnalyticsReportsResponse>, IGet
-{
-    @DataMember(Order=1)
-    open var month:Date? = null
-
-    @DataMember(Order=2)
-    open var filter:String? = null
-
-    @DataMember(Order=3)
-    open var value:String? = null
-
-    @DataMember(Order=4)
-    open var force:Boolean? = null
-    companion object { private val responseType = GetAnalyticsReportsResponse::class.java }
-    override fun getResponseType(): Any? = GetAnalyticsReports.responseType
-}
-
-open class HelloResponse
-{
-    open var result:String? = null
-}
-
-open class AdminDataResponse
-{
-    open var pageStats:ArrayList<PageStats> = ArrayList<PageStats>()
-}
-
 @DataContract
 open class ChatResponse
 {
@@ -536,6 +285,27 @@ open class ChatResponse
     open var usage:AiUsage? = null
 
     /**
+    * The provider used for the chat completion.
+    */
+    @DataMember(Name="provider")
+    @SerializedName("provider")
+    open var provider:String? = null
+
+    /**
+    * Total cost of the completion in USD, accumulated across every request in the tool loop.
+    */
+    @DataMember(Name="cost")
+    @SerializedName("cost")
+    open var cost:Double? = null
+
+    /**
+    * The assistant and tool messages exchanged during the tool-execution loop, in order.
+    */
+    @DataMember(Name="tool_history")
+    @SerializedName("tool_history")
+    open var toolHistory:ArrayList<ChoiceMessage>? = null
+
+    /**
     * Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.
     */
     @DataMember(Name="metadata")
@@ -544,104 +314,6 @@ open class ChatResponse
 
     @DataMember(Name="responseStatus")
     @SerializedName("responseStatus")
-    open var responseStatus:ResponseStatus? = null
-}
-
-@DataContract
-open class AuthenticateResponse : IHasSessionId, IHasBearerToken
-{
-    @DataMember(Order=1)
-    open var userId:String? = null
-
-    @DataMember(Order=2)
-    open var sessionId:String? = null
-
-    @DataMember(Order=3)
-    open var userName:String? = null
-
-    @DataMember(Order=4)
-    open var displayName:String? = null
-
-    @DataMember(Order=5)
-    open var referrerUrl:String? = null
-
-    @DataMember(Order=6)
-    open var bearerToken:String? = null
-
-    @DataMember(Order=7)
-    open var refreshToken:String? = null
-
-    @DataMember(Order=8)
-    open var refreshTokenExpiry:Date? = null
-
-    @DataMember(Order=9)
-    open var profileUrl:String? = null
-
-    @DataMember(Order=10)
-    open var roles:ArrayList<String>? = null
-
-    @DataMember(Order=11)
-    open var permissions:ArrayList<String>? = null
-
-    @DataMember(Order=12)
-    open var authProvider:String? = null
-
-    @DataMember(Order=13)
-    open var responseStatus:ResponseStatus? = null
-
-    @DataMember(Order=14)
-    open var meta:HashMap<String,String>? = null
-}
-
-@DataContract
-open class QueryResponse<T>
-{
-    @DataMember(Order=1)
-    open var offset:Int? = null
-
-    @DataMember(Order=2)
-    open var total:Int? = null
-
-    @DataMember(Order=3)
-    open var results:ArrayList<Booking> = ArrayList<Booking>()
-
-    @DataMember(Order=4)
-    open var meta:HashMap<String,String>? = null
-
-    @DataMember(Order=5)
-    open var responseStatus:ResponseStatus? = null
-}
-
-@DataContract
-open class IdResponse
-{
-    @DataMember(Order=1)
-    open var id:String? = null
-
-    @DataMember(Order=2)
-    open var responseStatus:ResponseStatus? = null
-}
-
-@DataContract
-open class GetAnalyticsInfoResponse
-{
-    @DataMember(Order=1)
-    open var months:ArrayList<String>? = null
-
-    @DataMember(Order=2)
-    open var result:AnalyticsLogInfo? = null
-
-    @DataMember(Order=3)
-    open var responseStatus:ResponseStatus? = null
-}
-
-@DataContract
-open class GetAnalyticsReportsResponse
-{
-    @DataMember(Order=1)
-    open var result:AnalyticsReports? = null
-
-    @DataMember(Order=2)
     open var responseStatus:ResponseStatus? = null
 }
 
@@ -685,6 +357,34 @@ open class AiMessage
     @DataMember(Name="tool_call_id")
     @SerializedName("tool_call_id")
     open var toolCallId:String? = null
+
+    /**
+    * The reasoning an assistant message was generated with, normalized per provider when replayed as history.
+    */
+    @DataMember(Name="reasoning")
+    @SerializedName("reasoning")
+    open var reasoning:String? = null
+
+    /**
+    * The reasoning an assistant message was generated with, as emitted by Gemini and most OpenAI-compatible providers.
+    */
+    @DataMember(Name="reasoning_content")
+    @SerializedName("reasoning_content")
+    open var reasoningContent:String? = null
+
+    /**
+    * Unix timestamp (in milliseconds) the message was generated.
+    */
+    @DataMember(Name="timestamp")
+    @SerializedName("timestamp")
+    open var timestamp:Long? = null
+
+    /**
+    * Images attached to the message. Folded into `content` parts before sending to a provider.
+    */
+    @DataMember(Name="images")
+    @SerializedName("images")
+    open var images:ArrayList<AiContent>? = null
 }
 
 /**
@@ -714,8 +414,8 @@ open class AiResponseFormat
     /**
     * An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
     */
-    @DataMember(Name="response_format")
-    @SerializedName("response_format")
+    @DataMember(Name="type")
+    @SerializedName("type")
     open var Type:ResponseFormat? = null
 }
 
@@ -728,67 +428,13 @@ open class Tool
     @DataMember(Name="type")
     @SerializedName("type")
     open var Type:ToolType? = null
-}
 
-open class QueryDb<T> : QueryBase()
-{
-}
-
-/**
-* Booking Details
-*/
-open class Booking : AuditBase()
-{
-    open var id:Int? = null
-    open var name:String? = null
-    open var roomType:RoomType? = null
-    open var roomNumber:Int? = null
-    open var bookingStartDate:Date? = null
-    open var bookingEndDate:Date? = null
-    open var cost:BigDecimal? = null
-    @References(Type=Coupon::class)
-    open var couponId:String? = null
-
-    open var discount:Coupon? = null
-    open var notes:String? = null
-    open var cancelled:Boolean? = null
-    open var employee:User? = null
-}
-
-/**
-* Discount Coupons
-*/
-open class Coupon
-{
-    open var id:String? = null
-    open var description:String? = null
-    open var discount:Int? = null
-    open var expiryDate:Date? = null
-}
-
-open class User
-{
-    open var id:String? = null
-    open var userName:String? = null
-    open var firstName:String? = null
-    open var lastName:String? = null
-    open var displayName:String? = null
-    open var profileUrl:String? = null
-}
-
-enum class RoomType
-{
-    Single,
-    Double,
-    Queen,
-    Twin,
-    Suite,
-}
-
-open class PageStats
-{
-    open var label:String? = null
-    open var total:Int? = null
+    /**
+    * The function definition the model may call.
+    */
+    @DataMember(Name="function")
+    @SerializedName("function")
+    open var function:AiToolFunction? = null
 }
 
 @DataContract
@@ -814,6 +460,13 @@ open class Choice
     @DataMember(Name="message")
     @SerializedName("message")
     open var message:ChoiceMessage? = null
+
+    /**
+    * Log probability information for the choice.
+    */
+    @DataMember(Name="logprobs")
+    @SerializedName("logprobs")
+    open var logprobs:Logprobs? = null
 }
 
 /**
@@ -827,21 +480,21 @@ open class AiUsage
     */
     @DataMember(Name="completion_tokens")
     @SerializedName("completion_tokens")
-    open var completionTokens:Int? = null
+    open var completionTokens:Long? = null
 
     /**
     * Number of tokens in the prompt.
     */
     @DataMember(Name="prompt_tokens")
     @SerializedName("prompt_tokens")
-    open var promptTokens:Int? = null
+    open var promptTokens:Long? = null
 
     /**
     * Total number of tokens used in the request (prompt + completion).
     */
     @DataMember(Name="total_tokens")
     @SerializedName("total_tokens")
-    open var totalTokens:Int? = null
+    open var totalTokens:Long? = null
 
     /**
     * Breakdown of tokens used in a completion.
@@ -856,86 +509,115 @@ open class AiUsage
     @DataMember(Name="prompt_tokens_details")
     @SerializedName("prompt_tokens_details")
     open var promptTokensDetails:AiPromptUsage? = null
+
+    /**
+    * Seconds spent servicing the completion, including every request in the tool loop.
+    */
+    @DataMember(Name="duration")
+    @SerializedName("duration")
+    open var duration:Long? = null
 }
 
 @DataContract
-open class AnalyticsLogInfo
+open class ChoiceMessage
 {
-    @DataMember(Order=1)
-    open var id:Long? = null
+    /**
+    * The contents of the message.
+    */
+    @DataMember(Name="content")
+    @SerializedName("content")
+    open var content:String? = null
 
-    @DataMember(Order=2)
-    open var dateTime:Date? = null
+    /**
+    * The refusal message generated by the model.
+    */
+    @DataMember(Name="refusal")
+    @SerializedName("refusal")
+    open var refusal:String? = null
 
-    @DataMember(Order=3)
-    open var browser:String? = null
+    /**
+    * The reasoning process used by the model.
+    */
+    @DataMember(Name="reasoning")
+    @SerializedName("reasoning")
+    open var reasoning:String? = null
 
-    @DataMember(Order=4)
-    open var device:String? = null
+    /**
+    * The reasoning process used by the model, as emitted by Gemini and most OpenAI-compatible providers.
+    */
+    @DataMember(Name="reasoning_content")
+    @SerializedName("reasoning_content")
+    open var reasoningContent:String? = null
 
-    @DataMember(Order=5)
-    open var bot:String? = null
+    /**
+    * The reasoning process used by the model, as emitted by Anthropic.
+    */
+    @DataMember(Name="thinking")
+    @SerializedName("thinking")
+    open var thinking:String? = null
 
-    @DataMember(Order=6)
-    open var op:String? = null
+    /**
+    * The role of the author of this message.
+    */
+    @DataMember(Name="role")
+    @SerializedName("role")
+    open var role:String? = null
 
-    @DataMember(Order=7)
-    open var userId:String? = null
+    /**
+    * Unix timestamp (in milliseconds) the message was generated.
+    */
+    @DataMember(Name="timestamp")
+    @SerializedName("timestamp")
+    open var timestamp:Long? = null
 
-    @DataMember(Order=8)
-    open var userName:String? = null
+    /**
+    * The tool call this message is responding to, set on `tool` role messages in tool_history.
+    */
+    @DataMember(Name="tool_call_id")
+    @SerializedName("tool_call_id")
+    open var toolCallId:String? = null
 
-    @DataMember(Order=9)
-    open var apiKey:String? = null
+    /**
+    * Images generated by the model or produced by a tool call.
+    */
+    @DataMember(Name="images")
+    @SerializedName("images")
+    open var images:ArrayList<AiContent>? = null
 
-    @DataMember(Order=10)
-    open var ip:String? = null
-}
+    /**
+    * Audio generated by the model or produced by a tool call.
+    */
+    @DataMember(Name="audios")
+    @SerializedName("audios")
+    open var audios:ArrayList<AiContent>? = null
 
-@DataContract
-open class AnalyticsReports
-{
-    @DataMember(Order=1)
-    open var id:Long? = null
+    /**
+    * Files produced by a tool call.
+    */
+    @DataMember(Name="files")
+    @SerializedName("files")
+    open var files:ArrayList<AiContent>? = null
 
-    @DataMember(Order=2)
-    open var created:Date? = null
+    /**
+    * Annotations for the message, when applicable, as when using the web search tool.
+    */
+    @DataMember(Name="annotations")
+    @SerializedName("annotations")
+    open var annotations:ArrayList<ChoiceAnnotation>? = null
 
-    @DataMember(Order=3)
-    open var version:BigDecimal? = null
+    /**
+    * If the audio output modality is requested, this object contains data about the audio response from the model.
+    */
+    @DataMember(Name="audio")
+    @SerializedName("audio")
+    open var audio:ChoiceAudio? = null
 
-    @DataMember(Order=4)
-    open var apis:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=5)
-    open var users:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=6)
-    open var tags:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=7)
-    open var status:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=8)
-    open var days:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=9)
-    open var apiKeys:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=10)
-    open var ips:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=11)
-    open var browsers:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=12)
-    open var devices:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=13)
-    open var bots:HashMap<String,RequestSummary>? = null
-
-    @DataMember(Order=14)
-    open var durations:HashMap<String,Long>? = null
+    /**
+    * The tool calls generated by the model, such as function calls.
+    */
+    @DataMember(Name="tool_calls")
+    @SerializedName("tool_calls")
+    open var toolCalls:ArrayList<ToolCall>? = null
 }
 
 @DataContract
@@ -974,7 +656,7 @@ open class ToolCall
     */
     @DataMember(Name="function")
     @SerializedName("function")
-    open var function:String? = null
+    open var function:ToolFunction? = null
 }
 
 enum class ResponseFormat
@@ -989,105 +671,42 @@ enum class ToolType
 }
 
 @DataContract
-open class QueryBase
-{
-    @DataMember(Order=1)
-    open var skip:Int? = null
-
-    @DataMember(Order=2)
-    open var take:Int? = null
-
-    @DataMember(Order=3)
-    open var orderBy:String? = null
-
-    @DataMember(Order=4)
-    open var orderByDesc:String? = null
-
-    @DataMember(Order=5)
-    open var include:String? = null
-
-    @DataMember(Order=6)
-    open var fields:String? = null
-
-    @DataMember(Order=7)
-    open var meta:HashMap<String,String>? = null
-}
-
-@DataContract
-open class AuditBase
-{
-    @DataMember(Order=1)
-    open var createdDate:Date? = null
-
-    @DataMember(Order=2)
-    @Required()
-    open var createdBy:String? = null
-
-    @DataMember(Order=3)
-    open var modifiedDate:Date? = null
-
-    @DataMember(Order=4)
-    @Required()
-    open var modifiedBy:String? = null
-
-    @DataMember(Order=5)
-    open var deletedDate:Date? = null
-
-    @DataMember(Order=6)
-    open var deletedBy:String? = null
-}
-
-@DataContract
-open class ChoiceMessage
+open class AiToolFunction
 {
     /**
-    * The contents of the message.
+    * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
+    */
+    @DataMember(Name="name")
+    @SerializedName("name")
+    open var name:String? = null
+
+    /**
+    * A description of what the function does, used by the model to choose when and how to call the function.
+    */
+    @DataMember(Name="description")
+    @SerializedName("description")
+    open var description:String? = null
+
+    /**
+    * The parameters the functions accepts, described as a JSON Schema object. See the guide for examples, and the JSON Schema reference for documentation about the format.
+    */
+    @DataMember(Name="parameters")
+    @SerializedName("parameters")
+    open var parameters:HashMap<String,Object>? = null
+}
+
+/**
+* Log probability information for the choice.
+*/
+@DataContract
+open class Logprobs
+{
+    /**
+    * A list of message content tokens with log probability information.
     */
     @DataMember(Name="content")
     @SerializedName("content")
-    open var content:String? = null
-
-    /**
-    * The refusal message generated by the model.
-    */
-    @DataMember(Name="refusal")
-    @SerializedName("refusal")
-    open var refusal:String? = null
-
-    /**
-    * The reasoning process used by the model.
-    */
-    @DataMember(Name="reasoning")
-    @SerializedName("reasoning")
-    open var reasoning:String? = null
-
-    /**
-    * The role of the author of this message.
-    */
-    @DataMember(Name="role")
-    @SerializedName("role")
-    open var role:String? = null
-
-    /**
-    * Annotations for the message, when applicable, as when using the web search tool.
-    */
-    @DataMember(Name="annotations")
-    @SerializedName("annotations")
-    open var annotations:ArrayList<ChoiceAnnotation>? = null
-
-    /**
-    * If the audio output modality is requested, this object contains data about the audio response from the model.
-    */
-    @DataMember(Name="audio")
-    @SerializedName("audio")
-    open var audio:ChoiceAudio? = null
-
-    /**
-    * The tool calls generated by the model, such as function calls.
-    */
-    @DataMember(Name="tool_calls")
-    @SerializedName("tool_calls")
-    open var toolCalls:ArrayList<ToolCall>? = null
+    open var content:ArrayList<LogprobItem> = ArrayList<LogprobItem>()
 }
 
 /**
@@ -1101,28 +720,28 @@ open class AiCompletionUsage
     */
     @DataMember(Name="accepted_prediction_tokens")
     @SerializedName("accepted_prediction_tokens")
-    open var acceptedPredictionTokens:Int? = null
+    open var acceptedPredictionTokens:Long? = null
 
     /**
     * Audio input tokens generated by the model.
     */
     @DataMember(Name="audio_tokens")
     @SerializedName("audio_tokens")
-    open var audioTokens:Int? = null
+    open var audioTokens:Long? = null
 
     /**
     * Tokens generated by the model for reasoning.
     */
     @DataMember(Name="reasoning_tokens")
     @SerializedName("reasoning_tokens")
-    open var reasoningTokens:Int? = null
+    open var reasoningTokens:Long? = null
 
     /**
     * When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion.
     */
     @DataMember(Name="rejected_prediction_tokens")
     @SerializedName("rejected_prediction_tokens")
-    open var rejectedPredictionTokens:Int? = null
+    open var rejectedPredictionTokens:Long? = null
 }
 
 /**
@@ -1136,67 +755,77 @@ open class AiPromptUsage
     */
     @DataMember(Name="accepted_prediction_tokens")
     @SerializedName("accepted_prediction_tokens")
-    open var acceptedPredictionTokens:Int? = null
+    open var acceptedPredictionTokens:Long? = null
 
     /**
     * Audio input tokens present in the prompt.
     */
     @DataMember(Name="audio_tokens")
     @SerializedName("audio_tokens")
-    open var audioTokens:Int? = null
+    open var audioTokens:Long? = null
 
     /**
     * Cached tokens present in the prompt.
     */
     @DataMember(Name="cached_tokens")
     @SerializedName("cached_tokens")
-    open var cachedTokens:Int? = null
+    open var cachedTokens:Long? = null
 }
 
+/**
+* Annotations for the message, when applicable, as when using the web search tool.
+*/
 @DataContract
-open class RequestSummary
+open class ChoiceAnnotation
 {
-    @DataMember(Order=1)
-    open var name:String? = null
+    /**
+    * The type of the URL citation. Always url_citation.
+    */
+    @DataMember(Name="type")
+    @SerializedName("type")
+    open var Type:String? = null
 
-    @DataMember(Order=2)
-    open var totalRequests:Long? = null
+    /**
+    * A URL citation when using web search.
+    */
+    @DataMember(Name="url_citation")
+    @SerializedName("url_citation")
+    open var urlCitation:UrlCitation? = null
+}
 
-    @DataMember(Order=3)
-    open var totalRequestLength:Long? = null
+/**
+* If the audio output modality is requested, this object contains data about the audio response from the model.
+*/
+@DataContract
+open class ChoiceAudio
+{
+    /**
+    * Base64 encoded audio bytes generated by the model, in the format specified in the request.
+    */
+    @DataMember(Name="data")
+    @SerializedName("data")
+    open var Data:String? = null
 
-    @DataMember(Order=4)
-    open var minRequestLength:Long? = null
+    /**
+    * The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.
+    */
+    @DataMember(Name="expires_at")
+    @SerializedName("expires_at")
+    open var expiresAt:Long? = null
 
-    @DataMember(Order=5)
-    open var maxRequestLength:Long? = null
+    /**
+    * Unique identifier for this audio response.
+    */
+    @DataMember(Name="id")
+    @SerializedName("id")
+    open var id:String? = null
 
-    @DataMember(Order=6)
-    open var totalDuration:Double? = null
-
-    @DataMember(Order=7)
-    open var minDuration:Double? = null
-
-    @DataMember(Order=8)
-    open var maxDuration:Double? = null
-
-    @DataMember(Order=9)
-    open var status:HashMap<Int,Long>? = null
-
-    @DataMember(Order=10)
-    open var durations:HashMap<String,Long>? = null
-
-    @DataMember(Order=11)
-    open var apis:HashMap<String,Long>? = null
-
-    @DataMember(Order=12)
-    open var users:HashMap<String,Long>? = null
-
-    @DataMember(Order=13)
-    open var ips:HashMap<String,Long>? = null
-
-    @DataMember(Order=14)
-    open var apiKeys:HashMap<String,Long>? = null
+    /**
+    * Transcript of the audio generated by the model.
+    */
+    @DataMember(Name="transcript")
+    @SerializedName("transcript")
+    open var transcript:String? = null
 }
 
 /**
@@ -1256,59 +885,108 @@ open class AiFileContent : AiContent()
 }
 
 /**
-* Annotations for the message, when applicable, as when using the web search tool.
+* Generated audio content part, referenced by URL (emitted by tool calls and audio models)
 */
 @DataContract
-open class ChoiceAnnotation
+open class AiAudioUrlContent : AiContent()
 {
     /**
-    * The type of the URL citation. Always url_citation.
+    * The audio for this content.
     */
-    @DataMember(Name="type")
-    @SerializedName("type")
-    open var Type:String? = null
-
-    /**
-    * A URL citation when using web search.
-    */
-    @DataMember(Name="url_citation")
-    @SerializedName("url_citation")
-    open var urlCitation:UrlCitation? = null
+    @DataMember(Name="audio_url")
+    @SerializedName("audio_url")
+    open var audioUrl:AiAudioUrl? = null
 }
 
 /**
-* If the audio output modality is requested, this object contains data about the audio response from the model.
+* The function that the model called.
 */
 @DataContract
-open class ChoiceAudio
+open class ToolFunction
 {
     /**
-    * Base64 encoded audio bytes generated by the model, in the format specified in the request.
+    * The name of the function to call.
     */
-    @DataMember(Name="data")
-    @SerializedName("data")
-    open var Data:String? = null
+    @DataMember(Name="name")
+    @SerializedName("name")
+    open var name:String? = null
 
     /**
-    * The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.
+    * The arguments to call the function with, as generated by the model in JSON format. Note that the model does not always generate valid JSON, and may hallucinate parameters not defined by your function schema. Validate the arguments in your code before calling your function.
     */
-    @DataMember(Name="expires_at")
-    @SerializedName("expires_at")
-    open var expiresAt:Int? = null
+    @DataMember(Name="arguments")
+    @SerializedName("arguments")
+    open var arguments:String? = null
+}
+
+/**
+* A list of message content tokens with log probability information.
+*/
+@DataContract
+open class LogprobItem
+{
+    /**
+    * The token.
+    */
+    @DataMember(Name="token")
+    @SerializedName("token")
+    open var token:String? = null
 
     /**
-    * Unique identifier for this audio response.
+    * The log probability of this token, if it is within the top 20 most likely tokens. Otherwise, the value `-9999`.0 is used to signify that the token is very unlikely.
     */
-    @DataMember(Name="id")
-    @SerializedName("id")
-    open var id:String? = null
+    @DataMember(Name="logprob")
+    @SerializedName("logprob")
+    open var logprob:Double? = null
 
     /**
-    * Transcript of the audio generated by the model.
+    * A list of integers representing the UTF-8 bytes representation of the token. Useful in instances where characters are represented by multiple tokens and their byte representations must be combined to generate the correct text representation. Can be `null` if there is no bytes representation for the token.
     */
-    @DataMember(Name="transcript")
-    @SerializedName("transcript")
-    open var transcript:String? = null
+    @DataMember(Name="bytes")
+    @SerializedName("bytes")
+    open var bytes:ByteArray = ByteArray(0)
+
+    /**
+    * List of the most likely tokens and their log probability, at this token position. In rare cases, there may be fewer than the number of requested `top_logprobs` returned.
+    */
+    @DataMember(Name="top_logprobs")
+    @SerializedName("top_logprobs")
+    open var topLogprobs:ArrayList<LogprobItem> = ArrayList<LogprobItem>()
+}
+
+/**
+* Annotations for the message, when applicable, as when using the web search tool.
+*/
+@DataContract
+open class UrlCitation
+{
+    /**
+    * The index of the last character of the URL citation in the message.
+    */
+    @DataMember(Name="end_index")
+    @SerializedName("end_index")
+    open var endIndex:Int? = null
+
+    /**
+    * The index of the first character of the URL citation in the message.
+    */
+    @DataMember(Name="start_index")
+    @SerializedName("start_index")
+    open var startIndex:Int? = null
+
+    /**
+    * The title of the web resource.
+    */
+    @DataMember(Name="title")
+    @SerializedName("title")
+    open var title:String? = null
+
+    /**
+    * The URL of the web resource.
+    */
+    @DataMember(Name="url")
+    @SerializedName("url")
+    open var url:String? = null
 }
 
 @DataContract
@@ -1371,35 +1049,11 @@ open class AiFile
     open var fileId:String? = null
 }
 
-/**
-* Annotations for the message, when applicable, as when using the web search tool.
-*/
 @DataContract
-open class UrlCitation
+open class AiAudioUrl
 {
     /**
-    * The index of the last character of the URL citation in the message.
-    */
-    @DataMember(Name="end_index")
-    @SerializedName("end_index")
-    open var endIndex:Int? = null
-
-    /**
-    * The index of the first character of the URL citation in the message.
-    */
-    @DataMember(Name="start_index")
-    @SerializedName("start_index")
-    open var startIndex:Int? = null
-
-    /**
-    * The title of the web resource.
-    */
-    @DataMember(Name="title")
-    @SerializedName("title")
-    open var title:String? = null
-
-    /**
-    * The URL of the web resource.
+    * Either a URL of the audio or the base64 encoded audio data.
     */
     @DataMember(Name="url")
     @SerializedName("url")

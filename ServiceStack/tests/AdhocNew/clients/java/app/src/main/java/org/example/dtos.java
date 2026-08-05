@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-10-14 12:13:33
-Version: 8.81
+Date: 2026-08-06 02:13:20
+Version: 10.09
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5000
 
@@ -12,7 +12,7 @@ Package: org.example
 //AddResponseStatus: False
 //AddDescriptionAsComments: True
 //AddImplicitVersion: 
-//IncludeTypes: 
+IncludeTypes: {AI}
 //ExcludeTypes: 
 //TreatTypesAsStrings: 
 //DefaultImports: java.math.*,java.util.*,java.io.InputStream,net.servicestack.client.*,com.google.gson.annotations.*,com.google.gson.reflect.*
@@ -29,24 +29,6 @@ import com.google.gson.reflect.*;
 
 public class dtos
 {
-
-    @Route(Path="/hello/{Name}")
-    public static class Hello implements IReturn<HelloResponse>, IGet
-    {
-        public String name = null;
-        
-        public String getName() { return name; }
-        public Hello setName(String value) { this.name = value; return this; }
-        private static Object responseType = HelloResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    public static class AdminData implements IReturn<AdminDataResponse>, IGet
-    {
-        
-        private static Object responseType = AdminDataResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
 
     /**
     * Chat Completions API (OpenAI-Compatible)
@@ -302,361 +284,6 @@ public class dtos
         public Object getResponseType() { return responseType; }
     }
 
-    /**
-    * Sign In
-    */
-    @Route(Path="/auth", Verbs="GET,POST")
-    // @Route(Path="/auth/{provider}", Verbs="POST")
-    @Api(Description="Sign In")
-    @DataContract
-    public static class Authenticate implements IReturn<AuthenticateResponse>, IPost
-    {
-        /**
-        * AuthProvider, e.g. credentials
-        */
-        @DataMember(Order=1)
-        public String provider = null;
-
-        @DataMember(Order=2)
-        public String userName = null;
-
-        @DataMember(Order=3)
-        public String password = null;
-
-        @DataMember(Order=4)
-        public Boolean rememberMe = null;
-
-        @DataMember(Order=5)
-        public String accessToken = null;
-
-        @DataMember(Order=6)
-        public String accessTokenSecret = null;
-
-        @DataMember(Order=7)
-        public String returnUrl = null;
-
-        @DataMember(Order=8)
-        public String errorView = null;
-
-        @DataMember(Order=9)
-        public HashMap<String,String> meta = null;
-        
-        public String getProvider() { return provider; }
-        public Authenticate setProvider(String value) { this.provider = value; return this; }
-        public String getUserName() { return userName; }
-        public Authenticate setUserName(String value) { this.userName = value; return this; }
-        public String getPassword() { return password; }
-        public Authenticate setPassword(String value) { this.password = value; return this; }
-        public Boolean isRememberMe() { return rememberMe; }
-        public Authenticate setRememberMe(Boolean value) { this.rememberMe = value; return this; }
-        public String getAccessToken() { return accessToken; }
-        public Authenticate setAccessToken(String value) { this.accessToken = value; return this; }
-        public String getAccessTokenSecret() { return accessTokenSecret; }
-        public Authenticate setAccessTokenSecret(String value) { this.accessTokenSecret = value; return this; }
-        public String getReturnUrl() { return returnUrl; }
-        public Authenticate setReturnUrl(String value) { this.returnUrl = value; return this; }
-        public String getErrorView() { return errorView; }
-        public Authenticate setErrorView(String value) { this.errorView = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public Authenticate setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-        private static Object responseType = AuthenticateResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    /**
-    * Find Bookings
-    */
-    @Route(Path="/bookings", Verbs="GET")
-    // @Route(Path="/bookings/{Id}", Verbs="GET")
-    public static class QueryBookings extends QueryDb<Booking> implements IReturn<QueryResponse<Booking>>
-    {
-        public Integer id = null;
-        
-        public Integer getId() { return id; }
-        public QueryBookings setId(Integer value) { this.id = value; return this; }
-        private static Object responseType = new TypeToken<QueryResponse<Booking>>(){}.getType();
-        public Object getResponseType() { return responseType; }
-    }
-
-    /**
-    * Find Coupons
-    */
-    @Route(Path="/coupons", Verbs="GET")
-    public static class QueryCoupons extends QueryDb<Coupon> implements IReturn<QueryResponse<Coupon>>
-    {
-        public String id = null;
-        
-        public String getId() { return id; }
-        public QueryCoupons setId(String value) { this.id = value; return this; }
-        private static Object responseType = new TypeToken<QueryResponse<Coupon>>(){}.getType();
-        public Object getResponseType() { return responseType; }
-    }
-
-    @ValidateRequest(Validator="IsAdmin")
-    public static class QueryUsers extends QueryDb<User> implements IReturn<QueryResponse<User>>
-    {
-        public String id = null;
-        
-        public String getId() { return id; }
-        public QueryUsers setId(String value) { this.id = value; return this; }
-        private static Object responseType = new TypeToken<QueryResponse<User>>(){}.getType();
-        public Object getResponseType() { return responseType; }
-    }
-
-    /**
-    * Create a new Booking
-    */
-    @Route(Path="/bookings", Verbs="POST")
-    @ValidateRequest(Validator="HasRole(`Employee`)")
-    public static class CreateBooking implements IReturn<IdResponse>, ICreateDb<Booking>
-    {
-        /**
-        * Name this Booking is for
-        */
-        @Validate(Validator="NotEmpty")
-        public String name = null;
-
-        public RoomType roomType = null;
-        @Validate(Validator="GreaterThan(0)")
-        public Integer roomNumber = null;
-
-        @Validate(Validator="GreaterThan(0)")
-        public BigDecimal cost = null;
-
-        @Required()
-        public Date bookingStartDate = null;
-
-        public Date bookingEndDate = null;
-        public String notes = null;
-        public String couponId = null;
-        
-        public String getName() { return name; }
-        public CreateBooking setName(String value) { this.name = value; return this; }
-        public RoomType getRoomType() { return roomType; }
-        public CreateBooking setRoomType(RoomType value) { this.roomType = value; return this; }
-        public Integer getRoomNumber() { return roomNumber; }
-        public CreateBooking setRoomNumber(Integer value) { this.roomNumber = value; return this; }
-        public BigDecimal getCost() { return cost; }
-        public CreateBooking setCost(BigDecimal value) { this.cost = value; return this; }
-        public Date getBookingStartDate() { return bookingStartDate; }
-        public CreateBooking setBookingStartDate(Date value) { this.bookingStartDate = value; return this; }
-        public Date getBookingEndDate() { return bookingEndDate; }
-        public CreateBooking setBookingEndDate(Date value) { this.bookingEndDate = value; return this; }
-        public String getNotes() { return notes; }
-        public CreateBooking setNotes(String value) { this.notes = value; return this; }
-        public String getCouponId() { return couponId; }
-        public CreateBooking setCouponId(String value) { this.couponId = value; return this; }
-        private static Object responseType = IdResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    /**
-    * Update an existing Booking
-    */
-    @Route(Path="/booking/{Id}", Verbs="PATCH")
-    @ValidateRequest(Validator="HasRole(`Employee`)")
-    public static class UpdateBooking implements IReturn<IdResponse>, IPatchDb<Booking>
-    {
-        public Integer id = null;
-        public String name = null;
-        public RoomType roomType = null;
-        @Validate(Validator="GreaterThan(0)")
-        public Integer roomNumber = null;
-
-        @Validate(Validator="GreaterThan(0)")
-        public BigDecimal cost = null;
-
-        public Date bookingStartDate = null;
-        public Date bookingEndDate = null;
-        public String notes = null;
-        public String couponId = null;
-        public Boolean cancelled = null;
-        
-        public Integer getId() { return id; }
-        public UpdateBooking setId(Integer value) { this.id = value; return this; }
-        public String getName() { return name; }
-        public UpdateBooking setName(String value) { this.name = value; return this; }
-        public RoomType getRoomType() { return roomType; }
-        public UpdateBooking setRoomType(RoomType value) { this.roomType = value; return this; }
-        public Integer getRoomNumber() { return roomNumber; }
-        public UpdateBooking setRoomNumber(Integer value) { this.roomNumber = value; return this; }
-        public BigDecimal getCost() { return cost; }
-        public UpdateBooking setCost(BigDecimal value) { this.cost = value; return this; }
-        public Date getBookingStartDate() { return bookingStartDate; }
-        public UpdateBooking setBookingStartDate(Date value) { this.bookingStartDate = value; return this; }
-        public Date getBookingEndDate() { return bookingEndDate; }
-        public UpdateBooking setBookingEndDate(Date value) { this.bookingEndDate = value; return this; }
-        public String getNotes() { return notes; }
-        public UpdateBooking setNotes(String value) { this.notes = value; return this; }
-        public String getCouponId() { return couponId; }
-        public UpdateBooking setCouponId(String value) { this.couponId = value; return this; }
-        public Boolean isCancelled() { return cancelled; }
-        public UpdateBooking setCancelled(Boolean value) { this.cancelled = value; return this; }
-        private static Object responseType = IdResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    /**
-    * Delete a Booking
-    */
-    @Route(Path="/booking/{Id}", Verbs="DELETE")
-    @ValidateRequest(Validator="HasRole(`Manager`)")
-    public static class DeleteBooking implements IReturnVoid, IDeleteDb<Booking>
-    {
-        public Integer id = null;
-        
-        public Integer getId() { return id; }
-        public DeleteBooking setId(Integer value) { this.id = value; return this; }
-    }
-
-    @Route(Path="/coupons", Verbs="POST")
-    @ValidateRequest(Validator="HasRole(`Employee`)")
-    public static class CreateCoupon implements IReturn<IdResponse>, ICreateDb<Coupon>
-    {
-        @Validate(Validator="NotEmpty")
-        public String id = null;
-
-        @Validate(Validator="NotEmpty")
-        public String description = null;
-
-        @Validate(Validator="GreaterThan(0)")
-        public Integer discount = null;
-
-        @Validate(Validator="NotNull")
-        public Date expiryDate = null;
-        
-        public String getId() { return id; }
-        public CreateCoupon setId(String value) { this.id = value; return this; }
-        public String getDescription() { return description; }
-        public CreateCoupon setDescription(String value) { this.description = value; return this; }
-        public Integer getDiscount() { return discount; }
-        public CreateCoupon setDiscount(Integer value) { this.discount = value; return this; }
-        public Date getExpiryDate() { return expiryDate; }
-        public CreateCoupon setExpiryDate(Date value) { this.expiryDate = value; return this; }
-        private static Object responseType = IdResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    @Route(Path="/coupons/{Id}", Verbs="PATCH")
-    @ValidateRequest(Validator="HasRole(`Employee`)")
-    public static class UpdateCoupon implements IReturn<IdResponse>, IPatchDb<Coupon>
-    {
-        public String id = null;
-        @Validate(Validator="NotEmpty")
-        public String description = null;
-
-        @Validate(Validator="NotNull")
-        // @Validate(Validator="GreaterThan(0)")
-        public Integer discount = null;
-
-        @Validate(Validator="NotNull")
-        public Date expiryDate = null;
-        
-        public String getId() { return id; }
-        public UpdateCoupon setId(String value) { this.id = value; return this; }
-        public String getDescription() { return description; }
-        public UpdateCoupon setDescription(String value) { this.description = value; return this; }
-        public Integer getDiscount() { return discount; }
-        public UpdateCoupon setDiscount(Integer value) { this.discount = value; return this; }
-        public Date getExpiryDate() { return expiryDate; }
-        public UpdateCoupon setExpiryDate(Date value) { this.expiryDate = value; return this; }
-        private static Object responseType = IdResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    /**
-    * Delete a Coupon
-    */
-    @Route(Path="/coupons/{Id}", Verbs="DELETE")
-    @ValidateRequest(Validator="HasRole(`Manager`)")
-    public static class DeleteCoupon implements IReturnVoid, IDeleteDb<Coupon>
-    {
-        public String id = null;
-        
-        public String getId() { return id; }
-        public DeleteCoupon setId(String value) { this.id = value; return this; }
-    }
-
-    @DataContract
-    public static class GetAnalyticsInfo implements IReturn<GetAnalyticsInfoResponse>, IGet
-    {
-        @DataMember(Order=1)
-        public Date month = null;
-
-        @DataMember(Order=2)
-        public String type = null;
-
-        @DataMember(Order=3)
-        public String op = null;
-
-        @DataMember(Order=4)
-        public String apiKey = null;
-
-        @DataMember(Order=5)
-        public String userId = null;
-
-        @DataMember(Order=6)
-        public String ip = null;
-        
-        public Date getMonth() { return month; }
-        public GetAnalyticsInfo setMonth(Date value) { this.month = value; return this; }
-        public String getType() { return type; }
-        public GetAnalyticsInfo setType(String value) { this.type = value; return this; }
-        public String getOp() { return op; }
-        public GetAnalyticsInfo setOp(String value) { this.op = value; return this; }
-        public String getApiKey() { return apiKey; }
-        public GetAnalyticsInfo setApiKey(String value) { this.apiKey = value; return this; }
-        public String getUserId() { return userId; }
-        public GetAnalyticsInfo setUserId(String value) { this.userId = value; return this; }
-        public String getIp() { return ip; }
-        public GetAnalyticsInfo setIp(String value) { this.ip = value; return this; }
-        private static Object responseType = GetAnalyticsInfoResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    @DataContract
-    public static class GetAnalyticsReports implements IReturn<GetAnalyticsReportsResponse>, IGet
-    {
-        @DataMember(Order=1)
-        public Date month = null;
-
-        @DataMember(Order=2)
-        public String filter = null;
-
-        @DataMember(Order=3)
-        public String value = null;
-
-        @DataMember(Order=4)
-        public Boolean force = null;
-        
-        public Date getMonth() { return month; }
-        public GetAnalyticsReports setMonth(Date value) { this.month = value; return this; }
-        public String getFilter() { return filter; }
-        public GetAnalyticsReports setFilter(String value) { this.filter = value; return this; }
-        public String getValue() { return value; }
-        public GetAnalyticsReports setValue(String value) { this.value = value; return this; }
-        public Boolean isForce() { return force; }
-        public GetAnalyticsReports setForce(Boolean value) { this.force = value; return this; }
-        private static Object responseType = GetAnalyticsReportsResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    public static class HelloResponse
-    {
-        public String result = null;
-        
-        public String getResult() { return result; }
-        public HelloResponse setResult(String value) { this.result = value; return this; }
-    }
-
-    public static class AdminDataResponse
-    {
-        public ArrayList<PageStats> pageStats = new ArrayList<PageStats>();
-        
-        public ArrayList<PageStats> getPageStats() { return pageStats; }
-        public AdminDataResponse setPageStats(ArrayList<PageStats> value) { this.pageStats = value; return this; }
-    }
-
     @DataContract
     public static class ChatResponse
     {
@@ -717,6 +344,27 @@ public class dtos
         public AiUsage usage = null;
 
         /**
+        * The provider used for the chat completion.
+        */
+        @DataMember(Name="provider")
+        @SerializedName("provider")
+        public String provider = null;
+
+        /**
+        * Total cost of the completion in USD, accumulated across every request in the tool loop.
+        */
+        @DataMember(Name="cost")
+        @SerializedName("cost")
+        public Double cost = null;
+
+        /**
+        * The assistant and tool messages exchanged during the tool-execution loop, in order.
+        */
+        @DataMember(Name="tool_history")
+        @SerializedName("tool_history")
+        public ArrayList<ChoiceMessage> toolHistory = null;
+
+        /**
         * Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.
         */
         @DataMember(Name="metadata")
@@ -743,165 +391,16 @@ public class dtos
         public ChatResponse setServiceTier(String value) { this.serviceTier = value; return this; }
         public AiUsage getUsage() { return usage; }
         public ChatResponse setUsage(AiUsage value) { this.usage = value; return this; }
+        public String getProvider() { return provider; }
+        public ChatResponse setProvider(String value) { this.provider = value; return this; }
+        public Double getCost() { return cost; }
+        public ChatResponse setCost(Double value) { this.cost = value; return this; }
+        public ArrayList<ChoiceMessage> getToolHistory() { return toolHistory; }
+        public ChatResponse setToolHistory(ArrayList<ChoiceMessage> value) { this.toolHistory = value; return this; }
         public HashMap<String,String> getMetadata() { return metadata; }
         public ChatResponse setMetadata(HashMap<String,String> value) { this.metadata = value; return this; }
         public ResponseStatus getResponseStatus() { return responseStatus; }
         public ChatResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    @DataContract
-    public static class AuthenticateResponse implements IHasSessionId, IHasBearerToken
-    {
-        @DataMember(Order=1)
-        public String userId = null;
-
-        @DataMember(Order=2)
-        public String sessionId = null;
-
-        @DataMember(Order=3)
-        public String userName = null;
-
-        @DataMember(Order=4)
-        public String displayName = null;
-
-        @DataMember(Order=5)
-        public String referrerUrl = null;
-
-        @DataMember(Order=6)
-        public String bearerToken = null;
-
-        @DataMember(Order=7)
-        public String refreshToken = null;
-
-        @DataMember(Order=8)
-        public Date refreshTokenExpiry = null;
-
-        @DataMember(Order=9)
-        public String profileUrl = null;
-
-        @DataMember(Order=10)
-        public ArrayList<String> roles = null;
-
-        @DataMember(Order=11)
-        public ArrayList<String> permissions = null;
-
-        @DataMember(Order=12)
-        public String authProvider = null;
-
-        @DataMember(Order=13)
-        public ResponseStatus responseStatus = null;
-
-        @DataMember(Order=14)
-        public HashMap<String,String> meta = null;
-        
-        public String getUserId() { return userId; }
-        public AuthenticateResponse setUserId(String value) { this.userId = value; return this; }
-        public String getSessionId() { return sessionId; }
-        public AuthenticateResponse setSessionId(String value) { this.sessionId = value; return this; }
-        public String getUserName() { return userName; }
-        public AuthenticateResponse setUserName(String value) { this.userName = value; return this; }
-        public String getDisplayName() { return displayName; }
-        public AuthenticateResponse setDisplayName(String value) { this.displayName = value; return this; }
-        public String getReferrerUrl() { return referrerUrl; }
-        public AuthenticateResponse setReferrerUrl(String value) { this.referrerUrl = value; return this; }
-        public String getBearerToken() { return bearerToken; }
-        public AuthenticateResponse setBearerToken(String value) { this.bearerToken = value; return this; }
-        public String getRefreshToken() { return refreshToken; }
-        public AuthenticateResponse setRefreshToken(String value) { this.refreshToken = value; return this; }
-        public Date getRefreshTokenExpiry() { return refreshTokenExpiry; }
-        public AuthenticateResponse setRefreshTokenExpiry(Date value) { this.refreshTokenExpiry = value; return this; }
-        public String getProfileUrl() { return profileUrl; }
-        public AuthenticateResponse setProfileUrl(String value) { this.profileUrl = value; return this; }
-        public ArrayList<String> getRoles() { return roles; }
-        public AuthenticateResponse setRoles(ArrayList<String> value) { this.roles = value; return this; }
-        public ArrayList<String> getPermissions() { return permissions; }
-        public AuthenticateResponse setPermissions(ArrayList<String> value) { this.permissions = value; return this; }
-        public String getAuthProvider() { return authProvider; }
-        public AuthenticateResponse setAuthProvider(String value) { this.authProvider = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public AuthenticateResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public AuthenticateResponse setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-    }
-
-    @DataContract
-    public static class QueryResponse<T>
-    {
-        @DataMember(Order=1)
-        public Integer offset = null;
-
-        @DataMember(Order=2)
-        public Integer total = null;
-
-        @DataMember(Order=3)
-        public ArrayList<Booking> results = new ArrayList<Booking>();
-
-        @DataMember(Order=4)
-        public HashMap<String,String> meta = null;
-
-        @DataMember(Order=5)
-        public ResponseStatus responseStatus = null;
-        
-        public Integer getOffset() { return offset; }
-        public QueryResponse<T> setOffset(Integer value) { this.offset = value; return this; }
-        public Integer getTotal() { return total; }
-        public QueryResponse<T> setTotal(Integer value) { this.total = value; return this; }
-        public ArrayList<Booking> getResults() { return results; }
-        public QueryResponse<T> setResults(ArrayList<Booking> value) { this.results = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public QueryResponse<T> setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public QueryResponse<T> setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    @DataContract
-    public static class IdResponse
-    {
-        @DataMember(Order=1)
-        public String id = null;
-
-        @DataMember(Order=2)
-        public ResponseStatus responseStatus = null;
-        
-        public String getId() { return id; }
-        public IdResponse setId(String value) { this.id = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public IdResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    @DataContract
-    public static class GetAnalyticsInfoResponse
-    {
-        @DataMember(Order=1)
-        public ArrayList<String> months = null;
-
-        @DataMember(Order=2)
-        public AnalyticsLogInfo result = null;
-
-        @DataMember(Order=3)
-        public ResponseStatus responseStatus = null;
-        
-        public ArrayList<String> getMonths() { return months; }
-        public GetAnalyticsInfoResponse setMonths(ArrayList<String> value) { this.months = value; return this; }
-        public AnalyticsLogInfo getResult() { return result; }
-        public GetAnalyticsInfoResponse setResult(AnalyticsLogInfo value) { this.result = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public GetAnalyticsInfoResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    @DataContract
-    public static class GetAnalyticsReportsResponse
-    {
-        @DataMember(Order=1)
-        public AnalyticsReports result = null;
-
-        @DataMember(Order=2)
-        public ResponseStatus responseStatus = null;
-        
-        public AnalyticsReports getResult() { return result; }
-        public GetAnalyticsReportsResponse setResult(AnalyticsReports value) { this.result = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public GetAnalyticsReportsResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
 
     /**
@@ -944,6 +443,34 @@ public class dtos
         @DataMember(Name="tool_call_id")
         @SerializedName("tool_call_id")
         public String toolCallId = null;
+
+        /**
+        * The reasoning an assistant message was generated with, normalized per provider when replayed as history.
+        */
+        @DataMember(Name="reasoning")
+        @SerializedName("reasoning")
+        public String reasoning = null;
+
+        /**
+        * The reasoning an assistant message was generated with, as emitted by Gemini and most OpenAI-compatible providers.
+        */
+        @DataMember(Name="reasoning_content")
+        @SerializedName("reasoning_content")
+        public String reasoningContent = null;
+
+        /**
+        * Unix timestamp (in milliseconds) the message was generated.
+        */
+        @DataMember(Name="timestamp")
+        @SerializedName("timestamp")
+        public Long timestamp = null;
+
+        /**
+        * Images attached to the message. Folded into `content` parts before sending to a provider.
+        */
+        @DataMember(Name="images")
+        @SerializedName("images")
+        public ArrayList<AiContent> images = null;
         
         public ArrayList<AiContent> getContent() { return content; }
         public AiMessage setContent(ArrayList<AiContent> value) { this.content = value; return this; }
@@ -955,6 +482,14 @@ public class dtos
         public AiMessage setToolCalls(ArrayList<ToolCall> value) { this.toolCalls = value; return this; }
         public String getToolCallId() { return toolCallId; }
         public AiMessage setToolCallId(String value) { this.toolCallId = value; return this; }
+        public String getReasoning() { return reasoning; }
+        public AiMessage setReasoning(String value) { this.reasoning = value; return this; }
+        public String getReasoningContent() { return reasoningContent; }
+        public AiMessage setReasoningContent(String value) { this.reasoningContent = value; return this; }
+        public Long getTimestamp() { return timestamp; }
+        public AiMessage setTimestamp(Long value) { this.timestamp = value; return this; }
+        public ArrayList<AiContent> getImages() { return images; }
+        public AiMessage setImages(ArrayList<AiContent> value) { this.images = value; return this; }
     }
 
     /**
@@ -989,8 +524,8 @@ public class dtos
         /**
         * An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
         */
-        @DataMember(Name="response_format")
-        @SerializedName("response_format")
+        @DataMember(Name="type")
+        @SerializedName("type")
         public ResponseFormat type = null;
         
         public ResponseFormat getType() { return type; }
@@ -1006,123 +541,18 @@ public class dtos
         @DataMember(Name="type")
         @SerializedName("type")
         public ToolType type = null;
+
+        /**
+        * The function definition the model may call.
+        */
+        @DataMember(Name="function")
+        @SerializedName("function")
+        public AiToolFunction function = null;
         
         public ToolType getType() { return type; }
         public Tool setType(ToolType value) { this.type = value; return this; }
-    }
-
-    public static class QueryDb<T> extends QueryBase
-    {
-        
-    }
-
-    /**
-    * Booking Details
-    */
-    public static class Booking extends AuditBase
-    {
-        public Integer id = null;
-        public String name = null;
-        public RoomType roomType = null;
-        public Integer roomNumber = null;
-        public Date bookingStartDate = null;
-        public Date bookingEndDate = null;
-        public BigDecimal cost = null;
-        @References(Type=Coupon.class)
-        public String couponId = null;
-
-        public Coupon discount = null;
-        public String notes = null;
-        public Boolean cancelled = null;
-        public User employee = null;
-        
-        public Integer getId() { return id; }
-        public Booking setId(Integer value) { this.id = value; return this; }
-        public String getName() { return name; }
-        public Booking setName(String value) { this.name = value; return this; }
-        public RoomType getRoomType() { return roomType; }
-        public Booking setRoomType(RoomType value) { this.roomType = value; return this; }
-        public Integer getRoomNumber() { return roomNumber; }
-        public Booking setRoomNumber(Integer value) { this.roomNumber = value; return this; }
-        public Date getBookingStartDate() { return bookingStartDate; }
-        public Booking setBookingStartDate(Date value) { this.bookingStartDate = value; return this; }
-        public Date getBookingEndDate() { return bookingEndDate; }
-        public Booking setBookingEndDate(Date value) { this.bookingEndDate = value; return this; }
-        public BigDecimal getCost() { return cost; }
-        public Booking setCost(BigDecimal value) { this.cost = value; return this; }
-        public String getCouponId() { return couponId; }
-        public Booking setCouponId(String value) { this.couponId = value; return this; }
-        public Coupon getDiscount() { return discount; }
-        public Booking setDiscount(Coupon value) { this.discount = value; return this; }
-        public String getNotes() { return notes; }
-        public Booking setNotes(String value) { this.notes = value; return this; }
-        public Boolean isCancelled() { return cancelled; }
-        public Booking setCancelled(Boolean value) { this.cancelled = value; return this; }
-        public User getEmployee() { return employee; }
-        public Booking setEmployee(User value) { this.employee = value; return this; }
-    }
-
-    /**
-    * Discount Coupons
-    */
-    public static class Coupon
-    {
-        public String id = null;
-        public String description = null;
-        public Integer discount = null;
-        public Date expiryDate = null;
-        
-        public String getId() { return id; }
-        public Coupon setId(String value) { this.id = value; return this; }
-        public String getDescription() { return description; }
-        public Coupon setDescription(String value) { this.description = value; return this; }
-        public Integer getDiscount() { return discount; }
-        public Coupon setDiscount(Integer value) { this.discount = value; return this; }
-        public Date getExpiryDate() { return expiryDate; }
-        public Coupon setExpiryDate(Date value) { this.expiryDate = value; return this; }
-    }
-
-    public static class User
-    {
-        public String id = null;
-        public String userName = null;
-        public String firstName = null;
-        public String lastName = null;
-        public String displayName = null;
-        public String profileUrl = null;
-        
-        public String getId() { return id; }
-        public User setId(String value) { this.id = value; return this; }
-        public String getUserName() { return userName; }
-        public User setUserName(String value) { this.userName = value; return this; }
-        public String getFirstName() { return firstName; }
-        public User setFirstName(String value) { this.firstName = value; return this; }
-        public String getLastName() { return lastName; }
-        public User setLastName(String value) { this.lastName = value; return this; }
-        public String getDisplayName() { return displayName; }
-        public User setDisplayName(String value) { this.displayName = value; return this; }
-        public String getProfileUrl() { return profileUrl; }
-        public User setProfileUrl(String value) { this.profileUrl = value; return this; }
-    }
-
-    public static enum RoomType
-    {
-        Single,
-        Double,
-        Queen,
-        Twin,
-        Suite;
-    }
-
-    public static class PageStats
-    {
-        public String label = null;
-        public Integer total = null;
-        
-        public String getLabel() { return label; }
-        public PageStats setLabel(String value) { this.label = value; return this; }
-        public Integer getTotal() { return total; }
-        public PageStats setTotal(Integer value) { this.total = value; return this; }
+        public AiToolFunction getFunction() { return function; }
+        public Tool setFunction(AiToolFunction value) { this.function = value; return this; }
     }
 
     @DataContract
@@ -1148,6 +578,13 @@ public class dtos
         @DataMember(Name="message")
         @SerializedName("message")
         public ChoiceMessage message = null;
+
+        /**
+        * Log probability information for the choice.
+        */
+        @DataMember(Name="logprobs")
+        @SerializedName("logprobs")
+        public Logprobs logprobs = null;
         
         public String getFinishReason() { return finishReason; }
         public Choice setFinishReason(String value) { this.finishReason = value; return this; }
@@ -1155,6 +592,8 @@ public class dtos
         public Choice setIndex(Integer value) { this.index = value; return this; }
         public ChoiceMessage getMessage() { return message; }
         public Choice setMessage(ChoiceMessage value) { this.message = value; return this; }
+        public Logprobs getLogprobs() { return logprobs; }
+        public Choice setLogprobs(Logprobs value) { this.logprobs = value; return this; }
     }
 
     /**
@@ -1168,21 +607,21 @@ public class dtos
         */
         @DataMember(Name="completion_tokens")
         @SerializedName("completion_tokens")
-        public Integer completionTokens = null;
+        public Long completionTokens = null;
 
         /**
         * Number of tokens in the prompt.
         */
         @DataMember(Name="prompt_tokens")
         @SerializedName("prompt_tokens")
-        public Integer promptTokens = null;
+        public Long promptTokens = null;
 
         /**
         * Total number of tokens used in the request (prompt + completion).
         */
         @DataMember(Name="total_tokens")
         @SerializedName("total_tokens")
-        public Integer totalTokens = null;
+        public Long totalTokens = null;
 
         /**
         * Breakdown of tokens used in a completion.
@@ -1197,147 +636,157 @@ public class dtos
         @DataMember(Name="prompt_tokens_details")
         @SerializedName("prompt_tokens_details")
         public AiPromptUsage promptTokensDetails = null;
+
+        /**
+        * Seconds spent servicing the completion, including every request in the tool loop.
+        */
+        @DataMember(Name="duration")
+        @SerializedName("duration")
+        public Long duration = null;
         
-        public Integer getCompletionTokens() { return completionTokens; }
-        public AiUsage setCompletionTokens(Integer value) { this.completionTokens = value; return this; }
-        public Integer getPromptTokens() { return promptTokens; }
-        public AiUsage setPromptTokens(Integer value) { this.promptTokens = value; return this; }
-        public Integer getTotalTokens() { return totalTokens; }
-        public AiUsage setTotalTokens(Integer value) { this.totalTokens = value; return this; }
+        public Long getCompletionTokens() { return completionTokens; }
+        public AiUsage setCompletionTokens(Long value) { this.completionTokens = value; return this; }
+        public Long getPromptTokens() { return promptTokens; }
+        public AiUsage setPromptTokens(Long value) { this.promptTokens = value; return this; }
+        public Long getTotalTokens() { return totalTokens; }
+        public AiUsage setTotalTokens(Long value) { this.totalTokens = value; return this; }
         public AiCompletionUsage getCompletionTokensDetails() { return completionTokensDetails; }
         public AiUsage setCompletionTokensDetails(AiCompletionUsage value) { this.completionTokensDetails = value; return this; }
         public AiPromptUsage getPromptTokensDetails() { return promptTokensDetails; }
         public AiUsage setPromptTokensDetails(AiPromptUsage value) { this.promptTokensDetails = value; return this; }
+        public Long getDuration() { return duration; }
+        public AiUsage setDuration(Long value) { this.duration = value; return this; }
     }
 
     @DataContract
-    public static class AnalyticsLogInfo
+    public static class ChoiceMessage
     {
-        @DataMember(Order=1)
-        public Long id = null;
+        /**
+        * The contents of the message.
+        */
+        @DataMember(Name="content")
+        @SerializedName("content")
+        public String content = null;
 
-        @DataMember(Order=2)
-        public Date dateTime = null;
+        /**
+        * The refusal message generated by the model.
+        */
+        @DataMember(Name="refusal")
+        @SerializedName("refusal")
+        public String refusal = null;
 
-        @DataMember(Order=3)
-        public String browser = null;
+        /**
+        * The reasoning process used by the model.
+        */
+        @DataMember(Name="reasoning")
+        @SerializedName("reasoning")
+        public String reasoning = null;
 
-        @DataMember(Order=4)
-        public String device = null;
+        /**
+        * The reasoning process used by the model, as emitted by Gemini and most OpenAI-compatible providers.
+        */
+        @DataMember(Name="reasoning_content")
+        @SerializedName("reasoning_content")
+        public String reasoningContent = null;
 
-        @DataMember(Order=5)
-        public String bot = null;
+        /**
+        * The reasoning process used by the model, as emitted by Anthropic.
+        */
+        @DataMember(Name="thinking")
+        @SerializedName("thinking")
+        public String thinking = null;
 
-        @DataMember(Order=6)
-        public String op = null;
+        /**
+        * The role of the author of this message.
+        */
+        @DataMember(Name="role")
+        @SerializedName("role")
+        public String role = null;
 
-        @DataMember(Order=7)
-        public String userId = null;
+        /**
+        * Unix timestamp (in milliseconds) the message was generated.
+        */
+        @DataMember(Name="timestamp")
+        @SerializedName("timestamp")
+        public Long timestamp = null;
 
-        @DataMember(Order=8)
-        public String userName = null;
+        /**
+        * The tool call this message is responding to, set on `tool` role messages in tool_history.
+        */
+        @DataMember(Name="tool_call_id")
+        @SerializedName("tool_call_id")
+        public String toolCallId = null;
 
-        @DataMember(Order=9)
-        public String apiKey = null;
+        /**
+        * Images generated by the model or produced by a tool call.
+        */
+        @DataMember(Name="images")
+        @SerializedName("images")
+        public ArrayList<AiContent> images = null;
 
-        @DataMember(Order=10)
-        public String ip = null;
+        /**
+        * Audio generated by the model or produced by a tool call.
+        */
+        @DataMember(Name="audios")
+        @SerializedName("audios")
+        public ArrayList<AiContent> audios = null;
+
+        /**
+        * Files produced by a tool call.
+        */
+        @DataMember(Name="files")
+        @SerializedName("files")
+        public ArrayList<AiContent> files = null;
+
+        /**
+        * Annotations for the message, when applicable, as when using the web search tool.
+        */
+        @DataMember(Name="annotations")
+        @SerializedName("annotations")
+        public ArrayList<ChoiceAnnotation> annotations = null;
+
+        /**
+        * If the audio output modality is requested, this object contains data about the audio response from the model.
+        */
+        @DataMember(Name="audio")
+        @SerializedName("audio")
+        public ChoiceAudio audio = null;
+
+        /**
+        * The tool calls generated by the model, such as function calls.
+        */
+        @DataMember(Name="tool_calls")
+        @SerializedName("tool_calls")
+        public ArrayList<ToolCall> toolCalls = null;
         
-        public Long getId() { return id; }
-        public AnalyticsLogInfo setId(Long value) { this.id = value; return this; }
-        public Date getDateTime() { return dateTime; }
-        public AnalyticsLogInfo setDateTime(Date value) { this.dateTime = value; return this; }
-        public String getBrowser() { return browser; }
-        public AnalyticsLogInfo setBrowser(String value) { this.browser = value; return this; }
-        public String getDevice() { return device; }
-        public AnalyticsLogInfo setDevice(String value) { this.device = value; return this; }
-        public String getBot() { return bot; }
-        public AnalyticsLogInfo setBot(String value) { this.bot = value; return this; }
-        public String getOp() { return op; }
-        public AnalyticsLogInfo setOp(String value) { this.op = value; return this; }
-        public String getUserId() { return userId; }
-        public AnalyticsLogInfo setUserId(String value) { this.userId = value; return this; }
-        public String getUserName() { return userName; }
-        public AnalyticsLogInfo setUserName(String value) { this.userName = value; return this; }
-        public String getApiKey() { return apiKey; }
-        public AnalyticsLogInfo setApiKey(String value) { this.apiKey = value; return this; }
-        public String getIp() { return ip; }
-        public AnalyticsLogInfo setIp(String value) { this.ip = value; return this; }
-    }
-
-    @DataContract
-    public static class AnalyticsReports
-    {
-        @DataMember(Order=1)
-        public Long id = null;
-
-        @DataMember(Order=2)
-        public Date created = null;
-
-        @DataMember(Order=3)
-        public BigDecimal version = null;
-
-        @DataMember(Order=4)
-        public HashMap<String,RequestSummary> apis = null;
-
-        @DataMember(Order=5)
-        public HashMap<String,RequestSummary> users = null;
-
-        @DataMember(Order=6)
-        public HashMap<String,RequestSummary> tags = null;
-
-        @DataMember(Order=7)
-        public HashMap<String,RequestSummary> status = null;
-
-        @DataMember(Order=8)
-        public HashMap<String,RequestSummary> days = null;
-
-        @DataMember(Order=9)
-        public HashMap<String,RequestSummary> apiKeys = null;
-
-        @DataMember(Order=10)
-        public HashMap<String,RequestSummary> ips = null;
-
-        @DataMember(Order=11)
-        public HashMap<String,RequestSummary> browsers = null;
-
-        @DataMember(Order=12)
-        public HashMap<String,RequestSummary> devices = null;
-
-        @DataMember(Order=13)
-        public HashMap<String,RequestSummary> bots = null;
-
-        @DataMember(Order=14)
-        public HashMap<String,Long> durations = null;
-        
-        public Long getId() { return id; }
-        public AnalyticsReports setId(Long value) { this.id = value; return this; }
-        public Date getCreated() { return created; }
-        public AnalyticsReports setCreated(Date value) { this.created = value; return this; }
-        public BigDecimal getVersion() { return version; }
-        public AnalyticsReports setVersion(BigDecimal value) { this.version = value; return this; }
-        public HashMap<String,RequestSummary> getApis() { return apis; }
-        public AnalyticsReports setApis(HashMap<String,RequestSummary> value) { this.apis = value; return this; }
-        public HashMap<String,RequestSummary> getUsers() { return users; }
-        public AnalyticsReports setUsers(HashMap<String,RequestSummary> value) { this.users = value; return this; }
-        public HashMap<String,RequestSummary> getTags() { return tags; }
-        public AnalyticsReports setTags(HashMap<String,RequestSummary> value) { this.tags = value; return this; }
-        public HashMap<String,RequestSummary> getStatus() { return status; }
-        public AnalyticsReports setStatus(HashMap<String,RequestSummary> value) { this.status = value; return this; }
-        public HashMap<String,RequestSummary> getDays() { return days; }
-        public AnalyticsReports setDays(HashMap<String,RequestSummary> value) { this.days = value; return this; }
-        public HashMap<String,RequestSummary> getApiKeys() { return apiKeys; }
-        public AnalyticsReports setApiKeys(HashMap<String,RequestSummary> value) { this.apiKeys = value; return this; }
-        public HashMap<String,RequestSummary> getIps() { return ips; }
-        public AnalyticsReports setIps(HashMap<String,RequestSummary> value) { this.ips = value; return this; }
-        public HashMap<String,RequestSummary> getBrowsers() { return browsers; }
-        public AnalyticsReports setBrowsers(HashMap<String,RequestSummary> value) { this.browsers = value; return this; }
-        public HashMap<String,RequestSummary> getDevices() { return devices; }
-        public AnalyticsReports setDevices(HashMap<String,RequestSummary> value) { this.devices = value; return this; }
-        public HashMap<String,RequestSummary> getBots() { return bots; }
-        public AnalyticsReports setBots(HashMap<String,RequestSummary> value) { this.bots = value; return this; }
-        public HashMap<String,Long> getDurations() { return durations; }
-        public AnalyticsReports setDurations(HashMap<String,Long> value) { this.durations = value; return this; }
+        public String getContent() { return content; }
+        public ChoiceMessage setContent(String value) { this.content = value; return this; }
+        public String getRefusal() { return refusal; }
+        public ChoiceMessage setRefusal(String value) { this.refusal = value; return this; }
+        public String getReasoning() { return reasoning; }
+        public ChoiceMessage setReasoning(String value) { this.reasoning = value; return this; }
+        public String getReasoningContent() { return reasoningContent; }
+        public ChoiceMessage setReasoningContent(String value) { this.reasoningContent = value; return this; }
+        public String getThinking() { return thinking; }
+        public ChoiceMessage setThinking(String value) { this.thinking = value; return this; }
+        public String getRole() { return role; }
+        public ChoiceMessage setRole(String value) { this.role = value; return this; }
+        public Long getTimestamp() { return timestamp; }
+        public ChoiceMessage setTimestamp(Long value) { this.timestamp = value; return this; }
+        public String getToolCallId() { return toolCallId; }
+        public ChoiceMessage setToolCallId(String value) { this.toolCallId = value; return this; }
+        public ArrayList<AiContent> getImages() { return images; }
+        public ChoiceMessage setImages(ArrayList<AiContent> value) { this.images = value; return this; }
+        public ArrayList<AiContent> getAudios() { return audios; }
+        public ChoiceMessage setAudios(ArrayList<AiContent> value) { this.audios = value; return this; }
+        public ArrayList<AiContent> getFiles() { return files; }
+        public ChoiceMessage setFiles(ArrayList<AiContent> value) { this.files = value; return this; }
+        public ArrayList<ChoiceAnnotation> getAnnotations() { return annotations; }
+        public ChoiceMessage setAnnotations(ArrayList<ChoiceAnnotation> value) { this.annotations = value; return this; }
+        public ChoiceAudio getAudio() { return audio; }
+        public ChoiceMessage setAudio(ChoiceAudio value) { this.audio = value; return this; }
+        public ArrayList<ToolCall> getToolCalls() { return toolCalls; }
+        public ChoiceMessage setToolCalls(ArrayList<ToolCall> value) { this.toolCalls = value; return this; }
     }
 
     @DataContract
@@ -1379,14 +828,14 @@ public class dtos
         */
         @DataMember(Name="function")
         @SerializedName("function")
-        public String function = null;
+        public ToolFunction function = null;
         
         public String getId() { return id; }
         public ToolCall setId(String value) { this.id = value; return this; }
         public String getType() { return type; }
         public ToolCall setType(String value) { this.type = value; return this; }
-        public String getFunction() { return function; }
-        public ToolCall setFunction(String value) { this.function = value; return this; }
+        public ToolFunction getFunction() { return function; }
+        public ToolCall setFunction(ToolFunction value) { this.function = value; return this; }
     }
 
     public static enum ResponseFormat
@@ -1401,148 +850,52 @@ public class dtos
     }
 
     @DataContract
-    public static class QueryBase
-    {
-        @DataMember(Order=1)
-        public Integer skip = null;
-
-        @DataMember(Order=2)
-        public Integer take = null;
-
-        @DataMember(Order=3)
-        public String orderBy = null;
-
-        @DataMember(Order=4)
-        public String orderByDesc = null;
-
-        @DataMember(Order=5)
-        public String include = null;
-
-        @DataMember(Order=6)
-        public String fields = null;
-
-        @DataMember(Order=7)
-        public HashMap<String,String> meta = null;
-        
-        public Integer getSkip() { return skip; }
-        public QueryBase setSkip(Integer value) { this.skip = value; return this; }
-        public Integer getTake() { return take; }
-        public QueryBase setTake(Integer value) { this.take = value; return this; }
-        public String getOrderBy() { return orderBy; }
-        public QueryBase setOrderBy(String value) { this.orderBy = value; return this; }
-        public String getOrderByDesc() { return orderByDesc; }
-        public QueryBase setOrderByDesc(String value) { this.orderByDesc = value; return this; }
-        public String getInclude() { return include; }
-        public QueryBase setInclude(String value) { this.include = value; return this; }
-        public String getFields() { return fields; }
-        public QueryBase setFields(String value) { this.fields = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public QueryBase setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-    }
-
-    @DataContract
-    public static class AuditBase
-    {
-        @DataMember(Order=1)
-        public Date createdDate = null;
-
-        @DataMember(Order=2)
-        @Required()
-        public String createdBy = null;
-
-        @DataMember(Order=3)
-        public Date modifiedDate = null;
-
-        @DataMember(Order=4)
-        @Required()
-        public String modifiedBy = null;
-
-        @DataMember(Order=5)
-        public Date deletedDate = null;
-
-        @DataMember(Order=6)
-        public String deletedBy = null;
-        
-        public Date getCreatedDate() { return createdDate; }
-        public AuditBase setCreatedDate(Date value) { this.createdDate = value; return this; }
-        public String getCreatedBy() { return createdBy; }
-        public AuditBase setCreatedBy(String value) { this.createdBy = value; return this; }
-        public Date getModifiedDate() { return modifiedDate; }
-        public AuditBase setModifiedDate(Date value) { this.modifiedDate = value; return this; }
-        public String getModifiedBy() { return modifiedBy; }
-        public AuditBase setModifiedBy(String value) { this.modifiedBy = value; return this; }
-        public Date getDeletedDate() { return deletedDate; }
-        public AuditBase setDeletedDate(Date value) { this.deletedDate = value; return this; }
-        public String getDeletedBy() { return deletedBy; }
-        public AuditBase setDeletedBy(String value) { this.deletedBy = value; return this; }
-    }
-
-    @DataContract
-    public static class ChoiceMessage
+    public static class AiToolFunction
     {
         /**
-        * The contents of the message.
+        * The name of the function to be called. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
+        */
+        @DataMember(Name="name")
+        @SerializedName("name")
+        public String name = null;
+
+        /**
+        * A description of what the function does, used by the model to choose when and how to call the function.
+        */
+        @DataMember(Name="description")
+        @SerializedName("description")
+        public String description = null;
+
+        /**
+        * The parameters the functions accepts, described as a JSON Schema object. See the guide for examples, and the JSON Schema reference for documentation about the format.
+        */
+        @DataMember(Name="parameters")
+        @SerializedName("parameters")
+        public HashMap<String,Object> parameters = null;
+        
+        public String getName() { return name; }
+        public AiToolFunction setName(String value) { this.name = value; return this; }
+        public String getDescription() { return description; }
+        public AiToolFunction setDescription(String value) { this.description = value; return this; }
+        public HashMap<String,Object> getParameters() { return parameters; }
+        public AiToolFunction setParameters(HashMap<String,Object> value) { this.parameters = value; return this; }
+    }
+
+    /**
+    * Log probability information for the choice.
+    */
+    @DataContract
+    public static class Logprobs
+    {
+        /**
+        * A list of message content tokens with log probability information.
         */
         @DataMember(Name="content")
         @SerializedName("content")
-        public String content = null;
-
-        /**
-        * The refusal message generated by the model.
-        */
-        @DataMember(Name="refusal")
-        @SerializedName("refusal")
-        public String refusal = null;
-
-        /**
-        * The reasoning process used by the model.
-        */
-        @DataMember(Name="reasoning")
-        @SerializedName("reasoning")
-        public String reasoning = null;
-
-        /**
-        * The role of the author of this message.
-        */
-        @DataMember(Name="role")
-        @SerializedName("role")
-        public String role = null;
-
-        /**
-        * Annotations for the message, when applicable, as when using the web search tool.
-        */
-        @DataMember(Name="annotations")
-        @SerializedName("annotations")
-        public ArrayList<ChoiceAnnotation> annotations = null;
-
-        /**
-        * If the audio output modality is requested, this object contains data about the audio response from the model.
-        */
-        @DataMember(Name="audio")
-        @SerializedName("audio")
-        public ChoiceAudio audio = null;
-
-        /**
-        * The tool calls generated by the model, such as function calls.
-        */
-        @DataMember(Name="tool_calls")
-        @SerializedName("tool_calls")
-        public ArrayList<ToolCall> toolCalls = null;
+        public ArrayList<LogprobItem> content = new ArrayList<LogprobItem>();
         
-        public String getContent() { return content; }
-        public ChoiceMessage setContent(String value) { this.content = value; return this; }
-        public String getRefusal() { return refusal; }
-        public ChoiceMessage setRefusal(String value) { this.refusal = value; return this; }
-        public String getReasoning() { return reasoning; }
-        public ChoiceMessage setReasoning(String value) { this.reasoning = value; return this; }
-        public String getRole() { return role; }
-        public ChoiceMessage setRole(String value) { this.role = value; return this; }
-        public ArrayList<ChoiceAnnotation> getAnnotations() { return annotations; }
-        public ChoiceMessage setAnnotations(ArrayList<ChoiceAnnotation> value) { this.annotations = value; return this; }
-        public ChoiceAudio getAudio() { return audio; }
-        public ChoiceMessage setAudio(ChoiceAudio value) { this.audio = value; return this; }
-        public ArrayList<ToolCall> getToolCalls() { return toolCalls; }
-        public ChoiceMessage setToolCalls(ArrayList<ToolCall> value) { this.toolCalls = value; return this; }
+        public ArrayList<LogprobItem> getContent() { return content; }
+        public Logprobs setContent(ArrayList<LogprobItem> value) { this.content = value; return this; }
     }
 
     /**
@@ -1556,37 +909,37 @@ public class dtos
         */
         @DataMember(Name="accepted_prediction_tokens")
         @SerializedName("accepted_prediction_tokens")
-        public Integer acceptedPredictionTokens = null;
+        public Long acceptedPredictionTokens = null;
 
         /**
         * Audio input tokens generated by the model.
         */
         @DataMember(Name="audio_tokens")
         @SerializedName("audio_tokens")
-        public Integer audioTokens = null;
+        public Long audioTokens = null;
 
         /**
         * Tokens generated by the model for reasoning.
         */
         @DataMember(Name="reasoning_tokens")
         @SerializedName("reasoning_tokens")
-        public Integer reasoningTokens = null;
+        public Long reasoningTokens = null;
 
         /**
         * When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion.
         */
         @DataMember(Name="rejected_prediction_tokens")
         @SerializedName("rejected_prediction_tokens")
-        public Integer rejectedPredictionTokens = null;
+        public Long rejectedPredictionTokens = null;
         
-        public Integer getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
-        public AiCompletionUsage setAcceptedPredictionTokens(Integer value) { this.acceptedPredictionTokens = value; return this; }
-        public Integer getAudioTokens() { return audioTokens; }
-        public AiCompletionUsage setAudioTokens(Integer value) { this.audioTokens = value; return this; }
-        public Integer getReasoningTokens() { return reasoningTokens; }
-        public AiCompletionUsage setReasoningTokens(Integer value) { this.reasoningTokens = value; return this; }
-        public Integer getRejectedPredictionTokens() { return rejectedPredictionTokens; }
-        public AiCompletionUsage setRejectedPredictionTokens(Integer value) { this.rejectedPredictionTokens = value; return this; }
+        public Long getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
+        public AiCompletionUsage setAcceptedPredictionTokens(Long value) { this.acceptedPredictionTokens = value; return this; }
+        public Long getAudioTokens() { return audioTokens; }
+        public AiCompletionUsage setAudioTokens(Long value) { this.audioTokens = value; return this; }
+        public Long getReasoningTokens() { return reasoningTokens; }
+        public AiCompletionUsage setReasoningTokens(Long value) { this.reasoningTokens = value; return this; }
+        public Long getRejectedPredictionTokens() { return rejectedPredictionTokens; }
+        public AiCompletionUsage setRejectedPredictionTokens(Long value) { this.rejectedPredictionTokens = value; return this; }
     }
 
     /**
@@ -1600,103 +953,98 @@ public class dtos
         */
         @DataMember(Name="accepted_prediction_tokens")
         @SerializedName("accepted_prediction_tokens")
-        public Integer acceptedPredictionTokens = null;
+        public Long acceptedPredictionTokens = null;
 
         /**
         * Audio input tokens present in the prompt.
         */
         @DataMember(Name="audio_tokens")
         @SerializedName("audio_tokens")
-        public Integer audioTokens = null;
+        public Long audioTokens = null;
 
         /**
         * Cached tokens present in the prompt.
         */
         @DataMember(Name="cached_tokens")
         @SerializedName("cached_tokens")
-        public Integer cachedTokens = null;
+        public Long cachedTokens = null;
         
-        public Integer getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
-        public AiPromptUsage setAcceptedPredictionTokens(Integer value) { this.acceptedPredictionTokens = value; return this; }
-        public Integer getAudioTokens() { return audioTokens; }
-        public AiPromptUsage setAudioTokens(Integer value) { this.audioTokens = value; return this; }
-        public Integer getCachedTokens() { return cachedTokens; }
-        public AiPromptUsage setCachedTokens(Integer value) { this.cachedTokens = value; return this; }
+        public Long getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
+        public AiPromptUsage setAcceptedPredictionTokens(Long value) { this.acceptedPredictionTokens = value; return this; }
+        public Long getAudioTokens() { return audioTokens; }
+        public AiPromptUsage setAudioTokens(Long value) { this.audioTokens = value; return this; }
+        public Long getCachedTokens() { return cachedTokens; }
+        public AiPromptUsage setCachedTokens(Long value) { this.cachedTokens = value; return this; }
     }
 
+    /**
+    * Annotations for the message, when applicable, as when using the web search tool.
+    */
     @DataContract
-    public static class RequestSummary
+    public static class ChoiceAnnotation
     {
-        @DataMember(Order=1)
-        public String name = null;
+        /**
+        * The type of the URL citation. Always url_citation.
+        */
+        @DataMember(Name="type")
+        @SerializedName("type")
+        public String type = null;
 
-        @DataMember(Order=2)
-        public Long totalRequests = null;
-
-        @DataMember(Order=3)
-        public Long totalRequestLength = null;
-
-        @DataMember(Order=4)
-        public Long minRequestLength = null;
-
-        @DataMember(Order=5)
-        public Long maxRequestLength = null;
-
-        @DataMember(Order=6)
-        public Double totalDuration = null;
-
-        @DataMember(Order=7)
-        public Double minDuration = null;
-
-        @DataMember(Order=8)
-        public Double maxDuration = null;
-
-        @DataMember(Order=9)
-        public HashMap<Integer,Long> status = null;
-
-        @DataMember(Order=10)
-        public HashMap<String,Long> durations = null;
-
-        @DataMember(Order=11)
-        public HashMap<String,Long> apis = null;
-
-        @DataMember(Order=12)
-        public HashMap<String,Long> users = null;
-
-        @DataMember(Order=13)
-        public HashMap<String,Long> ips = null;
-
-        @DataMember(Order=14)
-        public HashMap<String,Long> apiKeys = null;
+        /**
+        * A URL citation when using web search.
+        */
+        @DataMember(Name="url_citation")
+        @SerializedName("url_citation")
+        public UrlCitation urlCitation = null;
         
-        public String getName() { return name; }
-        public RequestSummary setName(String value) { this.name = value; return this; }
-        public Long getTotalRequests() { return totalRequests; }
-        public RequestSummary setTotalRequests(Long value) { this.totalRequests = value; return this; }
-        public Long getTotalRequestLength() { return totalRequestLength; }
-        public RequestSummary setTotalRequestLength(Long value) { this.totalRequestLength = value; return this; }
-        public Long getMinRequestLength() { return minRequestLength; }
-        public RequestSummary setMinRequestLength(Long value) { this.minRequestLength = value; return this; }
-        public Long getMaxRequestLength() { return maxRequestLength; }
-        public RequestSummary setMaxRequestLength(Long value) { this.maxRequestLength = value; return this; }
-        public Double getTotalDuration() { return totalDuration; }
-        public RequestSummary setTotalDuration(Double value) { this.totalDuration = value; return this; }
-        public Double getMinDuration() { return minDuration; }
-        public RequestSummary setMinDuration(Double value) { this.minDuration = value; return this; }
-        public Double getMaxDuration() { return maxDuration; }
-        public RequestSummary setMaxDuration(Double value) { this.maxDuration = value; return this; }
-        public HashMap<Integer,Long> getStatus() { return status; }
-        public RequestSummary setStatus(HashMap<Integer,Long> value) { this.status = value; return this; }
-        public HashMap<String,Long> getDurations() { return durations; }
-        public RequestSummary setDurations(HashMap<String,Long> value) { this.durations = value; return this; }
-        public HashMap<String,Long> getApis() { return apis; }
-        public RequestSummary setApis(HashMap<String,Long> value) { this.apis = value; return this; }
-        public HashMap<String,Long> getUsers() { return users; }
-        public RequestSummary setUsers(HashMap<String,Long> value) { this.users = value; return this; }
-        public HashMap<String,Long> getIps() { return ips; }
-        public RequestSummary setIps(HashMap<String,Long> value) { this.ips = value; return this; }
-        public HashMap<String,Long> getApiKeys() { return apiKeys; }
-        public RequestSummary setApiKeys(HashMap<String,Long> value) { this.apiKeys = value; return this; }
+        public String getType() { return type; }
+        public ChoiceAnnotation setType(String value) { this.type = value; return this; }
+        public UrlCitation getUrlCitation() { return urlCitation; }
+        public ChoiceAnnotation setUrlCitation(UrlCitation value) { this.urlCitation = value; return this; }
+    }
+
+    /**
+    * If the audio output modality is requested, this object contains data about the audio response from the model.
+    */
+    @DataContract
+    public static class ChoiceAudio
+    {
+        /**
+        * Base64 encoded audio bytes generated by the model, in the format specified in the request.
+        */
+        @DataMember(Name="data")
+        @SerializedName("data")
+        public String data = null;
+
+        /**
+        * The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.
+        */
+        @DataMember(Name="expires_at")
+        @SerializedName("expires_at")
+        public Long expiresAt = null;
+
+        /**
+        * Unique identifier for this audio response.
+        */
+        @DataMember(Name="id")
+        @SerializedName("id")
+        public String id = null;
+
+        /**
+        * Transcript of the audio generated by the model.
+        */
+        @DataMember(Name="transcript")
+        @SerializedName("transcript")
+        public String transcript = null;
+        
+        public String getData() { return data; }
+        public ChoiceAudio setData(String value) { this.data = value; return this; }
+        public Long getExpiresAt() { return expiresAt; }
+        public ChoiceAudio setExpiresAt(Long value) { this.expiresAt = value; return this; }
+        public String getId() { return id; }
+        public ChoiceAudio setId(String value) { this.id = value; return this; }
+        public String getTranscript() { return transcript; }
+        public ChoiceAudio setTranscript(String value) { this.transcript = value; return this; }
     }
 
     /**
@@ -1768,73 +1116,134 @@ public class dtos
     }
 
     /**
-    * Annotations for the message, when applicable, as when using the web search tool.
+    * Generated audio content part, referenced by URL (emitted by tool calls and audio models)
     */
     @DataContract
-    public static class ChoiceAnnotation
+    public static class AiAudioUrlContent extends AiContent
     {
         /**
-        * The type of the URL citation. Always url_citation.
+        * The audio for this content.
         */
-        @DataMember(Name="type")
-        @SerializedName("type")
-        public String type = null;
-
-        /**
-        * A URL citation when using web search.
-        */
-        @DataMember(Name="url_citation")
-        @SerializedName("url_citation")
-        public UrlCitation urlCitation = null;
+        @DataMember(Name="audio_url")
+        @SerializedName("audio_url")
+        public AiAudioUrl audioUrl = null;
         
-        public String getType() { return type; }
-        public ChoiceAnnotation setType(String value) { this.type = value; return this; }
-        public UrlCitation getUrlCitation() { return urlCitation; }
-        public ChoiceAnnotation setUrlCitation(UrlCitation value) { this.urlCitation = value; return this; }
+        public AiAudioUrl getAudioUrl() { return audioUrl; }
+        public AiAudioUrlContent setAudioUrl(AiAudioUrl value) { this.audioUrl = value; return this; }
     }
 
     /**
-    * If the audio output modality is requested, this object contains data about the audio response from the model.
+    * The function that the model called.
     */
     @DataContract
-    public static class ChoiceAudio
+    public static class ToolFunction
     {
         /**
-        * Base64 encoded audio bytes generated by the model, in the format specified in the request.
+        * The name of the function to call.
         */
-        @DataMember(Name="data")
-        @SerializedName("data")
-        public String data = null;
+        @DataMember(Name="name")
+        @SerializedName("name")
+        public String name = null;
 
         /**
-        * The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.
+        * The arguments to call the function with, as generated by the model in JSON format. Note that the model does not always generate valid JSON, and may hallucinate parameters not defined by your function schema. Validate the arguments in your code before calling your function.
         */
-        @DataMember(Name="expires_at")
-        @SerializedName("expires_at")
-        public Integer expiresAt = null;
-
-        /**
-        * Unique identifier for this audio response.
-        */
-        @DataMember(Name="id")
-        @SerializedName("id")
-        public String id = null;
-
-        /**
-        * Transcript of the audio generated by the model.
-        */
-        @DataMember(Name="transcript")
-        @SerializedName("transcript")
-        public String transcript = null;
+        @DataMember(Name="arguments")
+        @SerializedName("arguments")
+        public String arguments = null;
         
-        public String getData() { return data; }
-        public ChoiceAudio setData(String value) { this.data = value; return this; }
-        public Integer getExpiresAt() { return expiresAt; }
-        public ChoiceAudio setExpiresAt(Integer value) { this.expiresAt = value; return this; }
-        public String getId() { return id; }
-        public ChoiceAudio setId(String value) { this.id = value; return this; }
-        public String getTranscript() { return transcript; }
-        public ChoiceAudio setTranscript(String value) { this.transcript = value; return this; }
+        public String getName() { return name; }
+        public ToolFunction setName(String value) { this.name = value; return this; }
+        public String getArguments() { return arguments; }
+        public ToolFunction setArguments(String value) { this.arguments = value; return this; }
+    }
+
+    /**
+    * A list of message content tokens with log probability information.
+    */
+    @DataContract
+    public static class LogprobItem
+    {
+        /**
+        * The token.
+        */
+        @DataMember(Name="token")
+        @SerializedName("token")
+        public String token = null;
+
+        /**
+        * The log probability of this token, if it is within the top 20 most likely tokens. Otherwise, the value `-9999`.0 is used to signify that the token is very unlikely.
+        */
+        @DataMember(Name="logprob")
+        @SerializedName("logprob")
+        public Double logprob = null;
+
+        /**
+        * A list of integers representing the UTF-8 bytes representation of the token. Useful in instances where characters are represented by multiple tokens and their byte representations must be combined to generate the correct text representation. Can be `null` if there is no bytes representation for the token.
+        */
+        @DataMember(Name="bytes")
+        @SerializedName("bytes")
+        public byte[] bytes = new byte[]{};
+
+        /**
+        * List of the most likely tokens and their log probability, at this token position. In rare cases, there may be fewer than the number of requested `top_logprobs` returned.
+        */
+        @DataMember(Name="top_logprobs")
+        @SerializedName("top_logprobs")
+        public ArrayList<LogprobItem> topLogprobs = new ArrayList<LogprobItem>();
+        
+        public String getToken() { return token; }
+        public LogprobItem setToken(String value) { this.token = value; return this; }
+        public Double getLogprob() { return logprob; }
+        public LogprobItem setLogprob(Double value) { this.logprob = value; return this; }
+        public byte[] getBytes() { return bytes; }
+        public LogprobItem setBytes(byte[] value) { this.bytes = value; return this; }
+        public ArrayList<LogprobItem> getTopLogprobs() { return topLogprobs; }
+        public LogprobItem setTopLogprobs(ArrayList<LogprobItem> value) { this.topLogprobs = value; return this; }
+    }
+
+    /**
+    * Annotations for the message, when applicable, as when using the web search tool.
+    */
+    @DataContract
+    public static class UrlCitation
+    {
+        /**
+        * The index of the last character of the URL citation in the message.
+        */
+        @DataMember(Name="end_index")
+        @SerializedName("end_index")
+        public Integer endIndex = null;
+
+        /**
+        * The index of the first character of the URL citation in the message.
+        */
+        @DataMember(Name="start_index")
+        @SerializedName("start_index")
+        public Integer startIndex = null;
+
+        /**
+        * The title of the web resource.
+        */
+        @DataMember(Name="title")
+        @SerializedName("title")
+        public String title = null;
+
+        /**
+        * The URL of the web resource.
+        */
+        @DataMember(Name="url")
+        @SerializedName("url")
+        public String url = null;
+        
+        public Integer getEndIndex() { return endIndex; }
+        public UrlCitation setEndIndex(Integer value) { this.endIndex = value; return this; }
+        public Integer getStartIndex() { return startIndex; }
+        public UrlCitation setStartIndex(Integer value) { this.startIndex = value; return this; }
+        public String getTitle() { return title; }
+        public UrlCitation setTitle(String value) { this.title = value; return this; }
+        public String getUrl() { return url; }
+        public UrlCitation setUrl(String value) { this.url = value; return this; }
     }
 
     @DataContract
@@ -1912,48 +1321,18 @@ public class dtos
         public AiFile setFileId(String value) { this.fileId = value; return this; }
     }
 
-    /**
-    * Annotations for the message, when applicable, as when using the web search tool.
-    */
     @DataContract
-    public static class UrlCitation
+    public static class AiAudioUrl
     {
         /**
-        * The index of the last character of the URL citation in the message.
-        */
-        @DataMember(Name="end_index")
-        @SerializedName("end_index")
-        public Integer endIndex = null;
-
-        /**
-        * The index of the first character of the URL citation in the message.
-        */
-        @DataMember(Name="start_index")
-        @SerializedName("start_index")
-        public Integer startIndex = null;
-
-        /**
-        * The title of the web resource.
-        */
-        @DataMember(Name="title")
-        @SerializedName("title")
-        public String title = null;
-
-        /**
-        * The URL of the web resource.
+        * Either a URL of the audio or the base64 encoded audio data.
         */
         @DataMember(Name="url")
         @SerializedName("url")
         public String url = null;
         
-        public Integer getEndIndex() { return endIndex; }
-        public UrlCitation setEndIndex(Integer value) { this.endIndex = value; return this; }
-        public Integer getStartIndex() { return startIndex; }
-        public UrlCitation setStartIndex(Integer value) { this.startIndex = value; return this; }
-        public String getTitle() { return title; }
-        public UrlCitation setTitle(String value) { this.title = value; return this; }
         public String getUrl() { return url; }
-        public UrlCitation setUrl(String value) { this.url = value; return this; }
+        public AiAudioUrl setUrl(String value) { this.url = value; return this; }
     }
 
 }
