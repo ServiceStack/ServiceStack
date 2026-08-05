@@ -94,6 +94,7 @@ public class ZigGenerator : ILangGenerator
 
     public static Dictionary<string, string> TypeAliases = new() {
         {"String", "[]const u8"},
+        {"Object", "std.json.Value"},
         {"Boolean", "bool"},
         {"DateTime", "[]const u8"},
         {"DateOnly", "[]const u8"},

@@ -88,6 +88,7 @@ public class GoGenerator : ILangGenerator
 
     public static Dictionary<string, string> TypeAliases = new() {
         {"String", "string"},
+        {"Object", "interface{}"},
         {"Boolean", "bool"},
         {"DateTime", "time.Time"},
         {"DateOnly", "time.Time"},

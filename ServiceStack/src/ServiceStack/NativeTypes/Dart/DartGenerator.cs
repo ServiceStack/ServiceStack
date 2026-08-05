@@ -119,7 +119,7 @@ public class DartGenerator : ILangGenerator
     {
         var propType = GetPropertyType(prop);
         propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
-        if (prop.IsEnumerable() && feature.ShouldInitializeCollection(type))
+        if (prop.IsEnumerable() && propType != "Uint8List" && feature.ShouldInitializeCollection(type))
         {
             var val = prop.IsDictionary() ? "{}" : "[]";
             return forConstructor ? $"const {val}" : val;
@@ -136,7 +136,7 @@ public class DartGenerator : ILangGenerator
         var propType = GetPropertyType(prop);
         if (DefaultValues.TryGetValue(propType, out var dv))
             return dv;
-        if (prop.IsEnumerable())
+        if (prop.IsEnumerable() && propType != "Uint8List")
             return prop.IsDictionary() ? "{}" : "[]";
         return null;
     }

@@ -86,11 +86,13 @@ public class RustGenerator : ILangGenerator
 
     public static List<string> DefaultImports = new() {
         "serde::{Serialize, Deserialize}",
+        "serde_json::Value",
         "std::collections::HashMap",
     };
 
     public static Dictionary<string, string> TypeAliases = new() {
         {"String", "String"},
+        {"Object", "Value"},
         {"Boolean", "bool"},
         {"DateTime", "String"},  // Will use String for DateTime, can be customized
         {"DateOnly", "String"},
