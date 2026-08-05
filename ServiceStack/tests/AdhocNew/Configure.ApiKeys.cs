@@ -54,8 +54,11 @@ public class ConfigureApiKeys : IHostingStartup
                     List<string> scopes = user.UserName == "admin@email.com"
                         ? [RoleNames.Admin] 
                         : [];
+                    var key = user.UserName == "admin@email.com"
+                        ? "ak-87949de37e894627a9f6173154e7cafa"
+                        : "ak-09d5b92c2201486d9b8dcb3ed5b8b204";
                     feature.Insert(db, 
-                        new() { Name = "Seed API Key", UserId = user.Id, UserName = user.UserName, Scopes = scopes });
+                        new() { Key = key, Name = "Seed API Key", UserId = user.Id, UserName = user.UserName, Scopes = scopes });
                 }
             }
         });
