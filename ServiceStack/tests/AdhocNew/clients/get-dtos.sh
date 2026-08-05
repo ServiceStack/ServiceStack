@@ -10,7 +10,7 @@ pushd fsharp
 npx get-dtos fsharp
 popd
 
-pushd go
+pushd go/dtos
 npx get-dtos go
 popd
 

@@ -32,21 +32,33 @@ public class GoGenerator : ILangGenerator
 
     public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
 
-    //In _builtInTypes servicestack library
+    //Types in the servicestack-go library are filtered out in LibraryTypes below
     public static HashSet<string> IgnoreTypeInfosFor = [];
-    /* if added in external library
+
+    /// <summary>
+    /// The Go module of the ServiceStack Go Client Library that generated DTOs reference
+    /// </summary>
+    public static string LibraryPackage { get; set; } = "github.com/ServiceStack/servicestack-go";
+
+    /// <summary>
+    /// The package alias the ServiceStack Go Client Library is imported as
+    /// </summary>
+    public static string LibraryAlias { get; set; } = "ss";
+
+    /// <summary>
+    /// Built-in ServiceStack Types implemented in the servicestack-go library which
+    /// are referenced instead of being emitted in generated DTOs
+    /// </summary>
+    public static HashSet<string> LibraryTypes { get; set; } =
     [
-        "String",
-        "Integer",
-        "TrueClass",
-        "Float",
-        "Hash",
-        "Array",
-        "DateTime",
-        "Time",
-        "ResponseStatus",
-        "ResponseError",
-        "QueryBase",
+        nameof(ResponseStatus),
+        nameof(ResponseError),
+        nameof(EmptyResponse),
+        nameof(IdResponse),
+        nameof(StringResponse),
+        nameof(StringsResponse),
+        nameof(AuditBase),
+        nameof(QueryBase),
         "QueryData",
         "QueryDb",
         "QueryResponse",
@@ -58,30 +70,35 @@ public class GoGenerator : ILangGenerator
         nameof(AssignRolesResponse),
         nameof(UnAssignRoles),
         nameof(UnAssignRolesResponse),
-        nameof(CancelRequest),
-        nameof(CancelRequestResponse),
-        nameof(UpdateEventSubscriber),
-        nameof(UpdateEventSubscriberResponse),
-        nameof(GetEventSubscribers),
+        nameof(ConvertSessionToToken),
+        nameof(ConvertSessionToTokenResponse),
+        nameof(GetAccessToken),
+        nameof(GetAccessTokenResponse),
         nameof(GetApiKeys),
         nameof(GetApiKeysResponse),
         nameof(RegenerateApiKeys),
         nameof(RegenerateApiKeysResponse),
         nameof(UserApiKey),
-        nameof(ConvertSessionToToken),
-        nameof(ConvertSessionToTokenResponse),
-        nameof(GetAccessToken),
-        nameof(GetAccessTokenResponse),
         nameof(NavItem),
         nameof(GetNavItems),
         nameof(GetNavItemsResponse),
-        nameof(EmptyResponse),
-        nameof(IdResponse),
-        nameof(StringResponse),
-        nameof(StringsResponse),
-        nameof(AuditBase)
     ];
-    */
+
+    /// <summary>
+    /// Library Types implemented as Go generic types, e.g. ss.QueryResponse[Booking]
+    /// </summary>
+    public static HashSet<string> GenericLibraryTypes { get; set; } =
+    [
+        "QueryResponse",
+    ];
+
+    /// <summary>
+    /// Method names generated on Request DTOs, which are omitted when they would
+    /// conflict with an existing property of the same name
+    /// </summary>
+    public const string CreateResponseMethod = "CreateResponse";
+    public const string CreateResponseVoidMethod = "CreateResponseVoid";
+    public const string HttpMethodMethod = "HttpMethod";
 
     public static List<string> DefaultImports = new() {
     };
@@ -177,12 +194,87 @@ public class GoGenerator : ILangGenerator
         return !prop.IsRequired();
     }
 
+    /// <summary>
+    /// Library Types referenced by the generated DTOs, resolved in Init()
+    /// </summary>
+    public HashSet<string> UseLibraryTypes { get; set; } = new();
+
+    /// <summary>
+    /// Whether properties of abstract Types with sub types are emitted as interface{}.
+    /// Go doesn't support sub classing so a property of an abstract Type can only ever
+    /// hold the abstract Type's own properties, losing the sub types data
+    /// </summary>
+    public static bool PolymorphicPropertiesAsAny { get; set; } = true;
+
+    /// <summary>
+    /// Abstract Types with sub types in the generated DTOs, resolved in Init()
+    /// </summary>
+    public HashSet<string> PolymorphicTypes { get; set; } = new();
+
+    private bool usesLibrary;
+    private bool usesTime;
+    private bool resolvingPropertyType;
+
+    /// <summary>
+    /// Whether the Type Name refers to a Type implemented in the servicestack-go library
+    /// </summary>
+    public bool IsLibraryType(string typeName) => UseLibraryTypes.Contains(typeName);
+
+    /// <summary>
+    /// Reference a Type implemented in the servicestack-go library, e.g. ss.ResponseStatus
+    /// </summary>
+    public string LibraryType(string typeName)
+    {
+        usesLibrary = true;
+        return LibraryAlias + "." + typeName;
+    }
+
     public void Init(MetadataTypes metadata)
     {
         var includeList = metadata.RemoveIgnoredTypes(Config);
         AllTypes = metadata.GetAllTypesOrdered();
         AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+
+        //Interfaces that are only used as markers in .NET aren't needed in Go
+        if (AllTypes.Any(x => x.IsInterface == true))
+        {
+            var referencedTypes = new HashSet<string>();
+            foreach (var metaType in AllTypes)
+            {
+                if (metaType.Inherits != null)
+                    referencedTypes.Add(metaType.Inherits.Name.LeftPart('`'));
+
+                foreach (var metaProp in metaType.Properties.Safe())
+                {
+                    referencedTypes.Add(metaProp.Type.LeftPart('`').TrimEnd('[', ']'));
+                    foreach (var genericArg in metaProp.GenericArgs.Safe())
+                    {
+                        referencedTypes.Add(genericArg.LeftPart('`').TrimEnd('[', ']'));
+                    }
+                }
+            }
+            AllTypes.RemoveAll(x => x.IsInterface == true && !referencedTypes.Contains(x.Name.LeftPart('`')));
+        }
+
+        //Only use Library Types when they're not shadowed by a User-defined Type of the same name
+        var userTypeNames = AllTypes
+            .Where(x => x.Namespace != nameof(ServiceStack))
+            .Map(x => x.Name.LeftPart('`'))
+            .ToSet();
+        UseLibraryTypes = LibraryTypes.Where(x => !userTypeNames.Contains(x)).ToSet();
+
+        //Library Types are implemented in the servicestack-go library
+        AllTypes.RemoveAll(x => UseLibraryTypes.Contains(x.Name.LeftPart('`')));
+
         AllTypes = FilterTypes(AllTypes);
+
+        //Properties of abstract Types with sub types can only be represented as interface{}
+        PolymorphicTypes = !PolymorphicPropertiesAsAny
+            ? new HashSet<string>()
+            : AllTypes.Where(x => x.IsAbstract == true)
+                .Map(x => x.Name.LeftPart('`'))
+                .Where(name => AllTypes.Any(x => x.Inherits?.Name.LeftPart('`') == name))
+                .ToSet();
 
         //Go doesn't support generics in the same way, track conflicts
         var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
@@ -260,41 +352,14 @@ public class GoGenerator : ILangGenerator
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
 
+        // Types are generated first so only the imports they use are emitted
+        var sbTypesInner = StringBuilderCacheAlt.Allocate();
+        var sbTypes = new StringBuilderWrapper(sbTypesInner);
+
         var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
         if (insertCode != null)
-            sb.AppendLine(insertCode);
+            sbTypes.AppendLine(insertCode);
 
-
-        // If DefaultImports is not specified, add time import if needed
-        if (request.QueryString["DefaultImports"].IsNullOrEmpty())
-        {
-            foreach (var metaType in AllTypes)
-            {
-                foreach (var metaProp in metaType.Properties.Safe())
-                {
-                    var typeAlias = TypeAlias(metaProp.Type);
-                    if (typeAlias.StartsWith("time."))
-                    {
-                        defaultImports.AddIfNotExists("time");
-                    }
-                }
-            }
-        }
-        
-        // Add imports
-        if (defaultImports.Count > 0)
-        {
-            sb.AppendLine("import (");
-            sb = sb.Indent();
-            foreach (var import in defaultImports)
-            {
-                sb.AppendLine($"\"{import}\"");
-            }
-            sb = sb.UnIndent();
-            sb.AppendLine(")");
-            sb.AppendLine();
-        }
-        
         //ServiceStack core interfaces
         foreach (var type in AllTypes)
         {
@@ -309,7 +374,7 @@ public class GoGenerator : ILangGenerator
                         response = operation.Response;
                     }
 
-                    lastNS = AppendType(ref sb, type, lastNS,
+                    lastNS = AppendType(ref sbTypes, type, lastNS,
                         new CreateTypeOptions
                         {
                             Routes = metadata.Operations.GetRoutes(type),
@@ -325,7 +390,7 @@ public class GoGenerator : ILangGenerator
                 if (!existingTypes.Contains(fullTypeName)
                     && !Config.IgnoreTypesInNamespaces.Contains(type.Namespace))
                 {
-                    lastNS = AppendType(ref sb, type, lastNS,
+                    lastNS = AppendType(ref sbTypes, type, lastNS,
                         new CreateTypeOptions
                         {
                             IsResponse = true,
@@ -336,7 +401,7 @@ public class GoGenerator : ILangGenerator
             }
             else if (AllTypes.Contains(type) && !existingTypes.Contains(fullTypeName))
             {
-                lastNS = AppendType(ref sb, type, lastNS,
+                lastNS = AppendType(ref sbTypes, type, lastNS,
                     new CreateTypeOptions { IsType = true });
 
                 existingTypes.Add(fullTypeName);
@@ -345,10 +410,144 @@ public class GoGenerator : ILangGenerator
 
         var addCode = AddCodeFilter?.Invoke(AllTypes, Config);
         if (addCode != null)
-            sb.AppendLine(addCode);
+            sbTypes.AppendLine(addCode);
 
-        var ret = StringBuilderCache.ReturnAndFree(sbInner);
+        // Only import the packages used by the generated Types
+        if (request.QueryString["DefaultImports"].IsNullOrEmpty())
+        {
+            if (usesTime)
+                defaultImports.AddIfNotExists("time");
+            if (usesLibrary)
+                defaultImports.AddIfNotExists($"{LibraryAlias} {LibraryPackage}");
+        }
+
+        if (defaultImports.Count > 0)
+        {
+            sb.AppendLine("import (");
+            sb = sb.Indent();
+            //gofmt sorts imports by package path
+            foreach (var import in defaultImports.OrderBy(x => x.RightPart(' '), StringComparer.Ordinal))
+            {
+                // Imports can be aliased with an "alias package" prefix, e.g. ss github.com/org/pkg
+                var alias = import.LeftPart(' ');
+                var package = import.RightPart(' ');
+                sb.AppendLine(alias == package
+                    ? $"\"{package}\""
+                    : $"{alias} \"{package}\"");
+            }
+            sb = sb.UnIndent();
+            sb.AppendLine(")");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbTypesInner).TrimEnd());
+
+        var ret = GoFormat(StringBuilderCache.ReturnAndFree(sbInner));
         return formatter != null ? formatter.Transform(ret, this, request) : ret;
+    }
+
+    /// <summary>
+    /// Format generated source with gofmt conventions, i.e. tabs for indentation,
+    /// no trailing whitespace, no consecutive blank lines and struct fields
+    /// aligned in columns
+    /// </summary>
+    public static string GoFormat(string src)
+    {
+        var lines = new List<string>();
+        var lastLineEmpty = false;
+        foreach (var line in src.ReadLines())
+        {
+            var indent = 0;
+            while ((indent + 1) * 4 <= line.Length && line.Substring(indent * 4, 4) == "    ")
+            {
+                indent++;
+            }
+
+            var content = line.Substring(indent * 4).TrimEnd();
+            var isEmpty = content.Length == 0;
+            if (isEmpty && lastLineEmpty)
+                continue;
+            lastLineEmpty = isEmpty;
+
+            lines.Add(isEmpty ? "" : new string('\t', indent) + content);
+        }
+
+        AlignStructFields(lines);
+
+        var sb = StringBuilderCacheAlt.Allocate();
+        foreach (var line in lines)
+        {
+            sb.AppendLine(line);
+        }
+        return StringBuilderCacheAlt.ReturnAndFree(sb);
+    }
+
+    /// <summary>
+    /// Align the Name and Type columns of adjacent struct fields like gofmt, e.g:
+    ///
+    ///     Id   int    `json:"id,omitempty"`
+    ///     Name string `json:"name"`
+    /// </summary>
+    private static void AlignStructFields(List<string> lines)
+    {
+        var inStruct = false;
+        var start = -1;
+
+        void alignFields(int from, int to)
+        {
+            if (to - from < 2)
+                return;
+
+            var names = new List<string>();
+            var types = new List<string>();
+            var rest = new List<string>();
+            for (var i = from; i < to; i++)
+            {
+                var field = lines[i].Substring(1); //strip the field's tab indent
+                var name = field.LeftPart(' ');
+                var type = field.RightPart(' ').TrimStart().LeftPart(' ');
+                names.Add(name);
+                types.Add(type);
+                rest.Add(field.RightPart(' ').TrimStart().RightPart(' ').TrimStart());
+            }
+
+            var nameWidth = names.Max(x => x.Length);
+            var typeWidth = types.Max(x => x.Length);
+            for (var i = from; i < to; i++)
+            {
+                lines[i] = "\t" + names[i - from].PadRight(nameWidth) + " " +
+                           types[i - from].PadRight(typeWidth) + " " + rest[i - from];
+            }
+        }
+
+        //Fields are only aligned within adjacent runs of fields, comments and blank lines break the run
+        bool isField(string line) => line.StartsWith("\t") && !line.StartsWith("\t\t")
+            && !line.TrimStart().StartsWith("/") && line.Substring(1).Trim().CountOccurrencesOf(' ') >= 2;
+
+        for (var i = 0; i < lines.Count; i++)
+        {
+            var line = lines[i];
+            if (!inStruct)
+            {
+                inStruct = line.StartsWith("type ") && line.EndsWith(" struct {");
+                continue;
+            }
+
+            if (isField(line))
+            {
+                if (start == -1)
+                    start = i;
+                continue;
+            }
+
+            if (start >= 0)
+            {
+                alignFields(start, i);
+                start = -1;
+            }
+            if (line == "}")
+                inStruct = false;
+        }
     }
 
     private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
@@ -378,8 +577,12 @@ public class GoGenerator : ILangGenerator
 
             if (type.EnumNames != null && type.EnumNames.Count > 0)
             {
-                sb.AppendLine("const (");
-                sb = sb.Indent();
+                // Go's const declarations are aligned in columns, e.g:
+                //     RoomTypeSingle RoomType = "Single"
+                //     RoomTypeDouble           = "Double"
+                var constNames = new List<string>();
+                var constTypes = new List<string>();
+                var constValues = new List<string>();
 
                 for (var i = 0; i < type.EnumNames.Count; i++)
                 {
@@ -387,30 +590,23 @@ public class GoGenerator : ILangGenerator
                     var value = type.EnumValues?[i];
                     var memberValue = type.GetEnumMemberValue(i);
 
-                    if (i == 0)
-                    {
-                        if (isIntEnum)
-                        {
-                            sb.AppendLine($"{typeName}{name} {typeName} = {value ?? i.ToString()}");
-                        }
-                        else
-                        {
-                            var strValue = memberValue ?? name;
-                            sb.AppendLine($"{typeName}{name} {typeName} = \"{strValue}\"");
-                        }
-                    }
-                    else
-                    {
-                        if (isIntEnum)
-                        {
-                            sb.AppendLine($"{typeName}{name} {typeName} = {value ?? i.ToString()}");
-                        }
-                        else
-                        {
-                            var strValue = memberValue ?? name;
-                            sb.AppendLine($"{typeName}{name} = \"{strValue}\"");
-                        }
-                    }
+                    constNames.Add(typeName + name);
+                    //Only the first const needs to declare the Type, the rest inherit it
+                    constTypes.Add(isIntEnum || i == 0 ? typeName : "");
+                    constValues.Add(isIntEnum
+                        ? value ?? i.ToString()
+                        : $"\"{memberValue ?? name}\"");
+                }
+
+                var nameWidth = constNames.Max(x => x.Length);
+                var typeWidth = constTypes.Max(x => x.Length);
+
+                sb.AppendLine("const (");
+                sb = sb.Indent();
+
+                for (var i = 0; i < constNames.Count; i++)
+                {
+                    sb.AppendLine($"{constNames[i].PadRight(nameWidth)} {constTypes[i].PadRight(typeWidth)} = {constValues[i]}");
                 }
 
                 sb = sb.UnIndent();
@@ -446,16 +642,85 @@ public class GoGenerator : ILangGenerator
 
             sb = sb.UnIndent();
             sb.AppendLine("}");
+
+            if (options.IsRequest)
+            {
+                AppendRequestMethods(sb, type, typeName, options.Op);
+            }
         }
 
         PostTypeFilter?.Invoke(sb, type);
-            
+
         return lastNS;
+    }
+
+    /// <summary>
+    /// Generate the methods implementing the servicestack-go client interfaces which lets
+    /// the Response Type and HTTP Method of a Request DTO be resolved from the Request DTO, e.g:
+    ///
+    ///     func (Hello) CreateResponse() (r HelloResponse) { return }
+    ///     func (Hello) HttpMethod() string { return "GET" }
+    /// </summary>
+    public void AppendRequestMethods(StringBuilderWrapper sb, MetadataType type, string typeName, MetadataOperationType op)
+    {
+        if (op == null)
+            return;
+
+        // Go doesn't allow a method and a field of the same name
+        bool hasProperty(string name) => type.Properties.Safe().Any(x => GetPropertyName(x) == name);
+
+        //Method Signature -> Body, emitted in aligned columns like gofmt
+        var methods = new List<KeyValuePair<string, string>>();
+
+        var returnsVoid = op.ReturnsVoid == true || (op.ReturnType == null && op.Response == null);
+        if (returnsVoid)
+        {
+            if (!hasProperty(CreateResponseVoidMethod))
+                methods.Add(new($"func ({typeName}) {CreateResponseVoidMethod}()", "{}"));
+        }
+        else if (!hasProperty(CreateResponseMethod))
+        {
+            var responseType = op.ReturnType != null
+                ? Type(op.ReturnType.Name, op.ReturnType.GenericArgs)
+                : Type(op.Response.Name, op.Response.GenericArgs);
+
+            // A Request DTO can't return itself as it would recurse in its own method signature
+            if (responseType != typeName)
+            {
+                methods.Add(new($"func ({typeName}) {CreateResponseMethod}() (r {responseType})", "{ return }"));
+            }
+        }
+
+        var method = op.Method ?? op.Routes?.FirstOrDefault(x => !string.IsNullOrEmpty(x.Verbs))?.Verbs.LeftPart(',');
+        if (!string.IsNullOrEmpty(method) && method != "ANY" && !hasProperty(HttpMethodMethod))
+        {
+            methods.Add(new($"func ({typeName}) {HttpMethodMethod}() string", $"{{ return \"{method.ToUpper()}\" }}"));
+        }
+
+        if (methods.Count == 0)
+            return;
+
+        var signatureWidth = methods.Max(x => x.Key.Length);
+        sb.AppendLine();
+        foreach (var entry in methods)
+        {
+            sb.AppendLine($"{entry.Key.PadRight(signatureWidth)} {entry.Value}");
+        }
     }
 
     public virtual string GetPropertyType(MetadataPropertyType prop, out bool isNullable)
     {
-        var propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
+        //Only properties reference abstract Types as interface{}, sub types still embed them
+        resolvingPropertyType = true;
+        string propType;
+        try
+        {
+            propType = Type(prop.GetTypeName(Config, AllTypes), prop.GenericArgs);
+        }
+        finally
+        {
+            resolvingPropertyType = false;
+        }
         isNullable = propType.EndsWith("?");
         if (isNullable)
         {
@@ -509,7 +774,7 @@ public class GoGenerator : ILangGenerator
 
         if (includeResponseStatus)
         {
-            sb.AppendLine($"ResponseStatus *ResponseStatus `json:\"responseStatus,omitempty\"`");
+            sb.AppendLine($"ResponseStatus *{TypeAlias(nameof(ResponseStatus))} `json:\"responseStatus,omitempty\"`");
         }
     }
 
@@ -637,12 +902,15 @@ public class GoGenerator : ILangGenerator
             }
             else
             {
-                // Go doesn't support generics in the same way, use interface{} or specific type
                 var parts = type.Split('`');
                 if (parts.Length > 1)
                 {
-                    // For generic types, just use the base name
-                    cooked = TypeAlias(parts[0]);
+                    var baseName = parts[0];
+                    // Library Types implemented as Go generics, e.g. ss.QueryResponse[Booking]
+                    cooked = IsLibraryType(baseName) && GenericLibraryTypes.Contains(baseName) && genericArgs.Length > 0
+                        ? $"{LibraryType(baseName)}[{GenericArg(genericArgs[0])}]"
+                        // Go doesn't support generics in the same way, just use the base name
+                        : TypeAlias(baseName);
                 }
             }
 
@@ -680,6 +948,17 @@ public class GoGenerator : ILangGenerator
         TypeAliases.TryGetValue(type, out var typeAlias);
 
         var cooked = typeAlias ?? NameOnly(type);
+        if (resolvingPropertyType && PolymorphicTypes.Contains(cooked))
+            return TypeAliases["Object"];
+
+        if (cooked.StartsWith("time."))
+        {
+            usesTime = true;
+        }
+        else if (IsLibraryType(cooked))
+        {
+            cooked = LibraryType(cooked);
+        }
         return CookedTypeFilter?.Invoke(cooked) ?? cooked;
     }
 

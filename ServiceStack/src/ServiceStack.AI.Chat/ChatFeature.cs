@@ -357,29 +357,8 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
 
     public void ConfigureNativeTypes()
     {
-        NativeTypes.Go.GoGenerator.PropertyTypeFilter = (gen, type, prop) => {
-            if (type.Name == "AiMessage" && prop.Name == "Content")
-            {
-                return "[]interface{}";
-            }
-            if (prop.Type == "AiContent" || prop.PropertyType?.Name == "AiContent" || prop.GenericArgs?.Contains("AiContent") == true)
-            {
-                return prop.Type?.StartsWith("List") == true || prop.GenericArgs != null ? "[]interface{}" : "interface{}";
-            }
-            return null;
-        };
-
-        NativeTypes.Rust.RustGenerator.PropertyTypeFilter = (gen, type, prop) => {
-            if (type.Name == "AiMessage" && prop.Name == "Content")
-            {
-                return "Option<Vec<Value>>";
-            }
-            if (prop.Type == "AiContent" || prop.PropertyType?.Name == "AiContent" || prop.GenericArgs?.Contains("AiContent") == true)
-            {
-                return prop.Type?.StartsWith("List") == true || prop.GenericArgs != null ? "Option<Vec<Value>>" : "Option<Value>";
-            }
-            return null;
-        };
+        // Go and Rust don't need customizing, their generators emit properties of abstract
+        // Types (e.g. AiContent) as interface{} / serde_json::Value
 
         NativeTypes.Zig.ZigGenerator.PropertyTypeFilter = (gen, type, prop) => {
             if (type.Name == "AiMessage" && prop.Name == "Content")

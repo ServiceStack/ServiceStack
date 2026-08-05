@@ -1,3 +1,5 @@
 module adhocnew/clients/go
 
-go 1.25.3
+go 1.21
+
+require github.com/ServiceStack/servicestack-go v0.1.0
