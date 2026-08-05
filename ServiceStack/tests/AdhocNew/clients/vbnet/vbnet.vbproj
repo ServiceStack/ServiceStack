@@ -3,11 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>vbnet</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Client" Version="8.*" />
+    <PackageReference Include="ServiceStack.Client" Version="10.*" />
   </ItemGroup>
 
 </Project>
