@@ -17,17 +17,15 @@ public class ConfigureAiChat : IHostingStartup
             services.AddPlugin(new ChatFeature
             {
                 RequireAuth = true,
-                AuthType = ChatAuthType.OAuth,   // sign in with Identity Auth
-                SignInUrl = "/Account/Login",
 
                 // only enable providers we have API Keys for (default: all enabled in llms.json)
-                EnableProviders = [
-                    "groq",
-                    "google",
-                    "anthropic",
-                    "openai",
-                    "openrouter",
-                ],
+                // EnableProviders = [
+                //     "groq",
+                //     "google",
+                //     "anthropic",
+                //     "openai",
+                //     "openrouter",
+                // ],
 
                 // Server-side code execution + filesystem tools are opt-in, e.g:
                 // ToolsConfig = new() {

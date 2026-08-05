@@ -1,7 +1,9 @@
 using MyApp.ServiceModel;
+using ServiceStack.DataAnnotations;
 
 namespace MyApp.ServiceInterface;
 
+[ExcludeMetadata]
 public class SearchRootSummary : QueryDb<RootSummary>
 {
     

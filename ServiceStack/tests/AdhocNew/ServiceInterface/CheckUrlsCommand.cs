@@ -1,4 +1,5 @@
 using ServiceStack;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Jobs;
 
 namespace MyApp.ServiceInterface;
@@ -8,6 +9,7 @@ public class QueueCheckUrlsResponse
     public BackgroundJobRef JobRef { get; set; }
 }
 
+[ExcludeMetadata]
 public class QueueCheckUrls : IReturn<QueueCheckUrlsResponse>
 {
     [Input(Type = "textarea")] public string Urls { get; set; }
