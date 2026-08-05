@@ -3,7 +3,7 @@
 
 # Options:
 =begin
-Date: 2026-08-06 02:13:24
+Date: 2026-08-06 04:43:31
 Version: 10.09
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5000
@@ -40,7 +40,6 @@ module ToolType
 end
 
 module IPost
-    pass
 end
 
 # @DataContract
@@ -715,4 +714,7 @@ class ChatCompletion
     # @DataMember(Name="stream")
     # @return [TrueClass]
     attr_accessor :stream
+    def response_type() = ChatResponse
+    def get_type_name() = 'ChatCompletion'
+    def get_method() = 'POST'
 end

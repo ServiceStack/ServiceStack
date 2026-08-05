@@ -31,10 +31,9 @@ public class RustGenerator : ILangGenerator
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-    public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
+    public static bool GenerateServiceStackTypes => true;
 
-    //In _builtInTypes servicestack library
-    public static HashSet<string> IgnoreTypeInfosFor = [];
+    public static HashSet<string> IgnoreTypeInfosFor = ["Value", "Object"];
     /* if added in external library
     [
         "String",
@@ -375,8 +374,12 @@ public class RustGenerator : ILangGenerator
             }
             else if (AllTypes.Contains(type) && !existingTypes.Contains(fullTypeName))
             {
-                lastNS = AppendType(ref sb, type, lastNS,
-                    new CreateTypeOptions { IsType = true });
+                var ignoreType = IgnoreTypeInfosFor.Contains(type.Name) || TypeAliases.ContainsKey(type.Name);
+                if (!ignoreType)
+                {
+                    lastNS = AppendType(ref sb, type, lastNS,
+                        new CreateTypeOptions { IsType = true });
+                }
 
                 existingTypes.Add(fullTypeName);
             }
@@ -410,7 +413,7 @@ public class RustGenerator : ILangGenerator
             var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty();
 
             // Rust enums with #[derive(Serialize, Deserialize)]
-            sb.AppendLine("#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]");
+            sb.AppendLine("#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]");
 
             if (isIntEnum)
             {
@@ -427,6 +430,11 @@ public class RustGenerator : ILangGenerator
                 {
                     var name = type.EnumNames[i];
                     var value = type.EnumValues?[i];
+
+                    if (i == 0)
+                    {
+                        sb.AppendLine("#[default]");
+                    }
 
                     var memberValue = type.GetEnumMemberValue(i);
                     if (memberValue != null)
@@ -458,7 +466,8 @@ public class RustGenerator : ILangGenerator
         else
         {
             // Rust struct generation
-            sb.AppendLine("#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]");
+            sb.AppendLine("#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]");
+            sb.AppendLine("#[serde(default)]");
 
             var typeName = Type(type.Name, type.GenericArgs);
             sb.AppendLine($"pub struct {typeName} {{");
@@ -538,9 +547,13 @@ public class RustGenerator : ILangGenerator
                 }
 
                 // Handle optional fields with Option<T>
-                if (isOptional && !propType.StartsWith("Option<"))
+                if (isOptional)
                 {
-                    propType = $"Option<{propType}>";
+                    sb.AppendLine("#[serde(default, skip_serializing_if = \"Option::is_none\")]");
+                    if (!propType.StartsWith("Option<"))
+                    {
+                        propType = $"Option<{propType}>";
+                    }
                 }
 
                 sb.Emit(prop, Lang.Rust);

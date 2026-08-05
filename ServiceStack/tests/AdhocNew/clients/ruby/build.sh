@@ -1,27 +1,14 @@
 #!/bin/bash
 
-rm -f dtos.rb && npx get-dtos ruby http://localhost:5000
-
-# Check dtos.rb for syntax errors
-echo "Checking dtos.rb for syntax errors..."
-ruby -c dtos.rb
-
-if [ $? -eq 0 ]; then
-    echo "✓ dtos.rb has no syntax errors"
-else
-    echo "✗ dtos.rb has syntax errors"
-    exit 1
-fi
-
 rm -f dtos.rb && npx get-dtos ruby http://localhost:5000 --include "ChatCompletion.*"
 
-# Check dtos.rb for syntax errors
-echo "Checking dtos.rb for syntax errors..."
-ruby -c dtos.rb
+# Check dtos.rb, client.rb, main.rb for syntax errors
+echo "Checking Ruby files for syntax errors..."
+ruby -c dtos.rb && ruby -c client.rb && ruby -c main.rb
 
 if [ $? -eq 0 ]; then
-    echo "✓ dtos.rb has no syntax errors"
+    echo "✓ Ruby files have no syntax errors"
 else
-    echo "✗ dtos.rb has syntax errors"
+    echo "✗ Syntax errors found"
     exit 1
 fi

@@ -35,10 +35,9 @@ public class ZigGenerator : ILangGenerator
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PrePropertyFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataPropertyType, MetadataType> PostPropertyFilter { get; set; }
 
-    public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
+    public static bool GenerateServiceStackTypes => true;
 
-    //In _builtInTypes servicestack library
-    public static HashSet<string> IgnoreTypeInfosFor = [];
+    public static HashSet<string> IgnoreTypeInfosFor = ["std.json.Value", "Value", "Object"];
     /* if added in external library
     [
         "String",
@@ -118,8 +117,8 @@ public class ZigGenerator : ILangGenerator
         {"Byte[]", "[]const u8"},
         {"Stream", "[]const u8"},
         {"HttpWebResponse", "[]const u8"},
-        {"IDictionary", "std.StringHashMap"},
-        {"OrderedDictionary", "std.StringHashMap"},
+        {"IDictionary", "std.json.Value"},
+        {"OrderedDictionary", "std.json.Value"},
         {"Uri", "[]const u8"},
         {"Type", "[]const u8"},
     };
@@ -358,8 +357,12 @@ public class ZigGenerator : ILangGenerator
             }
             else if (AllTypes.Contains(type) && !existingTypes.Contains(fullTypeName))
             {
-                lastNS = AppendType(ref sb, type, lastNS,
-                    new CreateTypeOptions { IsType = true });
+                var ignoreType = IgnoreTypeInfosFor.Contains(type.Name) || TypeAliases.ContainsKey(type.Name);
+                if (!ignoreType)
+                {
+                    lastNS = AppendType(ref sb, type, lastNS,
+                        new CreateTypeOptions { IsType = true });
+                }
 
                 existingTypes.Add(fullTypeName);
             }
@@ -537,10 +540,16 @@ public class ZigGenerator : ILangGenerator
                 sb.Emit(prop, Lang.TypeScript);
                 PrePropertyFilter?.Invoke(sb, prop, type);
 
-                // In Zig, optional fields use ?Type syntax (no default values allowed in struct definitions)
-                var zigType = optional && !propType.StartsWith("?") ? $"?{propType}" : propType;
+                var isOptional = optional || propType.StartsWith("?") || propType == "[]const u8";
+                var zigType = isOptional && !propType.StartsWith("?") ? $"?{propType}" : propType;
+                var defaultValue = isOptional ? " = null" : 
+                    (zigType.StartsWith("[]") ? " = &.{}" : 
+                    (zigType == "bool" ? " = false" : 
+                    (zigType == "i32" || zigType == "i64" || zigType == "u32" || zigType == "u64" ||
+                     zigType == "i16" || zigType == "u16" || zigType == "i8" || zigType == "u8" ||
+                     zigType == "usize" || zigType == "isize" || zigType == "f32" || zigType == "f64" ? " = 0" : "")));
 
-                sb.AppendLine("{0}: {1},".Fmt(GetPropertyName(prop), zigType));
+                sb.AppendLine("{0}: {1}{2},".Fmt(GetPropertyName(prop), zigType, defaultValue));
                 PostPropertyFilter?.Invoke(sb, prop, type);
             }
         }
@@ -550,7 +559,7 @@ public class ZigGenerator : ILangGenerator
             if (wasAdded) sb.AppendLine();
 
             AppendDataMember(sb, null, dataMemberIndex++);
-            sb.AppendLine("{0}: ?ResponseStatus,".Fmt(GetPropertyName(nameof(ResponseStatus))));
+            sb.AppendLine("{0}: ?ResponseStatus = null,".Fmt(GetPropertyName(nameof(ResponseStatus))));
         }
     }
 
@@ -655,7 +664,7 @@ public class ZigGenerator : ILangGenerator
             }
             if (DictionaryTypes.Contains(type))
             {
-                cooked = "std.StringHashMap({0})".Fmt(GenericArg(genericArgs[1]));
+                cooked = "std.json.Value";
             }
         }
 
@@ -686,9 +695,7 @@ public class ZigGenerator : ILangGenerator
                 cooked = "[]{0}".Fmt(GenericArg(genericArgs[0])).StripNullable();
             else if (DictionaryTypes.Contains(type))
             {
-                var valArg = genericArgs[1];
-                var valType = GenericArg(valArg);
-                cooked = "std.StringHashMap(" + valType + ")";
+                cooked = "std.json.Value";
             }
             else
             {
@@ -866,9 +873,7 @@ public class ZigGenerator : ILangGenerator
         }
         else if (node.Text == "Dictionary")
         {
-            sb.Append("std.StringHashMap(");
-            sb.Append(ConvertFromCSharp(node.Children[1]));
-            sb.Append(")");
+            sb.Append("std.json.Value");
         }
         else
         {

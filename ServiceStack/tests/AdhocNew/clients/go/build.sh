@@ -1,31 +1,9 @@
 #!/bin/bash
 
-rm -f dtos.go && npx get-dtos go https://localhost:5001
+rm -f dtos.go && npx get-dtos go http://localhost:5000 --include "ChatCompletion.*"
 
-# Initialize Go module if not already initialized
-if [ ! -f "go.mod" ]; then
-    go mod init adhocnew/clients/go
-fi
+# Update package name from dtos to main so main.go can compile with it
+sed -i 's/^package dtos/package main/' dtos.go
 
-# Build dtos.go to check for errors
-echo "Building dtos.go..."
-go build -o /dev/null dtos.go
-
-if [ $? -eq 0 ]; then
-    echo "✓ dtos.go compiled successfully"
-else
-    echo "✗ dtos.go has build errors"
-    exit 1
-fi
-
-rm -f dtos.go && npx get-dtos go https://localhost:5001 --include "ChatCompletion.*"
-
-echo "Building dtos.go..."
-go build -o /dev/null dtos.go
-
-if [ $? -eq 0 ]; then
-    echo "✓ dtos.go compiled successfully"
-else
-    echo "✗ dtos.go has build errors"
-    exit 1
-fi
+echo "Building and running main.go..."
+go run main.go client.go dtos.go

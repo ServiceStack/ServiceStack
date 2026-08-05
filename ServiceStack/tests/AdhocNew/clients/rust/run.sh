@@ -1,2 +1,2 @@
 #!/bin/bash
-./build.sh
+./build.sh && cargo run --bin main

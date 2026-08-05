@@ -513,12 +513,18 @@ public class RubyGenerator : ILangGenerator
 
             string responseTypeExpression = null;
             //? $"def method\n  return '{options?.Op?.Method}'\nend"
-            string responseMethod = options?.Op?.Method != null
-                ? $"def get_type_name() = '{options?.Op?.Method}'"
-                : null;
-            if (string.IsNullOrEmpty(implStr) && type.Type is {IsAbstract: true})
+            string responseMethod = $"def get_type_name() = '{typeName}'";
+            if (options?.Op?.Method != null)
             {
-                // need to emit type hint when a generic base class contains a generic response type
+                responseMethod += $"\n    def get_method() = '{options.Op.Method}'";
+            }
+            if (!string.IsNullOrEmpty(implStr))
+            {
+                responseTypeExpression = "def response_type() = " + (implStr == nameof(IReturnVoid) ? "nil" : implStr);
+            }
+            if (responseTypeExpression == null && type.Type != null)
+            {
+                // need to emit type hint when a class contains a generic response type
                 var genericIReturn = type.Type.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                 if (genericIReturn != null)
                 {
@@ -584,7 +590,6 @@ public class RubyGenerator : ILangGenerator
             }
             else if (type.Properties.IsEmpty() && !addVersionInfo && type.Name != "IReturn`1" && type.Name != "IReturnVoid")
             {
-                sb.AppendLine("pass");
             }
             
             sb = sb.UnIndent();

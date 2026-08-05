@@ -202,6 +202,9 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public string SvgIcon { get; set; } =
         """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M8 2.19c3.13 0 5.68 2.25 5.68 5s-2.55 5-5.68 5a5.7 5.7 0 0 1-1.89-.29l-.75-.26l-.56.56a14 14 0 0 1-2 1.55a.13.13 0 0 1-.07 0v-.06a6.58 6.58 0 0 0 .15-4.29a5.25 5.25 0 0 1-.55-2.16c0-2.77 2.55-5 5.68-5M8 .94c-3.83 0-6.93 2.81-6.93 6.27a6.4 6.4 0 0 0 .64 2.64a5.53 5.53 0 0 1-.18 3.48a1.32 1.32 0 0 0 2 1.5a15 15 0 0 0 2.16-1.71a6.8 6.8 0 0 0 2.31.36c3.83 0 6.93-2.81 6.93-6.27S11.83.94 8 .94"></path><ellipse cx="5.2" cy="7.7" fill="currentColor" rx=".8" ry=".75"></ellipse><ellipse cx="8" cy="7.7" fill="currentColor" rx=".8" ry=".75"></ellipse><ellipse cx="10.8" cy="7.7" fill="currentColor" rx=".8" ry=".75"></ellipse></svg>""";
 
+    /// <summary> Whether to customize the NativeTypes code generation </summary>
+    public bool CustomizeNativeTypes { get; set; } = true;
+    
     public Action<ChatFeature>? Setup { get; set; }
     
     public ChatFeature()
@@ -345,6 +348,50 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         });
 
         appHost.ScriptContext.Args[nameof(Chat)] = new Chat(this);
+
+        if (CustomizeNativeTypes)
+        {
+            ConfigureNativeTypes();
+        }
+    }
+
+    public void ConfigureNativeTypes()
+    {
+        NativeTypes.Go.GoGenerator.PropertyTypeFilter = (gen, type, prop) => {
+            if (type.Name == "AiMessage" && prop.Name == "Content")
+            {
+                return "[]interface{}";
+            }
+            if (prop.Type == "AiContent" || prop.PropertyType?.Name == "AiContent" || prop.GenericArgs?.Contains("AiContent") == true)
+            {
+                return prop.Type?.StartsWith("List") == true || prop.GenericArgs != null ? "[]interface{}" : "interface{}";
+            }
+            return null;
+        };
+
+        NativeTypes.Rust.RustGenerator.PropertyTypeFilter = (gen, type, prop) => {
+            if (type.Name == "AiMessage" && prop.Name == "Content")
+            {
+                return "Option<Vec<Value>>";
+            }
+            if (prop.Type == "AiContent" || prop.PropertyType?.Name == "AiContent" || prop.GenericArgs?.Contains("AiContent") == true)
+            {
+                return prop.Type?.StartsWith("List") == true || prop.GenericArgs != null ? "Option<Vec<Value>>" : "Option<Value>";
+            }
+            return null;
+        };
+
+        NativeTypes.Zig.ZigGenerator.PropertyTypeFilter = (gen, type, prop) => {
+            if (type.Name == "AiMessage" && prop.Name == "Content")
+            {
+                return "?[]std.json.Value";
+            }
+            if (prop.Type == "AiContent" || prop.PropertyType?.Name == "AiContent" || prop.GenericArgs?.Contains("AiContent") == true)
+            {
+                return prop.Type?.StartsWith("List") == true || prop.GenericArgs != null ? "?[]std.json.Value" : "?std.json.Value";
+            }
+            return null;
+        };
     }
 
     public class Chat(ChatFeature feature)
