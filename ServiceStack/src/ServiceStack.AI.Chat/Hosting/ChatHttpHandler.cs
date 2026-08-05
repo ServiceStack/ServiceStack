@@ -7,7 +7,7 @@ using ServiceStack.Web;
 namespace ServiceStack.AI;
 
 /// <summary>
-/// Dispatches all Chat UI requests under ChatFeature.RoutePrefix through the RouteRegistry —
+/// Dispatches all Chat UI requests under ChatFeature.RoutePrefix through the RouteRegistry -
 /// the C# equivalent of llms-py's aiohttp server loop, including managed_handler error wrapping,
 /// on_request user setup, and the SPA index.html fallback.
 /// </summary>

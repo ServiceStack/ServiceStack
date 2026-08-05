@@ -51,9 +51,23 @@ public class ConfigureAiChat : IHostingStartup
             });
             
             services.AddPlugin(new PdfFeature {
-                
+                PdfCodeGen = new() {
+                    Namespace = "MyApp.ServiceModel.Pdf",
+                    OutputPath = Path.Combine(context.HostingEnvironment.ContentRootPath, "ServiceModel/Pdf"),
+                    // Exclude = ["invoice"],
+                }
             });
-       });
+       })
+       .ConfigureAppHost(afterAppHostInit:appHost => {
+            var log = appHost.GetApplicationServices().GetRequiredService<ILogger<ConfigureAiChat>>();
+            log.LogInformation("AI Chat configured");
+            
+            // Generate a typed model for every template in App_Data/pdf with:
+            //     dotnet run --AppTasks=pdf
+            // Templates you've since edited the model of are left alone, as are any named in Exclude.
+            AppTasks.Register("pdf", _ => appHost.GetPlugin<PdfFeature>().GeneratePdfs());
+            
+        });
 }
 
 /// <summary>

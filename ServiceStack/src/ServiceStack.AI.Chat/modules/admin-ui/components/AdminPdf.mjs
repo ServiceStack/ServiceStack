@@ -1,23 +1,53 @@
 // Keep this C#-owned copy in sync with src/ServiceStack.AI.Chat/modules/admin-ui/components/AdminPdf.mjs.
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
-import { useClient } from '@servicestack/vue'
+import { useClient, useFormatters } from '@servicestack/vue'
+import hljs from 'highlight.js'
 
 class AdminPdfTemplates { getTypeName() { return 'AdminPdfTemplates' }; getMethod() { return 'GET' }; createResponse() { return {} } }
 class AdminGetPdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminGetPdfTemplate' }; getMethod() { return 'GET' }; createResponse() { return {} } }
 class AdminDeletePdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminDeletePdfTemplate' }; getMethod() { return 'POST' }; createResponse() { return {} } }
 class AdminEditPdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminEditPdfTemplate' }; getMethod() { return 'POST' }; createResponse() { return {} } }
+class AdminPdfTemplateTypes { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminPdfTemplateTypes' }; getMethod() { return 'POST' }; createResponse() { return {} } }
 
 const json = value => {
     try { return value ? JSON.parse(value) : {} } catch { return {} }
 }
 
+/**
+ * Syntax highlighting that survives re-rendering.
+ *
+ * The shared v-highlightjs directive resets the element to plain text and then calls
+ * highlightElement, but hljs stamps dataset.highlighted on first use and refuses to run again -
+ * so every reactive update after the first leaves the plain text behind. Unsetting the flag first
+ * keeps the colours, and the value check keeps the live-editing path from re-parsing needlessly.
+ */
+const hl = (el, binding) => {
+    const value = binding.value ?? ''
+    if (el.__hl === value) return
+    el.__hl = value
+    el.textContent = value
+    delete el.dataset.highlighted
+    if (value) hljs.highlightElement(el)
+}
+
+/** Shared by the highlighted <pre> and the textarea over it - any mismatch here misaligns the caret.
+ *  Inline rather than Tailwind because text-transparent/break-words aren't in the admin-ui's CSS build. */
+const editorStyle = 'font:0.75rem/1.625 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;' +
+    // `anywhere` rather than `break-word`: only `anywhere` shrinks the element's min-content width, so a
+    // long unbreakable JSON token can't make the pane demand more width as the document loads.
+    'padding:1rem;margin:0;border:0;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2'
+
 export const AdminPdf = {
+    directives: { hl },
     template: `
-    <div class="max-w-screen-2xl mx-auto p-4 sm:p-6">
+    <!-- w-full is load-bearing: this is a flex item, and mx-auto's auto cross-axis margins cancel
+         align-self:stretch, so without it the page shrink-wraps to its content and every pane resizes
+         as the data and the rendered preview arrive. -->
+    <div class="w-full max-w-screen-2xl mx-auto p-4 sm:p-6">
         <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
             <div class="flex-1 min-w-48">
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ selected?.name || 'PDF Templates' }}</h1>
-                <p v-if="selected?.publishedBy" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Published by {{ selected.publishedBy }}{{ selected.publishedAt ? ' · ' + formatDate(selected.publishedAt) : '' }}</p>
+                <p v-if="selected?.publishedBy" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" :title="selected.publishedAt ? formatDate(selected.publishedAt) : ''">Published by {{ selected.publishedBy }}{{ selected.publishedAt ? ' · ' + relativeTime(selected.publishedAt) : '' }}</p>
                 <p v-else class="text-sm text-gray-500 dark:text-gray-400">Published PDF templates</p>
             </div>
             <button type="button" @click="openDialog = true" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-colors" title="Open published template">
@@ -56,21 +86,62 @@ export const AdminPdf = {
             </div>
         </section>
 
-        <div v-if="selected" class="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            <section class="rounded-lg border border-gray-200 dark:border-gray-700 min-w-0 overflow-hidden">
+        <!-- Viewport breakpoint rather than a container-relative auto-fit: the panes sit inside the
+             admin sidebar + padding, so a container-width rule needs a threshold we can't know here.
+             lg: splits them one breakpoint earlier than the xl: this used to use. -->
+        <div v-if="selected" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <section class="rounded-lg border border-gray-200 dark:border-gray-700 min-w-0 flex flex-col overflow-hidden">
                 <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
                     <h2 class="text-sm font-medium text-gray-700 dark:text-gray-200">Data</h2>
                     <div class="flex items-center gap-2">
+                        <!-- Reset first so the toggle stays pinned to the container's right edge: as the
+                             last child it doesn't shift when Reset drops out on the Code tab. -->
+                        <button v-if="dataView !== 'code'" type="button" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors" @click="resetData">Reset</button>
                         <div class="inline-flex rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 divide-x divide-gray-300 dark:divide-gray-600">
-                            <button type="button" @click="raw = true" class="px-3 py-1 text-xs font-medium transition-colors" :class="raw ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'">Code</button>
-                            <button type="button" @click="raw = false" class="px-3 py-1 text-xs font-medium transition-colors" :class="!raw ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'">Form</button>
+                            <button type="button" v-for="v in ['form','data','code']" :key="v" @click="dataView = v" class="px-3 py-1 text-xs font-medium transition-colors capitalize" :class="dataView === v ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'">{{ v }}</button>
                         </div>
-                        <button type="button" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors" @click="resetData">Reset</button>
                     </div>
                 </div>
-                <div class="w-full">
-                    <textarea v-if="raw" ref="textareaEl" v-model="dataText" @input="onCodeInput" class="block w-full p-4 font-mono text-xs leading-relaxed text-gray-800 dark:text-gray-200 bg-transparent outline-none resize-none overflow-hidden" spellcheck="false"></textarea>
-                    <JsonSchemaForm v-else :schema="schema" :data="data" :show-title="false" class="block w-full p-3" @change="onFormChange" />
+                <div class="w-full min-h-96 flex-1 flex flex-col">
+                    <!-- Highlighted JSON under a transparent textarea, both carrying the same metrics so
+                         the layers can't drift out of alignment.
+                         The scroller fills the available height and the inner layer grows inside it, so the pane
+                         occupies the same box before and after the data arrives - a content-height pane
+                         re-lays-out the whole grid the moment the empty object is replaced by the real
+                         document. -->
+                    <div v-if="dataView === 'data'" class="overflow-auto bg-white flex-1 min-h-96">
+                        <div class="relative min-w-0" style="min-height:100%">
+                            <pre :style="editorStyle" aria-hidden="true"><code lang="json" class="language-json block" v-hl="dataText"></code></pre>
+                            <textarea v-model="dataText" @input="onCodeInput" class="absolute inset-0 w-full h-full" :style="editorStyle + ';color:transparent;background:transparent;caret-color:#4f46e5;resize:none;outline:none;overflow:hidden'" spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                    <component v-else-if="dataView === 'form' && jsonSchemaForm" :is="jsonSchemaForm" :schema="schema" :data="data" :show-title="false" class="block w-full p-3" @change="onFormChange" />
+                    <p v-else-if="dataView === 'form'" class="p-4 text-sm text-gray-500 dark:text-gray-400">The form editor couldn't be loaded from the Chat UI. Use <span class="font-medium">Data</span> to edit it as JSON.</p>
+                    <div v-else class="p-3 space-y-3">
+                        <!-- Scrolls rather than wraps: the tab strip is the one thing that has to stay one
+                             row, or the pane's height changes as the examples arrive. -->
+                        <div class="overflow-x-auto -mx-3 px-3">
+                            <div class="inline-flex rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 divide-x divide-gray-300 dark:divide-gray-600 whitespace-nowrap">
+                                <button type="button" v-for="t in codeTabs" :key="t.id" @click="codeTab = t.id" class="px-3 py-1 text-xs font-medium transition-colors" :class="codeTab === t.id ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'">{{ t.label }}</button>
+                            </div>
+                        </div>
+                        <!-- The models tab is the only one the AppTask writes; the examples are stubs to paste.
+                             modelsPath doubles as "is PdfCodeGen configured": without it there's no task to run. -->
+                        <template v-if="codeTab === 'model'">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Copy this into your own model<template v-if="modelsPath">, or generate PDF Data Models for every template with:</template><template v-else>.</template>
+                            </p>
+                            <ShellCommand v-if="modelsPath" class="mb-2">dotnet run --AppTasks=pdf</ShellCommand>
+                        </template>
+                        <p v-else-if="activeCode?.notes" class="text-xs text-gray-500 dark:text-gray-400" style="overflow-wrap:anywhere">{{ activeCode.notes }}</p>
+                        <p v-if="codeTab === 'model' && selected && !selected.hasSchema" class="text-xs text-amber-600 dark:text-amber-400">Generated from the example data. Add a <span class="font-mono">{{ selected.name }}.ui.json</span> schema in PDF Studio for richer types — dates, decimals, enums and required members.</p>
+                        <p v-if="typesError" class="text-xs text-red-600 dark:text-red-400">{{ typesError }}</p>
+                        <!-- CopyIcon sits outside the scroller so it stays pinned as the code scrolls under it -->
+                        <div v-if="activeCode?.source" class="relative">
+                            <CopyIcon class="absolute top-2 right-2 z-10" :text="activeCode.source" title="Copy code" />
+                            <pre class="overflow-auto rounded-md bg-white border border-gray-200 dark:border-gray-700 m-0 p-3 pr-14 text-xs leading-relaxed"><code lang="csharp" class="language-csharp block" v-hl="activeCode.source"></code></pre>
+                        </div>
+                    </div>
                 </div>
             </section>
             <section class="rounded-lg border border-gray-200 dark:border-gray-700 min-w-0 flex flex-col overflow-hidden">
@@ -110,12 +181,27 @@ export const AdminPdf = {
     </div>`,
     setup() {
         const client = useClient(), routes = inject('routes')
+        const { relativeTime } = useFormatters()
         const humanifyBytes = bytes => bytes == null ? '—' : bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`
         const templates = ref([]), selected = ref(null), pdfPath = ref(''), chatBase = ref('/chat'), typstAvailable = ref(false)
-        const loading = ref(false), rendering = ref(false), editing = ref(false), openDialog = ref(false), search = ref(''), sort = ref('name'), raw = ref(false), error = ref(null)
-        const data = ref({}), initialData = ref({}), dataText = ref('{}'), schema = ref({}), pdfView = shallowRef(null), pages = ref(0), scale = ref(1), pdfBytes = ref(null), previewEl = ref(null), textareaEl = ref(null), canvases = []
-        const autoResize = () => nextTick(() => { const el = textareaEl.value; if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } })
-        watch([dataText, raw], autoResize)
+        const VIEWS = ['form','data','code'], VIEW_KEY = 'admin-pdf.view'
+        const loading = ref(false), rendering = ref(false), editing = ref(false), openDialog = ref(false), search = ref(''), sort = ref('name'), error = ref(null)
+        // a reload remounts the component, so the tab has to come from somewhere that outlives it
+        const dataView = ref(VIEWS.includes(localStorage.getItem(VIEW_KEY)) ? localStorage.getItem(VIEW_KEY) : 'data')
+        watch(dataView, v => localStorage.setItem(VIEW_KEY, v))
+        const data = ref({}), initialData = ref({}), dataText = ref('{}'), schema = ref({}), pdfView = shallowRef(null), pages = ref(0), scale = ref(1), pdfBytes = ref(null), previewEl = ref(null), canvases = []
+        // Borrowed from the Chat UI rather than bundled, like pdf-preview.mjs above it
+        const jsonSchemaForm = shallowRef(null)
+        const typesSource = ref(''), typesError = ref(''), modelsPath = ref(''), codeExamples = ref([])
+        // the model is always the first tab; the rest are whatever stubs the server generated for it
+        const CODE_KEY = 'admin-pdf.code'
+        const codeTab = ref(localStorage.getItem(CODE_KEY) || 'model')
+        watch(codeTab, v => localStorage.setItem(CODE_KEY, v))
+        const codeTabs = computed(() => [
+            { id: 'model', label: 'PDF Data Models', source: typesSource.value },
+            ...codeExamples.value,
+        ])
+        const activeCode = computed(() => codeTabs.value.find(x => x.id === codeTab.value) ?? codeTabs.value[0])
         const filtered = computed(() => templates.value.filter(x => x.name.toLowerCase().includes(search.value.toLowerCase())).sort((a,b) => sort.value === 'name' ? a.name.localeCompare(b.name) : sort.value === 'size' ? b.size - a.size : new Date(b.modified) - new Date(a.modified)))
         const formatDate = value => value ? new Date(value).toLocaleString() : '—'
         let renderTimer = null
@@ -132,19 +218,56 @@ export const AdminPdf = {
         const onCodeInput = () => { if (readData()) scheduleRender() }
         const onFormChange = value => { data.value = value; error.value = null; syncText(); scheduleRender() }
         const resetData = () => { data.value = cloneData(initialData.value); error.value = null; syncText(); scheduleRender() }
-        const loadPreviewModule = async () => {
+        const loadModules = async () => {
             try {
                 const preview = await import(`${chatBase.value}/ext/pdf/pdf-preview.mjs`)
                 pdfView.value = new preview.PdfView(chatBase.value + '/ext/pdf')
             } catch { /* typst-disabled chat returns the SPA HTML; textarea/iframe-free canvas fallback remains usable */ }
+            try {
+                // registered here so the Form view works in any App, not only those that happen to
+                // list JsonSchemaForm in their own admin-ui index.html
+                const mod = await import(`${chatBase.value}/ui/components/JsonSchemaForm.mjs`)
+                jsonSchemaForm.value = mod.JsonSchemaForm
+            } catch { /* the Form view falls back to a message pointing at Code */ }
         }
+
+        /**
+         * The model comes from the server so the Code view shows exactly what `dotnet run --AppTasks=pdf`
+         * would write - one generator, one output. Debounced because it tracks the data being typed.
+         */
+        let typesTimer = null
+        const buildTypes = async () => {
+            if (!selected.value) return
+            const name = selected.value.name
+            const api = await client.api(new AdminPdfTemplateTypes({
+                name, data: dataText.value, schema: JSON.stringify(schema.value),
+            }))
+            if (selected.value?.name !== name) return // a slow response for a template we've moved off
+            if (api.error) {
+                typesError.value = api.error.message || `${api.error}`; typesSource.value = ''; return
+            }
+            typesError.value = ''
+            typesSource.value = api.response.source
+            codeExamples.value = api.response.examples || []
+            // a document with no root class has no examples - don't strand the view on a tab that's gone
+            if (!codeTabs.value.some(x => x.id === codeTab.value)) codeTab.value = 'model'
+        }
+        const scheduleTypes = () => {
+            clearTimeout(typesTimer)
+            typesTimer = setTimeout(buildTypes, 300)
+        }
+        watch([dataView, dataText, schema], () => {
+            if (dataView.value === 'code') scheduleTypes()
+        })
+
         const refresh = async () => {
             loading.value = true
             const api = await client.api(new AdminPdfTemplates())
             loading.value = false
             if (api.error) { error.value = api.error; return }
             const r = api.response; templates.value = r.results || []; pdfPath.value = r.pdfPath; chatBase.value = r.chatBaseUrl || '/chat'; typstAvailable.value = r.typstAvailable
-            await loadPreviewModule()
+            modelsPath.value = r.modelsPath || ''
+            await loadModules()
             if (routes.template) await select(routes.template, false)
         }
         const select = async (name, close = true) => {
@@ -166,6 +289,8 @@ export const AdminPdf = {
                 error.value = api.error; return
             }
             const r = api.response; selected.value = r.template; initialData.value = json(r.data); data.value = cloneData(initialData.value); dataText.value = r.data || '{}'; schema.value = json(r.schema); pages.value = 0; pdfBytes.value = null
+            typesSource.value = ''; typesError.value = ''; codeExamples.value = []
+            if (dataView.value === 'code') await buildTypes()
             if (close) openDialog.value = false
             // Keep the selected template addressable without adding a duplicate history entry
             // when this selection was itself caused by back/forward navigation.
@@ -200,7 +325,8 @@ export const AdminPdf = {
                 error.value = null
             }
         })
-        onMounted(refresh); onUnmounted(() => { clearTimeout(renderTimer); pdfView.value?.destroy() })
-        return { templates, selected, pdfPath, chatBase, typstAvailable, loading, rendering, editing, openDialog, search, sort, raw, error, data, dataText, schema, pages, scale, pdfBytes, previewEl, textareaEl, canvases, filtered, humanifyBytes, formatDate, onCodeInput, onFormChange, resetData, select, render, zoom, fit, download, unpublish, edit }
+        onMounted(refresh); onUnmounted(() => { clearTimeout(renderTimer); clearTimeout(typesTimer); pdfView.value?.destroy() })
+        return { editorStyle, relativeTime, templates, selected, pdfPath, chatBase, typstAvailable, loading, rendering, editing, openDialog, search, sort, dataView, error, data, dataText, schema, pages, scale, pdfBytes, previewEl, canvases, filtered, humanifyBytes, formatDate, onCodeInput, onFormChange, resetData, select, render, zoom, fit, download, unpublish, edit,
+            jsonSchemaForm, typesError, modelsPath, codeTab, codeTabs, activeCode }
     },
 }

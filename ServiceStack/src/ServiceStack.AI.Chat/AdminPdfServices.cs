@@ -35,6 +35,8 @@ public class AdminPdfTemplatesResponse
     /// <summary>Where the Chat UI is mounted, which is also where the Admin UI borrows its JS from</summary>
     public string ChatBaseUrl { get; set; } = null!;
     public List<PublishedPdfTemplate> Results { get; set; } = [];
+    /// <summary>Where the `pdf` AppTask generates models, shown so the Code view can point at it</summary>
+    public string? ModelsPath { get; set; }
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
@@ -118,10 +120,38 @@ public class AdminEditPdfTemplateResponse
 }
 
 /// <summary>
+/// The C# data model for a template, generated from its .ui.json schema so App code can populate a typed
+/// DTO instead of hand-building the template's JSON.
+/// <para>
+/// Read-only: this is the same <see cref="PdfCodeGen"/> the <c>pdf</c> AppTask runs, so what the Admin UI
+/// shows for copy/paste is exactly what <c>dotnet run --AppTasks=pdf</c> writes into the project.
+/// </para>
+/// </summary>
+[ExcludeMetadata, Tag(TagNames.Admin)]
+public class AdminPdfTemplateTypes : IPost, IReturn<AdminPdfTemplateTypesResponse>
+{
+    public string Name { get; set; } = null!;
+    /// <summary>Data JSON being edited in the UI. Omitted uses the published &lt;name&gt;.json.</summary>
+    public string? Data { get; set; }
+    /// <summary>Schema JSON being edited in the UI. Omitted uses the published &lt;name&gt;.ui.json.</summary>
+    public string? Schema { get; set; }
+}
+
+public class AdminPdfTemplateTypesResponse
+{
+    /// <summary>Root class name, e.g. "Invoice"</summary>
+    public string? TypeName { get; set; }
+    public string Source { get; set; } = null!;
+    /// <summary>Copy/paste stubs for using the model, one per tab in the Code view</summary>
+    public List<PdfCodeGenExample> Examples { get; set; } = [];
+    public ResponseStatus? ResponseStatus { get; set; }
+}
+
+/// <summary>
 /// Admin APIs behind /admin-ui/pdf: browse the templates published to App_Data/pdf, render them with
 /// arbitrary data, unpublish them, and publish new ones out of the Chat PDF Designer.
 /// </summary>
-public class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Service
+public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Service
 {
     string ResolveTemplate(string name, bool mustExist = true)
     {
@@ -143,7 +173,7 @@ public class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Servi
     {
         var to = AssertFeature();
         if (!to.IsAvailable)
-            throw new Exception("typst is not installed — install it from https://typst.app to render PDFs");
+            throw new Exception("typst is not installed - install it from https://typst.app to render PDFs");
         return to;
     }
 
@@ -160,6 +190,10 @@ public class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Servi
             TypstAvailable = feature.IsAvailable,
             ChatBaseUrl = feature.ChatRoutePrefix,
             Results = publisher.GetPublishedNames().Map(x => ToTemplate(x, manifest)),
+            // only when the App has an AppTask to run: without a config, GeneratePdfs() has nowhere to write
+            ModelsPath = feature.PdfCodeGen != null
+                ? feature.PdfCodeGen.OutputPath ?? feature.ModelsPath
+                : null,
         };
     }
 
@@ -243,7 +277,7 @@ public class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Servi
 
         foreach (var flatFile in files)
         {
-            // Skip thumbnails — they don't belong in the designer
+            // Skip thumbnails - they don't belong in the designer
             if (flatFile.EndsWith(".preview.png", StringComparison.OrdinalIgnoreCase))
                 continue;
 
@@ -265,7 +299,7 @@ public class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Servi
                 var stemSuffix = sourceStem + suffix; // e.g. "quote.json" or "quote.logo.png"
 
                 // If the suffix starts with the source stem's extension pattern (e.g. .json, .ui.json),
-                // it's a companion; otherwise it's a prefixed asset — strip the name prefix
+                // it's a companion; otherwise it's a prefixed asset - strip the name prefix
                 if (flatFile.StartsWith(name + "." + sourceStem + ".", StringComparison.Ordinal)
                     || suffix.StartsWith("." + sourceStem + ".", StringComparison.Ordinal))
                 {
@@ -281,7 +315,7 @@ public class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Servi
             }
             else
             {
-                // Unexpected file in the manifest — place it as-is in the source dir
+                // Unexpected file in the manifest - place it as-is in the source dir
                 targetRel = sourceDir.Length > 0 ? $"{sourceDir}/{flatFile}" : flatFile;
             }
 
@@ -400,7 +434,44 @@ public class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer) : Servi
         };
     }
 
+    public object Any(AdminPdfTemplateTypes request)
+    {
+        AssertFeature();
+        ResolveTemplate(request.Name); // the model must belong to a template that exists
+
+        // the App's own codegen config, so the source shown here is namespaced exactly like the one the
+        // AppTask writes - nothing for the UI to ask for or get wrong
+        var config = feature.PdfCodeGen ?? new PdfCodeGenConfig();
+
+        // the UI sends what's currently in its editors, so the source tracks unsaved edits; omitted, the
+        // generator reads the template's own companions, which is what the AppTask does
+        var file = new PdfCodeGen(feature).CreateFile(request.Name, config, outputPath: "",
+            data: ParseJson(request.Data), schema: ParseJson(request.Schema));
+
+        return new AdminPdfTemplateTypesResponse
+        {
+            TypeName = file.TypeName,
+            Source = file.Source,
+            Examples = PdfExamples.Create(file, config.Namespace ?? feature.ModelsNamespace),
+        };
+    }
+
     // ── Helpers ──
+
+    /// <summary>Editor content the UI hasn't finished typing yet is null, not an error</summary>
+    static JsonNode? ParseJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return null;
+        try
+        {
+            return ChatJson.Parse(json!);
+        }
+        catch (System.Text.Json.JsonException e)
+        {
+            throw new ArgumentException($"Invalid JSON: {e.Message}");
+        }
+    }
 
     string? ReadIfExists(string fileName)
     {

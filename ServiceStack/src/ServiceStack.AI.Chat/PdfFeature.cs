@@ -13,7 +13,7 @@ namespace ServiceStack.AI;
 /// does, since that's what reads the designer's folder.
 /// </para>
 /// </summary>
-public class PdfFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPreInitPlugin
+public partial class PdfFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPreInitPlugin
 {
     public string Id => "pdf";
 
@@ -44,11 +44,31 @@ public class PdfFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPreI
     /// <summary>Where the Chat UI is mounted, for the Admin UI's Edit link + borrowed JS modules</summary>
     public string ChatRoutePrefix { get; set; } = "/chat";
 
+    /// <summary>
+    /// Where the <c>pdf</c> AppTask generates PDF data models, when its config doesn't say. Set to
+    /// override; otherwise resolved on Register to the App's ServiceModel folder + "/Pdf", and null when
+    /// no ServiceModel folder was found.
+    /// <para>
+    /// Their own folder because generated names come from the document's keys and are generic enough
+    /// (Item, From, Details) to collide with the App's own types.
+    /// </para>
+    /// <para>Nothing is ever written outside <see cref="GeneratePdfs"/> — see <see cref="AI.PdfCodeGen"/>.</para>
+    /// </summary>
+    public string? ModelsPath { get; set; }
+
+    /// <summary>
+    /// Namespace generated models are emitted into. Set to override; otherwise the namespace the
+    /// App's ServiceModel sources declare + ".Pdf", to match <see cref="ModelsPath"/>.
+    /// </summary>
+    public string? ModelsNamespace { get; set; }
+
     /// <summary>Replaceable renderer, also resolvable as IPdfRenderer</summary>
     public IPdfRenderer Renderer { get; set; } = null!;
 
     /// <summary>False when typst isn't installed: templates can still be listed and unpublished</summary>
     public bool IsAvailable => !string.IsNullOrEmpty(TypstPath);
+    
+    public PdfCodeGenConfig? PdfCodeGen { get; set; }
 
     public ILogger Log { get; set; } = Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
@@ -99,5 +119,107 @@ public class PdfFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPreI
         // the Admin UI links back to the designer and borrows its JS modules, wherever it's mounted
         if (appHost.GetPlugin<ChatFeature>() is { } chat)
             ChatRoutePrefix = chat.RoutePrefix;
+
+        // both default to a Pdf/ subfolder of the App's ServiceModel, so generated models are
+        // namespaced away from the App's own types rather than sitting alongside them
+        var serviceModelPath = ModelsPath == null || ModelsNamespace == null
+            ? ResolveServiceModelPath(appHost)
+            : null;
+        ModelsPath ??= serviceModelPath != null
+            ? Path.Combine(serviceModelPath, PdfModelsFolder)
+            : null;
+        if (serviceModelPath != null)
+            ModelsNamespace ??= ResolveServiceModelNamespace(serviceModelPath) is { } ns
+                ? ns + "." + PdfModelsFolder
+                : null;
+    }
+
+    /// <summary>Folder + namespace segment generated models default into</summary>
+    public const string PdfModelsFolder = "Pdf";
+
+    /// <summary>
+    /// The namespace the App's own ServiceModel sources use, since it can't be derived reliably: the
+    /// folder is often "ServiceModel" inside a differently-named project (e.g. MyApp.ServiceModel).
+    /// </summary>
+    string? ResolveServiceModelNamespace(string dir)
+    {
+        try
+        {
+            var declared = Directory.EnumerateFiles(dir, "*.cs", SearchOption.TopDirectoryOnly)
+                .SelectMany(x => File.ReadLines(x).Take(30))
+                .Select(line => NamespaceRegex().Match(line))
+                .Where(m => m.Success)
+                .Select(m => m.Groups["ns"].Value)
+                .GroupBy(x => x)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault();
+            if (declared != null)
+                return declared;
+
+            // an empty folder still names itself in the multi-project layout
+            var name = new DirectoryInfo(dir).Name;
+            return name.Contains('.') ? name : null;
+        }
+        catch (Exception e)
+        {
+            Log.LogDebug(e, "Could not resolve ServiceModel namespace");
+            return null;
+        }
+    }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"^\s*namespace\s+(?<ns>[A-Za-z_][A-Za-z0-9_.]*)\s*[;{]?\s*$")]
+    private static partial System.Text.RegularExpressions.Regex NamespaceRegex();
+
+    /// <summary>
+    /// Finds the App's ServiceModel folder, covering both layouts ServiceStack Apps use: a folder in
+    /// the host project, or the sibling MyApp.ServiceModel project `x new` templates create.
+    /// </summary>
+    string? ResolveServiceModelPath(IAppHost appHost)
+    {
+        try
+        {
+            var inProject = appHost.MapProjectPath("~/ServiceModel");
+            if (Directory.Exists(inProject))
+                return inProject;
+
+            var contentRoot = appHost.MapProjectPath("~/");
+            var parent = Directory.GetParent(contentRoot.TrimEnd(Path.DirectorySeparatorChar, '/'));
+            if (parent?.Exists != true)
+                return null;
+
+            // only when it's unambiguous: a solution with several is not ours to guess between
+            var siblings = parent.GetDirectories("*.ServiceModel")
+                .Where(x => x.EnumerateFiles("*.csproj").Any())
+                .ToList();
+            return siblings.Count == 1 ? siblings[0].FullName : null;
+        }
+        catch (Exception e)
+        {
+            // a missing or unreadable project layout just means models can't be saved from the UI
+            Log.LogDebug(e, "Could not resolve ServiceModel path");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Generates a typed C# model for every published PDF template, to register as an AppTask and run with
+    /// <c>dotnet run --AppTasks=pdf</c> — the same source the Admin UI's Code view shows.
+    /// </summary>
+    /// <example><code>
+    /// AppTasks.Register("pdf", _ => appHost.GetPlugin&lt;PdfFeature&gt;().GeneratePdf(new() {
+    ///     Namespace = "MyApp.ServiceModel.Pdf",
+    ///     OutputPath = Path.Combine(contentRootPath, "ServiceModel/Pdf"),
+    /// }));
+    /// </code></example>
+    public PdfCodeGenResult GeneratePdfs(PdfCodeGenConfig? config = null)
+    {
+        config ??= PdfCodeGen;
+        if (config == null)
+            throw new InvalidOperationException("PdfCodeGen configuration is not set.");
+        var result = new PdfCodeGen(this).Generate(config);
+        Log.LogInformation("Generated PDF models in {Path}\n{Log}",
+            config.OutputPath ?? ModelsPath, result.GetLog());
+        return result;
     }
 }
