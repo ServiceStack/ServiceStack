@@ -306,7 +306,11 @@ public class RustGenerator : ILangGenerator
         AllTypes = metadata.GetAllTypesOrdered();
         AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
 
-        //Interfaces are only used as markers in .NET, they're not needed in Rust
+        //Interfaces are only used as markers in .NET, they're not emitted in Rust so the
+        //properties referencing them can only be represented as serde_json::Value
+        var interfaceTypes = AllTypes.Where(x => x.IsInterface == true)
+            .Map(x => x.Name.LeftPart('`'))
+            .ToSet();
         AllTypes.RemoveAll(x => x.IsInterface == true);
 
         //Only use Library Types when they're not shadowed by a User-defined Type of the same name
@@ -328,6 +332,8 @@ public class RustGenerator : ILangGenerator
                 .Map(x => x.Name.LeftPart('`'))
                 .Where(name => AllTypes.Any(x => x.Inherits?.Name.LeftPart('`') == name))
                 .ToSet();
+
+        PolymorphicTypes.UnionWith(interfaceTypes);
 
         //TypeScript doesn't support reusing same type name with different generic airity
         var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
@@ -608,6 +614,11 @@ public class RustGenerator : ILangGenerator
                 return lastNS;
             }
 
+            if (IsMarkerGenericType(type.Name))
+            {
+                typeName = TypeAlias(type.Name);
+            }
+
             sb.AppendLine($"pub struct {typeName} {{");
 
             sb = sb.Indent();
@@ -781,17 +792,6 @@ public class RustGenerator : ILangGenerator
             sb.AppendLine("pub {0}: Option<ResponseStatus>,".Fmt(responseStatusFieldName));
         }
 
-        // Add PhantomData for generic types with no properties
-        if (type.GenericArgs?.Length > 0 &&
-            (type.Properties == null || type.Properties.Count == 0) &&
-            !includeResponseStatus)
-        {
-            for (int i = 0; i < type.GenericArgs.Length; i++)
-            {
-                sb.AppendLine("#[serde(skip)]");
-                sb.AppendLine($"pub _phantom{(i > 0 ? i.ToString() : "")}: std::marker::PhantomData<{type.GenericArgs[i]}>,");
-            }
-        }
     }
 
     public bool AppendAttributes(StringBuilderWrapper sb, List<MetadataAttribute> attributes)
@@ -911,6 +911,20 @@ public class RustGenerator : ILangGenerator
         return cooked;
     }
 
+    /// <summary>
+    /// Whether a Type is a generic marker base Type with no properties of its own, e.g.
+    /// CreateAuditBase&lt;Table,TResponse&gt;. Its Type params are dropped as the PhantomData
+    /// fields they'd need would require its Type args to implement Default for serde
+    /// </summary>
+    public bool IsMarkerGenericType(string typeName)
+    {
+        if (typeName.IndexOf('`') == -1)
+            return false;
+
+        var type = AllTypes.FirstOrDefault(x => x.Name == typeName);
+        return type != null && type.GenericArgs?.Length > 0 && type.Properties.IsEmpty();
+    }
+
     public string Type(string type, string[] genericArgs)
     {
         var useType = TypeFilter?.Invoke(type, genericArgs);
@@ -940,7 +954,9 @@ public class RustGenerator : ILangGenerator
                     var typeName = TypeAlias(type);
 
                     // Library Types that aren't generic in Rust, e.g. QueryDb<Booking> -> QueryDb
-                    if (IsLibraryType(parts[0]) && NonGenericLibraryTypes.Contains(parts[0]))
+                    // and marker base Types whose Type params none of their properties use
+                    if ((IsLibraryType(parts[0]) && NonGenericLibraryTypes.Contains(parts[0]))
+                        || IsMarkerGenericType(type))
                     {
                         cooked = typeName;
                     }
