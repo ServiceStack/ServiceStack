@@ -32,7 +32,7 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
     public Func<IRequest, bool> AutoSignInSessionsMatching { get; set; }
 
     public string AuthenticationType { get; set; } = "Identity.Application"; //Used by SignInManager<T>.IsSignedIn()
-    public string Issuer { get; set; } = HostContext.ServiceName;
+    public string Issuer { get; set; } 
 
     public string IdClaimType
     {
@@ -324,6 +324,8 @@ public class NetCoreIdentityAuthProvider : AuthProvider, IAuthWithRequest, IAuth
     public override void Register(IAppHost appHost, AuthFeature authFeature)
     {
         base.Register(appHost, authFeature);
+        
+        Issuer ??= ((ServiceStackHost)appHost).ServiceName;        
         
         if (AutoSignInSessions)
         {
