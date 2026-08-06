@@ -529,8 +529,9 @@ public class RustGenerator : ILangGenerator
         {
             var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty();
 
-            // Rust enums with #[derive(Serialize, Deserialize)]
-            sb.AppendLine("#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]");
+            // Rust enums with #[derive(Serialize, Deserialize)]. Copy, Eq and Hash let enums
+            // be used as HashMap keys, which C# Dictionary<Enum,T> properties are mapped to
+            sb.AppendLine("#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
 
             if (isIntEnum)
             {
@@ -583,22 +584,41 @@ public class RustGenerator : ILangGenerator
         else
         {
             // Rust struct generation
+            var typeName = Type(type.Name, type.GenericArgs);
+            var baseTypeName = type.Inherits != null
+                ? Type(type.Inherits.Name, type.Inherits.GenericArgs)
+                : null;
+
             sb.AppendLine("#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]");
             sb.AppendLine("#[serde(default)]");
 
-            var typeName = Type(type.Name, type.GenericArgs);
+            // A collection can't be flattened into a struct, DTOs inheriting a collection are
+            // instead emitted as a newtype struct which serializes as its inner collection, e.g:
+            //     pub struct StoreContacts(pub Vec<Contact>);
+            if (baseTypeName != null && IsCollectionType(baseTypeName))
+            {
+                sb.AppendLine($"pub struct {typeName}(pub {baseTypeName});");
+
+                if (options.IsRequest)
+                {
+                    AppendRequestImpls(sb, type, typeName, options.Op);
+                }
+
+                PostTypeFilter?.Invoke(sb, type);
+                return lastNS;
+            }
+
             sb.AppendLine($"pub struct {typeName} {{");
 
             sb = sb.Indent();
             InnerTypeFilter?.Invoke(sb, type);
 
             // Rust doesn't support sub classing, inherited properties are flattened into the Type
-            if (type.Inherits != null)
+            if (baseTypeName != null)
             {
-                var baseType = Type(type.Inherits.Name, type.Inherits.GenericArgs);
                 var baseFieldName = GetPropertyName(type.Inherits.Name.LeftPart('`'));
                 sb.AppendLine("#[serde(flatten)]");
-                sb.AppendLine($"pub {baseFieldName}: {baseType},");
+                sb.AppendLine($"pub {baseFieldName}: {baseTypeName},");
             }
 
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
@@ -850,6 +870,12 @@ public class RustGenerator : ILangGenerator
         "IOrderedDictionary",
     };
         
+    /// <summary>
+    /// Whether the Rust Type is a collection which can't be flattened into a struct
+    /// </summary>
+    public static bool IsCollectionType(string rustType) =>
+        rustType.StartsWith("Vec<") || rustType.StartsWith("HashMap<");
+
     public string Type(MetadataTypeName typeName) => Type(typeName.Name, typeName.GenericArgs);
 
     public string DeclarationType(string type, string[] genericArgs, out string addDeclaration)

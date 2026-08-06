@@ -439,9 +439,8 @@ public class RubyGenerator : ILangGenerator
         allTypes.AddRange(AllTypes.Where(x => x.IsEnum == true));
         allTypes.AddRange(AllTypes.Where(x => x.IsEnum != true));
 
-        //Ruby doesn't support Generic classes
-        allTypes.RemoveAll(x => x.Name.IndexOf('`') >= 0);
-        AllTypes.RemoveAll(x => x.Name.IndexOf('`') >= 0);
+        // Ruby doesn't support Generic classes, generic Types are emitted with their Type
+        // params erased, keeping the inherited properties of the Types extending them
 
         var orderedTypes = allTypes;
 
@@ -628,6 +627,14 @@ public class RubyGenerator : ILangGenerator
                 extends = $" < {Type(type.Inherits, includeNested: true)}";
             }
 
+            // DTOs inheriting a collection extend Array or Hash, which the client sends
+            // as the JSON Array or Object the API expects, e.g: class StoreContacts < Array
+            var collectionBaseType = CollectionBaseType(type.Inherits);
+            if (collectionBaseType != null)
+            {
+                extends = $" < {collectionBaseType}";
+            }
+
             sb.AppendLine($"{defType} {typeName}{extends}");
             sb = sb.Indent();
 
@@ -636,6 +643,16 @@ public class RubyGenerator : ILangGenerator
             {
                 sb.AppendLine($"include {LibraryType("DTO")}");
                 sb.AppendLine();
+            }
+            else if (collectionBaseType != null)
+            {
+                var elementTypeExpression = CollectionTypeExpression(type.Inherits);
+                if (elementTypeExpression != null)
+                {
+                    // Populate the collection with instances of its element Type
+                    sb.AppendLine($"def self.from_hash(json) = new.replace({LibraryType("DTO")}::Serializer.from_json_value({elementTypeExpression}, json))");
+                    sb.AppendLine();
+                }
             }
 
             InnerTypeFilter?.Invoke(sb, type);
@@ -647,13 +664,16 @@ public class RubyGenerator : ILangGenerator
                 sb.AppendLine();
             }
             
-            AddProperties(sb, type, 
-                includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                    && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
-
-            if (type.IsInterface != true)
+            if (collectionBaseType == null)
             {
-                AppendPropertyMetadata(sb, type);
+                AddProperties(sb, type, 
+                    includeResponseStatus: Config.AddResponseStatus && options.IsResponse
+                        && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
+
+                if (type.IsInterface != true)
+                {
+                    AppendPropertyMetadata(sb, type);
+                }
             }
 
             if (responseTypeExpression != null)
@@ -805,7 +825,7 @@ public class RubyGenerator : ILangGenerator
         return Type(typeName.Name, typeName.GenericArgs, includeNested: includeNested);
     }
 
-    public static string TypeAlias(string type)
+    public string TypeAlias(string type)
     {
         typeAliasValues ??= new HashSet<string>(TypeAliases.Values);
         if (typeAliasValues.Contains(type))
@@ -824,16 +844,14 @@ public class RubyGenerator : ILangGenerator
         return typeAlias ?? NameOnly(type);
     }
 
-    public static string NameOnly(string type)
+    public string NameOnly(string type)
     {
-        var name = conflictTypeNames.Contains(type)
+        var name = ConflictTypeNames.Contains(type)
             ? type.Replace('`', '_')
             : type.LeftPart('`');
 
         return name.LastRightPart('.').SafeToken();
     }
-
-    static HashSet<string> conflictTypeNames = new();
 
     public string Type(string type, string[] genericArgs, bool includeNested = false)
     {
@@ -970,6 +988,41 @@ public class RubyGenerator : ILangGenerator
         }
 
         return ConvertedTypeExpression(prop.Type);
+    }
+
+    /// <summary>
+    /// The Ruby collection a DTO inheriting a collection extends, or null when it doesn't
+    /// inherit one, e.g: List&lt;Contact&gt; -&gt; Array
+    /// </summary>
+    public string CollectionBaseType(MetadataTypeName baseType)
+    {
+        if (baseType?.Name == null)
+            return null;
+        if (ArrayTypes.Contains(baseType.Name) || baseType.Name.EndsWith("[]"))
+            return "Array";
+        return DictionaryTypes.Contains(baseType.Name) ? "Hash" : null;
+    }
+
+    /// <summary>
+    /// The Ruby Type expression of an inherited collection's elements, or null when
+    /// its JSON values are used as-is, e.g: [Contact] or { String =&gt; Contact }
+    /// </summary>
+    public string CollectionTypeExpression(MetadataTypeName baseType)
+    {
+        if (baseType?.GenericArgs == null)
+            return null;
+
+        if (ArrayTypes.Contains(baseType.Name) && baseType.GenericArgs.Length > 0)
+        {
+            var elementType = ConvertedTypeExpression(baseType.GenericArgs[0]);
+            return elementType != null ? $"[{elementType}]" : null;
+        }
+        if (DictionaryTypes.Contains(baseType.Name) && baseType.GenericArgs.Length > 1)
+        {
+            var valueType = ConvertedTypeExpression(baseType.GenericArgs[1]);
+            return valueType != null ? $"{{ String => {valueType} }}" : null;
+        }
+        return null;
     }
 
     /// <summary>
