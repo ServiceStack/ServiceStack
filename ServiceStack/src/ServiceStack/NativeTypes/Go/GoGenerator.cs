@@ -21,8 +21,8 @@ public class GoGenerator : ILangGenerator
         Config = config;
         feature = HostContext.GetPlugin<NativeTypesFeature>();
     }
-        
-    public static Func<IRequest,string> AddHeader { get; set; }
+
+    public static Func<IRequest, string> AddHeader { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> InnerTypeFilter { get; set; }
     public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
@@ -97,62 +97,66 @@ public class GoGenerator : ILangGenerator
     /// conflict with an existing property of the same name
     /// </summary>
     public const string CreateResponseMethod = "CreateResponse";
+
     public const string CreateResponseVoidMethod = "CreateResponseVoid";
     public const string HttpMethodMethod = "HttpMethod";
 
-    public static List<string> DefaultImports = new() {
+    public static List<string> DefaultImports = new()
+    {
     };
 
-    public static Dictionary<string, string> TypeAliases = new() {
-        {"String", "string"},
-        {"Object", "interface{}"},
-        {"Boolean", "bool"},
-        {"DateTime", "time.Time"},
-        {"DateOnly", "time.Time"},
-        {"DateTimeOffset", "time.Time"},
-        {"TimeSpan", "time.Duration"},
-        {"TimeOnly", "time.Duration"},
-        {"Guid", "string"},
-        {"Char", "string"},
-        {"Byte", "byte"},
-        {"Int16", "int16"},
-        {"Int32", "int"},
-        {"Int64", "int64"},
-        {"UInt16", "uint16"},
-        {"UInt32", "uint32"},
-        {"UInt64", "uint64"},
-        {"Single", "float32"},
-        {"Double", "float64"},
-        {"Decimal", "float64"},
-        {"IntPtr", "int64"},
-        {"Byte[]", "[]byte"},
-        {"Stream", "[]byte"},
-        {"HttpWebResponse", "[]byte"},
-        {"Uri", "string"},
-        {"Type", "string"},
+    public static Dictionary<string, string> TypeAliases = new()
+    {
+        { "String", "string" },
+        { "Object", "interface{}" },
+        { "Boolean", "bool" },
+        { "DateTime", "time.Time" },
+        { "DateOnly", "time.Time" },
+        { "DateTimeOffset", "time.Time" },
+        { "TimeSpan", "time.Duration" },
+        { "TimeOnly", "time.Duration" },
+        { "Guid", "string" },
+        { "Char", "string" },
+        { "Byte", "byte" },
+        { "Int16", "int16" },
+        { "Int32", "int" },
+        { "Int64", "int64" },
+        { "UInt16", "uint16" },
+        { "UInt32", "uint32" },
+        { "UInt64", "uint64" },
+        { "Single", "float32" },
+        { "Double", "float64" },
+        { "Decimal", "float64" },
+        { "IntPtr", "int64" },
+        { "Byte[]", "[]byte" },
+        { "Stream", "[]byte" },
+        { "HttpWebResponse", "[]byte" },
+        { "Uri", "string" },
+        { "Type", "string" },
     };
 
-    internal static readonly Dictionary<string, string> primitiveDefaultValues = new() {
-        {"string", "\"\""},
-        {"bool", "false"},
-        {"time.Time", "time.Time{}"},
-        {"time.Duration", "0"},
-        {"byte", "0"},
-        {"int16", "0"},
-        {"int", "0"},
-        {"int64", "0"},
-        {"uint16", "0"},
-        {"uint32", "0"},
-        {"uint64", "0"},
-        {"float32", "0"},
-        {"float64", "0"},
+    internal static readonly Dictionary<string, string> primitiveDefaultValues = new()
+    {
+        { "string", "\"\"" },
+        { "bool", "false" },
+        { "time.Time", "time.Time{}" },
+        { "time.Duration", "0" },
+        { "byte", "0" },
+        { "int16", "0" },
+        { "int", "0" },
+        { "int64", "0" },
+        { "uint16", "0" },
+        { "uint32", "0" },
+        { "uint64", "0" },
+        { "float32", "0" },
+        { "float64", "0" },
     };
 
     public HashSet<string> UseGenericDefinitionsFor { get; set; } = new()
     {
         typeof(QueryResponse<>).Name,
     };
-        
+
     public static TypeFilterDelegate TypeFilter { get; set; }
     public static Func<string, string> CookedTypeFilter { get; set; }
     public static TypeFilterDelegate DeclarationTypeFilter { get; set; }
@@ -188,7 +192,9 @@ public class GoGenerator : ILangGenerator
     /// <summary>
     /// Whether property should be marked optional (pointer types in Go)
     /// </summary>
-    public static Func<GoGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } = DefaultIsPropertyOptional;
+    public static Func<GoGenerator, MetadataType, MetadataPropertyType, bool> IsPropertyOptional { get; set; } =
+        DefaultIsPropertyOptional;
+
     public static bool DefaultIsPropertyOptional(GoGenerator generator, MetadataType type, MetadataPropertyType prop)
     {
         return !prop.IsRequired();
@@ -253,6 +259,7 @@ public class GoGenerator : ILangGenerator
                     }
                 }
             }
+
             AllTypes.RemoveAll(x => x.IsInterface == true && !referencedTypes.Contains(x.Name.LeftPart('`')));
         }
 
@@ -289,8 +296,9 @@ public class GoGenerator : ILangGenerator
     }
 
     public MetadataType FindType(MetadataTypeName typeRef) =>
-        typeRef == null ? null : FindType(typeRef.Name, typeRef.Namespace); 
-    public MetadataType FindType(string name, string @namespace = null) => AllTypes.FirstOrDefault(x => x.Name == name 
+        typeRef == null ? null : FindType(typeRef.Name, typeRef.Namespace);
+
+    public MetadataType FindType(string name, string @namespace = null) => AllTypes.FirstOrDefault(x => x.Name == name
         && (@namespace == null || @namespace == x.Namespace));
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
@@ -318,15 +326,22 @@ public class GoGenerator : ILangGenerator
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-            sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"),
+                Config.MakePropertiesOptional));
+            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"),
+                Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"),
+                Config.AddImplicitVersion));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"),
+                Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"),
+                Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"),
+                Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name =>
+                sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -435,6 +450,7 @@ public class GoGenerator : ILangGenerator
                     ? $"\"{package}\""
                     : $"{alias} \"{package}\"");
             }
+
             sb = sb.UnIndent();
             sb.AppendLine(")");
             sb.AppendLine();
@@ -479,6 +495,7 @@ public class GoGenerator : ILangGenerator
         {
             sb.AppendLine(line);
         }
+
         return StringBuilderCacheAlt.ReturnAndFree(sb);
     }
 
@@ -522,7 +539,8 @@ public class GoGenerator : ILangGenerator
 
         //Fields are only aligned within adjacent runs of fields, comments and blank lines break the run
         bool isField(string line) => line.StartsWith("\t") && !line.StartsWith("\t\t")
-            && !line.TrimStart().StartsWith("/") && line.Substring(1).Trim().CountOccurrencesOf(' ') >= 2;
+                                                           && !line.TrimStart().StartsWith("/") &&
+                                                           line.Substring(1).Trim().CountOccurrencesOf(' ') >= 2;
 
         for (var i = 0; i < lines.Count; i++)
         {
@@ -545,6 +563,7 @@ public class GoGenerator : ILangGenerator
                 alignFields(start, i);
                 start = -1;
             }
+
             if (line == "}")
                 inStruct = false;
         }
@@ -559,6 +578,7 @@ public class GoGenerator : ILangGenerator
         {
             AppendAttributes(sb, options.Routes.ConvertAll(x => x.ToMetadataAttribute()));
         }
+
         AppendAttributes(sb, type.Attributes);
         if (type.IsInterface != true) AppendDataContract(sb, type.DataContract);
 
@@ -606,7 +626,8 @@ public class GoGenerator : ILangGenerator
 
                 for (var i = 0; i < constNames.Count; i++)
                 {
-                    sb.AppendLine($"{constNames[i].PadRight(nameWidth)} {constTypes[i].PadRight(typeWidth)} = {constValues[i]}");
+                    sb.AppendLine(
+                        $"{constNames[i].PadRight(nameWidth)} {constTypes[i].PadRight(typeWidth)} = {constValues[i]}");
                 }
 
                 sb = sb.UnIndent();
@@ -618,16 +639,40 @@ public class GoGenerator : ILangGenerator
             // Go struct
             var typeName = Type(type.Name, type.GenericArgs);
 
-            sb.AppendLine($"type {typeName} struct {{");
+            // Generic Type declarations need a constraint on each Type param, e.g:
+            //     type IdentityUser_1[TKey any] struct { ... }
+            var declarationName = type.GenericArgs?.Length > 0
+                ? $"{NameOnly(type.Name)}[{string.Join(", ", type.GenericArgs.Map(x => $"{GenericArg(x)} any"))}]"
+                : typeName;
+
+            var baseTypeName = type.Inherits != null
+                ? Type(type.Inherits.Name, type.Inherits.GenericArgs)
+                : null;
+
+            // Go can't embed collections, DTOs inheriting a collection are instead emitted
+            // as a named collection Type, e.g: type StoreRockstars []Rockstar
+            if (baseTypeName != null && (baseTypeName.StartsWith("[]") || baseTypeName.StartsWith("map[")))
+            {
+                sb.AppendLine($"type {declarationName} {baseTypeName}");
+
+                if (options.IsRequest)
+                {
+                    AppendRequestMethods(sb, type, typeName, options.Op);
+                }
+
+                PostTypeFilter?.Invoke(sb, type);
+                return lastNS;
+            }
+
+            sb.AppendLine($"type {declarationName} struct {{");
             sb = sb.Indent();
 
             InnerTypeFilter?.Invoke(sb, type);
 
             // Add embedded base type if inherits
-            if (type.Inherits != null)
+            if (baseTypeName != null)
             {
-                var baseType = Type(type.Inherits.Name, type.Inherits.GenericArgs);
-                sb.AppendLine(baseType);
+                sb.AppendLine(baseTypeName);
             }
 
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
@@ -638,7 +683,8 @@ public class GoGenerator : ILangGenerator
 
             AddProperties(sb, type,
                 includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                                                                && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
+                                                                && type.Properties.Safe().All(x =>
+                                                                    x.Name != nameof(ResponseStatus)));
 
             sb = sb.UnIndent();
             sb.AppendLine("}");
@@ -661,7 +707,8 @@ public class GoGenerator : ILangGenerator
     ///     func (Hello) CreateResponse() (r HelloResponse) { return }
     ///     func (Hello) HttpMethod() string { return "GET" }
     /// </summary>
-    public void AppendRequestMethods(StringBuilderWrapper sb, MetadataType type, string typeName, MetadataOperationType op)
+    public void AppendRequestMethods(StringBuilderWrapper sb, MetadataType type, string typeName,
+        MetadataOperationType op)
     {
         if (op == null)
             return;
@@ -721,6 +768,7 @@ public class GoGenerator : ILangGenerator
         {
             resolvingPropertyType = false;
         }
+
         isNullable = propType.EndsWith("?");
         if (isNullable)
         {
@@ -730,6 +778,7 @@ public class GoGenerator : ILangGenerator
         {
             isNullable = prop.IsRequired != true;
         }
+
         return propType;
     }
 
@@ -745,7 +794,8 @@ public class GoGenerator : ILangGenerator
 
                 // In Go, use pointer types for optional/nullable properties
                 var usePointer = IsPropertyOptional(this, type, prop);
-                if (usePointer && !propType.StartsWith("*") && !propType.StartsWith("[]") && !propType.StartsWith("map["))
+                if (usePointer && !propType.StartsWith("*") && !propType.StartsWith("[]") &&
+                    !propType.StartsWith("map["))
                 {
                     propType = "*" + propType;
                 }
@@ -763,6 +813,7 @@ public class GoGenerator : ILangGenerator
                 {
                     jsonTag += ",omitempty";
                 }
+
                 jsonTag += "\"`";
 
                 sb.Emit(prop, Lang.Go);
@@ -810,6 +861,7 @@ public class GoGenerator : ILangGenerator
                         args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
                     }
                 }
+
                 sb.AppendLine("// @{0}({1})".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));
             }
         }
@@ -834,7 +886,8 @@ public class GoGenerator : ILangGenerator
         return value;
     }
 
-    public static HashSet<string> ArrayTypes = new() {
+    public static HashSet<string> ArrayTypes = new()
+    {
         "List`1",
         "IEnumerable`1",
         "ICollection`1",
@@ -844,7 +897,8 @@ public class GoGenerator : ILangGenerator
         "IEnumerable",
     };
 
-    public static HashSet<string> DictionaryTypes = new() {
+    public static HashSet<string> DictionaryTypes = new()
+    {
         "Dictionary`2",
         "IDictionary`2",
         "IOrderedDictionary`2",
@@ -854,12 +908,16 @@ public class GoGenerator : ILangGenerator
         "IOrderedDictionary",
     };
 
-    public static HashSet<string> AllowedKeyTypes = new() {
+    public static HashSet<string> AllowedKeyTypes = new()
+    {
         "string",
-        "boolean",
-        "number",
+        "bool",
+        "byte",
+        "int16", "int", "int64",
+        "uint16", "uint32", "uint64",
+        "float32", "float64",
     };
-        
+
     public string Type(MetadataTypeName typeName) => Type(typeName.Name, typeName.GenericArgs);
 
     public string DeclarationType(string type, string[] genericArgs, out string addDeclaration)
@@ -906,11 +964,20 @@ public class GoGenerator : ILangGenerator
                 if (parts.Length > 1)
                 {
                     var baseName = parts[0];
-                    // Library Types implemented as Go generics, e.g. ss.QueryResponse[Booking]
-                    cooked = IsLibraryType(baseName) && GenericLibraryTypes.Contains(baseName) && genericArgs.Length > 0
-                        ? $"{LibraryType(baseName)}[{GenericArg(genericArgs[0])}]"
-                        // Go doesn't support generics in the same way, just use the base name
-                        : TypeAlias(baseName);
+                    if (IsLibraryType(baseName))
+                    {
+                        // Library Types implemented as Go generics, e.g. ss.QueryResponse[Booking]
+                        cooked = GenericLibraryTypes.Contains(baseName) && genericArgs.Length > 0
+                            ? $"{LibraryType(baseName)}[{GenericArg(genericArgs[0])}]"
+                            : TypeAlias(baseName);
+                    }
+                    else
+                    {
+                        // Generic Types are emitted as Go generics, e.g. KeyValuePair[string, string]
+                        cooked = genericArgs.Length > 0
+                            ? $"{NameOnly(type)}[{string.Join(", ", genericArgs.Map(GenericArg))}]"
+                            : NameOnly(type);
+                    }
                 }
             }
 
@@ -938,13 +1005,6 @@ public class GoGenerator : ILangGenerator
             return "[]{0}".Fmt(TypeAlias(arrParts[0]));
         }
 
-        // Handle generic type parameters (single uppercase letter like T)
-        // Convert them to interface{} since Go doesn't support generic type parameters in the same way
-        if (type.Length == 1 && char.IsUpper(type[0]))
-        {
-            return "interface{}";
-        }
-
         TypeAliases.TryGetValue(type, out var typeAlias);
 
         var cooked = typeAlias ?? NameOnly(type);
@@ -959,13 +1019,14 @@ public class GoGenerator : ILangGenerator
         {
             cooked = LibraryType(cooked);
         }
+
         return CookedTypeFilter?.Invoke(cooked) ?? cooked;
     }
 
     public string NameOnly(string type)
     {
         var name = ConflictTypeNames.Contains(type)
-            ? type.Replace('`','_')
+            ? type.Replace('`', '_')
             : type.LeftPart('`');
 
         return name.LastRightPart('.').SafeToken();
@@ -977,6 +1038,7 @@ public class GoGenerator : ILangGenerator
         {
             sb.AppendLine("/** @description {0}".Fmt(desc.SafeComment()) + " */");
         }
+
         return false;
     }
 
@@ -1005,6 +1067,7 @@ public class GoGenerator : ILangGenerator
 
             dcArgs = "({0})".Fmt(dcArgs);
         }
+
         sb.AppendLine("// @DataContract{0}".Fmt(dcArgs));
     }
 
@@ -1019,6 +1082,7 @@ public class GoGenerator : ILangGenerator
                     : "// @DataMember()");
                 return true;
             }
+
             return false;
         }
 
@@ -1058,6 +1122,7 @@ public class GoGenerator : ILangGenerator
 
             dmArgs = "({0})".Fmt(dmArgs);
         }
+
         sb.AppendLine("// @DataMember{0}".Fmt(dmArgs));
 
         return true;
@@ -1070,64 +1135,59 @@ public class GoGenerator : ILangGenerator
 
     public string ConvertFromCSharp(TextNode node)
     {
-        var sb = new StringBuilder();
+        var name = node.Text.LeftPart('`');
 
-        if (node.Text == "Nullable")
-            return TypeAlias(node.Children[0].Text);
+        // Nullable<T> is represented by the property being a pointer
+        if (name == "Nullable")
+            return node.Children.Count > 0 ? ConvertFromCSharp(node.Children[0]) : TypeAliases["Object"];
 
-        if (node.Text == "List")
+        if (IsArrayType(name))
+            return "[]" + (node.Children.Count > 0
+                ? ConvertFromCSharp(node.Children[0])
+                : TypeAliases["Object"]);
+
+        if (IsDictionaryType(name))
         {
-            sb.Append(ConvertFromCSharp(node.Children[0]));
-            sb.Append("[]");
-        }
-        else if (node.Text == "List`1")
-        {
-            var type = node.Children.Count > 0 ? node.Children[0].Text : "any";
-            sb.Append(type).Append("[]");
-        }
-        else if (node.Text == "Dictionary")
-        {
-            sb.Append("{ [index:");
-            var keyType = ConvertFromCSharp(node.Children[0]);
-            sb.Append(GetKeyType(keyType));
-            sb.Append("]: ");
-            sb.Append(ConvertFromCSharp(node.Children[1]));
-            sb.Append("; }");
-        }
-        else
-        {
-            if (node.Text == "Tuple")
-                node.Text += "`" + node.Children.Count;
-
-            sb.Append(TypeAlias(node.Text));
-            if (node.Children.Count > 0)
-            {
-                sb.Append("<");
-                for (var i = 0; i < node.Children.Count; i++)
-                {
-                    var childNode = node.Children[i];
-
-                    if (i > 0)
-                        sb.Append(",");
-
-                    sb.Append(ConvertFromCSharp(childNode));
-                }
-                sb.Append(">");
-            }
+            var keyType = node.Children.Count > 0 ? ConvertFromCSharp(node.Children[0]) : "string";
+            var valueType = node.Children.Count > 1 ? ConvertFromCSharp(node.Children[1]) : TypeAliases["Object"];
+            return $"map[{GetKeyType(keyType)}]{valueType}";
         }
 
-        return sb.ToString();
+        if (node.Children.Count > 0)
+        {
+            // Library Types implemented as Go generics, e.g. ss.QueryResponse[Booking]
+            if (IsLibraryType(name) && GenericLibraryTypes.Contains(name))
+                return $"{LibraryType(name)}[{ConvertFromCSharp(node.Children[0])}]";
+
+            // Go doesn't support generics in the same way, just use the base name
+            return TypeAlias(node.Text);
+        }
+
+        return TypeAlias(node.Text);
     }
+
+    /// <summary>
+    /// Whether the Type is a collection, with or without its generic arity, e.g. List or List`1
+    /// </summary>
+    public static bool IsArrayType(string name) =>
+        ArrayTypes.Contains(name) || ArrayTypes.Contains(name + "`1");
+
+    /// <summary>
+    /// Whether the Type is a dictionary, with or without its generic arity, e.g. Dictionary or Dictionary`2
+    /// </summary>
+    public static bool IsDictionaryType(string name) =>
+        DictionaryTypes.Contains(name) || DictionaryTypes.Contains(name + "`2");
 
     private static string GetKeyType(string keyType)
     {
-        var jsKeyType = AllowedKeyTypes.Contains(keyType)
+        // Go map keys have to be comparable Types
+        return AllowedKeyTypes.Contains(keyType)
             ? keyType
             : "string";
-        return jsKeyType;
     }
 
     public string GetPropertyName(string name) => name.SafeToken().GoPropertyStyle();
+
     public string GetPropertyName(MetadataPropertyType prop)
     {
         var name = prop.GetSerializedAlias() ?? prop.Name;
