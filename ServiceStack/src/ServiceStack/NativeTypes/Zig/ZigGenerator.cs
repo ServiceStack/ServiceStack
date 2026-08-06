@@ -219,6 +219,12 @@ public class ZigGenerator : ILangGenerator
     private bool resolvingPropertyType;
 
     /// <summary>
+    /// The generic params of the base Type being flattened, mapped to the args it's
+    /// inherited with, so its properties resolve to the concrete Types
+    /// </summary>
+    private Dictionary<string, string> genericArgsMap;
+
+    /// <summary>
     /// The Zig module of the ServiceStack Client Library that generated DTOs reference
     /// </summary>
     public static string LibraryModule { get; set; } = "servicestack";
@@ -279,6 +285,12 @@ public class ZigGenerator : ILangGenerator
     public const string NameDecl = "ss_name";
     public const string VerbDecl = "ss_verb";
     public const string ResponseDecl = "Response";
+    public const string CollectionDecl = "ss_collection";
+
+    /// <summary>
+    /// The field a DTO inheriting a collection holds its collection in
+    /// </summary>
+    public const string CollectionField = "items";
 
     /// <summary>
     /// Library Types referenced by the generated DTOs, resolved in Init()
@@ -564,17 +576,17 @@ public class ZigGenerator : ILangGenerator
                     var memberValue = type.GetEnumMemberValue(i);
                     if (memberValue != null)
                     {
-                        sb.AppendLine($"{EnumMemberName(memberValue)},");
+                        sb.AppendLine($"{Identifier(memberValue)},");
                         continue;
                     }
 
                     if (isIntEnum && value != null)
                     {
-                        sb.AppendLine($"{EnumMemberName(name)} = {value},");
+                        sb.AppendLine($"{Identifier(name)} = {value},");
                     }
                     else
                     {
-                        sb.AppendLine($"{EnumMemberName(name)},");
+                        sb.AppendLine($"{Identifier(name)},");
                     }
                 }
             }
@@ -634,15 +646,38 @@ public class ZigGenerator : ILangGenerator
                 AppendRequestDecls(sb, type, options.Op);
             }
 
+            // Zig can't declare ss_name/ss_verb on a slice, DTOs inheriting a collection hold
+            // it in a field the client sends and populates as the DTO's JSON Array, e.g:
+            //     pub const ss_collection = "items";
+            //     items: []const Contact = &.{},
+            var collectionType = InheritedCollectionType(type);
+            if (collectionType != null)
+            {
+                sb.AppendLine($"pub const {CollectionDecl} = \"{CollectionField}\";");
+                sb.AppendLine();
+                sb.AppendLine($"{CollectionField}: {collectionType} = &.{{}},");
+
+                sb = sb.UnIndent();
+                sb.AppendLine("};");
+                PostTypeFilter?.Invoke(sb, type);
+                return lastNS;
+            }
+
             // Zig doesn't support sub classing, inherited properties are flattened into the Type
+            var existingProps = new HashSet<string>();
             foreach (var baseType in GetInheritedTypes(type))
             {
-                AddProperties(sb, baseType, includeResponseStatus: false);
+                // Resolve the base Type's generic params to the args it's inherited with,
+                // e.g. HelloBase<T> inherited as HelloBase<Poco> flattens items: []Poco
+                genericArgsMap = GenericArgsMap(baseType.Type, baseType.GenericArgs);
+                AddProperties(sb, baseType.Type, includeResponseStatus: false, existingProps: existingProps);
+                genericArgsMap = null;
             }
 
             AddProperties(sb, type,
                 includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                                                                && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
+                                                                && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)),
+                existingProps: existingProps);
 
             sb = sb.UnIndent();
             sb.AppendLine("};");
@@ -674,9 +709,9 @@ public class ZigGenerator : ILangGenerator
     ];
 
     /// <summary>
-    /// Zig enum member name, quoted when it's not a valid Zig identifier, e.g. @"1st"
+    /// Zig identifier, quoted when the name isn't a valid one, e.g. @"1st" or @"error"
     /// </summary>
-    public static string EnumMemberName(string name)
+    public static string Identifier(string name)
     {
         if (string.IsNullOrEmpty(name))
             return "@\"\"";
@@ -689,22 +724,70 @@ public class ZigGenerator : ILangGenerator
     }
 
     /// <summary>
+    /// The Zig slice a DTO inheriting a collection holds, or null when it doesn't
+    /// inherit one, e.g: List&lt;Contact&gt; -&gt; []const Contact
+    /// </summary>
+    public string InheritedCollectionType(MetadataType type)
+    {
+        var inherits = type.Inherits;
+        if (inherits?.Name == null || !ArrayTypes.Contains(inherits.Name))
+            return null;
+
+        var zigType = Type(inherits.Name, inherits.GenericArgs);
+        return zigType.StartsWith("[]") ? zigType : null;
+    }
+
+    /// <summary>
     /// The Types a Type inherits from, base Types first, so their properties can
     /// be flattened into the Type Zig generates
     /// </summary>
-    public List<MetadataType> GetInheritedTypes(MetadataType type)
+    public List<InheritedType> GetInheritedTypes(MetadataType type)
     {
-        var to = new List<MetadataType>();
+        var to = new List<InheritedType>();
         var inherits = type.Inherits;
         while (inherits != null)
         {
-            var baseTypeName = inherits.Name.LeftPart('`');
-            var baseType = AllMetadataTypes.FirstOrDefault(x => x.Name.LeftPart('`') == baseTypeName);
-            if (baseType == null || to.Contains(baseType))
+            // Match on the full name so Types that only differ by their generic arity,
+            // e.g. HelloBase and HelloBase`1, don't resolve to each other
+            var baseType = AllMetadataTypes.FirstOrDefault(x => x.Name == inherits.Name)
+                ?? AllMetadataTypes.FirstOrDefault(x => x.Name.LeftPart('`') == inherits.Name.LeftPart('`'));
+            if (baseType == null || to.Any(x => x.Type == baseType))
                 break;
 
-            to.Insert(0, baseType);
+            to.Insert(0, new InheritedType(baseType, inherits.GenericArgs));
             inherits = baseType.Inherits;
+        }
+        return to;
+    }
+
+    /// <summary>
+    /// A base Type and the generic args it's inherited with, e.g. HelloBase`1 inherited
+    /// as HelloBase&lt;Poco&gt; has the generic args ["Poco"]
+    /// </summary>
+    public class InheritedType
+    {
+        public InheritedType(MetadataType type, string[] genericArgs)
+        {
+            Type = type;
+            GenericArgs = genericArgs;
+        }
+
+        public MetadataType Type { get; }
+        public string[] GenericArgs { get; }
+    }
+
+    /// <summary>
+    /// The generic params of a Type mapped to the args it's inherited with, e.g. T -&gt; Poco
+    /// </summary>
+    public Dictionary<string, string> GenericArgsMap(MetadataType type, string[] genericArgs)
+    {
+        if (type.GenericArgs.IsEmpty() || genericArgs.IsEmpty())
+            return null;
+
+        var to = new Dictionary<string, string>();
+        for (var i = 0; i < type.GenericArgs.Length && i < genericArgs.Length; i++)
+        {
+            to[type.GenericArgs[i]] = genericArgs[i];
         }
         return to;
     }
@@ -726,7 +809,7 @@ public class ZigGenerator : ILangGenerator
         var propertyNames = new HashSet<string>();
         foreach (var baseType in GetInheritedTypes(type))
         {
-            baseType.Properties.Safe().Each(x => propertyNames.Add(GetPropertyName(x)));
+            baseType.Type.Properties.Safe().Each(x => propertyNames.Add(GetPropertyName(x)));
         }
         type.Properties.Safe().Each(x => propertyNames.Add(GetPropertyName(x)));
 
@@ -789,7 +872,8 @@ public class ZigGenerator : ILangGenerator
         return propType;
     }
 
-    public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
+    public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus,
+        HashSet<string> existingProps = null)
     {
         var wasAdded = false;
 
@@ -798,6 +882,10 @@ public class ZigGenerator : ILangGenerator
         {
             foreach (var prop in type.Properties)
             {
+                // A Type redeclaring an inherited property would emit a duplicate struct field
+                if (existingProps != null && !existingProps.Add(GetPropertyName(prop)))
+                    continue;
+
                 if (wasAdded) sb.AppendLine();
 
                 var propType = GetPropertyType(prop, out var optionalProperty);
@@ -963,6 +1051,15 @@ public class ZigGenerator : ILangGenerator
         var useType = TypeFilter?.Invoke(type, genericArgs);
         if (useType != null)
             return useType;
+
+        // Resolve the generic params of the base Type being flattened, e.g. T -> Poco
+        if (genericArgsMap != null)
+        {
+            if (genericArgsMap.TryGetValue(type, out var concreteType))
+                type = concreteType;
+            if (genericArgs != null)
+                genericArgs = genericArgs.Map(x => genericArgsMap.TryGetValue(x, out var arg) ? arg : x).ToArray();
+        }
 
         if (genericArgs != null)
         {
@@ -1194,9 +1291,9 @@ public class ZigGenerator : ILangGenerator
         return sb.ToString();
     }
 
-    public string GetPropertyName(string name) => name.SafeToken().PropertyStyle();
+    public string GetPropertyName(string name) => Identifier(name.SafeToken().PropertyStyle());
     public string GetPropertyName(MetadataPropertyType prop) =>
-        prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle();
+        Identifier(prop.GetSerializedAlias() ?? prop.Name.SafeToken().PropertyStyle());
 }
 
 public static class ZigGeneratorExtensions
