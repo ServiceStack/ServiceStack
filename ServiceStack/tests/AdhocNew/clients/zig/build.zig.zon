@@ -1,0 +1,13 @@
+.{
+    .name = .adhocnew_zig_client,
+    .version = "0.1.0",
+    .fingerprint = 0x7c885433100cc7d1,
+    .minimum_zig_version = "0.15.0",
+    .dependencies = .{
+        .servicestack = .{
+            .url = "https://github.com/ServiceStack/servicestack-zig/archive/refs/tags/v0.1.0.tar.gz",
+            .hash = "servicestack-0.1.0-AcbmKjnnAADzWnll_XL6_KApjPniOaSe_vdSftURM8oC",
+        },
+    },
+    .paths = .{""},
+}

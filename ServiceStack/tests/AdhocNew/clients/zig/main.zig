@@ -1,13 +1,13 @@
 const std = @import("std");
+const ss = @import("servicestack");
 const dtos = @import("dtos.zig");
-const client_lib = @import("client.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var client = try client_lib.JsonServiceClient.init(allocator, "http://localhost:5000");
+    var client = try ss.JsonServiceClient.init(allocator, "http://localhost:5000");
     defer client.deinit();
 
     client.setBearerToken("ak-87949de37e894627a9f6173154e7cafa");
@@ -17,7 +17,7 @@ pub fn main() !void {
     try part.put("type", std.json.Value{ .string = "text" });
     try part.put("text", std.json.Value{ .string = "Capital of France?" });
 
-    var content_buf = [_]std.json.Value{ .{ .object = part } };
+    var content_buf = [_]std.json.Value{.{ .object = part }};
     var messages_buf = [_]dtos.AiMessage{
         .{
             .role = "user",
@@ -30,18 +30,17 @@ pub fn main() !void {
         .messages = messages_buf[0..],
     };
 
-    var parsed = try client.post(dtos.ChatResponse, request);
+    var parsed = try client.send(request);
     defer parsed.deinit();
 
     if (parsed.value.choices.len > 0) {
-        const msg = parsed.value.choices[0].message;
-        if (msg.content) |content| {
-            if (content.len > 0) {
+        if (parsed.value.choices[0].message) |msg| {
+            if (msg.content) |content| {
                 std.debug.print("Content: {s}\n", .{content});
             }
-        }
-        if (msg.reasoning) |reasoning| {
-            std.debug.print("Reasoning: {s}\n", .{reasoning});
+            if (msg.reasoning) |reasoning| {
+                std.debug.print("Reasoning: {s}\n", .{reasoning});
+            }
         }
     }
 }

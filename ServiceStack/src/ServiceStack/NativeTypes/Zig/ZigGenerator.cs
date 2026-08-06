@@ -218,11 +218,118 @@ public class ZigGenerator : ILangGenerator
 
     private bool resolvingPropertyType;
 
+    /// <summary>
+    /// The Zig module of the ServiceStack Client Library that generated DTOs reference
+    /// </summary>
+    public static string LibraryModule { get; set; } = "servicestack";
+
+    /// <summary>
+    /// The name the ServiceStack Client Library is imported as
+    /// </summary>
+    public static string LibraryAlias { get; set; } = "ss";
+
+    /// <summary>
+    /// Built-in ServiceStack Types implemented in the servicestack module which
+    /// are referenced instead of being emitted in generated DTOs
+    /// </summary>
+    public static HashSet<string> LibraryTypes { get; set; } =
+    [
+        nameof(ResponseStatus),
+        nameof(ResponseError),
+        nameof(EmptyResponse),
+        nameof(IdResponse),
+        nameof(StringResponse),
+        nameof(StringsResponse),
+        "QueryResponse",
+        nameof(Authenticate),
+        nameof(AuthenticateResponse),
+        nameof(Register),
+        nameof(RegisterResponse),
+        nameof(AssignRoles),
+        nameof(AssignRolesResponse),
+        nameof(UnAssignRoles),
+        nameof(UnAssignRolesResponse),
+        nameof(ConvertSessionToToken),
+        nameof(ConvertSessionToTokenResponse),
+        nameof(GetAccessToken),
+        nameof(GetAccessTokenResponse),
+        nameof(GetApiKeys),
+        nameof(GetApiKeysResponse),
+        nameof(RegenerateApiKeys),
+        nameof(RegenerateApiKeysResponse),
+        nameof(UserApiKey),
+    ];
+
+    /// <summary>
+    /// Base Types whose properties are flattened into their sub types, as Zig
+    /// doesn't support sub classing
+    /// </summary>
+    public static HashSet<string> FlattenedBaseTypes { get; set; } =
+    [
+        nameof(QueryBase),
+        "QueryDb",
+        "QueryData",
+        nameof(AuditBase),
+    ];
+
+    /// <summary>
+    /// Declarations generated on Request DTOs, omitted when they'd conflict with
+    /// an existing property of the same name
+    /// </summary>
+    public const string NameDecl = "ss_name";
+    public const string VerbDecl = "ss_verb";
+    public const string ResponseDecl = "Response";
+
+    /// <summary>
+    /// Library Types referenced by the generated DTOs, resolved in Init()
+    /// </summary>
+    public HashSet<string> UseLibraryTypes { get; set; } = new();
+
+    /// <summary>
+    /// All Types in the metadata, incl. the Types that aren't generated, used to
+    /// resolve the inherited properties flattened into sub types
+    /// </summary>
+    public List<MetadataType> AllMetadataTypes { get; set; } = new();
+
+    private bool usesLibrary;
+
+    /// <summary>
+    /// Whether the Type Name refers to a Type implemented in the servicestack module
+    /// </summary>
+    public bool IsLibraryType(string typeName) => UseLibraryTypes.Contains(typeName);
+
+    /// <summary>
+    /// Reference a Type implemented in the servicestack module, e.g. ss.ResponseStatus
+    /// </summary>
+    public string LibraryType(string typeName)
+    {
+        usesLibrary = true;
+        return LibraryAlias + "." + typeName;
+    }
+
     public void Init(MetadataTypes metadata)
     {
         var includeList = metadata.RemoveIgnoredTypes(Config);
         AllTypes = metadata.GetAllTypesOrdered();
         AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+
+        //Interfaces are only used as markers in .NET, they're not needed in Zig
+        AllTypes.RemoveAll(x => x.IsInterface == true);
+
+        //Keep a reference to every Type so inherited properties can be flattened
+        AllMetadataTypes = new List<MetadataType>(AllTypes);
+
+        //Only use Library Types when they're not shadowed by a User-defined Type of the same name
+        var userTypeNames = AllTypes
+            .Where(x => x.Namespace != nameof(ServiceStack))
+            .Map(x => x.Name.LeftPart('`'))
+            .ToSet();
+        UseLibraryTypes = LibraryTypes.Where(x => !userTypeNames.Contains(x)).ToSet();
+
+        //Library Types are implemented in the servicestack module, base Types are flattened into their sub types
+        AllTypes.RemoveAll(x => UseLibraryTypes.Contains(x.Name.LeftPart('`'))
+            || (x.Namespace == nameof(ServiceStack) && FlattenedBaseTypes.Contains(x.Name.LeftPart('`'))));
+
         AllTypes = FilterTypes(AllTypes);
 
         //Properties of abstract Types with sub types can only be represented as std.json.Value
@@ -305,15 +412,11 @@ public class ZigGenerator : ILangGenerator
             .Where(x => x.Response != null)
             .Select(x => x.Response).ToSet();
 
-        foreach (var import in defaultImports)
-        {
-            sb.AppendLine(import);
-        }
-
-        if (defaultImports.Count > 0)
-        {
-            sb.AppendLine();
-        }
+        // Types are generated first so only the imports they use are emitted
+        var sbTypesInner = StringBuilderCacheAlt.Allocate();
+        var sbTypes = new StringBuilderWrapper(sbTypesInner);
+        var sbAll = sb;
+        sb = sbTypes;
 
         var insertCode = InsertCodeFilter?.Invoke(AllTypes, Config);
         if (insertCode != null)
@@ -393,6 +496,26 @@ public class ZigGenerator : ILangGenerator
         var addCode = AddCodeFilter?.Invoke(AllTypes, Config);
         if (addCode != null)
             sb.AppendLine(addCode);
+
+        sb = sbAll;
+
+        // Only import the modules used by the generated Types
+        if (usesLibrary && request.QueryString["DefaultImports"].IsNullOrEmpty())
+        {
+            defaultImports.AddIfNotExists($"const {LibraryAlias} = @import(\"{LibraryModule}\");");
+        }
+
+        foreach (var import in defaultImports)
+        {
+            sb.AppendLine(import);
+        }
+
+        if (defaultImports.Count > 0)
+        {
+            sb.AppendLine();
+        }
+
+        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbTypesInner).TrimEnd());
         
         var ret = StringBuilderCache.ReturnAndFree(sbInner);
         return formatter != null ? formatter.Transform(ret, this, request) : ret;
@@ -436,20 +559,22 @@ public class ZigGenerator : ILangGenerator
                     var name = type.EnumNames[i];
                     var value = type.EnumValues?[i];
 
+                    // String enums are serialized by name, so members need to use
+                    // the same name they're serialized with
                     var memberValue = type.GetEnumMemberValue(i);
                     if (memberValue != null)
                     {
-                        sb.AppendLine($"{name.ToLowercaseUnderscore()},");
+                        sb.AppendLine($"{EnumMemberName(memberValue)},");
                         continue;
                     }
 
                     if (isIntEnum && value != null)
                     {
-                        sb.AppendLine($"{name.ToLowercaseUnderscore()} = {value},");
+                        sb.AppendLine($"{EnumMemberName(name)} = {value},");
                     }
                     else
                     {
-                        sb.AppendLine($"{name.ToLowercaseUnderscore()},");
+                        sb.AppendLine($"{EnumMemberName(name)},");
                     }
                 }
             }
@@ -504,6 +629,17 @@ public class ZigGenerator : ILangGenerator
                     GetPropertyName("Version"), Config.AddImplicitVersion));
             }
 
+            if (options.IsRequest)
+            {
+                AppendRequestDecls(sb, type, options.Op);
+            }
+
+            // Zig doesn't support sub classing, inherited properties are flattened into the Type
+            foreach (var baseType in GetInheritedTypes(type))
+            {
+                AddProperties(sb, baseType, includeResponseStatus: false);
+            }
+
             AddProperties(sb, type,
                 includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                                                                 && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
@@ -522,6 +658,110 @@ public class ZigGenerator : ILangGenerator
         PostTypeFilter?.Invoke(sb, type);
             
         return lastNS;
+    }
+
+    /// <summary>
+    /// Zig keywords that can't be used as identifiers unescaped
+    /// </summary>
+    public static HashSet<string> ZigKeywords { get; set; } =
+    [
+        "addrspace", "align", "allowzero", "and", "anyframe", "anytype", "asm", "async", "await",
+        "break", "callconv", "catch", "comptime", "const", "continue", "defer", "else", "enum",
+        "errdefer", "error", "export", "extern", "fn", "for", "if", "inline", "linksection",
+        "noalias", "noinline", "nosuspend", "opaque", "or", "orelse", "packed", "pub", "resume",
+        "return", "struct", "suspend", "switch", "test", "threadlocal", "try", "union", "unreachable",
+        "usingnamespace", "var", "volatile", "while",
+    ];
+
+    /// <summary>
+    /// Zig enum member name, quoted when it's not a valid Zig identifier, e.g. @"1st"
+    /// </summary>
+    public static string EnumMemberName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return "@\"\"";
+
+        var isValid = (char.IsLetter(name[0]) || name[0] == '_')
+            && name.All(c => char.IsLetterOrDigit(c) || c == '_')
+            && !ZigKeywords.Contains(name);
+
+        return isValid ? name : $"@\"{name}\"";
+    }
+
+    /// <summary>
+    /// The Types a Type inherits from, base Types first, so their properties can
+    /// be flattened into the Type Zig generates
+    /// </summary>
+    public List<MetadataType> GetInheritedTypes(MetadataType type)
+    {
+        var to = new List<MetadataType>();
+        var inherits = type.Inherits;
+        while (inherits != null)
+        {
+            var baseTypeName = inherits.Name.LeftPart('`');
+            var baseType = AllMetadataTypes.FirstOrDefault(x => x.Name.LeftPart('`') == baseTypeName);
+            if (baseType == null || to.Contains(baseType))
+                break;
+
+            to.Insert(0, baseType);
+            inherits = baseType.Inherits;
+        }
+        return to;
+    }
+
+    /// <summary>
+    /// Generate the declarations the servicestack client uses to resolve the
+    /// Response Type and HTTP Method of a Request DTO, e.g:
+    ///
+    ///     pub const ss_name = "Hello";
+    ///     pub const ss_verb = "GET";
+    ///     pub const Response = HelloResponse;
+    /// </summary>
+    public void AppendRequestDecls(StringBuilderWrapper sb, MetadataType type, MetadataOperationType op)
+    {
+        if (op == null)
+            return;
+
+        // Zig doesn't allow a declaration and a field of the same name
+        var propertyNames = new HashSet<string>();
+        foreach (var baseType in GetInheritedTypes(type))
+        {
+            baseType.Properties.Safe().Each(x => propertyNames.Add(GetPropertyName(x)));
+        }
+        type.Properties.Safe().Each(x => propertyNames.Add(GetPropertyName(x)));
+
+        var wasAdded = false;
+        if (!propertyNames.Contains(NameDecl))
+        {
+            sb.AppendLine($"pub const {NameDecl} = \"{type.Name.LeftPart('`')}\";");
+            wasAdded = true;
+        }
+
+        var method = op.Method ?? op.Routes?.FirstOrDefault(x => !string.IsNullOrEmpty(x.Verbs))?.Verbs.LeftPart(',');
+        method = string.IsNullOrEmpty(method) || method == "ANY" ? "POST" : method.ToUpper();
+        if (!propertyNames.Contains(VerbDecl))
+        {
+            sb.AppendLine($"pub const {VerbDecl} = \"{method}\";");
+            wasAdded = true;
+        }
+
+        var returnsVoid = op.ReturnsVoid == true || (op.ReturnType == null && op.Response == null);
+        if (!returnsVoid && !propertyNames.Contains(ResponseDecl))
+        {
+            var responseType = op.ReturnType != null
+                ? Type(op.ReturnType.Name, op.ReturnType.GenericArgs)
+                : Type(op.Response.Name, op.Response.GenericArgs);
+
+            // A Request DTO can't return itself as it would recurse in its own declaration
+            if (responseType != Type(type.Name, type.GenericArgs))
+            {
+                sb.AppendLine($"pub const {ResponseDecl} = {responseType};");
+                wasAdded = true;
+            }
+        }
+
+        if (wasAdded)
+            sb.AppendLine();
     }
 
     public virtual string GetPropertyType(MetadataPropertyType prop, out bool isNullable)
@@ -574,12 +814,20 @@ public class ZigGenerator : ILangGenerator
 
                 var isOptional = optional || propType.StartsWith("?") || propType == "[]const u8";
                 var zigType = isOptional && !propType.StartsWith("?") ? $"?{propType}" : propType;
-                var defaultValue = isOptional ? " = null" : 
-                    (zigType.StartsWith("[]") ? " = &.{}" : 
-                    (zigType == "bool" ? " = false" : 
+                var defaultValue = isOptional ? " = null" :
+                    (zigType.StartsWith("[]") ? " = &.{}" :
+                    (zigType == "bool" ? " = false" :
                     (zigType == "i32" || zigType == "i64" || zigType == "u32" || zigType == "u64" ||
                      zigType == "i16" || zigType == "u16" || zigType == "i8" || zigType == "u8" ||
                      zigType == "usize" || zigType == "isize" || zigType == "f32" || zigType == "f64" ? " = 0" : "")));
+
+                // Every field needs a default value so std.json can parse Responses
+                // that omit it, Types without one are made optional
+                if (defaultValue.Length == 0)
+                {
+                    zigType = "?" + zigType;
+                    defaultValue = " = null";
+                }
 
                 sb.AppendLine("{0}: {1}{2},".Fmt(GetPropertyName(prop), zigType, defaultValue));
                 PostPropertyFilter?.Invoke(sb, prop, type);
@@ -734,6 +982,13 @@ public class ZigGenerator : ILangGenerator
                 var parts = type.Split('`');
                 if (parts.Length > 1)
                 {
+                    if (IsLibraryType(parts[0]))
+                    {
+                        // Zig generic Types are functions, e.g. ss.QueryResponse(Booking)
+                        var args = genericArgs.Map(GenericArg).Join(", ");
+                        return $"{LibraryType(parts[0])}({args})";
+                    }
+
                     // In Zig, we just use the base type name without generic args for now
                     // Generic types will be handled specially in AppendType
                     var typeName = TypeAlias(type);
@@ -779,6 +1034,10 @@ public class ZigGenerator : ILangGenerator
         var cooked = typeAlias ?? NameOnly(type);
         if (resolvingPropertyType && PolymorphicTypes.Contains(cooked))
             return TypeAliases["Object"];
+
+        // Types implemented in the servicestack module, e.g. ss.ResponseStatus
+        if (IsLibraryType(cooked))
+            cooked = LibraryType(cooked);
 
         return CookedTypeFilter?.Invoke(cooked) ?? cooked;
     }
