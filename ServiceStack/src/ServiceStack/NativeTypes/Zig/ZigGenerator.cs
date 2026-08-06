@@ -326,6 +326,11 @@ public class ZigGenerator : ILangGenerator
         AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
 
         //Interfaces are only used as markers in .NET, they're not needed in Zig
+        //Interfaces aren't emitted in Zig so the properties referencing them can only be
+        //represented as std.json.Value
+        var interfaceTypes = AllTypes.Where(x => x.IsInterface == true)
+            .Map(x => x.Name.LeftPart('`'))
+            .ToSet();
         AllTypes.RemoveAll(x => x.IsInterface == true);
 
         //Keep a reference to every Type so inherited properties can be flattened
@@ -338,9 +343,18 @@ public class ZigGenerator : ILangGenerator
             .ToSet();
         UseLibraryTypes = LibraryTypes.Where(x => !userTypeNames.Contains(x)).ToSet();
 
+        //Base Types are still emitted when a property references one, as only the Types
+        //inheriting them have their properties flattened
+        var propertyTypes = AllTypes.SelectMany(x => x.Properties.Safe())
+            .SelectMany(x => new[] { x.Type }.Concat(x.GenericArgs.Safe()))
+            .Where(x => x != null)
+            .Map(x => x.LeftPart('`').LeftPart('['))
+            .ToSet();
+
         //Library Types are implemented in the servicestack module, base Types are flattened into their sub types
         AllTypes.RemoveAll(x => UseLibraryTypes.Contains(x.Name.LeftPart('`'))
-            || (x.Namespace == nameof(ServiceStack) && FlattenedBaseTypes.Contains(x.Name.LeftPart('`'))));
+            || (x.Namespace == nameof(ServiceStack) && FlattenedBaseTypes.Contains(x.Name.LeftPart('`'))
+                && !propertyTypes.Contains(x.Name.LeftPart('`'))));
 
         AllTypes = FilterTypes(AllTypes);
 
@@ -351,6 +365,8 @@ public class ZigGenerator : ILangGenerator
                 .Map(x => x.Name.LeftPart('`'))
                 .Where(name => AllTypes.Any(x => x.Inherits?.Name.LeftPart('`') == name))
                 .ToSet();
+
+        PolymorphicTypes.UnionWith(interfaceTypes);
 
         //TypeScript doesn't support reusing same type name with different generic airity
         var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()

@@ -344,8 +344,6 @@ public class RubyGenerator : ILangGenerator
             .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
             .Map(x => x.Name);
 
-        ConflictTypeNames.Add(typeof(QueryDb<,>).Name);
-        ConflictTypeNames.Add(typeof(QueryData<,>).Name);
     }
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
