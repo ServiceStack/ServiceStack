@@ -45,7 +45,60 @@ public class RubyGenerator : ILangGenerator
 
     public static List<string> DefaultImports = new() {
         "json",
+        "servicestack",
     };
+
+    /// <summary>
+    /// The Ruby module of the ServiceStack Client Library that generated DTOs reference
+    /// </summary>
+    public static string LibraryModule { get; set; } = "ServiceStack";
+
+    /// <summary>
+    /// Built-in ServiceStack Types implemented in the servicestack gem which are
+    /// referenced instead of being emitted in generated DTOs
+    /// </summary>
+    public static HashSet<string> LibraryTypes { get; set; } =
+    [
+        nameof(ResponseStatus),
+        nameof(ResponseError),
+        nameof(EmptyResponse),
+        nameof(IdResponse),
+        nameof(StringResponse),
+        nameof(StringsResponse),
+        nameof(AuditBase),
+        nameof(QueryBase),
+        "QueryDb",
+        "QueryData",
+        "QueryResponse",
+        nameof(Authenticate),
+        nameof(AuthenticateResponse),
+        nameof(Register),
+        nameof(RegisterResponse),
+        nameof(ConvertSessionToToken),
+        nameof(ConvertSessionToTokenResponse),
+        nameof(GetAccessToken),
+        nameof(GetAccessTokenResponse),
+    ];
+
+    /// <summary>
+    /// Library Types that convert their generic results, e.g. QueryResponse.of(Booking)
+    /// </summary>
+    public static HashSet<string> GenericLibraryTypes { get; set; } = ["QueryResponse"];
+
+    /// <summary>
+    /// Library Types referenced by the generated DTOs, resolved in Init()
+    /// </summary>
+    public HashSet<string> UseLibraryTypes { get; set; } = new();
+
+    /// <summary>
+    /// Whether the Type Name refers to a Type implemented in the servicestack gem
+    /// </summary>
+    public bool IsLibraryType(string typeName) => UseLibraryTypes.Contains(typeName);
+
+    /// <summary>
+    /// Reference a Type implemented in the servicestack gem, e.g. ServiceStack::ResponseStatus
+    /// </summary>
+    public string LibraryType(string typeName) => LibraryModule + "::" + typeName;
 
     public static Dictionary<string, string> TypeAliases = new() {
         {"String", "String"},
@@ -267,6 +320,17 @@ public class RubyGenerator : ILangGenerator
         var includeList = metadata.RemoveIgnoredTypes(Config);
         AllTypes = metadata.GetAllTypesOrdered();
         AllTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
+
+        //Only use Library Types when they're not shadowed by a User-defined Type of the same name
+        var userTypeNames = AllTypes
+            .Where(x => x.Namespace != nameof(ServiceStack))
+            .Map(x => x.Name.LeftPart('`'))
+            .ToSet();
+        UseLibraryTypes = LibraryTypes.Where(x => !userTypeNames.Contains(x)).ToSet();
+
+        //Library Types are implemented in the servicestack gem
+        AllTypes.RemoveAll(x => UseLibraryTypes.Contains(x.Name.LeftPart('`')));
+
         AllTypes = FilterTypes(AllTypes);
 
         //Ruby doesn't support reusing same type name with different generic airity
@@ -567,6 +631,13 @@ public class RubyGenerator : ILangGenerator
             sb.AppendLine($"{defType} {typeName}{extends}");
             sb = sb.Indent();
 
+            // DTO provides to_hash/from_hash conversions from the properties below
+            if (type.IsInterface != true && string.IsNullOrEmpty(extends))
+            {
+                sb.AppendLine($"include {LibraryType("DTO")}");
+                sb.AppendLine();
+            }
+
             InnerTypeFilter?.Invoke(sb, type);
 
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
@@ -579,6 +650,11 @@ public class RubyGenerator : ILangGenerator
             AddProperties(sb, type, 
                 includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                     && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
+
+            if (type.IsInterface != true)
+            {
+                AppendPropertyMetadata(sb, type);
+            }
 
             if (responseTypeExpression != null)
             {
@@ -645,7 +721,8 @@ public class RubyGenerator : ILangGenerator
             if (wasAdded) sb.AppendLine();
 
             AppendDataMember(sb, null, dataMemberIndex++);
-            sb.AppendLine($"{modifier}{GetPropertyName(nameof(ResponseStatus))}: ResponseStatus = None");
+            sb.AppendLine($"# @return [{LibraryType(nameof(ResponseStatus))}]");
+            sb.AppendLine($"{modifier}attr_accessor :{GetPropertyName(nameof(ResponseStatus))}");
         }
     }
     
@@ -788,14 +865,139 @@ public class RubyGenerator : ILangGenerator
                 }
 
                 var typeName = TypeAlias(type);
+                if (IsLibraryType(typeName))
+                {
+                    // Generic Library Types convert their results, e.g. QueryResponse.of(Booking)
+                    return GenericLibraryTypes.Contains(typeName) && genericArgs.Length > 0
+                        ? $"{LibraryType(typeName)}.of({Type(genericArgs[0], TypeConstants.EmptyStringArray)})"
+                        : LibraryType(typeName);
+                }
                 return $"{typeName}";
             }
         }
 
         var result = TypeAlias(type);
+        if (IsLibraryType(result))
+            result = LibraryType(result);
         if (CookedTypeFilter != null)
             result = CookedTypeFilter(result);
         return result;
+    }
+
+    /// <summary>
+    /// Generate the wire name and Type of each property, which the servicestack
+    /// gem uses to convert DTOs to and from the JSON their APIs use, e.g:
+    ///
+    ///     def self.properties
+    ///       {
+    ///         id: { name: 'id' },
+    ///         booking_start_date: { name: 'bookingStartDate', type: DateTime },
+    ///       }
+    ///     end
+    /// </summary>
+    public void AppendPropertyMetadata(StringBuilderWrapper sb, MetadataType type)
+    {
+        var props = type.Properties.Safe().ToList();
+        if (props.Count == 0)
+            return;
+
+        sb.AppendLine();
+        sb.AppendLine("def self.properties");
+        sb = sb.Indent();
+        sb.AppendLine("{");
+        sb = sb.Indent();
+
+        foreach (var prop in props)
+        {
+            var propName = GetPropertyName(prop.Name);
+            var jsonName = prop.GetSerializedAlias() ?? prop.Name.ToCamelCase();
+            var typeExpression = PropertyTypeExpression(prop);
+
+            sb.AppendLine(typeExpression != null
+                ? $"{propName}: {{ name: '{jsonName}', type: {typeExpression} }},"
+                : $"{propName}: {{ name: '{jsonName}' }},");
+        }
+
+        sb = sb.UnIndent();
+        sb.AppendLine("}");
+        sb = sb.UnIndent();
+        sb.AppendLine("end");
+        sb.AppendLine();
+    }
+
+    public static HashSet<string> ArrayTypes { get; set; } =
+    [
+        "List`1", "IEnumerable`1", "ICollection`1", "HashSet`1", "Queue`1", "Stack`1", "IList`1", "IEnumerable",
+    ];
+
+    public static HashSet<string> DictionaryTypes { get; set; } =
+    [
+        "Dictionary`2", "IDictionary`2", "IOrderedDictionary`2", "OrderedDictionary", "StringDictionary",
+        "IDictionary", "IOrderedDictionary",
+    ];
+
+    /// <summary>
+    /// The Ruby Type expression used to convert a property's JSON value, or null
+    /// when its JSON value is used as-is, e.g:
+    ///
+    ///     Coupon                        # a nested DTO
+    ///     [Coupon]                      # a List of DTOs
+    ///     { String =&gt; Coupon }          # a Dictionary of DTOs
+    ///     DateTime
+    /// </summary>
+    public string PropertyTypeExpression(MetadataPropertyType prop)
+    {
+        if (prop.GenericArgs?.Length > 0)
+        {
+            if (ArrayTypes.Contains(prop.Type))
+            {
+                var elementType = ConvertedTypeExpression(prop.GenericArgs[0]);
+                return elementType != null ? $"[{elementType}]" : null;
+            }
+            if (DictionaryTypes.Contains(prop.Type) && prop.GenericArgs.Length > 1)
+            {
+                var valueType = ConvertedTypeExpression(prop.GenericArgs[1]);
+                return valueType != null ? $"{{ String => {valueType} }}" : null;
+            }
+            if (prop.Type == "Nullable`1")
+                return ConvertedTypeExpression(prop.GenericArgs[0]);
+        }
+
+        if (prop.Type?.EndsWith("[]") == true)
+        {
+            var elementType = ConvertedTypeExpression(prop.Type.Substring(0, prop.Type.Length - 2));
+            return elementType != null ? $"[{elementType}]" : null;
+        }
+
+        return ConvertedTypeExpression(prop.Type);
+    }
+
+    /// <summary>
+    /// The Ruby Type a JSON value needs to be converted into, or null when it doesn't
+    /// </summary>
+    public string ConvertedTypeExpression(string typeName)
+    {
+        if (string.IsNullOrEmpty(typeName))
+            return null;
+
+        var name = typeName.SanitizeType().LeftPart('`');
+        switch (name)
+        {
+            case "DateTime":
+            case "DateTimeOffset":
+            case "DateOnly":
+                return "DateTime";
+        }
+
+        //Enums are serialized as their String value, primitives are used as-is
+        var metaType = AllTypes.FirstOrDefault(x => x.Name.LeftPart('`') == name);
+        if (metaType != null)
+            return metaType.IsEnum == true ? null : Type(name, TypeConstants.EmptyStringArray);
+
+        if (IsLibraryType(name))
+            return LibraryType(name);
+
+        return null;
     }
 
     private string GetPropertyName(string name)

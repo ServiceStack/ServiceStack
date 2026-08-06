@@ -3,7 +3,7 @@
 
 # Options:
 =begin
-Date: 2026-08-06 04:43:31
+Date: 2026-08-06 15:11:56
 Version: 10.09
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5000
@@ -28,6 +28,7 @@ IncludeTypes: ChatCompletion.*
 =end
 
 require 'json'
+require 'servicestack'
 
 
 module ResponseFormat
@@ -44,9 +45,18 @@ end
 
 # @DataContract
 class AiContent
+    include ServiceStack::DTO
+
     # @DataMember(Name="type")
     # @return [String]
     attr_accessor :type
+
+    def self.properties
+        {
+            type: { name: 'type' },
+        }
+    end
+
 end
 
 #
@@ -54,6 +64,8 @@ end
 #
 # @DataContract
 class ToolFunction
+    include ServiceStack::DTO
+
     # @DataMember(Name="name")
     # @return [String]
     attr_accessor :name
@@ -61,6 +73,14 @@ class ToolFunction
     # @DataMember(Name="arguments")
     # @return [String]
     attr_accessor :arguments
+
+    def self.properties
+        {
+            name: { name: 'name' },
+            arguments: { name: 'arguments' },
+        }
+    end
+
 end
 
 #
@@ -68,6 +88,8 @@ end
 #
 # @DataContract
 class ToolCall
+    include ServiceStack::DTO
+
     # @DataMember(Name="id")
     # @return [String]
     attr_accessor :id
@@ -79,6 +101,15 @@ class ToolCall
     # @DataMember(Name="function")
     # @return [ToolFunction]
     attr_accessor :function
+
+    def self.properties
+        {
+            id: { name: 'id' },
+            type: { name: 'type' },
+            function: { name: 'function', type: ToolFunction },
+        }
+    end
+
 end
 
 #
@@ -86,6 +117,8 @@ end
 #
 # @DataContract
 class AiMessage
+    include ServiceStack::DTO
+
     # @DataMember(Name="content")
     # @return [List]
     attr_accessor :content
@@ -121,6 +154,21 @@ class AiMessage
     # @DataMember(Name="images")
     # @return [List]
     attr_accessor :images
+
+    def self.properties
+        {
+            content: { name: 'content', type: [AiContent] },
+            role: { name: 'role' },
+            name: { name: 'name' },
+            tool_calls: { name: 'tool_calls', type: [ToolCall] },
+            tool_call_id: { name: 'tool_call_id' },
+            reasoning: { name: 'reasoning' },
+            reasoning_content: { name: 'reasoning_content' },
+            timestamp: { name: 'timestamp' },
+            images: { name: 'images', type: [AiContent] },
+        }
+    end
+
 end
 
 #
@@ -128,6 +176,8 @@ end
 #
 # @DataContract
 class AiChatAudio
+    include ServiceStack::DTO
+
     # @DataMember(Name="format")
     # @return [String]
     attr_accessor :format
@@ -135,17 +185,36 @@ class AiChatAudio
     # @DataMember(Name="voice")
     # @return [String]
     attr_accessor :voice
+
+    def self.properties
+        {
+            format: { name: 'format' },
+            voice: { name: 'voice' },
+        }
+    end
+
 end
 
 # @DataContract
 class AiResponseFormat
+    include ServiceStack::DTO
+
     # @DataMember(Name="type")
     # @return [ResponseFormat]
     attr_accessor :type
+
+    def self.properties
+        {
+            type: { name: 'type' },
+        }
+    end
+
 end
 
 # @DataContract
 class AiToolFunction
+    include ServiceStack::DTO
+
     # @DataMember(Name="name")
     # @return [String]
     attr_accessor :name
@@ -157,10 +226,21 @@ class AiToolFunction
     # @DataMember(Name="parameters")
     # @return [Dictionary]
     attr_accessor :parameters
+
+    def self.properties
+        {
+            name: { name: 'name' },
+            description: { name: 'description' },
+            parameters: { name: 'parameters' },
+        }
+    end
+
 end
 
 # @DataContract
 class Tool
+    include ServiceStack::DTO
+
     # @DataMember(Name="type")
     # @return [ToolType]
     attr_accessor :type
@@ -168,6 +248,14 @@ class Tool
     # @DataMember(Name="function")
     # @return [AiToolFunction]
     attr_accessor :function
+
+    def self.properties
+        {
+            type: { name: 'type' },
+            function: { name: 'function', type: AiToolFunction },
+        }
+    end
+
 end
 
 #
@@ -175,6 +263,8 @@ end
 #
 # @DataContract
 class UrlCitation
+    include ServiceStack::DTO
+
     # @DataMember(Name="end_index")
     # @return [Integer]
     attr_accessor :end_index
@@ -190,6 +280,16 @@ class UrlCitation
     # @DataMember(Name="url")
     # @return [String]
     attr_accessor :url
+
+    def self.properties
+        {
+            end_index: { name: 'end_index' },
+            start_index: { name: 'start_index' },
+            title: { name: 'title' },
+            url: { name: 'url' },
+        }
+    end
+
 end
 
 #
@@ -197,6 +297,8 @@ end
 #
 # @DataContract
 class ChoiceAnnotation
+    include ServiceStack::DTO
+
     # @DataMember(Name="type")
     # @return [String]
     attr_accessor :type
@@ -204,6 +306,14 @@ class ChoiceAnnotation
     # @DataMember(Name="url_citation")
     # @return [UrlCitation]
     attr_accessor :url_citation
+
+    def self.properties
+        {
+            type: { name: 'type' },
+            url_citation: { name: 'url_citation', type: UrlCitation },
+        }
+    end
+
 end
 
 #
@@ -211,6 +321,8 @@ end
 #
 # @DataContract
 class ChoiceAudio
+    include ServiceStack::DTO
+
     # @DataMember(Name="data")
     # @return [String]
     attr_accessor :data
@@ -226,10 +338,22 @@ class ChoiceAudio
     # @DataMember(Name="transcript")
     # @return [String]
     attr_accessor :transcript
+
+    def self.properties
+        {
+            data: { name: 'data' },
+            expires_at: { name: 'expires_at' },
+            id: { name: 'id' },
+            transcript: { name: 'transcript' },
+        }
+    end
+
 end
 
 # @DataContract
 class ChoiceMessage
+    include ServiceStack::DTO
+
     # @DataMember(Name="content")
     # @return [String]
     attr_accessor :content
@@ -285,6 +409,26 @@ class ChoiceMessage
     # @DataMember(Name="tool_calls")
     # @return [List]
     attr_accessor :tool_calls
+
+    def self.properties
+        {
+            content: { name: 'content' },
+            refusal: { name: 'refusal' },
+            reasoning: { name: 'reasoning' },
+            reasoning_content: { name: 'reasoning_content' },
+            thinking: { name: 'thinking' },
+            role: { name: 'role' },
+            timestamp: { name: 'timestamp' },
+            tool_call_id: { name: 'tool_call_id' },
+            images: { name: 'images', type: [AiContent] },
+            audios: { name: 'audios', type: [AiContent] },
+            files: { name: 'files', type: [AiContent] },
+            annotations: { name: 'annotations', type: [ChoiceAnnotation] },
+            audio: { name: 'audio', type: ChoiceAudio },
+            tool_calls: { name: 'tool_calls', type: [ToolCall] },
+        }
+    end
+
 end
 
 #
@@ -292,6 +436,8 @@ end
 #
 # @DataContract
 class LogprobItem
+    include ServiceStack::DTO
+
     # @DataMember(Name="token")
     # @return [String]
     attr_accessor :token
@@ -307,6 +453,16 @@ class LogprobItem
     # @DataMember(Name="top_logprobs")
     # @return [List]
     attr_accessor :top_logprobs
+
+    def self.properties
+        {
+            token: { name: 'token' },
+            logprob: { name: 'logprob' },
+            bytes: { name: 'bytes' },
+            top_logprobs: { name: 'top_logprobs', type: [LogprobItem] },
+        }
+    end
+
 end
 
 #
@@ -314,13 +470,24 @@ end
 #
 # @DataContract
 class Logprobs
+    include ServiceStack::DTO
+
     # @DataMember(Name="content")
     # @return [List]
     attr_accessor :content
+
+    def self.properties
+        {
+            content: { name: 'content', type: [LogprobItem] },
+        }
+    end
+
 end
 
 # @DataContract
 class Choice
+    include ServiceStack::DTO
+
     # @DataMember(Name="finish_reason")
     # @return [String]
     attr_accessor :finish_reason
@@ -336,6 +503,16 @@ class Choice
     # @DataMember(Name="logprobs")
     # @return [Logprobs]
     attr_accessor :logprobs
+
+    def self.properties
+        {
+            finish_reason: { name: 'finish_reason' },
+            index: { name: 'index' },
+            message: { name: 'message', type: ChoiceMessage },
+            logprobs: { name: 'logprobs', type: Logprobs },
+        }
+    end
+
 end
 
 #
@@ -343,6 +520,8 @@ end
 #
 # @DataContract
 class AiCompletionUsage
+    include ServiceStack::DTO
+
     # @DataMember(Name="accepted_prediction_tokens")
     # @return [Integer]
     attr_accessor :accepted_prediction_tokens
@@ -358,6 +537,16 @@ class AiCompletionUsage
     # @DataMember(Name="rejected_prediction_tokens")
     # @return [Integer]
     attr_accessor :rejected_prediction_tokens
+
+    def self.properties
+        {
+            accepted_prediction_tokens: { name: 'accepted_prediction_tokens' },
+            audio_tokens: { name: 'audio_tokens' },
+            reasoning_tokens: { name: 'reasoning_tokens' },
+            rejected_prediction_tokens: { name: 'rejected_prediction_tokens' },
+        }
+    end
+
 end
 
 #
@@ -365,6 +554,8 @@ end
 #
 # @DataContract
 class AiPromptUsage
+    include ServiceStack::DTO
+
     # @DataMember(Name="accepted_prediction_tokens")
     # @return [Integer]
     attr_accessor :accepted_prediction_tokens
@@ -376,6 +567,15 @@ class AiPromptUsage
     # @DataMember(Name="cached_tokens")
     # @return [Integer]
     attr_accessor :cached_tokens
+
+    def self.properties
+        {
+            accepted_prediction_tokens: { name: 'accepted_prediction_tokens' },
+            audio_tokens: { name: 'audio_tokens' },
+            cached_tokens: { name: 'cached_tokens' },
+        }
+    end
+
 end
 
 #
@@ -383,6 +583,8 @@ end
 #
 # @DataContract
 class AiUsage
+    include ServiceStack::DTO
+
     # @DataMember(Name="completion_tokens")
     # @return [Integer]
     attr_accessor :completion_tokens
@@ -406,48 +608,18 @@ class AiUsage
     # @DataMember(Name="duration")
     # @return [Integer]
     attr_accessor :duration
-end
 
-# @DataContract
-class ResponseError
-    # @DataMember(Order=1)
-    # @return [String]
-    attr_accessor :error_code
+    def self.properties
+        {
+            completion_tokens: { name: 'completion_tokens' },
+            prompt_tokens: { name: 'prompt_tokens' },
+            total_tokens: { name: 'total_tokens' },
+            completion_tokens_details: { name: 'completion_tokens_details', type: AiCompletionUsage },
+            prompt_tokens_details: { name: 'prompt_tokens_details', type: AiPromptUsage },
+            duration: { name: 'duration' },
+        }
+    end
 
-    # @DataMember(Order=2)
-    # @return [String]
-    attr_accessor :field_name
-
-    # @DataMember(Order=3)
-    # @return [String]
-    attr_accessor :message
-
-    # @DataMember(Order=4)
-    # @return [Dictionary]
-    attr_accessor :meta
-end
-
-# @DataContract
-class ResponseStatus
-    # @DataMember(Order=1)
-    # @return [String]
-    attr_accessor :error_code
-
-    # @DataMember(Order=2)
-    # @return [String]
-    attr_accessor :message
-
-    # @DataMember(Order=3)
-    # @return [String]
-    attr_accessor :stack_trace
-
-    # @DataMember(Order=4)
-    # @return [List]
-    attr_accessor :errors
-
-    # @DataMember(Order=5)
-    # @return [Dictionary]
-    attr_accessor :meta
 end
 
 #
@@ -458,13 +630,29 @@ class AiTextContent < AiContent
     # @DataMember(Name="text")
     # @return [String]
     attr_accessor :text
+
+    def self.properties
+        {
+            text: { name: 'text' },
+        }
+    end
+
 end
 
 # @DataContract
 class AiImageUrl
+    include ServiceStack::DTO
+
     # @DataMember(Name="url")
     # @return [String]
     attr_accessor :url
+
+    def self.properties
+        {
+            url: { name: 'url' },
+        }
+    end
+
 end
 
 #
@@ -475,6 +663,13 @@ class AiImageContent < AiContent
     # @DataMember(Name="image_url")
     # @return [AiImageUrl]
     attr_accessor :image_url
+
+    def self.properties
+        {
+            image_url: { name: 'image_url', type: AiImageUrl },
+        }
+    end
+
 end
 
 #
@@ -482,6 +677,8 @@ end
 #
 # @DataContract
 class AiInputAudio
+    include ServiceStack::DTO
+
     # @DataMember(Name="data")
     # @return [String]
     attr_accessor :data
@@ -489,6 +686,14 @@ class AiInputAudio
     # @DataMember(Name="format")
     # @return [String]
     attr_accessor :format
+
+    def self.properties
+        {
+            data: { name: 'data' },
+            format: { name: 'format' },
+        }
+    end
+
 end
 
 #
@@ -499,6 +704,13 @@ class AiAudioContent < AiContent
     # @DataMember(Name="input_audio")
     # @return [AiInputAudio]
     attr_accessor :input_audio
+
+    def self.properties
+        {
+            input_audio: { name: 'input_audio', type: AiInputAudio },
+        }
+    end
+
 end
 
 #
@@ -506,6 +718,8 @@ end
 #
 # @DataContract
 class AiFile
+    include ServiceStack::DTO
+
     # @DataMember(Name="file_data")
     # @return [String]
     attr_accessor :file_data
@@ -517,6 +731,15 @@ class AiFile
     # @DataMember(Name="file_id")
     # @return [String]
     attr_accessor :file_id
+
+    def self.properties
+        {
+            file_data: { name: 'file_data' },
+            filename: { name: 'filename' },
+            file_id: { name: 'file_id' },
+        }
+    end
+
 end
 
 #
@@ -527,13 +750,29 @@ class AiFileContent < AiContent
     # @DataMember(Name="file")
     # @return [AiFile]
     attr_accessor :file
+
+    def self.properties
+        {
+            file: { name: 'file', type: AiFile },
+        }
+    end
+
 end
 
 # @DataContract
 class AiAudioUrl
+    include ServiceStack::DTO
+
     # @DataMember(Name="url")
     # @return [String]
     attr_accessor :url
+
+    def self.properties
+        {
+            url: { name: 'url' },
+        }
+    end
+
 end
 
 #
@@ -544,10 +783,19 @@ class AiAudioUrlContent < AiContent
     # @DataMember(Name="audio_url")
     # @return [AiAudioUrl]
     attr_accessor :audio_url
+
+    def self.properties
+        {
+            audio_url: { name: 'audio_url', type: AiAudioUrl },
+        }
+    end
+
 end
 
 # @DataContract
 class ChatResponse
+    include ServiceStack::DTO
+
     # @DataMember(Name="id")
     # @return [String]
     attr_accessor :id
@@ -597,8 +845,27 @@ class ChatResponse
     attr_accessor :metadata
 
     # @DataMember(Name="responseStatus")
-    # @return [ResponseStatus]
+    # @return [ServiceStack::ResponseStatus]
     attr_accessor :response_status
+
+    def self.properties
+        {
+            id: { name: 'id' },
+            choices: { name: 'choices', type: [Choice] },
+            created: { name: 'created' },
+            model: { name: 'model' },
+            system_fingerprint: { name: 'system_fingerprint' },
+            object: { name: 'object' },
+            service_tier: { name: 'service_tier' },
+            usage: { name: 'usage', type: AiUsage },
+            provider: { name: 'provider' },
+            cost: { name: 'cost' },
+            tool_history: { name: 'tool_history', type: [ChoiceMessage] },
+            metadata: { name: 'metadata' },
+            response_status: { name: 'responseStatus', type: ServiceStack::ResponseStatus },
+        }
+    end
+
 end
 
 #
@@ -607,6 +874,8 @@ end
 # @Route("/v1/chat/completions", "POST")
 # @DataContract
 class ChatCompletion
+    include ServiceStack::DTO
+
     # @DataMember(Name="messages")
     # @return [List]
     attr_accessor :messages
@@ -714,6 +983,39 @@ class ChatCompletion
     # @DataMember(Name="stream")
     # @return [TrueClass]
     attr_accessor :stream
+
+    def self.properties
+        {
+            messages: { name: 'messages', type: [AiMessage] },
+            model: { name: 'model' },
+            audio: { name: 'audio', type: AiChatAudio },
+            logit_bias: { name: 'logit_bias' },
+            metadata: { name: 'metadata' },
+            reasoning_effort: { name: 'reasoning_effort' },
+            response_format: { name: 'response_format', type: AiResponseFormat },
+            service_tier: { name: 'service_tier' },
+            safety_identifier: { name: 'safety_identifier' },
+            stop: { name: 'stop' },
+            modalities: { name: 'modalities' },
+            prompt_cache_key: { name: 'prompt_cache_key' },
+            tools: { name: 'tools', type: [Tool] },
+            verbosity: { name: 'verbosity' },
+            temperature: { name: 'temperature' },
+            max_completion_tokens: { name: 'max_completion_tokens' },
+            top_logprobs: { name: 'top_logprobs' },
+            top_p: { name: 'top_p' },
+            frequency_penalty: { name: 'frequency_penalty' },
+            presence_penalty: { name: 'presence_penalty' },
+            seed: { name: 'seed' },
+            n: { name: 'n' },
+            store: { name: 'store' },
+            logprobs: { name: 'logprobs' },
+            parallel_tool_calls: { name: 'parallel_tool_calls' },
+            enable_thinking: { name: 'enable_thinking' },
+            stream: { name: 'stream' },
+        }
+    end
+
     def response_type() = ChatResponse
     def get_type_name() = 'ChatCompletion'
     def get_method() = 'POST'
