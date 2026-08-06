@@ -522,10 +522,15 @@ public class GoGenerator : ILangGenerator
             {
                 var field = lines[i].Substring(1); //strip the field's tab indent
                 var name = field.LeftPart(' ');
-                var type = field.RightPart(' ').TrimStart().LeftPart(' ');
+
+                // The Type can itself contain spaces, e.g. KeyValuePair[string, string],
+                // so it's everything up to the field's JSON tag
+                var remainder = field.Substring(name.Length).TrimStart();
+                var tagPos = remainder.IndexOf('`');
+
                 names.Add(name);
-                types.Add(type);
-                rest.Add(field.RightPart(' ').TrimStart().RightPart(' ').TrimStart());
+                types.Add(tagPos >= 0 ? remainder.Substring(0, tagPos).TrimEnd() : remainder.LeftPart(' '));
+                rest.Add(tagPos >= 0 ? remainder.Substring(tagPos) : remainder.RightPart(' ').TrimStart());
             }
 
             var nameWidth = names.Max(x => x.Length);
@@ -716,14 +721,14 @@ public class GoGenerator : ILangGenerator
         // Go doesn't allow a method and a field of the same name
         bool hasProperty(string name) => type.Properties.Safe().Any(x => GetPropertyName(x) == name);
 
-        //Method Signature -> Body, emitted in aligned columns like gofmt
+        //Method Signature -> Body statement, emitted in aligned columns like gofmt
         var methods = new List<KeyValuePair<string, string>>();
 
         var returnsVoid = op.ReturnsVoid == true || (op.ReturnType == null && op.Response == null);
         if (returnsVoid)
         {
             if (!hasProperty(CreateResponseVoidMethod))
-                methods.Add(new($"func ({typeName}) {CreateResponseVoidMethod}()", "{}"));
+                methods.Add(new($"func ({typeName}) {CreateResponseVoidMethod}()", ""));
         }
         else if (!hasProperty(CreateResponseMethod))
         {
@@ -734,24 +739,60 @@ public class GoGenerator : ILangGenerator
             // A Request DTO can't return itself as it would recurse in its own method signature
             if (responseType != typeName)
             {
-                methods.Add(new($"func ({typeName}) {CreateResponseMethod}() (r {responseType})", "{ return }"));
+                methods.Add(new($"func ({typeName}) {CreateResponseMethod}() (r {responseType})", "return"));
             }
         }
 
         var method = op.Method ?? op.Routes?.FirstOrDefault(x => !string.IsNullOrEmpty(x.Verbs))?.Verbs.LeftPart(',');
         if (!string.IsNullOrEmpty(method) && method != "ANY" && !hasProperty(HttpMethodMethod))
         {
-            methods.Add(new($"func ({typeName}) {HttpMethodMethod}() string", $"{{ return \"{method.ToUpper()}\" }}"));
+            methods.Add(new($"func ({typeName}) {HttpMethodMethod}() string", $"return \"{method.ToUpper()}\""));
         }
 
         if (methods.Count == 0)
             return;
 
-        var signatureWidth = methods.Max(x => x.Key.Length);
         sb.AppendLine();
-        foreach (var entry in methods)
+        AppendMethods(sb, methods);
+    }
+
+    /// <summary>
+    /// gofmt only keeps a method's body on the same line when its declaration fits within
+    /// 100 chars, and aligns the bodies of the adjacent methods that do, e.g:
+    ///
+    ///     func (Hello) CreateResponse() (r HelloResponse) { return }
+    ///     func (Hello) HttpMethod() string                { return "GET" }
+    /// </summary>
+    public static void AppendMethods(StringBuilderWrapper sb, List<KeyValuePair<string, string>> methods)
+    {
+        const int MaxOneLineDeclaration = 100;
+        bool isOneLine(KeyValuePair<string, string> method) =>
+            method.Key.Length + 1 + method.Value.Length <= MaxOneLineDeclaration;
+
+        string body(string statement) => statement.Length == 0 ? "{}" : $"{{ {statement} }}";
+
+        for (var i = 0; i < methods.Count; i++)
         {
-            sb.AppendLine($"{entry.Key.PadRight(signatureWidth)} {entry.Value}");
+            if (!isOneLine(methods[i]))
+            {
+                sb.AppendLine($"{methods[i].Key} {{");
+                sb.AppendLine($"\t{methods[i].Value}");
+                sb.AppendLine("}");
+                continue;
+            }
+
+            //Only the adjacent methods gofmt keeps on one line are aligned together
+            var last = i;
+            while (last + 1 < methods.Count && isOneLine(methods[last + 1]))
+                last++;
+
+            var signatureWidth = 0;
+            for (var x = i; x <= last; x++)
+                signatureWidth = Math.Max(signatureWidth, methods[x].Key.Length);
+
+            for (; i <= last; i++)
+                sb.AppendLine($"{methods[i].Key.PadRight(signatureWidth)} {body(methods[i].Value)}");
+            i = last;
         }
     }
 
