@@ -527,8 +527,9 @@ public class ZigGenerator : ILangGenerator
 
         sb = sbAll;
 
-        // Only import the modules used by the generated Types
-        if (usesLibrary && request.QueryString["DefaultImports"].IsNullOrEmpty())
+        // The servicestack module is required by the generated Types that reference it,
+        // DefaultImports only overrides the modules they don't
+        if (usesLibrary)
         {
             defaultImports.AddIfNotExists($"const {LibraryAlias} = @import(\"{LibraryModule}\");");
         }

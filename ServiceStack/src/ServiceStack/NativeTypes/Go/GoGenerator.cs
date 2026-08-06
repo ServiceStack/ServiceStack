@@ -427,14 +427,12 @@ public class GoGenerator : ILangGenerator
         if (addCode != null)
             sbTypes.AppendLine(addCode);
 
-        // Only import the packages used by the generated Types
-        if (request.QueryString["DefaultImports"].IsNullOrEmpty())
-        {
-            if (usesTime)
-                defaultImports.AddIfNotExists("time");
-            if (usesLibrary)
-                defaultImports.AddIfNotExists($"{LibraryAlias} {LibraryPackage}");
-        }
+        // The time and servicestack packages are required by the generated Types that
+        // reference them, DefaultImports only overrides the packages they don't
+        if (usesTime)
+            defaultImports.AddIfNotExists("time");
+        if (usesLibrary)
+            defaultImports.AddIfNotExists($"{LibraryAlias} {LibraryPackage}");
 
         if (defaultImports.Count > 0)
         {
