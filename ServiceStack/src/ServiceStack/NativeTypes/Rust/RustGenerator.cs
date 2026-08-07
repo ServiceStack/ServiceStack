@@ -84,9 +84,19 @@ public class RustGenerator : ILangGenerator
     */
 
     public static List<string> DefaultImports = new() {
-        "serde::{Serialize, Deserialize}",
+        "serde::{Deserialize, Serialize}",
         "serde_json::Value",
         "std::collections::HashMap",
+    };
+
+    /// <summary>
+    /// The rustc and clippy lints disabled in generated DTOs
+    /// </summary>
+    public static List<string> DefaultAllowedLints = new() {
+        "dead_code",
+        "non_camel_case_types",
+        "non_snake_case",
+        "clippy::upper_case_acronyms",
     };
 
     /// <summary>
@@ -370,22 +380,26 @@ public class RustGenerator : ILangGenerator
         var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
+            // rustfmt strips trailing whitespace from comments, options are emitted without it
+            var sbOptions = sb;
+            void appendOption(string option) => sbOptions.AppendLine(option.TrimEnd());
+
             sb.AppendLine("/* Options:");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.VersionString));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            appendOption("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
+            appendOption("Version: {0}".Fmt(Env.VersionString));
+            appendOption("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
+            appendOption("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-            sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+            appendOption("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
+            appendOption("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
+            appendOption("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            appendOption("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            appendOption("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            appendOption("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            appendOption("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            appendOption("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            appendOption("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            AddQueryParamOptions.Each(name => appendOption($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -494,6 +508,31 @@ public class RustGenerator : ILangGenerator
 
         sb = sbAll;
 
+        // DTOs keep the names of the Types they're generated from and only the Types used
+        // by an App are referenced, so the lints they'd otherwise trigger are disabled
+        if (DefaultAllowedLints.Count > 0)
+        {
+            var lints = DefaultAllowedLints.Join(", ");
+            // rustfmt wraps attributes with args wider than its attr_fn_like_width default
+            if (lints.Length <= 70)
+            {
+                sb.AppendLine($"#![allow({lints})]");
+            }
+            else
+            {
+                sb.AppendLine("#![allow(");
+                sb = sb.Indent();
+                for (var i = 0; i < DefaultAllowedLints.Count; i++)
+                {
+                    var suffix = i < DefaultAllowedLints.Count - 1 ? "," : "";
+                    sb.AppendLine($"{DefaultAllowedLints[i]}{suffix}");
+                }
+                sb = sb.UnIndent();
+                sb.AppendLine(")]");
+            }
+            sb.AppendLine();
+        }
+
         // The servicestack crate is required by the generated Types that reference it,
         // DefaultImports only overrides the crates they don't
         if (usesLibrary)
@@ -501,7 +540,8 @@ public class RustGenerator : ILangGenerator
             defaultImports.AddIfNotExists($"{LibraryCrate}::*");
         }
 
-        foreach (var import in defaultImports)
+        // Emitted in the same order rustfmt sorts them in, i.e. by crate then by name
+        foreach (var import in defaultImports.Map(SortImportNames).OrderBy(x => x, StringComparer.Ordinal))
         {
             sb.AppendLine($"use {import};");
         }
@@ -511,10 +551,29 @@ public class RustGenerator : ILangGenerator
             sb.AppendLine();
         }
 
-        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbTypesInner).TrimEnd());
+        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbTypesInner).Trim());
 
         var ret = StringBuilderCache.ReturnAndFree(sbInner);
         return formatter != null ? formatter.Transform(ret, this, request) : ret;
+    }
+
+    /// <summary>
+    /// Sorts the names of a grouped import in the same order rustfmt does, e.g:
+    ///
+    ///     serde::{Serialize, Deserialize} => serde::{Deserialize, Serialize}
+    /// </summary>
+    public static string SortImportNames(string import)
+    {
+        if (import.IndexOf('{') == -1)
+            return import;
+
+        var names = import.RightPart('{').LastLeftPart('}');
+        if (names.IndexOf(',') == -1)
+            return import;
+
+        var sortedNames = names.Split(',').Map(x => x.Trim())
+            .OrderBy(x => x, StringComparer.Ordinal).Join(", ");
+        return import.LeftPart('{') + "{" + sortedNames + "}" + import.LastRightPart('}');
     }
 
     private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
@@ -620,32 +679,43 @@ public class RustGenerator : ILangGenerator
                 typeName = TypeAlias(type.Name);
             }
 
-            sb.AppendLine($"pub struct {typeName} {{");
-
-            sb = sb.Indent();
-            InnerTypeFilter?.Invoke(sb, type);
-
-            // Rust doesn't support sub classing, inherited properties are flattened into the Type
-            if (baseTypeName != null)
-            {
-                var baseFieldName = GetPropertyName(type.Inherits.Name.LeftPart('`'));
-                sb.AppendLine("#[serde(flatten)]");
-                sb.AppendLine($"pub {baseFieldName}: {baseTypeName},");
-            }
-
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
-            if (addVersionInfo)
+            var addResponseStatus = Config.AddResponseStatus && options.IsResponse
+                                    && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus));
+
+            // rustfmt collapses structs without any fields, e.g. pub struct EmptyClass {}
+            var isEmpty = InnerTypeFilter == null && baseTypeName == null && !addVersionInfo
+                          && !addResponseStatus && type.Properties.Safe().FirstOrDefault() == null;
+            if (isEmpty)
             {
-                sb.AppendLine("pub {0}: i32, //{1}".Fmt(
-                    GetPropertyName("Version"), Config.AddImplicitVersion));
+                sb.AppendLine($"pub struct {typeName} {{}}");
             }
+            else
+            {
+                sb.AppendLine($"pub struct {typeName} {{");
 
-            AddProperties(sb, type,
-                includeResponseStatus: Config.AddResponseStatus && options.IsResponse
-                                                                && type.Properties.Safe().All(x => x.Name != nameof(ResponseStatus)));
+                sb = sb.Indent();
+                InnerTypeFilter?.Invoke(sb, type);
 
-            sb = sb.UnIndent();
-            sb.AppendLine("}");
+                // Rust doesn't support sub classing, inherited properties are flattened into the Type
+                if (baseTypeName != null)
+                {
+                    var baseFieldName = GetPropertyName(type.Inherits.Name.LeftPart('`'));
+                    sb.AppendLine("#[serde(flatten)]");
+                    sb.AppendLine($"pub {baseFieldName}: {baseTypeName},");
+                }
+
+                if (addVersionInfo)
+                {
+                    sb.AppendLine("pub {0}: i32, //{1}".Fmt(
+                        GetPropertyName("Version"), Config.AddImplicitVersion));
+                }
+
+                AddProperties(sb, type, includeResponseStatus: addResponseStatus);
+
+                sb = sb.UnIndent();
+                sb.AppendLine("}");
+            }
 
             if (options.IsRequest)
             {
@@ -666,7 +736,9 @@ public class RustGenerator : ILangGenerator
     ///         const NAME: &amp;'static str = "Hello";
     ///         const VERB: &amp;'static str = "GET";
     ///     }
-    ///     impl IReturn for Hello { type Response = HelloResponse; }
+    ///     impl IReturn for Hello {
+    ///         type Response = HelloResponse;
+    ///     }
     /// </summary>
     public void AppendRequestImpls(StringBuilderWrapper sb, MetadataType type, string typeName, MetadataOperationType op)
     {
@@ -699,7 +771,11 @@ public class RustGenerator : ILangGenerator
             // A Request DTO can't return itself as it would recurse in its own impl
             if (responseType != typeName)
             {
-                sb.AppendLine($"impl IReturn for {typeName} {{ type Response = {responseType}; }}");
+                sb.AppendLine($"impl IReturn for {typeName} {{");
+                sb = sb.Indent();
+                sb.AppendLine($"type Response = {responseType};");
+                sb = sb.UnIndent();
+                sb.AppendLine("}");
             }
         }
     }
