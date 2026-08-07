@@ -262,19 +262,31 @@ function useRequests(ext) {
         return (await ext.getJson(appendQueryString(`/requests?fields=threadId&not_null=threadId&as=column&take=10000`, query))).response || []
     }
 
-    async function getSummary() {
-        return (await ext.getJson(`/requests/summary`)).response
+    async function getSummary(query) {
+        return (await ext.getJson(appendQueryString(`/requests/summary`, query))).response
     }
-    async function getDailySummary(day) {
-        return (await ext.getJson(`/requests/summary/${day}`)).response
+    async function getDailySummary(day, query) {
+        return (await ext.getJson(appendQueryString(`/requests/summary/${day}`, query))).response
+    }
+    // Admin-only: null when the caller isn't allowed (or the request failed), an array when they are.
+    // Callers use that to decide whether to reveal the Admin views, so it must not coalesce a 403
+    // into an empty array — [] is truthy and would show empty Admin controls to a non-Admin.
+    async function getUsersSummary() {
+        const api = await ext.getJson(`/requests/users`)
+        return api.error ? null : (api.response || [])
+    }
+    async function getUsersList() {
+        const api = await ext.getJson(`/requests/users/list`)
+        return api.error ? null : (api.response || [])
     }
 
     // Get unique values for filter options
-    async function getFilterOptions() {
+    async function getFilterOptions(queryParams = {}) {
         const results = await query({
             select: 'distinct',
             fields: 'model,provider',
             not_null: 'model,provider',
+            ...queryParams
         })
 
         if (results) {
@@ -294,6 +306,8 @@ function useRequests(ext) {
         getThreadIds,
         getSummary,
         getDailySummary,
+        getUsersSummary,
+        getUsersList,
         getFilterOptions,
     }
 }

@@ -79,16 +79,27 @@ public partial class AppExtension
         return config;
     }
 
+    /// <summary>
+    /// A theme can be a &lt;name&gt;/theme.json directory or a flat &lt;name&gt;.json, and the bundled themes
+    /// use both: dark.json carries the full definition while dark/theme.json only adds its
+    /// colorScheme. Directories are merged first so the flat file supplies the base underneath.
+    /// </summary>
     JsonObject GetThemes(ChatRequestContext req)
     {
         var themes = new JsonObject();
 
-        // bundled themes (chat/themes/<name>/theme.json)
-        foreach (var dir in HostContext.VirtualFileSources.GetDirectory("chat/themes")?.Directories ?? [])
+        // bundled themes (chat/themes/)
+        var bundled = HostContext.VirtualFileSources.GetDirectory("chat/themes");
+        foreach (var dir in bundled?.Directories ?? [])
         {
             var themeJson = HostContext.VirtualFileSources.GetFile($"chat/themes/{dir.Name}/theme.json");
             if (themeJson != null && ChatJson.TryParseObject(themeJson.ReadAllText()) is { } config)
-                themes[dir.Name] = RebaseThemeUrls(config);
+                MergeDirTheme(themes, dir.Name, config);
+        }
+        foreach (var file in bundled?.Files ?? [])
+        {
+            if (IsThemeFile(file.Name) && ChatJson.TryParseObject(file.ReadAllText()) is { } config)
+                MergeFileTheme(themes, Path.GetFileNameWithoutExtension(file.Name), config);
         }
 
         // user overrides
@@ -99,13 +110,58 @@ public partial class AppExtension
             foreach (var themeDir in Directory.GetDirectories(themesDir))
             {
                 var configPath = Path.Combine(themeDir, "theme.json");
-                if (!File.Exists(configPath))
-                    continue;
-                if (ChatJson.TryParseObject(File.ReadAllText(configPath)) is { } config)
-                    themes[Path.GetFileName(themeDir)] = RebaseThemeUrls(config);
+                if (File.Exists(configPath) && ChatJson.TryParseObject(File.ReadAllText(configPath)) is { } config)
+                    MergeDirTheme(themes, Path.GetFileName(themeDir), config);
+            }
+            foreach (var path in Directory.GetFiles(themesDir, "*.json"))
+            {
+                if (IsThemeFile(Path.GetFileName(path))
+                    && ChatJson.TryParseObject(File.ReadAllText(path)) is { } config)
+                    MergeFileTheme(themes, Path.GetFileNameWithoutExtension(path), config);
             }
         }
         return themes;
+    }
+
+    /// <summary>shared.json holds the vars every theme inherits — it isn't a theme itself</summary>
+    static bool IsThemeFile(string fileName) =>
+        fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+        && !fileName.Equals("shared.json", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>A &lt;name&gt;/theme.json overrides only the keys it defines</summary>
+    void MergeDirTheme(JsonObject themes, string name, JsonObject config)
+    {
+        config = RebaseThemeUrls(config);
+        if (themes[name] is not JsonObject existing)
+        {
+            themes[name] = config;
+            return;
+        }
+        foreach (var entry in config)
+            existing[entry.Key] = entry.Value?.DeepClone();
+    }
+
+    /// <summary>
+    /// A flat &lt;name&gt;.json is the complete definition, so it becomes the base and whatever was
+    /// merged before it (a directory stub's vars) is layered back over the top.
+    /// </summary>
+    void MergeFileTheme(JsonObject themes, string name, JsonObject config)
+    {
+        config = RebaseThemeUrls(config);
+        if (themes[name] is JsonObject existing)
+        {
+            if (existing["vars"] is JsonObject existingVars)
+            {
+                if (config["vars"] is not JsonObject vars)
+                {
+                    vars = new JsonObject();
+                    config["vars"] = vars;
+                }
+                foreach (var entry in existingVars)
+                    vars[entry.Key] = entry.Value?.DeepClone();
+            }
+        }
+        themes[name] = config;
     }
 
     JsonObject? GetThemeConfig(string theme, ChatRequestContext req)

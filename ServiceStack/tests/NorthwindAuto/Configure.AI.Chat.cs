@@ -29,6 +29,10 @@ public class ConfigureAiChat : IHostingStartup
                 },
                 RequireAuth = true,
                 // RequiredRole = "Admin",
+                // Publish =
+                // {
+                //     Enabled = true,
+                // },
                 Tools =
                 {
                     EnableCodeExecution = true,

@@ -49,7 +49,13 @@ public partial class AppExtension() : ChatExtension("app")
         ctx.AddGet("threads", req =>
         {
             var query = QueryOf(req);
-            var rows = Db.QueryThreads(query, req.UserName);
+            var rows = Db.QueryThreads(query, GetTargetUser(req));
+            // an Admin following a link to a specific thread they don't own still resolves it
+            if (rows.Count == 0 && query.ContainsKey("id") && !query.ContainsKey("user")
+                && Ctx.IsAdmin(req.Request))
+            {
+                rows = Db.QueryThreads(query, ChatDb.AllUsers);
+            }
             return Task.FromResult<object?>(rows.ToDtos(x => x.ToDto()));
         });
 
@@ -74,7 +80,7 @@ public partial class AppExtension() : ChatExtension("app")
 
         ctx.AddGet("threads/{id}", req =>
         {
-            var thread = Db.GetThread(ThreadId(req), req.UserName);
+            var thread = ResolveThread(req, ThreadId(req), out _);
             return Task.FromResult<object?>(thread != null ? thread.ToDto() : (JsonNode)"");
         });
 
@@ -82,7 +88,8 @@ public partial class AppExtension() : ChatExtension("app")
         {
             var id = ThreadId(req);
             var thread = await req.GetJsonBodyAsync().ConfigAwait();
-            var user = req.UserName;
+            if (ResolveThread(req, id, out var user) == null)
+                throw new Exception("Thread not found");
             if (!await threadApi.UpdateThreadInternalAsync(id, thread, user).ConfigAwait())
                 throw new Exception("Thread not found");
             Updates.NotifyThreadUpdate(id);
@@ -91,7 +98,8 @@ public partial class AppExtension() : ChatExtension("app")
 
         ctx.AddDelete("threads/{id}", req =>
         {
-            Db.DeleteThread(ThreadId(req), req.UserName);
+            if (ResolveThread(req, ThreadId(req), out var user) != null)
+                Db.DeleteThread(ThreadId(req), user);
             return Task.FromResult<object?>(new JsonObject());
         });
 
@@ -99,6 +107,24 @@ public partial class AppExtension() : ChatExtension("app")
         ctx.AddGet("threads/{id}/updates", GetThreadUpdatesAsync);
         ctx.AddPost("threads/{id}/cancel", CancelThreadAsync);
         ctx.AddPost("threads/{id}/compact", CompactThreadAsync);
+    }
+
+    /// <summary>
+    /// Load a thread as its owner, falling back to any user's for an Admin. <paramref name="user"/>
+    /// receives the user the follow-up operation must run as — the owner when an Admin resolved
+    /// someone else's thread, so an update or delete still targets the right row.
+    /// </summary>
+    ChatThread? ResolveThread(ChatRequestContext req, long id, out string? user)
+    {
+        user = req.UserName;
+        var thread = Db.GetThread(id, user);
+        if (thread != null || !Ctx.IsAdmin(req.Request))
+            return thread;
+
+        thread = Db.GetThread(id, ChatDb.AllUsers);
+        if (thread != null)
+            user = thread.User ?? ChatDb.AllUsers;
+        return thread;
     }
 
     /// <summary>
@@ -113,7 +139,7 @@ public partial class AppExtension() : ChatExtension("app")
             return ChatResult.Unauthorized(Ctx.Feature.ErrorAuthRequired());
 
         var id = ThreadId(req);
-        var user = req.UserName;
+        ResolveThread(req, id, out var user);
         var chatReq = await req.GetJsonBodyAsync().ConfigAwait();
 
         var messages = TimestampMessages(chatReq.GetArray("messages"));
@@ -341,15 +367,44 @@ public partial class AppExtension() : ChatExtension("app")
 
     // ── Requests (accounting + analytics) ──
 
+    /// <summary>
+    /// Whose rows a request is asking for. ?user= is honoured only for Admins — for everyone else it's
+    /// ignored and they get their own, so the parameter can't be used to read another user's history.
+    /// </summary>
+    string? GetTargetUser(ChatRequestContext req)
+    {
+        var requested = req.QueryString("user");
+        return !string.IsNullOrEmpty(requested) && Ctx.IsAdmin(req.Request)
+            ? requested
+            : req.UserName;
+    }
+
     void RegisterRequestRoutes(ExtensionContext ctx)
     {
+        // registered before "requests" so the literal paths win over the generic query route
+        Ctx.AddGet("requests/users", req =>
+        {
+            if (!Ctx.IsAdmin(req.Request))
+                return Task.FromResult<object?>(ChatResult.Json(
+                    ChatJson.CreateErrorResponse("Admin role required", "Forbidden"), 403));
+            return Task.FromResult<object?>(Db.GetUsersSummary().ToDtos(x => x.ToDto()));
+        });
+
+        Ctx.AddGet("requests/users/list", req =>
+        {
+            if (!Ctx.IsAdmin(req.Request))
+                return Task.FromResult<object?>(ChatResult.Json(
+                    ChatJson.CreateErrorResponse("Admin role required", "Forbidden"), 403));
+            return Task.FromResult<object?>(GetKnownUserNamesAsync(req));
+        });
+
         Ctx.AddGet("requests/summary", req =>
-            Task.FromResult<object?>(BuildSummary(Db.GetRequestsForSummary(req.UserName))));
+            Task.FromResult<object?>(BuildSummary(Db.GetRequestsForSummary(GetTargetUser(req)))));
 
         Ctx.AddGet("requests/summary/{day}", req =>
         {
             var day = req.GetPathParam("day");
-            var rows = Db.GetRequestsForSummary(req.UserName)
+            var rows = Db.GetRequestsForSummary(GetTargetUser(req))
                 .Where(x => ChatDb.ToDateString(x.CreatedAt).StartsWith(day, StringComparison.Ordinal))
                 .ToList();
             return Task.FromResult<object?>(BuildDailySummary(rows));
@@ -357,7 +412,7 @@ public partial class AppExtension() : ChatExtension("app")
 
         Ctx.AddGet("requests", req =>
         {
-            var rows = Db.QueryRequests(QueryOf(req), req.UserName);
+            var rows = Db.QueryRequests(QueryOf(req), GetTargetUser(req));
             return Task.FromResult<object?>(rows.ToDtos(x => x.ToDto()));
         });
 
@@ -367,6 +422,32 @@ public partial class AppExtension() : ChatExtension("app")
                 Db.DeleteRequest(id, req.UserName);
             return Task.FromResult<object?>(new JsonObject());
         });
+    }
+
+    /// <summary>
+    /// Users an Admin can filter by: everyone who has made a request, plus whatever the host adds via
+    /// ChatFeature.UserNamesResolver (llms-py merges its own users.json here; an Identity Auth host
+    /// would resolve its user store instead, so it stays the host's call).
+    /// </summary>
+    JsonArray GetKnownUserNamesAsync(ChatRequestContext req)
+    {
+        var users = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var user in Db.GetUsersList())
+            users.Add(user);
+
+        if (Feature.UserNamesResolver is { } resolver)
+        {
+            try
+            {
+                foreach (var user in resolver(req.Request))
+                    users.Add(user);
+            }
+            catch (Exception e)
+            {
+                Log.LogError(e, "UserNamesResolver failed");
+            }
+        }
+        return new JsonArray(users.Select(x => (JsonNode)x).ToArray());
     }
 
     static JsonObject BuildSummary(List<ChatRequest> rows)

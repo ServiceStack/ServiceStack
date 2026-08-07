@@ -24,12 +24,12 @@ const MonthSelector = {
         <div class="flex gap-1 sm:gap-2 flex-wrap justify-center">
             <template v-for="month in availableMonthsForYear" :key="month">
                 <span v-if="selectedMonth === month"
-                    class="text-xs leading-5 font-semibold py-1 px-2 sm:px-3 flex items-center space-x-2 whitespace-nowrap" :class="[$styles.tagButtonActive,$styles.tagButtonSmall]">
+                    class="text-xs leading-5 font-semibold py-1 px-2.5 sm:px-3 flex items-center space-x-2 whitespace-nowrap rounded-md border shadow-xs" :class="[$styles.tagButtonActive, $styles.tagButtonSmall]">
                     <span class="hidden sm:inline">{{ new Date(selectedYear + '-' + month.toString().padStart(2,'0') + '-01').toLocaleString('default', { month: 'long' }) }}</span>
                     <span class="sm:hidden">{{ new Date(selectedYear + '-' + month.toString().padStart(2,'0') + '-01').toLocaleString('default', { month: 'short' }) }}</span>
                 </span>
                 <button v-else type="button"
-                    class="text-xs leading-5 font-semibold py-1 px-2 sm:px-3 flex items-center space-x-2 whitespace-nowrap" :class="[$styles.tagButton,$styles.tagButtonSmall]"
+                    class="text-xs leading-5 font-semibold py-1 px-2.5 sm:px-3 flex items-center space-x-2 whitespace-nowrap rounded-md border transition-colors cursor-pointer shadow-xs" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput, 'hover:border-blue-400 dark:hover:border-blue-500', $styles.tagButtonSmall]"
                     @click="updateSelection(selectedYear, month)">
                     {{ new Date(selectedYear + '-' + month.toString().padStart(2,'0') + '-01').toLocaleString('default', { month: 'short' }) }}
                 </button>
@@ -38,7 +38,7 @@ const MonthSelector = {
 
         <!-- Year Dropdown -->
         <select :value="selectedYear" @change="(e) => updateSelection(parseInt(e.target.value), selectedMonth)"
-            class="rounded-md text-sm font-medium flex-shrink-0 transition-colors" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+            class="pl-3 pr-8 py-1.5 border rounded-md text-xs sm:text-sm font-medium flex-shrink-0 transition-colors shadow-xs" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
             <option v-for="year in availableYears" :key="year" :value="year">
                 {{ year }}
             </option>
@@ -104,6 +104,125 @@ const MonthSelector = {
     }
 }
 
+export const UserSelect = {
+    template: `
+        <div class="relative inline-block text-left" ref="containerRef">
+            <div class="flex items-center gap-1.5 border rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium cursor-pointer shadow-xs transition-colors"
+                :class="[$styles.bgInput, $styles.textInput, $styles.borderInput, 'hover:border-blue-400 dark:hover:border-blue-500']"
+                @click="toggleOpen">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span class="truncate max-w-[140px] sm:max-w-[180px]">{{ displayText }}</span>
+                <svg class="w-3.5 h-3.5 ml-1 text-gray-400 transition-transform" :class="isOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+
+            <!-- Dropdown Menu -->
+            <div v-if="isOpen" class="absolute right-0 z-50 mt-1 w-64 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-1 text-sm">
+                <!-- Search Filter Input -->
+                <div class="px-2 py-1.5 border-b border-gray-100 dark:border-gray-700">
+                    <div class="relative">
+                        <input type="text" v-model="searchQuery" ref="searchInputRef"
+                            placeholder="Search user..."
+                            class="w-full pl-8 pr-3 py-1 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"
+                            @keydown.esc.prevent="isOpen = false" />
+                        <svg class="w-3.5 h-3.5 absolute left-2.5 top-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Options List -->
+                <div class="max-h-60 overflow-y-auto py-1">
+                    <div @click="select('all')"
+                        :class="['px-3 py-1.5 text-xs font-medium cursor-pointer flex items-center justify-between',
+                                 modelValue === 'all' ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700']">
+                        <span>All Users</span>
+                        <svg v-if="modelValue === 'all'" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <div v-for="u in filteredUsers" :key="u"
+                        @click="select(u)"
+                        :class="['px-3 py-1.5 text-xs cursor-pointer flex items-center justify-between',
+                                 modelValue === u ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700']">
+                        <span class="truncate">{{ u }}</span>
+                        <svg v-if="modelValue === u" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <div v-if="filteredUsers.length === 0" class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+                        No users found
+                    </div>
+                </div>
+            </div>
+        </div>
+    `,
+    props: {
+        modelValue: String,
+        users: Array,
+    },
+    emits: ['update:modelValue', 'change'],
+    setup(props, { emit }) {
+        const isOpen = ref(false)
+        const searchQuery = ref('')
+        const containerRef = ref(null)
+        const searchInputRef = ref(null)
+
+        const displayText = computed(() => {
+            if (!props.modelValue || props.modelValue === 'all') return 'All Users'
+            return props.modelValue
+        })
+
+        const filteredUsers = computed(() => {
+            const list = props.users || []
+            if (!searchQuery.value) return list
+            const q = searchQuery.value.toLowerCase()
+            return list.filter(u => u && u.toLowerCase().includes(q))
+        })
+
+        const toggleOpen = () => {
+            isOpen.value = !isOpen.value
+            if (isOpen.value) {
+                searchQuery.value = ''
+                nextTick(() => {
+                    if (searchInputRef.value) searchInputRef.value.focus()
+                })
+            }
+        }
+
+        const select = (val) => {
+            emit('update:modelValue', val)
+            emit('change', val)
+            isOpen.value = false
+        }
+
+        const handleClickOutside = (e) => {
+            if (containerRef.value && !containerRef.value.contains(e.target)) {
+                isOpen.value = false
+            }
+        }
+
+        onMounted(() => {
+            document.addEventListener('mousedown', handleClickOutside)
+        })
+
+        onUnmounted(() => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        })
+
+        return {
+            isOpen,
+            searchQuery,
+            containerRef,
+            searchInputRef,
+            displayText,
+            filteredUsers,
+            toggleOpen,
+            select,
+        }
+    }
+}
+
 export const Analytics = {
     template: `
         <div class="flex flex-col w-full">
@@ -115,7 +234,13 @@ export const Analytics = {
                     <h2 class="text-lg font-semibold flex-shrink-0" :class="[$styles.heading]">
                         <RouterLink to="/analytics">Analytics</RouterLink>
                     </h2>
-                    <MonthSelector :dailyData="allDailyData" />
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div v-if="isAdmin" class="flex items-center gap-2">
+                            <label class="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400"></label>
+                            <UserSelect v-model="selectedUser" :users="userList" @change="onUserChange" />
+                        </div>
+                        <MonthSelector :dailyData="allDailyData" />
+                    </div>
                 </div>
             </div>
 
@@ -145,6 +270,14 @@ export const Analytics = {
                                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200']">
                         Activity
+                    </button>
+                    <button v-if="isAdmin" type="button"
+                        @click="activeTab = 'users'"
+                        :class="['py-3 px-1 border-b-2 font-medium text-sm transition-colors',
+                                 activeTab === 'users'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200']">
+                        Users
                     </button>
                 </div>
             </div>
@@ -180,7 +313,7 @@ export const Analytics = {
                             <h3 class="text-sm sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                                 {{ new Date(selectedDay).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) }}
                             </h3>
-                            <select v-model="costChartType" class="px-3 pr-6 py-2 border rounded-md text-sm font-medium flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                            <select v-model="costChartType" class="pl-3 pr-8 py-2 border rounded-md text-sm font-medium flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
                                 <option value="bar">Bar Chart</option>
                                 <option value="line">Line Chart</option>
                             </select>
@@ -282,13 +415,131 @@ export const Analytics = {
                         </div>
                     </div>
 
+                    <!-- Users Tab (Admin Only) -->
+                    <div v-if="activeTab === 'users'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+                            <div>
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">User Analytics</h3>
+                                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Browse usage and cost breakdown across all registered and active users.</p>
+                            </div>
+                            <button type="button" @click="loadUsersSummary" class="px-3 py-1.5 text-xs font-medium border rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                Refresh
+                            </button>
+                        </div>
+
+                        <div v-if="isUsersLoading" class="px-6 py-12 text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                        </div>
+
+                        <div v-else-if="usersSummary.length === 0" class="flex items-center justify-center h-48 text-gray-500 dark:text-gray-400">
+                            <p>No user request data available</p>
+                        </div>
+
+                        <div v-else class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="text-xs uppercase bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
+                                    <tr>
+                                        <th @click="toggleUsersSort('user')" class="px-4 py-3 font-semibold cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            <div class="flex items-center gap-1">
+                                                <span>User</span>
+                                                <span v-if="usersSortBy === 'user'">{{ usersSortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                            </div>
+                                        </th>
+                                        <th @click="toggleUsersSort('requests')" class="px-4 py-3 font-semibold text-right cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            <div class="flex items-center justify-end gap-1">
+                                                <span>Requests</span>
+                                                <span v-if="usersSortBy === 'requests'">{{ usersSortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                            </div>
+                                        </th>
+                                        <th @click="toggleUsersSort('cost')" class="px-4 py-3 font-semibold text-right cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            <div class="flex items-center justify-end gap-1">
+                                                <span>Total Cost</span>
+                                                <span v-if="usersSortBy === 'cost'">{{ usersSortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                            </div>
+                                        </th>
+                                        <th @click="toggleUsersSort('inputTokens')" class="px-4 py-3 font-semibold text-right cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            <div class="flex items-center justify-end gap-1">
+                                                <span>Input Tokens</span>
+                                                <span v-if="usersSortBy === 'inputTokens'">{{ usersSortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                            </div>
+                                        </th>
+                                        <th @click="toggleUsersSort('outputTokens')" class="px-4 py-3 font-semibold text-right cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            <div class="flex items-center justify-end gap-1">
+                                                <span>Output Tokens</span>
+                                                <span v-if="usersSortBy === 'outputTokens'">{{ usersSortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                            </div>
+                                        </th>
+                                        <th @click="toggleUsersSort('totalTokens')" class="px-4 py-3 font-semibold text-right cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            <div class="flex items-center justify-end gap-1">
+                                                <span>Total Tokens</span>
+                                                <span v-if="usersSortBy === 'totalTokens'">{{ usersSortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                            </div>
+                                        </th>
+                                        <th @click="toggleUsersSort('lastActive')" class="px-4 py-3 font-semibold text-right cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                            <div class="flex items-center justify-end gap-1">
+                                                <span>Last Active</span>
+                                                <span v-if="usersSortBy === 'lastActive'">{{ usersSortOrder === 'asc' ? '↑' : '↓' }}</span>
+                                            </div>
+                                        </th>
+                                        <th class="px-4 py-3 font-semibold text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr v-for="userRow in paginatedUsersSummary" :key="userRow.user" @click="selectUser(userRow.user)" class="cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors">
+                                        <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs uppercase">
+                                                {{ (userRow.user || 'A').charAt(0) }}
+                                            </div>
+                                            <span>{{ userRow.user }}</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">{{ userRow.requests }}</td>
+                                        <td class="px-4 py-3 text-right font-semibold text-emerald-600 dark:text-emerald-400">{{ $fmt.cost(userRow.cost) }}</td>
+                                        <td class="px-4 py-3 text-right text-gray-600 dark:text-gray-400">{{ $fmt.humanifyNumber(userRow.inputTokens) }}</td>
+                                        <td class="px-4 py-3 text-right text-gray-600 dark:text-gray-400">{{ $fmt.humanifyNumber(userRow.outputTokens) }}</td>
+                                        <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">{{ $fmt.humanifyNumber(userRow.inputTokens + userRow.outputTokens) }}</td>
+                                        <td class="px-4 py-3 text-right text-xs text-gray-500 dark:text-gray-400" :title="userRow.lastActive ? new Date(userRow.lastActive).toLocaleString() : ''">{{ timeAgo(userRow.lastActive) }}</td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" @click.stop="selectUser(userRow.user)" class="px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+                                                View Analytics
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Pagination Controls -->
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 mt-2 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-400">
+                                <div>
+                                    Showing {{ usersSummary.length > 0 ? (usersCurrentPage - 1) * usersPageSize + 1 : 0 }} to {{ Math.min(usersCurrentPage * usersPageSize, usersSummary.length) }} of {{ usersSummary.length }} users
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex items-center gap-2">
+                                        <span>Per page:</span>
+                                        <select v-model="usersPageSize" @change="usersCurrentPage = 1" class="pl-2 pr-7 py-1 border rounded text-xs flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                                            <option :value="25">25</option>
+                                            <option :value="50">50</option>
+                                            <option :value="100">100</option>
+                                            <option :value="200">200</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" :disabled="usersCurrentPage <= 1" @click="usersCurrentPage--" class="px-2.5 py-1 border rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed font-medium">Prev</button>
+                                        <span class="px-2 font-medium">{{ usersCurrentPage }} / {{ totalUsersPages }}</span>
+                                        <button type="button" :disabled="usersCurrentPage >= totalUsersPages" @click="usersCurrentPage++" class="px-2.5 py-1 border rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed font-medium">Next</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Activity Tab - Full Page Layout -->
                     <div v-if="activeTab === 'activity'" class="flex flex-col bg-white dark:bg-gray-800">
                         <!-- Filters Bar -->
                         <div class="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 sm:px-6 py-4">
                             <div class="flex flex-wrap gap-2 sm:gap-4 items-end">
                                 <div class="flex flex-col flex-1 min-w-[120px] sm:flex-initial">
-                                    <select v-model="selectedModel" class="px-3 py-2 border rounded-md text-sm font-medium flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                                    <select v-model="selectedModel" class="pl-3 pr-8 py-2 border rounded-md text-sm font-medium flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
                                         <option value="">All Models</option>
                                         <option v-for="model in filterOptions.models" :key="model" :value="model">
                                             {{ model }}
@@ -297,7 +548,7 @@ export const Analytics = {
                                 </div>
 
                                 <div class="flex flex-col flex-1 min-w-[120px] sm:flex-initial">
-                                    <select v-model="selectedProvider" class="px-3 py-2 border rounded-md text-sm font-medium flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                                    <select v-model="selectedProvider" class="pl-3 pr-8 py-2 border rounded-md text-sm font-medium flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
                                         <option value="">All Providers</option>
                                         <option v-for="provider in filterOptions.providers" :key="provider" :value="provider">
                                             {{ provider }}
@@ -306,7 +557,7 @@ export const Analytics = {
                                 </div>
 
                                 <div class="flex flex-col flex-1 min-w-[140px] sm:flex-initial">
-                                    <select v-model="sortBy" class="px-3 py-2 border rounded-md text-sm font-medium flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                                    <select v-model="sortBy" class="pl-3 pr-8 py-2 border rounded-md text-sm font-medium flex-shrink-0" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
                                         <option value="createdAt">Date (Newest)</option>
                                         <option value="cost">Cost (Highest)</option>
                                         <option value="duration">Duration (Longest)</option>
@@ -409,6 +660,125 @@ export const Analytics = {
         const router = useRouter()
         const route = useRoute()
         const analyticsData = ref()
+
+        const isAdminRef = ref(false)
+        const isAdmin = computed(() => isAdminRef.value || ctx.ai.isAdmin || !ctx.ai.requiresAuth)
+        const selectedUser = ref(route.query.user || 'all')
+        const userList = ref([])
+        const usersSummary = ref([])
+        const isUsersLoading = ref(false)
+
+        const usersPageSize = ref(25)
+        const usersCurrentPage = ref(1)
+        const usersSortBy = ref('requests')
+        const usersSortOrder = ref('desc')
+
+        function toggleUsersSort(field) {
+            if (usersSortBy.value === field) {
+                usersSortOrder.value = usersSortOrder.value === 'asc' ? 'desc' : 'asc'
+            } else {
+                usersSortBy.value = field
+                usersSortOrder.value = field === 'user' ? 'asc' : 'desc'
+            }
+            usersCurrentPage.value = 1
+        }
+
+        const sortedUsersSummary = computed(() => {
+            const list = [...(usersSummary.value || [])]
+            const field = usersSortBy.value
+            const mult = usersSortOrder.value === 'asc' ? 1 : -1
+
+            return list.sort((a, b) => {
+                let valA, valB
+                if (field === 'totalTokens') {
+                    valA = (a.inputTokens || 0) + (a.outputTokens || 0)
+                    valB = (b.inputTokens || 0) + (b.outputTokens || 0)
+                } else if (field === 'lastActive') {
+                    valA = a.lastActive ? new Date(a.lastActive).getTime() : 0
+                    valB = b.lastActive ? new Date(b.lastActive).getTime() : 0
+                } else if (field === 'user') {
+                    valA = (a.user || '').toLowerCase()
+                    valB = (b.user || '').toLowerCase()
+                    return valA.localeCompare(valB) * mult
+                } else {
+                    valA = a[field] ?? 0
+                    valB = b[field] ?? 0
+                }
+
+                if (valA < valB) return -1 * mult
+                if (valA > valB) return 1 * mult
+                return 0
+            })
+        })
+
+        const totalUsersPages = computed(() => {
+            return Math.ceil((sortedUsersSummary.value?.length || 0) / usersPageSize.value) || 1
+        })
+
+        const paginatedUsersSummary = computed(() => {
+            const list = sortedUsersSummary.value
+            const start = (usersCurrentPage.value - 1) * usersPageSize.value
+            return list.slice(start, start + usersPageSize.value)
+        })
+
+        function timeAgo(dateInput) {
+            if (!dateInput) return '-'
+            const date = new Date(dateInput)
+            if (isNaN(date.getTime())) return '-'
+            const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+            if (seconds < 5) return 'just now'
+            if (seconds < 60) return `${seconds}s ago`
+            const minutes = Math.floor(seconds / 60)
+            if (minutes < 60) return `${minutes}m ago`
+            const hours = Math.floor(minutes / 60)
+            if (hours < 24) return `${hours}h ago`
+            const days = Math.floor(hours / 24)
+            if (days < 30) return `${days}d ago`
+            const months = Math.floor(days / 30)
+            if (months < 12) return `${months}mo ago`
+            const years = Math.floor(days / 365)
+            return `${years}y ago`
+        }
+
+        const onUserChange = () => {
+            router.push({ query: { ...route.query, user: selectedUser.value } })
+        }
+
+        const selectUser = (userName) => {
+            selectedUser.value = userName
+            activeTab.value = 'cost'
+            router.push({ query: { ...route.query, user: userName, tab: 'cost' } })
+        }
+
+        async function loadUsersList() {
+            try {
+                // null when we're not an Admin, so reaching it is what reveals the Admin views.
+                // An empty array is a valid Admin response (no users yet) - don't coalesce the two.
+                const list = await ctx.requests.getUsersList()
+                if (list) {
+                    isAdminRef.value = true
+                    userList.value = list
+                }
+            } catch (error) {
+                console.error('Failed to load user list:', error)
+            }
+        }
+
+        async function loadUsersSummary() {
+            isUsersLoading.value = true
+            try {
+                // null when we're not an Admin - see loadUsersList
+                const summary = await ctx.requests.getUsersSummary()
+                if (summary) {
+                    isAdminRef.value = true
+                    usersSummary.value = summary
+                }
+            } catch (error) {
+                console.error('Failed to load users summary:', error)
+            } finally {
+                isUsersLoading.value = false
+            }
+        }
 
         // Initialize activeTab from URL query parameter, default to 'cost'
         const activeTab = ref(route.query.tab || 'cost')
@@ -542,8 +912,33 @@ export const Analytics = {
         async function loadAnalyticsData() {
             try {
                 // Group requests by date
-                analyticsData.value = await ctx.requests.getSummary()
-                allDailyData.value = analyticsData.value.dailyData
+                analyticsData.value = await ctx.requests.getSummary(selectedUser.value ? { user: selectedUser.value } : {})
+                allDailyData.value = analyticsData.value?.dailyData || {}
+
+                // Auto-adjust month/year/day if current selection has no data for this user
+                const dateKeys = Object.keys(allDailyData.value).sort()
+                if (dateKeys.length > 0) {
+                    const hasDataInCurrentSelection = dateKeys.some(dateKey => {
+                        const date = new Date(dateKey + 'T00:00:00Z')
+                        return date.getFullYear() === selectedYear.value && (date.getMonth() + 1) === selectedMonth.value
+                    })
+
+                    if (!hasDataInCurrentSelection) {
+                        const latestDateStr = dateKeys[dateKeys.length - 1]
+                        const latestDate = new Date(latestDateStr + 'T00:00:00Z')
+                        const latestYear = latestDate.getFullYear()
+                        const latestMonth = latestDate.getMonth() + 1
+                        router.replace({
+                            query: {
+                                ...route.query,
+                                year: latestYear,
+                                month: latestMonth,
+                                day: latestDateStr,
+                                user: selectedUser.value,
+                            }
+                        })
+                    }
+                }
 
                 // Update chart data based on selected month/year
                 updateChartData()
@@ -620,7 +1015,7 @@ export const Analytics = {
             }
 
             try {
-                const dailySummary = await ctx.requests.getDailySummary(dateKey)
+                const dailySummary = await ctx.requests.getDailySummary(dateKey, selectedUser.value ? { user: selectedUser.value } : {})
                 const { modelData = {}, providerData = {} } = dailySummary ?? {}
 
                 // Prepare model pie chart data
@@ -665,7 +1060,7 @@ export const Analytics = {
             }
 
             try {
-                const dailySummary = await ctx.requests.getDailySummary(dateKey)
+                const dailySummary = await ctx.requests.getDailySummary(dateKey, selectedUser.value ? { user: selectedUser.value } : {})
                 const { modelData = {}, providerData = {} } = dailySummary ?? {}
 
                 // Prepare model pie chart data
@@ -1148,7 +1543,7 @@ export const Analytics = {
         // Activity tab functions
         const loadActivityFilterOptions = async () => {
             try {
-                filterOptions.value = await ctx.requests.getFilterOptions()
+                filterOptions.value = await ctx.requests.getFilterOptions(selectedUser.value ? { user: selectedUser.value } : {})
             } catch (error) {
                 console.error('Failed to load filter options:', error)
             }
@@ -1158,6 +1553,7 @@ export const Analytics = {
             try {
                 existingThreadIds.value = new Set(await ctx.requests.getThreadIds({
                     month: selectedYearMonth.value,
+                    user: selectedUser.value ? selectedUser.value : undefined,
                 }))
             } catch (error) {
                 console.error('Failed to load existing thread IDs:', error)
@@ -1188,6 +1584,7 @@ export const Analytics = {
                     take: activityPageSize,
                     skip: activityOffset.value,
                     month: selectedYearMonth.value,
+                    user: selectedUser.value || undefined,
                 })
 
                 const hasMore = requests.length >= activityPageSize
@@ -1254,13 +1651,44 @@ export const Analytics = {
             renderCostChart()
         })
 
-        watch(() => route.query, async () => {
+        watch(() => route.query, async (newQuery) => {
+            if (newQuery.user !== undefined && newQuery.user !== selectedUser.value) {
+                selectedUser.value = newQuery.user
+            }
+            if (newQuery.tab !== undefined && newQuery.tab !== activeTab.value) {
+                activeTab.value = newQuery.tab
+            }
+
+            await loadAnalyticsData()
             updateChartData()
             await nextTick()
             renderCostChart()
             renderTokenChart()
 
             // Also update pie charts if a day is selected
+            if (selectedDay.value) {
+                if (activeTab.value === 'cost') {
+                    await updatePieChartData(selectedDay.value)
+                    await nextTick()
+                    renderModelPieChart()
+                    renderProviderPieChart()
+                } else if (activeTab.value === 'tokens') {
+                    await updateTokenPieChartData(selectedDay.value)
+                    await nextTick()
+                    renderTokenModelPieChart()
+                    renderTokenProviderPieChart()
+                }
+            }
+        })
+
+        watch(selectedUser, async () => {
+            await loadAnalyticsData()
+            if (activeTab.value === 'users') {
+                await loadUsersSummary()
+            } else if (activeTab.value === 'activity') {
+                await loadActivityFilterOptions()
+                await loadActivityRequests(true)
+            }
             if (selectedDay.value) {
                 if (activeTab.value === 'cost') {
                     await updatePieChartData(selectedDay.value)
@@ -1331,6 +1759,8 @@ export const Analytics = {
                 await loadActivityRequests(true)
                 await nextTick()
                 setupObserver()
+            } else if (newTab === 'users') {
+                await loadUsersSummary()
             }
         })
 
@@ -1342,6 +1772,8 @@ export const Analytics = {
         })
 
         onMounted(async () => {
+            await loadUsersList()
+
             await loadAnalyticsData()
 
             // Load pie chart data for the selected day (default to today)
@@ -1357,6 +1789,8 @@ export const Analytics = {
                 await nextTick()
                 renderTokenModelPieChart()
                 renderTokenProviderPieChart()
+            } else if (activeTab.value === 'users') {
+                await loadUsersSummary()
             }
 
             // If Activity tab is active on page load, load activity data
@@ -1373,6 +1807,23 @@ export const Analytics = {
         })
 
         return {
+            isAdmin,
+            selectedUser,
+            userList,
+            usersSummary,
+            isUsersLoading,
+            usersPageSize,
+            usersCurrentPage,
+            usersSortBy,
+            usersSortOrder,
+            toggleUsersSort,
+            sortedUsersSummary,
+            totalUsersPages,
+            paginatedUsersSummary,
+            timeAgo,
+            onUserChange,
+            selectUser,
+            loadUsersSummary,
             activeTab,
             costChartType,
             costChartCanvas,
@@ -1406,7 +1857,6 @@ export const Analytics = {
             sortBy,
             filterOptions,
             hasActiveFilters,
-            hasActiveFilters,
             scrollSentinel,
             clearActivityFilters,
             formatActivityDate,
@@ -1425,6 +1875,7 @@ export default {
     install(ctx) {
         ctx.components({
             MonthSelector,
+            UserSelect,
             Analytics,
         })
 

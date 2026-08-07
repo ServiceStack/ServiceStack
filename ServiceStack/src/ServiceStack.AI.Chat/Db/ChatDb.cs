@@ -64,7 +64,7 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     {
         using var db = OpenDb();
         var q = db.From<ChatThread>().Where(x => x.Id == id);
-        if (user != null)
+        if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
         return db.Single(q);
     }
@@ -73,7 +73,7 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     {
         using var db = OpenDb();
         var q = db.From<ChatThread>().Where(x => x.Id == id);
-        if (user != null)
+        if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
         q.Select(columnName.SqlColumn(db.GetDialectProvider()));
         return db.Scalar<T>(q);
@@ -99,7 +99,7 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     {
         using var db = OpenDb();
         var q = db.From<ChatThread>().Where(x => x.Id == id);
-        if (user != null)
+        if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
         db.UpdateOnly(() => new ChatThread { StreamingMessage = json, UpdatedAt = DateTime.Now }, q);
     }
@@ -108,7 +108,7 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     {
         using var db = OpenDb();
         var q = db.From<ChatThread>().Where(x => x.Id == id);
-        if (user != null)
+        if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
         return db.Delete(q) > 0;
     }
@@ -150,7 +150,7 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     {
         using var db = OpenDb();
         var q = db.From<ChatRequest>().Where(x => x.Id == id);
-        if (user != null)
+        if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
         return db.Single(q);
     }
@@ -159,7 +159,7 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     {
         using var db = OpenDb();
         var q = db.From<ChatRequest>().Where(x => x.Id == id);
-        if (user != null)
+        if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
         return db.Delete(q) > 0;
     }
@@ -285,7 +285,7 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     {
         using var db = OpenDb();
         var q = db.From<ChatMedia>().Where(x => x.Hash == hash);
-        if (user != null)
+        if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
         return db.Delete(q) > 0;
     }
@@ -294,7 +294,7 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     {
         using var db = OpenDb();
         var q = db.From<ChatMedia>().Where(x => x.Hash == hash);
-        if (user != null)
+        if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
         return db.Single(q);
     }
@@ -303,6 +303,9 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
 
     public static void ApplyUserFilter<T>(SqlExpression<T> q, string? user)
     {
+        // Admin views read across every user by asking for "all"
+        if (IsAllUsers(user))
+            return;
         // null user (auth disabled) sees the shared "default" partition
         var partition = user ?? DefaultUser;
         q.Where("\"user\" = {0}".Replace("\"user\"", q.DialectProvider.GetQuotedColumnName("user")), partition);
@@ -310,10 +313,57 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
 
     public const string DefaultUser = "default";
 
+    /// <summary>
+    /// The sentinel an authorized Admin view passes to read across every user's rows
+    /// (llms-py's user="all"/"*"). Callers must have checked <see cref="IChatAuth.IsAdmin"/> first —
+    /// nothing in ChatDb authorizes it.
+    /// </summary>
+    public static bool IsAllUsers(string? user) => user is AllUsers or "*";
+
+    public const string AllUsers = "all";
+
+    // ── Per-user rollups for the Admin analytics views ──
+
+    /// <summary>One row per user that has made a request, most active first (port of get_users_summary)</summary>
+    public List<ChatUserSummary> GetUsersSummary()
+    {
+        using var db = OpenDb();
+        // every identifier is quoted through the dialect: unquoted names fold to lower case on
+        // Postgres and wouldn't match OrmLite's PascalCase columns
+        string C(string name) => db.GetDialectProvider().GetQuotedColumnName(name);
+        return db.Select<ChatUserSummary>(db.From<ChatRequest>()
+            .GroupBy(C("user"))
+            .OrderBy("COUNT(*) DESC")
+            .Select($@"{C("user")} AS {C(nameof(ChatUserSummary.User))},
+                COUNT(*) AS {C(nameof(ChatUserSummary.Requests))},
+                SUM({C(nameof(ChatRequest.Cost))}) AS {C(nameof(ChatUserSummary.Cost))},
+                SUM({C(nameof(ChatRequest.InputTokens))}) AS {C(nameof(ChatUserSummary.InputTokens))},
+                SUM({C(nameof(ChatRequest.OutputTokens))}) AS {C(nameof(ChatUserSummary.OutputTokens))},
+                MAX({C(nameof(ChatRequest.CreatedAt))}) AS {C(nameof(ChatUserSummary.LastActive))}"));
+    }
+
+    /// <summary>Distinct users that have made a request, sorted (port of get_users_list)</summary>
+    public List<string> GetUsersList()
+    {
+        using var db = OpenDb();
+        var userColumn = db.GetDialectProvider().GetQuotedColumnName("user");
+        return db.Column<string?>(db.From<ChatRequest>()
+                .GroupBy(userColumn)
+                .OrderBy(userColumn)
+                .Select(userColumn))
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Select(x => x!)
+            .ToList();
+    }
+
     public static void ApplyFilters<T>(SqlExpression<T> q, JsonObject query, Dictionary<string, string> columns)
     {
         foreach (var entry in query)
         {
+            // ?user= selects whose rows to read and is applied by ApplyUserFilter after the caller
+            // has authorized it — never as an ordinary column filter on top of it
+            if (entry.Key == "user")
+                continue;
             if (!columns.TryGetValue(entry.Key, out var column))
                 continue;
             if (entry.Value is not JsonValue value)

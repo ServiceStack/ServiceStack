@@ -11,10 +11,15 @@ namespace ServiceStack.AI;
 /// Publish threads/media/projects to a remote llms.py site (port of llms-py's "publish" extension).
 /// Connection config is stored per user at App_Data/chat/user/&lt;user&gt;/publish/config.json.
 /// </summary>
-public partial class PublishExtension() : ChatExtension("publish")
+public partial class PublishExtension : ChatExtension
 {
     const string DefaultPublishBaseUrl = "https://ai.llmspy.org";
     const string RegisterPath = "/embed/register.html?domain=llmspy.org";
+
+    public PublishExtension() : base("publish")
+    {
+        Enabled = false;
+    }
 
     public override void Install(ExtensionContext ctx)
     {

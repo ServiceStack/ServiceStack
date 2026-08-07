@@ -87,6 +87,13 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     /// <summary>Optional server-side request validation for all Chat UI + API requests</summary>
     public Func<IRequest, Task<IHttpResult?>>? ValidateRequest { get; set; }
 
+    /// <summary>
+    /// Extra usernames to offer in the Admin analytics user filter, on top of everyone who has made a
+    /// request. llms-py merges its own users.json here; an Identity Auth host would resolve its user
+    /// store, e.g. () =&gt; db.Column&lt;string&gt;(db.From&lt;ApplicationUser&gt;().Select(x =&gt; x.UserName)).
+    /// </summary>
+    public Func<IRequest, IEnumerable<string>>? UserNamesResolver { get; set; }
+
     // ── Config (llms.json + providers.json) ──
 
     public JsonObject Config { get; set; } = new();

@@ -110,6 +110,8 @@ public class ExtensionContext(ChatFeature feature, string name)
     // ── Auth / users ──
 
     public bool IsAuthEnabled => feature.ChatAuth.IsEnabled;
+    /// <summary>True for Admins, and for everyone when auth is disabled (Python: ctx.is_admin)</summary>
+    public bool IsAdmin(IRequest request) => feature.ChatAuth.IsAdmin(request);
     public string? GetUserName(IRequest request) => feature.ChatAuth.GetUserName(request);
     public string? AssertUserName(IRequest request) => feature.ChatAuth.AssertUserName(request);
     public (bool IsAuthenticated, JsonObject? Session) CheckAuth(IRequest request) => feature.ChatAuth.CheckAuth(request);

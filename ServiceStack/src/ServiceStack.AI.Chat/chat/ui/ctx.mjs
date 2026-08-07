@@ -309,7 +309,7 @@ export class AppContext {
                 this.setState({ selectedModel: targetModel })
                 this.setPrefs({ model: targetModel })
             }
-            const targetTheme = override?.theme || this.prefs.theme
+            const targetTheme = override?.theme || this.prefs.theme || this.selectedTheme
             if (targetTheme) {
                 this.selectTheme(targetTheme)
             }
@@ -317,7 +317,7 @@ export class AppContext {
         }
 
         const prefs = this.prefs
-        const targetTheme = override?.theme || profile.overrideTheme || profile.theme || prefs.theme
+        const targetTheme = override?.theme || profile.overrideTheme || profile.theme || prefs.theme || this.selectedTheme
         if (targetTheme) {
             this.selectTheme(targetTheme)
         }
@@ -715,7 +715,7 @@ export class AppContext {
     }
 
     get selectedTheme() {
-        return this.getPrefs().theme || (this.getDarkMode() ? 'dark' : 'light')
+        return this.getPrefs().theme || localStorage.getItem('llms.theme') || (this.getDarkMode() ? 'dark' : 'light')
     }
 
     getTheme(theme) {
@@ -725,10 +725,16 @@ export class AppContext {
     }
 
     selectTheme(theme) {
+        if (!theme) return
+        localStorage.setItem('llms.theme', theme)
         this.setPrefs({
             theme
         })
-        this.setTheme(this.getTheme(theme))
+        const fullTheme = this.getTheme(theme)
+        if (fullTheme?.vars?.colorScheme) {
+            this.setColorScheme(fullTheme.vars.colorScheme === 'dark')
+        }
+        this.setTheme(fullTheme)
     }
 
     setTheme(theme) {

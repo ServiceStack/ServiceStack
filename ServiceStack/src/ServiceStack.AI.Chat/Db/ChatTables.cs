@@ -197,3 +197,17 @@ public class ChatMedia
     public string? PublishedUrl { get; set; }
     public string? Metadata { get; set; }         // JSON
 }
+
+/// <summary>
+/// Per-user request rollup returned by the Admin analytics views. Not a table — the result shape of
+/// <see cref="ChatDb.GetUsersSummary"/>.
+/// </summary>
+public class ChatUserSummary
+{
+    public string? User { get; set; }
+    public long Requests { get; set; }
+    public double? Cost { get; set; }
+    public long? InputTokens { get; set; }
+    public long? OutputTokens { get; set; }
+    public DateTime? LastActive { get; set; }
+}

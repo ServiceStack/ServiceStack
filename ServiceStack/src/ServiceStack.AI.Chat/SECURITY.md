@@ -131,6 +131,27 @@ Gemini, Tools, CoreTools, SystemPrompts, Pdf, Analytics).
 > **drop** the user predicate when it is null (unlike `ApplyUserFilter`, which maps null to the
 > `default` partition). The gate is what prevents those from being reached anonymously.
 
+### C. Admin cross-user access
+
+Admins can read across users, which is what the analytics user picker and "open this thread" are built
+on. Every path to it checks `IChatAuth.IsAdmin` first:
+
+| Surface | Cross-user behaviour |
+| :--- | :--- |
+| `GET /ext/app/requests`, `/requests/summary`, `/requests/summary/{day}`, `/ext/app/threads` | `?user=<name>` selects whose rows to read, `?user=all` reads every user's. **Honoured only for Admins** — `AppExtension.GetTargetUser` falls back to the caller's own username for everyone else, so the parameter can't be used to read sideways. |
+| `GET /ext/app/threads/{id}`, `PATCH`, `DELETE`, `POST {id}/chat` | Resolved as the caller first; an Admin falls back to any user's thread and the operation then runs as its **owner**, so an update or delete still targets the right partition (`AppExtension.ResolveThread`). |
+| `GET /ext/app/requests/users`, `/requests/users/list` | Admin-only, `403 Admin role required` otherwise. |
+
+`ChatDb.IsAllUsers` recognises the `"all"`/`"*"` sentinel that lifts the user predicate. **It authorizes
+nothing** — it is only reachable through the call sites above, each of which has already checked
+`IsAdmin`. `ChatDb.ApplyFilters` skips a `user` key entirely so `?user=` can never be applied as an
+ordinary column filter that bypasses this.
+
+The separate `/admin-ui/chat` services (`AdminChatServices`) remain `RoleNames.Admin` gated
+independently and are unaffected by `RequireAuth`/`RequiredRole`; `ChatFeature.DisableAdminUi` removes
+that Admin UI only — it does **not** remove the in-app Admin analytics above, which is governed purely
+by who holds the `Admin` role.
+
 ---
 
 ## 4. MCP API Endpoints & Identity Context

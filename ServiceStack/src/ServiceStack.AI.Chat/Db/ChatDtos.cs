@@ -140,6 +140,16 @@ public static class ChatDtos
         ["metadata"] = ParseJson(x.Metadata),
     };
 
+    public static JsonObject ToDto(this ChatUserSummary x) => new()
+    {
+        ["user"] = x.User ?? ChatDb.DefaultUser,
+        ["requests"] = x.Requests,
+        ["cost"] = x.Cost ?? 0,
+        ["inputTokens"] = x.InputTokens ?? 0,
+        ["outputTokens"] = x.OutputTokens ?? 0,
+        ["lastActive"] = ChatDb.ToDateNode(x.LastActive),
+    };
+
     public static JsonArray ToDtos<T>(this IEnumerable<T> rows, Func<T, JsonObject> toDto)
     {
         var arr = new JsonArray();
