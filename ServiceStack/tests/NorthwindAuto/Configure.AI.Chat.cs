@@ -28,6 +28,7 @@ public class ConfigureAiChat : IHostingStartup
                     new BookingToolsExtension(),
                 },
                 RequireAuth = true,
+                // RequiredRole = "Admin",
                 Tools =
                 {
                     EnableCodeExecution = true,

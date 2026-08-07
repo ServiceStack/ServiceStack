@@ -28,16 +28,23 @@ public class ExtensionContext(ChatFeature feature, string name)
         ? ExtPrefix
         : path.StartsWith('/') ? path : $"{ExtPrefix}/{path}";
 
-    public void AddGet(string path, ChatRouteHandler handler) => feature.Routes.AddGet(WebPath(path), handler);
-    public void AddPost(string path, ChatRouteHandler handler) => feature.Routes.AddPost(WebPath(path), handler);
-    public void AddPut(string path, ChatRouteHandler handler) => feature.Routes.AddPut(WebPath(path), handler);
-    public void AddDelete(string path, ChatRouteHandler handler) => feature.Routes.AddDelete(WebPath(path), handler);
-    public void AddPatch(string path, ChatRouteHandler handler) => feature.Routes.AddPatch(WebPath(path), handler);
+    // routes require an authenticated request satisfying RequireAuth + RequiredRole unless they
+    // opt out with allowAnon (only for what the UI needs before SignIn) - see RouteRegistry
+    public void AddGet(string path, ChatRouteHandler handler, bool allowAnon = false) => feature.Routes.AddGet(WebPath(path), handler, allowAnon);
+    public void AddPost(string path, ChatRouteHandler handler, bool allowAnon = false) => feature.Routes.AddPost(WebPath(path), handler, allowAnon);
+    public void AddPut(string path, ChatRouteHandler handler, bool allowAnon = false) => feature.Routes.AddPut(WebPath(path), handler, allowAnon);
+    public void AddDelete(string path, ChatRouteHandler handler, bool allowAnon = false) => feature.Routes.AddDelete(WebPath(path), handler, allowAnon);
+    public void AddPatch(string path, ChatRouteHandler handler, bool allowAnon = false) => feature.Routes.AddPatch(WebPath(path), handler, allowAnon);
 
-    /// <summary>Serve this extension's synced UI files (chat/ext/&lt;name&gt;/**) at /ext/&lt;name&gt;/{path}</summary>
+    /// <summary>
+    /// Serve this extension's synced UI files (chat/ext/&lt;name&gt;/**) at /ext/&lt;name&gt;/{path}.
+    /// Anonymous: the UI imports /ext/&lt;name&gt;/index.mjs before SignIn (the SignIn component itself
+    /// is registered by the credentials extension's module). Registered after the extension's own
+    /// routes, so this wildcard only serves paths its APIs didn't already claim.
+    /// </summary>
     public void AddStaticFiles() =>
         feature.Routes.AddGet($"{ExtPrefix}/{{path:.*}}", ctx =>
-            feature.ServeEmbeddedFileAsync(ctx, $"chat/ext/{name}", ctx.GetPathParam("path")));
+            feature.ServeEmbeddedFileAsync(ctx, $"chat/ext/{name}", ctx.GetPathParam("path")), allowAnon: true);
 
     /// <summary>
     /// Read one of this extension's bundled files (chat/ext/&lt;name&gt;/&lt;path&gt;), e.g. the AI

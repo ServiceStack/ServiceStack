@@ -14,11 +14,20 @@ public partial class ChatFeature
     /// </summary>
     public Func<byte[], int?, int?, byte[]>? ImageTransformer { get; set; }
 
-    /// <summary>Core routes in llms-py registration order (main.py:4843-5265)</summary>
+    /// <summary>
+    /// Core routes in llms-py registration order (main.py:4843-5265).
+    /// Routes are authenticated by default; allowAnon marks the few the UI must reach before SignIn
+    /// (static assets + the auth endpoints themselves). See ChatHttpHandler for the gate.
+    /// </summary>
     void RegisterCoreRoutes()
     {
         // POST /v1/chat/completions is the typed ChatServices service (unprefixed, like ai.mjs expects)
-        Routes.AddGet("/models", _ => Task.FromResult<object?>(GetActiveModels()));
+
+        // ai.init() fetches /models + /prefs before it knows whether anyone is signed in, so these
+        // answer anonymously with an empty payload rather than 401 - the UI only ever reads them as
+        // an array/object and a 401's error body would break it before it could render SignIn
+        Routes.AddGet("/models", ctx => Task.FromResult<object?>(
+            IsAuthenticated(ctx) ? GetActiveModels() : new JsonArray()), allowAnon: true);
         Routes.AddGet("/providers", _ => Task.FromResult<object?>(ApiProviders()));
         Routes.AddGet("/status", _ =>
         {
@@ -32,6 +41,8 @@ public partial class ChatFeature
         });
         Routes.AddPost("/providers/{provider}", UpdateProviderHandlerAsync);
         Routes.AddPost("/upload", UploadHandlerAsync);
+        // the UI dynamically imports each listed extension's index.mjs to render, including the
+        // credentials extension that registers the SignIn component itself
         Routes.AddGet("/ext", _ =>
         {
             var arr = new JsonArray();
@@ -44,15 +55,21 @@ public partial class ChatFeature
                 });
             }
             return Task.FromResult<object?>(arr);
-        });
+        }, allowAnon: true);
         Routes.AddGet("/~cache/{tail:.*}", CacheHandlerAsync);
-        Routes.AddGet("/ui/{path:.*}", ctx => ServeEmbeddedFileAsync(ctx, "chat/ui", ctx.GetPathParam("path")));
+        Routes.AddGet("/ui/{path:.*}", ctx => ServeEmbeddedFileAsync(ctx, "chat/ui", ctx.GetPathParam("path")),
+            allowAnon: true);
         // C#-only UI assets, served like an extension's own files. Nothing under chat/custom/ is
         // synced from llms-py, so it's the place to extend the UI without sync.sh overwriting it.
-        Routes.AddGet("/custom/{path:.*}", ctx => ServeEmbeddedFileAsync(ctx, "chat/custom", ctx.GetPathParam("path")));
-        Routes.AddGet("/config", ConfigHandlerAsync);
-        Routes.AddGet("/prefs", ctx => Task.FromResult<object?>(AppData.GetUserPrefs(ctx.UserName)));
-        Routes.AddGet("/favicon.ico", _ => Task.FromResult<object?>(ChatResult.NotFound()));
+        Routes.AddGet("/custom/{path:.*}", ctx => ServeEmbeddedFileAsync(ctx, "chat/custom", ctx.GetPathParam("path")),
+            allowAnon: true);
+        // anonymous and unfiltered: the UI needs authType/signInUrl to pick a SignIn component, and
+        // its chat modules read config.defaults/status/extensions at setup time even before SignIn.
+        // Exposes provider ids + enabled/disabled + default model names to anonymous users.
+        Routes.AddGet("/config", ConfigHandlerAsync, allowAnon: true);
+        Routes.AddGet("/prefs", ctx => Task.FromResult<object?>(
+            IsAuthenticated(ctx) ? AppData.GetUserPrefs(ctx.UserName) : new JsonObject()), allowAnon: true);
+        Routes.AddGet("/favicon.ico", _ => Task.FromResult<object?>(ChatResult.NotFound()), allowAnon: true);
 
         // Identity Auth endpoints (Python: provided by credentials/github_auth extensions)
         Routes.AddGet("/auth", async ctx =>
@@ -61,13 +78,16 @@ public partial class ChatFeature
             return info == null
                 ? ChatResult.Unauthorized(ErrorAuthRequired())
                 : info;
-        });
+        }, allowAnon: true);
         Routes.AddPost("/auth/logout", async ctx =>
         {
             await ChatAuth.SignOutAsync(ctx.Request).ConfigAwait();
             return new JsonObject { ["success"] = true };
-        });
+        }, allowAnon: true);
     }
+
+    /// <summary>Whether the request is authenticated, i.e. satisfies RequireAuth + RequiredRole</summary>
+    bool IsAuthenticated(ChatRequestContext ctx) => ChatAuth.CheckAuth(ctx.Request).IsAuthenticated;
 
     static JsonArray ToJsonArray(IEnumerable<string> items) => new(items.Select(x => (JsonNode)x).ToArray());
 

@@ -8,20 +8,26 @@ public delegate Task<object?> ChatRouteHandler(ChatRequestContext ctx);
 /// Ordered route table mirroring aiohttp's router semantics used by llms-py:
 /// routes match in registration order, templates support "{name}" segments and
 /// trailing "{name:.*}" wildcards (e.g. "/ext/app/threads/{id}", "/~cache/{tail:.*}").
+///
+/// Routes are authenticated by default: ChatHttpHandler rejects any matched route without
+/// AllowAnon when RequireAuth is enabled and the request isn't authenticated (which includes
+/// failing RequiredRole). Only the static UI assets and SignIn endpoints needed to bootstrap the
+/// UI opt out with allowAnon - a new route is protected unless it deliberately says otherwise.
 /// </summary>
 public class RouteRegistry
 {
-    public record Route(string Method, string Template, ChatRouteHandler Handler, string[] Segments, string? WildcardParam);
+    public record Route(string Method, string Template, ChatRouteHandler Handler, string[] Segments,
+        string? WildcardParam, bool AllowAnon);
 
     public List<Route> Routes { get; } = [];
 
-    public void AddGet(string path, ChatRouteHandler handler) => Add(HttpMethods.Get, path, handler);
-    public void AddPost(string path, ChatRouteHandler handler) => Add(HttpMethods.Post, path, handler);
-    public void AddPut(string path, ChatRouteHandler handler) => Add(HttpMethods.Put, path, handler);
-    public void AddDelete(string path, ChatRouteHandler handler) => Add(HttpMethods.Delete, path, handler);
-    public void AddPatch(string path, ChatRouteHandler handler) => Add(HttpMethods.Patch, path, handler);
+    public void AddGet(string path, ChatRouteHandler handler, bool allowAnon = false) => Add(HttpMethods.Get, path, handler, allowAnon);
+    public void AddPost(string path, ChatRouteHandler handler, bool allowAnon = false) => Add(HttpMethods.Post, path, handler, allowAnon);
+    public void AddPut(string path, ChatRouteHandler handler, bool allowAnon = false) => Add(HttpMethods.Put, path, handler, allowAnon);
+    public void AddDelete(string path, ChatRouteHandler handler, bool allowAnon = false) => Add(HttpMethods.Delete, path, handler, allowAnon);
+    public void AddPatch(string path, ChatRouteHandler handler, bool allowAnon = false) => Add(HttpMethods.Patch, path, handler, allowAnon);
 
-    public void Add(string method, string template, ChatRouteHandler handler)
+    public void Add(string method, string template, ChatRouteHandler handler, bool allowAnon = false)
     {
         if (!template.StartsWith('/'))
             template = "/" + template;
@@ -34,7 +40,7 @@ public class RouteRegistry
             if (last.StartsWith('{') && last.EndsWith(":.*}"))
                 wildcardParam = last[1..^4];
         }
-        Routes.Add(new Route(method.ToUpper(), template, handler, segments, wildcardParam));
+        Routes.Add(new Route(method.ToUpper(), template, handler, segments, wildcardParam, allowAnon));
     }
 
     /// <summary>Find the first registered route matching method + path. Returns null if no match.</summary>

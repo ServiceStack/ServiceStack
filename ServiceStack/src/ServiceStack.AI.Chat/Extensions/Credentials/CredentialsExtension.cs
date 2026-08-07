@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -27,8 +28,9 @@ public class CredentialsExtension() : ChatExtension("credentials")
         }
 
         // Python parity: /auth/login sits alongside the core /auth + /auth/logout routes,
-        // outside this extension's /ext/credentials prefix (a leading '/' escapes it)
-        ctx.AddPost("/auth/login", LoginAsync);
+        // outside this extension's /ext/credentials prefix (a leading '/' escapes it).
+        // Necessarily anonymous - it's how you stop being anonymous.
+        ctx.AddPost("/auth/login", LoginAsync, allowAnon: true);
     }
 
     async Task<object?> LoginAsync(ChatRequestContext ctx)
@@ -75,6 +77,28 @@ public class CredentialsExtension() : ChatExtension("credentials")
                 "Sign in did not return an authenticated session", "Unauthorized"), 401);
         }
 
+        // ChatAuth returns no auth info for a user without RequiredRole, so this fallback has to
+        // enforce it as well - otherwise SignIn would succeed for any user the host authenticates.
+        // Checked against the Authenticate response since the fallback exists for hosts that don't
+        // populate the request's ClaimsPrincipal on sign in (fails closed when Roles is unpopulated).
+        if (Feature.RequiredRole != null && !HasRequiredRole(authResponse.Roles))
+        {
+            Log.LogInformation("Denied '{UserName}' sign in, missing '{RequiredRole}' Role",
+                userName, Feature.RequiredRole);
+            // undo the sign in so a rejected user isn't left holding the host's auth cookie
+            // (best effort: they're denied either way, so don't turn a 403 into a 500)
+            try
+            {
+                await Feature.ChatAuth.SignOutAsync(ctx.Request).ConfigAwait();
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning(e, "Failed to sign out denied user '{UserName}'", userName);
+            }
+            return ChatResult.Json(ChatJson.CreateErrorResponse(
+                $"'{Feature.RequiredRole}' Role Required", "Forbidden"), 403);
+        }
+
         return new JsonObject
         {
             ["userId"] = authResponse.UserId ?? authResponse.UserName ?? userName,
@@ -85,4 +109,8 @@ public class CredentialsExtension() : ChatExtension("credentials")
             ["authProvider"] = AuthenticateService.CredentialsProvider,
         };
     }
+
+    /// <summary>Admin satisfies any RequiredRole, matching IdentityChatAuth.HasRequiredRole</summary>
+    bool HasRequiredRole(List<string>? roles) =>
+        roles != null && (roles.Contains(Feature.RequiredRole!) || roles.Contains(RoleNames.Admin));
 }

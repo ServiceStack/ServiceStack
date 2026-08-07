@@ -34,6 +34,17 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
             var match = feature.Routes.Match(req.Verb, path);
             if (match != null)
             {
+                // Single authorization gate for every route dispatched here. Routes are protected by
+                // default, so an extension can't leave an API open by forgetting its own CheckAuth -
+                // only the static assets + SignIn endpoints marked allowAnon are reachable
+                // anonymously. CheckAuth covers both RequireAuth and RequiredRole.
+                if (!match.Value.Route.AllowAnon && !feature.ChatAuth.CheckAuth(req).IsAuthenticated)
+                {
+                    feature.Log.LogDebug("Denied anonymous {Method} {Path}", req.Verb, path);
+                    await WriteResultAsync(res, ChatResult.Unauthorized(feature.ErrorAuthRequired())).ConfigAwait();
+                    return;
+                }
+
                 var ctx = new ChatRequestContext(feature, req, match.Value.Params);
                 object? result;
                 try

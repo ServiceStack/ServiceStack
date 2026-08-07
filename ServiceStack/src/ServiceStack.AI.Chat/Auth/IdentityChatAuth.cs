@@ -29,10 +29,37 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
     {
         if (!IsEnabled)
             return null;
+        // a user without RequiredRole is no more authenticated than an anonymous one, so every
+        // caller of GetUserName/CheckAuth (uploads, /v1/chat/completions, extension APIs) rejects
+        // them without each needing its own role check
+        if (!HasRequiredRole(request))
+            return null;
         var user = GetClaimsPrincipal(request);
         if (user != null)
             return user.GetUserName();
         return GetApiKeyUserName(request);
+    }
+
+    /// <summary>
+    /// Whether the request satisfies ChatFeature.RequiredRole, checked against the same identity
+    /// GetUserName resolves (ClaimsPrincipal first, then API Key). Follows ServiceStack's convention
+    /// that Admin satisfies any required role. Always true when RequiredRole isn't configured.
+    /// </summary>
+    public virtual bool HasRequiredRole(IRequest request)
+    {
+        var requiredRole = feature.RequiredRole;
+        if (requiredRole == null)
+            return true;
+
+        var user = GetClaimsPrincipal(request);
+        if (user != null)
+            return user.HasRole(requiredRole) || user.HasRole(RoleNames.Admin);
+
+        var apiKey = request.GetApiKey();
+        if (apiKey != null)
+            return apiKey.HasScope(requiredRole) || apiKey.HasScope(RoleNames.Admin);
+
+        return false;
     }
 
     string? GetApiKeyUserName(IRequest request)
@@ -68,17 +95,8 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
     {
         if (!IsEnabled)
             return null;
-        if (feature.RequiredRole != null)
-        {
-            var user = GetClaimsPrincipal(request);
-            if (user != null && !user.HasRole(feature.RequiredRole))
-                throw new UnauthorizedAccessException($"Authentication required: role '{feature.RequiredRole}'");
-            var apiKey = request.GetApiKey();
-            if (apiKey != null && !apiKey.HasScope(feature.RequiredRole))
-                throw new UnauthorizedAccessException($"Authentication required: scope '{feature.RequiredRole}'");
-            if (user == null && apiKey == null)
-                throw new UnauthorizedAccessException("Authentication required");
-        }
+        if (feature.RequiredRole != null && !HasRequiredRole(request))
+            throw new UnauthorizedAccessException($"Authentication required: '{feature.RequiredRole}' Role Required");
         return GetUserName(request)
             ?? throw new UnauthorizedAccessException("Authentication required");
     }
@@ -96,6 +114,10 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
     public virtual async Task<JsonObject?> GetAuthInfoAsync(IRequest request)
     {
         if (!IsEnabled)
+            return null;
+        // no auth info for a user the host authenticated but who lacks RequiredRole, so GET /auth
+        // 401s and the UI keeps showing SignIn instead of treating them as signed in
+        if (!HasRequiredRole(request))
             return null;
 
         var user = GetClaimsPrincipal(request);

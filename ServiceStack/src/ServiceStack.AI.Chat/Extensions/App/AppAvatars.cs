@@ -20,6 +20,9 @@ public partial class AppExtension
         Ctx.AddPost("/agents/avatar", req => UploadAvatarAsync(req, "agent"));
 
         Ctx.AddGet("/themes", req => Task.FromResult<object?>(GetThemes(req)));
+        // static theme assets (css/images a theme's url(...) refs resolve to), so the SignIn screen
+        // still renders themed. The /themes listing above stays protected - the UI falls back to its
+        // bundled defaults when it 401s.
         Ctx.AddGet("/themes/{theme}/ui/{file_name}", req =>
         {
             var theme = req.GetPathParam("theme");
@@ -38,7 +41,7 @@ public partial class AppExtension
             return Task.FromResult<object?>(bundled != null
                 ? new ChatResult { Body = bundled.ReadAllBytes(), ContentType = MimeTypes.GetMimeType(fileName) }
                 : ChatResult.NotFound());
-        });
+        }, allowAnon: true);
     }
 
     // ── Themes ──
