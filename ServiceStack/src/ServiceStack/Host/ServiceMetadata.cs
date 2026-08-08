@@ -411,6 +411,33 @@ public class ServiceMetadata(List<RestPath> restPaths)
         }
     }
 
+    public bool IsAuthorized(Operation operation, AuthenticateResponse? auth)
+    {
+        if (operation.RequiresAuthentication && auth == null)
+            return false;
+        
+        var allRoles = auth?.Roles ?? [];
+        var allPerms = auth?.Permissions ?? [];
+
+        // Admin implicitly satisfies every Role/Permission, as IAuthSession.HasRole() does
+        if (allRoles.Contains(RoleNames.Admin))
+            return true;
+
+        if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(allRoles.Contains))
+            return false;
+
+        if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(allPerms.Contains))
+            return false;
+
+        if (!operation.RequiresAnyRole.IsEmpty() && !operation.RequiresAnyRole.Any(allRoles.Contains))
+            return false;
+
+        if (!operation.RequiresAnyPermission.IsEmpty() && !operation.RequiresAnyPermission.Any(allPerms.Contains))
+            return false;
+
+        return true;
+    }
+
     public bool IsVisible(IRequest httpReq, Operation operation)
     {
         var config = ServiceStackHost.Instance?.Config;
@@ -907,8 +934,8 @@ public class Operation : ICloneable
     public Type RequestType { get; set; }
     public Type ServiceType { get; set; }
     public Type? ResponseType { get; set; }
-    public Type DataModelType => AutoCrudOperation.GetModelType(RequestType);
-    public Type ViewModelType => AutoCrudOperation.GetViewModelType(RequestType, ResponseType);
+    public Type? DataModelType => AutoCrudOperation.GetModelType(RequestType);
+    public Type? ViewModelType => AutoCrudOperation.GetViewModelType(RequestType, ResponseType);
     public RestrictAttribute? RestrictTo { get; set; }
     public List<string>? Actions { get; set; }
     public bool ReturnsVoid => ResponseType == null;

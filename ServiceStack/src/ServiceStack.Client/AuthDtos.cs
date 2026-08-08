@@ -334,6 +334,26 @@ public partial class MetadataApp : IGet, IReturn<AppMetadata>
     public List<string> IncludeTypes { get; set; }
 }
 
+[DataContract, ExcludeMetadata]
+public partial class MetadataSchema : IGet, IReturn<string>
+{
+    [DataMember(Order = 1)]
+    public string Name { get; set; }
+}
+
+[DataContract, ExcludeMetadata]
+public partial class MetadataSchemas : IGet, IReturn<string> {}
+
+[DataContract, ExcludeMetadata]
+public partial class AutoQuerySchema : IGet, IReturn<string>
+{
+    [DataMember(Order = 1)]
+    public string Name { get; set; }
+}
+
+[DataContract, ExcludeMetadata]
+public partial class AutoQuerySchemas : IGet, IReturn<string> {}
+
 [DataContract]
 public class GetFile : IReturn<FileContent>, IGet
 {

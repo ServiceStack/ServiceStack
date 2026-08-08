@@ -46,7 +46,7 @@ public class CreateTodo : ICreateDb<Todo>, IReturn<Todo>
 //[ValidateApiKey("todo:write")]
 [Tag("todos")]
 [Route("/todos/{Id}", "PUT")]
-public class UpdateTodo : IUpdateDb<Todo>, IReturn<Todo>
+public class UpdateTodo : IPatchDb<Todo>, IReturn<Todo>
 {
     public long Id { get; set; }
     [ValidateNotEmpty]

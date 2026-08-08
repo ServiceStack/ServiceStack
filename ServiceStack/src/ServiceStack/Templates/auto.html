@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${Title}</title>
+    <link rel="stylesheet" href="/css/ui.css">
+    <base href="">
+    <script type="importmap">
+        {
+            "imports": {
+                "vue": "../js/vue.mjs",
+                "vue-router": "../js/vue-router.mjs",
+                "@servicestack/vue": "../js/servicestack-vue.mjs",
+                "@servicestack/client": "../js/servicestack-client.mjs"
+            }
+        }
+    </script>
+    <script>
+        // Apply the theme before first paint to avoid a flash of the wrong one.
+        // Uses the same localStorage key as <DarkModeToggle>
+        (function () {
+            const saved = localStorage.getItem('color-scheme')
+            const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+            document.documentElement.classList.toggle('dark', dark)
+            document.documentElement.style.setProperty('color-scheme', dark ? 'dark' : null)
+        })()
+    </script>
+    <style>
+        /* QueryPrefs' inputs carry `bg-white dark:bg-black`, and @layer utilities outranks
+           @layer base, so those override @tailwindcss/forms' checked background — leaving the
+           white tick invisible on white. Unlayered rules beat every layer, so this restores it. */
+        [type='checkbox']:checked, [type='radio']:checked { background-color: currentColor; }
+    </style>
+    <script>window.Schema=${Schema}</script>
+    <script>window.Auth=${Auth}</script>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm">
+
+<div id="app"></div>
+
+<script type="module">
+import { createApp, computed, ref } from "vue"
+import { createRouter, createWebHistory } from "vue-router"
+import ServiceStackVue from "@servicestack/vue"
+import AutoQuerySchema, { ACTIONS, requirementText, subtitle } from "../js/components/AutoQuerySchema.mjs"
+
+const Auto = window.Schema
+
+// A padlock that reveals what each action needs — kept out of the way of normal use
+const AuthLock = {
+    props: { items: Array },
+    template: `
+    <div class="relative">
+        <button type="button" @click="open = !open" title="Access required"
+                class="rounded-md p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200
+                       hover:bg-gray-100 dark:hover:bg-gray-800">
+            <span class="sr-only">Access required</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75
+                    11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0
+                    0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
+            </svg>
+        </button>
+        <div v-if="open" class="fixed inset-0 z-10" @click="open = false"></div>
+        <div v-if="open" class="absolute left-0 mt-1 w-72 z-20 rounded-lg shadow-lg p-3
+                                border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <p class="text-xs font-semibold mb-2">Access required</p>
+            <dl class="space-y-1">
+                <div v-for="i in items" :key="i.action" class="flex gap-2 text-xs">
+                    <dt class="w-12 shrink-0 font-medium">{{ i.action }}</dt>
+                    <dd class="text-gray-500 dark:text-gray-400">requires {{ i.text }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>`,
+    setup: () => ({ open: ref(false) })
+}
+
+// --- page ------------------------------------------------------------------
+
+const template = `
+<div class="px-4 pt-6 pb-16">
+
+    <div class="flex items-center gap-2 mb-5">
+        <!-- a real link, so it opens in a tab on cmd/middle click like any other -->
+        <a href="/auto" title="All data models"
+           class="mt-0.5 shrink-0 rounded-md p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200
+                  hover:bg-gray-100 dark:hover:bg-gray-800 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+            <span class="sr-only">All data models</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
+            </svg>
+        </a>
+
+        <div class="min-w-0">
+            <h1 class="text-xl font-semibold">{{ Auto.title || Auto.name }}</h1>
+            <p v-if="modelSubtitle" class="text-gray-500 dark:text-gray-400">{{ modelSubtitle }}</p>
+        </div>
+        <AuthLock v-if="authItems.length" :items="authItems" />
+        <span class="flex-1"></span>
+        <DarkModeToggle />
+    </div>
+
+    <AutoQuerySchema :schema="Auto" :auth="auth" />
+</div>`
+
+const App = {
+    components: { AuthLock, AutoQuerySchema },
+    template,
+    setup() {
+        return {
+            Auto,
+            auth: window.Auth,
+            modelSubtitle: subtitle(Auto.model),
+            authItems: computed(() => Object.keys(ACTIONS)
+                .filter(k => Auto[k]?.auth)
+                .map(k => ({ action: ACTIONS[k], text: requirementText(Auto[k].auth) }))),
+        }
+    },
+}
+
+const router = createRouter({
+    history: createWebHistory(),
+    routes: [{ path: '/:pathMatch(.*)*', component: App }],
+})
+
+createApp({ template: `<RouterView />` })
+    .use(ServiceStackVue)
+    .use(router)
+    .mount('#app')
+</script>
+
+</body>
+</html>

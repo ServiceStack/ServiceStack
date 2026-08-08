@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Browse APIs</title>
+    <link rel="stylesheet" href="/css/ui.css">
+    <base href="">
+    <script type="importmap">
+        {
+            "imports": {
+                "vue": "../js/vue.mjs",
+                "vue-router": "../js/vue-router.mjs",
+                "@servicestack/vue": "../js/servicestack-vue.mjs",
+                "@servicestack/client": "../js/servicestack-client.mjs"
+            }
+        }
+    </script>
+    <script>
+        // Apply the theme before first paint to avoid a flash of the wrong one.
+        // Uses the same localStorage key as <DarkModeToggle>
+        (function () {
+            const saved = localStorage.getItem('color-scheme')
+            const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+            document.documentElement.classList.toggle('dark', dark)
+            document.documentElement.style.setProperty('color-scheme', dark ? 'dark' : null)
+        })()
+    </script>
+    <style>
+        /* Cards enter once on load, never while filtering — re-animating 40+ cards on every
+           keystroke reads as lag, which is the opposite of what a launcher should feel like */
+        @keyframes card-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .card-in { animation: card-in .18s cubic-bezier(.2,.7,.3,1) backwards; }
+        @media (prefers-reduced-motion: reduce) {
+            .card-in { animation: none; }
+            * { transition-duration: 1ms !important; }
+        }
+    </style>
+    <script>window.Results=${Results}</script>
+    <script>window.Auth=${Auth}</script>
+</head>
+<body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+
+<div id="app"></div>
+
+<script type="module">
+import { createApp, ref, computed, onMounted, onUnmounted, nextTick } from "vue"
+import ServiceStackVue from "@servicestack/vue"
+
+const Apis = window.Results || []
+
+const METHOD_CLASS = {
+    GET: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
+    POST: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+    PUT: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+    PATCH: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
+    DELETE: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+}
+
+const ACTIONS = [
+    { key: 'query',  label: 'Query' },
+    { key: 'create', label: 'Create' },
+    { key: 'update', label: 'Update' },
+    { key: 'delete', label: 'Delete' },
+    { key: 'save',   label: 'Save' },
+    { key: 'api',    label: 'API' },
+]
+
+// --- fuzzy matching --------------------------------------------------------
+
+const isUpper = c => c >= 'A' && c <= 'Z'
+const isSep = c => c === undefined || !/[A-Za-z0-9]/.test(c)
+
+function fuzzyMatch(needle, text) {
+    if (!needle) return { score: 0, hits: [] }
+    if (!text) return null
+
+    const lower = text.toLowerCase()
+    const hits = []
+    let at = 0
+    let score = 0
+    let previousHit = -2
+
+    for (const ch of needle.toLowerCase()) {
+        const found = lower.indexOf(ch, at)
+        if (found < 0) return null
+
+        if (found === 0) score += 12
+        else if (isUpper(text[found]) && !isUpper(text[found - 1])) score += 10
+        else if (isSep(text[found - 1])) score += 10
+        else score += 1
+
+        if (found === previousHit + 1) score += 6
+
+        hits.push(found)
+        previousHit = found
+        at = found + 1
+    }
+    return { score: score - text.length * 0.1, hits }
+}
+
+function best(needle, texts) {
+    let top = null
+    for (const text of texts ?? []) {
+        const match = fuzzyMatch(needle, text)
+        if (match && (top === null || match.score > top)) top = match.score
+    }
+    return top
+}
+
+function segments(text, hits) {
+    if (!hits?.length) return [{ text, hit: false }]
+    const set = new Set(hits)
+    const out = []
+    for (let i = 0; i < text.length; i++) {
+        const hit = set.has(i)
+        const last = out[out.length - 1]
+        if (last && last.hit === hit) last.text += text[i]
+        else out.push({ text: text[i], hit })
+    }
+    return out
+}
+
+// --- api view models -----------------------------------------------------
+
+const plural = (names, noun) => names.join(', ') + ' ' + noun + (names.length > 1 ? 's' : '')
+
+function requirementText(auth) {
+    const bits = []
+    if (auth.requiredRoles) bits.push(plural(auth.requiredRoles, 'role'))
+    if (auth.requiresAnyRole) bits.push('any ' + plural(auth.requiresAnyRole, 'role'))
+    if (auth.requiredPermissions) bits.push(plural(auth.requiredPermissions, 'permission'))
+    if (auth.requiresAnyPermission) bits.push('any ' + plural(auth.requiresAnyPermission, 'permission'))
+    if (auth.requiredScopes) bits.push(plural(auth.requiredScopes, 'scope'))
+    if (auth.requiresApiKey) bits.push('an API Key')
+    if (!bits.length && auth.requiresAuth) bits.push('sign in')
+    return bits.join(' and ')
+}
+
+const entries = Apis.map(api => {
+    const apis = api.apis || {}
+    const locked = ACTIONS
+        .filter(a => apis[a.key]?.auth)
+        .map(a => `${a.label} requires ${requirementText(apis[a.key].auth)}`)
+
+    const apiTitle = ACTIONS
+        .filter(a => apis[a.key])
+        .map(a => {
+            const auth = apis[a.key].auth
+            return `${a.label}: ${apis[a.key].request}`
+                 + (auth ? ` (requires ${requirementText(auth)})` : '')
+        })
+        .join('\n')
+
+    return {
+        ...api,
+        subtitle: api.title && api.title !== api.name ? api.title : null,
+        requests: ACTIONS.map(a => apis[a.key]?.request).filter(Boolean),
+        tags: api.tags ?? [],
+        apiTitle: apiTitle || api.name,
+        locked,
+    }
+})
+
+const verbCounts = new Map()
+for (const m of entries) {
+    if (m.verb) {
+        const v = m.verb.toUpperCase()
+        verbCounts.set(v, (verbCounts.get(v) ?? 0) + 1)
+    }
+}
+const verbOrder = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+const allVerbs = [...verbCounts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => {
+        const ai = verbOrder.indexOf(a.name)
+        const bi = verbOrder.indexOf(b.name)
+        if (ai !== -1 && bi !== -1) return ai - bi
+        if (ai !== -1) return -1
+        if (bi !== -1) return 1
+        return a.name.localeCompare(b.name)
+    })
+
+const tagCounts = new Map()
+for (const m of entries) {
+    for (const tag of m.tags) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1)
+}
+const allTags = [...tagCounts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+
+// --- app -------------------------------------------------------------------
+
+const template = `
+<div class="min-h-screen">
+
+    <header class="sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800
+                   bg-white/85 dark:bg-gray-950/85 backdrop-blur">
+        <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3 sm:gap-4">
+            <div class="hidden sm:block shrink-0">
+                <div class="font-mono text-[10px] uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500">
+                    ServiceStack
+                </div>
+                <h1 class="text-sm font-semibold -mt-0.5">APIs</h1>
+            </div>
+
+            <div class="flex-1 relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"
+                     viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0
+                        0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z"/>
+                </svg>
+                <input ref="search" type="search" v-model="query" :placeholder="placeholder"
+                       autocomplete="off" spellcheck="false" aria-label="Search APIs"
+                       @keydown.down.prevent="move(1)" @keydown.up.prevent="move(-1)"
+                       @keydown.enter.prevent="open()" @keydown.esc.prevent="clear"
+                       class="w-full rounded-lg border border-gray-300 dark:border-gray-700
+                              bg-gray-50 dark:bg-gray-900 pl-9 pr-16 py-2 font-mono text-sm
+                              text-gray-900 dark:text-gray-100 placeholder:font-sans placeholder:text-gray-400
+                              focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:bg-white
+                              dark:focus:bg-gray-900 outline-none transition-colors">
+                <kbd v-if="!query" class="hidden sm:block absolute right-3 top-1/2 -translate-y-1/2
+                          font-mono text-[10px] text-gray-400 dark:text-gray-500 border border-gray-300
+                          dark:border-gray-700 rounded px-1.5 py-0.5 pointer-events-none">/</kbd>
+            </div>
+
+            <div v-if="verbs.length" class="shrink-0">
+                <select v-model="verb" aria-label="Filter by HTTP Method"
+                        class="rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900
+                               pl-3 pr-8 py-2 font-mono text-xs font-semibold text-gray-900 dark:text-gray-100
+                               focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors cursor-pointer">
+                    <option value="">All Verbs</option>
+                    <option v-for="v in verbs" :key="v.name" :value="v.name">
+                        {{ v.name }} ({{ v.count }})
+                    </option>
+                </select>
+            </div>
+
+            <DarkModeToggle />
+        </div>
+
+        <div class="mx-auto max-w-7xl px-4 pb-2.5 flex flex-wrap items-center gap-x-4 gap-y-1
+                    text-[11px] text-gray-500 dark:text-gray-400">
+            <span class="tabular-nums">{{ results.length }} of {{ total }}</span>
+
+            <span v-if="tags.length" class="flex flex-wrap items-center gap-1">
+                <button v-for="t in tags" :key="t.name" type="button" @click="toggleTag(t.name)"
+                        :title="tag === t.name ? 'Clear the ' + t.name + ' filter' : 'Show only ' + t.name"
+                        :class="['inline-flex items-center gap-1 rounded-full border px-2 py-0.5',
+                                 'transition-colors outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                                 tag === t.name
+                                     ? 'border-indigo-400 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                                     : 'border-gray-200 dark:border-gray-800 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400']">
+                    {{ t.name }}
+                    <span class="tabular-nums opacity-60">{{ t.count }}</span>
+                </button>
+            </span>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-6">
+
+        <div v-if="!results.length" class="py-24 text-center">
+            <p class="font-mono text-sm text-gray-500 dark:text-gray-400">
+                <span v-if="query">Nothing matches “{{ query }}”</span>
+                <span v-else-if="verb">No {{ verb }} APIs found</span>
+                <span v-else>Nothing is tagged “{{ tag }}”</span>
+                <span v-if="query && verb"> for {{ verb }}</span>
+                <span v-if="query && tag"> in {{ tag }}</span>
+            </p>
+            <button type="button" @click="clear"
+                    class="mt-4 rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm
+                           hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                Show all {{ total }} APIs
+            </button>
+        </div>
+
+        <div v-else class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <div v-for="(m, i) in results" :key="m.name" :ref="el => cards[i] = el"
+                 @mouseenter="cursor = i"
+                 :class="['group relative flex flex-col gap-2 rounded-xl border p-3.5 pl-4',
+                          'transition-[border-color,background-color,transform] duration-150',
+                          'hover:-translate-y-0.5 has-[a:focus-visible]:-translate-y-0.5',
+                          cursor === i
+                              ? 'border-indigo-400 dark:border-indigo-500 bg-indigo-50/60 dark:bg-indigo-500/10'
+                              : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700',
+                          firstPaint ? 'card-in' : '']"
+                 :style="firstPaint ? { animationDelay: Math.min(i, 16) * 8 + 'ms' } : null">
+
+                <!-- the whole card is the link -->
+                <a :href="'/schema/' + (m.request || m.name)" :aria-label="'Open ' + (m.request || m.name)" :title="m.apiTitle"
+                   class="absolute inset-0 rounded-xl outline-none focus-visible:ring-2
+                          focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-black"></a>
+
+                <span :class="['absolute left-0 top-3.5 bottom-3.5 w-0.5 rounded-full transition-colors',
+                               cursor === i ? 'bg-indigo-500' : 'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-700']"></span>
+
+                <div class="relative pointer-events-none flex items-center justify-between gap-2 min-w-0">
+                    <h2 class="font-mono text-sm font-medium truncate">
+                        <span v-for="(seg, si) in m.segments" :key="si"
+                              :class="seg.hit ? 'text-indigo-600 dark:text-indigo-300 font-semibold bg-indigo-100/70 dark:bg-indigo-400/15 rounded-sm' : ''"
+                        >{{ seg.text }}</span>
+                    </h2>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span v-if="m.verb" :class="['font-mono text-[10px] font-semibold rounded px-1.5 py-0.5', METHOD_CLASS[m.verb] || METHOD_CLASS.POST]">
+                            {{ m.verb }}
+                        </span>
+                        <svg v-if="m.locked.length" class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500"
+                             :title="m.locked.join(' · ')" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <title>{{ m.locked.join(' · ') }}</title>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9
+                                0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25
+                                2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <p v-if="m.subtitle" class="relative pointer-events-none text-xs text-gray-600 dark:text-gray-400 truncate -mt-1">{{ m.subtitle }}</p>
+                <p v-if="m.notes" class="relative pointer-events-none text-xs text-gray-500 dark:text-gray-500 line-clamp-2">{{ m.notes }}</p>
+
+                <div v-if="m.tags.length" class="relative pointer-events-none mt-auto pt-1 flex items-center gap-1">
+                    <span class="ml-auto flex flex-wrap justify-end gap-1 min-w-0">
+                        <button v-for="t in m.tags" :key="t" type="button" @click="toggleTag(t)"
+                                :title="tag === t ? 'Clear the ' + t + ' filter' : 'Show only ' + t"
+                                :class="['pointer-events-auto truncate rounded-full border px-2 py-0.5 text-[10px]',
+                                         'transition-colors outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                                         tag === t
+                                             ? 'border-indigo-400 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-400/15'
+                                             : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400']"
+                        >{{ t }}</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>`
+
+const App = {
+    template,
+    setup() {
+        const params = new URLSearchParams(location.search)
+        const query = ref(params.get('q') || '')
+        const tag = ref(params.get('tag') || '')
+        const verb = ref(params.get('verb') || '')
+        const cursor = ref(0)
+        const cards = ref([])
+        const search = ref(null)
+        const firstPaint = ref(true)
+
+        const results = computed(() => {
+            const byVerb = verb.value ? entries.filter(m => m.verb?.toUpperCase() === verb.value.toUpperCase()) : entries
+            const tagged = tag.value ? byVerb.filter(m => m.tags.includes(tag.value)) : byVerb
+            const q = query.value.trim()
+            if (!q) return tagged.map(m => ({ ...m, segments: segments(m.name) }))
+
+            const scored = []
+            for (const m of tagged) {
+                const onName = fuzzyMatch(q, m.name)
+                const onTitle = fuzzyMatch(q, m.subtitle || '')
+                const onRequest = best(q, m.requests)
+                const onTag = best(q, m.tags)
+                const inNotes = m.notes?.toLowerCase().includes(q.toLowerCase())
+                const score = Math.max(
+                    onName ? onName.score : -Infinity,
+                    onTitle ? onTitle.score * 0.6 : -Infinity,
+                    onRequest ? onRequest * 0.6 : -Infinity,
+                    onTag ? onTag * 0.6 : -Infinity,
+                    inNotes ? 4 : -Infinity)
+
+                if (score === -Infinity) continue
+                scored.push({ ...m, score, segments: segments(m.name, onName?.hits) })
+            }
+            return scored.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+        })
+
+        const total = entries.length
+        const placeholder = `Search ${total} APIs`
+        const tags = allTags
+        const verbs = allVerbs
+
+        const syncUrl = () => {
+            const qs = new URLSearchParams()
+            if (query.value) qs.set('q', query.value)
+            if (tag.value) qs.set('tag', tag.value)
+            if (verb.value) qs.set('verb', verb.value)
+            history.replaceState(null, '', [...qs].length ? `${location.pathname}?${qs}` : location.pathname)
+        }
+
+        function move(delta) {
+            if (!results.value.length) return
+            cursor.value = (cursor.value + delta + results.value.length) % results.value.length
+            nextTick(() => cards.value[cursor.value]?.scrollIntoView({ block: 'nearest' }))
+        }
+        const open = () => results.value[cursor.value] && (location.href = '/schema/' + (results.value[cursor.value].request || results.value[cursor.value].name))
+        const clear = () => { query.value = ''; tag.value = ''; verb.value = ''; cursor.value = 0; syncUrl(); search.value?.focus() }
+
+        const toggleTag = t => {
+            tag.value = tag.value === t ? '' : t
+            cursor.value = 0
+            syncUrl()
+        }
+
+        function onKey(e) {
+            if (e.key === '/' && document.activeElement !== search.value) {
+                e.preventDefault()
+                search.value?.focus()
+            } else if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault()
+                search.value?.select()
+            }
+        }
+
+        onMounted(() => {
+            search.value?.focus()
+            window.addEventListener('keydown', onKey)
+            setTimeout(() => firstPaint.value = false, 350)
+        })
+        onUnmounted(() => window.removeEventListener('keydown', onKey))
+
+        return {
+            query, tag, tags, verb, verbs, cursor, cards, search, firstPaint, results, total, placeholder, METHOD_CLASS,
+            move, open, clear, toggleTag,
+            onQuery: () => { cursor.value = 0; syncUrl() },
+        }
+    },
+    watch: {
+        query() { this.onQuery() },
+        verb() { this.onQuery() },
+    },
+}
+
+createApp(App).use(ServiceStackVue).mount('#app')
+</script>
+
+</body>
+</html>

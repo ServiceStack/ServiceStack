@@ -66,6 +66,12 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
             "/" + "metadata".Localize() + "/" + "nav".Localize(),
             "/" + "metadata".Localize() + "/" + "nav".Localize() + "/{Name}"
         ],
+#if NET10_0_OR_GREATER        
+        [typeof(MetadataSchemaService)]   = ["/" + "schema".Localize() + "/{Name}"],
+        [typeof(MetadataSchemasService)]  = ["/" + "schema".Localize()],
+        [typeof(AutoQuerySchemaService)]  = ["/" + "auto".Localize() + "/{Name}"],
+        [typeof(AutoQuerySchemasService)] = ["/" + "auto".Localize()],
+#endif        
     };
 
     public HtmlModule HtmlModule { get; set; } = new("/modules/ui", "/ui") {
