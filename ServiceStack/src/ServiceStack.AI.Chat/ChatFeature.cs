@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Builder;
 using ServiceStack.Configuration;
 using ServiceStack.Web;
 
@@ -341,6 +342,18 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
                 && (pathInfo.Length == RoutePrefix.Length || pathInfo[RoutePrefix.Length] == '/'))
                 return new ChatHttpHandler(this, pathInfo);
             return null!;
+        });
+
+        // ASP.NET Core SPA hosts commonly register MapFallbackToNode/MapFallbackToFile.
+        // Endpoint routing selects those fallback endpoints before ServiceStack middleware can
+        // consult CatchAllHandlers, so also claim the Chat route space as a concrete endpoint.
+        // Its more-specific route wins over SPA fallbacks in both development and production.
+        (appHost as IAppHostNetCore).MapEndpoints(endpoints =>
+        {
+            var route = RoutePrefix.Length == 0 ? "/{**path}" : RoutePrefix + "/{**path}";
+            endpoints.Map(route, async context =>
+                await context.ProcessRequestAsync(new ChatHttpHandler(this,
+                    context.Request.Path.Value ?? RoutePrefix)).ConfigAwait());
         });
 
         // OpenAI's wire format is richer than the typed DTO can express (e.g. message content can be
