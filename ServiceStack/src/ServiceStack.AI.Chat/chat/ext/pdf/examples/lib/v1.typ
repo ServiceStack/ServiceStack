@@ -1,4 +1,4 @@
-// Shared styles and helpers for every template in this folder.
+// Shared styles and helpers for every template in this workspace.
 //
 //   #import "lib/v1.typ": *
 //   #let data = load-data("../invoice.json")
@@ -7,6 +7,16 @@
 // Change something here and open lib/v1.preview.typ to see it applied to every feature at once.
 
 #let header-title = "Acme"
+
+// Optional renderer context is separate from document data. Applications may add any JSON-compatible
+// keys; the baseline library consumes language and region for Typst's text pipeline.
+#let render-options = if "options" in sys.inputs {
+  json(bytes(sys.inputs.options))
+} else {
+  (:)
+}
+#let render-language = render-options.at("language", default: "en")
+#let render-region = render-options.at("region", default: none)
 
 #let header-logo = "<svg width='457' height='400' viewBox='271 300 457 400' fill='none' xmlns='http://www.w3.org/2000/svg'>
   <path d='M726.708 621.101L544.791 305.046C542.962 301.835 539.306 300 535.649 300H462.973C459.317 300 455.66 301.835 453.832 305.046L272.371 621.101C270.543 624.312 270.543 628.44 272.371 631.651L308.938 694.954C310.766 698.165 314.423 700 318.079 700H681.457C685.114 700 688.771 698.165 690.599 694.954L727.165 631.651C728.537 628.44 728.537 624.312 726.708 621.101ZM469.373 321.101H517.823L381.613 557.798C379.785 561.009 379.785 565.138 381.613 568.349C383.442 571.56 387.098 573.395 390.755 573.395H530.164L554.389 615.596H299.796L469.373 321.101ZM499.54 521.101L517.823 552.752H481.257L499.54 521.101ZM299.796 636.697H572.215C575.872 636.697 579.529 634.862 581.357 631.651C583.185 628.44 583.185 624.312 581.357 621.101L511.881 500L536.106 457.798L663.174 678.899H324.021L299.796 636.697ZM681.457 668.349L544.791 431.651C542.962 428.44 539.306 426.606 535.649 426.606C531.992 426.606 528.336 428.44 526.507 431.651L457.031 552.752H408.581L536.106 331.651L705.683 626.606L681.457 668.349Z' fill='black'/>
@@ -32,7 +42,7 @@
 // ---------------------------------------------------------------- theme
 #let theme(doc) = {
   set page(paper: "us-letter", margin: (x: 2cm, y: 2cm))
-  set text(font: body-font, size: 10pt)
+  set text(font: body-font, size: 10pt, lang: render-language, region: render-region)
   set par(leading: 0.65em)
   show raw: set text(font: mono-font, size: 0.9em)
   show heading: set block(above: 1.2em, below: 0.6em)

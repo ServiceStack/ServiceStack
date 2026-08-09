@@ -6,9 +6,8 @@ namespace ServiceStack.AI;
 /// <summary>
 /// Renders <see cref="PdfAttribute"/>-decorated data models, so App code never repeats a template name.
 /// <para>
-/// These are extension methods rather than <see cref="IPdfRenderer"/> members because that interface is
-/// public and swappable through <see cref="PdfFeature.Renderer"/> — adding members would break anyone
-/// who has substituted their own renderer.
+/// These are extension methods because <see cref="IPdfRenderer"/> intentionally accepts only JSON while
+/// this typed convenience layer owns model serialization and [Pdf] template discovery.
 /// </para>
 /// </summary>
 public static class PdfRendererExtensions
@@ -54,12 +53,28 @@ public static class PdfRendererExtensions
     /// <exception cref="PdfRenderException">typst is missing, or the template failed to compile</exception>
     public static Task<byte[]> RenderPdfAsync<T>(this IPdfRenderer renderer, T model,
         CancellationToken token = default)
+        => RenderPdfAsync(renderer, model, options: null, token);
+
+    /// <summary>Render a [Pdf]-decorated model with optional template-defined rendering context.</summary>
+    public static Task<byte[]> RenderPdfAsync<T>(this IPdfRenderer renderer, T model,
+        PdfRenderOptions? options, CancellationToken token = default)
     {
         if (renderer == null)
             throw new ArgumentNullException(nameof(renderer));
 
         var attr = AssertPdfAttribute(model);
-        return renderer.RenderAsync(attr.Template, (object?)model, token);
+        return renderer.RenderAsync(attr.Template, model != null ? ChatJson.Serialize(model) : null, options, token);
+    }
+
+    /// <summary>Render a [Pdf]-decorated model directly into a writable stream.</summary>
+    public static Task RenderPdfAsync<T>(this IPdfRenderer renderer, T model, Stream output,
+        PdfRenderOptions? options = null, CancellationToken token = default)
+    {
+        if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+        if (output == null) throw new ArgumentNullException(nameof(output));
+        var attr = AssertPdfAttribute(model);
+        return renderer.RenderToStreamAsync(attr.Template, output, model != null ? ChatJson.Serialize(model) : null,
+            options, token);
     }
 
     /// <summary>
@@ -70,12 +85,19 @@ public static class PdfRendererExtensions
     /// <param name="inline">True to display in the browser rather than download it</param>
     public static async Task<HttpResult> PdfResultAsync<T>(this IPdfRenderer renderer, T model,
         string? fileName = null, bool inline = false, CancellationToken token = default)
+        => await PdfResultAsync(renderer, model, options: null, fileName, inline, token).ConfigAwait();
+
+    /// <summary>Render a [Pdf]-decorated model as an HTTP result with optional rendering context.</summary>
+    public static async Task<HttpResult> PdfResultAsync<T>(this IPdfRenderer renderer, T model,
+        PdfRenderOptions? options, string? fileName = null, bool inline = false,
+        CancellationToken token = default)
     {
         if (renderer == null)
             throw new ArgumentNullException(nameof(renderer));
 
         var attr = AssertPdfAttribute(model);
-        var pdf = await renderer.RenderAsync(attr.Template, (object?)model, token).ConfigAwait();
+        var pdf = await renderer.RenderAsync(attr.Template, model != null ? ChatJson.Serialize(model) : null,
+            options, token).ConfigAwait();
 
         var disposition = inline ? "inline" : "attachment";
         var name = !string.IsNullOrEmpty(fileName) ? fileName! : attr.ResolveFileName();

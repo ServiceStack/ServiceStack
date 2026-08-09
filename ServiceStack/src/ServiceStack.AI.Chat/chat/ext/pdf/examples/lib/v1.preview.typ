@@ -1,4 +1,4 @@
-// Every feature lib/v1.typ styles, on one page. Edit lib/v1.typ, render this, see what changed.
+// Every feature v1.typ styles, on one page. Edit v1.typ, render this, see what changed.
 #import "v1.typ": *
 
 #show: theme

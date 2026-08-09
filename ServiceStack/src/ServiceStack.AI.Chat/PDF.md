@@ -593,10 +593,36 @@ current revision. A revision directory is not a renderable template.
 | Call | Returns |
 | --- | --- |
 | `pdf.RenderPdfAsync(model, token)` | PDF bytes for a `[Pdf]`-decorated model |
+| `pdf.RenderPdfAsync(model, stream, options, token)` | write a `[Pdf]` model directly to a writable stream |
 | `pdf.PdfResultAsync(model, fileName, inline, token)` | an `HttpResult` a Service can return directly |
-| `pdf.RenderAsync(name, data, token)` | render by template name, when you have no model |
+| `pdf.RenderAsync(name, dataJson, token)` | render JSON by template name, when you have no model |
+| `pdf.RenderToStreamAsync(name, stream, dataJson, options, token)` | render JSON by name directly to a writable stream |
 | `pdf.RenderPngAsync(name, …)` | rasterise a page, e.g. for a thumbnail |
 | `pdf.GetTemplateNames()` | what's currently published |
+
+### Optional render context
+
+`PdfRenderOptions` is an open-ended dictionary passed separately from document data as JSON in Typst's
+`sys.inputs.options`. This keeps presentation context out of generated data contracts and lets each
+versioned library define the options it supports:
+
+```csharp
+var options = new PdfRenderOptions {
+    Language = "de",
+    Region = "DE",
+    ["application-defined-key"] = "value",
+};
+
+await pdf.RenderPdfAsync(invoice, outputStream, options, token);
+```
+
+`lib/v1.typ` reads `language` and `region` and applies them to `text`, affecting Typst hyphenation, smart
+quotes, text direction and accessibility metadata. Templates can read additional application-defined keys
+from `render-options`. Options and data share the `MaxDataBytes` command-line input limit. Omitting options
+preserves existing rendering calls and behavior.
+
+`IPdfRenderer` accepts one data representation: nullable JSON text. `RenderPdfAsync` is the typed
+convenience layer—it serializes a `[Pdf]` model to that JSON contract before calling the renderer.
 
 ## Admin APIs
 
@@ -660,12 +686,12 @@ Built-in support includes:
 - Immutable filesystem revisions, revision history and rollback.
 - Admin preview and download through pdf.js, with form and raw JSON test-data editors.
 - JSON Schema-assisted C# model generation.
-- Rendering to `byte[]`, or an `HttpResult` with inline/download content disposition.
+- Rendering to `byte[]`, a writable `Stream`, or an `HttpResult` with inline/download content disposition.
 - PNG rendering of one selected page, primarily for gallery thumbnails.
 
 The built-in implementation does **not** provide PDF merging, splitting, page reordering, encryption,
 password protection, digital signatures, timestamping, PDF/A conversion or validation, AcroForm filling,
-form flattening, tagged-PDF validation, OCR, PDF text extraction, or streaming output. Use a separate PDF
+form flattening, tagged-PDF validation, OCR, or PDF text extraction. Use a separate PDF
 library before or after rendering, or replace/wrap `IPdfRenderer`, when an application needs those features.
 
 PDF import in Studio is a visual reconstruction aid, not a structural PDF importer. The browser rasterises
@@ -782,7 +808,7 @@ When answering questions or proposing code based on this document:
    through the Admin API/UI.
 6. Do not describe PDF import as editable PDF conversion. It supplies rasterised reference pages to a
    vision-capable model, which creates a new Typst approximation.
-7. Do not invent support for signing, encryption, forms, PDF/A, OCR, merging or streaming. Recommend a
+7. Do not invent support for signing, encryption, forms, PDF/A, OCR or merging. Recommend a
    separate PDF library or a custom `IPdfRenderer` pipeline.
 8. Preserve explicit `lib/*.typ` imports and recommend a new library version for incompatible changes.
 9. Preserve cancellation tokens in render calls and avoid persisting PDF bytes in background-job request

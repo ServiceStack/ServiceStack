@@ -5,6 +5,37 @@ using ServiceStack.Text;
 namespace ServiceStack.AI;
 
 /// <summary>
+/// Optional, template-defined rendering context passed to Typst as <c>sys.inputs.options</c>.
+/// Values are deliberately open-ended so applications and versioned libraries can agree on their own
+/// options without expanding the renderer API. Common keys include <c>language</c> and <c>region</c>.
+/// </summary>
+public class PdfRenderOptions : Dictionary<string, object?>
+{
+    public const string LanguageKey = "language";
+    public const string RegionKey = "region";
+
+    /// <summary>ISO 639 language code consumed by the baseline Typst library.</summary>
+    public string? Language
+    {
+        get => TryGetValue(LanguageKey, out var value) ? value as string : null;
+        set => SetOptional(LanguageKey, value);
+    }
+
+    /// <summary>ISO 3166-1 alpha-2 region code consumed by the baseline Typst library.</summary>
+    public string? Region
+    {
+        get => TryGetValue(RegionKey, out var value) ? value as string : null;
+        set => SetOptional(RegionKey, value);
+    }
+
+    void SetOptional(string key, string? value)
+    {
+        if (value == null) Remove(key);
+        else this[key] = value;
+    }
+}
+
+/// <summary>
 /// Renders the published typst templates in App_Data/pdf.
 /// <para>
 /// Data reaches a template through typst's <c>--input data=&lt;json&gt;</c>, which lib.typ's
@@ -23,11 +54,18 @@ public interface IPdfRenderer
     /// <summary>Absolute path of a published file, throwing if the name escapes App_Data/pdf</summary>
     string ResolvePath(string name, string ext = ".typ", bool mustExist = true);
 
-    /// <summary>Compile a published template to PDF. A null dataJson uses the template's own .json</summary>
-    Task<byte[]> RenderAsync(string name, string? dataJson = null, CancellationToken token = default);
+    /// <summary>Compile JSON data with optional template-defined rendering context.</summary>
+    Task<byte[]> RenderAsync(string name, string? dataJson = null, PdfRenderOptions? options = null,
+        CancellationToken token = default);
 
-    /// <summary>Compile with any object or dictionary, serialised to camelCase JSON for the template</summary>
-    Task<byte[]> RenderAsync(string name, object? data, CancellationToken token = default);
+    /// <summary>Compile JSON data directly into a destination stream.</summary>
+    async Task RenderToStreamAsync(string name, Stream output, string? dataJson = null,
+        PdfRenderOptions? options = null,
+        CancellationToken token = default)
+    {
+        var bytes = await RenderAsync(name, dataJson, options, token).ConfigAwait();
+        await output.WriteAsync(bytes, token).ConfigAwait();
+    }
 
     /// <summary>Rasterise one page to PNG, used for the &lt;name&gt;.preview.png thumbnails</summary>
     Task<byte[]> RenderPngAsync(string name, string? dataJson = null, int page = 1, int? ppi = null,
@@ -106,24 +144,48 @@ public partial class PdfRenderer(PdfFeature feature) : IPdfRenderer
         return ResolvePath(name!, ".typ", mustExist);
     }
 
-    public Task<byte[]> RenderAsync(string name, object? data, CancellationToken token = default) =>
-        RenderAsync(name, data != null ? ChatJson.Serialize(data) : null, token);
+    public Task<byte[]> RenderAsync(string name, string? dataJson = null, PdfRenderOptions? options = null,
+        CancellationToken token = default) =>
+        CompileAsync(name, dataJson, options, png: false, page: 1, ppi: null, feature.RenderTimeout, token);
 
-    public Task<byte[]> RenderAsync(string name, string? dataJson = null, CancellationToken token = default) =>
-        CompileAsync(name, dataJson, png: false, page: 1, ppi: null, feature.RenderTimeout, token);
+    public Task RenderToStreamAsync(string name, Stream output, string? dataJson = null,
+        PdfRenderOptions? options = null,
+        CancellationToken token = default) =>
+        CompileAsync(name, output, dataJson, options, feature.RenderTimeout, token);
 
     public Task<byte[]> RenderPngAsync(string name, string? dataJson = null, int page = 1, int? ppi = null,
         CancellationToken token = default) =>
-        CompileAsync(name, dataJson, png: true, page, ppi ?? feature.PreviewPpi, feature.PreviewTimeout, token);
+        CompileAsync(name, dataJson, options: null, png: true, page, ppi ?? feature.PreviewPpi,
+            feature.PreviewTimeout, token);
 
-    async Task<byte[]> CompileAsync(string name, string? dataJson, bool png, int page, int? ppi,
+    async Task<byte[]> CompileAsync(string name, string? dataJson, PdfRenderOptions? options, bool png, int page, int? ppi,
         TimeSpan timeout, CancellationToken token)
     {
+        using var output = new MemoryStream();
+        await CompileAsync(name, output, dataJson, options, png, page, ppi, timeout, token).ConfigAwait();
+        return output.ToArray();
+    }
+
+    Task CompileAsync(string name, Stream output, string? dataJson, PdfRenderOptions? options,
+        TimeSpan timeout, CancellationToken token) =>
+        CompileAsync(name, output, dataJson, options, png: false, page: 1, ppi: null, timeout, token);
+
+    async Task CompileAsync(string name, Stream output, string? dataJson, PdfRenderOptions? options, bool png,
+        int page, int? ppi, TimeSpan timeout, CancellationToken token)
+    {
+        if (output == null) throw new ArgumentNullException(nameof(output));
+        if (!output.CanWrite) throw new ArgumentException("PDF output stream must be writable", nameof(output));
         if (!IsAvailable)
             throw new PdfRenderException("typst is not installed — install it from https://typst.app");
         if (dataJson != null && dataJson.Length > feature.MaxDataBytes)
             throw new ArgumentException(
                 $"Data is too large: {dataJson.Length / 1024}KB, at most {feature.MaxDataBytes / 1024}KB");
+
+        var optionsJson = options is { Count: > 0 } ? ChatJson.Serialize(options) : null;
+        var inputLength = (dataJson?.Length ?? 0) + (optionsJson?.Length ?? 0);
+        if (inputLength > feature.MaxDataBytes)
+            throw new ArgumentException(
+                $"Render inputs are too large: {inputLength / 1024}KB, at most {feature.MaxDataBytes / 1024}KB");
 
         var templatePath = AssertTemplatePath(name);
         var root = feature.PdfPath!;
@@ -144,6 +206,11 @@ public partial class PdfRenderer(PdfFeature feature) : IPdfRenderer
             // through ArgumentList, never a joined command line — the JSON must not be shell-parsed
             psi.ArgumentList.Add("--input");
             psi.ArgumentList.Add("data=" + dataJson);
+        }
+        if (optionsJson != null)
+        {
+            psi.ArgumentList.Add("--input");
+            psi.ArgumentList.Add("options=" + optionsJson);
         }
         var fontsDir = Path.Combine(root, "fonts");
         if (Directory.Exists(fontsDir))
@@ -168,7 +235,7 @@ public partial class PdfRenderer(PdfFeature feature) : IPdfRenderer
         await renderLock.WaitAsync(token).ConfigAwait();
         try
         {
-            return await RunAsync(psi, name, timeout, token).ConfigAwait();
+            await RunAsync(psi, output, name, timeout, token).ConfigAwait();
         }
         finally
         {
@@ -176,7 +243,8 @@ public partial class PdfRenderer(PdfFeature feature) : IPdfRenderer
         }
     }
 
-    static async Task<byte[]> RunAsync(ProcessStartInfo psi, string name, TimeSpan timeout, CancellationToken token)
+    static async Task RunAsync(ProcessStartInfo psi, Stream output, string name, TimeSpan timeout,
+        CancellationToken token)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(token);
         cts.CancelAfter(timeout);
@@ -185,16 +253,15 @@ public partial class PdfRenderer(PdfFeature feature) : IPdfRenderer
             ?? throw new PdfRenderException($"Could not start '{psi.FileName}'");
         try
         {
-            using var stdout = new MemoryStream();
             // stderr is drained concurrently: a diagnostic large enough to fill its pipe would
             // otherwise deadlock both sides
-            var stdoutTask = process.StandardOutput.BaseStream.CopyToAsync(stdout, cts.Token);
+            var stdoutTask = process.StandardOutput.BaseStream.CopyToAsync(output, cts.Token);
             var stderrTask = process.StandardError.ReadToEndAsync(cts.Token);
             await Task.WhenAll(stdoutTask, stderrTask).ConfigAwait();
             await process.WaitForExitAsync(cts.Token).ConfigAwait();
 
             var stderr = await stderrTask.ConfigAwait();
-            if (process.ExitCode != 0 || stdout.Length == 0)
+            if (process.ExitCode != 0)
             {
                 throw new PdfRenderException(FirstError(stderr) ?? $"typst compile {name} failed")
                 {
@@ -202,7 +269,6 @@ public partial class PdfRenderer(PdfFeature feature) : IPdfRenderer
                     ExitCode = process.ExitCode,
                 };
             }
-            return stdout.ToArray();
         }
         catch (OperationCanceledException) when (!token.IsCancellationRequested)
         {

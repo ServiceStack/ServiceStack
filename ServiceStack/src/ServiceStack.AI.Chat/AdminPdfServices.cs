@@ -275,7 +275,7 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
     {
         AssertTypst();
         ResolveTemplate(request.Name);
-        var pdf = await renderer.RenderAsync(request.Name, request.Data, Request.RequestAborted)
+        var pdf = await renderer.RenderAsync(request.Name, request.Data, token: Request.RequestAborted)
             .ConfigAwait();
         return new HttpResult(pdf, MimeTypes.Pdf)
         {
@@ -501,7 +501,7 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
             try
             {
                 await renderer.RenderAsync(name, await File.ReadAllTextAsync(fixturePath, Request.RequestAborted),
-                    Request.RequestAborted).ConfigAwait();
+                    token: Request.RequestAborted).ConfigAwait();
             }
             catch (Exception e)
             {

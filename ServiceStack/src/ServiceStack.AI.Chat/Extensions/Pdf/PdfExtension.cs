@@ -289,6 +289,8 @@ public partial class PdfExtension() : ChatExtension("pdf")
                 {
                     LibName => DefaultLibName,
                     "lib.preview.typ" => LibPreview,
+                    "lib.v1.typ" => DefaultLibName,
+                    "lib.v1.preview.typ" => LibPreview,
                     _ => name,
                 };
             }, file => file) ?? [];
