@@ -36,17 +36,13 @@
     <script>window.Auth=${Auth}</script>
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm">
-
 <div id="app"></div>
-
 <script type="module">
 import { createApp, computed, ref } from "vue"
 import { createRouter, createWebHistory } from "vue-router"
 import ServiceStackVue from "@servicestack/vue"
 import AutoQuerySchema, { ACTIONS, requirementText, subtitle } from "../js/components/AutoQuerySchema.mjs"
-
 const Auto = window.Schema
-
 // A padlock that reveals what each action needs — kept out of the way of normal use
 const AuthLock = {
     props: { items: Array },
@@ -76,12 +72,12 @@ const AuthLock = {
     </div>`,
     setup: () => ({ open: ref(false) })
 }
-
 // --- page ------------------------------------------------------------------
-
+// Everything below the title is <AutoQuerySchema>: the results grid, its filters and
+// paging, query preferences and the Create/Edit/Delete forms. The page keeps only its
+// own chrome, and reads the schema's auth to explain what each action needs.
 const template = `
 <div class="px-4 pt-6 pb-16">
-
     <div class="flex items-center gap-2 mb-5">
         <!-- a real link, so it opens in a tab on cmd/middle click like any other -->
         <a href="/auto" title="All data models"
@@ -92,7 +88,6 @@ const template = `
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
             </svg>
         </a>
-
         <div class="min-w-0">
             <h1 class="text-xl font-semibold">{{ Auto.title || Auto.name }}</h1>
             <p v-if="modelSubtitle" class="text-gray-500 dark:text-gray-400">{{ modelSubtitle }}</p>
@@ -101,10 +96,8 @@ const template = `
         <span class="flex-1"></span>
         <DarkModeToggle />
     </div>
-
     <AutoQuerySchema :schema="Auto" :auth="auth" />
 </div>`
-
 const App = {
     components: { AuthLock, AutoQuerySchema },
     template,
@@ -119,17 +112,16 @@ const App = {
         }
     },
 }
-
+// A catch-all route so only the query string drives state - the path stays /auto/{Name},
+// which the server serves as-is, so every URL survives a full page reload
 const router = createRouter({
     history: createWebHistory(),
     routes: [{ path: '/:pathMatch(.*)*', component: App }],
 })
-
 createApp({ template: `<RouterView />` })
     .use(ServiceStackVue)
     .use(router)
     .mount('#app')
 </script>
-
 </body>
 </html>

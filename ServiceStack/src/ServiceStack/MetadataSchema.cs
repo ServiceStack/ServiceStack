@@ -52,8 +52,8 @@ public class MetadataSchemasService() : Service
         
         if (Request!.IsHtml())
         {
-            var htmlFile = VirtualFileSources.GetFile("schemas.html")
-                           ?? throw HttpError.NotFound("schemas.html not found");
+            var htmlFile = VirtualFileSources.GetFile("Templates/schemas.html")
+                           ?? throw HttpError.NotFound("Templates/schemas.html not found");
 
             var html = await htmlFile.ReadAllTextAsync();
             html = html.Replace("${Results}", detailsJson);
@@ -88,8 +88,8 @@ public class MetadataSchemaService() : Service
         
         if (Request!.IsHtml())
         {
-            var htmlFile = VirtualFileSources.GetFile("schema.html")
-                ?? throw HttpError.NotFound("schema.html not found");
+            var htmlFile = VirtualFileSources.GetFile("Templates/schema.html")
+                ?? throw HttpError.NotFound("Templates/schema.html not found");
 
             var authApi = await Gateway.ApiAsync(new Authenticate());
             var auth = authApi.Response;
@@ -123,8 +123,8 @@ public class AutoQuerySchemasService() : Service
         
         if (Request!.IsHtml())
         {
-            var htmlFile = VirtualFileSources.GetFile("autos.html")
-                ?? throw HttpError.NotFound("autos.html not found");
+            var htmlFile = VirtualFileSources.GetFile("Templates/autos.html")
+                ?? throw HttpError.NotFound("Templates/autos.html not found");
 
             var html = await htmlFile.ReadAllTextAsync();
             html = html.Replace("${Results}", detailsJson);
@@ -156,8 +156,8 @@ public class AutoQuerySchemaService() : Service
         var jsonSchema = schema.ToJsonString();
         if (Request!.IsHtml())
         {
-            var htmlFile = VirtualFileSources.GetFile("auto.html")
-                ?? throw HttpError.NotFound("auto.html not found");
+            var htmlFile = VirtualFileSources.GetFile("Templates/auto.html")
+                ?? throw HttpError.NotFound("Templates/auto.html not found");
             
             var html = await htmlFile.ReadAllTextAsync();
             html = html.Replace("${Title}", schema.TryGetPropertyValue("title", out var title) ? title?.ToString() ?? name : name);

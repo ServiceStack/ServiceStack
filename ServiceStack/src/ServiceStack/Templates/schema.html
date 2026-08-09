@@ -36,9 +36,7 @@
     <script>window.Auth=${Auth}</script>
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm">
-
 <div id="app"></div>
-
 <script type="module">
 /**
  * The HTML view of /schema/{RequestDto}: renders one API's schema as a form you can fill in
@@ -59,19 +57,14 @@ import ServiceStackVue, { useAuth } from "@servicestack/vue"
 import { SchemaInput, buildRequest, propsOf, toOp, requirementText, subtitle }
     from "../js/components/AutoQuerySchema.mjs"
 import JsonView, { unwrapResponse } from "../js/components/JsonView.mjs"
-
 const Schema = window.Schema
 if (window.Auth) useAuth().signIn(window.Auth)
-
 // --- helpers ---------------------------------------------------------------
-
 const bytes = n => n < 1024 ? `${n} B`
     : n < 1024 * 1024 ? `${(n / 1024).toFixed(1)} KB`
     : `${(n / 1024 / 1024).toFixed(1)} MB`
-
 const escapeHtml = s => String(s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
 /**
  * Minimal JSON highlighter. A response is the whole point of this page, so it earns colour;
  * pulling in a syntax highlighter for one language does not.
@@ -88,7 +81,6 @@ function highlight(json) {
             return `<span class="${cls}">${match}</span>`
         })
 }
-
 /** The same request as a curl one-liner, so it can be run outside the browser as-is */
 function toCurl({ method, url, headers, body, uploads }) {
     const origin = location.origin
@@ -104,7 +96,6 @@ function toCurl({ method, url, headers, body, uploads }) {
     }
     return parts.join(' \\\n  ')
 }
-
 /** A query string value arrives as text; the inputs and the API both want it typed */
 function coerce(value, prop) {
     const type = prop?.type
@@ -125,9 +116,7 @@ function coerce(value, prop) {
     if (type === 'object') return parseJson(value)
     return value
 }
-
 const parseJson = text => { try { return JSON.parse(text) } catch { return undefined } }
-
 /**
  * Values for this API found in the page's own query string, so a link like
  *   /schema/QueryBookings?RoomType=Queen&Take=5
@@ -147,18 +136,15 @@ function fromQueryString(schema) {
     }
     return to
 }
-
 /** Updates the browser URL query string after form submission to include all non-empty values */
 function updateUrlQueryString(schema, data) {
     const params = new URLSearchParams()
     const properties = schema?.properties ?? {}
     const byLowerProp = new Map(Object.entries(properties).map(([k, v]) => [k.toLowerCase(), v]))
-
     for (const [name, val] of Object.entries(data ?? {})) {
         if (val === undefined || val === null) continue
         const prop = properties[name] ?? byLowerProp.get(String(name).toLowerCase())
         const isNumberProp = prop?.type === 'integer' || prop?.type === 'number'
-
         if (isNumberProp || typeof val === 'number') {
             const num = Number(val)
             if (!Number.isFinite(num) || num === 0) continue
@@ -181,12 +167,10 @@ function updateUrlQueryString(schema, data) {
             params.set(name, trimmed)
         }
     }
-
     const qs = params.toString()
     const newUrl = location.pathname + (qs ? '?' + qs : '')
     history.replaceState(null, '', newUrl)
 }
-
 const METHOD_CLASS = {
     GET: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
     POST: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
@@ -194,7 +178,6 @@ const METHOD_CLASS = {
     PATCH: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
     DELETE: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
 }
-
 /** A padlock that says what the API needs, kept out of the way until asked for */
 const AuthLock = {
     props: { text: String },
@@ -219,7 +202,6 @@ const AuthLock = {
     </div>`,
     setup: () => ({ open: ref(false) }),
 }
-
 /** A code block with a copy button - used for the request, the curl line and the response */
 const CodeBlock = {
     props: { code: String, html: String, sizeClass: { type: String, default: 'max-h-[60vh]' } },
@@ -259,12 +241,9 @@ const CodeBlock = {
         }
     },
 }
-
 // --- page ------------------------------------------------------------------
-
 const template = `
 <div class="min-h-screen">
-
     <header class="sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800
                    bg-white/90 dark:bg-gray-900/90 backdrop-blur">
         <div class="mx-auto max-w-[110rem] px-4 py-3 flex items-start gap-3">
@@ -276,7 +255,6 @@ const template = `
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
                 </svg>
             </a>
-
             <div class="min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
                     <h1 class="text-xl font-semibold">{{ Schema.title || Schema.request }}</h1>
@@ -288,19 +266,15 @@ const template = `
                 </div>
                 <p v-if="pageSubtitle" class="text-gray-500 dark:text-gray-400" v-html="pageSubtitle"></p>
             </div>
-
             <span class="flex-1"></span>
             <DarkModeToggle />
         </div>
     </header>
-
     <main class="mx-auto max-w-[110rem] px-4 py-5 space-y-6">
-
         <div class="grid gap-6 lg:grid-cols-2 items-start">
             <!-- request form -->
             <form ref="form" @submit.prevent="execute" @keydown.enter="onFormEnter" class="min-w-0">
                 <ErrorSummary v-if="error" :status="error" :except="boundFields" class="mb-4" />
-
                 <div v-if="fields.length" class="grid grid-cols-12 gap-4">
                     <SchemaInput v-for="f in fields" :key="f.name" :name="f.name" :prop="f.prop"
                                  :schema="Schema" :status="error" :model-value="data[f.name]"
@@ -309,7 +283,6 @@ const template = `
                 <p v-else class="text-gray-500 dark:text-gray-400">
                     This API takes no parameters — just run it.
                 </p>
-
                 <div class="mt-5 flex items-center gap-3">
                     <PrimaryButton type="submit" :disabled="loading">
                         {{ loading ? 'Running…' : (Schema.ui?.submitLabel || 'Execute') }}
@@ -319,7 +292,6 @@ const template = `
                         You don't have access to call this — it will fail with 401/403
                     </span>
                 </div>
-
                 <!-- what's actually about to be sent, straight from buildRequest() -->
                 <section class="mt-6">
                     <div class="flex items-center gap-2 mb-1.5">
@@ -336,7 +308,6 @@ const template = `
                     <CodeBlock v-if="showCurl" :code="curl" size-class="max-h-64" class="mt-2" />
                 </section>
             </form>
-
             <!-- schema -->
             <section class="min-w-0 flex flex-col" :style="formHeight ? { height: formHeight + 'px' } : {}">
                 <div class="flex items-center gap-2 mb-1.5 min-h-6 shrink-0">
@@ -349,7 +320,6 @@ const template = `
                 </div>
             </section>
         </div>
-
         <!-- response -->
         <section class="min-w-0">
             <div class="flex items-center gap-2 mb-1.5 min-h-6">
@@ -384,14 +354,12 @@ const template = `
                     </button>
                 </div>
             </div>
-
             <div v-if="!result"
                  :class="['rounded-lg border border-dashed border-gray-300 dark:border-gray-700',
                           'flex items-center justify-center text-xs text-gray-500 dark:text-gray-400',
                           paneHeight]">
                 Run the API to see its response
             </div>
-
             <div v-else-if="tab === 'Data'"
                  :class="['overflow-auto rounded-lg border border-gray-200 dark:border-gray-800 p-3', paneHeight]">
                 <!-- say which field the shown payload came out of, since it isn't the whole response -->
@@ -401,13 +369,11 @@ const template = `
                 </p>
                 <JsonView :value="payload.data" />
             </div>
-
             <CodeBlock v-else-if="tab === 'JSON'" :html="bodyHtml" :code="result.text" :size-class="paneHeight" />
             <CodeBlock v-else-if="tab === 'Headers'" :code="result.headers" :size-class="paneHeight" />
             <CodeBlock v-else :html="schemaHtml" :code="schemaJson" :size-class="paneHeight" />
         </section>
     </main>
-
     <Teleport to="body">
         <div v-if="maximized" class="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-900 p-4 sm:p-6 overflow-hidden">
             <div class="flex items-center gap-3 pb-3 mb-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
@@ -430,9 +396,7 @@ const template = `
                         <span v-if="payload.range"> · {{ payload.range }}</span>
                     </span>
                 </div>
-
                 <span class="flex-1"></span>
-
                 <div class="flex items-center gap-2 text-xs">
                     <button v-for="t in tabs" :key="t" type="button" @click="tab = t"
                             :class="['rounded px-2.5 py-1 font-medium',
@@ -450,7 +414,6 @@ const template = `
                     </button>
                 </div>
             </div>
-
             <div class="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800 p-4 bg-white dark:bg-gray-900">
                 <div v-if="tab === 'Data'">
                     <p v-if="payload.key" class="mb-3 text-xs text-gray-500 dark:text-gray-400">
@@ -459,7 +422,6 @@ const template = `
                     </p>
                     <JsonView :value="payload.data" />
                 </div>
-
                 <CodeBlock v-else-if="tab === 'JSON'" :html="bodyHtml" :code="result.text" size-class="h-full min-h-full" />
                 <CodeBlock v-else-if="tab === 'Headers'" :code="result.headers" size-class="h-full min-h-full" />
                 <CodeBlock v-else :html="schemaHtml" :code="schemaJson" size-class="h-full min-h-full" />
@@ -467,14 +429,12 @@ const template = `
         </div>
     </Teleport>
 </div>`
-
 const App = {
     components: { SchemaInput, AuthLock, CodeBlock, JsonView, Teleport },
     template,
     setup() {
         const fields = propsOf(Schema)
         const blank = () => Object.fromEntries(fields.map(f => [f.name, undefined]))
-
         // anything the URL already answers for
         const prefilled = fromQueryString(Schema)
         const data = ref({ ...blank(), ...prefilled })
@@ -486,13 +446,13 @@ const App = {
         const maximized = ref(false)
         const formHeight = ref(null)
         let resizeObserver = null
+        // shallow, because ref() would hand the whole <form> DOM tree to Vue's deep reactive
+        // proxy - which recurses through the element graph until the stack gives out
         const form = shallowRef(null)
-
         const { canAccess } = useAuth()
         const method = Schema.method || 'POST'
-
+        // rebuilt as the form is edited, so the preview is never stale
         const request = computed(() => buildRequest(Schema, data.value, form.value))
-
         const requestText = computed(() => {
             const r = request.value
             const lines = [`${r.method} ${r.url}`]
@@ -504,14 +464,13 @@ const App = {
             }
             return lines.join('\n')
         })
-
+        // Fields render their own error, so the summary only shows what none of them claimed
         const boundFields = computed(() => {
             const names = Object.keys(Schema.properties ?? {})
             return (error.value?.errors ?? [])
                 .map(e => e.fieldName)
                 .filter(f => names.some(n => String(f ?? '').toLowerCase().startsWith(n.toLowerCase())))
         })
-
         async function execute() {
             updateUrlQueryString(Schema, data.value)
             loading.value = true
@@ -522,15 +481,14 @@ const App = {
                 const res = await fetch(r.url, { method: r.method, headers: r.headers, body: r.payload ?? undefined })
                 const text = await res.text()
                 const ms = Math.round(performance.now() - started)
-
                 let pretty = text
                 let json = null
                 try {
                     json = text ? JSON.parse(text) : null
                     pretty = json != null ? JSON.stringify(json, null, 2) : text
                 } catch { /* not JSON - show it raw */ }
+                // a 204, or a 401 that only answers in headers, still needs to say something
                 if (!pretty) pretty = '(no content)'
-
                 result.value = {
                     json,
                     ok: res.ok,
@@ -541,8 +499,9 @@ const App = {
                     text: pretty,
                     headers: [...res.headers.entries()].map(([k, v]) => `${k}: ${v}`).join('\n'),
                 }
+                // nothing to lay out if it didn't parse, so start on the raw text
                 tab.value = json == null ? 'JSON' : 'Data'
-
+                // a failed call still binds its field errors to the inputs that caused them
                 error.value = res.ok ? null : (json?.responseStatus ?? json?.ResponseStatus
                     ?? { message: `${res.status} ${res.statusText}`, errors: [] })
             } catch (e) {
@@ -552,23 +511,21 @@ const App = {
                 loading.value = false
             }
         }
-
         function onKeydown(e) {
             if (e.key === 'Escape' && maximized.value) {
                 maximized.value = false
             }
         }
-
         function onFormEnter(e) {
             if (e.target?.tagName === 'TEXTAREA') return
             e.preventDefault()
             execute()
         }
-
+        // A GET is safe to repeat, so a prefilled link runs itself; anything that writes waits
+        // for the button, however it was linked to
         onMounted(() => {
             if (method === 'GET' && Object.keys(prefilled).length) execute()
             window.addEventListener('keydown', onKeydown)
-
             if (form.value && typeof ResizeObserver !== 'undefined') {
                 resizeObserver = new ResizeObserver(entries => {
                     for (const entry of entries) {
@@ -578,23 +535,21 @@ const App = {
                 resizeObserver.observe(form.value)
             }
         })
-
         onUnmounted(() => {
             window.removeEventListener('keydown', onKeydown)
             if (resizeObserver) resizeObserver.disconnect()
         })
-
         const schemaJson = JSON.stringify(Schema, null, 2)
-
         return {
             Schema, form, fields, data, error, loading, result, tab, showCurl, method, maximized, formHeight,
             boundFields, requestText, execute, onFormEnter,
             schemaJson,
             schemaHtml: highlight(schemaJson),
             bodyHtml: computed(() => result.value ? highlight(result.value.text) : ''),
-
+            /** the part of the response that is the answer, and where it was found */
             payload: computed(() => {
                 const { data, key, envelope } = unwrapResponse(result.value?.json)
+                // AutoQuery pages a result set, so say which page this is when it says so
                 const total = envelope?.total ?? envelope?.Total
                 const offset = envelope?.offset ?? envelope?.Offset ?? 0
                 const range = Array.isArray(data) && data.length > 0
@@ -619,9 +574,7 @@ const App = {
         }
     },
 }
-
 createApp(App).use(ServiceStackVue).mount('#app')
 </script>
-
 </body>
 </html>
