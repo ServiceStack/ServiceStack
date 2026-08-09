@@ -5,8 +5,7 @@ import { PdfView } from './pdf-preview.mjs'
 import { defineTypstMode } from './typst-mode.mjs'
 import { registerTypst } from './typst-hljs.mjs'
 import { toAttachments, MAX_ATTACHMENTS, MAX_PDF_PAGES } from './attachments.mjs'
-import { JsonSchemaForm } from '/ui/components/JsonSchemaForm.mjs'
-import { TYPE_LANGUAGES, generateTypes as generateTypesFor } from '/ui/components/jsonTypes.mjs'
+import { JsonSchemaForm, TYPE_LANGUAGES, generateTypes as generateTypesFor } from '@servicestack/vue'
 
 let ext
 let tools

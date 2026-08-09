@@ -42,8 +42,8 @@
  * The HTML view of /schema/{RequestDto}: renders one API's schema as a form you can fill in
  * and execute, alongside exactly what gets sent and exactly what comes back.
  *
- * The form, the request building and the error binding are all AutoQuerySchema's — imported
- * rather than reimplemented, so an API behaves here the way it does in the CRUD UI:
+ * The form, the request building and the error binding are all AutoQuerySchema's — reused
+ * from @servicestack/vue, so an API behaves here the way it does in the CRUD UI:
  *
  *   SchemaInput    one input per property, picking the widget from the schema and binding its
  *                  own ResponseStatus.Errors[].FieldName message
@@ -53,10 +53,9 @@
  *   propsOf/toOp/requirementText/subtitle
  */
 import { createApp, computed, ref, shallowRef, onMounted, onUnmounted, Teleport } from "vue"
-import ServiceStackVue, { useAuth } from "@servicestack/vue"
-import { SchemaInput, buildRequest, propsOf, toOp, requirementText, subtitle }
-    from "../js/components/AutoQuerySchema.mjs"
-import JsonView, { unwrapResponse } from "../js/components/JsonView.mjs"
+import ServiceStackVue, {
+    useAuth, buildRequest, propsOf, toOp, requirementText, subtitle, unwrapResponse
+} from "@servicestack/vue"
 const Schema = window.Schema
 if (window.Auth) useAuth().signIn(window.Auth)
 // --- helpers ---------------------------------------------------------------
@@ -430,7 +429,7 @@ const template = `
     </Teleport>
 </div>`
 const App = {
-    components: { SchemaInput, AuthLock, CodeBlock, JsonView, Teleport },
+    components: { AuthLock, CodeBlock, Teleport },
     template,
     setup() {
         const fields = propsOf(Schema)

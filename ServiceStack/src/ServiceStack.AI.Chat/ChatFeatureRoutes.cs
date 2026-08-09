@@ -429,8 +429,7 @@ public partial class ChatFeature
         var imports = new JsonObject();
         if (RoutePrefix.Length > 0)
         {
-            // Synced modules import shared UI by its site-root path (llms-py mounts the UI at "/"),
-            // e.g. ext/pdf/index.mjs: import { JsonSchemaForm } from '/ui/components/JsonSchemaForm.mjs'.
+            // Synced modules can import shared UI by its site-root path (llms-py mounts the UI at "/").
             // An import specifier isn't resolved at runtime the way ai.resolveUrl handles fetches, so
             // remap the prefix here — a trailing-slash key maps every path under it.
             imports["/ui/"] = RoutePrefix + "/ui/";

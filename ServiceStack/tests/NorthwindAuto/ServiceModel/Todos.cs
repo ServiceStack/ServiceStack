@@ -19,7 +19,7 @@ public class Todo
     [AutoIncrement]
     public long Id { get; set; }
     public required string Text { get; set; }
-    public bool IsFinished { get; set; }
+    public bool? IsFinished { get; set; }
 }
 
 [ValidateApiKey]
@@ -39,7 +39,7 @@ public class CreateTodo : ICreateDb<Todo>, IReturn<Todo>
 {
     [ValidateNotEmpty]
     public string Text { get; set; } = string.Empty;
-    public bool IsFinished { get; set; }
+    public bool? IsFinished { get; set; }
 }
 
 [ValidateHasClaim("perm", "todo:write")]
@@ -51,7 +51,7 @@ public class UpdateTodo : IPatchDb<Todo>, IReturn<Todo>
     public long Id { get; set; }
     [ValidateNotEmpty]
     public string Text { get; set; } = string.Empty;
-    public bool IsFinished { get; set; }
+    public bool? IsFinished { get; set; }
 }
 
 [ValidateApiKey("todo:write")]

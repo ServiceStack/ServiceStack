@@ -42,8 +42,7 @@
 <script type="module">
 import { createApp, computed, ref } from "vue"
 import { createRouter, createWebHistory } from "vue-router"
-import ServiceStackVue from "@servicestack/vue"
-import AutoQuerySchema, { ACTIONS, requirementText, subtitle } from "../js/components/AutoQuerySchema.mjs"
+import ServiceStackVue, { ACTIONS, requirementText, subtitle } from "@servicestack/vue"
 
 const Auto = window.Schema
 
@@ -109,7 +108,7 @@ const template = `
 </div>`
 
 const App = {
-    components: { AuthLock, AutoQuerySchema },
+    components: { AuthLock },
     template,
     setup() {
         return {

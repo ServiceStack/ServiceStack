@@ -1,5 +1,5 @@
 #nullable enable
-#if NET10_0_OR_GREATER
+#if NET8_0_OR_GREATER
 
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,7 @@ using JsonArray = System.Text.Json.Nodes.JsonArray;
 
 namespace ServiceStack;
 
+#if NET10_0_OR_GREATER
 /// <summary>
 /// The {Name} these routes take is the name in the path, not the bound property: a query string
 /// is where these pages put their own arguments, so an API with its own `Name` property - or an
@@ -172,6 +173,7 @@ public class AutoQuerySchemaService() : Service
         return jsonSchema;
     }
 }
+#endif
 
 public class CrudApi
 {

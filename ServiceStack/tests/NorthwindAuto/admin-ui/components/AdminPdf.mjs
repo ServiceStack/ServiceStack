@@ -1,6 +1,6 @@
 // Keep this C#-owned copy in sync with src/ServiceStack.AI.Chat/modules/admin-ui/components/AdminPdf.mjs.
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
-import { useClient, useFormatters } from '@servicestack/vue'
+import { JsonSchemaForm, useClient, useFormatters } from '@servicestack/vue'
 import hljs from 'highlight.js'
 
 class AdminPdfTemplates { getTypeName() { return 'AdminPdfTemplates' }; getMethod() { return 'GET' }; createResponse() { return {} } }
@@ -191,7 +191,7 @@ export const AdminPdf = {
         watch(dataView, v => localStorage.setItem(VIEW_KEY, v))
         const data = ref({}), initialData = ref({}), dataText = ref('{}'), schema = ref({}), pdfView = shallowRef(null), pages = ref(0), scale = ref(1), pdfBytes = ref(null), previewEl = ref(null), canvases = []
         // Borrowed from the Chat UI rather than bundled, like pdf-preview.mjs above it
-        const jsonSchemaForm = shallowRef(null)
+        const jsonSchemaForm = shallowRef(JsonSchemaForm)
         const typesSource = ref(''), typesError = ref(''), modelsPath = ref(''), codeExamples = ref([])
         // the model is always the first tab; the rest are whatever stubs the server generated for it
         const CODE_KEY = 'admin-pdf.code'
@@ -223,12 +223,6 @@ export const AdminPdf = {
                 const preview = await import(`${chatBase.value}/ext/pdf/pdf-preview.mjs`)
                 pdfView.value = new preview.PdfView(chatBase.value + '/ext/pdf')
             } catch { /* typst-disabled chat returns the SPA HTML; textarea/iframe-free canvas fallback remains usable */ }
-            try {
-                // registered here so the Form view works in any App, not only those that happen to
-                // list JsonSchemaForm in their own admin-ui index.html
-                const mod = await import(`${chatBase.value}/ui/components/JsonSchemaForm.mjs`)
-                jsonSchemaForm.value = mod.JsonSchemaForm
-            } catch { /* the Form view falls back to a message pointing at Code */ }
         }
 
         /**

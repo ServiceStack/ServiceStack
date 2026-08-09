@@ -1,7 +1,6 @@
 import { ref, reactive, computed, onMounted, watch, inject, nextTick } from "vue"
 import { ApiResult, createErrorStatus } from "@servicestack/client"
-import { JsonSchemaForm } from "/ui/components/JsonSchemaForm.mjs"
-import { generateTypes } from "/ui/components/jsonTypes.mjs"
+import { JsonSchemaForm, generateTypes } from "@servicestack/vue"
 
 let ext
 
