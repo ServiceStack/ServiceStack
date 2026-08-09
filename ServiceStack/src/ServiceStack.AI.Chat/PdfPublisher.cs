@@ -24,6 +24,12 @@ public partial class PdfPublisher(PdfFeature feature)
     /// <summary>Manifest of what's published, kept out of listings by its leading dot</summary>
     public const string ManifestFile = ".published.json";
 
+    /// <summary>Immutable published snapshots, kept out of template listings by the leading dot.</summary>
+    public const string VersionsDir = ".versions";
+
+    /// <summary>Metadata stored beside every immutable revision.</summary>
+    public const string RevisionFile = "revision.json";
+
     /// <summary>How deep #include/#import chains are followed when collecting a template's files</summary>
     public const int MaxDepth = 8;
 
@@ -59,6 +65,18 @@ public partial class PdfPublisher(PdfFeature feature)
         public List<string> Files { get; set; } = [];
         public List<string> Warnings { get; set; } = [];
         public bool LibUpdated { get; set; }
+    }
+
+    public class Revision
+    {
+        public string Id { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+        public string? PublishedBy { get; set; }
+        public string? Source { get; set; }
+        public string Action { get; set; } = "publish";
+        public string? RestoredFrom { get; set; }
+        public List<string> Files { get; set; } = [];
     }
 
     /// <summary>The existing owner of a published name, or null when it's free</summary>
@@ -149,7 +167,8 @@ public partial class PdfPublisher(PdfFeature feature)
         if (!Directory.Exists(PdfPath))
             return to;
         foreach (var path in Directory.EnumerateFiles(PdfPath, name + ".*")
-                     .Append(Path.Combine(PdfPath, PdfExtension.LibName)))
+                     .Append(Path.Combine(PdfPath, PdfExtension.LibName))
+                     .Append(Path.Combine(PdfPath, ManifestFile)))
         {
             if (File.Exists(path))
                 to[Path.GetFileName(path)] = File.ReadAllBytes(path);
@@ -170,9 +189,172 @@ public partial class PdfPublisher(PdfFeature feature)
             File.WriteAllBytes(Path.Combine(PdfPath, fileName), bytes);
         }
 
-        var manifest = GetManifest();
-        if (snapshot.Keys.All(x => x != name + ".typ") && manifest.Remove(name))
+        // New snapshots include the manifest, so restoring its bytes already restores ownership and
+        // currentRevision. Keep the fallback for snapshots made by older callers.
+        if (!snapshot.ContainsKey(ManifestFile))
+        {
+            var manifest = GetManifest();
+            if (snapshot.Keys.All(x => x != name + ".typ") && manifest.Remove(name))
+                SaveManifest(manifest);
+        }
+    }
+
+    /// <summary>
+    /// Store the current live files as an immutable filesystem revision. The directory is staged and
+    /// renamed only after every file and its metadata have been written.
+    /// </summary>
+    public Revision SaveRevision(string name, string? user, string? source, IEnumerable<string> files,
+        string action = "publish", string? restoredFrom = null)
+    {
+        AssertRevisionName(name);
+        var now = DateTime.UtcNow;
+        var id = $"{now:yyyyMMddTHHmmssfffZ}-{Guid.NewGuid():N}"[..38];
+        var templateDir = Path.Combine(PdfPath, VersionsDir, name);
+        var finalDir = Path.Combine(templateDir, id);
+        var stagingDir = finalDir + ".tmp";
+        Directory.CreateDirectory(stagingDir);
+
+        var revision = new Revision
+        {
+            Id = id,
+            Name = name,
+            CreatedAt = now,
+            PublishedBy = user,
+            Source = source,
+            Action = action,
+            RestoredFrom = restoredFrom,
+        };
+
+        try
+        {
+            foreach (var fileName in files.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x, StringComparer.Ordinal))
+            {
+                if (fileName != Path.GetFileName(fileName) || fileName is ManifestFile or RevisionFile)
+                    continue;
+                var sourcePath = Path.Combine(PdfPath, fileName);
+                if (!File.Exists(sourcePath))
+                    continue;
+                File.Copy(sourcePath, Path.Combine(stagingDir, fileName));
+                revision.Files.Add(fileName);
+            }
+
+            File.WriteAllText(Path.Combine(stagingDir, RevisionFile), ChatJson.Serialize(revision));
+            Directory.CreateDirectory(templateDir);
+            Directory.Move(stagingDir, finalDir);
+
+            var manifest = GetManifest();
+            var entry = manifest.GetObject(name) ?? new JsonObject();
+            entry["currentRevision"] = id;
+            entry["publishedAt"] = now.ToString("O");
+            entry["user"] = user;
+            entry["source"] = source;
+            entry["files"] = new JsonArray(revision.Files.Select(x => (JsonNode)x).ToArray());
+            manifest[name] = entry;
             SaveManifest(manifest);
+            return revision;
+        }
+        catch
+        {
+            if (Directory.Exists(stagingDir))
+                Directory.Delete(stagingDir, recursive: true);
+            if (Directory.Exists(finalDir))
+                Directory.Delete(finalDir, recursive: true);
+            throw;
+        }
+    }
+
+    public List<Revision> GetRevisions(string name)
+    {
+        AssertRevisionName(name);
+        var templateDir = Path.Combine(PdfPath, VersionsDir, name);
+        if (!Directory.Exists(templateDir))
+            return [];
+
+        var revisions = new List<Revision>();
+        foreach (var dir in Directory.EnumerateDirectories(templateDir).OrderByDescending(x => x, StringComparer.Ordinal))
+        {
+            var metadataPath = Path.Combine(dir, RevisionFile);
+            if (!File.Exists(metadataPath))
+                continue;
+            try
+            {
+                if (ChatJson.Deserialize<Revision>(File.ReadAllText(metadataPath)) is { } revision)
+                    revisions.Add(revision);
+            }
+            catch (Exception e)
+            {
+                feature.Log.LogWarning(e, "Could not read PDF revision {Revision}", dir);
+            }
+        }
+        return revisions;
+    }
+
+    /// <summary>Activate an immutable snapshot and record that activation as a new revision.</summary>
+    public (Revision Revision, List<string> Warnings) Rollback(string name, string revisionId, string? user)
+    {
+        AssertRevisionName(name);
+        if (!ValidRevisionId(revisionId))
+            throw new ArgumentException($"Invalid PDF revision '{revisionId}'");
+        var revisionDir = Path.Combine(PdfPath, VersionsDir, name, revisionId);
+        var metadataPath = Path.Combine(revisionDir, RevisionFile);
+        if (!File.Exists(metadataPath))
+            throw new FileNotFoundException($"PDF revision '{revisionId}' does not exist", metadataPath);
+        var target = ChatJson.Deserialize<Revision>(File.ReadAllText(metadataPath))
+            ?? throw new InvalidDataException($"PDF revision '{revisionId}' has invalid metadata");
+        if (!target.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException($"PDF revision '{revisionId}' belongs to another template");
+
+        var snapshot = Snapshot(name);
+        try
+        {
+            var currentFiles = GetManifestFiles(GetManifest().GetObject(name));
+            var targetFiles = target.Files.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var usedByOthers = FilesUsedByOtherTemplates(name);
+            foreach (var fileName in currentFiles.Where(x => !targetFiles.Contains(x) && !usedByOthers.Contains(x)))
+            {
+                if (fileName == Path.GetFileName(fileName))
+                    File.Delete(Path.Combine(PdfPath, fileName));
+            }
+            foreach (var fileName in target.Files)
+            {
+                if (fileName != Path.GetFileName(fileName) || fileName is ManifestFile or RevisionFile)
+                    throw new InvalidDataException($"PDF revision '{revisionId}' contains an invalid file name");
+                File.Copy(Path.Combine(revisionDir, fileName), Path.Combine(PdfPath, fileName), overwrite: true);
+            }
+
+            var warnings = new List<string>();
+            if (target.Files.Contains(PdfExtension.LibName, StringComparer.OrdinalIgnoreCase) &&
+                GetPublishedNames().Any(x => !x.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                warnings.Add($"{PdfExtension.LibName} was restored and may affect other published templates");
+
+            return (SaveRevision(name, user, target.Source, target.Files, "rollback", revisionId), warnings);
+        }
+        catch
+        {
+            Restore(name, snapshot);
+            throw;
+        }
+    }
+
+    static bool ValidRevisionId(string value) => value.Length is >= 20 and <= 80 &&
+        value.All(ch => char.IsLetterOrDigit(ch) || ch is '-' or '_');
+
+    static void AssertRevisionName(string name)
+    {
+        if (string.IsNullOrEmpty(name) || name != Path.GetFileName(name) || name.StartsWith('.') ||
+            name.Any(ch => !(char.IsLetterOrDigit(ch) || ch is '.' or '_' or '-')))
+            throw new ArgumentException($"Invalid PDF template name '{name}'");
+    }
+
+    HashSet<string> FilesUsedByOtherTemplates(string name)
+    {
+        var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { PdfExtension.LibName };
+        foreach (var other in GetManifest().Where(x => !x.Key.Equals(name, StringComparison.OrdinalIgnoreCase)))
+        {
+            if (other.Value is JsonObject entry)
+                used.UnionWith(GetManifestFiles(entry));
+        }
+        return used;
     }
 
     /// <summary>

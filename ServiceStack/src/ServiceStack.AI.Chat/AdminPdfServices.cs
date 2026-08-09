@@ -103,6 +103,35 @@ public class AdminPublishPdfTemplateResponse
     public List<string> Files { get; set; } = [];
     public List<string> Warnings { get; set; } = [];
     public bool LibUpdated { get; set; }
+    public string? Revision { get; set; }
+    public ResponseStatus? ResponseStatus { get; set; }
+}
+
+[ExcludeMetadata, Tag(TagNames.Admin)]
+public class AdminPdfTemplateVersions : IGet, IReturn<AdminPdfTemplateVersionsResponse>
+{
+    public string Name { get; set; } = null!;
+}
+
+public class AdminPdfTemplateVersionsResponse
+{
+    public string? CurrentRevision { get; set; }
+    public List<PdfPublisher.Revision> Results { get; set; } = [];
+    public ResponseStatus? ResponseStatus { get; set; }
+}
+
+[ExcludeMetadata, Tag(TagNames.Admin)]
+public class AdminRollbackPdfTemplate : IPost, IReturn<AdminRollbackPdfTemplateResponse>
+{
+    public string Name { get; set; } = null!;
+    public string Revision { get; set; } = null!;
+}
+
+public class AdminRollbackPdfTemplateResponse
+{
+    public PublishedPdfTemplate Template { get; set; } = null!;
+    public PdfPublisher.Revision Revision { get; set; } = null!;
+    public List<string> Warnings { get; set; } = [];
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
@@ -209,6 +238,35 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
             Data = ReadIfExists(name + ".json"),
             Schema = ReadIfExists(name + CoreToolsExtension.SchemaSuffix),
             Source = request.IncludeSource == true ? File.ReadAllText(typPath) : null,
+        };
+    }
+
+    public object Any(AdminPdfTemplateVersions request)
+    {
+        AssertFeature();
+        ResolveTemplate(request.Name);
+        var publisher = Publisher;
+        var entry = publisher.GetManifest().GetObject(request.Name);
+        return new AdminPdfTemplateVersionsResponse
+        {
+            CurrentRevision = entry?.GetString("currentRevision"),
+            Results = publisher.GetRevisions(request.Name),
+        };
+    }
+
+    public object Any(AdminRollbackPdfTemplate request)
+    {
+        AssertFeature();
+        ResolveTemplate(request.Name);
+        var publisher = Publisher;
+        var user = HostContext.GetPlugin<ChatFeature>()?.ChatAuth.GetUserName(Request!)
+            ?? Request?.GetClaimsPrincipal()?.Identity?.Name;
+        var (revision, warnings) = publisher.Rollback(request.Name, request.Revision, user);
+        return new AdminRollbackPdfTemplateResponse
+        {
+            Template = ToTemplate(request.Name, publisher.GetManifest()),
+            Revision = revision,
+            Warnings = warnings,
         };
     }
 
@@ -425,12 +483,24 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
             };
         }
 
+        PdfPublisher.Revision revision;
+        try
+        {
+            revision = publisher.SaveRevision(name, user, relPath, result.Files);
+        }
+        catch
+        {
+            publisher.Restore(name, snapshot);
+            throw;
+        }
+
         return new AdminPublishPdfTemplateResponse
         {
             Template = ToTemplate(name, publisher.GetManifest()),
             Files = result.Files,
             Warnings = result.Warnings,
             LibUpdated = result.LibUpdated,
+            Revision = revision.Id,
         };
     }
 

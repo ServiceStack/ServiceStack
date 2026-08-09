@@ -7,6 +7,8 @@ class AdminPdfTemplates { getTypeName() { return 'AdminPdfTemplates' }; getMetho
 class AdminGetPdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminGetPdfTemplate' }; getMethod() { return 'GET' }; createResponse() { return {} } }
 class AdminDeletePdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminDeletePdfTemplate' }; getMethod() { return 'POST' }; createResponse() { return {} } }
 class AdminEditPdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminEditPdfTemplate' }; getMethod() { return 'POST' }; createResponse() { return {} } }
+class AdminPdfTemplateVersions { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminPdfTemplateVersions' }; getMethod() { return 'GET' }; createResponse() { return {} } }
+class AdminRollbackPdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminRollbackPdfTemplate' }; getMethod() { return 'POST' }; createResponse() { return {} } }
 class AdminPdfTemplateTypes { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminPdfTemplateTypes' }; getMethod() { return 'POST' }; createResponse() { return {} } }
 
 const json = value => {
@@ -58,6 +60,10 @@ export const AdminPdf = {
                 <svg v-if="editing" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
                 <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
                 {{ editing ? 'Opening…' : 'Edit' }}
+            </button>
+            <button v-if="selected" type="button" @click="openVersions" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-9-9c2.488 0 4.738 1.01 6.364 2.636L21 8.25M21 3v5.25h-5.25"/></svg>
+                History
             </button>
             <button v-if="selected" type="button" @click="unpublish" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 shadow-sm transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
@@ -178,6 +184,22 @@ export const AdminPdf = {
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"><button type="button" v-for="t in filtered" :key="t.name" @click="select(t.name)" class="group relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 text-left shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-2 hover:ring-indigo-500 dark:hover:ring-indigo-400 transition-all"><img v-if="t.previewUrl" :src="t.previewUrl" loading="lazy" class="h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.02]"><span v-else class="grid h-full place-items-center"><svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg></span><span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-950/80 to-transparent px-3 pt-6 pb-2 text-white"><span class="block truncate text-sm font-medium">{{ t.name }}</span><span class="block text-xs text-gray-300">{{ humanifyBytes(t.size) }} · {{ formatDate(t.modified) }}</span></span></button></div>
             </div>
         </ModalDialog>
+        <ModalDialog v-if="versionsDialog" size-class="w-full max-w-2xl" @done="versionsDialog = false">
+            <div class="p-5 sm:p-6">
+                <div class="mb-5 pr-8"><h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selected?.name }} history</h2><p class="text-sm text-gray-500 dark:text-gray-400">Each publish and rollback is an immutable filesystem revision.</p></div>
+                <div v-if="versionsLoading" class="py-10 text-center text-sm text-gray-500">Loading history…</div>
+                <div v-else-if="!versions.length" class="py-10 text-center text-sm text-gray-500">No revisions yet. The next publish will create the first one.</div>
+                <div v-else class="divide-y divide-gray-200 dark:divide-gray-700 border-y border-gray-200 dark:border-gray-700">
+                    <div v-for="v in versions" :key="v.id" class="flex items-center gap-3 py-3">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2"><span class="font-mono text-xs text-gray-800 dark:text-gray-200">{{ v.id }}</span><span v-if="v.id === currentRevision" class="rounded-full bg-green-100 dark:bg-green-900/40 px-2 py-0.5 text-xs text-green-700 dark:text-green-300">Current</span><span v-if="v.action === 'rollback'" class="rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs text-amber-700 dark:text-amber-300">Rollback</span></div>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ formatDate(v.createdAt) }}<template v-if="v.publishedBy"> · {{ v.publishedBy }}</template><template v-if="v.restoredFrom"> · restored {{ v.restoredFrom }}</template> · {{ v.files.length }} files</p>
+                        </div>
+                        <button type="button" @click="rollback(v)" :disabled="rollingBack || v.id === currentRevision" class="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40">Restore</button>
+                    </div>
+                </div>
+            </div>
+        </ModalDialog>
     </div>`,
     setup() {
         const client = useClient(), routes = inject('routes')
@@ -186,6 +208,7 @@ export const AdminPdf = {
         const templates = ref([]), selected = ref(null), pdfPath = ref(''), chatBase = ref('/chat'), typstAvailable = ref(false)
         const VIEWS = ['form','data','code'], VIEW_KEY = 'admin-pdf.view'
         const loading = ref(false), rendering = ref(false), editing = ref(false), openDialog = ref(false), search = ref(''), sort = ref('name'), error = ref(null)
+        const versionsDialog = ref(false), versionsLoading = ref(false), rollingBack = ref(false), versions = ref([]), currentRevision = ref('')
         // a reload remounts the component, so the tab has to come from somewhere that outlives it
         const dataView = ref(VIEWS.includes(localStorage.getItem(VIEW_KEY)) ? localStorage.getItem(VIEW_KEY) : 'data')
         watch(dataView, v => localStorage.setItem(VIEW_KEY, v))
@@ -308,6 +331,27 @@ export const AdminPdf = {
         const download = () => { if (!pdfBytes.value) return; const url = URL.createObjectURL(new Blob([pdfBytes.value], { type: 'application/pdf' })); const a = Object.assign(document.createElement('a'), { href: url, download: selected.value.name + '.pdf' }); a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) }
         const unpublish = async () => { if (!selected.value || !confirm(`Unpublish ${selected.value.name}?`)) return; const api = await client.api(new AdminDeletePdfTemplate({ name: selected.value.name })); if (api.error) return error.value = api.error; selected.value = null; routes.to({ template: undefined }); await refresh() }
         const edit = async () => { if (!selected.value) return; editing.value = true; error.value = null; try { const api = await client.api(new AdminEditPdfTemplate({ name: selected.value.name })); if (api.error) { error.value = api.error; return } location.href = api.response.editUrl } catch (e) { error.value = e } finally { editing.value = false } }
+        const loadVersions = async () => {
+            if (!selected.value) return
+            versionsLoading.value = true
+            const api = await client.api(new AdminPdfTemplateVersions({ name: selected.value.name }))
+            versionsLoading.value = false
+            if (api.error) { error.value = api.error; return }
+            versions.value = api.response.results || []; currentRevision.value = api.response.currentRevision || ''
+        }
+        const openVersions = async () => { versionsDialog.value = true; await loadVersions() }
+        const rollback = async version => {
+            if (!selected.value || !confirm(`Restore ${selected.value.name} revision ${version.id}? This creates a new rollback revision.`)) return
+            rollingBack.value = true; error.value = null
+            try {
+                const api = await client.api(new AdminRollbackPdfTemplate({ name: selected.value.name, revision: version.id }))
+                if (api.error) { error.value = api.error; return }
+                selected.value = api.response.template
+                await select(selected.value.name, false)
+                await loadVersions()
+                if (api.response.warnings?.length) error.value = { message: api.response.warnings.join('\n') }
+            } finally { rollingBack.value = false }
+        }
         watch(() => routes.template, name => {
             if (name && name !== selected.value?.name) {
                 select(name, false)
@@ -321,6 +365,7 @@ export const AdminPdf = {
         })
         onMounted(refresh); onUnmounted(() => { clearTimeout(renderTimer); clearTimeout(typesTimer); pdfView.value?.destroy() })
         return { editorStyle, relativeTime, templates, selected, pdfPath, chatBase, typstAvailable, loading, rendering, editing, openDialog, search, sort, dataView, error, data, dataText, schema, pages, scale, pdfBytes, previewEl, canvases, filtered, humanifyBytes, formatDate, onCodeInput, onFormChange, resetData, select, render, zoom, fit, download, unpublish, edit,
+            versionsDialog, versionsLoading, rollingBack, versions, currentRevision, openVersions, rollback,
             jsonSchemaForm, typesError, modelsPath, codeTab, codeTabs, activeCode }
     },
 }
