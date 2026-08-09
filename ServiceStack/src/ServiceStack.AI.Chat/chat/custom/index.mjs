@@ -492,7 +492,17 @@ export default {
                                     if (confirm(`${owner.name || props.entry} was published by ${owner.user || 'another user'} from ${owner.source || 'another template'}. Overwrite it?`))
                                         api = await post({ path: props.entry, overwrite: true })
                                 }
-                                if (api.error) return ext.setError(api.error)
+                                if (api.error) {
+                                    if (api.error.errorCode === 'PdfContractValidation' && api.error.errors?.length) {
+                                        const details = api.error.errors.map(x => {
+                                            const fixture = x.meta?.fixture ? `${x.meta.fixture}: ` : ''
+                                            const path = x.fieldName ? `${x.fieldName}: ` : ''
+                                            return `${fixture}${path}${x.message}`
+                                        }).join('\n')
+                                        return ext.setError(Object.assign({}, api.error, { message: `PDF contract validation failed\n${details}` }))
+                                    }
+                                    return ext.setError(api.error)
+                                }
                                 ext.toast(`Published ${api.response.template.name}`)
                                 if (api.response.libUpdated) ext.toast('lib.typ was updated and may affect other published templates')
                             } catch (e) {
@@ -520,4 +530,3 @@ export default {
         }
     }
 }
-

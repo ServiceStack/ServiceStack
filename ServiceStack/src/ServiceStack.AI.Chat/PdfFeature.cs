@@ -41,6 +41,9 @@ public partial class PdfFeature : IPlugin, Model.IHasStringId, IConfigureService
     /// </summary>
     public int MaxDataBytes { get; set; } = 64 * 1024;
 
+    /// <summary>Validate example/fixture data and generated model contracts before publishing</summary>
+    public bool ValidateOnPublish { get; set; } = true;
+
     /// <summary>Where the Chat UI is mounted, for the Admin UI's Edit link + borrowed JS modules</summary>
     public string ChatRoutePrefix { get; set; } = "/chat";
 

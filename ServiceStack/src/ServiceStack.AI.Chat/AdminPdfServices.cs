@@ -99,11 +99,12 @@ public class AdminPublishPdfTemplate : IPost, IReturn<AdminPublishPdfTemplateRes
 
 public class AdminPublishPdfTemplateResponse
 {
-    public PublishedPdfTemplate Template { get; set; } = null!;
+    public PublishedPdfTemplate? Template { get; set; }
     public List<string> Files { get; set; } = [];
     public List<string> Warnings { get; set; } = [];
     public bool LibUpdated { get; set; }
     public string? Revision { get; set; }
+    public PdfContractValidation? Validation { get; set; }
     public ResponseStatus? ResponseStatus { get; set; }
 }
 
@@ -421,6 +422,12 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
         var name = request.Name ?? System.IO.Path.GetFileName(relPath).LeftPart('.');
         renderer.ResolvePath(name, ".typ", mustExist: false); // validates the published name
 
+        var validation = feature.ValidateOnPublish
+            ? new PdfContractValidator(feature).Validate(srcRoot, relPath, name)
+            : new PdfContractValidation();
+        if (!validation.IsValid)
+            return ContractFailure(validation);
+
         // republishing your own template is silent; taking over someone else's needs a nudge
         if (request.Overwrite != true && publisher.GetOwner(name) is { } owner)
         {
@@ -483,6 +490,32 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
             };
         }
 
+        // A template.fixture.<name>.json companion is a named contract fixture. It must satisfy the schema
+        // above and compile through the flattened, published template before the publish can commit.
+        foreach (var fixture in validation.Fixtures)
+        {
+            var fileName = $"{name}.fixture.{fixture}.json";
+            var fixturePath = System.IO.Path.Combine(publisher.PdfPath, fileName);
+            if (!File.Exists(fixturePath))
+                continue;
+            try
+            {
+                await renderer.RenderAsync(name, await File.ReadAllTextAsync(fixturePath, Request.RequestAborted),
+                    Request.RequestAborted).ConfigAwait();
+            }
+            catch (Exception e)
+            {
+                publisher.Restore(name, snapshot);
+                validation.Issues.Add(new PdfContractIssue
+                {
+                    Code = "FixtureCompile",
+                    Fixture = fixture,
+                    Message = $"Fixture '{fixture}' does not compile after publishing: {e.Message}",
+                });
+                return ContractFailure(validation);
+            }
+        }
+
         PdfPublisher.Revision revision;
         try
         {
@@ -501,7 +534,33 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
             Warnings = result.Warnings,
             LibUpdated = result.LibUpdated,
             Revision = revision.Id,
+            Validation = validation,
         };
+    }
+
+    static HttpResult ContractFailure(PdfContractValidation validation)
+    {
+        var first = validation.Issues.First(x => x.Severity == "error");
+        var status = new ResponseStatus("PdfContractValidation", first.Message)
+        {
+            Errors = validation.Issues.Select(x => new ResponseError
+            {
+                ErrorCode = x.Code,
+                FieldName = x.Path ?? "",
+                Message = x.Message,
+                Meta = new Dictionary<string, string>
+                {
+                    ["severity"] = x.Severity,
+                    ["fixture"] = x.Fixture ?? "",
+                },
+            }).ToList(),
+        };
+        var response = new AdminPublishPdfTemplateResponse
+        {
+            Validation = validation,
+            ResponseStatus = status,
+        };
+        return new HttpResult(response, System.Net.HttpStatusCode.BadRequest);
     }
 
     public object Any(AdminPdfTemplateTypes request)
