@@ -182,7 +182,6 @@ const SchemaField = {
 }
 
 export const ApiApprovalForm = {
-    components: { SchemaField },
     props: { approval: { type: Object, required: true } },
     emits: ['resolved'],
     template: `
@@ -197,22 +196,7 @@ export const ApiApprovalForm = {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <SchemaField v-for="name in primaryFields" :key="name" :schema="properties[name]"
-                    :model-value="args[name]" :label="humanize(name)" :required="required.includes(name)"
-                    @update:model-value="setArg(name, $event)" />
-            </div>
-
-            <div v-if="optionalFields.length">
-                <button type="button" @click="showOptional = !showOptional" class="text-xs font-medium" :class="$styles.link">
-                    {{ showOptional ? 'Hide' : 'More' }} options ({{ optionalFields.length }})
-                </button>
-                <div v-if="showOptional" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                    <SchemaField v-for="name in optionalFields" :key="name" :schema="properties[name]"
-                        :model-value="args[name]" :label="humanize(name)"
-                        @update:model-value="setArg(name, $event)" />
-                </div>
-            </div>
+            <JsonSchemaForm :schema="approval.schema" :data="args" :show-title="false" @change="setArgs" />
 
             <div v-if="errors.length" class="rounded-md bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 px-3 py-2 text-xs">
                 <div v-for="error in errors" :key="error">{{ error }}</div>
@@ -231,23 +215,21 @@ export const ApiApprovalForm = {
     setup(props, { emit }) {
         const ctx = inject('ctx')
         const args = reactive(normalizeSchemaValue(props.approval.schema, props.approval.proposedArgs || {}))
-        const showOptional = ref(false)
         const submitting = ref(false)
         const errors = ref([])
-        const properties = computed(() => props.approval.schema?.properties || {})
-        const required = computed(() => props.approval.schema?.required || [])
         const showDescription = computed(() => {
             const title = String(props.approval.apiName || '').trim().toLowerCase()
             const description = String(props.approval.description || '').trim()
             return description.length > 0 && description.toLowerCase() !== title
         })
-        const primaryFields = computed(() => Object.keys(properties.value)
-            .filter(name => required.value.includes(name) || hasValue(args[name])))
-        const optionalFields = computed(() => Object.keys(properties.value).filter(name => !primaryFields.value.includes(name)))
         const warningClass = computed(() => props.approval.safety === 'destructive'
             ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/20 text-red-800 dark:text-red-200'
             : 'border-amber-300 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200')
-        const setArg = (name, value) => { args[name] = value }
+        const setArgs = value => {
+            if (value === args) return
+            for (const name of Object.keys(args)) delete args[name]
+            Object.assign(args, value)
+        }
         const approve = async () => {
             errors.value = validate(props.approval.schema || {}, args)
             if (errors.value.length) return
@@ -276,9 +258,7 @@ export const ApiApprovalForm = {
                 submitting.value = false
             }
         }
-        return { args, properties, required, showDescription, primaryFields, optionalFields, showOptional, submitting,
-            humanize,
-            errors, warningClass, setArg, approve, reject }
+        return { args, showDescription, submitting, errors, warningClass, setArgs, approve, reject }
     }
 }
 

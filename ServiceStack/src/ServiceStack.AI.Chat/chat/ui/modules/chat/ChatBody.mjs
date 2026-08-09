@@ -958,7 +958,7 @@ export const ChatBody = {
         <div class="flex flex-col h-full">
             <!-- Messages Area -->
             <div id="messages" class="flex-1 overflow-y-auto" ref="messagesContainer" @scroll="checkUserScroll">
-                <div class="mx-auto max-w-6xl px-4 py-6">
+                <div class="mx-auto max-w-7xl px-4 py-6">
 
                     <div v-if="!$ai.hasAccess">
                         <SignIn @done="$ai.signIn($event)" />
