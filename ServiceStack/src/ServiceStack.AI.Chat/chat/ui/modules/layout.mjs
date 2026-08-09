@@ -165,7 +165,7 @@ const SignIn = {
 
 const ErrorViewer = {
     template: `
-        <div v-if="$state.error" class="rounded-lg px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 shadow-sm">
+        <div v-if="$state.error" class="rounded-lg px-4 py-3 bg-red-50 dark:bg-gray-900 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 shadow-sm">
             <div class="flex items-start space-x-2">
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start">
@@ -178,7 +178,7 @@ const ErrorViewer = {
                         </button>
                     </div>
                     <div v-if="$state.error?.message" class="text-base mb-1">{{ $state.error.message }}</div>
-                    <div v-if="$state.error?.stackTrace" class="mt-2 text-sm whitespace-pre-wrap break-words max-h-80 overflow-y-auto font-mono p-2 border border-red-200/70 dark:border-red-800/70">
+                    <div v-if="$state.error?.stackTrace" class="mt-2 text-sm whitespace-pre-wrap break-words max-h-80 overflow-y-auto font-mono p-2 bg-white dark:bg-gray-950 border border-red-200 dark:border-red-800">
                         {{ $state.error.stackTrace }}
                     </div>
                 </div>

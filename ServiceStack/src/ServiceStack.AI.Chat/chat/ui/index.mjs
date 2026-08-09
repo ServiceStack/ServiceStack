@@ -28,7 +28,8 @@ export async function createContext() {
 
     app.use(ServiceStackVue)
     Object.keys(Components).forEach(name => {
-        app.component(name, Components[name])
+        if (app.component(name) !== Components[name])
+            app.component(name, Components[name])
     })
 
     const fmt = Object.assign({}, useFormatters(), utilsFormatters())
@@ -83,7 +84,8 @@ export async function createContext() {
 
     // Register all components with Vue
     Object.entries(ctx._components).forEach(([name, component]) => {
-        app.component(name, component)
+        if (app.component(name) !== component)
+            app.component(name, component)
     })
 
     // Add fallback route and create router

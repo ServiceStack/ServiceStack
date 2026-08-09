@@ -5,7 +5,7 @@ import { PdfView } from './pdf-preview.mjs'
 import { defineTypstMode } from './typst-mode.mjs'
 import { registerTypst } from './typst-hljs.mjs'
 import { toAttachments, MAX_ATTACHMENTS, MAX_PDF_PAGES } from './attachments.mjs'
-import { JsonSchemaForm, TYPE_LANGUAGES, generateTypes as generateTypesFor } from '@servicestack/vue'
+import { TYPE_LANGUAGES, generateTypes as generateTypesFor } from '@servicestack/vue'
 
 let ext
 let tools
@@ -1152,7 +1152,7 @@ const PdfDesigner = {
             </div>
 
             <!-- Edit with AI -->
-            <div class="flex-shrink-0 flex flex-col border-t" :class="$styles.chromeBorder">
+            <div class="flex-shrink-0 flex flex-col border-t bg-white dark:bg-gray-900" :class="$styles.chromeBorder">
                 <div v-if="prefs.showAi" class="pdf-drag-y h-1 -mt-1" @mousedown.prevent="startDragAi"></div>
                 <div class="flex items-center gap-2 px-2 py-1 select-none" :class="$styles.bgSidebar">
                     <button type="button" @click="toggleAi" class="flex items-center gap-1.5 text-xs" :class="$styles.muted">
@@ -1268,7 +1268,7 @@ const PdfDesigner = {
                 <template v-for="action in previewActions" :key="action.id">
                     <component v-if="(!action.isVisible || action.isVisible(previewContext)) && (!action.show || action.show(previewContext))"
                                :is="action.component"
-                               v-bind="previewContext" />
+                               v-bind="previewActionProps(action)" />
                 </template>
             </div>
 
@@ -1373,6 +1373,15 @@ const PdfDesigner = {
             promptSavePdf,
             root: root.value,
         }))
+        const previewActionProps = action => {
+            const declared = action.component?.props
+            const names = Array.isArray(declared)
+                ? declared
+                : declared && typeof declared === 'object' ? Object.keys(declared) : []
+            return Object.fromEntries(names
+                .filter(name => Object.hasOwn(previewContext.value, name))
+                .map(name => [name, previewContext.value[name]]))
+        }
         const activeTab = ref(null)
         const buffers = reactive({}) // path -> { content, saved }
         const extraTabs = ref([]) // files opened from the explorer that the template doesn't reference
@@ -2925,7 +2934,7 @@ const PdfDesigner = {
             loadFiles, onNodeSelect, openTab, selectTab, closeTab, save, download, promptSavePdf, zoom, fitToWidth, goToDiagnostic,
             promptNewTemplate, promptNewFile, promptNewFolder, openMenu, onMenuPick,
             toggleExplorer, toggleAi, startDragSplit, startDragAi, onTextareaInput, rawUrl, baseName,
-            previewActions, previewContext,
+            previewActions, previewContext, previewActionProps,
         }
     },
 }
@@ -2951,7 +2960,6 @@ export default {
         })
 
         ctx.components({
-            JsonSchemaForm,
             PdfFileNode,
             PdfContextMenu,
             PdfPrompt,

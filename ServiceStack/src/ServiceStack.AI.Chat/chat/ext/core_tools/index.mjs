@@ -1,6 +1,6 @@
 import { ref, reactive, computed, onMounted, watch, inject, nextTick } from "vue"
 import { ApiResult, createErrorStatus } from "@servicestack/client"
-import { JsonSchemaForm, generateTypes } from "@servicestack/vue"
+import { generateTypes } from "@servicestack/vue"
 
 let ext
 
@@ -893,9 +893,6 @@ const CalcPage = {
 export default {
     install(ctx) {
         ext = ctx.scope('core_tools')
-
-        // shared component, also used by the pdf designer - register it here so /code works standalone
-        ctx.components({ JsonSchemaForm })
 
         const LANGUAGE_TOOLS = Object.values(languages).map(x => x.tool).filter(Boolean)
         ctx.setLeftIcons({

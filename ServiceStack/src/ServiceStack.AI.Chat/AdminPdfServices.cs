@@ -417,6 +417,13 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
         var relPath = (request.Path ?? "").Replace('\\', '/').TrimStart('/');
         if (!relPath.EndsWith(".typ", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Only .typ templates can be published");
+        if (PdfExtension.IsLibraryArtifact(relPath))
+        {
+            var status = new ResponseStatus("LibraryArtifact",
+                $"'{relPath}' is a library artifact and cannot be published as a PDF document");
+            return new HttpResult(new AdminPublishPdfTemplateResponse { ResponseStatus = status },
+                System.Net.HttpStatusCode.BadRequest);
+        }
         PdfExtension.Resolve(srcRoot, relPath, mustExist: true);
 
         var name = request.Name ?? System.IO.Path.GetFileName(relPath).LeftPart('.');

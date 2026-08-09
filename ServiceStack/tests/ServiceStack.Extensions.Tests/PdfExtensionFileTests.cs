@@ -48,6 +48,9 @@ public class PdfExtensionFileTests
 
         Assert.That(PdfExtension.IsLibraryTemplate("lib/v1.typ"), Is.True);
         Assert.That(PdfExtension.IsLibraryTemplate("lib/v1.preview.typ"), Is.False);
+        Assert.That(PdfExtension.IsLibraryArtifact("lib/v1.typ"), Is.True);
+        Assert.That(PdfExtension.IsLibraryArtifact("lib/v1.preview.typ"), Is.True);
+        Assert.That(PdfExtension.IsLibraryArtifact("invoice.typ"), Is.False);
         Assert.That(PdfExtension.LibraryTemplates(root), Is.EqualTo(new[] { "lib/v1.typ" }));
     }
 }

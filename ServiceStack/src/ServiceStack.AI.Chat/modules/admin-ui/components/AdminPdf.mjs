@@ -322,7 +322,8 @@ export const AdminPdf = {
                 const res = await fetch('/api/AdminRenderPdfTemplate', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: selected.value.name, data: JSON.stringify(data.value) }) })
                 if (!res.ok) { const body = await res.json().catch(() => null); throw body?.responseStatus || { message: res.statusText } }
                 pdfBytes.value = await res.arrayBuffer()
-                if (pdfView.value) { pages.value = await pdfView.value.load(pdfBytes.value); await renderCanvases() }
+                // PDF.js transfers its input buffer to the worker, detaching it. Keep the original for Download.
+                if (pdfView.value) { pages.value = await pdfView.value.load(pdfBytes.value.slice(0)); await renderCanvases() }
                 else { error.value = { message: 'PDF preview module could not load. You can still download the PDF.' } }
             } catch (e) { error.value = e } finally { rendering.value = false }
         }

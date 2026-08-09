@@ -1,7 +1,7 @@
 {
   "invoice": {
     "number": "#150306",
-    "date": "15 March 2025",
+    "date": "2025-03-15",
     "due": "2026-08-03",
     "currency": "$"
   },

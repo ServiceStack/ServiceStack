@@ -445,17 +445,19 @@ export default {
 
         ctx.pdf.setPreviewActions({
             adminPdf: {
-                isVisible: c => ctx.ai.isAdmin && c.entry?.endsWith('.typ') && !/^lib(?:\.preview)?\.typ$/i.test(c.entry),
+                isVisible: c => ctx.ai.isAdmin && c.entry?.endsWith('.typ')
+                    && !/^(?:lib(?:\.preview)?\.typ|lib\/)/i.test(c.entry),
                 component: {
+                    inheritAttrs: false,
                     props: ['entry', 'buffers', 'rendering', 'save'],
                     template: `
-                        <button type="button" @click="publish" :disabled="!entry || rendering || publishing"
+                        <button v-if="publishable" type="button" @click="publish" :disabled="rendering || publishing"
                             title="Publish this template to PDF Admin UI"
                             class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs disabled:opacity-40 mr-1 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md">
                             {{ publishing ? 'Publishing…' : 'Publish' }}
                         </button>
                         
-                        <a :href="'/admin-ui/pdf?template=' + entry + '&origin=chat'" title="View template in Admin UI"
+                        <a v-if="publishable" :href="'/admin-ui/pdf?template=' + entry + '&origin=chat'" title="View template in Admin UI"
                             class="inline-flex items-center justify-center p-1 rounded-md text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24">
                                 <path d="M0 0h24v24H0z" fill="none" />
@@ -467,6 +469,8 @@ export default {
                         </a>`,
                     setup(props) {
                         const publishing = ref(false)
+                        const publishable = computed(() => !!props.entry?.endsWith('.typ')
+                            && !/^(?:lib(?:\.preview)?\.typ|lib\/)/i.test(props.entry))
                         const hasUnsavedChanges = () => Object.values(props.buffers || {})
                             .some(x => x.content !== x.saved)
                         const post = async body => {
@@ -478,7 +482,7 @@ export default {
                             return await ctx.ai.createJsonResult(res)
                         }
                         const publish = async () => {
-                            if (!props.entry || publishing.value) return
+                            if (!publishable.value || publishing.value) return
                             if (hasUnsavedChanges()) {
                                 if (!confirm('Save your changes before publishing? Publishing uses the files on disk.')) return
                                 await props.save()
@@ -511,7 +515,7 @@ export default {
                                 publishing.value = false
                             }
                         }
-                        return { publishing, publish }
+                        return { publishing, publishable, publish }
                     },
                 }
             }

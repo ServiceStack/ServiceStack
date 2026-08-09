@@ -305,6 +305,7 @@ public partial class PdfExtension() : ChatExtension("pdf")
         if (Directory.EnumerateFileSystemEntries(root).Any())
         {
             SeedLibrary(root, examples);
+            UpgradeBundledExamples(root, examples);
             return;
         }
         foreach (var (name, file) in examples)
@@ -314,6 +315,29 @@ public partial class PdfExtension() : ChatExtension("pdf")
             File.WriteAllBytes(path, file.ReadAllBytes());
         }
         Log.LogInformation("Seeded example templates in {Path}", root);
+    }
+
+    /// <summary>
+    /// Upgrade known, unchanged starter files without overwriting anything the user has edited.
+    /// </summary>
+    void UpgradeBundledExamples(string root, Dictionary<string, IO.IVirtualFile> examples)
+    {
+        const string oldDate = "\"date\": \"15 March 2025\"";
+        const string newDate = "\"date\": \"2025-03-15\"";
+        if (!examples.TryGetValue("invoice.json", out var example))
+            return;
+
+        var path = Path.Combine(root, "invoice.json");
+        if (!File.Exists(path))
+            return;
+
+        var bundled = Encoding.UTF8.GetString(example.ReadAllBytes());
+        var previousBundled = bundled.Replace(newDate, oldDate, StringComparison.Ordinal);
+        if (File.ReadAllText(path) != previousBundled)
+            return;
+
+        File.WriteAllBytes(path, example.ReadAllBytes());
+        Log.LogInformation("Upgraded unchanged example invoice data in {Path}", path);
     }
 
     /// <summary>
@@ -564,6 +588,15 @@ public partial class PdfExtension() : ChatExtension("pdf")
             return true;
         return relPath.StartsWith(LibDir + "/", StringComparison.OrdinalIgnoreCase)
                && !Path.GetFileNameWithoutExtension(relPath).Contains(".preview", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Library implementations and their preview companions are infrastructure, not documents.</summary>
+    public static bool IsLibraryArtifact(string relPath)
+    {
+        relPath = NormalizeRelPath(relPath);
+        return relPath.Equals(LibName, StringComparison.OrdinalIgnoreCase)
+               || relPath.Equals("lib.preview.typ", StringComparison.OrdinalIgnoreCase)
+               || relPath.StartsWith(LibDir + "/", StringComparison.OrdinalIgnoreCase);
     }
 
     public static List<string> LibraryTemplates(string root) => AllTemplates(root)
