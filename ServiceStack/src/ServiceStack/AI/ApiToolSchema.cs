@@ -12,12 +12,11 @@ using ServiceStack.Text;
 namespace ServiceStack;
 
 /// <summary>
-/// Generates the JSON Schema an AI Agent reads before calling an API, from the Request DTO and the
-/// documentation attributes already on it: [Description] and [ApiMember] become property
-/// descriptions, [ApiAllowableValues] and enums become allowed values, [Required] becomes required.
+/// Generates the restricted JSON Schema subset sent inside model-provider function definitions,
+/// from the Request DTO and its existing documentation attributes.
 /// <para>
-/// Schemas are emitted in the JSON Schema subset understood by tool-calling APIs (and by MCP's
-/// inputSchema), so the same output serves both.
+/// API discovery and approval UIs use <c>MetadataSchemaGenerator</c>'s complete API Schema;
+/// providers can reject its richer route, auth, reference and UI annotations in function schemas.
 /// </para>
 /// </summary>
 public static class ApiToolSchema

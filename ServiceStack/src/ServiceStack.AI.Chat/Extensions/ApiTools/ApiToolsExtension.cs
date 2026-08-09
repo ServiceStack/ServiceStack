@@ -81,8 +81,9 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
             }), SearchAsync, group);
 
         ctx.RegisterTool(ToolDef("api_describe",
-            "Get the JSON Schema of one or more APIs: their arguments, which are required, and "
-            + "example payloads. Call this before api_call unless you already know the arguments.",
+            "Get the API JSON Schema for one or more Request DTOs, including their arguments, "
+            + "required fields, validation, UI metadata, safety and examples. Call this before "
+            + "api_call unless you already know the arguments.",
             new JsonObject
             {
                 ["names"] = new JsonObject
@@ -95,8 +96,9 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
 
         ctx.RegisterTool(ToolDef("api_call",
             "Call one of this App's APIs and return its JSON response. Runs as the signed-in user, "
-            + "so it can only do what they're allowed to do. Results may be truncated — filter or "
-            + "page rather than asking for everything.",
+            + "so it can only do what they're allowed to do. Write and destructive calls pause for "
+            + "the user to review and confirm their arguments. Results may be truncated — filter "
+            + "or page rather than asking for everything.",
             new JsonObject
             {
                 ["name"] = new JsonObject
@@ -109,7 +111,15 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
                     ["type"] = "object",
                     ["description"] = "Arguments matching the API's schema from api_describe",
                 },
-            }, required: ["name"]), CallAsync, group);
+            }, required: ["name"]), CallAsync, group, ApprovalAsync);
+
+        if (ctx.Feature.ChatDb != null)
+        {
+            ctx.RegisterUiExtension("/custom/ApiApprovalForm.mjs");
+            var approvals = new ApiToolApprovalCoordinator(this, ctx);
+            approvals.Install();
+            ctx.Feature.ToolApprovalCoordinator = approvals;
+        }
     }
 
     Task<object?> SearchAsync(JsonObject args, ChatContext context)
@@ -157,21 +167,12 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
                 continue;
             }
 
-            var describe = new JsonObject
-            {
-                ["name"] = tool.Name,
-                ["description"] = tool.Summary,
-                ["arguments"] = ChatJson.Parse(tool.InputSchema.ToJson()),
-                ["safety"] = tool.Safety.ToString().ToLower(),
-            };
+            var describe = CreateToolSchema(tool);
+            var toolAnnotation = describe["tool"]!.AsObject();
             if (!string.IsNullOrEmpty(tool.WhenToUse))
-                describe["whenToUse"] = tool.WhenToUse;
-            if (!string.IsNullOrEmpty(tool.Notes))
-                describe["notes"] = tool.Notes;
+                toolAnnotation["whenToUse"] = tool.WhenToUse;
             if (tool.Examples.Count > 0)
-                describe["examples"] = new JsonArray(tool.Examples.Select(x => (JsonNode)x).ToArray());
-            if (tool.RequiresApproval || tool.Safety == ToolSafety.Destructive)
-                describe["requiresApproval"] = true;
+                toolAnnotation["examples"] = new JsonArray(tool.Examples.Select(x => (JsonNode)x).ToArray());
             to.Add(describe);
         }
         return Task.FromResult<object?>(to);
@@ -194,10 +195,62 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
         Log.LogInformation("api_call {Api} as {User}", tool.RequestType, context.User);
 
         var response = await registry.ExecuteAsync(tool, argsJson, req).ConfigAwait();
+        return FormatResult(response);
+    }
+
+    Task<ChatToolApprovalRequest?> ApprovalAsync(JsonObject args, ChatContext context)
+    {
+        if (RequestOf(context) is not { } req)
+            return Task.FromResult<ChatToolApprovalRequest?>(null);
+
+        var name = args.GetString("name");
+        var tool = !string.IsNullOrEmpty(name) ? registry.GetTool(name, req) : null;
+        if (tool == null || (!tool.RequiresApproval && tool.Safety == ToolSafety.ReadOnly))
+            return Task.FromResult<ChatToolApprovalRequest?>(null);
+
+        var proposedArgs = args["args"] is JsonObject dtoArgs ? dtoArgs.Clone() : new JsonObject();
+        return Task.FromResult<ChatToolApprovalRequest?>(new ChatToolApprovalRequest
+        {
+            Title = tool.Name,
+            Description = tool.Summary,
+            Safety = tool.Safety,
+            Schema = CreateToolSchema(tool),
+            Arguments = proposedArgs,
+            Metadata = new JsonObject
+            {
+                ["apiName"] = tool.Name,
+                ["requestType"] = tool.RequestType,
+                ["method"] = tool.Method,
+                ["route"] = tool.Route,
+            },
+        });
+    }
+
+    internal string FormatResult(object? response)
+    {
         var json = response.ToJson() ?? "null";
         return json.Length > MaxResultLength
             ? json[..MaxResultLength] + $"\n...[truncated at {MaxResultLength} chars, narrow the query]"
             : json;
+    }
+
+    internal ApiTool? GetTool(string name, IRequest req) => registry.GetTool(name, req);
+
+    internal Task<object?> ExecuteAsync(ApiTool tool, JsonObject args, IRequest req) =>
+        registry.ExecuteAsync(tool, args.ToJsonString(ChatJson.Options), req);
+
+    static JsonObject CreateToolSchema(ApiTool tool)
+    {
+        var schema = (ChatJson.Parse(tool.InputSchema.ToJson()) as JsonObject) ?? new JsonObject();
+        schema["tool"] = new JsonObject
+        {
+            // This can differ from `request` when [Tool(Name)] defines an alias. api_call uses it.
+            ["name"] = tool.Name,
+            ["safety"] = tool.Safety.ToString().ToLower(),
+            ["requiresApproval"] = tool.RequiresApproval
+                || tool.Safety is ToolSafety.Write or ToolSafety.Destructive,
+        };
+        return schema;
     }
 
     /// <summary>

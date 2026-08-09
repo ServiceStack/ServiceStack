@@ -73,6 +73,7 @@ public class ExtensionContext(ChatFeature feature, string name)
 
     public void RegisterChatRequestFilter(Func<JsonObject, ChatContext, Task> handler) => feature.Filters.ChatRequestFilters.Add(handler);
     public void RegisterChatToolFilter(Func<JsonObject, ChatContext, Task> handler) => feature.Filters.ChatToolFilters.Add(handler);
+    public void RegisterChatApprovalFilter(Func<JsonObject, ChatContext, Task> handler) => feature.Filters.ChatApprovalFilters.Add(handler);
     public void RegisterChatStatusFilter(Func<string, ChatContext, Task> handler) => feature.Filters.ChatStatusFilters.Add(handler);
     public void RegisterChatResponseFilter(Func<JsonObject, ChatContext, Task> handler) => feature.Filters.ChatResponseFilters.Add(handler);
     public void RegisterChatErrorFilter(Func<Exception, ChatContext, Task> handler) => feature.Filters.ChatErrorFilters.Add(handler);
@@ -82,8 +83,15 @@ public class ExtensionContext(ChatFeature feature, string name)
 
     // ── Tools ──
 
-    public void RegisterTool(JsonObject definition, ChatToolHandler handler, string? group = null) =>
-        feature.Tools.Register(new ChatTool { Definition = definition, Handler = handler, Group = group ?? name });
+    public void RegisterTool(JsonObject definition, ChatToolHandler handler, string? group = null,
+        ChatToolApprovalHandler? approvalHandler = null) =>
+        feature.Tools.Register(new ChatTool
+        {
+            Definition = definition,
+            Handler = handler,
+            ApprovalHandler = approvalHandler,
+            Group = group ?? name,
+        });
 
     /// <summary>
     /// Register a ServiceStack Command as a tool: the Command's request type becomes the tool's

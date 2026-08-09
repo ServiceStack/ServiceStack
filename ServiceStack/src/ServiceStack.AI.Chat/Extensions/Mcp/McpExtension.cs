@@ -285,6 +285,7 @@ public class McpExtension() : ChatExtension("mcp")
 
         Log.LogInformation("MCP tools/call {Tool} as {User}", name, req.UserName);
         var context = new ChatContext { User = req.UserName, Request = req.Request };
+        context.Items[ChatContext.EnforceToolApprovalKey] = true;
         // tool errors come back as result text (ExecToolAsync never throws), which is what an
         // Agent wants to read anyway — isError is reserved for what it couldn't attempt
         var (text, resources) = await Ctx.Feature.ExecToolAsync(name!, toolArgs, context).ConfigAwait();

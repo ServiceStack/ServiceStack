@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.AI;
 
@@ -96,11 +97,16 @@ public partial class AppExtension() : ChatExtension("app")
             return Db.GetThread(id, user)?.ToDto();
         });
 
-        ctx.AddDelete("threads/{id}", req =>
+        ctx.AddDelete("threads/{id}", async req =>
         {
-            if (ResolveThread(req, ThreadId(req), out var user) != null)
-                Db.DeleteThread(ThreadId(req), user);
-            return Task.FromResult<object?>(new JsonObject());
+            var id = ThreadId(req);
+            if (ResolveThread(req, id, out var user) != null)
+            {
+                if (Ctx.Feature.ToolApprovalCoordinator != null)
+                    await Ctx.Feature.ToolApprovalCoordinator.CancelThreadAsync(id, user).ConfigAwait();
+                Db.DeleteThread(id, user);
+            }
+            return new JsonObject();
         });
 
         ctx.AddPost("threads/{id}/chat", QueueChatAsync);
@@ -140,6 +146,9 @@ public partial class AppExtension() : ChatExtension("app")
 
         var id = ThreadId(req);
         ResolveThread(req, id, out var user);
+        if (Ctx.Feature.ToolApprovalCoordinator?.HasPending(id, user) == true)
+            return ChatResult.Json(ChatJson.CreateErrorResponse(
+                "Resolve or cancel the pending tool approval before sending another message", "ApprovalRequired"), 409);
         var chatReq = await req.GetJsonBodyAsync().ConfigAwait();
 
         var messages = TimestampMessages(chatReq.GetArray("messages"));
@@ -191,11 +200,36 @@ public partial class AppExtension() : ChatExtension("app")
         await threadApi.UpdateThreadInternalAsync(id, update, user).ConfigAwait();
         thread = Db.GetThread(id, user)?.ToDto() ?? throw new Exception("Thread not found");
 
+        StartThreadCompletion(id, user, thread, req.Request);
+
+        return thread;
+    }
+
+    /// <summary>Continue a paused tool-call turn without inventing another user message.</summary>
+    internal async Task QueueContinuationAsync(long id, string? user, IRequest request)
+    {
+        var row = Db.GetThread(id, user) ?? throw new Exception("Thread not found");
+        if (row.CompletedAt != null || row.Error != null)
+            throw new Exception("Thread is no longer active");
+
+        await threadApi.UpdateThreadAsync(id, new JsonObject
+        {
+            ["startedAt"] = ChatDb.ToDateString(DateTime.Now),
+            ["completedAt"] = null,
+            ["status"] = Ctx.NextLoadingMessage(),
+            ["streamingMessage"] = null,
+        }, user).ConfigAwait();
+
+        var thread = Db.GetThread(id, user)?.ToDto() ?? throw new Exception("Thread not found");
+        StartThreadCompletion(id, user, thread, request);
+    }
+
+    JsonObject ThreadChat(JsonObject thread)
+    {
         var metadata = thread.GetObject("metadata")?.Clone() ?? new JsonObject();
         var chat = new JsonObject
         {
             ["model"] = thread.GetString("model"),
-            // an in-flight message merged into the DTO must not be sent to the provider either
             ["messages"] = thread.GetArray("messages").WithoutStreamingMessages(),
             ["modalities"] = thread.GetArray("modalities")?.Clone(),
             ["tools"] = thread.GetArray("tools")?.Clone(),
@@ -206,14 +240,19 @@ public partial class AppExtension() : ChatExtension("app")
             if (ChatFeature.RequestArgs.Contains(entry.Key))
                 chat[entry.Key] = entry.Value?.DeepClone();
         }
+        return chat;
+    }
 
+    void StartThreadCompletion(long id, string? user, JsonObject thread, IRequest request)
+    {
+        var chat = ThreadChat(thread);
+        var metadata = chat.GetObject("metadata") ?? new JsonObject();
         var cts = Updates.StartChatTask(id);
         var context = new ChatContext
         {
             Chat = chat,
             User = user,
-            // the completion runs on a background task, outliving this HTTP request
-            Request = ChatContext.DetachRequest(req.Request),
+            Request = ChatContext.DetachRequest(request),
             ThreadId = id,
             Tools = metadata.GetString("tools") ?? "all",
             CancellationToken = cts.Token,
@@ -232,12 +271,9 @@ public partial class AppExtension() : ChatExtension("app")
             catch (Exception e)
             {
                 Ctx.Log.LogError(e, "Chat failed for thread {ThreadId}", id);
-                // chat_error filter normally records this; ensure the thread isn't left running
                 var current = Db.GetThread(id, user);
                 if (current != null && current.Error == null)
-                {
                     await OnChatErrorAsync(e, context).ConfigAwait();
-                }
             }
             finally
             {
@@ -245,8 +281,6 @@ public partial class AppExtension() : ChatExtension("app")
                 Updates.NotifyThreadUpdate(id);
             }
         }, CancellationToken.None);
-
-        return thread;
     }
 
     /// <summary>
@@ -301,6 +335,8 @@ public partial class AppExtension() : ChatExtension("app")
         var id = ThreadId(req);
         var user = req.UserName;
         Updates.CancelChatTask(id);
+        if (Ctx.Feature.ToolApprovalCoordinator != null)
+            await Ctx.Feature.ToolApprovalCoordinator.CancelThreadAsync(id, user).ConfigAwait();
         await threadApi.UpdateThreadInternalAsync(id, new JsonObject
         {
             ["completedAt"] = ChatDb.ToDateString(DateTime.Now),
@@ -526,6 +562,7 @@ public partial class AppExtension() : ChatExtension("app")
     {
         ctx.RegisterChatRequestFilter(OnChatRequestAsync);
         ctx.RegisterChatToolFilter(OnChatToolAsync);
+        ctx.RegisterChatApprovalFilter(OnChatApprovalAsync);
         ctx.RegisterChatStatusFilter(OnChatStatusAsync);
         ctx.RegisterChatResponseFilter(OnChatResponseAsync);
         ctx.RegisterChatErrorFilter(OnChatErrorAsync);
@@ -562,6 +599,64 @@ public partial class AppExtension() : ChatExtension("app")
         if (context.NoHistory || context.ThreadId is not { } threadId)
             return;
         await threadApi.UpdateThreadAsync(threadId, new JsonObject { ["status"] = status }, context.User).ConfigAwait();
+    }
+
+    /// <summary>Account for a provider turn that stopped at a durable approval boundary.</summary>
+    async Task OnChatApprovalAsync(JsonObject response, ChatContext context)
+    {
+        var chat = context.Chat;
+        var usage = response.GetObject("usage");
+        if (usage == null || chat == null)
+            return;
+
+        var user = context.User;
+        var threadId = context.ThreadId;
+        var modelInfo = context.ModelInfo ?? new JsonObject();
+        var modelCost = context.ModelCost ?? modelInfo.GetObject("cost")
+            ?? new JsonObject { ["input"] = 0, ["output"] = 0 };
+        var duration = context.Items.GetValueOrDefault("duration") as long? ?? 0;
+        var completedAt = DateTime.Now;
+        var inputPrice = modelCost.GetDouble("input") ?? 0;
+        var outputPrice = modelCost.GetDouble("output") ?? 0;
+        var inputTokens = usage.GetLong("prompt_tokens") ?? 0;
+        var outputTokens = usage.GetLong("completion_tokens") ?? 0;
+        var isPerRequest = modelCost.GetString("type") == "request";
+        var cost = usage.GetDouble("cost") ?? response.GetDouble("cost")
+            ?? (inputPrice * inputTokens + outputPrice * outputTokens) / 1_000_000;
+        if (isPerRequest)
+            cost = usage.GetDouble("cost") ?? (outputPrice > 0 ? outputPrice : cost);
+
+        if (!context.NoStore)
+        {
+            Db.InsertRequest(new ChatRequest
+            {
+                User = user ?? ChatDb.DefaultUser,
+                Model = modelInfo.GetString("name") ?? modelInfo.GetString("id") ?? chat.GetString("model"),
+                Duration = duration,
+                Cost = cost,
+                InputPrice = inputPrice,
+                InputTokens = inputTokens,
+                InputCachedTokens = usage.GetLong("inputCachedTokens") ?? 0,
+                OutputPrice = outputPrice,
+                OutputTokens = outputTokens,
+                TotalTokens = usage.GetLong("total_tokens") ?? inputTokens + outputTokens,
+                Usage = ChatDtos.ToJson(usage),
+                FinishReason = "requires_action",
+                Provider = context.Provider?.Id,
+                ProviderModel = response.GetString("model"),
+                ProviderRef = response.GetString("provider"),
+                ThreadId = threadId,
+                Title = context.Items.GetValueOrDefault("title") as string ?? PromptToTitle(LastUserPrompt(chat)),
+                StartedAt = context.Items.GetValueOrDefault("startedAt") as DateTime?,
+                CompletedAt = completedAt,
+                CreatedAt = completedAt,
+                UpdatedAt = completedAt,
+                Ref = response.GetString("id"),
+            });
+        }
+
+        if (threadId is { } id && !context.NoHistory)
+            await UpdateThreadTotalsAsync(id, user, duration, isPerRequest).ConfigAwait();
     }
 
     /// <summary>Record the completed request + write the assistant message and cost stats to the thread</summary>
@@ -687,6 +782,11 @@ public partial class AppExtension() : ChatExtension("app")
 
         await threadApi.UpdateThreadAsync(id, update, user).ConfigAwait();
 
+        await UpdateThreadTotalsAsync(id, user, duration, isPerRequest).ConfigAwait();
+    }
+
+    async Task UpdateThreadTotalsAsync(long id, string? user, long duration, bool isPerRequest)
+    {
         // roll thread totals up from its recorded requests
         var threadRequests = Db.QueryRequests(new JsonObject { ["threadId"] = id, ["take"] = 10000 }, user);
         var totalCost = threadRequests.Sum(x => x.Cost ?? 0);

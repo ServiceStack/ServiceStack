@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -28,9 +29,25 @@ public class FakeChatProvider(JsonObject reply) : ChatProvider
 public class ScriptedChatProvider(JsonObject[] replies) : ChatProvider
 {
     public int Calls { get; private set; }
+    public List<JsonObject> ReceivedChats { get; } = [];
 
-    public override Task<JsonObject> ChatAsync(JsonObject chat, ChatContext context) =>
-        Task.FromResult(replies[Calls++].Clone());
+    public override Task<JsonObject> ChatAsync(JsonObject chat, ChatContext context)
+    {
+        ReceivedChats.Add(chat.Clone());
+        return Task.FromResult(replies[Calls++].Clone());
+    }
+}
+
+public class CapturingApprovalCoordinator : IChatToolApprovalCoordinator
+{
+    public List<PendingChatToolCall> Calls { get; } = [];
+    public Task PauseAsync(IReadOnlyList<PendingChatToolCall> calls, ChatContext context)
+    {
+        Calls.AddRange(calls);
+        return Task.CompletedTask;
+    }
+    public bool HasPending(long threadId, string? user) => Calls.Count > 0;
+    public Task CancelThreadAsync(long threadId, string? user) => Task.CompletedTask;
 }
 
 public class AiChatClientTests
@@ -467,6 +484,156 @@ public class AiChatClientTests
         Assert.That(res.Usage.CompletionTokens, Is.EqualTo(9)); // 4 + 5
         Assert.That(res.Usage.Duration, Is.Not.Null);
         Assert.That(provider.Calls, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Pauses_a_guarded_tool_before_its_handler_executes()
+    {
+        var provider = new ScriptedChatProvider([ChatJson.ParseObject("""
+        {
+          "id":"approval-1", "model":"kimi-k2",
+          "choices":[{"finish_reason":"tool_calls","message":{"role":"assistant","content":"","tool_calls":[{
+            "id":"call_unsafe","type":"function","function":{"name":"unsafe_tool","arguments":"{\"value\":1}"}
+          }]}}],
+          "usage":{"prompt_tokens":7,"completion_tokens":3,"total_tokens":10}
+        }
+        """)])
+        {
+            Id = "fake",
+            Models = { [Model] = new JsonObject { ["id"] = Model, ["tool_call"] = true } },
+        };
+        var approvals = new CapturingApprovalCoordinator();
+        var executed = false;
+        var approvalFilterCalled = false;
+        var feature = new ChatFeature
+        {
+            Providers = { ["fake"] = provider },
+            ToolApprovalCoordinator = approvals,
+        };
+        feature.Filters.ChatApprovalFilters.Add((_, _) =>
+        {
+            approvalFilterCalled = true;
+            return Task.CompletedTask;
+        });
+        feature.Tools.Register(new ChatTool
+        {
+            Definition = ChatJson.ParseObject("""
+                {"type":"function","function":{"name":"unsafe_tool","parameters":{"type":"object"}}}
+                """),
+            Handler = (_, _) =>
+            {
+                executed = true;
+                return Task.FromResult<object?>("executed");
+            },
+            ApprovalHandler = (args, _) => Task.FromResult<ChatToolApprovalRequest?>(new()
+            {
+                Title = "Unsafe tool",
+                Safety = ToolSafety.Destructive,
+                Schema = new JsonObject { ["type"] = "object" },
+                Arguments = args.Clone(),
+            }),
+        });
+        var chat = ChatJson.ParseObject("""
+            {"model":"kimi-k2","messages":[{"role":"user","content":"do it"}],"metadata":{"threadId":42}}
+            """);
+
+        var response = await feature.ChatCompletionAsync(chat, ChatContext.FromChat(chat, "ann"));
+
+        Assert.That(executed, Is.False);
+        Assert.That(provider.Calls, Is.EqualTo(1));
+        Assert.That(approvals.Calls, Has.Count.EqualTo(1));
+        Assert.That(approvals.Calls[0].ToolCallId, Is.EqualTo("call_unsafe"));
+        Assert.That(approvals.Calls[0].Approval.Arguments.GetInt("value"), Is.EqualTo(1));
+        Assert.That(approvalFilterCalled, Is.True);
+        Assert.That(response.GetObject("usage").GetLong("total_tokens"), Is.EqualTo(10));
+    }
+
+    [Test]
+    public async Task Guarded_tool_fails_closed_without_an_interactive_coordinator()
+    {
+        var provider = new ScriptedChatProvider([
+            ChatJson.ParseObject("""
+            {"id":"1","model":"kimi-k2","choices":[{"finish_reason":"tool_calls","message":{"role":"assistant","content":"","tool_calls":[{
+              "id":"call_unsafe","type":"function","function":{"name":"unsafe_tool","arguments":"{}"}
+            }]}}]}
+            """),
+            ChatJson.ParseObject("""
+            {"id":"2","model":"kimi-k2","choices":[{"finish_reason":"stop","message":{"role":"assistant","content":"I could not run it."}}]}
+            """),
+        ])
+        {
+            Id = "fake",
+            Models = { [Model] = new JsonObject { ["id"] = Model, ["tool_call"] = true } },
+        };
+        var executed = false;
+        var feature = new ChatFeature { Providers = { ["fake"] = provider } };
+        feature.Tools.Register(new ChatTool
+        {
+            Definition = ChatJson.ParseObject("""
+                {"type":"function","function":{"name":"unsafe_tool","parameters":{"type":"object"}}}
+                """),
+            Handler = (_, _) =>
+            {
+                executed = true;
+                return Task.FromResult<object?>("executed");
+            },
+            ApprovalHandler = (_, _) => Task.FromResult<ChatToolApprovalRequest?>(new()
+            {
+                Title = "Unsafe tool",
+                Safety = ToolSafety.Write,
+                Schema = new JsonObject { ["type"] = "object" },
+                Arguments = new JsonObject(),
+            }),
+        });
+        var chat = ChatJson.ParseObject("""
+            {"model":"kimi-k2","messages":[{"role":"user","content":"do it"}]}
+            """);
+
+        var response = await feature.ChatCompletionAsync(chat, ChatContext.FromChat(chat, "ann"));
+
+        Assert.That(executed, Is.False);
+        Assert.That(response.GetArray("choices")![0]!["message"]!["content"]!.GetValue<string>(),
+            Is.EqualTo("I could not run it."));
+        var messages = provider.ReceivedChats[1].GetArray("messages")!;
+        Assert.That(messages.OfType<JsonObject>().Single(x => x.GetString("role") == "tool").GetString("content"),
+            Does.Contain("requires interactive approval"));
+    }
+
+    [Test]
+    public async Task Explicit_tool_execution_bypasses_model_approval_preflight()
+    {
+        var executed = false;
+        var feature = new ChatFeature();
+        feature.Tools.Register(new ChatTool
+        {
+            Definition = ChatJson.ParseObject("""
+                {"type":"function","function":{"name":"unsafe_tool","parameters":{"type":"object"}}}
+                """),
+            Handler = (_, _) =>
+            {
+                executed = true;
+                return Task.FromResult<object?>("executed");
+            },
+            ApprovalHandler = (_, _) => Task.FromResult<ChatToolApprovalRequest?>(new()
+            {
+                Title = "Unsafe tool",
+                Safety = ToolSafety.Write,
+                Schema = new JsonObject { ["type"] = "object" },
+                Arguments = new JsonObject(),
+            }),
+        });
+
+        var result = await feature.ExecToolAsync("unsafe_tool", new JsonObject(), new ChatContext());
+
+        Assert.That(executed, Is.True);
+        Assert.That(result.Content, Is.EqualTo("executed"));
+
+        executed = false;
+        var modelContext = new ChatContext();
+        modelContext.Items[ChatContext.EnforceToolApprovalKey] = true;
+        result = await feature.ExecToolAsync("unsafe_tool", new JsonObject(), modelContext);
+        Assert.That(executed, Is.False);
+        Assert.That(result.Content, Does.Contain("requires interactive approval"));
     }
 
     [Test]

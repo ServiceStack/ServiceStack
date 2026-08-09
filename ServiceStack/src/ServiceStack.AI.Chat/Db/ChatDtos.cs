@@ -53,9 +53,17 @@ public static class ChatDtos
         // but clients read one list, so present it merged on the way out.
         if (ParseJson(x.StreamingMessage) is JsonObject streaming)
         {
-            var message = streaming.Clone();
-            message[StreamingKey] = true;
-            dto.GetArray("messages")!.Add(message);
+            var messages = dto.GetArray("messages")!;
+            var timestamp = streaming.GetLong("timestamp");
+            var role = streaming.GetString("role");
+            var alreadyCommitted = timestamp != null && messages.OfType<JsonObject>().Any(message =>
+                message.GetLong("timestamp") == timestamp && message.GetString("role") == role);
+            if (!alreadyCommitted)
+            {
+                var message = streaming.Clone();
+                message[StreamingKey] = true;
+                messages.Add(message);
+            }
         }
         return dto;
     }

@@ -259,6 +259,21 @@ public class ChatThreadTests
     }
 
     [Test]
+    public void Thread_dto_does_not_duplicate_a_committed_streaming_checkpoint()
+    {
+        var thread = new ChatThread
+        {
+            Messages = """[{"role":"assistant","content":"Submitting","timestamp":42,"tool_calls":[{"id":"call_1"}]}]""",
+            StreamingMessage = """{"role":"assistant","content":"Submitting","timestamp":42,"model":"test","tool_calls":[{"id":"call_1"}]}""",
+        };
+
+        var messages = thread.ToDto().GetArray("messages")!;
+
+        Assert.That(messages, Has.Count.EqualTo(1));
+        Assert.That(messages[0]![ChatDtos.StreamingKey], Is.Null);
+    }
+
+    [Test]
     public void Echoed_in_flight_messages_are_dropped_before_persisting()
     {
         var messages = ChatJson.ParseObject("""
@@ -380,5 +395,77 @@ public class ChatThreadTests
         Assert.That(ChatDtos.ParseJson(row.StreamingMessage)!["content"]!.GetValue<string>(), Is.EqualTo("partial"));
         // and it's presented to clients as the trailing in-flight message
         Assert.That(StoredMessages(db, id).Count, Is.EqualTo(6));
+    }
+
+    [Test]
+    public async Task Persists_and_cancels_unsafe_tool_approvals_with_the_thread()
+    {
+        var dbFactory = new OrmLiteConnectionFactory(
+            $"DataSource=file:approvals{Guid.NewGuid():n}?mode=memory&cache=shared", SqliteDialect.Provider);
+        var db = new ChatDb(dbFactory);
+        db.InitSchema();
+        var updates = new ThreadUpdates();
+        var threads = new DbThreadApi(db, updates, NullLogger.Instance);
+        var feature = new ChatFeature
+        {
+            ChatDb = db,
+            ThreadApi = threads,
+            AutoInitSchema = true,
+        };
+        var coordinator = new ApiToolApprovalCoordinator(new ApiToolsExtension(),
+            new ExtensionContext(feature, "api_tools"));
+        coordinator.Install();
+        var now = DateTime.Now;
+        var toolCallMessage = ChatJson.ParseObject("""
+            {"role":"assistant","content":"Submitting the call","tool_calls":[{
+              "id":"call_1","type":"function","function":{"name":"api_call","arguments":"{\"name\":\"UpdateCustomer\",\"args\":{\"id\":1}}"}
+            }]}
+            """);
+        var threadId = db.InsertThread(new ChatThread
+        {
+            User = ChatDb.DefaultUser,
+            CreatedAt = now,
+            UpdatedAt = now,
+            Messages = new JsonArray(toolCallMessage.Clone()).ToJsonString(ChatJson.Options),
+            StreamingMessage = toolCallMessage.ToJsonString(ChatJson.Options),
+        });
+
+        await coordinator.PauseAsync([new PendingChatToolCall
+        {
+            ToolCallId = "call_1",
+            ToolName = "api_call",
+            Sequence = 0,
+            Arguments = ChatJson.ParseObject("""{"name":"UpdateCustomer","args":{"id":1}}"""),
+            Approval = new ChatToolApprovalRequest
+            {
+                Title = "UpdateCustomer",
+                Description = "Updates a customer",
+                Safety = ToolSafety.Write,
+                Schema = ChatJson.ParseObject("""{"type":"object","properties":{"id":{"type":"integer"}}}"""),
+                Arguments = ChatJson.ParseObject("""{"id":1}"""),
+                Metadata = new JsonObject { ["apiName"] = "UpdateCustomer" },
+            },
+        }], new ChatContext { ThreadId = threadId, User = ChatDb.DefaultUser });
+
+        Assert.That(coordinator.HasPending(threadId, ChatDb.DefaultUser), Is.True);
+        var pausedThread = db.GetThread(threadId, ChatDb.DefaultUser)!;
+        Assert.That(pausedThread.Status, Is.EqualTo("Approval required"));
+        Assert.That(pausedThread.StreamingMessage, Is.Null);
+        Assert.That(pausedThread.ToDto().GetArray("messages"), Has.Count.EqualTo(1),
+            "the committed api_call must not also be merged from its streaming checkpoint");
+        using (var conn = db.OpenDb())
+        {
+            var approval = conn.Select<ChatToolApproval>().Single();
+            Assert.That(approval.ToolCallId, Is.EqualTo("call_1"));
+            Assert.That(approval.ApiName, Is.EqualTo("UpdateCustomer"));
+            Assert.That(approval.Status, Is.EqualTo(ApiToolApprovalStatus.Pending));
+            Assert.That(ChatJson.ParseObject(approval.ProposedArgs).GetInt("id"), Is.EqualTo(1));
+        }
+
+        await coordinator.CancelThreadAsync(threadId, ChatDb.DefaultUser);
+
+        Assert.That(coordinator.HasPending(threadId, ChatDb.DefaultUser), Is.False);
+        using (var conn = db.OpenDb())
+            Assert.That(conn.Select<ChatToolApproval>().Single().Status, Is.EqualTo(ApiToolApprovalStatus.Canceled));
     }
 }

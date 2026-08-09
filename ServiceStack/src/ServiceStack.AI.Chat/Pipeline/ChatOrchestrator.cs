@@ -126,8 +126,64 @@ public partial class ChatFeature
 
                         await Filters.OnChatToolAsync(currentChat, context).ConfigAwait();
 
+                        var pending = new List<PendingChatToolCall>();
+                        var blocked = new Dictionary<string, string>();
+                        for (var i = 0; i < toolCalls.Count; i++)
+                        {
+                            if (toolCalls[i] is not JsonObject toolCall)
+                                continue;
+                            var toolCallId = toolCall.GetString("id") ?? "";
+                            var fn = toolCall.GetObject("function");
+                            var fnName = fn.GetString("name") ?? "";
+                            var tool = Tools.GetTool(fnName);
+                            if (tool?.ApprovalHandler == null)
+                                continue;
+
+                            JsonObject args;
+                            try
+                            {
+                                args = ChatJson.TryParseObject(fn.GetString("arguments")) ?? new JsonObject();
+                            }
+                            catch
+                            {
+                                continue; // normal execution produces the existing parse error result
+                            }
+
+                            try
+                            {
+                                var approval = await tool.ApprovalHandler(args, context).ConfigAwait();
+                                if (approval == null)
+                                    continue;
+                                if (ToolApprovalCoordinator == null || context.ThreadId == null)
+                                {
+                                    blocked[toolCallId] =
+                                        $"Error: Tool '{fnName}' requires interactive approval and cannot run in this context";
+                                    continue;
+                                }
+                                pending.Add(new PendingChatToolCall
+                                {
+                                    ToolCallId = toolCallId,
+                                    ToolName = fnName,
+                                    Arguments = args.Clone(),
+                                    Approval = approval,
+                                    Sequence = i,
+                                });
+                            }
+                            catch (Exception e)
+                            {
+                                // Approval preflight must fail closed: never fall through to the executable handler.
+                                blocked[toolCallId] =
+                                    $"Error preparing approval for tool '{fnName}': {ChatJson.ToErrorMessage(e)}";
+                            }
+                        }
+
+                        var pendingIds = pending.Select(x => x.ToolCallId).ToSet();
                         var execTasks = toolCalls
-                            .Select(tc => ExecuteToolCallAsync(tc as JsonObject, context))
+                            .OfType<JsonObject>()
+                            .Where(tc => !pendingIds.Contains(tc.GetString("id") ?? ""))
+                            .Select(tc => blocked.TryGetValue(tc.GetString("id") ?? "", out var error)
+                                ? Task.FromResult((tc.GetString("id") ?? "", error, new List<JsonObject>()))
+                                : ExecuteToolCallAsync(tc, context))
                             .ToList();
                         var toolResults = await Task.WhenAll(execTasks).ConfigAwait();
 
@@ -149,6 +205,15 @@ public partial class ChatFeature
                             await Filters.OnChatToolAsync(currentChat, context).ConfigAwait();
                         }
 
+                        if (pending.Count > 0)
+                        {
+                            await ToolApprovalCoordinator!.PauseAsync(pending, context).ConfigAwait();
+                            FinalizeUsage(response, startedAt, lastPromptTokens, totalCompletionTokens,
+                                accumulatedCost, context);
+                            await Filters.OnChatApprovalAsync(response, context).ConfigAwait();
+                            return response;
+                        }
+
                         if (ShouldCancelThread(context))
                             return CancelledResponse(model);
 
@@ -159,20 +224,8 @@ public partial class ChatFeature
                     if (toolHistory.Count > 0)
                         response["tool_history"] = toolHistory.Clone();
 
-                    var finalUsage = response.GetObject("usage");
-                    if (finalUsage == null)
-                    {
-                        finalUsage = new JsonObject();
-                        response["usage"] = finalUsage;
-                    }
-                    var duration = (long)(DateTimeOffset.UtcNow - startedAt).TotalSeconds;
-                    context.Items["duration"] = duration;
-                    finalUsage["prompt_tokens"] = lastPromptTokens;
-                    finalUsage["completion_tokens"] = totalCompletionTokens;
-                    finalUsage["total_tokens"] = lastPromptTokens + totalCompletionTokens;
-                    finalUsage["duration"] = duration;
-                    if (accumulatedCost > 0)
-                        response["cost"] = accumulatedCost;
+                    FinalizeUsage(response, startedAt, lastPromptTokens, totalCompletionTokens,
+                        accumulatedCost, context);
 
                     finalResponse = response;
                     break;
@@ -199,6 +252,25 @@ public partial class ChatFeature
         firstException ??= new Exception("All providers failed");
         await Filters.OnChatErrorAsync(firstException, context).ConfigAwait();
         throw firstException;
+    }
+
+    static void FinalizeUsage(JsonObject response, DateTimeOffset startedAt, long promptTokens,
+        long completionTokens, double accumulatedCost, ChatContext context)
+    {
+        var usage = response.GetObject("usage");
+        if (usage == null)
+        {
+            usage = new JsonObject();
+            response["usage"] = usage;
+        }
+        var duration = (long)(DateTimeOffset.UtcNow - startedAt).TotalSeconds;
+        context.Items["duration"] = duration;
+        usage["prompt_tokens"] = promptTokens;
+        usage["completion_tokens"] = completionTokens;
+        usage["total_tokens"] = promptTokens + completionTokens;
+        usage["duration"] = duration;
+        if (accumulatedCost > 0)
+            response["cost"] = accumulatedCost;
     }
 
     static JsonObject CancelledResponse(string model) => new()
@@ -281,6 +353,13 @@ public partial class ChatFeature
 
         try
         {
+            if (context.Items.GetValueOrDefault(ChatContext.EnforceToolApprovalKey) is true
+                && tool.ApprovalHandler != null
+                && await tool.ApprovalHandler(args, context).ConfigAwait() != null)
+            {
+                return ($"Error: Tool '{fnName}' requires interactive approval and cannot run in this context", []);
+            }
+
             // tools declaring a "user" param receive the authenticated username
             if (context.User != null && tool.Definition.GetObject("function").GetObject("parameters")
                     .GetObject("properties")?.ContainsKey("user") == true)

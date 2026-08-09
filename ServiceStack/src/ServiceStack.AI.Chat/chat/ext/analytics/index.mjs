@@ -501,7 +501,7 @@ export const Analytics = {
                                         <td class="px-4 py-3 text-right text-xs text-gray-500 dark:text-gray-400" :title="userRow.lastActive ? new Date(userRow.lastActive).toLocaleString() : ''">{{ timeAgo(userRow.lastActive) }}</td>
                                         <td class="px-4 py-3 text-center">
                                             <button type="button" @click.stop="selectUser(userRow.user)" class="px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
-                                                View Analytics
+                                                View
                                             </button>
                                         </td>
                                     </tr>

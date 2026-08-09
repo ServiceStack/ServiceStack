@@ -157,10 +157,24 @@ public class ApiToolRegistry(ApiToolsConfig config)
                 RequiresAnyRole = op.RequiresAnyRole.ToList(),
                 RequiredPermissions = op.RequiredPermissions.ToList(),
                 RequiresAnyPermission = op.RequiresAnyPermission.ToList(),
-                InputSchema = ApiToolSchema.ToJsonSchema(type),
+                InputSchema = CreateInputSchema(type),
             });
         }
         return to;
+    }
+
+    /// <summary>
+    /// The complete API Schema used by api_describe and schema-driven approval UIs. Provider
+    /// function definitions use <see cref="ApiToolSchema"/>'s smaller, strict subset instead.
+    /// </summary>
+    public static Dictionary<string, object?> CreateInputSchema(Type type)
+    {
+#if NET8_0_OR_GREATER
+        return MetadataSchemaGenerator.CreateSchema(type).ToJsonString()
+            .FromJson<Dictionary<string, object?>>()!;
+#else
+        return ApiToolSchema.ToJsonSchema(type);
+#endif
     }
 
     bool ShouldInclude(Operation op, ToolAttribute? attr)

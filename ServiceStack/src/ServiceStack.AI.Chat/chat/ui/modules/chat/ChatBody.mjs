@@ -839,9 +839,12 @@ export const ToolCall = {
                 <span class="text-[10px] uppercase tracking-wider font-medium whitespace-nowrap">Tool Call</span>
             </div>
             
-            <ToolArguments :value="tool?.function?.arguments || ''" />
-
-            <ToolOutput :tool="tool" :output="toolOutput" />
+            <component v-if="toolCallBody" :is="toolCallBody.component"
+                :thread="thread" :tool="tool" :output="toolOutput" />
+            <template v-else>
+                <ToolArguments :value="tool?.function?.arguments || ''" />
+                <ToolOutput :tool="tool" :output="toolOutput" />
+            </template>
         </div>    
     `,
     props: {
@@ -859,6 +862,22 @@ export const ToolCall = {
 
         const collapsed = ref(true)
         const toolOutput = computed(() => props.thread?.messages?.find(m => m.role === 'tool' && m.tool_call_id === props.tool?.id))
+        const toolCallBody = computed(() => ctx.toolCallBodyComponents?.[props.tool?.function?.name])
+        const autoExpand = () => {
+            try {
+                return toolCallBody.value?.autoExpand?.({
+                    thread: props.thread,
+                    tool: props.tool,
+                    output: toolOutput.value,
+                }) === true
+            } catch (e) {
+                console.error('tool call autoExpand failed', e)
+                return false
+            }
+        }
+        watch([toolCallBody, () => props.thread?.status, toolOutput], () => {
+            if (autoExpand()) collapsed.value = false
+        }, { immediate: true })
         const toolFailed = computed(() => {
             const output = toolOutput.value
             return output?.content?.includes('Error')
@@ -914,6 +933,7 @@ export const ToolCall = {
             toolSummary,
             toolOutput,
             toolFailed,
+            toolCallBody,
         }
     }
 }

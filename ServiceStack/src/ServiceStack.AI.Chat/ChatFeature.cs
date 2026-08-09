@@ -170,6 +170,8 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public IThreadApi ThreadApi { get; set; } = new NullThreadApi();
     public IMediaApi MediaApi { get; set; } = new NullMediaApi();
     public IProjectsApi ProjectsApi { get; set; } = new NullProjectsApi();
+    /// <summary>Installed by an interactive extension capable of durably pausing unsafe tool calls.</summary>
+    public IChatToolApprovalCoordinator? ToolApprovalCoordinator { get; set; }
 
     public Dictionary<string, List<string>> AllowedDirectories { get; } = [];
     public Dictionary<string, string> AliasedDirectories { get; } = [];

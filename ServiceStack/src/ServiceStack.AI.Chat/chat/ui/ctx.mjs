@@ -155,6 +155,7 @@ export class AppContext {
         this.updateThreadFilters = []
         this.threadHeaderComponents = {}
         this.threadFooterComponents = {}
+        this.toolCallBodyComponents = {}
         this.userMenuItemComponents = {}
         this.top = {}
         this.left = {}
@@ -510,6 +511,16 @@ export class AppContext {
     }
     setThreadFooters(components) {
         Object.assign(this.threadFooterComponents, components)
+    }
+    setToolCallBodies(components) {
+        if (!components) return
+        Object.entries(components).forEach(([name, def]) => {
+            if (def && typeof def === 'object' && def.component) {
+                this.toolCallBodyComponents[name] = { ...def, component: markRaw(def.component) }
+            } else if (def) {
+                this.toolCallBodyComponents[name] = { component: markRaw(def) }
+            }
+        })
     }
     setUserMenuItems(components) {
         Object.assign(this.userMenuItemComponents, components)

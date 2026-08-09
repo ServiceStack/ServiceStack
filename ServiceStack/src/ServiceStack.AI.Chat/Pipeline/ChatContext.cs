@@ -10,6 +10,9 @@ namespace ServiceStack.AI;
 /// </summary>
 public class ChatContext
 {
+    /// <summary>Items flag for model-driven transports that cannot present an approval UI.</summary>
+    public const string EnforceToolApprovalKey = "enforce_tool_approval";
+
     public JsonObject? Chat { get; set; }
     public string? User { get; set; }
     public long? ThreadId { get; set; }
@@ -85,6 +88,7 @@ public class ChatFilters
 {
     public List<Func<JsonObject, ChatContext, Task>> ChatRequestFilters { get; } = [];
     public List<Func<JsonObject, ChatContext, Task>> ChatToolFilters { get; } = [];
+    public List<Func<JsonObject, ChatContext, Task>> ChatApprovalFilters { get; } = [];
     public List<Func<string, ChatContext, Task>> ChatStatusFilters { get; } = [];
     public List<Func<JsonObject, ChatContext, Task>> ChatResponseFilters { get; } = [];
     public List<Func<Exception, ChatContext, Task>> ChatErrorFilters { get; } = [];
@@ -102,6 +106,12 @@ public class ChatFilters
     {
         foreach (var filter in ChatToolFilters)
             await filter(chat, context).ConfigAwait();
+    }
+
+    public async Task OnChatApprovalAsync(JsonObject response, ChatContext context)
+    {
+        foreach (var filter in ChatApprovalFilters)
+            await filter(response, context).ConfigAwait();
     }
 
     public async Task OnChatStatusAsync(string status, ChatContext context)
