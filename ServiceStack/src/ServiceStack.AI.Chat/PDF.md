@@ -1,36 +1,50 @@
-# PDF Templates: design with AI, render from your App
+# ServiceStack PDF support
 
-Every App eventually needs to produce a real PDF — an invoice, a quote, a statement, a packing slip, a
-certificate. The usual options are all unpleasant: HTML-to-PDF that renders differently in every headless
-browser, a reporting designer that only runs on Windows, or a templating library whose layout model is a
-stack of tables you maintain by hand.
+> This document is an implementation reference for AI assistants and developers working with PDF support
+> in `ServiceStack.AI.Chat`. Treat the behavior, paths, limits and API contracts documented here as the
+> supported behavior. Do not infer general PDF manipulation features from the presence of a PDF renderer;
+> see [Supported scope](#supported-scope) for the explicit boundary.
 
-`ServiceStack.AI.Chat` takes a different route. Documents are [typst](https://typst.app) templates —
-plain text, versionable, and compiled by a single fast binary — and you **don't write them by hand**.
-You describe the document you want (or paste a screenshot of one), the AI writes the typst, and you watch
-the PDF update live as it does. When it looks right you **publish** it, and your App gets a **typed C#
-model** generated from it, so populating a document is `new Invoice { ... }` rather than hand-building JSON
-and hoping the keys match.
+ServiceStack produces PDFs from [Typst](https://typst.app) templates. PDF Studio can author those templates
+with AI assistance, but templates are plain-text `.typ` files and can also be edited manually. Published
+templates render in a .NET App through `IPdfRenderer`; production rendering does not call an LLM and does
+not require `ChatFeature`.
 
-![The three surfaces: PDF Studio, Admin UI, your App](img/pdf/hero-overview.png)
+The normal artifact set for a document named `invoice` is:
 
-> 📸 **`hero-overview.png`** — a three-panel banner: PDF Studio with a rendered invoice, the Admin UI
-> gallery of published templates, and a snippet of C# calling `PdfResultAsync`. This is the doc's hero
-> image, so favour a clean wide crop over detail.
+| File | Purpose |
+| --- | --- |
+| `invoice.typ` | Typst source and layout |
+| `invoice.json` | example data used by previews and as code-generation fallback |
+| `invoice.ui.json` | optional JSON Schema used by forms and typed C# generation |
+| `invoice.*` assets | images and other document-specific resources |
+| `lib.typ` | shared Typst helpers and styles |
 
-## How it fits together
+## Quick start
+
+1. Install `typst` and ensure the executable is on `PATH`, or set `TYPST_PATH`.
+2. Register `services.AddPlugin(new PdfFeature());`.
+3. With `ChatFeature` installed, open `/chat/pdf`, create or edit a template, and publish it.
+4. Open `/admin-ui/pdf` to test the published template with form or JSON data.
+5. Configure `PdfCodeGen`, run `dotnet run --AppTasks=pdf`, and populate the generated `[Pdf]` model.
+6. Return `await pdf.PdfResultAsync(model)` from a Service, or call `RenderPdfAsync` for PDF bytes.
+
+For rendering without the designer, place a valid published artifact set directly in `App_Data/pdf` and
+install only `PdfFeature`.
+
+## Architecture and lifecycle
 
 | Step | Where | What you get |
 | --- | --- | --- |
 | 1. Design the template | **PDF Studio** — `/chat/pdf` | a `.typ` template + its `.json` example data |
-| 2. Publish it | the Studio's **Publish** button | a flat, self-contained copy in `App_Data/pdf` |
+| 2. Publish it | the Studio's **Publish** button | a flat runtime copy in `App_Data/pdf` |
 | 3. Generate a data model | **Admin UI** — `/admin-ui/pdf` → **Code** | a typed C# class bound to the template |
 | 4. Render it | your App's code | PDF bytes, or an `HttpResult` a Service returns |
 
 Steps 1 and 2 are dev-time and interactive. Steps 3 and 4 are what ships: at runtime your App only ever
 touches `App_Data/pdf` and `IPdfRenderer`, with no dependency on the Chat UI or on any AI provider.
 
-## Two plugins, deliberately separate
+### Two plugins, deliberately separate
 
 | Plugin | Provides | Needs |
 | --- | --- | --- |
@@ -65,12 +79,6 @@ Open **PDF Studio** at `/chat/pdf`. Your first visit seeds your workspace with a
 (`invoice.typ`, `invoice.json`, `invoice.ui.json`) plus the shared `lib.typ`, so there's something
 compiling in front of you before you type anything.
 
-![PDF Studio with the invoice example open](img/pdf/studio-overview.png)
-
-> 📸 **`studio-overview.png`** — the full Studio: file explorer on the left, `invoice.typ` in the editor,
-> rendered invoice in the preview pane, AI prompt box at the bottom. This is the "what am I looking at"
-> shot, so keep every region visible even if the text is small.
-
 Templates are stored **per user** under `App_Data/chat/user/<user>/pdf`, so everyone experiments in their
 own workspace and nothing reaches your App until it's published.
 
@@ -86,23 +94,11 @@ compile fails, the model gets one shot at fixing its own output before you ever 
 >
 > *"Make this look like a shipping label: 4x6 inches, big barcode area, no margins"*
 
-![The AI prompt and its result, side by side](img/pdf/studio-ai-edit.png)
-
-> 📸 **`studio-ai-edit.png`** — a before/after of one prompt. Capture the prompt text you typed and the
-> changed preview; the diff in the editor is a bonus. Pick a visually obvious change (a watermark, a colour
-> scheme) so the difference reads at thumbnail size.
-
 ### Build a template from a screenshot
 
 The prompt accepts image attachments — up to 8 screenshots, photos or rasterised PDF pages. Paste in a
 picture of the document you're replacing and ask for it back as a typst template. This is by far the
 fastest way to start: an existing invoice becomes a working template in one round trip.
-
-![Attaching a screenshot of an existing document](img/pdf/studio-attach-image.png)
-
-> 📸 **`studio-attach-image.png`** — the prompt box with an attached image thumbnail and a prompt like
-> "rebuild this as a typst template", next to the resulting render. Use a document you're happy to publish
-> — no real customer data.
 
 ### Undo is a button, not a prayer
 
@@ -136,11 +132,6 @@ optional but worth having, because it's what turns a guess into a fact:
 
 The Studio generates it for you from the data, and rebuilds it on demand after you change the data's shape.
 
-![Generating the .ui.json schema](img/pdf/studio-generate-schema.png)
-
-> 📸 **`studio-generate-schema.png`** — the generate/rebuild schema action with `invoice.ui.json` open
-> beside `invoice.json`, so the correspondence between a field and its schema entry is visible.
-
 ## The shared `lib.typ`
 
 Every template imports `lib.typ`, which holds the styles and helpers your documents share — fonts, colours,
@@ -153,11 +144,6 @@ a `money()` formatter, header and footer blocks. Change it once and every templa
 
 When a template is ready, hit **Publish** in the Studio's preview toolbar. (The button only appears for
 admins, on a real template — not on `lib.typ`.)
-
-![The Publish button in the Studio toolbar](img/pdf/studio-publish.png)
-
-> 📸 **`studio-publish.png`** — a tight crop of the preview toolbar showing **Publish** and the eye icon
-> that opens the template in the Admin UI, with the "Published invoice" toast if you can catch it.
 
 Publishing copies the template out of your personal workspace into the App's shared `App_Data/pdf` folder,
 and does rather more than a file copy:
@@ -173,6 +159,22 @@ and does rather more than a file copy:
   document in the designer.
 - **It won't silently take over someone else's name.** Publishing over a template someone else published
   asks first.
+- **It keeps immutable revisions.** Every successful publish is copied to
+  `App_Data/pdf/.versions/<template>/<revision>` with the files produced by publishing, the thumbnail when
+  available, and publishing metadata. The hidden revision folders don't appear as renderable templates
+  and require no database.
+
+### Version history and rollback
+
+Open a published template in `/admin-ui/pdf` and choose **History** to see who published each revision and
+when. **Restore** replaces the live files with that snapshot. A restore never rewrites or deletes history:
+it creates a new revision whose metadata points back to the revision it restored, leaving a complete audit
+trail and making the rollback itself reversible.
+
+Revisions are intentionally retained when a template is unpublished, so an administrator can republish the
+same name without losing its history. Back up `.versions` together with the rest of `App_Data/pdf`. If a
+revision contains the shared `lib.typ`, restoring it may affect other templates and the Admin UI reports a
+warning.
 
 ---
 
@@ -186,12 +188,6 @@ render, exercising templates against real data, and getting the code to use them
 Published templates are shown as thumbnails — the preview rendered at publish time — with search and
 sorting by name, modified date or size.
 
-![The published templates gallery](img/pdf/admin-gallery.png)
-
-> 📸 **`admin-gallery.png`** — the landing state of `/admin-ui/pdf` with several published templates so the
-> grid reads as a gallery. Publish 4–6 visually distinct templates first (invoice, receipt, label, report);
-> one lonely thumbnail undersells it.
-
 The same picker is available from the **Open** button once you have a template selected, so you can move
 between templates without going back.
 
@@ -199,11 +195,6 @@ between templates without going back.
 
 Selecting a template opens a two-pane workspace: the document's data on the left, the rendered PDF on the
 right. Edit the data and the preview re-renders as you type.
-
-![The template workspace: data and live preview](img/pdf/admin-workspace.png)
-
-> 📸 **`admin-workspace.png`** — the full two-pane view with the **Data** tab active and a rendered invoice
-> beside it. The headline shot for this section; make sure both panes have real content.
 
 The data pane has three tabs:
 
@@ -213,20 +204,10 @@ The `.ui.json` schema rendered as an editable form — labelled fields, date pic
 add/remove rows for line items. This is how you exercise a template without touching JSON, and it's a
 faithful preview of what a schema-driven UI over the same document would look like.
 
-![Editing document data as a form](img/pdf/admin-tab-form.png)
-
-> 📸 **`admin-tab-form.png`** — the **Form** tab with nested groups expanded and an array of line items
-> visible, so the add/remove row controls are in frame.
-
 ### Data
 
 The raw JSON, syntax-highlighted and editable, for when you want to paste a payload straight in. Invalid
 JSON is reported inline rather than blanking the preview. **Reset** puts back the published example.
-
-![Editing document data as JSON](img/pdf/admin-tab-data.png)
-
-> 📸 **`admin-tab-data.png`** — the **Data** tab mid-edit. If you can catch the preview showing the edited
-> value, that sells the live re-render better than a static shot.
 
 ### Code
 
@@ -249,11 +230,6 @@ Rendered with pdf.js, so it's the real PDF, not an approximation:
 published it), it copies the published files in first, so you can pick up someone else's template and keep
 working. **Unpublish** removes it from `App_Data/pdf`.
 
-![The template toolbar](img/pdf/admin-toolbar.png)
-
-> 📸 **`admin-toolbar.png`** — a crop of the header showing the template name, "Published by … · 2 hours
-> ago", and the Open / Edit / Unpublish buttons.
-
 ---
 
 # Part 4 — Code generation
@@ -261,12 +237,6 @@ working. **Unpublish** removes it from `App_Data/pdf`.
 This is what turns a published template into something your App can use without ever writing a JSON key by
 hand. The **Code** tab has three sub-tabs, all generated from *this* template — real type names, real
 members, real template name.
-
-![The Code tab's three sub-tabs](img/pdf/admin-tab-code.png)
-
-> 📸 **`admin-tab-code.png`** — the **Code** tab with the tab strip visible and the generated model
-> showing. Capture the `[Pdf("invoice")]` attribute and a couple of properties, plus the copy icon in the
-> code block's corner.
 
 ## PDF Data Models
 
@@ -352,12 +322,6 @@ Generated PDF models in /home/me/src/MyApp/MyApp.ServiceModel/Pdf
   skipped   quote (Quote.cs was edited by hand)
 ```
 
-![Running the pdf AppTask](img/pdf/apptask-run.png)
-
-> 📸 **`apptask-run.png`** — a terminal running `dotnet run --AppTasks=pdf` with a mix of
-> generated/unchanged/skipped lines. Publish 3+ templates and hand-edit one first so all three outcomes
-> appear.
-
 Both paths default to a `Pdf` subfolder of your App's ServiceModel — `MyApp.ServiceModel/Pdf`, in the
 `MyApp.ServiceModel.Pdf` namespace. Generated names come from the document's own keys and are generic
 enough (`Item`, `From`, `Details`) to collide with your App's types, which is why they get their own folder
@@ -423,12 +387,6 @@ public class InvoicePdfServices(IPdfRenderer pdf) : Service
 The same mapping, wired into a background Command that attaches the rendered bytes to an email — including
 the `IDbConnectionFactory` you'll want for loading the document, and the `EnqueueCommand` call to kick it
 off.
-
-![The example code tabs](img/pdf/admin-code-examples.png)
-
-> 📸 **`admin-code-examples.png`** — the **Rendering a PDF API** tab (or a two-up with **Sending an
-> Email**), scrolled to show the generated object initialiser. That's the part people don't expect to be
-> generated, so make it the focus.
 
 ---
 
@@ -499,11 +457,6 @@ Content-Disposition: attachment; filename="Invoice-INV-2026-042.pdf"
 Pass `inline: true` to display it in the browser instead. Omit the file name to use the attribute's
 `FileName`, which defaults to `{Template}.pdf`.
 
-![The rendered PDF served from your API](img/pdf/end-to-end-download.png)
-
-> 📸 **`end-to-end-download.png`** — a browser at `/orders/1/invoice` showing the PDF inline (use
-> `inline: true` for the shot), with the URL bar visible so it's clearly your App's own API.
-
 ### 3. Or attach it to an email
 
 ```csharp
@@ -548,6 +501,31 @@ jobs table is a bad time.
 
 # Reference
 
+## Published filesystem layout
+
+```text
+App_Data/pdf/
+├── .published.json
+├── .versions/
+│   └── invoice/
+│       └── <revision>/
+│           ├── revision.json
+│           ├── invoice.typ
+│           ├── invoice.json
+│           ├── invoice.ui.json
+│           └── invoice.preview.png
+├── fonts/
+├── lib.typ
+├── invoice.typ
+├── invoice.json
+├── invoice.ui.json
+└── invoice.preview.png
+```
+
+The files at the root are the live revision used by `IPdfRenderer`. `.versions` contains immutable
+snapshots and `revision.json` metadata. `.published.json` records live ownership, source location, files and
+current revision. A revision directory is not a renderable template.
+
 ## `PdfFeature`
 
 | Property | Default | Purpose |
@@ -587,6 +565,23 @@ jobs table is a bad time.
 | `pdf.RenderPngAsync(name, …)` | rasterise a page, e.g. for a thumbnail |
 | `pdf.GetTemplateNames()` | what's currently published |
 
+## Admin APIs
+
+All these request DTOs require the Admin role and are excluded from ordinary metadata pages.
+
+| Request | Method | Purpose |
+| --- | --- | --- |
+| `AdminPdfTemplates` | GET | list live published templates and feature status |
+| `AdminGetPdfTemplate` | GET | get one template's example data, schema and optional source |
+| `AdminRenderPdfTemplate` | POST | render a live template with arbitrary JSON |
+| `AdminPdfTemplatePreview` | GET | return the stored gallery thumbnail |
+| `AdminPublishPdfTemplate` | POST | publish a Studio template and create an immutable revision |
+| `AdminPdfTemplateVersions` | GET | list immutable revisions and the current revision ID |
+| `AdminRollbackPdfTemplate` | POST | restore a revision and record a new rollback revision |
+| `AdminEditPdfTemplate` | POST | copy missing published files into the current user's Studio workspace |
+| `AdminDeletePdfTemplate` | POST | unpublish live files while retaining revision history |
+| `AdminPdfTemplateTypes` | POST | generate model source and usage examples without writing source files |
+
 ## `[Pdf]`
 
 | Property | Purpose |
@@ -611,45 +606,149 @@ warns when a template has no schema at all.
 which is why models default into their own folder and namespace.
 
 **Data rides typst's command line.** It's passed as `--input data=<json>`, which the OS caps well below
-128KB once the environment is counted — hence the conservative 64KB `MaxDataBytes`. Documents with
-hundreds of line items should paginate, not grow one payload.
+128KB once the environment is counted — hence the conservative 64KB `MaxDataBytes`. Pagination controls
+layout but does not reduce the JSON payload size. For data beyond this limit, split the document into
+multiple renders or replace `IPdfRenderer` with an implementation that transports data differently.
 
 **`lib.typ` is shared.** Publishing a template republishes the library it imports, which can affect other
 published templates. The publish response says so when it happens.
 
-# Security notes
+# Supported scope
+
+Built-in support includes:
+
+- Authoring `.typ` templates and companion files in per-user PDF Studio workspaces.
+- AI edits from text prompts, screenshots and rasterised PDF pages.
+- Typst compilation to PDF with local images, partials, data files, fonts and Typst packages.
+- Publishing a flattened runtime artifact set to `App_Data/pdf`; local referenced files are copied, while
+  external Typst packages remain external dependencies.
+- Immutable filesystem revisions, revision history and rollback.
+- Admin preview and download through pdf.js, with form and raw JSON test-data editors.
+- JSON Schema-assisted C# model generation.
+- Rendering to `byte[]`, or an `HttpResult` with inline/download content disposition.
+- PNG rendering of one selected page, primarily for gallery thumbnails.
+
+The built-in implementation does **not** provide PDF merging, splitting, page reordering, encryption,
+password protection, digital signatures, timestamping, PDF/A conversion or validation, AcroForm filling,
+form flattening, tagged-PDF validation, OCR, PDF text extraction, or streaming output. Use a separate PDF
+library before or after rendering, or replace/wrap `IPdfRenderer`, when an application needs those features.
+
+PDF import in Studio is a visual reconstruction aid, not a structural PDF importer. The browser rasterises
+at most the first four pages for the model; it does not preserve source fonts, text objects, forms,
+annotations, metadata or accessibility structure.
+
+# Security and privacy
 
 - The Admin UI and every `Admin*Pdf*` API require the **Admin** role.
-- Nothing in the Admin UI writes to your source tree. Generating models is an AppTask *you* run.
-- Published names are flat and validated — a template name can't contain separators, `..` or an absolute
-  path, so nothing escapes `App_Data/pdf`.
-- Designer workspaces are per-user and path-checked; publishing is the only way anything reaches the App's
-  shared folder, and it's admin-only.
-- typst compiles are sandboxed to their own directory, time-limited by `RenderTimeout`, and bounded by
-  `MaxConcurrentRenders` so a burst can't saturate the host.
+- Nothing in the Admin UI writes to the application's source tree. Only the explicitly registered `pdf`
+  AppTask generates model source files.
+- Published names are flat and validated: names cannot contain path separators, traversal segments or
+  absolute paths.
+- Designer workspaces are per-user and path-checked. Publishing is the admin-only boundary that copies
+  files into the shared runtime folder.
+- Typst receives `--root` restricted to the relevant PDF directory. Compiles are also time-limited and
+  concurrency-limited. This file-access restriction is not an operating-system process sandbox; deploy
+  untrusted template compilation inside an appropriately isolated container or worker.
+- Images and PDF pages attached to an AI prompt are sent to the configured model provider as image data.
+  Do not attach secrets, personal information or regulated documents unless that provider and deployment
+  are approved for the data.
+- Runtime document data is passed as a process argument. Avoid secrets that must not be visible to local
+  process-inspection tools, or provide a custom renderer with a different transport.
+- Back up `.published.json`, `.versions` and all live files together. Revisions contain the example data
+  and assets present at publish time and may therefore contain sensitive information.
 
----
+# Deployment
 
-## Screenshot checklist
+## Pin Typst and fonts
 
-| File | Shows |
-| --- | --- |
-| `hero-overview.png` | three-panel banner: Studio, Admin UI, C# |
-| `studio-overview.png` | the whole PDF Studio with the invoice example |
-| `studio-ai-edit.png` | one AI prompt, before and after |
-| `studio-attach-image.png` | building a template from an attached screenshot |
-| `studio-generate-schema.png` | generating `invoice.ui.json` from the data |
-| `studio-publish.png` | the Publish button and its toast |
-| `admin-gallery.png` | the published templates gallery |
-| `admin-workspace.png` | data pane + live PDF preview |
-| `admin-tab-form.png` | the Form tab editing nested data |
-| `admin-tab-data.png` | the Data tab editing raw JSON |
-| `admin-tab-code.png` | the Code tab and its three sub-tabs |
-| `admin-code-examples.png` | a generated example with its object initialiser |
-| `admin-toolbar.png` | template header: published-by, Open / Edit / Unpublish |
-| `apptask-run.png` | `dotnet run --AppTasks=pdf` output |
-| `end-to-end-download.png` | the PDF served from your own API |
+PDF layout can change when the Typst version or installed fonts change. Pin the Typst CLI version in every
+environment, deploy the same font files, and validate representative documents before upgrading either.
+At startup, `PdfFeature.TypstPath` resolves from `TYPST_PATH` and then `PATH`.
 
-Put them in `img/pdf/` next to this document. Shoot in **light theme** at a consistent window width
-(1440px works well) so the set looks like one sitting, and publish a handful of visually distinct templates
-before taking the gallery shot.
+The renderer passes `App_Data/pdf/fonts` to Typst as a font directory when it exists. Include that folder
+in deployments when templates depend on non-system fonts; do not assume a developer workstation's fonts
+exist in a container.
+
+## Container example
+
+This example supplies a pinned Typst binary to an ASP.NET runtime image. Add the application's normal
+publish and copy stages around it, and replace the example version with the version validated by the App.
+
+```dockerfile
+FROM rust:1-bookworm AS typst
+ARG TYPST_VERSION
+RUN test -n "$TYPST_VERSION" \
+    && cargo install typst-cli --version "$TYPST_VERSION" --locked
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+COPY --from=typst /usr/local/cargo/bin/typst /usr/local/bin/typst
+COPY ./publish/ ./
+COPY ./App_Data/pdf/ ./App_Data/pdf/
+ENV TYPST_PATH=/usr/local/bin/typst
+ENTRYPOINT ["dotnet", "MyApp.dll"]
+```
+
+For a different target framework, use the matching ASP.NET runtime image. If native fonts are installed
+with the operating-system package manager, pin those package versions as well.
+
+# Validation and CI
+
+There is no built-in visual-regression or PDF conformance command. The following checks are appropriate:
+
+1. Keep `.typ`, `.json`, `.ui.json`, assets and `.published.json` in deployment backups or source control
+   according to the application's release policy.
+2. Run `dotnet run --AppTasks=pdf` and review generated/unchanged/skipped output after schema changes.
+3. Run application tests that construct every generated root model and call `RenderPdfAsync`.
+4. Include empty, typical, long-text, maximum-list and international-character fixtures.
+5. Pin Typst and fonts, render fixtures in CI, and compare page count or approved raster baselines when
+   layout stability is important.
+
+A simple compile check for published templates can use each template's example JSON fallback:
+
+```bash
+mkdir -p /tmp/pdf-smoke
+for template in App_Data/pdf/*.typ; do
+  case "$template" in */lib.typ|*/lib.preview.typ) continue ;; esac
+  typst compile --root App_Data/pdf "$template" "/tmp/pdf-smoke/$(basename "${template%.typ}").pdf"
+done
+```
+
+This checks compilation only. It does not prove that arbitrary runtime payloads satisfy the template or
+that the rendered layout is visually correct.
+
+# Troubleshooting
+
+| Symptom | Likely cause | Action |
+| --- | --- | --- |
+| PDF Studio is absent or disabled | `typst` was not found when `ChatFeature` loaded | install Typst, set `TYPST_PATH`, and restart |
+| Templates list but Render is unavailable | `PdfFeature.IsAvailable` is false | verify the service account can execute `TypstPath` |
+| `dictionary does not contain key` | a model property was null/omitted, or schema/template drifted | populate every referenced member and align `.typ`, `.json` and `.ui.json` |
+| `Data is too large` | serialized input exceeded `MaxDataBytes` or command-line limits | reduce/split data or use a custom renderer transport |
+| A font differs or is missing | environments have different font installations | deploy the font under `App_Data/pdf/fonts` and pin it |
+| Template works in Studio but fails after publishing | a reference was not collected or could not be rewritten | inspect publish warnings and use literal local references supported by the publisher |
+| Another template changed after publish/rollback | shared `lib.typ` changed | inspect the publish warning and restore or republish the intended library |
+| Code model is missing a property | `.ui.json` does not declare it | rebuild/edit the schema, regenerate models, and update mappings |
+| Edited generated file is not updated | `PreserveModified` defaults to `true` | adopt the file intentionally, exclude it, or set `PreserveModified = false` |
+| History is empty for an older template | it predates filesystem versioning | publish it once to create its first immutable revision |
+
+# Guidance for AI assistants
+
+When answering questions or proposing code based on this document:
+
+1. Distinguish the three storage contexts: per-user Studio files, live published files, and immutable
+   published revisions. Runtime rendering reads live published files only.
+2. Distinguish authoring dependencies from runtime dependencies. AI and `ChatFeature` are optional at
+   runtime; Typst and `PdfFeature` are required by the default renderer.
+3. Prefer generated `[Pdf]` models for application code, but explain that they do not validate the model
+   against every key read by the Typst source.
+4. Never claim a successful compile proves visual correctness or schema compatibility.
+5. Do not suggest editing `.versions`; revisions are immutable implementation artifacts. Restore them
+   through the Admin API/UI.
+6. Do not describe PDF import as editable PDF conversion. It supplies rasterised reference pages to a
+   vision-capable model, which creates a new Typst approximation.
+7. Do not invent support for signing, encryption, forms, PDF/A, OCR, merging or streaming. Recommend a
+   separate PDF library or a custom `IPdfRenderer` pipeline.
+8. Mention the shared `lib.typ` blast radius when a publish or rollback changes library behavior.
+9. Preserve cancellation tokens in render calls and avoid persisting PDF bytes in background-job request
+   DTOs; persist an identifier and render inside the job instead.
