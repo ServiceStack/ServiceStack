@@ -246,6 +246,18 @@ public partial class AppExtension
         {
             await file.InputStream.CopyToAsync(fs).ConfigAwait();
         }
+
+        // Keep one uploaded avatar regardless of its format. Otherwise an older file with a
+        // higher lookup priority (for example agent.webp before agent.png) keeps being served.
+        foreach (var oldExt in new[] { "webp", "png", "jpg", "jpeg", "svg" })
+        {
+            if (oldExt == ext)
+                continue;
+
+            var oldPath = Path.Combine(userPath, $"{prefix}.{oldExt}");
+            if (File.Exists(oldPath))
+                File.Delete(oldPath);
+        }
         return new JsonObject { ["success"] = true };
     }
 
