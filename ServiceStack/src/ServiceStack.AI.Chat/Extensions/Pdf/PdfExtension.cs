@@ -16,9 +16,12 @@ namespace ServiceStack.AI;
 /// </summary>
 public partial class PdfExtension() : ChatExtension("pdf")
 {
-    /// <summary>A template importing the shared library, e.g. #import "../lib.typ"</summary>
-    [GeneratedRegex(@"#(?:import|include)\s+""(?:\.\./)*lib\.typ""")]
-    private static partial Regex ImportsLibRegex();
+    /// <summary>A local Typst import/include. Comments are stripped before this is used.</summary>
+    [GeneratedRegex(@"#(?:import|include)\s+""(?<path>[^""]+)""")]
+    private static partial Regex ImportRegex();
+
+    [GeneratedRegex(@"(?m)//.*$|/\*[\s\S]*?\*/")]
+    private static partial Regex TypstCommentsRegex();
 
     /// <summary>Path to the typst CLI, resolved on install</summary>
     public string? TypstPath { get; set; }
@@ -48,8 +51,10 @@ public partial class PdfExtension() : ChatExtension("pdf")
     ];
 
     // shared styles every template imports, plus the document that shows what it does
-    public const string LibName = "lib.typ";
-    public const string LibPreview = "lib.preview.typ";
+    public const string LibName = "lib.typ"; // legacy root library, still supported
+    public const string LibDir = "lib";
+    public const string DefaultLibName = "lib/v1.typ";
+    public const string LibPreview = "lib/v1.preview.typ";
 
     /// <summary>Bundled starter templates, synced from llms-py (chat/ext/pdf/examples)</summary>
     const string ExamplesDir = "chat/ext/pdf/examples";
@@ -135,6 +140,19 @@ public partial class PdfExtension() : ChatExtension("pdf")
             return new JsonObject { ["path"] = relPath };
         });
 
+        ctx.AddGet("dependencies", req =>
+        {
+            var root = PdfRoot(req.AssertUserName());
+            var relPath = NormalizeRelPath(req.QueryString("path"));
+            Resolve(root, relPath, mustExist: true);
+            return Task.FromResult<object?>(new JsonObject
+            {
+                ["path"] = relPath,
+                ["dependencies"] = new JsonArray(FindDependants(root, relPath)
+                    .Select(x => (JsonNode)x).ToArray()),
+            });
+        });
+        ctx.AddPost("duplicate", DuplicateAsync);
         ctx.AddPost("rename", RenameAsync);
         ctx.AddDelete("file", req => Task.FromResult<object?>(Delete(req)));
         ctx.AddPost("render", RenderAsync);
@@ -197,19 +215,21 @@ public partial class PdfExtension() : ChatExtension("pdf")
     /// <summary>
     /// How a template refers to a file: relative to the templates root, with forward slashes.
     /// <para>
-    /// Data files are loaded through lib.typ's load-data(), and typst resolves a json() path
-    /// relative to the file that calls it — lib.typ at the root — not to the template passing it.
-    /// A path relative to the template only works for templates in the root folder.
+    /// Data files are loaded through lib/v1.typ's load-data(), so authoring paths walk up from lib/ to
+    /// the artifact root. Publishing rewrites these root-relative paths when it flattens the file set.
     /// </para>
     /// </summary>
     static string TypstRef(string relPath) => relPath.Replace('\\', '/').TrimStart('/');
 
-    /// <summary>lib.typ sits at the root, so a template in a subfolder imports it as ../lib.typ</summary>
+    /// <summary>load-data executes in lib/v1.typ, one directory below the artifact root.</summary>
+    static string LibDataRef(string relPath) => "../" + TypstRef(relPath);
+
+    /// <summary>The versioned library sits below the root, so nested templates walk back to it.</summary>
     static string LibImport(string relPath)
     {
         var dir = Path.GetDirectoryName(relPath.Replace('\\', '/'))?.Trim('/') ?? "";
         var depth = dir.Length == 0 ? 0 : dir.Split('/').Length;
-        return string.Concat(Enumerable.Repeat("../", depth)) + LibName;
+        return string.Concat(Enumerable.Repeat("../", depth)) + DefaultLibName;
     }
 
     static long Modified(string path) => new DateTimeOffset(File.GetLastWriteTimeUtc(path)).ToUnixTimeMilliseconds();
@@ -226,6 +246,28 @@ public partial class PdfExtension() : ChatExtension("pdf")
     static ChatResult Conflict(string? relPath) =>
         ChatResult.Json(ChatJson.CreateErrorResponse($"'{relPath}' already exists", "AlreadyExists"), 409);
 
+    static ChatResult Blocked(string message, string errorCode) =>
+        ChatResult.Json(ChatJson.CreateErrorResponse(message, errorCode), 409);
+
+    static void AssertOperationName(string from, string to)
+    {
+        if (!ParentDir(from).Equals(ParentDir(to), StringComparison.Ordinal))
+            throw new ArgumentException("Rename and duplicate accept a new file name, not a destination path");
+        var name = Path.GetFileName(to);
+        if (string.IsNullOrWhiteSpace(name) || name is "." or ".." || name.StartsWith('.'))
+            throw new ArgumentException($"Invalid file name '{name}'");
+    }
+
+    static bool PathExists(string root, string relPath)
+    {
+        var path = Resolve(root, relPath);
+        if (File.Exists(path) || Directory.Exists(path))
+            return true;
+        var dir = Path.GetDirectoryName(path);
+        return dir != null && Directory.Exists(dir) && Directory.EnumerateFileSystemEntries(dir)
+            .Any(x => Path.GetFileName(x).Equals(Path.GetFileName(path), StringComparison.OrdinalIgnoreCase));
+    }
+
     // ── Seeding ──
 
     /// <summary>
@@ -240,9 +282,16 @@ public partial class PdfExtension() : ChatExtension("pdf")
     {
         var examples = HostContext.VirtualFileSources.GetDirectory(ExamplesDir);
         return examples?.GetAllMatchingFiles("*")
-            .ToDictionary(
-                file => file.VirtualPath[(ExamplesDir.Length + 1)..].Replace('/', '.'),
-                file => file) ?? [];
+            .ToDictionary(file =>
+            {
+                var name = file.VirtualPath[(ExamplesDir.Length + 1)..].Replace('/', '.');
+                return name switch
+                {
+                    LibName => DefaultLibName,
+                    "lib.preview.typ" => LibPreview,
+                    _ => name,
+                };
+            }, file => file) ?? [];
     }
 
     /// <summary>Copy the starter templates into an empty pdf folder so there's something to look at</summary>
@@ -258,27 +307,30 @@ public partial class PdfExtension() : ChatExtension("pdf")
         }
         foreach (var (name, file) in examples)
         {
-            File.WriteAllBytes(Path.Combine(root, name), file.ReadAllBytes());
+            var path = Path.Combine(root, name);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllBytes(path, file.ReadAllBytes());
         }
         Log.LogInformation("Seeded example templates in {Path}", root);
     }
 
     /// <summary>
-    /// Templates don't compile without the library they import, so put it back if it goes missing —
-    /// but only while something still imports it. Renaming lib.typ shouldn't conjure up a second copy.
+    /// Every workspace keeps a versioned library baseline. Existing root lib.typ files remain untouched.
     /// </summary>
     void SeedLibrary(string root, Dictionary<string, IO.IVirtualFile> examples)
     {
-        if (File.Exists(Path.Combine(root, LibName)))
+        if (File.Exists(Path.Combine(root, DefaultLibName)))
             return;
-        if (!AllTemplates(root).Any(rel => ImportsLibRegex().IsMatch(File.ReadAllText(Path.Combine(root, rel)))))
-            return;
-        foreach (var name in new[] { LibName, LibPreview })
+        foreach (var name in new[] { DefaultLibName, LibPreview })
         {
             if (examples.TryGetValue(name, out var file))
-                File.WriteAllBytes(Path.Combine(root, name), file.ReadAllBytes());
+            {
+                var path = Path.Combine(root, name);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllBytes(path, file.ReadAllBytes());
+            }
         }
-        Log.LogInformation("Restored {Lib} in {Path}", LibName, root);
+        Log.LogInformation("Restored {Lib} in {Path}", DefaultLibName, root);
     }
 
     // ── File tree ──
@@ -410,7 +462,7 @@ public partial class PdfExtension() : ChatExtension("pdf")
                 $"""
                  #import "{LibImport(relPath)}": *
 
-                 #let data = load-data("{TypstRef(relData)}")
+                 #let data = load-data("{LibDataRef(relData)}")
 
                  #show: theme
 
@@ -438,7 +490,7 @@ public partial class PdfExtension() : ChatExtension("pdf")
         return new JsonObject { ["path"] = relPath, ["data"] = withData ? relData : null };
     }
 
-    /// <summary>Siblings that belong to the same document: invoice.json, invoice.ui.json, lib.preview.typ</summary>
+    /// <summary>Siblings that belong to the same document: invoice.json, invoice.ui.json, v1.preview.typ</summary>
     public static List<string> Companions(string root, string relPath)
     {
         var fileName = Path.GetFileName(relPath);
@@ -486,8 +538,135 @@ public partial class PdfExtension() : ChatExtension("pdf")
         return at <= 0 ? "" : path[..at];
     }
 
+    static string NormalizeRelPath(string? path) => (path ?? "").Replace('\\', '/').TrimStart('/');
+
+    static string NormalizeImportPath(string path)
+    {
+        var segments = new List<string>();
+        foreach (var part in path.Replace('\\', '/').Split('/'))
+        {
+            if (part is "" or ".") continue;
+            if (part == ".." && segments.Count > 0) segments.RemoveAt(segments.Count - 1);
+            else if (part != "..") segments.Add(part);
+        }
+        return string.Join('/', segments);
+    }
+
+    /// <summary>A versioned library template, excluding preview companions.</summary>
+    public static bool IsLibraryTemplate(string relPath)
+    {
+        relPath = NormalizeRelPath(relPath);
+        if (!relPath.EndsWith(".typ", StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (relPath.Equals(LibName, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return relPath.StartsWith(LibDir + "/", StringComparison.OrdinalIgnoreCase)
+               && !Path.GetFileNameWithoutExtension(relPath).Contains(".preview", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static List<string> LibraryTemplates(string root) => AllTemplates(root)
+        .Where(x => NormalizeRelPath(x).StartsWith(LibDir + "/", StringComparison.OrdinalIgnoreCase))
+        .Where(IsLibraryTemplate)
+        .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
+    /// <summary>Local import/include targets, normalized relative to the PDF artifact root.</summary>
+    public static List<string> FindImports(string root, string relPath)
+    {
+        var source = TypstCommentsRegex().Replace(File.ReadAllText(Resolve(root, relPath, mustExist: true)), "");
+        var dir = ParentDir(relPath);
+        return ImportRegex().Matches(source)
+            .Select(x => x.Groups["path"].Value)
+            .Where(x => x.Length > 0 && !x.StartsWith('@'))
+            .Select(x => NormalizeImportPath(dir.Length > 0 ? $"{dir}/{x}" : x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    /// <summary>Direct and transitive Typst templates affected by removing or renaming target.</summary>
+    public static List<string> FindDependants(string root, string target)
+    {
+        target = NormalizeRelPath(target);
+        var templates = AllTemplates(root);
+        var imports = templates.ToDictionary(x => x, x => FindImports(root, x), StringComparer.OrdinalIgnoreCase);
+        var affected = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { target };
+        var changed = true;
+        while (changed)
+        {
+            changed = false;
+            foreach (var (template, dependencies) in imports)
+            {
+                if (!affected.Contains(template) && dependencies.Any(affected.Contains))
+                    changed |= affected.Add(template);
+            }
+        }
+        affected.Remove(target);
+        return affected.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>Duplicate a template and all stem companions, retargeting the copy to its companions.</summary>
+    async Task<object?> DuplicateAsync(ChatRequestContext req)
+    {
+        var root = PdfRoot(req.AssertUserName());
+        var body = await req.GetJsonBodyAsync().ConfigAwait();
+        var relFrom = NormalizeRelPath(body.GetString("from"));
+        var relTo = NormalizeRelPath(body.GetString("to"));
+        Resolve(root, relFrom, mustExist: true);
+        AssertOperationName(relFrom, relTo);
+        if (!relFrom.EndsWith(".typ", StringComparison.OrdinalIgnoreCase) ||
+            !relTo.EndsWith(".typ", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("PDF templates must use a .typ name");
+
+        var copies = CompanionMoves(root, relFrom, relTo);
+        foreach (var (_, to) in copies)
+        {
+            if (PathExists(root, to))
+                return Conflict(to);
+        }
+
+        var created = new List<string>();
+        try
+        {
+            foreach (var (from, to) in copies)
+            {
+                var destination = Resolve(root, to);
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                File.Copy(Resolve(root, from, mustExist: true), destination);
+                created.Add(to);
+            }
+            foreach (var path in created.Where(x => x.EndsWith(".typ", StringComparison.OrdinalIgnoreCase)))
+                RetargetReferences(root, path, copies);
+        }
+        catch
+        {
+            foreach (var path in created.Select(x => Resolve(root, x)).Where(File.Exists))
+                File.Delete(path);
+            throw;
+        }
+
+        return new JsonObject
+        {
+            ["path"] = relTo,
+            ["copied"] = new JsonArray(created.Select(x => (JsonNode)x).ToArray()),
+        };
+    }
+
+    static List<(string From, string To)> CompanionMoves(string root, string relFrom, string relTo)
+    {
+        var moves = new List<(string From, string To)> { (relFrom, relTo) };
+        var toStem = Path.GetFileName(relTo)[..^".typ".Length];
+        var toDir = ParentDir(relTo);
+        var fromStemLength = Path.GetFileName(relFrom).LeftPart('.').Length;
+        foreach (var relOther in Companions(root, relFrom))
+        {
+            var suffix = Path.GetFileName(relOther)[fromStemLength..];
+            moves.Add((relOther, toDir.Length > 0 ? $"{toDir}/{toStem}{suffix}" : toStem + suffix));
+        }
+        return moves;
+    }
+
     /// <summary>
-    /// Point a template at renamed files: json("invoice.json"), #import "lib.typ".
+    /// Point a template at renamed files: json("invoice.json"), #import "lib/v1.typ".
     /// <para>
     /// The renamed template gets every quoted reference updated — its own data and schema. Other
     /// templates only get their #import/#include lines touched, since a mention of another
@@ -534,47 +713,74 @@ public partial class PdfExtension() : ChatExtension("pdf")
         var body = await req.GetJsonBodyAsync().ConfigAwait();
         var relFrom = body.GetString("from");
         var relTo = body.GetString("to");
+        relFrom = NormalizeRelPath(relFrom);
+        relTo = NormalizeRelPath(relTo);
         Resolve(root, relFrom, mustExist: true); // validates it exists and stays inside the folder
+        AssertOperationName(relFrom, relTo);
         var toPath = Resolve(root, relTo);
-        if (File.Exists(toPath) || Directory.Exists(toPath))
+        if (PathExists(root, relTo))
             return Conflict(relTo);
+
+        if (IsLibraryTemplate(relFrom!))
+        {
+            var dependants = FindDependants(root, relFrom!);
+            if (dependants.Count > 0)
+                return Blocked($"Cannot rename '{relFrom}' because it is referenced by: {string.Join(", ", dependants)}",
+                    "LibraryInUse");
+        }
 
         var renames = new List<(string From, string To)> { (relFrom!, relTo!) };
         if (relFrom!.EndsWith(".typ", StringComparison.OrdinalIgnoreCase)
             && relTo!.EndsWith(".typ", StringComparison.OrdinalIgnoreCase))
         {
-            var toStem = Path.GetFileName(relTo)[..^".typ".Length];
-            var toDir = ParentDir(relTo);
-            var fromStemLength = Path.GetFileName(relFrom).LeftPart('.').Length;
-            foreach (var relOther in Companions(root, relFrom))
-            {
-                // invoice.ui.json keeps everything after the stem, so .ui.json and .preview.typ survive
-                var suffix = Path.GetFileName(relOther)[fromStemLength..];
-                var relOtherTo = toDir.Length > 0 ? $"{toDir}/{toStem}{suffix}" : toStem + suffix;
-                var otherToPath = Resolve(root, relOtherTo);
-                if (!File.Exists(otherToPath) && !Directory.Exists(otherToPath))
-                    renames.Add((relOther, relOtherTo));
-            }
+            renames = CompanionMoves(root, relFrom, relTo);
+            foreach (var (_, destination) in renames.Skip(1))
+                if (PathExists(root, destination))
+                    return Conflict(destination);
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(toPath)!);
-        foreach (var (oldRel, newRel) in renames)
+        var originalTemplates = AllTemplates(root).ToDictionary(x => x,
+            x => File.ReadAllBytes(Resolve(root, x)), StringComparer.OrdinalIgnoreCase);
+        var moved = new List<(string From, string To, bool IsDirectory)>();
+        var updated = new List<string>();
+        try
         {
-            var from = Resolve(root, oldRel);
-            var to = Resolve(root, newRel);
-            Directory.CreateDirectory(Path.GetDirectoryName(to)!);
-            if (Directory.Exists(from))
-                Directory.Move(from, to);
-            else
-                File.Move(from, to);
-        }
+            Directory.CreateDirectory(Path.GetDirectoryName(toPath)!);
+            foreach (var (oldRel, newRel) in renames)
+            {
+                var from = Resolve(root, oldRel);
+                var to = Resolve(root, newRel);
+                Directory.CreateDirectory(Path.GetDirectoryName(to)!);
+                var isDirectory = Directory.Exists(from);
+                if (isDirectory) Directory.Move(from, to);
+                else File.Move(from, to);
+                moved.Add((oldRel, newRel, isDirectory));
+            }
 
-        // the renamed templates in full, every other one's imports — so a renamed lib.typ doesn't
-        // break the documents importing it
-        var renamedPaths = renames.Select(x => x.To).ToHashSet(StringComparer.Ordinal);
-        var updated = AllTemplates(root)
-            .Where(rel => RetargetReferences(root, rel, renames, importsOnly: !renamedPaths.Contains(rel)))
-            .ToList();
+            // The renamed document's own data/assets references follow its companions. Library renames are
+            // only allowed when unused, so unrelated templates are never silently bulk-edited.
+            var renamedPaths = renames.Select(x => x.To).ToHashSet(StringComparer.Ordinal);
+            updated = AllTemplates(root)
+                .Where(rel => RetargetReferences(root, rel, renames, importsOnly: !renamedPaths.Contains(rel)))
+                .ToList();
+        }
+        catch
+        {
+            foreach (var move in moved.AsEnumerable().Reverse())
+            {
+                var from = Resolve(root, move.From);
+                var to = Resolve(root, move.To);
+                if (move.IsDirectory && Directory.Exists(to)) Directory.Move(to, from);
+                else if (!move.IsDirectory && File.Exists(to)) File.Move(to, from);
+            }
+            foreach (var (rel, bytes) in originalTemplates)
+            {
+                var path = Resolve(root, rel);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllBytes(path, bytes);
+            }
+            throw;
+        }
 
         return new JsonObject
         {
@@ -596,6 +802,23 @@ public partial class PdfExtension() : ChatExtension("pdf")
         var relPath = req.QueryString("path");
         var fullPath = Resolve(root, relPath, mustExist: true);
         var deleted = new JsonArray(relPath!);
+
+        if (Directory.Exists(fullPath) && LibraryTemplates(root).Any(x =>
+                x.StartsWith(NormalizeRelPath(relPath) + "/", StringComparison.OrdinalIgnoreCase)))
+            return Blocked("Delete library templates individually so their dependencies can be checked", "LibraryDirectory");
+
+        if (IsLibraryTemplate(relPath!))
+        {
+            var libraries = LibraryTemplates(root);
+            if (NormalizeRelPath(relPath).StartsWith(LibDir + "/", StringComparison.OrdinalIgnoreCase)
+                && libraries.Count <= 1)
+                return Blocked($"Cannot delete '{relPath}' because at least one lib/*.typ template is required",
+                    "LastLibrary");
+            var dependants = FindDependants(root, relPath!);
+            if (dependants.Count > 0)
+                return Blocked($"Cannot delete '{relPath}' because it is referenced by: {string.Join(", ", dependants)}",
+                    "LibraryInUse");
+        }
 
         if (Directory.Exists(fullPath))
         {

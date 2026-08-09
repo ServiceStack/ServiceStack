@@ -30,7 +30,7 @@ const GEN_PREFIX = 'generated:'
 const SAVED_DIR = 'saved'
 
 // files a typst template pulls in: json("x.json"), image("logo.png"), #include "part.typ", ...
-// lib.typ's load-data() counts too, since that's how every bundled template reaches its .json
+// lib/v1.typ's load-data() counts too, since that's how every bundled template reaches its .json
 const RESOURCE_RE = /\b(?:json|yaml|toml|csv|xml|cbor|read|image|bibliography|load-data)\s*\(\s*"([^"]+)"|#?\b(?:include|import)\s+"([^"]+)"/g
 
 function baseName(path) {
@@ -57,14 +57,17 @@ function isSchemaFile(path) {
 /** invoice.typ, invoice.json, invoice.ui.json, invoice.cs all share the stem "invoice" */
 /**
  * Everything before the first dot, so one rule covers the lot: invoice.json, invoice.ui.json,
- * invoice.signature.png and lib.preview.typ all belong to their base document. It matches how
+ * invoice.signature.png and v1.preview.typ all belong to their base document. It matches how
  * rename picks up a template's companions.
  */
 function stemOf(name) {
     return name.split('.')[0] || name
 }
-const LIB_NAME = 'lib.typ'
-const isLibrary = path => baseName(path ?? '') === LIB_NAME
+const isLibrary = path => {
+    path = (path ?? '').replace(/^\/+/, '')
+    const name = baseName(path)
+    return path === 'lib.typ' || (path.startsWith('lib/') && path.endsWith('.typ') && !name.includes('.preview.'))
+}
 // the file a group opens when you click it, most template-ish first
 const PRIMARY_EXTS = ['.typ', '.json']
 
@@ -343,7 +346,7 @@ const PdfPrompt = {
             <div class="mt-4 flex justify-end gap-2">
                 <button type="button" @click="$emit('cancel')" class="px-3 py-1.5 text-sm" :class="$styles.secondaryButton">Cancel</button>
                 <button v-if="altText" type="button" @click="$emit('alt')" class="px-3 py-1.5 text-sm" :class="$styles.secondaryButton">{{ altText }}</button>
-                <button type="button" @click="submit" class="px-3 py-1.5 text-sm"
+                <button type="button" @click="submit" :disabled="disabled" class="px-3 py-1.5 text-sm disabled:opacity-40"
                     :class="danger ? 'rounded-md border border-transparent shadow-sm text-white bg-red-600 hover:bg-red-700' : $styles.primaryButton">{{ okText }}</button>
             </div>
         </div>
@@ -355,6 +358,7 @@ const PdfPrompt = {
         okText: { type: String, default: 'OK' },
         danger: { type: Boolean, default: false },
         confirmOnly: { type: Boolean, default: false },
+        disabled: { type: Boolean, default: false },
         /** optional second action, e.g. "Discard" next to "Save" */
         altText: { type: String, default: '' },
     },
@@ -369,7 +373,7 @@ const PdfPrompt = {
         }))
         let submitted = false
         function submit() {
-            if (submitted) return
+            if (submitted || props.disabled) return
             const val = props.confirmOnly ? true : text.value.trim()
             if (!val) return
             submitted = true
@@ -2119,13 +2123,22 @@ const PdfDesigner = {
             )
         }
 
-        function promptRename(node) {
+        async function promptRename(node) {
             const others = companionsOf(node.path).map(baseName)
+            let dependants = []
+            if (node.isFile !== false && isLibrary(node.path)) {
+                const api = await ext.getJson(`/dependencies?path=${encodeURIComponent(node.path)}`)
+                if (api.error) return ext.setError(api.error)
+                dependants = api.response.dependencies || []
+            }
             prompt.value = {
                 title: 'Rename',
-                message: others.length ? `${others.join(', ')} will be renamed too, and references updated` : '',
+                message: dependants.length
+                    ? `Cannot rename this library. Referenced by: ${dependants.join(', ')}`
+                    : others.length ? `${others.join(', ')} will be renamed too, and references updated` : '',
                 value: node.name,
                 okText: 'Rename',
+                disabled: dependants.length > 0,
                 async onSubmit(name) {
                     prompt.value = null
                     // rename moves files on disk, so unsaved buffers would be stranded - write them out first
@@ -2144,14 +2157,44 @@ const PdfDesigner = {
             }
         }
 
-        function promptDelete(node) {
+        function promptDuplicate(node) {
             const others = companionsOf(node.path).map(baseName)
+            const ext = extName(node.path)
+            const stem = ext ? node.name.slice(0, -ext.length) : node.name
+            prompt.value = {
+                title: 'Duplicate',
+                message: others.length ? `${others.join(', ')} will be copied too` : '',
+                value: `${stem}-copy${ext}`,
+                okText: 'Duplicate',
+                async onSubmit(name) {
+                    prompt.value = null
+                    if (dirty.value) await save()
+                    const to = joinPath(dirName(node.path), name)
+                    const api = await ext.postJson('/duplicate', { from: node.path, to })
+                    if (api.error) return ext.setError(api.error)
+                    await loadFiles()
+                    await selectTemplate(api.response.path, { force: true })
+                },
+            }
+        }
+
+        async function promptDelete(node) {
+            const others = companionsOf(node.path).map(baseName)
+            let dependants = []
+            if (node.isFile !== false && isLibrary(node.path)) {
+                const api = await ext.getJson(`/dependencies?path=${encodeURIComponent(node.path)}`)
+                if (api.error) return ext.setError(api.error)
+                dependants = api.response.dependencies || []
+            }
             prompt.value = {
                 title: `Delete ${node.name}?`,
-                message: others.length ? `${others.join(', ')} will be deleted too` : '',
+                message: dependants.length
+                    ? `Cannot delete this library. Referenced by: ${dependants.join(', ')}`
+                    : others.length ? `${others.join(', ')} will be deleted too` : '',
                 okText: 'Delete',
                 danger: true,
                 confirmOnly: true,
+                disabled: dependants.length > 0,
                 async onSubmit() {
                     prompt.value = null
                     const api = await ext.deleteJson(`/file?path=${encodeURIComponent(node.path)}&sidecar=true`)
@@ -2185,6 +2228,7 @@ const PdfDesigner = {
             if (node) {
                 items.push(
                     { divider: true },
+                    ...(node.isFile !== false && extName(node.path) === '.typ' ? [{ id: 'duplicate', label: 'Duplicate…' }] : []),
                     { id: 'rename', label: 'Rename…' },
                     { id: 'delete', label: 'Delete', danger: true },
                 )
@@ -2213,6 +2257,7 @@ const PdfDesigner = {
             if (item.id === 'new-template') promptNewTemplate(node)
             else if (item.id === 'new-file') promptNewFile(node)
             else if (item.id === 'new-folder') promptNewFolder(node)
+            else if (item.id === 'duplicate') promptDuplicate(node)
             else if (item.id === 'rename') promptRename(node)
             else if (item.id === 'delete') promptDelete(node)
             else if (item.id === 'refresh') loadFiles()

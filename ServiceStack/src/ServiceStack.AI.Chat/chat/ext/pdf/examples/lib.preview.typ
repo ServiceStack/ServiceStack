@@ -1,12 +1,12 @@
-// Every feature lib.typ styles, on one page. Edit lib.typ, render this, see what changed.
-#import "lib.typ": *
+// Every feature lib/v1.typ styles, on one page. Edit lib/v1.typ, render this, see what changed.
+#import "v1.typ": *
 
 #show: theme
 
 #letterhead()
 
 #v(1em)
-#title-block("lib.typ preview", subtitle: "Each block below is styled by lib.typ - change a token there and re-render this")
+#title-block("lib/v1.typ preview", subtitle: "Each block below is styled by lib/v1.typ - change a token there and re-render this")
 
 = Headings and text
 == A second level heading
@@ -78,14 +78,14 @@ Column one is bold via a `show` rule in the theme, so tables never need to repea
 $ sum_(i=1)^n i = (n (n + 1)) / 2 $
 
 #v(1fr)
-#muted[Rendered from lib.preview.typ]
+#muted[Rendered from lib/v1.preview.typ]
 
 #hrule()
 
 = Example Usage
 
 ```typst
-#import "lib.typ": *
+#import "v1.typ": *
 #let data = load-data("invoice.json")
 #show: theme
 ```

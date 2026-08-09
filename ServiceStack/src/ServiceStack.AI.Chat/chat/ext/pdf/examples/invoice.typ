@@ -1,6 +1,6 @@
 // Data lives in the sidecar invoice.json - edit either side and the preview re-renders
-#import "lib.typ": *
-#let data = load-data("invoice.json")
+#import "lib/v1.typ": *
+#let data = load-data("../invoice.json")
 
 #show: theme
 

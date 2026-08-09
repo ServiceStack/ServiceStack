@@ -18,7 +18,7 @@ The normal artifact set for a document named `invoice` is:
 | `invoice.json` | example data used by previews and as code-generation fallback |
 | `invoice.ui.json` | optional JSON Schema used by forms and typed C# generation |
 | `invoice.*` assets | images and other document-specific resources |
-| `lib.typ` | shared Typst helpers and styles |
+| `lib/v1.typ` | explicitly versioned Typst helpers and styles |
 
 ## Quick start
 
@@ -76,7 +76,7 @@ Without typst, templates can still be browsed and unpublished — only rendering
 # Part 1 — Design a template with AI
 
 Open **PDF Studio** at `/chat/pdf`. Your first visit seeds your workspace with a worked `invoice` example
-(`invoice.typ`, `invoice.json`, `invoice.ui.json`) plus the shared `lib.typ`, so there's something
+(`invoice.typ`, `invoice.json`, `invoice.ui.json`) plus `lib/v1.typ`, so there's something
 compiling in front of you before you type anything.
 
 Templates are stored **per user** under `App_Data/chat/user/<user>/pdf`, so everyone experiments in their
@@ -132,24 +132,29 @@ optional but worth having, because it's what turns a guess into a fact:
 
 The Studio generates it for you from the data, and rebuilds it on demand after you change the data's shape.
 
-## The shared `lib.typ`
+## Versioned libraries
 
-Every template imports `lib.typ`, which holds the styles and helpers your documents share — fonts, colours,
-a `money()` formatter, header and footer blocks. Change it once and every template picks it up.
-`lib.preview.typ` is a small document that renders the library itself, so you can see what's in it.
+New templates explicitly import `lib/v1.typ`, which holds shared styles and helpers such as fonts, colours,
+formatters, headers and footers. Create `lib/v2.typ` for an incompatible change and migrate documents one at
+a time; existing imports remain stable. `lib/v1.preview.typ` renders the library itself.
+
+PDF Studio treats each `.typ` directly under `lib/` as a library version. Duplicate and rename operations
+include stem companions. A referenced library cannot be renamed or deleted: the UI lists every direct and
+transitive dependant. The final library cannot be deleted, ensuring that every workspace retains at least
+one library implementation. Root `lib.typ` remains supported for existing workspaces.
 
 ---
 
 # Part 2 — Publish
 
 When a template is ready, hit **Publish** in the Studio's preview toolbar. (The button only appears for
-admins, on a real template — not on `lib.typ`.)
+admins, on a real document — not on a `lib/*.typ` library.)
 
 Publishing copies the template out of your personal workspace into the App's shared `App_Data/pdf` folder,
 and does rather more than a file copy:
 
 - **It follows the template's references.** Data files, `#include`d partials, `#image()` assets and
-  `lib.typ` all come along, up to 8 levels deep.
+  imported `lib/*.typ` versions all come along, up to 8 levels deep.
 - **It flattens them.** A template authored at `reports/quote.typ` is published as `quote.typ` with its
   companions beside it and its paths rewritten. Published templates are always flat, so rendering never
   depends on your folder layout.
@@ -176,8 +181,8 @@ trail and making the rollback itself reversible.
 
 Revisions are intentionally retained when a template is unpublished, so an administrator can republish the
 same name without losing its history. Back up `.versions` together with the rest of `App_Data/pdf`. If a
-revision contains the shared `lib.typ`, restoring it may affect other templates and the Admin UI reports a
-warning.
+Each scoped library is flattened into the document's published file set, so its exact implementation is
+captured by the immutable revision.
 
 ### Contract fixtures
 
@@ -542,8 +547,8 @@ App_Data/pdf/
 │           ├── invoice.ui.json
 │           └── invoice.preview.png
 ├── fonts/
-├── lib.typ
 ├── invoice.typ
+├── invoice.v1.typ
 ├── invoice.json
 ├── invoice.ui.json
 └── invoice.preview.png
@@ -638,8 +643,9 @@ which is why models default into their own folder and namespace.
 layout but does not reduce the JSON payload size. For data beyond this limit, split the document into
 multiple renders or replace `IPdfRenderer` with an implementation that transports data differently.
 
-**`lib.typ` is shared.** Publishing a template republishes the library it imports, which can affect other
-published templates. The publish response says so when it happens.
+**Libraries are explicit dependencies.** New workspaces use `lib/v1.typ`; publishing flattens that imported
+version into the document's own published file set (for example `invoice.v1.typ`). Create a new version and
+migrate imports deliberately instead of changing every document implicitly.
 
 # Supported scope
 
@@ -738,7 +744,7 @@ A simple compile check for published templates can use each template's example J
 ```bash
 mkdir -p /tmp/pdf-smoke
 for template in App_Data/pdf/*.typ; do
-  case "$template" in */lib.typ|*/lib.preview.typ) continue ;; esac
+  case "$template" in */lib.typ|*/lib/*.typ) continue ;; esac
   typst compile --root App_Data/pdf "$template" "/tmp/pdf-smoke/$(basename "${template%.typ}").pdf"
 done
 ```
@@ -756,7 +762,7 @@ that the rendered layout is visually correct.
 | `Data is too large` | serialized input exceeded `MaxDataBytes` or command-line limits | reduce/split data or use a custom renderer transport |
 | A font differs or is missing | environments have different font installations | deploy the font under `App_Data/pdf/fonts` and pin it |
 | Template works in Studio but fails after publishing | a reference was not collected or could not be rewritten | inspect publish warnings and use literal local references supported by the publisher |
-| Another template changed after publish/rollback | shared `lib.typ` changed | inspect the publish warning and restore or republish the intended library |
+| A library cannot be renamed or deleted | one or more templates import it | update the listed dependants to another `lib/*.typ` version first |
 | Code model is missing a property | `.ui.json` does not declare it | rebuild/edit the schema, regenerate models, and update mappings |
 | Edited generated file is not updated | `PreserveModified` defaults to `true` | adopt the file intentionally, exclude it, or set `PreserveModified = false` |
 | History is empty for an older template | it predates filesystem versioning | publish it once to create its first immutable revision |
@@ -778,6 +784,6 @@ When answering questions or proposing code based on this document:
    vision-capable model, which creates a new Typst approximation.
 7. Do not invent support for signing, encryption, forms, PDF/A, OCR, merging or streaming. Recommend a
    separate PDF library or a custom `IPdfRenderer` pipeline.
-8. Mention the shared `lib.typ` blast radius when a publish or rollback changes library behavior.
+8. Preserve explicit `lib/*.typ` imports and recommend a new library version for incompatible changes.
 9. Preserve cancellation tokens in render calls and avoid persisting PDF bytes in background-job request
    DTOs; persist an identifier and render inside the job instead.

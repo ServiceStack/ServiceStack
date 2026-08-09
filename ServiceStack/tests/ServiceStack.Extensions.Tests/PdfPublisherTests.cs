@@ -72,5 +72,25 @@ public class PdfPublisherTests
         Assert.That(File.Exists(Path.Combine(root, "invoice.logo.png")), Is.False);
     }
 
+    [Test]
+    public void Publishing_captures_a_scoped_library_in_the_documents_flat_file_set()
+    {
+        var source = Path.Combine(root, "source");
+        Directory.CreateDirectory(Path.Combine(source, "lib"));
+        File.WriteAllText(Path.Combine(source, "invoice.typ"),
+            "#import \"lib/v1.typ\": *\n#let data = load-data(\"../invoice.json\")");
+        File.WriteAllText(Path.Combine(source, "invoice.json"), "{}");
+        File.WriteAllText(Path.Combine(source, "lib", "v1.typ"),
+            "#let load-data(fallback) = json(fallback)");
+
+        var result = publisher.Publish(source, "invoice.typ", "invoice", "author");
+
+        Assert.That(result.Files, Does.Contain("invoice.v1.typ"));
+        Assert.That(File.ReadAllText(Path.Combine(root, "invoice.typ")),
+            Does.Contain("#import \"invoice.v1.typ\""));
+        Assert.That(File.ReadAllText(Path.Combine(root, "invoice.typ")),
+            Does.Contain("load-data(\"invoice.json\")"));
+    }
+
     void Write(string fileName, string contents) => File.WriteAllText(Path.Combine(root, fileName), contents);
 }

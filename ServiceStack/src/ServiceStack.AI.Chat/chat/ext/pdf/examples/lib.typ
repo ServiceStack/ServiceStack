@@ -1,10 +1,10 @@
 // Shared styles and helpers for every template in this folder.
 //
-//   #import "lib.typ": *
-//   #let data = load-data("invoice.json")
+//   #import "lib/v1.typ": *
+//   #let data = load-data("../invoice.json")
 //   #show: theme
 //
-// Change something here and open lib.preview.typ to see it applied to every feature at once.
+// Change something here and open lib/v1.preview.typ to see it applied to every feature at once.
 
 #let header-title = "Acme"
 
