@@ -630,7 +630,7 @@ public class AiChatClientTests
 
         executed = false;
         var modelContext = new ChatContext();
-        modelContext.Items[ChatContext.EnforceToolApprovalKey] = true;
+        modelContext.Items[ChatContext.RejectToolsRequiringApproval] = true;
         result = await feature.ExecToolAsync("unsafe_tool", new JsonObject(), modelContext);
         Assert.That(executed, Is.False);
         Assert.That(result.Content, Does.Contain("requires interactive approval"));

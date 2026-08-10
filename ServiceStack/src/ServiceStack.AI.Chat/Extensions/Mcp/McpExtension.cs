@@ -42,6 +42,12 @@ public class McpExtension() : ChatExtension("mcp")
     public string? Instructions { get; set; }
 
     /// <summary>
+    /// Reject tools that require ServiceStack's interactive approval UI, which MCP clients cannot
+    /// present. Disable only when the MCP client is trusted to confirm write/destructive calls.
+    /// </summary>
+    public bool RejectToolsRequiringApproval { get; set; } = true;
+
+    /// <summary>
     /// Largest image/audio result inlined as base64 in a tool result. Larger resources are
     /// returned as a link instead — an Agent can't stream a 40MB wav through its context.
     /// </summary>
@@ -248,6 +254,8 @@ public class McpExtension() : ChatExtension("mcp")
         // MCP requires an object schema; tools with no arguments still need an empty one
         to["inputSchema"] = fn.GetObject("parameters")?.Clone()
             ?? new JsonObject { ["type"] = "object", ["properties"] = new JsonObject() };
+        if (tool.OutputSchema != null)
+            to["outputSchema"] = tool.OutputSchema.Clone();
         // hints Clients use to decide what to auto-approve, for tools that declare their safety
         if (Annotations(tool.Safety) is { } annotations)
             to["annotations"] = annotations;
@@ -285,7 +293,8 @@ public class McpExtension() : ChatExtension("mcp")
 
         Log.LogInformation("MCP tools/call {Tool} as {User}", name, req.UserName);
         var context = new ChatContext { User = req.UserName, Request = req.Request };
-        context.Items[ChatContext.EnforceToolApprovalKey] = true;
+        if (RejectToolsRequiringApproval)
+            context.Items[ChatContext.RejectToolsRequiringApproval] = true;
         // tool errors come back as result text (ExecToolAsync never throws), which is what an
         // Agent wants to read anyway — isError is reserved for what it couldn't attempt
         var (text, resources) = await Ctx.Feature.ExecToolAsync(name!, toolArgs, context).ConfigAwait();
@@ -301,7 +310,10 @@ public class McpExtension() : ChatExtension("mcp")
         if (content.Count == 0)
             content.Add(new JsonObject { ["type"] = "text", ["text"] = "" });
 
-        return new JsonObject { ["content"] = content };
+        var result = new JsonObject { ["content"] = content };
+        if (ChatJson.TryParseObject(text) is { } structured)
+            result["structuredContent"] = structured;
+        return result;
     }
 
     /// <summary>

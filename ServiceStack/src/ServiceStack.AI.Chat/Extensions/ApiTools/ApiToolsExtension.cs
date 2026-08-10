@@ -78,7 +78,7 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
                     ["type"] = "integer",
                     ["description"] = "Max APIs to return (default 20)",
                 },
-            }), SearchAsync, group);
+            }), SearchAsync, group, outputSchema: SearchOutputSchema(), safety: ToolSafety.ReadOnly);
 
         ctx.RegisterTool(ToolDef("api_describe",
             "Get the API JSON Schema for one or more Request DTOs, including their arguments, "
@@ -92,7 +92,8 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
                     ["items"] = new JsonObject { ["type"] = "string" },
                     ["description"] = "API names returned by api_search",
                 },
-            }, required: ["names"]), DescribeAsync, group);
+            }, required: ["names"]), DescribeAsync, group,
+            outputSchema: DescribeOutputSchema(), safety: ToolSafety.ReadOnly);
 
         ctx.RegisterTool(ToolDef("api_call",
             "Call one of this App's APIs and return its JSON response. Runs as the signed-in user, "
@@ -111,7 +112,8 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
                     ["type"] = "object",
                     ["description"] = "Arguments matching the API's schema from api_describe",
                 },
-            }, required: ["name"]), CallAsync, group, ApprovalAsync);
+            }, required: ["name"]), CallAsync, group, ApprovalAsync,
+            outputSchema: CallOutputSchema(), safety: ToolSafety.Write);
 
         if (ctx.Feature.ChatDb != null)
         {
@@ -128,22 +130,39 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
             return Task.FromResult<object?>(NoRequestError);
 
         var take = args.GetInt("take") ?? 20;
-        var results = registry.Search(req, args.GetString("query"), args.GetString("tag"), take);
+        var tag = args.GetString("tag");
+        var results = registry.Search(req, args.GetString("query"), tag, take);
         if (results.Count == 0)
         {
             var tags = registry.GetTags(req);
-            return Task.FromResult<object?>(tags.Count > 0
-                ? $"No APIs matched. Available tags: {string.Join(", ", tags)}"
-                : "No APIs are available to you.");
+            return Task.FromResult<object?>(new JsonObject
+            {
+                ["status"] = "no_match",
+                ["count"] = 0,
+                ["apis"] = new JsonArray(),
+                ["availableTags"] = new JsonArray(tags.Select(x => (JsonNode)x).ToArray()),
+                ["suggestedApis"] = new JsonArray(registry.Search(req, null, tag, 5)
+                    .Select(x => (JsonNode)x.Name).ToArray()),
+                ["next"] = "Try broader user vocabulary, an available tag, or one of suggestedApis",
+            });
         }
 
-        var sb = StringBuilderCache.Allocate();
-        sb.AppendLine($"{results.Count} API(s):");
-        foreach (var tool in results)
+        return Task.FromResult<object?>(new JsonObject
         {
-            sb.AppendLine(tool.ToSummaryLine());
-        }
-        return Task.FromResult<object?>(StringBuilderCache.ReturnAndFree(sb));
+            ["status"] = "success",
+            ["count"] = results.Count,
+            ["apis"] = new JsonArray(results.Select(tool => (JsonNode)new JsonObject
+            {
+                ["name"] = tool.Name,
+                ["request"] = tool.RequestType,
+                ["summary"] = tool.Summary,
+                ["tags"] = new JsonArray(tool.Tags.Select(x => (JsonNode)x).ToArray()),
+                ["safety"] = tool.Safety.ToString().ToLowerInvariant(),
+                ["method"] = tool.Method,
+                ["route"] = tool.Route,
+            }).ToArray()),
+            ["next"] = "Call api_describe with the names of the APIs you intend to use",
+        });
     }
 
     Task<object?> DescribeAsync(JsonObject args, ChatContext context)
@@ -175,7 +194,13 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
                 toolAnnotation["examples"] = new JsonArray(tool.Examples.Select(x => (JsonNode)x).ToArray());
             to.Add(describe);
         }
-        return Task.FromResult<object?>(to);
+        return Task.FromResult<object?>(new JsonObject
+        {
+            ["status"] = "success",
+            ["count"] = to.Count,
+            ["apis"] = to,
+            ["next"] = "Call api_call with the selected API name and arguments matching inputSchema",
+        });
     }
 
     async Task<object?> CallAsync(JsonObject args, ChatContext context)
@@ -191,11 +216,12 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
         if (tool == null)
             return $"Error: API '{name}' not found or not available to you. Use api_search to find one.";
 
-        var argsJson = args["args"] is JsonObject dtoArgs ? dtoArgs.ToJsonString(ChatJson.Options) : null;
+        var dtoArgs = args["args"] as JsonObject;
+        var argsJson = dtoArgs?.ToJsonString(ChatJson.Options);
         Log.LogInformation("api_call {Api} as {User}", tool.RequestType, context.User);
 
         var response = await registry.ExecuteAsync(tool, argsJson, req).ConfigAwait();
-        return FormatResult(response);
+        return FormatResult(tool, proposedArgs: dtoArgs, response);
     }
 
     Task<ChatToolApprovalRequest?> ApprovalAsync(JsonObject args, ChatContext context)
@@ -226,12 +252,23 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
         });
     }
 
-    internal string FormatResult(object? response)
+    internal JsonObject FormatResult(ApiTool tool, JsonObject? proposedArgs, object? response)
     {
         var json = response.ToJson() ?? "null";
-        return json.Length > MaxResultLength
-            ? json[..MaxResultLength] + $"\n...[truncated at {MaxResultLength} chars, narrow the query]"
-            : json;
+        var truncated = json.Length > MaxResultLength;
+        return new JsonObject
+        {
+            ["status"] = "success",
+            ["api"] = tool.Name,
+            ["request"] = proposedArgs?.Clone(),
+            ["response"] = truncated
+                ? json[..MaxResultLength] + $"\n...[truncated at {MaxResultLength} chars, narrow the query]"
+                : ChatJson.Parse(json),
+            ["truncated"] = truncated,
+            ["next"] = tool.FollowUps.Count > 0
+                ? new JsonArray(tool.FollowUps.Select(x => (JsonNode)x).ToArray())
+                : null,
+        };
     }
 
     internal ApiTool? GetTool(string name, IRequest req) => registry.GetTool(name, req);
@@ -242,6 +279,15 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
     static JsonObject CreateToolSchema(ApiTool tool)
     {
         var schema = (ChatJson.Parse(tool.InputSchema.ToJson()) as JsonObject) ?? new JsonObject();
+        schema["inputSchema"] = schema.Clone();
+        if (tool.OutputSchema != null)
+            schema["outputSchema"] = ChatJson.Parse(tool.OutputSchema.ToJson());
+        if (tool.Prerequisites.Count > 0)
+            schema["prerequisites"] = new JsonArray(tool.Prerequisites.Select(x => (JsonNode)x).ToArray());
+        if (tool.Preview != null)
+            schema["preview"] = tool.Preview;
+        if (tool.FollowUps.Count > 0)
+            schema["followUps"] = new JsonArray(tool.FollowUps.Select(x => (JsonNode)x).ToArray());
         schema["tool"] = new JsonObject
         {
             // This can differ from `request` when [Tool(Name)] defines an alias. api_call uses it.
@@ -252,6 +298,46 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
         };
         return schema;
     }
+
+    static JsonObject SearchOutputSchema() => new()
+    {
+        ["type"] = "object",
+        ["properties"] = new JsonObject
+        {
+            ["status"] = new JsonObject { ["type"] = "string" },
+            ["count"] = new JsonObject { ["type"] = "integer" },
+            ["apis"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "object" } },
+            ["next"] = new JsonObject { ["type"] = "string" },
+        },
+        ["required"] = new JsonArray("status", "count", "apis"),
+    };
+
+    static JsonObject DescribeOutputSchema() => new()
+    {
+        ["type"] = "object",
+        ["properties"] = new JsonObject
+        {
+            ["status"] = new JsonObject { ["type"] = "string" },
+            ["count"] = new JsonObject { ["type"] = "integer" },
+            ["apis"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "object" } },
+            ["next"] = new JsonObject { ["type"] = "string" },
+        },
+        ["required"] = new JsonArray("status", "count", "apis"),
+    };
+
+    static JsonObject CallOutputSchema() => new()
+    {
+        ["type"] = "object",
+        ["properties"] = new JsonObject
+        {
+            ["status"] = new JsonObject { ["type"] = "string" },
+            ["api"] = new JsonObject { ["type"] = "string" },
+            ["request"] = new JsonObject { ["type"] = "object" },
+            ["response"] = new JsonObject(),
+            ["truncated"] = new JsonObject { ["type"] = "boolean" },
+        },
+        ["required"] = new JsonArray("status", "api", "response", "truncated"),
+    };
 
     /// <summary>
     /// API tools can only run on behalf of a request. Without one there's no user to run as, and

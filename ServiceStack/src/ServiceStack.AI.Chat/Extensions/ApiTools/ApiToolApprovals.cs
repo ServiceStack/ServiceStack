@@ -239,7 +239,7 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
                 var tool = apiTools.GetTool(row.ApiName, req.Request)
                     ?? throw HttpError.Forbidden($"API '{row.ApiName}' is no longer available to this user");
                 var response = await apiTools.ExecuteAsync(tool, effectiveArgs, req.Request).ConfigAwait();
-                var result = apiTools.FormatResult(response);
+                var result = apiTools.FormatResult(tool, effectiveArgs, response).ToJsonString(ChatJson.Options);
                 var content = ToolResult("approved", row.ApiName, proposedArgs, effectiveArgs, ResultNode(result));
                 Complete(id, user, ApiToolApprovalStatus.Completed, effectiveArgs, result, content, null, null);
             }

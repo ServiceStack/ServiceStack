@@ -11,7 +11,7 @@ namespace ServiceStack.AI;
 public class ChatContext
 {
     /// <summary>Items flag for model-driven transports that cannot present an approval UI.</summary>
-    public const string EnforceToolApprovalKey = "enforce_tool_approval";
+    public const string RejectToolsRequiringApproval = "reject_tools_requiring_approval";
 
     public JsonObject? Chat { get; set; }
     public string? User { get; set; }

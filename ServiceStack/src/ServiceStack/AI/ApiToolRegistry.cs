@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
@@ -50,6 +51,10 @@ public class ApiTool
     public string? WhenToUse { get; set; }
     public List<string> Keywords { get; set; } = [];
     public List<string> Examples { get; set; } = [];
+    public List<string> Prerequisites { get; set; } = [];
+    public string? Preview { get; set; }
+    public List<string> FollowUps { get; set; } = [];
+    public List<string> Aliases { get; set; } = [];
 
     public ToolSafety Safety { get; set; }
     public bool RequiresApproval { get; set; }
@@ -67,9 +72,14 @@ public class ApiTool
     public List<string> RequiresAnyRole { get; set; } = [];
     public List<string> RequiredPermissions { get; set; } = [];
     public List<string> RequiresAnyPermission { get; set; } = [];
+    public List<Claim> RequiredClaims { get; set; } = [];
+    public List<string> RequiredScopes { get; set; } = [];
+
+    public Type? ResponseType { get; set; }
 
     /// <summary>JSON Schema of the Request DTO, generated on first use</summary>
     public Dictionary<string, object?> InputSchema { get; set; } = null!;
+    public Dictionary<string, object?>? OutputSchema { get; set; }
 
     /// <summary>What this API does, for a listing. Falls back to the API name when undocumented.</summary>
     public string Summary => !string.IsNullOrEmpty(Description) ? Description!
@@ -113,7 +123,9 @@ public class ApiToolRegistry(ApiToolsConfig config)
     public List<ApiTool> GetTools(IRequest req) => GetAll().Where(x => CanAccess(x, req)).ToList();
 
     public ApiTool? GetTool(string name, IRequest req) => GetTools(req)
-        .FirstOrDefault(x => x.Name == name || x.RequestType == name);
+        .FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+            || x.RequestType.Equals(name, StringComparison.OrdinalIgnoreCase)
+            || x.Aliases.Any(alias => alias.Equals(name, StringComparison.OrdinalIgnoreCase)));
 
     /// <summary>Distinct [Tag]s across exposed APIs — a cheap map of the App to seed an Agent with</summary>
     public List<string> GetTags(IRequest req) => GetTools(req)
@@ -143,6 +155,10 @@ public class ApiToolRegistry(ApiToolsConfig config)
                 WhenToUse = attr?.WhenToUse,
                 Keywords = attr?.Keywords?.ToList() ?? [],
                 Examples = attr?.Examples?.ToList() ?? [],
+                Prerequisites = attr?.Prerequisites?.ToList() ?? [],
+                Preview = attr?.Preview,
+                FollowUps = attr?.FollowUps?.ToList() ?? [],
+                Aliases = attr?.Aliases?.ToList() ?? [],
                 Safety = safety,
                 RequiresApproval = attr?.RequiresApproval ?? false,
                 Fields = attr?.Fields,
@@ -157,7 +173,11 @@ public class ApiToolRegistry(ApiToolsConfig config)
                 RequiresAnyRole = op.RequiresAnyRole.ToList(),
                 RequiredPermissions = op.RequiredPermissions.ToList(),
                 RequiresAnyPermission = op.RequiresAnyPermission.ToList(),
+                RequiredClaims = op.RequiredClaims.ToList(),
+                RequiredScopes = op.RequiredScopes.ToList(),
+                ResponseType = op.ResponseType,
                 InputSchema = CreateInputSchema(type),
+                OutputSchema = op.ResponseType != null ? CreateOutputSchema(op.ResponseType) : null,
             });
         }
         return to;
@@ -171,6 +191,19 @@ public class ApiToolRegistry(ApiToolsConfig config)
     {
 #if NET8_0_OR_GREATER
         return MetadataSchemaGenerator.CreateSchema(type).ToJsonString()
+            .FromJson<Dictionary<string, object?>>()!;
+#else
+        return ApiToolSchema.ToJsonSchema(type);
+#endif
+    }
+
+    public static Dictionary<string, object?> CreateOutputSchema(Type type)
+    {
+        if (type == typeof(string) || type.IsPrimitive || type.IsEnum
+            || typeof(IEnumerable).IsAssignableFrom(type))
+            return ApiToolSchema.ToJsonTypeSchema(type);
+#if NET8_0_OR_GREATER
+        return MetadataSchemaGenerator.CreateModelSchema(type).ToJsonString()
             .FromJson<Dictionary<string, object?>>()!;
 #else
         return ApiToolSchema.ToJsonSchema(type);
@@ -229,29 +262,49 @@ public class ApiToolRegistry(ApiToolsConfig config)
     /// </summary>
     public bool CanAccess(ApiTool tool, IRequest req)
     {
-        if (!tool.RequiresAuth && tool.RequiredRoles.Count == 0 && tool.RequiresAnyRole.Count == 0
-            && tool.RequiredPermissions.Count == 0 && tool.RequiresAnyPermission.Count == 0)
+        if (!tool.RequiresAuth && !tool.RequiresApiKey && tool.RequiredRoles.Count == 0 && tool.RequiresAnyRole.Count == 0
+            && tool.RequiredPermissions.Count == 0 && tool.RequiresAnyPermission.Count == 0
+            && tool.RequiredClaims.Count == 0 && tool.RequiredScopes.Count == 0)
             return true;
 
-        var session = req.GetSession();
-        if (session?.IsAuthenticated != true)
+        var apiKey = req.GetApiKey();
+        if (tool.RequiresApiKey && apiKey == null)
             return false;
 
-        var authRepo = HostContext.AppHost.GetAuthRepository(req);
-        using (authRepo as IDisposable)
+        var session = req.GetSession();
+        var needsSession = tool.RequiresAuth || tool.RequiredRoles.Count > 0 || tool.RequiresAnyRole.Count > 0
+            || tool.RequiredPermissions.Count > 0 || tool.RequiresAnyPermission.Count > 0;
+        if (needsSession && session?.IsAuthenticated != true)
+            return false;
+
+        if (needsSession)
         {
-            if (tool.RequiredRoles.Any(role => !session.HasRole(role, authRepo)))
-                return false;
-            if (tool.RequiresAnyRole.Count > 0 && !tool.RequiresAnyRole.Any(role => session.HasRole(role, authRepo)))
-                return false;
-            if (tool.RequiredPermissions.Any(perm => !session.HasPermission(perm, authRepo)))
-                return false;
-            if (tool.RequiresAnyPermission.Count > 0
-                && !tool.RequiresAnyPermission.Any(perm => session.HasPermission(perm, authRepo)))
-                return false;
+            var authRepo = HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                if (tool.RequiredRoles.Any(role => !session!.HasRole(role, authRepo)))
+                    return false;
+                if (tool.RequiresAnyRole.Count > 0 && !tool.RequiresAnyRole.Any(role => session!.HasRole(role, authRepo)))
+                    return false;
+                if (tool.RequiredPermissions.Any(perm => !session!.HasPermission(perm, authRepo)))
+                    return false;
+                if (tool.RequiresAnyPermission.Count > 0
+                    && !tool.RequiresAnyPermission.Any(perm => session!.HasPermission(perm, authRepo)))
+                    return false;
+            }
         }
+        if (tool.RequiredClaims.Any(claim => !RequiredClaimAttribute.HasClaim(req, claim.Type, claim.Value)))
+            return false;
+        if (tool.RequiredScopes.Any(scope => apiKey?.HasScope(scope) != true
+                && !HasScope(req.GetClaimsPrincipal(), scope)))
+            return false;
         return true;
     }
+
+    static bool HasScope(ClaimsPrincipal? principal, string scope) => principal?.Claims
+        .Where(x => x.Type is "scope" or "scp")
+        .SelectMany(x => x.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        .Any(x => x.Equals(scope, StringComparison.OrdinalIgnoreCase)) == true;
 
     /// <summary>
     /// Find APIs matching a query, ranked name &gt; keywords &gt; tags &gt; description. Matching on a
@@ -284,16 +337,42 @@ public class ApiToolRegistry(ApiToolsConfig config)
     static int Score(ApiTool tool, List<string> terms)
     {
         var score = 0;
+        var searchableName = tool.Name.SplitCamelCase();
         foreach (var term in terms)
         {
             if (tool.Name.Contains(term, StringComparison.OrdinalIgnoreCase)) score += 10;
+            else if (searchableName.Contains(term, StringComparison.OrdinalIgnoreCase)) score += 8;
+            else if (EditDistance(tool.Name, term) <= 2) score += 2;
             if (tool.Keywords.Any(x => x.Contains(term, StringComparison.OrdinalIgnoreCase))) score += 6;
+            if (tool.Aliases.Any(x => x.Contains(term, StringComparison.OrdinalIgnoreCase))) score += 7;
             if (tool.Tags.Any(x => x.Contains(term, StringComparison.OrdinalIgnoreCase))) score += 4;
             if (tool.WhenToUse?.Contains(term, StringComparison.OrdinalIgnoreCase) == true) score += 3;
             if (tool.Description?.Contains(term, StringComparison.OrdinalIgnoreCase) == true) score += 2;
             if (tool.Route?.Contains(term, StringComparison.OrdinalIgnoreCase) == true) score += 1;
         }
         return score;
+    }
+
+    static int EditDistance(string left, string right)
+    {
+        left = left.ToLowerInvariant();
+        right = right.ToLowerInvariant();
+        if (Math.Abs(left.Length - right.Length) > 2)
+            return 3;
+        var costs = Enumerable.Range(0, right.Length + 1).ToArray();
+        for (var i = 1; i <= left.Length; i++)
+        {
+            var prior = costs[0];
+            costs[0] = i;
+            for (var j = 1; j <= right.Length; j++)
+            {
+                var old = costs[j];
+                costs[j] = Math.Min(Math.Min(costs[j] + 1, costs[j - 1] + 1),
+                    prior + (left[i - 1] == right[j - 1] ? 0 : 1));
+                prior = old;
+            }
+        }
+        return costs[^1];
     }
 
     /// <summary>
@@ -305,6 +384,9 @@ public class ApiToolRegistry(ApiToolsConfig config)
         if (!CanAccess(tool, req))
             throw HttpError.Forbidden($"'{tool.Name}' requires access this user doesn't have");
 
+        if (!string.IsNullOrWhiteSpace(argsJson))
+            ValidateArguments(tool, argsJson!);
+
         var dto = string.IsNullOrWhiteSpace(argsJson)
             ? tool.Type.CreateInstance()
             : JsonSerializer.DeserializeFromString(argsJson, tool.Type);
@@ -315,6 +397,43 @@ public class ApiToolRegistry(ApiToolsConfig config)
 
         var gateway = HostContext.AppHost.GetServiceGateway(req);
         return await gateway.SendAsync<object>(dto).ConfigAwait();
+    }
+
+    static void ValidateArguments(ApiTool tool, string argsJson)
+    {
+        var value = argsJson.FromJson<Dictionary<string, object?>>() ?? [];
+        var schema = tool.InputSchema;
+        var errors = new List<string>();
+        ValidateNode(schema, value, "arguments", errors);
+        if (errors.Count > 0)
+            throw new ArgumentException(string.Join("; ", errors));
+    }
+
+    static void ValidateNode(IDictionary<string, object?> schema, object? value, string path, List<string> errors)
+    {
+        if (value is IDictionary<string, object?> obj && schema.TryGetValue("properties", out var propertiesValue)
+            && propertiesValue is IDictionary<string, object?> properties)
+        {
+            foreach (var entry in obj)
+            {
+                var name = properties.Keys.FirstOrDefault(x => x.Equals(entry.Key, StringComparison.OrdinalIgnoreCase));
+                if (name == null)
+                {
+                    var suggestion = properties.Keys.OrderBy(x => EditDistance(x, entry.Key)).FirstOrDefault();
+                    errors.Add($"Unknown field '{path}.{entry.Key}'"
+                        + (suggestion != null ? $". Did you mean '{suggestion}'?" : ""));
+                    continue;
+                }
+                if (properties[name] is IDictionary<string, object?> child)
+                    ValidateNode(child, entry.Value, $"{path}.{name}", errors);
+            }
+        }
+        else if (value is IList list && schema.TryGetValue("items", out var itemValue)
+                 && itemValue is IDictionary<string, object?> itemSchema)
+        {
+            for (var i = 0; i < list.Count; i++)
+                ValidateNode(itemSchema, list[i], $"{path}[{i}]", errors);
+        }
     }
 
     /// <summary>

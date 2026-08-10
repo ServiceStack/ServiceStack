@@ -353,7 +353,7 @@ public partial class ChatFeature
 
         try
         {
-            if (context.Items.GetValueOrDefault(ChatContext.EnforceToolApprovalKey) is true
+            if (context.Items.GetValueOrDefault(ChatContext.RejectToolsRequiringApproval) is true
                 && tool.ApprovalHandler != null
                 && await tool.ApprovalHandler(args, context).ConfigAwait() != null)
             {

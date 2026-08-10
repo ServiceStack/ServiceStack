@@ -10,6 +10,8 @@ public class ChatTool
     /// <summary>{"type":"function","function":{"name":...,"description":...,"parameters":{...}}}</summary>
     public required JsonObject Definition { get; init; }
     public required ChatToolHandler Handler { get; init; }
+    /// <summary>Optional JSON Schema for structured MCP tool results.</summary>
+    public JsonObject? OutputSchema { get; init; }
     /// <summary>Optional preflight for model-generated calls that may need human approval.</summary>
     public ChatToolApprovalHandler? ApprovalHandler { get; init; }
     public string? Group { get; init; }

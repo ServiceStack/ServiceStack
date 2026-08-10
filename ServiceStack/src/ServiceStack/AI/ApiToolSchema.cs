@@ -26,6 +26,9 @@ public static class ApiToolSchema
 
     public static Dictionary<string, object?> ToJsonSchema(Type type) => ObjectSchema(type, 0, []);
 
+    /// <summary>Generate a schema for any JSON value, including scalar and collection responses.</summary>
+    public static Dictionary<string, object?> ToJsonTypeSchema(Type type) => TypeSchema(type, 0, []);
+
     static Dictionary<string, object?> ObjectSchema(Type type, int depth, HashSet<Type> seen)
     {
         var properties = new Dictionary<string, object?>();

@@ -100,6 +100,18 @@ public class ToolAttribute : AttributeBase
     /// </summary>
     public string[]? Examples { get; set; }
 
+    /// <summary>APIs the Agent should normally call before this one.</summary>
+    public string[]? Prerequisites { get; set; }
+
+    /// <summary>A read-only API that previews or validates this API's proposed arguments.</summary>
+    public string? Preview { get; set; }
+
+    /// <summary>APIs commonly useful after this one succeeds.</summary>
+    public string[]? FollowUps { get; set; }
+
+    /// <summary>Alternative names and user vocabulary that should resolve to this API.</summary>
+    public string[]? Aliases { get; set; }
+
     /// <summary>
     /// How much damage this tool call can do, used to decide whether an Agent may call it
     /// unattended. Defaults to <see cref="ToolSafety.Auto"/>, inferred from the API's HTTP Verb.

@@ -84,12 +84,15 @@ public class ExtensionContext(ChatFeature feature, string name)
     // ── Tools ──
 
     public void RegisterTool(JsonObject definition, ChatToolHandler handler, string? group = null,
-        ChatToolApprovalHandler? approvalHandler = null) =>
+        ChatToolApprovalHandler? approvalHandler = null, JsonObject? outputSchema = null,
+        ToolSafety safety = ToolSafety.Auto) =>
         feature.Tools.Register(new ChatTool
         {
             Definition = definition,
             Handler = handler,
             ApprovalHandler = approvalHandler,
+            OutputSchema = outputSchema,
+            Safety = safety,
             Group = group ?? name,
         });
 

@@ -39,12 +39,13 @@ public class ConfigureAiChat : IHostingStartup
                     EnableFilesystemTools = true,
                 },
                 ApiTools = {
-                    IncludeTags = ["todos"]
+                    IncludeTags = ["todos", "CoffeeShop"]
                 },
                 // Add this App's own tools to the built-in extensions
                 // Expose these tools to external AI Agents over MCP at /chat/mcp
                 Mcp = {
                     ToolGroups = ["api_tools", "bookings"],
+                    RejectToolsRequiringApproval = false,
                 },
                 Setup = (ctx => {
                     // ctx.Mcp.ToolGroups = ["api_tools", "core_tools", "booking_tools"];
