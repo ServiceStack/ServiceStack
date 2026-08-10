@@ -89,7 +89,7 @@ const ToolResult = {
         <div class="flex items-center gap-2 text-[10px] uppercase tracking-wider font-medium select-none">
             <span @click="ext.setPrefs({ toolFormat: 'text' })" 
                 class="cursor-pointer transition-colors"
-                :class="ext.prefs.toolFormat !== 'preview' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
+                :class="ext.prefs.toolFormat !== 'preview' && ext.prefs.toolFormat !== 'json' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
                 text
             </span>
             <span :class="[$styles.muted]">|</span>
@@ -98,12 +98,24 @@ const ToolResult = {
                 :class="ext.prefs.toolFormat == 'preview' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
                 preview
             </span>
+            <template v-if="jsonValue">
+                <span :class="[$styles.muted]">|</span>
+                <span @click="ext.setPrefs({ toolFormat: 'json' })" 
+                    class="cursor-pointer transition-colors"
+                    :class="ext.prefs.toolFormat == 'json' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
+                    json
+                </span>
+            </template>
         </div>
         <div class="not-prose py-2">
-            <pre v-if="ext.prefs.toolFormat !== 'preview'" class="tool-output">{{ origResult }}</pre>
-            <div v-else>
-                <ViewTypes v-if="Array.isArray(result) && result[0]?.type" :results="result" />
-                <ViewType v-else :result="result" />
+            <div v-if="ext.prefs.toolFormat === 'json' && jsonValue">
+                <CodeBlock :html="$utils.highlightJson(jsonString)" :code="jsonString" size-class="h-full overflow-auto" />
+            </div>
+            <pre v-else-if="ext.prefs.toolFormat !== 'preview'" class="tool-output">{{ origResult }}</pre>
+            <div v-else class="overflow-auto">
+                <HtmlFormat v-if="jsonValue" :value="jsonValue" :classes="$utils.htmlFormatClasses" />
+                <ViewTypes v-else-if="Array.isArray(result) && result[0]?.type" :results="result" />
+                <ViewType v-else-if="result && result.type" :result="result" />
             </div>
         </div>
     </div>
@@ -114,19 +126,27 @@ const ToolResult = {
         }
     },
     setup(props) {
+        const ctx = inject('ctx')
 
         const origResult = computed(() => {
             let ret = props.result
             if (Array.isArray(props.result) && props.result.length == 1) {
                 ret = props.result[0]
             }
-            if (ret.type) {
+            if (ret && ret.type) {
                 if (ret.type === "text") {
                     return ret.text
                 }
             }
             return props.result
         })
+        const jsonValue = computed(() => 
+            Array.isArray(props.result) && props.result.length == 1
+                ? ctx.utils.tryParseJson(props.result[0]?.text)
+            : props.result?.text 
+                ? ctx.utils.tryParseJson(props.result?.text) 
+                : null)
+        const jsonString = computed(() => jsonValue.value ? JSON.stringify(jsonValue.value, null, 2) : null)
         const displayResult = computed(() => {
             try {
                 let result = typeof props.result == 'string'
@@ -135,7 +155,7 @@ const ToolResult = {
                 if (Array.isArray(result) && result.length == 1) {
                     result = result[0]
                 }
-                if (result.type) {
+                if (result && result.type) {
                     if (result.type === "text") {
                         try {
                             return JSON.parse(result.text)
@@ -152,6 +172,8 @@ const ToolResult = {
         return {
             ext,
             origResult,
+            jsonValue,
+            jsonString,
             displayResult,
         }
     }

@@ -17,6 +17,37 @@ export function toJsonObject(json) {
     }
 }
 
+export function tryParseJson(str) {
+    try {
+        return JSON.parse(str)
+    } catch (e) {
+        return null
+    }
+}
+export function hasJsonStructure(str) {
+    return tryParseJson(str) != null
+}
+
+const escapeHtml = s => String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/**
+ * Minimal JSON highlighter. A response is the whole point of this page, so it earns colour;
+ * pulling in a syntax highlighter for one language does not.
+ */
+export function highlightJson(json) {
+    return escapeHtml(json).replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+        match => {
+            const cls = /^"/.test(match)
+                ? (/:$/.test(match) ? 'text-sky-700 dark:text-sky-300' : 'text-emerald-700 dark:text-emerald-300')
+                : /true|false/.test(match) ? 'text-purple-700 dark:text-purple-300'
+                : /null/.test(match) ? 'text-gray-400 dark:text-gray-500'
+                : 'text-amber-700 dark:text-amber-300'
+            return `<span class="${cls}">${match}</span>`
+        })
+}
+
 export function storageArray(key, save) {
     if (save && Array.isArray(save)) {
         localStorage.setItem(key, JSON.stringify(save))
@@ -333,6 +364,10 @@ export function utilsFunctions() {
         nextId,
         toJsonArray,
         toJsonObject,
+        tryParseJson,
+        hasJsonStructure,
+        escapeHtml,
+        highlightJson,
         storageArray,
         storageObject,
         fileToBase64,

@@ -4,7 +4,7 @@ import SettingsDialog, { useSettings } from './SettingsDialog.mjs'
 import {
     ChatBody, ErrorBubble, LightboxImage, TypeText, TypeImage, TypeAudio, TypeFile, ViewType, ViewTypes,
     ViewToolTypes, TextViewer, ToolCall, ToolArguments, ToolOutput, MessageUsage, MessageReasoning,
-    CompactThreadButton, UserAvatar, AgentAvatar
+    CompactThreadButton, UserAvatar, AgentAvatar, CodeBlock,
 } from './ChatBody.mjs'
 import { AppContext } from '../../ctx.mjs'
 
@@ -1337,6 +1337,7 @@ export default {
             ThreadFooter,
             UserAvatar,
             AgentAvatar,
+            CodeBlock,
         })
         ctx.setGlobals({
             chat: useChatPrompt(ctx)

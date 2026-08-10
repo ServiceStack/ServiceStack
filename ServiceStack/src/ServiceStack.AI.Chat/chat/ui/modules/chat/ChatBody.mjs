@@ -1,17 +1,6 @@
 import { ref, computed, nextTick, watch, onMounted, onUnmounted, onUpdated, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
-function tryParseJson(str) {
-    try {
-        return JSON.parse(str)
-    } catch (e) {
-        return null
-    }
-}
-function hasJsonStructure(str) {
-    return tryParseJson(str) != null
-}
-
 function isEmpty(v) {
     return !v || v === '{}' || v === '[]' || v === 'null' || v === 'undefined' || v === '""' || v === "''" || v === "``"
 }
@@ -263,7 +252,8 @@ export const TypeFile = {
 export const ViewType = {
     template: `
     <div class="flex items-center gap-2 p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <TypeText v-if="result.type === 'text'" :text="result" />
+        <HtmlFormat v-if="result.type === 'text' && $utils.tryParseJson(result.text)" :value="$utils.tryParseJson(result.text)" :classes="$utils.htmlFormatClasses" />
+        <TypeText v-else-if="result.type === 'text'" :text="result" />
         <TypeImage v-else-if="result.type === 'image_url'" :image="result" />
         <TypeAudio v-else-if="result.type === 'audio_url' || result.type === 'input_audio'" :audio="result" />
         <TypeFile v-else-if="result.type === 'file'" :file="result" />
@@ -637,12 +627,12 @@ export const ToolArguments = {
         const maximized = ref({})
         const dict = computed(() => {
             if (isEmpty(props.value)) return null
-            const ret = tryParseJson(props.value)
+            const ret = ctx.utils.tryParseJson(props.value)
             return typeof ret === 'object' && !Array.isArray(ret) ? ret : null
         })
         const list = computed(() => {
             if (isEmpty(props.value)) return null
-            const ret = tryParseJson(props.value)
+            const ret = ctx.utils.tryParseJson(props.value)
             return Array.isArray(ret) && ret.length > 0 ? ret : null
         })
 
@@ -692,6 +682,46 @@ export const ToolArguments = {
     }
 }
 
+/** A code block with a copy button - used for the request, the curl line and the response */
+export const CodeBlock = {
+    props: { code: String, html: String, sizeClass: { type: String, default: 'max-h-[60vh]' } },
+    template: `
+    <div class="relative group flex flex-col h-full">
+        <button type="button" @click="copy" :title="copied ? 'Copied' : 'Copy'"
+                class="absolute right-2 top-2 z-10 rounded-md p-1.5 opacity-0 group-hover:opacity-100
+                       focus:opacity-100 transition-opacity bg-white/80 dark:bg-gray-900/80
+                       text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            <span class="sr-only">Copy</span>
+            <svg v-if="!copied" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504
+                    1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125
+                    1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504
+                    1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621
+                    0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12
+                    6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375
+                    3.375 0 0 0-3.375-3.375H9.75"/>
+            </svg>
+            <svg v-else class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+        </button>
+        <div :class="['overflow-auto rounded-lg bg-gray-50 dark:bg-black border border-gray-200',
+                      'dark:border-gray-800 p-3 font-mono text-xs leading-relaxed flex-1 min-h-0', sizeClass]"
+        ><code v-if="html" v-html="html" class="whitespace-pre"></code><code class="whitespace-pre" v-else>{{ code }}</code></div>
+    </div>`,
+    setup(props) {
+        const copied = ref(false)
+        return {
+            copied,
+            copy() {
+                navigator.clipboard?.writeText(props.code)
+                copied.value = true
+                setTimeout(() => copied.value = false, 1200)
+            },
+        }
+    },
+}
+
 export const ToolOutput = {
     template: `
         <div v-if="output" class="border-t" :class="[$styles.chromeBorder]">
@@ -700,10 +730,10 @@ export const ToolOutput = {
                     <svg class="size-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     <span class="text-[10px] uppercase tracking-wider font-medium" :class="[$styles.muted]">Output</span>
                 </div>    
-                <div v-if="hasJsonStructure(output.content)" class="flex items-center gap-2 text-[10px] uppercase tracking-wider font-medium select-none">
+                <div v-if="$utils.hasJsonStructure(output.content)" class="flex items-center gap-2 text-[10px] uppercase tracking-wider font-medium select-none">
                     <span @click="$ctx.setPrefs({ toolFormat: 'text' })" 
                         class="cursor-pointer transition-colors"
-                        :class="$ctx.prefs.toolFormat !== 'preview' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
+                        :class="$ctx.prefs.toolFormat !== 'preview' && $ctx.prefs.toolFormat !== 'json' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
                         text
                     </span>
                     <span class="text-gray-300 dark:text-gray-700">|</span>
@@ -712,14 +742,25 @@ export const ToolOutput = {
                         :class="$ctx.prefs.toolFormat == 'preview' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
                         preview
                     </span>
+                    <template v-if="jsonValue">
+                        <span class="text-gray-300 dark:text-gray-700">|</span>
+                        <span @click="$ctx.setPrefs({ toolFormat: 'json' })" 
+                            class="cursor-pointer transition-colors"
+                            :class="$ctx.prefs.toolFormat == 'json' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
+                            json
+                        </span>
+                    </template>
                 </div>
             </div>
             <div class="px-3 py-2">
-                <div v-if="$ctx.prefs.toolFormat !== 'preview' || !hasJsonStructure(output.content)">
+                <div v-if="$ctx.prefs.toolFormat === 'json' && jsonValue">
+                    <CodeBlock :html="$utils.highlightJson(jsonString)" :code="jsonString" size-class="h-full overflow-auto" />
+                </div>
+                <div v-else-if="$ctx.prefs.toolFormat !== 'preview' || !jsonValue">
                     <TextViewer prefsName="toolOutput" :text="output.content" />
                 </div>
                 <div v-else class="not-prose text-xs">
-                    <HtmlFormat v-if="tryParseJson(output.content)" :value="tryParseJson(output.content)" :classes="$utils.htmlFormatClasses" />
+                    <HtmlFormat v-if="jsonValue" :value="jsonValue" :classes="$utils.htmlFormatClasses" />
                     <div v-else class="text-gray-500 italic p-2">Invalid JSON content</div>
                 </div>
             </div>
@@ -731,10 +772,12 @@ export const ToolOutput = {
         output: Object,
     },
     setup(props) {
+        const ctx = inject('ctx')
+        const jsonValue = computed(() => ctx.utils.tryParseJson(props.output?.content))
+        const jsonString = computed(() => jsonValue.value ? JSON.stringify(jsonValue.value, null, 2) : (typeof props.output?.content === 'string' ? props.output.content : JSON.stringify(props.output?.content, null, 2)))
 
         return {
-            tryParseJson,
-            hasJsonStructure,
+            jsonString,
         }
     }
 }
@@ -1497,8 +1540,6 @@ export const ChatBody = {
             resolveUrl,
             getMessageUsage,
             isToolLinked,
-            tryParseJson,
-            hasJsonStructure,
         }
     }
 }
