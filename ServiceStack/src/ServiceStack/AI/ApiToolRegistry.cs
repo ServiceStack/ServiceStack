@@ -303,7 +303,7 @@ public class ApiToolRegistry(ApiToolsConfig config)
 
     static bool HasScope(ClaimsPrincipal? principal, string scope) => principal?.Claims
         .Where(x => x.Type is "scope" or "scp")
-        .SelectMany(x => x.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        .SelectMany(x => x.Value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
         .Any(x => x.Equals(scope, StringComparison.OrdinalIgnoreCase)) == true;
 
     /// <summary>
@@ -320,7 +320,7 @@ public class ApiToolRegistry(ApiToolsConfig config)
         if (string.IsNullOrWhiteSpace(query))
             return tools.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).Take(take).ToList();
 
-        var terms = query!.Split([' ', ',', '|'], StringSplitOptions.RemoveEmptyEntries)
+        var terms = query!.Split(new[] { ' ', ',', '|' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(x => x.Trim()).Where(x => x.Length > 1).ToList();
         if (terms.Count == 0)
             terms.Add(query.Trim());
@@ -372,7 +372,7 @@ public class ApiToolRegistry(ApiToolsConfig config)
                 prior = old;
             }
         }
-        return costs[^1];
+        return costs[costs.Length - 1];
     }
 
     /// <summary>
