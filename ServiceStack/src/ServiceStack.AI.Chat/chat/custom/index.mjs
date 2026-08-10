@@ -39,8 +39,8 @@ const McpToolPageHeader = {
         >
             <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between">
-                    <span class="font-semibold text-gray-800 dark:text-gray-200">
-                        {{ info.serverName || 'servicestack-ai-chat' }} (v{{ info.serverVersion }})
+                    <span class="font-semibold text-gray-800 dark:text-gray-200" :title="info.serverName && info.serverVersion ? info.serverName + ' v' + info.serverVersion : ''">
+                        {{ info.serverName || 'servicestack-ai-chat' }}
                     </span>
                     <span v-if="info.isEnabled" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" :class="[$styles.bgSuccess]">
                         Enabled
@@ -457,7 +457,7 @@ export default {
                             {{ publishing ? 'Publishing…' : 'Publish' }}
                         </button>
                         
-                        <a v-if="publishable" :href="'/admin-ui/pdf?template=' + entry + '&origin=chat'" title="View template in Admin UI"
+                        <a v-if="publishable" :href="viewPdfUrl" title="View template in Admin UI"
                             class="inline-flex items-center justify-center p-1 rounded-md text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24">
                                 <path d="M0 0h24v24H0z" fill="none" />
@@ -469,6 +469,7 @@ export default {
                         </a>`,
                     setup(props) {
                         const publishing = ref(false)
+                        const viewPdfUrl = computed(() => `/admin-ui/pdf?template=${props.entry}&origin=chat`)
                         const publishable = computed(() => !!props.entry?.endsWith('.typ')
                             && !/^(?:lib(?:\.preview)?\.typ|lib\/)/i.test(props.entry))
                         const hasUnsavedChanges = () => Object.values(props.buffers || {})
@@ -506,8 +507,10 @@ export default {
                                         return ext.setError(Object.assign({}, api.error, { message: `PDF contract validation failed\n${details}` }))
                                     }
                                     return ext.setError(api.error)
+                                } else {
+                                    ext.toast(`Published ${api.response.template.name}`)
+                                    location.href = viewPdfUrl.value
                                 }
-                                ext.toast(`Published ${api.response.template.name}`)
                                 if (api.response.libUpdated) ext.toast('lib.typ was updated and may affect other published templates')
                             } catch (e) {
                                 ext.setError(ctx.ai.createErrorStatus({ message: e.message || String(e) }))
@@ -515,7 +518,7 @@ export default {
                                 publishing.value = false
                             }
                         }
-                        return { publishing, publishable, publish }
+                        return { viewPdfUrl, publishing, publishable, publish }
                     },
                 }
             }

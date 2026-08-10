@@ -7,7 +7,7 @@ let mcpExt
 
 const McpToolPageHeader = {
     template: `
-    <div class="text-sm flex flex-col items-end">
+    <div class="text-sm flex flex-col items-end mb-8">
         <!-- Collapsed Header -->
         <div
             @click="toggleExpanded"
@@ -29,20 +29,17 @@ const McpToolPageHeader = {
             <span v-else-if="!info.isEnabled" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                 Disabled
             </span>
-            <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" :class="[$styles.bgWarning]">
-                No tools exposed
-            </span>
         </div>
 
         <!-- Expanded Details -->
         <div
             v-if="isExpanded"
-            class="mb-8 w-full mt-3 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 text-left"
+            class="w-full mt-3 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 text-left"
             :class="[$styles.bgCard]"
         >
             <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between">
-                    <span class="font-semibold text-gray-800 dark:text-gray-200">
+                    <span class="font-semibold text-gray-800 dark:text-gray-200" :title="info.serverName && info.serverVersion ? info.serverName + ' v' + info.serverVersion : ''">
                         {{ info.serverName || 'servicestack-ai-chat' }}
                     </span>
                     <span v-if="info.isEnabled" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" :class="[$styles.bgSuccess]">
@@ -448,17 +445,19 @@ export default {
 
         ctx.pdf.setPreviewActions({
             adminPdf: {
-                isVisible: c => ctx.ai.isAdmin && c.entry?.endsWith('.typ') && !/^lib(?:\.preview)?\.typ$/i.test(c.entry),
+                isVisible: c => ctx.ai.isAdmin && c.entry?.endsWith('.typ')
+                    && !/^(?:lib(?:\.preview)?\.typ|lib\/)/i.test(c.entry),
                 component: {
+                    inheritAttrs: false,
                     props: ['entry', 'buffers', 'rendering', 'save'],
                     template: `
-                        <button type="button" @click="publish" :disabled="!entry || rendering || publishing"
+                        <button v-if="publishable" type="button" @click="publish" :disabled="rendering || publishing"
                             title="Publish this template to PDF Admin UI"
                             class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs disabled:opacity-40 mr-1 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md">
                             {{ publishing ? 'Publishing…' : 'Publish' }}
                         </button>
                         
-                        <a :href="'/admin-ui/pdf?template=' + entry + '&origin=chat'" title="View template in Admin UI"
+                        <a v-if="publishable" :href="viewPdfUrl" title="View template in Admin UI"
                             class="inline-flex items-center justify-center p-1 rounded-md text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24">
                                 <path d="M0 0h24v24H0z" fill="none" />
@@ -467,10 +466,12 @@ export default {
                                     <path d="M15 12a3 3 0 1 0-6 0a3 3 0 0 0 6 0Z" />
                                 </g>
                             </svg>
-                        </a>
-                    `,
+                        </a>`,
                     setup(props) {
                         const publishing = ref(false)
+                        const viewPdfUrl = computed(() => `/admin-ui/pdf?template=${props.entry}&origin=chat`)
+                        const publishable = computed(() => !!props.entry?.endsWith('.typ')
+                            && !/^(?:lib(?:\.preview)?\.typ|lib\/)/i.test(props.entry))
                         const hasUnsavedChanges = () => Object.values(props.buffers || {})
                             .some(x => x.content !== x.saved)
                         const post = async body => {
@@ -482,7 +483,7 @@ export default {
                             return await ctx.ai.createJsonResult(res)
                         }
                         const publish = async () => {
-                            if (!props.entry || publishing.value) return
+                            if (!publishable.value || publishing.value) return
                             if (hasUnsavedChanges()) {
                                 if (!confirm('Save your changes before publishing? Publishing uses the files on disk.')) return
                                 await props.save()
@@ -496,8 +497,20 @@ export default {
                                     if (confirm(`${owner.name || props.entry} was published by ${owner.user || 'another user'} from ${owner.source || 'another template'}. Overwrite it?`))
                                         api = await post({ path: props.entry, overwrite: true })
                                 }
-                                if (api.error) return ext.setError(api.error)
-                                ext.toast(`Published ${api.response.template.name}`)
+                                if (api.error) {
+                                    if (api.error.errorCode === 'PdfContractValidation' && api.error.errors?.length) {
+                                        const details = api.error.errors.map(x => {
+                                            const fixture = x.meta?.fixture ? `${x.meta.fixture}: ` : ''
+                                            const path = x.fieldName ? `${x.fieldName}: ` : ''
+                                            return `${fixture}${path}${x.message}`
+                                        }).join('\n')
+                                        return ext.setError(Object.assign({}, api.error, { message: `PDF contract validation failed\n${details}` }))
+                                    }
+                                    return ext.setError(api.error)
+                                } else {
+                                    ext.toast(`Published ${api.response.template.name}`)
+                                    location.href = viewPdfUrl.value
+                                }
                                 if (api.response.libUpdated) ext.toast('lib.typ was updated and may affect other published templates')
                             } catch (e) {
                                 ext.setError(ctx.ai.createErrorStatus({ message: e.message || String(e) }))
@@ -505,7 +518,7 @@ export default {
                                 publishing.value = false
                             }
                         }
-                        return { publishing, publish }
+                        return { viewPdfUrl, publishing, publishable, publish }
                     },
                 }
             }
@@ -524,4 +537,3 @@ export default {
         }
     }
 }
-

@@ -32,6 +32,7 @@ rm -f ../../tests/NorthwindAuto/App_Data/chat/providers-extra.json
 
 # copy custom components to include in css
 cp ./chat/custom/*.* $LLMS/ui/tailwind/
+cp ../../tests/NorthwindAuto/wwwroot/chat/custom/*.* chat/custom/
 
 echo "Syncing from $LLMS"
 
