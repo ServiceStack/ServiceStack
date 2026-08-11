@@ -28,9 +28,9 @@
         "--tw-prose-code-bg": "#3b4252",
         "--tw-prose-code-border": "#5e81ac",
         "--tw-prose-table-bg": "#2e344099",
-        "--tw-prose-th-bg": "#5e81ac",
-        "--tw-prose-th-borders": "#5e81ac",
-        "--tw-prose-td-borders": "#5e81ac"
+        "--tw-prose-th-bg": "#5e81ac33",
+        "--tw-prose-th-borders": "#5e81ac66",
+        "--tw-prose-td-borders": "#5e81ac40"
     },
     "nord": {
         "--color-nord-100": "#eceff4",

@@ -419,8 +419,8 @@ export const o = {
             "--tw-prose-code-bg": "#1e40af99",
             "--tw-prose-code-border": "#2563eb99",
             "--tw-prose-table-bg": "#11182780",
-            "--tw-prose-th-bg": "#1e40af99",
-            "--tw-prose-th-borders": "#2563eb99",
+            "--tw-prose-th-bg": "#1e3a8a66",
+            "--tw-prose-th-borders": "#2563eb66",
             "--tw-prose-td-borders": "#374151",
         },
         "styles": {
