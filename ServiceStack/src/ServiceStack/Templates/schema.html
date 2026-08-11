@@ -38,138 +38,15 @@
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm">
 <div id="app"></div>
 <script type="module">
-/**
- * The HTML view of /schema/{RequestDto}: renders one API's schema as a form you can fill in
- * and execute, alongside exactly what gets sent and exactly what comes back.
- *
- * The form, the request building and the error binding are all AutoQuerySchema's — reused
- * from @servicestack/vue, so an API behaves here the way it does in the CRUD UI:
- *
- *   SchemaInput    one input per property, picking the widget from the schema and binding its
- *                  own ResponseStatus.Errors[].FieldName message
- *   buildRequest   the method, URL, querystring/JSON/multipart body, and AutoQuery's Patch
- *                  `reset` rules - the preview and the actual call read the same function, so
- *                  what's shown is what's sent
- *   propsOf/toOp/requirementText/subtitle
- */
-import { createApp, computed, ref, shallowRef, onMounted, onUnmounted, Teleport } from "vue"
+import { createApp, computed, ref, inject, provide } from "vue"
+import { JsonServiceClient } from "@servicestack/client"
 import ServiceStackVue, {
-    useAuth, buildRequest, propsOf, toOp, requirementText, subtitle, unwrapResponse
+    useAuth, requirementText, subtitle, toOp, useApiKey
 } from "@servicestack/vue"
+import ApiExplorerSchema from "../mjs/ApiExplorerSchema.mjs"
+import AvatarButton from "../mjs/AvatarButton.mjs"
 const Schema = window.Schema
 if (window.Auth) useAuth().signIn(window.Auth)
-// --- helpers ---------------------------------------------------------------
-const bytes = n => n < 1024 ? `${n} B`
-    : n < 1024 * 1024 ? `${(n / 1024).toFixed(1)} KB`
-    : `${(n / 1024 / 1024).toFixed(1)} MB`
-const escapeHtml = s => String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-/**
- * Minimal JSON highlighter. A response is the whole point of this page, so it earns colour;
- * pulling in a syntax highlighter for one language does not.
- */
-function highlight(json) {
-    return escapeHtml(json).replace(
-        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
-        match => {
-            const cls = /^"/.test(match)
-                ? (/:$/.test(match) ? 'text-sky-700 dark:text-sky-300' : 'text-emerald-700 dark:text-emerald-300')
-                : /true|false/.test(match) ? 'text-purple-700 dark:text-purple-300'
-                : /null/.test(match) ? 'text-gray-400 dark:text-gray-500'
-                : 'text-amber-700 dark:text-amber-300'
-            return `<span class="${cls}">${match}</span>`
-        })
-}
-/** The same request as a curl one-liner, so it can be run outside the browser as-is */
-function toCurl({ method, url, headers, body, uploads }) {
-    const origin = location.origin
-    const parts = [`curl -X ${method} '${origin}${url}'`]
-    for (const [k, v] of Object.entries(headers)) parts.push(`-H '${k}: ${v}'`)
-    if (uploads.length) {
-        for (const [k, v] of Object.entries(body)) {
-            if (!uploads.includes(k)) parts.push(`-F '${k}=${v}'`)
-        }
-        for (const name of uploads) parts.push(`-F '${name}=@/path/to/file'`)
-    } else if (method !== 'GET' && method !== 'DELETE') {
-        parts.push(`-d '${JSON.stringify(body)}'`)
-    }
-    return parts.join(' \\\n  ')
-}
-/** A query string value arrives as text; the inputs and the API both want it typed */
-function coerce(value, prop) {
-    const type = prop?.type
-    if (type === 'boolean') {
-        // a bare `?Cancelled` reads as the flag being set, which is how links are written
-        return value === '' || /^(true|1|on|yes)$/i.test(value)
-    }
-    if (type === 'integer' || type === 'number') {
-        const n = Number(value)
-        return Number.isFinite(n) && value !== '' ? n : undefined
-    }
-    if (type === 'array') {
-        const values = Array.isArray(value) ? value : [value]
-        if (prop.items?.type === 'object') return parseJson(values[0])
-        // both `?Ids=1&Ids=2` and `?Ids=1,2` are common, so accept either
-        return values.flatMap(v => String(v).split(',')).map(x => x.trim()).filter(Boolean)
-    }
-    if (type === 'object') return parseJson(value)
-    return value
-}
-const parseJson = text => { try { return JSON.parse(text) } catch { return undefined } }
-/**
- * Values for this API found in the page's own query string, so a link like
- *   /schema/QueryBookings?RoomType=Queen&Take=5
- * lands on the answer instead of a form to fill in again. Names are matched
- * case-insensitively, since the API itself accepts either casing.
- */
-function fromQueryString(schema) {
-    const params = new URLSearchParams(location.search)
-    const byLower = new Map(Object.keys(schema.properties ?? {}).map(n => [n.toLowerCase(), n]))
-    const to = {}
-    for (const [key, value] of params) {
-        const name = byLower.get(key.toLowerCase())
-        if (!name || name in to) continue
-        const prop = schema.properties[name]
-        const parsed = coerce(prop?.type === 'array' ? params.getAll(key) : value, prop)
-        if (parsed !== undefined) to[name] = parsed
-    }
-    return to
-}
-/** Updates the browser URL query string after form submission to include all non-empty values */
-function updateUrlQueryString(schema, data) {
-    const params = new URLSearchParams()
-    const properties = schema?.properties ?? {}
-    const byLowerProp = new Map(Object.entries(properties).map(([k, v]) => [k.toLowerCase(), v]))
-    for (const [name, val] of Object.entries(data ?? {})) {
-        if (val === undefined || val === null) continue
-        const prop = properties[name] ?? byLowerProp.get(String(name).toLowerCase())
-        const isNumberProp = prop?.type === 'integer' || prop?.type === 'number'
-        if (isNumberProp || typeof val === 'number') {
-            const num = Number(val)
-            if (!Number.isFinite(num) || num === 0) continue
-            params.set(name, String(num))
-        } else if (prop?.type === 'boolean' || typeof val === 'boolean') {
-            if (val === true || val === 'true') {
-                params.set(name, 'true')
-            }
-        } else if (Array.isArray(val)) {
-            if (val.length > 0) {
-                params.set(name, val.join(','))
-            }
-        } else if (typeof val === 'object') {
-            if (Object.keys(val).length > 0) {
-                params.set(name, JSON.stringify(val))
-            }
-        } else if (typeof val === 'string') {
-            const trimmed = val.trim()
-            if (trimmed === '' || trimmed === '0') continue
-            params.set(name, trimmed)
-        }
-    }
-    const qs = params.toString()
-    const newUrl = location.pathname + (qs ? '?' + qs : '')
-    history.replaceState(null, '', newUrl)
-}
 const METHOD_CLASS = {
     GET: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
     POST: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
@@ -201,46 +78,6 @@ const AuthLock = {
     </div>`,
     setup: () => ({ open: ref(false) }),
 }
-/** A code block with a copy button - used for the request, the curl line and the response */
-const CodeBlock = {
-    props: { code: String, html: String, sizeClass: { type: String, default: 'max-h-[60vh]' } },
-    template: `
-    <div class="relative group flex flex-col h-full">
-        <button type="button" @click="copy" :title="copied ? 'Copied' : 'Copy'"
-                class="absolute right-2 top-2 z-10 rounded-md p-1.5 opacity-0 group-hover:opacity-100
-                       focus:opacity-100 transition-opacity bg-white/80 dark:bg-gray-900/80
-                       text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-            <span class="sr-only">Copy</span>
-            <svg v-if="!copied" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504
-                    1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125
-                    1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504
-                    1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621
-                    0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12
-                    6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375
-                    3.375 0 0 0-3.375-3.375H9.75"/>
-            </svg>
-            <svg v-else class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
-            </svg>
-        </button>
-        <pre :class="['overflow-auto rounded-lg bg-gray-50 dark:bg-black border border-gray-200',
-                      'dark:border-gray-800 p-3 font-mono text-xs leading-relaxed flex-1 min-h-0', sizeClass]"
-        ><code v-if="html" v-html="html"></code><code v-else>{{ code }}</code></pre>
-    </div>`,
-    setup(props) {
-        const copied = ref(false)
-        return {
-            copied,
-            copy() {
-                navigator.clipboard?.writeText(props.code)
-                copied.value = true
-                setTimeout(() => copied.value = false, 1200)
-            },
-        }
-    },
-}
-// --- page ------------------------------------------------------------------
 const template = `
 <div class="min-h-screen">
     <header class="sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800
@@ -257,323 +94,63 @@ const template = `
             <div class="min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
                     <h1 class="text-xl font-semibold">{{ Schema.title || Schema.request }}</h1>
-                    <span :class="['font-mono text-[11px] font-semibold rounded px-1.5 py-0.5', methodClass]">
+                    <span :class="['font-mono text-[11px] font-semibold rounded ml-4 mt-1 px-1.5 py-0.5', methodClass]">
                         {{ method }}
                     </span>
-                    <code class="font-mono text-xs text-gray-500 dark:text-gray-400">{{ Schema.$id }}</code>
+                    <code class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{{ Schema.$id }}</code>
                     <AuthLock v-if="authText" :text="authText" />
+                    <button v-if="requiresApiKey" type="button" @click="showApiKeyDialog = true"
+                            :title="apiKey ? 'API Key configured' : 'API Key required'"
+                            class="rounded-md p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span class="sr-only">API Key</span>
+                        <svg class="w-5 h-5" :class="apiKey ? 'text-emerald-500' : 'text-amber-500'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                        </svg>
+                    </button>
                 </div>
                 <p v-if="pageSubtitle" class="text-gray-500 dark:text-gray-400" v-html="pageSubtitle"></p>
             </div>
             <span class="flex-1"></span>
-            <DarkModeToggle />
+            <AvatarButton />
+            <DarkModeToggle class="mt-1" />
         </div>
     </header>
-    <main class="mx-auto max-w-[110rem] px-4 py-5 space-y-6">
-        <div class="grid gap-6 lg:grid-cols-2 items-start">
-            <!-- request form -->
-            <form ref="form" @submit.prevent="execute" @keydown.enter="onFormEnter" class="min-w-0">
-                <ErrorSummary v-if="error" :status="error" :except="boundFields" class="mb-4" />
-                <div v-if="fields.length" class="grid grid-cols-12 gap-4">
-                    <SchemaInput v-for="f in fields" :key="f.name" :name="f.name" :prop="f.prop"
-                                 :schema="Schema" :status="error" :model-value="data[f.name]"
-                                 @update:model-value="data[f.name] = $event" />
-                </div>
-                <p v-else class="text-gray-500 dark:text-gray-400">
-                    This API takes no parameters — just run it.
-                </p>
-                <div class="mt-5 flex items-center gap-3">
-                    <PrimaryButton type="submit" :disabled="loading">
-                        {{ loading ? 'Running…' : (Schema.ui?.submitLabel || 'Execute') }}
-                    </PrimaryButton>
-                    <SecondaryButton type="button" @click="reset" :disabled="loading">Reset</SecondaryButton>
-                    <span v-if="!canCall" class="text-xs text-amber-600 dark:text-amber-400">
-                        You don't have access to call this — it will fail with 401/403
-                    </span>
-                </div>
-                <!-- what's actually about to be sent, straight from buildRequest() -->
-                <section class="mt-6">
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Request
-                        </h2>
-                        <span class="flex-1"></span>
-                        <button type="button" @click="showCurl = !showCurl"
-                                class="text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
-                            {{ showCurl ? 'hide curl' : 'curl' }}
-                        </button>
-                    </div>
-                    <CodeBlock :code="requestText" size-class="max-h-64" />
-                    <CodeBlock v-if="showCurl" :code="curl" size-class="max-h-64" class="mt-2" />
-                </section>
-            </form>
-            <!-- schema -->
-            <section class="min-w-0 flex flex-col" :style="formHeight ? { height: formHeight + 'px' } : {}">
-                <div class="flex items-center gap-2 mb-1.5 min-h-6 shrink-0">
-                    <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        Schema
-                    </h2>
-                </div>
-                <div class="flex-1 min-h-0">
-                    <CodeBlock :html="schemaHtml" :code="schemaJson" size-class="h-full overflow-auto" />
-                </div>
-            </section>
-        </div>
-        <!-- response -->
-        <section class="min-w-0">
-            <div class="flex items-center gap-2 mb-1.5 min-h-6">
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Response
-                </h2>
-                <template v-if="result">
-                    <span :class="['font-mono text-[11px] font-semibold rounded px-1.5 py-0.5',
-                                   result.ok ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300'
-                                             : 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300']">
-                        {{ result.status }} {{ result.statusText }}
-                    </span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
-                        {{ result.ms }} ms · {{ result.size }}
-                    </span>
-                </template>
-                <span class="flex-1"></span>
-                <div v-if="result" class="flex items-center gap-2 text-xs">
-                    <button v-for="t in tabs" :key="t" type="button" @click="tab = t"
-                            :class="['rounded px-1.5 py-0.5',
-                                     tab === t ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-medium'
-                                               : 'text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400']">
-                        {{ t }}
-                    </button>
-                    <button type="button" @click="maximized = true" title="Maximize view"
-                            class="ml-1 rounded p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200
-                                   hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                        <span class="sr-only">Maximize view</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div v-if="!result"
-                 :class="['rounded-lg border border-dashed border-gray-300 dark:border-gray-700',
-                          'flex items-center justify-center text-xs text-gray-500 dark:text-gray-400',
-                          paneHeight]">
-                Run the API to see its response
-            </div>
-            <div v-else-if="tab === 'Data'"
-                 :class="['overflow-auto rounded-lg border border-gray-200 dark:border-gray-800 p-3', paneHeight]">
-                <!-- say which field the shown payload came out of, since it isn't the whole response -->
-                <p v-if="payload.key" class="mb-2 text-xs text-gray-500 dark:text-gray-400">
-                    <code class="font-mono">{{ payload.key }}</code>
-                    <span v-if="payload.range"> · {{ payload.range }}</span>
-                </p>
-                <JsonView :value="payload.data" />
-            </div>
-            <CodeBlock v-else-if="tab === 'JSON'" :html="bodyHtml" :code="result.text" :size-class="paneHeight" />
-            <CodeBlock v-else-if="tab === 'Headers'" :code="result.headers" :size-class="paneHeight" />
-            <CodeBlock v-else :html="schemaHtml" :code="schemaJson" :size-class="paneHeight" />
-        </section>
+    <main class="mx-auto max-w-[110rem] px-4 py-5">
+        <ApiExplorerSchema :schema="Schema" />
     </main>
-    <Teleport to="body">
-        <div v-if="maximized" class="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-900 p-4 sm:p-6 overflow-hidden">
-            <div class="flex items-center gap-3 pb-3 mb-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
-                <div class="flex items-center gap-2 flex-wrap min-w-0">
-                    <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">
-                        {{ Schema.title || Schema.request }} Response
-                    </h2>
-                    <template v-if="result">
-                        <span :class="['font-mono text-xs font-semibold rounded px-2 py-0.5',
-                                       result.ok ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300'
-                                                 : 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300']">
-                            {{ result.status }} {{ result.statusText }}
-                        </span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
-                            {{ result.ms }} ms · {{ result.size }}
-                        </span>
-                    </template>
-                    <span v-if="tab === 'Data' && payload.key" class="text-xs text-gray-500 dark:text-gray-400">
-                        <code class="font-mono">{{ payload.key }}</code>
-                        <span v-if="payload.range"> · {{ payload.range }}</span>
-                    </span>
-                </div>
-                <span class="flex-1"></span>
-                <div class="flex items-center gap-2 text-xs">
-                    <button v-for="t in tabs" :key="t" type="button" @click="tab = t"
-                            :class="['rounded px-2.5 py-1 font-medium',
-                                     tab === t ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                                               : 'text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400']">
-                        {{ t }}
-                    </button>
-                    <button type="button" @click="maximized = false" title="Restore view (Esc)"
-                            class="ml-2 rounded-md p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200
-                                   hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                        <span class="sr-only">Restore view</span>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9 3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5 5.25 5.25"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200 dark:border-gray-800 p-4 bg-white dark:bg-gray-900">
-                <div v-if="tab === 'Data'">
-                    <p v-if="payload.key" class="mb-3 text-xs text-gray-500 dark:text-gray-400">
-                        <code class="font-mono">{{ payload.key }}</code>
-                        <span v-if="payload.range"> · {{ payload.range }}</span>
-                    </p>
-                    <JsonView :value="payload.data" />
-                </div>
-                <CodeBlock v-else-if="tab === 'JSON'" :html="bodyHtml" :code="result.text" size-class="h-full min-h-full" />
-                <CodeBlock v-else-if="tab === 'Headers'" :code="result.headers" size-class="h-full min-h-full" />
-                <CodeBlock v-else :html="schemaHtml" :code="schemaJson" size-class="h-full min-h-full" />
-            </div>
-        </div>
-    </Teleport>
+    <api-key-dialog v-if="showApiKeyDialog" @done="showApiKeyDialog = false" @save="onApiKeySaved"></api-key-dialog>
 </div>`
 const App = {
-    components: { AuthLock, CodeBlock, Teleport },
+    components: { AuthLock, ApiExplorerSchema, AvatarButton },
     template,
     setup() {
-        const fields = propsOf(Schema)
-        const blank = () => Object.fromEntries(fields.map(f => [f.name, undefined]))
-        // anything the URL already answers for
-        const prefilled = fromQueryString(Schema)
-        const data = ref({ ...blank(), ...prefilled })
-        const error = ref(null)
-        const loading = ref(false)
-        const result = ref(null)
-        const tab = ref('Data')
-        const showCurl = ref(false)
-        const maximized = ref(false)
-        const formHeight = ref(null)
-        let resizeObserver = null
-        // shallow, because ref() would hand the whole <form> DOM tree to Vue's deep reactive
-        // proxy - which recurses through the element graph until the stack gives out
-        const form = shallowRef(null)
-        const { canAccess } = useAuth()
         const method = Schema.method || 'POST'
-        // rebuilt as the form is edited, so the preview is never stale
-        const request = computed(() => buildRequest(Schema, data.value, form.value))
-        const requestText = computed(() => {
-            const r = request.value
-            const lines = [`${r.method} ${r.url}`]
-            for (const [k, v] of Object.entries(r.headers)) lines.push(`${k}: ${v}`)
-            if (r.uploads.length) {
-                lines.push('', `(multipart — uploading ${r.uploads.join(', ')})`)
-            } else if (typeof r.payload === 'string' && r.payload !== '{}') {
-                lines.push('', JSON.stringify(r.body, null, 2))
-            }
-            return lines.join('\n')
-        })
-        // Fields render their own error, so the summary only shows what none of them claimed
-        const boundFields = computed(() => {
-            const names = Object.keys(Schema.properties ?? {})
-            return (error.value?.errors ?? [])
-                .map(e => e.fieldName)
-                .filter(f => names.some(n => String(f ?? '').toLowerCase().startsWith(n.toLowerCase())))
-        })
-        async function execute() {
-            updateUrlQueryString(Schema, data.value)
-            loading.value = true
-            error.value = null
-            const started = performance.now()
-            try {
-                const r = buildRequest(Schema, data.value, form.value)
-                const res = await fetch(r.url, { method: r.method, headers: r.headers, body: r.payload ?? undefined })
-                const text = await res.text()
-                const ms = Math.round(performance.now() - started)
-                let pretty = text
-                let json = null
-                try {
-                    json = text ? JSON.parse(text) : null
-                    pretty = json != null ? JSON.stringify(json, null, 2) : text
-                } catch { /* not JSON - show it raw */ }
-                // a 204, or a 401 that only answers in headers, still needs to say something
-                if (!pretty) pretty = '(no content)'
-                result.value = {
-                    json,
-                    ok: res.ok,
-                    status: res.status,
-                    statusText: res.statusText,
-                    ms,
-                    size: bytes(new Blob([text]).size),
-                    text: pretty,
-                    headers: [...res.headers.entries()].map(([k, v]) => `${k}: ${v}`).join('\n'),
-                }
-                // nothing to lay out if it didn't parse, so start on the raw text
-                tab.value = json == null ? 'JSON' : 'Data'
-                // a failed call still binds its field errors to the inputs that caused them
-                error.value = res.ok ? null : (json?.responseStatus ?? json?.ResponseStatus
-                    ?? { message: `${res.status} ${res.statusText}`, errors: [] })
-            } catch (e) {
-                error.value = { message: e.message ?? String(e), errors: [] }
-                result.value = null
-            } finally {
-                loading.value = false
-            }
+        const client = inject('client', null) ?? new JsonServiceClient()
+        provide('client', client)
+        const globalApiKey = useApiKey()
+        const apiKey = computed(() => globalApiKey.value || client.bearerToken || '')
+        const requiresApiKey = computed(() => !!Schema.auth?.requiresApiKey)
+        const showApiKeyDialog = ref(false)
+        function onApiKeySaved(key) {
+            if (client) client.bearerToken = key
+            globalApiKey.value = key
         }
-        function onKeydown(e) {
-            if (e.key === 'Escape' && maximized.value) {
-                maximized.value = false
-            }
-        }
-        function onFormEnter(e) {
-            if (e.target?.tagName === 'TEXTAREA') return
-            e.preventDefault()
-            execute()
-        }
-        // A GET is safe to repeat, so a prefilled link runs itself; anything that writes waits
-        // for the button, however it was linked to
-        onMounted(() => {
-            if (method === 'GET' && Object.keys(prefilled).length) execute()
-            window.addEventListener('keydown', onKeydown)
-            if (form.value && typeof ResizeObserver !== 'undefined') {
-                resizeObserver = new ResizeObserver(entries => {
-                    for (const entry of entries) {
-                        formHeight.value = entry.target.offsetHeight
-                    }
-                })
-                resizeObserver.observe(form.value)
-            }
-        })
-        onUnmounted(() => {
-            window.removeEventListener('keydown', onKeydown)
-            if (resizeObserver) resizeObserver.disconnect()
-        })
-        const schemaJson = JSON.stringify(Schema, null, 2)
         return {
-            Schema, form, fields, data, error, loading, result, tab, showCurl, method, maximized, formHeight,
-            boundFields, requestText, execute, onFormEnter,
-            schemaJson,
-            schemaHtml: highlight(schemaJson),
-            bodyHtml: computed(() => result.value ? highlight(result.value.text) : ''),
-            /** the part of the response that is the answer, and where it was found */
-            payload: computed(() => {
-                const { data, key, envelope } = unwrapResponse(result.value?.json)
-                // AutoQuery pages a result set, so say which page this is when it says so
-                const total = envelope?.total ?? envelope?.Total
-                const offset = envelope?.offset ?? envelope?.Offset ?? 0
-                const range = Array.isArray(data) && data.length > 0
-                    ? (total ? `${offset + 1}-${offset + data.length} of ${total}`
-                             : `${offset + 1}-${offset + data.length}`)
-                    : null
-                return { data, key, range }
-            }),
-            curl: computed(() => toCurl(request.value)),
-            tabs: ['Data', 'JSON', 'Headers', 'Schema'],
-            paneHeight: 'max-h-[70vh] min-h-48',
+            Schema,
+            method,
             methodClass: METHOD_CLASS[method] ?? METHOD_CLASS.POST,
             pageSubtitle: subtitle(Schema),
             authText: Schema.auth ? requirementText(Schema.auth) : null,
-            canCall: computed(() => canAccess(toOp(Schema))),
-            reset: () => {
-                data.value = blank()
-                error.value = null
-                result.value = null
-                updateUrlQueryString(Schema, data.value)
-            },
+            requiresApiKey,
+            apiKey,
+            showApiKeyDialog,
+            onApiKeySaved,
         }
     },
 }
-createApp(App).use(ServiceStackVue).mount('#app')
+const app = createApp(App)
+app.use(ServiceStackVue)
+app.mount('#app')
 </script>
 </body>
 </html>
