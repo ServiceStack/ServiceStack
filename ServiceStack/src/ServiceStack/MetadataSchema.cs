@@ -731,6 +731,11 @@ public static class MetadataSchemaGenerator
             propSchema["type"] = "string";
             propSchema["format"] = "duration";
         }
+        else if (GetDictionaryValueType(propType) is { } dictValueType)
+        {
+            propSchema["type"] = "object";
+            propSchema["additionalProperties"] = TypeSchema(dictValueType, depth + 1, seen);
+        }
         else if (GetCollectionItemType(propType) is { } itemType)
         {
             propSchema["type"] = "array";
@@ -878,6 +883,11 @@ public static class MetadataSchemaGenerator
         else if (type == typeof(double) || type == typeof(float) || type == typeof(decimal)) schema["type"] = "number";
         else if (type == typeof(DateTime) || type == typeof(DateTimeOffset)) { schema["type"] = "string"; schema["format"] = "date-time"; }
         else if (type == typeof(Guid)) { schema["type"] = "string"; schema["format"] = "uuid"; }
+        else if (GetDictionaryValueType(type) is { } dictValueType)
+        {
+            schema["type"] = "object";
+            schema["additionalProperties"] = TypeSchema(dictValueType, depth + 1, seen);
+        }
         else if (GetCollectionItemType(type) is { } itemType)
         {
             schema["type"] = "array";
@@ -1016,13 +1026,19 @@ public static class MetadataSchemaGenerator
         var refsAttr = pi.FirstAttribute<ReferencesAttribute>();
         if (refsAttr?.Type != null)
         {
-            return refsAttr.Type.CreateRefModel();
+            var modelRef = refsAttr.Type.CreateRefModel();
+            if (modelRef != null)
+                modelRef.SelfId = pi.Name;
+            return modelRef;
         }
 
         var fkAttr = pi.FirstAttribute<ForeignKeyAttribute>();
         if (fkAttr?.Type != null)
         {
-            return fkAttr.Type.CreateRefModel();
+            var modelRef = fkAttr.Type.CreateRefModel();
+            if (modelRef != null)
+                modelRef.SelfId = pi.Name;
+            return modelRef;
         }
 
         var referenceAttr = pi.FirstAttribute<ReferenceAttribute>();
@@ -1039,8 +1055,27 @@ public static class MetadataSchemaGenerator
                     RefLabel = referenceAttr.RefLabel,
                 };
             }
-            return pt.CreateRefModel();
+            var selfId = referenceAttr.SelfId
+                ?? (pi.DeclaringType?.GetProperty(pi.Name + "Id") != null ? pi.Name + "Id" : null);
+            var modelRef = pt.CreateRefModel();
+            if (modelRef != null && selfId != null)
+                modelRef.SelfId = selfId;
+            return modelRef;
         }
+
+        return null;
+    }
+
+    static Type? GetDictionaryValueType(Type type)
+    {
+        if (type == typeof(string) || type == typeof(byte[])) return null;
+        var dictionary = type.GetInterfaces().Concat([type])
+            .FirstOrDefault(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(IDictionary<,>) || x.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)));
+        if (dictionary != null)
+            return dictionary.GetGenericArguments()[1];
+
+        if (typeof(System.Collections.IDictionary).IsAssignableFrom(type))
+            return typeof(object);
 
         return null;
     }

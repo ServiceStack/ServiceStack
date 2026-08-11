@@ -1640,11 +1640,21 @@ public static class AppMetadataUtils
 
         var refsAttr = allAttrs.OfType<ReferencesAttribute>().FirstOrDefault();
         if (refsAttr != null)
-            return meta.CreateRefModel(refsAttr.Type.Name);
+        {
+            var modelRef = meta.CreateRefModel(refsAttr.Type.Name);
+            if (modelRef != null)
+                modelRef.SelfId = p.Name;
+            return modelRef;
+        }
 
         var fkAttr = allAttrs.OfType<ForeignKeyAttribute>().FirstOrDefault();
         if (fkAttr != null)
-            return meta.CreateRefModel(fkAttr.Type.Name);
+        {
+            var modelRef = meta.CreateRefModel(fkAttr.Type.Name);
+            if (modelRef != null)
+                modelRef.SelfId = p.Name;
+            return modelRef;
+        }
 
         if (allAttrs.OfType<ReferenceAttribute>().FirstOrDefault() != null)
         {
@@ -1672,9 +1682,9 @@ public static class AppMetadataUtils
             }
             else
             {
-                var selfRefId = pt.Name + "Id";
-                var selfRef = type.Properties?.FirstOrDefault(prop => prop.Name == selfRefId);
-                if (selfRef == null)
+                var selfRefId = type.Properties?.FirstOrDefault(prop => prop.Name.EqualsIgnoreCase(p.Name + "Id"))?.Name
+                    ?? type.Properties?.FirstOrDefault(prop => prop.Name.EqualsIgnoreCase(pt.Name + "Id"))?.Name;
+                if (selfRefId == null)
                     return meta.CreateRefModel(pt.Name);
                 var refMetaType = meta.GetType(pt.Name);
                 var fkProp = refMetaType?.Properties?.FirstOrDefault(prop => prop.IsPrimaryKey == true);
@@ -1773,11 +1783,21 @@ public static class AppMetadataUtils
         
         var refsAttr = allAttrs.OfType<ReferencesAttribute>().FirstOrDefault();
         if (refsAttr != null)
-            return refsAttr.Type.CreateRefModel();
+        {
+            var modelRef = refsAttr.Type.CreateRefModel();
+            if (modelRef != null)
+                modelRef.SelfId = p.PropertyInfo.Name;
+            return modelRef;
+        }
  
         var fkAttr = allAttrs.OfType<ForeignKeyAttribute>().FirstOrDefault();
         if (fkAttr != null)
-            return fkAttr.Type.CreateRefModel();
+        {
+            var modelRef = fkAttr.Type.CreateRefModel();
+            if (modelRef != null)
+                modelRef.SelfId = p.PropertyInfo.Name;
+            return modelRef;
+        }
 
         var referenceAttr = allAttrs.OfType<ReferenceAttribute>().FirstOrDefault();
         if (referenceAttr != null)
@@ -1816,9 +1836,10 @@ public static class AppMetadataUtils
                     };
                 }
                 
-                var selfRefId = pt.Name + "Id";
-                var selfRef = props.FirstOrDefault(prop => prop.Name == selfRefId);
-                if (selfRef == null)
+                var selfRefId = referenceAttr.SelfId
+                    ?? props.FirstOrDefault(prop => prop.Name.EqualsIgnoreCase(p.PropertyInfo.Name + "Id"))?.Name
+                    ?? props.FirstOrDefault(prop => prop.Name.EqualsIgnoreCase(pt.Name + "Id"))?.Name;
+                if (selfRefId == null)
                     return pt.CreateRefModel();
                     
                 var refMetaTypeProps = pt.GetAllProperties();
