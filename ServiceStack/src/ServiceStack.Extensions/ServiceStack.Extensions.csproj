@@ -36,8 +36,8 @@
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
         <PackageReference Include="Grpc.AspNetCore.Server" Version="2.80.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.11" />
     </ItemGroup>
 
     <ItemGroup>
@@ -52,7 +52,7 @@
         <PackageReference Include="protobuf-net" Version="3.2.56"/>
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.2.2"/>
 
-        <PackageReference Include="System.Threading.Channels" Version="10.0.10" />
+        <PackageReference Include="System.Threading.Channels" Version="10.0.11" />
 
         <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.21.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.21.0" />
