@@ -89,7 +89,7 @@ public class UiFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostInitP
             {
                 Form = "max-w-screen-2xl",
                 Fieldset = "grid grid-cols-12 gap-6",
-                Field = "col-span-12 lg:col-span-6 xl:col-span-4",
+                Field = "col-span-12 lg:col-span-6 2xl:col-span-4",
             },
             Tags = new AppTags
             {
