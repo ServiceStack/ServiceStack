@@ -40,9 +40,13 @@
 <div id="app"></div>
 
 <script type="module">
-import { createApp, computed, ref } from "vue"
+import { createApp, computed, ref, inject, provide } from "vue"
 import { createRouter, createWebHistory } from "vue-router"
-import ServiceStackVue, { ACTIONS, requirementText, subtitle } from "@servicestack/vue"
+import { JsonServiceClient } from "@servicestack/client"
+import ServiceStackVue, { ACTIONS, requirementText, subtitle, useApiKey, useAuth } from "@servicestack/vue"
+import AvatarButton from "../mjs/AvatarButton.mjs"
+
+if (window.Auth) useAuth().signIn(window.Auth)
 
 const Auto = window.Schema
 
@@ -100,17 +104,38 @@ const template = `
             <p v-if="modelSubtitle" class="text-gray-500 dark:text-gray-400">{{ modelSubtitle }}</p>
         </div>
         <AuthLock v-if="authItems.length" :items="authItems" />
+        <button v-if="requiresApiKey" type="button" @click="showApiKeyDialog = true"
+                :title="apiKey ? 'API Key configured' : 'API Key required'"
+                class="rounded-md p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+            <span class="sr-only">API Key</span>
+            <svg class="w-5 h-5" :class="apiKey ? 'text-emerald-500' : 'text-amber-500'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+            </svg>
+        </button>
         <span class="flex-1"></span>
+        <AvatarButton />
         <DarkModeToggle />
     </div>
 
     <AutoQuerySchema :schema="Auto" :auth="auth" />
+
+    <api-key-dialog v-if="showApiKeyDialog" @done="showApiKeyDialog = false" @save="onApiKeySaved"></api-key-dialog>
 </div>`
 
 const App = {
-    components: { AuthLock },
+    components: { AuthLock, AvatarButton },
     template,
     setup() {
+        const client = inject('client', null) ?? new JsonServiceClient()
+        provide('client', client)
+        const globalApiKey = useApiKey()
+        const apiKey = computed(() => globalApiKey.value || client.bearerToken || '')
+        const requiresApiKey = computed(() => Object.keys(ACTIONS).some(k => Auto[k]?.auth?.requiresApiKey))
+        const showApiKeyDialog = ref(false)
+        function onApiKeySaved(key) {
+            if (client) client.bearerToken = key
+            globalApiKey.value = key
+        }
         return {
             Auto,
             auth: window.Auth,
@@ -118,6 +143,10 @@ const App = {
             authItems: computed(() => Object.keys(ACTIONS)
                 .filter(k => Auto[k]?.auth)
                 .map(k => ({ action: ACTIONS[k], text: requirementText(Auto[k].auth) }))),
+            requiresApiKey,
+            apiKey,
+            showApiKeyDialog,
+            onApiKeySaved,
         }
     },
 }
