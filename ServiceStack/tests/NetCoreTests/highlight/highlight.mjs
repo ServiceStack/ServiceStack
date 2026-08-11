@@ -28,6 +28,27 @@ import vbnet from 'highlight.js/lib/languages/vbnet';
 import yaml from 'highlight.js/lib/languages/yaml';
 import xml from 'highlight.js/lib/languages/xml';
 
+// Zig isn't included in the Highlight.js language bundle.
+const zig = hljs => ({
+    name: 'Zig',
+    aliases: ['zig'],
+    keywords: {
+        keyword: 'addrspace align allowzero and anyframe anytype asm async await break callconv catch comptime const continue defer else enum errdefer error export extern fn for if inline linksection noalias noinline nosuspend opaque or orelse packed pub resume return struct suspend switch test threadlocal try union unreachable usingnamespace var volatile while',
+        type: 'bool void noreturn type anyerror anyopaque comptime_int comptime_float f16 f32 f64 f80 f128 i8 u8 i16 u16 i32 u32 i64 u64 i128 u128 isize usize c_char c_short c_ushort c_int c_uint c_long c_ulong c_longlong c_ulonglong c_longdouble',
+        literal: 'true false null undefined',
+    },
+    contains: [
+        hljs.COMMENT('//', '$', { contains: [{ scope: 'doctag', begin: '//[!/]' }] }),
+        { scope: 'string', begin: /\\\\/, end: /$/ },
+        hljs.QUOTE_STRING_MODE,
+        { scope: 'string', begin: /'/, end: /'/, illegal: /\n/, contains: [hljs.BACKSLASH_ESCAPE] },
+        { scope: 'built_in', begin: /@[a-zA-Z_]\w*/ },
+        hljs.C_NUMBER_MODE,
+        { scope: 'title.function', begin: /\bfn\s+/, end: /[\s(]/, excludeBegin: true, excludeEnd: true },
+        { scope: 'type', begin: /\b[A-Z]\w*/, relevance: 0 },
+    ],
+});
+
 // ✅ Register them
 hljs.registerLanguage('bash', bash);
 hljs.registerLanguage('c', c);
@@ -54,6 +75,7 @@ hljs.registerLanguage('typescript', typescript);
 hljs.registerLanguage('vbnet', vbnet);
 hljs.registerLanguage('yaml', yaml);
 hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('zig', zig);
 
 // ✅ Optionally: import a theme if bundling CSS
 // import 'highlight.js/styles/github-dark.css';
