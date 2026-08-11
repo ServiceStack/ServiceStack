@@ -446,6 +446,55 @@ export const MessageReasoning = {
     }
 }
 
+export const JsonPreview = {
+    props: {
+        value: { type: [Object, Array], required: true },
+        classes: String,
+    },
+    template: `
+        <div class="group relative">
+            <button type="button" @click="maximized = true"
+                title="Maximize preview" aria-label="Maximize preview"
+                class="absolute top-1 right-1 z-10 p-1.5 rounded-md border shadow-sm opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
+                :class="[$styles.secondaryButton]">
+                <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h6v2H5v4H3zm0 18h6v-2H5v-4H3zm12 0h6v-6h-2v4h-4zm6-18h-6v2h4v4h2z"></path></svg>
+            </button>
+            <HtmlFormat :value="value" :classes="classes || $utils.htmlFormatClasses" />
+        </div>
+        <Teleport to="body">
+            <div v-if="maximized" class="fixed inset-0 z-100 p-4 sm:p-6 flex items-center justify-center">
+                <div class="fixed inset-0 bg-black/50" @click="maximized = false"></div>
+                <div class="relative w-full h-full flex flex-col overflow-hidden rounded-xl shadow-2xl" :class="[$styles.dialog]">
+                    <div class="flex items-center justify-between px-4 py-3 border-b shrink-0" :class="[$styles.chromeBorder]">
+                        <span class="text-sm font-semibold" :class="[$styles.heading]">Preview</span>
+                        <button type="button" @click="maximized = false"
+                            title="Close preview" aria-label="Close preview"
+                            class="p-1.5 rounded-md cursor-pointer" :class="[$styles.mutedIcon,$styles.iconHover]">
+                            <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.41 4.29 19.71 2.88 18.3 9.17 12 2.88 5.7 4.29 4.29 10.59 10.59 16.89 4.29z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="not-prose text-xs flex-1 min-h-0 overflow-auto p-4 sm:p-6">
+                        <HtmlFormat :value="value" :classes="classes || $utils.htmlFormatClasses" />
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+    `,
+    setup(props, { expose }) {
+        const maximized = ref(false)
+        const maximize = () => maximized.value = true
+        const closeOnEscape = e => {
+            if (e.key === 'Escape' && maximized.value) maximized.value = false
+        }
+        onMounted(() => window.addEventListener('keydown', closeOnEscape))
+        onUnmounted(() => window.removeEventListener('keydown', closeOnEscape))
+        expose({ maximize })
+        return { maximized }
+    },
+}
+
 export const TextViewer = {
     template: `
         <div v-if="text.length > 200" class="relative group">
@@ -484,9 +533,9 @@ export const TextViewer = {
                 </button>
 
                 <!-- Maximize Toggle -->
-                <button type="button" @click="toggleMaximized" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 focus:outline-none p-0.5 rounded transition-colors" :title="isMaximized ? 'Minimize' : 'Maximize'">
+                <button type="button" @click="prefs === 'preview' ? preview?.maximize() : toggleMaximized()" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 focus:outline-none p-0.5 rounded transition-colors" :title="prefs === 'preview' ? 'Maximize preview' : (isMaximized ? 'Minimize' : 'Maximize')">
                     <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path v-if="isMaximized" fill="currentColor" d="M9 9H3V7h4V3h2zm0 6H3v2h4v4h2zm12 0h-6v6h2v-4h4zm-6-6h6V7h-4V3h-2z"/>
+                        <path v-if="prefs !== 'preview' && isMaximized" fill="currentColor" d="M9 9H3V7h4V3h2zm0 6H3v2h4v4h2zm12 0h-6v6h2v-4h4zm-6-6h6V7h-4V3h-2z"/>
                         <path v-else fill="currentColor" d="M3 3h6v2H5v4H3zm0 18h6v-2H5v-4H3zm12 0h6v-6h-2v4h-4zm6-18h-6v2h4v4h2z"/>
                     </svg>
                 </button>
@@ -498,7 +547,7 @@ export const TextViewer = {
                     <div v-html="$fmt.markdown(text)"></div>
                 </div>
                 <div v-else-if="prefs === 'preview' && jsonValue">
-                    <HtmlFormat :value="jsonValue" />
+                    <JsonPreview ref="preview" :value="jsonValue" />
                 </div>
                 <div v-else :class="['p-0.5', contentClass]">{{ text }}</div>
             </div>
@@ -512,6 +561,7 @@ export const TextViewer = {
     setup(props) {
         const ctx = inject('ctx')
         const prefs = ref('pre')
+        const preview = ref()
         const maximized = ref({})
         const dropdownOpen = ref(false)
         const hash = computed(() => ctx.utils.hashString(props.text))
@@ -576,6 +626,7 @@ export const TextViewer = {
 
         return {
             hash,
+            preview,
             textStyles,
             prefs,
             jsonValue,
@@ -724,7 +775,7 @@ export const CodeBlock = {
 
 export const ToolOutput = {
     template: `
-        <div v-if="output" class="border-t" :class="[$styles.chromeBorder]">
+        <div data-tag="ToolOutput" v-if="output" class="border-t" :class="[$styles.chromeBorder]">
             <div class="px-3 py-1.5 flex justify-between items-center border-b" :class="[$styles.chromeBorder]">
                 <div class="flex items-center gap-2">
                     <svg class="size-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -760,7 +811,7 @@ export const ToolOutput = {
                     <TextViewer prefsName="toolOutput" :text="output.content" />
                 </div>
                 <div v-else class="not-prose text-xs">
-                    <HtmlFormat v-if="jsonValue" :value="jsonValue" :classes="$utils.htmlFormatClasses" />
+                    <JsonPreview v-if="jsonValue" :value="jsonValue" :classes="$utils.htmlFormatClasses" />
                     <div v-else class="text-gray-500 italic p-2">Invalid JSON content</div>
                 </div>
             </div>

@@ -1,6 +1,5 @@
 // This file is intentionally C#-owned: sync.sh does not replace chat/custom/**.
 import { ref, computed, inject, onMounted } from 'vue'
-import hljs from 'highlight.js'
 
 let ext
 let mcpExt
@@ -176,7 +175,8 @@ const McpToolPageHeader = {
                                     <p class="text-gray-500 dark:text-gray-400">
                                         Schema visible to AI Assistants when calling <code class="font-mono bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">api_describe</code>:
                                     </p>
-                                    <pre class="p-3 rounded-lg bg-gray-900 font-mono text-xs overflow-x-auto select-all max-h-80 whitespace-pre-wrap hljs"><code class="language-json" v-html="describeResultHtml"></code></pre>
+                                    <CodeBlock :html="$utils.highlightJson(describeResult)" :code="describeResult"
+                                        size-class="max-h-80 overflow-auto" />
                                 </div>
                             </div>
 
@@ -202,11 +202,38 @@ const McpToolPageHeader = {
                                 </div>
 
                                 <div v-if="invokeResult !== null || invokeError" class="space-y-1.5 pt-2 border-t border-gray-200 dark:border-gray-700/60">
-                                    <span class="font-medium text-gray-700 dark:text-gray-300 text-[11px]">API Result Payload:</span>
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium text-gray-700 dark:text-gray-300 text-[11px]">API Result Payload:</span>
+                                        <div v-if="invokeJsonValue" class="flex items-center gap-2 text-[10px] uppercase tracking-wider font-medium select-none">
+                                            <span @click="invokeResultFormat = 'text'"
+                                                class="cursor-pointer transition-colors"
+                                                :class="invokeResultFormat === 'text' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
+                                                text
+                                            </span>
+                                            <span class="text-gray-300 dark:text-gray-700">|</span>
+                                            <span @click="invokeResultFormat = 'preview'"
+                                                class="cursor-pointer transition-colors"
+                                                :class="invokeResultFormat === 'preview' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
+                                                preview
+                                            </span>
+                                            <span class="text-gray-300 dark:text-gray-700">|</span>
+                                            <span @click="invokeResultFormat = 'json'"
+                                                class="cursor-pointer transition-colors"
+                                                :class="invokeResultFormat === 'json' ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'">
+                                                json
+                                            </span>
+                                        </div>
+                                    </div>
                                     <div v-if="invokeError" class="p-3 rounded-md bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 font-mono whitespace-pre-wrap">
                                         {{ invokeError }}
                                     </div>
-                                    <pre v-else class="p-3 rounded-lg bg-gray-900 font-mono text-xs overflow-x-auto select-all max-h-80 whitespace-pre-wrap hljs"><code class="language-json" v-html="invokeResultHtml"></code></pre>
+                                    <div v-else-if="invokeResultFormat === 'preview' && invokeJsonValue" class="not-prose text-xs max-h-80 overflow-auto">
+                                        <JsonPreview :value="invokeJsonValue" :classes="$utils.htmlFormatClasses" />
+                                    </div>
+                                    <CodeBlock v-else-if="invokeResultFormat === 'json' && invokeJsonValue"
+                                        :html="$utils.highlightJson(invokeJsonString)" :code="invokeJsonString"
+                                        size-class="max-h-80 overflow-auto" />
+                                    <TextViewer v-else prefsName="apiInvokeOutput" :text="invokeResult" />
                                 </div>
                             </div>
                         </div>
@@ -234,6 +261,7 @@ const McpToolPageHeader = {
         const loadingInvoke = ref(false)
         const invokeResult = ref(null)
         const invokeError = ref(null)
+        const invokeResultFormat = ref('preview')
 
         function formatToolResult(data) {
             if (data == null) return ''
@@ -264,27 +292,10 @@ const McpToolPageHeader = {
             return JSON.stringify(payload, null, 2)
         }
 
-        function highlight(code, lang = 'json') {
-            if (!code) return ''
-            try {
-                const text = typeof code === 'string' ? code : JSON.stringify(code, null, 2)
-                const language = hljs.getLanguage(lang) ? lang : 'plaintext'
-                return hljs.highlight(text, { language }).value
-            } catch (e) {
-                console.error('Highlight error:', e)
-                return typeof code === 'string' ? code : JSON.stringify(code, null, 2)
-            }
-        }
-
-        const describeResultHtml = computed(() => {
-            if (!describeResult.value) return ''
-            return highlight(describeResult.value, 'json')
-        })
-
-        const invokeResultHtml = computed(() => {
-            if (!invokeResult.value) return ''
-            return highlight(invokeResult.value, 'json')
-        })
+        const invokeJsonValue = computed(() => ctx.utils.tryParseJson(invokeResult.value))
+        const invokeJsonString = computed(() => invokeJsonValue.value
+            ? JSON.stringify(invokeJsonValue.value, null, 2)
+            : invokeResult.value)
 
         const mcpUrl = computed(() => {
             const rel = info.value.url || '/mcp'
@@ -353,6 +364,7 @@ const McpToolPageHeader = {
             invokeArgsObj.value = {}
             invokeResult.value = null
             invokeError.value = null
+            invokeResultFormat.value = 'preview'
             describeError.value = null
             describeResult.value = ''
             loadingDescribe.value = true
@@ -387,6 +399,7 @@ const McpToolPageHeader = {
             loadingInvoke.value = true
             invokeResult.value = null
             invokeError.value = null
+            invokeResultFormat.value = 'preview'
             try {
                 const parsedArgs = invokeArgsObj.value || {}
                 const toolsExt = ctx.scope('tools')
@@ -423,11 +436,12 @@ const McpToolPageHeader = {
             loadingInvoke,
             invokeResult,
             invokeError,
+            invokeResultFormat,
+            invokeJsonValue,
+            invokeJsonString,
             inspectApi,
             closeInspectApi,
             executeInvoke,
-            describeResultHtml,
-            invokeResultHtml,
         }
     }
 }

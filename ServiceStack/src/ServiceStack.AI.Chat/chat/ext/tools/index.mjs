@@ -85,7 +85,7 @@ function useTools(ctx) {
 
 const ToolResult = {
     template: `
-    <div>
+    <div data-tag="ToolResult">
         <div class="flex items-center gap-2 text-[10px] uppercase tracking-wider font-medium select-none">
             <span @click="ext.setPrefs({ toolFormat: 'text' })" 
                 class="cursor-pointer transition-colors"
@@ -113,7 +113,7 @@ const ToolResult = {
             </div>
             <pre v-else-if="ext.prefs.toolFormat !== 'preview'" class="tool-output">{{ origResult }}</pre>
             <div v-else class="overflow-auto">
-                <HtmlFormat v-if="jsonValue" :value="jsonValue" :classes="$utils.htmlFormatClasses" />
+                <JsonPreview v-if="jsonValue" :value="jsonValue" :classes="$utils.htmlFormatClasses" />
                 <ViewTypes v-else-if="Array.isArray(result) && result[0]?.type" :results="result" />
                 <ViewType v-else-if="result && result.type" :result="result" />
             </div>
