@@ -32,9 +32,19 @@ public class IndexOperationsControl
         var icons = CreateIcons(op);
 
         var opTemplate = StringBuilderCache.Allocate();
+
+
         opTemplate.Append($"<tr><th data-tags=\"" + 
                           op.Tags.Map(x => x).Join(",") + 
                           "\">" + icons + 
+                          (HostContext.AppHost.GetPlugin<MetadataFeature>()?.IsApiSchemaEnabled == true ? 
+                            """
+                            <a href="schema/{0}" style="margin-right:0.3em;" title="{0} Schema"><svg xmlns="http://www.w3.org/2000/svg" width="1.3em" height="1.3em" style="vertical-align:bottom;" viewBox="0 0 24 24">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path fill="currentColor" d="m12 14l-2-2l2-2l2 2zM9.875 8.471L8.183 6.78L12 2.962l3.817 3.817l-1.692 1.692L12 6.346zm-3.096 7.346L2.962 12l3.817-3.817L8.47 9.875L6.346 12l2.125 2.125zm10.442 0l-1.692-1.692L17.654 12l-2.125-2.125l1.692-1.692L21.038 12zM12 21.038l-3.817-3.817l1.692-1.692L12 17.654l2.125-2.125l1.692 1.692z" />
+                            </svg></a>
+                            """ 
+                            : "") +
                           (HostContext.AppHost.HasUi() ? "<a href='ui/{0}'>{0}</a>" : "{0}") +
                           "</th>");
         foreach (var config in MetadataConfig.AvailableFormatConfigs)
