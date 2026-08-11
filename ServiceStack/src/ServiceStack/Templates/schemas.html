@@ -60,7 +60,9 @@
 <div id="app"></div>
 <script type="module">
 import { createApp, ref, computed, onMounted, onUnmounted, nextTick } from "vue"
-import ServiceStackVue from "@servicestack/vue"
+import ServiceStackVue, { useAuth } from "@servicestack/vue"
+import AvatarButton from "../mjs/AvatarButton.mjs"
+if (window.Auth) useAuth().signIn(window.Auth)
 const Apis = window.Results || []
 const METHOD_CLASS = {
     GET: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
@@ -238,7 +240,7 @@ const template = `
                        @keydown.down.prevent="move(1)" @keydown.up.prevent="move(-1)"
                        @keydown.enter.prevent="open()" @keydown.esc.prevent="clear"
                        class="w-full rounded-lg border border-gray-300 dark:border-gray-700
-                              bg-gray-50 dark:bg-gray-900 pl-9 pr-16 py-2 font-mono text-sm
+                              bg-gray-50 dark:bg-gray-900 pl-9 pr-8 py-2 font-mono text-sm
                               text-gray-900 dark:text-gray-100 placeholder:font-sans placeholder:text-gray-400
                               focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:bg-white
                               dark:focus:bg-gray-900 outline-none transition-colors">
@@ -257,6 +259,7 @@ const template = `
                     </option>
                 </select>
             </div>
+            <AvatarButton />
             <DarkModeToggle />
         </div>
         <div class="mx-auto max-w-7xl px-4 pb-2.5 flex flex-wrap items-center gap-x-4 gap-y-1
@@ -428,7 +431,9 @@ const App = {
         verb() { this.onQuery() },
     },
 }
-createApp(App).use(ServiceStackVue).mount('#app')
+const app = createApp(App).use(ServiceStackVue)
+app.component('AvatarButton', AvatarButton)
+app.mount('#app')
 </script>
 </body>
 </html>
