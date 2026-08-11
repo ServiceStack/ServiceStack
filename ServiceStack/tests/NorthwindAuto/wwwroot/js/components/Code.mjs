@@ -125,7 +125,74 @@ let api = client.Api(new Hello(
 ))
 
 // Quickly inspect response
-api.Response.PrintDump()`
+api.Response.PrintDump()`,
+    go: `package main
+
+import (
+    "fmt"
+    "log"
+
+    ss "github.com/ServiceStack/servicestack-go"
+    "myapp/dtos"
+)
+
+func main() {
+    client := ss.NewClient("${BaseUrl}")
+
+    response, err := ss.Send(client, dtos.Hello{
+        //...
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("%+v\n", response)
+}`,
+    rust: `use servicestack::JsonServiceClient;
+mod dtos;
+use dtos::*;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = JsonServiceClient::new("${BaseUrl}");
+
+    let response = client.send(&Hello {
+        //...
+        ..Default::default()
+    }).await?;
+
+    println!("{:#?}", response);
+    Ok(())
+}`,
+    ruby: `require 'servicestack'
+require_relative 'dtos'
+
+client = ServiceStack::JsonServiceClient.new('${BaseUrl}')
+
+response = client.send(Hello.new(
+  #...
+))
+
+puts response.inspect`,
+    zig: `const std = @import("std");
+const ss = @import("servicestack");
+const dtos = @import("dtos.zig");
+
+pub fn main() !void {
+    var gpa: std.heap.GeneralPurposeAllocator(.{}) = .{};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var client = try ss.JsonServiceClient.init(allocator, "${BaseUrl}");
+    defer client.deinit();
+
+    var response = try client.send(dtos.Hello{
+        //...
+    });
+    defer response.deinit();
+
+    std.debug.print("{any}\n", .{response.value});
+}`
 }
 /*:raw*/
 
@@ -518,7 +585,64 @@ const FSharp = {
     }
 }
 
-export const LanguageComponents = { CSharp, TypeScript, Mjs, Dart, Java, Kotlin, Python, Php, Swift, VbNet, FSharp }
+const createNativeLanguageComponent = ({ name, packageText, packageDescription, highlight }) => ({
+    components,
+    template:`<div>
+    <h2 class="text-2xl pl-4 pb-3 border-b pt-4 pb-3 w-full bg-white">Call this API from ${name}</h2>
+    <p class="text-lg p-4">
+      <b class="mr-2">1.</b> ${packageDescription}
+    </p>
+
+    <CopyLine :text="packageText" />
+
+    <div class="text-lg p-4 flex">
+      <div><b class="mr-2">2.</b> Copy the DTOs source code for this API</div>
+      <CopyIcon class="ml-3" :text="src" title="Copy code" />
+    </div>
+    <div class="text-lg p-4">
+      <b class="mr-2">3.</b> Use the API DTOs with the typed <em>JsonServiceClient</em>
+    </div>
+    <div class="bg-gray-50 border-y border-gray-200 p-4 overflow-auto">
+      <div class="relative">
+        <CopyIcon class="absolute right-0" :text="usage" title="Copy code" />
+      </div>
+      <pre><code class="language-${highlight}" v-highlightjs="usage"></code></pre>
+    </div>
+
+    <InstallTool lang="${highlight}" />
+    </div>`,
+    props:['src','usage'],
+    setup() {
+        return { packageText }
+    }
+})
+
+const Go = createNativeLanguageComponent({
+    name: 'Go',
+    packageDescription: 'Add the <b>servicestack-go</b> module to your project',
+    packageText: 'go get github.com/ServiceStack/servicestack-go',
+    highlight: 'go',
+})
+const Rust = createNativeLanguageComponent({
+    name: 'Rust',
+    packageDescription: 'Add the <b>servicestack</b> crate to your project',
+    packageText: 'cargo add servicestack',
+    highlight: 'rust',
+})
+const Ruby = createNativeLanguageComponent({
+    name: 'Ruby',
+    packageDescription: 'Install the <b>servicestack</b> gem',
+    packageText: 'gem install servicestack',
+    highlight: 'ruby',
+})
+const Zig = createNativeLanguageComponent({
+    name: 'Zig',
+    packageDescription: 'Add the <b>servicestack</b> module to your project',
+    packageText: 'zig fetch --save https://github.com/ServiceStack/servicestack-zig/archive/refs/tags/v0.1.3.tar.gz',
+    highlight: 'zig',
+})
+
+export const LanguageComponents = { CSharp, TypeScript, Mjs, Dart, Java, Kotlin, Python, Php, Swift, VbNet, FSharp, Go, Rust, Ruby, Zig }
 export const LangTypes = {
     CSharp:     ['csharp',     'C#'],
     TypeScript: ['typescript', 'TypeScript'],
@@ -531,6 +655,10 @@ export const LangTypes = {
     Swift:      ['swift',      'Swift'],
     VbNet:      ['vbnet',      'VB'],
     FSharp:     ['fsharp',     'F#'],
+    Go:         ['go',         'Go'],
+    Rust:       ['rust',       'Rust'],
+    Ruby:       ['ruby',       'Ruby'],
+    Zig:        ['zig',        'Zig'],
 }
 export const Languages = Object.keys(LangTypes).reduce((acc,type) => {
     const lang = LangTypes[type][0]
@@ -566,7 +694,8 @@ export const Code = {
         </div>
         <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg relative" style="min-width:585px;max-width:700px">
           <CloseButton @close="showHelp=false" />
-          <component v-if="Languages[selected]?.component" :is="Languages[selected]?.component" :src="activeLangSrc" :usage="usage" class="" />
+          <component v-if="Languages[selected]?.component" :key="selected + ':' + op"
+                     :is="Languages[selected]?.component" :src="activeLangSrc" :usage="usage" class="" />
         </div>
       </div>
   </div>

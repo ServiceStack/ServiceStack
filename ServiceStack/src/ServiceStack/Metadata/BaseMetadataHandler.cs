@@ -178,6 +178,10 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
                     new ("swift", "Swift"),
                     new ("vbnet", "VB.NET"),
                     new ("fsharp", "F#"),
+                    new ("go", "Go"),
+                    new ("rust", "Rust"),
+                    new ("ruby", "Ruby"),
+                    new ("zig", "Zig"),
                 } : Array.Empty<KeyValuePair<string, string>>();
             sb.AppendLine("<div class=\"types-nav\"><nav class=\"flex space-x-4\">");
             var queryLang = httpReq.QueryString["lang"];

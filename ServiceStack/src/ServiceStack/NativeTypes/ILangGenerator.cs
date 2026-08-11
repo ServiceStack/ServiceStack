@@ -56,11 +56,12 @@ public static class LangGeneratorExtensions
             "vbnet" => Generate(new VbNet.VbNetGenerator(typesConfig)),
             "fsharp" => Generate(new FSharp.FSharpGenerator(typesConfig)),
             "go" => Generate(new Go.GoGenerator(typesConfig)),
-            "ruby" => Generate(new Ruby.RubyGenerator(typesConfig)),
             "rust" => Generate(new Rust.RustGenerator(typesConfig)),
+            "ruby" => Generate(new Ruby.RubyGenerator(typesConfig)),
+            "zig" => Generate(new Zig.ZigGenerator(typesConfig)),
             _ => throw new NotSupportedException(
                 $"Unknown language, Supported languages: " +
-                $"csharp, mjs, typescript, dart, java, kotlin, python, php, swift, vbnet, fsharp, go, ruby, rust")
+                $"csharp, mjs, typescript, dart, java, kotlin, python, php, swift, vbnet, fsharp, go, rust, ruby, zig")
         };
         return src;
     }
