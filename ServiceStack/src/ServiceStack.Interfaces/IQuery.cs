@@ -288,6 +288,7 @@ public abstract class QueryBase : IQuery, IHasQueryParams
     [Input(Type = "tag", Options = "{ allowableValues:$dataModelFields }"), FieldCss(Field = "col-span-12")]
     public virtual string? Fields { get; set; }
 
+    [Input(Type = "hidden")]
     [DataMember(Order = 7)]
     public virtual Dictionary<string, string>? Meta { get; set; }
 
