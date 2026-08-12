@@ -461,29 +461,35 @@ public class AuthFeature : IPlugin, IPostInitPlugin, Model.IHasStringId, IConfig
 
         var uiFeature = appHost.GetPlugin<UiFeature>();
         appHost.AddToAppMetadata(meta => {
-            meta.Plugins.Auth = new AuthInfo {
-                HasAuthSecret = (appHost.Config.AdminAuthSecret != null).NullIfFalse(),
-                HasAuthRepository = appHost.GetContainer().Exists<IAuthRepository>().NullIfFalse(),
-                IncludesRoles = IncludeRolesInAuthenticateResponse.NullIfFalse(),
-                IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse.NullIfFalse(),
-                HtmlRedirect = HtmlRedirect?.TrimStart('~'),
-                ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(routes => {
-                    var register = appHost.GetPlugin<RegistrationFeature>();
-                    if (register != null)
-                        routes[nameof(RegisterService)] = [register.AtRestPath];
-                }),
-                AuthProviders = AuthenticateService.GetAuthProviders()
-                    .OrderBy(x => (x as AuthProvider)?.Sort ?? 0)
-                    .Map(ToMetaAuthProvider),
-                RoleLinks = uiFeature?.RoleLinks ?? new(),
-            };
-            if (meta.Plugins.Auth.HasAuthSecret == true && AdminAuthSecretInfo != null)
-                meta.Plugins.Auth.AuthProviders.Add(AdminAuthSecretInfo);
-            
+            meta.Plugins.Auth = GetAuthInfo();
             OnAppMetadata.ForEach(fn => fn(meta));
         });
 
         OnAfterInit.ForEach(fn => fn(this));
+    }
+
+    public AuthInfo GetAuthInfo()
+    {
+        var authInfo = new AuthInfo
+        {
+            HasAuthSecret = (HostContext.Config.AdminAuthSecret != null).NullIfFalse(),
+            HasAuthRepository = HostContext.AppHost.GetContainer().Exists<IAuthRepository>().NullIfFalse(),
+            IncludesRoles = IncludeRolesInAuthenticateResponse.NullIfFalse(),
+            IncludesOAuthTokens = IncludeOAuthTokensInAuthenticateResponse.NullIfFalse(),
+            HtmlRedirect = HtmlRedirect?.TrimStart('~'),
+            ServiceRoutes = ServiceRoutes.ToMetadataServiceRoutes(routes => {
+                var register = HostContext.AppHost.GetPlugin<RegistrationFeature>();
+                if (register != null)
+                    routes[nameof(RegisterService)] = [register.AtRestPath];
+            }),
+            AuthProviders = AuthenticateService.GetAuthProviders()
+                .OrderBy(x => (x as AuthProvider)?.Sort ?? 0)
+                .Map(ToMetaAuthProvider),
+        };
+        if (authInfo.HasAuthSecret == true && AdminAuthSecretInfo != null)
+            authInfo.AuthProviders.Add(AdminAuthSecretInfo);
+
+        return authInfo;
     }
 
     public MetaAuthProvider ToMetaAuthProvider(IAuthProvider authProvider) => new()

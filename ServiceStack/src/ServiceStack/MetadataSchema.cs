@@ -58,6 +58,7 @@ public class MetadataSchemasService() : Service
             var html = await htmlFile.ReadAllTextAsync();
             html = html.Replace("${Results}", detailsJson);
             html = html.Replace("${Auth}", auth.ToJson() ?? "null");
+            html = html.Replace("${AuthInfo}", HostContext.GetPlugin<AuthFeature>()?.GetAuthInfo().ToJson() ?? "null");
             
             Response!.ContentType = MimeTypes.Html;
             return html;
@@ -98,6 +99,7 @@ public class MetadataSchemaService() : Service
             html = html.Replace("${Title}", $"{name} Schema");
             html = html.Replace("${Schema}", schema.ToJsonString());
             html = html.Replace("${Auth}", auth.ToJson() ?? "null");
+            html = html.Replace("${AuthInfo}", HostContext.GetPlugin<AuthFeature>()?.GetAuthInfo().ToJson() ?? "null");
             
             Response!.ContentType = MimeTypes.Html;
             return html;
@@ -129,6 +131,7 @@ public class AutoQuerySchemasService() : Service
             var html = await htmlFile.ReadAllTextAsync();
             html = html.Replace("${Results}", detailsJson);
             html = html.Replace("${Auth}", auth.ToJson() ?? "null");
+            html = html.Replace("${AuthInfo}", HostContext.GetPlugin<AuthFeature>()?.GetAuthInfo().ToJson() ?? "null");
             
             Response!.ContentType = MimeTypes.Html;
             return html;
@@ -163,6 +166,7 @@ public class AutoQuerySchemaService() : Service
             html = html.Replace("${Title}", schema.TryGetPropertyValue("title", out var title) ? title?.ToString() ?? name : name);
             html = html.Replace("${Schema}", jsonSchema);
             html = html.Replace("${Auth}", auth.ToJson() ?? "null");
+            html = html.Replace("${AuthInfo}", HostContext.GetPlugin<AuthFeature>()?.GetAuthInfo().ToJson() ?? "null");
             
             Response!.ContentType = MimeTypes.Html;
             return html;
@@ -559,6 +563,15 @@ public static class MetadataSchemaGenerator
         }
 
         var dataModelType = AutoCrudOperation.GetModelType(requestDto);
+        if (dataModelType != null)
+        {
+            var dataModelFields = new JsonArray();
+            foreach (var field in dataModelType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                         .Where(p => p.CanRead && p.GetIndexParameters().Length == 0)
+                         .Where(p => !HasAttributeNamed(p, "IgnoreDataMemberAttribute") && !HasAttributeNamed(p, "IgnoreAttribute")))
+                dataModelFields.Add(field.Name);
+            uiObj["dataModelFields"] = dataModelFields;
+        }
         var classFields = requestDto.AllAttributes<FieldAttribute>();
 
         var properties = requestDto.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -666,7 +679,8 @@ public static class MetadataSchemaGenerator
         var propUi = new JsonObject();
 
         var propType = Nullable.GetUnderlyingType(pi.PropertyType) ?? pi.PropertyType;
-        var propTitle = apiMember?.Description ?? pi.GetDescription() ?? pi.Name.SplitCamelCase();
+        var input = (InputAttributeBase?)inputAttr ?? fieldAttr;
+        var propTitle = inputAttr?.Label ?? fieldAttr?.Label ?? apiMember?.Description ?? pi.GetDescription() ?? pi.Name.SplitCamelCase();
         var propHelp = inputAttr?.Help ?? fieldAttr?.Help ?? apiMember?.Description ?? pi.GetDescription();
         var propPlaceholder = inputAttr?.Placeholder ?? fieldAttr?.Placeholder;
 
@@ -754,6 +768,29 @@ public static class MetadataSchemaGenerator
             propSchema["enum"] = enumArr;
         }
 
+        // Input.AllowableValues / AllowableValuesEnum / evaluated allowable values use the
+        // same conversion path as App Metadata, but are carried by the JSON Schema itself.
+        var inputInfo = input?.ToInput();
+        if (inputInfo?.AllowableValues is { Length: > 0 })
+        {
+            var enumArr = new JsonArray();
+            foreach (var value in inputInfo.AllowableValues) enumArr.Add(value);
+            propSchema["enum"] = enumArr;
+        }
+        if (inputInfo?.AllowableEntries is { Length: > 0 })
+        {
+            var entries = new JsonArray();
+            foreach (var entry in inputInfo.AllowableEntries)
+                entries.Add(new JsonObject { ["key"] = entry.Key, ["value"] = entry.Value });
+            propUi["allowableEntries"] = entries;
+        }
+
+        if (!string.IsNullOrEmpty(input?.Pattern)) propSchema["pattern"] = input.Pattern;
+        if (input != null && input.MinLength != int.MinValue) propSchema["minLength"] = input.MinLength;
+        if (input != null && input.MaxLength != int.MinValue) propSchema["maxLength"] = input.MaxLength;
+        if (input?.ReadOnly == true) propSchema["readOnly"] = true;
+        if (!string.IsNullOrEmpty(input?.Value)) propSchema["default"] = input.Value;
+
         // Process [Validate*] attributes
         var validateAttrs = pi.AllAttributes<ValidateAttribute>();
         foreach (var vAttr in validateAttrs)
@@ -805,7 +842,7 @@ public static class MetadataSchemaGenerator
         }
 
         // UI Widget & Options
-        var widget = inputAttr?.Type ?? fieldAttr?.Type;
+        var widget = input?.Type;
         if (!string.IsNullOrEmpty(widget))
         {
             propUi["widget"] = widget;
@@ -815,17 +852,29 @@ public static class MetadataSchemaGenerator
             propUi["widget"] = "lookup";
         }
 
+        if (!string.IsNullOrEmpty(input?.Options)) propUi["options"] = input.Options;
+
+        // Preserve the remaining [Input] presentation attributes verbatim for SchemaInput to
+        // pass through to built-in or custom components.
+        if (!string.IsNullOrEmpty(input?.Value)) propUi["value"] = input.Value;
+        if (!string.IsNullOrEmpty(input?.Title)) propUi["title"] = input.Title;
+        if (!string.IsNullOrEmpty(input?.Size)) propUi["size"] = input.Size;
+        if (input?.Disabled == true) propUi["disabled"] = true;
+        if (!string.IsNullOrEmpty(input?.Autocomplete)) propUi["autocomplete"] = input.Autocomplete;
+        if (!string.IsNullOrEmpty(input?.Autofocus)) propUi["autofocus"] = input.Autofocus;
+        if (!string.IsNullOrEmpty(input?.Min)) propUi["min"] = input.Min;
+        if (!string.IsNullOrEmpty(input?.Max)) propUi["max"] = input.Max;
+        if (!string.IsNullOrEmpty(input?.Accept)) propUi["accept"] = input.Accept;
+        if (!string.IsNullOrEmpty(input?.Capture)) propUi["capture"] = input.Capture;
+        if (input?.Multiple == true) propUi["multiple"] = true;
+
         if (!string.IsNullOrEmpty(propPlaceholder))
             propUi["placeholder"] = propPlaceholder;
 
         if (!string.IsNullOrEmpty(propHelp))
             propUi["help"] = propHelp;
 
-        if (!string.IsNullOrEmpty(inputAttr?.Step))
-        {
-            if (double.TryParse(inputAttr.Step, out var stepVal))
-                propUi["step"] = stepVal;
-        }
+        if (!string.IsNullOrEmpty(input?.Step)) propUi["step"] = input.Step;
 
         // How to render the value, e.g. currency/relative time/icon, and 'hidden' to omit it
         // from a grid. Same derivation MetadataTypes.ToProperty() uses for App metadata.
@@ -842,7 +891,7 @@ public static class MetadataSchemaGenerator
         }
 
         // Which file types the [UploadTo] location allows, as NativeTypesMetadata does
-        if (pi.FirstAttribute<UploadToAttribute>() is { } uploadTo)
+        if (string.IsNullOrEmpty(input?.Accept) && pi.FirstAttribute<UploadToAttribute>() is { } uploadTo)
         {
             var location = HostContext.GetPlugin<FilesUploadFeature>()?.Locations
                 .FirstOrDefault(x => x.Name == uploadTo.Location);
@@ -854,6 +903,10 @@ public static class MetadataSchemaGenerator
         var fieldCss = fieldCssAttr?.Field ?? fieldAttr?.FieldCss;
         if (!string.IsNullOrEmpty(fieldCss))
             propUi["fieldCss"] = fieldCss;
+        var inputCss = fieldCssAttr?.Input ?? fieldAttr?.InputCss;
+        if (!string.IsNullOrEmpty(inputCss)) propUi["inputCss"] = inputCss;
+        var labelCss = fieldCssAttr?.Label ?? fieldAttr?.LabelCss;
+        if (!string.IsNullOrEmpty(labelCss)) propUi["labelCss"] = labelCss;
 
         if (propUi.Count > 0)
             propSchema["ui"] = propUi;
