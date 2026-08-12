@@ -14,7 +14,7 @@
     
     <ItemGroup>
         <PackageReference Include="Bogus" Version="34.0.1" />
-        <PackageReference Include="Markdig" Version="0.43.*" />
+        <PackageReference Include="Markdig" Version="1.*" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.*" />
     </ItemGroup>
     
