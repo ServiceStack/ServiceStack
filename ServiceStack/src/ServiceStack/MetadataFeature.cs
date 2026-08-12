@@ -101,6 +101,10 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
             }
         }
     }
+
+    public Action<Type, System.Text.Json.Nodes.JsonObject> OnApiSchema { get; set; }
+    public Action<Type, System.Text.Json.Nodes.JsonObject> OnAutoQuerySchema { get; set; }
+
 #else
     public bool IsApiSchemaEnabled => false;
     public bool IsAutoQuerySchemaEnabled => false;

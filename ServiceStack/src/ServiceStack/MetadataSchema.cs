@@ -86,6 +86,9 @@ public class MetadataSchemaService() : Service
             throw HttpError.NotFound($"Request DTO '{name}' was not found");
 
         var schema = MetadataSchemaGenerator.CreateSchema(requestDto);
+        var feature = AssertPlugin<MetadataFeature>();
+        if (feature.OnApiSchema != null)
+            feature.OnApiSchema(requestDto, schema);
         
         if (Request!.IsHtml())
         {
@@ -155,7 +158,14 @@ public class AutoQuerySchemaService() : Service
         var authApi = await Gateway.ApiAsync(new Authenticate());
         var auth = authApi.Response;
 
-        var schema = MetadataSchemaGenerator.CreateAutoQuerySchema(name, Request!, auth);
+        var dataModel = MetadataSchemaGenerator.GetAytoQueryDataModel(name, Request!)
+            ?? throw HttpError.NotFound($"No AutoQuery APIs were found for '{name}'");
+        var schema = MetadataSchemaGenerator.CreateAutoQuerySchema(dataModel, Request!, auth);
+
+        var feature = AssertPlugin<MetadataFeature>();
+        if (feature.OnAutoQuerySchema != null)
+            feature.OnAutoQuerySchema(dataModel, schema);
+        
         var jsonSchema = schema.ToJsonString();
         if (Request!.IsHtml())
         {
@@ -186,24 +196,27 @@ public class CrudApi
 
 public static class MetadataSchemaGenerator
 {
+    public static Type? GetAytoQueryDataModel(string name, IRequest req)
+    {
+        // resolve against every visible API so a Data Model that exists but is off-limits
+        // reports 401/403 instead of masquerading as 404
+        var visibleApis = GetVisibleCrudApis(req);
+        var modelType = visibleApis.FirstOrDefault(x => x.ModelType.Name.EqualsIgnoreCase(name))?.ModelType
+            ?? visibleApis.FirstOrDefault(x => x.Operation.Name.EqualsIgnoreCase(name))?.ModelType;
+        return modelType;
+    }
+
     /// <summary>
     /// Returns all AutoQuery/CRUD Schemas available for a Data Model, e.g:
     /// { "query":{...}, "create":{...}, "update":{...}, "delete":{...} }
     /// Only includes the APIs this Request is authorized to call, and requires
     /// access to the Query API to see the Data Model at all.
     /// </summary>
-    /// <param name="name">Data Model (e.g. Booking) or AutoQuery Request DTO (e.g. QueryBookings) name</param>
+    /// <param name="modelType">Data Model (e.g. Booking) or AutoQuery Request DTO (e.g. QueryBookings) type</param>
     /// <param name="req">Only include APIs visible and authorized for this Request</param>
     /// <param name="auth">The Authenticated User's Info</param>
-    public static JsonObject CreateAutoQuerySchema(string name, IRequest req, AuthenticateResponse? auth = null)
+   public static JsonObject CreateAutoQuerySchema(Type modelType, IRequest req, AuthenticateResponse? auth = null)
     {
-        // resolve against every visible API so a Data Model that exists but is off-limits
-        // reports 401/403 instead of masquerading as 404
-        var visibleApis = GetVisibleCrudApis(req);
-        var modelType = visibleApis.FirstOrDefault(x => x.ModelType.Name.EqualsIgnoreCase(name))?.ModelType
-            ?? visibleApis.FirstOrDefault(x => x.Operation.Name.EqualsIgnoreCase(name))?.ModelType
-            ?? throw HttpError.NotFound($"No AutoQuery APIs were found for '{name}'");
-
         var crudApis = GetAuthorizedCrudApis(req, auth);
         var modelApis = crudApis.Where(x => x.ModelType == modelType).ToList();
         var queryApi = FindCrud(modelApis, AutoCrudOperation.Query);
