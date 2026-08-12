@@ -33,9 +33,9 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.29.0" />
-    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.50.0" />
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.29.1" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.51.1" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.2" />
     <PackageReference Include="Azure.Storage.Common" Version="12.28.0" />
   </ItemGroup>
 
