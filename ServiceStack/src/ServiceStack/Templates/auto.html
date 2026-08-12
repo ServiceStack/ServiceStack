@@ -42,7 +42,7 @@ import { createApp, computed, ref, inject, provide } from "vue"
 import { createRouter, createWebHistory } from "vue-router"
 import { JsonServiceClient } from "@servicestack/client"
 import ServiceStackVue, { ACTIONS, requirementText, subtitle, useApiKey, useAuth } from "@servicestack/vue"
-import AvatarButton from "../mjs/AvatarButton.mjs"
+import AvatarButton from "../js/components/AvatarButton.mjs"
 if (window.Auth) useAuth().signIn(window.Auth)
 const Auto = window.Schema
 // A padlock that reveals what each action needs — kept out of the way of normal use

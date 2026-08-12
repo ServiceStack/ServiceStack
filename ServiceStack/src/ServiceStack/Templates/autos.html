@@ -61,7 +61,7 @@
 <script type="module">
 import { createApp, ref, computed, onMounted, onUnmounted, nextTick } from "vue"
 import ServiceStackVue, { useAuth } from "@servicestack/vue"
-import AvatarButton from "../mjs/AvatarButton.mjs"
+import AvatarButton from "../js/components/AvatarButton.mjs"
 if (window.Auth) useAuth().signIn(window.Auth)
 const Models = window.Results || []
 // The CRUD actions a Data Model can expose, in the order they're described on hover
