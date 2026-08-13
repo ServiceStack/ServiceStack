@@ -21,6 +21,7 @@ public class GeminiUploadWorker
     readonly Dictionary<string, string> includeMimeTypes = new(StringComparer.OrdinalIgnoreCase);
     readonly object syncRoot = new();
     CancellationTokenSource? cts;
+    bool restartRequested;
 
     public bool Running { get; private set; }
 
@@ -43,14 +44,18 @@ public class GeminiUploadWorker
 
     public void Start()
     {
+        CancellationTokenSource source;
         lock (syncRoot)
         {
+            // Do this even while running: it closes the window where the worker has observed an
+            // empty queue but has not yet changed Running back to false.
+            restartRequested = true;
             if (Running)
                 return;
             Running = true;
-            cts = new CancellationTokenSource();
+            source = cts = new CancellationTokenSource();
         }
-        _ = Task.Run(() => RunAsync(cts.Token));
+        _ = Task.Run(() => RunAsync(source));
     }
 
     public void Stop()
@@ -61,8 +66,9 @@ public class GeminiUploadWorker
         }
     }
 
-    async Task RunAsync(CancellationToken token)
+    async Task RunAsync(CancellationTokenSource source)
     {
+        var token = source.Token;
         try
         {
             ctx.Log.LogInformation("Gemini UploadWorker started");
@@ -72,11 +78,37 @@ public class GeminiUploadWorker
 
             while (!token.IsCancellationRequested)
             {
-                var pending = db.GetPendingDocuments()
-                    .Where(x => !completed.Contains(x.Id))
-                    .ToList();
+                List<ChatDocument> pending;
+                lock (syncRoot)
+                    restartRequested = false;
+
+                try
+                {
+                    pending = db.GetPendingDocuments()
+                        .Where(x => !completed.Contains(x.Id))
+                        .ToList();
+                }
+                catch (Exception e)
+                {
+                    // A transient database failure used to kill the only worker, leaving queued
+                    // rows stranded until another upload happened to call Start().
+                    ctx.Log.LogError(e, "Gemini UploadWorker failed to read its queue; retrying");
+                    await Task.Delay(TimeSpan.FromSeconds(5), token).ConfigAwait();
+                    continue;
+                }
+
                 if (pending.Count == 0)
-                    break;
+                {
+                    lock (syncRoot)
+                    {
+                        if (restartRequested)
+                            continue;
+                        Running = false;
+                        if (ReferenceEquals(cts, source))
+                            cts = null;
+                        break;
+                    }
+                }
 
                 foreach (var doc in pending)
                 {
@@ -109,10 +141,14 @@ public class GeminiUploadWorker
         {
             lock (syncRoot)
             {
-                Running = false;
-                cts?.Dispose();
-                cts = null;
+                if (ReferenceEquals(cts, source))
+                {
+                    Running = false;
+                    restartRequested = false;
+                    cts = null;
+                }
             }
+            source.Dispose();
             ctx.Log.LogInformation("Gemini UploadWorker stopped");
         }
     }

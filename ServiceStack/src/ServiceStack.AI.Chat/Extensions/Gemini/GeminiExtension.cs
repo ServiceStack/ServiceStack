@@ -66,7 +66,7 @@ public class GeminiExtension() : ChatExtension("gemini")
     }
 
     /// <summary>Resume any uploads that were still queued when the app last shut down</summary>
-    public Task LoadAsync(ExtensionContext ctx, CancellationToken token = default)
+    public override Task LoadAsync(ExtensionContext ctx, CancellationToken token = default)
     {
         worker?.Start();
         return Task.CompletedTask;
@@ -186,7 +186,15 @@ public class GeminiExtension() : ChatExtension("gemini")
     Task<object?> QueryDocumentsAsync(ChatRequestContext req)
     {
         var rows = db.QueryDocuments(QueryOf(req), UserOf(req));
-        return Task.FromResult<object?>(rows.ToDtos(x => x.ToDto()));
+        return Task.FromResult<object?>(rows.ToDtos(ToClientDto));
+    }
+
+    /// <summary>The Gemini UI uses document URLs directly, so include the configured mount path.</summary>
+    JsonObject ToClientDto(ChatDocument document)
+    {
+        var dto = document.ToDto();
+        dto["url"] = Feature.ResolveClientUrl(document.Url);
+        return dto;
     }
 
     /// <summary>
@@ -292,7 +300,7 @@ public class GeminiExtension() : ChatExtension("gemini")
             : [];
 
         worker?.Start();
-        return docs.ToDtos(x => x.ToDto());
+        return docs.ToDtos(ToClientDto);
     }
 
     async Task<object?> DeleteDocumentAsync(ChatRequestContext req)
@@ -356,7 +364,7 @@ public class GeminiExtension() : ChatExtension("gemini")
             if (doc.UploadedAt != null || doc.Error != null)
                 break;
         }
-        return (db.GetDocument(id, user) ?? doc).ToDto();
+        return ToClientDto(db.GetDocument(id, user) ?? doc);
     }
 
     // ── Sync ──
