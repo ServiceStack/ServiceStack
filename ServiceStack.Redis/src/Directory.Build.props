@@ -1,10 +1,10 @@
 <Project>
 
   <PropertyGroup>
-    <Version>10.0.9</Version>
+    <Version>10.1.0</Version>
     <Authors>ServiceStack</Authors>
     <Company>ServiceStack, Inc.</Company>
-    <Copyright>&#169; 2008-2022 ServiceStack, Inc</Copyright>
+    <Copyright>&#169; 2008-2026 ServiceStack, Inc</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/ServiceStack/ServiceStack</PackageProjectUrl>
     <PackageLicenseUrl>https://servicestack.net/terms</PackageLicenseUrl>

@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <Version>10.0.9</Version>
+    <Version>10.1.0</Version>
     <LangVersion>latest</LangVersion>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
