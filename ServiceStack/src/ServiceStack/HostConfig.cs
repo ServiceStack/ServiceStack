@@ -47,7 +47,6 @@ public class HostConfig
             PreferredContentTypes = [MimeTypes.Html, MimeTypes.Json, MimeTypes.Xml, MimeTypes.Jsv],
             AllowJsonpRequests = true,
             AllowRouteContentTypeExtensions = true,
-            BufferSyncSerializers = Env.IsNetCore3,
             DebugMode = false,
             StrictMode = Env.StrictMode,
             DefaultDocuments =
