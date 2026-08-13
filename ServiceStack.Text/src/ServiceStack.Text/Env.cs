@@ -24,7 +24,6 @@ public static class Env
                 IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
                 IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
                 IsOSX  = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-                IsNetCore3 = RuntimeInformation.FrameworkDescription.StartsWith(".NET Core 3");
                 
                 var fxDesc = RuntimeInformation.FrameworkDescription;
                 IsMono = fxDesc.Contains("Mono");
@@ -168,8 +167,6 @@ public static class Env
 
     public static bool IsNetCore { get; set; }
         
-    public static bool IsNetCore3 { get; set; }
-
     public static bool SupportsExpressions { get; private set; }
 
     public static bool SupportsEmit { get; private set; }
