@@ -411,14 +411,28 @@ public partial class PdfPublisher(PdfFeature feature)
         .ToHashSet(StringComparer.OrdinalIgnoreCase)
         ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-    public List<string> GetPublishedNames() => Directory.Exists(PdfPath)
-        ? Directory.EnumerateFiles(PdfPath, "*.typ")
-            .Select(Path.GetFileNameWithoutExtension)
-            .Where(x => !PdfRenderer.ReservedNames.Contains(x, StringComparer.OrdinalIgnoreCase))
-            .Distinct()
+    public List<string> GetPublishedNames()
+    {
+        if (!Directory.Exists(PdfPath))
+            return [];
+
+        // A published document can bring other .typ files with it. Those files are flattened beside
+        // the entry point (e.g. invoice.v1.typ), but they are implementation dependencies rather than
+        // independently published templates. Once a manifest exists it is the authoritative list.
+        var manifest = GetManifest();
+        var names = manifest.Count > 0
+            ? manifest.Select(x => x.Key)
+                .Where(x => File.Exists(Path.Combine(PdfPath, x + ".typ")))
+            // Preserve browsing/unpublishing support for installations created before manifests.
+            : Directory.EnumerateFiles(PdfPath, "*.typ")
+                .Select(x => Path.GetFileNameWithoutExtension(x)!)
+                .Where(x => !PdfRenderer.ReservedNames.Contains(x, StringComparer.OrdinalIgnoreCase));
+
+        return names
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
-            .ToList()
-        : [];
+            .ToList();
+    }
 
     // ── Collecting a template's files ──
 

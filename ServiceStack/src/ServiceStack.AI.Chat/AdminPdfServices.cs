@@ -303,9 +303,12 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
     {
         AssertFeature();
         ResolveTemplate(request.Name); // validates the name + that it exists
+        var name = System.IO.Path.GetFileNameWithoutExtension(request.Name);
+        if (!Publisher.GetPublishedNames().Contains(name, StringComparer.OrdinalIgnoreCase))
+            throw HttpError.NotFound($"'{name}' is not a published PDF template");
         return new AdminDeletePdfTemplateResponse
         {
-            Deleted = Publisher.Unpublish(System.IO.Path.GetFileNameWithoutExtension(request.Name)),
+            Deleted = Publisher.Unpublish(name),
         };
     }
 
