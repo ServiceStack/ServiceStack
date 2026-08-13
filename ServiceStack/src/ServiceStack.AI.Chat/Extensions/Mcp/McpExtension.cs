@@ -27,7 +27,7 @@ public class McpExtension() : ChatExtension("mcp")
     /// exposed until ToolGroups/Tools names something.
     /// </summary>
     /// <summary>Tool groups to expose, e.g. "api_tools", "core_tools". Empty disables the endpoint.</summary>
-    public List<string> ToolGroups { get; set; } = [];
+    public List<string> ToolGroups { get; set; } = ["api_tools"];
 
     /// <summary>Individual tools to expose, in addition to whole <see cref="ToolGroups"/></summary>
     public List<string> Tools { get; set; } = [];
