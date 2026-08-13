@@ -1,10 +1,10 @@
 using System.ComponentModel;
 using System.Text.Json.Nodes;
-using MyApp.ServiceModel;
 using ServiceStack;
 using ServiceStack.AI;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using MyApp.ServiceModel;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureAiChat))]
 
