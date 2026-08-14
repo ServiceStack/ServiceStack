@@ -29,15 +29,16 @@ public class ConfigureAiChat : IHostingStartup
                 },
                 RequireAuth = true,
                 // RequiredRole = "Admin",
-                // Publish =
-                // {
-                //     Enabled = true,
-                // },
+#if DEBUG
                 Tools =
                 {
+                    // NOTE: This allows AI Models to run code on the server and read/write files to allowed directories.
                     EnableCodeExecution = true,
                     EnableFilesystemTools = true,
                 },
+                // Share your best Projects, Threads or AI Media with everyone
+                // Publish = { Enabled = true },
+#endif
                 ApiTools = {
                     IncludeTags = ["todos", "CoffeeShop"]
                 },
