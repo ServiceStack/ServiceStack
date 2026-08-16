@@ -1,6 +1,6 @@
 {
     "theme": "dark",
-    "model": "GLM-5.2",
+    "model": "GLM-5.3",
     "onlyTools": [
         "get_current_time",
         "calc",
