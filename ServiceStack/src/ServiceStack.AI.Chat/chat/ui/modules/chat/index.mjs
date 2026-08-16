@@ -554,16 +554,80 @@ const VoiceInput = {
         const stopRecording = () => {
             if (mediaRecorder && isRecording.value) {
                 isProcessing.value = true
+                // stop() only *queues* the flush of buffered audio, so the stream tracks
+                // must not be stopped here - tearing the source down first races the flush
+                // and yields an empty recording (a bare container header, no audio).
+                // They're released in onstop below, once the data has been delivered.
                 mediaRecorder.stop()
                 isRecording.value = false
-                mediaRecorder.stream.getTracks().forEach(track => track.stop())
+            }
+        }
+
+        // Convert a recording to 16 kHz mono 16-bit WAV using the browser's own decoder.
+        // Every transcription API accepts WAV, whereas the webm/opus browsers record is
+        // rejected by some (Mistral: "Audio input could not be decoded"), and this avoids
+        // needing ffmpeg installed on the server. Returns null if the browser can't do it,
+        // in which case the original recording is sent unchanged.
+        const toWavBlob = async (blob) => {
+            const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext
+            if (!OfflineCtx || !blob?.size) return null
+            const rate = 16000
+            try {
+                // Decode with an offline context: a real AudioContext would open the audio
+                // output device, and its close() is async, so it can still be tearing down
+                // when the next recording calls getUserMedia - which shows up as a delay
+                // before recording starts. An offline context touches no hardware.
+                const decoder = new OfflineCtx(1, 1, rate)
+                const encoded = await blob.arrayBuffer()
+                const decoded = await new Promise((resolve, reject) => {
+                    // Safari's older implementation is callback-only
+                    const p = decoder.decodeAudioData(encoded, resolve, reject)
+                    if (p?.then) p.then(resolve, reject)
+                })
+                const frames = Math.max(1, Math.ceil(decoded.duration * rate))
+                // rendering into a 1-channel context downmixes and resamples in one step
+                const offline = new OfflineCtx(1, frames, rate)
+                const source = offline.createBufferSource()
+                source.buffer = decoded
+                source.connect(offline.destination)
+                source.start()
+                const samples = (await offline.startRendering()).getChannelData(0)
+
+                const bytes = new ArrayBuffer(44 + samples.length * 2)
+                const view = new DataView(bytes)
+                const ascii = (offset, text) => {
+                    for (let i = 0; i < text.length; i++) view.setUint8(offset + i, text.charCodeAt(i))
+                }
+                ascii(0, 'RIFF')
+                view.setUint32(4, 36 + samples.length * 2, true)
+                ascii(8, 'WAVE')
+                ascii(12, 'fmt ')
+                view.setUint32(16, 16, true)        // PCM header size
+                view.setUint16(20, 1, true)         // format = PCM
+                view.setUint16(22, 1, true)         // mono
+                view.setUint32(24, rate, true)
+                view.setUint32(28, rate * 2, true)  // byte rate
+                view.setUint16(32, 2, true)         // block align
+                view.setUint16(34, 16, true)        // bits per sample
+                ascii(36, 'data')
+                view.setUint32(40, samples.length * 2, true)
+                for (let i = 0, offset = 44; i < samples.length; i++, offset += 2) {
+                    const s = Math.max(-1, Math.min(1, samples[i]))
+                    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true)
+                }
+                return new Blob([bytes], { type: 'audio/wav' })
+            } catch (e) {
+                console.debug('WAV conversion unavailable, sending the original recording', e)
+                return null
             }
         }
 
         const startRecording = async () => {
             if (isProcessing.value) return
             try {
+                const requestedAt = performance.now()
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+                console.debug(`microphone acquired in ${Math.round(performance.now() - requestedAt)}ms`)
                 recordingStartTime.value = Date.now()
                 mediaRecorder = new MediaRecorder(stream)
                 audioChunks = []
@@ -571,6 +635,9 @@ const VoiceInput = {
                     audioChunks.push(event.data)
                 }
                 mediaRecorder.onstop = async () => {
+                    // safe to release the microphone now the recorder has flushed
+                    mediaRecorder.stream.getTracks().forEach(track => track.stop())
+
                     // Ignore recordings less than 1 second - likely unintentional
                     const recordingDuration = Date.now() - recordingStartTime.value
                     if (recordingDuration < 1000) {
@@ -578,10 +645,35 @@ const VoiceInput = {
                         isProcessing.value = false
                         return
                     }
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
-                    const fileName = `voice-${Date.now()}.webm`
+                    // MediaRecorder's default differs by browser (webm/opus in Chrome,
+                    // mp4/aac in Safari) so take the type it actually produced
+                    const recordedType = mediaRecorder.mimeType || 'audio/webm'
+                    const recordedExt = recordedType.includes('mp4') ? 'mp4'
+                        : recordedType.includes('ogg') ? 'ogg' : 'webm'
+                    let audioBlob = new Blob(audioChunks, { type: recordedType })
+                    let fileName = `voice-${Date.now()}.${recordedExt}`
 
-                    const audioFile = new File([audioBlob], fileName, { type: 'audio/webm' })
+                    // A recording of at least a second that's this small contains no audio
+                    // frames, only a container header - uploading it just yields a confusing
+                    // "could not be decoded" error from the transcription provider.
+                    if (audioBlob.size < 1024) {
+                        console.debug(`Recording contained no audio (${audioBlob.size} bytes)`)
+                        ctx.setError({ errorCode: 'Error',
+                            message: 'No audio was captured - check your microphone is not muted, then try again' })
+                        isProcessing.value = false
+                        return
+                    }
+
+                    const convertedAt = performance.now()
+                    const wavBlob = await toWavBlob(audioBlob)
+                    console.debug(`converted ${audioBlob.size}b ${recordedType} to wav in ` +
+                        `${Math.round(performance.now() - convertedAt)}ms`)
+                    if (wavBlob) {
+                        audioBlob = wavBlob
+                        fileName = `voice-${Date.now()}.wav`
+                    }
+
+                    const audioFile = new File([audioBlob], fileName, { type: audioBlob.type })
                     const formData = new FormData()
                     formData.append('file', audioFile)
                     const res = await ctx.postForm('/transcribe', {

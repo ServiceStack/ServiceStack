@@ -105,13 +105,80 @@ Ported from llms-py's modular extensions (`ChatFeature.Extensions`); add your ow
 | `computer` | Filesystem tools + `run_bash` (opt-in) |
 | `gallery` | Catalogue of uploaded/generated media |
 | `skills` | Anthropic-style skill packages |
-| `voice` | Speech-to-text (self-disables when no backend is available) |
+| `voice` | Speech-to-text via any OpenAI-compatible transcription API, or a local CLI (self-disables when no backend is available) |
 | `publish` | Publish threads/media/projects to a remote llms.py site |
 | `gemini` | Gemini File Search stores for RAG (self-disables without a Gemini API key) |
 | `analytics`, `katex`, `identity` | UI-only |
 
 `credentials`, `github_auth` and `browser` are intentionally not ported — Identity Auth replaces the
 first two, and browser automation doesn't apply to a web host.
+
+### Voice input
+
+The `voice` extension tries `voxtype`, `transcribe`, `api` and `voxtral-mini-latest` in order, using the
+first available — override with the `LLMS_VOICE` environment variable, or set `LLMS_VOICE=""` to disable.
+This matches llms-py, including the configuration below.
+
+`api` posts the recording to any OpenAI-compatible `/v1/audio/transcriptions` endpoint and needs nothing
+installed. With no configuration it uses the first provider API key it finds — `GROQ_API_KEY`
+(`whisper-large-v3-turbo`), `OPENAI_API_KEY` (`whisper-1`) or `MISTRAL_API_KEY` (`voxtral-mini-latest`).
+
+llms.py ships with `mistral` / `voxtral-mini-latest` configured in `defaults.voice`. If that
+provider has no API key it **falls back** to any other provider that does, so the shipped default
+never disables voice input for someone using a different provider — `--verbose` logs `[fallback]`
+when that happens.
+
+> **Audio format.** Browsers record `webm/opus`, which Groq and OpenAI accept but Mistral rejects
+> with *"Audio input could not be decoded"*. The chat UI converts the recording to 16 kHz mono WAV
+> before uploading, so every provider works with no extra software. If the browser can't do the
+> conversion the server falls back to `ffmpeg` when it's installed, and otherwise sends the
+> original — in which case use `groq` or `openai`, which decode `webm` directly.
+
+Configure it with a `voice` section under `defaults` in `llms.json`:
+
+```json
+{
+  "defaults": {
+    "voice": {
+      "provider": "groq",
+      "model": "whisper-large-v3",
+      "language": "en"
+    }
+  }
+}
+```
+
+| Setting | Purpose |
+| --- | --- |
+| `provider` | `groq`, `openai` or `mistral` — selects the endpoint and default model |
+| `model` | Model id |
+| `url` | Full endpoint URL; set instead of `provider` to use any other server |
+| `api_key` | API key. Prefer `$SOME_VAR` over a literal key |
+| `language` | ISO-639-1 hint, e.g. `en`. Omit to auto-detect |
+| `prompt` | Biasing prompt for names and jargon |
+
+A local speech-to-text server (speaches, faster-whisper-server) needs no key:
+
+```json
+{
+  "defaults": {
+    "voice": {
+      "url": "http://localhost:8001/v1/audio/transcriptions",
+      "model": "Systran/faster-whisper-small"
+    }
+  }
+}
+```
+
+Each setting is overridable by an environment variable that takes precedence over `llms.json`:
+`LLMS_TRANSCRIBE_PROVIDER`, `LLMS_TRANSCRIBE_MODEL`, `LLMS_TRANSCRIBE_URL`, `LLMS_TRANSCRIBE_KEY`,
+`LLMS_TRANSCRIBE_LANG`, `LLMS_TRANSCRIBE_PROMPT`.
+
+`voxtype` and `transcribe` shell out to local CLIs and additionally require `ffmpeg`; `voxtype` needs a
+graphical desktop session so it doesn't apply to a web host.
+
+> The browser only exposes the microphone in a secure context — HTTPS, or `localhost`/`127.0.0.1`. Over
+> plain HTTP to any other host the button won't appear at all, regardless of configuration.
 
 ### Server-side execution
 

@@ -130,9 +130,13 @@ public partial class ChatFeature
                 providers.Add(dto);
             }
         }
+        // defaults is sent to the browser, so never expose a literal voice API key
+        var defaults = Config.GetObject("defaults")?.Clone() ?? new JsonObject();
+        defaults.GetObject("voice")?.Remove("api_key");
+
         var ret = new JsonObject
         {
-            ["defaults"] = Config.GetObject("defaults")?.Clone() ?? new JsonObject(),
+            ["defaults"] = defaults,
             ["status"] = new JsonObject
             {
                 ["enabled"] = ToJsonArray(enabled),

@@ -107,6 +107,10 @@
             ],
             "stream": false
         },
+        "voice": {
+            "provider": "mistral",
+            "model": "voxtral-mini-latest"
+        },
         "check": {
             "messages": [
                 {
