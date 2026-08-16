@@ -37,7 +37,7 @@ public class ConfigureAiChat : IHostingStartup
                     EnableFilesystemTools = true,
                 },
                 // Share your best Projects, Threads or AI Media with everyone
-                // Publish = { Enabled = true },
+                Publish = { Enabled = true },
 #endif
                 ApiTools = {
                     IncludeTags = ["todos", "CoffeeShop"]
