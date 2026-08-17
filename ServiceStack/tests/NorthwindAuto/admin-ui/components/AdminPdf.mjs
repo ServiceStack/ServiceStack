@@ -1,7 +1,6 @@
 // Keep this C#-owned copy in sync with src/ServiceStack.AI.Chat/modules/admin-ui/components/AdminPdf.mjs.
 import { computed, inject, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { JsonSchemaForm, useClient, useFormatters } from '@servicestack/vue'
-import hljs from 'highlight.js'
 
 class AdminPdfTemplates { getTypeName() { return 'AdminPdfTemplates' }; getMethod() { return 'GET' }; createResponse() { return {} } }
 class AdminGetPdfTemplate { constructor(init) { Object.assign(this, init) }; getTypeName() { return 'AdminGetPdfTemplate' }; getMethod() { return 'GET' }; createResponse() { return {} } }
@@ -15,23 +14,6 @@ const json = value => {
     try { return value ? JSON.parse(value) : {} } catch { return {} }
 }
 
-/**
- * Syntax highlighting that survives re-rendering.
- *
- * The shared v-highlightjs directive resets the element to plain text and then calls
- * highlightElement, but hljs stamps dataset.highlighted on first use and refuses to run again -
- * so every reactive update after the first leaves the plain text behind. Unsetting the flag first
- * keeps the colours, and the value check keeps the live-editing path from re-parsing needlessly.
- */
-const hl = (el, binding) => {
-    const value = binding.value ?? ''
-    if (el.__hl === value) return
-    el.__hl = value
-    el.textContent = value
-    delete el.dataset.highlighted
-    if (value) hljs.highlightElement(el)
-}
-
 /** Shared by the highlighted <pre> and the textarea over it - any mismatch here misaligns the caret.
  *  Inline rather than Tailwind because text-transparent/break-words aren't in the admin-ui's CSS build. */
 const editorStyle = 'font:0.75rem/1.625 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;' +
@@ -40,7 +22,6 @@ const editorStyle = 'font:0.75rem/1.625 ui-monospace,SFMono-Regular,Menlo,Monaco
     'padding:1rem;margin:0;border:0;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2'
 
 export const AdminPdf = {
-    directives: { hl },
     template: `
     <!-- w-full is load-bearing: this is a flex item, and mx-auto's auto cross-axis margins cancel
          align-self:stretch, so without it the page shrink-wraps to its content and every pane resizes
@@ -117,7 +98,7 @@ export const AdminPdf = {
                          document. -->
                     <div v-if="dataView === 'data'" class="overflow-auto bg-white flex-1 min-h-96">
                         <div class="relative min-w-0" style="min-height:100%">
-                            <pre :style="editorStyle" aria-hidden="true"><code lang="json" class="language-json block" v-hl="dataText"></code></pre>
+                            <pre :style="editorStyle" aria-hidden="true"><code lang="json" class="language-json block" v-highlightjs="dataText"></code></pre>
                             <textarea v-model="dataText" @input="onCodeInput" class="absolute inset-0 w-full h-full" :style="editorStyle + ';color:transparent;background:transparent;caret-color:#4f46e5;resize:none;outline:none;overflow:hidden'" spellcheck="false"></textarea>
                         </div>
                     </div>
@@ -145,7 +126,7 @@ export const AdminPdf = {
                         <!-- CopyIcon sits outside the scroller so it stays pinned as the code scrolls under it -->
                         <div v-if="activeCode?.source" class="relative">
                             <CopyIcon class="absolute top-2 right-2 z-10" :text="activeCode.source" title="Copy code" />
-                            <pre class="overflow-auto rounded-md bg-white border border-gray-200 dark:border-gray-700 m-0 p-3 pr-14 text-xs leading-relaxed"><code lang="csharp" class="language-csharp block" v-hl="activeCode.source"></code></pre>
+                            <pre class="overflow-auto rounded-md bg-white border border-gray-200 dark:border-gray-700 m-0 p-3 pr-14 text-xs leading-relaxed"><code lang="csharp" class="language-csharp block" v-highlightjs="activeCode.source"></code></pre>
                         </div>
                     </div>
                 </div>

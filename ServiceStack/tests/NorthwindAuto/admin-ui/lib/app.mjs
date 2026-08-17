@@ -345,9 +345,15 @@ app.use(ServiceStackVue)
 app.component('RouterLink', ServiceStackVue.component('RouterLink'))
 app.provides({ app, server, client, store, routes, breakpoints, settings })
 app.directive('highlightjs', (el, binding) => {
-    if (binding.value) {
-        el.innerHTML = enc(binding.value)
+    const value = binding.value ?? ''
+    if (el.__hl === value) return
+    el.__hl = value
+    delete el.dataset.highlighted
+    if (value) {
+        el.innerHTML = enc(value)
         hljs.highlightElement(el)
+    } else {
+        el.innerHTML = ''
     }
 })
 

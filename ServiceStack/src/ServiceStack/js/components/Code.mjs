@@ -638,7 +638,7 @@ export const Code = {
             </div>
             <CopyIcon v-if="activeLangSrc" :text="activeLangSrc" title="Copy code" />
           </div>
-          <pre :key="selected" v-if="activeLangSrc" class=""><code :class="'language-' + selected" :lang="selected" v-highlightjs="activeLangSrc"></code></pre>
+          <pre :key="selected + ':' + op" v-if="activeLangSrc" class=""><code :class="'language-' + selected" :lang="selected" v-highlightjs="activeLangSrc"></code></pre>
           <Loading v-else />
         </div>
         <div v-if="showHelp" class="flex-1 w-full lg:w-1/2 overflow-auto shadow-lg relative" style="min-width:585px;max-width:700px">

@@ -434,10 +434,15 @@ app.component('RouterLink', ServiceStackVue.component('RouterLink'))
 app.provides({ app, client, store, routes, breakpoints, server:globalThis.Server })
 
 app.directive('highlightjs', (el, binding) => {
-    if (binding.value) {
-        //el.className = ''
-        el.innerHTML = enc(binding.value)
+    const value = binding.value ?? ''
+    if (el.__hl === value) return
+    el.__hl = value
+    delete el.dataset.highlighted
+    if (value) {
+        el.innerHTML = enc(value)
         hljs.highlightElement(el)
+    } else {
+        el.innerHTML = ''
     }
 })
 app.directive('hash', (el,binding) => {
