@@ -63,7 +63,7 @@ public class ContainerResolveCache : ITypeFactory
 #endif
 
     /// <summary>
-    /// Creates instance using straight Resolve approach.
+    /// Creates an instance using the straight Resolve approach.
     /// This will throw an exception if resolution fails
     /// </summary>
     public object CreateInstance(IResolver resolver, Type type)
@@ -72,12 +72,12 @@ public class ContainerResolveCache : ITypeFactory
     }
 
     /// <summary>
-    /// Creates instance using the TryResolve approach if tryResolve = true.
-    /// Otherwise uses Resolve approach, which will throw an exception if resolution fails
+    /// Creates an instance using the TryResolve approach if tryResolve = true.
+    /// Otherwise uses the Resolve approach, which will throw an exception if resolution fails
     /// </summary>
 	public object CreateInstance(IResolver resolver, Type type, bool tryResolve)
     {
-        var resolveFn = resolveFnMap.GetOrAdd(type, GenerateServiceFactory(type));
+        var resolveFn = resolveFnMap.GetOrAdd(type, GenerateServiceFactory);
 
         var instance = resolveFn(resolver);
         if (instance == null && !tryResolve)
