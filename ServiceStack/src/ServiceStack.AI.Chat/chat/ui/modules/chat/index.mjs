@@ -950,7 +950,7 @@ const ChatPrompt = {
         const triggerFilePicker = () => {
             if (fileInput.value) fileInput.value.click()
         }
-        const onFilesSelected = async (e) => {
+        const onFilesSelected = async (e, { populateImagePrompt = true } = {}) => {
             const files = Array.from(e.target?.files || [])
             await uploadFiles(files)
 
@@ -960,7 +960,9 @@ const ChatPrompt = {
 
             if (!messageText.value?.trim()) {
                 if (hasImage()) {
-                    messageText.value = getTextContent(config.defaults.image)
+                    if (populateImagePrompt) {
+                        messageText.value = getTextContent(config.defaults.image)
+                    }
                 } else if (hasAudio()) {
                     messageText.value = getTextContent(config.defaults.audio)
                 } else {
@@ -1013,7 +1015,11 @@ const ChatPrompt = {
                 e.preventDefault()
                 // Reuse the same logic as onFilesSelected for consistency
                 const event = { target: { files: files } }
-                await onFilesSelected(event)
+                const threadIsEmpty = !(ctx.threads.currentThread.value?.messages?.length)
+                const pastedImage = files.some(file => file.type?.startsWith('image/'))
+                await onFilesSelected(event, {
+                    populateImagePrompt: !pastedImage || threadIsEmpty,
+                })
             }
         }
 

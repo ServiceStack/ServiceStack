@@ -30,7 +30,7 @@ const RecentResults = {
                             <td class="py-3 px-1 border-b border-gray-200 dark:border-gray-700">
                                 <div class="text-right whitespace-nowrap">
                                     <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(t.updatedAt || t.createdAt) }}</div>
-                                    <div class="text-[11px] text-gray-500/80 dark:text-gray-400/80">{{ (t.messages?.length || 0) }} messages</div>
+                                    <div class="text-[11px] text-gray-500/80 dark:text-gray-400/80">{{ (t.messageCount ?? t.messages?.length ?? 0) }} messages</div>
                                     <div v-if="t.model" class="text-[11px] text-blue-600 dark:text-blue-400 max-w-[140px] truncate" :title="t.model">{{ t.model }}</div>
                                 </div>
                             </td>

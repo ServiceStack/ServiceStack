@@ -125,6 +125,10 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
                 }
                 break;
 
+            case ChatStreamResult stream:
+                await stream.Write(res).ConfigAwait();
+                break;
+
             case JsonNode node:
                 res.ContentType = MimeTypes.Json;
                 await res.WriteAsync(node.ToJsonString(ChatJson.Options)).ConfigAwait();

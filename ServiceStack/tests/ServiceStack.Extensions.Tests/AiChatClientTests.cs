@@ -487,6 +487,28 @@ public class AiChatClientTests
     }
 
     [Test]
+    public void Durable_tool_loop_yields_at_the_slice_boundary_instead_of_failing_the_run()
+    {
+        var (feature, _) = CreateToolLoopFeature();
+        feature.Limits.MaxIterations = 1;
+        var chat = ChatJson.ParseObject("""
+            {"model":"kimi-k2","messages":[{"role":"user","content":"weather","timestamp":1}]}
+            """);
+        var context = new ChatContext
+        {
+            Chat = chat,
+            User = "ann",
+            ThreadId = 7,
+            RunId = 9,
+            ProjectedContext = true,
+        };
+        context.SeedMessageTimestamps(chat.GetArray("messages"));
+
+        Assert.That(async () => await feature.ChatCompletionAsync(chat, context),
+            Throws.TypeOf<AgentSliceYieldException>().With.Property("Iterations").EqualTo(1));
+    }
+
+    [Test]
     public async Task Pauses_a_guarded_tool_before_its_handler_executes()
     {
         var provider = new ScriptedChatProvider([ChatJson.ParseObject("""

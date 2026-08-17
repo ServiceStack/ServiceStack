@@ -4,51 +4,15 @@ using System.Collections.Concurrent;
 namespace ServiceStack.AI;
 
 /// <summary>
-/// Coordinates background chat tasks and the long-poll update channel that delivers streamed
-/// thread updates to the browser (port of active_chat_tasks/thread_update_events in extensions/app).
+/// Coordinates thread update signals and serializes per-thread read/modify/write operations.
 /// </summary>
 public class ThreadUpdates
 {
-    readonly ConcurrentDictionary<long, CancellationTokenSource> activeChatTasks = new();
     readonly ConcurrentDictionary<long, TaskCompletionSource> updateEvents = new();
     readonly ConcurrentDictionary<long, SemaphoreSlim> threadLocks = new();
 
     /// <summary>How long GET threads/{id}/updates waits before returning the unchanged thread</summary>
     public TimeSpan LongPollTimeout { get; set; } = TimeSpan.FromSeconds(10);
-
-    public CancellationTokenSource StartChatTask(long threadId)
-    {
-        var cts = new CancellationTokenSource();
-        activeChatTasks.AddOrUpdate(threadId, cts, (_, existing) =>
-        {
-            existing.Cancel();
-            existing.Dispose();
-            return cts;
-        });
-        return cts;
-    }
-
-    public void CompleteChatTask(long threadId, CancellationTokenSource cts)
-    {
-        if (activeChatTasks.TryGetValue(threadId, out var current) && ReferenceEquals(current, cts))
-        {
-            activeChatTasks.TryRemove(threadId, out _);
-        }
-        cts.Dispose();
-    }
-
-    /// <summary>Cancel a running chat. Returns true when a task was actually cancelled.</summary>
-    public bool CancelChatTask(long threadId)
-    {
-        if (!activeChatTasks.TryRemove(threadId, out var cts))
-            return false;
-        try
-        {
-            cts.Cancel();
-        }
-        catch (ObjectDisposedException) { /* already completed */ }
-        return true;
-    }
 
     /// <summary>Wake any long-poll waiters for this thread (port of notify_thread_update)</summary>
     public void NotifyThreadUpdate(long threadId)

@@ -12,7 +12,7 @@ namespace ServiceStack.AI;
 /// DTOs are emitted in the exact wire shape the synced UI expects: camelCase keys, parsed JSON
 /// columns, and sortable string timestamps (the UI string-compares updatedAt when long-polling).
 /// </summary>
-public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = null)
+public partial class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = null)
 {
     /// <summary>Python datetime repr — sortable and directly string-comparable</summary>
     public const string DateFormat = "yyyy-MM-dd HH:mm:ss.ffffff";
@@ -30,12 +30,20 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
         db.CreateTableIfNotExists<ChatThread>();
         db.CreateTableIfNotExists<ChatRequest>();
         db.CreateTableIfNotExists<ChatMedia>();
+        db.CreateTableIfNotExists<AgentRun>();
+        db.CreateTableIfNotExists<AgentStep>();
+        db.CreateTableIfNotExists<ChatMessage>();
+        db.CreateTableIfNotExists<ContextSnapshot>();
 
         // tables created by an earlier version are missing newly added columns
         // (port of Python's add_missing_columns PRAGMA/ALTER TABLE migration)
         AddMissingColumns<ChatThread>(db);
         AddMissingColumns<ChatRequest>(db);
         AddMissingColumns<ChatMedia>(db);
+        AddMissingColumns<AgentRun>(db);
+        AddMissingColumns<AgentStep>(db);
+        AddMissingColumns<ChatMessage>(db);
+        AddMissingColumns<ContextSnapshot>(db);
     }
 
     /// <summary>Add columns missing from a table created by an earlier version (also used by extension tables)</summary>
@@ -60,13 +68,25 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
     }
 
     // ── Threads ──
-    public ChatThread? GetThread(long id, string? user)
+    public ChatThread? GetThread(long id, string? user, bool includeMessages = true)
     {
         using var db = OpenDb();
         var q = db.From<ChatThread>().Where(x => x.Id == id);
         if (user != null && !IsAllUsers(user))
             q.And(x => x.User == user);
+        if (!includeMessages)
+            SelectThreadSummary(q);
         return db.Single(q);
+    }
+
+    static void SelectThreadSummary(SqlExpression<ChatThread> q)
+    {
+        var selected = typeof(ChatThread).GetProperties()
+            .Select(x => x.Name)
+            .Where(x => x is not nameof(ChatThread.Messages) and not nameof(ChatThread.ToolHistory)
+                and not nameof(ChatThread.ProviderResponse) && x != nameof(ChatThread.Sig))
+            .Select(x => q.DialectProvider.GetQuotedColumnName(x == nameof(ChatThread.User) ? "user" : x));
+        q.Select(string.Join(",", selected));
     }
 
     public T? GetThreadColumn<T>(long id, string columnName, string? user)
@@ -87,8 +107,34 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
 
     public void UpdateThread(ChatThread thread, string? user)
     {
+        UpdateThreadFields(thread,
+            typeof(ChatThread).GetProperties()
+                .Where(x => x.Name is not nameof(ChatThread.Id) and not nameof(ChatThread.Sig))
+                .Select(x => x.Name), user);
+    }
+
+    /// <summary>
+    /// Update a partial thread without rewriting large JSON columns that were not changed. Frequent
+    /// status/context checkpoints must remain cheap even when the compatibility Messages blob is MBs.
+    /// </summary>
+    public int UpdateThreadFields(ChatThread thread, IEnumerable<string> fields, string? user)
+    {
+        var onlyFields = fields.Where(x => x is not nameof(ChatThread.Id) and not nameof(ChatThread.Sig))
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (onlyFields.Length == 0) return 0;
         using var db = OpenDb();
-        db.Update(thread);
+        if (user != null && !IsAllUsers(user))
+            return db.UpdateOnlyFields(thread, onlyFields, x => x.Id == thread.Id && x.User == user);
+        return db.UpdateOnlyFields(thread, onlyFields, x => x.Id == thread.Id);
+    }
+
+    public void UpdateThreadContextTokens(long id, long? contextTokens, string? user)
+    {
+        using var db = OpenDb();
+        var q = db.From<ChatThread>().Where(x => x.Id == id);
+        if (user != null && !IsAllUsers(user))
+            q.And(x => x.User == user);
+        db.UpdateOnly(() => new ChatThread { ContextTokens = contextTokens, UpdatedAt = DateTime.Now }, q);
     }
 
     /// <summary>
@@ -129,6 +175,9 @@ public class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = nu
 
         ApplySort(q, query.GetString("sort") ?? "-id", ThreadColumns);
         q.Limit(query.GetInt("skip") ?? 0, Math.Min(query.GetInt("take") ?? 50, 1000));
+        // Sidebar queries never need the multi-megabyte compatibility history or diagnostic blobs.
+        // The selected thread is loaded through the bounded window endpoint.
+        SelectThreadSummary(q);
         return db.Select(q);
     }
 

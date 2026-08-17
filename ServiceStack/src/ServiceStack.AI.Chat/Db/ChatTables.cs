@@ -99,6 +99,19 @@ public static class ChatSignature
             System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(raw)));
         return $"{msgLen}:{hash[..12].ToLowerInvariant()}";
     }
+
+    /// <summary>A signature for normalized history that does not require reading the legacy blob.</summary>
+    public static string Compute(long messageCount, long? lastSequence, string? streamingMessage,
+        string? status, DateTime? completedAt, string? error)
+    {
+        var streaming = streamingMessage ?? "";
+        var streamingTail = streaming.Length > 100 ? streaming[^100..] : streaming;
+        var completed = completedAt != null ? ChatDb.ToDateString(completedAt.Value) : "";
+        var raw = $"{messageCount}:{lastSequence}:{streaming.Length}:{streamingTail}:{status ?? ""}:{completed}:{error ?? ""}";
+        var hash = Convert.ToHexString(
+            System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(raw)));
+        return $"{messageCount}:{hash[..12].ToLowerInvariant()}";
+    }
 }
 
 /// <summary>

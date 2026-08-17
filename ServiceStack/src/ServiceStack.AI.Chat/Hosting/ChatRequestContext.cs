@@ -62,3 +62,9 @@ public class ChatFileResult(string filePath)
     public string? ContentType { get; set; }
     public Dictionary<string, string>? Headers { get; set; }
 }
+
+/// <summary>A route result that owns the response stream (used by server-sent events).</summary>
+public class ChatStreamResult(Func<IResponse, Task> write)
+{
+    public Func<IResponse, Task> Write { get; } = write;
+}

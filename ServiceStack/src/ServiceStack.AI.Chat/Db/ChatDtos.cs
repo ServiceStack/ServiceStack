@@ -12,7 +12,7 @@ public static class ChatDtos
     /// <summary>Marks the in-flight message merged into a thread DTO's messages while it streams</summary>
     public const string StreamingKey = "streaming";
 
-    public static JsonObject ToDto(this ChatThread x)
+    public static JsonObject ToDto(this ChatThread x, bool includeMessages = true)
     {
         var dto = new JsonObject
         {
@@ -25,7 +25,7 @@ public static class ChatDtos
             ["model"] = x.Model,
             ["modelInfo"] = ParseJson(x.ModelInfo),
             ["modalities"] = ParseJson(x.Modalities),
-            ["messages"] = ParseJson(x.Messages) ?? new JsonArray(),
+            ["messages"] = includeMessages ? ParseJson(x.Messages) ?? new JsonArray() : new JsonArray(),
             ["args"] = ParseJson(x.Args),
             ["tools"] = ParseJson(x.Tools),
             ["toolHistory"] = ParseJson(x.ToolHistory),
@@ -51,7 +51,7 @@ public static class ChatDtos
 
         // The in-flight message is stored separately so a failed stream can't damage `messages`,
         // but clients read one list, so present it merged on the way out.
-        if (ParseJson(x.StreamingMessage) is JsonObject streaming)
+        if (includeMessages && ParseJson(x.StreamingMessage) is JsonObject streaming)
         {
             var messages = dto.GetArray("messages")!;
             var timestamp = streaming.GetLong("timestamp");

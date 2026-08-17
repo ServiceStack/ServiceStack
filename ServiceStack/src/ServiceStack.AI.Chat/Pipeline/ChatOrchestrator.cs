@@ -92,7 +92,11 @@ public partial class ChatFeature
                     if (ShouldCancelThread(context))
                         return CancelledResponse(model);
 
-                    var response = await provider.ChatAsync(currentChat, context).ConfigAwait();
+                    // Provider preparation removes internal identities and may repair/merge legacy
+                    // history. It must operate on an outbound projection, never our checkpointable
+                    // working history.
+                    var providerChat = currentChat.Clone();
+                    var response = await provider.ChatAsync(providerChat, context).ConfigAwait();
 
                     if (ShouldCancelThread(context))
                         return CancelledResponse(model);
@@ -120,7 +124,7 @@ public partial class ChatFeature
                     if (toolCalls is { Count: > 0 } && supportsToolCalls && message != null)
                     {
                         var assistantMsg = message.Clone();
-                        assistantMsg["timestamp"] ??= DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                        assistantMsg["timestamp"] ??= context.NextMessageTimestamp();
                         currentChat.GetArray("messages")!.Add(assistantMsg.Clone());
                         toolHistory.Add(assistantMsg);
 
@@ -194,6 +198,7 @@ public partial class ChatFeature
                                 ["role"] = "tool",
                                 ["tool_call_id"] = toolCallId,
                                 ["content"] = toolResult,
+                                ["timestamp"] = context.NextMessageTimestamp(),
                             };
                             foreach (var entry in GroupResources(resources))
                             {
@@ -232,10 +237,18 @@ public partial class ChatFeature
                 }
 
                 if (finalResponse == null)
+                {
+                    if (context.ProjectedContext && context.RunId != null)
+                        throw new AgentSliceYieldException(maxIterations);
                     throw new Exception($"Reached maximum tool iterations ({maxIterations}) without receiving final response");
+                }
 
                 await Filters.OnChatResponseAsync(finalResponse, context).ConfigAwait();
                 return finalResponse;
+            }
+            catch (AgentSliceYieldException)
+            {
+                throw;
             }
             catch (Exception e)
             {

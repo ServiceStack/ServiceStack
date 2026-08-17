@@ -94,18 +94,6 @@ public class ChatThreadTests
     }
 
     [Test]
-    public void Cancel_reports_whether_a_task_was_running()
-    {
-        var updates = new ThreadUpdates();
-        Assert.That(updates.CancelChatTask(5), Is.False, "nothing running yet");
-
-        var cts = updates.StartChatTask(5);
-        Assert.That(updates.CancelChatTask(5), Is.True);
-        Assert.That(cts.IsCancellationRequested, Is.True);
-        Assert.That(updates.CancelChatTask(5), Is.False, "already cancelled + removed");
-    }
-
-    [Test]
     public void Thread_dto_emits_sortable_string_timestamps_and_parsed_json()
     {
         var thread = new ChatThread
@@ -230,6 +218,41 @@ public class ChatThreadTests
         Assert.That(AppExtension.LastUserPrompt(chat), Is.EqualTo("second"));
     }
 
+    [Test]
+    public async Task Text_only_GLM_payloads_flatten_attachments_and_repair_orphan_tool_results()
+    {
+        var provider = new OpenAiCompatibleProvider
+        {
+            Id = "zai-coding-plan",
+            Models =
+            {
+                ["glm-test"] = new JsonObject
+                {
+                    ["family"] = "glm",
+                    ["modalities"] = new JsonObject { ["input"] = new JsonArray("text") },
+                },
+            },
+        };
+        var chat = ChatJson.ParseObject("""
+        {
+          "model":"glm-test",
+          "messages":[
+            {"role":"user","content":[{"type":"text","text":"inspect"},{"type":"image_url","image_url":{"url":"data:image/png;base64,AA=="}}]},
+            {"role":"tool","tool_call_id":"orphan","content":"legacy output"},
+            {"role":"assistant","content":"ready"}
+          ]
+        }
+        """);
+
+        var outbound = await provider.ProcessChatAsync(chat, provider.Id);
+        var messages = outbound.GetArray("messages")!;
+
+        Assert.That(messages.OfType<JsonObject>().All(x => x["content"] is JsonValue), Is.True);
+        Assert.That(messages.ToJsonString(), Does.Contain("image attachment omitted"));
+        Assert.That(messages.ToJsonString(), Does.Contain("Tool result (orphan)"));
+        Assert.That(messages.OfType<JsonObject>().Any(x => x.GetString("role") == "tool"), Is.False);
+    }
+
     // ── The in-flight streaming message lives outside the durable conversation ──
 
     [Test]
@@ -322,6 +345,104 @@ public class ChatThreadTests
 
     static JsonArray StoredMessages(ChatDb db, long id) =>
         db.GetThread(id, ChatDb.DefaultUser)!.ToDto()["messages"]!.AsArray();
+
+    [Test]
+    public void Durable_schema_backfills_legacy_history_and_pages_without_duplicates()
+    {
+        var (_, db, id) = CreateThreadApi(History());
+
+        db.EnsureChatMessages(id);
+        db.SyncChatMessages(id, History());
+
+        var bounds = db.GetChatMessageBounds(id);
+        Assert.That(bounds.Count, Is.EqualTo(5));
+        Assert.That(bounds.First, Is.EqualTo(1));
+        Assert.That(bounds.Last, Is.EqualTo(5));
+        var page = db.GetChatMessagePage(id, after: 2, take: 2);
+        Assert.That(page.Select(x => x.GetLong("_sequence")), Is.EqualTo(new long?[] { 3, 4 }));
+        Assert.That(page.Select(x => x.GetString("content")),
+            Is.EqualTo(new[] { "turn 2 question", "turn 2 answer" }));
+        var sidebar = db.QueryThreads(new JsonObject { ["take"] = 30 }, ChatDb.DefaultUser).Single();
+        Assert.That(sidebar.Messages, Is.Null, "sidebar queries must not fetch the legacy history blob");
+        Assert.That(db.GetThread(id, ChatDb.DefaultUser, includeMessages: false)!.Messages, Is.Null,
+            "window/update reads must not fetch the legacy history blob");
+    }
+
+    [Test]
+    public void Reconciliation_updates_an_existing_canonical_identity_without_duplicating_it()
+    {
+        var (_, db, id) = CreateThreadApi(History());
+        db.EnsureChatMessages(id);
+        var changed = ChatJson.ParseObject(
+            """{"role":"user","content":"turn 3 question","timestamp":5,"usage":{"tokens":42}}""");
+
+        db.SyncChatMessages(id, new JsonArray(changed));
+
+        var rows = db.GetActiveMessagesAfter(id, 0);
+        Assert.That(rows, Has.Count.EqualTo(5));
+        Assert.That(rows[^1].GetObject("usage").GetLong("tokens"), Is.EqualTo(42));
+    }
+
+    [Test]
+    public void Payload_sizing_and_token_estimation_do_not_take_ownership_of_message_nodes()
+    {
+        var rows = new System.Collections.Generic.List<JsonObject>
+        {
+            ChatJson.ParseObject("""{"role":"user","content":"hello","timestamp":1}"""),
+            ChatJson.ParseObject("""{"role":"assistant","content":"world","timestamp":2}"""),
+        };
+        var flags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic;
+        var limit = typeof(AppExtension).GetMethod("LimitMessagePayload", flags)!;
+        var tokens = typeof(AppExtension).GetMethod("Tokens", flags)!;
+
+        var selected = (System.Collections.Generic.List<JsonObject>)limit.Invoke(
+            null, new object[] { rows, 1024, false })!;
+        _ = tokens.Invoke(null, new object[] { rows });
+
+        Assert.That(rows.All(x => x.Parent == null), Is.True,
+            "measurement must use clones because JsonNode permits only one parent");
+        Assert.DoesNotThrow(() => _ = new JsonArray(selected.Select(x => (JsonNode)x).ToArray()));
+    }
+
+    [Test]
+    public void Durable_pages_do_not_split_tool_call_groups()
+    {
+        var history = ChatJson.ParseObject("""
+        {"messages":[
+          {"role":"user","content":"inspect","timestamp":1},
+          {"role":"assistant","content":"checking","timestamp":2,"tool_calls":[
+            {"id":"a","type":"function","function":{"name":"read","arguments":"{}"}},
+            {"id":"b","type":"function","function":{"name":"read","arguments":"{}"}}]},
+          {"role":"tool","tool_call_id":"a","content":"one","timestamp":3},
+          {"role":"tool","tool_call_id":"b","content":"two","timestamp":4},
+          {"role":"assistant","content":"done","timestamp":5}
+        ]}
+        """).GetArray("messages")!;
+        var (_, db, id) = CreateThreadApi(history);
+
+        // Both directions deliberately request only the first tool result. The persistence boundary
+        // expands it to the originating assistant plus every result in the atomic tool exchange.
+        var forwards = db.GetChatMessagePage(id, after: 2, take: 1);
+        var backwards = db.GetChatMessagePage(id, before: 4, take: 1);
+
+        Assert.That(forwards.Select(x => x.GetLong("_sequence")), Is.EqualTo(new long?[] { 2, 3, 4 }));
+        Assert.That(backwards.Select(x => x.GetLong("_sequence")), Is.EqualTo(new long?[] { 2, 3, 4 }));
+    }
+
+    [Test]
+    public void Agent_runs_are_claimed_once_and_interrupted_runs_requeue()
+    {
+        var (_, db, id) = CreateThreadApi(History());
+        var runId = db.CreateAgentRun(id, ChatDb.DefaultUser, "test", 42);
+
+        var claimed = db.ClaimAgentRuns("worker-a", 2, 300);
+        Assert.That(claimed.Select(x => x.Id), Is.EqualTo(new[] { runId }));
+        Assert.That(db.ClaimAgentRuns("worker-b", 2, 300), Is.Empty);
+        Assert.That(db.GetAgentRun(runId, ChatDb.DefaultUser)!.Status, Is.EqualTo(AgentRunStatus.Running));
+
+        Assert.That(db.RequeueInterruptedAgentRuns(), Is.EqualTo(1));
+        Assert.That(db.GetAgentRun(runId, ChatDb.DefaultUser)!.Status, Is.EqualTo(AgentRunStatus.Queued));
+    }
 
     [Test]
     public async Task Appending_messages_is_allowed()

@@ -699,6 +699,9 @@
   .my-4 {
     margin-block: calc(var(--spacing) * 4);
   }
+  .my-5 {
+    margin-block: calc(var(--spacing) * 5);
+  }
   .-mt-1 {
     margin-top: calc(var(--spacing) * -1);
   }

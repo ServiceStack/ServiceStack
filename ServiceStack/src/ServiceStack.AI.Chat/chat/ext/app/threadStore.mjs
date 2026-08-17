@@ -19,6 +19,7 @@ const threadDetails = ref({})
 const threadActions = ref({})
 const currentThread = ref(null)
 const isLoading = ref(false)
+const MAX_RENDERED_MESSAGES = 800
 
 let ctx = null
 let ext = null
@@ -32,7 +33,29 @@ async function query(query) {
 }
 
 let watchTimeout = null
+let eventSource = null
+let sseConnectTimer = null
+let sseHealthTimer = null
+let watchGeneration = 0
 const isWatchingThread = ref(false)
+
+const defaultEventsConfig = Object.freeze({
+    transport: 'auto',
+    longPollTimeoutSeconds: 25,
+    sseHeartbeatSeconds: 15,
+    sseConnectTimeoutSeconds: 5,
+    sseFailureThreshold: 3,
+    sseRetryDelaySeconds: 10,
+})
+
+function getEventsConfig() {
+    const configured = ctx?.state?.config?.defaults?.events || {}
+    const config = { ...defaultEventsConfig, ...configured }
+    config.transport = ['auto', 'sse', 'long-poll'].includes(config.transport)
+        ? config.transport
+        : 'auto'
+    return config
+}
 
 async function fetchThread(threadId) {
     if (!threadId) return null
@@ -46,12 +69,87 @@ async function fetchThread(threadId) {
     return null
 }
 
-async function watchThreadUpdates() {
+async function fetchFullThread(threadId) {
+    if (!threadId) return null
+    const api = await ext.getJson(`/threads/${threadId}?allMessages=true`)
+    return api.response || null
+}
+
+function rangesFor(messages) {
+    const sequences = [...new Set(messages.map(x => x._sequence).filter(x => x != null))].sort((a, b) => a - b)
+    const ranges = []
+    for (const sequence of sequences) {
+        const last = ranges[ranges.length - 1]
+        if (!last || sequence > last.to + 1) ranges.push({ from: sequence, to: sequence })
+        else last.to = sequence
+    }
+    return ranges
+}
+
+function mergeWindowMessages(existing, incoming, preserve = 'auto') {
+    const values = new Map()
+    for (const message of [...(existing || []), ...(incoming || [])]) {
+        if (message.streaming) continue
+        // An optimistically rendered message initially has only a timestamp. Once
+        // persisted, the server returns the same timestamp plus its RDBMS sequence.
+        // Replace that provisional identity instead of retaining both copies.
+        if (message._sequence != null && message.timestamp != null) {
+            values.delete(`t:${message.timestamp}`)
+        }
+        const key = message._sequence != null ? `s:${message._sequence}` : `t:${message.timestamp}`
+        values.set(key, message)
+    }
+    const streaming = (incoming || []).filter(x => x.streaming)
+    let messages = [...values.values()].sort((a, b) =>
+        (a._sequence ?? Number.MAX_SAFE_INTEGER) - (b._sequence ?? Number.MAX_SAFE_INTEGER))
+    if (messages.length > MAX_RENDERED_MESSAGES) {
+        if (preserve === 'auto') {
+            let leading = 1
+            while (leading < messages.length
+                && messages[leading]._sequence === messages[leading - 1]._sequence + 1) leading++
+            preserve = leading > 20 ? 'start' : 'end'
+        }
+        messages = preserve === 'start'
+            ? [...messages.slice(0, MAX_RENDERED_MESSAGES - 100), ...messages.slice(-100)]
+            : [...messages.slice(0, 20), ...messages.slice(-(MAX_RENDERED_MESSAGES - 20))]
+    }
+    return [...messages, ...streaming]
+}
+
+async function loadMessageRange({ after = null, before = null, take = 100 } = {}) {
+    const thread = currentThread.value
+    if (!thread?.id) return null
+    const query = { take }
+    if (before != null) query.before = before
+    else query.after = after || 0
+    const api = await ext.getJson(appendQueryString(`/threads/${thread.id}/messages`, query))
+    if (!api.response) {
+        setError(api.error, `Loading messages for thread ${thread.id}`)
+        return null
+    }
+    const messages = mergeWindowMessages(
+        thread.messages, api.response.messages, before != null ? 'end' : 'start'
+    )
+    currentThread.value = {
+        ...thread,
+        messages,
+        messageWindow: {
+            ...(thread.messageWindow || {}),
+            messageCount: api.response.messageCount,
+            firstSequence: api.response.firstSequence,
+            lastSequence: api.response.lastSequence,
+            ranges: rangesFor(messages),
+        },
+    }
+    return api.response
+}
+
+async function watchThreadUpdates(generation) {
     clearTimeout(watchTimeout)
     watchTimeout = null
 
     const thread = currentThread.value
-    if (!thread?.id || !thread.messages?.length || thread.completedAt || thread.error) {
+    if (generation !== watchGeneration || !thread?.id || !thread.messages?.length || thread.completedAt || thread.error) {
         stopWatchingThread()
         return
     }
@@ -68,6 +166,98 @@ async function watchThreadUpdates() {
         setError(api.error, `watching thread ${thread.id}`)
         stopWatchingThread()
     }
+
+    if (generation === watchGeneration && isWatchingThread.value) {
+        watchTimeout = setTimeout(() => watchThreadUpdates(generation), 100)
+    }
+}
+
+function startLongPolling(generation) {
+    if (generation !== watchGeneration || !isWatchingThread.value) return
+    watchTimeout = setTimeout(() => watchThreadUpdates(generation), 100)
+}
+
+function closeSse() {
+    if (eventSource) {
+        eventSource.close()
+        eventSource = null
+    }
+    clearTimeout(sseConnectTimer)
+    clearTimeout(sseHealthTimer)
+    sseConnectTimer = null
+    sseHealthTimer = null
+}
+
+function startSse(generation, config) {
+    const thread = currentThread.value
+    if (generation !== watchGeneration || !thread?.id || !isWatchingThread.value) return
+
+    let connected = false
+    let failures = 0
+    const url = ctx.resolveUrl(appendQueryString(
+        `/ext/app/threads/${thread.id}/updates/stream`, { sig: thread.sig || '' }))
+    const source = new EventSource(url, { withCredentials: true })
+    eventSource = source
+
+    const fallbackOrRetry = () => {
+        if (generation !== watchGeneration || !isWatchingThread.value) return
+        closeSse()
+        if (config.transport === 'auto') {
+            startLongPolling(generation)
+        } else {
+            watchTimeout = setTimeout(() => startSse(generation, config),
+                config.sseRetryDelaySeconds * 1000)
+        }
+    }
+
+    const checkHealth = () => {
+        clearTimeout(sseHealthTimer)
+        sseHealthTimer = setTimeout(() => {
+            failures++
+            if (failures >= config.sseFailureThreshold) fallbackOrRetry()
+            else checkHealth()
+        }, config.sseHeartbeatSeconds * 3000)
+    }
+
+    const markHealthy = () => {
+        failures = 0
+        checkHealth()
+    }
+
+    const applyEvent = async event => {
+        if (generation !== watchGeneration) return
+        markHealthy()
+        try {
+            const updated = JSON.parse(event.data)
+            if (updated?.id) {
+                const isCompleted = !!(updated.completedAt || updated.error)
+                replaceThread(updated)
+                if (isCompleted) await fetchThread(updated.id)
+            }
+        } catch (e) {
+            console.warn('Ignoring invalid thread event', e)
+        }
+    }
+
+    source.addEventListener('connected', event => {
+        connected = true
+        clearTimeout(sseConnectTimer)
+        applyEvent(event)
+    })
+    source.addEventListener('thread', applyEvent)
+    source.addEventListener('heartbeat', markHealthy)
+    source.onerror = () => {
+        if (!connected) {
+            fallbackOrRetry()
+            return
+        }
+        failures++
+        if (failures >= config.sseFailureThreshold) fallbackOrRetry()
+    }
+
+    sseConnectTimer = setTimeout(() => {
+        if (!connected) fallbackOrRetry()
+    }, config.sseConnectTimeoutSeconds * 1000)
 }
 
 function startWatchingThread() {
@@ -75,14 +265,22 @@ function startWatchingThread() {
     const thread = currentThread.value
     if (thread?.id && thread.messages?.length > 0 && !thread.completedAt && !thread.error) {
         isWatchingThread.value = true
-        watchTimeout = setTimeout(watchThreadUpdates, 100)
+        const generation = watchGeneration
+        const config = getEventsConfig()
+        if (config.transport === 'long-poll' || typeof EventSource === 'undefined') {
+            startLongPolling(generation)
+        } else {
+            startSse(generation, config)
+        }
     } else {
         stopWatchingThread()
     }
 }
 
 function stopWatchingThread() {
+    watchGeneration++
     isWatchingThread.value = false
+    closeSse()
     if (watchTimeout) {
         clearTimeout(watchTimeout)
         watchTimeout = null
@@ -91,6 +289,15 @@ function stopWatchingThread() {
 
 function replaceThread(thread, opt = {}) {
     if (!thread) return
+    const existing = currentThread.value?.id === thread.id ? currentThread.value : null
+    if (!opt?.resetMessages && existing?.messageWindow && thread.messageWindow) {
+        const messages = mergeWindowMessages(existing.messages, thread.messages)
+        thread = {
+            ...thread,
+            messages,
+            messageWindow: { ...thread.messageWindow, ranges: rangesFor(messages) },
+        }
+    }
     const index = threads.value.findIndex(t => t.id === thread.id)
     if (index !== -1) threads.value[index] = thread
     if (currentThread.value?.id === thread.id) currentThread.value = thread
@@ -101,7 +308,7 @@ function replaceThread(thread, opt = {}) {
             loadThreadActions(thread.id, opt?.forceActions ? { force: true } : undefined)
         }
         stopWatchingThread()
-    } else if (currentThread.value?.id === thread.id) {
+    } else if (currentThread.value?.id === thread.id && !isWatchingThread.value) {
         startWatchingThread()
     }
     return thread
@@ -159,14 +366,14 @@ async function updateThread(threadId, updates) {
 
     const api = await ext.patchJson(`/threads/${threadId}`, updates)
     if (api.response) {
-        return replaceThread(api.response)
+        return replaceThread(api.response, { resetMessages: !!updates.truncate })
     } else {
         setError(api.error, `Updating thread ${threadId}`)
     }
 }
 
 async function deleteMessageFromThread(threadId, timestamp) {
-    const thread = await getThread(threadId)
+    const thread = await fetchFullThread(threadId)
     if (!thread) throw new Error('Thread not found')
     const updatedMessages = thread.messages.filter(m => m.timestamp !== timestamp)
     console.log('deleteMessageFromThread', threadId, timestamp, updatedMessages)
@@ -176,7 +383,7 @@ async function deleteMessageFromThread(threadId, timestamp) {
 }
 
 async function updateMessageInThread(threadId, messageId, updates) {
-    const thread = await getThread(threadId)
+    const thread = await fetchFullThread(threadId)
     if (!thread) throw new Error('Thread not found')
 
     const messageIndex = thread.messages.findIndex(m => m.timestamp === messageId)
@@ -188,11 +395,11 @@ async function updateMessageInThread(threadId, messageId, updates) {
         ...updates
     }
 
-    await updateThread(threadId, { messages: updatedMessages })
+    await updateThread(threadId, { messages: updatedMessages, truncate: true })
 }
 
 async function redoMessageFromThread(threadId, timestamp) {
-    const thread = await getThread(threadId)
+    const thread = await fetchFullThread(threadId)
     if (!thread) throw new Error('Thread not found')
 
     // Find the index of the message to redo
@@ -221,7 +428,7 @@ async function redoMessageFromThread(threadId, timestamp) {
     const model = thread.modelInfo
     const api = await queueChat({ request, thread, model })
     if (api.response) {
-        replaceThread(api.response)
+        replaceThread(api.response, { resetMessages: true })
     } else {
         setError(api.error, `Redoing message ${timestamp} in thread ${threadId}`)
     }
@@ -282,7 +489,7 @@ async function setCurrentThread(threadId) {
         stopWatchingThread()
         return null
     }
-    const thread = await getThread(threadId)
+    const thread = await fetchThread(threadId)
     if (thread) {
         currentThread.value = thread
         startWatchingThread()
@@ -477,6 +684,8 @@ export function useThreadStore() {
         loadThreads,
         getThread,
         fetchThread,
+        fetchFullThread,
+        loadMessageRange,
         deleteThread,
         setCurrentThread,
         setCurrentThreadFromRoute,

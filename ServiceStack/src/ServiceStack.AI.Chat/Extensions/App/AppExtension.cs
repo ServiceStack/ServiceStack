@@ -41,6 +41,7 @@ public partial class AppExtension() : ChatExtension("app")
         RegisterRequestRoutes(ctx);
         RegisterAvatarRoutes(ctx);
         RegisterFilters(ctx);
+        InstallDurableAgents(ctx);
     }
 
     // ── Threads ──
@@ -57,7 +58,7 @@ public partial class AppExtension() : ChatExtension("app")
             {
                 rows = Db.QueryThreads(query, ChatDb.AllUsers);
             }
-            return Task.FromResult<object?>(rows.ToDtos(x => x.ToDto()));
+            return Task.FromResult<object?>(rows.ToDtos(ThreadListDto));
         });
 
         ctx.AddPost("threads", async req =>
@@ -68,7 +69,8 @@ public partial class AppExtension() : ChatExtension("app")
             var row = new ChatThread { User = user, CreatedAt = now, UpdatedAt = now };
             row.PopulateFrom(thread);
             row.Id = Db.InsertThread(row);
-            return Db.GetThread(row.Id, user)?.ToDto();
+            var created = Db.GetThread(row.Id, user, includeMessages: false);
+            return created != null ? ThreadWindowDto(created) : null;
         });
 
         // registered before threads/{id} so the literal route wins (aiohttp/registration order)
@@ -76,41 +78,48 @@ public partial class AppExtension() : ChatExtension("app")
         {
             var query = QueryOf(req);
             var rows = Db.QueryThreads(query, req.UserName);
-            return Task.FromResult<object?>(rows.ToDtos(x => x.ToDto()));
+            return Task.FromResult<object?>(rows.ToDtos(ThreadListDto));
         });
 
         ctx.AddGet("threads/{id}", req =>
         {
-            var thread = ResolveThread(req, ThreadId(req), out _);
-            return Task.FromResult<object?>(thread != null ? thread.ToDto() : (JsonNode)"");
+            var thread = ResolveThread(req, ThreadId(req), out _, includeMessages: false);
+            if (thread == null) return Task.FromResult<object?>((JsonNode)"");
+            return Task.FromResult<object?>(req.QueryString("allMessages") == "true"
+                ? FullThreadDto(thread) : ThreadWindowDto(thread));
         });
+
+        ctx.AddGet("threads/{id}/messages", GetThreadMessagesAsync);
 
         ctx.AddPatch("threads/{id}", async req =>
         {
             var id = ThreadId(req);
             var thread = await req.GetJsonBodyAsync().ConfigAwait();
-            if (ResolveThread(req, id, out var user) == null)
+            if (ResolveThread(req, id, out var user, includeMessages: false) == null)
                 throw new Exception("Thread not found");
             if (!await threadApi.UpdateThreadInternalAsync(id, thread, user).ConfigAwait())
                 throw new Exception("Thread not found");
             Updates.NotifyThreadUpdate(id);
-            return Db.GetThread(id, user)?.ToDto();
+            var updated = Db.GetThread(id, user, includeMessages: false);
+            return updated != null ? ThreadWindowDto(updated) : null;
         });
 
         ctx.AddDelete("threads/{id}", async req =>
         {
             var id = ThreadId(req);
-            if (ResolveThread(req, id, out var user) != null)
+            if (ResolveThread(req, id, out var user, includeMessages: false) != null)
             {
                 if (Ctx.Feature.ToolApprovalCoordinator != null)
                     await Ctx.Feature.ToolApprovalCoordinator.CancelThreadAsync(id, user).ConfigAwait();
                 Db.DeleteThread(id, user);
+                Db.DeleteDurableThreadData(id);
             }
             return new JsonObject();
         });
 
         ctx.AddPost("threads/{id}/chat", QueueChatAsync);
         ctx.AddGet("threads/{id}/updates", GetThreadUpdatesAsync);
+        ctx.AddGet("threads/{id}/updates/stream", GetThreadUpdatesStreamAsync);
         ctx.AddPost("threads/{id}/cancel", CancelThreadAsync);
         ctx.AddPost("threads/{id}/compact", CompactThreadAsync);
     }
@@ -120,23 +129,22 @@ public partial class AppExtension() : ChatExtension("app")
     /// receives the user the follow-up operation must run as — the owner when an Admin resolved
     /// someone else's thread, so an update or delete still targets the right row.
     /// </summary>
-    ChatThread? ResolveThread(ChatRequestContext req, long id, out string? user)
+    ChatThread? ResolveThread(ChatRequestContext req, long id, out string? user, bool includeMessages = true)
     {
         user = req.UserName;
-        var thread = Db.GetThread(id, user);
+        var thread = Db.GetThread(id, user, includeMessages);
         if (thread != null || !Ctx.IsAdmin(req.Request))
             return thread;
 
-        thread = Db.GetThread(id, ChatDb.AllUsers);
+        thread = Db.GetThread(id, ChatDb.AllUsers, includeMessages);
         if (thread != null)
             user = thread.User ?? ChatDb.AllUsers;
         return thread;
     }
 
     /// <summary>
-    /// Queue a completion for this thread: merge the request into the thread, start the
-    /// orchestrator on a background task, and return immediately — the UI then long-polls
-    /// threads/{id}/updates to receive the streamed response.
+    /// Queue a completion for this thread: merge and persist the request, create a durable run,
+    /// wake the bounded async scheduler, and return immediately. SSE or long-poll then delivers it.
     /// </summary>
     async Task<object?> QueueChatAsync(ChatRequestContext req)
     {
@@ -145,17 +153,21 @@ public partial class AppExtension() : ChatExtension("app")
             return ChatResult.Unauthorized(Ctx.Feature.ErrorAuthRequired());
 
         var id = ThreadId(req);
-        ResolveThread(req, id, out var user);
+        ResolveThread(req, id, out var user, includeMessages: false);
         if (Ctx.Feature.ToolApprovalCoordinator?.HasPending(id, user) == true)
             return ChatResult.Json(ChatJson.CreateErrorResponse(
                 "Resolve or cancel the pending tool approval before sending another message", "ApprovalRequired"), 409);
         var chatReq = await req.GetJsonBodyAsync().ConfigAwait();
 
+        if (Db.GetActiveAgentRun(id, user) is { } activeRun)
+            return ChatResult.Json(ChatJson.CreateErrorResponse(
+                $"Agent run {activeRun.Id} is already {activeRun.Status}", "RunActive"), 409);
+
         var messages = TimestampMessages(chatReq.GetArray("messages"));
         if (messages.Count == 0)
             throw new Exception("messages required");
 
-        var thread = Db.GetThread(id, user)?.ToDto()
+        var thread = Db.GetThread(id, user, includeMessages: false)?.ToDto(includeMessages: false)
             ?? throw new Exception("Thread not found");
 
         var update = new JsonObject
@@ -198,17 +210,25 @@ public partial class AppExtension() : ChatExtension("app")
             update["title"] = PromptToTitle(LastUserPrompt(chatReq));
 
         await threadApi.UpdateThreadInternalAsync(id, update, user).ConfigAwait();
-        thread = Db.GetThread(id, user)?.ToDto() ?? throw new Exception("Thread not found");
+        thread = Db.GetThread(id, user, includeMessages: false)?.ToDto(includeMessages: false)
+            ?? throw new Exception("Thread not found");
 
-        StartThreadCompletion(id, user, thread, req.Request);
+        // Materialize the bounded response before creating/waking the run. A serialization failure
+        // must not return HTTP 500 after the durable side effect has already started executing.
+        var row = Db.GetThread(id, user, includeMessages: false)!;
+        var result = ThreadWindowDto(row);
+        var maxSteps = chatReq.GetObject("metadata").GetInt("maxSteps") ?? 250;
+        var runId = Db.CreateAgentRun(id, user, thread.GetString("model"), maxSteps);
+        result["run"] = Db.GetAgentRun(runId, user)?.ToDto();
+        Scheduler.Enqueue(runId, ChatContext.DetachRequest(req.Request));
 
-        return thread;
+        return result;
     }
 
     /// <summary>Continue a paused tool-call turn without inventing another user message.</summary>
     internal async Task QueueContinuationAsync(long id, string? user, IRequest request)
     {
-        var row = Db.GetThread(id, user) ?? throw new Exception("Thread not found");
+        var row = Db.GetThread(id, user, includeMessages: false) ?? throw new Exception("Thread not found");
         if (row.CompletedAt != null || row.Error != null)
             throw new Exception("Thread is no longer active");
 
@@ -220,73 +240,27 @@ public partial class AppExtension() : ChatExtension("app")
             ["streamingMessage"] = null,
         }, user).ConfigAwait();
 
-        var thread = Db.GetThread(id, user)?.ToDto() ?? throw new Exception("Thread not found");
-        StartThreadCompletion(id, user, thread, request);
-    }
-
-    JsonObject ThreadChat(JsonObject thread)
-    {
-        var metadata = thread.GetObject("metadata")?.Clone() ?? new JsonObject();
-        var chat = new JsonObject
+        var run = Db.GetActiveAgentRun(id, user);
+        if (run == null)
         {
-            ["model"] = thread.GetString("model"),
-            ["messages"] = thread.GetArray("messages").WithoutStreamingMessages(),
-            ["modalities"] = thread.GetArray("modalities")?.Clone(),
-            ["tools"] = thread.GetArray("tools")?.Clone(),
-            ["metadata"] = metadata.Clone(),
-        };
-        foreach (var entry in thread.GetObject("args") ?? [])
-        {
-            if (ChatFeature.RequestArgs.Contains(entry.Key))
-                chat[entry.Key] = entry.Value?.DeepClone();
+            run = Db.GetAgentRun(Db.CreateAgentRun(id, user, row.Model), user)!;
         }
-        return chat;
-    }
-
-    void StartThreadCompletion(long id, string? user, JsonObject thread, IRequest request)
-    {
-        var chat = ThreadChat(thread);
-        var metadata = chat.GetObject("metadata") ?? new JsonObject();
-        var cts = Updates.StartChatTask(id);
-        var context = new ChatContext
+        else
         {
-            Chat = chat,
-            User = user,
-            Request = ChatContext.DetachRequest(request),
-            ThreadId = id,
-            Tools = metadata.GetString("tools") ?? "all",
-            CancellationToken = cts.Token,
-        };
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Ctx.ChatCompletionAsync(chat, context).ConfigAwait();
-            }
-            catch (OperationCanceledException)
-            {
-                Ctx.Log.LogDebug("Chat cancelled for thread {ThreadId}", id);
-            }
-            catch (Exception e)
-            {
-                Ctx.Log.LogError(e, "Chat failed for thread {ThreadId}", id);
-                var current = Db.GetThread(id, user);
-                if (current != null && current.Error == null)
-                    await OnChatErrorAsync(e, context).ConfigAwait();
-            }
-            finally
-            {
-                Updates.CompleteChatTask(id, cts);
-                Updates.NotifyThreadUpdate(id);
-            }
-        }, CancellationToken.None);
+            run.Status = AgentRunStatus.Queued;
+            run.CompletedAt = null;
+            run.Error = null;
+            run.LeaseOwner = null;
+            run.LeaseExpiresAt = null;
+            Db.UpdateAgentRun(run);
+        }
+        Scheduler.Enqueue(run.Id, ChatContext.DetachRequest(request));
     }
 
     /// <summary>
     /// Long-poll for thread changes (port of get_thread_updates): the client sends the signature
     /// of the thread it last rendered; if the stored thread already differs (or is terminal) it's
-    /// returned at once, otherwise the request parks for up to 10s, re-checking the signature each
+    /// returned at once, otherwise the request parks for the configured timeout, re-checking the signature each
     /// time the streaming writer signals an update.
     /// </summary>
     async Task<object?> GetThreadUpdatesAsync(ChatRequestContext req)
@@ -295,11 +269,12 @@ public partial class AppExtension() : ChatExtension("app")
         var user = req.UserName;
         var clientSig = req.QueryString("sig") ?? "";
 
-        var thread = Db.GetThread(id, user) ?? throw new Exception("Thread not found");
-        var dto = thread.ToDto();
+        var thread = Db.GetThread(id, user, includeMessages: false) ?? throw new Exception("Thread not found");
+        var dto = ThreadWindowDto(thread);
+        var sig = dto.GetString("sig")!;
 
         // already terminal, or changed since the client last saw it → return immediately
-        if (IsTerminal(thread) || (clientSig.Length > 0 && thread.Sig != clientSig))
+        if (IsTerminal(thread) || (clientSig.Length > 0 && sig != clientSig))
             return dto;
 
         var deadline = DateTime.UtcNow + Updates.LongPollTimeout;
@@ -319,13 +294,14 @@ public partial class AppExtension() : ChatExtension("app")
             if (woke == timeout)
                 break;
 
-            var updated = Db.GetThread(id, user);
+            var updated = Db.GetThread(id, user, includeMessages: false);
             if (updated == null)
                 break;
-            if (IsTerminal(updated) || updated.Sig != clientSig)
-                return updated.ToDto();
+            var updatedDto = ThreadWindowDto(updated);
+            if (IsTerminal(updated) || updatedDto.GetString("sig") != clientSig)
+                return updatedDto;
         }
-        return dto;
+        return ThreadWindowDto(thread);
     }
 
     static bool IsTerminal(ChatThread thread) => thread.CompletedAt != null || thread.Error != null;
@@ -334,7 +310,17 @@ public partial class AppExtension() : ChatExtension("app")
     {
         var id = ThreadId(req);
         var user = req.UserName;
-        Updates.CancelChatTask(id);
+        var run = Db.GetActiveAgentRun(id, user);
+        if (run != null)
+        {
+            run.Status = AgentRunStatus.Cancelled;
+            run.CompletedAt = DateTime.Now;
+            run.Error = "Request was canceled";
+            run.LeaseOwner = null;
+            run.LeaseExpiresAt = null;
+            Db.UpdateAgentRun(run);
+            Scheduler.Cancel(run.Id);
+        }
         if (Ctx.Feature.ToolApprovalCoordinator != null)
             await Ctx.Feature.ToolApprovalCoordinator.CancelThreadAsync(id, user).ConfigAwait();
         await threadApi.UpdateThreadInternalAsync(id, new JsonObject
@@ -343,62 +329,41 @@ public partial class AppExtension() : ChatExtension("app")
             ["error"] = "Request was canceled",
         }, user).ConfigAwait();
         Updates.NotifyThreadUpdate(id);
-        return Db.GetThread(id, user)?.ToDto();
+        var cancelled = Db.GetThread(id, user, includeMessages: false);
+        return cancelled != null ? ThreadWindowDto(cancelled) : null;
     }
 
-    /// <summary>Summarize a long conversation using the "compact" template from llms.json</summary>
+    /// <summary>Manual compaction uses the same engine as automatic snapshots, creating a child thread.</summary>
     async Task<object?> CompactThreadAsync(ChatRequestContext req)
     {
         var id = ThreadId(req);
         var user = req.UserName;
-        var thread = Db.GetThread(id, user)?.ToDto() ?? throw new Exception("Thread not found");
-
-        var compactTemplate = Ctx.GetConfigDefaults().GetObject("compact")
-            ?? throw new Exception("No 'compact' template configured in llms.json defaults");
-
-        var messages = thread.GetArray("messages") ?? new JsonArray();
-        var messagesJson = messages.ToJsonString(ChatJson.Options);
-        var contextTokens = thread.GetLong("contextTokens") ?? CountTokensApprox(messagesJson);
-
-        var chat = compactTemplate.Clone();
-        // the bundled template names a specific model; fall back to the thread's own model
-        // when that provider isn't enabled on this host
-        if (chat.GetString("model") is not { } compactModel
-            || !Ctx.Feature.Providers.Values.Any(x => x.ProviderModel(compactModel) != null))
+        var row = Db.GetThread(id, user, includeMessages: false) ?? throw new Exception("Thread not found");
+        var messages = new JsonArray(Db.GetActiveMessagesAfter(id, 0)
+            .Select(x => { x.Remove("_sequence"); return (JsonNode)x; }).ToArray());
+        var metadata = ChatDtos.ParseJson(row.Metadata) as JsonObject ?? new JsonObject();
+        var tokens = DurableAgentUtils.CountTokensApprox(messages);
+        var contextLimit = (ChatDtos.ParseJson(row.ModelInfo) as JsonObject).GetObject("limit").GetLong("context");
+        var target = Math.Max(2_000, Math.Min((long)(tokens * .3), contextLimit is > 0 ? contextLimit.Value / 2 : tokens));
+        var compacted = await CompactMessagesAsync(messages, target,
+            Math.Max(8_000, metadata.GetLong("compactChunkTokens") ?? 60_000), user,
+            Math.Max(4, metadata.GetInt("compactRecentMessages") ?? 12), null, CancellationToken.None).ConfigAwait();
+        foreach (var message in compacted.OfType<JsonObject>())
+            message.Remove("_compaction");
+        var now = DateTime.Now;
+        var child = new ChatThread
         {
-            chat["model"] = thread.GetString("model");
-        }
-
-        var vars = new Dictionary<string, string>
-        {
-            ["{message_count}"] = messages.Count.ToString(),
-            ["{token_count}"] = contextTokens.ToString(),
-            ["{target_tokens}"] = (contextTokens / 4).ToString(),
-            ["{messages_json}"] = messagesJson,
+            User = row.User, Title = row.Title, SystemPrompt = row.SystemPrompt, Model = row.Model,
+            ModelInfo = row.ModelInfo, Modalities = row.Modalities,
+            Messages = compacted.ToJsonString(ChatJson.Options), Args = row.Args, Tools = row.Tools,
+            ToolHistory = row.ToolHistory, Provider = row.Provider, ProviderModel = row.ProviderModel,
+            Metadata = row.Metadata, Ref = row.Ref, ParentId = row.Id,
+            ContextTokens = DurableAgentUtils.CountTokensApprox(compacted),
+            CompletedAt = now, CreatedAt = now, UpdatedAt = now,
         };
-        SubstituteVars(chat, vars);
-
-        var context = new ChatContext { Chat = chat, User = user, Tools = "none", NoHistory = true, NoStore = true };
-        var response = await Ctx.ChatCompletionAsync(chat, context).ConfigAwait();
-
-        var summary = response.GetArray("choices") is { Count: > 0 } choices
-            ? (choices[0] as JsonObject).GetObject("message").GetString("content")
-            : null;
-        if (summary == null)
-            throw new Exception("Failed to compact thread");
-
-        var compacted = new JsonArray(new JsonObject
-        {
-            ["role"] = "user",
-            ["content"] = summary,
-            ["timestamp"] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-        });
-        await threadApi.UpdateThreadAsync(id, new JsonObject
-        {
-            ["messages"] = compacted,
-            [DbThreadApi.TruncateKey] = true, // compacting is an explicit rewrite of history
-        }, user).ConfigAwait();
-        return Db.GetThread(id, user)?.ToDto();
+        child.Id = Db.InsertThread(child);
+        Db.SyncChatMessages(child.Id, compacted, rewrite: true);
+        return new JsonObject { ["id"] = child.Id };
     }
 
     // ── Requests (accounting + analytics) ──
@@ -572,6 +537,16 @@ public partial class AppExtension() : ChatExtension("app")
     {
         if (context.NoHistory || context.ThreadId is not { } threadId)
             return;
+        context.SeedMessageTimestamps(chat.GetArray("messages"));
+        if (context.ProjectedContext)
+        {
+            // Snapshot summaries are projection-only and normally have no timestamp. Give every
+            // baseline item an identity before tool checkpoint reconciliation so a later filter
+            // cannot mistake synthetic context for a newly produced canonical message.
+            foreach (var message in chat.GetArray("messages")?.OfType<JsonObject>() ?? [])
+                message["timestamp"] ??= context.NextMessageTimestamp();
+            context.SeedMessageTimestamps(chat.GetArray("messages"));
+        }
         await threadApi.UpdateThreadAsync(threadId, new JsonObject
         {
             ["status"] = Ctx.NextLoadingMessage(),
@@ -583,11 +558,42 @@ public partial class AppExtension() : ChatExtension("app")
     {
         if (context.NoHistory || context.ThreadId is not { } threadId)
             return;
-        await threadApi.UpdateThreadAsync(threadId, new JsonObject
+        if (context.ProjectedContext)
         {
-            ["messages"] = chat.GetArray("messages")?.Clone() ?? new JsonArray(),
-            ["status"] = Ctx.NextLoadingMessage(),
-        }, context.User).ConfigAwait();
+            var append = new JsonArray();
+            foreach (var node in chat.GetArray("messages") ?? [])
+            {
+                if (node is not JsonObject message) continue;
+                message["timestamp"] ??= context.NextMessageTimestamp();
+                var timestamp = message.GetLong("timestamp")!.Value;
+                if (context.ProjectedKnownTimestamps.Add(timestamp)) append.Add(message.Clone());
+            }
+            if (append.Count > 0)
+            {
+                Db.SyncChatMessages(threadId, append, runId: context.RunId, stepId: context.StepId);
+                var row = Db.GetThread(threadId, context.User, includeMessages: false);
+                if (row != null)
+                {
+                    var canonical = Db.GetActiveMessagesAfter(threadId, 0);
+                    row.Messages = new JsonArray(canonical.Select(x => { x.Remove("_sequence"); return (JsonNode)x; }).ToArray())
+                        .ToJsonString(ChatJson.Options);
+                    row.Status = Ctx.NextLoadingMessage();
+                    row.UpdatedAt = DateTime.Now;
+                    Db.UpdateThreadFields(row,
+                        [nameof(ChatThread.Messages), nameof(ChatThread.Status), nameof(ChatThread.UpdatedAt)],
+                        context.User);
+                    Updates.NotifyThreadUpdate(threadId);
+                }
+            }
+        }
+        else
+        {
+            await threadApi.UpdateThreadAsync(threadId, new JsonObject
+            {
+                ["messages"] = chat.GetArray("messages")?.Clone() ?? new JsonArray(),
+                ["status"] = Ctx.NextLoadingMessage(),
+            }, context.User).ConfigAwait();
+        }
 
         var completedAt = Db.GetThreadColumn<DateTime?>(threadId, nameof(ChatThread.CompletedAt), context.User);
         if (completedAt != null)
@@ -657,6 +663,13 @@ public partial class AppExtension() : ChatExtension("app")
 
         if (threadId is { } id && !context.NoHistory)
             await UpdateThreadTotalsAsync(id, user, duration, isPerRequest).ConfigAwait();
+        if (context.RunId is { } runId && Db.GetAgentRun(runId, ChatDb.AllUsers) is { } run)
+        {
+            run.Status = AgentRunStatus.WaitingApproval;
+            run.LeaseOwner = null;
+            run.LeaseExpiresAt = null;
+            Db.UpdateAgentRun(run);
+        }
     }
 
     /// <summary>Record the completed request + write the assistant message and cost stats to the thread</summary>
@@ -731,9 +744,9 @@ public partial class AppExtension() : ChatExtension("app")
         // request: the request's copy is missing anything appended while it was in flight (tool
         // call/result messages) and has been rewritten for the provider, so writing it back would
         // drop messages.
-        var stored = Db.GetThread(id, user)?.ToDto().GetArray("messages");
-        var messages = stored is { Count: > 0 }
-            ? stored.WithoutStreamingMessages()
+        var canonical = Db.GetActiveMessagesAfter(id, 0);
+        var messages = canonical.Count > 0
+            ? new JsonArray(canonical.Select(x => { x.Remove("_sequence"); return (JsonNode)x; }).ToArray())
             : chat.GetArray("messages").WithoutStreamingMessages();
         var outputCost = isPerRequest ? cost : inputPrice * inputTokens / 1_000_000;
         var lastRole = messages.Count > 0 ? (messages[^1] as JsonObject).GetString("role") : null;
@@ -750,6 +763,7 @@ public partial class AppExtension() : ChatExtension("app")
         }
 
         var assistantMessage = ChatResponseToMessage(response);
+        assistantMessage["timestamp"] ??= context.NextMessageTimestamp();
         assistantMessage["model"] = model;
         var assistantUsage = new JsonObject
         {
@@ -781,6 +795,11 @@ public partial class AppExtension() : ChatExtension("app")
             update["providerResponse"] = TruncateLongStrings(providerResponse.Clone());
 
         await threadApi.UpdateThreadAsync(id, update, user).ConfigAwait();
+        // The compatibility history update inserts the assistant row. Attach durable provenance to
+        // that canonical row without duplicating it (the timestamp is its stable identity).
+        if (context.RunId != null || context.StepId != null)
+            Db.SyncChatMessages(id, new JsonArray(assistantMessage.Clone()),
+                runId: context.RunId, stepId: context.StepId);
 
         await UpdateThreadTotalsAsync(id, user, duration, isPerRequest).ConfigAwait();
     }
@@ -875,7 +894,8 @@ public partial class AppExtension() : ChatExtension("app")
     static JsonArray TimestampMessages(JsonArray? messages)
     {
         var ret = messages.WithoutStreamingMessages();
-        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var maxExisting = ret.OfType<JsonObject>().Select(x => x.GetLong("timestamp") ?? 0).DefaultIfEmpty().Max();
+        var timestamp = Math.Max(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), maxExisting + 1);
         foreach (var messageNode in ret)
         {
             if (messageNode is JsonObject message && !message.ContainsKey("timestamp"))

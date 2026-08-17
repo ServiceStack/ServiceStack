@@ -336,10 +336,10 @@ export const ViewToolTypes = {
 export const MessageUsage = {
     template: `
     <div class="mt-2 text-xs opacity-70">                                        
-        <span v-if="message.model" @click="$chat.setSelectedModel({ name: message.model })" title="Select model"><span class="cursor-pointer hover:underline">{{ message.model }}</span> &#8226; </span>
-        <span v-if="message.timestamp">{{ $fmt.time(message.timestamp) }}</span>
+        <span v-if="message.model" @click="$chat.setSelectedModel({ name: message.model })" title="Select model"><span class="cursor-pointer hover:underline">{{ message.model }}</span></span>
+        <span v-if="message.timestamp"><span v-if="message.model"> &#8226; </span>{{ $fmt.time(message.timestamp) }}</span>
         <span v-if="usage" :title="$fmt.tokensTitle(usage)">
-            &#8226;
+            <span v-if="message.model || message.timestamp"> &#8226; </span>
             {{ $fmt.humanifyNumber(usage.tokens) }} tokens
             <span v-if="usage.cost">&#183; {{ $fmt.tokenCostLong(usage.cost) }}</span>
             <span v-if="usage.duration"> in {{ $fmt.humanifyMs(usage.duration * 1000) }} <span v-if="usage.tokens > 0 && usage.duration > 0">({{ Math.round(usage.tokens / usage.duration) }} tk/s)</span></span>
@@ -1078,7 +1078,7 @@ export const ChatBody = {
                             <div
                                 v-for="message in currentThreadMessages"
                                 :key="message.timestamp"
-                                v-show="message.role !== 'tool' && !!(message.content || message.reasoning || message.thinking || message.reasoning_content || message.tool_calls?.length || message.images?.length || message.audios?.length)"
+                                v-show="message._gap || (message.role !== 'tool' && !!(message.content || message.reasoning || message.thinking || message.reasoning_content || message.tool_calls?.length || message.images?.length || message.audios?.length))"
                                 :data-role="message.role"
                                 :data-has-content="!!(typeof message.content === 'string' ? message.content?.trim() : message.content?.length)"
                                 :data-has-tools="!!message.tool_calls?.length"
@@ -1087,7 +1087,7 @@ export const ChatBody = {
                                 :class="message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''"
                             >
                                 <!-- Avatar outside the bubble -->
-                                <div class="flex-shrink-0 flex flex-col justify-center">
+                                <div v-if="!message._gap" class="flex-shrink-0 flex flex-col justify-center">
                                     <UserAvatar v-if="message.role === 'user'" />
                                     <AgentAvatar v-else :profile="currentThread?.metadata?.profile" />
 
@@ -1103,7 +1103,22 @@ export const ChatBody = {
                                 </div>
 
                                 <!-- Message bubble -->
-                                <div v-if="message.role === 'assistant' && !message.content?.trim() && !message.reasoning && !message.thinking && !message.reasoning_content && message.tool_calls && message.tool_calls.length > 0 && !message.images?.length && !message.audios?.length">
+                                <div v-if="message._gap" class="w-full my-5 flex items-center gap-3 text-xs" :class="$styles.muted">
+                                    <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
+                                    <div class="flex flex-wrap items-center justify-center gap-2">
+                                        <span>{{ message.hiddenCount.toLocaleString() }} message{{ message.hiddenCount === 1 ? '' : 's' }} hidden</span>
+                                        <button type="button" @click="loadGapMessages(message, 'after')"
+                                            :disabled="loadingGap" class="px-2 py-1 rounded border hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
+                                            Load next 100
+                                        </button>
+                                        <button type="button" @click="loadGapMessages(message, 'before')"
+                                            :disabled="loadingGap" class="px-2 py-1 rounded border hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
+                                            Load previous 100
+                                        </button>
+                                    </div>
+                                    <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
+                                </div>
+                                <div v-else-if="message.role === 'assistant' && !message.content?.trim() && !message.reasoning && !message.thinking && !message.reasoning_content && message.tool_calls && message.tool_calls.length > 0 && !message.images?.length && !message.audios?.length">
 
                                     <div v-if="message.tool_calls && message.tool_calls.length > 0" class="mb-3 space-y-4">
                                         <ToolCall v-for="(tool, i) in message.tool_calls" :key="i" :thread="currentThread" :tool="tool" />
@@ -1244,7 +1259,25 @@ export const ChatBody = {
                                     </div>
                                 </div>
 
-                                <span :class="['text-sm', $styles.muted]">{{currentThread?.status}}</span>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span :class="['text-sm', $styles.muted]">{{ pendingRunStatus }}</span>
+                                        <svg v-if="contextDonut" width="20" height="20" viewBox="0 0 20 20"
+                                            class="shrink-0" role="img" :aria-label="contextDonut.title">
+                                            <title>{{ contextDonut.title }}</title>
+                                            <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor"
+                                                stroke-width="3" class="text-gray-200 dark:text-gray-700" />
+                                            <circle cx="10" cy="10" r="6.5" fill="none" :stroke="contextDonut.color"
+                                                stroke-width="3" stroke-linecap="round"
+                                                :stroke-dasharray="contextDonut.circumference"
+                                                :stroke-dashoffset="contextDonut.offset"
+                                                transform="rotate(-90 10 10)" />
+                                        </svg>
+                                    </div>
+                                    <span v-if="isLongRunning" class="text-xs text-amber-600 dark:text-amber-400">
+                                        Taking longer than expected. You can cancel this run if it no longer appears useful.
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Thread error message bubble -->
@@ -1305,6 +1338,64 @@ export const ChatBody = {
         })
         const messagesContainer = ref(null)
         const copying = ref(null)
+        const runClock = ref(Date.now())
+        const lastRunActivityAt = ref(Date.now())
+        let runClockTimer = null
+
+        const pendingIdleSeconds = computed(() => currentThread.value?.run
+            ? Math.max(0, Math.floor((runClock.value - lastRunActivityAt.value) / 1000))
+            : null)
+        const formatElapsed = seconds => {
+            if (seconds == null) return ''
+            if (seconds < 60) return `${seconds}s`
+            const minutes = Math.floor(seconds / 60)
+            if (minutes < 60) return `${minutes}m ${String(seconds % 60).padStart(2, '0')}s`
+            return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`
+        }
+        const pendingRunStatus = computed(() => {
+            const run = currentThread.value?.run
+            let label = currentThread.value?.status || 'Working'
+            if (run?.status === 'queued') label = run.stepCount > 0 ? 'Continuing' : 'Queued'
+            else if (run?.status === 'running' && (!label || label === 'Continuing…')) label = 'Working'
+            else if (run?.status === 'waiting_approval') label = 'Waiting for approval'
+            const elapsed = pendingIdleSeconds.value >= 10
+                ? formatElapsed(pendingIdleSeconds.value)
+                : ''
+            const parts = [label]
+            if (elapsed) parts.push(`waiting ${elapsed}`)
+            if (run?.contextTokens && label.startsWith('Reducing context')) {
+                const used = run.contextTokens.toLocaleString()
+                if (run.contextLimit) {
+                    const limit = run.contextLimit.toLocaleString()
+                    const percent = Math.round(run.contextTokens / run.contextLimit * 100)
+                    parts.push(`${used} / ${limit} context tokens (${percent}%)`)
+                } else {
+                    parts.push(`${used} context tokens`)
+                }
+            }
+            return parts.filter(Boolean).join(' · ')
+        })
+        const contextDonut = computed(() => {
+            const run = currentThread.value?.run
+            const status = currentThread.value?.status || ''
+            if (!run?.contextTokens || !run?.contextLimit || status.startsWith('Reducing context')) return null
+            const rawPercent = run.contextTokens / run.contextLimit * 100
+            const percent = Math.max(0, Math.min(100, rawPercent))
+            const circumference = 2 * Math.PI * 6.5
+            const color = percent >= 85 ? '#ef4444' : percent >= 65 ? '#f59e0b' : percent >= 40 ? '#eab308' : '#22c55e'
+            return {
+                color,
+                circumference,
+                offset: circumference * (1 - percent / 100),
+                title: `${Math.round(rawPercent)}% context used — ${run.contextTokens.toLocaleString()} / ${run.contextLimit.toLocaleString()} tokens`,
+            }
+        })
+        const isLongRunning = computed(() => (pendingIdleSeconds.value || 0) >= 300)
+
+        onMounted(() => {
+            runClockTimer = setInterval(() => { runClock.value = Date.now() }, 1000)
+        })
+        onUnmounted(() => clearInterval(runClockTimer))
 
         const resolveUrl = (url) => {
             if (url && url.startsWith('~')) {
@@ -1348,8 +1439,12 @@ export const ChatBody = {
                 }
             ],
             () => {
+                // This is deliberately client receipt time: every persisted stream
+                // checkpoint or new message resets how long the user has seen no activity.
+                lastRunActivityAt.value = Date.now()
                 scrollToBottom()
-            }
+            },
+            { immediate: true }
         )
 
         // Watch for route changes and load the appropriate thread
@@ -1542,8 +1637,67 @@ export const ChatBody = {
         }
 
         const ignoreUserMessages = ['proceed', 'retry']
-        const currentThreadMessages = computed(() =>
-            currentThread.value?.messages?.filter(x => x.role !== 'system' && !(x.role === 'user' && Array.isArray(x.content) && ignoreUserMessages.includes(x.content[0]?.text))))
+        const loadingGap = ref(false)
+        const currentThreadMessages = computed(() => {
+            const messages = currentThread.value?.messages || []
+            const result = []
+            const sequenced = messages.filter(x => x._sequence != null)
+            const loadedCount = new Set(sequenced.map(x => x._sequence)).size
+            const hiddenCount = Math.max(0,
+                (currentThread.value?.messageWindow?.messageCount || loadedCount) - loadedCount)
+            let gapAfter = null
+            let largestSequenceJump = 0
+            for (let i = 1; i < sequenced.length; i++) {
+                const jump = sequenced[i]._sequence - sequenced[i - 1]._sequence
+                if (jump > largestSequenceJump) {
+                    largestSequenceJump = jump
+                    gapAfter = sequenced[i - 1]._sequence
+                }
+            }
+            let previousSequence = null
+            for (const message of messages) {
+                const sequence = message._sequence
+                if (hiddenCount > 0 && previousSequence === gapAfter) {
+                    result.push({
+                        _gap: true,
+                        timestamp: `gap-${previousSequence}-${sequence}`,
+                        after: previousSequence,
+                        before: sequence,
+                        hiddenCount,
+                    })
+                }
+                if (sequence != null) previousSequence = sequence
+                // Display filtering must happen after sequence accounting. Otherwise
+                // every intentionally hidden system/internal message appears as a
+                // separate unloaded-history gap.
+                const hiddenSystem = message.role === 'system'
+                const hiddenInternal = message.role === 'user' && Array.isArray(message.content)
+                    && ignoreUserMessages.includes(message.content[0]?.text)
+                if (!hiddenSystem && !hiddenInternal) result.push(message)
+            }
+            return result
+        })
+
+        const loadGapMessages = async (gap, direction) => {
+            if (loadingGap.value) return
+            const container = messagesContainer.value
+            const previousHeight = container?.scrollHeight || 0
+            const previousTop = container?.scrollTop || 0
+            loadingGap.value = true
+            try {
+                await threads.loadMessageRange(direction === 'before'
+                    ? { before: gap.before, take: 100 }
+                    : { after: gap.after, take: 100 })
+                await nextTick()
+                // Loading backwards from the tail inserts content above the user's
+                // viewport; compensate for that growth to prevent a visible jump.
+                if (container && direction === 'before') {
+                    container.scrollTop = previousTop + container.scrollHeight - previousHeight
+                }
+            } finally {
+                loadingGap.value = false
+            }
+        }
 
         const getBottomLines = (text, maxLines = 2) => {
             if (!text || typeof text !== 'string') return ''
@@ -1575,7 +1729,12 @@ export const ChatBody = {
             models,
             currentThread,
             currentThreadMessages,
+            loadingGap,
+            loadGapMessages,
             activeReasoningProgress,
+            pendingRunStatus,
+            contextDonut,
+            isLongRunning,
             selectedModel,
             selectedModelObj,
             messagesContainer,

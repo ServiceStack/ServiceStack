@@ -16,6 +16,30 @@ public class ChatContext
     public JsonObject? Chat { get; set; }
     public string? User { get; set; }
     public long? ThreadId { get; set; }
+    public long? RunId { get; set; }
+    public long? StepId { get; set; }
+    /// <summary>True when Chat.Messages is a bounded snapshot/tail projection, not canonical history.</summary>
+    public bool ProjectedContext { get; set; }
+    public HashSet<long> ProjectedKnownTimestamps { get; } = [];
+    long lastMessageTimestamp;
+
+    public long NextMessageTimestamp()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var next = Math.Max(now, Interlocked.Increment(ref lastMessageTimestamp));
+        Interlocked.Exchange(ref lastMessageTimestamp, next);
+        return next;
+    }
+
+    public void SeedMessageTimestamps(JsonArray? messages)
+    {
+        foreach (var message in messages?.OfType<JsonObject>() ?? [])
+        {
+            if (message.GetLong("timestamp") is not { } timestamp) continue;
+            ProjectedKnownTimestamps.Add(timestamp);
+            if (timestamp > lastMessageTimestamp) lastMessageTimestamp = timestamp;
+        }
+    }
 
     /// <summary>
     /// The HTTP request this completion is running under, when there is one. Tools that act on the
@@ -81,6 +105,12 @@ public class ChatContext
     /// </summary>
     static bool MetaBool(JsonObject? metadata, string key) =>
         metadata.GetBool(key) || (bool.TryParse(metadata.GetString(key), out var b) && b);
+}
+
+/// <summary>A durable slice boundary, not an agent failure.</summary>
+public sealed class AgentSliceYieldException(int iterations) : Exception
+{
+    public int Iterations => iterations;
 }
 
 /// <summary>Chat pipeline filter hooks that extensions can register (mirrors AppExtensions filters)</summary>

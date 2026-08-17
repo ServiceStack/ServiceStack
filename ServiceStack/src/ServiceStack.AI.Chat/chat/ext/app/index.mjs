@@ -1,10 +1,27 @@
-import { onMounted, inject } from 'vue'
+import { onMounted, onUnmounted, inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { appendQueryString } from '@servicestack/client'
 import ThreadStore from './threadStore.mjs'
 import Recents from './Recents.mjs'
 
 let ext
+const runClock = ref(Date.now())
+let runClockTimer = null
+
+function elapsedSeconds(run) {
+    const started = new Date(run?.createdAt).getTime()
+    return Number.isFinite(started) ? Math.max(0, Math.floor((runClock.value - started) / 1000)) : null
+}
+
+function elapsedText(run) {
+    const seconds = elapsedSeconds(run)
+    if (seconds == null) return ''
+    if (seconds < 60) return `${seconds}s`
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ${String(seconds % 60).padStart(2, '0')}s`
+    const hours = Math.floor(minutes / 60)
+    return `${hours}h ${String(minutes % 60).padStart(2, '0')}m`
+}
 
 // Thread Item Component
 const ThreadItem = {
@@ -20,7 +37,7 @@ const ThreadItem = {
                         {{ thread.title }}
                     </div>
                     <div class="text-xs truncate" :class="[isActive ? $styles.mutedActive : $styles.muted]">
-                        <span>{{ $fmt.relativeTime(thread.updatedAt) }} • {{ thread.messages.length }} msgs</span>
+                        <span>{{ $fmt.relativeTime(thread.updatedAt) }} • {{ thread.messageCount ?? thread.messages?.length ?? 0 }} msgs</span>
                         <span v-if="thread.stats?.inputTokens" :title="$fmt.statsTitle(thread.stats)">
                             &#8226; {{ $fmt.humanifyNumber(thread.stats.inputTokens + thread.stats.outputTokens) }} toks
                             {{ thread.stats.cost ? ' ' + $fmt.cost(thread.stats.cost) : '' }}
@@ -28,6 +45,12 @@ const ThreadItem = {
                     </div>
                     <div v-if="thread.model" class="text-xs truncate" :class="$styles.highlighted">
                         {{ thread.model }}
+                    </div>
+                    <div v-if="thread.run" class="mt-1 flex items-center gap-1 text-xs" :class="$styles.highlighted"
+                        :title="runTitle(thread.run)">
+                        <span v-if="['queued','running'].includes(thread.run.status)"
+                            class="inline-block size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>{{ runLabel(thread.run) }}</span>
                     </div>
                 </div>
 
@@ -61,6 +84,22 @@ const ThreadItem = {
 
     setup() {
         return {
+            runLabel(run) {
+                if (!run) return ''
+                const elapsed = elapsedText(run)
+                let label = run.status
+                if (run.status === 'running') label = 'Working'
+                if (run.status === 'queued') label = run.stepCount > 0 ? 'Continuing' : 'Queued'
+                if (run.status === 'waiting_approval') label = 'Waiting for approval'
+                return elapsed ? `${label} · ${elapsed}` : label
+            },
+            runTitle(run) {
+                const seconds = elapsedSeconds(run)
+                if (seconds != null && seconds >= 300) {
+                    return 'This run is taking longer than expected. Open it to review progress or cancel it.'
+                }
+                return 'Elapsed time for the current agent run'
+            },
         }
     }
 }
@@ -203,7 +242,18 @@ const ThreadsSidebar = {
         } = ctx.threads
 
         onMounted(async () => {
+            if (!runClockTimer) {
+                runClock.value = Date.now()
+                runClockTimer = setInterval(() => { runClock.value = Date.now() }, 1000)
+            }
             await loadThreads()
+        })
+
+        onUnmounted(() => {
+            if (runClockTimer) {
+                clearInterval(runClockTimer)
+                runClockTimer = null
+            }
         })
 
         const selectThread = async (threadId) => {

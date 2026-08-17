@@ -25,6 +25,10 @@ public partial class OpenAiCompatibleProvider
         if (chat.GetArray("messages") is not { } messages)
             return chat;
 
+        var modelInfo = ModelInfo(chat.GetString("model") ?? "");
+        NormalizeContentForModel(chat, modelInfo);
+        NormalizeMessageSequenceForModel(chat, modelInfo, providerId);
+        messages = chat.GetArray("messages") ?? messages;
         NormalizeReasoningFields(chat, messages, providerId);
 
         foreach (var messageNode in messages)
@@ -81,6 +85,9 @@ public partial class OpenAiCompatibleProvider
                 msg.Remove("timestamp");
                 msg.Remove("model");
                 msg.Remove("usage");
+                msg.Remove("_sequence");
+                msg.Remove("streaming");
+                msg.Remove("_compaction");
                 cleaned.Add(msg);
             }
             else
@@ -95,6 +102,134 @@ public partial class OpenAiCompatibleProvider
             chat.Remove("modalities");
         }
         return chat;
+    }
+
+    static void NormalizeContentForModel(JsonObject chat, JsonObject? modelInfo)
+    {
+        var inputs = modelInfo.GetObject("modalities").GetArray("input");
+        if (inputs is not { Count: 1 } || inputs[0]?.GetValue<string>() != "text") return;
+        var labels = new Dictionary<string, string>
+        {
+            ["image_url"] = "image", ["input_image"] = "image", ["input_audio"] = "audio",
+            ["audio"] = "audio", ["file"] = "file", ["input_file"] = "file",
+            ["pdf"] = "PDF", ["video"] = "video",
+        };
+        foreach (var message in chat.GetArray("messages")?.OfType<JsonObject>() ?? [])
+        {
+            var text = new List<string>();
+            if (message["content"] is JsonArray parts)
+            {
+                foreach (var part in parts)
+                {
+                    if (part is JsonValue value && value.TryGetValue<string>(out var str)) { if (str.Length > 0) text.Add(str); continue; }
+                    if (part is not JsonObject item) { if (part != null) text.Add(part.ToJsonString()); continue; }
+                    var type = item.GetString("type");
+                    if (type is "text" or "input_text" || type == null && item.ContainsKey("text"))
+                    {
+                        if (item.GetString("text") is { Length: > 0 } partText) text.Add(partText);
+                        continue;
+                    }
+                    var label = labels.GetValueOrDefault(type ?? "", type ?? "non-text");
+                    var name = item.GetString("name") ?? item.GetString("filename");
+                    text.Add($"[{label} attachment omitted for text-only model{(name != null ? $": {name}" : "")}]");
+                }
+            }
+            else if (message["content"] != null)
+                text.Add(message.GetString("content") ?? message["content"]!.ToJsonString());
+
+            foreach (var (field, label) in new[] { ("images", "image"), ("audios", "audio"), ("files", "file"), ("resources", "resource") })
+            {
+                if (!message.TryGetPropertyValue(field, out var resources) || resources == null) continue;
+                message.Remove(field);
+                var count = resources is JsonArray array ? array.Count : 1;
+                text.Add($"[{count} {(count == 1 ? label : label + "s")} omitted for text-only model]");
+            }
+            message["content"] = string.Join('\n', text);
+        }
+    }
+
+    static void NormalizeMessageSequenceForModel(JsonObject chat, JsonObject? modelInfo, string? providerId)
+    {
+        var family = modelInfo.GetString("family")?.ToLowerInvariant() ?? "";
+        var model = chat.GetString("model")?.ToLowerInvariant() ?? "";
+        var provider = providerId?.ToLowerInvariant() ?? "";
+        if (family != "glm" && !model.Contains("glm") && provider != "zai-coding-plan") return;
+        var messages = chat.GetArray("messages")?.OfType<JsonObject>().ToList() ?? [];
+        var validGroups = new HashSet<int>();
+        for (var i = 0; i < messages.Count; i++)
+        {
+            var calls = messages[i].GetArray("tool_calls");
+            if (messages[i].GetString("role") != "assistant" || calls is not { Count: > 0 }) continue;
+            var expected = calls.OfType<JsonObject>().Select(x => x.GetString("id")).Where(x => x != null).ToSet();
+            var found = new HashSet<string?>();
+            for (var j = i + 1; j < messages.Count && messages[j].GetString("role") == "tool"; j++)
+                found.Add(messages[j].GetString("tool_call_id"));
+            if (expected.Count > 0 && expected.IsSubsetOf(found)) validGroups.Add(i);
+        }
+
+        var normalized = new List<JsonObject>();
+        var pending = new HashSet<string?>();
+        var skipped = new HashSet<string?>();
+        var seen = new HashSet<string?>();
+        var repaired = false;
+        void AppendOrdinary(string role, string? content, JsonObject? source = null)
+        {
+            if (content.IsNullOrEmpty()) return;
+            var item = source?.Clone() ?? new JsonObject();
+            item["role"] = role; item["content"] = content; item.Remove("tool_call_id"); item.Remove("tool_calls");
+            if (normalized.LastOrDefault() is { } previous && previous.GetString("role") == role &&
+                previous.GetArray("tool_calls") is not { Count: > 0 })
+                previous["content"] = (previous.GetString("content") + "\n\n" + content).Trim();
+            else normalized.Add(item);
+        }
+        for (var i = 0; i < messages.Count; i++)
+        {
+            var message = messages[i].Clone(); var role = message.GetString("role");
+            var calls = message.GetArray("tool_calls");
+            if (role == "assistant" && calls is { Count: > 0 })
+            {
+                var ids = calls.OfType<JsonObject>().Select(x => x.GetString("id")).Where(x => x != null).ToSet();
+                if (validGroups.Contains(i) && !ids.Overlaps(seen))
+                {
+                    normalized.Add(message); pending = ids; seen.UnionWith(ids); skipped.Clear();
+                }
+                else if (validGroups.Contains(i)) { skipped = ids; pending.Clear(); }
+                else { repaired = true; pending.Clear(); AppendOrdinary("assistant", message.GetString("content"), message); }
+                continue;
+            }
+            if (role == "tool")
+            {
+                var id = message.GetString("tool_call_id");
+                if (skipped.Remove(id)) continue;
+                if (id != null && pending.Remove(id)) normalized.Add(message);
+                else AppendOrdinary("user", $"[Tool result{(id != null ? $" ({id})" : "")}]\n{message.GetString("content") ?? ""}");
+                continue;
+            }
+            pending.Clear(); skipped.Clear();
+            if (role is "system" or "user" or "assistant") AppendOrdinary(role, message.GetString("content"), message);
+        }
+
+        var first = normalized.FindIndex(x => x.GetString("role") != "system");
+        if (first >= 0 && normalized[first].GetString("role") == "assistant" && normalized[first].GetArray("tool_calls") is not { Count: > 0 })
+        {
+            var prior = normalized[first].GetString("content"); normalized.RemoveAt(first);
+            AppendSystemContext(normalized, $"Prior assistant context:\n{prior}");
+        }
+        var systemContent = normalized.Where(x => x.GetString("role") == "system")
+            .Select(x => x.GetString("content")).Where(x => !x.IsNullOrEmpty()).Distinct().ToList();
+        normalized.RemoveAll(x => x.GetString("role") == "system");
+        if (systemContent.Count > 0) normalized.Insert(0, new JsonObject
+            { ["role"] = "system", ["content"] = string.Join("\n\n", systemContent) });
+        if (repaired && normalized.LastOrDefault()?.GetString("role") == "assistant")
+            normalized.Add(new JsonObject { ["role"] = "user", ["content"] = "Continue the interrupted agent run from the available history." });
+        chat["messages"] = new JsonArray(normalized.Select(x => (JsonNode)x).ToArray());
+    }
+
+    static void AppendSystemContext(List<JsonObject> messages, string content)
+    {
+        var system = messages.FirstOrDefault(x => x.GetString("role") == "system");
+        if (system != null) system["content"] = (system.GetString("content") + "\n\n" + content).Trim();
+        else messages.Insert(0, new JsonObject { ["role"] = "system", ["content"] = content });
     }
 
     /// <summary>Normalize reasoning/thinking fields on assistant history for the target model</summary>
