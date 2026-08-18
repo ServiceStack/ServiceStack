@@ -46,7 +46,6 @@ public class ConfigureAiChat : IHostingStartup
                 // Expose these tools to external AI Agents over MCP at /chat/mcp
                 Mcp = {
                     ToolGroups = ["api_tools", "bookings"],
-                    RejectToolsRequiringApproval = false, // allow Agents to call any tool in the above groups without approval
                 },
                 Setup = (ctx => {
                     // ctx.Mcp.ToolGroups = ["api_tools", "core_tools", "booking_tools"];

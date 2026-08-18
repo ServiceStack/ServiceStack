@@ -229,21 +229,46 @@ Avoid returning large media or datasets through a model context when a compact s
 
 ## Approval policy
 
-AI.Chat can pause a thread and display its editable schema-generated approval form. A generic MCP client cannot display or complete that ServiceStack UI flow. `RejectToolsRequiringApproval` defines how the MCP boundary handles this difference.
+AI.Chat can pause a thread and display its editable schema-generated approval form. A generic MCP client cannot display or complete that ServiceStack UI flow. `ApprovalMode` defines how the MCP boundary handles mutating operations (`Write` or `Destructive` safety, or APIs marked `RequiresApproval = true`).
 
-### Safe default: reject
+### Default: Two-Phase Confirmation Token
 
 ```csharp
 Mcp =
 {
     ToolGroups = ["api_tools"],
-    RejectToolsRequiringApproval = true,
+    ApprovalMode = McpApprovalMode.ConfirmationToken, // Default
+    ConfirmationTokenExpiry = TimeSpan.FromMinutes(5),
 }
 ```
 
-This is the default. Before executing a tool, MCP runs its approval preflight. If the tool would require interactive approval, execution is refused with an approval-required error. This prevents an external transport from silently bypassing ServiceStack approval.
+This is the default mode. When a mutating operation is called without a token:
+1. The server returns a `requires_confirmation` status containing a summary, argument parameters, and a signed, short-lived `confirmationToken`.
+2. The AI assistant presents the summary to the user in chat for confirmation.
+3. Upon approval, the assistant re-invokes `api_call` with the `confirmationToken`.
+4. The server cryptographically validates the token (user identity, target API, payload argument hash, expiry, and single-use replay check) before executing.
 
-For API Tools, write and destructive APIs require approval, as do APIs explicitly marked `RequiresApproval = true`.
+Read-only operations (`IGet`, `QueryBase`, `QueryDb<>`, `QueryData<>`) execute immediately without requiring a token.
+
+#### Production deployment
+
+Two-Phase Confirmation is a security primitive; its cross-cluster correctness depends on **shared** state:
+
+- **Signing secret must be shared and stable.** Configure `Mcp.SigningSecret` (or `HostConfig.AdminAuthSecret`) with a value of at least **32 bytes**, sourced from a secret store / env var. If neither is set, `McpExtension` generates an ephemeral per-process secret and logs a warning: tokens will not survive a restart and are rejected across load-balanced instances.
+- **Register a distributed `ICacheClient`** (Redis via `IRedisClientsManager`, `OrmLiteCacheClient` on a shared DB, etc.) for the single-use replay set. Otherwise `McpExtension` falls back to an in-process `ConcurrentDictionary` and logs a warning: replay protection is per-process only and silently degrades in a farm. The used-token set uses TTL keys under `urn:mcp:used:{jti}` so it self-cleans.
+- **`ApprovalHandler` must be deterministic.** The handler runs on both Phase 1 (mint) and Phase 2 (verify); its returned `Arguments` are hashed both times and compared. Any per-call mutation (attaching request IP, timestamps, correlation IDs, etc.) will break verification with `"Arguments have been modified since confirmation was issued"`. Side-effects such as audit logs also run twice per successful mutation.
+
+### Fail-closed: Reject
+
+```csharp
+Mcp =
+{
+    ToolGroups = ["api_tools"],
+    ApprovalMode = McpApprovalMode.Reject,
+}
+```
+
+Before executing a tool, MCP runs its approval preflight. If the tool would require interactive approval, execution is refused with an approval-required error. Use this for strictly read-only exposure.
 
 ### Delegate confirmation to the MCP client
 
@@ -251,22 +276,16 @@ For API Tools, write and destructive APIs require approval, as do APIs explicitl
 Mcp =
 {
     ToolGroups = ["api_tools"],
-    RejectToolsRequiringApproval = false,
+    ApprovalMode = McpApprovalMode.DelegateToClient,
 }
 ```
 
-When disabled, MCP executes the tool normally. The client is expected to use MCP safety annotations and its own permission system to ask the user before write or destructive calls.
+MCP executes the tool immediately on the first call. The client is expected to use standard MCP safety annotations (`readOnlyHint: false`, `destructiveHint: true`) and its own native confirmation dialog to ask the user before mutating calls.
 
 Use this mode only when:
-
 - The MCP client is trusted.
-- Its confirmation policy is enabled and understood.
+- Its native confirmation policy is enabled.
 - The API key is scoped to the intended user and capabilities.
-- The exposed tool selection is intentionally narrow.
-
-Disabling rejection does not disable API authorization or DTO validation. It delegates only the interactive approval decision.
-
-There is currently no cross-client pending approval token that can be approved later in AI.Chat. A server-mediated MCP approval workflow would require a separate protocol for creating, inspecting, approving, and resuming pending calls.
 
 ## API Tools over MCP
 
@@ -324,7 +343,15 @@ The API may not be opted in, may be excluded, or may be inaccessible to the API-
 
 ### Requires interactive approval
 
-The server has `RejectToolsRequiringApproval = true`. Keep it enabled for fail-closed behavior, or explicitly disable it only when the MCP client's own confirmation policy is trusted.
+The server has `ApprovalMode = McpApprovalMode.Reject`. Switch to `ConfirmationToken` (the default) to expose a two-phase approval flow to the assistant, or `DelegateToClient` when the MCP client's own confirmation dialog is trusted.
+
+### Arguments have been modified since confirmation was issued
+
+The Phase 2 argument hash does not match the token. Common causes:
+
+- The AI assistant re-emitted the arguments with different numeric formatting or field ordering that `Canonicalize` doesn't handle (report this).
+- The tool's `ApprovalHandler` is non-deterministic — it mutates `Arguments` differently on each call (see *Production deployment*).
+- A shared signing secret is not configured and the token was validated by a different process than the one that minted it.
 
 ### Output schema but no structured content
 

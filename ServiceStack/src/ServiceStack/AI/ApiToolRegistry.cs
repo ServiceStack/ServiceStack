@@ -47,6 +47,8 @@ public class ApiTool
     public Type Type { get; set; } = null!;
 
     public string? Description { get; set; }
+    /// <summary>MCP-specific description override from <see cref="McpAttribute.Description"/>. When set, MCP responses prefer this over <see cref="Description"/>.</summary>
+    public string? McpDescription { get; set; }
     public string? Notes { get; set; }
     public string? WhenToUse { get; set; }
     public List<string> Keywords { get; set; } = [];
@@ -85,6 +87,13 @@ public class ApiTool
     public string Summary => !string.IsNullOrEmpty(Description) ? Description!
         : !string.IsNullOrEmpty(WhenToUse) ? $"Use when {WhenToUse}"
         : Name;
+
+    /// <summary>
+    /// MCP-flavored summary: prefers <see cref="McpDescription"/> (from <c>[Mcp]</c>) then falls
+    /// back to <see cref="Summary"/>. Used by MCP responses so hosts can give MCP agents
+    /// imperative wording without polluting the DTO's regular <c>[Description]</c>.
+    /// </summary>
+    public string McpSummary => !string.IsNullOrEmpty(McpDescription) ? McpDescription! : Summary;
 
     /// <summary>One line per API for a search result listing — the Agent's index into the App's APIs</summary>
     public string ToSummaryLine() => Safety == ToolSafety.ReadOnly
@@ -151,6 +160,7 @@ public class ApiToolRegistry(ApiToolsConfig config)
                 RequestType = op.Name,
                 Type = type,
                 Description = op.Description,
+                McpDescription = type.FirstAttribute<McpAttribute>()?.Description,
                 Notes = op.Notes,
                 WhenToUse = attr?.WhenToUse,
                 Keywords = attr?.Keywords?.ToList() ?? [],

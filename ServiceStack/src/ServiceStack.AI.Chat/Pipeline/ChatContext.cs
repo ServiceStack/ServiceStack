@@ -13,6 +13,15 @@ public class ChatContext
     /// <summary>Items flag for model-driven transports that cannot present an approval UI.</summary>
     public const string RejectToolsRequiringApproval = "reject_tools_requiring_approval";
 
+    /// <summary>
+    /// Items flag set by <c>McpExtension</c> when a tool is being invoked over the MCP endpoint.
+    /// Tools that surface per-DTO descriptions (api_search, api_describe, api_call approval
+    /// summaries) prefer <see cref="ApiTool.McpDescription"/> over <see cref="ApiTool.Description"/>
+    /// when this flag is set, so hosts can annotate DTOs with <c>[Mcp]</c> without polluting the
+    /// regular <c>[Description]</c> read by OpenAPI generators and admin UIs.
+    /// </summary>
+    public const string McpTransport = "mcp_transport";
+
     public JsonObject? Chat { get; set; }
     public string? User { get; set; }
     public long? ThreadId { get; set; }

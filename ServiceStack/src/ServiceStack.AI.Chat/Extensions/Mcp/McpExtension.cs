@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
@@ -42,10 +43,85 @@ public class McpExtension() : ChatExtension("mcp")
     public string? Instructions { get; set; }
 
     /// <summary>
-    /// Reject tools that require ServiceStack's interactive approval UI, which MCP clients cannot
-    /// present. Disable only when the MCP client is trusted to confirm write/destructive calls.
+    /// Approval mode for operations requiring verification. Defaults to ConfirmationToken (Two-Phase confirmation).
     /// </summary>
-    public bool RejectToolsRequiringApproval { get; set; } = true;
+    public McpApprovalMode ApprovalMode { get; set; } = McpApprovalMode.ConfirmationToken;
+
+    /// <summary>
+    /// How long a generated confirmation token remains valid. Defaults to 5 minutes.
+    /// </summary>
+    public TimeSpan ConfirmationTokenExpiry { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Secret used for HMAC-SHA256 token signing. When not provided, falls back to
+    /// <see cref="HostConfig.AdminAuthSecret"/>. If neither is configured a random
+    /// per-process secret is generated and a warning is logged: tokens will not survive
+    /// process restarts and are invalid across load-balanced instances — always set an
+    /// explicit shared secret (>= 32 bytes) in production.
+    /// </summary>
+    public string? SigningSecret { get; set; }
+
+    /// <summary>Minimum length (in UTF-8 bytes) required for an explicitly configured signing secret.</summary>
+    public const int MinSigningSecretLength = 32;
+
+    /// <summary>
+    /// Reject tools that require ServiceStack's interactive approval UI, which MCP clients cannot
+    /// present. Set to true to fail-closed, or false to delegate confirmation to MCP client native dialogs.
+    /// </summary>
+    [Obsolete(
+        "Use ApprovalMode instead. NOTE: the default has changed from Reject (true) to " +
+        "ConfirmationToken. Setting this property will opt out of the new two-phase confirmation flow: " +
+        "true maps to McpApprovalMode.Reject, false maps to McpApprovalMode.DelegateToClient.")]
+    public bool RejectToolsRequiringApproval
+    {
+        get => ApprovalMode == McpApprovalMode.Reject;
+        set => ApprovalMode = value ? McpApprovalMode.Reject : McpApprovalMode.DelegateToClient;
+    }
+
+    private McpConfirmationTokenManager? tokenManager;
+    public McpConfirmationTokenManager TokenManager => tokenManager ??= CreateTokenManager();
+
+    private McpConfirmationTokenManager CreateTokenManager()
+    {
+        string secret;
+        if (!string.IsNullOrEmpty(SigningSecret))
+        {
+            if (Encoding.UTF8.GetByteCount(SigningSecret) < MinSigningSecretLength)
+            {
+                Log.LogWarning(
+                    "McpExtension.SigningSecret is shorter than {Min} bytes; HMAC keys should be at least this long. "
+                    + "Configure a longer shared secret in production.", MinSigningSecretLength);
+            }
+            secret = SigningSecret;
+        }
+        else if (!string.IsNullOrEmpty(HostContext.Config?.AdminAuthSecret))
+        {
+            secret = HostContext.Config!.AdminAuthSecret;
+        }
+        else
+        {
+            // Fail-secret-open: generate an ephemeral secret so the feature works on a single
+            // dev node, but loudly warn — tokens don't survive restarts and are invalid across
+            // load-balanced instances.
+            secret = Guid.NewGuid().ToString("N");
+            Log.LogWarning(
+                "MCP ConfirmationToken signing secret not configured; using an ephemeral per-process secret. "
+                + "Tokens will not survive restarts and will be rejected across load-balanced instances. "
+                + "Set McpExtension.SigningSecret or HostConfig.AdminAuthSecret to a shared value (>= {Min} bytes) in production.",
+                MinSigningSecretLength);
+        }
+
+        var cache = HostContext.AppHost?.GetCacheClient();
+        if (cache == null || cache is Caching.MemoryCacheClient)
+        {
+            Log.LogWarning(
+                "MCP ConfirmationToken replay protection is using in-memory storage; single-use enforcement "
+                + "is per-process only and will silently degrade across a load-balanced or multi-instance "
+                + "deployment. Register a shared ICacheClient (e.g. Redis / OrmLite) for production.");
+        }
+
+        return new McpConfirmationTokenManager(secret, ConfirmationTokenExpiry, cache);
+    }
 
     /// <summary>
     /// Largest image/audio result inlined as base64 in a tool result. Larger resources are
@@ -56,7 +132,7 @@ public class McpExtension() : ChatExtension("mcp")
     /// <summary>Whether the host has opted in to exposing anything over MCP</summary>
     public bool IsEnabled => ToolGroups.Count > 0 || Tools.Count > 0;
 
-    /// <summary>ToolGroups + Tools as a <see cref="ToolRegistry.SelectTools"/> selector</summary>
+    /// <summary>ToolGroups + Tools as a <see cref="ToolsExtension.SelectTools"/> selector</summary>
     public string ToolSelector => ToolGroups.Contains("all") || Tools.Contains("all")
         ? "all"
         : string.Join(",", ToolGroups.Union(Tools));
@@ -221,8 +297,17 @@ public class McpExtension() : ChatExtension("mcp")
                 ["version"] = GetServerVersion(),
             },
         };
-        if (!string.IsNullOrEmpty(Instructions))
-            to["instructions"] = Instructions;
+        var instructions = Instructions;
+        if (string.IsNullOrEmpty(instructions) && ApprovalMode == McpApprovalMode.ConfirmationToken)
+        {
+            instructions = "Use API Tools (api_search, api_describe, api_call) to interact with the application. "
+                + "Read-only APIs execute immediately. "
+                + "When calling Write or Destructive APIs via api_call, the server returns a 'requires_confirmation' status with a confirmationToken. "
+                + "Present the summary and arguments to the user to obtain explicit confirmation. "
+                + "Once confirmed, re-invoke api_call passing the exact same arguments along with the provided confirmationToken.";
+        }
+        if (!string.IsNullOrEmpty(instructions))
+            to["instructions"] = instructions;
         return to;
     }
 
@@ -252,8 +337,9 @@ public class McpExtension() : ChatExtension("mcp")
         if (fn.GetString("description") is { } description)
             to["description"] = description;
         // MCP requires an object schema; tools with no arguments still need an empty one
-        to["inputSchema"] = fn.GetObject("parameters")?.Clone()
+        var inputSchema = fn.GetObject("parameters")?.Clone()
             ?? new JsonObject { ["type"] = "object", ["properties"] = new JsonObject() };
+        to["inputSchema"] = inputSchema;
         if (tool.OutputSchema != null)
             to["outputSchema"] = tool.OutputSchema.Clone();
         // hints Clients use to decide what to auto-approve, for tools that declare their safety
@@ -282,19 +368,121 @@ public class McpExtension() : ChatExtension("mcp")
         if (tool == null)
             throw new McpException(InvalidParams, $"Tool '{name}' is not available");
 
-        // only pass args declared in the tool's schema
+        // Extract protocol-level confirmation token. Accept only the documented
+        // top-level `confirmationToken` (advertised in the tool schema) and the common
+        // nested-in-`args` shape that api_call surfaces. We deliberately don't accept
+        // snake_case aliases — Postel's Law here just lets models guess wrong shapes silently.
+        var rawArgs = args.GetObject("arguments") ?? new JsonObject();
+        var token = rawArgs.GetString("confirmationToken")
+            ?? rawArgs.GetObject("args")?.GetString("confirmationToken");
+
+        // only pass business args declared in the tool's schema (strip confirmationToken)
         var toolArgs = new JsonObject();
         var properties = tool.Definition.GetObject("function").GetObject("parameters").GetObject("properties");
-        foreach (var entry in args.GetObject("arguments") ?? new JsonObject())
+        foreach (var entry in rawArgs)
         {
+            if (entry.Key == "confirmationToken")
+                continue;
             if (properties == null || properties.ContainsKey(entry.Key))
                 toolArgs[entry.Key] = entry.Value?.DeepClone();
         }
 
+        if (toolArgs["args"] is JsonObject nestedArgs)
+        {
+            nestedArgs.Remove("confirmationToken");
+        }
+
         Log.LogInformation("MCP tools/call {Tool} as {User}", name, req.UserName);
         var context = new ChatContext { User = req.UserName, Request = req.Request };
-        if (RejectToolsRequiringApproval)
+        // Signal to tool implementations (api_search / api_describe / api_call approval) that
+        // this call is being served over MCP, so per-DTO summaries prefer [Mcp(Description=..)]
+        // over the regular [Description]. See ApiTool.McpSummary.
+        context.Items[ChatContext.McpTransport] = true;
+
+        if (ApprovalMode == McpApprovalMode.Reject)
+        {
             context.Items[ChatContext.RejectToolsRequiringApproval] = true;
+        }
+        else if (ApprovalMode == McpApprovalMode.ConfirmationToken && tool.ApprovalHandler != null)
+        {
+            // NOTE: ApprovalHandler is invoked on BOTH Phase 1 (mint) and Phase 2 (verify).
+            // Its returned Arguments are what gets hashed and compared. Handlers therefore
+            // MUST be deterministic for identical inputs — any per-call mutation (attaching
+            // request IP, timestamps, correlation IDs, etc.) will break token verification
+            // with "Arguments have been modified since confirmation was issued". Side-effects
+            // (audit logs, DB reads) also run twice per successful mutation.
+            var approval = await tool.ApprovalHandler(toolArgs, context).ConfigAwait();
+            if (approval != null)
+            {
+                // Prefer the explicit target DTO name; fall back to the args["name"] the
+                // multiplexer received; last resort is the approval title / tool name.
+                // For a multiplexing tool like api_call the token's target field MUST identify
+                // the specific DTO being invoked, not the tool itself — otherwise the
+                // cross-action swap protection documented in the threat model degrades.
+                var targetName = approval.Metadata?.GetString("apiName")
+                    ?? toolArgs.GetString("name")
+                    ?? approval.Title
+                    ?? tool.Name;
+                if (string.Equals(targetName, tool.Name, StringComparison.OrdinalIgnoreCase) &&
+                    tool.Definition.GetObject("function")?.GetObject("parameters")?.GetObject("properties")?.ContainsKey("name") == true)
+                {
+                    // The tool schema advertises a `name` parameter (i.e. it's a multiplexer
+                    // dispatching to a DTO). Falling back to the tool's own name here would
+                    // let a token minted for one DTO be replayed against another.
+                    Log.LogWarning(
+                        "MCP ConfirmationToken: multiplexing tool '{Tool}' produced no specific target; " +
+                        "ApprovalHandler must populate Metadata.apiName or arguments must include 'name'.",
+                        tool.Name);
+                    throw new McpException(InternalError,
+                        "Confirmation target could not be determined for a multiplexing tool; " +
+                        "ApprovalHandler must provide 'apiName' metadata or the request must include 'name'.");
+                }
+                var targetArgs = approval.Arguments;
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    // Phase 1: Generate confirmation token and return requires_confirmation
+                    var confirmationToken = TokenManager.CreateToken(req.UserName, tool.Name, targetName, targetArgs);
+                    var summary = approval.Description ?? approval.Title ?? targetName;
+                    var requiresConfirmResult = McpConfirmationTokenManager.CreateRequiresConfirmationResponse(
+                        targetName,
+                        approval.Safety.ToString(),
+                        confirmationToken,
+                        (int)ConfirmationTokenExpiry.TotalSeconds,
+                        summary,
+                        targetArgs);
+
+                    var confirmJson = requiresConfirmResult.ToJsonString(ChatJson.Options);
+                    return new JsonObject
+                    {
+                        ["content"] = new JsonArray { new JsonObject { ["type"] = "text", ["text"] = confirmJson } },
+                        ["structuredContent"] = requiresConfirmResult,
+                    };
+                }
+
+                // Phase 2: Validate token
+                var validation = TokenManager.ValidateToken(token, req.UserName, tool.Name, targetName, targetArgs);
+                if (!validation.IsValid)
+                {
+                    var errorText = $"Error: Invalid confirmation token: {validation.ErrorMessage}";
+                    // Include `api` — the tool's output schema (e.g. api_call's CallOutputSchema)
+                    // marks it required, and strict MCP clients reject structured content that
+                    // omits it with "data must have required property 'api'".
+                    return new JsonObject
+                    {
+                        ["content"] = new JsonArray { new JsonObject { ["type"] = "text", ["text"] = errorText } },
+                        ["structuredContent"] = new JsonObject
+                        {
+                            ["status"] = "error",
+                            ["api"] = targetName,
+                            ["error"] = errorText,
+                        },
+                        ["isError"] = true,
+                    };
+                }
+            }
+        }
+
         // tool errors come back as result text (ExecToolAsync never throws), which is what an
         // Agent wants to read anyway — isError is reserved for what it couldn't attempt
         var (text, resources) = await Ctx.Feature.ExecToolAsync(name!, toolArgs, context).ConfigAwait();

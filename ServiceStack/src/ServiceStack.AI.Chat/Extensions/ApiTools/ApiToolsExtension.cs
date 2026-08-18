@@ -112,6 +112,11 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
                     ["type"] = "object",
                     ["description"] = "Arguments matching the API's schema from api_describe",
                 },
+                ["confirmationToken"] = new JsonObject
+                {
+                    ["type"] = "string",
+                    ["description"] = "Confirmation token returned by a previous requires_confirmation response for write/destructive operations.",
+                },
             }, required: ["name"]), CallAsync, group, ApprovalAsync,
             outputSchema: CallOutputSchema(), safety: ToolSafety.Write);
 
@@ -131,6 +136,7 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
 
         var take = args.GetInt("take") ?? 20;
         var tag = args.GetString("tag");
+        var isMcp = context.Items.ContainsKey(ChatContext.McpTransport);
         var results = registry.Search(req, args.GetString("query"), tag, take);
         if (results.Count == 0)
         {
@@ -155,7 +161,7 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
             {
                 ["name"] = tool.Name,
                 ["request"] = tool.RequestType,
-                ["summary"] = tool.Summary,
+                ["summary"] = isMcp ? tool.McpSummary : tool.Summary,
                 ["tags"] = new JsonArray(tool.Tags.Select(x => (JsonNode)x).ToArray()),
                 ["safety"] = tool.Safety.ToString().ToLowerInvariant(),
                 ["method"] = tool.Method,
@@ -176,6 +182,7 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
         if (names.Count == 0)
             return Task.FromResult<object?>("Error: 'names' is required");
 
+        var isMcp = context.Items.ContainsKey(ChatContext.McpTransport);
         var to = new JsonArray();
         foreach (var name in names)
         {
@@ -187,6 +194,11 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
             }
 
             var describe = CreateToolSchema(tool);
+            // For MCP callers, overlay the root schema description with [Mcp(Description=..)]
+            // when set — lets hosts give MCP agents imperative wording without touching the
+            // regular [Description] read by OpenAPI generators and admin UIs.
+            if (isMcp && !string.IsNullOrEmpty(tool.McpDescription))
+                describe["description"] = tool.McpDescription;
             var toolAnnotation = describe["tool"]!.AsObject();
             if (!string.IsNullOrEmpty(tool.WhenToUse))
                 toolAnnotation["whenToUse"] = tool.WhenToUse;
@@ -235,10 +247,11 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
             return Task.FromResult<ChatToolApprovalRequest?>(null);
 
         var proposedArgs = args["args"] is JsonObject dtoArgs ? dtoArgs.Clone() : new JsonObject();
+        var isMcp = context.Items.ContainsKey(ChatContext.McpTransport);
         return Task.FromResult<ChatToolApprovalRequest?>(new ChatToolApprovalRequest
         {
             Title = tool.Name,
-            Description = tool.Summary,
+            Description = isMcp ? tool.McpSummary : tool.Summary,
             Safety = tool.Safety,
             Schema = CreateToolSchema(tool),
             Arguments = proposedArgs,
@@ -254,13 +267,17 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
 
     internal JsonObject FormatResult(ApiTool tool, JsonObject? proposedArgs, object? response)
     {
-        var json = response.ToJson() ?? "null";
+        var json = ChatJson.Serialize(response);
         var truncated = json.Length > MaxResultLength;
         return new JsonObject
         {
             ["status"] = "success",
             ["api"] = tool.Name,
-            ["request"] = proposedArgs?.Clone(),
+            // Always emit an object (never null) — CallOutputSchema declares `request` as
+            // `{"type":"object"}`, and strict MCP clients (e.g. ZCode) fail schema validation
+            // with "data/request must be object" when a caller omits `args` (e.g. IGet DTOs
+            // like GetCoffeeShopMenu that take no parameters).
+            ["request"] = proposedArgs?.Clone() ?? new JsonObject(),
             ["response"] = truncated
                 ? json[..MaxResultLength] + $"\n...[truncated at {MaxResultLength} chars, narrow the query]"
                 : ChatJson.Parse(json),
@@ -278,10 +295,10 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
 
     static JsonObject CreateToolSchema(ApiTool tool)
     {
-        var schema = (ChatJson.Parse(tool.InputSchema.ToJson()) as JsonObject) ?? new JsonObject();
+        var schema = (ChatJson.ToNode(tool.InputSchema) as JsonObject) ?? new JsonObject();
         schema["inputSchema"] = schema.Clone();
         if (tool.OutputSchema != null)
-            schema["outputSchema"] = ChatJson.Parse(tool.OutputSchema.ToJson());
+            schema["outputSchema"] = ChatJson.ToNode(tool.OutputSchema);
         if (tool.Prerequisites.Count > 0)
             schema["prerequisites"] = new JsonArray(tool.Prerequisites.Select(x => (JsonNode)x).ToArray());
         if (tool.Preview != null)
@@ -335,8 +352,12 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
             ["request"] = new JsonObject { ["type"] = "object" },
             ["response"] = new JsonObject(),
             ["truncated"] = new JsonObject { ["type"] = "boolean" },
+            ["confirmationToken"] = new JsonObject { ["type"] = "string" },
+            ["expiresInSeconds"] = new JsonObject { ["type"] = "integer" },
+            ["summary"] = new JsonObject { ["type"] = "string" },
+            ["instruction"] = new JsonObject { ["type"] = "string" },
         },
-        ["required"] = new JsonArray("status", "api", "response", "truncated"),
+        ["required"] = new JsonArray("status", "api"),
     };
 
     /// <summary>
