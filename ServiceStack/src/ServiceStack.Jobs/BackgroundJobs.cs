@@ -809,16 +809,24 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
         db.DeleteById<BackgroundJob>(job.Id);
         
-        // Execute any jobs depending on this job
-        db.UpdateOnly(() => new BackgroundJob {
-            RequestId = requestId,
-            StartedDate = now,
-            LastActivityDate = now,
-            State = BackgroundJobState.Queued,
-            ParentId = job.Id,
-        }, where:x => x.CompletedDate == null && x.RequestId == null && x.DependsOn == job.Id);
-        
-        var dispatchJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
+        var dispatchJobs = new List<BackgroundJob>();
+        var dependentJobIds = db.Column<long>(db.From<BackgroundJob>()
+            .Where(x => x.CompletedDate == null && x.RequestId == null && x.DependsOn == job.Id)
+            .Select(x => x.Id));
+
+        if (dependentJobIds.Count > 0)
+        {
+            // Execute any jobs depending on this job
+            db.UpdateOnly(() => new BackgroundJob {
+                RequestId = requestId,
+                StartedDate = now,
+                LastActivityDate = now,
+                State = BackgroundJobState.Queued,
+                ParentId = job.Id,
+            }, where:x => Sql.In(x.Id, dependentJobIds));
+            
+            dispatchJobs = db.Select<BackgroundJob>(x => x.RequestId == requestId);
+        }
         if (dispatchJobs.Count > 0)
         {
             log.LogInformation("JOBS Queued {Count} Jobs dependent on {JobId}", dispatchJobs.Count, job.Id);
