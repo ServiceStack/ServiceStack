@@ -7,6 +7,7 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Jobs;
 
+[CompositeIndex(nameof(CompletedDate), nameof(RequestId), nameof(RunAfter))]
 public abstract class BackgroundJobBase : IMeta
 {
     public virtual long Id { get; set; }
@@ -31,6 +32,7 @@ public abstract class BackgroundJobBase : IMeta
     /// <summary>
     /// Only execute job after successful completion of Parent Job
     /// </summary>
+    [Index]
     public virtual long? DependsOn { get; set; }
     /// <summary>
     /// Only run Job after date
