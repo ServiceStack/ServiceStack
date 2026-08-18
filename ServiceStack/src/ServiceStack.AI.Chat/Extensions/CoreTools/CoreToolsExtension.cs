@@ -1,13 +1,17 @@
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using ServiceStack.Text;
 
 namespace ServiceStack.AI;
 
 /// <summary>
-/// Built-in LLM tools (port of llms-py's "core_tools" extension): get_current_time and calc are
-/// always available; the run_* code-execution tools require the host to opt in via
+/// Built-in LLM tools (port of llms-py's "core_tools" extension): fetch_url, grep_search, get_current_time and calc
+/// are always available; the run_* code-execution tools require the host to opt in via
 /// ChatFeature.ToolsConfig.EnableCodeExecution (a web host is not a localhost sandbox).
 /// </summary>
 public class CoreToolsExtension() : ChatExtension("core_tools")
@@ -15,6 +19,73 @@ public class CoreToolsExtension() : ChatExtension("core_tools")
     public override void Install(ExtensionContext ctx)
     {
         const string group = "core_tools";
+
+        ctx.RegisterTool(ToolDef("fetch_url",
+                "Fetch content from a URL via HTTP request and convert HTML to clean, structured Markdown. Non-HTML content (JSON, plain text) is returned as raw text.",
+                new JsonObject
+                {
+                    ["url"] = new JsonObject
+                    {
+                        ["type"] = "string",
+                        ["description"] = "The HTTP/HTTPS URL to fetch content from",
+                    },
+                    ["max_length"] = new JsonObject
+                    {
+                        ["type"] = "integer",
+                        ["description"] = "Maximum character length of content to return (default: 20000)",
+                        ["default"] = 20000,
+                    },
+                }, required: ["url"]),
+            async (args, c) => await FetchUrlAsync(args.GetString("url") ?? "", args.GetInt("max_length") ?? 20000, c.CancellationToken).ConfigAwait(),
+            group);
+
+        ctx.RegisterTool(ToolDef("grep_search",
+                "Search for exact text or regex patterns across files within a directory tree. Returns matched file paths, line numbers, and matching line content.",
+                new JsonObject
+                {
+                    ["query"] = new JsonObject
+                    {
+                        ["type"] = "string",
+                        ["description"] = "Text or regular expression to search for across files",
+                    },
+                    ["path"] = new JsonObject
+                    {
+                        ["type"] = "string",
+                        ["description"] = "Directory or file path to search (default is current working directory)",
+                    },
+                    ["is_regex"] = new JsonObject
+                    {
+                        ["type"] = "boolean",
+                        ["description"] = "Whether to treat query as a regular expression (default: false)",
+                        ["default"] = false,
+                    },
+                    ["case_sensitive"] = new JsonObject
+                    {
+                        ["type"] = "boolean",
+                        ["description"] = "Whether the search is case-sensitive (default: false)",
+                        ["default"] = false,
+                    },
+                    ["file_pattern"] = new JsonObject
+                    {
+                        ["type"] = "string",
+                        ["description"] = "Optional glob pattern to filter filenames (e.g. '*.py', '*.ts', '*.cs')",
+                    },
+                    ["max_matches"] = new JsonObject
+                    {
+                        ["type"] = "integer",
+                        ["description"] = "Maximum number of matching lines to return (default: 50)",
+                        ["default"] = 50,
+                    },
+                }, required: ["query"]),
+            (args, c) => Task.FromResult<object?>(GrepSearch(
+                args.GetString("query") ?? "",
+                args.GetString("path"),
+                args.GetBool("is_regex", false),
+                args.GetBool("case_sensitive", false),
+                args.GetString("file_pattern"),
+                args.GetInt("max_matches") ?? 50,
+                c)),
+            group);
 
         ctx.RegisterTool(ToolDef("get_current_time", "Get current time in ISO-8601 format.",
                 new JsonObject
@@ -311,5 +382,214 @@ public class CoreToolsExtension() : ChatExtension("core_tools")
             }
         }
         return null;
+    }
+
+    // ── Web / URL Fetching (port of fetch_url) ──
+
+    private static readonly HttpClient SharedHttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(15)
+    };
+
+    async Task<object?> FetchUrlAsync(string url, int maxLength, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return "Error: URL is required.";
+
+        if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            url = "https://" + url;
+        }
+
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            req.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/json,text/plain;q=0.9,*/*;q=0.8");
+            req.Headers.TryAddWithoutValidation("Accept-Language", "en-US,en;q=0.5");
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            cts.CancelAfter(TimeSpan.FromSeconds(15));
+
+            using var response = await SharedHttpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigAwait();
+            response.EnsureSuccessStatusCode();
+
+            var mediaType = response.Content.Headers.ContentType?.MediaType?.ToLowerInvariant() ?? "";
+            using var stream = await response.Content.ReadAsStreamAsync(cts.Token).ConfigAwait();
+
+            const int maxBytes = 2 * 1024 * 1024;
+            var buffer = new byte[maxBytes];
+            int totalRead = 0;
+            while (totalRead < maxBytes)
+            {
+                int read = await stream.ReadAsync(buffer.AsMemory(totalRead, maxBytes - totalRead), cts.Token).ConfigAwait();
+                if (read == 0) break;
+                totalRead += read;
+            }
+
+            var charset = response.Content.Headers.ContentType?.CharSet;
+            Encoding encoding = Encoding.UTF8;
+            if (!string.IsNullOrEmpty(charset))
+            {
+                try { encoding = Encoding.GetEncoding(charset); } catch { /* fallback to UTF8 */ }
+            }
+
+            var rawText = encoding.GetString(buffer, 0, totalRead);
+
+            string content;
+            if (mediaType.Contains("html") ||
+                rawText.StartsWith("<!doctype html", StringComparison.OrdinalIgnoreCase) ||
+                rawText.IndexOf("<html", 0, Math.Min(500, rawText.Length), StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                var parser = new HtmlToMarkdownParser(url);
+                content = parser.Parse(rawText);
+            }
+            else
+            {
+                content = rawText.Trim();
+            }
+
+            if (content.Length > maxLength)
+            {
+                var remaining = content.Length - maxLength;
+                return content[..maxLength] + $"\n\n... [Truncated: {remaining} additional characters]";
+            }
+
+            return string.IsNullOrWhiteSpace(content) ? "No content found on page." : content;
+        }
+        catch (Exception e)
+        {
+            return $"Error fetching URL '{url}': {e.Message}";
+        }
+    }
+
+    // ── File Content Search / Grep (port of grep_search) ──
+
+    private static readonly HashSet<string> IgnoredSearchDirs = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".git", ".venv", "venv", ".env", "node_modules", "__pycache__", "dist", "build", "bin", "obj", "target", "vendor", ".next", ".nuxt", ".cache", ".tox"
+    };
+
+    string GrepSearch(string query, string? path, bool isRegex, bool caseSensitive, string? filePattern, int maxMatches, ChatContext c)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return "Error: query is required.";
+
+        var searchDir = path;
+        if (string.IsNullOrEmpty(searchDir))
+        {
+            var allowed = Ctx.ResolveAllowedDirectories(c.User);
+            searchDir = allowed.Count > 0 ? allowed[0] : Directory.GetCurrentDirectory();
+        }
+
+        searchDir = Path.GetFullPath(Environment.ExpandEnvironmentVariables(searchDir));
+        if (!Directory.Exists(searchDir) && !File.Exists(searchDir))
+            return $"Error: Path '{searchDir}' does not exist.";
+
+        Regex regex;
+        try
+        {
+            var pattern = isRegex ? query : Regex.Escape(query);
+            var options = RegexOptions.Compiled;
+            if (!caseSensitive)
+                options |= RegexOptions.IgnoreCase;
+            regex = new Regex(pattern, options);
+        }
+        catch (Exception e)
+        {
+            return $"Error: Invalid regular expression '{query}': {e.Message}";
+        }
+
+        var matches = new List<string>();
+        var baseDir = Directory.Exists(searchDir) ? searchDir : Path.GetDirectoryName(searchDir) ?? searchDir;
+
+        void SearchFile(string filePath)
+        {
+            try
+            {
+                using var stream = File.OpenRead(filePath);
+                var header = new byte[Math.Min(1024, (int)stream.Length)];
+                int read = stream.Read(header, 0, header.Length);
+                if (header.AsSpan(0, read).IndexOf((byte)0) >= 0)
+                    return; // skip binary file
+
+                stream.Seek(0, SeekOrigin.Begin);
+                using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+                int lineNo = 0;
+                string? line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    lineNo++;
+                    if (regex.IsMatch(line))
+                    {
+                        var relPath = Path.GetRelativePath(baseDir, filePath);
+                        matches.Add($"{relPath}:{lineNo}: {line.TrimEnd()}");
+                        if (matches.Count >= maxMatches)
+                            return;
+                    }
+                }
+            }
+            catch
+            {
+                // best effort, ignore unreadable/locked files
+            }
+        }
+
+        if (File.Exists(searchDir))
+        {
+            SearchFile(searchDir);
+        }
+        else
+        {
+            SearchDirectory(searchDir, regex, filePattern, maxMatches, matches, baseDir, SearchFile);
+        }
+
+        if (matches.Count == 0)
+            return $"No matches found for '{query}'.";
+
+        var output = string.Join("\n", matches);
+        if (matches.Count >= maxMatches)
+            output += $"\n\n... [Capped at {maxMatches} matches]";
+        return output;
+    }
+
+    static void SearchDirectory(string dirPath, Regex regex, string? filePattern, int maxMatches, List<string> matches, string baseDir, Action<string> searchFile)
+    {
+        var dirInfo = new DirectoryInfo(dirPath);
+        try
+        {
+            foreach (var file in dirInfo.EnumerateFiles().OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrEmpty(filePattern) && !PathMatchesPattern(file.Name, filePattern))
+                    continue;
+
+                searchFile(file.FullName);
+                if (matches.Count >= maxMatches)
+                    return;
+            }
+
+            foreach (var subDir in dirInfo.EnumerateDirectories().OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                if (subDir.Name.StartsWith('.') || IgnoredSearchDirs.Contains(subDir.Name))
+                    continue;
+
+                SearchDirectory(subDir.FullName, regex, filePattern, maxMatches, matches, baseDir, searchFile);
+                if (matches.Count >= maxMatches)
+                    return;
+            }
+        }
+        catch
+        {
+            // Ignore access errors on protected directories
+        }
+    }
+
+    static bool PathMatchesPattern(string filename, string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern) || pattern == "*")
+            return true;
+        var regexPattern = "^" + Regex.Escape(pattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
+        return Regex.IsMatch(filename, regexPattern, RegexOptions.IgnoreCase);
     }
 }

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.AI;
@@ -113,5 +114,140 @@ public class ChatMediaTests
         // the gallery UI reads aspect_ratio, matching Python's column name
         Assert.That(dto["aspect_ratio"]!.GetValue<string>(), Is.EqualTo("16:9"));
         Assert.That(dto["type"]!.GetValue<string>(), Is.EqualTo("image"));
+    }
+}
+
+public class HtmlToMarkdownParserTests
+{
+    [Test]
+    public void Converts_html_elements_to_markdown()
+    {
+        var html = """
+            <!DOCTYPE html>
+            <html>
+            <head><title>Test Page</title><style>body { color: red; }</style></head>
+            <body>
+                <script>console.log('ignore');</script>
+                <h1>Main Title</h1>
+                <p>This is a paragraph with <b>bold text</b>, <i>italic text</i>, and a <a href="/docs/guide">Documentation Link</a>.</p>
+                <pre><code>public void Hello()
+                {
+                    Console.WriteLine("Hello world");
+                }</code></pre>
+                <ul>
+                    <li>Item 1</li>
+                    <li>Item 2</li>
+                </ul>
+                <blockquote>A wise quote</blockquote>
+                <table>
+                    <tr><th>Name</th><th>Role</th></tr>
+                    <tr><td>Alice</td><td>Admin</td></tr>
+                </table>
+            </body>
+            </html>
+            """;
+
+        var parser = new HtmlToMarkdownParser("https://example.com/base/");
+        var md = parser.Parse(html);
+
+        Assert.That(md, Does.Contain("# Main Title"));
+        Assert.That(md, Does.Contain("**bold text**"));
+        Assert.That(md, Does.Contain("*italic text*"));
+        Assert.That(md, Does.Contain("[Documentation Link](https://example.com/docs/guide)"));
+        Assert.That(md, Does.Contain("```\npublic void Hello()"));
+        Assert.That(md, Does.Contain("- Item 1"));
+        Assert.That(md, Does.Contain("- Item 2"));
+        Assert.That(md, Does.Contain("> A wise quote"));
+        Assert.That(md, Does.Contain("| Name | Role |"));
+        Assert.That(md, Does.Contain("| Alice | Admin |"));
+        Assert.That(md, Does.Not.Contain("console.log"));
+        Assert.That(md, Does.Not.Contain("color: red"));
+    }
+
+    [Test]
+    public void Handles_empty_and_plain_text()
+    {
+        var parser = new HtmlToMarkdownParser();
+        Assert.That(parser.Parse(""), Is.EqualTo(""));
+        Assert.That(parser.Parse("Just plain text"), Is.EqualTo("Just plain text"));
+    }
+}
+
+public class GrepSearchTests
+{
+    [Test]
+    public void Grep_searches_files_and_directories()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "grep-test-" + Guid.NewGuid().ToString("n")[..8]);
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var f1 = Path.Combine(tempDir, "Test1.cs");
+            var f2 = Path.Combine(tempDir, "Test2.txt");
+            var ignoredDir = Path.Combine(tempDir, "node_modules");
+            Directory.CreateDirectory(ignoredDir);
+            var f3 = Path.Combine(ignoredDir, "Ignored.cs");
+
+            File.WriteAllText(f1, "public class CalculatorService\n{\n    public int Add(int a, int b) => a + b;\n}\n");
+            File.WriteAllText(f2, "Note: CalculatorService should be tested.\nAnother line.\n");
+            File.WriteAllText(f3, "CalculatorService in node_modules\n");
+
+            var ext = new CoreToolsExtension();
+            var feature = new ChatFeature();
+            var ctx = new ExtensionContext(feature, "core_tools");
+            ext.Install(ctx);
+
+            var toolDef = ctx.GetToolDefinition("grep_search");
+            Assert.That(toolDef, Is.Not.Null);
+
+            var chatCtx = new ChatContext();
+
+            // Literal search
+            var res = (string)(ctx.Feature.Tools.GetTool("grep_search")!.Handler(new System.Text.Json.Nodes.JsonObject
+            {
+                ["query"] = "CalculatorService",
+                ["path"] = tempDir,
+            }, chatCtx).Result ?? "");
+
+            Assert.That(res, Does.Contain("Test1.cs:1: public class CalculatorService"));
+            Assert.That(res, Does.Contain("Test2.txt:1: Note: CalculatorService"));
+            Assert.That(res, Does.Not.Contain("node_modules"));
+
+            // File pattern filter
+            var resPattern = (string)(ctx.Feature.Tools.GetTool("grep_search")!.Handler(new System.Text.Json.Nodes.JsonObject
+            {
+                ["query"] = "CalculatorService",
+                ["path"] = tempDir,
+                ["file_pattern"] = "*.cs",
+            }, chatCtx).Result ?? "");
+
+            Assert.That(resPattern, Does.Contain("Test1.cs:1:"));
+            Assert.That(resPattern, Does.Not.Contain("Test2.txt"));
+
+            // Regex search
+            var resRegex = (string)(ctx.Feature.Tools.GetTool("grep_search")!.Handler(new System.Text.Json.Nodes.JsonObject
+            {
+                ["query"] = @"public\s+int\s+Add\(",
+                ["path"] = tempDir,
+                ["is_regex"] = true,
+            }, chatCtx).Result ?? "");
+
+            Assert.That(resRegex, Does.Contain("Test1.cs:3:"));
+            Assert.That(resRegex, Does.Contain("public int Add(int a, int b)"));
+            Assert.That(resRegex, Does.Not.Contain("Test2.txt"));
+
+            // Non-matching
+            var resNone = (string)(ctx.Feature.Tools.GetTool("grep_search")!.Handler(new System.Text.Json.Nodes.JsonObject
+            {
+                ["query"] = "NonExistentSymbol_XYZ",
+                ["path"] = tempDir,
+            }, chatCtx).Result ?? "");
+
+            Assert.That(resNone, Is.EqualTo("No matches found for 'NonExistentSymbol_XYZ'."));
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { /* best effort */ }
+        }
     }
 }
