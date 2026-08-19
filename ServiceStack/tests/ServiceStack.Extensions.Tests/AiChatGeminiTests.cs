@@ -105,7 +105,10 @@ public class AiChatGeminiTests
         Assert.That(saved.Name, Is.EqualTo("fileSearchStores/docs-xyz"));
         Assert.That(saved.ActiveDocumentsCount, Is.EqualTo(12));
         Assert.That(saved.SizeBytes, Is.EqualTo(2048));
-        Assert.That(saved.CreateTime, Does.StartWith("2026-01-09 12:34:56"));
+        // Gemini's RFC3339 is normalized to the same wire format as every other timestamp,
+        // so assert against that rather than restating the format here.
+        Assert.That(saved.CreateTime, Is.EqualTo(
+            ChatDb.ToDateString(new DateTime(2026, 1, 9, 12, 34, 56, 789, DateTimeKind.Utc))));
     }
 
     [Test]
