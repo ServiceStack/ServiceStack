@@ -282,17 +282,18 @@ export const ApiToolCallBody = {
             </div>
             <details>
                 <summary class="cursor-pointer text-xs font-medium" :class="[$styles.highlighted, $styles.linkHover]">Effective arguments</summary>
-                <pre class="mt-2 overflow-auto rounded-md p-2 text-xs" :class="$styles.card" style="color:var(--tw-prose-pre-code)">{{ json(approval.effectiveArgs || approval.proposedArgs) }}</pre>
+                <CodeBlock class="mt-2" :code="effectiveArgsJson" :html="$utils.highlightJson(effectiveArgsJson)" size-class="max-h-60" />
             </details>
             <details v-if="approval.result !== null && approval.result !== undefined">
                 <summary class="cursor-pointer text-xs font-medium" :class="[$styles.highlighted, $styles.linkHover]">API response</summary>
-                <pre class="mt-2 max-h-80 overflow-auto rounded-md p-2 text-xs" :class="$styles.card" style="color:var(--tw-prose-pre-code)">{{ json(approval.result) }}</pre>
+                <CodeBlock class="mt-2" :code="resultJson" :html="$utils.highlightJson(resultJson)" size-class="max-h-80" />
             </details>
         </div>
         <div v-else class="p-3 space-y-2">
             <div class="text-xs font-medium">{{ callArgs.name || 'API call' }}</div>
-            <pre class="overflow-auto rounded-md p-2 text-xs" :class="$styles.card" style="color:var(--tw-prose-pre-code)">{{ json(callArgs.args || {}) }}</pre>
-            <pre v-if="output?.content" class="max-h-80 overflow-auto rounded-md p-2 text-xs" :class="$styles.card" style="color:var(--tw-prose-pre-code)">{{ output.content }}</pre>
+            <!-- an API that takes no arguments is an empty object: a panel for two characters -->
+            <CodeBlock v-if="argsJson !== '{}'" :code="argsJson" :html="$utils.highlightJson(argsJson)" size-class="max-h-60" />
+            <CodeBlock v-if="output?.content" :code="output.content" :html="$utils.highlightJson(output.content)" size-class="max-h-80" />
         </div>
     `,
     setup(props) {
@@ -315,8 +316,15 @@ export const ApiToolCallBody = {
         }
         watch([() => props.thread?.status, () => props.output], refresh)
         onMounted(refresh)
+        // CodeBlock wants the text and its highlighted markup separately, so each payload is
+        // stringified once here rather than twice in the template.
         const json = value => typeof value === 'string' ? value : JSON.stringify(value, null, 2)
-        return { loading, approval, callArgs, statusLabel, statusClass, refresh, json }
+        const argsJson = computed(() => json(callArgs.value.args || {}))
+        const effectiveArgsJson = computed(() =>
+            json(approval.value?.effectiveArgs || approval.value?.proposedArgs))
+        const resultJson = computed(() => json(approval.value?.result))
+        return { loading, approval, callArgs, statusLabel, statusClass, refresh,
+            argsJson, effectiveArgsJson, resultJson }
     }
 }
 

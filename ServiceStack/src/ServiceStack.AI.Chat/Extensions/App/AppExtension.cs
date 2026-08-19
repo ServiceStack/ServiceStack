@@ -579,8 +579,13 @@ public partial class AppExtension() : ChatExtension("app")
                         .ToJsonString(ChatJson.Options);
                     row.Status = Ctx.NextLoadingMessage();
                     row.UpdatedAt = DateTime.Now;
+                    // The turn that produced these messages has finished streaming and is now
+                    // durable; its checkpoint is stale. Leaving it behind renders the message twice
+                    // (committed + partial) until the next turn's first chunk overwrites it.
+                    row.StreamingMessage = null;
                     Db.UpdateThreadFields(row,
-                        [nameof(ChatThread.Messages), nameof(ChatThread.Status), nameof(ChatThread.UpdatedAt)],
+                        [nameof(ChatThread.Messages), nameof(ChatThread.Status),
+                            nameof(ChatThread.StreamingMessage), nameof(ChatThread.UpdatedAt)],
                         context.User);
                     Updates.NotifyThreadUpdate(threadId);
                 }
@@ -592,6 +597,7 @@ public partial class AppExtension() : ChatExtension("app")
             {
                 ["messages"] = chat.GetArray("messages")?.Clone() ?? new JsonArray(),
                 ["status"] = Ctx.NextLoadingMessage(),
+                ["streamingMessage"] = null, // the streamed turn is committed, its partial is stale
             }, context.User).ConfigAwait();
         }
 

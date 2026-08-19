@@ -60,11 +60,8 @@ public partial class AppExtension
             .Concat(LimitMessagePayload(tailRows, 384 * 1024, fromEnd: true)).ToList();
         var dto = row.ToDto(includeMessages: false);
         dto["messages"] = new JsonArray(messages.Select(x => (JsonNode)x).ToArray());
-        if (ChatDtos.ParseJson(row.StreamingMessage) is JsonObject streaming)
-        {
-            streaming[ChatDtos.StreamingKey] = true;
-            dto.GetArray("messages")!.Add(streaming);
-        }
+        ChatDtos.MergeStreamingMessage(dto.GetArray("messages")!,
+            ChatDtos.ParseJson(row.StreamingMessage) as JsonObject);
         dto["messageCount"] = bounds.Count;
         dto["sig"] = ChatSignature.Compute(bounds.Count, bounds.Last, row.StreamingMessage,
             row.Status, row.CompletedAt, row.Error);

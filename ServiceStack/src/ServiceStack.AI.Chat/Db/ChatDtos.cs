@@ -51,21 +51,35 @@ public static class ChatDtos
 
         // The in-flight message is stored separately so a failed stream can't damage `messages`,
         // but clients read one list, so present it merged on the way out.
-        if (includeMessages && ParseJson(x.StreamingMessage) is JsonObject streaming)
-        {
-            var messages = dto.GetArray("messages")!;
-            var timestamp = streaming.GetLong("timestamp");
-            var role = streaming.GetString("role");
-            var alreadyCommitted = timestamp != null && messages.OfType<JsonObject>().Any(message =>
-                message.GetLong("timestamp") == timestamp && message.GetString("role") == role);
-            if (!alreadyCommitted)
-            {
-                var message = streaming.Clone();
-                message[StreamingKey] = true;
-                messages.Add(message);
-            }
-        }
+        if (includeMessages)
+            MergeStreamingMessage(dto.GetArray("messages")!, ParseJson(x.StreamingMessage) as JsonObject);
         return dto;
+    }
+
+    /// <summary>
+    /// Append the in-flight message to a client-facing messages array, skipping it when the turn it
+    /// belongs to has already been committed to history.
+    ///
+    /// A streaming checkpoint outlives the commit that ends its turn: the tool loop persists the
+    /// assistant message that requested the tools and only overwrites `streamingMessage` once the
+    /// next turn produces its first chunk. Appending unconditionally in that window renders the same
+    /// message twice (the committed copy plus the stale partial), which resolves itself only when
+    /// the run completes and clears `streamingMessage`. The checkpoint and the committed message
+    /// share the provider-assigned timestamp, so that is the identity to match on.
+    /// </summary>
+    public static void MergeStreamingMessage(JsonArray messages, JsonObject? streaming)
+    {
+        if (streaming == null)
+            return;
+        var timestamp = streaming.GetLong("timestamp");
+        var role = streaming.GetString("role");
+        var alreadyCommitted = timestamp != null && messages.OfType<JsonObject>().Any(message =>
+            message.GetLong("timestamp") == timestamp && message.GetString("role") == role);
+        if (alreadyCommitted)
+            return;
+        var message = streaming.Clone();
+        message[StreamingKey] = true;
+        messages.Add(message);
     }
 
     /// <summary>

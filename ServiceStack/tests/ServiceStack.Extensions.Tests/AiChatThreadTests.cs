@@ -113,8 +113,15 @@ public class ChatThreadTests
 
         // the UI string-compares updatedAt when long-polling, so the format must sort correctly
         var updatedAt = dto["updatedAt"]!.GetValue<string>();
-        Assert.That(updatedAt, Is.EqualTo("2026-07-24 09:09:01.123000"));
+        var expectedOffset = TimeZoneInfo.Local.GetUtcOffset(thread.UpdatedAt).ToString(@"hh\:mm");
+        var sign = TimeZoneInfo.Local.GetUtcOffset(thread.UpdatedAt) < TimeSpan.Zero ? "-" : "+";
+        Assert.That(updatedAt, Is.EqualTo($"2026-07-24T09:09:01.123000{sign}{expectedOffset}"));
         Assert.That(string.CompareOrdinal(dto["createdAt"]!.GetValue<string>(), updatedAt), Is.LessThan(0));
+
+        // …and it must name an instant, not a wall clock: a browser in another timezone parses a
+        // timestamp with no offset as its own local time, which is how a run that started seconds
+        // ago reported hours of elapsed time.
+        Assert.That(DateTimeOffset.Parse(updatedAt).LocalDateTime, Is.EqualTo(thread.UpdatedAt));
 
         // JSON columns come back as parsed nodes, not strings
         Assert.That(dto["messages"], Is.TypeOf<JsonArray>());
@@ -294,6 +301,35 @@ public class ChatThreadTests
 
         Assert.That(messages, Has.Count.EqualTo(1));
         Assert.That(messages[0]![ChatDtos.StreamingKey], Is.Null);
+    }
+
+    [Test]
+    public void Merging_an_in_flight_checkpoint_skips_a_turn_already_committed_to_history()
+    {
+        // The window/SSE payload the live UI reads is assembled from ChatMessages rows rather than
+        // ChatThread.Messages, so it needs this guard too: the tool loop commits the assistant turn
+        // that requested the tools while that turn's checkpoint is still the thread's
+        // streamingMessage, and only the next turn's first chunk overwrites it.
+        var messages = ChatJson.ParseObject("""
+            {"messages":[
+                {"role":"user","content":"hi","timestamp":41,"_sequence":1},
+                {"role":"assistant","content":"Submitting","timestamp":42,"_sequence":2,"tool_calls":[{"id":"call_1"}]}
+            ]}
+            """).GetArray("messages")!;
+        var committed = ChatJson.ParseObject(
+            """{"role":"assistant","content":"Submitting","timestamp":42,"model":"test","tool_calls":[{"id":"call_1"}]}""");
+
+        ChatDtos.MergeStreamingMessage(messages, committed);
+
+        Assert.That(messages, Has.Count.EqualTo(2), "the committed turn must not be rendered twice");
+
+        // the next turn's checkpoint has its own identity and is still merged in while it streams
+        var inFlight = ChatJson.ParseObject("""{"role":"assistant","content":"Thinking","timestamp":43}""");
+
+        ChatDtos.MergeStreamingMessage(messages, inFlight);
+
+        Assert.That(messages, Has.Count.EqualTo(3));
+        Assert.That(messages[2]![ChatDtos.StreamingKey]!.GetValue<bool>(), Is.True);
     }
 
     [Test]

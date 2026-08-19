@@ -1,4 +1,5 @@
 using System.Data;
+using System.Globalization;
 using System.Text.Json.Nodes;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
@@ -14,10 +15,21 @@ namespace ServiceStack.AI;
 /// </summary>
 public partial class ChatDb(IDbConnectionFactory dbFactory, string? namedConnection = null)
 {
-    /// <summary>Python datetime repr — sortable and directly string-comparable</summary>
-    public const string DateFormat = "yyyy-MM-dd HH:mm:ss.ffffff";
+    /// <summary>
+    /// Sortable, string-comparable, and timezone-explicit. The naive `yyyy-MM-dd HH:mm:ss.ffffff`
+    /// this replaced left the offset to whoever parsed it: `new Date(..)` in the browser reads a
+    /// naive timestamp as *browser*-local, so a server in a different timezone made every relative
+    /// and elapsed label wrong by the offset between the two (a run started seconds ago reported
+    /// hours). Emitting the offset makes the value mean the same instant to every reader.
+    /// </summary>
+    public const string DateFormat = "yyyy-MM-dd'T'HH:mm:ss.ffffffzzz";
 
-    public static string ToDateString(DateTime date) => date.ToString(DateFormat);
+    /// <summary>A DateTime of unspecified Kind is server-local: that is what `DateTime.Now` wrote.</summary>
+    public static string ToDateString(DateTime date) =>
+        // default(DateTime) has no room for a positive local offset, which the DateTimeOffset
+        // ctor rejects rather than clamping; an unset date is not a local wall clock anyway.
+        new DateTimeOffset(date == default ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : date)
+            .ToString(DateFormat, CultureInfo.InvariantCulture);
     public static JsonNode? ToDateNode(DateTime? date) => date == null ? null : ToDateString(date.Value);
 
     public IDbConnection OpenDb() => namedConnection != null

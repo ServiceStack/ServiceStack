@@ -354,7 +354,7 @@ export const MessageUsage = {
 
 export const MessageReasoning = {
     template: `
-    <div class="mt-2 mb-2">
+    <div class="mt-1 mb-1">
         <button type="button" @click="toggleReasoning(message.timestamp)" class="text-xs flex items-center space-x-1" :class="[$styles.highlighted, $styles.linkHover]">
             <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" :class="isReasoningExpanded(message.timestamp) ? 'transform rotate-90' : ''"><path fill="currentColor" d="M7 5l6 5l-6 5z"/></svg>
             <span>
@@ -380,23 +380,30 @@ export const MessageReasoning = {
     },
     setup(props) {
         const reasoningBox = ref(null)
-        const expandedReasoning = ref(new Set())
+        // id -> the user's explicit choice. Absent means follow `defaultExpanded`.
+        const expandedReasoning = ref(new Map())
 
-        const isStreaming = computed(() => !props.message?.content || String(props.message.content).trim().length === 0)
+        // Only the in-flight checkpoint is still being generated. "has no content yet" is not the
+        // same thing: a reasoning-only turn that ends in tool calls never gets content, so keying
+        // auto-scroll off that kept firing for messages that had long since finished.
+        const isStreaming = computed(() => props.message?.streaming === true)
+
+        // Only the turn still being generated opens itself. Once it is done the reasoning is a
+        // footnote to the answer, so it goes back behind the toggle — and stays there on reload,
+        // since nothing about a finished message says "expand me".
+        const defaultExpanded = computed(() => isStreaming.value)
 
         const isReasoningExpanded = (id) => {
-            if (isStreaming.value) return true
-            return expandedReasoning.value.has(id)
+            const choice = expandedReasoning.value.get(id)
+            // An explicit toggle always wins, otherwise the default pins reasoning-only
+            // messages open and makes the collapse button a no-op.
+            return choice != null ? choice : defaultExpanded.value
         }
 
         const toggleReasoning = (id) => {
-            const s = new Set(expandedReasoning.value)
-            if (s.has(id)) {
-                s.delete(id)
-            } else {
-                s.add(id)
-            }
-            expandedReasoning.value = s
+            const choices = new Map(expandedReasoning.value)
+            choices.set(id, !isReasoningExpanded(id))
+            expandedReasoning.value = choices
         }
 
         const reasoningLength = computed(() => {
@@ -619,7 +626,9 @@ export const TextViewer = {
         })
 
         const contentClass = computed(() => {
-            if (prefs.value === 'pre') return 'whitespace-pre-wrap font-mono text-xs'
+            // break-all, not just pre-wrap: a minified JSON payload has no whitespace to wrap at,
+            // so without it one line sets the width of everything that contains it.
+            if (prefs.value === 'pre') return 'whitespace-pre-wrap break-all font-mono text-xs'
             if (prefs.value === 'normal') return 'font-sans text-sm'
             return ''
         })
@@ -828,6 +837,7 @@ export const ToolOutput = {
         const jsonString = computed(() => jsonValue.value ? JSON.stringify(jsonValue.value, null, 2) : (typeof props.output?.content === 'string' ? props.output.content : JSON.stringify(props.output?.content, null, 2)))
 
         return {
+            jsonValue,
             jsonString,
         }
     }
@@ -912,27 +922,28 @@ export const CompactThreadButton = {
 
 export const ToolCall = {
     template: `
-        <div v-if="collapsed" @click="collapsed = !collapsed" class="cursor-pointer rounded-lg overflow-hidden" :class="[$styles.card]">
-            <!-- Tool Call Header -->
-            <div class="px-3 py-2 flex items-center justify-between space-x-4">
-                <div class="flex items-center gap-2">
-                    <svg class="size-3.5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                    <span class="font-mono text-xs font-bold">{{ tool?.function?.name || '' }}</span>
-                    <span v-if="toolSummary" :title="toolSummary" class="font-mono text-xs truncate overflow-hidden xl:max-w-2xl lg:max-w-xl md:max-w-lg sm:max-w-sm max-w-xs">{{ toolSummary }}</span>
-                </div>
-                <span class="text-[10px] uppercase tracking-wider font-medium whitespace-nowrap" :class="[$styles.muted]">Tool Call</span>
-            </div>
+        <!-- Collapsed: one line, no card chrome. A finished tool call is a footnote to the answer,
+             so it should cost a line of height, not a panel. The card is the expanded form's. -->
+        <div v-if="collapsed" data-tag="ToolCall" @click="toggle()"
+            class="cursor-pointer select-none flex items-center gap-1.5 text-xs leading-5" :class="[$styles.muted]">
+            <svg class="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+            <span class="font-mono font-semibold">{{ tool?.function?.name || '' }}</span>
+            <span v-if="toolSummary" :title="toolSummary" class="font-mono truncate overflow-hidden xl:max-w-2xl lg:max-w-xl md:max-w-lg sm:max-w-sm max-w-xs">{{ toolSummary }}</span>
         </div>
         <div v-else class="rounded-lg border overflow-hidden" :class="[$styles.card]">
             <!-- Tool Call Header -->
-            <div @click="collapsed = !collapsed" class="cursor-pointer px-3 py-2 flex items-center space-x-4 justify-between border-b" :class="[$styles.chromeBorder]">
+            <div @click="toggle()" class="cursor-pointer px-3 py-2 flex items-center space-x-4 justify-between border-b" :class="[$styles.chromeBorder]">
                 <div class="flex items-center gap-2">
                     <svg class="size-3.5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
                     <span class="font-mono text-xs font-bold">{{ tool?.function?.name || '' }}</span>
                 </div>
                 <span class="text-[10px] uppercase tracking-wider font-medium whitespace-nowrap">Tool Call</span>
             </div>
-            
+
+            <div v-if="reasoning" class="px-3 border-b" :class="[$styles.chromeBorder]">
+                <MessageReasoning :reasoning="reasoning" :message="message" />
+            </div>
+
             <component v-if="toolCallBody" :is="toolCallBody.component"
                 :thread="thread" :tool="tool" :output="toolOutput" />
             <template v-else>
@@ -949,16 +960,31 @@ export const ToolCall = {
         tool: {
             type: Object,
             required: true
-        }
+        },
+        /** The assistant turn these calls belong to, passed to whichever call owns its reasoning */
+        message: Object,
     },
     setup(props) {
         const ctx = inject('ctx')
 
+        const reasoning = computed(() => props.message?.reasoning
+            || props.message?.thinking || props.message?.reasoning_content)
+
         const collapsed = ref(true)
+        // Set on the first click. An explicit choice has to survive the auto-expand watcher below,
+        // which would otherwise fight the user every time the thread's status changes.
+        const toggledByUser = ref(false)
+        const toggle = () => {
+            collapsed.value = !collapsed.value
+            toggledByUser.value = true
+        }
         const toolOutput = computed(() => props.thread?.messages?.find(m => m.role === 'tool' && m.tool_call_id === props.tool?.id))
         const toolCallBody = computed(() => ctx.toolCallBodyComponents?.[props.tool?.function?.name])
         const autoExpand = () => {
             try {
+                // Stay open while the turn is still being generated: its reasoning now lives in
+                // here, and there is nothing to watch if the only thing on screen is a chip.
+                if (props.message?.streaming === true) return true
                 return toolCallBody.value?.autoExpand?.({
                     thread: props.thread,
                     tool: props.tool,
@@ -969,8 +995,11 @@ export const ToolCall = {
                 return false
             }
         }
-        watch([toolCallBody, () => props.thread?.status, toolOutput], () => {
-            if (autoExpand()) collapsed.value = false
+        // A body that opts into auto-expand (a pending approval form, say) wants to be open only
+        // while that condition holds. It used to latch open, leaving every call it had ever
+        // expanded sprawled across the thread long after it finished; now it collapses back.
+        watch([toolCallBody, () => props.thread?.status, toolOutput, () => props.message?.streaming], () => {
+            if (!toggledByUser.value) collapsed.value = !autoExpand()
         }, { immediate: true })
         const toolFailed = computed(() => {
             const output = toolOutput.value
@@ -1024,6 +1053,8 @@ export const ToolCall = {
 
         return {
             collapsed,
+            toggle,
+            reasoning,
             toolSummary,
             toolOutput,
             toolFailed,
@@ -1086,12 +1117,14 @@ export const ChatBody = {
                                 class="flex items-start space-x-3 group"
                                 :class="message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''"
                             >
-                                <!-- Avatar outside the bubble -->
-                                <div v-if="!message._gap" class="flex-shrink-0 flex flex-col justify-center">
+                                <!-- Avatar outside the bubble. Tool calls are the same agent working,
+                                     not a new speaker, so the whole column is skipped for them: an
+                                     avatar-sized spacer would set a 32px floor under a 20px line. -->
+                                <div v-if="!message._gap && !isToolCallsOnly(message)" class="flex-shrink-0 flex flex-col justify-center">
                                     <UserAvatar v-if="message.role === 'user'" />
                                     <AgentAvatar v-else :profile="currentThread?.metadata?.profile" />
 
-                                    <!-- Delete button (shown on hover) -->
+                                    <!-- Delete button (shown on hover). Tool rows render it inline. -->
                                     <button type="button" @click.stop="$threads.deleteMessageFromThread(currentThread.id, message.timestamp)"
                                         class="p-1 mx-auto opacity-0 group-hover:opacity-100 mt-2 rounded hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
                                         :class="$styles.mutedIcon"
@@ -1118,14 +1151,29 @@ export const ChatBody = {
                                     </div>
                                     <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
                                 </div>
-                                <div v-else-if="message.role === 'assistant' && !message.content?.trim() && !message.reasoning && !message.thinking && !message.reasoning_content && message.tool_calls && message.tool_calls.length > 0 && !message.images?.length && !message.audios?.length">
-
-                                    <div v-if="message.tool_calls && message.tool_calls.length > 0" class="mb-3 space-y-4">
-                                        <ToolCall v-for="(tool, i) in message.tool_calls" :key="i" :thread="currentThread" :tool="tool" />
+                                <!-- No avatar column on these rows, so pad the gutter back in to keep
+                                     them lined up with the message bubbles above and below. -->
+                                <div v-else-if="isToolCallsOnly(message)" class="flex items-start gap-2 min-w-0 pl-12">
+                                    <div class="space-y-1 min-w-0">
+                                        <!-- The reasoning that led to these calls belongs to the first
+                                             of them, so it collapses away with it instead of leaving a
+                                             "Thinking..." line stranded above a one-line chip. -->
+                                        <ToolCall v-for="(tool, i) in message.tool_calls" :key="i"
+                                            :thread="currentThread" :tool="tool" :message="i === 0 ? message : null" />
                                     </div>
+
+                                    <!-- Delete button (shown on hover) -->
+                                    <button type="button" @click.stop="$threads.deleteMessageFromThread(currentThread.id, message.timestamp)"
+                                        class="p-0.5 opacity-0 group-hover:opacity-100 rounded hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
+                                        :class="$styles.mutedIcon"
+                                        title="Delete message">
+                                        <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
                                 </div>
                                 <div v-else
-                                    class="message rounded-lg px-4 py-3 relative group"
+                                    class="message rounded-lg px-4 py-3 relative group min-w-0"
                                     :class="message.role === 'user'
                                         ? $styles.messageUser
                                         : $styles.messageAssistant"
@@ -1148,7 +1196,7 @@ export const ChatBody = {
                                     <div
                                         v-if="message.role === 'assistant'"
                                         v-html="$fmt.markdown(message.content)"
-                                        class="prose prose-sm max-w-none dark:prose-invert"
+                                        class="prose prose-sm max-w-none dark:prose-invert break-words"
                                     ></div>
 
                                     <!-- Collapsible reasoning section -->
@@ -1156,7 +1204,7 @@ export const ChatBody = {
                                         :reasoning="message.reasoning || message.thinking || message.reasoning_content" :message="message" />
 
                                     <!-- Tool Calls & Outputs -->
-                                    <div v-if="message.tool_calls && message.tool_calls.length > 0" class="mb-3 space-y-4">
+                                    <div v-if="message.tool_calls && message.tool_calls.length > 0" class="mb-2 space-y-2 min-w-0">
                                         <ToolCall v-for="(tool, i) in message.tool_calls" :key="i" :thread="currentThread" :tool="tool" />
                                     </div>
 
@@ -1626,6 +1674,15 @@ export const ChatBody = {
             return usage
         }
 
+        // An assistant turn that produced no answer — just tool calls, and whatever reasoning led
+        // to them. There is no message to put in a message bubble, so these render bare: the
+        // bubble, its padding and its usage footer are all chrome around content that isn't there.
+        const isToolCallsOnly = (message) =>
+            message?.role === 'assistant' && !message._gap
+            && !message.content?.trim()
+            && !message.images?.length && !message.audios?.length
+            && message.tool_calls?.length > 0
+
         const isToolLinked = (message) => {
             if (message.role !== 'tool') return false
             return currentThread.value?.messages?.some(m => m.role === 'assistant' && m.tool_calls?.some(tc => tc.id === message.tool_call_id))
@@ -1729,6 +1786,7 @@ export const ChatBody = {
             models,
             currentThread,
             currentThreadMessages,
+            isToolCallsOnly,
             loadingGap,
             loadGapMessages,
             activeReasoningProgress,

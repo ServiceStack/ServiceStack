@@ -110,8 +110,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public ChatFilters Filters { get; } = new();
     public Dictionary<string, string> ImportMaps { get; set; } = new()
     {
-        ["vue-prod"] = "/ui/lib/vue.min.mjs",
-        ["vue"] = "/ui/lib/vue.mjs",
+        ["vue"] = "/ui/lib/vue.min.mjs",
         ["vue-router"] = "/ui/lib/vue-router.min.mjs",
         ["@servicestack/client"] = "/ui/lib/servicestack-client.mjs",
         ["@servicestack/vue"] = "/ui/lib/servicestack-vue.mjs",
@@ -297,6 +296,11 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
 
     public void Register(IAppHost appHost)
     {
+        if (appHost.Config.DebugMode)
+        {
+            ImportMaps["vue"] = "/ui/lib/vue.mjs";
+        }
+        
         Services = appHost.GetApplicationServices();
         HttpClientFactory = Services.GetRequiredService<IHttpClientFactory>();
         Log = Services.GetRequiredService<ILogger<ChatFeature>>();
