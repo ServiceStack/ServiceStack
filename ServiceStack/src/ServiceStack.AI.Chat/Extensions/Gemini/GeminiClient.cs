@@ -49,6 +49,9 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
 
     // ── Documents ──
 
+    /// <summary>Gemini rejects a documents.list pageSize outside 1-20 (default 10)</summary>
+    public const int MaxDocumentsPageSize = 20;
+
     /// <summary>All documents in a store, following nextPageToken (the SDK's documents.list() pager)</summary>
     public async Task<List<JsonObject>> ListDocumentsAsync(string parent, CancellationToken token = default)
     {
@@ -56,7 +59,7 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
         string? pageToken = null;
         do
         {
-            var query = "pageSize=100" + (pageToken != null ? $"&pageToken={Uri.EscapeDataString(pageToken)}" : "");
+            var query = $"pageSize={MaxDocumentsPageSize}" + (pageToken != null ? $"&pageToken={Uri.EscapeDataString(pageToken)}" : "");
             var page = await SendAsync(HttpMethod.Get, Url($"{parent}/documents", query), null, token).ConfigAwait();
             foreach (var node in page.GetArray("documents") ?? [])
             {
