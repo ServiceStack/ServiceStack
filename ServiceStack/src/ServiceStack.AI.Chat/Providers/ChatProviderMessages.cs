@@ -88,6 +88,10 @@ public partial class OpenAiCompatibleProvider
                 msg.Remove("_sequence");
                 msg.Remove("streaming");
                 msg.Remove("_compaction");
+                // Gemini grounding is persisted for the UI's citation footer, but it is not
+                // provider input. Sending it back wastes context and other providers reject the
+                // unknown field.
+                msg.Remove("groundingMetadata");
                 cleaned.Add(msg);
             }
             else

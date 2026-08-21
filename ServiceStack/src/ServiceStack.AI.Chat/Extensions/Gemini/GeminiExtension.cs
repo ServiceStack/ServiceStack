@@ -11,7 +11,7 @@ namespace ServiceStack.AI;
 /// OpenAI-shaped `file_search` tool, which <see cref="GoogleProvider"/> forwards to Gemini.
 /// Self-disables when no Gemini API key is configured.
 /// </summary>
-public class GeminiExtension() : ChatExtension("gemini")
+public partial class GeminiExtension() : ChatExtension("gemini")
 {
     /// <summary>Url prefix of the content-addressed cache documents are stored in</summary>
     public const string CacheUrlBase = "/~cache/";
@@ -20,11 +20,14 @@ public class GeminiExtension() : ChatExtension("gemini")
     GeminiClient client = null!;
     GeminiStores stores = null!;
     GeminiUploadWorker? worker;
+    string? writeRole;
 
     public override void Install(ExtensionContext ctx)
     {
-        // GEMINI_API_KEY (Python parity), falling back to whatever the google provider resolved
-        var apiKey = ctx.Feature.ResolveVariable("$GEMINI_API_KEY");
+        // Keep extension and provider precedence identical.
+        var apiKey = ctx.Feature.ResolveVariable("$GOOGLE_API_KEY");
+        if (string.IsNullOrEmpty(apiKey))
+            apiKey = ctx.Feature.ResolveVariable("$GEMINI_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
             apiKey = ctx.Feature.Providers.GetValueOrDefault("google")?.ApiKey;
         if (string.IsNullOrEmpty(apiKey))
@@ -43,6 +46,8 @@ public class GeminiExtension() : ChatExtension("gemini")
         }
 
         db = new GeminiDb(chatDb);
+        writeRole = ctx.Feature.ResolveVariable("$GEMINI_WRITE_ROLE")
+            ?? ctx.Config.GetString("gemini_write_role");
         if (ctx.Feature.AutoInitSchema)
         {
             db.InitSchema();
@@ -53,16 +58,37 @@ public class GeminiExtension() : ChatExtension("gemini")
         worker = new GeminiUploadWorker(ctx, db, client, stores);
         ctx.RegisterShutdownHandler(worker.Stop);
 
-        ctx.AddGet("filestores", QueryFilestoresAsync);
+        ctx.AddGet("filestores", QueryFilestoresAsync, allowAnon: true);
         ctx.AddPost("filestores", CreateFilestoreAsync);
         ctx.AddDelete("filestores/{id}", DeleteFilestoreAsync);
-        ctx.AddGet("filestores/{id}/categories", FilestoreCategoriesAsync);
-        ctx.AddGet("filestores/{id}/documents", FilestoreDocumentsAsync);
+        ctx.AddGet("filestores/{id}/categories", FilestoreCategoriesAsync, allowAnon: true);
+        ctx.AddGet("filestores/{id}/documents", FilestoreDocumentsAsync, allowAnon: true);
         ctx.AddPost("filestores/{id}/upload", UploadToFilestoreAsync);
         ctx.AddPost("filestores/{id}/sync", SyncFilestoreAsync);
-        ctx.AddGet("documents", QueryDocumentsAsync);
+        ctx.AddPost("filestores/{id}/prune", PruneFilestoreAsync);
+        ctx.AddGet("documents", QueryDocumentsAsync, allowAnon: true);
         ctx.AddDelete("documents/{id}", DeleteDocumentAsync);
         ctx.AddPost("documents/{id}/upload", UploadDocumentAsync);
+        ctx.AddGet("documents/count", CountDocumentsAsync, allowAnon: true);
+        ctx.AddPost("documents/bulk", BulkDocumentsAsync);
+        ctx.AddPost("documents/summary", SummarizeDocumentsAsync);
+        ctx.AddPost("documents/delete", DeleteDocumentsAsync);
+        ctx.AddGet("documents/pending", PendingDocumentsAsync, allowAnon: true);
+        ctx.AddGet("filestores/{id}/facets", FilestoreFacetsAsync, allowAnon: true);
+        ctx.AddPost("filestores/{id}/reindex", ReindexDocumentsAsync);
+        ctx.AddGet("worker", WorkerStatusAsync, allowAnon: true);
+        ctx.AddPost("worker/cancel", CancelWorkerAsync);
+        ctx.AddGet("source-types", SourceTypesAsync, allowAnon: true);
+        ctx.AddGet("sources", QuerySourcesAsync, allowAnon: true);
+        ctx.AddPost("sources", CreateSourceAsync);
+        ctx.AddPatch("sources/{id}", UpdateSourceAsync);
+        ctx.AddDelete("sources/{id}", DeleteSourceAsync);
+        ctx.AddGet("sources/{id}/runs", SourceRunsAsync, allowAnon: true);
+        ctx.AddPost("sources/{id}/run", RunSourceAsync);
+        ctx.AddGet("config/import-roots", GetImportRootsAsync, allowAnon: true);
+        ctx.AddPost("config/import-roots", SaveImportRootsAsync);
+        ctx.AddGet("capabilities", GetCapabilitiesAsync, allowAnon: true);
+        ctx.AddPost("capabilities/probe", ProbeCapabilitiesAsync);
     }
 
     /// <summary>Resume any uploads that were still queued when the app last shut down</summary>
@@ -99,6 +125,7 @@ public class GeminiExtension() : ChatExtension("gemini")
 
     async Task<object?> CreateFilestoreAsync(ChatRequestContext req)
     {
+        await AssertWriteAsync(req).ConfigAwait();
         var user = UserOf(req);
         var body = await req.GetJsonBodyAsync().ConfigAwait();
         var displayName = body.GetString("displayName");
@@ -125,6 +152,7 @@ public class GeminiExtension() : ChatExtension("gemini")
 
     async Task<object?> DeleteFilestoreAsync(ChatRequestContext req)
     {
+        await AssertWriteAsync(req).ConfigAwait();
         var user = UserOf(req);
         var id = IdOf(req);
         var filestore = db.GetFilestore(id, user)
@@ -211,100 +239,13 @@ public class GeminiExtension() : ChatExtension("gemini")
         if (db.GetFilestore(id, user) == null)
             throw new Exception("Filestore does not exist");
 
-        var files = req.Request.Files.Where(x => x.Name?.StartsWith("file") == true).ToList();
-        if (files.Count == 0)
-            files = req.Request.Files.ToList();
-
-        var docIds = new List<long>();
-        foreach (var file in files)
-        {
-            if (string.IsNullOrEmpty(file.FileName))
-                continue;
-
-            using var ms = new MemoryStream();
-            await file.InputStream.CopyToAsync(ms).ConfigAwait();
-            var content = ms.ToArray();
-
-            var filename = file.FileName.LastRightPart('/').LastRightPart('\\');
-            var mimeType = MimeTypes.GetMimeType(filename);
-            var hash = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
-            var ext = filename.IndexOf('.') >= 0 ? filename.LastRightPart('.') : "";
-            if (string.IsNullOrEmpty(ext))
-                ext = MimeTypes.GetExtension(mimeType).TrimStart('.');
-            if (string.IsNullOrEmpty(ext))
-                ext = "bin";
-
-            // 2 char sub dir keeps the cache directories from growing unbounded
-            var saveFilename = $"{hash}.{ext}";
-            var relativePath = $"{hash[..2]}/{saveFilename}";
-            var fullPath = Ctx.GetCachePath(relativePath);
-            var url = CacheUrlBase + relativePath;
-
-            // re-uploading identical content replaces the existing document
-            if (db.FindDocumentByHash(hash, user) is { } existing)
-            {
-                if (existing.Name is { } existingName)
-                {
-                    try
-                    {
-                        Log.LogInformation("Deleting existing document {Name} from filestore...", existingName);
-                        await client.DeleteDocumentAsync(existingName).ConfigAwait();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.LogError(e, "Could not delete document {Name}", existingName);
-                    }
-                }
-                db.DeleteDocument(existing.Id, user);
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-            await File.WriteAllBytesAsync(fullPath, content).ConfigAwait();
-
-            var info = new JsonObject
-            {
-                ["date"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                ["url"] = url,
-                ["size"] = content.Length,
-                ["type"] = mimeType,
-                ["name"] = filename,
-            };
-            await File.WriteAllTextAsync(Path.ChangeExtension(fullPath, null) + ".info.json",
-                info.ToJsonString(ChatJson.Options)).ConfigAwait();
-
-            var now = DateTime.Now;
-            var doc = new ChatDocument
-            {
-                FilestoreId = id,
-                User = user,
-                CreatedAt = now,
-                UpdatedAt = now,
-                Filename = saveFilename,
-                Url = url,
-                Hash = hash,
-                Size = content.Length,
-                DisplayName = filename,
-                MimeType = mimeType,
-                Category = category,
-            };
-            docIds.Add(db.InsertDocument(doc));
-        }
-
-        var docs = docIds.Count > 0
-            ? db.QueryDocuments(new JsonObject
-            {
-                ["ids_in"] = string.Join(",", docIds),
-                ["take"] = docIds.Count,
-            }, user)
-            : [];
-
-        worker?.Start();
-        return docs.ToDtos(ToClientDto);
+        await AssertWriteAsync(req).ConfigAwait();
+        return await QueueManualUploadsAsync(req, id, user, category).ConfigAwait();
     }
 
     async Task<object?> DeleteDocumentAsync(ChatRequestContext req)
     {
+        await AssertWriteAsync(req).ConfigAwait();
         var user = UserOf(req);
         var id = IdOf(req);
         var doc = db.GetDocument(id, user)
@@ -340,19 +281,7 @@ public class GeminiExtension() : ChatExtension("gemini")
         var doc = db.GetDocument(id, user)
             ?? throw new Exception("Document does not exist");
 
-        if (doc.Name is { } name)
-        {
-            try
-            {
-                Log.LogInformation("Deleting existing document {Name} from filestore...", name);
-                await client.DeleteDocumentAsync(name).ConfigAwait();
-            }
-            catch (Exception e)
-            {
-                Log.LogError(e, "Could not delete document {Name}", name);
-            }
-        }
-
+        await AssertWriteAsync(req).ConfigAwait();
         db.ResetDocumentUpload(id);
         worker?.Start();
 
@@ -376,12 +305,14 @@ public class GeminiExtension() : ChatExtension("gemini")
     /// </summary>
     async Task<object?> SyncFilestoreAsync(ChatRequestContext req)
     {
+        await AssertWriteAsync(req).ConfigAwait();
         var user = UserOf(req);
         var id = IdOf(req);
         var filestore = db.GetFilestore(id, user)
             ?? throw new Exception("Filestore does not exist");
 
         var localDocs = db.QueryAllDocuments(id, user).ToList();
+        var localById = localDocs.ToDictionary(x => x.Id);
         var localByHash = new Dictionary<string, ChatDocument>();
         var localByName = new Dictionary<string, ChatDocument>();
         foreach (var doc in localDocs)
@@ -400,15 +331,16 @@ public class GeminiExtension() : ChatExtension("gemini")
         var metadataMismatch = new List<ChatDocument>();
         var unmatched = new List<ChatDocument>();
         var hashCounts = new Dictionary<string, int>();
-        var seenRemoteHashes = new HashSet<string>();
+        var matchedLocalIds = new HashSet<long>();
         var matchedByHash = 0;
 
         var remoteDocs = await client.ListDocumentsAsync(filestore.Name ?? "").ConfigAwait();
         foreach (var remoteJson in remoteDocs)
         {
             var remote = GeminiRemoteDocument.From(remoteJson);
-            var local = remote.MetadataHash != null
-                ? localByHash.GetValueOrDefault(remote.MetadataHash)
+            var local = remote.MetadataId is { } metadataId
+                ? localById.GetValueOrDefault(metadataId)
+                : remote.MetadataHash != null ? localByHash.GetValueOrDefault(remote.MetadataHash)
                 : remote.Name != null ? localByName.GetValueOrDefault(remote.Name) : null;
 
             if (local == null)
@@ -417,6 +349,7 @@ public class GeminiExtension() : ChatExtension("gemini")
                 localMissing.Add(remote);
                 continue;
             }
+            matchedLocalIds.Add(local.Id);
             if (remote.MetadataHash == null || remote.MetadataId == null)
             {
                 Log.LogDebug("Remote doc missing metadata: {Name}", remote.Name);
@@ -424,7 +357,6 @@ public class GeminiExtension() : ChatExtension("gemini")
                 continue;
             }
 
-            seenRemoteHashes.Add(remote.MetadataHash);
             matchedByHash++;
 
             var diff = remote.Diff(local);
@@ -437,7 +369,9 @@ public class GeminiExtension() : ChatExtension("gemini")
                 db.UpdateDocument(local);
             }
 
-            if (local.Id != remote.MetadataId || local.Hash != remote.MetadataHash)
+            var remoteMetadata = ChatDtos.ParseJson(remote.CustomMetadata) as JsonArray;
+            if (local.Id != remote.MetadataId || local.Hash != remote.MetadataHash
+                || GeminiMetadata.Differs(local, remoteMetadata))
             {
                 Log.LogDebug("Metadata mismatch: id={LocalId}|{RemoteId}, hash={LocalHash}|{RemoteHash}",
                     local.Id, remote.MetadataId, local.Hash, remote.MetadataHash);
@@ -449,7 +383,7 @@ public class GeminiExtension() : ChatExtension("gemini")
 
         foreach (var local in localDocs)
         {
-            if (local.Hash != null && !seenRemoteHashes.Contains(local.Hash))
+            if (!matchedLocalIds.Contains(local.Id))
                 remoteMissing.Add(local);
         }
 

@@ -1366,6 +1366,27 @@ const ThreadFooter = {
     }
 }
 
+const MessageFooter = {
+    template: `
+    <div v-if="showComponents.length">
+        <div v-for="component in showComponents">
+            <component :is="component" :thread="thread" :message="message" />
+        </div>
+    </div>
+    `,
+    props: { thread: Object, message: Object },
+    setup(props) {
+        const ctx = inject('ctx')
+        const showComponents = computed(() => {
+            const args = { thread: props.thread, message: props.message }
+            return Object.values(ctx.messageFooterComponents).filter(def => def.show(args)).map(def => def.component)
+        })
+        return {
+            showComponents,
+        }
+    }
+}
+
 const ThreadModel = {
     template: `
     <span @click="$chat.setSelectedModel({ name: thread.model})" 
@@ -1433,6 +1454,7 @@ export default {
             ThemeButton,
             ThreadHeader,
             ThreadFooter,
+            MessageFooter,
             UserAvatar,
             AgentAvatar,
             CodeBlock,

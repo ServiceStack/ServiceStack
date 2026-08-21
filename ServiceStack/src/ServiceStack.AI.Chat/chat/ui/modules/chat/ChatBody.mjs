@@ -1195,13 +1195,16 @@ export const ChatBody = {
 
                                     <div
                                         v-if="message.role === 'assistant'"
-                                        v-html="$fmt.markdown(message.content)"
+                                        v-html="$fmt.markdown($ctx.messageContent(message, currentThread))"
                                         class="prose prose-sm max-w-none dark:prose-invert break-words"
                                     ></div>
 
                                     <!-- Collapsible reasoning section -->
-                                    <MessageReasoning v-if="message.role === 'assistant' && (message.reasoning || message.thinking || message.reasoning_content)" 
+                                    <MessageReasoning v-if="message.role === 'assistant' && (message.reasoning || message.thinking || message.reasoning_content)"
                                         :reasoning="message.reasoning || message.thinking || message.reasoning_content" :message="message" />
+
+                                    <!-- Per-message extension slot, e.g. the sources this answer cited -->
+                                    <MessageFooter v-if="message.role === 'assistant'" :thread="currentThread" :message="message" />
 
                                     <!-- Tool Calls & Outputs -->
                                     <div v-if="message.tool_calls && message.tool_calls.length > 0" class="mb-2 space-y-2 min-w-0">

@@ -1,5 +1,11 @@
-import { ref, computed, inject, onMounted, onUnmounted, toRef, watch } from 'vue'
+import { ref, computed, inject, onBeforeUnmount, onMounted, onUnmounted, toRef, watch } from 'vue'
 import { appendQueryString, lastLeftPart, leftPart, rightPart } from '@servicestack/client'
+import { initMetadata, loadFacets, CoverageStrip, BulkEditDialog, MetadataDialog, MetaChip,
+    DOC_FIELDS, META_LIST_FIELDS, FACET_FIELDS, LIST_FIELDS } from './metadata.mjs'
+import { initSources, SourcesPanel, RunReport, TrustedFolders } from './sources.mjs'
+import { initExplorer, Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState,
+    CheckBox, SelectionBar, ConfirmDialog } from './explorer.mjs'
+import { initImport, ImportPanel } from './import.mjs'
 
 let ext = null
 let ctx = null
@@ -65,7 +71,7 @@ function getGeminiModel() {
     return getDefaultGeminiModel()
 }
 
-function createNewChat(filestoreId, { category, document } = {}) {
+function createNewChat(filestoreId, { category, document, metadataFilter, filters } = {}) {
     console.log('createNewChat', category, document)
     const model = getGeminiModel()
     if (!model) {
@@ -102,7 +108,10 @@ function createNewChat(filestoreId, { category, document } = {}) {
             file_search_store_names: [filestore.name]
         }
     }
-    if (category != null) {
+    if (metadataFilter) {
+        tool.file_search.metadata_filter = metadataFilter
+        tool.filters = filters || []
+    } else if (category != null) {
         tool.file_search.metadata_filter = `category=${category || ''}`
         tool.category = category
     } else if (document != null) {
@@ -111,7 +120,11 @@ function createNewChat(filestoreId, { category, document } = {}) {
     }
     const tools = [tool]
 
-    const title = `Ask ${filestore.displayName}` + (category ? ` about ${category}` : document ? ` about ${document.displayName}` : '')
+    const categoryFilter = filters?.find(f => f.field === 'category')?.value ?? category
+    const filterCount = filters?.filter(f => f.field !== 'category').length || 0
+    const categoryPath = categoryFilter ? `/${String(categoryFilter).replace(/^\/+|\/+$/g, '')}` : ''
+    const title = `Ask ${filestore.displayName}${categoryPath}` + (filterCount ? ` (${filterCount} filter${filterCount === 1 ? '' : 's'})`
+        : document ? ` about ${document.displayName}` : '')
     const thread = {
         title,
         model,
@@ -147,8 +160,8 @@ const IssueCard = {
 
 const SyncReport = {
     components: { IssueCard },
-    props: ['syncResult', 'syncing'],
-    emits: ['sync'],
+    props: ['syncResult', 'syncing', 'pruning'],
+    emits: ['sync', 'prune'],
     template: `
         <div class="mb-8">
             <div class="flex justify-between items-start mb-4">
@@ -159,7 +172,8 @@ const SyncReport = {
                 <button type="button"
                     @click="$emit('sync')"
                     :disabled="syncing"
-                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium" :class="[$styles.primaryButton]"
+                    :class="[$styles.primaryButton]"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium" 
                 >
                     <span v-if="syncing">Syncing...</span>
                     <span v-else>Sync Store</span>
@@ -208,6 +222,23 @@ const SyncReport = {
                     <IssueCard name="Duplicate Documents" :issue="syncResult['Duplicate Documents']" />
                 </div>
 
+                <!-- Duplicates are the one finding here with a one-click fix, because their cause
+                     is known: an upload adds a copy rather than replacing one. -->
+                <div v-if="duplicates" class="rounded-lg p-4 border flex flex-wrap items-center justify-between gap-3"
+                    :class="[$styles.chromeBorder]">
+                    <div class="text-sm min-w-0">
+                        <p class="font-semibold">{{ duplicates.toLocaleString() }} document{{ duplicates === 1 ? ' has' : 's have' }} more than one copy in Gemini</p>
+                        <p class="text-xs mt-0.5" :class="[$styles.muted]">
+                            Left over from re-indexing before an upload removed the copy it replaced. Keeps the
+                            newest copy of each and deletes the rest; nothing local changes.
+                        </p>
+                    </div>
+                    <button type="button" @click="$emit('prune')" :disabled="pruning"
+                        class="px-4 py-2 rounded-md text-sm font-semibold border shrink-0" :class="[$styles.chromeBorder]">
+                        {{ pruning ? 'Removing…' : 'Remove extra copies' }}
+                    </button>
+                </div>
+
                 <!-- Success Message -->
                 <div v-else class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
                     <p class="text-sm font-semibold text-green-900 dark:text-green-100">Perfect Sync!</p>
@@ -229,8 +260,11 @@ const SyncReport = {
             )
         })
 
+        const duplicates = computed(() => props.syncResult?.['Duplicate Documents']?.count || 0)
+
         return {
-            hasIssues
+            hasIssues,
+            duplicates,
         }
     }
 }
@@ -239,8 +273,7 @@ const GeminiModelSelector = {
     template: `
         <div class="flex items-center space-x-2">
             <button type="button" @click="openModelPicker"
-                class="flex items-center justify-between rounded-lg px-3.5 py-2 border shadow-sm transition-colors text-sm cursor-pointer"
-                :class="[$styles.dropdownButton, $styles.chromeBorder]">
+                class="flex items-center justify-between rounded-lg px-3.5 py-2 transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 text-sm cursor-pointer">
                 <span class="flex items-center space-x-2 truncate">
                     <ProviderIcon v-if="selectedModelObj?.provider" :provider="selectedModelObj.provider" class="size-4 shrink-0" />
                     <span class="font-medium truncate">
@@ -264,7 +297,7 @@ const GeminiModelSelector = {
                 <div class="fixed inset-0 bg-black/60 transition-opacity" @click="isModelPickerOpen = false"></div>
                 <div class="fixed inset-4 md:inset-10 lg:inset-16 flex items-center justify-center">
                     <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full h-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
-                        <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <div class="shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                             <div>
                                 <h3 class="text-lg font-semibold">Select Model</h3>
                                 <p class="text-xs" :class="$styles.muted">Select a model for Gemini File Stores requests</p>
@@ -558,7 +591,7 @@ const FileStoreList = {
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center justify-between">
                                         <p class="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">{{ store.displayName }}</p>
-                                        <div class="ml-2 flex-shrink-0 flex">
+                                        <div class="ml-2 shrink-0 flex">
                                             <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="[$styles.bgSuccess]">
                                                 {{ store.activeDocumentsCount || 0 }} docs
                                             </p>
@@ -578,7 +611,7 @@ const FileStoreList = {
                                     </div>
                                 </div>
                                 <span @click.prevent.stop="createNewChat(store.id)"
-                                    class="ml-2 cursor-pointer flex-shrink-0" :title="'Ask Gemini RAG about ' + store.displayName">
+                                    class="ml-2 cursor-pointer shrink-0" :title="'Ask Gemini RAG about ' + store.displayName">
                                     <svg class="size-10 text-gray-400 dark:text-gray-600 hover:text-blue-600 dark:hover:text-blue-400" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.418 4.214A9.3 9.3 0 0 0 10.5 3.75c-4.418 0-8 3.026-8 6.759c0 1.457.546 2.807 1.475 3.91L3 19l3.916-2.447a9.2 9.2 0 0 0 3.584.714c4.418 0 8-3.026 8-6.758c0-.685-.12-1.346-.345-1.969M16.5 3.5v4m2-2h-4" stroke-width="1"/></svg>
                                 </span>
                             </div>
@@ -636,11 +669,14 @@ const FileStoreList = {
 }
 
 const FileStoreDetails = {
-    components: { SyncReport, GeminiModelSelector },
+    components: { SyncReport, GeminiModelSelector, CoverageStrip, SelectionBar, BulkEditDialog, MetadataDialog,
+                  MetaChip, ConfirmDialog, SourcesPanel, ImportPanel, RunReport, TrustedFolders,
+                  Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState, CheckBox },
     props: ['storeId'],
 
     template: `
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" v-if="store">
+        <!-- Room for the docked selection bar, so the last row isn't the one it covers. -->
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" :class="bulkCount ? 'pb-24' : ''" v-if="store">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                  <div class="flex items-center gap-4">
                      <button type="button"
@@ -668,199 +704,397 @@ const FileStoreDetails = {
                  </div>
             </div>
 
-            <div class="mb-8">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
-                    <button
-                        @click="selectCategory(null)"
-                        type="button"
-                        class="bg-white dark:bg-gray-800 shadow rounded-lg px-4 py-3 flex items-start hover:bg-gray-50 dark:hover:bg-gray-700 transition border-2"
-                        :class="ext.prefs.category === null ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-transparent'"
-                    >
-                        <span class="text-2xl mr-3">📚</span>
-                        <div class="min-w-0 flex-1 text-left">
-                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate"
-                               :class="{'text-blue-600 dark:text-blue-400': ext.prefs.category === null}">
-                                All Documents
-                            </p>
-                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                <div>{{ total.count }} document{{ total.count !== 1 ? 's' : '' }}</div>
-                                <div>{{ $fmt.bytes(total.size) }}</div>
-                            </div>
-                        </div>
-                        <span @click.prevent.stop="createNewChat(storeId)" 
-                            class="cursor-pointer text-2xl text-gray-600" title="Ask Gemini RAG about All Documents"
-                            >
-                            <svg class="size-7" :class="[$styles.muted]" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.418 4.214A9.3 9.3 0 0 0 10.5 3.75c-4.418 0-8 3.026-8 6.759c0 1.457.546 2.807 1.475 3.91L3 19l3.916-2.447a9.2 9.2 0 0 0 3.584.714c4.418 0 8-3.026 8-6.758c0-.685-.12-1.346-.345-1.969M16.5 3.5v4m2-2h-4" stroke-width="1"/></svg>
-                        </span>
-                    </button>
 
-                    <button
-                        v-for="cat in categories"
-                        :key="cat.category"
-                        @click="selectCategory(cat.category)"
-                        type="button"
-                        class="bg-white dark:bg-gray-800 shadow rounded-lg px-4 py-3 flex items-start hover:bg-gray-50 dark:hover:bg-gray-700 transition border-2"
-                        :class="ext.prefs.category === cat.category ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-transparent'"
-                    >
-                        <span class="text-2xl mr-3">{{ cat.category ? '📁' : '📄' }}</span>
-                        <div class="min-w-0 flex-1 text-left">
-                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate"
-                               :class="{'text-blue-600 dark:text-blue-400': ext.prefs.category === cat.category}">
-                                {{ cat.category || 'Uncategorized' }}
-                            </p>
-                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                <div>{{ cat.count }} document{{ cat.count !== 1 ? 's' : '' }}</div>
-                                <div>{{ $fmt.bytes(cat.size) }}</div>
-                            </div>
-                        </div>
-                        <span @click.prevent.stop="createNewChat(storeId, { category: cat.category })" 
-                            class="cursor-pointer text-2xl text-gray-600" :title="'Ask Gemini RAG about ' + (cat.category ? cat.category : 'Uncategorized') + ' documents'"
-                            >
-                            <svg class="size-7" :class="[$styles.muted]" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.418 4.214A9.3 9.3 0 0 0 10.5 3.75c-4.418 0-8 3.026-8 6.759c0 1.457.546 2.807 1.475 3.91L3 19l3.916-2.447a9.2 9.2 0 0 0 3.584.714c4.418 0 8-3.026 8-6.758c0-.685-.12-1.346-.345-1.969M16.5 3.5v4m2-2h-4" stroke-width="1"/></svg>
-                        </span>
-                    </button>
-                </div>
+            <!-- Explore is the everyday view; Import is a place you go on purpose. Splitting them
+                 keeps a form nobody needs while browsing from dominating the page. -->
+            <div class="flex gap-1 mb-6 border-b" :class="[$styles.chromeBorder]">
+                <button type="button" @click="view = 'explore'"
+                    class="px-4 py-2 text-sm font-medium border-b-2 -mb-px"
+                    :class="view === 'explore' ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                               : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'">
+                    Explore
+                    <span v-if="facetTotal" class="ml-1 text-xs tabular-nums" :class="[$styles.muted]">{{ facetTotal.toLocaleString() }}</span>
+                </button>
+                <button type="button" @click="view = 'import'"
+                    class="px-4 py-2 text-sm font-medium border-b-2 -mb-px"
+                    :class="view === 'import' ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                              : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'">
+                    Import
+                    <span v-if="sourceCount" class="ml-1 text-xs tabular-nums" :class="[$styles.muted]">{{ sourceCount }}</span>
+                </button>
             </div>
 
-            <div class="mb-4 flex justify-between items-center gap-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center space-x-1">
-                    <span>Documents</span>
-                    <span v-if="ext.prefs.category != null" class="text-base font-normal text-gray-500 dark:text-gray-400">
-                        in {{ ext.prefs.category === '' ? 'Uncategorized' : ext.prefs.category }}
-                    </span>
-                </h3>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <div :class="[$styles.muted]">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M13 19c0 .34.04.67.09 1H4a2 2 0 0 1-2-2V6c0-1.11.89-2 2-2h6l2 2h8a2 2 0 0 1 2 2v5.81c-.88-.51-1.9-.81-3-.81c-3.31 0-6 2.69-6 6m7-1v-3h-2v3h-3v2h3v3h2v-3h3v-2z"/></svg>
-                    </div>
-                    <input
-                        type="text"
-                        v-model="newCategoryName"
-                        @keyup.enter="createNewCategory"
-                        placeholder="New category"
-                        class="w-48 rounded-md shadow-sm sm:text-sm px-3 py-1.5"
-                        :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"
-                    >
-                </div>
-            </div>
-
-            <div
-                @drop.prevent="onDrop"
-                @dragover.prevent="dragover = true"
-                @dragleave.prevent="dragover = false"
-                @click="fileInput.click()"
-                :class="{'border-blue-500 bg-blue-50 dark:bg-blue-900/20': dragover}"
-                class="group relative transition-colors duration-200 text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 mb-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800">
-                <div class="mx-auto h-12 w-12 text-gray-400 text-5xl mb-4">📄</div>
-                 <div v-if="(ext.prefs.category != null && ext.prefs.category !== '') || newCategoryName" class="mb-3 flex items-center justify-center gap-1">
-                    📁
-                    <span class="font-medium" :class="[$styles.heading]">{{ newCategoryName || ext.prefs.category }}</span>
-                 </div>
-                 <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                    <span :class="[$styles.linkHover]">Upload a file</span> or drag and drop
-                 </h3>
-                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload PDFs, Text files or Markdown to get started.</p>
-            </div>
-
-            <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md mb-8">
-               <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
-                   <div class="flex items-center gap-3">
-                       <div class="relative max-w-xs w-full">
-                           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                              </svg>
+            <div v-show="view === 'explore'">
+                <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md mb-8">
+                   <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center gap-3 bg-gray-50 dark:bg-gray-900/50">
+                       <div class="flex flex-wrap items-center justify-between gap-3 grow">
+                         <div class="flex flex-wrap items-center gap-3">
+                           <div class="relative w-64 shrink-0">
+                               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                  <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                  </svg>
+                               </div>
+                               <input type="text" v-model.lazy="ext.prefs.q" placeholder="Search"
+                                   class="block w-full pl-9 pr-8 py-1.5 rounded-md" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                               <button v-if="ext.prefs.q" @click="ext.prefs.q = ''; loadDocuments()" type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                   <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                   </svg>
+                               </button>
                            </div>
-                           <input type="text" v-model.lazy="ext.prefs.q" placeholder="Search"
-                               class="block w-full pl-9 pr-8 py-1.5 rounded-md" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
-                           <button v-if="ext.prefs.q" @click="ext.prefs.q = ''; loadDocuments()" type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                               <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                               </svg>
+                           <select v-model="ext.prefs.sortBy" class="block rounded-md sm:text-sm py-1.5 pl-3 pr-8 cursor-pointer transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300">
+                               <option value="-uploadedAt">Newest First</option>
+                               <option value="uploadedAt">Oldest First</option>
+                               <option value="displayName">Name (A-Z)</option>
+                               <option value="-displayName">Name (Z-A)</option>
+                               <option value="-createdAt">Created (Newest)</option>
+                               <option value="createdAt">Created (Oldest)</option>
+                               <option value="-size">Size (Largest)</option>
+                               <option value="size">Size (Smallest)</option>
+                               <option value="issues">Sync Issues</option>
+                               <option value="failed">Failed</option>
+                               <option value="uploading">Uploading</option>
+                           </select>
+                         </div>
+                         <div class="flex items-center gap-2">
+                             <button type="button" @click="createNewChat(storeId, { metadataFilter: filterExpression, filters: chatFilters })"
+                                 class="px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap"
+                                 :class="[$styles.primaryButton]"
+                                 :title="askAboutTitle">
+                                 Ask about this
+                             </button>
+                             <!-- Creating a category is importing into it: an empty category means
+                                  nothing now that categories are derived from what was ingested. -->
+                             <button type="button" @click="importInto(ext.prefs.category)"
+                                  class="px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300"
+                                  :title="ext.prefs.category
+                                      ? 'Add documents to ' + ext.prefs.category
+                                      : 'Categories are created by importing into them'">
+                                 Import here
+                             </button>
+                         </div>
+                       </div>
+                       <div class="flex items-center gap-4 text-sm font-medium">
+                           <span v-if="!ext.prefs.q && totalPages > 0" class="text-gray-600 dark:text-gray-400">
+                               Page {{ ext.prefs.page }} of {{ totalPages }}
+                           </span>
+                           <button v-if="ext.prefs.page > 1" @click="ext.prefs.page--; loadDocuments()" type="button" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:text-gray-400 disabled:cursor-not-allowed">
+                               &larr; previous
+                           </button>
+                           <button v-if="ext.prefs.page < totalPages" @click="ext.prefs.page++; loadDocuments()" type="button" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:text-gray-400 disabled:cursor-not-allowed">
+                               next &rarr;
                            </button>
                        </div>
-                       <select v-model="ext.prefs.sortBy" class="block rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white py-1.5 pl-3 pr-8">
-                           <option value="-uploadedAt">Newest First</option>
-                           <option value="uploadedAt">Oldest First</option>
-                           <option value="displayName">Name (A-Z)</option>
-                           <option value="-displayName">Name (Z-A)</option>
-                           <option value="-createdAt">Created (Newest)</option>
-                           <option value="createdAt">Created (Oldest)</option>
-                           <option value="-size">Size (Largest)</option>
-                           <option value="size">Size (Smallest)</option>
-                           <option value="issues">Sync Issues</option>
-                           <option value="failed">Failed</option>
-                           <option value="uploading">Uploading</option>
-                       </select>
                    </div>
-                   <div class="flex items-center gap-4 text-sm font-medium">
-                       <span v-if="!ext.prefs.q && totalPages > 0" class="text-gray-600 dark:text-gray-400">
-                           Page {{ ext.prefs.page }} of {{ totalPages }}
+                   <!-- Where you are. A category is a path, so the honest rendering is a path. -->
+                   <div class="px-4 py-2 sm:px-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b"
+                       :class="[$styles.chromeBorder]">
+                       <Breadcrumb :path="ext.prefs.category" :root-label="store?.displayName" @go="selectCategory" />
+                       <span v-if="searching" class="text-xs" :class="[$styles.muted]">
+                           Searching {{ ext.prefs.category ? 'this folder and below' : 'all folders' }}
                        </span>
-                       <button v-if="ext.prefs.page > 1" @click="ext.prefs.page--; loadDocuments()" type="button" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:text-gray-400 disabled:cursor-not-allowed">
-                           &larr; previous
-                       </button>
-                       <button v-if="ext.prefs.page < totalPages" @click="ext.prefs.page++; loadDocuments()" type="button" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 disabled:text-gray-400 disabled:cursor-not-allowed">
-                           next &rarr;
-                       </button>
+                       <span v-else-if="folderCount" class="text-xs tabular-nums" :class="[$styles.muted]">
+                           {{ folderCount }} folder{{ folderCount === 1 ? '' : 's' }}
+                       </span>
                    </div>
-               </div>
-               <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-                   <li v-for="doc in docs" :key="doc.id">
-                       <div class="px-4 py-4 sm:px-6 flex items-center justify-between">
-                            <div class="flex items-center min-w-0 flex-1">
-                                <div class="text-sm min-w-0 flex-1 mr-4">
-                                   <div class="flex items-center gap-x-1">
-                                       <span v-if="doc.category" class="cursor-pointer inline-flex items-center rounded font-medium text-gray-800 dark:text-gray-200" @click="selectCategory(doc.category)">
-                                           📂 {{ doc.category }}
-                                       </span>
-                                       <span v-if="doc.category">/</span>
-                                       <a :href="doc.url + '?download'" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate" :title="'Download ' + doc.displayName">{{ doc.displayName }}</a>
-                                   </div>
-                                   <div class="flex items-center mt-1">
-                                       <span class="flex-shrink-0 text-gray-500 dark:text-gray-400">
-                                           {{ $fmt.bytes(doc.size) }} &middot; {{ $fmt.date(doc.uploadedAt || doc.createdAt) }}
-                                       </span>
-                                   </div>
-                                </div>
-                            </div>
-                            <div class="flex-shrink-0 flex items-center gap-2">
-                                <button type="button" @click.stop="deleteDocument(doc)" class="ml-2 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete document">
-                                    <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zM17 6H7v13h10zM9 17h2V8H9zm4 0h2V8h-2zM7 6v13z"/></svg>
-                                </button>
-                                <!-- Show loading indicator if document is being uploaded/processed -->
-                                <span v-if="doc.startedAt && !doc.uploadedAt && !doc.error" class="p-1 text-blue-600" title="Uploading to Gemini...">
-                                    <svg class="size-5 animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity=".5"/><path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"/></svg>
-                                </span>
-                                <!-- Show re-upload button only if document has been uploaded -->
-                                <button v-else-if="doc.uploadedAt || doc.error" type="button" @click.stop="reuploadDocument(doc)" :disabled="reuploadingDocs.has(doc.id)" class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Re-upload document to Gemini">
-                                    <svg v-if="!reuploadingDocs.has(doc.id)" class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="m346.231 284.746l-90.192-90.192l-90.192 90.192l22.627 22.627l51.565-51.565V496h32V255.808l51.565 51.565z"/><path fill="currentColor" d="M400 161.453V160c0-79.4-64.6-144-144-144S112 80.6 112 160v2.491A122.3 122.3 0 0 0 49.206 195.2A109.4 109.4 0 0 0 16 273.619c0 31.119 12.788 60.762 36.01 83.469C74.7 379.275 105.338 392 136.07 392H200v-32h-63.93C89.154 360 48 319.635 48 273.619c0-42.268 35.64-77.916 81.137-81.155L144 191.405V160a112 112 0 0 1 224 0v32.04l15.8.2c46.472.588 80.2 34.813 80.2 81.379C464 322.057 428.346 360 382.83 360H312v32h70.83a109.75 109.75 0 0 0 81.14-35.454c20.655-22.207 32.03-51.657 32.03-82.927c0-58.437-40.284-104.227-96-112.166"/></svg>
-                                    <svg v-else class="size-5 animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity=".5"/><path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"/></svg>
-                                </button>
-                                <span v-if="doc.error" class="text-red-600" :title="doc.error">
-                                    <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z"/></svg>
-                                </span>
-                                <span v-else-if="doc.state === 'STATE_ACTIVE'" class="text-green-600" title="Active">
-                                    <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" clip-rule="evenodd"/></svg>
-                                </span>                                
-                                <span v-else-if="doc.state && ['STATE_UNSPECIFIED','STATE_PENDING'].includes(doc.state)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">{{ doc.state }}</span>
-                                <span v-else-if="doc.state && ['MISSING_METADATA','DUPLICATE_FILE','MISSING_FROM_REMOTE','METADATA_MISMATCH'].includes(doc.state)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">{{ doc.state }}</span>
-                                <span v-else-if="doc.state" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{{ doc.state }}</span>
-                                <span @click.prevent.stop="createNewChat(storeId, { document: doc })"
-                                    class="cursor-pointer text-2xl text-gray-600" :title="'Ask Gemini RAG about ' + doc.displayName">
-                                    <svg class="size-6" :class="[$styles.muted,$styles.mutedHover]" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.418 4.214A9.3 9.3 0 0 0 10.5 3.75c-4.418 0-8 3.026-8 6.759c0 1.457.546 2.807 1.475 3.91L3 19l3.916-2.447a9.2 9.2 0 0 0 3.584.714c4.418 0 8-3.026 8-6.758c0-.685-.12-1.346-.345-1.969M16.5 3.5v4m2-2h-4" stroke-width="1"/></svg>
-                                </span>
-                            </div>
-                       </div>
-                   </li>
-                   <li v-if="docs.length === 0 && !docsLoading" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                       No documents found.
-                   </li>
-               </ul>
 
+                   <!-- Select, then filter state, then the two panels that produce it. Filters
+                        live next to the rows they act on rather than in a permanent column. -->
+                   <div class="pl-4 pr-2 py-2 sm:pl-6 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs border-b"
+                       :class="[$styles.chromeBorder]">
+                       <div class="flex items-center gap-3 shrink-0">
+                           <CheckBox :model-value="allOnPageSelected" @update:model-value="togglePage()"
+                               :disabled="!docs.length" />
+                           <span v-if="!selected.size && !selectAllMatching" :class="[$styles.muted]">Select</span>
+                           <template v-else-if="selectAllMatching">
+                               <span>All <b>{{ (totalDocs || 0).toLocaleString() }}</b> matching are selected.</span>
+                               <button type="button" class="text-blue-600 dark:text-blue-400 underline" @click="selectAllMatching = false">Only this page</button>
+                           </template>
+                           <template v-else>
+                               <span><b>{{ selected.size }}</b> selected on this page.</span>
+                               <button v-if="allOnPageSelected && totalDocs && totalDocs > docs.length" type="button"
+                                   class="text-blue-600 dark:text-blue-400 underline" @click="selectAllMatching = true">
+                                   Select all {{ totalDocs.toLocaleString() }}
+                               </button>
+                           </template>
+                       </div>
+
+                       <FilterChips class="grow" :active="filterChips" @remove="removeFilter" @clear="clearFilters" />
+
+                       <div class="flex items-center gap-2 shrink-0">
+                           <Popover v-for="field in availableQuickFilters" :key="field" :label="quickFilterLabel(field)" icon>
+                               <template #default="{ close }">
+                                   <div class="text-[11px] font-semibold uppercase tracking-wide mb-1.5" :class="[$styles.muted]">
+                                       Filter by {{ quickFilterLabel(field) }}
+                                   </div>
+                                   <button v-for="v in (facets[field]?.values || []).slice(0, 30)" :key="v.value"
+                                       type="button" @click="close(); pickFacet(field, v.value)"
+                                       class="w-full flex justify-between items-center gap-3 px-2 py-1 rounded text-sm hover:bg-gray-100 dark:hover:bg-gray-800">
+                                       <span class="truncate">{{ v.value }}</span>
+                                       <span class="tabular-nums text-xs shrink-0" :class="[$styles.muted]">{{ v.count.toLocaleString() }}</span>
+                                   </button>
+                                   <button v-if="facets[field]?.null" type="button" @click="close(); showMissing(field)"
+                                       class="w-full flex justify-between items-center gap-3 px-2 py-1 rounded text-sm hover:bg-gray-100 dark:hover:bg-gray-800">
+                                       <span class="text-gray-400 dark:text-gray-500">(no value)</span>
+                                       <span class="tabular-nums text-xs shrink-0" :class="[$styles.muted]">{{ facets[field].null.toLocaleString() }}</span>
+                                   </button>
+                               </template>
+                           </Popover>
+                           <span v-if="availableQuickFilters.length" class="h-5 border-l" :class="[$styles.chromeBorder]" aria-hidden="true"></span>
+                           <Popover label="Categories" :count="folderTotal || ''">
+                               <template #default="{ close }">
+                                   <CategoryTree :tree="facets.category?.tree" :active="ext.prefs.category"
+                                       :total="facetTotal" :root-label="store?.displayName"
+                                       @go="p => { selectCategory(p); close() }" />
+                               </template>
+                           </Popover>
+                            <button type="button" @click="coverageOpen = true"
+                                class="px-2.5 py-1 rounded-md border text-xs font-medium inline-flex items-center gap-1.5"
+                                :class="[$styles.chromeBorder]">
+                                Coverage
+                               <!-- Ambient, not an alarm: a count that tells you there is something
+                                    to look at without interrupting what you came here to do. -->
+                               <span v-if="pending.count" class="tabular-nums px-1 rounded"
+                                   :class="[$styles.tagLabel]" :title="pending.count + ' documents have unpushed metadata'">
+                                   {{ pending.count }}
+                               </span>
+                           </button>
+                       </div>
+                   </div>
+
+                   <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                       <!-- Folders first, the way a file explorer orders them. Hidden while
+                            searching, because a search spans folders and the rows would be a
+                            second, competing answer to "what matched". -->
+                        <li v-if="!searching && ext.prefs.category" class="px-4 sm:px-6">
+                            <button type="button" @click="selectCategory(parentCategory)"
+                                class="w-full py-2.5 flex items-center gap-3 text-sm text-left group">
+                                <svg class="size-4 shrink-0 transition-transform group-hover:-translate-x-0.5"
+                                    :class="[$styles.muted]" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" aria-hidden="true">
+                                    <polyline points="9 14 4 9 9 4"/>
+                                    <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+                                </svg>
+                                <span :class="[$styles.muted]">{{ parentCategory == null ? (store?.displayName || 'Top level') : parentCategory }}</span>
+                            </button>
+                        </li>
+                       <li v-for="f in (searching ? [] : childFolders)" :key="f.path" class="px-4 sm:px-6">
+                           <button type="button" @click="selectCategory(f.path)"
+                               class="w-full py-2.5 flex items-center justify-between gap-3 text-sm text-left">
+                                <span class="flex items-center gap-2 min-w-0">
+                                    <svg class="size-4 shrink-0 opacity-70" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    <span class="font-medium truncate">{{ f.path === '' ? '(uncategorised)' : f.name }}</span>
+                                </span>
+                               <span class="tabular-nums text-xs shrink-0" :class="[$styles.muted]"
+                                   :title="f.own + ' here, ' + f.total + ' including subfolders'">
+                                   {{ f.total.toLocaleString() }}
+                               </span>
+                           </button>
+                       </li>
+                       <li v-for="doc in docs" :key="doc.id">
+                           <div class="px-4 py-4 sm:px-6 flex items-center justify-between"
+                                :class="selected.has(doc.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''">
+                                <div class="flex items-center min-w-0 flex-1">
+                                    <CheckBox class="mr-3" :model-value="selected.has(doc.id)"
+                                        @update:model-value="toggleDoc(doc.id)" />
+                                    <div class="text-sm min-w-0 flex-1 mr-4">
+                                       <div class="flex items-center gap-x-1">
+                                           <!-- Only while searching: in a folder listing the path
+                                                is the breadcrumb, and repeating it on every row is
+                                                noise. In results it's the one thing that locates a hit. -->
+                                            <template v-if="searching && doc.category">
+                                                <span class="cursor-pointer inline-flex items-center gap-1 rounded font-medium text-gray-800 dark:text-gray-200"
+                                                    @click="selectCategory(doc.category)" title="Go to this folder">
+                                                    <svg class="size-3.5 shrink-0 opacity-70" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round" aria-hidden="true">
+                                                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                                    </svg>
+                                                    {{ doc.category }}
+                                                </span>
+                                               <span>/</span>
+                                           </template>
+                                           <span v-if="deletingDocs.has(doc.id)"
+                                               class="font-medium text-red-600 dark:text-red-400 line-through truncate"
+                                               :title="'Deleting ' + doc.displayName">{{ doc.displayName }}</span>
+                                           <a v-else :href="doc.url + '?download'" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate" :title="'Download ' + doc.displayName">{{ doc.displayName }}</a>
+                                       </div>
+                                       <div class="flex items-center flex-wrap gap-1.5 mt-1">
+                                           <span class="shrink-0 text-gray-500 dark:text-gray-400">
+                                               {{ $fmt.bytes(doc.size) }} &middot; {{ $fmt.date(doc.uploadedAt || doc.createdAt) }}
+                                           </span>
+                                           <MetaChip v-for="m in docMeta(doc)" :key="m.id" :field="m.k" :value="m.v" />
+                                           <span v-if="doc.tombstonedAt" class="px-1.5 py-0.5 rounded border text-[11px] text-red-500 border-red-500/50">removed upstream</span>
+                                           <!-- At the end of what the metadata says, because that
+                                                is where you are when you notice it's wrong. On a
+                                                document with none, it's the invitation to add it. -->
+                                           <button type="button" @click.stop="editDocument(doc)"
+                                               class="px-1.5 py-0.5 rounded border text-[11px] inline-flex items-center gap-1"
+                                               :class="[$styles.chromeBorder, $styles.muted, $styles.mutedHover]"
+                                               :title="'Edit metadata for ' + doc.displayName">
+                                               <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                   <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+                                               </svg>
+                                               {{ docMeta(doc).length ? 'Edit' : 'Add metadata' }}
+                                           </button>
+                                       </div>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 flex items-center gap-2">
+                                    <span v-if="deletingDocs.has(doc.id)" class="ml-2 p-1 text-red-600 dark:text-red-400" title="Deleting document…">
+                                        <svg class="size-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9"/>
+                                        </svg>
+                                    </span>
+                                    <button v-else type="button" @click.stop="deleteDocument(doc)" class="ml-2 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete document">
+                                        <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zM17 6H7v13h10zM9 17h2V8H9zm4 0h2V8h-2zM7 6v13z"/></svg>
+                                    </button>
+                                    <!-- Show loading indicator if document is being uploaded/processed -->
+                                    <span v-if="doc.startedAt && !doc.uploadedAt && !doc.error" class="p-1 text-blue-600" title="Uploading to Gemini...">
+                                        <svg class="size-5 animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity=".5"/><path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"/></svg>
+                                    </span>
+                                    <!-- Show re-upload button only if document has been uploaded -->
+                                    <button v-else-if="doc.uploadedAt || doc.error" type="button" @click.stop="reuploadDocument(doc)" :disabled="reuploadingDocs.has(doc.id)" class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Re-upload document to Gemini">
+                                        <svg v-if="!reuploadingDocs.has(doc.id)" class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="m346.231 284.746l-90.192-90.192l-90.192 90.192l22.627 22.627l51.565-51.565V496h32V255.808l51.565 51.565z"/><path fill="currentColor" d="M400 161.453V160c0-79.4-64.6-144-144-144S112 80.6 112 160v2.491A122.3 122.3 0 0 0 49.206 195.2A109.4 109.4 0 0 0 16 273.619c0 31.119 12.788 60.762 36.01 83.469C74.7 379.275 105.338 392 136.07 392H200v-32h-63.93C89.154 360 48 319.635 48 273.619c0-42.268 35.64-77.916 81.137-81.155L144 191.405V160a112 112 0 0 1 224 0v32.04l15.8.2c46.472.588 80.2 34.813 80.2 81.379C464 322.057 428.346 360 382.83 360H312v32h70.83a109.75 109.75 0 0 0 81.14-35.454c20.655-22.207 32.03-51.657 32.03-82.927c0-58.437-40.284-104.227-96-112.166"/></svg>
+                                        <svg v-else class="size-5 animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity=".5"/><path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"/></svg>
+                                    </button>
+                                    <span v-if="doc.error" class="text-red-600" :title="doc.error">
+                                        <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z"/></svg>
+                                    </span>
+                                    <span v-else-if="doc.state === 'STATE_ACTIVE'" class="text-green-600" title="Active">
+                                        <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" clip-rule="evenodd"/></svg>
+                                    </span>                                
+                                    <span v-else-if="doc.state && ['STATE_UNSPECIFIED','STATE_PENDING'].includes(doc.state)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">{{ doc.state }}</span>
+                                    <span v-else-if="doc.state && ['MISSING_METADATA','DUPLICATE_FILE','MISSING_FROM_REMOTE','METADATA_MISMATCH'].includes(doc.state)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">{{ doc.state }}</span>
+                                    <span v-else-if="doc.state" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{{ doc.state }}</span>
+                                    <span @click.prevent.stop="createNewChat(storeId, { document: doc })"
+                                        class="cursor-pointer text-2xl text-gray-600" :title="'Ask Gemini RAG about ' + doc.displayName">
+                                        <svg class="size-6" :class="[$styles.muted,$styles.mutedHover]" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.418 4.214A9.3 9.3 0 0 0 10.5 3.75c-4.418 0-8 3.026-8 6.759c0 1.457.546 2.807 1.475 3.91L3 19l3.916-2.447a9.2 9.2 0 0 0 3.584.714c4.418 0 8-3.026 8-6.758c0-.685-.12-1.346-.345-1.969M16.5 3.5v4m2-2h-4" stroke-width="1"/></svg>
+                                    </span>
+                                </div>
+                           </div>
+                       </li>
+                       <li v-if="docs.length === 0 && !docsLoading && (searching || !childFolders.length)" class="px-4 py-10 text-center">
+                           <p class="text-sm" :class="[$styles.muted]">
+                               <span v-if="searching">Nothing matches.</span>
+                               <span v-else-if="ext.prefs.category != null">This folder is empty.</span>
+                               <span v-else-if="facetTotal">No documents on this page.</span>
+                               <span v-else>Nothing imported yet.</span>
+                           </p>
+                           <button v-if="!facetTotal" type="button"
+                               @click="importInto(ext.prefs.category)"
+                               class="mt-3 px-4 py-1.5 rounded-md text-sm font-medium" :class="[$styles.primaryButton]">
+                               {{ ext.prefs.category ? 'Import into ' + ext.prefs.category : 'Import documents' }}
+                           </button>
+                       </li>
+                   </ul>
+
+                </div>
             </div>
 
-            <SyncReport :syncResult="syncResult" :syncing="syncing" @sync="syncStore" />
+            <div v-show="view === 'import'">
+                <div class="mb-6">
+                    <ImportPanel ref="importPanel" :storeId="storeId" :facets="facets" :preset-category="importCategory"
+                        @previewing="onImportPreviewing" @preview="onImportPreview" @imported="onUploadImported" />
+                </div>
+                <div v-if="uploadProgress" class="mb-6 px-4 py-3 rounded-lg border flex flex-wrap items-center justify-between gap-3"
+                    :class="[$styles.chromeBorder]">
+                    <div class="flex items-center gap-2.5 min-w-0 text-sm">
+                        <svg v-if="pending.uploading" class="size-5 shrink-0 animate-spin text-blue-600 dark:text-blue-400"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9"/>
+                        </svg>
+                        <svg v-else class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/>
+                        </svg>
+                        <div class="font-medium">{{ uploadStatus }}</div>
+                    </div>
+                    <button type="button" @click="viewUploads"
+                        class="px-3 py-1.5 rounded-md text-sm font-semibold border shrink-0"
+                        :class="[$styles.chromeBorder]">View uploads</button>
+                </div>
+                <div v-if="importPreview" class="mb-6">
+                    <RunReport :run="importPreview.run" @confirm="confirmImport" @dismiss="dismissImport" />
+                </div>
+                <div class="mb-8">
+                    <SourcesPanel :key="sourceListVersion" :storeId="storeId" @imported="onImported" />
+                    <TrustedFolders />
+                </div>
+            </div>
+
+            <Modal :open="coverageOpen" title="Coverage & filters"
+                subtitle="What metadata your documents carry, what you can filter on, and what Gemini currently holds."
+                @close="coverageOpen = false">
+                <div class="grid gap-6 sm:grid-cols-2">
+                    <div>
+                        <div class="text-xs font-semibold uppercase tracking-wide mb-2" :class="[$styles.muted]">Coverage</div>
+                        <CoverageStrip v-if="facetTotal" :facets="facets" :total="facetTotal"
+                            @pick="f => { showMissing(f, true); coverageOpen = false }" />
+                        <p v-else class="text-sm" :class="[$styles.muted]">Nothing imported yet.</p>
+
+                        <div class="mt-6 pt-4 border-t" :class="[$styles.chromeBorder]">
+                            <div class="text-xs font-semibold uppercase tracking-wide mb-2" :class="[$styles.muted]">In Gemini</div>
+                            <SyncState :pending="pending" :worker="pendingWorker" :busy="pushing"
+                                @push="pushToGemini" @cancel="cancelPush"
+                                @review="ids => { reviewPending(ids); coverageOpen = false }" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-xs font-semibold uppercase tracking-wide mb-2" :class="[$styles.muted]">Filter by</div>
+                        <FacetPicker :facets="facets" :active="activeFacets" :field-names="facetFields"
+                            @pick="(field, value) => { pickFacet(field, value, true); coverageOpen = false }"
+                            @missing="f => { showMissing(f, true); coverageOpen = false }" />
+
+                        <!-- A filter that silently matches nothing is the failure mode worth
+                             catching, so show the expression a chat would actually send. -->
+                        <div v-if="filterExpression" class="mt-6 pt-4 border-t" :class="[$styles.chromeBorder]">
+                            <div class="text-xs font-semibold uppercase tracking-wide mb-1" :class="[$styles.muted]">Sent with a chat</div>
+                            <p class="text-xs mb-1.5" :class="[$styles.muted]">
+                                Filters here only narrow this page. Ask about this sends them to Gemini as:
+                            </p>
+                            <code class="block text-[11px] font-mono break-all px-2 py-1.5 rounded border"
+                                :class="[$styles.chromeBorder, $styles.muted]">{{ filterExpression }}</code>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
+            <SelectionBar :count="bulkCount" :all-matching="selectAllMatching"
+                @edit="bulkEditOpen = true" @delete="openBulkDelete" @clear="clearSelection" />
+
+            <BulkEditDialog v-if="bulkEditOpen" :selector="bulkSelector" :count="bulkCount" :facets="facets"
+                @close="bulkEditOpen = false" @applied="onBulkApplied" />
+
+            <!-- One document. Same dialog as the import defaults, minus the path rules: a document
+                 that already exists has a path, so a rule that guesses one has nothing to do. -->
+            <MetadataDialog v-if="editDoc" :model-value="editDocMetadata" :facets="facets"
+                :fields="docFields" :list-fields="docListFields" :show-rules="false"
+                title="Document metadata" :subtitle="editDoc.displayName" save-label="Save"
+                note="Saved here; pushing to Gemini re-indexes it."
+                @update:modelValue="saveDocument" @close="editDoc = null" />
+
+            <ConfirmDialog :open="bulkDeleteOpen" :busy="bulkDeleting"
+                :title="'Delete ' + bulkCount.toLocaleString() + ' document' + (bulkCount === 1 ? '' : 's') + '?'"
+                :confirm-label="'Delete ' + bulkCount.toLocaleString()" busy-label="Deleting…"
+                @confirm="confirmBulkDelete" @close="bulkDeleteOpen = false">
+                <p>They are removed from Gemini as well as from here. This cannot be undone.</p>
+                <ul v-if="deleteSample.length" class="mt-3 space-y-0.5 text-xs" :class="[$styles.muted]">
+                    <li v-for="name in deleteSample" :key="name" class="truncate">{{ name }}</li>
+                    <li v-if="bulkCount > deleteSample.length">and {{ (bulkCount - deleteSample.length).toLocaleString() }} more</li>
+                </ul>
+            </ConfirmDialog>
+            <SyncReport :syncResult="syncResult" :syncing="syncing" :pruning="pruning"
+                @sync="syncStore" @prune="pruneStore" />
 
             <div class="flex justify-between items-center dark:border-gray-700">
                 <div>
@@ -876,7 +1110,7 @@ const FileStoreDetails = {
                 <button type="button"
                     @click="deleteStore"
                     :disabled="deleting"
-                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <svg v-if="deleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -900,13 +1134,432 @@ const FileStoreDetails = {
         const categories = ref([])
         const docs = ref([])
         const docsLoading = ref(false)
-        const newCategoryName = ref('')
+        const deletingDocs = ref(new Set())
         const reuploadingDocs = ref(new Set())
         const syncing = ref(false)
+        const pruning = ref(false)
         const syncResult = ref(null)
         const deleting = ref(false)
+        const facets = ref({})
+        const pendingIds = ref([])
+        const PAGE_SIZE = 10
+        const facetTotal = ref(0)
+        const selected = ref(new Set())
+        const selectAllMatching = ref(false)
+        // Pending state used to live in the banner component. It now feeds an ambient count on
+        // the Coverage button and the dialog's sync section, so it belongs here.
+        const pending = ref({ count: 0 })
+        const pendingWorker = ref({})
+        const pushing = ref(false)
+        const coverageOpen = ref(false)
+        let pendingTimer = null
+
+        async function refreshPending() {
+            const api = await ext.getJson(`/documents/pending?filestoreId=${props.storeId}`)
+            if (api.error) return
+            pending.value = api.response || { count: 0 }
+            pendingWorker.value = api.response?.worker || {}
+            clearTimeout(pendingTimer)
+            // Only poll while something is in flight; an idle store shouldn't be chatty.
+            if (pendingWorker.value.running || pending.value.uploading) pendingTimer = setTimeout(refreshPending, 3000)
+            else loadDocuments()   // the worker finished: pick up uploadedAt so spinners stop
+        }
+
+        async function pushToGemini() {
+            pushing.value = true
+            try {
+                const api = await ext.postJson(`/filestores/${props.storeId}/reindex`, {})
+                if (api.error) return ext.setError(api.error)
+                await reload()
+            } finally { pushing.value = false }
+        }
+
+        async function cancelPush() {
+            await ext.postJson('/worker/cancel', {})
+            refreshPending()
+        }
+
+        onBeforeUnmount(() => clearTimeout(pendingTimer))
+
         let pollTimer = null
         let lastRequestId = 0
+
+        // --- facets ------------------------------------------------------------------
+        // Derived from the documents, so the rail, the autocomplete and the coverage strip all
+        // read the same numbers.
+        async function loadFacetData() {
+            const res = await loadFacets(props.storeId, FACET_FIELDS)
+            if (!res) return
+            facets.value = res.facets || {}
+            facetTotal.value = res.total || 0
+        }
+
+        const activeFacets = computed(() => {
+            const out = {}
+            FACET_FIELDS.forEach(f => {
+                const v = f === 'category' ? ext.prefs.category : ext.prefs['facet_' + f]
+                if (v !== undefined && v !== null) out[f] = v
+            })
+            return out
+        })
+        const activeChips = computed(() => Object.entries(activeFacets.value))
+        const quickFilterFields = ['docType', 'status', 'locale', 'product', 'versions', 'tags']
+        const quickFilterLabels = {
+            docType: 'doc type', status: 'status', locale: 'locale', product: 'product',
+            versions: 'versions', tags: 'tags',
+        }
+        const quickFilterLabel = field => quickFilterLabels[field] || field
+        const availableQuickFilters = computed(() => quickFilterFields.filter(field =>
+            ext.prefs['facet_' + field] == null
+            && ext.prefs.missing !== field
+            && ((facets.value?.[field]?.values || []).length || facets.value?.[field]?.null)))
+
+        const filterChips = computed(() => {
+            const out = { ...activeFacets.value }
+            delete out.category                       // a location, shown in the breadcrumb
+            if (ext.prefs.missing) out[ext.prefs.missing] = ''   // FilterChips renders '' as (none)
+            if (pendingIds.value.length) out['Sync status'] = 'differs from Gemini'
+            return out
+        })
+
+        function removeFilter(field) {
+            if (field === 'Sync status') {
+                pendingIds.value = []
+                ext.setPrefs({ page: 1 })
+                loadDocuments()
+                return
+            }
+            if (ext.prefs.missing === field) {
+                ext.setPrefs({ page: 1, missing: null })
+                loadDocuments()
+                return
+            }
+            pickFacet(field, null)
+        }
+
+        // --- explorer ------------------------------------------------------------------
+        // A search or a metadata filter spans folders, so the list stops being a directory
+        // listing and becomes results. Everything that differs between the two hangs off this.
+        const searching = computed(() => !!(ext.prefs.q || ext.prefs.missing || pendingIds.value.length
+            || FACET_FIELDS.some(f => f !== 'category' && ext.prefs['facet_' + f] != null && ext.prefs['facet_' + f] !== '')))
+
+        // Browsing the top level. Its documents are the ones in no folder at all - showing the
+        // whole store here would contradict the folder rows sitting directly above them.
+        const browsingRoot = computed(() => !searching.value && ext.prefs.category == null)
+
+        const parentCategory = computed(() => {
+            const cat = ext.prefs.category
+            if (cat == null || cat === '') return null
+            return cat.includes('/') ? cat.slice(0, cat.lastIndexOf('/')) : null
+        })
+
+        // The immediate children of wherever we are - what a folder listing shows.
+        const childFolders = computed(() => {
+            const cat = ext.prefs.category
+            const roots = facets.value?.category?.tree || []
+            if (cat == null) return roots.filter(n => n.path !== '')
+            if (cat === '') return []          // (uncategorised) is a leaf by construction
+            const find = nodes => (nodes || []).reduce((hit, n) =>
+                hit || (n.path === cat ? n : find(n.children)), null)
+            return find(roots)?.children || []
+        })
+        const folderCount = computed(() => childFolders.value.length)
+        const folderTotal = computed(() => {
+            let n = 0
+            const walk = nodes => (nodes || []).forEach(x => { n++; walk(x.children) })
+            walk(facets.value?.category?.tree)
+            return n
+        })
+
+        function clearFilters() {
+            pendingIds.value = []
+            const patch = { page: 1, missing: null }
+            FACET_FIELDS.filter(f => f !== 'category').forEach(f => { patch['facet_' + f] = null })
+            ext.setPrefs(patch)
+            loadDocuments()
+        }
+
+        function reviewPending(ids) {
+            // Narrow the list to exactly the documents the banner is counting, so "which ones?"
+            // has an answer that isn't "read the whole store".
+            pendingIds.value = ids || []
+            const patch = { page: 1, q: '', category: null, missing: null }
+            FACET_FIELDS.filter(f => f !== 'category').forEach(f => { patch['facet_' + f] = null })
+            ext.setPrefs(patch)
+            loadDocuments()
+        }
+
+        /**
+         * The metadata_filter a chat over this selection would send.
+         *
+         * Shown because the grammar beyond `=` isn't documented, so this is how you tell a syntax
+         * problem from an empty result - and it's what gets reused in an assistant's config.
+         * Keys are snake_case: a camelCase key indexes fine and then never matches.
+         */
+        const filterExpression = computed(() => {
+            const parts = []
+            for (const [field, value] of Object.entries(activeFacets.value)) {
+                if (value === null || value === undefined || value === '') continue
+                const key = field.replace(/[A-Z]/g, c => '_' + c.toLowerCase())
+                if (field === 'category') parts.push(`category_path:"${value}"`)
+                else if (LIST_FIELDS.includes(field)) parts.push(`${key}:"${value}"`)
+                else parts.push(`${key}="${value}"`)
+            }
+            return parts.join(' AND ')
+        })
+        const chatFilters = computed(() => Object.entries(activeFacets.value)
+            .filter(([, value]) => value !== null && value !== undefined && value !== '')
+            .map(([field, value]) => ({
+                field,
+                value,
+                label: field === 'category' ? 'category' : quickFilterLabel(field),
+            })))
+        const askAboutTitle = computed(() => chatFilters.value.length
+            ? 'Ask a question using:\n' + chatFilters.value.map(f => `${f.label} = ${f.value}`).join('\n')
+            : 'Ask a question over every document in this store')
+
+        function pickFacet(field, value, storeWide = false) {
+            clearSelection()
+            if (field === 'category') return selectCategory(value)
+            ext.setPrefs({ page: 1, ...(storeWide ? { category: null } : {}), ['facet_' + field]: value })
+            loadDocuments()
+        }
+
+        function showMissing(field, storeWide = false) {
+            clearSelection()
+            ext.setPrefs({ page: 1, ...(storeWide ? { category: null } : {}), missing: field })
+            loadDocuments()
+        }
+
+        // --- selection ---------------------------------------------------------------
+        // Tracked by id so it survives paging; losing a selection because you paged is the
+        // fastest way to make someone give up on a backfill.
+        function toggleDoc(id) {
+            const next = new Set(selected.value)
+            next.has(id) ? next.delete(id) : next.add(id)
+            selected.value = next
+            selectAllMatching.value = false
+        }
+        const allOnPageSelected = computed(() =>
+            docs.value.length > 0 && docs.value.every(d => selected.value.has(d.id)))
+        function togglePage() {
+            selected.value = allOnPageSelected.value ? new Set() : new Set(docs.value.map(d => d.id))
+            selectAllMatching.value = false
+        }
+        function clearSelection() {
+            selected.value = new Set()
+            selectAllMatching.value = false
+        }
+
+        /**
+         * How many documents the current filter matches.
+         *
+         * Derived from the facet counts rather than a total on the documents response. Null when
+         * the combination can't be counted exactly (two or more facets), which hides the
+         * "select all matching" escalation instead of showing a number that might be wrong -
+         * page selection and bulk apply still work.
+         */
+        const totalDocs = computed(() => matchCount.value)
+
+        const bulkCount = computed(() => selectAllMatching.value ? (totalDocs.value || 0) : selected.value.size)
+        // The filter form matters at scale: shipping 12,000 ids over the wire is not the plan,
+        // and a filter is a stable description of intent that can be re-run.
+        const bulkSelector = computed(() => selectAllMatching.value
+            ? { filter: { filestoreId: Number(props.storeId), ...activeFacets.value } }
+            : { ids: [...selected.value] })
+
+        // --- editing -----------------------------------------------------------------
+        const bulkEditOpen = ref(false)
+        const bulkDeleteOpen = ref(false)
+        const bulkDeleting = ref(false)
+        const deleteSample = ref([])
+        const editDoc = ref(null)
+
+        async function onBulkApplied() {
+            bulkEditOpen.value = false
+            clearSelection()
+            await reload()
+        }
+
+        function editDocument(doc) { editDoc.value = doc }
+
+        const editDocMetadata = computed(() => {
+            const doc = editDoc.value
+            const defaults = {}
+            for (const { key } of [...DOC_FIELDS, ...META_LIST_FIELDS]) {
+                const v = doc?.[key]
+                if (v !== null && v !== undefined && v !== '') defaults[key] = v
+            }
+            return { defaults }
+        })
+
+        /**
+         * Save one document by diffing the form against what it already said.
+         *
+         * The dialog reports the values it holds rather than which ones you touched, so a field
+         * that had a value and no longer does is how a clear arrives. Diffing also keeps the
+         * untouched fields out of the request: `set` on all seven would mark the document pending
+         * over edits nobody made, and pending costs a re-index.
+         */
+        async function saveDocument(meta) {
+            const doc = editDoc.value
+            if (!doc) return
+            const defaults = meta?.defaults || {}
+            const changes = []
+            for (const { key } of [...DOC_FIELDS, ...META_LIST_FIELDS]) {
+                const list = LIST_FIELDS.includes(key)
+                const before = list ? (doc[key] || []) : (doc[key] ?? '')
+                const after = list ? (defaults[key] || []) : (defaults[key] ?? '')
+                if (list ? JSON.stringify(before) === JSON.stringify(after) : before === after) continue
+                changes.push(list ? (after.length ? { field: key, op: 'set', value: after } : { field: key, op: 'clear' })
+                                  : (after ? { field: key, op: 'set', value: after } : { field: key, op: 'clear' }))
+            }
+            if (!changes.length) return
+            const api = await ext.postJson('/documents/bulk', { ids: [doc.id], changes })
+            if (api.error) return ext.setError(api.error)
+            await reload()
+        }
+
+        async function openBulkDelete() {
+            deleteSample.value = []
+            bulkDeleteOpen.value = true
+            // Named documents, from the same selector the delete will use. "Delete 412 documents"
+            // is otherwise a number taken on trust - and a filter selection has no rows on screen
+            // to check it against.
+            const api = await ext.postJson('/documents/summary', { ...bulkSelector.value, fields: [] })
+            if (!api.error) deleteSample.value = api.response?.sample || []
+        }
+
+        async function confirmBulkDelete() {
+            bulkDeleting.value = true
+            try {
+                const api = await ext.postJson('/documents/delete', bulkSelector.value)
+                if (api.error) return ext.setError(api.error)
+                const failed = api.response?.errors || []
+                bulkDeleteOpen.value = false
+                clearSelection()
+                await loadFilestores()
+                await refresh()
+                // Deleted what it could and named what it couldn't, rather than reporting success
+                // for a batch that was partly refused.
+                if (failed.length) ext.setError({ message:
+                    `Deleted ${api.response.deleted} of ${api.response.selected}. ${failed[0].displayName}: ${failed[0].error}` })
+            } finally { bulkDeleting.value = false }
+        }
+
+        function docMeta(doc) {
+            return ['docType', 'status', 'locale', 'product', 'versions', 'tags']
+                .filter(k => doc[k] != null && doc[k] !== '' && !(Array.isArray(doc[k]) && !doc[k].length))
+                .flatMap(k => (Array.isArray(doc[k]) ? doc[k] : [doc[k]])
+                    .map((v, i) => ({ k, v, id: `${k}:${i}:${v}` })))
+        }
+
+        async function reload() {
+            await Promise.all([loadFacetData(), loadDocuments()])
+            await refreshPending()
+        }
+
+        // --- import ------------------------------------------------------------------
+        // A preview is always shown before anything is indexed, so the operator sees the cost
+        // (and which rules matched) before committing.
+        const importPreview = ref(null)
+        // Explore is where the time is spent, so it's the landing view; the choice is remembered.
+        const view = ref(ext.prefs.view === 'import' ? 'import' : 'explore')
+        watch(view, v => ext.setPrefs({ view: v }))
+        const importCategory = ref(null)
+        const sourceCount = ref(0)
+        const sourceListVersion = ref(0)
+        const importPanel = ref(null)
+        const uploadProgress = ref(null)
+        const uploadStatus = computed(() => {
+            const total = Number(uploadProgress.value?.queued || 0)
+            const remaining = Math.min(total, Number(pending.value.uploading || 0))
+            const done = Math.max(0, total - remaining)
+            const noun = total === 1 ? 'document' : 'documents'
+            const destination = uploadProgress.value?.category || 'Gemini'
+            return remaining
+                ? `Uploading ${done.toLocaleString()}/${total.toLocaleString()} ${noun} to ${destination}…`
+                : `Uploaded ${total.toLocaleString()}/${total.toLocaleString()} ${noun} to ${destination}.`
+        })
+
+        async function loadSourceCount() {
+            const api = await ext.getJson(`/sources?filestoreId=${props.storeId}`)
+            if (!api.error) sourceCount.value = (api.response || []).length
+        }
+
+        /**
+         * Jump to Import with the category you were browsing already filled in.
+         *
+         * This is how a category gets created now - there's no "new category" box, because a
+         * category with no documents in it means nothing once categories are derived from imports.
+         */
+        function importInto(category) {
+            importCategory.value = category || null
+            view.value = 'import'
+        }
+
+        function onImportPreviewing() { uploadProgress.value = null }
+
+        function onImportPreview(payload) {
+            uploadProgress.value = null
+            importPreview.value = payload
+        }
+
+        async function onImported() {
+            await Promise.all([reload(), loadSourceCount()])
+            sourceListVersion.value++
+        }
+
+        async function onUploadImported(result) {
+            uploadProgress.value = {
+                queued: Number(result?.queued || 0),
+                category: result?.category || null,
+            }
+            await onImported()
+        }
+
+        function viewUploads() {
+            pendingIds.value = []
+            const patch = {
+                page: 1,
+                q: '',
+                missing: null,
+                category: uploadProgress.value?.category ?? null,
+                sortBy: 'uploading',
+            }
+            FACET_FIELDS.filter(f => f !== 'category').forEach(f => { patch['facet_' + f] = null })
+            ext.setPrefs(patch)
+            view.value = 'explore'
+            loadDocuments()
+        }
+
+        async function confirmImport() {
+            const { source, keep } = importPreview.value || {}
+            if (!source) return
+            const api = await ext.postJson(`/sources/${source.id}/run`, { dryRun: false })
+            if (api.error) return ext.setError(api.error)
+            // A one-off leaves no source behind; it existed only to carry the config through
+            // the same pipeline a recurring import uses.
+            if (!keep) await ext.deleteJson(`/sources/${source.id}?documents=keep`)
+            uploadProgress.value = {
+                queued: Number(api.response?.queued || 0),
+                category: source.category?.prefix || null,
+            }
+            importPreview.value = null
+            importPanel.value?.resetAfterImport()
+            await onImported()
+        }
+
+        async function dismissImport() {
+            const { source } = importPreview.value || {}
+            // Always clean up, even when "Save as a recurring import" was ticked: a preview that
+            // was never confirmed has never run, and a saved import that has never imported
+            // anything is just a confusing "Not run yet" row nobody asked for. Ticking the box
+            // states an intent; completing the import is what acts on it.
+            if (source) await ext.deleteJson(`/sources/${source.id}?documents=keep`)
+            importPreview.value = null
+            await loadSourceCount()
+        }
 
         const total = computed(() => {
             return {
@@ -915,36 +1568,52 @@ const FileStoreDetails = {
             }
         })
 
-        const currentCategoryCount = computed(() => {
-            if (ext.prefs.category === null) {
-                return total.value.count
-            }
-            const cat = categories.value.find(c => c.category === ext.prefs.category)
-            return cat ? cat.count : 0
-        })
+        // Straight from the count of the query that produced the rows, so the pager can't claim
+        // pages the filter doesn't have.
+        const totalPages = computed(() => Math.ceil(matchCount.value / PAGE_SIZE))
 
-        const totalPages = computed(() => {
-            return Math.ceil(currentCategoryCount.value / 10)
-        })
+        // One place that describes "what is on screen". The count endpoint is handed the same
+        // object, which is what stops the pager and the list from disagreeing.
+        function documentQuery() {
+            const params = new URLSearchParams({ filestoreId: props.storeId })
+            if (ext.prefs.q) params.append('q', ext.prefs.q)
+            if (pendingIds.value.length) params.append('ids_in', pendingIds.value.join(','))
+            // One comma-joined `null`: aiohttp's MultiDict hands the handler only the first value
+            // for a repeated key, so two appends would silently drop one filter.
+            const nulls = []
+            if (ext.prefs.missing) nulls.push(ext.prefs.missing)
+            if (browsingRoot.value || ext.prefs.category === '') {
+                nulls.push('category')
+            } else if (ext.prefs.category != null) {
+                // Searching from a folder searches the folder *and below* - the exact match that
+                // makes a directory listing correct makes a search useless.
+                params.append(searching.value ? 'categoryUnder' : 'category', ext.prefs.category)
+            }
+            if (nulls.length) params.append('null', [...new Set(nulls)].join(','))
+            // sql_filter() accepts any query parameter matching a column, so the other facets
+            // needed no new server code.
+            FACET_FIELDS.filter(f => f !== 'category').forEach(f => {
+                const v = ext.prefs['facet_' + f]
+                if (v != null && v !== '') params.append(f, v)
+            })
+            return params
+        }
+
+        const matchCount = ref(0)
+        async function loadCount() {
+            const api = await ext.getJson(`/documents/count?${documentQuery().toString()}`)
+            if (!api.error) matchCount.value = api.response?.count ?? 0
+        }
 
         async function loadDocuments() {
             const requestId = ++lastRequestId
             docsLoading.value = true
+            loadCount()
             try {
-                const params = new URLSearchParams({
-                    filestoreId: props.storeId,
-                    take: 10,
-                    skip: (ext.prefs.page - 1) * 10,
-                    sort: ext.prefs.sortBy || '-uploadedAt',
-                })
-                if (ext.prefs.q) params.append('q', ext.prefs.q)
-                if (ext.prefs.category != null) {
-                    if (ext.prefs.category === '') {
-                        params.append('null', 'category')
-                    } else {
-                        params.append('category', ext.prefs.category)
-                    }
-                }
+                const params = documentQuery()
+                params.append('take', PAGE_SIZE)
+                params.append('skip', (ext.prefs.page - 1) * PAGE_SIZE)
+                params.append('sort', ext.prefs.sortBy || '-uploadedAt')
 
                 const api = await ext.getJson(`/documents?${params.toString()}`)
                 if (requestId !== lastRequestId) return
@@ -982,11 +1651,14 @@ const FileStoreDetails = {
         async function refresh() {
             await Promise.all([
                 loadDocumentCategories(),
+                loadFacetData(),
                 loadDocuments(),
+                loadSourceCount(),
             ])
         }
 
         function selectCategory(category) {
+            pendingIds.value = []
             ext.setPrefs({
                 page: 1,
                 category,
@@ -995,18 +1667,7 @@ const FileStoreDetails = {
             loadDocuments()
         }
 
-        function createNewCategory() {
-            if (!newCategoryName.value.trim()) return
-
-            const categoryName = newCategoryName.value.trim()
-            newCategoryName.value = ''
-
-            // Select the newly created category
-            selectCategory(categoryName)
-        }
-
         watch(() => props.storeId, () => {
-            newCategoryName.value = ''
             ext.setPrefs({
                 page: 1,
             })
@@ -1046,8 +1707,7 @@ const FileStoreDetails = {
                 }
 
                 let url = `/filestores/${store.value.id}/upload`
-                // Use newCategoryName if being typed, otherwise use ext.prefs.category
-                const categoryToUse = newCategoryName.value.trim() || ext.prefs.category
+                const categoryToUse = ext.prefs.category
 
                 if (categoryToUse != null && categoryToUse !== '') {
                     url += `?category=${encodeURIComponent(categoryToUse)}`
@@ -1058,15 +1718,6 @@ const FileStoreDetails = {
                 if (api.error) {
                     ctx.setError(api.error)
                 } else {
-                    // If a new category was created via upload, clear the input and select it
-                    if (newCategoryName.value.trim()) {
-                        newCategoryName.value = ''
-                    }
-
-                    if (categoryToUse != ext.prefs.category) {
-                        selectCategory(categoryToUse)
-                    }
-
                     // Switch to "uploading" sort to show upload progress
                     ext.setPrefs({ sortBy: 'uploading' })
 
@@ -1137,14 +1788,22 @@ const FileStoreDetails = {
         }
 
         async function deleteDocument(doc) {
+            if (deletingDocs.value.has(doc.id)) return
             if (!confirm(`Are you sure you want to delete "${doc.displayName}"? This cannot be undone.`)) return
 
-            const api = await ext.deleteJson("/documents/" + doc.id)
-            if (api.error) {
-                ext.setError(api.error)
-            } else {
-                await loadFilestores()
-                await refresh()
+            deletingDocs.value.add(doc.id)
+            deletingDocs.value = new Set(deletingDocs.value)
+            try {
+                const api = await ext.deleteJson("/documents/" + doc.id)
+                if (api.error) {
+                    ext.setError(api.error)
+                } else {
+                    await loadFilestores()
+                    await refresh()
+                }
+            } finally {
+                deletingDocs.value.delete(doc.id)
+                deletingDocs.value = new Set(deletingDocs.value)
             }
         }
 
@@ -1173,6 +1832,26 @@ const FileStoreDetails = {
             }
         }
 
+        /**
+         * Drop the extra Gemini copies, then re-sync so the states settle.
+         *
+         * The re-sync is the point: DUPLICATE_FILE is written by sync and cleared by sync, so
+         * without it every row keeps its red badge after the cause is gone.
+         */
+        async function pruneStore() {
+            if (!store.value) return
+            pruning.value = true
+            try {
+                const api = await ext.postJson(`/filestores/${store.value.id}/prune`, {})
+                if (api.error) return ext.setError(api.error)
+                const failed = api.response?.errors || []
+                if (failed.length) ext.setError({ message:
+                    `Removed ${api.response.removed}, but ${failed.length} could not be deleted: ${failed[0].error}` })
+                await loadFilestores()
+                await syncStore()
+            } finally { pruning.value = false }
+        }
+
         async function syncStore() {
             if (!store.value) return
 
@@ -1199,7 +1878,6 @@ const FileStoreDetails = {
         return {
             ext,
             total,
-            currentCategoryCount,
             totalPages,
             store,
             deleting,
@@ -1209,6 +1887,8 @@ const FileStoreDetails = {
             reuploadingDocs,
             syncStore,
             syncing,
+            pruneStore,
+            pruning,
             syncResult,
             SyncReport,
             loading,
@@ -1218,14 +1898,60 @@ const FileStoreDetails = {
             onDrop,
             dragover,
             docs,
+            deletingDocs,
             loadDocuments,
             docsLoading,
             formatDate,
             categories,
             selectCategory,
-            newCategoryName,
-            createNewCategory,
             createNewChat,
+            // metadata + ingest
+            facets,
+            facetTotal,
+            activeFacets,
+            activeChips,
+            filterExpression, chatFilters, askAboutTitle,
+            pickFacet,
+            showMissing,
+            selected,
+            selectAllMatching,
+            allOnPageSelected,
+            toggleDoc,
+            togglePage,
+            clearSelection,
+            bulkCount,
+            bulkSelector,
+            onBulkApplied,
+            bulkEditOpen,
+            bulkDeleteOpen,
+            bulkDeleting,
+            deleteSample,
+            openBulkDelete,
+            confirmBulkDelete,
+            editDoc,
+            editDocument,
+            editDocMetadata,
+            saveDocument,
+            docFields: DOC_FIELDS,
+            docListFields: META_LIST_FIELDS,
+            totalDocs,
+            pending, pendingWorker, pushing, coverageOpen, pushToGemini, cancelPush,
+            filterChips, removeFilter, availableQuickFilters, quickFilterLabel,
+            matchCount,
+            searching, browsingRoot, parentCategory, childFolders, folderCount, folderTotal,
+            clearFilters, reviewPending, facetFields: FACET_FIELDS,
+            docMeta,
+            reload,
+            view,
+            sourceCount, sourceListVersion, importPanel, uploadProgress, uploadStatus,
+            importCategory,
+            importInto,
+            onImported, onUploadImported, viewUploads,
+            importPreview,
+            onImportPreviewing,
+            onImportPreview,
+            confirmImport,
+            dismissImport,
         }
     }
 }
@@ -1268,18 +1994,28 @@ const GeminiPage = {
 const GeminiHeader = {
     template: `
         <div v-if="fileSearch" class="flex space-x-1 items-center cursor-pointer text-xs rounded transition-colors border" :class="[$styles.tagLabel]"
-            :title="fileSearch.description ? fileSearch.description : 'Gemini File Search'"
+            :title="fileSearch.title"
             @click="fileSearch.url ? $ctx.to(fileSearch.url) : null" style="line-height: 20px;"
         >
             <svg class="ml-1 size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Gemini File Search</title><path fill="currentColor" d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14"/></svg>
-            <span class="inline-block mr-1">{{fileSearch.description}}</span>
-            <span v-if="fileSearch.category" class="px-1 font-semibold" :class="[$styles.mutedIcon]" :title="'Search in category ' + fileSearch.category">
-                📂{{fileSearch.category}}
+            <span class="inline-block mr-1">{{fileSearch.description}}{{fileSearch.categoryPath}}<template v-if="fileSearch.otherFilterCount"> ({{ fileSearch.otherFilterCount }})</template></span>
+            <span v-if="fileSearch.document" class="px-1 font-semibold inline-flex items-center gap-1" :class="[$styles.mutedIcon]" :title="'Search in document ' + fileSearch.document">
+                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                {{fileSearch.document}}
             </span>
-            <span v-else-if="fileSearch.document" class="px-1 font-semibold" :class="[$styles.mutedIcon]" :title="'Search in document ' + fileSearch.document">
-                📄 {{fileSearch.document}}
+            <span v-else-if="!fileSearch.category && !fileSearch.filters?.length" class="mr-1 inline-flex items-center" title="Search All Documents">
+                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M16 6l4 14"/>
+                    <path d="M12 6v14"/>
+                    <path d="M8 8v12"/>
+                    <path d="M4 4v16"/>
+                </svg>
             </span>
-            <span v-else class="mr-1" title="Search All Documents">📚</span>
         </div>
     `,
     props: {
@@ -1294,6 +2030,7 @@ const GeminiHeader = {
             const ret = {
                 name: filestoreName || 'File Search',
                 description: lastLeftPart(rightPart(filestoreName || '', '/'), '-') || '',
+                filters: def.filters || [],
             }
             if (def.category) {
                 ret.category = def.category
@@ -1301,16 +2038,28 @@ const GeminiHeader = {
             if (def.document) {
                 ret.document = def.document
             }
+            const categoryFilter = ret.filters.find(f => f.field === 'category')
+            if (categoryFilter) {
+                ret.category = categoryFilter.value
+            }
+            ret.categoryPath = ret.category
+                ? `/${String(ret.category).replace(/^\/+|\/+$/g, '')}`
+                : ''
+            ret.otherFilterCount = ret.filters.filter(f => f.field !== 'category').length
             const filestore = ext.state.filestores?.find(f => f.name === filestoreName)
             if (filestore) {
                 ret.description = filestore.displayName
                 ret.url = `/gemini/filestores/${filestore.id}`
             }
+            ret.title = ret.filters.length
+                ? ret.description + '\n' + ret.filters.map(f => `${f.label || f.field} = ${f.value}`).join('\n')
+                : ret.description || 'Gemini File Search'
             if (!ret.category && tool.metadata_filter) {
                 const field = leftPart(tool.metadata_filter, '=')
                 const value = rightPart(tool.metadata_filter, '=')
                 if (field === 'category' && value) {
                     ret.category = value
+                    ret.categoryPath = `/${String(value).replace(/^\/+|\/+$/g, '')}`
                 }
             }
             return ret
@@ -1321,11 +2070,82 @@ const GeminiHeader = {
     }
 }
 
-const GeminiFooter = {
+/**
+ * Resolves a grounding chunk to the source a reader should be sent to.
+ *
+ * Preference order is deliberate: the document's own `sourceUrl` (the customer's live page)
+ * beats the URI the provider echoed back, which beats a download of the cached upload.
+ * Nobody wants a support answer citing `/~cache/ab/ab12…md`.
+ */
+function resolveSource(chunk) {
+    const rc = chunk?.retrievedContext || chunk?.web || {}
+    const title = rc.title || rc.documentName || 'Source'
+    const doc = Object.values(ext.state.documentsCache)
+        .find(d => d.displayName === rc.title)
+    const url = doc?.sourceUrl || rc.uri || (doc ? doc.url + '?download' : null)
+    return { title, url, doc, text: rc.text }
+}
+
+function escapeAttr(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+/**
+ * Rewrites an answer to carry inline [n] citation markers.
+ *
+ * `groundingSupports` give the byte range of each claim in the UTF-8 answer plus the sources
+ * backing it, so the markers land on the sentence they support instead of all being dumped at
+ * the end. The stored message is never modified - this runs at render time, so copying the
+ * message still yields exactly what the model wrote.
+ */
+function withInlineCitations(content, { message }) {
+    const supports = message?.groundingMetadata?.groundingSupports
+    const chunks = message?.groundingMetadata?.groundingChunks
+    if (!content || typeof content !== 'string' || !supports?.length || !chunks?.length) return content
+
+    const bytes = new TextEncoder().encode(content)
+    const decoder = new TextDecoder()
+
+    // Several supports can end at the same place; group them so a claim backed by three
+    // sources renders [1][2][3] once rather than three separate superscripts.
+    const byOffset = new Map()
+    for (const support of supports) {
+        const end = support.segment?.endIndex
+        if (end == null || end < 0 || end > bytes.length) continue
+        // A split inside a multi-byte character would decode to a replacement char, so an
+        // offset that isn't on a character boundary is skipped rather than corrupting the text.
+        if (end < bytes.length && (bytes[end] & 0xC0) === 0x80) continue
+        const nums = (support.groundingChunkIndices || [])
+            .filter(i => i >= 0 && i < chunks.length)
+            .map(i => i + 1)
+        if (!nums.length) continue
+        byOffset.set(end, (byOffset.get(end) || []).concat(nums))
+    }
+    if (!byOffset.size) return content
+
+    const sources = chunks.map(resolveSource)
+    let out = ''
+    let prev = 0
+    for (const offset of [...byOffset.keys()].sort((a, b) => a - b)) {
+        out += decoder.decode(bytes.slice(prev, offset))
+        const nums = [...new Set(byOffset.get(offset))].sort((a, b) => a - b)
+        out += '<sup class="gemini-citation whitespace-nowrap">' + nums.map(n => {
+            const src = sources[n - 1]
+            const label = escapeAttr(src?.title ? `${n}. ${src.title}` : `Source ${n}`)
+            return src?.url
+                ? `<a href="${escapeAttr(src.url)}" target="_blank" rel="noopener noreferrer" title="${label}" class="px-px text-blue-600 dark:text-blue-400 no-underline hover:underline">[${n}]</a>`
+                : `<span title="${label}" class="px-px text-gray-500 dark:text-gray-400">[${n}]</span>`
+        }).join('') + '</sup>'
+        prev = offset
+    }
+    out += decoder.decode(bytes.slice(prev))
+    return out
+}
+
+const GeminiMessageFooter = {
     template: `
-        <div v-if="hasMetadata" class="mt-4 border-t pt-4 space-y-4" :class="[$styles.chromeBorder]">
-            <!-- Grounding Sources -->
-            <div v-if="groundingChunks.length > 0" class="space-y-2">
+        <div v-if="groundingChunks.length" class="mt-4 border-t pt-4 space-y-4" :class="[$styles.chromeBorder]">
+            <div class="space-y-2">
                 <div class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -1334,39 +2154,43 @@ const GeminiFooter = {
                     <span>Sources ({{ groundingChunks.length }})</span>
                 </div>
                 <div class="grid grid-cols-1 gap-2">
-                    <div v-for="(chunk, idx) in groundingChunks" :key="idx"
+                    <div v-for="(source, idx) in sources" :key="idx"
                         class="group relative bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 transition-colors">
                         <div class="flex items-start justify-between gap-2"
-                            @click="chunk.retrievedContext.text && toggleChunk(idx)"
-                            :class="{'cursor-pointer': chunk.retrievedContext.text}">
+                            @click="source.text && toggleChunk(idx)"
+                            :class="{'cursor-pointer': source.text}">
+                            <span class="shrink-0 mt-0.5 text-xs font-semibold tabular-nums" :class="[$styles.muted]">{{ idx + 1 }}.</span>
                             <div class="flex-1 min-w-0">
-                                <div v-if="getDocument(chunk)">
-                                    <a
-                                        @click.stop
-                                        :href="getDocument(chunk).url + '?download'"
-                                        class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate"
-                                        :title="'Download ' + chunk.retrievedContext.title">
-                                        {{ chunk.retrievedContext.title }}
-                                    </a>
-                                </div>
+                                <a v-if="source.url"
+                                    @click.stop
+                                    :href="source.url"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate"
+                                    :title="source.doc?.sourceUrl || source.title">
+                                    {{ source.title }}
+                                </a>
                                 <div v-else class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                    {{ chunk.retrievedContext.title }}
+                                    {{ source.title }}
                                 </div>
-                                <div v-if="chunk.retrievedContext.text" class="mt-1 text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                                    {{ chunk.retrievedContext.text.substring(0, 150) }}{{ chunk.retrievedContext.text.length > 150 ? '...' : '' }}
+                                <div v-if="source.doc?.sourceUrl" class="text-xs truncate" :class="[$styles.muted]">
+                                    {{ source.doc.sourceUrl }}
+                                </div>
+                                <div v-if="source.text" class="mt-1 text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                                    {{ source.text.substring(0, 150) }}{{ source.text.length > 150 ? '...' : '' }}
                                 </div>
                             </div>
                             <div
-                                v-if="chunk.retrievedContext.text"
-                                class="flex-shrink-0 p-1 text-gray-400 transition-colors pointer-events-none"
+                                v-if="source.text"
+                                class="shrink-0 p-1 text-gray-400 transition-colors pointer-events-none"
                                 :title="expandedChunks.has(idx) ? 'Show less' : 'Show more'">
                                 <svg class="w-4 h-4 transition-transform" :class="{'rotate-180': expandedChunks.has(idx)}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="6 9 12 15 18 9"/>
                                 </svg>
                             </div>
                         </div>
-                        <div v-if="expandedChunks.has(idx) && chunk.retrievedContext.text" class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <div class="prose prose-sm max-w-none dark:prose-invert whitespace-wrap" style="font-size:13px" v-html="$fmt.markdown(chunk.retrievedContext.text)"></div>
+                        <div v-if="expandedChunks.has(idx) && source.text" class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <div class="prose prose-sm max-w-none dark:prose-invert whitespace-wrap" style="font-size:13px" v-html="$fmt.markdown(source.text)"></div>
                         </div>
                     </div>
                 </div>
@@ -1374,31 +2198,14 @@ const GeminiFooter = {
         </div>
     `,
     props: {
-        thread: Object
+        thread: Object,
+        message: Object,
     },
     setup(props) {
         const expandedChunks = ref(new Set())
 
-        const groundingChunks = computed(() => {
-            const candidate = props.thread?.providerResponse?.candidates?.[0]
-            const chunks = candidate?.groundingMetadata?.groundingChunks || []
-            return chunks
-        })
-
-        const modelVersion = computed(() => {
-            return props.thread?.providerResponse?.modelVersion
-        })
-
-        const hasMetadata = computed(() => {
-            return groundingChunks.value.length > 0
-        })
-
-        function getDocument(chunk) {
-            const title = chunk.retrievedContext?.title
-            if (!title) return null
-            const docs = Object.values(ext.state.documentsCache)
-            return docs.find(doc => doc.displayName === title)
-        }
+        const groundingChunks = computed(() => props.message?.groundingMetadata?.groundingChunks || [])
+        const sources = computed(() => groundingChunks.value.map(resolveSource))
 
         function toggleChunk(idx) {
             if (expandedChunks.value.has(idx)) {
@@ -1411,9 +2218,9 @@ const GeminiFooter = {
         }
 
         function loadDocumentChunks(chunks) {
-            // Load documents for all grounding chunks
+            // Resolve each cited title to its local document, which is what carries sourceUrl
             const filestoreNames = chunks.map(c => c.retrievedContext?.fileSearchStore).filter(Boolean)
-            filestoreNames.forEach(name => {
+            new Set(filestoreNames).forEach(name => {
                 const filestore = ext.state.filestores.find(fs => fs.name === name)
                 if (!filestore) return
                 const displayNames = new Set(chunks
@@ -1426,17 +2233,14 @@ const GeminiFooter = {
             })
         }
 
-        onMounted(() => {
-            loadDocumentChunks(groundingChunks.value)
-        })
+        onMounted(() => loadDocumentChunks(groundingChunks.value))
+        watch(groundingChunks, chunks => loadDocumentChunks(chunks))
 
         return {
             ext,
             expandedChunks,
             groundingChunks,
-            modelVersion,
-            hasMetadata,
-            getDocument,
+            sources,
             toggleChunk,
         }
     }
@@ -1448,6 +2252,10 @@ export default {
     install(context) {
         ext = context.scope('gemini')
         ctx = context
+        initMetadata(ext, ctx)
+        initSources(ext)
+        initImport(ext)
+        initExplorer(ext)
 
         ctx.setLeftIcons({
             gemini: {
@@ -1475,14 +2283,19 @@ export default {
             }
         })
 
-        ctx.setThreadFooters({
+        // Sources hang off the message that cited them, not the thread: a thread-level footer
+        // can only ever show the most recent answer's sources, so scrolling back through a
+        // conversation attributed every earlier answer to the newest one's documents.
+        ctx.setMessageFooters({
             gemini: {
-                component: GeminiFooter,
-                show({ thread }) {
-                    return thread.provider === 'google' || thread.model?.toLowerCase().includes('gemini')
+                component: GeminiMessageFooter,
+                show({ message }) {
+                    return message?.groundingMetadata?.groundingChunks?.length > 0
                 }
             }
         })
+
+        ctx.addMessageContentFilter(withInlineCitations)
 
         ext.setState({
             filestores: [],

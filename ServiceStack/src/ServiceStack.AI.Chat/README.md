@@ -203,16 +203,29 @@ Treat enabling these as granting the model shell access to the host.
 
 ### Gemini File Search (RAG)
 
-`gemini` manages [Gemini File Search stores](https://ai.google.dev/api/file-search): documents uploaded
-in the UI are deduplicated by SHA256, saved to the cache and uploaded to Gemini by a background worker,
-then a chat can ground its answers on a store (or a single category/document) with an OpenAI-shaped
-`file_search` tool that `GoogleProvider` forwards to Gemini. `POST /ext/gemini/filestores/{id}/sync`
-reconciles the local catalogue with the store and records what didn't line up in each document's state.
+`gemini` manages [Gemini File Search stores](https://ai.google.dev/api/file-search). Documents can be
+uploaded directly (including ZIP expansion) or imported repeatably from trusted server folders with
+include/exclude globs, category derivation, metadata rules, dry-run plans, deletion rails and saved run
+history. Stable `(store, source, sourceKey)` identity makes an unchanged re-import free and lets changed
+content safely replace its previous Gemini copy only after the replacement is live.
 
-It uses `$GEMINI_API_KEY` (falling back to the key the `google` provider resolved) and self-disables
-when neither is configured. `$GEMINI_UPLOAD_MIME_TYPES` overrides the MIME type sent for specific
-extensions, e.g. `"mdx:text/markdown,cshtml:text/html"` (the default). File stores and documents are
-stored in the `ChatFilestore` and `ChatDocument` tables.
+Explorer exposes hierarchical categories and facets for document type, status, locale, product,
+versions and tags. Metadata can be edited in bulk and deliberately re-indexed. Chats preserve the
+current Explorer filters in Gemini's `metadata_filter`; streamed and non-streamed answers retain
+per-message grounding metadata for inline citations and source links. Sync reconciles local/remote
+state, while prune removes unreachable duplicate remote copies.
+
+The extension resolves `$GOOGLE_API_KEY`, then `$GEMINI_API_KEY`, then the configured `google` provider
+key, and self-disables when none is available. `$GEMINI_UPLOAD_MIME_TYPES` overrides declared MIME
+types (default `"mdx:text/markdown,cshtml:text/html"`). Uploads use bounded concurrency and transient
+failure backoff; tune them with `$GEMINI_UPLOAD_CONCURRENCY` (default `4`) and
+`$GEMINI_UPLOAD_MAX_RETRIES` (default `4`). Set `$GEMINI_WRITE_ROLE` (or `gemini_write_role` in config)
+to restrict corpus mutations to a role. Admins configure non-admin filesystem access under
+`gemini.importRoots` in the deployment-wide `config.json` or in the Import UI.
+
+File stores/documents are stored in `ChatFilestore` and `ChatDocument`; repeatable imports and their
+history use `ChatSource` and `ChatSourceRun`. Existing SQLite document tables are transactionally
+migrated from hash identity on startup.
 
 ## sync.sh
 

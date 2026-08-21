@@ -14,7 +14,7 @@ public class HtmlToMarkdownParser
     private readonly string baseUrl;
     private static readonly HashSet<string> SkipTags = new(StringComparer.OrdinalIgnoreCase)
     {
-        "script", "style", "head", "svg", "noscript", "iframe", "canvas", "template", "nav", "footer", "aside"
+        "script", "style", "head", "svg", "noscript", "iframe", "canvas", "template", "nav", "header", "footer", "aside", "form"
     };
 
     public HtmlToMarkdownParser(string baseUrl = "")

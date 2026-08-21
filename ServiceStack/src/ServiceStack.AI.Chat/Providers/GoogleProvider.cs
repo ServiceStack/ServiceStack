@@ -164,21 +164,25 @@ public class GoogleProvider : OpenAiCompatibleProvider
         // Gemini models support tool calls unless the catalogue explicitly says otherwise
         var supportsToolCalls = !hasMediaModality && modelInfo.GetBool("tool_call", defaultValue: true);
 
-        // tools → Gemini function_declarations
+        // File Search is a Gemini built-in tool and currently cannot be combined reliably with
+        // function declarations. Keep the user's selected tools intact in the thread, but isolate
+        // File Search in the provider-specific outgoing payload.
         JsonArray? tools = null;
-        // Gemini requires opting in to combine its built-in (server side) tools with function calling
-        var hasServerSideTools = false;
-        var hasFunctionDeclarations = false;
         if (supportsToolCalls && chat.GetArray("tools") is { Count: > 0 } chatTools)
         {
-            var functionDeclarations = new JsonArray();
-            var geminiTools = new JsonObject();
-            foreach (var toolNode in chatTools)
+            var fileSearch = chatTools.OfType<JsonObject>()
+                .FirstOrDefault(x => x.GetString("type") == "file_search")?["file_search"];
+            if (fileSearch != null)
             {
-                if (toolNode is not JsonObject tool)
-                    continue;
-                if (tool.GetString("type") == "function" && tool.GetObject("function") is { } fn)
+                tools = new JsonArray(new JsonObject { ["file_search"] = fileSearch.DeepClone() });
+            }
+            else
+            {
+                var functionDeclarations = new JsonArray();
+                foreach (var tool in chatTools.OfType<JsonObject>())
                 {
+                    if (tool.GetString("type") != "function" || tool.GetObject("function") is not { } fn)
+                        continue;
                     functionDeclarations.Add(new JsonObject
                     {
                         ["name"] = fn.GetString("name"),
@@ -186,19 +190,9 @@ public class GoogleProvider : OpenAiCompatibleProvider
                         ["parameters"] = SanitizeParameters(fn["parameters"]),
                     });
                 }
-                else if (tool.GetString("type") == "file_search" && tool["file_search"] is { } fileSearch)
-                {
-                    geminiTools["file_search"] = fileSearch.DeepClone();
-                    hasServerSideTools = true;
-                }
+                if (functionDeclarations.Count > 0)
+                    tools = new JsonArray(new JsonObject { ["function_declarations"] = functionDeclarations });
             }
-            if (functionDeclarations.Count > 0)
-            {
-                geminiTools["function_declarations"] = functionDeclarations;
-                hasFunctionDeclarations = true;
-            }
-            if (geminiTools.Count > 0)
-                tools = new JsonArray(geminiTools);
         }
 
         var (contents, systemPrompt) = ToGeminiContents(chat);
@@ -208,14 +202,6 @@ public class GoogleProvider : OpenAiCompatibleProvider
         var body = new JsonObject { ["contents"] = contents };
         if (tools != null)
             body["tools"] = tools;
-        // "Please enable tool_config.include_server_side_tool_invocations to use Built-in tools with Function calling"
-        if (hasServerSideTools && hasFunctionDeclarations)
-        {
-            body["toolConfig"] = new JsonObject
-            {
-                ["includeServerSideToolInvocations"] = true,
-            };
-        }
         if (SafetySettingsArray is { } safety)
             body["safetySettings"] = safety.Clone();
         if (systemPrompt != null)
@@ -454,6 +440,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
         var reasoningParts = new List<string>();
         var toolCalls = new JsonArray();
         var images = new JsonArray();
+        JsonObject? groundingAcc = null;
         string? finishReason = null;
 
         foreach (var candidateNode in response.GetArray("candidates") ?? [])
@@ -461,6 +448,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
             if (candidateNode is not JsonObject candidate)
                 continue;
             finishReason ??= candidate.GetString("finishReason");
+            groundingAcc = GeminiGrounding.Merge(groundingAcc, candidate.GetObject("groundingMetadata"));
 
             foreach (var partNode in candidate.GetObject("content")?.GetArray("parts") ?? [])
             {
@@ -530,6 +518,10 @@ public class GoogleProvider : OpenAiCompatibleProvider
             message["tool_calls"] = toolCalls;
         if (images.Count > 0)
             message["images"] = images;
+        var grounding = GeminiGrounding.Finalize(groundingAcc, message.GetString("content"),
+            trustSpans: textParts.Count <= 1);
+        if (grounding != null)
+            message["groundingMetadata"] = grounding;
 
         var usageMetadata = response.GetObject("usageMetadata");
         var inputTokens = usageMetadata.GetLong("promptTokenCount") ?? 0;
@@ -579,6 +571,8 @@ public class GoogleProvider : OpenAiCompatibleProvider
         var reasoningAcc = new StringBuilder();
         var toolCalls = new JsonArray();
         var usageAcc = new JsonObject();
+        JsonObject? groundingAcc = null;
+        JsonObject? grounding = null;
         var writer = CreateStreamWriter(context);
         var msgTimestamp = startedAt.ToUnixTimeMilliseconds();
 
@@ -596,6 +590,8 @@ public class GoogleProvider : OpenAiCompatibleProvider
                 msg["reasoning_content"] = reasoningAcc.ToString();
             if (toolCalls.Count > 0)
                 msg["tool_calls"] = toolCalls.Clone();
+            if (grounding != null)
+                msg["groundingMetadata"] = grounding.DeepClone();
             return msg;
         }
 
@@ -639,6 +635,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
                         continue;
                     if (candidate.GetString("finishReason") is { } fr)
                         finishReason = fr;
+                    groundingAcc = GeminiGrounding.Merge(groundingAcc, candidate.GetObject("groundingMetadata"));
 
                     foreach (var partNode in candidate.GetObject("content")?.GetArray("parts") ?? [])
                     {
@@ -689,6 +686,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
             return null;
         }
 
+        grounding = GeminiGrounding.Finalize(groundingAcc, contentAcc.ToString());
         await writer.WriteAsync(BuildAssistantMsg(includeModel: true), final: true).ConfigAwait();
 
         var ret = new JsonObject

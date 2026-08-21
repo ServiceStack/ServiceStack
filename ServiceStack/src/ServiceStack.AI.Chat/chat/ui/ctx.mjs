@@ -155,6 +155,8 @@ export class AppContext {
         this.updateThreadFilters = []
         this.threadHeaderComponents = {}
         this.threadFooterComponents = {}
+        this.messageFooterComponents = {}
+        this.messageContentFilters = []
         this.toolCallBodyComponents = {}
         this.userMenuItemComponents = {}
         this.top = {}
@@ -511,6 +513,31 @@ export class AppContext {
     }
     setThreadFooters(components) {
         Object.assign(this.threadFooterComponents, components)
+    }
+    /** Components rendered under an individual message, e.g. the sources an answer cited.
+     *  Each def is `{ component, show({ thread, message }) }` and is passed both as props. */
+    setMessageFooters(components) {
+        Object.assign(this.messageFooterComponents, components)
+    }
+    /** `(content, { message, thread }) => content` applied before a message is rendered as
+     *  markdown. Lets an extension annotate an answer (inline citations, highlights) without
+     *  touching the stored message, which stays exactly what the model returned. */
+    addMessageContentFilter(filter) {
+        if (typeof filter === 'function') {
+            this.messageContentFilters.push(filter)
+        }
+    }
+    messageContent(message, thread) {
+        let content = message?.content
+        for (const filter of this.messageContentFilters) {
+            try {
+                const ret = filter(content, { message, thread })
+                if (ret != null) content = ret
+            } catch (e) {
+                console.error('messageContentFilter failed', e)
+            }
+        }
+        return content
     }
     setToolCallBodies(components) {
         if (!components) return

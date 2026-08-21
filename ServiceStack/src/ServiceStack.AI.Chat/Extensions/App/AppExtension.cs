@@ -970,30 +970,38 @@ public partial class AppExtension() : ChatExtension("app")
     /// Mutates in place — reassigning an unchanged child back into its own parent is rejected
     /// by System.Text.Json ("the node already has a parent").
     /// </summary>
-    public static JsonNode? TruncateLongStrings(JsonNode? node, int maxLength = 10000)
+    public static JsonNode? TruncateLongStrings(JsonNode? node, int maxLength = 10000,
+        bool displayed = false)
     {
         switch (node)
         {
             case JsonObject obj:
                 foreach (var key in obj.Select(x => x.Key).ToList())
                 {
+                    var childDisplayed = displayed || key == "groundingMetadata";
                     if (LongStringLength(obj[key], maxLength) is { } len)
-                        obj[key] = $"({len})";
+                        obj[key] = childDisplayed
+                            ? obj[key]!.GetValue<string>()[..maxLength] + "…"
+                            : $"({len})";
                     else
-                        TruncateLongStrings(obj[key], maxLength);
+                        TruncateLongStrings(obj[key], maxLength, childDisplayed);
                 }
                 return obj;
             case JsonArray arr:
                 for (var i = 0; i < arr.Count; i++)
                 {
                     if (LongStringLength(arr[i], maxLength) is { } len)
-                        arr[i] = $"({len})";
+                        arr[i] = displayed
+                            ? arr[i]!.GetValue<string>()[..maxLength] + "…"
+                            : $"({len})";
                     else
-                        TruncateLongStrings(arr[i], maxLength);
+                        TruncateLongStrings(arr[i], maxLength, displayed);
                 }
                 return arr;
             default:
-                return LongStringLength(node, maxLength) is { } rootLen ? $"({rootLen})" : node;
+                if (LongStringLength(node, maxLength) is not { } rootLen)
+                    return node;
+                return displayed ? node!.GetValue<string>()[..maxLength] + "…" : $"({rootLen})";
         }
     }
 

@@ -145,7 +145,7 @@ public class AiChatGoogleTests
     }
 
     [Test]
-    public void Request_opts_in_to_server_side_tools_when_combined_with_function_calling()
+    public void Request_isolates_file_search_from_function_calling()
     {
         var chat = ChatJson.ParseObject("""
             {
@@ -164,9 +164,8 @@ public class AiChatGoogleTests
         var geminiTools = body["tools"]!.AsArray()[0]!.AsObject();
         Assert.That(geminiTools["file_search"]!["file_search_store_names"]!.AsArray()[0]!.GetValue<string>(),
             Is.EqualTo("fileSearchStores/docs"));
-        Assert.That(geminiTools["function_declarations"]!.AsArray().Count, Is.EqualTo(1));
-        // Gemini 400s mixing built-in tools with function calling without this opt-in
-        Assert.That(body["toolConfig"]!["includeServerSideToolInvocations"]!.GetValue<bool>(), Is.True);
+        Assert.That(geminiTools.ContainsKey("function_declarations"), Is.False);
+        Assert.That(body.ContainsKey("toolConfig"), Is.False);
 
         // only needed when both kinds of tools are sent
         var functionsOnly = ChatJson.ParseObject("""
@@ -394,5 +393,52 @@ public class AiChatGoogleTests
         Assert.That(res["usage"]!["total_tokens"]!.GetValue<long>(), Is.EqualTo(11));
         // pricing metadata resolves from the model catalogue
         Assert.That(res["metadata"]!["pricing"]!.GetValue<string>(), Is.EqualTo("0.3/2.5"));
+    }
+
+    [Test]
+    public void Grounding_merge_deduplicates_chunks_and_remaps_supports()
+    {
+        JsonObject Metadata(string title, int start, int end) => new()
+        {
+            ["groundingChunks"] = new JsonArray(new JsonObject
+            {
+                ["retrievedContext"] = new JsonObject
+                    { ["title"] = title, ["uri"] = "https://example/" + title },
+            }),
+            ["groundingSupports"] = new JsonArray(new JsonObject
+            {
+                ["segment"] = new JsonObject { ["startIndex"] = start, ["endIndex"] = end },
+                ["groundingChunkIndices"] = new JsonArray(0),
+            }),
+        };
+        JsonObject? merged = null;
+        merged = GeminiGrounding.Merge(merged, Metadata("one", 0, 5));
+        merged = GeminiGrounding.Merge(merged, Metadata("two", 6, 11));
+        merged = GeminiGrounding.Merge(merged, Metadata("one", 0, 5));
+        var grounding = GeminiGrounding.Finalize(merged, "hello world");
+
+        Assert.That(grounding!.GetArray("groundingChunks")!.Count, Is.EqualTo(2));
+        Assert.That(grounding.GetArray("groundingSupports")!.Count, Is.EqualTo(2));
+        Assert.That(grounding.GetArray("groundingSupports")![1]!["groundingChunkIndices"]![0]!.GetValue<int>(),
+            Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Streaming_response_keeps_grounding_on_the_assistant_message()
+    {
+        const string sse = """
+            data: {"candidates":[{"content":{"parts":[{"text":"Redis works"}]},"groundingMetadata":{"groundingChunks":[{"retrievedContext":{"title":"redis.md","uri":"https://docs/redis"}}],"groundingSupports":[{"segment":{"startIndex":0,"endIndex":11,"text":"Redis works"},"groundingChunkIndices":[0]}]}}]}
+
+            data: {"candidates":[{"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":3,"candidatesTokenCount":2}}
+            """;
+        var res = await CreateProvider().HandleGeminiStreamAsync(
+            SseResponse(sse), ChatJson.ParseObject("""{"model":"gemini-2.5-flash","messages":[]}"""),
+            DateTimeOffset.UtcNow, new ChatContext());
+        var message = res!["choices"]![0]!["message"]!.AsObject();
+        var grounding = message.GetObject("groundingMetadata");
+        Assert.That(grounding, Is.Not.Null);
+        Assert.That(grounding!.GetArray("groundingChunks")![0]!["retrievedContext"]!["title"]!.GetValue<string>(),
+            Is.EqualTo("redis.md"));
+        Assert.That(grounding.GetArray("groundingSupports")!.Count, Is.EqualTo(1));
     }
 }

@@ -77,6 +77,9 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
     public Task<JsonObject> DeleteDocumentAsync(string name, CancellationToken token = default) =>
         SendAsync(HttpMethod.Delete, Url(name, "force=true"), null, token);
 
+    public Task<JsonObject> GenerateContentAsync(string model, JsonObject body, CancellationToken token = default) =>
+        SendAsync(HttpMethod.Post, Url($"models/{model}:generateContent"), body, token);
+
     // ── Uploads ──
 
     /// <summary>

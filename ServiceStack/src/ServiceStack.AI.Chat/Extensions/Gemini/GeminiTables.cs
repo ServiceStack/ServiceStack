@@ -39,6 +39,10 @@ public class ChatFilestore
     [StringLength(StringLengthAttribute.MaxText)]
     public string? Error { get; set; }
     public string? Ref { get; set; }
+    /// <summary>public | internal; access is enforced at store scope, never by metadata filters.</summary>
+    public string? Visibility { get; set; }
+    /// <summary>JSON list of metadata fields displayed as facets in Explorer.</summary>
+    public string? Facets { get; set; }
 }
 
 /// <summary>
@@ -46,7 +50,7 @@ public class ChatFilestore
 /// The file itself lives in the content-addressed cache; this row tracks both the local copy
 /// (filename/url/hash/size) and the remote Gemini document (name/state/customMetadata).
 /// </summary>
-[UniqueConstraint(nameof(FilestoreId), nameof(Hash))]
+[UniqueConstraint(nameof(FilestoreId), nameof(SourceScopeId), nameof(SourceKey))]
 public class ChatDocument
 {
     [AutoIncrement]
@@ -92,7 +96,33 @@ public class ChatDocument
     /// <summary>User-defined folder, surfaced in the UI and as a "category=" metadata_filter</summary>
     [Index]
     public string? Category { get; set; }
-    public string? Tags { get; set; }              // JSON
+    public string? SourceUrl { get; set; }
+
+    [Index]
+    public long? SourceId { get; set; }
+    /// <summary>Non-null source scope used by the portable unique constraint (SourceId ?? 0).</summary>
+    [Default(0)]
+    public long SourceScopeId { get; set; }
+    [Index]
+    public string? SourceKey { get; set; }
+    public string? SourceEtag { get; set; }
+    public string? ContentHash { get; set; }
+    public string? MetadataHash { get; set; }
+    public string? ExtractorVer { get; set; }
+    public DateTime? TombstonedAt { get; set; }
+
+    public string? CategoryPath { get; set; }       // JSON string[]
+    [Index]
+    public string? DocType { get; set; }
+    [Index]
+    public string? Status { get; set; }
+    [Index]
+    public string? Locale { get; set; }
+    [Index]
+    public string? Product { get; set; }
+    public string? Versions { get; set; }           // JSON string[]
+    public long? SourceUpdatedAt { get; set; }      // epoch seconds
+    public string? Tags { get; set; }               // JSON string[]
 
     public DateTime? StartedAt { get; set; }
     public DateTime? UploadedAt { get; set; }
@@ -101,6 +131,58 @@ public class ChatDocument
     [StringLength(StringLengthAttribute.MaxText)]
     public string? Error { get; set; }
     public string? Ref { get; set; }
+}
+
+/// <summary>A repeatable import definition such as a folder or ZIP source.</summary>
+public class ChatSource
+{
+    [AutoIncrement] public long Id { get; set; }
+    [Index] public long FilestoreId { get; set; }
+    [Alias("user"), Index] public string? User { get; set; }
+    [Index] public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public string? Name { get; set; }
+    public string? Type { get; set; }
+    public bool Enabled { get; set; } = true;
+    public string? Config { get; set; }
+    public string? Category { get; set; }
+    public string? Rules { get; set; }
+    public string? Include { get; set; }
+    public string? Exclude { get; set; }
+    public string? Extract { get; set; }
+    public string? Chunking { get; set; }
+    public string? Volatile { get; set; }
+    public string? ExtractorVer { get; set; }
+    public string? Schedule { get; set; }
+    public string? OnDelete { get; set; }
+    public string? Cursor { get; set; }
+    public long? LastRunId { get; set; }
+    public DateTime? LastRunAt { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Error { get; set; }
+}
+
+/// <summary>A dry-run preview or applied execution of a saved import.</summary>
+public class ChatSourceRun
+{
+    [AutoIncrement] public long Id { get; set; }
+    [Index] public long SourceId { get; set; }
+    [Alias("user"), Index] public string? User { get; set; }
+    [Index] public DateTime StartedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public string? Status { get; set; }
+    public bool DryRun { get; set; }
+    public int Discovered { get; set; }
+    public int Added { get; set; }
+    public int Changed { get; set; }
+    public int MetadataOnly { get; set; }
+    public int Unchanged { get; set; }
+    public int Removed { get; set; }
+    public int Skipped { get; set; }
+    public int Failed { get; set; }
+    public long Bytes { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Plan { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Log { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Error { get; set; }
 }
 
 /// <summary>Document counts + total size per category (port of GeminiDB.document_categories)</summary>
@@ -154,6 +236,8 @@ public static class GeminiDtos
         ["metadata"] = ChatDtos.ParseJson(x.Metadata),
         ["error"] = x.Error,
         ["ref"] = x.Ref,
+        ["visibility"] = x.Visibility,
+        ["facets"] = ChatDtos.ParseJson(x.Facets),
     };
 
     public static JsonObject ToDto(this ChatDocument x) => new()
@@ -176,12 +260,52 @@ public static class GeminiDtos
         ["mimeType"] = x.MimeType,
         ["state"] = x.State,
         ["category"] = x.Category,
+        ["sourceUrl"] = x.SourceUrl,
+        ["sourceId"] = x.SourceId,
+        ["sourceKey"] = x.SourceKey,
+        ["sourceEtag"] = x.SourceEtag,
+        ["contentHash"] = x.ContentHash,
+        ["metadataHash"] = x.MetadataHash,
+        ["extractorVer"] = x.ExtractorVer,
+        ["tombstonedAt"] = ChatDb.ToDateNode(x.TombstonedAt),
+        ["categoryPath"] = ChatDtos.ParseJson(x.CategoryPath),
+        ["docType"] = x.DocType,
+        ["status"] = x.Status,
+        ["locale"] = x.Locale,
+        ["product"] = x.Product,
+        ["versions"] = ChatDtos.ParseJson(x.Versions),
+        ["sourceUpdatedAt"] = x.SourceUpdatedAt,
         ["tags"] = ChatDtos.ParseJson(x.Tags),
         ["startedAt"] = ChatDb.ToDateNode(x.StartedAt),
         ["uploadedAt"] = ChatDb.ToDateNode(x.UploadedAt),
         ["metadata"] = ChatDtos.ParseJson(x.Metadata),
         ["error"] = x.Error,
         ["ref"] = x.Ref,
+    };
+
+    public static JsonObject ToDto(this ChatSource x) => new()
+    {
+        ["id"] = x.Id, ["filestoreId"] = x.FilestoreId, ["user"] = x.User,
+        ["createdAt"] = ChatDb.ToDateString(x.CreatedAt), ["updatedAt"] = ChatDb.ToDateString(x.UpdatedAt),
+        ["name"] = x.Name, ["type"] = x.Type, ["enabled"] = x.Enabled,
+        ["config"] = ChatDtos.ParseJson(x.Config), ["category"] = ChatDtos.ParseJson(x.Category),
+        ["rules"] = ChatDtos.ParseJson(x.Rules), ["include"] = ChatDtos.ParseJson(x.Include),
+        ["exclude"] = ChatDtos.ParseJson(x.Exclude), ["extract"] = ChatDtos.ParseJson(x.Extract),
+        ["chunking"] = ChatDtos.ParseJson(x.Chunking), ["volatile"] = ChatDtos.ParseJson(x.Volatile),
+        ["extractorVer"] = x.ExtractorVer, ["schedule"] = x.Schedule, ["onDelete"] = x.OnDelete,
+        ["cursor"] = ChatDtos.ParseJson(x.Cursor), ["lastRunId"] = x.LastRunId,
+        ["lastRunAt"] = ChatDb.ToDateNode(x.LastRunAt), ["error"] = x.Error,
+    };
+
+    public static JsonObject ToDto(this ChatSourceRun x) => new()
+    {
+        ["id"] = x.Id, ["sourceId"] = x.SourceId, ["user"] = x.User,
+        ["startedAt"] = ChatDb.ToDateString(x.StartedAt), ["completedAt"] = ChatDb.ToDateNode(x.CompletedAt),
+        ["status"] = x.Status, ["dryRun"] = x.DryRun, ["discovered"] = x.Discovered,
+        ["added"] = x.Added, ["changed"] = x.Changed, ["metadataOnly"] = x.MetadataOnly,
+        ["unchanged"] = x.Unchanged, ["removed"] = x.Removed, ["skipped"] = x.Skipped,
+        ["failed"] = x.Failed, ["bytes"] = x.Bytes, ["plan"] = ChatDtos.ParseJson(x.Plan),
+        ["log"] = ChatDtos.ParseJson(x.Log), ["error"] = x.Error,
     };
 
     public static JsonObject ToDto(this AiChatDocumentCategory x) => new()
