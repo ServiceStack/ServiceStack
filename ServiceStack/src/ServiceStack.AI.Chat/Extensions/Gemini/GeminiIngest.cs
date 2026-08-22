@@ -87,7 +87,7 @@ public static class GeminiIngest
     [
         ".git/**", "**/.git/**", "node_modules/**", "**/node_modules/**", "__pycache__/**",
         "**/__pycache__/**", ".venv/**", "venv/**", "dist/**", "build/**", "**/.DS_Store",
-        "**/*.lock", "**/.*/*",
+        "**/*.lock", "**/.*/*", "import.json", "**/import.json",
     ];
 
     public static Regex GlobRegex(string pattern)
@@ -424,6 +424,34 @@ public static class GeminiIngest
         using var stream = entry.Open(); using var ms = new MemoryStream(); stream.CopyTo(ms); return ms.ToArray();
     }
 
+    static JsonObject RulesForItem(JsonObject config, string type, string key, JsonObject baseRules)
+    {
+        JsonObject inherited;
+        var path = ResolvePath(config.GetString("path") ?? "");
+        if (type == "folder")
+        {
+            inherited = GeminiExtension.EffectiveImportMetadata(path, key);
+        }
+        else if (type == "zip")
+        {
+            inherited = new JsonObject();
+            using var archive = ZipFile.OpenRead(path);
+            var directory = Path.GetDirectoryName(key.Replace('/', Path.DirectorySeparatorChar)) ?? "";
+            var parts = directory.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+            var current = "";
+            foreach (var part in new string?[] { null }.Concat(parts))
+            {
+                if (part != null) current = current.Length == 0 ? part : current + "/" + part;
+                var manifest = current.Length == 0 ? "import.json" : current + "/import.json";
+                var entry = archive.GetEntry(manifest); if (entry == null) continue;
+                try { using var reader = new StreamReader(entry.Open(), Encoding.UTF8); var cfg = ChatJson.TryParseObject(reader.ReadToEnd()) ?? new JsonObject(); inherited = GeminiExtension.MergeImportMetadata(inherited, cfg.GetObject("metadata")); }
+                catch (Exception e) { throw new ArgumentException($"Invalid {manifest}: {e.Message}", e); }
+            }
+        }
+        else return baseRules;
+        return GeminiExtension.MergeImportMetadata(inherited, baseRules);
+    }
+
     public static GeminiIngestPlan BuildPlan(ChatSource source, IEnumerable<ChatDocument> existingDocs, JsonObject? overrides = null)
     {
         var plan = new GeminiIngestPlan(); var existing = existingDocs.Where(x => x.SourceKey != null).ToDictionary(x => x.SourceKey!); var seen = new HashSet<string>();
@@ -442,14 +470,15 @@ public static class GeminiIngest
             {
                 var raw = item.Fetch(); var extracted = Extract(raw, item.Key, extract);
                 if (extracted.Skip != null) { plan.Skipped.Add(new JsonObject { ["sourceKey"] = item.Key, ["reason"] = extracted.Skip }); continue; }
-                var derived = DeriveMetadata(item.Key, rules, extracted.Frontmatter, item.Native, overrides);
+                var itemRules = RulesForItem(config, source.Type ?? "folder", item.Key, rules);
+                var derived = DeriveMetadata(item.Key, itemRules, extracted.Frontmatter, item.Native, overrides);
                 if (derived.Metadata == null) { plan.Skipped.Add(new JsonObject { ["sourceKey"] = item.Key, ["reason"] = "excluded by rule" }); continue; }
                 foreach (var pattern in derived.Matched) plan.RulesMatched[pattern] = plan.RulesMatched.GetValueOrDefault(pattern) + 1;
                 derived.Metadata["category"] = category; derived.Metadata["categoryPath"] = new JsonArray(GeminiMetadata.CategoryAncestors(category).Select(x => (JsonNode)x).ToArray());
                 if (derived.Metadata.GetString("sourceUrl") is { } sourceUrl)
                     derived.Metadata["sourceUrl"] = ExpandTemplate(sourceUrl, TemplateValues(item.Key, category, item.Title, categoryConfig.GetString("root")));
                 var contentHash = ContentHash(extracted.Text!, volatilePatterns); var metadataHash = MetadataHash(derived.Metadata);
-                var entry = new GeminiIngestEntry { SourceKey = item.Key, DisplayName = item.Title, Text = extracted.Text!, Size = raw.Length,
+                var entry = new GeminiIngestEntry { SourceKey = item.Key, DisplayName = extracted.Frontmatter.GetString("title") ?? item.Title, Text = extracted.Text!, Size = raw.Length,
                     ContentHash = contentHash, MetadataHash = metadataHash, SourceEtag = item.Etag, ExtractorVer = source.ExtractorVer ?? ExtractorVersion,
                     Metadata = derived.Metadata };
                 if (!existing.TryGetValue(item.Key, out var prior)) { plan.Added.Add(entry); plan.Bytes += raw.Length; }

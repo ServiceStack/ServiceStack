@@ -51,6 +51,8 @@ public partial class GeminiExtension
         var config = ChatDtos.ParseJson(source.Config) as JsonObject;
         var path = config?.GetString("path");
         if (string.IsNullOrEmpty(path) || Ctx.IsAdmin(req.Request)) return;
+        var imports = CrawlImportsRoot(UserOf(req));
+        if (GeminiIngest.WithinRoots(ResolveImportPath(path), [imports])) return;
         var roots = TrustedImportRoots();
         if (roots.Count == 0)
             throw new UnauthorizedAccessException("No trusted import folders are configured");
@@ -95,11 +97,13 @@ public partial class GeminiExtension
     Task<object?> SourceTypesAsync(ChatRequestContext req)
     {
         var roots = TrustedImportRoots();
+        var imports = CrawlImportsRoot(UserOf(req));
         var rootInfo = new JsonObject
         {
             ["trusted"] = new JsonArray(ConfiguredImportRoots().Select(ResolveImportPath).Select(x => (JsonNode)x).ToArray()),
             ["allowed"] = new JsonArray(Ctx.ResolveAllowedDirectories().Select(x => (JsonNode)x).ToArray()),
-            ["all"] = new JsonArray(roots.Select(x => (JsonNode)x).ToArray()),
+            ["imports"] = new JsonArray(imports),
+            ["all"] = new JsonArray(roots.Append(imports).Distinct().OrderBy(x => x).Select(x => (JsonNode)x).ToArray()),
         };
         return Task.FromResult<object?>(new JsonArray(
             new JsonObject { ["type"] = "folder", ["available"] = true, ["roots"] = rootInfo,
@@ -190,6 +194,10 @@ public partial class GeminiExtension
                 var applied = await ApplyPlanAsync(plan, source, req).ConfigAwait();
                 source.LastRunId = run.Id; source.LastRunAt = DateTime.Now; source.Error = null; db.UpdateSource(source); worker?.Start();
                 foreach (var (key, value) in applied) summary[key] = value?.DeepClone();
+                var sourceConfig = ChatDtos.ParseJson(source.Config) as JsonObject;
+                if (body.GetBool("saveConfig") && source.Type == "folder" && sourceConfig?.GetBool("metadataSpecified") == true
+                    && sourceConfig.GetString("path") is { } importPath)
+                    await SaveImportMetadataAsync(importPath, ChatDtos.ParseJson(source.Rules) as JsonObject).ConfigAwait();
             }
             db.UpdateSourceRun(run); summary["runId"] = run.Id; summary["dryRun"] = dryRun; return summary;
         }

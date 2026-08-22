@@ -139,7 +139,7 @@ function createNewChat(filestoreId, { category, document, metadataFilter, filter
 const IssueCard = {
     props: ['name', 'issue'],
     template: `
-        <div v-if="issue?.count > 0" class="p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+        <div data-tag="IssueCard" v-if="issue?.count > 0" class="p-3 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-900 dark:text-white">{{ name }}</span>
                 <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
@@ -163,7 +163,7 @@ const SyncReport = {
     props: ['syncResult', 'syncing', 'pruning'],
     emits: ['sync', 'prune'],
     template: `
-        <div class="mb-8">
+        <div data-tag="SyncReport" class="mb-8">
             <div class="flex justify-between items-start mb-4">
                 <div>
                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Sync Store</h3>
@@ -271,7 +271,7 @@ const SyncReport = {
 
 const GeminiModelSelector = {
     template: `
-        <div class="flex items-center space-x-2">
+        <div data-tag="GeminiModelSelector" class="flex items-center space-x-2">
             <button type="button" @click="openModelPicker"
                 class="flex items-center justify-between rounded-lg px-3.5 py-2 transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 text-sm cursor-pointer">
                 <span class="flex items-center space-x-2 truncate">
@@ -551,7 +551,7 @@ const GeminiModelSelector = {
 const FileStoreList = {
     components: { GeminiModelSelector },
     template: `
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div data-tag="FileStoreList" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                    <h1 class="text-2xl font-bold" :class="[$styles.heading]">File Stores</h1>
@@ -676,7 +676,7 @@ const FileStoreDetails = {
 
     template: `
         <!-- Room for the docked selection bar, so the last row isn't the one it covers. -->
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" :class="bulkCount ? 'pb-24' : ''" v-if="store">
+        <div data-tag="FileStoreDetails" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" :class="bulkCount ? 'pb-24' : ''" v-if="store">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                  <div class="flex items-center gap-4">
                      <button type="button"
@@ -1536,7 +1536,7 @@ const FileStoreDetails = {
         async function confirmImport() {
             const { source, keep } = importPreview.value || {}
             if (!source) return
-            const api = await ext.postJson(`/sources/${source.id}/run`, { dryRun: false })
+            const api = await ext.postJson(`/sources/${source.id}/run`, { dryRun: false, saveConfig: !!keep })
             if (api.error) return ext.setError(api.error)
             // A one-off leaves no source behind; it existed only to carry the config through
             // the same pipeline a recurring import uses.
@@ -1958,7 +1958,7 @@ const FileStoreDetails = {
 
 const GeminiPage = {
     template: `
-        <div class="h-full overflow-y-auto">
+        <div data-tag="GeminiPage" class="h-full overflow-y-auto">
             <div class="m-2">
                 <ErrorViewer />
             </div>
@@ -1993,7 +1993,7 @@ const GeminiPage = {
 
 const GeminiHeader = {
     template: `
-        <div v-if="fileSearch" class="flex space-x-1 items-center cursor-pointer text-xs rounded transition-colors border" :class="[$styles.tagLabel]"
+        <div data-tag="GeminiHeader" v-if="fileSearch" class="flex space-x-1 items-center cursor-pointer text-xs rounded transition-colors border" :class="[$styles.tagLabel]"
             :title="fileSearch.title"
             @click="fileSearch.url ? $ctx.to(fileSearch.url) : null" style="line-height: 20px;"
         >
@@ -2144,7 +2144,7 @@ function withInlineCitations(content, { message }) {
 
 const GeminiMessageFooter = {
     template: `
-        <div v-if="groundingChunks.length" class="mt-4 border-t pt-4 space-y-4" :class="[$styles.chromeBorder]">
+        <div data-tag="GeminiMessageFooter" v-if="groundingChunks.length" class="mt-4 border-t pt-4 space-y-4" :class="[$styles.chromeBorder]">
             <div class="space-y-2">
                 <div class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

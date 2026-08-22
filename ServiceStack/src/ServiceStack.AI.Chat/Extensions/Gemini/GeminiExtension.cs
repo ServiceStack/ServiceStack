@@ -89,6 +89,14 @@ public partial class GeminiExtension() : ChatExtension("gemini")
         ctx.AddPost("config/import-roots", SaveImportRootsAsync);
         ctx.AddGet("capabilities", GetCapabilitiesAsync, allowAnon: true);
         ctx.AddPost("capabilities/probe", ProbeCapabilitiesAsync);
+        ctx.AddGet("imports", ListCrawlImportsAsync);
+        ctx.AddGet("imports/schema", CrawlImportSchemaAsync);
+        ctx.AddGet("imports/{name}", GetCrawlImportAsync);
+        ctx.AddGet("imports/{name}/pages", ListCrawlPagesAsync);
+        ctx.AddGet("imports/{name}/page", GetCrawlPageAsync);
+        ctx.AddPost("imports/crawl", StartCrawlAsync);
+        ctx.AddPut("imports/{name}", SaveCrawlConfigAsync);
+        ctx.AddPost("imports/{name}/transform", TransformCrawlImportAsync);
     }
 
     /// <summary>Resume any uploads that were still queued when the app last shut down</summary>

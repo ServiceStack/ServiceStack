@@ -12,14 +12,16 @@ namespace ServiceStack.AI;
 public class HtmlToMarkdownParser
 {
     private readonly string baseUrl;
+    private readonly bool includeLinks;
     private static readonly HashSet<string> SkipTags = new(StringComparer.OrdinalIgnoreCase)
     {
         "script", "style", "head", "svg", "noscript", "iframe", "canvas", "template", "nav", "header", "footer", "aside", "form"
     };
 
-    public HtmlToMarkdownParser(string baseUrl = "")
+    public HtmlToMarkdownParser(string baseUrl = "", bool includeLinks = true)
     {
         this.baseUrl = baseUrl;
+        this.includeLinks = includeLinks;
     }
 
     public string Parse(string html)
@@ -136,6 +138,8 @@ public class HtmlToMarkdownParser
                             sb.Append('*');
                             break;
                         case "a":
+                            if (!includeLinks)
+                                break;
                             var text = linkText.ToString().Trim();
                             if (text.Length > 0 && currentHref != null)
                             {
@@ -154,6 +158,15 @@ public class HtmlToMarkdownParser
                             break;
                         case "tr":
                             sb.Append('\n');
+                            break;
+                        case "div" or "section" or "article":
+                            // A block can be followed immediately by text in minified HTML. Keep
+                            // their visible boundary without forcing layout-only divs onto new lines.
+                            if (sb.Length > 0 && !char.IsWhiteSpace(sb[^1]))
+                                sb.Append(' ');
+                            break;
+                        case "p":
+                            sb.Append("\n\n");
                             break;
                     }
                 }
@@ -196,6 +209,8 @@ public class HtmlToMarkdownParser
                             sb.Append('*');
                             break;
                         case "a":
+                            if (!includeLinks)
+                                break;
                             if (attrs.TryGetValue("href", out var href))
                                 currentHref = href;
                             linkText.Clear();

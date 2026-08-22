@@ -8,7 +8,8 @@ namespace ServiceStack.AI;
 
 public partial class GeminiExtension
 {
-    sealed record UploadPart(string Key, string DisplayName, byte[] Content, string MimeType, string? Category);
+    sealed record UploadPart(string Key, string DisplayName, byte[] Content, string MimeType, string? Category,
+        JsonObject? Metadata = null);
 
     async Task<object?> QueueManualUploadsAsync(ChatRequestContext req, long filestoreId, string? user, string? queryCategory)
     {
@@ -23,6 +24,7 @@ public partial class GeminiExtension
             ["product"] = Field("product"), ["versions"] = new JsonArray(SplitValues(Field("versions")).Select(x => (JsonNode)x).ToArray()),
             ["tags"] = new JsonArray(SplitValues(Field("tags")).Select(x => (JsonNode)x).ToArray()),
         };
+        if (!string.IsNullOrEmpty(sourceUrl)) metadata["sourceUrl"] = sourceUrl;
         var files = req.Request.Files.Where(x => x.Name?.StartsWith("file") == true).ToList();
         if (files.Count == 0) files = req.Request.Files.ToList();
         var parts = new List<UploadPart>();
@@ -32,7 +34,7 @@ public partial class GeminiExtension
             using var ms = new MemoryStream(); await file.InputStream.CopyToAsync(ms).ConfigAwait();
             var filename = file.FileName.LastRightPart('/').LastRightPart('\\'); var bytes = ms.ToArray();
             if (filename.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                parts.AddRange(ExpandZip(bytes, category));
+                parts.AddRange(ExpandZip(bytes, category, metadata));
             else
                 parts.Add(new UploadPart(filename, filename, bytes, MimeTypes.GetMimeType(filename), category));
         }
@@ -40,7 +42,7 @@ public partial class GeminiExtension
         var ids = new List<long>();
         foreach (var part in parts)
         {
-            var partMetadata = metadata.Clone();
+            var partMetadata = part.Metadata?.Clone() ?? metadata.Clone();
             if (sourceUrl != null)
                 partMetadata["sourceUrl"] = GeminiIngest.ExpandTemplate(sourceUrl,
                     GeminiIngest.TemplateValues(part.Key, part.Category, part.DisplayName));
@@ -67,18 +69,24 @@ public partial class GeminiExtension
             throw new ArgumentException("Source URL contains an invalid or unmatched variable");
     }
 
-    List<UploadPart> ExpandZip(byte[] content, string? baseCategory)
+    List<UploadPart> ExpandZip(byte[] content, string? baseCategory, JsonObject? overrideMetadata = null)
     {
         using var ms = new MemoryStream(content); using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
-        var entries = archive.Entries.Where(x => !string.IsNullOrEmpty(x.Name) && !x.FullName.Contains("__MACOSX/"))
-            .Where(x => !GeminiIngest.MatchesAny(x.FullName.Replace('\\', '/'), GeminiIngest.DefaultExcludes)).ToList();
+        var allEntries = archive.Entries.Where(x => !string.IsNullOrEmpty(x.Name) && !x.FullName.Contains("__MACOSX/")).ToList();
+        var entries = allEntries.Where(x => !GeminiIngest.MatchesAny(x.FullName.Replace('\\', '/'), GeminiIngest.DefaultExcludes)).ToList();
         var firstSegments = entries.Select(x => x.FullName.Replace('\\', '/').Split('/')[0]).Distinct().ToList();
         var stripWrapper = firstSegments.Count == 1 && entries.All(x => x.FullName.Contains('/'));
+        string Normalize(string value) { var key = value.Replace('\\', '/').TrimStart('/'); return stripWrapper && key.Contains('/') ? key[(key.IndexOf('/') + 1)..] : key; }
+        var manifests = new Dictionary<string, JsonObject>();
+        foreach (var entry in allEntries.Where(x => Normalize(x.FullName) is "import.json" || Normalize(x.FullName).EndsWith("/import.json")))
+        {
+            var key = Normalize(entry.FullName); try { using var reader = new StreamReader(entry.Open(), Encoding.UTF8); manifests[Path.GetDirectoryName(key)?.Replace('\\', '/') ?? ""] = ChatJson.TryParseObject(reader.ReadToEnd()) ?? new JsonObject(); }
+            catch (Exception e) { throw new ArgumentException($"Invalid {key}: {e.Message}", e); }
+        }
         var ret = new List<UploadPart>();
         foreach (var entry in entries)
         {
-            var key = entry.FullName.Replace('\\', '/').TrimStart('/');
-            if (stripWrapper) key = key[(key.IndexOf('/') + 1)..];
+            var key = Normalize(entry.FullName);
             using var input = entry.Open(); using var output = new MemoryStream(); input.CopyTo(output); var bytes = output.ToArray();
             var ext = Path.GetExtension(key).TrimStart('.').ToLowerInvariant(); var displayName = Path.GetFileName(key);
             var extracted = GeminiIngest.Extract(bytes, key, new JsonObject { ["minWords"] = 0 });
@@ -90,8 +98,16 @@ public partial class GeminiExtension
             else if (ext is not ("pdf" or "docx" or "pptx" or "xlsx"))
                 continue;
             var directory = key.Contains('/') ? key[..key.LastIndexOf('/')] : "";
+            var inherited = new JsonObject(); var current = "";
+            foreach (var part in new string?[] { null }.Concat(directory.Split('/', StringSplitOptions.RemoveEmptyEntries)))
+            {
+                if (part != null) current = current.Length == 0 ? part : current + "/" + part;
+                if (manifests.TryGetValue(current, out var manifest)) inherited = MergeImportMetadata(inherited, manifest.GetObject("metadata"));
+            }
+            var derived = GeminiIngest.DeriveMetadata(key, inherited, extracted.Frontmatter, null, overrideMetadata).Metadata ?? new JsonObject();
             var category = string.Join('/', new[] { baseCategory?.Trim('/'), directory }.Where(x => !string.IsNullOrEmpty(x)));
-            ret.Add(new UploadPart(key, displayName, bytes, MimeTypes.GetMimeType(displayName), category));
+            ret.Add(new UploadPart(key, extracted.Frontmatter.GetString("title") ?? displayName, bytes,
+                MimeTypes.GetMimeType(displayName), category, derived));
         }
         return ret;
     }

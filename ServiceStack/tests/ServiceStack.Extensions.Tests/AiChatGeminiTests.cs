@@ -536,6 +536,34 @@ public class AiChatGeminiTests
     }
 
     [Test]
+    public void Folder_imports_inherit_nested_import_json_metadata()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "gemini-manifest-" + Guid.NewGuid().ToString("n"));
+        Directory.CreateDirectory(Path.Combine(root, "guides"));
+        var body = "---\ntitle: Auth Guide\n---\n# Auth\n\n" + string.Join(' ', Enumerable.Repeat("documentation", 40));
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "import.json"), new JsonObject { ["metadata"] = new JsonObject
+            { ["defaults"] = new JsonObject { ["product"] = "Docs", ["status"] = "draft" } } }.ToJsonString());
+            File.WriteAllText(Path.Combine(root, "guides", "import.json"), new JsonObject { ["metadata"] = new JsonObject
+            { ["defaults"] = new JsonObject { ["status"] = "published", ["tags"] = new JsonArray("guides") } } }.ToJsonString());
+            File.WriteAllText(Path.Combine(root, "guides", "auth.md"), body);
+            var source = new ChatSource { Type = "folder", Config = new JsonObject { ["path"] = root }.ToJsonString(), ExtractorVer = "1" };
+            var plan = GeminiIngest.BuildPlan(source, []);
+            Assert.That(plan.Added.Count, Is.EqualTo(1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(plan.Added[0].DisplayName, Is.EqualTo("Auth Guide"));
+                Assert.That(plan.Added[0].Metadata.GetString("product"), Is.EqualTo("Docs"));
+                Assert.That(plan.Added[0].Metadata.GetString("status"), Is.EqualTo("published"));
+                Assert.That(GeminiMetadata.AsList(plan.Added[0].Metadata["tags"]), Is.EqualTo(new[] { "guides" }));
+                Assert.That(plan.Added.Any(x => x.SourceKey.EndsWith("import.json")), Is.False);
+            });
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Test]
     public void Html_extraction_honors_content_selector_and_removes_boilerplate()
     {
         var html = "<html><body><nav>Navigation</nav><main><h1>Docs</h1>"
@@ -548,5 +576,36 @@ public class AiChatGeminiTests
         Assert.That(extracted.Text, Does.Not.Contain("Navigation"));
         Assert.That(extracted.Text, Does.Not.Contain("Outside content"));
         Assert.That(extracted.Text, Does.Not.Contain("Was this page helpful"));
+    }
+
+    [Test]
+    public void Html_to_markdown_preserves_text_boundaries_after_nested_blocks()
+    {
+        var html = "<dt><div><span>01</span></div>AI Ready</dt>"
+            + "<dd>Start from well-known React templates.</dd>";
+        var markdown = new HtmlToMarkdownParser().Parse(html);
+        Assert.That(markdown, Does.Contain("01 AI Ready"));
+        Assert.That(markdown, Does.Not.Contain("01AI"));
+    }
+
+    [Test]
+    public void Crawler_html_to_markdown_emits_link_contents_as_plain_block_text()
+    {
+        var html = "<a href='/docs/autoquery/crud'><div>CRUD APIs</div>"
+            + "<div>Develop full CRUD RDBMS APIs with declarative Request DTOs</div></a>"
+            + "<a href='/docs/claude'><div>CLAUDE.md</div>"
+            + "<div>Using CLAUDE.md and AGENTS.md files for AI-powered development with React .NET Templates</div></a>";
+
+        var markdown = new HtmlToMarkdownParser(includeLinks: false).Parse(html);
+        var lines = markdown.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        Assert.That(lines, Is.EqualTo(new[]
+        {
+            "CRUD APIs",
+            "Develop full CRUD RDBMS APIs with declarative Request DTOs",
+            "CLAUDE.md",
+            "Using CLAUDE.md and AGENTS.md files for AI-powered development with React .NET Templates",
+        }));
+        Assert.That(markdown, Does.Not.Contain("](/docs/"));
     }
 }

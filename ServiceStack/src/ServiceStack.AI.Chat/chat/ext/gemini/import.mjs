@@ -7,6 +7,10 @@ export function initImport(extScope) {
     ext = extScope
 }
 
+// Vue wraps form values in reactive proxies, which structuredClone() rejects in browsers.
+// Crawl rules are deliberately JSON-only because they are persisted in import.json.
+const cloneJson = value => JSON.parse(JSON.stringify(value ?? null))
+
 // One entry per import option. `fields` drives the form, so a tab only ever shows what that
 // option actually needs - the folder tab has no upload zone, the upload tab has no path.
 export const IMPORT_TABS = [
@@ -39,6 +43,11 @@ export const IMPORT_TABS = [
             { key: 'exclude', label: 'Exclude', placeholder: '**/drafts/**', mono: true },
         ],
     },
+    {
+        id: 'crawl', label: 'Web crawl',
+        blurb: 'Fetch a website into an inspectable Markdown folder, transform it, then import it.',
+        recurring: false, fields: [],
+    },
 ]
 
 export const ImportPanel = {
@@ -64,6 +73,10 @@ export const ImportPanel = {
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                     </svg>
+                    <svg v-else class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>
+                    </svg>
                     {{ t.label }}
                     <span v-if="t.unavailable" class="ml-1 text-xs" :class="[$styles.muted]">· unavailable</span>
                 </button>
@@ -77,6 +90,96 @@ export const ImportPanel = {
                 </div>
 
                 <template v-else>
+                    <div v-if="tab === 'crawl'" class="space-y-4">
+                        <div class="grid sm:grid-cols-[1fr_14rem_7rem] gap-3">
+                            <div><label class="block text-xs font-semibold mb-1">Start URL</label>
+                                <input v-model="crawlForm.url" @input="deriveCrawlName" placeholder="https://docs.example.org/"
+                                    class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
+                            <div><label class="block text-xs font-semibold mb-1">Import folder</label>
+                                <input v-model="crawlForm.name" @input="crawlNameEdited = true" placeholder="docs.example.org"
+                                    class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
+                            <div><label class="block text-xs font-semibold mb-1">Max pages</label>
+                                <input v-model.number="crawlForm.maxPages" type="number" min="1" max="10000"
+                                    class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <div><label class="block text-xs font-semibold mb-1">Include paths</label>
+                                <input v-model="crawlForm.includeText" placeholder="/** — comma or newline separated"
+                                    class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
+                            <div><label class="block text-xs font-semibold mb-1">Exclude paths</label>
+                                <input v-model="crawlForm.excludeText" placeholder="e.g. /archives/**, /account/**"
+                                    class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
+                            <div class="grid grid-cols-[10rem_1fr] gap-2">
+                                <div><label class="block text-xs font-semibold mb-1">Query strings</label>
+                                    <select v-model="crawlForm.queryMode" class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]">
+                                        <option value="ignore">Ignore</option><option value="allow">Allow selected</option><option value="all">Include all</option>
+                                    </select></div>
+                                <div><label class="block text-xs font-semibold mb-1">Allowed parameters</label>
+                                    <input v-model="crawlForm.queryAllowText" :disabled="crawlForm.queryMode !== 'allow'" placeholder="version, lang"
+                                        class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900 disabled:opacity-50" :class="[$styles.chromeBorder]"></div>
+                            </div>
+                            <div class="grid grid-cols-[7rem_1fr] gap-2">
+                                <div><label class="block text-xs font-semibold mb-1">Max depth</label>
+                                    <input v-model.number="crawlForm.maxDepth" type="number" min="0" max="100"
+                                        class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
+                                <div><label class="block text-xs font-semibold mb-1">Additional hosts</label>
+                                    <input v-model="crawlForm.allowedHostsText" placeholder="cdn.example.org"
+                                        class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                            <label class="inline-flex items-center gap-2"><CheckBox v-model="crawlForm.respectRobots"/> Respect robots.txt</label>
+                            <label class="inline-flex items-center gap-2"><CheckBox v-model="crawlForm.respectNoIndex"/> Respect noindex</label>
+                            <label class="inline-flex items-center gap-2"><CheckBox v-model="crawlForm.followNoFollow"/> Follow nofollow links</label>
+                            <label class="inline-flex items-center gap-2"><CheckBox v-model="crawlForm.useCanonical"/> Use canonical URLs</label>
+                            <label class="inline-flex items-center gap-2"><CheckBox v-model="crawlForm.dedupeContent"/> Remove duplicate content</label>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold mb-2">Additional crawl rules</div>
+                            <JsonSchemaForm :schema="crawlRuleSchema" :data="crawlRules"
+                                :show-title="false" @change="setCrawlRules" />
+                        </div>
+                        <p v-if="crawlError" class="text-xs text-red-600">{{ crawlError }}</p>
+                        <button type="button" @click="startCrawl" :disabled="busy || !crawlForm.url"
+                            class="px-4 py-2 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40">
+                            {{ busy ? 'Crawling…' : 'Crawl website' }}
+                        </button>
+
+                        <div class="border-t pt-4" :class="[$styles.chromeBorder]">
+                            <div class="flex items-center justify-between mb-2"><h3 class="text-sm font-semibold">Saved crawl imports</h3>
+                                <button type="button" @click="loadImports" class="text-xs underline" :class="[$styles.muted]">refresh</button></div>
+                            <p v-if="!crawlImports.length" class="text-sm" :class="[$styles.muted]">No crawled imports yet.</p>
+                            <div v-else class="grid sm:grid-cols-[14rem_1fr] gap-4">
+                                <div class="space-y-1">
+                                    <button v-for="item in crawlImports" :key="item.name" type="button" @click="openImport(item)"
+                                        class="w-full text-left rounded-md border px-3 py-2" :class="[$styles.chromeBorder, selectedImport?.name === item.name ? 'bg-blue-50 dark:bg-blue-900/20' : '']">
+                                        <span class="block text-sm font-medium truncate">{{ item.name }}</span>
+                                        <span class="text-xs" :class="[$styles.muted]">{{ item.pages }} page{{ item.pages === 1 ? '' : 's' }}</span>
+                                    </button>
+                                </div>
+                                <div v-if="selectedImport" class="space-y-3 min-w-0">
+                                    <div class="text-xs font-mono break-all" :class="[$styles.muted]">{{ selectedImport.path }}</div>
+                                    <label class="block text-xs font-semibold">Regex transforms</label>
+                                    <JsonSchemaForm :schema="transformSchema" :data="transforms"
+                                        :show-title="false" @change="setTransforms" />
+                                    <p class="text-xs" :class="[$styles.muted]">Applying transforms also saves them to this crawl's import.json.</p>
+                                    <ErrorSummary v-if="transformError" :status="transformError" />
+                                    <p v-else-if="transformMessage" class="text-xs text-green-600 dark:text-green-400">{{ transformMessage }}</p>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <button type="button" @click="viewCrawledPages" class="px-3 py-1.5 rounded-md text-sm border font-medium inline-flex items-center gap-1.5" :class="[$styles.chromeBorder]">
+                                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                            View crawled pages
+                                        </button>
+                                        <button type="button" @click="applyTransforms" class="px-3 py-1.5 rounded-md text-sm border font-medium" :class="[$styles.chromeBorder]">Apply &amp; save transforms</button>
+                                        <button type="button" @click="importCrawlFolder" class="px-3 py-1.5 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700">Import this folder</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Upload: the drop zone lives in its own tab now -->
                     <div v-if="tab === 'upload'">
                         <input type="file" ref="fileInput" class="hidden" multiple
@@ -104,7 +207,7 @@ export const ImportPanel = {
                     </div>
 
                     <!-- Everything else is driven by the tab's own field list -->
-                    <div v-else class="grid sm:grid-cols-2 gap-4">
+                    <div v-else-if="tab !== 'crawl'" class="grid sm:grid-cols-2 gap-4">
                         <div v-for="cell in formCells" :key="cell.id" class="flex items-start gap-3"
                             :class="cell.wide ? 'sm:col-span-2' : ''">
                             <div v-for="f in cell.fields" :key="f.key" :class="f.width || 'grow min-w-0'">
@@ -145,7 +248,7 @@ export const ImportPanel = {
                     <!-- Import is where categories come from. Browsing one in Explore is a
                          read-only view of what was ingested; typing a new name here is how one
                          starts existing, by having documents put in it. -->
-                    <div class="sm:w-2/3">
+                    <div v-if="tab !== 'crawl'" class="sm:w-2/3">
                         <label class="block text-xs font-semibold mb-1">
                             Destination category
                             <span class="font-normal" :class="[$styles.muted]">— optional</span>
@@ -160,7 +263,7 @@ export const ImportPanel = {
                     </div>
 
                     <!-- Metadata: one button, then a read-optimised summary -->
-                    <div class="rounded-lg border p-3" :class="[$styles.chromeBorder]">
+                    <div v-if="tab !== 'crawl'" class="rounded-lg border p-3" :class="[$styles.chromeBorder]">
                         <div class="flex items-center justify-between gap-3 flex-wrap">
                             <div class="min-w-0">
                                 <div class="text-xs font-semibold">Metadata</div>
@@ -201,7 +304,7 @@ export const ImportPanel = {
                             class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]">
                     </div>
 
-                    <div class="flex items-center gap-3 pt-1">
+                    <div v-if="tab !== 'crawl'" class="flex items-center gap-3 pt-1">
                         <button type="button" @click="submit" :disabled="!canSubmit || busy"
                             class="px-4 py-2 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">
                             {{ busy ? busyLabel : submitLabel }}
@@ -215,6 +318,49 @@ export const ImportPanel = {
 
             <MetadataDialog v-if="dialogOpen" v-model="metadata" :facets="facets" :fields="importFields"
                 :show-rules="tab !== 'upload'" @close="dialogOpen = false" />
+
+            <Teleport to="body">
+            <div v-if="pageBrowserOpen" class="fixed inset-0 z-100 overflow-hidden text-gray-900 dark:text-gray-100" @keydown.escape="closePageBrowser">
+                <div class="fixed inset-0 bg-black/50" @click="closePageBrowser"></div>
+                <div class="fixed inset-4 md:inset-8 lg:inset-12 flex items-center justify-center" @click.self="closePageBrowser">
+                    <div class="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full h-full max-w-7xl max-h-[92vh] flex flex-col overflow-hidden">
+                        <div class="shrink-0 px-5 py-3 border-b flex items-center justify-between" :class="[$styles.chromeBorder]">
+                            <div class="min-w-0">
+                                <h2 class="text-lg font-semibold">Crawled pages</h2>
+                                <p class="text-xs truncate" :class="[$styles.muted]">{{ selectedImport?.name }} · {{ pagePaths.length }} page{{ pagePaths.length === 1 ? '' : 's' }}</p>
+                            </div>
+                            <button type="button" @click="closePageBrowser" class="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" title="Close">
+                                <svg class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                            </button>
+                        </div>
+                        <div class="flex-1 grid grid-cols-[minmax(13rem,22rem)_1fr] min-h-0">
+                            <div class="border-r overflow-y-auto py-2 bg-gray-50 dark:bg-gray-950" :class="[$styles.chromeBorder]">
+                                <p v-if="pageBrowserBusy" class="px-4 py-3 text-sm" :class="[$styles.muted]">Loading pages…</p>
+                                <p v-else-if="pageBrowserError" class="px-4 py-3 text-sm text-red-600">{{ pageBrowserError }}</p>
+                                <p v-else-if="!pageEntries.length" class="px-4 py-3 text-sm" :class="[$styles.muted]">No crawled pages.</p>
+                                <button v-for="entry in pageEntries" :key="entry.path" type="button"
+                                    @click="entry.directory ? togglePageDirectory(entry.path) : selectCrawledPage(entry.path)"
+                                    class="w-full flex items-center gap-1.5 pr-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    :class="!entry.directory && selectedPagePath === entry.path ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : ''"
+                                    :style="{ paddingLeft: (entry.depth * 16 + 12) + 'px' }">
+                                    <svg v-if="entry.directory" class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path d="M9 18l6-6-6-6" :class="pageDirectoriesClosed[entry.path] ? '' : 'rotate-90 origin-center'"/>
+                                    </svg>
+                                    <svg v-else class="size-4 shrink-0 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                                    <span class="truncate">{{ entry.name }}</span>
+                                </button>
+                            </div>
+                            <div class="min-w-0 min-h-0 flex flex-col bg-white dark:bg-gray-900">
+                                <div v-if="selectedPagePath" class="shrink-0 px-4 py-2 border-b text-xs font-mono truncate" :class="[$styles.chromeBorder, $styles.muted]">{{ selectedPagePath }}</div>
+                                <div v-if="pageContentBusy" class="p-6 text-sm" :class="[$styles.muted]">Loading page…</div>
+                                <div v-else-if="selectedPagePath" class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-5 text-sm leading-6 font-mono whitespace-pre-wrap break-words select-text">{{ selectedPageContent }}</div>
+                                <div v-else class="flex-1 flex items-center justify-center text-sm" :class="[$styles.muted]">Select a page to view its contents.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </Teleport>
         </div>
     `,
     props: { storeId: [String, Number], facets: Object, presetCategory: String },
@@ -234,8 +380,51 @@ export const ImportPanel = {
         const dialogOpen = ref(false)
         const busy = ref(false)
         const fileInput = ref(null)
+        const crawlForm = ref({ url: '', name: '', maxPages: 500, maxDepth: 10,
+            includeText: '/**', excludeText: '',
+            queryMode: 'ignore', queryAllowText: '', allowedHostsText: '', respectRobots: true,
+            respectNoIndex: true, followNoFollow: false, useCanonical: true, dedupeContent: true })
+        const crawlNameEdited = ref(false)
+        const crawlRuleSchema = ref({ type: 'array', items: { type: 'object' } })
+        const crawlRules = ref([])
+        const crawlError = ref('')
+        const crawlImports = ref([])
+        const selectedImport = ref(null)
+        const transformSchema = ref({ type: 'array', items: { type: 'object' } })
+        const transforms = ref([])
+        const transformError = ref(null)
+        const transformMessage = ref('')
+        const pageBrowserOpen = ref(false)
+        const pageBrowserBusy = ref(false)
+        const pageBrowserError = ref('')
+        const pagePaths = ref([])
+        const pageDirectoriesClosed = ref({})
+        const selectedPagePath = ref('')
+        const selectedPageContent = ref('')
+        const pageContentBusy = ref(false)
 
         const active = computed(() => tabs.value.find(t => t.id === tab.value) || tabs.value[0])
+        const pageEntries = computed(() => {
+            const tree = {}
+            for (const path of pagePaths.value) {
+                let node = tree
+                for (const part of path.split('/')) node = node[part] ||= {}
+            }
+            const entries = []
+            const visit = (node, parent = '', depth = 0) => {
+                for (const name of Object.keys(node).sort((a, b) => {
+                    const ad = Object.keys(node[a]).length > 0, bd = Object.keys(node[b]).length > 0
+                    return ad === bd ? a.localeCompare(b) : ad ? -1 : 1
+                })) {
+                    const path = parent ? `${parent}/${name}` : name
+                    const directory = Object.keys(node[name]).length > 0
+                    entries.push({ name, path, depth, directory })
+                    if (directory && !pageDirectoriesClosed.value[path]) visit(node[name], path, depth + 1)
+                }
+            }
+            visit(tree)
+            return entries
+        })
 
         // Arriving from "Import into guides/auth": for an upload that's the category itself, for a
         // folder import it's a prefix the discovered structure nests under - build_plan derives
@@ -288,12 +477,127 @@ export const ImportPanel = {
             tabs.value = tabs.value.map(t => t.sourceType && byType[t.sourceType] && !byType[t.sourceType].available
                 ? { ...t, unavailable: true, reason: byType[t.sourceType].reason }
                 : t)
+            await loadImports()
+            const schema = await ext.getJson('/imports/schema')
+            if (!schema.error) {
+                if (schema.response?.rules) crawlRuleSchema.value = schema.response.rules
+                if (schema.response?.transforms) transformSchema.value = schema.response.transforms
+            }
         })
 
         function select(id) {
             tab.value = id
             config.value = {}
             ext.setPrefs({ importTab: id })
+        }
+
+        function defaultCrawlName(url) {
+            try { return new URL(url).host.toLowerCase().replace(/:/g, '-').replace(/[^a-z0-9._-]+/g, '-') }
+            catch { return '' }
+        }
+        function deriveCrawlName() {
+            if (!crawlNameEdited.value) crawlForm.value.name = defaultCrawlName(crawlForm.value.url)
+        }
+        async function loadImports() {
+            const api = await ext.getJson('/imports')
+            if (!api.error) crawlImports.value = api.response || []
+        }
+        function openImport(item) {
+            selectedImport.value = item
+            transforms.value = cloneJson(item.config?.transforms || [])
+            const saved = item.config?.crawl || {}
+            if (saved.url) {
+                crawlForm.value = { ...crawlForm.value, ...saved,
+                    includeText: (saved.include || []).join(', '), excludeText: (saved.exclude || []).join(', '),
+                    queryMode: saved.query?.mode || 'ignore', queryAllowText: (saved.query?.allow || []).join(', '),
+                    allowedHostsText: (saved.allowedHosts || []).join(', ') }
+                crawlRules.value = cloneJson(saved.rules || [])
+                crawlNameEdited.value = true
+            }
+            transformError.value = null
+            transformMessage.value = ''
+        }
+        const splitValues = value => String(value || '').split(/[\n,]/).map(x => x.trim()).filter(Boolean)
+        function setCrawlRules(value) { crawlRules.value = value }
+        function setTransforms(value) {
+            transforms.value = value
+            transformError.value = null
+            transformMessage.value = ''
+        }
+        async function startCrawl() {
+            busy.value = true
+            crawlError.value = ''
+            try {
+                const body = { ...crawlForm.value,
+                    include: splitValues(crawlForm.value.includeText), exclude: splitValues(crawlForm.value.excludeText),
+                    allowedHosts: splitValues(crawlForm.value.allowedHostsText), rules: cloneJson(crawlRules.value),
+                    query: { mode: crawlForm.value.queryMode, allow: splitValues(crawlForm.value.queryAllowText),
+                        exclude: ['utm_*', 'fbclid', 'gclid', 'ref', 'session', 'token'], maxVariantsPerPath: 5 } }
+                for (const key of ['includeText', 'excludeText', 'allowedHostsText', 'queryMode', 'queryAllowText']) delete body[key]
+                const api = await ext.postJson('/imports/crawl', body)
+                if (api.error) return ext.setError(api.error)
+                await loadImports()
+                openImport(crawlImports.value.find(x => x.name === api.response.name) || api.response)
+            } catch (e) { crawlError.value = e.message }
+            finally { busy.value = false }
+        }
+        async function applyTransforms() {
+            transformError.value = null
+            transformMessage.value = ''
+            try {
+                const api = await ext.postJson(`/imports/${encodeURIComponent(selectedImport.value.name)}/transform`, {
+                    transforms: cloneJson(transforms.value),
+                })
+                if (api.error) {
+                    transformError.value = api.error
+                    return
+                }
+                selectedImport.value = { ...selectedImport.value, config: api.response.config }
+                transformMessage.value = `${api.response.changed} page${api.response.changed === 1 ? '' : 's'} updated. Transforms saved to import.json.`
+            } catch (e) {
+                transformError.value = { errorCode: 'Error', message: e.message || String(e) }
+            }
+        }
+        function importCrawlFolder() {
+            const item = selectedImport.value
+            if (!item) return
+            tab.value = 'folder'
+            ext.setPrefs({ importTab: 'folder' })
+            config.value = { path: item.path }
+            metadata.value = item.config?.metadata || { defaults: {}, rules: [] }
+        }
+        async function viewCrawledPages() {
+            if (!selectedImport.value) return
+            pageBrowserOpen.value = true
+            pageBrowserBusy.value = true
+            pageBrowserError.value = ''
+            pagePaths.value = []
+            selectedPagePath.value = ''
+            selectedPageContent.value = ''
+            const api = await ext.getJson(`/imports/${encodeURIComponent(selectedImport.value.name)}/pages`)
+            pageBrowserBusy.value = false
+            if (api.error) {
+                pageBrowserError.value = api.error.message || String(api.error)
+                return
+            }
+            pagePaths.value = api.response?.pages || []
+            if (pagePaths.value.length) await selectCrawledPage(pagePaths.value[0])
+        }
+        function closePageBrowser() { pageBrowserOpen.value = false }
+        function togglePageDirectory(path) {
+            pageDirectoriesClosed.value = { ...pageDirectoriesClosed.value, [path]: !pageDirectoriesClosed.value[path] }
+        }
+        async function selectCrawledPage(path) {
+            selectedPagePath.value = path
+            selectedPageContent.value = ''
+            pageContentBusy.value = true
+            const api = await ext.getJson(`/imports/${encodeURIComponent(selectedImport.value.name)}/page?path=${encodeURIComponent(path)}`)
+            pageContentBusy.value = false
+            if (api.error) {
+                selectedPageContent.value = api.error.message || String(api.error)
+                return
+            }
+            if (selectedPagePath.value === path) selectedPageContent.value = api.response?.content || ''
         }
 
         const canSubmit = computed(() => {
@@ -368,6 +672,8 @@ export const ImportPanel = {
                     path: cfg.path,
                     include: cfg.include ? [cfg.include] : null,
                     exclude: cfg.exclude ? [cfg.exclude] : null,
+                    metadataSpecified: !!(Object.keys(metadata.value.defaults || {}).length
+                        || (metadata.value.rules || []).length),
                 },
                 category: {
                     root: cfg.root || null,
@@ -395,6 +701,12 @@ export const ImportPanel = {
         return {
             tabs, tab, active, config, metadata, saveSource, name, files, dragover, dialogOpen,
             busy, fileInput, hasArchive, formCells, summary, canSubmit,
+            crawlForm, crawlNameEdited, crawlRuleSchema, crawlRules, crawlError, crawlImports, selectedImport,
+            transformSchema, transforms, transformError, transformMessage,
+            pageBrowserOpen, pageBrowserBusy, pageBrowserError, pagePaths, pageDirectoriesClosed,
+            pageEntries, selectedPagePath, selectedPageContent, pageContentBusy,
+            deriveCrawlName, loadImports, openImport, setCrawlRules, setTransforms, startCrawl, applyTransforms, importCrawlFolder,
+            viewCrawledPages, closePageBrowser, togglePageDirectory, selectCrawledPage,
             importFields: IMPORT_FIELDS,
             landingCategory, setLanding, categoryValues, folderRoots, rootsUnrestricted, loadRoots,
             submitLabel, busyLabel, select, onFiles, onDrop, submit, resetAfterImport,
