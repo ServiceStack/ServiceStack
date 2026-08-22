@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using ServiceStack.AI;
 
@@ -13,10 +14,7 @@ public class AiChatFeatureTests
     {
         var feature = new ChatFeature();
 
-        Assert.That(feature.AutoUpdate, Is.EquivalentTo(new[]
-        {
-            "llms.json", "providers.json", "providers-extra.json",
-        }));
+        Assert.That(feature.PreserveConfigs, Is.Empty);
     }
 
     [Test]

@@ -70,15 +70,10 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public string? AppDataPath { get; set; }
 
     /// <summary>
-    /// Bundled configuration files to overwrite in App_Data/chat on startup. Remove a file name
-    /// (or clear the collection) to preserve the existing local copy instead.
+    /// Bundled configuration files to preserve (not overwrite) in App_Data/chat on startup.
+    /// Starts empty — all bundled configs are overwritten unless listed here.
     /// </summary>
-    public List<string> AutoUpdate { get; set; } =
-    [
-        "llms.json",
-        "providers.json",
-        "providers-extra.json",
-    ];
+    public List<string> PreserveConfigs { get; set; } = [];
 
     public bool AutoInitSchema { get; set; } = true;
 
@@ -405,7 +400,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
                 return AppData.TextFromFile(AppData.GetHomePath(fileName)) ?? "";
             }
             return AppData.SeedOrUpdateFile(fileName, bundled,
-                AutoUpdate.Contains(fileName, StringComparer.OrdinalIgnoreCase));
+                !PreserveConfigs.Contains(fileName, StringComparer.OrdinalIgnoreCase));
         }
 
         // llms.json: programmatic Config > App_Data/chat/llms.json > embedded chat/llms.json (seeded to App_Data)
