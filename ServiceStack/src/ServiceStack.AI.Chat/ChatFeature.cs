@@ -69,6 +69,17 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     /// <summary>File storage root. Default: {ContentRoot}/App_Data/chat</summary>
     public string? AppDataPath { get; set; }
 
+    /// <summary>
+    /// Bundled configuration files to overwrite in App_Data/chat on startup. Remove a file name
+    /// (or clear the collection) to preserve the existing local copy instead.
+    /// </summary>
+    public List<string> AutoUpdate { get; set; } =
+    [
+        "llms.json",
+        "providers.json",
+        "providers-extra.json",
+    ];
+
     public bool AutoInitSchema { get; set; } = true;
 
     /// <summary>Extension names to disable (llms.json disable_extensions also applies)</summary>
@@ -384,12 +395,23 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
 
     void LoadConfig(IAppHost appHost)
     {
+        string SyncBundledFile(string fileName, bool required = true)
+        {
+            var bundled = appHost.VirtualFileSources.GetFile($"chat/{fileName}")?.ReadAllText();
+            if (bundled == null)
+            {
+                if (required)
+                    throw new Exception($"chat/{fileName} not found");
+                return AppData.TextFromFile(AppData.GetHomePath(fileName)) ?? "";
+            }
+            return AppData.SeedOrUpdateFile(fileName, bundled,
+                AutoUpdate.Contains(fileName, StringComparer.OrdinalIgnoreCase));
+        }
+
         // llms.json: programmatic Config > App_Data/chat/llms.json > embedded chat/llms.json (seeded to App_Data)
+        var configJson = SyncBundledFile("llms.json");
         if (Config.Count == 0)
         {
-            var configJson = AppData.SeedFile("llms.json", () =>
-                appHost.VirtualFileSources.GetFile("chat/llms.json")?.ReadAllText()
-                ?? throw new Exception("chat/llms.json not found"));
             Config = ChatJson.ParseObject(configJson);
         }
 
@@ -427,16 +449,11 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             }
         }
 
-        var providersJson = AppData.SeedFile("providers.json", () =>
-            appHost.VirtualFileSources.GetFile("chat/providers.json")?.ReadAllText()
-            ?? throw new Exception("chat/providers.json not found"));
+        var providersJson = SyncBundledFile("providers.json");
         ProviderModels = ChatJson.ParseObject(providersJson);
 
         // seed providers-extra.json for future --update-providers merges
-        if (appHost.VirtualFileSources.GetFile("chat/providers-extra.json")?.ReadAllText() is { } extraJson)
-        {
-            AppData.SeedFile("providers-extra.json", () => extraJson);
-        }
+        SyncBundledFile("providers-extra.json", required: false);
     }
 
     public string? ResolveVariable(string value)

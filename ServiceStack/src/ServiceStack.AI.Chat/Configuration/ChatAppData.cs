@@ -70,4 +70,13 @@ public class ChatAppData(string basePath)
         WriteTextFile(path, content);
         return content;
     }
+
+    /// <summary>Seed a missing file, or replace it with the bundled version when auto-update is enabled.</summary>
+    public string SeedOrUpdateFile(string fileName, string bundledContent, bool autoUpdate)
+    {
+        var path = GetHomePath(fileName);
+        if (autoUpdate || !File.Exists(path))
+            WriteTextFile(path, bundledContent);
+        return TextFromFile(path)!;
+    }
 }
