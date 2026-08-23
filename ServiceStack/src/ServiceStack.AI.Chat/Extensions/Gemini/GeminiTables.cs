@@ -185,6 +185,52 @@ public class ChatSourceRun
     [StringLength(StringLengthAttribute.MaxText)] public string? Error { get; set; }
 }
 
+/// <summary>A configured website Assistant backed by one Gemini File Search Store.</summary>
+public class ChatAssistant
+{
+    [AutoIncrement] public long Id { get; set; }
+    [Index] public long FilestoreId { get; set; }
+    [Alias("user"), Index] public string? User { get; set; }
+    [Index] public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public string? Name { get; set; }
+    [Index(Unique = true)] public string? PublicId { get; set; }
+    public bool Enabled { get; set; } = true;
+    public DateTime? PublishedAt { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Config { get; set; }
+}
+
+/// <summary>A retained visitor conversation with a published Assistant.</summary>
+[UniqueConstraint(nameof(AssistantId), nameof(SessionId))]
+public class ChatAssistantConversation
+{
+    [AutoIncrement] public long Id { get; set; }
+    [Index] public long AssistantId { get; set; }
+    [Alias("user"), Index] public string? User { get; set; }
+    [Index] public DateTime CreatedAt { get; set; }
+    [Index] public DateTime UpdatedAt { get; set; }
+    public string? SessionId { get; set; }
+    public string? Origin { get; set; }
+    public string? PageUrl { get; set; }
+    public string? UserAgent { get; set; }
+    public string? Title { get; set; }
+    public string? Status { get; set; }
+    public int MessageCount { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? LastMessage { get; set; }
+}
+
+/// <summary>A retained user or Assistant message, including resolved public citations.</summary>
+public class ChatAssistantMessage
+{
+    [AutoIncrement] public long Id { get; set; }
+    [Index] public long ConversationId { get; set; }
+    [Index] public DateTime CreatedAt { get; set; }
+    public string? Role { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Content { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Citations { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Error { get; set; }
+}
+
 /// <summary>Document counts + total size per category (port of GeminiDB.document_categories)</summary>
 public class AiChatDocumentCategory
 {
@@ -306,6 +352,30 @@ public static class GeminiDtos
         ["unchanged"] = x.Unchanged, ["removed"] = x.Removed, ["skipped"] = x.Skipped,
         ["failed"] = x.Failed, ["bytes"] = x.Bytes, ["plan"] = ChatDtos.ParseJson(x.Plan),
         ["log"] = ChatDtos.ParseJson(x.Log), ["error"] = x.Error,
+    };
+
+    public static JsonObject ToDto(this ChatAssistant x) => new()
+    {
+        ["id"] = x.Id, ["filestoreId"] = x.FilestoreId, ["user"] = x.User,
+        ["createdAt"] = ChatDb.ToDateString(x.CreatedAt), ["updatedAt"] = ChatDb.ToDateString(x.UpdatedAt),
+        ["name"] = x.Name, ["publicId"] = x.PublicId, ["enabled"] = x.Enabled,
+        ["publishedAt"] = ChatDb.ToDateNode(x.PublishedAt), ["config"] = ChatDtos.ParseJson(x.Config),
+    };
+
+    public static JsonObject ToDto(this ChatAssistantConversation x) => new()
+    {
+        ["id"] = x.Id, ["assistantId"] = x.AssistantId, ["user"] = x.User,
+        ["createdAt"] = ChatDb.ToDateString(x.CreatedAt), ["updatedAt"] = ChatDb.ToDateString(x.UpdatedAt),
+        ["sessionId"] = x.SessionId, ["origin"] = x.Origin, ["pageUrl"] = x.PageUrl,
+        ["userAgent"] = x.UserAgent, ["title"] = x.Title, ["status"] = x.Status,
+        ["messageCount"] = x.MessageCount, ["lastMessage"] = x.LastMessage,
+    };
+
+    public static JsonObject ToDto(this ChatAssistantMessage x) => new()
+    {
+        ["id"] = x.Id, ["conversationId"] = x.ConversationId,
+        ["createdAt"] = ChatDb.ToDateString(x.CreatedAt), ["role"] = x.Role,
+        ["content"] = x.Content, ["citations"] = ChatDtos.ParseJson(x.Citations), ["error"] = x.Error,
     };
 
     public static JsonObject ToDto(this AiChatDocumentCategory x) => new()

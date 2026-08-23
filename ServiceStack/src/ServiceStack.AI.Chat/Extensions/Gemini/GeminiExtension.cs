@@ -60,6 +60,7 @@ public partial class GeminiExtension() : ChatExtension("gemini")
 
         ctx.AddGet("filestores", QueryFilestoresAsync, allowAnon: true);
         ctx.AddPost("filestores", CreateFilestoreAsync);
+        ctx.AddGet("filestores/{id}/delete-summary", FilestoreDeleteSummaryAsync);
         ctx.AddDelete("filestores/{id}", DeleteFilestoreAsync);
         ctx.AddGet("filestores/{id}/categories", FilestoreCategoriesAsync, allowAnon: true);
         ctx.AddGet("filestores/{id}/documents", FilestoreDocumentsAsync, allowAnon: true);
@@ -97,6 +98,7 @@ public partial class GeminiExtension() : ChatExtension("gemini")
         ctx.AddPost("imports/crawl", StartCrawlAsync);
         ctx.AddPut("imports/{name}", SaveCrawlConfigAsync);
         ctx.AddPost("imports/{name}/transform", TransformCrawlImportAsync);
+        InstallAssistantRoutes(ctx);
     }
 
     /// <summary>Resume any uploads that were still queued when the app last shut down</summary>
@@ -158,13 +160,51 @@ public partial class GeminiExtension() : ChatExtension("gemini")
         return db.GetFilestore(filestore.Id, user)?.ToDto();
     }
 
+    async Task<object?> FilestoreDeleteSummaryAsync(ChatRequestContext req)
+    {
+        await AssertWriteAsync(req).ConfigAwait();
+        var summary = db.FilestoreDeleteSummary(IdOf(req), UserOf(req));
+        if (summary == null) return ChatResult.NotFound("File Store does not exist");
+        var name = summary.GetString("name");
+        if (!string.IsNullOrEmpty(name))
+        {
+            try
+            {
+                var remote = await client.GetFileSearchStoreAsync(name).ConfigAwait();
+                summary["remoteStoreExists"] = true;
+                summary["remoteDocuments"] = (remote.GetLong("activeDocumentsCount") ?? 0)
+                    + (remote.GetLong("pendingDocumentsCount") ?? 0)
+                    + (remote.GetLong("failedDocumentsCount") ?? 0);
+                summary["remoteDocumentBytes"] = remote.GetLong("sizeBytes") ?? 0;
+            }
+            catch (GeminiApiException e) when (e.StatusCode == 404)
+            {
+                summary["remoteStoreExists"] = false;
+                summary["remoteDocuments"] = 0;
+                summary["remoteDocumentBytes"] = 0;
+            }
+            catch (Exception e)
+            {
+                // Stored counts still provide a useful confirmation preview when Gemini's live
+                // statistics are temporarily unavailable.
+                Log.LogError(e, "Could not refresh delete summary for {Name}", name);
+            }
+        }
+        return summary;
+    }
+
     async Task<object?> DeleteFilestoreAsync(ChatRequestContext req)
     {
         await AssertWriteAsync(req).ConfigAwait();
         var user = UserOf(req);
         var id = IdOf(req);
-        var filestore = db.GetFilestore(id, user)
-            ?? throw new Exception("Filestore does not exist");
+        var filestore = db.GetFilestore(id, user);
+        if (filestore == null) return ChatResult.NotFound("File Store does not exist");
+        var body = await req.GetJsonBodyAsync().ConfigAwait();
+        var confirmation = body.GetString("confirm");
+        if (confirmation != filestore.DisplayName)
+            return Error($"Type \"{filestore.DisplayName}\" to confirm permanent deletion",
+                "ConfirmationRequired", 400);
 
         if (filestore.Name is { } name)
         {
@@ -183,8 +223,18 @@ public partial class GeminiExtension() : ChatExtension("gemini")
             Log.LogInformation("Filestore {Id} has no name, skipping Gemini deletion...", id);
         }
 
-        db.DeleteFilestore(id, user);
-        return new JsonObject();
+        JsonObject? deleted;
+        try
+        {
+            deleted = db.DeleteFilestore(id, user, confirmation);
+        }
+        catch (ArgumentException e)
+        {
+            return Error(e.Message, "ConfirmationRequired", 400);
+        }
+        return deleted == null
+            ? ChatResult.NotFound("File Store does not exist")
+            : new JsonObject { ["deleted"] = deleted };
     }
 
     Task<object?> FilestoreCategoriesAsync(ChatRequestContext req)

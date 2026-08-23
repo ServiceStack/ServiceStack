@@ -51,7 +51,7 @@ export const Popover = {
         <div class="relative inline-block" ref="root">
             <button type="button" ref="trigger" @click="toggle"
                 class="px-2 py-1 rounded-md border text-xs font-medium inline-flex items-center gap-1"
-                :class="[open ? $styles.primaryButton : $styles.chromeBorder]">
+                :class="[open ? $styles.primaryButton : $styles.secondaryButton]">
                 <!-- SVG rather than a ▸ glyph: glyphs sit in a large em box and render tiny at
                      button sizes. Rotates right -> down as the panel opens. The icon prop drops
                      it entirely for triggers that carry their own glyph. -->
@@ -357,7 +357,7 @@ export const SelectionBar = {
                     Delete
                 </button>
                 <button type="button" @click="$emit('clear')"
-                    class="px-3 py-1.5 rounded-md text-sm border" :class="[$styles.chromeBorder]">Clear selection</button>
+                    class="px-3 py-1.5 rounded-md text-sm border" :class="[$styles.secondaryButton]">Clear selection</button>
             </div>
         </div>
       </Teleport>

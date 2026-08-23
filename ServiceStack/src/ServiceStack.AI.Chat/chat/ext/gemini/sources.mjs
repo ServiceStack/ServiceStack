@@ -141,11 +141,11 @@ export const SourcesPanel = {
                         <!-- A toggle, so the button always describes what pressing it does. -->
                         <button type="button" @click="reports[s.id] ? reports[s.id] = null : run(s, true)"
                             :disabled="running === s.id"
-                            class="px-3 py-1.5 rounded-md text-xs border font-semibold disabled:opacity-50" :class="[$styles.chromeBorder]">
+                            class="px-3 py-1.5 rounded-md text-xs border font-semibold disabled:opacity-50" :class="[$styles.secondaryButton]">
                             {{ running === s.id ? 'Scanning…' : (reports[s.id] ? 'Close' : 'Preview') }}
                         </button>
                         <button type="button" @click="remove(s)"
-                            class="px-3 py-1.5 rounded-md text-xs border" :class="[$styles.chromeBorder]">Delete</button>
+                            class="px-3 py-1.5 rounded-md text-xs border" :class="[$styles.secondaryButton]">Delete</button>
                     </div>
                 </div>
 
@@ -245,13 +245,13 @@ export const TrustedFolders = {
                     <!-- One path per entry. The old placeholder listed three separated by commas,
                          which read as "commas are supported" - they aren't, and a pasted list
                          would have been stored as one unmatchable path. -->
-                    <input v-model="draft" @keyup.enter="add" placeholder="One folder, e.g. /srv/docs"
-                        class="grow min-w-0 px-2.5 py-1.5 rounded-md text-sm border-2 font-mono bg-white dark:bg-gray-900"
-                        :class="[$styles.chromeBorder]"
+                    <input type="text" v-model="draft" @keyup.enter="add" placeholder="One folder, e.g. /srv/docs"
+                        class="grow min-w-0 px-2.5 py-1.5 rounded-md text-sm font-mono bg-white dark:bg-gray-900"
+                        :class="[$styles.textInput, $styles.bgInput, $styles.borderInput]"
                         title="A single absolute path. ~ expands, and $WORKSPACE / $TEMP resolve to the server's own folders.">
                     <button type="button" @click="add" :disabled="!draft.trim() || saving"
                         class="px-3 py-1.5 rounded-md text-sm font-medium border disabled:opacity-50"
-                        :class="[$styles.chromeBorder]">Add</button>
+                        :class="[$styles.secondaryButton]">Add</button>
                     <span v-if="saving" class="text-xs" :class="[$styles.muted]">Saving…</span>
                 </div>
 

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Runtime.CompilerServices;
 using ServiceStack.Text;
 
 namespace ServiceStack.AI;
@@ -79,6 +80,30 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
 
     public Task<JsonObject> GenerateContentAsync(string model, JsonObject body, CancellationToken token = default) =>
         SendAsync(HttpMethod.Post, Url($"models/{model}:generateContent"), body, token);
+
+    /// <summary>Stream generateContent SSE events as their decoded Gemini response objects.</summary>
+    public async IAsyncEnumerable<JsonObject> GenerateContentStreamAsync(string model, JsonObject body,
+        [EnumeratorCancellation] CancellationToken token = default)
+    {
+        using var http = CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Post, Url($"models/{model}:streamGenerateContent", "alt=sse"))
+        {
+            Content = new StringContent(body.ToJsonString(ChatJson.Options), Encoding.UTF8, MimeTypes.Json),
+        };
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigAwait();
+        await AssertSuccessAsync(response).ConfigAwait();
+        await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigAwait();
+        using var reader = new StreamReader(stream);
+        while (!token.IsCancellationRequested)
+        {
+            var line = await reader.ReadLineAsync(token).ConfigAwait();
+            if (line == null) break;
+            if (line?.StartsWith("data:", StringComparison.Ordinal) != true) continue;
+            var json = line[5..].Trim();
+            if (json.Length > 0 && json != "[DONE]" && ChatJson.TryParseObject(json) is { } chunk)
+                yield return chunk;
+        }
+    }
 
     // ── Uploads ──
 

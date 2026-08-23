@@ -1,4 +1,4 @@
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { MetadataInput, MetadataDialog, IMPORT_FIELDS, summariseMetadata, loadFacets } from './metadata.mjs'
 import { Popover, RootsPanel, PathText, CheckBox } from './explorer.mjs'
 
@@ -151,8 +151,8 @@ export const ImportPanel = {
                             <p v-if="!crawlImports.length" class="text-sm" :class="[$styles.muted]">No crawled imports yet.</p>
                             <div v-else class="grid sm:grid-cols-[14rem_1fr] gap-4">
                                 <div class="space-y-1">
-                                    <button v-for="item in crawlImports" :key="item.name" type="button" @click="openImport(item)"
-                                        class="w-full text-left rounded-md border px-3 py-2" :class="[$styles.chromeBorder, selectedImport?.name === item.name ? 'bg-blue-50 dark:bg-blue-900/20' : '']">
+                                    <button v-for="item in crawlImports" :key="item.name" type="button" @click="toggleImport(item)"
+                                        class="w-full text-left rounded-md px-3 py-2" :class="[$styles.secondaryButton, selectedImport?.name === item.name ? 'bg-blue-50 dark:bg-blue-900/20' : '']">
                                         <span class="block text-sm font-medium truncate">{{ item.name }}</span>
                                         <span class="text-xs" :class="[$styles.muted]">{{ item.pages }} page{{ item.pages === 1 ? '' : 's' }}</span>
                                     </button>
@@ -166,14 +166,14 @@ export const ImportPanel = {
                                     <ErrorSummary v-if="transformError" :status="transformError" />
                                     <p v-else-if="transformMessage" class="text-xs text-green-600 dark:text-green-400">{{ transformMessage }}</p>
                                     <div class="flex gap-2 flex-wrap">
-                                        <button type="button" @click="viewCrawledPages" class="px-3 py-1.5 rounded-md text-sm border font-medium inline-flex items-center gap-1.5" :class="[$styles.chromeBorder]">
+                                        <button type="button" @click="viewCrawledPages" class="px-3 py-1.5 rounded-md text-sm border font-medium inline-flex items-center gap-1.5" :class="[$styles.secondaryButton]">
                                             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                                 <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>
                                             </svg>
                                             View crawled pages
                                         </button>
-                                        <button type="button" @click="applyTransforms" class="px-3 py-1.5 rounded-md text-sm border font-medium" :class="[$styles.chromeBorder]">Apply &amp; save transforms</button>
-                                        <button type="button" @click="importCrawlFolder" class="px-3 py-1.5 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700">Import this folder</button>
+                                        <button type="button" @click="applyTransforms" class="px-3 py-1.5 rounded-md text-sm" :class="[$styles.secondaryButton]">Apply &amp; save transforms</button>
+                                        <button type="button" @click="importCrawlFolder" class="px-3 py-1.5 rounded-md text-sm" :class="[$styles.primaryButton]">Import this folder</button>
                                     </div>
                                 </div>
                             </div>
@@ -282,7 +282,7 @@ export const ImportPanel = {
                                 </div>
                             </div>
                             <button type="button" @click="dialogOpen = true"
-                                class="px-3 py-1.5 rounded-md text-sm border font-medium shrink-0" :class="[$styles.chromeBorder]">
+                                class="px-3 py-1.5 rounded-md text-sm font-medium shrink-0" :class="[$styles.secondaryButton]">
                                 {{ summary.length || (metadata.rules || []).length ? 'Edit metadata' : 'Add metadata' }}
                             </button>
                         </div>
@@ -300,8 +300,8 @@ export const ImportPanel = {
                     </label>
                     <div v-if="active.recurring && saveSource" class="sm:w-1/2">
                         <label class="block text-xs font-semibold mb-1">Name</label>
-                        <input v-model="name" placeholder="Product docs"
-                            class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]">
+                        <input type="text" v-model="name" placeholder="Product docs"
+                            class="w-full px-2.5 py-1.5 rounded-md" :class="[$styles.textInput, $styles.bgInput, $styles.borderInput]">
                     </div>
 
                     <div v-if="tab !== 'crawl'" class="flex items-center gap-3 pt-1">
@@ -320,9 +320,9 @@ export const ImportPanel = {
                 :show-rules="tab !== 'upload'" @close="dialogOpen = false" />
 
             <Teleport to="body">
-            <div v-if="pageBrowserOpen" class="fixed inset-0 z-100 overflow-hidden text-gray-900 dark:text-gray-100" @keydown.escape="closePageBrowser">
-                <div class="fixed inset-0 bg-black/50" @click="closePageBrowser"></div>
-                <div class="fixed inset-4 md:inset-8 lg:inset-12 flex items-center justify-center" @click.self="closePageBrowser">
+            <div v-if="pageBrowserOpen"
+                class="fixed inset-0 flex items-center justify-center p-4 md:p-8 lg:p-12 overflow-hidden bg-black/50 text-gray-900 dark:text-gray-100"
+                style="z-index:200" @click.self="closePageBrowser">
                     <div class="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full h-full max-w-7xl max-h-[92vh] flex flex-col overflow-hidden">
                         <div class="shrink-0 px-5 py-3 border-b flex items-center justify-between" :class="[$styles.chromeBorder]">
                             <div class="min-w-0">
@@ -358,18 +358,19 @@ export const ImportPanel = {
                             </div>
                         </div>
                     </div>
-                </div>
             </div>
             </Teleport>
         </div>
     `,
-    props: { storeId: [String, Number], facets: Object, presetCategory: String },
-    emits: ['previewing', 'preview', 'imported'],
+    props: { storeId: [String, Number], facets: Object, presetCategory: String,
+        routeTab: String, routeCrawl: String },
+    emits: ['previewing', 'preview', 'imported', 'navigate'],
     setup(props, { emit }) {
         const tabs = ref(IMPORT_TABS.map(t => ({ ...t })))
-        // Which import option you were on survives a refresh, the same way the Explore/Import
-        // choice does - coming back to a half-filled Folder form and finding Upload is jarring.
-        const saved = IMPORT_TABS.some(t => t.id === ext.prefs.importTab) ? ext.prefs.importTab : 'upload'
+        // The URL is authoritative for reload/back/forward; preferences are only a fallback for
+        // old links that predate deep-linking.
+        const saved = props.routeCrawl ? 'crawl' : IMPORT_TABS.some(t => t.id === props.routeTab) ? props.routeTab
+            : IMPORT_TABS.some(t => t.id === ext.prefs.importTab) ? ext.prefs.importTab : 'upload'
         const tab = ref(saved)
         const config = ref({})
         const metadata = ref({ defaults: {}, rules: [] })
@@ -483,12 +484,20 @@ export const ImportPanel = {
                 if (schema.response?.rules) crawlRuleSchema.value = schema.response.rules
                 if (schema.response?.transforms) transformSchema.value = schema.response.transforms
             }
+            syncRouteState()
         })
+
+        function onWindowKeydown(e) {
+            if (e.key === 'Escape' && pageBrowserOpen.value) closePageBrowser()
+        }
+        window.addEventListener('keydown', onWindowKeydown)
+        onUnmounted(() => window.removeEventListener('keydown', onWindowKeydown))
 
         function select(id) {
             tab.value = id
             config.value = {}
             ext.setPrefs({ importTab: id })
+            emit('navigate', { import:id, crawl:id === 'crawl' ? selectedImport.value?.name || null : null })
         }
 
         function defaultCrawlName(url) {
@@ -500,9 +509,12 @@ export const ImportPanel = {
         }
         async function loadImports() {
             const api = await ext.getJson('/imports')
-            if (!api.error) crawlImports.value = api.response || []
+            if (!api.error) {
+                crawlImports.value = api.response || []
+                syncRouteState()
+            }
         }
-        function openImport(item) {
+        function showImport(item, navigate=false) {
             selectedImport.value = item
             transforms.value = cloneJson(item.config?.transforms || [])
             const saved = item.config?.crawl || {}
@@ -516,7 +528,35 @@ export const ImportPanel = {
             }
             transformError.value = null
             transformMessage.value = ''
+            if (navigate) emit('navigate', { import:'crawl', crawl:item.name })
         }
+        function openImport(item) { showImport(item, true) }
+        function toggleImport(item) {
+            if (selectedImport.value?.name === item.name) {
+                selectedImport.value = null
+                transforms.value = []
+                transformError.value = null
+                transformMessage.value = ''
+                emit('navigate', { import:'crawl', crawl:null })
+            } else showImport(item, true)
+        }
+        function syncRouteState() {
+            const nextTab = props.routeCrawl ? 'crawl'
+                : IMPORT_TABS.some(t => t.id === props.routeTab) ? props.routeTab : tab.value
+            if (tab.value !== nextTab) {
+                tab.value = nextTab
+                config.value = {}
+                ext.setPrefs({ importTab:nextTab })
+            }
+            if (nextTab !== 'crawl' || !props.routeCrawl) {
+                selectedImport.value = null
+                return
+            }
+            const item = crawlImports.value.find(x => x.name === props.routeCrawl)
+            if (item && selectedImport.value?.name !== item.name) showImport(item)
+            else if (!item) selectedImport.value = null
+        }
+        watch([() => props.routeTab, () => props.routeCrawl], syncRouteState)
         const splitValues = value => String(value || '').split(/[\n,]/).map(x => x.trim()).filter(Boolean)
         function setCrawlRules(value) { crawlRules.value = value }
         function setTransforms(value) {
@@ -563,6 +603,7 @@ export const ImportPanel = {
             if (!item) return
             tab.value = 'folder'
             ext.setPrefs({ importTab: 'folder' })
+            emit('navigate', { import:'folder', crawl:null })
             config.value = { path: item.path }
             metadata.value = item.config?.metadata || { defaults: {}, rules: [] }
         }
@@ -705,7 +746,7 @@ export const ImportPanel = {
             transformSchema, transforms, transformError, transformMessage,
             pageBrowserOpen, pageBrowserBusy, pageBrowserError, pagePaths, pageDirectoriesClosed,
             pageEntries, selectedPagePath, selectedPageContent, pageContentBusy,
-            deriveCrawlName, loadImports, openImport, setCrawlRules, setTransforms, startCrawl, applyTransforms, importCrawlFolder,
+            deriveCrawlName, loadImports, openImport, toggleImport, setCrawlRules, setTransforms, startCrawl, applyTransforms, importCrawlFolder,
             viewCrawledPages, closePageBrowser, togglePageDirectory, selectCrawledPage,
             importFields: IMPORT_FIELDS,
             landingCategory, setLanding, categoryValues, folderRoots, rootsUnrestricted, loadRoots,

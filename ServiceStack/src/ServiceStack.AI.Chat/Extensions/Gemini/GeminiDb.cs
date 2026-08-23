@@ -19,81 +19,16 @@ public partial class GeminiDb(ChatDb db)
         conn.CreateTableIfNotExists<ChatDocument>();
         conn.CreateTableIfNotExists<ChatSource>();
         conn.CreateTableIfNotExists<ChatSourceRun>();
+        conn.CreateTableIfNotExists<ChatAssistant>();
+        conn.CreateTableIfNotExists<ChatAssistantConversation>();
+        conn.CreateTableIfNotExists<ChatAssistantMessage>();
         ChatDb.AddMissingColumns<ChatFilestore>(conn);
-        // A populated legacy SQLite table cannot ALTER in the new non-null scope column. Rebuild
-        // it from the intersection of old/new columns before ordinary additive migration runs.
-        MigrateLegacyDocumentIdentity(conn);
         ChatDb.AddMissingColumns<ChatDocument>(conn);
         ChatDb.AddMissingColumns<ChatSource>(conn);
         ChatDb.AddMissingColumns<ChatSourceRun>(conn);
-        BackfillDocumentIdentity(conn);
-    }
-
-    static void MigrateLegacyDocumentIdentity(IDbConnection conn)
-    {
-        if (!conn.GetDialectProvider().GetType().Name.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
-            return;
-        var sql = conn.Scalar<string>(
-            "SELECT sql FROM sqlite_master WHERE type='table' AND name=@name", new { name = nameof(ChatDocument) });
-        if (sql == null || !System.Text.RegularExpressions.Regex.IsMatch(sql,
-            "UNIQUE\\s*\\(\\s*[\\\"`\\[]?FilestoreId[\\\"`\\]]?\\s*,\\s*[\\\"`\\[]?Hash[\\\"`\\]]?\\s*\\)",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase))
-            return;
-        var oldColumns = SqliteColumns(conn, nameof(ChatDocument));
-        var model = typeof(ChatDocument).GetModelMetadata();
-        var keep = model.FieldDefinitions.Select(x => x.FieldName)
-            .Where(x => oldColumns.Contains(x, StringComparer.OrdinalIgnoreCase)).ToList();
-        var quoted = string.Join(',', keep.Select(x => $"\"{x.Replace("\"", "\"\"")}\""));
-        const string legacy = "ChatDocument_legacy_identity";
-        var indexes = new List<string>();
-        using (var cmd = conn.CreateCommand())
-        {
-            cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name=@table AND sql IS NOT NULL";
-            var parameter = cmd.CreateParameter(); parameter.ParameterName = "@table"; parameter.Value = nameof(ChatDocument);
-            cmd.Parameters.Add(parameter);
-            using var reader = cmd.ExecuteReader(); while (reader.Read()) indexes.Add(reader.GetString(0));
-        }
-        using var tx = conn.OpenTransaction();
-        conn.ExecuteSql($"ALTER TABLE \"{nameof(ChatDocument)}\" RENAME TO \"{legacy}\"");
-        // Explicit indexes keep their global names after a table rename and would collide with
-        // the indexes CreateTable creates for the replacement.
-        foreach (var index in indexes)
-            conn.ExecuteSql($"DROP INDEX \"{index.Replace("\"", "\"\"")}\"");
-        conn.CreateTable<ChatDocument>();
-        if (keep.Count > 0)
-            conn.ExecuteSql($"INSERT INTO \"{nameof(ChatDocument)}\" ({quoted}) SELECT {quoted} FROM \"{legacy}\"");
-        conn.ExecuteSql($"DROP TABLE \"{legacy}\"");
-        tx.Commit();
-    }
-
-    static HashSet<string> SqliteColumns(IDbConnection conn, string table)
-    {
-        var ret = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        using var cmd = conn.CreateCommand(); cmd.CommandText = $"PRAGMA table_info(\"{table.Replace("\"", "\"\"")}\")";
-        using var reader = cmd.ExecuteReader(); while (reader.Read()) ret.Add(reader.GetString(1));
-        return ret;
-    }
-
-    static void BackfillDocumentIdentity(IDbConnection conn)
-    {
-        var rows = conn.Select<ChatDocument>();
-        var used = new HashSet<string>(rows.Where(x => x.SourceKey != null)
-            .Select(x => $"{x.FilestoreId}\u001f{x.SourceId ?? 0}\u001f{x.SourceKey}"), StringComparer.Ordinal);
-        foreach (var row in rows)
-        {
-            var before = (row.SourceKey, row.SourceScopeId, row.CategoryPath, row.Versions, row.Tags);
-            if (row.SourceKey == null)
-            {
-                var candidate = row.DisplayName ?? $"document-{row.Id}";
-                var identity = $"{row.FilestoreId}\u001f{row.SourceId ?? 0}\u001f{candidate}";
-                if (!used.Add(identity)) candidate += $"#{row.Id}";
-                row.SourceKey = candidate;
-            }
-            row.SourceScopeId = row.SourceId ?? 0;
-            GeminiMetadata.NormalizeDocument(row);
-            var after = (row.SourceKey, row.SourceScopeId, row.CategoryPath, row.Versions, row.Tags);
-            if (before != after) conn.Update(row);
-        }
+        ChatDb.AddMissingColumns<ChatAssistant>(conn);
+        ChatDb.AddMissingColumns<ChatAssistantConversation>(conn);
+        ChatDb.AddMissingColumns<ChatAssistantMessage>(conn);
     }
 
     public static readonly Dictionary<string, string> FilestoreColumns = ChatDb.ColumnsOf<ChatFilestore>();
@@ -114,6 +49,11 @@ public partial class GeminiDb(ChatDb db)
     public ChatFilestore? GetFilestore(long id, string? user)
     {
         using var conn = OpenDb();
+        return GetFilestore(conn, id, user);
+    }
+
+    static ChatFilestore? GetFilestore(IDbConnection conn, long id, string? user)
+    {
         var q = conn.From<ChatFilestore>().Where(x => x.Id == id);
         if (user != null)
             ChatDb.ApplyUserFilter(q, user);
@@ -160,23 +100,100 @@ public partial class GeminiDb(ChatDb db)
         conn.Update(filestore);
     }
 
-    /// <summary>Deletes the file store and all of its documents (port of delete_filestore)</summary>
-    public void DeleteFilestore(long id, string? user)
+    /// <summary>Describe every local record affected by permanently deleting a File Store.</summary>
+    public JsonObject? FilestoreDeleteSummary(long id, string? user)
     {
         using var conn = OpenDb();
-        var docs = conn.From<ChatDocument>().Where(x => x.FilestoreId == id);
-        var filestores = conn.From<ChatFilestore>().Where(x => x.Id == id);
-        if (user != null)
+        return FilestoreDeleteSummary(conn, id, user);
+    }
+
+    static JsonObject? FilestoreDeleteSummary(IDbConnection conn, long id, string? user)
+    {
+        var store = GetFilestore(conn, id, user);
+        if (store == null) return null;
+
+        var sourceIds = conn.Column<long>(conn.From<ChatSource>()
+            .Where(x => x.FilestoreId == id).Select(x => x.Id));
+        var documents = conn.Select<ChatDocument>(x => x.FilestoreId == id)
+            .ToDictionary(x => x.Id);
+        foreach (var sourceIdsBatch in sourceIds.Chunk(500))
         {
-            ChatDb.ApplyUserFilter(docs, user);
-            ChatDb.ApplyUserFilter(filestores, user);
+            foreach (var document in conn.Select<ChatDocument>(x => x.SourceId != null
+                         && sourceIdsBatch.Contains(x.SourceId.Value)))
+                documents.TryAdd(document.Id, document);
         }
-        conn.Delete(docs);
-        var sources = conn.Select(conn.From<ChatSource>().Where(x => x.FilestoreId == id));
-        if (sources.Count > 0)
-            conn.Delete<ChatSourceRun>(x => sources.Select(s => s.Id).Contains(x.SourceId));
+        var assistants = conn.Select<ChatAssistant>(x => x.FilestoreId == id);
+        var conversationIds = new List<long>();
+        foreach (var assistantIdsBatch in assistants.Select(x => x.Id).Chunk(500))
+        {
+            conversationIds.AddRange(conn.Column<long>(conn.From<ChatAssistantConversation>()
+                .Where(x => assistantIdsBatch.Contains(x.AssistantId)).Select(x => x.Id)));
+        }
+        long messages = 0;
+        foreach (var conversationIdsBatch in conversationIds.Chunk(500))
+            messages += conn.Count<ChatAssistantMessage>(x => conversationIdsBatch.Contains(x.ConversationId));
+
+        var remoteDocuments = (store.ActiveDocumentsCount ?? 0)
+            + (store.PendingDocumentsCount ?? 0) + (store.FailedDocumentsCount ?? 0);
+        return new JsonObject
+        {
+            ["id"] = store.Id,
+            ["name"] = store.Name,
+            ["displayName"] = store.DisplayName,
+            ["remoteStoreExists"] = !string.IsNullOrEmpty(store.Name),
+            ["remoteDocuments"] = remoteDocuments,
+            ["remoteDocumentBytes"] = store.SizeBytes ?? 0,
+            ["documents"] = documents.Count,
+            ["documentBytes"] = documents.Values.Sum(x => x.SizeBytes ?? x.Size ?? 0),
+            ["savedImports"] = sourceIds.Count,
+            ["importRuns"] = sourceIds.Count == 0 ? 0 : conn.Count<ChatSourceRun>(x => sourceIds.Contains(x.SourceId)),
+            ["assistants"] = assistants.Count,
+            ["publishedAssistants"] = assistants.Count(x => x.Enabled && x.PublishedAt != null),
+            ["conversations"] = conversationIds.Count,
+            ["messages"] = messages,
+        };
+    }
+
+    /// <summary>
+    /// Transactionally deletes the File Store and every dependent record identified by its
+    /// relationships. The user filter is used to authorize the store; dependent rows are then
+    /// removed by store identity so stale ownership metadata cannot leave conflicting orphans.
+    /// </summary>
+    public JsonObject? DeleteFilestore(long id, string? user, string? confirmation = null)
+    {
+        using var conn = OpenDb();
+        using var tx = conn.OpenTransaction();
+        var impact = FilestoreDeleteSummary(conn, id, user);
+        if (impact == null) return null;
+        if (confirmation != null && confirmation != impact.GetString("displayName"))
+            throw new ArgumentException($"Type \"{impact.GetString("displayName")}\" to confirm permanent deletion");
+
+        var sourceIds = conn.Column<long>(conn.From<ChatSource>()
+            .Where(x => x.FilestoreId == id).Select(x => x.Id));
+        var assistantIds = conn.Column<long>(conn.From<ChatAssistant>()
+            .Where(x => x.FilestoreId == id).Select(x => x.Id));
+        var conversationIds = new List<long>();
+        foreach (var assistantIdsBatch in assistantIds.Chunk(500))
+        {
+            conversationIds.AddRange(conn.Column<long>(conn.From<ChatAssistantConversation>()
+                .Where(x => assistantIdsBatch.Contains(x.AssistantId)).Select(x => x.Id)));
+        }
+
+        foreach (var conversationIdsBatch in conversationIds.Chunk(500))
+            conn.Delete<ChatAssistantMessage>(x => conversationIdsBatch.Contains(x.ConversationId));
+        foreach (var assistantIdsBatch in assistantIds.Chunk(500))
+            conn.Delete<ChatAssistantConversation>(x => assistantIdsBatch.Contains(x.AssistantId));
+        conn.Delete<ChatAssistant>(x => x.FilestoreId == id);
+        foreach (var sourceIdsBatch in sourceIds.Chunk(500))
+        {
+            conn.Delete<ChatSourceRun>(x => sourceIdsBatch.Contains(x.SourceId));
+            conn.Delete<ChatDocument>(x => x.SourceId != null && sourceIdsBatch.Contains(x.SourceId.Value));
+        }
+        conn.Delete<ChatDocument>(x => x.FilestoreId == id);
         conn.Delete<ChatSource>(x => x.FilestoreId == id);
-        conn.Delete(filestores);
+        conn.Delete<ChatFilestore>(x => x.Id == id);
+        tx.Commit();
+        return impact;
     }
 
     // ── Documents ──

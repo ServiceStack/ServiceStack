@@ -227,6 +227,37 @@ File stores/documents are stored in `ChatFilestore` and `ChatDocument`; repeatab
 history use `ChatSource` and `ChatSourceRun`. Existing SQLite document tables are transactionally
 migrated from hash identity on startup.
 
+#### Website Assistants
+
+The **Assistants** tab publishes a filtered File Store as an isolated Shadow DOM chat widget. Each
+named Assistant owns its visitor-facing identity, category/facet scope, private system prompt,
+fallback and conversation notice, theme palette, launcher appearance, origin allowlist and rolling
+per-client request limit. Publishing makes its File Store public and produces a stable embed:
+
+Behavior presets are provided for Documentation Guide, Technical Troubleshooter, Customer Support,
+Developer/API Assistant, Product Advisor, Onboarding Guide, and Policy and Procedures use cases.
+Their editable specialist instructions are combined server-side with shared rules for retrieval,
+grounding, conflicting documents, prompt-injection resistance, conversation context, fallback
+handling and response formatting.
+
+```html
+<script src="https://chat.example.com/ext/gemini/public/assistants/widget.js?g=abc123" async></script>
+```
+
+The server applies all document filters and prompt behavior; neither is exposed in the generated
+JavaScript or overridable by the host page. The host may select the theme, position, accent and
+built-in icon with `data-theme`, `data-position`, `data-accent` and `data-icon`. Empty origin rules
+allow any website; exact HTTP(S) origins and `https://*.example.com` wildcard subdomains restrict
+chat requests. The panel can open only when initiated, automatically after page load, or when the
+visitor reaches the bottom of the page; an optional Ctrl/Command+K shortcut opens it independently.
+Regenerating the deployment ID invalidates old embeds immediately.
+
+Visitor sessions and recent visible messages are cached in the browser, while authoritative
+conversations, messages and resolved source citations are retained in `ChatAssistant`,
+`ChatAssistantConversation` and `ChatAssistantMessage` for support review. Archiving disables public
+access but retains that history; permanent deletion removes it. Set `$GEMINI_ASSISTANT_MODEL` to
+override the default `gemini-flash-latest` model.
+
 ## sync.sh
 
 Re-copies the UI and seed configs from a local llms-py checkout:

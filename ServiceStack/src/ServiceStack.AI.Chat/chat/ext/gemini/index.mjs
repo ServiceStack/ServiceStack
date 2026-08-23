@@ -6,6 +6,7 @@ import { initSources, SourcesPanel, RunReport, TrustedFolders } from './sources.
 import { initExplorer, Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState,
     CheckBox, SelectionBar, ConfirmDialog } from './explorer.mjs'
 import { initImport, ImportPanel } from './import.mjs'
+import { initAssistants, AssistantsPanel } from './assistants.mjs'
 
 let ext = null
 let ctx = null
@@ -270,6 +271,12 @@ const SyncReport = {
 }
 
 const GeminiModelSelector = {
+    props: {
+        modelValue: { type: String, default: undefined },
+        defaultText: String,
+        helpText: String,
+    },
+    emits: ['update:modelValue'],
     template: `
         <div data-tag="GeminiModelSelector" class="flex items-center space-x-2">
             <button type="button" @click="openModelPicker"
@@ -277,7 +284,7 @@ const GeminiModelSelector = {
                 <span class="flex items-center space-x-2 truncate">
                     <ProviderIcon v-if="selectedModelObj?.provider" :provider="selectedModelObj.provider" class="size-4 shrink-0" />
                     <span class="font-medium truncate">
-                        {{ overrideModelName ? selectedModelName : ('Default (' + defaultModelDisplay + ')') }}
+                        {{ overrideModelName ? selectedModelName : resolvedDefaultText }}
                     </span>
                 </span>
                 <svg class="size-4 opacity-70 shrink-0 ml-2" :class="$styles.icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -300,7 +307,7 @@ const GeminiModelSelector = {
                         <div class="shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                             <div>
                                 <h3 class="text-lg font-semibold">Select Model</h3>
-                                <p class="text-xs" :class="$styles.muted">Select a model for Gemini File Stores requests</p>
+                                <p class="text-xs" :class="$styles.muted">{{ helpText || 'Select a model for Gemini File Stores requests' }}</p>
                             </div>
                             <button type="button" @click="isModelPickerOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                                 <svg class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -351,10 +358,10 @@ const GeminiModelSelector = {
                             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 <button v-for="m in filteredModelList" :key="m.id + '-' + m.provider"
                                     type="button"
-                                    @click="selectModelOverride(m.name || m.id)"
+                                    @click="selectModelOverride(m)"
                                     :class="[
                                         'text-left p-3.5 rounded-lg border transition-all cursor-pointer group hover:scale-[1.01]',
-                                        overrideModelName === (m.name || m.id)
+                                        isSelectedModel(m)
                                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-500/50'
                                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                                     ]">
@@ -396,7 +403,7 @@ const GeminiModelSelector = {
             </div>
         </Teleport>
     `,
-    setup() {
+    setup(props, { emit }) {
         const isModelPickerOpen = ref(false)
         const modelSearchQuery = ref('')
         const modelSortBy = ref('release_date')
@@ -411,9 +418,11 @@ const GeminiModelSelector = {
             { id: 'context', label: 'Context Limit' },
         ]
 
-        const overrideModelName = computed(() => ext.getPrefs()?.model || '')
+        const controlled = computed(() => props.modelValue !== undefined)
+        const overrideModelName = computed(() => controlled.value ? props.modelValue || '' : ext.getPrefs()?.model || '')
         const defaultModelObj = computed(() => getDefaultGeminiModel())
         const defaultModelDisplay = computed(() => defaultModelObj.value?.name || defaultModelObj.value?.id || 'gemini-flash-latest')
+        const resolvedDefaultText = computed(() => props.defaultText || ('Default (' + defaultModelDisplay.value + ')'))
 
         const selectedModelObj = computed(() => {
             const override = overrideModelName.value
@@ -430,7 +439,13 @@ const GeminiModelSelector = {
             isModelPickerOpen.value = true
         }
 
-        function selectModelOverride(modelName) {
+        function selectModelOverride(model) {
+            const modelName = controlled.value ? model.id || model.name : model.name || model.id
+            if (controlled.value) {
+                emit('update:modelValue', modelName)
+                isModelPickerOpen.value = false
+                return
+            }
             const prefs = ext.getPrefs()
             prefs.model = modelName
             ext.setPrefs(prefs)
@@ -438,9 +453,17 @@ const GeminiModelSelector = {
         }
 
         function clearModelOverride() {
+            if (controlled.value) {
+                emit('update:modelValue', '')
+                return
+            }
             const prefs = ext.getPrefs()
             prefs.model = ''
             ext.setPrefs(prefs)
+        }
+
+        function isSelectedModel(model) {
+            return overrideModelName.value === model.id || overrideModelName.value === model.name
         }
 
         const excludedSubstrings = [
@@ -535,11 +558,13 @@ const GeminiModelSelector = {
             overrideModelName,
             defaultModelObj,
             defaultModelDisplay,
+            resolvedDefaultText,
             selectedModelObj,
             selectedModelName,
             openModelPicker,
             selectModelOverride,
             clearModelOverride,
+            isSelectedModel,
             filteredModelList,
             formatShortNumber,
             formatCostNum,
@@ -668,15 +693,128 @@ const FileStoreList = {
     }
 }
 
+/**
+ * A File Store owns much more than the document rows visible in Explore. Make that full blast
+ * radius explicit and require the one value an accidental click cannot plausibly supply.
+ */
+const DeleteStoreDialog = {
+    props: {
+        open: Boolean,
+        busy: Boolean,
+        loading: Boolean,
+        storeName: String,
+        summary: Object,
+        modelValue: String,
+    },
+    emits: ['update:modelValue', 'close', 'confirm'],
+    template: `
+      <Teleport to="body">
+        <div v-if="open" class="fixed inset-0 flex items-center justify-center p-4" style="z-index:220">
+            <div class="fixed inset-0 bg-black/60" @click="close"></div>
+            <div class="relative flex max-h-[calc(100vh-2rem)] w-full max-w-xl flex-col overflow-hidden rounded-xl border bg-white shadow-2xl dark:bg-gray-900"
+                :class="[$styles.chromeBorder]" role="dialog" aria-modal="true" aria-labelledby="delete-store-title">
+                <div class="flex items-start gap-3 border-b px-5 py-4" :class="[$styles.chromeBorder]">
+                    <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 9v4m0 4h.01M10.3 3.7 2.4 17.4A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 id="delete-store-title" class="font-semibold" :class="[$styles.heading]">
+                            Permanently delete {{ storeName }}?
+                        </h3>
+                        <p class="mt-1 text-sm" :class="[$styles.muted]">
+                            This removes the Gemini File Search Store and every linked local record. It cannot be undone.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto px-5 py-4">
+                    <div v-if="loading" class="flex items-center justify-center gap-2 py-10 text-sm" :class="[$styles.muted]">
+                        <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0A12 12 0 0 0 0 12h4Z"/>
+                        </svg>
+                        Calculating everything that will be deleted…
+                    </div>
+                    <template v-else-if="summary">
+                        <div class="overflow-hidden rounded-lg border text-sm" :class="[$styles.chromeBorder]">
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Gemini File Search Store <small v-if="!summary.remoteStoreExists" :class="[$styles.muted]">(already absent)</small></span>
+                                <b>{{ summary.remoteStoreExists ? 1 : 0 }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Gemini documents <small v-if="summary.remoteDocumentBytes" :class="[$styles.muted]">({{ $fmt.bytes(summary.remoteDocumentBytes) }})</small></span>
+                                <b>{{ Number(summary.remoteDocuments || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Local document records <small v-if="summary.documentBytes" :class="[$styles.muted]">({{ $fmt.bytes(summary.documentBytes) }})</small></span>
+                                <b>{{ Number(summary.documents || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Saved imports</span><b>{{ Number(summary.savedImports || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Import run history</span><b>{{ Number(summary.importRuns || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Assistants <small v-if="summary.publishedAssistants" class="text-red-600 dark:text-red-400">({{ summary.publishedAssistants }} published)</small></span>
+                                <b>{{ Number(summary.assistants || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Customer conversations</span><b>{{ Number(summary.conversations || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 px-3 py-2.5">
+                                <span>Conversation messages</span><b>{{ Number(summary.messages || 0).toLocaleString() }}</b>
+                            </div>
+                        </div>
+
+                        <label for="delete-store-confirmation" class="mt-5 block text-sm font-medium">
+                            Type <strong>{{ storeName }}</strong> to confirm
+                        </label>
+                        <input id="delete-store-confirmation" type="text" :value="modelValue"
+                            @input="$emit('update:modelValue', $event.target.value)"
+                            :disabled="busy" autocomplete="off" spellcheck="false"
+                            class="mt-2 block w-full rounded-md px-3 py-2 text-sm"
+                            :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                    </template>
+                </div>
+
+                <div class="flex justify-end gap-2 border-t px-5 py-3" :class="[$styles.chromeBorder]">
+                    <button type="button" @click="close" :disabled="busy"
+                        class="rounded-md border px-3 py-1.5 text-sm disabled:opacity-50" :class="[$styles.secondaryButton]">
+                        Cancel
+                    </button>
+                    <button type="button" @click="$emit('confirm')"
+                        :disabled="busy || loading || !summary || modelValue !== storeName"
+                        class="rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40">
+                        {{ busy ? 'Deleting everything…' : 'Delete everything' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+      </Teleport>
+    `,
+    setup(props, { emit }) {
+        function close() { if (!props.busy) emit('close') }
+        function onKey(event) { if (event.key === 'Escape' && props.open) close() }
+        onMounted(() => document.addEventListener('keydown', onKey))
+        onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
+        return { close }
+    },
+}
+
 const FileStoreDetails = {
     components: { SyncReport, GeminiModelSelector, CoverageStrip, SelectionBar, BulkEditDialog, MetadataDialog,
-                  MetaChip, ConfirmDialog, SourcesPanel, ImportPanel, RunReport, TrustedFolders,
-                  Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState, CheckBox },
+                  MetaChip, ConfirmDialog, SourcesPanel, ImportPanel, AssistantsPanel, RunReport, TrustedFolders,
+                  Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState, CheckBox,
+                  DeleteStoreDialog },
     props: ['storeId'],
 
     template: `
         <!-- Room for the docked selection bar, so the last row isn't the one it covers. -->
-        <div data-tag="FileStoreDetails" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" :class="bulkCount ? 'pb-24' : ''" v-if="store">
+        <div data-tag="FileStoreDetails" class="mx-auto px-4 sm:px-6 lg:px-8 py-8"
+            :class="[bulkCount ? 'pb-24' : '', view === 'assistants' ? 'max-w-7xl' : 'max-w-5xl']" v-if="store">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                  <div class="flex items-center gap-4">
                      <button type="button"
@@ -708,19 +846,26 @@ const FileStoreDetails = {
             <!-- Explore is the everyday view; Import is a place you go on purpose. Splitting them
                  keeps a form nobody needs while browsing from dominating the page. -->
             <div class="flex gap-1 mb-6 border-b" :class="[$styles.chromeBorder]">
-                <button type="button" @click="view = 'explore'"
+                <button type="button" @click="selectView('explore')"
                     class="px-4 py-2 text-sm font-medium border-b-2 -mb-px"
                     :class="view === 'explore' ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                                                : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'">
                     Explore
                     <span v-if="facetTotal" class="ml-1 text-xs tabular-nums" :class="[$styles.muted]">{{ facetTotal.toLocaleString() }}</span>
                 </button>
-                <button type="button" @click="view = 'import'"
+                <button type="button" @click="selectView('import')"
                     class="px-4 py-2 text-sm font-medium border-b-2 -mb-px"
                     :class="view === 'import' ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                                               : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'">
                     Import
                     <span v-if="sourceCount" class="ml-1 text-xs tabular-nums" :class="[$styles.muted]">{{ sourceCount }}</span>
+                </button>
+                <button type="button" @click="selectView('assistants')"
+                    class="px-4 py-2 text-sm font-medium border-b-2 -mb-px"
+                    :class="view === 'assistants' ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                                  : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'">
+                    Assistants
+                    <span v-if="assistantCount" class="ml-1 text-xs tabular-nums" :class="[$styles.muted]">{{ assistantCount }}</span>
                 </button>
             </div>
 
@@ -767,7 +912,7 @@ const FileStoreDetails = {
                              <!-- Creating a category is importing into it: an empty category means
                                   nothing now that categories are derived from what was ingested. -->
                              <button type="button" @click="importInto(ext.prefs.category)"
-                                  class="px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300"
+                                  class="px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap" :class="[$styles.secondaryButton]"
                                   :title="ext.prefs.category
                                       ? 'Add documents to ' + ext.prefs.category
                                       : 'Categories are created by importing into them'">
@@ -851,7 +996,7 @@ const FileStoreDetails = {
                            </Popover>
                             <button type="button" @click="coverageOpen = true"
                                 class="px-2.5 py-1 rounded-md border text-xs font-medium inline-flex items-center gap-1.5"
-                                :class="[$styles.chromeBorder]">
+                                :class="[$styles.secondaryButton]">
                                 Coverage
                                <!-- Ambient, not an alarm: a count that tells you there is something
                                     to look at without interrupting what you came here to do. -->
@@ -936,7 +1081,7 @@ const FileStoreDetails = {
                                                 document with none, it's the invitation to add it. -->
                                            <button type="button" @click.stop="editDocument(doc)"
                                                class="px-1.5 py-0.5 rounded border text-[11px] inline-flex items-center gap-1"
-                                               :class="[$styles.chromeBorder, $styles.muted, $styles.mutedHover]"
+                                               :class="[$styles.secondaryButton, $styles.muted, $styles.mutedHover]"
                                                :title="'Edit metadata for ' + doc.displayName">
                                                <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1002,6 +1147,7 @@ const FileStoreDetails = {
             <div v-show="view === 'import'">
                 <div class="mb-6">
                     <ImportPanel ref="importPanel" :storeId="storeId" :facets="facets" :preset-category="importCategory"
+                        :route-tab="routeQuery.import" :route-crawl="routeQuery.crawl" @navigate="onImportNavigate"
                         @previewing="onImportPreviewing" @preview="onImportPreview" @imported="onUploadImported" />
                 </div>
                 <div v-if="uploadProgress" class="mb-6 px-4 py-3 rounded-lg border flex flex-wrap items-center justify-between gap-3"
@@ -1029,6 +1175,13 @@ const FileStoreDetails = {
                     <SourcesPanel :key="sourceListVersion" :storeId="storeId" @imported="onImported" />
                     <TrustedFolders />
                 </div>
+            </div>
+
+            <div v-show="view === 'assistants'" class="border-b border-gray-200 dark:border-gray-700 mb-8">
+                <AssistantsPanel :storeId="storeId" :facets="facets"
+                    :route-assistant="routeQuery.assistant" :route-conversations="routeQuery.conversations"
+                    :route-conversation="routeQuery.conversation" @navigate="onAssistantNavigate"
+                    @count="assistantCount = $event" />
             </div>
 
             <Modal :open="coverageOpen" title="Coverage & filters"
@@ -1069,6 +1222,10 @@ const FileStoreDetails = {
                 </div>
             </Modal>
 
+            <DeleteStoreDialog :open="deleteDialogOpen" :busy="deleting" :loading="deleteSummaryLoading"
+                :store-name="store.displayName" :summary="deleteSummary" v-model="deleteConfirmation"
+                @close="closeDeleteDialog" @confirm="deleteStore" />
+
             <SelectionBar :count="bulkCount" :all-matching="selectAllMatching"
                 @edit="bulkEditOpen = true" @delete="openBulkDelete" @clear="clearSelection" />
 
@@ -1104,11 +1261,11 @@ const FileStoreDetails = {
                    </h3>
                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                        <span v-if="deleting">Please wait, this may take a while.</span>
-                       <span v-else>Permanently delete this file store and all its documents.</span>
+                       <span v-else>Permanently delete this File Store, documents, imports, assistants, and conversations.</span>
                    </p>
                 </div>
                 <button type="button"
-                    @click="deleteStore"
+                    @click="openDeleteDialog"
                     :disabled="deleting"
                     class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -1126,6 +1283,14 @@ const FileStoreDetails = {
     `,
     emits: ['select', 'back'],
     setup(props, { emit }) {
+        const route = ctx.router.currentRoute
+        const routeQuery = computed(() => route.value.query || {})
+        const queryValue = value => Array.isArray(value) ? value[0] : value
+        const categoryFromRoute = () => {
+            if (!Object.prototype.hasOwnProperty.call(routeQuery.value, 'category')) return null
+            return queryValue(routeQuery.value.category) ?? ''
+        }
+        ext.setPrefs({ category:categoryFromRoute(), page:1 })
         const store = computed(() => ext.state.filestores?.find(s => s.id == props.storeId))
         const loading = ref(false)
         const fileInput = ref(null)
@@ -1140,6 +1305,10 @@ const FileStoreDetails = {
         const pruning = ref(false)
         const syncResult = ref(null)
         const deleting = ref(false)
+        const deleteDialogOpen = ref(false)
+        const deleteSummaryLoading = ref(false)
+        const deleteSummary = ref(null)
+        const deleteConfirmation = ref('')
         const facets = ref({})
         const pendingIds = ref([])
         const PAGE_SIZE = 10
@@ -1286,6 +1455,7 @@ const FileStoreDetails = {
             const patch = { page: 1, q: '', category: null, missing: null }
             FACET_FIELDS.filter(f => f !== 'category').forEach(f => { patch['facet_' + f] = null })
             ext.setPrefs(patch)
+            updateExploreCategory(null)
             loadDocuments()
         }
 
@@ -1322,12 +1492,14 @@ const FileStoreDetails = {
             clearSelection()
             if (field === 'category') return selectCategory(value)
             ext.setPrefs({ page: 1, ...(storeWide ? { category: null } : {}), ['facet_' + field]: value })
+            if (storeWide) updateExploreCategory(null)
             loadDocuments()
         }
 
         function showMissing(field, storeWide = false) {
             clearSelection()
             ext.setPrefs({ page: 1, ...(storeWide ? { category: null } : {}), missing: field })
+            if (storeWide) updateExploreCategory(null)
             loadDocuments()
         }
 
@@ -1463,11 +1635,61 @@ const FileStoreDetails = {
         // A preview is always shown before anything is indexed, so the operator sees the cost
         // (and which rules matched) before committing.
         const importPreview = ref(null)
-        // Explore is where the time is spent, so it's the landing view; the choice is remembered.
-        const view = ref(ext.prefs.view === 'import' ? 'import' : 'explore')
-        watch(view, v => ext.setPrefs({ view: v }))
+        const pageViews = ['explore', 'import', 'assistants']
+        const importViews = ['upload', 'folder', 'crawl']
+        const view = computed({
+            get: () => {
+                const explicit = queryValue(routeQuery.value.view)
+                if (pageViews.includes(explicit)) return explicit
+                if (routeQuery.value.assistant || routeQuery.value.conversations || routeQuery.value.conversation) return 'assistants'
+                if (routeQuery.value.import || routeQuery.value.crawl) return 'import'
+                return 'explore'
+            },
+            set: selectView,
+        })
+        function updateNavigation(patch) {
+            const query = { ...routeQuery.value }
+            for (const [key, value] of Object.entries(patch)) {
+                if (value == null || (value === '' && key !== 'category')) delete query[key]
+                else query[key] = String(value)
+            }
+            if (JSON.stringify(query) === JSON.stringify(routeQuery.value)) return
+            ctx.router.push({ path:route.value.path, query, hash:route.value.hash })
+        }
+        function selectView(next) {
+            if (!pageViews.includes(next)) next = 'explore'
+            const patch = { view:next }
+            if (next === 'import') {
+                const currentImport = queryValue(routeQuery.value.import)
+                patch.import = importViews.includes(currentImport)
+                    ? currentImport
+                    : importViews.includes(ext.prefs.importTab) ? ext.prefs.importTab : 'upload'
+                if (patch.import !== 'crawl') patch.crawl = null
+            } else {
+                patch.import = null
+                patch.crawl = null
+            }
+            if (next !== 'assistants') {
+                patch.assistant = null
+                patch.conversations = null
+                patch.conversation = null
+            }
+            ext.setPrefs({ view:next })
+            updateNavigation(patch)
+        }
+        function onImportNavigate(patch) {
+            updateNavigation({ view:'import', assistant:null, conversations:null, conversation:null, ...patch })
+        }
+        function onAssistantNavigate(patch) {
+            updateNavigation({ view:'assistants', import:null, crawl:null, ...patch })
+        }
+        function updateExploreCategory(category) {
+            updateNavigation({ view:'explore', category, import:null, crawl:null,
+                assistant:null, conversations:null, conversation:null })
+        }
         const importCategory = ref(null)
         const sourceCount = ref(0)
+        const assistantCount = ref(0)
         const sourceListVersion = ref(0)
         const importPanel = ref(null)
         const uploadProgress = ref(null)
@@ -1529,7 +1751,7 @@ const FileStoreDetails = {
             }
             FACET_FIELDS.filter(f => f !== 'category').forEach(f => { patch['facet_' + f] = null })
             ext.setPrefs(patch)
-            view.value = 'explore'
+            updateExploreCategory(patch.category)
             loadDocuments()
         }
 
@@ -1664,8 +1886,16 @@ const FileStoreDetails = {
                 category,
                 sortBy: ext.prefs.sortBy === 'uploading' ? '-uploadedAt' : ext.prefs.sortBy,
             })
+            updateExploreCategory(category)
             loadDocuments()
         }
+
+        watch(categoryFromRoute, category => {
+            if (ext.prefs.category === category) return
+            pendingIds.value = []
+            ext.setPrefs({ page:1, category })
+            if (view.value === 'explore') loadDocuments()
+        })
 
         watch(() => props.storeId, () => {
             ext.setPrefs({
@@ -1769,16 +1999,45 @@ const FileStoreDetails = {
             if (pollTimer) clearTimeout(pollTimer)
         })
 
-        async function deleteStore() {
+        async function openDeleteDialog() {
             if (!store.value) return
-            if (!confirm(`Are you sure you want to delete "${store.value.displayName}"? This cannot be undone.`)) return
+            deleteDialogOpen.value = true
+            deleteSummaryLoading.value = true
+            deleteSummary.value = null
+            deleteConfirmation.value = ''
+            try {
+                const api = await ext.getJson(`/filestores/${store.value.id}/delete-summary`)
+                if (api.error) {
+                    ext.setError(api.error)
+                    deleteDialogOpen.value = false
+                } else {
+                    deleteSummary.value = api.response
+                }
+            } finally {
+                deleteSummaryLoading.value = false
+            }
+        }
+
+        function closeDeleteDialog() {
+            if (deleting.value) return
+            deleteDialogOpen.value = false
+            deleteSummary.value = null
+            deleteConfirmation.value = ''
+        }
+
+        async function deleteStore() {
+            if (!store.value || deleteConfirmation.value !== store.value.displayName) return
 
             deleting.value = true
             try {
-                const api = await ext.deleteJson("/filestores/" + store.value.id)
+                const api = await ext.deleteJson("/filestores/" + store.value.id, {
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ confirm: deleteConfirmation.value }),
+                })
                 if (api.error) {
                     ext.setError(api.error)
                 } else {
+                    deleteDialogOpen.value = false
                     await loadFilestores()
                     emit('back')
                 }
@@ -1881,6 +2140,12 @@ const FileStoreDetails = {
             totalPages,
             store,
             deleting,
+            deleteDialogOpen,
+            deleteSummaryLoading,
+            deleteSummary,
+            deleteConfirmation,
+            openDeleteDialog,
+            closeDeleteDialog,
             deleteStore,
             deleteDocument,
             reuploadDocument,
@@ -1942,8 +2207,8 @@ const FileStoreDetails = {
             clearFilters, reviewPending, facetFields: FACET_FIELDS,
             docMeta,
             reload,
-            view,
-            sourceCount, sourceListVersion, importPanel, uploadProgress, uploadStatus,
+            view, routeQuery, selectView, onImportNavigate, onAssistantNavigate,
+            sourceCount, assistantCount, sourceListVersion, importPanel, uploadProgress, uploadStatus,
             importCategory,
             importInto,
             onImported, onUploadImported, viewUploads,
@@ -2255,6 +2520,7 @@ export default {
         initMetadata(ext, ctx)
         initSources(ext)
         initImport(ext)
+        initAssistants(ext, ctx, { GeminiModelSelector })
         initExplorer(ext)
 
         ctx.setLeftIcons({

@@ -95,9 +95,9 @@ public static class GeminiIngest
         var sb = new StringBuilder("\\A");
         for (var i = 0; i < pattern.Length;)
         {
-            if (i + 2 < pattern.Length && pattern.AsSpan(i, 3).SequenceEqual("**/"))
+            if (i + 2 < pattern.Length && pattern.AsSpan(i, 3) is "**/")
             { sb.Append("(?:.*/)?"); i += 3; }
-            else if (i + 1 < pattern.Length && pattern.AsSpan(i, 2).SequenceEqual("**"))
+            else if (i + 1 < pattern.Length && pattern.AsSpan(i, 2) is "**")
             { sb.Append(".*"); i += 2; }
             else if (pattern[i] == '*') { sb.Append("[^/]*"); i++; }
             else if (pattern[i] == '?') { sb.Append("[^/]"); i++; }

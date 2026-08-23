@@ -111,7 +111,7 @@ const META_CHIP_FALLBACK = { class: 'text-gray-600 dark:text-gray-400 border-gra
 
 export const MetaChip = {
     template: `
-        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[11px]"
+        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-xs"
             :class="chip.class" :title="field + ': ' + text">
             <span v-if="chip.icon" v-html="chip.icon" class="shrink-0 opacity-80" aria-hidden="true"></span>
             <span class="truncate max-w-[16rem]">{{ text }}</span>
@@ -186,8 +186,8 @@ export const MetadataInput = {
         <div data-tag="MetadataInput" class="relative">
             <input type="text" autocomplete="off" :placeholder="placeholder" :disabled="disabled"
                 v-model="text" @input="onInput" @focus="open = !disabled" @blur="onBlur" @keydown="onKey"
-                class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 outline-none bg-white dark:bg-gray-900 disabled:opacity-50"
-                :class="borderClass">
+                class="w-full px-2.5 py-1.5 rounded-md text-sm"
+                :class="[borderClass, $styles.textInput, $styles.bgInput]">
             <div v-if="open && suggestions.length" class="absolute z-30 left-0 right-0 mt-1 max-h-52 overflow-auto rounded-md border shadow-lg bg-white dark:bg-gray-800"
                 :class="[$styles.chromeBorder]">
                 <div v-for="s in suggestions" :key="s.value" @mousedown.prevent="choose(s.value)"
@@ -206,11 +206,11 @@ export const MetadataInput = {
             <div v-if="message && !disabled" class="mt-1 text-xs flex items-center gap-1.5 flex-wrap" :class="messageClass">
                 <span>{{ message }}</span>
                 <button v-if="near && !forced" type="button" @mousedown.prevent="choose(near.value)"
-                    class="px-1.5 py-0.5 rounded border text-[11px] font-semibold border-current">Use “{{ near.value }}”</button>
+                    class="px-1.5 py-0.5 rounded border text-xs font-semibold border-current">Use “{{ near.value }}”</button>
                 <button v-if="near && !forced" type="button" @mousedown.prevent="forceNew()"
-                    class="px-1.5 py-0.5 rounded border text-[11px] font-semibold border-current">Keep “{{ text.trim() }}”</button>
+                    class="px-1.5 py-0.5 rounded border text-xs font-semibold border-current">Keep “{{ text.trim() }}”</button>
             </div>
-            <div v-else-if="hint && !disabled" class="mt-1 text-[11px]" :class="[$styles.muted]">{{ hint }}</div>
+            <div v-else-if="hint && !disabled" class="mt-1 text-xs" :class="[$styles.muted]">{{ hint }}</div>
         </div>
     `,
     props: {
@@ -361,7 +361,7 @@ export const MetadataListInput = {
                      between the two shunts every chip down a line while you type. -->
                 <div v-if="modelValue?.length" class="flex flex-wrap gap-1 mt-1.5">
                     <span v-for="v in modelValue" :key="v"
-                        class="inline-flex items-center gap-1 pl-1.5 pr-1 py-0.5 rounded border text-[11px] text-emerald-600 dark:text-emerald-400 border-emerald-500/50">
+                        class="inline-flex items-center gap-1 pl-1.5 pr-1 py-0.5 rounded border text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/50">
                         <span class="truncate max-w-[10rem]">{{ v }}</span>
                         <button v-if="!disabled" type="button" @click="remove(v)" :title="'Remove ' + v"
                             class="px-0.5 leading-none opacity-60 hover:opacity-100">×</button>
@@ -494,13 +494,13 @@ export const CoverageStrip = {
 export const MetadataFields = {
     components: { MetadataInput, MetadataListInput },
     template: `
-        <div data-tag="MetadataFields" class="grid sm:grid-cols-2 gap-x-5 gap-y-7">
+        <div data-tag="MetadataFields" class="grid sm:grid-cols-2 gap-x-5 gap-y-5">
             <div v-for="f in allFields" :key="f.key" :class="f.wide ? 'sm:col-span-2' : ''">
                 <div class="flex items-baseline justify-between gap-2 mb-1">
                     <label class="text-xs font-semibold">{{ f.label }}</label>
                     <!-- Per-field effect, next to the field causing it. The total in the footer is
                          by document, so it can't answer "which of my five edits does nothing". -->
-                    <span v-if="ops && dirty(f.key) && counts?.[f.key]" class="text-[11px] tabular-nums"
+                    <span v-if="ops && dirty(f.key) && counts?.[f.key]" class="text-xs tabular-nums"
                         :class="counts[f.key].change ? 'text-amber-600 dark:text-amber-400' : $styles.muted">
                         {{ counts[f.key].change.toLocaleString() }} change<span
                             v-if="counts[f.key].skipped">, {{ counts[f.key].skipped.toLocaleString() }} kept</span>
@@ -517,18 +517,19 @@ export const MetadataFields = {
                         @input="e => setValue(f.key, e.target.value)" :disabled="opFor(f) === 'clear'"
                         :placeholder="ops ? 'Leave unchanged' : (f.placeholder || 'Optional')"
                         :aria-invalid="f.key === 'sourceUrl' && !!sourceUrlTemplateError(modelValue[f.key])"
-                        class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900 disabled:opacity-50"
-                        :class="f.key === 'sourceUrl' && sourceUrlTemplateError(modelValue[f.key])
-                            ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : $styles.chromeBorder">
+                        class="w-full rounded-md"
+                        :class="[$styles.textInput, f.key === 'sourceUrl' && sourceUrlTemplateError(modelValue[f.key])
+                            ? 'border-red-500 bg-red-50 dark:bg-red-900/20' 
+                            : $styles.borderInput + ' ' + $styles.bgInput]">
                     <div v-if="f.variables?.length" class="mt-1.5 flex flex-wrap items-center gap-1">
-                        <span class="text-[11px] mr-0.5" :class="[$styles.muted]">Append</span>
+                        <span class="text-xs mr-0.5" :class="[$styles.muted]">Append</span>
                         <button v-for="variable in f.variables" :key="variable" type="button"
                             @click="appendVariable(f.key, variable)" :title="'Append {' + variable + '} to Source URL'"
-                            class="px-0.5 py-0.5 rounded border font-mono text-[11px] hover:bg-gray-50 dark:hover:bg-gray-800"
+                            class="px-0.5 py-0.5 rounded border font-mono text-xs hover:bg-gray-50 dark:hover:bg-gray-800"
                             :class="[$styles.chromeBorder]">{{ '{' + variable + '}' }}</button>
                     </div>
                     <p v-if="f.key === 'sourceUrl' && sourceUrlTemplateError(modelValue[f.key])"
-                        class="mt-1 text-[11px] text-red-600 dark:text-red-400">
+                        class="mt-1 text-xs text-red-600 dark:text-red-400">
                         {{ sourceUrlTemplateError(modelValue[f.key]) }}
                     </p>
                 </template>
@@ -540,17 +541,17 @@ export const MetadataFields = {
 
                 <div v-if="ops" class="mt-1.5 flex flex-wrap items-center gap-2">
                     <select :value="opFor(f)" @change="e => setOp(f, e.target.value)"
-                        class="pl-1.5 pr-6 py-0.5 rounded border text-[11px] bg-white dark:bg-gray-900"
-                        :class="[$styles.chromeBorder, dirty(f.key) ? '' : 'opacity-40']">
+                        class="pl-1.5 pr-6 py-0.5 text-xs rounded-md"
+                        :class="[$styles.textInput, $styles.borderInput, $styles.bgInput, dirty(f.key) ? '' : 'opacity-50']">
                         <option v-for="o in opsFor(f)" :key="o.value" :value="o.value">{{ o.label }}</option>
                     </select>
-                    <span v-if="dirty(f.key)" class="text-[11px]" :class="[$styles.muted]">{{ OP_HINTS[opFor(f)] }}</span>
+                    <span v-if="dirty(f.key)" class="text-xs" :class="[$styles.muted]">{{ OP_HINTS[opFor(f)] }}</span>
                 </div>
 
                 <!-- What the selection holds today. Over many documents an empty input can't tell
                      "they all say guide" from "they say six different things", and those want
                      different edits. Each value is also the fastest way to type it. -->
-                <p v-if="summaryFor(f.key)" class="mt-1.5 flex flex-wrap items-center gap-1 text-[11px]">
+                <p v-if="summaryFor(f.key)" class="mt-1.5 flex flex-wrap items-center gap-1 text-xs">
                     <span :class="[$styles.muted]">Now</span>
                     <button v-for="v in summaryFor(f.key).values.slice(0, 4)" :key="v.value" type="button"
                         @click="setValue(f.key, v.value)" :title="'Use “' + v.value + '”'"
@@ -562,7 +563,7 @@ export const MetadataFields = {
                     <span v-if="summaryFor(f.key).empty" :class="[$styles.muted]">
                         · {{ summaryFor(f.key).empty.toLocaleString() }} empty</span>
                 </p>
-                <p v-else-if="f.free && f.hint && !f.variables?.length" class="mt-1 text-[11px]" :class="[$styles.muted]">{{ f.hint }}</p>
+                <p v-else-if="f.free && f.hint && !f.variables?.length" class="mt-1 text-xs" :class="[$styles.muted]">{{ f.hint }}</p>
             </div>
         </div>
     `,
@@ -681,7 +682,7 @@ export const MetadataDialog = {
                                         :class="rule.field === 'sourceUrl' && sourceUrlTemplateError(rule.value)
                                             ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : $styles.chromeBorder">
                                     <p v-if="rule.field === 'sourceUrl' && sourceUrlTemplateError(rule.value)"
-                                        class="mt-1 text-[11px] text-red-600 dark:text-red-400">
+                                        class="mt-1 text-xs text-red-600 dark:text-red-400">
                                         {{ sourceUrlTemplateError(rule.value) }}
                                     </p>
                                 </div>
@@ -696,9 +697,9 @@ export const MetadataDialog = {
                 <div class="px-5 py-3 border-t flex items-center justify-between gap-3" :class="[$styles.chromeBorder]">
                     <button type="button" @click="clearAll" class="text-xs" :class="[$styles.muted]">Clear all</button>
                     <div class="flex items-center gap-3">
-                        <span v-if="templateError" class="text-[11px] text-right text-red-600 dark:text-red-400">{{ templateError }}</span>
-                        <span v-else-if="note" class="text-[11px] text-right" :class="[$styles.muted]">{{ note }}</span>
-                        <button type="button" @click="$emit('close')" class="px-3 py-1.5 rounded-md text-sm border" :class="[$styles.chromeBorder]">Cancel</button>
+                        <span v-if="templateError" class="text-xs text-right text-red-600 dark:text-red-400">{{ templateError }}</span>
+                        <span v-else-if="note" class="text-xs text-right" :class="[$styles.muted]">{{ note }}</span>
+                        <button type="button" @click="$emit('close')" class="px-3 py-1.5 rounded-md text-sm border" :class="[$styles.secondaryButton]">Cancel</button>
                         <button type="button" @click="save" :disabled="!!templateError"
                             class="px-4 py-1.5 rounded-md text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
                             :class="[$styles.primaryButton]">{{ saveLabel }}</button>
@@ -801,7 +802,7 @@ export const BulkEditDialog = {
                         </template>
                     </div>
                     <div class="flex gap-2">
-                        <button type="button" @click="$emit('close')" class="px-3 py-1.5 rounded-md text-sm border" :class="[$styles.chromeBorder]">Cancel</button>
+                        <button type="button" @click="$emit('close')" class="px-3 py-1.5 rounded-md text-sm border" :class="[$styles.secondaryButton]">Cancel</button>
                         <button type="button" @click="apply" :disabled="!preview?.change || busy || stale"
                             class="px-4 py-1.5 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">
                             {{ busy ? 'Applying…' : (preview?.change ? 'Apply to ' + preview.change.toLocaleString() : 'Apply') }}
@@ -913,11 +914,11 @@ export const PendingBanner = {
             </div>
             <div class="flex gap-2 shrink-0">
                 <button v-if="!worker.running && pending.ids?.length" type="button" @click="$emit('review', pending.ids)"
-                    class="px-3 py-1 rounded-md border text-xs font-medium" :class="[$styles.chromeBorder]">Review</button>
+                    class="px-3 py-1 rounded-md text-xs font-medium" :class="[$styles.secondaryButton]">Review</button>
                 <button v-if="worker.running" type="button" @click="cancel"
-                    class="px-3 py-1 rounded-md border text-xs font-medium" :class="[$styles.chromeBorder]">Cancel</button>
+                    class="px-3 py-1 rounded-md text-xs font-medium" :class="[$styles.secondaryButton]">Cancel</button>
                 <button v-else type="button" @click="reindex" :disabled="busy"
-                    class="px-3 py-1 rounded-md text-xs font-medium disabled:opacity-50" :class="[$styles.primaryButton]">
+                    class="px-3 py-1 rounded-md text-xs font-medium" :class="[$styles.primaryButton]">
                     {{ busy ? 'Queueing…' : 'Push ' + pending.count.toLocaleString() + ' to Gemini' }}
                 </button>
             </div>
