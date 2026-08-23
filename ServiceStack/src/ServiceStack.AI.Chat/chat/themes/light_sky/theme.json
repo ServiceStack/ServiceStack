@@ -39,7 +39,7 @@
         "voiceButtonDefault": "bg-white text-sky-500 hover:text-sky-600 shadow-sm",
         "borderInput": "border-sky-300 focus:border-blue-500 focus:ring-blue-500 focus:ring-offset-white focus-within:ring-indigo-500 focus-within:border-indigo-500",
         "checkbox": "rounded bg-sky-500",
-        "secondaryButton": "text-sky-700 bg-white border border-sky-300 hover:bg-sky-50 transition-colors shadow-sm rounded-md",
+        "secondaryButton": "text-sky-700 bg-white border border-sky-300 hover:border-sky-400 hover:bg-sky-50 transition-colors shadow-sm rounded-md",
         "dropdownButton": "border border-sky-300/80 bg-white hover:bg-sky-50 text-sky-900 focus:outline-none",
         "bgPopover": "bg-white/95 backdrop-blur-xl border border-sky-200 shadow-lg",
         "textBlock": "backdrop-blur-sm",

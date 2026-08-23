@@ -72,7 +72,7 @@
         "cardActiveTitleBar": "border-b border-green-500 bg-green-900/40 text-green-400 font-mono",
         "textBlock": "text-green-400 backdrop-blur-sm",
         "primaryButton": "border border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)] text-black bg-green-500 hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed font-mono font-bold transition-all duration-300 hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] rounded-none",
-        "secondaryButton": "text-green-500 bg-black border border-green-700 hover:bg-green-950 transition-all duration-300 rounded-none",
+        "secondaryButton": "text-green-500 bg-black border border-green-700 hover:border-green-800 hover:bg-green-950 transition-all duration-300 rounded-none",
         "textLink": "text-green-500 underline decoration-green-800 hover:decoration-green-400 hover:text-green-300 transition-all duration-300",
         "bgIcon": "bg-green-600",
         "icon": "text-green-600",
