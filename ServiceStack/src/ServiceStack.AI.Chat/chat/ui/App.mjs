@@ -10,8 +10,7 @@ const LeftBar = {
             <div class="flex flex-col space-y-2 pt-2.5 px-1">
                 <div v-for="(icon, id) in $ctx.visibleComponents($ctx.left)" :key="id" class="relative flex items-center justify-center">
                     <component :is="icon.component" 
-                        class="size-7 p-1 cursor-pointer block rounded"
-                        :class="[icon.isActive({ ...$layout }) ? $styles.iconActive : $styles.icon, $styles.iconHover]" 
+                        :class="[icon.isActive({ ...$layout }) ? $styles.iconActive : $styles.icon, $styles.iconHover, icon.iconClass ?? 'size-7 p-1 cursor-pointer block rounded']" 
                         @mouseenter="tooltip = icon.id"
                         @mouseleave="tooltip = ''"
                         />

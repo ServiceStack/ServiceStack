@@ -916,6 +916,7 @@ export default {
                     setup() {
                     }
                 },
+                iconClass: 'size-6.5 p-1 cursor-pointer block rounded',
                 isVisible() {
                     return ctx.state.tool?.groups?.core_tools?.includes('calc')
                 },
