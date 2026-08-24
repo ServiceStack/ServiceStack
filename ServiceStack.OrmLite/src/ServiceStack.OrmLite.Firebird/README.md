@@ -131,7 +131,7 @@ Below is a complete example of how to use "SqlExpressionVisitor <T>" in OrmLite:
 				Console.WriteLine(ev.WhereExpression);
 				Console.WriteLine("Expected:{0} ; Selected:{1}, OK? {2}", expected, result.Count, expected==result.Count);
 			
-				//  enough selecting, lets udpate;
+				//  enough selecting, lets update;
 				
 				// set Active=false where rate =0
 				expected=2;
