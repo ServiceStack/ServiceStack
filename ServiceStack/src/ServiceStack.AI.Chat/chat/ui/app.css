@@ -933,10 +933,6 @@
     width: calc(var(--spacing) * 6);
     height: calc(var(--spacing) * 6);
   }
-  .size-6\.5 {
-    width: calc(var(--spacing) * 6.5);
-    height: calc(var(--spacing) * 6.5);
-  }
   .size-7 {
     width: calc(var(--spacing) * 7);
     height: calc(var(--spacing) * 7);
@@ -8373,6 +8369,36 @@
   }
   ::-webkit-scrollbar-thumb {
     background-color: var(--scrollbar-thumb-bg);
+  }
+  .custom-tooltip {
+    position: relative;
+    cursor: pointer;
+  }
+  .custom-tooltip::after {
+    content: attr(data-title);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background-color: var(--assistant-bg);
+    color: var(--assistant-text);
+    border: 1px solid var(--assistant-border);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateY(-4px);
+  }
+  .dark .custom-tooltip::after {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .custom-tooltip:hover::after {
+    opacity: 1;
   }
   [role=dialog].z-10 {
     z-index: 60;
