@@ -1,10 +1,14 @@
 import { ref, computed, inject, onBeforeUnmount, onMounted, onUnmounted, toRef, watch } from 'vue'
 import { appendQueryString, lastLeftPart, leftPart, rightPart } from '@servicestack/client'
-import { initMetadata, loadFacets, CoverageStrip, BulkEditDialog, MetadataDialog, MetaChip,
-    DOC_FIELDS, META_LIST_FIELDS, FACET_FIELDS, LIST_FIELDS } from './metadata.mjs'
+import {
+    initMetadata, loadFacets, CoverageStrip, BulkEditDialog, MetadataDialog, MetaChip,
+    DOC_FIELDS, META_LIST_FIELDS, FACET_FIELDS, LIST_FIELDS
+} from './metadata.mjs'
 import { initSources, SourcesPanel, RunReport, TrustedFolders } from './sources.mjs'
-import { initExplorer, Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState,
-    CheckBox, SelectionBar, ConfirmDialog } from './explorer.mjs'
+import {
+    initExplorer, Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState,
+    CheckBox, SelectionBar, ConfirmDialog
+} from './explorer.mjs'
 import { initImport, ImportPanel } from './import.mjs'
 import { initAssistants, AssistantsPanel } from './assistants.mjs'
 
@@ -805,10 +809,12 @@ const DeleteStoreDialog = {
 }
 
 const FileStoreDetails = {
-    components: { SyncReport, GeminiModelSelector, CoverageStrip, SelectionBar, BulkEditDialog, MetadataDialog,
-                  MetaChip, ConfirmDialog, SourcesPanel, ImportPanel, AssistantsPanel, RunReport, TrustedFolders,
-                  Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState, CheckBox,
-                  DeleteStoreDialog },
+    components: {
+        SyncReport, GeminiModelSelector, CoverageStrip, SelectionBar, BulkEditDialog, MetadataDialog,
+        MetaChip, ConfirmDialog, SourcesPanel, ImportPanel, AssistantsPanel, RunReport, TrustedFolders,
+        Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState, CheckBox,
+        DeleteStoreDialog
+    },
     props: ['storeId'],
 
     template: `
@@ -1290,7 +1296,7 @@ const FileStoreDetails = {
             if (!Object.prototype.hasOwnProperty.call(routeQuery.value, 'category')) return null
             return queryValue(routeQuery.value.category) ?? ''
         }
-        ext.setPrefs({ category:categoryFromRoute(), page:1 })
+        ext.setPrefs({ category: categoryFromRoute(), page: 1 })
         const store = computed(() => ext.state.filestores?.find(s => s.id == props.storeId))
         const loading = ref(false)
         const fileInput = ref(null)
@@ -1584,7 +1590,7 @@ const FileStoreDetails = {
                 const after = list ? (defaults[key] || []) : (defaults[key] ?? '')
                 if (list ? JSON.stringify(before) === JSON.stringify(after) : before === after) continue
                 changes.push(list ? (after.length ? { field: key, op: 'set', value: after } : { field: key, op: 'clear' })
-                                  : (after ? { field: key, op: 'set', value: after } : { field: key, op: 'clear' }))
+                    : (after ? { field: key, op: 'set', value: after } : { field: key, op: 'clear' }))
             }
             if (!changes.length) return
             const api = await ext.postJson('/documents/bulk', { ids: [doc.id], changes })
@@ -1614,8 +1620,10 @@ const FileStoreDetails = {
                 await refresh()
                 // Deleted what it could and named what it couldn't, rather than reporting success
                 // for a batch that was partly refused.
-                if (failed.length) ext.setError({ message:
-                    `Deleted ${api.response.deleted} of ${api.response.selected}. ${failed[0].displayName}: ${failed[0].error}` })
+                if (failed.length) ext.setError({
+                    message:
+                        `Deleted ${api.response.deleted} of ${api.response.selected}. ${failed[0].displayName}: ${failed[0].error}`
+                })
             } finally { bulkDeleting.value = false }
         }
 
@@ -1654,11 +1662,11 @@ const FileStoreDetails = {
                 else query[key] = String(value)
             }
             if (JSON.stringify(query) === JSON.stringify(routeQuery.value)) return
-            ctx.router.push({ path:route.value.path, query, hash:route.value.hash })
+            ctx.router.push({ path: route.value.path, query, hash: route.value.hash })
         }
         function selectView(next) {
             if (!pageViews.includes(next)) next = 'explore'
-            const patch = { view:next }
+            const patch = { view: next }
             if (next === 'import') {
                 const currentImport = queryValue(routeQuery.value.import)
                 patch.import = importViews.includes(currentImport)
@@ -1674,18 +1682,20 @@ const FileStoreDetails = {
                 patch.conversations = null
                 patch.conversation = null
             }
-            ext.setPrefs({ view:next })
+            ext.setPrefs({ view: next })
             updateNavigation(patch)
         }
         function onImportNavigate(patch) {
-            updateNavigation({ view:'import', assistant:null, conversations:null, conversation:null, ...patch })
+            updateNavigation({ view: 'import', assistant: null, conversations: null, conversation: null, ...patch })
         }
         function onAssistantNavigate(patch) {
-            updateNavigation({ view:'assistants', import:null, crawl:null, ...patch })
+            updateNavigation({ view: 'assistants', import: null, crawl: null, ...patch })
         }
         function updateExploreCategory(category) {
-            updateNavigation({ view:'explore', category, import:null, crawl:null,
-                assistant:null, conversations:null, conversation:null })
+            updateNavigation({
+                view: 'explore', category, import: null, crawl: null,
+                assistant: null, conversations: null, conversation: null
+            })
         }
         const importCategory = ref(null)
         const sourceCount = ref(0)
@@ -1893,7 +1903,7 @@ const FileStoreDetails = {
         watch(categoryFromRoute, category => {
             if (ext.prefs.category === category) return
             pendingIds.value = []
-            ext.setPrefs({ page:1, category })
+            ext.setPrefs({ page: 1, category })
             if (view.value === 'explore') loadDocuments()
         })
 
@@ -2104,8 +2114,10 @@ const FileStoreDetails = {
                 const api = await ext.postJson(`/filestores/${store.value.id}/prune`, {})
                 if (api.error) return ext.setError(api.error)
                 const failed = api.response?.errors || []
-                if (failed.length) ext.setError({ message:
-                    `Removed ${api.response.removed}, but ${failed.length} could not be deleted: ${failed[0].error}` })
+                if (failed.length) ext.setError({
+                    message:
+                        `Removed ${api.response.removed}, but ${failed.length} could not be deleted: ${failed[0].error}`
+                })
                 await loadFilestores()
                 await syncStore()
             } finally { pruning.value = false }
@@ -2526,7 +2538,7 @@ export default {
         ctx.setLeftIcons({
             gemini: {
                 component: {
-                    template: `<svg @click="$ctx.togglePath('/gemini')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5" d="M3 12a9 9 0 0 0 9-9a9 9 0 0 0 9 9a9 9 0 0 0-9 9a9 9 0 0 0-9-9Z"/></svg>`
+                    template: `<svg @click="$ctx.togglePath('/gemini', { left:false })" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5" d="M3 12a9 9 0 0 0 9-9a9 9 0 0 0 9 9a9 9 0 0 0-9 9a9 9 0 0 0-9-9Z"/></svg>`
                 },
                 isActive({ path }) {
                     return ctx.matchesPath(path, '/gemini*')
