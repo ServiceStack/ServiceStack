@@ -13,7 +13,7 @@ for (const key of Object.keys(allowed)) {
     if (allowed[key].includes(overrides[key])) appearance[key] = overrides[key];
 }
 const accentOverride = /^#[0-9a-f]{6}$/i.test(overrides.accent || '') ? overrides.accent : '';
-const launch = { openMode:'', keyboardShortcut:false, ...(CONFIG.launch || {}) };
+const launch = { openMode:'', keyboardShortcut:true, ...(CONFIG.launch || {}) };
 if (!['', 'page-load', 'page-bottom'].includes(launch.openMode)) launch.openMode = '';
 launch.keyboardShortcut = Boolean(launch.keyboardShortcut);
 const markdownParser = typeof MARKDOWN !== 'undefined' && typeof MARKDOWN?.parse === 'function' ? MARKDOWN : null;

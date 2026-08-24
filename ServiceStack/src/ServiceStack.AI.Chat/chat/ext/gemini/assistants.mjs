@@ -131,7 +131,7 @@ const defaults = () => ({
     model: '',
     identity: { title: 'Ask our assistant', description: 'Answers grounded in our documentation.', welcome: 'Hi! How can I help you today?', suggestions: ['What can you help me with?'] },
     scope: {},
-    behavior: { template: 'documentation', systemPrompt: PROMPTS.documentation, grounded: true, citations: true, responseStyle: 'balanced', openMode: '', keyboardShortcut: false, fallback: "I couldn't find that in the available documents.", notice: 'Conversations may be reviewed to improve support.' },
+    behavior: { template: 'documentation', systemPrompt: PROMPTS.documentation, grounded: true, citations: true, responseStyle: 'balanced', openMode: '', keyboardShortcut: true, fallback: "I couldn't find that in the available documents.", notice: 'Conversations may be reviewed to improve support.' },
     appearance: { theme: 'auto', colors: {}, fonts: {}, position: 'bottom-right', icon: 'sparkles', button: {...DEFAULT_BUTTON}, panelSize: 'standard' },
     hosting: { allowedOrigins: [], requestsPerMinute: 30 },
 })

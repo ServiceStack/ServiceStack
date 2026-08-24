@@ -203,7 +203,7 @@ Use the retrieved documents as the primary authority for organization-specific i
         {
             ["template"] = "documentation", ["systemPrompt"] = PromptTemplates["documentation"],
             ["grounded"] = true, ["citations"] = true, ["responseStyle"] = "balanced",
-            ["openMode"] = "", ["keyboardShortcut"] = false,
+            ["openMode"] = "", ["keyboardShortcut"] = true,
             ["fallback"] = "I couldn't find that in the available documents.",
             ["notice"] = "Conversations may be reviewed to improve support.",
         },
@@ -294,7 +294,7 @@ Use the retrieved documents as the primary authority for organization-specific i
             ? responseStyle : "balanced";
         var openMode = behavior.GetString("openMode") ?? "";
         behavior["openMode"] = new[] { "", "page-load", "page-bottom" }.Contains(openMode) ? openMode : "";
-        behavior["keyboardShortcut"] = behavior.GetBool("keyboardShortcut");
+        behavior["keyboardShortcut"] = behavior.GetBool("keyboardShortcut", true);
         behavior["fallback"] = Text(behavior, "fallback", "I couldn't find that in the available documents.");
         behavior["notice"] = Text(behavior, "notice", max: 500);
 

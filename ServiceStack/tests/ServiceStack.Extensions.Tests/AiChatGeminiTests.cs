@@ -663,6 +663,8 @@ public class AiChatGeminiTests
             .GetString("model"), Is.Empty);
         Assert.That(GeminiAssistants.ResolveModel(new JsonObject(), "gemini-flash-latest"),
             Is.EqualTo("gemini-flash-latest"));
+        Assert.That(GeminiAssistants.NormalizeConfig().GetObject("behavior")!
+            .GetBool("keyboardShortcut"), Is.True);
     }
 
     [Test]
