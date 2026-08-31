@@ -233,6 +233,7 @@ public static class OrmLiteConfig
 
     public static Action<IDbCommand, object> InsertFilter { get; set; }
     public static Action<IDbCommand, object> UpdateFilter { get; set; }
+    public static Action<IDbCommand, object> UpsertFilter { get; set; }
     public static Action<IUntypedSqlExpression> SqlExpressionSelectFilter { get; set; }
     public static Func<Type, string, string> LoadReferenceSelectFilter { get; set; }
 

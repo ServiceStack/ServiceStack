@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Data;
@@ -346,6 +347,74 @@ public static class OrmLiteWriteApiAsync
     public static Task<int> DeleteAsync(this IDbConnection dbConn, Type tableType, string sqlFilter, object anonType, CancellationToken token = default)
     {
         return dbConn.Exec(dbCmd => dbCmd.DeleteAsync(tableType, sqlFilter, anonType, token));
+    }
+
+    /// <summary>
+    /// Inserts a new row or updates the row with the same primary key using a native UPSERT when supported.
+    /// Providers without native UPSERT support use Save() behavior.
+    /// </summary>
+    public static Task UpsertAsync<T>(this IDbConnection dbConn, T obj, CancellationToken token = default)
+    {
+        return dbConn.Exec(dbCmd => dbCmd.UpsertAsync(obj, updateOnly: null, token));
+    }
+
+    /// <summary>
+    /// Inserts all insertable fields for a new row, or only updates fields selected by updateOnly when the
+    /// primary key already exists.
+    /// </summary>
+    public static Task UpsertAsync<T>(this IDbConnection dbConn, T obj,
+        Expression<Func<T, object>> updateOnly, CancellationToken token = default)
+    {
+        if (updateOnly == null)
+            throw new ArgumentNullException(nameof(updateOnly));
+
+        return dbConn.Exec(dbCmd => dbCmd.UpsertAsync(obj, updateOnly.GetFieldNames(), token));
+    }
+
+    /// <summary>
+    /// Inserts all insertable fields for a new row, or only updates fields named by updateOnly when the
+    /// primary key already exists.
+    /// </summary>
+    public static Task UpsertAsync<T>(this IDbConnection dbConn, T obj,
+        string[] updateOnly, CancellationToken token = default)
+    {
+        if (updateOnly == null)
+            throw new ArgumentNullException(nameof(updateOnly));
+
+        return dbConn.Exec(dbCmd => dbCmd.UpsertAsync(obj, updateOnly, token));
+    }
+
+    /// <summary>
+    /// Inserts new rows or updates rows with the same primary keys in a transaction.
+    /// </summary>
+    public static Task UpsertAllAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs,
+        CancellationToken token = default)
+    {
+        return dbConn.Exec(dbCmd => dbCmd.UpsertAllAsync(objs, updateOnly: null, token));
+    }
+
+    /// <summary>
+    /// Inserts new rows or only updates selected fields on rows with the same primary keys in a transaction.
+    /// </summary>
+    public static Task UpsertAllAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs,
+        Expression<Func<T, object>> updateOnly, CancellationToken token = default)
+    {
+        if (updateOnly == null)
+            throw new ArgumentNullException(nameof(updateOnly));
+
+        return dbConn.Exec(dbCmd => dbCmd.UpsertAllAsync(objs, updateOnly.GetFieldNames(), token));
+    }
+
+    /// <summary>
+    /// Inserts new rows or only updates named fields on rows with the same primary keys in a transaction.
+    /// </summary>
+    public static Task UpsertAllAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs,
+        string[] updateOnly, CancellationToken token = default)
+    {
+        if (updateOnly == null)
+            throw new ArgumentNullException(nameof(updateOnly));
+
+        return dbConn.Exec(dbCmd => dbCmd.UpsertAllAsync(objs, updateOnly, token));
     }
 
     /// <summary>

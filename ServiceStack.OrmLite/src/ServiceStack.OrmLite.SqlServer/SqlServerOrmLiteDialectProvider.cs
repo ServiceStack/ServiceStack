@@ -599,6 +599,31 @@ namespace ServiceStack.OrmLite.SqlServer
                 : $"INSERT INTO {GetQuotedTableName(modelDef)}{strReturning} DEFAULT VALUES";
         }
 
+        public override bool SupportsUpsert => true;
+
+        public override void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
+            ICollection<string> insertFields = null, ICollection<string> updateOnly = null)
+        {
+            PrepareUpsertFields<T>(cmd, insertFields, updateOnly,
+                out var modelDef, out var insertFieldDefs, out var updateFieldDefs);
+
+            var primaryKey = modelDef.PrimaryKey;
+            var quotedPrimaryKey = GetQuotedColumnName(primaryKey);
+            var primaryKeyParam = this.GetParam(SanitizeFieldNameForParamName(primaryKey.FieldName));
+            var insertColumns = insertFieldDefs.Map(GetQuotedColumnName).Join(",");
+            var insertValues = insertFieldDefs.Map(x =>
+                this.GetParam(SanitizeFieldNameForParamName(x.FieldName), x.CustomInsert)).Join(",");
+            var whenMatched = updateFieldDefs.Count > 0
+                ? "WHEN MATCHED THEN UPDATE SET " + GetUpsertUpdateSql(updateFieldDefs, "target.") + " "
+                : "";
+
+            cmd.CommandText = $"MERGE INTO {GetQuotedTableName(modelDef)} WITH (HOLDLOCK) AS target " +
+                              $"USING (VALUES ({primaryKeyParam})) AS source ({quotedPrimaryKey}) " +
+                              $"ON target.{quotedPrimaryKey}=source.{quotedPrimaryKey} " +
+                              whenMatched +
+                              $"WHEN NOT MATCHED THEN INSERT ({insertColumns}) VALUES ({insertValues});";
+        }
+
         public override void PrepareInsertRowStatement<T>(IDbCommand dbCmd, Dictionary<string, object> args)
         {
             var sbColumnNames = StringBuilderCache.Allocate();

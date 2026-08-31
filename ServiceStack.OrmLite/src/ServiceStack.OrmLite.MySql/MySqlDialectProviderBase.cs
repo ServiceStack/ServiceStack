@@ -51,6 +51,28 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 
 	public override bool SupportsSchema => false;
 
+	/// <summary>
+	/// MySQL's ON DUPLICATE KEY UPDATE also matches secondary UNIQUE constraints.
+	/// Set to false to use OrmLite's primary-key-only Save fallback instead.
+	/// </summary>
+	public bool UseNativeUpsert { get; set; } = true;
+
+	public override bool SupportsUpsert => UseNativeUpsert;
+
+	public override void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
+		ICollection<string> insertFields = null, ICollection<string> updateOnly = null)
+	{
+		PrepareUpsertFields<T>(cmd, insertFields, updateOnly,
+			out var modelDef, out var insertFieldDefs, out var updateFieldDefs);
+
+		var updateSql = updateFieldDefs.Count > 0
+			? GetUpsertUpdateSql(updateFieldDefs)
+			: $"{GetQuotedColumnName(modelDef.PrimaryKey)}={GetQuotedColumnName(modelDef.PrimaryKey)}";
+
+		cmd.CommandText = $"{GetUpsertInsertSql(modelDef, insertFieldDefs)} " +
+		                  $"ON DUPLICATE KEY UPDATE {updateSql}";
+	}
+
 	public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
 	public static HashSet<string> ReservedWords = new([
