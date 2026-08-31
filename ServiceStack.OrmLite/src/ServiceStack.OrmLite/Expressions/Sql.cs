@@ -5,6 +5,19 @@ using System.Collections.Generic;
 
 namespace ServiceStack.OrmLite
 {
+    /// <summary>
+    /// Portable JSON value categories returned by <see cref="Sql.JsonType(string)"/>.
+    /// </summary>
+    public enum JsonValueType
+    {
+        Null,
+        String,
+        Number,
+        Boolean,
+        Array,
+        Object,
+    }
+
     public static partial class Sql
     {
 	    public static string VARCHAR = nameof(VARCHAR); 
@@ -82,9 +95,7 @@ namespace ServiceStack.OrmLite
         public const string EOT= "0 EOT";
     }
 
-    /// <summary>
-    /// SQL Server 2016 specific features
-    /// </summary>
+    /// <summary>Portable SQL JSON expressions.</summary>
     public static partial class Sql
     {
         /// <summary>Tests whether a string contains valid JSON.</summary>
@@ -167,6 +178,50 @@ namespace ServiceStack.OrmLite
 
 		// SQL Server 2017+
 		public static T JsonQuery<T>(string expression, string path) => default(T);
+
+        /// <summary>
+        /// Marks a string column as a JSON document with the specified CLR shape.
+        /// Member and array-index access rooted at this marker is translated to a JSON path.
+        /// </summary>
+        public static T Json<T>(string expression) => default(T);
+
+        /// <summary>
+        /// Marks a typed, serialized column as a JSON document. This overload allows generic
+        /// type inference for complex properties stored as JSON.
+        /// </summary>
+        public static T Json<T>(T expression) => expression;
+
+        /// <summary>Tests whether a JSON path identifies any value, including JSON null.</summary>
+        public static bool JsonExists(string expression, string path) => false;
+
+        /// <summary>Returns the normalized type of the root JSON value.</summary>
+        public static JsonValueType? JsonType(string expression) => null;
+
+        /// <summary>Returns the normalized type of the JSON value at <paramref name="path"/>.</summary>
+        public static JsonValueType? JsonType(string expression, string path) => null;
+
+        /// <summary>Returns the number of elements in the root JSON array.</summary>
+        public static int? JsonArrayLength(string expression) => null;
+
+        /// <summary>Returns the number of elements in the JSON array at <paramref name="path"/>.</summary>
+        public static int? JsonArrayLength(string expression, string path) => null;
+
+        /// <summary>Tests whether the root JSON array contains a scalar value.</summary>
+        public static bool JsonArrayContains<T>(string expression, T value) => false;
+
+        /// <summary>Tests whether the JSON array at <paramref name="path"/> contains a scalar value.</summary>
+        public static bool JsonArrayContains<T>(string expression, string path, T value) => false;
+
+        /// <summary>
+        /// Tests whether a JSON document contains a candidate document. Support is currently
+        /// provider-dependent; PostgreSQL and MySQL have native containment operations.
+        /// </summary>
+        public static bool JsonContains<T>(string expression, T candidate) => false;
+
+        /// <summary>
+        /// Tests whether the value at <paramref name="path"/> contains a candidate document.
+        /// </summary>
+        public static bool JsonContains<T>(string expression, T candidate, string path) => false;
 	}
 }
 

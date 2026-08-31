@@ -1,3 +1,4 @@
+
 # ServiceStack AI.Chat MCP Server
 
 The built-in MCP server exposes selected AI.Chat tools to external AI assistants such as OpenCode, Claude Code, Cursor, VS Code, and other clients supporting MCP Streamable HTTP. It allows those assistants to use the same ServiceStack tools and API Tools as the built-in AI.Chat UI without publishing a second integration service.

@@ -1111,18 +1111,6 @@ public static class OrmLiteUtils
             if (c == ')')
             {
                 inBracesCount--;
-                if(inBracesCount > 0)
-                    continue;
-
-                var endPos = expr.IndexOf(',', i);
-                if (endPos == -1)
-                    endPos = expr.Length;
-
-                var arg = expr.Substring(pos, endPos - pos).Trim();
-                if (!string.IsNullOrEmpty(arg))
-                    to.Add(arg);
-
-                pos = endPos;
                 continue;
             }
 

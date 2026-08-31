@@ -32,7 +32,7 @@ namespace ServiceStack.OrmLite.SqlServerTests.Expressions
 
 			ConnectionString = GetConnectionString();
 
-			Db = OpenDbConnection();
+			Db = OpenDbConnection(dialectProvider: OrmLiteConfig.DialectProvider);
 
 			// Load test data
 			Db.DropAndCreateTable<TestType>();

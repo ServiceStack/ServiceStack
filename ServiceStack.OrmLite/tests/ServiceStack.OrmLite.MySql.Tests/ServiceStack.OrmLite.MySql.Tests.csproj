@@ -25,6 +25,7 @@
     <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithNamedCompositeIndex.cs" Link="Shared\ModelWithNamedCompositeIndex.cs" />
     <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\ModelWithOnlyStringFields.cs" Link="Shared\ModelWithOnlyStringFields.cs" />
     <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\Movie.cs" Link="Shared\Movie.cs" />
+    <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\PortableJsonExpressionsTestBase.cs" Link="Shared\PortableJsonExpressionsTestBase.cs" />
     <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\SampleOrderLine.cs" Link="Shared\SampleOrderLine.cs" />
     <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\Shipper.cs" Link="Shared\Shipper.cs" />
     <Compile Include="..\ServiceStack.OrmLite.Tests\Shared\TaskQueue.cs" Link="Shared\TaskQueue.cs" />

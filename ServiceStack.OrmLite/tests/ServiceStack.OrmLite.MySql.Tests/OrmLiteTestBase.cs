@@ -13,7 +13,8 @@ public class MySqlConfig
 #else
             MySqlConnectorDialectProvider.Instance;
 #endif
-    public static string ConnectionString = "Server=localhost;Database=test;UID=root;Password=test";
+    public static string ConnectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION")
+        ?? "Server=localhost;Database=test;UID=root;Password=test";
 }
 
 public class OrmLiteTestBase

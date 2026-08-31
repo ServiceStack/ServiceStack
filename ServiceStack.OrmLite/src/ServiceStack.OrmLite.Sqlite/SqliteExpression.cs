@@ -79,6 +79,72 @@ public class SqliteExpression<T>(IOrmLiteDialectProvider dialectProvider) : SqlE
         return new PartialSqlString(statement);
     }
 
+    protected override object VisitIsJsonMethod(object json) =>
+        new PartialSqlString($"json_valid({json})");
+
+    protected override object VisitJsonValueMethod(object json, JsonPathExpression path, Type returnType)
+    {
+        var extract = $"json_extract({json}, {path})";
+        var jsonType = $"json_type({json}, {path})";
+        var type = Nullable.GetUnderlyingType(returnType) ?? returnType;
+
+        if (type == typeof(string) || type.IsEnum)
+            return JsonScalar(
+                $"CASE WHEN {jsonType} NOT IN ('object','array','null') THEN {extract} END", returnType);
+
+        if (type == typeof(bool))
+            return JsonScalar(
+                $"CASE WHEN {jsonType} IN ('true','false') THEN {extract} END", returnType);
+
+        if (type == typeof(char) || type == typeof(Guid) || type == typeof(DateTime)
+            || type == typeof(DateTimeOffset) || type == typeof(TimeSpan))
+            return JsonScalar(
+                $"CASE WHEN {jsonType} = 'text' THEN {extract} END", returnType);
+
+        return JsonScalar(
+            $"CAST(CASE WHEN {jsonType} IN ('integer','real') THEN {extract} END AS {GetJsonDbType(type)})", returnType);
+    }
+
+    protected override object VisitJsonQueryMethod(object json, JsonPathExpression path, Type returnType)
+    {
+        var extract = $"json_extract({json}, {path})";
+        return new PartialSqlString(
+            $"CASE WHEN json_type({json}, {path}) IN ('object','array') THEN {extract} END");
+    }
+
+    protected override object VisitJsonExistsMethod(object json, JsonPathExpression path) =>
+        new PartialSqlString($"(json_type({json}, {path}) IS NOT NULL)");
+
+    protected override object VisitJsonTypeMethod(object json, JsonPathExpression path) => JsonValueType(
+        $"CASE json_type({json}, {path}) " +
+        "WHEN 'null' THEN 'Null' WHEN 'text' THEN 'String' " +
+        "WHEN 'integer' THEN 'Number' WHEN 'real' THEN 'Number' " +
+        "WHEN 'true' THEN 'Boolean' WHEN 'false' THEN 'Boolean' " +
+        "WHEN 'array' THEN 'Array' WHEN 'object' THEN 'Object' END");
+
+    protected override object VisitJsonArrayLengthMethod(object json, JsonPathExpression path) =>
+        new PartialSqlString(
+            $"CASE WHEN json_type({json}, {path}) = 'array' THEN json_array_length({json}, {path}) END");
+
+    protected override object VisitJsonArrayContainsMethod(object json, JsonPathExpression path, object value, Type valueType)
+    {
+        valueType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+        string typePredicate;
+        if (value.ToString() == "null")
+            return new PartialSqlString(
+                $"EXISTS (SELECT 1 FROM json_each({json}, {path}) j WHERE j.type = 'null')");
+        if (valueType == typeof(bool))
+            typePredicate = "j.type IN ('true','false')";
+        else if (valueType == typeof(string) || valueType == typeof(char) || valueType == typeof(Guid)
+                 || valueType == typeof(DateTime) || valueType == typeof(DateTimeOffset) || valueType.IsEnum)
+            typePredicate = "j.type = 'text'";
+        else
+            typePredicate = "j.type IN ('integer','real')";
+
+        return new PartialSqlString(
+            $"EXISTS (SELECT 1 FROM json_each({json}, {path}) j WHERE {typePredicate} AND j.atom = {value})");
+    }
+
     protected override PartialSqlString ToLengthPartialString(object arg)
     {
         return new PartialSqlString($"LENGTH({arg})");
