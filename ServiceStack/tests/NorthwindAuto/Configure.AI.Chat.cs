@@ -68,10 +68,13 @@ public class ConfigureAiChat : IHostingStartup
             var log = appHost.GetApplicationServices().GetRequiredService<ILogger<ConfigureAiChat>>();
             log.LogInformation("AI Chat configured");
             
-            // Generate a typed model for every template in App_Data/pdf with:
-            //     dotnet run --AppTasks=pdf
+            // Keep typed PDF models in sync with published templates on each debug restart.
             // Templates you've since edited the model of are left alone, as are any named in Exclude.
-            AppTasks.Register("pdf", _ => appHost.GetPlugin<PdfFeature>().GeneratePdfs());
+            StartupTasks.Register("pdf", () => appHost.GetPlugin<PdfFeature>().GeneratePdfs());
+
+            // Keep local ServiceStack References in sync with server DTO changes on each debug restart.
+            StartupTasks.Register("dtos", () =>
+                appHost.GetPlugin<NativeTypesFeature>().GenerateDtos());
             
         });
 }

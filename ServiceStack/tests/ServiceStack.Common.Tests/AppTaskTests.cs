@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 
 namespace ServiceStack.Common.Tests;
@@ -21,5 +22,27 @@ public class AppTaskTests
             Is.EqualTo("migrate"));
         Assert.That(AppTasks.GetAppTaskCommands(new[] { "run", "--AppTasks=migrate.revert:last" }), 
             Is.EqualTo("migrate.revert:last"));
+    }
+
+    [Test]
+    public void Does_run_all_StartupTasks_and_continue_after_errors()
+    {
+        var hold = StartupTasks.Instance;
+        try
+        {
+            StartupTasks.Instance = new StartupTasks();
+            var completed = false;
+
+            StartupTasks.Register("fails", () => throw new Exception("failed"));
+            StartupTasks.Register("completes", () => completed = true);
+
+            StartupTasks.Run();
+
+            Assert.That(completed, Is.True);
+        }
+        finally
+        {
+            StartupTasks.Instance = hold;
+        }
     }
 }

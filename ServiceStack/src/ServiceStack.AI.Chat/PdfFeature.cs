@@ -48,7 +48,7 @@ public partial class PdfFeature : IPlugin, Model.IHasStringId, IConfigureService
     public string ChatRoutePrefix { get; set; } = "/chat";
 
     /// <summary>
-    /// Where the <c>pdf</c> AppTask generates PDF data models, when its config doesn't say. Set to
+    /// Where the <c>pdf</c> StartupTask generates PDF data models, when its config doesn't say. Set to
     /// override; otherwise resolved on Register to the App's ServiceModel folder + "/Pdf", and null when
     /// no ServiceModel folder was found.
     /// <para>
@@ -206,11 +206,11 @@ public partial class PdfFeature : IPlugin, Model.IHasStringId, IConfigureService
     }
 
     /// <summary>
-    /// Generates a typed C# model for every published PDF template, to register as an AppTask and run with
-    /// <c>dotnet run --AppTasks=pdf</c> — the same source the Admin UI's Code view shows.
+    /// Generates a typed C# model for every published PDF template, typically registered as a development
+    /// StartupTask — the same source the Admin UI's Code view shows.
     /// </summary>
     /// <example><code>
-    /// AppTasks.Register("pdf", _ => appHost.GetPlugin&lt;PdfFeature&gt;().GeneratePdf(new() {
+    /// StartupTasks.Register("pdf", () => appHost.GetPlugin&lt;PdfFeature&gt;().GeneratePdf(new() {
     ///     Namespace = "MyApp.ServiceModel.Pdf",
     ///     OutputPath = Path.Combine(contentRootPath, "ServiceModel/Pdf"),
     /// }));

@@ -19,6 +19,12 @@ public class PdfAttribute(string template) : AttributeBase
     /// <summary>Published template name, without the .typ (e.g. "invoice")</summary>
     public string Template { get; set; } = template;
 
+    /// <summary>
+    /// Optional namespace override for all C# model classes generated from this template. PdfCodeGen
+    /// discovers it from loaded [Pdf] models; the generated file remains in the configured output folder.
+    /// </summary>
+    public string? Namespace { get; set; }
+
     /// <summary>Download name for <see cref="PdfRendererExtensions.PdfResultAsync{T}"/>, default "{Template}.pdf"</summary>
     public string? FileName { get; set; }
 
