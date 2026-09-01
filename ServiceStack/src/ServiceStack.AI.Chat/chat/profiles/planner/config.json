@@ -1,5 +1,5 @@
 {
-    "theme": "dark",
+    "theme": "nord",
     "model": "GLM-5.3",
     "onlyTools": [
         "get_current_time",
