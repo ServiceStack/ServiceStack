@@ -27,8 +27,4 @@
         <EmbeddedResource Include="chat\**\*.*;modules\**\*.*;" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="modules\admin-ui\components\" />
-    </ItemGroup>
-
 </Project>

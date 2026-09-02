@@ -35,7 +35,7 @@ public class AdminPdfTemplatesResponse
     /// <summary>Where the Chat UI is mounted, which is also where the Admin UI borrows its JS from</summary>
     public string ChatBaseUrl { get; set; } = null!;
     public List<PublishedPdfTemplate> Results { get; set; } = [];
-    /// <summary>Where the `pdf` AppTask generates models, shown so the Code view can point at it</summary>
+    /// <summary>Where the `pdf` StartupTask generates models, shown so the Code view can point at it</summary>
     public string? ModelsPath { get; set; }
     public ResponseStatus? ResponseStatus { get; set; }
 }
@@ -153,8 +153,8 @@ public class AdminEditPdfTemplateResponse
 /// The C# data model for a template, generated from its .ui.json schema so App code can populate a typed
 /// DTO instead of hand-building the template's JSON.
 /// <para>
-/// Read-only: this is the same <see cref="PdfCodeGen"/> the <c>pdf</c> AppTask runs, so what the Admin UI
-/// shows for copy/paste is exactly what <c>dotnet run --AppTasks=pdf</c> writes into the project.
+/// Read-only: this is the same <see cref="PdfCodeGen"/> the <c>pdf</c> StartupTask runs, so what the Admin UI
+/// shows for copy/paste is exactly what development startup writes into the project.
 /// </para>
 /// </summary>
 [ExcludeMetadata, Tag(TagNames.Admin)]
@@ -220,7 +220,7 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
             TypstAvailable = feature.IsAvailable,
             ChatBaseUrl = feature.ChatRoutePrefix,
             Results = publisher.GetPublishedNames().Map(x => ToTemplate(x, manifest)),
-            // only when the App has an AppTask to run: without a config, GeneratePdfs() has nowhere to write
+            // only when the App has a StartupTask to run: without config, GeneratePdfs() has nowhere to write
             ModelsPath = feature.PdfCodeGen != null
                 ? feature.PdfCodeGen.OutputPath ?? feature.ModelsPath
                 : null,
@@ -579,11 +579,11 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
         ResolveTemplate(request.Name); // the model must belong to a template that exists
 
         // the App's own codegen config, so the source shown here is namespaced exactly like the one the
-        // AppTask writes - nothing for the UI to ask for or get wrong
+        // StartupTask writes - nothing for the UI to ask for or get wrong
         var config = feature.PdfCodeGen ?? new PdfCodeGenConfig();
 
         // the UI sends what's currently in its editors, so the source tracks unsaved edits; omitted, the
-        // generator reads the template's own companions, which is what the AppTask does
+        // generator reads the template's own companions, which is what the StartupTask does
         var file = new PdfCodeGen(feature).CreateFile(request.Name, config, outputPath: "",
             data: ParseJson(request.Data), schema: ParseJson(request.Schema));
 
@@ -591,7 +591,7 @@ public partial class AdminPdfServices(PdfFeature feature, IPdfRenderer renderer)
         {
             TypeName = file.TypeName,
             Source = file.Source,
-            Examples = PdfExamples.Create(file, config.Namespace ?? feature.ModelsNamespace),
+            Examples = PdfExamples.Create(file, file.Namespace),
         };
     }
 

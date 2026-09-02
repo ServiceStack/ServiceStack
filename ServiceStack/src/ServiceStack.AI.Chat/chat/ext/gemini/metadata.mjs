@@ -38,12 +38,18 @@ const SOURCE_URL_VARIABLE_KEYS = new Set(SOURCE_URL_VARIABLES.map(x => x.toLower
 export function sourceUrlTemplateError(value) {
     const text = String(value || '')
     if (!text) return ''
-    const pairs = [...text.matchAll(/\{([^{}]*)\}/g)]
+    const placeholder = /\{(\w+)(?::\/((?:\\.|[^/])*)\/)?\}/g
+    const pairs = [...text.matchAll(placeholder)]
     const unknown = [...new Set(pairs
         .map(x => x[1])
         .filter(x => !SOURCE_URL_VARIABLE_KEYS.has(x.toLowerCase())))]
     if (unknown.length) return `Unknown variable${unknown.length === 1 ? '' : 's'}: ${unknown.map(x => `{${x}}`).join(', ')}`
-    if (/[{}]/.test(text.replace(/\{[^{}]*\}/g, ''))) return 'Every “{” must have a matching “}”'
+    for (const pair of pairs) {
+        if (pair[2] === undefined) continue
+        try { new RegExp(pair[2]) }
+        catch (e) { return `Invalid regex for {${pair[1]}}: ${e.message}` }
+    }
+    if (/[{}]/.test(text.replace(placeholder, ''))) return 'Use {variable} or {variable:/regex/}; every brace must be matched'
     return ''
 }
 
@@ -58,7 +64,7 @@ export const IMPORT_FIELDS = META_FIELDS.map(f => f.key === 'sourceUrl' ? {
     ...f,
     variables: SOURCE_URL_VARIABLES,
     placeholder: 'https://docs.acme.com/{category}/{name}',
-    hint: 'Build one URL per document with the variables below.',
+    hint: 'Build the URL per document. Supports regex with {name:/pattern/} - where first capture group is used.',
 } : f)
 
 /**
@@ -522,12 +528,13 @@ export const MetadataFields = {
                             ? 'border-red-500 bg-red-50 dark:bg-red-900/20' 
                             : $styles.borderInput + ' ' + $styles.bgInput]">
                     <div v-if="f.variables?.length" class="mt-1.5 flex flex-wrap items-center gap-1">
-                        <span class="text-xs mr-0.5" :class="[$styles.muted]">Append</span>
+                        <span class="text-xs mr-0.5" :class="[$styles.muted]">Add</span>
                         <button v-for="variable in f.variables" :key="variable" type="button"
-                            @click="appendVariable(f.key, variable)" :title="'Append {' + variable + '} to Source URL'"
+                            @click="appendVariable(f.key, variable)" :title="'Add {' + variable + '} to Source URL'"
                             class="px-0.5 py-0.5 rounded border font-mono text-xs hover:bg-gray-50 dark:hover:bg-gray-800"
                             :class="[$styles.chromeBorder]">{{ '{' + variable + '}' }}</button>
                     </div>
+                    <p v-if="f.hint" class="mt-1 text-xs" :class="[$styles.muted]">{{ f.hint }}</p>
                     <p v-if="f.key === 'sourceUrl' && sourceUrlTemplateError(modelValue[f.key])"
                         class="mt-1 text-xs text-red-600 dark:text-red-400">
                         {{ sourceUrlTemplateError(modelValue[f.key]) }}

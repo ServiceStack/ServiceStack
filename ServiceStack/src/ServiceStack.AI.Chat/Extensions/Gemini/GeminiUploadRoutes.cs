@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.AI;
@@ -44,8 +45,15 @@ public partial class GeminiExtension
         {
             var partMetadata = part.Metadata?.Clone() ?? metadata.Clone();
             if (sourceUrl != null)
-                partMetadata["sourceUrl"] = GeminiIngest.ExpandTemplate(sourceUrl,
-                    GeminiIngest.TemplateValues(part.Key, part.Category, part.DisplayName));
+            {
+                var expandedUrl = GeminiIngest.ExpandTemplate(sourceUrl,
+                    GeminiIngest.TemplateValues(part.Key, part.Category, part.DisplayName),
+                    warning => Log.LogWarning("{SourceKey}: {Warning}", part.Key, warning));
+                if (expandedUrl == null)
+                    partMetadata.Remove("sourceUrl");
+                else
+                    partMetadata["sourceUrl"] = expandedUrl;
+            }
             ids.Add(await QueueManualDocumentAsync(filestoreId, user, part, partMetadata).ConfigAwait());
         }
         worker?.Start();
@@ -58,16 +66,7 @@ public partial class GeminiExtension
         : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct().ToList();
 
     static void ValidateSourceUrlTemplate(string? template)
-    {
-        if (string.IsNullOrEmpty(template)) return;
-        var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "category", "fullPath", "path", "pathNoExt", "dir", "name", "filename", "ext", "title" };
-        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(template, "\\{(\\w+)\\}"))
-            if (!allowed.Contains(match.Groups[1].Value)) throw new ArgumentException($"Unknown Source URL variable '{{{match.Groups[1].Value}}}'");
-        var remainder = System.Text.RegularExpressions.Regex.Replace(template, "\\{\\w+\\}", "");
-        if (remainder.Contains('{') || remainder.Contains('}'))
-            throw new ArgumentException("Source URL contains an invalid or unmatched variable");
-    }
+        => GeminiIngest.ValidateTemplate(template);
 
     List<UploadPart> ExpandZip(byte[] content, string? baseCategory, JsonObject? overrideMetadata = null)
     {

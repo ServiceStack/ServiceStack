@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.AI;
@@ -185,7 +186,8 @@ public partial class GeminiExtension
         try
         {
             var existing = db.SelectDocuments(new JsonObject { ["filter"] = new JsonObject { ["sourceId"] = source.Id } }, UserOf(req), true);
-            var plan = await Task.Run(() => GeminiIngest.BuildPlan(source, existing, body.GetObject("set"))).ConfigAwait();
+            var plan = await Task.Run(() => GeminiIngest.BuildPlan(source, existing, body.GetObject("set"),
+                warning => Log.LogWarning("{Warning}", warning))).ConfigAwait();
             var summary = plan.Summary(); var refusal = body.GetBool("confirmDeletes") ? null : GeminiIngest.DeleteRefusal(plan, existing.Count);
             if (refusal != null) { summary["deleteRefused"] = refusal; plan.Removed.Clear(); }
             PopulateRun(run, plan, summary); run.CompletedAt = DateTime.Now; run.Status = dryRun ? "preview" : "completed";

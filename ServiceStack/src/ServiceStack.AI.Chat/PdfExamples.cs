@@ -20,7 +20,7 @@ public class PdfCodeGenExample
 /// emails it. Generated rather than written down so the type names, members and template name are this
 /// template's, which is the difference between a snippet you read and one you paste.
 /// <para>
-/// Stubs only — nothing here is written to your project. The <c>pdf</c> AppTask generates the data models
+/// Stubs only — nothing here is written to your project. The <c>pdf</c> StartupTask generates the data models
 /// these build on; what to do with them is yours.
 /// </para>
 /// </summary>

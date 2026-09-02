@@ -154,6 +154,9 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             var appLifetime = ApplicationServices.GetService<IHostApplicationLifetime>();
             appLifetime?.StopApplication();
         });
+
+        if (Config.DebugMode)
+            StartupTasks.Run();
     }
 
     /// <summary>

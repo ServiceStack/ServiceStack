@@ -7,7 +7,7 @@ namespace ServiceStack.AI;
 /// <summary>
 /// Generates typed C# classes from a JSON document or the JSON Schema describing it — the C# port of the
 /// Chat UI's <c>jsonTypes.mjs</c>, and the single implementation behind both the Admin UI's Code view and
-/// the <c>pdf</c> AppTask, so what's shown is exactly what's written to the project.
+/// the <c>pdf</c> StartupTask, so what's shown is exactly what's written to the project.
 /// <para>
 /// Deterministic and instant, no model required. A JSON example only carries JSON's six types, so passing
 /// the matching schema produces better output: <c>required</c> becomes non-nullable, <c>multipleOf: 0.01</c>

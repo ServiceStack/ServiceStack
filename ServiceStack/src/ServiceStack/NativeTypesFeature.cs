@@ -7,7 +7,7 @@ using ServiceStack.NativeTypes;
 
 namespace ServiceStack;
 
-public class NativeTypesFeature : IPlugin, IConfigureServices, Model.IHasStringId
+public partial class NativeTypesFeature : IPlugin, IConfigureServices, Model.IHasStringId
 {
     public string Id { get; set; } = Plugins.NativeTypes;
 

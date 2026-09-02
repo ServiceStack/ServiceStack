@@ -370,10 +370,55 @@ public static class GeminiIngest
         };
     }
 
-    public static string ExpandTemplate(string template, JsonObject values)
+    static readonly Regex TemplatePlaceholder = new(
+        @"\{(?<name>\w+)(?::/(?<pattern>(?:\\.|[^/])*)/)?\}", RegexOptions.Compiled,
+        TimeSpan.FromSeconds(1));
+
+    public static void ValidateTemplate(string? template)
     {
-        var output = Regex.Replace(template, "\\{(\\w+)\\}", match =>
-            values.GetString(match.Groups[1].Value.ToLowerInvariant()) ?? match.Value, RegexOptions.IgnoreCase);
+        if (string.IsNullOrEmpty(template)) return;
+        var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "category", "fullPath", "path", "pathNoExt", "dir", "name", "filename", "ext", "title" };
+        foreach (Match match in TemplatePlaceholder.Matches(template))
+        {
+            var name = match.Groups["name"].Value;
+            if (!allowed.Contains(name))
+                throw new ArgumentException($"Unknown Source URL variable '{{{name}}}'");
+            if (match.Groups["pattern"].Success)
+            {
+                try { _ = new Regex(match.Groups["pattern"].Value, RegexOptions.None, TimeSpan.FromSeconds(1)); }
+                catch (ArgumentException e) { throw new ArgumentException($"Invalid regex for Source URL variable '{{{name}}}': {e.Message}", e); }
+            }
+        }
+        var remainder = TemplatePlaceholder.Replace(template, "");
+        if (remainder.Contains('{') || remainder.Contains('}'))
+            throw new ArgumentException("Source URL contains an invalid or unmatched variable");
+    }
+
+    public static string? ExpandTemplate(string template, JsonObject values, Action<string>? onWarning = null)
+    {
+        ValidateTemplate(template);
+        string? warning = null;
+        var output = TemplatePlaceholder.Replace(template, match =>
+        {
+            var name = match.Groups["name"].Value;
+            var value = values.GetString(name.ToLowerInvariant()) ?? match.Value;
+            if (!match.Groups["pattern"].Success) return value;
+
+            var extract = Regex.Match(value, match.Groups["pattern"].Value,
+                RegexOptions.None, TimeSpan.FromSeconds(1));
+            if (!extract.Success)
+            {
+                warning = $"Source URL regex for '{{{name}}}' did not match '{value}'; omitting Source URL";
+                return "";
+            }
+            return extract.Groups.Count > 1 ? extract.Groups[1].Value : extract.Value;
+        });
+        if (warning != null)
+        {
+            onWarning?.Invoke(warning);
+            return null;
+        }
         var scheme = output.IndexOf("://", StringComparison.Ordinal);
         if (scheme >= 0) return output[..(scheme + 3)] + Regex.Replace(output[(scheme + 3)..], "/{2,}", "/");
         return Regex.Replace(output, "/{2,}", "/");
@@ -452,7 +497,8 @@ public static class GeminiIngest
         return GeminiExtension.MergeImportMetadata(inherited, baseRules);
     }
 
-    public static GeminiIngestPlan BuildPlan(ChatSource source, IEnumerable<ChatDocument> existingDocs, JsonObject? overrides = null)
+    public static GeminiIngestPlan BuildPlan(ChatSource source, IEnumerable<ChatDocument> existingDocs,
+        JsonObject? overrides = null, Action<string>? onWarning = null)
     {
         var plan = new GeminiIngestPlan(); var existing = existingDocs.Where(x => x.SourceKey != null).ToDictionary(x => x.SourceKey!); var seen = new HashSet<string>();
         var config = ChatDtos.ParseJson(source.Config) as JsonObject ?? new JsonObject();
@@ -476,7 +522,15 @@ public static class GeminiIngest
                 foreach (var pattern in derived.Matched) plan.RulesMatched[pattern] = plan.RulesMatched.GetValueOrDefault(pattern) + 1;
                 derived.Metadata["category"] = category; derived.Metadata["categoryPath"] = new JsonArray(GeminiMetadata.CategoryAncestors(category).Select(x => (JsonNode)x).ToArray());
                 if (derived.Metadata.GetString("sourceUrl") is { } sourceUrl)
-                    derived.Metadata["sourceUrl"] = ExpandTemplate(sourceUrl, TemplateValues(item.Key, category, item.Title, categoryConfig.GetString("root")));
+                {
+                    var expandedUrl = ExpandTemplate(sourceUrl,
+                        TemplateValues(item.Key, category, item.Title, categoryConfig.GetString("root")),
+                        warning => onWarning?.Invoke($"{item.Key}: {warning}"));
+                    if (expandedUrl == null)
+                        derived.Metadata.Remove("sourceUrl");
+                    else
+                        derived.Metadata["sourceUrl"] = expandedUrl;
+                }
                 var contentHash = ContentHash(extracted.Text!, volatilePatterns); var metadataHash = MetadataHash(derived.Metadata);
                 var entry = new GeminiIngestEntry { SourceKey = item.Key, DisplayName = extracted.Frontmatter.GetString("title") ?? item.Title, Text = extracted.Text!, Size = raw.Length,
                     ContentHash = contentHash, MetadataHash = metadataHash, SourceEtag = item.Etag, ExtractorVer = source.ExtractorVer ?? ExtractorVersion,
