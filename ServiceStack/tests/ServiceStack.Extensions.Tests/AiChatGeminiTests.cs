@@ -491,6 +491,25 @@ public class AiChatGeminiTests
     }
 
     [Test]
+    public void Source_url_templates_can_extract_a_regex_capture()
+    {
+        var values = GeminiIngest.TemplateValues("2026-09-04_servicestack-pdf.md");
+
+        Assert.That(GeminiIngest.ExpandTemplate(
+                @"https://docs.example/{name:/^\d{4}-\d{2}-\d{2}_(.+)$/}", values),
+            Is.EqualTo("https://docs.example/servicestack-pdf"));
+        Assert.That(GeminiIngest.ExpandTemplate(
+                @"https://docs.example/{name:/servicestack/}", values),
+            Is.EqualTo("https://docs.example/servicestack"));
+        var warnings = new System.Collections.Generic.List<string>();
+        Assert.That(GeminiIngest.ExpandTemplate(
+            @"https://docs.example/{name:/^release-(.+)$/}", values, warnings.Add), Is.Null);
+        Assert.That(warnings.Single(), Does.Contain("omitting Source URL"));
+        Assert.Throws<ArgumentException>(() => GeminiIngest.ValidateTemplate(
+            @"https://docs.example/{name:/([/}"));
+    }
+
+    [Test]
     public void Max_depth_limits_files_in_the_import_plan()
     {
         var root = Path.Combine(Path.GetTempPath(), "gemini-depth-" + Guid.NewGuid().ToString("n"));
