@@ -32,7 +32,8 @@ class ServiceBusMqWorker
     {
         var msg = args.Message;
         var strMessage = msg.Body.ToArray().FromMessageBody();
-        var iMessage = (IMessage)JsonSerializer.DeserializeFromString(strMessage, typeof(IMessage));
+        var iMessage = (IMessage?)JsonSerializer.DeserializeFromString(strMessage, typeof(IMessage));
+
         if (iMessage != null)
         {
             // Null strings round-trip as "" via ServiceStack.Text serialization; normalize back to null
@@ -49,8 +50,15 @@ class ServiceBusMqWorker
             factory.pendingAcks[msg.LockToken] = () => Task.CompletedTask;
         }
 
-        MessageHandler.ProcessMessage(MqClient, iMessage);
-        await args.CompleteMessageAsync(msg).ConfigureAwait(false);
+        try
+        {
+            MessageHandler.ProcessMessage(MqClient, iMessage);
+            await args.CompleteMessageAsync(msg).ConfigureAwait(false);
+        }
+        finally
+        {
+            factory.pendingAcks.TryRemove(msg.LockToken, out _);
+        }
     }
 
     public IMessageHandlerStats GetStats() => MessageHandler.GetStats();

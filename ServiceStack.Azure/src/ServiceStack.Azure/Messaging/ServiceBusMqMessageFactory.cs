@@ -40,7 +40,6 @@ public class ServiceBusMqMessageFactory : IMessageFactory
     {
         this.MqServer = mqServer;
         this.address = address;
-        JsConfig.AllowRuntimeType = _ => true;
         this.sbClient = new ServiceBusClient(address);
         this.managementClient = new ServiceBusAdministrationClient(address);
     }

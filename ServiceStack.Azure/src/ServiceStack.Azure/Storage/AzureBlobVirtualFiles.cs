@@ -1,4 +1,4 @@
-﻿using ServiceStack.IO;
+using ServiceStack.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,14 +158,8 @@ public class AzureBlobVirtualFiles : AbstractVirtualPathProviderBase, IVirtualFi
             });
     }
 
-    public override string? SanitizePath(string filePath)
-    {
-        var sanitizedPath = string.IsNullOrEmpty(filePath)
-            ? null
-            : (filePath[0] == VirtualPathSeparator[0] ? filePath.Substring(1) : filePath);
-
-        return sanitizedPath?.Replace('\\', VirtualPathSeparator[0]);
-    }
+    public override string? SanitizePath(string filePath) =>
+        AzureBlobVirtualFilesHelpers.SanitizePath(filePath);
 
     internal static BlobProperties ToBlobProperties(BlobItem item) =>
         BlobsModelFactory.BlobProperties(

@@ -6,14 +6,16 @@ using Azure.Storage.Blobs.Models;
 
 namespace ServiceStack.Azure.Storage;
 
-internal static class AzureBlobVirtualFilesHelpers
+public static class AzureBlobVirtualFilesHelpers
 {
-    internal static string? SanitizePath(string filePath)
+    public static string? SanitizePath(string filePath)
     {
         if (string.IsNullOrEmpty(filePath))
             return null;
-        var sanitized = filePath[0] == '/' ? filePath.Substring(1) : filePath;
-        return sanitized.Replace('\\', '/');
+        var normalized = filePath.Replace('\\', '/');
+        var resolved = ("/" + normalized.TrimStart('/')).ResolvePaths();
+        var sanitized = resolved.TrimStart('/');
+        return sanitized.Length == 0 ? null : sanitized;
     }
 
     internal static string? GetDirPath(string? filePath)

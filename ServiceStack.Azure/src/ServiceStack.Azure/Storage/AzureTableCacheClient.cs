@@ -293,9 +293,11 @@ public partial class AzureTableCacheClient : AdapterBase, ICacheClientExtended, 
             GetEntry(x)); // removes if expired
     }
 
+    public static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(2);
+
     public IEnumerable<string> GetKeysByRegex(string regex)
     {
-        var re = new Regex(regex, RegexOptions.Compiled | RegexOptions.Singleline);
+        var re = new Regex(regex, RegexOptions.Compiled | RegexOptions.Singleline, RegexTimeout);
         return tableClient!.Query<TableCacheEntry>()
             .Where(q => re.IsMatch(q.RowKey))
             .Select(static q => q.RowKey);

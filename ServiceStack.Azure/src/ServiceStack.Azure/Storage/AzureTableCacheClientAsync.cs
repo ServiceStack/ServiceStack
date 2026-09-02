@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
@@ -282,7 +282,7 @@ public partial class AzureTableCacheClient
 #pragma warning disable CS8425
     public async IAsyncEnumerable<string> GetKeysByRegexAsync(string regex, CancellationToken token = default)
     {
-        var re = new Regex(regex, RegexOptions.Compiled | RegexOptions.Singleline);
+        var re = new Regex(regex, RegexOptions.Compiled | RegexOptions.Singleline, RegexTimeout);
         await foreach (var entity in tableClient!.QueryAsync<TableCacheEntry>(cancellationToken: token))
         {
             if (re.IsMatch(entity.RowKey))
