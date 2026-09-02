@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -45,17 +45,26 @@ public partial class DynamoDbCacheClient : ICacheClientExtended, IRequiresSchema
         }
     }
 
-    private T GetValue<T>(string key)
+    private CacheEntry GetCacheEntry(string key)
     {
         var entry = Dynamo.GetItem<CacheEntry>(key);
         if (entry == null)
-            return default;
+            return null;
 
         if (entry.ExpiryDate != null && DateTime.UtcNow > entry.ExpiryDate.Value.ToUniversalTime())
         {
             Remove(key);
-            return default;
+            return null;
         }
+
+        return entry;
+    }
+
+    private T GetValue<T>(string key)
+    {
+        var entry = GetCacheEntry(key);
+        if (entry == null)
+            return default;
 
         return entry.Data.FromJson<T>();
     }
@@ -74,8 +83,8 @@ public partial class DynamoDbCacheClient : ICacheClientExtended, IRequiresSchema
 
     private bool CacheAdd<T>(string key, T value, DateTime? expiresAt)
     {
-        var entry = GetValue<T>(key);
-        if (!Equals(entry, default))
+        var entry = GetCacheEntry(key);
+        if (entry != null)
             return false;
 
         CacheSet(key, value, expiresAt);
@@ -84,8 +93,8 @@ public partial class DynamoDbCacheClient : ICacheClientExtended, IRequiresSchema
 
     private bool CacheReplace<T>(string key, T value, DateTime? expiresAt)
     {
-        var entry = GetValue<T>(key);
-        if (Equals(entry, default))
+        var entry = GetCacheEntry(key);
+        if (entry == null)
             return false;
 
         CacheSet(key, value, expiresAt);

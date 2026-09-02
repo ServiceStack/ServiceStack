@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -97,13 +97,12 @@ public class S3VirtualFile : AbstractVirtualFileBase
 
     public override async Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default)
     {
-        var response = await Client.GetObjectAsync(new GetObjectRequest
+        using var response = await Client.GetObjectAsync(new GetObjectRequest
         {
             Key = FilePath,
             BucketName = BucketName,
             ByteRange = new ByteRange(start, end)
         }, token);
-        Init(response);
 
         await response.ResponseStream.WriteToAsync(toStream, token).ConfigAwait();
     }

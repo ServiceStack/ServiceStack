@@ -419,11 +419,13 @@ public partial class S3VirtualFiles : AbstractVirtualPathProviderBase, IVirtualF
 
     public override string SanitizePath(string filePath)
     {
-        var sanitizedPath = string.IsNullOrEmpty(filePath)
-            ? null
-            : (filePath[0] == DirSep ? filePath.Substring(1) : filePath);
+        if (string.IsNullOrEmpty(filePath))
+            return null;
 
-        return sanitizedPath?.Replace('\\', DirSep);
+        var normalized = filePath.Replace('\\', DirSep);
+        var resolved = ("/" + normalized.TrimStart(DirSep)).ResolvePaths();
+        var sanitized = resolved.TrimStart(DirSep);
+        return sanitized.Length == 0 ? null : sanitized;
     }
 
     public static string GetFileName(string filePath)

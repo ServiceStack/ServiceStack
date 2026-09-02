@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -83,6 +83,9 @@ public partial class DynamoDbAuthRepository<TUserAuth, TUserAuthDetails> : IUser
 
         if (!newUser.UserName.IsNullOrEmpty())
         {
+            if (newUser.UserName.Contains("@"))
+                throw new ArgumentException("UserName cannot contain '@'", "UserName");
+
             if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
                 throw new ArgumentException("UserName contains invalid characters", "UserName");
         }
@@ -314,7 +317,16 @@ public partial class DynamoDbAuthRepository<TUserAuth, TUserAuthDetails> : IUser
         var index = Db.FromQueryIndex<UsernameUserAuthIndex>(q => q.UserName == userNameOrEmail)
             .Exec().FirstOrDefault();
         if (index == null)
+        {
+            if (userNameOrEmail.Contains("@"))
+            {
+                var userAuth = Db.FromScan<TUserAuth>()
+                    .Filter(x => x.Email == userNameOrEmail)
+                    .Exec().FirstOrDefault();
+                return DeSanitize(userAuth);
+            }
             return null;
+        }
 
         var userAuthId = index.Id;
 

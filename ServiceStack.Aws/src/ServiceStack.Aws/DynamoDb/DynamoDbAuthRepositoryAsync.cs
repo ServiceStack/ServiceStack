@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -212,7 +212,16 @@ public partial class DynamoDbAuthRepository<TUserAuth, TUserAuthDetails> : IUser
         var index = (await Db.FromQueryIndex<UsernameUserAuthIndex>(q => q.UserName == userNameOrEmail)
             .ExecAsync(token)).FirstOrDefault();
         if (index == null)
+        {
+            if (userNameOrEmail.Contains("@"))
+            {
+                var userAuth = (await Db.FromScan<TUserAuth>()
+                    .Filter(x => x.Email == userNameOrEmail)
+                    .ExecAsync(token)).FirstOrDefault();
+                return DeSanitize(userAuth);
+            }
             return null;
+        }
 
         var userAuthId = index.Id;
 

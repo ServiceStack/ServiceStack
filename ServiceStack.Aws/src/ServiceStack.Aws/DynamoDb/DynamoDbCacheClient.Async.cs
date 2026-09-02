@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -26,17 +26,26 @@ public partial class DynamoDbCacheClient : ICacheClientAsync, IRemoveByPatternAs
         }
     }
 
-    private async Task<T> GetValueAsync<T>(string key, CancellationToken token=default)
+    private async Task<CacheEntry> GetCacheEntryAsync(string key, CancellationToken token=default)
     {
         var entry = await Dynamo.GetItemAsync<CacheEntry>(key, token).ConfigAwait();
         if (entry == null)
-            return default;
+            return null;
 
         if (entry.ExpiryDate != null && DateTime.UtcNow > entry.ExpiryDate.Value.ToUniversalTime())
         {
             await RemoveAsync(key, token).ConfigAwait();
-            return default;
+            return null;
         }
+
+        return entry;
+    }
+
+    private async Task<T> GetValueAsync<T>(string key, CancellationToken token=default)
+    {
+        var entry = await GetCacheEntryAsync(key, token).ConfigAwait();
+        if (entry == null)
+            return default;
 
         return entry.Data.FromJson<T>();
     }
@@ -52,8 +61,8 @@ public partial class DynamoDbCacheClient : ICacheClientAsync, IRemoveByPatternAs
 
     private async Task<bool> CacheAddAsync<T>(string key, T value, DateTime? expiresAt, CancellationToken token=default)
     {
-        var entry = await GetValueAsync<T>(key, token).ConfigAwait();
-        if (!Equals(entry, default(T)))
+        var entry = await GetCacheEntryAsync(key, token).ConfigAwait();
+        if (entry != null)
             return false;
 
         await CacheSetAsync(key, value, expiresAt, token).ConfigAwait();
@@ -62,8 +71,8 @@ public partial class DynamoDbCacheClient : ICacheClientAsync, IRemoveByPatternAs
 
     private async Task<bool> CacheReplaceAsync<T>(string key, T value, DateTime? expiresAt, CancellationToken token=default)
     {
-        var entry = await GetValueAsync<T>(key, token).ConfigAwait();
-        if (Equals(entry, default(T)))
+        var entry = await GetCacheEntryAsync(key, token).ConfigAwait();
+        if (entry == null)
             return false;
 
         await CacheSetAsync(key, value, expiresAt, token).ConfigAwait();

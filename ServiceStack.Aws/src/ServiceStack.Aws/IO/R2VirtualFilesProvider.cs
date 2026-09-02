@@ -1,4 +1,4 @@
-﻿using Amazon.S3;
+using Amazon.S3;
 using Amazon.S3.Model;
 using ServiceStack.Aws;
 using ServiceStack.Logging;
@@ -76,6 +76,7 @@ public class R2VirtualFiles : S3VirtualFiles
         catch (Exception e)
         {
             Log.Error(e, "Could not write file to {0}", path);
+            throw;
         }
     }
 }
