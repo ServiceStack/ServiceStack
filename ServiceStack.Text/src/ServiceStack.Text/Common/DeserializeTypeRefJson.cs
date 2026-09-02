@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using ServiceStack.Text.Json;
 
 namespace ServiceStack.Text.Common;
@@ -32,7 +33,16 @@ internal static class DeserializeTypeRefJson
             return ctorFn();
 
         var config = JsConfig.GetConfig();
-        var typeAttr = config.TypeAttrMemory;
+        if (!JsState.TraverseDeserialization(type))
+        {
+            if (config.ThrowOnError)
+                throw new SerializationException($"Exceeded MaxDepth limit of {config.MaxDepth} attempting to deserialize {type.Name}");
+            return null;
+        }
+
+        try
+        {
+            var typeAttr = config.TypeAttrMemory;
 
         object instance = null;
         var textCase = typeConfig.TextCase.GetValueOrDefault(config.TextCase);
@@ -173,5 +183,10 @@ internal static class DeserializeTypeRefJson
         }
 
         return instance;
+        }
+        finally
+        {
+            JsState.UnTraverse();
+        }
     }
 }

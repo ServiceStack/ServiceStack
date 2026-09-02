@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -182,6 +182,8 @@ namespace ServiceStack.Text.Tests
             [IgnoreDataMember]
             public Node Parent { get; set; }
 
+            public Node Child { get; set; }
+
             public List<Node> Children { get; set; }
         }
 
@@ -244,5 +246,51 @@ namespace ServiceStack.Text.Tests
             dto.PrintDump();
         }
 
+        [Test]
+        public void Deserialization_respects_MaxDepth_limit()
+        {
+            using (JsConfig.With(new Config { MaxDepth = 5, ThrowOnError = true }))
+            {
+                // 3 levels deep - should succeed
+                var validJson = "{\"Name\":\"1\",\"Child\":{\"Name\":\"2\",\"Child\":{\"Name\":\"3\"}}}";
+                var node = validJson.FromJson<Node>();
+                Assert.That(node.Name, Is.EqualTo("1"));
+                Assert.That(node.Child.Name, Is.EqualTo("2"));
+                Assert.That(node.Child.Child.Name, Is.EqualTo("3"));
+
+                // 10 levels deep - exceeds MaxDepth = 5, should throw SerializationException
+                var deepJson = "{\"Child\":{\"Child\":{\"Child\":{\"Child\":{\"Child\":{\"Child\":{\"Child\":{}}}}}}}}";
+                Assert.Throws<SerializationException>(() => deepJson.FromJson<Node>());
+            }
+        }
+
+        [Test]
+        public void Deserialization_respects_MaxDepth_limit_for_collections()
+        {
+            using (JsConfig.With(new Config { MaxDepth = 5, ThrowOnError = true, ConvertObjectTypesIntoStringDictionary = true }))
+            {
+                // Deeply nested lists exceeding MaxDepth
+                var deepListJson = "[[[[[[[1]]]]]]]";
+                Assert.Throws<SerializationException>(() => deepListJson.FromJson<List<object>>());
+            }
+
+            using (JsConfig.With(new Config { MaxDepth = 5, ThrowOnError = true }))
+            {
+                // Deeply nested POCO children
+                var deepChildrenJson = "{\"Children\":[{\"Children\":[{\"Children\":[{\"Children\":[{\"Children\":[{\"Children\":[]}]}]}]}]}]}";
+                Assert.Throws<SerializationException>(() => deepChildrenJson.FromJson<Node>());
+            }
+        }
+
+        [Test]
+        public void Deserialization_respects_MaxDepth_limit_for_dictionaries()
+        {
+            using (JsConfig.With(new Config { MaxDepth = 5, ThrowOnError = true, ConvertObjectTypesIntoStringDictionary = true }))
+            {
+                // Deeply nested json objects exceeding MaxDepth
+                var deepDictJson = "{\"a\":{\"b\":{\"c\":{\"d\":{\"e\":{\"f\":{\"g\":1}}}}}}}";
+                Assert.Throws<SerializationException>(() => deepDictJson.FromJson<Dictionary<string, object>>());
+            }
+        }
     }
 }

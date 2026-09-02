@@ -27,7 +27,7 @@ public static partial class HttpUtils
     // Ok to use HttpClientHandler which now uses SocketsHttpHandler
     // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/src/System/Net/Http/HttpClientHandler.cs#L16
     public static Func<HttpClientHandler> HttpClientHandlerFactory { get; set; } = () => new() {
-        UseDefaultCredentials = true,
+        UseDefaultCredentials = false,
         AutomaticDecompression = DecompressionMethods.Brotli | DecompressionMethods.Deflate | DecompressionMethods.GZip,
     };
 

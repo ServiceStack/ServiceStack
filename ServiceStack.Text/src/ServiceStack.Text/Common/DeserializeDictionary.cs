@@ -13,6 +13,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Threading;
 
 namespace ServiceStack.Text.Common;
@@ -80,29 +81,43 @@ public static class DeserializeDictionary<TSerializer>
         if (value.Length == 0)
             return null;
 
-        var index = VerifyAndGetStartIndex(value, typeof(T));
-
-        var result = new T();
-
-        if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return result;
-
-        var valueLength = value.Length;
-        while (index < valueLength)
+        if (!JsState.TraverseDeserialization(typeof(T)))
         {
-            var keyValue = Serializer.EatMapKey(value, ref index);
-            Serializer.EatMapKeySeperator(value, ref index);
-            var elementValue = Serializer.EatValue(value, ref index);
-            if (keyValue.IsEmpty) continue;
-
-            var mapKey = keyValue.ToString();
-            var mapValue = elementValue.Value();
-
-            result[mapKey] = mapValue;
-
-            Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            if (JsConfig.ThrowOnError)
+                throw new SerializationException($"Exceeded MaxDepth limit of {JsConfig.MaxDepth} attempting to deserialize {typeof(T).Name}");
+            return null;
         }
 
-        return result;
+        try
+        {
+            var index = VerifyAndGetStartIndex(value, typeof(T));
+
+            var result = new T();
+
+            if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return result;
+
+            var valueLength = value.Length;
+            while (index < valueLength)
+            {
+                var keyValue = Serializer.EatMapKey(value, ref index);
+                Serializer.EatMapKeySeperator(value, ref index);
+                var elementValue = Serializer.EatValue(value, ref index);
+                if (keyValue.IsEmpty) continue;
+
+                var mapKey = keyValue.ToString();
+                var mapValue = elementValue.Value();
+
+                result[mapKey] = mapValue;
+
+                Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            }
+
+            return result;
+        }
+        finally
+        {
+            JsState.UnTraverse();
+        }
     }
 
     public static JsonObject ParseJsonObject(ReadOnlySpan<char> value)
@@ -110,29 +125,43 @@ public static class DeserializeDictionary<TSerializer>
         if (value.Length == 0)
             return null;
 
-        var index = VerifyAndGetStartIndex(value, typeof(JsonObject));
-
-        var result = new JsonObject();
-
-        if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return result;
-
-        var valueLength = value.Length;
-        while (index < valueLength)
+        if (!JsState.TraverseDeserialization(typeof(JsonObject)))
         {
-            var keyValue = Serializer.EatMapKey(value, ref index);
-            Serializer.EatMapKeySeperator(value, ref index);
-            var elementValue = Serializer.EatValue(value, ref index);
-            if (keyValue.IsEmpty) continue;
-
-            var mapKey = keyValue.ToString();
-            var mapValue = elementValue.Value();
-
-            result[mapKey] = mapValue;
-
-            Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            if (JsConfig.ThrowOnError)
+                throw new SerializationException($"Exceeded MaxDepth limit of {JsConfig.MaxDepth} attempting to deserialize JsonObject");
+            return null;
         }
 
-        return result;
+        try
+        {
+            var index = VerifyAndGetStartIndex(value, typeof(JsonObject));
+
+            var result = new JsonObject();
+
+            if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return result;
+
+            var valueLength = value.Length;
+            while (index < valueLength)
+            {
+                var keyValue = Serializer.EatMapKey(value, ref index);
+                Serializer.EatMapKeySeperator(value, ref index);
+                var elementValue = Serializer.EatValue(value, ref index);
+                if (keyValue.IsEmpty) continue;
+
+                var mapKey = keyValue.ToString();
+                var mapValue = elementValue.Value();
+
+                result[mapKey] = mapValue;
+
+                Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            }
+
+            return result;
+        }
+        finally
+        {
+            JsState.UnTraverse();
+        }
     }
 
     public static Dictionary<string, string> ParseStringDictionary(string value) => ParseStringDictionary(value.AsSpan());
@@ -142,29 +171,43 @@ public static class DeserializeDictionary<TSerializer>
         if (value.IsEmpty)
             return null;
 
-        var index = VerifyAndGetStartIndex(value, typeof(Dictionary<string, string>));
-
-        var result = new Dictionary<string, string>();
-
-        if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return result;
-
-        var valueLength = value.Length;
-        while (index < valueLength)
+        if (!JsState.TraverseDeserialization(typeof(Dictionary<string, string>)))
         {
-            var keyValue = Serializer.EatMapKey(value, ref index);
-            Serializer.EatMapKeySeperator(value, ref index);
-            var elementValue = Serializer.EatValue(value, ref index);
-            if (keyValue.IsEmpty) continue;
-
-            var mapKey = Serializer.UnescapeString(keyValue);
-            var mapValue = Serializer.UnescapeString(elementValue);
-
-            result[mapKey.ToString()] = mapValue.Value();
-
-            Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            if (JsConfig.ThrowOnError)
+                throw new SerializationException($"Exceeded MaxDepth limit of {JsConfig.MaxDepth} attempting to deserialize Dictionary<string, string>");
+            return null;
         }
 
-        return result;
+        try
+        {
+            var index = VerifyAndGetStartIndex(value, typeof(Dictionary<string, string>));
+
+            var result = new Dictionary<string, string>();
+
+            if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return result;
+
+            var valueLength = value.Length;
+            while (index < valueLength)
+            {
+                var keyValue = Serializer.EatMapKey(value, ref index);
+                Serializer.EatMapKeySeperator(value, ref index);
+                var elementValue = Serializer.EatValue(value, ref index);
+                if (keyValue.IsEmpty) continue;
+
+                var mapKey = Serializer.UnescapeString(keyValue);
+                var mapValue = Serializer.UnescapeString(elementValue);
+
+                result[mapKey.ToString()] = mapValue.Value();
+
+                Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            }
+
+            return result;
+        }
+        finally
+        {
+            JsState.UnTraverse();
+        }
     }
 
     public static IDictionary ParseIDictionary(string value, Type dictType) => ParseIDictionary(value.AsSpan(), dictType);
@@ -173,40 +216,54 @@ public static class DeserializeDictionary<TSerializer>
     {
         if (value.IsEmpty) return null;
 
-        var index = VerifyAndGetStartIndex(value, dictType);
-
-        var valueParseMethod = Serializer.GetParseStringSpanFn(typeof(object));
-        if (valueParseMethod == null) return null;
-
-        var to = (IDictionary)dictType.CreateInstance();
-
-        if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return to;
-
-        var valueLength = value.Length;
-        while (index < valueLength)
+        if (!JsState.TraverseDeserialization(dictType))
         {
-            var keyValue = Serializer.EatMapKey(value, ref index);
-            Serializer.EatMapKeySeperator(value, ref index);
-            var elementStartIndex = index;
-            var elementValue = Serializer.EatTypeValue(value, ref index);
-            if (keyValue.IsEmpty) continue;
-
-            var mapKey = valueParseMethod(keyValue);
-
-            if (elementStartIndex < valueLength)
-            {
-                Serializer.EatWhitespace(value, ref elementStartIndex);
-                to[mapKey] = DeserializeType<TSerializer>.ParsePrimitive(elementValue.Value(), value[elementStartIndex]);
-            }
-            else
-            {
-                to[mapKey] = valueParseMethod(elementValue);
-            }
-
-            Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            if (JsConfig.ThrowOnError)
+                throw new SerializationException($"Exceeded MaxDepth limit of {JsConfig.MaxDepth} attempting to deserialize {dictType.Name}");
+            return null;
         }
 
-        return to;
+        try
+        {
+            var index = VerifyAndGetStartIndex(value, dictType);
+
+            var valueParseMethod = Serializer.GetParseStringSpanFn(typeof(object));
+            if (valueParseMethod == null) return null;
+
+            var to = (IDictionary)dictType.CreateInstance();
+
+            if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return to;
+
+            var valueLength = value.Length;
+            while (index < valueLength)
+            {
+                var keyValue = Serializer.EatMapKey(value, ref index);
+                Serializer.EatMapKeySeperator(value, ref index);
+                var elementStartIndex = index;
+                var elementValue = Serializer.EatTypeValue(value, ref index);
+                if (keyValue.IsEmpty) continue;
+
+                var mapKey = valueParseMethod(keyValue);
+
+                if (elementStartIndex < valueLength)
+                {
+                    Serializer.EatWhitespace(value, ref elementStartIndex);
+                    to[mapKey] = DeserializeType<TSerializer>.ParsePrimitive(elementValue.Value(), value[elementStartIndex]);
+                }
+                else
+                {
+                    to[mapKey] = valueParseMethod(elementValue);
+                }
+
+                Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            }
+
+            return to;
+        }
+        finally
+        {
+            JsState.UnTraverse();
+        }
     }
 
     public static IDictionary<TKey, TValue> ParseDictionary<TKey, TValue>(
@@ -227,75 +284,88 @@ public static class DeserializeDictionary<TSerializer>
     {
         if (value.IsEmpty) return null;
 
-        var to = (createMapType == null)
-            ? new Dictionary<TKey, TValue>()
-            : (IDictionary<TKey, TValue>)createMapType.CreateInstance();
-
-        var objDeserializer = Json.JsonTypeSerializer.Instance.ObjectDeserializer;
-        if (to is Dictionary<string, object> && objDeserializer != null && typeof(TSerializer) == typeof(Json.JsonTypeSerializer))
-            return (IDictionary<TKey,TValue>) objDeserializer(value);
-
         var config = JsConfig.GetConfig();
-
-        var tryToParseItemsAsDictionaries =
-            config.ConvertObjectTypesIntoStringDictionary && typeof(TValue) == typeof(object);
-        var tryToParseItemsAsPrimitiveTypes =
-            config.TryToParsePrimitiveTypeValues && typeof(TValue) == typeof(object);
-
-        var index = VerifyAndGetStartIndex(value, createMapType);
-
-        if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return to;
-
-        var valueLength = value.Length;
-        while (index < valueLength)
+        if (!JsState.TraverseDeserialization(createMapType ?? typeof(Dictionary<TKey, TValue>)))
         {
-            var keyValue = Serializer.EatMapKey(value, ref index);
-            Serializer.EatMapKeySeperator(value, ref index);
-            var elementStartIndex = index;
-            var elementValue = Serializer.EatTypeValue(value, ref index);
-            if (keyValue.IsNullOrEmpty()) continue;
-
-            TKey mapKey = (TKey)parseKeyFn(keyValue);
-
-            if (tryToParseItemsAsDictionaries)
-            {
-                Serializer.EatWhitespace(value, ref elementStartIndex);
-                if (elementStartIndex < valueLength && value[elementStartIndex] == JsWriter.MapStartChar)
-                {
-                    var tmpMap = ParseDictionary<TKey, TValue>(elementValue, createMapType, parseKeyFn, parseValueFn);
-                    if (tmpMap != null && tmpMap.Count > 0)
-                    {
-                        to[mapKey] = (TValue)tmpMap;
-                    }
-                }
-                else if (elementStartIndex < valueLength && value[elementStartIndex] == JsWriter.ListStartChar)
-                {
-                    to[mapKey] = (TValue)DeserializeList<List<object>, TSerializer>.ParseStringSpan(elementValue);
-                }
-                else
-                {
-                    to[mapKey] = (TValue)(tryToParseItemsAsPrimitiveTypes && elementStartIndex < valueLength
-                        ? DeserializeType<TSerializer>.ParsePrimitive(elementValue.Value(), value[elementStartIndex])
-                        : parseValueFn(elementValue).Value());
-                }
-            }
-            else
-            {
-                if (tryToParseItemsAsPrimitiveTypes && elementStartIndex < valueLength)
-                {
-                    Serializer.EatWhitespace(value, ref elementStartIndex);
-                    to[mapKey] = (TValue)DeserializeType<TSerializer>.ParsePrimitive(elementValue.Value(), value[elementStartIndex]);
-                }
-                else
-                {
-                    to[mapKey] = (TValue)parseValueFn(elementValue).Value();
-                }
-            }
-
-            Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            if (config.ThrowOnError)
+                throw new SerializationException($"Exceeded MaxDepth limit of {config.MaxDepth} attempting to deserialize {typeof(Dictionary<TKey, TValue>).Name}");
+            return null;
         }
 
-        return to;
+        try
+        {
+            var to = (createMapType == null)
+                ? new Dictionary<TKey, TValue>()
+                : (IDictionary<TKey, TValue>)createMapType.CreateInstance();
+
+            var objDeserializer = Json.JsonTypeSerializer.Instance.ObjectDeserializer;
+            if (to is Dictionary<string, object> && objDeserializer != null && typeof(TSerializer) == typeof(Json.JsonTypeSerializer))
+                return (IDictionary<TKey,TValue>) objDeserializer(value);
+
+            var tryToParseItemsAsDictionaries =
+                config.ConvertObjectTypesIntoStringDictionary && typeof(TValue) == typeof(object);
+            var tryToParseItemsAsPrimitiveTypes =
+                config.TryToParsePrimitiveTypeValues && typeof(TValue) == typeof(object);
+
+            var index = VerifyAndGetStartIndex(value, createMapType);
+
+            if (Json.JsonTypeSerializer.IsEmptyMap(value, index)) return to;
+
+            var valueLength = value.Length;
+            while (index < valueLength)
+            {
+                var keyValue = Serializer.EatMapKey(value, ref index);
+                Serializer.EatMapKeySeperator(value, ref index);
+                var elementStartIndex = index;
+                var elementValue = Serializer.EatTypeValue(value, ref index);
+                if (keyValue.IsNullOrEmpty()) continue;
+
+                TKey mapKey = (TKey)parseKeyFn(keyValue);
+
+                if (tryToParseItemsAsDictionaries)
+                {
+                    Serializer.EatWhitespace(value, ref elementStartIndex);
+                    if (elementStartIndex < valueLength && value[elementStartIndex] == JsWriter.MapStartChar)
+                    {
+                        var tmpMap = ParseDictionary<TKey, TValue>(elementValue, createMapType, parseKeyFn, parseValueFn);
+                        if (tmpMap != null && tmpMap.Count > 0)
+                        {
+                            to[mapKey] = (TValue)tmpMap;
+                        }
+                    }
+                    else if (elementStartIndex < valueLength && value[elementStartIndex] == JsWriter.ListStartChar)
+                    {
+                        to[mapKey] = (TValue)DeserializeList<List<object>, TSerializer>.ParseStringSpan(elementValue);
+                    }
+                    else
+                    {
+                        to[mapKey] = (TValue)(tryToParseItemsAsPrimitiveTypes && elementStartIndex < valueLength
+                            ? DeserializeType<TSerializer>.ParsePrimitive(elementValue.Value(), value[elementStartIndex])
+                            : parseValueFn(elementValue).Value());
+                    }
+                }
+                else
+                {
+                    if (tryToParseItemsAsPrimitiveTypes && elementStartIndex < valueLength)
+                    {
+                        Serializer.EatWhitespace(value, ref elementStartIndex);
+                        to[mapKey] = (TValue)DeserializeType<TSerializer>.ParsePrimitive(elementValue.Value(), value[elementStartIndex]);
+                    }
+                    else
+                    {
+                        to[mapKey] = (TValue)parseValueFn(elementValue).Value();
+                    }
+                }
+
+                Serializer.EatItemSeperatorOrMapEndChar(value, ref index);
+            }
+
+            return to;
+        }
+        finally
+        {
+            JsState.UnTraverse();
+        }
     }
 
     private static int VerifyAndGetStartIndex(ReadOnlySpan<char> value, Type createMapType)

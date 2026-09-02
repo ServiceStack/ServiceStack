@@ -102,6 +102,19 @@ public static class CsvConfig
         }
     }
 
+    [ThreadStatic]
+    private static bool? tsEscapeFormulas;
+    private static bool? sEscapeFormulas;
+    public static bool EscapeFormulas
+    {
+        get => tsEscapeFormulas ?? sEscapeFormulas ?? true;
+        set
+        {
+            tsEscapeFormulas = value;
+            sEscapeFormulas = value;
+        }
+    }
+
     public static void Reset()
     {
         tsItemSeperatorString = sItemSeperatorString = null;
@@ -109,6 +122,7 @@ public static class CsvConfig
         tsEscapedItemDelimiterString = sEscapedItemDelimiterString = null;
         tsRowSeparatorString = sRowSeparatorString = null;
         tsEscapeStrings = sEscapeStrings = null;
+        tsEscapeFormulas = sEscapeFormulas = null;
     }
 
 }

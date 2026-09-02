@@ -52,7 +52,7 @@ public static partial class HttpUtils
         {
             prefix = url.IndexOf('?') == -1 ? "?" : "&";
         }
-        return url + prefix + key + "=" + (encode ? val.UrlEncode() : val);
+        return url + prefix + (encode ? key.UrlEncode() : key) + "=" + (encode ? val.UrlEncode() : val);
     }
 
     public static string AddQueryParams(this string url, Dictionary<string, object> args)

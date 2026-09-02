@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using ServiceStack.Text.Json;
 using ServiceStack.Text.Jsv;
 
@@ -30,8 +31,16 @@ internal static class DeserializeTypeRefJsv
             return ctorFn();
 
         var config = JsConfig.GetConfig();
+        if (!JsState.TraverseDeserialization(type))
+        {
+            if (config.ThrowOnError)
+                throw new SerializationException($"Exceeded MaxDepth limit of {config.MaxDepth} attempting to deserialize {type.Name}");
+            return null;
+        }
 
-        object instance = null;
+        try
+        {
+            object instance = null;
         var lenient = config.PropertyConvention == PropertyConvention.Lenient || config.TextCase == TextCase.SnakeCase;
 
         var strTypeLength = strType.Length;
@@ -148,6 +157,11 @@ internal static class DeserializeTypeRefJsv
         }
 
         return instance;
+        }
+        finally
+        {
+            JsState.UnTraverse();
+        }
     }
 }
 

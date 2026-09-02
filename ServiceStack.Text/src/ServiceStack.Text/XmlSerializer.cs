@@ -57,15 +57,21 @@ public class XmlSerializer
 
     public static T DeserializeFromStream<T>(Stream stream)
     {
-        var serializer = new DataContractSerializer(typeof(T));
-
-        return (T)serializer.ReadObject(stream);
+        return (T)DeserializeFromStream(typeof(T), stream);
     }
 
     public static object DeserializeFromStream(Type type, Stream stream)
     {
-        var serializer = new DataContractSerializer(type);
-        return serializer.ReadObject(stream);
+        try
+        {
+            using var reader = XmlReader.Create(stream, XmlReaderSettings);
+            var serializer = new DataContractSerializer(type);
+            return serializer.ReadObject(reader);
+        }
+        catch (Exception ex)
+        {
+            throw new SerializationException("DeserializeDataContract: Error converting type: " + ex.Message, ex);
+        }
     }
 
     public static string SerializeToString<T>(T from)

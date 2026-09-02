@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.IO;
@@ -56,23 +56,32 @@ public static class StringSpanExtensions
             return text;
             
         var delim = CsvConfig.ItemDelimiterString;
+        bool hasDelim = false;
         if (delim.Length == 1)
         {
-            if (text[0] != delim[0])
-                return text;
+            hasDelim = text[0] == delim[0];
         }
-        else if (!text.StartsWith(delim.AsSpan(), StringComparison.Ordinal))
+        else
         {
-            return text;
+            hasDelim = text.StartsWith(delim.AsSpan(), StringComparison.Ordinal);
         }
-            
-        var ret = text.Slice(CsvConfig.ItemDelimiterString.Length, text.Length - CsvConfig.EscapedItemDelimiterString.Length)
-            .ToString().Replace(CsvConfig.EscapedItemDelimiterString, CsvConfig.ItemDelimiterString);
-            
-        if (ret == string.Empty)
-            return TypeConstants.EmptyStringSpan;
 
-        return ret.AsSpan();
+        ReadOnlySpan<char> retSpan = text;
+        if (hasDelim)
+        {
+            var unescaped = text.Slice(CsvConfig.ItemDelimiterString.Length, text.Length - CsvConfig.EscapedItemDelimiterString.Length)
+                .ToString().Replace(CsvConfig.EscapedItemDelimiterString, CsvConfig.ItemDelimiterString);
+            if (unescaped == string.Empty)
+                return TypeConstants.EmptyStringSpan;
+            retSpan = unescaped.AsSpan();
+        }
+
+        if (CsvConfig.EscapeFormulas && retSpan.Length > 1 && retSpan[0] == '\'' && TextExtensions.StartsWithFormula(retSpan.Slice(1).ToString()))
+        {
+            retSpan = retSpan.Slice(1);
+        }
+
+        return retSpan;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

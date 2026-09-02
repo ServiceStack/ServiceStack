@@ -713,7 +713,6 @@ public static class JsConfig
         AllowRuntimeType = null;
         AllowRuntimeTypeWithAttributesNamed =
         [
-            nameof(SerializableAttribute),
             nameof(DataContractAttribute),
             nameof(RuntimeSerializableAttribute)
         ];
@@ -740,6 +739,8 @@ public static class JsConfig
         SystemJsonCompatible = false;
         PlatformExtensions.ClearRuntimeAttributes();
         ReflectionExtensions.Reset();
+        Json.JsonTypeSerializer.Instance.ObjectDeserializer = null;
+        Jsv.JsvTypeSerializer.Instance.ObjectDeserializer = null;
         JsState.Reset();
     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 namespace ServiceStack.Text.Common;
 
@@ -81,7 +82,18 @@ internal static class JsState
             return true;
             
         Tracer.Instance.WriteError(
-            $"Exceeded MaxDepth limit of {JsConfig.MaxDepth} attempting to serialize {value.GetType().Name}");
+            new SerializationException($"Exceeded MaxDepth limit of {JsConfig.MaxDepth} attempting to serialize {value.GetType().Name}"));
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool TraverseDeserialization(Type type = null)
+    {
+        if (++Depth <= JsConfig.MaxDepth) 
+            return true;
+            
+        Tracer.Instance.WriteError(
+            new SerializationException($"Exceeded MaxDepth limit of {JsConfig.MaxDepth} attempting to deserialize {type?.Name ?? "Object"}"));
         return false;
     }
 
@@ -90,6 +102,7 @@ internal static class JsState
 
     internal static void Reset()
     {
+        Depth = 0;
         InSerializerFns = null;
         InDeserializerFns = null;
     }

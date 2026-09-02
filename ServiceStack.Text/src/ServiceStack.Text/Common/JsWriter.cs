@@ -213,7 +213,7 @@ public static class JsWriter
     public static void AssertAllowedRuntimeType(Type type)
     {
         if (!ShouldAllowRuntimeType(type))
-            throw new NotSupportedException($"{type.Name} is not an allowed Runtime Type. Whitelist Type with [Serializable], [RuntimeSerializable], [DataContract] or IRuntimeSerializable, see: https://docs.servicestack.net/json-format#runtime-type-whitelist");
+            throw new NotSupportedException($"{type.Name} is not an allowed Runtime Type. Whitelist Type with [RuntimeSerializable], [DataContract] or IRuntimeSerializable, see: https://docs.servicestack.net/json-format#runtime-type-whitelist");
     }
 }
 

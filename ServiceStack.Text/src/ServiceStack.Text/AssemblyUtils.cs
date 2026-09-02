@@ -17,6 +17,8 @@ public static class AssemblyUtils
     private const char UriSeperator = '/';
 
     private static Dictionary<string, Type> TypeCache = new();
+    private static Dictionary<string, bool> NegativeTypeCache = new();
+    public const int MaxNegativeCacheSize = 1000;
 
     public static Func<string,bool> ValidateTypeName { get; set; } = DefaultValidateTypeName;
     public static Regex ValidateTypeRegex { get; set; } = 
@@ -39,6 +41,7 @@ public static class AssemblyUtils
     public static Type UncheckedFindType(string typeName)
     {
         if (TypeCache.TryGetValue(typeName, out var type)) return type;
+        if (NegativeTypeCache.ContainsKey(typeName)) return null;
 
         type = Type.GetType(typeName);
         if (type == null)
@@ -49,14 +52,30 @@ public static class AssemblyUtils
                 : FindTypeFromLoadedAssemblies(typeDef.TypeName);
         }
 
-        Dictionary<string, Type> snapshot, newCache;
-        do
+        if (type != null)
         {
-            snapshot = TypeCache;
-            newCache = new Dictionary<string, Type>(TypeCache) { [typeName] = type };
+            Dictionary<string, Type> snapshot, newCache;
+            do
+            {
+                snapshot = TypeCache;
+                newCache = new Dictionary<string, Type>(TypeCache) { [typeName] = type };
 
-        } while (!ReferenceEquals(
-                     Interlocked.CompareExchange(ref TypeCache, newCache, snapshot), snapshot));
+            } while (!ReferenceEquals(
+                         Interlocked.CompareExchange(ref TypeCache, newCache, snapshot), snapshot));
+        }
+        else
+        {
+            Dictionary<string, bool> snapshot, newCache;
+            do
+            {
+                snapshot = NegativeTypeCache;
+                newCache = snapshot.Count >= MaxNegativeCacheSize
+                    ? new Dictionary<string, bool> { [typeName] = true }
+                    : new Dictionary<string, bool>(snapshot) { [typeName] = true };
+
+            } while (!ReferenceEquals(
+                         Interlocked.CompareExchange(ref NegativeTypeCache, newCache, snapshot), snapshot));
+        }
 
         return type;
     }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -180,6 +180,7 @@ public static class PathUtils
             ? path.Substring(0, schemePos + 3)
             : "";
 
+        var isRooted = (path.Length > 0 && path[0] == '/') || prefix.Length > 0;
         var parts = path.Substring(prefix.Length).Split('/').ToList();
         var combinedPaths = new List<string>();
         foreach (var part in parts)
@@ -187,14 +188,25 @@ public static class PathUtils
             if (string.IsNullOrEmpty(part) || part == ".")
                 continue;
 
-            if (part == ".." && combinedPaths.Count > 0)
-                combinedPaths.RemoveAt(combinedPaths.Count - 1);
+            if (part == "..")
+            {
+                if (combinedPaths.Count > 0 && combinedPaths[combinedPaths.Count - 1] != "..")
+                {
+                    combinedPaths.RemoveAt(combinedPaths.Count - 1);
+                }
+                else if (!isRooted)
+                {
+                    combinedPaths.Add(part);
+                }
+            }
             else
+            {
                 combinedPaths.Add(part);
+            }
         }
 
         var resolvedPath = string.Join("/", combinedPaths);
-        if (path[0] == '/' && prefix.Length == 0)
+        if (path.Length > 0 && path[0] == '/' && prefix.Length == 0)
             resolvedPath = "/" + resolvedPath;
 
         return path[path.Length - 1] == '/' && resolvedPath.Length > 0

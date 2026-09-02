@@ -1,4 +1,4 @@
-﻿#if NETFX || (NETCORE && !NETSTANDARD2_0)
+#if NETFX || (NETCORE && !NETSTANDARD2_0)
 
 using System;
 using System.Linq;
@@ -381,7 +381,7 @@ public static class DynamicProxy
             methodInfo.Name,
             MethodAttributes.Public | MethodAttributes.Virtual,
             methodInfo.ReturnType,
-            methodInfo.GetParameters().Select(p => p.GetType()).ToArray()
+            methodInfo.GetParameters().Select(p => p.ParameterType).ToArray()
             );
         var methodILGen = methodBuilder.GetILGenerator();
         if (methodInfo.ReturnType == typeof(void))

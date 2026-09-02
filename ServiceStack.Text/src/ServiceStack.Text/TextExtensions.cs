@@ -18,10 +18,32 @@ namespace ServiceStack;
 
 public static class TextExtensions
 {
+    internal static bool StartsWithFormula(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return false;
+        var first = value[0];
+        if (first == '=' || first == '@' || first == '\t' || first == '\r')
+            return true;
+        if (first == '+' || first == '-')
+        {
+            if (value.Length > 1 && (char.IsDigit(value[1]) || value[1] == '.'))
+                return false;
+            return true;
+        }
+        return false;
+    }
+
     public static string ToCsvField(this string text)
     {
-        if (string.IsNullOrEmpty(text) || !CsvWriter.HasAnyEscapeChars(text))
+        if (string.IsNullOrEmpty(text))
             return text;
+
+        if (CsvConfig.EscapeFormulas && StartsWithFormula(text))
+            text = "'" + text;
+
+        if (!CsvWriter.HasAnyEscapeChars(text))
+            return text;
+
         var itemDelim = CsvConfig.ItemDelimiterString;
         return string.Concat(
             itemDelim,
@@ -35,7 +57,13 @@ public static class TextExtensions
             ? text.ToString() 
             : TypeSerializer.SerializeToString(text).StripQuotes();
 
-        if (textSerialized.IsNullOrEmpty() || !CsvWriter.HasAnyEscapeChars(textSerialized))
+        if (textSerialized.IsNullOrEmpty())
+            return textSerialized;
+
+        if (CsvConfig.EscapeFormulas && StartsWithFormula(textSerialized))
+            textSerialized = "'" + textSerialized;
+
+        if (!CsvWriter.HasAnyEscapeChars(textSerialized))
             return textSerialized;
             
         var itemDelim = CsvConfig.ItemDelimiterString;
@@ -47,12 +75,23 @@ public static class TextExtensions
 
     public static string FromCsvField(this string text)
     {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
         var itemDelim = CsvConfig.ItemDelimiterString;
-        if (string.IsNullOrEmpty(text) || !text.StartsWith(itemDelim, StringComparison.Ordinal))
-            return text; 
-        var escapedDelim = CsvConfig.EscapedItemDelimiterString;
-        return text.Substring(itemDelim.Length, text.Length - escapedDelim.Length)
-            .Replace(escapedDelim, itemDelim);
+        if (text.StartsWith(itemDelim, StringComparison.Ordinal))
+        {
+            var escapedDelim = CsvConfig.EscapedItemDelimiterString;
+            text = text.Substring(itemDelim.Length, text.Length - escapedDelim.Length)
+                .Replace(escapedDelim, itemDelim);
+        }
+
+        if (CsvConfig.EscapeFormulas && text.Length > 1 && text[0] == '\'' && StartsWithFormula(text.Substring(1)))
+        {
+            text = text.Substring(1);
+        }
+
+        return text;
     }
 
     public static List<string> FromCsvFields(this IEnumerable<string> texts)

@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Runtime.Serialization;
 using System.Threading;
 
 namespace ServiceStack.Text.Common;
@@ -174,70 +175,84 @@ public static class DeserializeListWithElements<T, TSerializer>
         if (value.IsNullOrEmpty())
             return isReadOnly ? (ICollection<T>)Activator.CreateInstance(createListType, to) : to;
 
-        var tryToParseItemsAsPrimitiveTypes =
-            typeof(T) == typeof(object) && JsConfig.TryToParsePrimitiveTypeValues;
-
-        if (!value.IsNullOrEmpty())
+        if (!JsState.TraverseDeserialization(createListType ?? typeof(List<T>)))
         {
-            var valueLength = value.Length;
-            var i = 0;
-            Serializer.EatWhitespace(value, ref i);
-            if (i < valueLength && value[i] == JsWriter.MapStartChar)
+            if (JsConfig.ThrowOnError)
+                throw new SerializationException($"Exceeded MaxDepth limit of {JsConfig.MaxDepth} attempting to deserialize {typeof(List<T>).Name}");
+            return null;
+        }
+
+        try
+        {
+            var tryToParseItemsAsPrimitiveTypes =
+                typeof(T) == typeof(object) && JsConfig.TryToParsePrimitiveTypeValues;
+
+            if (!value.IsNullOrEmpty())
             {
-                do
+                var valueLength = value.Length;
+                var i = 0;
+                Serializer.EatWhitespace(value, ref i);
+                if (i < valueLength && value[i] == JsWriter.MapStartChar)
                 {
-                    var itemValue = Serializer.EatTypeValue(value, ref i);
-                    if (!itemValue.IsEmpty)
+                    do
                     {
-                        to.Add((T)parseFn(itemValue));
-                    }
-                    else
-                    {
-                        to.Add(default);
-                    }
-                    Serializer.EatWhitespace(value, ref i);
-                } while (++i < value.Length);
-            }
-            else
-            {
-                    
-                while (i < valueLength)
-                {
-                    var startIndex = i;
-                    var elementValue = Serializer.EatValue(value, ref i);
-                    var listValue = elementValue;
-                    var isEmpty = listValue.IsNullOrEmpty();
-                    if (!isEmpty)
-                    {
-                        if (tryToParseItemsAsPrimitiveTypes)
+                        var itemValue = Serializer.EatTypeValue(value, ref i);
+                        if (!itemValue.IsEmpty)
                         {
-                            Serializer.EatWhitespace(value, ref startIndex);
-                            to.Add((T)DeserializeType<TSerializer>.ParsePrimitive(elementValue.Value(), value[startIndex]));
+                            to.Add((T)parseFn(itemValue));
                         }
                         else
                         {
-                            to.Add((T)parseFn(elementValue));
+                            to.Add(default);
                         }
-                    }
-
-                    if (Serializer.EatItemSeperatorOrMapEndChar(value, ref i) && i == valueLength)
-                    {
-                        // If we ate a separator and we are at the end of the value, 
-                        // it means the last element is empty => add default
-                        to.Add(default);
-                        continue;
-                    }
-
-                    if (isEmpty)
-                        to.Add(default);
+                        Serializer.EatWhitespace(value, ref i);
+                    } while (++i < value.Length);
                 }
+                else
+                {
+                    
+                    while (i < valueLength)
+                    {
+                        var startIndex = i;
+                        var elementValue = Serializer.EatValue(value, ref i);
+                        var listValue = elementValue;
+                        var isEmpty = listValue.IsNullOrEmpty();
+                        if (!isEmpty)
+                        {
+                            if (tryToParseItemsAsPrimitiveTypes)
+                            {
+                                Serializer.EatWhitespace(value, ref startIndex);
+                                to.Add((T)DeserializeType<TSerializer>.ParsePrimitive(elementValue.Value(), value[startIndex]));
+                            }
+                            else
+                            {
+                                to.Add((T)parseFn(elementValue));
+                            }
+                        }
 
+                        if (Serializer.EatItemSeperatorOrMapEndChar(value, ref i) && i == valueLength)
+                        {
+                            // If we ate a separator and we are at the end of the value, 
+                            // it means the last element is empty => add default
+                            to.Add(default);
+                            continue;
+                        }
+
+                        if (isEmpty)
+                            to.Add(default);
+                    }
+
+                }
             }
-        }
 
-        //TODO: 8-10-2011 -- this CreateInstance call should probably be moved over to ReflectionExtensions, 
-        //but not sure how you'd like to go about caching constructors with parameters -- I would probably build a NewExpression, .Compile to a LambdaExpression and cache
-        return isReadOnly ? (ICollection<T>)Activator.CreateInstance(createListType, to) : to;
+            //TODO: 8-10-2011 -- this CreateInstance call should probably be moved over to ReflectionExtensions, 
+            //but not sure how you'd like to go about caching constructors with parameters -- I would probably build a NewExpression, .Compile to a LambdaExpression and cache
+            return isReadOnly ? (ICollection<T>)Activator.CreateInstance(createListType, to) : to;
+        }
+        finally
+        {
+            JsState.UnTraverse();
+        }
     }
 }
 

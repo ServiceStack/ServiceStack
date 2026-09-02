@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -708,7 +708,7 @@ public static class LicenseUtils
     {
         try
         {
-            var rsAlg = new RSACryptoServiceProvider();
+            using var rsAlg = new RSACryptoServiceProvider();
             rsAlg.ImportParameters(key);
             return rsAlg.VerifyData(dataToVerify, halg, signedData);
         }

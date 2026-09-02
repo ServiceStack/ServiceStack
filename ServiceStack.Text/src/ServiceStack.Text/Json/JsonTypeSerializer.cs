@@ -505,6 +505,7 @@ public struct JsonTypeSerializer
     public static SpanIndex UnescapeJsString(ReadOnlySpan<char> json, char quoteChar, bool removeQuotes, int index)
     {
         if (json.IsNullOrEmpty()) return new(json, index);
+        if (index >= json.Length) return new(ReadOnlySpan<char>.Empty, index);
         var jsonLength = json.Length;
         var buffer = json;
 
@@ -517,7 +518,7 @@ public struct JsonTypeSerializer
             var jsonAtIndex = json.Slice(index);
             var strEndPos = jsonAtIndex.IndexOfAny(IsSafeJsonChars);
             if (strEndPos == -1) 
-                return new(jsonAtIndex.Slice(0, jsonLength), index);
+                return new(jsonAtIndex, jsonLength);
 
             if (jsonAtIndex[strEndPos] == quoteChar)
             {
@@ -527,6 +528,35 @@ public struct JsonTypeSerializer
                     ? potentialValue
                     : TypeConstants.EmptyStringSpan, index);
             }
+
+            var output = StringBuilderThreadStatic.Allocate();
+            int start = index;
+            int count = index;
+            while (count < jsonLength)
+            {
+                var c = buffer[count];
+                if (c == quoteChar)
+                {
+                    if (start != count)
+                        output.Append(buffer.Slice(start, count - start));
+                    count++;
+                    return new(StringBuilderThreadStatic.ReturnAndFree(output).AsSpan(), count);
+                }
+                if (c == JsonUtils.EscapeChar)
+                {
+                    if (start != count)
+                        output.Append(buffer.Slice(start, count - start));
+                    var escapeStart = count;
+                    count++;
+                    AppendUnescapedChar(buffer, ref count, jsonLength, output, escapeStart);
+                    start = count;
+                    continue;
+                }
+                count++;
+            }
+            if (start < count)
+                output.Append(buffer.Slice(start, count - start));
+            return new(StringBuilderThreadStatic.ReturnAndFree(output).AsSpan(), count);
         }
         else
         {
@@ -542,9 +572,10 @@ public struct JsonTypeSerializer
             }
             if (i == end) 
                 return new(buffer.Slice(index, jsonLength - index), index);
-        }
 
-        return new(Unescape(json, removeQuotes: removeQuotes, quoteChar: quoteChar), index);
+            var unescaped = Unescape(json.Slice(index), removeQuotes: removeQuotes, quoteChar: quoteChar);
+            return new(unescaped, index);
+        }
     }
         
     public static string Unescape(string input) => Unescape(input, true);
@@ -584,82 +615,16 @@ public struct JsonTypeSerializer
                 {
                     output.Append(input.Slice(start, count - start));
                 }
-                start = count;
+                var escapeStart = count;
                 count++;
-                if (count >= length) continue;
-
-                //we will always be parsing an escaped char here
-                c = input[count];
-
-                switch (c)
+                if (count >= length)
                 {
-                    case 'a':
-                        output.Append('\a');
-                        count++;
-                        break;
-                    case 'b':
-                        output.Append('\b');
-                        count++;
-                        break;
-                    case 'f':
-                        output.Append('\f');
-                        count++;
-                        break;
-                    case 'n':
-                        output.Append('\n');
-                        count++;
-                        break;
-                    case 'r':
-                        output.Append('\r');
-                        count++;
-                        break;
-                    case 'v':
-                        output.Append('\v');
-                        count++;
-                        break;
-                    case 't':
-                        output.Append('\t');
-                        count++;
-                        break;
-                    case 'u':
-                        if (count + 4 < length)
-                        {
-                            var unicodeString = input.Slice(count + 1, 4);
-                            var unicodeIntVal = MemoryProvider.Instance.ParseUInt32(unicodeString, NumberStyles.HexNumber);
-                            output.Append(ConvertFromUtf32((int)unicodeIntVal));
-                            count += 5;
-                        }
-                        else
-                        {
-                            output.Append(c);
-                        }
-                        break;
-                    case 'x':
-                        if (count + 4 < length)
-                        {
-                            var unicodeString = input.Slice(count + 1, 4);
-                            var unicodeIntVal = MemoryProvider.Instance.ParseUInt32(unicodeString, NumberStyles.HexNumber);
-                            output.Append(ConvertFromUtf32((int)unicodeIntVal));
-                            count += 5;
-                        }
-                        else
-                        if (count + 2 < length)
-                        {
-                            var unicodeString = input.Slice(count + 1, 2);
-                            var unicodeIntVal = MemoryProvider.Instance.ParseUInt32(unicodeString, NumberStyles.HexNumber);
-                            output.Append(ConvertFromUtf32((int)unicodeIntVal));
-                            count += 3;
-                        }
-                        else
-                        {
-                            output.Append(input.Slice(start, count - start));
-                        }
-                        break;
-                    default:
-                        output.Append(c);
-                        count++;
-                        break;
+                    output.Append(JsonUtils.EscapeChar);
+                    start = count;
+                    break;
                 }
+
+                AppendUnescapedChar(input, ref count, length, output, escapeStart);
                 start = count;
             }
             else
@@ -667,8 +632,88 @@ public struct JsonTypeSerializer
                 count++;
             }
         }
-        output.Append(input.Slice(start, length - start));
+        if (start < length)
+            output.Append(input.Slice(start, length - start));
         return StringBuilderThreadStatic.ReturnAndFree(output).AsSpan();
+    }
+
+    private static void AppendUnescapedChar(ReadOnlySpan<char> input, ref int count, int length, System.Text.StringBuilder output, int start)
+    {
+        if (count >= length)
+        {
+            output.Append(JsonUtils.EscapeChar);
+            return;
+        }
+        var c = input[count];
+        switch (c)
+        {
+            case 'a':
+                output.Append('\a');
+                count++;
+                break;
+            case 'b':
+                output.Append('\b');
+                count++;
+                break;
+            case 'f':
+                output.Append('\f');
+                count++;
+                break;
+            case 'n':
+                output.Append('\n');
+                count++;
+                break;
+            case 'r':
+                output.Append('\r');
+                count++;
+                break;
+            case 'v':
+                output.Append('\v');
+                count++;
+                break;
+            case 't':
+                output.Append('\t');
+                count++;
+                break;
+            case 'u':
+                if (count + 4 < length)
+                {
+                    var unicodeString = input.Slice(count + 1, 4);
+                    var unicodeIntVal = MemoryProvider.Instance.ParseUInt32(unicodeString, NumberStyles.HexNumber);
+                    output.Append(ConvertFromUtf32((int)unicodeIntVal));
+                    count += 5;
+                }
+                else
+                {
+                    output.Append(c);
+                    count++;
+                }
+                break;
+            case 'x':
+                if (count + 4 < length)
+                {
+                    var unicodeString = input.Slice(count + 1, 4);
+                    var unicodeIntVal = MemoryProvider.Instance.ParseUInt32(unicodeString, NumberStyles.HexNumber);
+                    output.Append(ConvertFromUtf32((int)unicodeIntVal));
+                    count += 5;
+                }
+                else if (count + 2 < length)
+                {
+                    var unicodeString = input.Slice(count + 1, 2);
+                    var unicodeIntVal = MemoryProvider.Instance.ParseUInt32(unicodeString, NumberStyles.HexNumber);
+                    output.Append(ConvertFromUtf32((int)unicodeIntVal));
+                    count += 3;
+                }
+                else
+                {
+                    output.Append(input.Slice(start, count - start));
+                }
+                break;
+            default:
+                output.Append(c);
+                count++;
+                break;
+        }
     }
 
     /// <summary>

@@ -660,7 +660,7 @@ public static class StringExtensions
         return fromText.Substring(startPos, endPos - startPos);
     }
 
-    static readonly Regex StripHtmlRegEx = new(@"<(.|\n)*?>", RegexOptions.Compiled);
+    static readonly Regex StripHtmlRegEx = new(@"<[^>]*>", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public static string StripHtml(this string html) => string.IsNullOrEmpty(html) ? null : StripHtmlRegEx.Replace(html, "");
 
@@ -682,8 +682,8 @@ public static class StringExtensions
                 : text;
     }
 
-    static readonly Regex StripBracketsRegEx = new(@"\[(.|\n)*?\]", PclExport.Instance.RegexOptions);
-    static readonly Regex StripBracesRegEx = new(@"\((.|\n)*?\)", RegexOptions.Compiled);
+    static readonly Regex StripBracketsRegEx = new(@"\[[^\]]*\]", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    static readonly Regex StripBracesRegEx = new(@"\([^\)]*\)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public static string StripMarkdownMarkup(this string markdown)
     {
