@@ -37,7 +37,18 @@ public static class QueryStringSerializer
 
     private static Dictionary<Type, WriteObjectDelegate> WriteFnCache = new();
 
-    public static WriteComplexTypeDelegate ComplexTypeStrategy { get; set; }
+    [ThreadStatic]
+    private static WriteComplexTypeDelegate tsComplexTypeStrategy;
+    private static WriteComplexTypeDelegate sComplexTypeStrategy;
+    public static WriteComplexTypeDelegate ComplexTypeStrategy
+    {
+        get => tsComplexTypeStrategy ?? sComplexTypeStrategy;
+        set
+        {
+            tsComplexTypeStrategy = value;
+            if (sComplexTypeStrategy == null) sComplexTypeStrategy = value;
+        }
+    }
 
     internal static WriteObjectDelegate GetWriteFn(Type type)
     {

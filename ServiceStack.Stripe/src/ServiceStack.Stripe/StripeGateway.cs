@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -166,7 +166,14 @@ public class GetStripeCustomers : IGet, IReturn<StripeCollection<StripeCustomer>
 
     public string ToUrl(string absoluteUrl)
     {
-        return Include == null ? absoluteUrl : absoluteUrl.AddQueryParam("include[]", string.Join(",", Include));
+        if (Include?.Length > 0)
+        {
+            foreach (var include in Include)
+            {
+                absoluteUrl = absoluteUrl.AddQueryParam("include[]", include);
+            }
+        }
+        return absoluteUrl;
     }
 }
 
@@ -238,7 +245,14 @@ public class GetStripeCustomerCards : IGet, IReturn<StripeCollection<StripeCard>
 
     public string ToUrl(string absoluteUrl)
     {
-        return Include == null ? absoluteUrl : absoluteUrl.AddQueryParam("include[]", string.Join(",", Include));
+        if (Include?.Length > 0)
+        {
+            foreach (var include in Include)
+            {
+                absoluteUrl = absoluteUrl.AddQueryParam("include[]", include);
+            }
+        }
+        return absoluteUrl;
     }
 }
 
@@ -788,18 +802,36 @@ public class StripeVerificationAccount
 }
 
 
-public class StripeGateway : IRestGateway
+public class StripeGateway : IRestGateway, IDisposable
 {
     private const string BaseUrl = "https://api.stripe.com/v1";
-    private const string APIVersion = "2018-02-28";
+    public const string DefaultAPIVersion = "2018-02-28";
 
-    public TimeSpan Timeout { get; set; }
+    public string ApiVersion { get; set; } = DefaultAPIVersion;
+
+    private TimeSpan timeout = TimeSpan.FromSeconds(60);
+    public TimeSpan Timeout
+    {
+        get => timeout;
+        set
+        {
+            timeout = value;
+            if (Client != null)
+                Client.Timeout = value;
+        }
+    }
 
     public string Currency { get; set; }
 
     private string apiKey;
     private string publishableKey;
     private string stripeAccount;
+    public string StripeAccount
+    {
+        get => stripeAccount;
+        set => stripeAccount = value;
+    }
+
     public ICredentials Credentials { get; set; }
     private string UserAgent { get; set; }
         
@@ -811,7 +843,6 @@ public class StripeGateway : IRestGateway
         this.publishableKey = publishableKey;
         this.stripeAccount = stripeAccount;
         Credentials = new NetworkCredential(apiKey, "");
-        Timeout = TimeSpan.FromSeconds(60);
         UserAgent = "ServiceStack.Stripe";
         Currency = Currencies.UnitedStatesDollar;
         Client = new HttpClient(new HttpClientHandler {
@@ -819,6 +850,7 @@ public class StripeGateway : IRestGateway
             PreAuthenticate = true,
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
         }, disposeHandler:true);
+        Timeout = TimeSpan.FromSeconds(60);
         JsConfig.InitStatics();
     }
 
@@ -834,7 +866,10 @@ public class StripeGateway : IRestGateway
         if (!string.IsNullOrWhiteSpace(idempotencyKey))
             httpReq.Headers.Add("Idempotency-Key", idempotencyKey);
 
-        httpReq.Headers.Add("Stripe-Version", APIVersion);
+        if (!string.IsNullOrWhiteSpace(stripeAccount))
+            httpReq.Headers.Add("Stripe-Account", stripeAccount);
+
+        httpReq.Headers.Add("Stripe-Version", ApiVersion ?? DefaultAPIVersion);
 
         if (requestBody != null)
         {
@@ -1037,6 +1072,14 @@ public class StripeGateway : IRestGateway
     public Task<T> DeleteAsync<T>(IReturn<T> request, CancellationToken token=default)
     {
         return SendAsync(request, HttpMethods.Delete, sendRequestBody: false, token: token);
+    }
+
+    private bool disposed;
+    public void Dispose()
+    {
+        if (disposed) return;
+        disposed = true;
+        Client?.Dispose();
     }
 }
 

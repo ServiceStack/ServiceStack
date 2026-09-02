@@ -606,7 +606,24 @@ public static class Currencies
     public const string CentralAfricanCfaFranc = "XAF";
     public const string EastCaribbeanDollar = "XCD";
     public const string WestAfricanCfaFranc = "XOF";
-    public const string CfpFranc = "XPF";
     public const string YemeniRial = "YER";
     public const string SouthAfricanRand = "ZAR";
+}
+
+public class StripeEvent : StripeId
+{
+    public string Type { get; set; }
+    public bool Livemode { get; set; }
+    public DateTime Created { get; set; }
+    public StripeEventData Data { get; set; }
+    public int PendingWebhooks { get; set; }
+    public string Request { get; set; }
+    public string ApiVersion { get; set; }
+    public string Account { get; set; }
+}
+
+public class StripeEventData
+{
+    public Dictionary<string, object> Object { get; set; }
+    public Dictionary<string, object> PreviousAttributes { get; set; }
 }
