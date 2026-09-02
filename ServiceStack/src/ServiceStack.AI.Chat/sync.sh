@@ -7,8 +7,6 @@ set -e
 
 cd "$(dirname "$0")"
 LLMS="${1:-${LLMS:-../../../../llms/llms}}"
-# User extensions live outside the package, in the llms home dir (each is its own repo)
-LLMS_HOME="${LLMS_HOME:-$LLMS/../llms-home}"
 
 if [ ! -f "$LLMS/index.html" ]; then
     echo "llms package dir not found at: $LLMS" >&2
@@ -19,11 +17,9 @@ fi
 # Extensions not ported: auth is provided by ServiceStack Identity Auth instead
 # (credentials has its own C#-only UI signing in with the host's Identity users)
 SKIP_EXT="credentials github_auth browser"
-# Ported extensions synced from $LLMS_HOME/extensions instead of $LLMS/extensions
-HOME_EXT="gemini"
 # UI extensions not under $LLMS/extensions, so never deleted as stale:
-# identity + credentials are C#-only, gemini is synced from $LLMS_HOME above
-KEEP_EXT="identity credentials gemini"
+# identity + credentials are C#-only
+KEEP_EXT="identity credentials"
 
 # clear stale config files
 rm -f ../../tests/NorthwindAuto/App_Data/chat/llms.json
@@ -64,17 +60,6 @@ for ext in "$LLMS"/extensions/*/; do
             rsync -a --delete "$ext/$asset/" "chat/ext/$name/$asset/"
         fi
     done
-done
-
-# User extension UIs (llms-home) -> chat/ext/<name>/
-for name in $HOME_EXT; do
-    ext="$LLMS_HOME/extensions/$name"
-    if [ -d "$ext/ui" ]; then
-        mkdir -p "chat/ext/$name"
-        rsync -aL --delete "$ext/ui/" "chat/ext/$name/"
-    else
-        echo "Skipping $name: $ext/ui not found" >&2
-    fi
 done
 
 # Remove synced ext dirs that no longer exist upstream (preserving KEEP_EXT)
