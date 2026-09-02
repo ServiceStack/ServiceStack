@@ -76,11 +76,16 @@ public class DynamicInputBase : TextInputBase
             }
             foreach (var key in to.Keys.ToArray())
             {
+                if (key.StartsWith("on", StringComparison.OrdinalIgnoreCase) || SanitizeAttribute(key))
+                {
+                    to.Remove(key);
+                    continue;
+                }
+
                 var val = to[key];
                 if ((val is null)
                     || (val is bool b && !b)
-                    || (val is int i && i == 0)
-                    || (val is string s && (s.StartsWith("on") || SanitizeAttribute(s))))
+                    || (val is int i && i == 0))
                 {
                     to.Remove(key);
                 }
@@ -89,6 +94,8 @@ public class DynamicInputBase : TextInputBase
             {
                 foreach (var entry in AdditionalAttributes)
                 {
+                    if (entry.Key.StartsWith("on", StringComparison.OrdinalIgnoreCase) || SanitizeAttribute(entry.Key))
+                        continue;
                     to[entry.Key] = entry.Value;
                 }
             }

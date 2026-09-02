@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE1006 // Naming Styles
 
 using System.Collections.Concurrent;
 using Microsoft.JSInterop;
@@ -49,10 +49,9 @@ public abstract class UiComponentBase : ComponentBase
         return safeAttrs;
     }
 
-    static long renderIndex = 0;
-    static ConcurrentDictionary<long, Func<IJSRuntime, Task>> RenderActions = new();
+    readonly ConcurrentQueue<Func<IJSRuntime, Task>> renderActions = new();
     protected virtual void QueueRenderAction(Func<IJSRuntime, Task> action) =>
-        RenderActions[Interlocked.Increment(ref renderIndex)] = action;
+        renderActions.Enqueue(action);
 
     /// <summary>
     /// Set the document.title
@@ -67,19 +66,15 @@ public abstract class UiComponentBase : ComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var orderedKeys = RenderActions.Keys.OrderBy(x => x).ToList();
-        foreach (var key in orderedKeys)
+        while (renderActions.TryDequeue(out var action))
         {
-            if (RenderActions.TryRemove(key, out var action))
+            try
             {
-                try
-                {
-                    await action(JS);
-                }
-                catch (Exception e)
-                {
-                    BlazorUtils.LogError(e, "RenderAction in {0} failed: {1}", GetType().Name, e.Message);
-                }
+                await action(JS);
+            }
+            catch (Exception e)
+            {
+                BlazorUtils.LogError(e, "RenderAction in {0} failed: {1}", GetType().Name, e.Message);
             }
         }
         await base.OnAfterRenderAsync(firstRender);

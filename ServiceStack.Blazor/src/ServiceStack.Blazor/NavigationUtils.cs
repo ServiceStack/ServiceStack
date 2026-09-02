@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using System.Collections.Specialized;
 
@@ -14,10 +14,26 @@ public static class NavigationUtils
 
     public static string? QueryString(this NavigationManager nav, string key) => nav.QueryString()[key];
 
+    public static bool IsLocalUrl(this string? url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return false;
+
+        if (url[0] == '/')
+        {
+            if (url.Length == 1)
+                return true;
+
+            return url[1] != '/' && url[1] != '\\';
+        }
+
+        return false;
+    }
+
     public static string GetReturnUrl(this NavigationManager nav)
     {
         var returnUrl = nav.QueryString("return");
-        if (returnUrl == null || returnUrl.IsEmpty())
+        if (returnUrl == null || returnUrl.IsEmpty() || !returnUrl.IsLocalUrl())
             return "/";
         return returnUrl;
     }

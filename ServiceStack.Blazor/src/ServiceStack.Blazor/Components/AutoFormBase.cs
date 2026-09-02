@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using ServiceStack.Text;
 
@@ -34,6 +34,8 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
     [Parameter] public string ButtonsClass { get; set; } = CssDefaults.Form.ButtonsClass;
 
     [Parameter] public bool AutoSave { get; set; } = true;
+    public const long DefaultMaxFileSize = 50 * 1024 * 1024; // 50MB
+    public const int DefaultMaxAllowedFiles = 100;
 
     [Parameter] public EventCallback Done { get; set; }
     [Parameter] public EventCallback<Model> Save { get; set; }
@@ -105,8 +107,8 @@ public abstract class AutoFormBase<Model> : BlazorComponentBase
                             ? AppMetadata?.Plugins.FilesUpload.Locations.FirstOrDefault(x => x.Name == prop.UploadTo) 
                             : null;
 
-                        var maxAllowedFiles = uploadInfo?.MaxFileCount ?? int.MaxValue;
-                        var maxFileSize = uploadInfo?.MaxFileBytes ?? int.MaxValue;
+                        var maxAllowedFiles = uploadInfo?.MaxFileCount ?? DefaultMaxAllowedFiles;
+                        var maxFileSize = uploadInfo?.MaxFileBytes ?? DefaultMaxFileSize;
 
                         var browserFiles = e.GetMultipleFiles(maxAllowedFiles);
                         foreach (var file in browserFiles)

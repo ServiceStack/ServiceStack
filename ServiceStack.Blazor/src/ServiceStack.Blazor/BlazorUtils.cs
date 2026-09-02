@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
 using System.Diagnostics;
 using System.Security.AccessControl;
@@ -76,13 +76,13 @@ public static class BlazorUtils
                 return "[]";
 
             if (TextUtils.IsComplexType(first.GetType()))
-                return wrap(TextUtils.FormatJson(Value).HtmlEncode(), FormatValue(Value));
+                return wrap(TextUtils.FormatJson(Value), FormatValue(Value).HtmlEncode());
 
             foreach (var item in e)
             {
                 if (sb.Length > 0)
                     sb.Append(',');
-                sb.Append(TextUtils.GetScalarText(item));
+                sb.Append(TextUtils.GetScalarText(item).HtmlEncode());
             }
 
         }
@@ -98,13 +98,13 @@ public static class BlazorUtils
             if (sb.Length > 0)
                 sb.Append(", ");
 
-            sb.AppendLine($"<b class=\"font-medium\">{key}</b>: {str}");
+            sb.AppendLine($"<b class=\"font-medium\">{key.HtmlEncode()}</b>: {str}");
         }
         if (keys.Count > len)
             sb.AppendLine("...");
 
         var html = StringBuilderCache.ReturnAndFree(sb);
-        return wrap(TextUtils.FormatJson(Value).HtmlEncode(), "{ " + html + " }");
+        return wrap(TextUtils.FormatJson(Value), "{ " + html + " }");
     }
 
     public static bool SupportsProperty(MetadataPropertyType? prop)

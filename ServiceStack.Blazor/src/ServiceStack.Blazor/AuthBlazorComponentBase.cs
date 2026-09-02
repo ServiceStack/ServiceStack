@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Data;
 using System.Security.Claims;
@@ -44,11 +44,11 @@ public abstract class AuthBlazorComponentBase : BlazorComponentBase
         var roles = User.GetRoles();
         var permissions = User.GetPermissions();
 
-        if (op.RequiredRoles != null && op.RequiredRoles.All(role => roles.Contains(role)))
+        if (op.RequiredRoles != null && !op.RequiredRoles.All(role => roles.Contains(role)))
             return false;
         if (op.RequiresAnyRole?.Count > 0 && !op.RequiresAnyRole.Any(role => roles.Contains(role)))
             return false;
-        if (op.RequiredPermissions != null && op.RequiredPermissions.All(permission => permissions.Contains(permission)))
+        if (op.RequiredPermissions != null && !op.RequiredPermissions.All(permission => permissions.Contains(permission)))
             return false;
         if (op.RequiresAnyPermission?.Count > 0 && !op.RequiresAnyPermission.Any(permission => permissions.Contains(permission)))
             return false;
@@ -68,16 +68,16 @@ public abstract class AuthBlazorComponentBase : BlazorComponentBase
         var missingRoles = op.RequiredRoles?.Where(x => !roles.Contains(x)).ToArray() ?? Array.Empty<string>();
         if (missingRoles.Length > 0)
             return $"Requires {missingRoles.Map(x => $"<b>{x}</b>").Join(", ")} Role" + (missingRoles.Length > 1 ? "s" : "");
-        var missingPerms = op.RequiredPermissions?.Where(x => !roles.Contains(x)).ToArray() ?? Array.Empty<string>();
+        var missingPerms = op.RequiredPermissions?.Where(x => !permissions.Contains(x)).ToArray() ?? Array.Empty<string>();
         if (missingPerms.Length > 0)
             return $"Requires {missingPerms.Map(x => $"<b>{x}</b>").Join(", ")} Perm" + (missingPerms.Length > 1 ? "s" : "");
 
 
         if (op.RequiresAnyRole?.Count > 0 && !op.RequiresAnyRole.Any(role => roles.Contains(role)))
-            return $"Requires any ${op.RequiresAnyRole.Where(x => !roles.Contains(x)).Map(x => $"<b>{x}</b>").Join(", ")} Role"
+            return $"Requires any {op.RequiresAnyRole.Where(x => !roles.Contains(x)).Map(x => $"<b>{x}</b>").Join(", ")} Role"
                 + (missingRoles.Length > 1 ? "s" : "");
         if (op.RequiresAnyPermission?.Count > 0 && !op.RequiresAnyPermission.Any(perm => permissions.Contains(perm)))
-            return $"Requires any ${op.RequiresAnyPermission.Where(x => !permissions.Contains(x)).Map(x => $"<b>{x}</b>").Join(", ")} Permission"
+            return $"Requires any {op.RequiresAnyPermission.Where(x => !permissions.Contains(x)).Map(x => $"<b>{x}</b>").Join(", ")} Permission"
                 + (missingRoles.Length > 1 ? "s" : "");
 
         return null;

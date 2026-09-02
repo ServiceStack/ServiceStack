@@ -20,6 +20,7 @@ public class HtmlDumpOptions
     public string[]? Headers { get; set; }
 
     public string? Display { get; set; }
+    public int MaxDepth { get; set; } = 20;
     internal int Depth { get; set; }
     internal int ChildDepth { get; set; } = 1;
     internal bool HasCaption { get; set; }
@@ -65,6 +66,8 @@ public static class HtmlUtils
         var depth = options.Depth;
         var childDepth = options.ChildDepth;
         options.Depth += 1;
+        if (options.Depth > (options.MaxDepth > 0 ? options.MaxDepth : 20))
+            return "...";
 
         try
         {
@@ -78,7 +81,8 @@ public static class HtmlUtils
             var className = (depth < childDepth ? parentClass : childClass ?? parentClass) ?? TableClass;
 
             var headerStyle = options.HeaderStyle;
-            var headerTag = options.HeaderTag ?? "th";
+            var rawHeaderTag = options.HeaderTag ?? "th";
+            var headerTag = rawHeaderTag.Length > 0 && rawHeaderTag.All(char.IsLetterOrDigit) ? rawHeaderTag : "th";
 
             if (target is IEnumerable e)
             {
@@ -97,9 +101,9 @@ public static class HtmlUtils
                 sb.Append("<table");
 
                 if (options.Id != null)
-                    sb.Append(" id=\"").Append(options.Id).Append('"');
+                    sb.Append(" id=\"").Append(options.Id.HtmlEncode()).Append('"');
                 if (!string.IsNullOrEmpty(className))
-                    sb.Append(" class=\"").Append(className).Append('"');
+                    sb.Append(" class=\"").Append(className.HtmlEncode()).Append('"');
 
                 sb.Append('>');
 
@@ -216,6 +220,8 @@ public static class HtmlUtils
         var depth = options.Depth;
         var childDepth = options.ChildDepth;
         options.Depth += 1;
+        if (options.Depth > (options.MaxDepth > 0 ? options.MaxDepth : 20))
+            return "...";
 
         try
         {
@@ -224,7 +230,8 @@ public static class HtmlUtils
             var className = (depth < childDepth ? parentClass : childClass ?? parentClass) ?? TableClass;
 
             var headerStyle = options.HeaderStyle;
-            var headerTag = options.HeaderTag ?? "th";
+            var rawHeaderTag = options.HeaderTag ?? "th";
+            var headerTag = rawHeaderTag.Length > 0 && rawHeaderTag.All(char.IsLetterOrDigit) ? rawHeaderTag : "th";
 
             var sbHeader = StringBuilderCache.Allocate();
             var sbRows = StringBuilderCacheAlt.Allocate();
@@ -283,9 +290,9 @@ public static class HtmlUtils
             sb.Append("<table");
 
             if (options.Id != null)
-                sb.Append(" id=\"").Append(options.Id).Append('"');
+                sb.Append(" id=\"").Append(options.Id.HtmlEncode()).Append('"');
             if (!string.IsNullOrEmpty(className))
-                sb.Append(" class=\"").Append(className).Append('"');
+                sb.Append(" class=\"").Append(className.HtmlEncode()).Append('"');
 
             sb.Append('>');
 
