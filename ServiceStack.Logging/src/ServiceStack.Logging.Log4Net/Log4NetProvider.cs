@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+#if !NET472
 
 using System.Collections.Concurrent;
 using System.IO;
@@ -64,7 +64,7 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="log4NetConfigFile">the file uri.</param>
         private static void Parselog4NetConfigFile(string log4NetConfigFile)
         {
-            ILoggerRepository rootRepository = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly());
+            ILoggerRepository rootRepository = log4net.LogManager.GetRepository(Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly());
 
             if (File.Exists(log4NetConfigFile))
                 log4net.Config.XmlConfigurator.ConfigureAndWatch(rootRepository, new FileInfo(log4NetConfigFile));

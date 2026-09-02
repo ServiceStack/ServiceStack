@@ -1,9 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <PackageId>ServiceStack.Logging.Slack</PackageId>
     <AssemblyName>ServiceStack.Logging.Slack</AssemblyName>
-    <TargetFrameworks>net472;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net472;net6.0;net8.0;net10.0</TargetFrameworks>
     <Title>ServiceStack.Logging.Slack</Title>
     <PackageDescription>
       Provides Slack logging integration for other ServiceStack projects

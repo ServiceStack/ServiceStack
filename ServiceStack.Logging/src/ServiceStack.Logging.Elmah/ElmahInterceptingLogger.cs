@@ -19,7 +19,7 @@ namespace ServiceStack.Logging.Elmah
         /// </remarks>
         /// <exception cref="ArgumentNullException">	Thrown when either the wrapped ILog or Elmah ErrorLog are null. </exception>
         /// <param name="log">	   	The underlying log to write to. </param>
-        /// <param name=application"> The application to signal with the errors </param>
+        /// <param name="application"> The application to signal with the errors </param>
         public ElmahInterceptingLogger(ILog log, HttpApplication application)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
@@ -41,44 +41,79 @@ namespace ServiceStack.Logging.Elmah
             log.DebugFormat(format, args);
         }
 
+        private void RaiseError(Exception exception)
+        {
+            if (exception == null)
+                return;
+
+            try
+            {
+                var signal = ErrorSignal.Get(application);
+                signal?.Raise(exception);
+            }
+            catch
+            {
+                // Elmah signal failures should not prevent underlying logging
+            }
+        }
+
+        private void RaiseError(object message)
+        {
+            var str = message?.ToString() ?? "(null)";
+            RaiseError(new System.ApplicationException(str));
+        }
+
+        private void RaiseError(string format, params object[] args)
+        {
+            try
+            {
+                var str = string.Format(format, args);
+                RaiseError(new System.ApplicationException(str));
+            }
+            catch (Exception ex)
+            {
+                RaiseError(ex);
+            }
+        }
+
         public void Error(object message, Exception exception)
         {
-            ErrorSignal.Get(application).Raise(exception);
+            RaiseError(exception ?? new System.ApplicationException(message?.ToString() ?? "(null)"));
 
             log.Error(message, exception);
         }
 
         public void Error(object message)
         {
-            ErrorSignal.Get(application).Raise(new System.ApplicationException(message.ToString()));
+            RaiseError(message);
 
             log.Error(message);
         }
 
         public void ErrorFormat(string format, params object[] args)
         {
-            ErrorSignal.Get(application).Raise(new System.ApplicationException(string.Format(format, args)));
+            RaiseError(format, args);
 
             log.ErrorFormat(format, args);
         }
 
         public void Fatal(object message, Exception exception)
         {
-            ErrorSignal.Get(application).Raise(exception);
+            RaiseError(exception ?? new System.ApplicationException(message?.ToString() ?? "(null)"));
 
             log.Fatal(message, exception);
         }
 
         public void Fatal(object message)
         {
-            ErrorSignal.Get(application).Raise(new System.ApplicationException(message.ToString()));
+            RaiseError(message);
 
             log.Fatal(message);
         }
 
         public void FatalFormat(string format, params object[] args)
         {
-            ErrorSignal.Get(application).Raise(new System.ApplicationException(string.Format(format, args)));
+            RaiseError(format, args);
 
             log.FatalFormat(format, args);
         }

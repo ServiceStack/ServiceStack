@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Serilog;
 using Serilog.Events;
 
@@ -246,25 +246,37 @@ namespace ServiceStack.Logging.Serilog
 
         private static Func<string, object, bool, IDisposable> GetPushProperty()
         {
-            Type ndcContextType = Type.GetType("Serilog.Context.LogContext, Serilog") ??
-                                  Type.GetType("Serilog.Context.LogContext, Serilog.FullNetFx");
+            try
+            {
+                Type ndcContextType = Type.GetType("Serilog.Context.LogContext, Serilog") ??
+                                      Type.GetType("Serilog.Context.LogContext, Serilog.FullNetFx");
 
-            var pushPropertyMethod = ndcContextType.GetMethod("PushProperty", new[] { typeof(string), typeof(object), typeof(bool) });
+                if (ndcContextType == null)
+                    return (key, value, destructure) => null;
 
-            var nameParam = System.Linq.Expressions.Expression.Parameter(typeof(string), "name");
-            var valueParam = System.Linq.Expressions.Expression.Parameter(typeof(object), "value");
-            var destructureObjectParam = System.Linq.Expressions.Expression.Parameter(typeof(bool), "destructureObjects");
-            var pushPropertyMethodCall = System.Linq.Expressions.Expression
-                .Call(null, pushPropertyMethod, nameParam, valueParam, destructureObjectParam);
-            var pushProperty = System.Linq.Expressions.Expression
-                .Lambda<Func<string, object, bool, IDisposable>>(
-                    pushPropertyMethodCall,
-                    nameParam,
-                    valueParam,
-                    destructureObjectParam)
-                .Compile();
+                var pushPropertyMethod = ndcContextType.GetMethod("PushProperty", new[] { typeof(string), typeof(object), typeof(bool) });
+                if (pushPropertyMethod == null)
+                    return (key, value, destructure) => null;
 
-            return (key, value, destructure) => pushProperty(key, value, destructure);
+                var nameParam = System.Linq.Expressions.Expression.Parameter(typeof(string), "name");
+                var valueParam = System.Linq.Expressions.Expression.Parameter(typeof(object), "value");
+                var destructureObjectParam = System.Linq.Expressions.Expression.Parameter(typeof(bool), "destructureObjects");
+                var pushPropertyMethodCall = System.Linq.Expressions.Expression
+                    .Call(null, pushPropertyMethod, nameParam, valueParam, destructureObjectParam);
+                var pushProperty = System.Linq.Expressions.Expression
+                    .Lambda<Func<string, object, bool, IDisposable>>(
+                        pushPropertyMethodCall,
+                        nameParam,
+                        valueParam,
+                        destructureObjectParam)
+                    .Compile();
+
+                return (key, value, destructure) => pushProperty(key, value, destructure);
+            }
+            catch
+            {
+                return (key, value, destructure) => null;
+            }
         }
 
         /// <summary>
@@ -338,6 +350,12 @@ namespace ServiceStack.Logging.Serilog
 
         private void Write(LogEventLevel level, object message)
         {
+            if (message == null)
+            {
+                log.Write(level, string.Empty);
+                return;
+            }
+
             if (message is string messageTemplate)
             {
                 log.Write(level, messageTemplate);
@@ -355,6 +373,15 @@ namespace ServiceStack.Logging.Serilog
 
         private void Write(LogEventLevel level, object message, Exception exception)
         {
+            if (message == null)
+            {
+                if (exception != null)
+                    log.Write(level, exception, string.Empty);
+                else
+                    log.Write(level, string.Empty);
+                return;
+            }
+
             if (message is string messageTemplate)
             {
                 log.Write(level, exception, messageTemplate);

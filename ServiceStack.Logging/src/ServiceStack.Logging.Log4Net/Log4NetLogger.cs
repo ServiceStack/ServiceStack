@@ -9,7 +9,7 @@ namespace ServiceStack.Logging.Log4Net
     {
         private readonly log4net.ILog log;
         
-#if !NETSTANDARD2_0            
+#if NET472            
         public Log4NetLogger(string typeName)
         {
             log = log4net.LogManager.GetLogger(typeName);

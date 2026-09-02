@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using ServiceStack.Text;
 
@@ -68,6 +68,9 @@ namespace ServiceStack.Logging.Slack
 
         public SlackLog(string incomingWebHookUrl, bool debugEnabled = false)
         {
+            if (incomingWebHookUrl != null && incomingWebHookUrl.StartsWith("http://hooks.slack.com", StringComparison.OrdinalIgnoreCase))
+                incomingWebHookUrl = "https://" + incomingWebHookUrl.Substring(7);
+
             this.incomingWebHookUrl = incomingWebHookUrl;
             this.debugEnabled = debugEnabled;
             // Init from DefaultChannel
@@ -80,11 +83,21 @@ namespace ServiceStack.Logging.Slack
 
         private void LogMessage(SlackLoggingData message)
         {
-            using (JsConfig.With(propertyConvention: PropertyConvention.Lenient,
-                emitLowercaseUnderscoreNames: true,
-                emitCamelCaseNames: false))
+            try
             {
-                incomingWebHookUrl.PostJsonToUrlAsync(message);
+                using (JsConfig.With(propertyConvention: PropertyConvention.Lenient,
+                    emitLowercaseUnderscoreNames: true,
+                    emitCamelCaseNames: false))
+                {
+                    var task = incomingWebHookUrl.PostJsonToUrlAsync(message);
+                    task?.ContinueWith(t => {
+                        var _ = t.Exception;
+                    }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnFaulted);
+                }
+            }
+            catch
+            {
+                // Logging failures should not crash callers
             }
         }
 
@@ -112,7 +125,8 @@ namespace ServiceStack.Logging.Slack
             sb.Append(message);
             if (execption != null)
                 sb.Append(NewLine);
-            while (execption != null)
+            int depth = 0;
+            while (execption != null && depth++ < 20)
             {
                 sb.Append("Message: ").Append(execption.Message).Append(NewLine)
                     .Append("Source: ").Append(execption.Source).Append(NewLine)

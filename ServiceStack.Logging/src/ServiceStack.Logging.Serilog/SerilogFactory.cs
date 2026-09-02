@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Serilog;
 
 namespace ServiceStack.Logging.Serilog
@@ -28,6 +28,9 @@ namespace ServiceStack.Logging.Serilog
         /// <returns></returns>
         public ILog GetLogger(Type type)
         {
+            if (type == null)
+                return GetLogger(typeof(object));
+
             return logger != null
                 ? new SerilogLogger(logger.ForContext(type))
                 : new SerilogLogger(type);
@@ -40,7 +43,16 @@ namespace ServiceStack.Logging.Serilog
         /// <returns></returns>
         public ILog GetLogger(string typeName)
         {
-            return GetLogger(Type.GetType(typeName));
+            if (string.IsNullOrEmpty(typeName))
+                return GetLogger(typeof(object));
+
+            var type = Type.GetType(typeName);
+            if (type != null)
+                return GetLogger(type);
+
+            return logger != null
+                ? new SerilogLogger(logger.ForContext("SourceContext", typeName))
+                : new SerilogLogger(Log.ForContext("SourceContext", typeName));
         }
     }
 }

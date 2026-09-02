@@ -44,6 +44,8 @@ namespace ServiceStack.Logging.EventLog
             Write(message, null, eventLogType);
         }
 
+        private const int MaxEventLogEntryLength = 31839;
+
         /// <summary>
         /// Writes the specified message.
         /// </summary>
@@ -52,28 +54,48 @@ namespace ServiceStack.Logging.EventLog
         /// <param name="eventLogType">Type of the event log.</param>
         private void Write(object message, Exception exeception, EventLogEntryType eventLogType)
         {
-            var sb = new StringBuilder();
-
-            System.Diagnostics.EventLog eventLogger = new System.Diagnostics.EventLog();
-            if (!System.Diagnostics.EventLog.SourceExists(eventLogSource))
+            try
             {
-                System.Diagnostics.EventLog.CreateEventSource(eventLogSource, eventLogName);
-            }
+                try
+                {
+                    if (!System.Diagnostics.EventLog.SourceExists(eventLogSource))
+                    {
+                        System.Diagnostics.EventLog.CreateEventSource(eventLogSource, eventLogName);
+                    }
+                }
+                catch
+                {
+                    // Ignore security/privilege exceptions when checking or creating event sources
+                }
 
-            sb.Append(message).Append(NEW_LINE);
-            while (exeception != null)
+                var sb = new StringBuilder();
+                sb.Append(message).Append(NEW_LINE);
+                int depth = 0;
+                while (exeception != null && depth++ < 20)
+                {
+                    sb.Append("Message: ").Append(exeception.Message).Append(NEW_LINE)
+                    .Append("Source: ").Append(exeception.Source).Append(NEW_LINE)
+                    .Append("Target site: ").Append(exeception.TargetSite).Append(NEW_LINE)
+                    .Append("Stack trace: ").Append(exeception.StackTrace).Append(NEW_LINE);
+
+                    // Walk the InnerException tree
+                    exeception = exeception.InnerException;
+                }
+
+                var entryText = string.Format(ERROR_MSG, eventLogName, sb);
+                if (entryText.Length > MaxEventLogEntryLength)
+                    entryText = entryText.Substring(0, MaxEventLogEntryLength);
+
+                using (var eventLogger = new System.Diagnostics.EventLog())
+                {
+                    eventLogger.Source = eventLogSource;
+                    eventLogger.WriteEntry(entryText, eventLogType);
+                }
+            }
+            catch
             {
-                sb.Append("Message: ").Append(exeception.Message).Append(NEW_LINE)
-                .Append("Source: ").Append(exeception.Source).Append(NEW_LINE)
-                .Append("Target site: ").Append(exeception.TargetSite).Append(NEW_LINE)
-                .Append("Stack trace: ").Append(exeception.StackTrace).Append(NEW_LINE);
-
-                // Walk the InnerException tree
-                exeception = exeception.InnerException;
+                // Logging failures should not crash callers
             }
-
-            eventLogger.Source = eventLogSource;
-            eventLogger.WriteEntry(String.Format(ERROR_MSG, eventLogName, sb), eventLogType);
         }
 
         /// <summary>

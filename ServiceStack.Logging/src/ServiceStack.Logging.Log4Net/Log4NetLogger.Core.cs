@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+#if !NET472
 
 using Microsoft.Extensions.Logging;
 using System;
@@ -8,7 +8,7 @@ namespace ServiceStack.Logging.Log4Net
 {
     public partial class Log4NetLogger : ILogger
     {
-        private Assembly mainAssembly = Assembly.GetEntryAssembly();
+        private Assembly mainAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
 
         public Log4NetLogger(string name)
         {
