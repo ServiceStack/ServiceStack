@@ -37,7 +37,7 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
             var schema = metadata.CreateSchema(type, allTypes: dtos);
             if (schema != null)
             {
-                swaggerDoc.Components.Schemas[OpenApiMetadata.GetSchemaTypeName(type)] = schema;
+                swaggerDoc.Components.Schemas[OpenApiMetadata.GetSchemaDefinitionRef(type)] = schema;
             }
         }
     }

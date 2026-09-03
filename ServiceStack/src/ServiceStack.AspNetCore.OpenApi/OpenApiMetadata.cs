@@ -1,7 +1,8 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -142,7 +143,7 @@ public class OpenApiMetadata
     };
 
     public ConcurrentDictionary<string, OpenApiSchema> Schemas { get; } = new();
-    internal static List<string> InlineSchemaTypesInNamespaces { get; set; } = new();
+    public List<string> InlineSchemaTypesInNamespaces { get; set; } = new();
     
     public OpenApiSecurityScheme? SecurityDefinition { get; set; }
     public OpenApiSecurityRequirement? SecurityRequirement { get; set; }
@@ -200,13 +201,13 @@ public class OpenApiMetadata
                 var inPaths = new List<string>();
                 foreach (var entry in openApiType.Properties)
                 {
-                    var inPath = route.Contains("{" + entry.Key + "}", StringComparison.OrdinalIgnoreCase);
+                    var inPath = route.Contains("{" + entry.Key + "}", StringComparison.OrdinalIgnoreCase)
+                        || route.Contains("{" + entry.Key + "*", StringComparison.OrdinalIgnoreCase)
+                        || route.Contains("{" + entry.Key + ":", StringComparison.OrdinalIgnoreCase);
                     if (inPath)
                     {
-                        var propNameUsed = route.Contains("{" + entry.Key + "}")
-                            ? entry.Key
-                            : TypeProperties.Get(operation.RequestType).GetPublicProperty(entry.Key)?.Name
-                              ?? throw new ArgumentException($"Could not find property '{entry.Key}' for route '{route}' in Request {operation.RequestType.Name}");
+                        var propNameUsed = TypeProperties.Get(operation.RequestType).GetPublicProperty(entry.Key)?.Name
+                            ?? entry.Key;
                         inPaths.Add(entry.Key);
                         OpenApiSchema? prop = entry.Value;
                         op.Parameters.Add(new OpenApiParameter
@@ -464,7 +465,9 @@ public class OpenApiMetadata
             if (hasDataContract && attr == null)
                 continue;
 
-            var inPath = route.Contains("{" + propertyName + "}", StringComparison.OrdinalIgnoreCase);
+            var inPath = route.Contains("{" + propertyName + "}", StringComparison.OrdinalIgnoreCase)
+                || route.Contains("{" + propertyName + "*", StringComparison.OrdinalIgnoreCase)
+                || route.Contains("{" + propertyName + ":", StringComparison.OrdinalIgnoreCase);
             var paramLocation = inPath
                 ? ParameterLocation.Path
                 : ParameterLocation.Query;
@@ -636,7 +639,10 @@ public class OpenApiMetadata
         return parameter;
     }
 
-    private static string GetSchemaDefinitionRef(Type schemaType) => GetSchemaTypeName(schemaType);
+    private static readonly Regex schemaRefRegex = new("[^A-Za-z0-9\\.\\-_]", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+    public static string GetSchemaDefinitionRef(Type schemaType) =>
+        schemaRefRegex.Replace(GetSchemaTypeName(schemaType), "_");
 
     private OpenApiSchema GetOpenApiProperty(PropertyInfo pi)
     {
@@ -1010,21 +1016,23 @@ public class OpenApiMetadata
 
         var responseSchema = GetResponseSchema(restPath, out string schemaDescription);
         //schema is null when return type is IReturnVoid
-        var statusCode = responseSchema == null && HostConfig.Instance.Return204NoContentForEmptyResponse
+        var return204 = HostContext.Config?.Return204NoContentForEmptyResponse == true;
+        var statusCode = responseSchema == null && return204
             ? ((int)HttpStatusCode.NoContent).ToString()
             : ((int)HttpStatusCode.OK).ToString();
 
-        responses.Add(statusCode, new OpenApiResponse
+        var okResponse = new OpenApiResponse
         {
-            Content =
-            {
-                [MimeTypes.Json] = new OpenApiMediaType
-                {
-                    Schema = responseSchema,
-                }
-            },
             Description = !string.IsNullOrEmpty(schemaDescription) ? schemaDescription : "Success"
-        });
+        };
+        if (responseSchema != null && statusCode != "204")
+        {
+            okResponse.Content[MimeTypes.Json] = new OpenApiMediaType
+            {
+                Schema = responseSchema,
+            };
+        }
+        responses.Add(statusCode, okResponse);
 
         foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())
         {

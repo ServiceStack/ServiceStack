@@ -28,11 +28,14 @@ public static class ServiceStackOpenApiExtensions
         });
     }
 
-    public static void AddSwagger(this ServiceStackServicesOptions options, Action<OpenApiMetadata>? configure = null)
-    {
-        configure?.Invoke(OpenApiMetadata.Instance);
+    public static void AddSwagger(this ServiceStackServicesOptions options, Action<OpenApiMetadata>? configure = null) =>
+        options.AddSwagger(OpenApiMetadata.Instance, configure);
 
-        options.Services!.AddSingleton(OpenApiMetadata.Instance);
+    public static void AddSwagger(this ServiceStackServicesOptions options, OpenApiMetadata metadata, Action<OpenApiMetadata>? configure = null)
+    {
+        configure?.Invoke(metadata);
+
+        options.Services!.AddSingleton(metadata);
         options.Services!.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
         options.Services!.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
         
@@ -41,12 +44,15 @@ public static class ServiceStackOpenApiExtensions
         });
     }
 
-    public static void AddServiceStackSwagger(this IServiceCollection services, Action<OpenApiMetadata>? configure = null)
+    public static void AddServiceStackSwagger(this IServiceCollection services, Action<OpenApiMetadata>? configure = null) =>
+        services.AddServiceStackSwagger(OpenApiMetadata.Instance, configure);
+
+    public static void AddServiceStackSwagger(this IServiceCollection services, OpenApiMetadata metadata, Action<OpenApiMetadata>? configure = null)
     {
         try
         {
-            configure?.Invoke(OpenApiMetadata.Instance);
-            services.AddSingleton(OpenApiMetadata.Instance);
+            configure?.Invoke(metadata);
+            services.AddSingleton(metadata);
             services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
             services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
         
