@@ -690,7 +690,7 @@ namespace ServiceStack.Server.Tests.Auth
     {
         public const string ListeningOn = "http://localhost:2337/";
 
-        protected readonly ServiceStackHost appHost;
+        protected ServiceStackHost appHost;
         protected string ApiKey;
         protected string ApiKeyTest;
         protected string ApiKeyWithRole;
@@ -708,7 +708,8 @@ namespace ServiceStack.Server.Tests.Auth
             };
         }
 
-        public StatelessAuthTests()
+        [OneTimeSetUp]
+        public virtual void OneTimeSetUp()
         {
             //LogManager.LogFactory = new ConsoleLogFactory();
             appHost = CreateAppHost()
@@ -945,7 +946,7 @@ namespace ServiceStack.Server.Tests.Auth
             catch (WebServiceException ex)
             {
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("NotFound"));
-                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("ApiKey does not exist"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("API Key does not exist"));
                 Assert.That(ex.ResponseStatus.StackTrace, Is.Not.Null);
             }
         }

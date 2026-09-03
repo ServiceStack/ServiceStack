@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Data;
@@ -16,12 +16,13 @@ namespace ServiceStack.Server.Tests.Auth
     {
         public const string ListeningOn = "http://localhost:2337/";
 
-        protected readonly ServiceStackHost appHost;
+        protected ServiceStackHost appHost;
         protected string ApiKey;
         public const string Username = "user";
         public const string Password = "p@55word";
 
-        protected StatelessAuthRazorTests()
+        [OneTimeSetUp]
+        public virtual void OneTimeSetUp()
         {
             appHost = CreateAppHost()
                .Init()
