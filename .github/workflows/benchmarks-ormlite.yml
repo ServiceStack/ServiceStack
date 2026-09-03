@@ -20,7 +20,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
+        image: mcr.microsoft.com/mssql/server:2025-latest
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: p@55wOrd
