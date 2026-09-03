@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -53,6 +53,9 @@ namespace ServiceStack.Api.OpenApi
 
         public object Get(OpenApiSpecification request)
         {
+            var feature = HostContext.GetPlugin<OpenApiFeature>();
+            var resourceFilter = feature?.ResourceFilterRegex ?? ResourceFilterRegex;
+
             var map = HostContext.ServiceController.RestPathMap;
             var paths = new List<RestPath>();
 
@@ -64,6 +67,10 @@ namespace ServiceStack.Api.OpenApi
             {
                 var restPaths = map[key];
                 var visiblePaths = restPaths.Where(x => meta.IsVisible(Request, Format.Json, x.RequestType.Name));
+                if (resourceFilter != null)
+                {
+                    visiblePaths = visiblePaths.Where(x => resourceFilter.IsMatch(x.RequestType.Name) || resourceFilter.IsMatch(x.Path));
+                }
                 paths.AddRange(visiblePaths);
             }
 
@@ -96,30 +103,33 @@ namespace ServiceStack.Api.OpenApi
                 Definitions = definitions.Where(x => !SchemaIdToClrType.ContainsKey(x.Key) || !IsInlineSchema(SchemaIdToClrType[x.Key])).ToDictionary(x => x.Key, x => x.Value),
                 Tags = tags.Values.OrderBy(x => x.Name).ToList(),
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
-                SecurityDefinitions = SecurityDefinitions,
+                SecurityDefinitions = feature?.SecurityDefinitions ?? SecurityDefinitions,
             };
 
-            if (SchemaFilter != null)
+            var schemaFilter = feature?.SchemaFilter ?? SchemaFilter;
+            if (schemaFilter != null)
             {
                 result.Parameters.Each(x => {
                     if (x.Value.Schema != null)
-                        SchemaFilter(x.Value.Schema);
+                        schemaFilter(x.Value.Schema);
                 });
                 result.Definitions.Each(x => {
                     if (x.Value.AllOf != null)
-                        SchemaFilter(x.Value.AllOf);
-                    SchemaFilter(x.Value);
+                        schemaFilter(x.Value.AllOf);
+                    schemaFilter(x.Value);
                 });
-                result.Responses.Each(x => {
+                result.Responses?.Each(x => {
                     if (x.Value.Schema != null)
-                        SchemaFilter(x.Value.Schema);
+                        schemaFilter(x.Value.Schema);
                 });
             }
 
-            if (OperationFilter != null)
-                apiPaths.Each(x => GetOperations(x.Value).Each(o => OperationFilter(o.Item1, o.Item2)));
+            var opFilter = feature?.OperationFilter ?? OperationFilter;
+            if (opFilter != null)
+                apiPaths.Each(x => GetOperations(x.Value).Each(o => opFilter(o.Item1, o.Item2)));
 
-            ApiDeclarationFilter?.Invoke(result);
+            var apiDeclFilter = feature?.ApiDeclarationFilter ?? ApiDeclarationFilter;
+            apiDeclFilter?.Invoke(result);
 
             return new HttpResult(result)
             {
@@ -376,7 +386,7 @@ namespace ServiceStack.Api.OpenApi
                 if (IsInlineSchema(propertyType))
                 {
                     ParseDefinitions(schemas, propertyType, route, verb);
-                    InlineSchema(schemas[GetSchemaTypeName(propertyType)], schemaProp);
+                    InlineSchema(schemas[GetSchemaDefinitionRef(propertyType)], schemaProp);
                 }
                 else
                 {
@@ -405,7 +415,7 @@ namespace ServiceStack.Api.OpenApi
                 else if (IsInlineSchema(listItemType))
                 {
                     ParseDefinitions(schemas, listItemType, route, verb);
-                    InlineSchema(schemas[GetSchemaTypeName(listItemType)], schemaProp);
+                    InlineSchema(schemas[GetSchemaDefinitionRef(listItemType)], schemaProp);
                 }
                 else
                 {
@@ -439,7 +449,7 @@ namespace ServiceStack.Api.OpenApi
             else if (IsInlineSchema(propertyType))
             {
                 ParseDefinitions(schemas, propertyType, route, verb);
-                InlineSchema(schemas[GetSchemaTypeName(propertyType)], schemaProp);
+                InlineSchema(schemas[GetSchemaDefinitionRef(propertyType)], schemaProp);
             }
             else
             {
@@ -489,14 +499,17 @@ namespace ServiceStack.Api.OpenApi
 
         protected bool IsInlineSchema(Type schemaType)
         {
-            return InlineSchemaTypesInNamespaces.Contains(schemaType.Namespace);
+            var namespaces = HostContext.GetPlugin<OpenApiFeature>()?.InlineSchemaTypesInNamespaces?.ToArray()
+                ?? InlineSchemaTypesInNamespaces;
+            return namespaces != null && namespaces.Contains(schemaType.Namespace);
         }
 
         public Dictionary<string, Type> SchemaIdToClrType { get; } = new();
         
         private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
         {
-            if (IgnoreRequest(schemaType)) return;
+            var ignoreRequest = HostContext.GetPlugin<OpenApiFeature>()?.IgnoreRequest ?? IgnoreRequest;
+            if (ignoreRequest != null && ignoreRequest(schemaType)) return;
             if (IsSwaggerScalarType(schemaType) || schemaType.ExcludesFeature(Feature.Metadata)) return;
 
             var schemaId = GetSchemaDefinitionRef(schemaType);
@@ -591,7 +604,8 @@ namespace ServiceStack.Api.OpenApi
 
                     schemaProperty.Enum = GetEnumValues(prop.FirstAttribute<ApiAllowableValuesAttribute>());
 
-                    SchemaPropertyFilter?.Invoke(schemaProperty);
+                    var schemaPropFilter = HostContext.GetPlugin<OpenApiFeature>()?.SchemaPropertyFilter ?? SchemaPropertyFilter;
+                    schemaPropFilter?.Invoke(schemaProperty);
 
                     schema.Properties[schemaPropertyName] = schemaProperty;
                 }
@@ -604,8 +618,12 @@ namespace ServiceStack.Api.OpenApi
             if (dataMemberAttr != null && !dataMemberAttr.Name.IsNullOrEmpty())
                 return dataMemberAttr.Name;
 
-            return UseCamelCaseSchemaPropertyNames
-                ? (UseLowercaseUnderscoreSchemaPropertyNames ? prop.Name.ToLowercaseUnderscore() : prop.Name.ToCamelCase())
+            var feature = HostContext.GetPlugin<OpenApiFeature>();
+            var useCamelCase = feature?.UseCamelCaseSchemaPropertyNames ?? UseCamelCaseSchemaPropertyNames;
+            var useLowercaseUnderscore = feature?.UseLowercaseUnderscoreSchemaPropertyNames ?? UseLowercaseUnderscoreSchemaPropertyNames;
+
+            return useCamelCase
+                ? (useLowercaseUnderscore ? prop.Name.ToLowercaseUnderscore() : prop.Name.ToCamelCase())
                 : prop.Name;
         }
 
@@ -658,7 +676,7 @@ namespace ServiceStack.Api.OpenApi
                         Format = GetSwaggerTypeFormat(schemaType)
                     }
                 : IsInlineSchema(schemaType)
-                    ? schemas[GetSchemaTypeName(schemaType)]
+                    ? schemas[GetSchemaDefinitionRef(schemaType)]
                     : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaDefinitionRef(schemaType) });
 
             schemaDescription = schema.Description ?? schemaType.GetDescription() ?? string.Empty;
@@ -714,8 +732,9 @@ namespace ServiceStack.Api.OpenApi
                 var verbs = new List<string>();
                 var summary = restPath.Summary ?? restPath.RequestType.GetDescription();
 
+                var anyVerbs = feature?.AnyRouteVerbs?.ToArray() ?? AnyRouteVerbs;
                 verbs.AddRange(restPath.AllowsAllVerbs
-                    ? AnyRouteVerbs
+                    ? anyVerbs
                     : restPath.Verbs);
 
                 var routePath = restPath.Path.Replace("*", "");
@@ -738,6 +757,7 @@ namespace ServiceStack.Api.OpenApi
                 {
                     var needAuth = op.RequiresAuthentication;
                     var userTags = annotatingTagAttributes.Select(x => x.Name).ToList();
+                    var opSecurity = feature?.OperationSecurity ?? OperationSecurity;
 
                     var operation = new OpenApiOperation
                     {
@@ -751,7 +771,7 @@ namespace ServiceStack.Api.OpenApi
                         Produces = [MimeTypes.Json],
                         Tags = userTags.Count > 0 ? userTags : GetTags(restPath.Path),
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
-                        Security = needAuth ? [OperationSecurity] : null
+                        Security = needAuth && opSecurity != null ? [opSecurity] : null
                     };
 
                     if (HasFormData(verb, operation.Parameters))
@@ -789,8 +809,9 @@ namespace ServiceStack.Api.OpenApi
             if (verb != HttpMethods.Post && verb != HttpMethods.Put)
                 return false;
 
+            var disableAutoDto = HostContext.GetPlugin<OpenApiFeature>()?.DisableAutoDtoInBodyParam ?? DisableAutoDtoInBodyParam;
             if (apiAttr?.BodyParameter == GenerateBodyParameter.Always
-                || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParameter != GenerateBodyParameter.Never))
+                || (!disableAutoDto && apiAttr?.BodyParameter != GenerateBodyParameter.Never))
                 return false;
 
             return true;
@@ -884,7 +905,11 @@ namespace ServiceStack.Api.OpenApi
                 if (hasDataContract && attr == null)
                     continue;
 
-                var inPath = (route ?? "").ToLowerInvariant().Contains("{" + propertyName.ToLowerInvariant() + "}");
+                var routeLower = (route ?? "").ToLowerInvariant();
+                var propNameLower = propertyName.ToLowerInvariant();
+                var inPath = routeLower.Contains("{" + propNameLower + "}")
+                    || routeLower.Contains("{" + propNameLower + "*")
+                    || routeLower.Contains("{" + propNameLower + ":");
                 var paramType = inPath
                     ? "path"
                     : IsFormData(verb, apiAttr) ? "formData" : "query";
@@ -938,8 +963,9 @@ namespace ServiceStack.Api.OpenApi
                 }
             }
 
+            var disableAutoDto = HostContext.GetPlugin<OpenApiFeature>()?.DisableAutoDtoInBodyParam ?? DisableAutoDtoInBodyParam;
             if (apiAttr?.BodyParameter == GenerateBodyParameter.Always
-                || (!DisableAutoDtoInBodyParam && apiAttr?.BodyParameter != GenerateBodyParameter.Never))
+                || (!disableAutoDto && apiAttr?.BodyParameter != GenerateBodyParameter.Never))
             {
                 if (!HttpMethods.Get.EqualsIgnoreCase(verb) && !HttpMethods.Delete.EqualsIgnoreCase(verb)
                     && !methodOperationParameters.Any(p => "body".EqualsIgnoreCase(p.In)))
@@ -1009,11 +1035,11 @@ namespace ServiceStack.Api.OpenApi
 
             if (IsInlineSchema(schemaType))
             {
-                openApiSchema = schemas[GetSchemaTypeName(schemaType)];
+                openApiSchema = schemas[GetSchemaDefinitionRef(schemaType)];
             }
             else
             {
-                openApiSchema = new OpenApiSchema {Ref = "#/definitions/" + GetSchemaTypeName(schemaType)};
+                openApiSchema = new OpenApiSchema {Ref = "#/definitions/" + GetSchemaDefinitionRef(schemaType)};
             }
 
             return new OpenApiParameter

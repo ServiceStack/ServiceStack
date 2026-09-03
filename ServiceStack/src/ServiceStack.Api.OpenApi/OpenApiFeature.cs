@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -100,10 +100,15 @@ namespace ServiceStack.Api.OpenApi
             }
         }
 
+        public Regex ResourceFilterRegex { get; set; }
+
         public void Register(IAppHost appHost)
         {
             if (ResourceFilterPattern != null)
-                OpenApiService.ResourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
+            {
+                ResourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+                OpenApiService.ResourceFilterRegex = ResourceFilterRegex;
+            }
 
             if (SecurityDefinitions == null && OperationSecurity == null)
             {
@@ -161,33 +166,62 @@ namespace ServiceStack.Api.OpenApi
                         {
                             res.ContentType = MimeTypes.HtmlUtf8; //use alt HTML ContentType so it's not overridden when Feature.Html is removed
                             var resourcesUrl = req.ResolveAbsoluteUrl("~/openapi");
-                            html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
-                                .Replace("ApiDocs", HostContext.ServiceName)
-                                .Replace("<span class=\"logo__title\">swagger</span>", $"<span class=\"logo__title\">{HostContext.ServiceName}</span>")
-                                .Replace("http://swagger.io", LogoHref ?? "./");
+                            var serviceName = HostContext.ServiceName?.HtmlEncode() ?? "";
+                            var logoHref = SanitizeUrl(LogoHref, "./");
+                            var logoUrl = SanitizeImageUrl(LogoUrl);
 
-                            if (LogoUrl != null)
-                                html = html.Replace("images/logo_small.png", LogoUrl);
+                            var pageHtml = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
+                                .Replace("ApiDocs", serviceName)
+                                .Replace("<span class=\"logo__title\">swagger</span>", $"<span class=\"logo__title\">{serviceName}</span>")
+                                .Replace("http://swagger.io", logoHref);
+
+                            if (logoUrl != null)
+                                pageHtml = pageHtml.Replace("images/logo_small.png", logoUrl);
 
                             if (injectPreloadJs != null)
                             {
-                                html = html.Replace("window.swaggerUi.load();", injectPreloadJs + "\n\n      window.swaggerUi.load();");
+                                pageHtml = pageHtml.Replace("window.swaggerUi.load();", injectPreloadJs + "\n\n      window.swaggerUi.load();");
                             }
 
                             if (injectJs != null)
                             {
-                                html = html.Replace("</body>",
+                                pageHtml = pageHtml.Replace("</body>",
                                     "<script type='text/javascript'>" + injectJs + "</script></body>");
                             }
 
-                            return html;
+                            return pageHtml;
                         });
                     }
-                    return pathInfo.StartsWith("/swagger-ui/") 
+                    return pathInfo.StartsWith("swagger-ui/") 
                         ? new StaticFileHandler() 
                         : null;
                 });
             }
+        }
+
+        private static string SanitizeUrl(string url, string defaultUrl = "./")
+        {
+            if (string.IsNullOrWhiteSpace(url)) return defaultUrl;
+            var trimmed = url.Trim();
+            if (trimmed.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.StartsWith("vbscript:", StringComparison.OrdinalIgnoreCase))
+            {
+                return defaultUrl;
+            }
+            return url.HtmlEncode();
+        }
+
+        private static string SanitizeImageUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+            var trimmed = url.Trim();
+            if (trimmed.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.StartsWith("vbscript:", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            return url.HtmlEncode();
         }
 
         public static bool IsEnabled => HostContext.HasPlugin<OpenApiFeature>();
