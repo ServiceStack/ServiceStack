@@ -14,7 +14,7 @@ public class FormatAttribute : AttributeBase
     /// <summary>
     /// Name of available JS function, see <see cref="FormatMethods"/> for built-in functions
     /// </summary>
-    public string Method { get; set; }
+    public string? Method { get; set; }
     public string? Options { get; set; }
     public string? Locale { get; set; }
     public FormatAttribute(){}

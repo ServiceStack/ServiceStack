@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 
@@ -13,7 +13,7 @@ public class ApiAllowableValuesAttribute : AttributeBase
     public ApiAllowableValuesAttribute() {}
     public ApiAllowableValuesAttribute(string? name) => Name = name;
 
-    public ApiAllowableValuesAttribute(string name, int min, int max) : this(name)
+    public ApiAllowableValuesAttribute(string? name, int min, int max) : this(name)
     {
         Type = "RANGE";
         Min = min;
@@ -21,7 +21,7 @@ public class ApiAllowableValuesAttribute : AttributeBase
     }
     public ApiAllowableValuesAttribute(int min, int max) : this(null, min, max) {}
 
-    public ApiAllowableValuesAttribute(string name, params string[] values)
+    public ApiAllowableValuesAttribute(string? name, params string[] values)
         : this(name)
     {
         Type = "LIST";
@@ -40,7 +40,7 @@ public class ApiAllowableValuesAttribute : AttributeBase
     }
     public ApiAllowableValuesAttribute(Type enumType) : this(null, enumType) {}
 
-    public ApiAllowableValuesAttribute(string name, Func<string[]>? listAction)
+    public ApiAllowableValuesAttribute(string? name, Func<string[]>? listAction)
         : this(name)
     {
         if (listAction != null)

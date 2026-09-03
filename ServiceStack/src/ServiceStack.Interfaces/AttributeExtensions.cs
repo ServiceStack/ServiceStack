@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Linq;
@@ -11,7 +11,7 @@ namespace ServiceStack;
 /// </summary>
 public static class AttributeExtensions
 {
-    static TAttr? FirstAttribute<TAttr>(Type type) where TAttr : class => (TAttr)type.GetCustomAttributes(typeof(TAttr),true).FirstOrDefault();
+    static TAttr? FirstAttribute<TAttr>(Type type) where TAttr : class => (TAttr?)type.GetCustomAttributes(typeof(TAttr),true).FirstOrDefault();
     static TAttribute? FirstAttribute<TAttribute>(MemberInfo memberInfo) => AllAttributes<TAttribute>(memberInfo).FirstOrDefault();
     static TAttribute? FirstAttribute<TAttribute>(ParameterInfo pi) => AllAttributes<TAttribute>(pi).FirstOrDefault();
     static TAttr[] AllAttributes<TAttr>(MemberInfo mi) => AllAttributes(mi, typeof(TAttr)).Cast<TAttr>().ToArray();

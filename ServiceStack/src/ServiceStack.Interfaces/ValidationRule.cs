@@ -9,7 +9,7 @@ namespace ServiceStack;
 
 public interface IValidateRule
 {
-    string Validator { get; set; }
+    string? Validator { get; set; }
     string? Condition { get; set; }
     string? ErrorCode { get; set; }
     string? Message { get; set; }
@@ -17,7 +17,7 @@ public interface IValidateRule
 
 public class ValidateRule : IValidateRule 
 {
-    public string Validator { get; set; }
+    public string? Validator { get; set; }
     public string? Condition { get; set; }
     public string? ErrorCode { get; set; }
     public string? Message { get; set; }
@@ -52,7 +52,7 @@ public class ValidationRule : ValidateRule
     /// The name of the Type 
     /// </summary>
     [Required]
-    public string Type { get; set; }
+    public string? Type { get; set; }
         
     /// <summary>
     /// The property field for Property Validators, null for Type Validators 
@@ -81,7 +81,7 @@ public class ValidationRule : ValidateRule
                Notes == other.Notes;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;

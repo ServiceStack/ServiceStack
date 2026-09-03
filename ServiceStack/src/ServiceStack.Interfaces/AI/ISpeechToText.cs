@@ -40,7 +40,7 @@ public class TranscriptResult
     /// <summary>
     /// The transcribed text.
     /// </summary>
-    public string Transcript { get; set; }
+    public string? Transcript { get; set; }
     
     /// <summary>
     /// The confidence level of the transcription.
@@ -50,7 +50,7 @@ public class TranscriptResult
     /// <summary>
     /// The JSON API Response of the Transcription 
     /// </summary>
-    public string ApiResponse { get; set; }
+    public string? ApiResponse { get; set; }
     
     /// <summary>
     /// Error Information if transcription was unsuccessful

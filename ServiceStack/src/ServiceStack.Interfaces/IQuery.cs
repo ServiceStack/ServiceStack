@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -199,7 +199,7 @@ public class AutoFilterAttribute : ScriptValueAttribute
     /// <summary>
     /// The name of the DB Field to query
     /// </summary>
-    public string Field { get; set; }
+    public string? Field { get; set; }
         
     /// <summary>
     /// For Simple Filters to change Operand used in default Template, e.g. For Greater Than: Operand=">"
@@ -324,7 +324,7 @@ public class QueryResponse<T> : IQueryResponse
     public virtual int Total { get; set; }
 
     [DataMember(Order = 3)]
-    public virtual List<T> Results { get; set; }
+    public virtual List<T> Results { get; set; } = [];
 
     [DataMember(Order = 4)]
     public virtual Dictionary<string, string>? Meta { get; set; }
@@ -364,7 +364,7 @@ public class AutoDefaultAttribute : ScriptValueAttribute
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class AutoMapAttribute : AttributeBase
 {
-    public string To { get; set; }
+    public string? To { get; set; }
     public AutoMapAttribute(string to) => To = to ?? throw new ArgumentNullException(nameof(to));
     public AutoMapAttribute() {}
 }
@@ -378,7 +378,7 @@ public class AutoPopulateAttribute : ScriptValueAttribute
     /// <summary>
     /// Name of Class Property to Populate
     /// </summary>
-    public string Field { get; set; }
+    public string? Field { get; set; }
         
     public AutoPopulateAttribute(string field) => Field = field ?? throw new ArgumentNullException(nameof(field));
     public AutoPopulateAttribute() {}

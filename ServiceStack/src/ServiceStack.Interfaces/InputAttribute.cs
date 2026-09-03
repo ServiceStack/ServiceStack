@@ -19,7 +19,7 @@ public class InputAttribute : InputAttributeBase
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
 public class FieldAttribute : InputAttributeBase
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public string? FieldCss { get; set; }
     public string? InputCss { get; set; }
     public string? LabelCss { get; set; }
@@ -30,7 +30,7 @@ public class FieldAttribute : InputAttributeBase
 
 public class InputAttributeBase : MetadataAttributeBase
 {
-    public string Type { get; set; }
+    public string? Type { get; set; }
     public string? Value { get; set; }
     public string? Placeholder { get; set; }
     public string? Help { get; set; }

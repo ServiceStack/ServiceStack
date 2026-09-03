@@ -17,13 +17,13 @@ public abstract class AuditBase
     public DateTime CreatedDate { get; set; }
 
     [DataMember(Order = 2), Required]
-    public string CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = string.Empty;
 
     [DataMember(Order = 3)]
     public DateTime ModifiedDate { get; set; }
 
     [DataMember(Order = 4), Required]
-    public string ModifiedBy { get; set; }
+    public string ModifiedBy { get; set; } = string.Empty;
 
     [DataMember(Order = 5), Index] //Check if Deleted
     public DateTime? DeletedDate { get; set; }

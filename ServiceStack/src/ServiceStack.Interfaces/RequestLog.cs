@@ -13,8 +13,8 @@ public class RequestLog : IMeta
 {
     [AutoIncrement]
     public long Id { get; set; }
-    public string TraceId { get; set; }
-    public string OperationName { get; set; }
+    public string? TraceId { get; set; }
+    public string? OperationName { get; set; }
     [Index]
     public DateTime DateTime { get; set; }
     public int StatusCode { get; set; }

@@ -13,13 +13,13 @@ public class ScheduledTask
     [AutoIncrement]
     public long Id { get; set; }
     [Index(Unique = true)]
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public TimeSpan? Interval { get; set; }
     public string? CronExpression { get; set; }
-    public virtual string RequestType { get; set; }
+    public virtual string? RequestType { get; set; }
     public virtual string? Command { get; set; }
-    public virtual string Request { get; set; }
-    public virtual string RequestBody { get; set; }
+    public virtual string? Request { get; set; }
+    public virtual string? RequestBody { get; set; }
     public BackgroundJobOptions? Options { get; set; }
     public DateTime? LastRun { get; set; }
     public long? LastJobId { get; set; }

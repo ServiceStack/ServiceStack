@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Net;
@@ -15,7 +15,7 @@ public interface IApiResponseDescription
     /// <summary>
     /// The description of a response status code
     /// </summary>
-    string Description { get; }
+    string? Description { get; }
 }
 
 /// <summary>
@@ -32,7 +32,7 @@ public class ApiResponseAttribute : AttributeBase, IApiResponseDescription
     /// <summary>
     /// End-user description of the data which is returned by response
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// If set to true, the response is default for all non-explicitly defined status codes 

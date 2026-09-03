@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -134,7 +134,7 @@ public class RouteAttribute : AttributeBase, IReflectAttributeConverter
                && Priority == other.Priority;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
@@ -165,15 +165,15 @@ public class RouteAttribute : AttributeBase, IReflectAttributeConverter
             {
                 return new ReflectAttribute {
                     ConstructorArgs = [
-                        new(GetType().GetProperty(nameof(Path)), Path),
-                        new(GetType().GetProperty(nameof(Verbs)), Verbs)
+                        new(GetType().GetProperty(nameof(Path))!, Path),
+                        new(GetType().GetProperty(nameof(Verbs))!, Verbs)
                     ]
                 };
             }
 
             return new ReflectAttribute {
                 ConstructorArgs = [
-                    new(GetType().GetProperty(nameof(Path)), Path)
+                    new(GetType().GetProperty(nameof(Path))!, Path)
                 ]
             };
         }
@@ -181,19 +181,19 @@ public class RouteAttribute : AttributeBase, IReflectAttributeConverter
         //Otherwise return Property Args
         var to = new ReflectAttribute {
             PropertyArgs = [
-                new(GetType().GetProperty(nameof(Path)), Path)
+                new(GetType().GetProperty(nameof(Path))!, Path)
             ]
         };
         if (Verbs != null)
-            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Verbs)), Verbs));
+            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Verbs))!, Verbs));
         if (Summary != null)
-            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Summary)), Summary));
+            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Summary))!, Summary));
         if (Notes != null)
-            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Notes)), Notes));
+            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Notes))!, Notes));
         if (Matches != null)
-            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Matches)), Matches));
+            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Matches))!, Matches));
         if (Priority != default)
-            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Priority)), Priority));
+            to.PropertyArgs.Add(new KeyValuePair<PropertyInfo, object>(GetType().GetProperty(nameof(Priority))!, Priority));
         return to;
     }
 }

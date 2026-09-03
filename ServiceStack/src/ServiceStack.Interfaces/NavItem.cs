@@ -12,12 +12,12 @@ public class NavItem : IMeta
     /// <summary>
     /// Link Label
     /// </summary>
-    public string Label { get; set; }
+    public string? Label { get; set; }
         
     /// <summary>
     /// Link href
     /// </summary>
-    public string Href { get; set; }
+    public string? Href { get; set; }
         
     /// <summary>
     /// Whether NavItem should only be considered active when paths 

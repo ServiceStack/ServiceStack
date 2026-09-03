@@ -44,13 +44,13 @@ public abstract class AsyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresReque
     public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
         ? (CancellationToken)oToken
         : default;
-    public IRequest Request { get; set; }
+    public IRequest Request { get; set; } = null!;
     public async Task ExecuteAsync(TArgs request) => await RunAsync(request,Token).ConfigureAwait(false);
     protected abstract Task RunAsync(TArgs request, CancellationToken token);
 }
 public abstract class SyncCommand<TArgs> : IAsyncCommand<TArgs>, IRequiresRequest
 {
-    public IRequest Request { get; set; }
+    public IRequest Request { get; set; } = null!;
     public Task ExecuteAsync(TArgs request)
     {
         var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true
@@ -79,15 +79,15 @@ public abstract class AsyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TR
     public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
         ? (CancellationToken)oToken
         : default;
-    public IRequest Request { get; set; }
-    public TResult Result { get; protected set; }
+    public IRequest Request { get; set; } = null!;
+    public TResult Result { get; protected set; } = default!;
     public async Task ExecuteAsync(NoArgs request) => Result = await RunAsync(Token).ConfigureAwait(false);
     protected abstract Task<TResult> RunAsync(CancellationToken token);
 }
 public abstract class SyncCommandWithResult<TResult> : IAsyncCommand<NoArgs, TResult>, IRequiresRequest
 {
-    public IRequest Request { get; set; }
-    public TResult Result { get; protected set; }
+    public IRequest Request { get; set; } = null!;
+    public TResult Result { get; protected set; } = default!;
     public Task ExecuteAsync(NoArgs request)
     {
         var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true
@@ -116,15 +116,15 @@ public abstract class AsyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArg
     public CancellationToken Token => Request?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
         ? (CancellationToken)oToken
         : default;
-    public IRequest Request { get; set; }
-    public TResult Result { get; protected set; }
+    public IRequest Request { get; set; } = null!;
+    public TResult Result { get; protected set; } = default!;
     public async Task ExecuteAsync(TArgs request) => Result = await RunAsync(request,Token).ConfigureAwait(false);
     protected abstract Task<TResult> RunAsync(TArgs request, CancellationToken token);
 }
 public abstract class SyncCommandWithResult<TArgs,TResult> : IAsyncCommand<TArgs, TResult>, IRequiresRequest
 {
-    public IRequest Request { get; set; }
-    public TResult Result { get; protected set; }
+    public IRequest Request { get; set; } = null!;
+    public TResult Result { get; protected set; } = default!;
     public Task ExecuteAsync(TArgs request)
     {
         var job = Request?.Items.TryGetValue(nameof(Jobs.BackgroundJob), out var oJob) == true

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 
@@ -29,7 +29,7 @@ public class ApiAttribute : AttributeBase
     /// <summary>
     /// The overall description of an API. Used by Swagger.
     /// </summary>
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Create or not body param for request type when verb is POST or PUT.

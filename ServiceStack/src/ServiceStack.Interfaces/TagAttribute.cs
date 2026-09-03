@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 
@@ -10,9 +10,9 @@ public class TagAttribute : AttributeBase
     /// <summary>
     /// Get or sets tag name
     /// </summary>
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public TagAttribute() : this(null) { }
-    public TagAttribute(string name) => Name = name;
+    public TagAttribute(string? name) => Name = name;
 }
 
 public static class TagNames

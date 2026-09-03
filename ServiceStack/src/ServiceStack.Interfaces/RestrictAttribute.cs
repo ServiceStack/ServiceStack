@@ -107,7 +107,7 @@ public class RestrictAttribute : AttributeBase
     /// Restrict access to any of the specified access scenarios
     /// </summary>
     /// <value>Access restrictions</value>
-    public RequestAttributes[] AccessibleToAny { get; private set; }
+    public RequestAttributes[] AccessibleToAny { get; private set; } = [];
 
     /// <summary>
     /// Sets a single metadata Visibility restriction
@@ -131,7 +131,7 @@ public class RestrictAttribute : AttributeBase
     /// Restrict metadata visibility to any of the specified access scenarios
     /// </summary>
     /// <value>Visibility restrictions</value>
-    public RequestAttributes[] VisibleToAny { get; private set; }
+    public RequestAttributes[] VisibleToAny { get; private set; } = [];
 
     public RestrictAttribute()
     {

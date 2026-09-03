@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -93,7 +93,7 @@ public class TypeChatResponse
     /// <summary>
     /// JSON Response from a TypeChat Provider
     /// </summary>
-    public string Result { get; set; }
+    public string? Result { get; set; }
 
     /// <summary>
     /// Error Information if transcription was unsuccessful
