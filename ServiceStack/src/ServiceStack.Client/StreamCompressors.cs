@@ -46,7 +46,7 @@ public static class StreamCompressors
     /// </summary>
     public static IStreamCompressor GetRequired(string encoding) => Get(encoding)
         ?? throw new NotSupportedException($"{encoding} is not a registered IStreamCompressor, only: "
-            + string.Join(", ", Compressors.Keys.ToString()));
+            + string.Join(", ", Compressors.Keys));
 
     /// <summary>
     /// Remove compression support for this encoding

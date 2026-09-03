@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -517,7 +517,12 @@ public static class PlatformRsaUtils
     public static RSAParameters ExtractFromXml(string xml)
     {
         var csp = new RSAParameters();
-        using var reader = XmlReader.Create(new StringReader(xml));
+        var settings = new XmlReaderSettings
+        {
+            DtdProcessing = DtdProcessing.Prohibit,
+            XmlResolver = null
+        };
+        using var reader = XmlReader.Create(new StringReader(xml), settings);
         while (reader.Read())
         {
             if (reader.NodeType != XmlNodeType.Element)
@@ -527,10 +532,11 @@ public static class PlatformRsaUtils
             if (elName == "RSAKeyValue")
                 continue;
 
-            do
+            while (reader.Read())
             {
-                reader.Read();
-            } while (reader.NodeType != XmlNodeType.Text && reader.NodeType != XmlNodeType.EndElement);
+                if (reader.NodeType == XmlNodeType.Text || reader.NodeType == XmlNodeType.EndElement)
+                    break;
+            }
 
             if (reader.NodeType == XmlNodeType.EndElement)
                 continue;

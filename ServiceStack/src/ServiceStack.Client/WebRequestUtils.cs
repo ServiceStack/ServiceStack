@@ -63,33 +63,34 @@ namespace ServiceStack
             method = authHeader.Substring(0, pos).ToLowerInvariant();
             string remainder = authHeader.Substring(pos + 1);
 
-            // split the rest by comma, then =
+            // split the rest by comma, taking into account quoted strings that may contain commas
             string[] pars = remainder.Split(',');
-            string[] newpars = new string[pars.Length];
-            int maxnewpars = 0;
-            // test possibility that a comma is mid value for a split (as in above example)
+            var newpars = new List<string>();
             for (int i = 0; i < pars.Length; i++)
             {
-                if (pars[i].EndsWith("\""))
+                var current = pars[i];
+                while (CountOccurrences(current, '"') % 2 != 0 && i + 1 < pars.Length)
                 {
-                    newpars[maxnewpars] = pars[i];
-                    maxnewpars++;
+                    i++;
+                    current += "," + pars[i];
                 }
-                else
-                {
-                    // merge with next one
-                    newpars[maxnewpars] = pars[i] + "," + pars[i + 1];
-                    maxnewpars++;
-                    i++; // skips next value
-                }
+                newpars.Add(current);
+            }
+
+            static int CountOccurrences(string s, char c)
+            {
+                int count = 0;
+                for (int j = 0; j < s.Length; j++)
+                    if (s[j] == c) count++;
+                return count;
             }
 
             // now go through each part, splitting on first = character, and removing leading and trailing spaces and " quotes
-            for (int i = 0; i < maxnewpars; i++)
+            for (int i = 0; i < newpars.Count; i++)
             {
                 var pos2 = newpars[i].IndexOf("=", StringComparison.Ordinal);
                 if (pos2 == -1)
-                    return;
+                    continue;
                 var name = newpars[i].Substring(0, pos2).Trim();
                 var value = newpars[i].Substring(pos2 + 1).Trim();
                 if (value.StartsWith("\""))

@@ -8,15 +8,22 @@ using System.Text.RegularExpressions;
 
 public static class UserAgentHelper
 {
-    public static readonly Regex RegexEdge = new(@"Edg/(\d+[\.\d]*)", RegexOptions.Compiled);
-    public static readonly Regex RegexChrome = new(@"Chrome/(\d+[\.\d]*)", RegexOptions.Compiled);
-    public static readonly Regex RegexSafari = new(@"Version/(\d+[\.\d]*)", RegexOptions.Compiled);
-    public static readonly Regex RegexFirefox = new(@"Firefox/(\d+[\.\d]*)", RegexOptions.Compiled);
-    public static readonly Regex RegexChromium = new(@"Chromium/(\d+[\.\d]*)", RegexOptions.Compiled);
-    public static readonly Regex RegexUCBrowser = new(@"UCBrowser/(\d+[\.\d]*)", RegexOptions.Compiled);
-    public static readonly Regex RegexSamsung = new(@"SamsungBrowser/(\d+[\.\d]*)", RegexOptions.Compiled);
-    
-    public static readonly Regex RegexAppleWebKit = new(@"applewebkit/605\.1\.", RegexOptions.Compiled);
+    public static readonly Regex RegexEdge = new(@"Edg/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexChrome = new(@"Chrome/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexSafari = new(@"Version/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexFirefox = new(@"Firefox/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexChromium = new(@"Chromium/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexUCBrowser = new(@"UCBrowser/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexSamsung = new(@"SamsungBrowser/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexAppleWebKit = new(@"applewebkit/605\.1\.", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexOpera1 = new(@"OPR/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexOpera2 = new(@"Opera/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexMsie = new(@"MSIE (\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexTrident = new(@"rv:(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexGooglebot = new(@"googlebot/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexBingbot = new(@"bingbot/(\d+[\.\d]*)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexGenericBot = new(@"([a-zA-Z0-9\._-]+bot|[a-zA-Z0-9\._-]+spider|[a-zA-Z0-9\._-]+crawler)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static readonly Regex RegexDimensions = new(@"(\d+)x(\d+)", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     
     /// <summary>
     /// Determines the browser name and version from a user agent string
@@ -72,9 +79,9 @@ public static class UserAgentHelper
         // Opera
         if (userAgent.Contains("OPR/") || userAgent.Contains("Opera/"))
         {
-            var match = Regex.Match(userAgent, @"OPR/(\d+[\.\d]*)");
+            var match = RegexOpera1.Match(userAgent);
             if (!match.Success)
-                match = Regex.Match(userAgent, @"Opera/(\d+[\.\d]*)");
+                match = RegexOpera2.Match(userAgent);
             return match.Success 
                 ? ("Opera", match.Groups[1].Value) 
                 : ("Opera", null);
@@ -83,9 +90,9 @@ public static class UserAgentHelper
         // Internet Explorer
         if (userAgent.Contains("MSIE ") || userAgent.Contains("Trident/"))
         {
-            var match = Regex.Match(userAgent, @"MSIE (\d+[\.\d]*)");
+            var match = RegexMsie.Match(userAgent);
             if (!match.Success)
-                match = Regex.Match(userAgent, @"rv:(\d+[\.\d]*)");
+                match = RegexTrident.Match(userAgent);
             return match.Success 
                 ? ("Internet Explorer", match.Groups[1].Value) 
                 : ("Internet Explorer", null);
@@ -134,7 +141,7 @@ public static class UserAgentHelper
         // Google bots
         if (userAgent.Contains("googlebot"))
         {
-            var match = Regex.Match(userAgent, @"googlebot/(\d+[\.\d]*)");
+            var match = RegexGooglebot.Match(userAgent);
             botName = match.Success ? $"Googlebot {match.Groups[1].Value}" : "Googlebot";
             return true;
         }
@@ -154,7 +161,7 @@ public static class UserAgentHelper
         // Bing bots
         if (userAgent.Contains("bingbot"))
         {
-            var match = Regex.Match(userAgent, @"bingbot/(\d+[\.\d]*)");
+            var match = RegexBingbot.Match(userAgent);
             botName = match.Success ? $"Bingbot {match.Groups[1].Value}" : "Bingbot";
             return true;
         }
@@ -220,7 +227,7 @@ public static class UserAgentHelper
             userAgent.Contains("bot") || userAgent.Contains("crawl"))
         {
             // Generic bot detection - try to extract the bot name from the user agent
-            var botMatch = Regex.Match(userAgent, @"([a-zA-Z0-9\._-]+bot|[a-zA-Z0-9\._-]+spider|[a-zA-Z0-9\._-]+crawler)");
+            var botMatch = RegexGenericBot.Match(userAgent);
             if (botMatch.Success)
             {
                 botName = botMatch.Groups[1].Value;
@@ -286,7 +293,7 @@ public static class UserAgentHelper
         }
         
         // Check for screen dimensions indicating mobile
-        var match = Regex.Match(userAgent, @"(\d+)x(\d+)");
+        var match = RegexDimensions.Match(userAgent);
         if (match.Success)
         {
             if (int.TryParse(match.Groups[1].Value, out int width) && 

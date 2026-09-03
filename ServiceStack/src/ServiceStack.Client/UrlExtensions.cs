@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -371,7 +371,7 @@ public class RestRoute
         this.queryProperties = GetQueryProperties(type);
         foreach (var variableName in GetUrlVariables(path))
         {
-            var safeVarName = variableName.Trim('*');
+            var safeVarName = variableName.LeftPart(':').TrimEnd('?').Trim('*');
             if (!this.queryProperties.TryGetValue(safeVarName, out var propertyInfo))
             {
                 this.AppendError($"Variable '{variableName}' does not match any property.");
@@ -429,7 +429,9 @@ public class RestRoute
                 continue;
             }
 
-            var variableValue = FormatVariable(value);
+            var variableValue = isWildCard && value is string strVal
+                ? strVal.Split('/').Select(Uri.EscapeDataString).Join("/")
+                : FormatVariable(value);
             uri = uri.Replace(VariablePrefix + variable.Key + VariablePostfix, variableValue);
         }
 
