@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 #if NET6_0_OR_GREATER
 
 using System;
@@ -193,9 +193,12 @@ public class RazorSsg
 
             var modelType = renderStaticDef.GetGenericArguments()[0];
             var method = typeof(RazorSsg).GetMethod(nameof(RenderStaticRazorPageAsync));
-            var genericMi = method.MakeGenericMethod(modelType);
-            var task = (Task) genericMi.Invoke(null, new object[] { appHost, razorFile, distDir })!;
-            await task;
+            if (method != null)
+            {
+                var genericMi = method.MakeGenericMethod(modelType);
+                var task = (Task) genericMi.Invoke(null, new object[] { appHost, razorFile, distDir })!;
+                await task;
+            }
         }
     }
 
@@ -214,7 +217,7 @@ public class RazorSsg
             jsExpr = '`' + jsExpr.Replace("{", "${") + '`';
             var scope = JS.CreateScope(new Dictionary<string, object>(pageModel.ToObjectDictionary(), StringComparer.OrdinalIgnoreCase));
             var jsResult = JS.eval(jsExpr, scope);
-            to = jsResult.ToString();
+            to = jsResult?.ToString() ?? "";
         }
         return to.EndsWith('/')
             ? to + "index.html"

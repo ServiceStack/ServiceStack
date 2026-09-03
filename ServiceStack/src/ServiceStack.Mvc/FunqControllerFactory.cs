@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 using System;
 using System.Linq;
 using System.Reflection;
@@ -24,13 +24,23 @@ public class FunqControllerFactory : DefaultControllerFactory
         this.funqBuilder = new ContainerResolveCache();
 
         // aggregate the local and external assemblies for processing (unless ignored)
-        IEnumerable<Assembly> targetAssemblies = assemblies.Concat(new[] { Assembly.GetCallingAssembly() });
+        IEnumerable<Assembly> targetAssemblies = (assemblies ?? TypeConstants<Assembly>.EmptyArray).Concat(new[] { Assembly.GetCallingAssembly() });
 
         foreach (var assembly in targetAssemblies)
         {
+            Type[] types;
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(x => x != null).ToArray()!;
+            }
+
             // Also register all the controller types as transient
             var controllerTypes =
-                (from type in assembly.GetTypes()
+                (from type in types
                  where typeof(IController).IsAssignableFrom(type)
                  select type).ToList();
 

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading.Tasks;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -39,12 +39,15 @@ public class MvcPageResult : Microsoft.AspNetCore.Mvc.ActionResult
 
     public override async Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context)
     {
-        foreach (var entry in pageResult.Options)
+        if (!context.HttpContext.Response.HasStarted)
         {
-            if (entry.Key == HttpHeaders.ContentType)
-                context.HttpContext.Response.ContentType = entry.Value;
-            else
-                context.HttpContext.Response.Headers[entry.Key] = entry.Value;
+            foreach (var entry in pageResult.Options)
+            {
+                if (entry.Key == HttpHeaders.ContentType)
+                    context.HttpContext.Response.ContentType = entry.Value;
+                else
+                    context.HttpContext.Response.Headers[entry.Key] = entry.Value;
+            }
         }
 
         await pageResult.WriteToAsync(context.HttpContext.Response.Body).ConfigAwait();

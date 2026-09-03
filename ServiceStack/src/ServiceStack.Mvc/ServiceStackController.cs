@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Text;
 using System.Threading;
@@ -42,7 +42,7 @@ public abstract class ServiceStackController : Controller, IHasServiceStackProvi
     /// Default redirect URL if [Authenticate] attribute doesn't permit access.
     /// </summary>
     public virtual string UnauthorizedRedirectUrl => 
-        HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
+        HostContext.GetPlugin<AuthFeature>()?.GetHtmlRedirect() ?? "/login";
 
     /// <summary>
     /// To change the error result when authentication (<see cref="AuthenticateAttribute"/>) fails.
@@ -54,10 +54,11 @@ public abstract class ServiceStackController : Controller, IHasServiceStackProvi
         {
             var returnUrl = HttpContext.Request.GetPathAndQuery();
             var unauthorizedUrl = UnauthorizedRedirectUrl;
-            if (unauthorizedUrl.IsNullOrEmpty() )
+            if (unauthorizedUrl.IsNullOrEmpty())
                 throw new HttpException(401, "Unauthorized");
 
-            return new RedirectResult(unauthorizedUrl + "?redirect={0}#f=Unauthorized".Fmt(returnUrl.UrlEncode()));
+            var sep = unauthorizedUrl.IndexOf('?') >= 0 ? "&" : "?";
+            return new RedirectResult($"{unauthorizedUrl}{sep}redirect={returnUrl.UrlEncode()}#f=Unauthorized");
         }
     }
 
@@ -65,7 +66,7 @@ public abstract class ServiceStackController : Controller, IHasServiceStackProvi
     /// Default redirect URL if Required Role or Permission attributes doesn't permit access.
     /// </summary>
     public virtual string ForbiddenRedirectUrl => 
-        HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
+        HostContext.GetPlugin<AuthFeature>()?.GetHtmlRedirect() ?? "/login";
 
     /// <summary>
     /// To change the error result when user doesn't have required role or permissions (<see cref="RequiredRoleAttribute"/>).
@@ -80,7 +81,8 @@ public abstract class ServiceStackController : Controller, IHasServiceStackProvi
             if (forbiddenUrl.IsNullOrEmpty())
                 throw new HttpException(403, "Forbidden");
 
-            return new RedirectResult(forbiddenUrl + "?redirect={0}#f=Forbidden".Fmt(returnUrl.UrlEncode()));
+            var sep = forbiddenUrl.IndexOf('?') >= 0 ? "&" : "?";
+            return new RedirectResult($"{forbiddenUrl}{sep}redirect={returnUrl.UrlEncode()}#f=Forbidden");
         }
     }
 
@@ -138,7 +140,7 @@ public abstract class ServiceStackController : Controller, IHasServiceStackProvi
         var controllerName = controller.GetType().Name.Replace("Controller", "");
         routeData.Values.Add("controller", controllerName);
         routeData.Values.Add("action", DefaultAction);
-        routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
+        routeData.Values.Add("url", httpContext.Request.Url?.OriginalString ?? httpContext.Request.RawUrl ?? "");
         controller.Execute(new System.Web.Routing.RequestContext(httpContext, routeData));
     }
 
@@ -278,7 +280,10 @@ public class ServiceStackJsonResult(object value) : JsonResult(value)
     public override Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context)
     {
         var response = context.HttpContext.Response;
-        response.ContentType = !string.IsNullOrEmpty(ContentType) ? ContentType : "application/json";
+        if (!response.HasStarted)
+        {
+            response.ContentType = !string.IsNullOrEmpty(ContentType) ? ContentType : "application/json";
+        }
 
         if (Value != null)
             return response.WriteAsync(JsonSerializer.SerializeToString(Value));

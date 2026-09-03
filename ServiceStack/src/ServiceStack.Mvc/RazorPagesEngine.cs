@@ -152,7 +152,8 @@ public class RazorPagesEngine
             var invoker = mi.GetStaticInvoker();
             return invoker;
         });
-        var pageViewData = invoker(model) as ViewDataDictionary;
+        var pageViewData = invoker(model) as ViewDataDictionary
+            ?? throw new InvalidOperationException($"Could not create ViewDataDictionary for {model.GetType().Name}");
         return pageViewData;
     }
     
@@ -177,7 +178,7 @@ public class RazorPagesEngine
         };
     }
 
-    public static void PopulateRazorPageContext(HttpContext httpCtx, RazorPage razorPage, ViewDataDictionary viewData, ActionContext actionContext = null)
+    public static void PopulateRazorPageContext(HttpContext httpCtx, RazorPage razorPage, ViewDataDictionary viewData, ActionContext? actionContext = null)
     {
         // var urlHelperFactory = httpCtx.RequestServices.GetRequiredService<IUrlHelperFactory>();
         // var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
@@ -200,12 +201,11 @@ public class RazorPagesEngine
             viewData = pageViewData;
         }
         
-        razorPage.PageContext = new PageContext(actionContext)
-        {
-            ViewData = viewData,
-            RouteData = httpCtx.GetRouteData(),
-            HttpContext = httpCtx,
-        };
+        var pageContext = actionContext != null ? new PageContext(actionContext) : new PageContext();
+        pageContext.ViewData = viewData;
+        pageContext.RouteData = httpCtx.GetRouteData();
+        pageContext.HttpContext = httpCtx;
+        razorPage.PageContext = pageContext;
     }
 }
 
