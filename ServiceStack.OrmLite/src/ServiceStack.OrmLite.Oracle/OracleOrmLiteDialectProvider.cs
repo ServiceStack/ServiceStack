@@ -932,14 +932,14 @@ namespace ServiceStack.OrmLite.Oracle
         
         public override bool DoesSchemaExist(IDbCommand dbCmd, string schema)
         {
-            dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = {schema.Quoted()}";
+            dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = '{schema.SqlParam()}'";
             var query = dbCmd.ExecLongScalar();
             return query == 1;
         }
 
         public override string ToCreateSchemaStatement(string schema)
         {
-            var sql = $"CREATE SCHEMA {NamingStrategy.GetSchemaName(schema)}";
+            var sql = $"CREATE SCHEMA {GetQuotedName(NamingStrategy.GetSchemaName(schema))}";
             return sql;
         }
 

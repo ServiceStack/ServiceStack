@@ -153,7 +153,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
         public override string ToCreateSchemaStatement(string schemaName)
         {
-            var sql = $"CREATE SCHEMA [{NamingStrategy.GetSchemaName(schemaName)}]";
+            var sql = $"CREATE SCHEMA [{NamingStrategy.GetSchemaName(schemaName).Replace("]", "]]")}]";
             return sql;
         }
         

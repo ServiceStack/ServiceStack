@@ -658,7 +658,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
     public override string ToCreateSchemaStatement(string schemaName)
     {
-        var sql = $"CREATE SCHEMA {NamingStrategy.GetSchemaName(schemaName)}";
+        var sql = $"CREATE SCHEMA {GetQuotedName(NamingStrategy.GetSchemaName(schemaName))}";
         return sql;
     }
 
@@ -762,7 +762,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         if (name == null)
             return null;
         return name.IndexOf('.') >= 0
-            ? base.GetQuotedName(name.Replace(".", "\".\""))
+            ? string.Join(".", name.Split('.').Map(part => base.GetQuotedName(part)))
             : base.GetQuotedName(name);
     }
 
@@ -929,7 +929,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         var useTable = GetQuotedTableName(modelDef);
         var useColumn = fieldDef != null ? GetColumnName(fieldDef) : columnName;
         
-        return $"SELECT setval(pg_get_serial_sequence('{useTable}', '{useColumn}'), {value}, false);";
+        return $"SELECT setval(pg_get_serial_sequence('{useTable.SqlParam()}', '{useColumn.SqlParam()}'), {value}, false);";
     }
 
     public override string SqlConflict(string sql, string conflictResolution)

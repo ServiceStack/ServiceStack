@@ -520,8 +520,14 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     }
 
     protected char QuoteChar = '"';
-    public virtual string GetQuotedName(string name) => name == null ? null : name.FirstCharEquals(QuoteChar) 
-        ? name : QuoteChar + name + QuoteChar;
+    public virtual string GetQuotedName(string name)
+    {
+        if (name == null) return null;
+        if (name.Length >= 2 && name[0] == QuoteChar && name[name.Length - 1] == QuoteChar)
+            return name;
+        var quoteStr = QuoteChar.ToString();
+        return QuoteChar + name.Replace(quoteStr, quoteStr + quoteStr) + QuoteChar;
+    }
 
     public virtual string GetQuotedName(string name, string schema)
     {

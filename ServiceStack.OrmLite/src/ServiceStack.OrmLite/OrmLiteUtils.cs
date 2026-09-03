@@ -461,11 +461,13 @@ public static class OrmLiteUtils
         return "{0}".SqlFmt(value);
     }
 
+    public static TimeSpan DefaultRegexTimeout = TimeSpan.FromSeconds(1);
+
     public static Regex VerifyFragmentRegEx = new Regex("([^\\w]|^)+(--|;--|;|%|/\\*|\\*/|@@|@|char|nchar|varchar|nvarchar|alter|begin|cast|create|cursor|declare|delete|drop|end|exec|execute|fetch|insert|kill|open|select|sys|sysobjects|syscolumns|table|update)([^\\w]|$)+",
-        RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase, DefaultRegexTimeout);
 
     public static Regex VerifySqlRegEx = new Regex("([^\\w]|^)+(--|;--|;|%|/\\*|\\*/|@@|@|char|nchar|varchar|nvarchar|alter|begin|cast|create|cursor|declare|delete|drop|end|exec|execute|fetch|insert|kill|open|table|update)([^\\w]|$)+",
-        RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase, DefaultRegexTimeout);
 
     public static Func<string,string> SqlVerifyFragmentFn { get; set; }
 
@@ -480,14 +482,30 @@ public static class OrmLiteUtils
             return false;
         }
 
-        var fragmentToVerify = sql
-            .StripQuotedStrings('\'')
-            .StripQuotedStrings('"')
-            .StripQuotedStrings('`')
+        var s1 = sql.StripQuotedStrings('\'', out var inQuotes1);
+        if (inQuotes1)
+            return true;
+
+        var s2 = s1.StripQuotedStrings('"', out var inQuotes2);
+        if (inQuotes2)
+            return true;
+
+        var fragmentToVerify = s2
+            .StripQuotedStrings('`', out var inQuotes3)
             .ToLower();
 
-        var match = verifySql.Match(fragmentToVerify);
-        return match.Success;
+        if (inQuotes3)
+            return true;
+
+        try
+        {
+            var match = verifySql.Match(fragmentToVerify);
+            return match.Success;
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return true;
+        }
     }
 
     public static string SqlVerifyFragment(this string sqlFragment)
@@ -510,11 +528,20 @@ public static class OrmLiteUtils
         if (sqlFragment == null)
             return null;
 
-        var fragmentToVerify = sqlFragment
-            .StripQuotedStrings('\'')
-            .StripQuotedStrings('"')
-            .StripQuotedStrings('`')
+        var s1 = sqlFragment.StripQuotedStrings('\'', out var inQuotes1);
+        if (inQuotes1)
+            throw new ArgumentException("Potential illegal fragment detected: " + sqlFragment);
+
+        var s2 = s1.StripQuotedStrings('"', out var inQuotes2);
+        if (inQuotes2)
+            throw new ArgumentException("Potential illegal fragment detected: " + sqlFragment);
+
+        var fragmentToVerify = s2
+            .StripQuotedStrings('`', out var inQuotes3)
             .ToLower();
+
+        if (inQuotes3)
+            throw new ArgumentException("Potential illegal fragment detected: " + sqlFragment);
 
         foreach (var illegalFragment in illegalFragments)
         {
@@ -532,12 +559,31 @@ public static class OrmLiteUtils
 
     public static string StripQuotedStrings(this string text, char quote = '\'')
     {
-        var sb = StringBuilderCache.Allocate();
-        var inQuotes = false;
-        foreach (var c in text)
+        return StripQuotedStrings(text, quote, out _);
+    }
+
+    public static string StripQuotedStrings(this string text, char quote, out bool inQuotes)
+    {
+        if (text == null)
         {
+            inQuotes = false;
+            return null;
+        }
+
+        var sb = StringBuilderCache.Allocate();
+        inQuotes = false;
+        for (var i = 0; i < text.Length; i++)
+        {
+            var c = text[i];
             if (c == quote)
             {
+                if (inQuotes && i + 1 < text.Length && text[i + 1] == quote)
+                {
+                    // Escaped quote within quoted literal (e.g. '' or "")
+                    i++;
+                    continue;
+                }
+
                 inQuotes = !inQuotes;
                 continue;
             }

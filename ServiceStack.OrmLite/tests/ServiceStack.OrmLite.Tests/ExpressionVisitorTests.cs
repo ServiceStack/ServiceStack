@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -214,13 +214,14 @@ public class ExpressionVisitorTests(DialectContext context) : OrmLiteProvidersTe
     [Test]
     public void Can_Select_using_int_array_constructed_inside_Contains()
     {
-        var q = Db.From<TestType>().Where(x => new int[] { 1, 3 }.Contains(x.Id));
-        Assert.That(q.WhereExpression, Does.Contain("IN (@0,@1)"));
+        var p = Db.GetDialectProvider().ParamString;
+        var q = Db.From<TestType>().Where(x => new[] { 1, 3 }.Contains(x.Id));
+        Assert.That(q.WhereExpression, Does.Contain($"IN ({p}0,{p}1)"));
         var target = Db.Select(q);
         CollectionAssert.AreEquivalent(new[] { 1, 3 }, target.Select(t => t.Id).ToArray());
         
         q = Db.From<TestType>().Where(x => new int?[] { 10, 30 }.Contains(x.NullableIntCol));
-        Assert.That(q.WhereExpression, Does.Contain("IN (@0,@1)"));
+        Assert.That(q.WhereExpression, Does.Contain($"IN ({p}0,{p}1)"));
         target = Db.Select(q);
         CollectionAssert.AreEquivalent(new[] { 1, 3 }, target.Select(t => t.Id).ToArray());
     }

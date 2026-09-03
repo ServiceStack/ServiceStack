@@ -15,7 +15,7 @@ public class SavePoint
     public SavePoint(OrmLiteTransaction transaction, string name)
     {
         Transaction = transaction;
-        Name = name;
+        Name = name?.SqlVerifyFragment();
         DialectProvider = Transaction.Db.GetDialectProvider();
     }
 

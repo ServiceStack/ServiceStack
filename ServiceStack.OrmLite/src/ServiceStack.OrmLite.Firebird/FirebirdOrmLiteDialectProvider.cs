@@ -739,14 +739,14 @@ namespace ServiceStack.OrmLite.Firebird
         
         public override bool DoesSchemaExist(IDbCommand dbCmd, string schemaName)
         {
-            dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = {schemaName.Quoted()}";
+            dbCmd.CommandText = $"SELECT 1 FROM sys.schemas WHERE name = '{schemaName.SqlParam()}'";
             var query = dbCmd.ExecLongScalar();
             return query == 1;
         }
 
         public override string ToCreateSchemaStatement(string schemaName)
         {
-            var sql = $"CREATE SCHEMA {NamingStrategy.GetSchemaName(schemaName)}";
+            var sql = $"CREATE SCHEMA {GetQuotedName(NamingStrategy.GetSchemaName(schemaName))}";
             return sql;
         }
 
@@ -757,7 +757,7 @@ namespace ServiceStack.OrmLite.Firebird
 //            if (!QuoteNames & !RESERVED.Contains(tableName.ToUpper()))
 //                tableName = tableName.ToUpper();
 
-            var sql = $"SELECT COUNT(*) FROM rdb$relations WHERE rdb$system_flag = 0 AND rdb$view_blr IS NULL AND rdb$relation_name = '{tableName}'";
+            var sql = $"SELECT COUNT(*) FROM rdb$relations WHERE rdb$system_flag = 0 AND rdb$view_blr IS NULL AND rdb$relation_name = '{tableName.SqlParam()}'";
 
             var result = dbCmd.ExecLongScalar(sql);
             return result == 1;
@@ -797,7 +797,7 @@ namespace ServiceStack.OrmLite.Firebird
             $"ALTER TABLE {QuoteTable(tableRef)} ALTER {GetColumnDefinition(fieldDef)};";
 
         public override string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn) => 
-            $"ALTER TABLE {QuoteTable(QuoteTable(tableRef))} ALTER {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(fieldDef)};";
+            $"ALTER TABLE {QuoteTable(tableRef)} ALTER {GetQuotedColumnName(oldColumn)} TO {GetQuotedColumnName(fieldDef)};";
         #endregion DDL
 
         public override string ToSelectStatement(QueryType queryType, ModelDefinition modelDef,

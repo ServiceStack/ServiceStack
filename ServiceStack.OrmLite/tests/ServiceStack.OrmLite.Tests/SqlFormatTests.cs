@@ -84,4 +84,33 @@ public class SqlFormatTests
 		var sql = "FROM `profile_extended`";
 		sql.SqlVerifyFragment();
 	}
+
+	[Test]
+	public void SqlVerifyFragment_throws_on_unclosed_quotes()
+	{
+		Assert.Throws<ArgumentException>(() =>
+			"'; DROP TABLE Users; --".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() =>
+			"Field = 'Value".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() =>
+			"Field = \"Value".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() =>
+			"Field = `Value".SqlVerifyFragment());
+	}
+
+	[Test]
+	public void GetQuotedName_escapes_embedded_quotes()
+	{
+		var dialect = OrmLiteConfig.DialectProvider;
+		Assert.That(dialect.GetQuotedName("my\"table"), Is.EqualTo("\"my\"\"table\""));
+		Assert.That(dialect.GetQuotedName("simple"), Is.EqualTo("\"simple\""));
+		Assert.That(dialect.GetQuotedName("\"already_quoted\""), Is.EqualTo("\"already_quoted\""));
+	}
+
+	[Test]
+	public void ByteArrayConverter_formats_to_hex_string()
+	{
+		var converter = new ServiceStack.OrmLite.Converters.ByteArrayConverter();
+		Assert.That(converter.ToQuotedString(typeof(byte[]), new byte[] { 0xDE, 0xAD, 0xBE, 0xEF }), Is.EqualTo("0xDEADBEEF"));
+	}
 }
