@@ -8,6 +8,7 @@ ServiceStack/tests/AdhocNew/clients/kotlin/app/build/
 .build/
 vendor/
 target/
+data/
 
 #bower deps
 **/wwwroot/lib/
