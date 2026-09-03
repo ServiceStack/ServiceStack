@@ -1,0 +1,116 @@
+services:
+  # Redis - Used across ServiceStack.Redis, ServiceStack.Common, OrmLite, Auth, Cache & Session tests
+  redis:
+    image: redis:latest
+    container_name: servicestack-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL - Used in OrmLite, WebHost Endpoints, Benchmarks, NuGet Pack tests
+  postgres:
+    image: postgres:17
+    container_name: servicestack-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    ports:
+      - "48303:5432"
+      - "5432:5432"
+    volumes:
+      - ./data/postgres-init:/docker-entrypoint-initdb.d:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Microsoft SQL Server 2025 - Used in OrmLite, WebHost Endpoints, Benchmarks, NuGet Pack tests
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    container_name: servicestack-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "p@55wOrd"
+      MSSQL_PID: "Developer"
+    ports:
+      - "48501:1433"
+      - "1433:1433"
+    healthcheck:
+      test: >-
+        /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "p@55wOrd" -C -Q "SELECT 1" ||
+        /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "p@55wOrd" -Q "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # MariaDB / MySQL - Used in OrmLite MySql integration tests & benchmarks
+  mysql:
+    image: mariadb:latest
+    container_name: servicestack-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "p@55wOrd"
+      MYSQL_DATABASE: "test"
+      MYSQL_USER: "test"
+      MYSQL_PASSWORD: "test"
+    ports:
+      - "48205:3306"
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "--password=p@55wOrd"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Firebird - Used in OrmLite Community Provider tests
+  firebird:
+    image: jacobalberty/firebird:v4.0.0
+    container_name: servicestack-firebird
+    environment:
+      ISC_PASSWORD: "p@55wOrd"
+      FIREBIRD_USER: "test"
+      FIREBIRD_PASSWORD: "p@55wOrd"
+      FIREBIRD_DATABASE: "test.gdb"
+      EnableLegacyClientAuth: "true"
+    ports:
+      - "48101:3050"
+      - "3050:3050"
+
+  # RabbitMQ - Used in ServiceStack MQ / Messaging integration tests
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: servicestack-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "45672:5672"
+      - "5672:5672"
+      - "41672:15672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # DynamoDB Local - Used in ServiceStack.Aws DynamoDB integration tests
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: servicestack-dynamodb
+    command: "-jar DynamoDBLocal.jar -inMemory -sharedDb"
+    ports:
+      - "48000:8000"
+      - "8000:8000"
+
+volumes:
+  postgres_data:
