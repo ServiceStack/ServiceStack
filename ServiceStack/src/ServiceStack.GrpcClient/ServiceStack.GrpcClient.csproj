@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <PackageId>ServiceStack.GrpcClient</PackageId>
@@ -17,7 +17,6 @@
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
 
         <PackageReference Include="Grpc.Net.Client" Version="2.80.0" />
-        <PackageReference Include="Grpc.Core" Version="2.46.6" />
         <PackageReference Include="protobuf-net.Grpc" Version="1.2.2" />
         <PackageReference Include="protobuf-net" Version="3.2.56" />
     </ItemGroup>
