@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 #if NETCORE
 
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
@@ -298,6 +299,12 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
         MapUserDefinedRoutes(routeBuilder);
     }
 
+    private static readonly Regex RegexWildcardParam = new(@"\{([a-zA-Z0-9_]+)\*\}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    public static string ToEndpointRoutePath(string routePath) =>
+        !string.IsNullOrEmpty(routePath) && routePath.Contains("*}")
+            ? RegexWildcardParam.Replace(routePath, "{*$1}")
+            : routePath;
+
     public virtual void MapUserDefinedRoutes(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routeBuilder)
     {
         Task HandleRequestAsync(Type requestType, HttpContext httpContext)
@@ -345,7 +352,8 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
                         var verbStr = string.Join(",", verbs);
                         routeRule = $"[{verbStr}] {route.Path}";
                         existingRoutes[routeRule] = route;
-                        var pathBuilder = routeBuilder.MapMethods(route.Path, verbs, (HttpResponse response, HttpContext httpContext) =>
+                        var endpointPath = ToEndpointRoutePath(route.Path);
+                        var pathBuilder = routeBuilder.MapMethods(endpointPath, verbs, (HttpResponse response, HttpContext httpContext) =>
                             HandleRequestAsync(requestType, httpContext));
                         
                         ConfigureOperationEndpoint(pathBuilder, operation, options);

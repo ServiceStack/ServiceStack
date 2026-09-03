@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -140,13 +140,13 @@ namespace ServiceStack.VirtualPath
 
         public IEnumerable<DirectoryInfo> EnumerateDirectories(string dirName)
         {
-            if (dirName[dirName.Length - 1] == ':')
+            if (!string.IsNullOrEmpty(dirName) && dirName[dirName.Length - 1] == ':')
             {
                 var dir = new DirectoryInfo(dirName + Path.DirectorySeparatorChar);
-                var subDirs = dir.GetDirectories();
+                return dir.GetDirectories();
             }
 
-            return BackingDirInfo.GetDirectories(dirName, SearchOption.TopDirectoryOnly);
+            return BackingDirInfo.GetDirectories(dirName ?? string.Empty, SearchOption.TopDirectoryOnly);
         }
     }
 }

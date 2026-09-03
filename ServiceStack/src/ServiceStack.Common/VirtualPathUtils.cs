@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -91,7 +91,7 @@ public static class VirtualPathUtils
 
     internal static void SleepBackOffMultiplier(this int i)
     {
-        var nextTryMs = (2 ^ i) * 50;
+        var nextTryMs = (1 << Math.Min(i, 10)) * 50;
 #if NETCORE
         System.Threading.Tasks.Task.Delay(nextTryMs).Wait();
 #elif NETFX

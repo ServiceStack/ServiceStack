@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public
+// This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/. 
 
@@ -16,9 +16,11 @@ namespace ServiceStack.Common.Tests.FluentValidation
         using NUnit.Framework;
         using ServiceStack.FluentValidation;
 
+        [TestFixture, NonParallelizable]
         public class UserSeverityTests
         {
-            private const string Urlbase = "http://localhost:20000/";
+            private static int port = 20010;
+            private static string GetNextUrl() => $"http://localhost:{System.Threading.Interlocked.Increment(ref port)}/";
 
             [Test]
             public void Stores_user_severity_against_validation_failure()
@@ -45,12 +47,13 @@ namespace ServiceStack.Common.Tests.FluentValidation
             [Test]
             public void Response_returned_when_valid()
             {
+                var url = GetNextUrl();
                 using (var appHost = new TestAppHost())
                 {
                     appHost.Init();
-                    appHost.Start(Urlbase);
+                    appHost.Start(url);
 
-                    var sc = new JsonServiceClient(Urlbase);
+                    var sc = new JsonServiceClient(url);
 
                     var response = sc.Get(new EchoRequest { Day = "Monday", Word = "Word" });
 
@@ -62,13 +65,14 @@ namespace ServiceStack.Common.Tests.FluentValidation
             [Test]
             public void Can_treat_warnings_and_info_as_errors()
             {
+                var url = GetNextUrl();
                 using (var appHost = new TestAppHost())
                 {
                     appHost.ConfigurePlugin<ValidationFeature>(x => x.TreatInfoAndWarningsAsErrors = true);
                     appHost.Init();
-                    appHost.Start(Urlbase);
+                    appHost.Start(url);
 
-                    var sc = new JsonServiceClient(Urlbase);
+                    var sc = new JsonServiceClient(url);
 
                     Assert.Throws<WebServiceException>(() => sc.Get(new EchoRequest { Day = "Monday", Word = "" }),
                         "'Word' should not be empty.");
@@ -78,13 +82,14 @@ namespace ServiceStack.Common.Tests.FluentValidation
             [Test]
             public void Can_return_response_when_no_failed_validations_and_TreatInfoAndWarningsAsErrors_set_false()
             {
+                var url = GetNextUrl();
                 using (var appHost = new TestAppHost())
                 {
                     appHost.ConfigurePlugin<ValidationFeature>(x => x.TreatInfoAndWarningsAsErrors = false);
                     appHost.Init();
-                    appHost.Start(Urlbase);
+                    appHost.Start(url);
 
-                    var sc = new JsonServiceClient(Urlbase);
+                    var sc = new JsonServiceClient(url);
 
                     var resp = sc.Get(new EchoRequest { Day = "Monday", Word = "Word" });
 
@@ -95,13 +100,14 @@ namespace ServiceStack.Common.Tests.FluentValidation
             [Test]
             public void Can_ignore_warnings_and_info_as_errors()
             {
+                var url = GetNextUrl();
                 using (var appHost = new TestAppHost())
                 {
                     appHost.ConfigurePlugin<ValidationFeature>(x => x.TreatInfoAndWarningsAsErrors = false);
                     appHost.Init();
-                    appHost.Start(Urlbase);
+                    appHost.Start(url);
 
-                    var sc = new JsonServiceClient(Urlbase);
+                    var sc = new JsonServiceClient(url);
 
                     var response = sc.Get(new EchoRequest { Day = "", Word = "" });
 

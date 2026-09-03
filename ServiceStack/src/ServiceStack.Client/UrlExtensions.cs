@@ -429,9 +429,7 @@ public class RestRoute
                 continue;
             }
 
-            var variableValue = isWildCard && value is string strVal
-                ? strVal.Split('/').Select(Uri.EscapeDataString).Join("/")
-                : FormatVariable(value);
+            var variableValue = FormatVariable(value);
             uri = uri.Replace(VariablePrefix + variable.Key + VariablePostfix, variableValue);
         }
 

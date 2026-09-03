@@ -80,8 +80,11 @@ public class ProtectedScripts : ScriptMethods
 
     private static List<string> typeGenericArgs(string typeName)
     {
-        var argList = typeName.RightPart('<');
-        argList = argList.Substring(0, argList.Length - 1);
+        var pos = typeName.IndexOf('<');
+        if (pos == -1 || !typeName.EndsWith(">"))
+            return new List<string>();
+
+        var argList = typeName.Substring(pos + 1, typeName.Length - pos - 2);
         var splitArgs = StringUtils.SplitGenericArgs(argList);
         return splitArgs;
     }
@@ -1420,39 +1423,7 @@ public class ProtectedScripts : ScriptMethods
         }
     }
 
-    public string exePath(string exeName)
-    {
-        try
-        {
-            var p = new Process
-            {
-                StartInfo =
-                {
-                    UseShellExecute = false,
-                    FileName = Env.IsWindows 
-                        ? "where"  //Win 7/Server 2003+
-                        : "which", //macOS / Linux
-                    Arguments = exeName,
-                    RedirectStandardOutput = true
-                }
-            };
-            p.Start();
-            var output = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
-
-            if (p.ExitCode == 0)
-            {
-                // just return first match
-                var fullPath = output.Substring(0, output.IndexOf(Environment.NewLine, StringComparison.Ordinal));
-                if (!string.IsNullOrEmpty(fullPath))
-                {
-                    return fullPath;
-                }
-            }
-        }
-        catch {}               
-        return null;
-    }
+    public string exePath(string exeName) => ProcessUtils.FindExePath(exeName);
 
     public StopExecution exit(int exitCode)
     {

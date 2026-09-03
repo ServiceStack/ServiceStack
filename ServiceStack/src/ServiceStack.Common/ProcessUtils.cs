@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
@@ -56,7 +57,7 @@ public static class ProcessUtils
             if (p.ExitCode == 0)
             {
                 // just return first match
-                var fullPath = output.Substring(0, output.IndexOf(Environment.NewLine, StringComparison.Ordinal));
+                var fullPath = output.ReadLines().FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim();
                 if (!string.IsNullOrEmpty(fullPath))
                 {
                     return fullPath;

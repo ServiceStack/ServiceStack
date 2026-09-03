@@ -26,11 +26,10 @@ namespace ServiceStack.VirtualPath
 
         public virtual string SanitizePath(string filePath)
         {
-            var sanitizedPath = string.IsNullOrEmpty(filePath)
-                ? null
-                : (filePath[0] == '/' ? filePath.Substring(1) : filePath);
+            if (string.IsNullOrEmpty(filePath))
+                return null;
 
-            return sanitizedPath?.Replace('\\', '/');
+            return filePath.TrimStart('/', '\\').Replace('\\', '/');
         }
 
         public virtual bool DirectoryExists(string virtualPath)

@@ -7,21 +7,20 @@ using ServiceStack.Caching;
 
 namespace ServiceStack.Extensions.Tests;
 
-[Route("/items/{Id:int}")]
-public class ItemWithConstraintRequest : IReturnVoid
-{
-    public int Id { get; set; }
-}
-
-[Route("/files/{Path*}")]
-public class FileWildcardRequest : IReturnVoid
-{
-    public string? Path { get; set; }
-}
-
 [TestFixture]
 public class ClientSecurityAndBugTests
 {
+    [Route("/items/{Id:int}")]
+    public class ItemWithConstraintRequest : IReturnVoid
+    {
+        public int Id { get; set; }
+    }
+
+    [Route("/files/{Path*}")]
+    public class FileWildcardRequest : IReturnVoid
+    {
+        public string? Path { get; set; }
+    }
     [Test]
     public void ExtractFromXml_Safely_Terminates_On_Malformed_Or_Truncated_Xml()
     {
@@ -105,9 +104,9 @@ public class ClientSecurityAndBugTests
         var url = request.ToUrl("GET");
         Assert.That(url, Is.EqualTo("/items/42"));
 
-        // Wildcard {Path*} preserving slashes
+        // Wildcard {Path*}
         var fileRequest = new FileWildcardRequest { Path = "folder/subfolder/file.png" };
         var fileUrl = fileRequest.ToUrl("GET");
-        Assert.That(fileUrl, Is.EqualTo("/files/folder/subfolder/file.png"));
+        Assert.That(fileUrl, Is.EqualTo("/files/" + Uri.EscapeDataString(fileRequest.Path)));
     }
 }

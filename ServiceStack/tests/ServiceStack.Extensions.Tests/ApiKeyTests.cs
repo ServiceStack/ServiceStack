@@ -106,6 +106,8 @@ public class ApiKeyTests
         }
     }
 
+    private static readonly string ListeningOn = "http://localhost:20008/";
+
     public ApiKeyTests()
     {
         var contentRootPath = "~/../../../".MapServerPath();
@@ -128,7 +130,7 @@ public class ApiKeyTests
             options.MapEndpoints();
         });
 
-        app.StartAsync(TestsConfig.ListeningOn);
+        app.StartAsync(ListeningOn);
     }
 
     [OneTimeTearDown]
@@ -137,7 +139,7 @@ public class ApiKeyTests
     [Test]
     public async Task Does_not_allow_access_to_Api_Secured_without_ApiKey()
     {
-        var client = new JsonApiClient(TestsConfig.ListeningOn);
+        var client = new JsonApiClient(ListeningOn);
         try
         {
             var apiSecure = await client.ApiAsync(new SecuredApiKey { Name = "Secured" });
@@ -154,7 +156,7 @@ public class ApiKeyTests
     [TestCaseSource(nameof(AllKeys))]
     public async Task Does_allow_access_to_Api_Secured_with_ApiKey(string apiKey)
     {
-        var client = new JsonApiClient(TestsConfig.ListeningOn)
+        var client = new JsonApiClient(ListeningOn)
         {
             BearerToken = apiKey
         };
@@ -172,7 +174,7 @@ public class ApiKeyTests
     [TestCaseSource(nameof(AllKeys))]
     public async Task Only_allows_admin_or_matching_scope_ApiKey(string apiKey)
     {
-        var client = new JsonApiClient(TestsConfig.ListeningOn)
+        var client = new JsonApiClient(ListeningOn)
         {
             BearerToken = apiKey
         };
@@ -201,17 +203,17 @@ public class ApiKeyTests
     [Test]
     public async Task Only_allows_AuthSecret_to_call_AuthSecretApiKey()
     {
-        var client = new JsonApiClient(TestsConfig.ListeningOn);
+        var client = new JsonApiClient(ListeningOn);
         var apiAnon = await client.ApiAsync(new AuthSecretApiKey { Name = "AuthSecret" });
         Assert.Throws<WebServiceException>(() => apiAnon.ThrowIfError());
         
-        client = new JsonApiClient(TestsConfig.ListeningOn) {
+        client = new JsonApiClient(ListeningOn) {
             BearerToken = AdminKey
         };
         var apiAdmin = await client.ApiAsync(new AuthSecretApiKey { Name = "AuthSecret" });
         Assert.Throws<WebServiceException>(() => apiAdmin.ThrowIfError());
         
-        client = new JsonApiClient(TestsConfig.ListeningOn) {
+        client = new JsonApiClient(ListeningOn) {
             BearerToken = AuthSecret
         };
         var apiAuthSecret = await client.ApiAsync(new AuthSecretApiKey { Name = "AuthSecret" });
@@ -222,25 +224,25 @@ public class ApiKeyTests
     [Test]
     public async Task Allows_Admin_ApiKey_and_AuthSecret_to_call_IsAdmin_Apis()
     {
-        var client = new JsonApiClient(TestsConfig.ListeningOn);
+        var client = new JsonApiClient(ListeningOn);
         
         var apiAnon = await client.ApiAsync(new AdminApiKey { Name = "Admin" });
         Assert.Throws<WebServiceException>(() => apiAnon.ThrowIfError());
 
-        client = new JsonApiClient(TestsConfig.ListeningOn) {
+        client = new JsonApiClient(ListeningOn) {
             BearerToken = ScopeKey
         };
         var apiUser = await client.ApiAsync(new AdminApiKey { Name = "Admin" });
         Assert.Throws<WebServiceException>(() => apiUser.ThrowIfError());
         
-        client = new JsonApiClient(TestsConfig.ListeningOn) {
+        client = new JsonApiClient(ListeningOn) {
             BearerToken = AdminKey
         };
         var apiAdmin = await client.ApiAsync(new AdminApiKey { Name = "Admin" });
         apiAdmin.ThrowIfError();
         Assert.That(apiAdmin.Response.Result, Is.EqualTo("Hello, Admin!"));
         
-        client = new JsonApiClient(TestsConfig.ListeningOn) {
+        client = new JsonApiClient(ListeningOn) {
             BearerToken = AuthSecret
         };
         var apiAuthSecret = await client.ApiAsync(new AdminApiKey { Name = "Admin" });
@@ -251,11 +253,11 @@ public class ApiKeyTests
     [Test]
     public async Task Only_allows_Restricted_Key_to_call_RestrictedApiKey()
     {
-        var client = new JsonApiClient(TestsConfig.ListeningOn);
+        var client = new JsonApiClient(ListeningOn);
         var apiAnon = await client.ApiAsync(new RestrictedApiKey { Name = "Restricted" });
         Assert.Throws<WebServiceException>(() => apiAnon.ThrowIfError());
         
-        client = new JsonApiClient(TestsConfig.ListeningOn) {
+        client = new JsonApiClient(ListeningOn) {
             BearerToken = RestrictedKey
         };
         var api = await client.ApiAsync(new RestrictedApiKey { Name = "Restricted" });

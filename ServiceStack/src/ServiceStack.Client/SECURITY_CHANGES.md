@@ -46,11 +46,9 @@ This document details security, robustness, and stability fixes across `ServiceS
 
 ---
 
-## 5. Route Constraint and Wildcard Formatting (`UrlExtensions`)
+## 5. Route Constraint and Optional Parameter Support (`UrlExtensions`)
 - **Severity**: Low / Routing Bug
 - **Description**:
   - In `UrlExtensions.RestRoute`, variable extraction only stripped `*` from variable names. Routes with constraints (`{Id:int}`) or optional markers (`{Id?}`) failed with `Variable '{variableName}' does not match any property`.
-  - Wildcard parameter formatting converted `/` to `%2F` via `Uri.EscapeDataString`, breaking REST hierarchical paths.
 - **Change**:
   - Normalized variable names with `.LeftPart(':').TrimEnd('?').Trim('*')` to support route constraints and optional parameters.
-  - Preserved `/` directory separators for wildcard route variables while URL-escaping individual path segments.

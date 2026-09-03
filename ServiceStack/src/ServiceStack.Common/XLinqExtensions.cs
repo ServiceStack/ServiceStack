@@ -267,9 +267,10 @@ public static class XLinqExtensions
 
     public static XElement FirstElement(this XElement element)
     {
-        if (element.FirstNode.NodeType == XmlNodeType.Element)
+        for (var node = element?.FirstNode; node != null; node = node.NextNode)
         {
-            return (XElement)element.FirstNode;
+            if (node.NodeType == XmlNodeType.Element)
+                return (XElement)node;
         }
         return null;
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -59,6 +59,7 @@ public class DeserializeTypeTests
     }
 
     [Serializable]
+    [RuntimeSerializable]
     private class InnerStub : IInnerStub
     {
     }
