@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -554,11 +554,11 @@ public class DynamoConverters
             return attr.L;
         if (attr.IsMSet)
             return attr.M;
-        if (attr.SS.Count > 0)
+        if (attr.SS?.Count > 0)
             return attr.SS;
-        if (attr.NS.Count > 0)
+        if (attr.NS?.Count > 0)
             return attr.NS;
-        if (attr.BS.Count > 0)
+        if (attr.BS?.Count > 0)
             return attr.BS;
 
         return null;

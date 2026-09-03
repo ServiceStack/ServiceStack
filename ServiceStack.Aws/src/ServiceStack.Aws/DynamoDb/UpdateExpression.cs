@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Amazon.DynamoDBv2;
@@ -8,6 +8,12 @@ namespace ServiceStack.Aws.DynamoDb;
 
 public class UpdateExpression : UpdateItemRequest
 {
+    public UpdateExpression()
+    {
+        ExpressionAttributeNames = new Dictionary<string, string>();
+        ExpressionAttributeValues = new Dictionary<string, AttributeValue>();
+    }
+
     protected IPocoDynamo Db { get; set; }
 
     protected DynamoMetadataType Table { get; set; }
@@ -49,11 +55,13 @@ public class UpdateExpression<T> : UpdateExpression
 
         if (args != null)
         {
+            this.ExpressionAttributeValues ??= new Dictionary<string, AttributeValue>();
             Db.ToExpressionAttributeValues(args).Each(x =>
                 this.ExpressionAttributeValues[x.Key] = x.Value);
         }
         if (aliases != null)
         {
+            this.ExpressionAttributeNames ??= new Dictionary<string, string>();
             foreach (var entry in aliases)
             {
                 this.ExpressionAttributeNames[entry.Key] = entry.Value;
@@ -71,6 +79,8 @@ public class UpdateExpression<T> : UpdateExpression
         {
             var hasExpr = UpdateExpression != null
                           && UpdateExpression.IndexOf("SET", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            this.ExpressionAttributeValues ??= new Dictionary<string, AttributeValue>();
 
             foreach (var entry in args)
             {
@@ -100,6 +110,8 @@ public class UpdateExpression<T> : UpdateExpression
         {
             var hasExpr = UpdateExpression != null
                           && UpdateExpression.IndexOf("ADD", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            this.ExpressionAttributeValues ??= new Dictionary<string, AttributeValue>();
 
             foreach (var entry in args)
             {

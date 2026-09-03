@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -14,6 +14,12 @@ namespace ServiceStack.Aws.DynamoDb;
 
 public class QueryExpression : QueryRequest, IDynamoCommonQuery
 {
+    public QueryExpression()
+    {
+        ExpressionAttributeNames = new Dictionary<string, string>();
+        ExpressionAttributeValues = new Dictionary<string, AttributeValue>();
+    }
+
     protected IPocoDynamo Db { get; set; }
 
     protected DynamoMetadataType Table { get; set; }
@@ -28,6 +34,7 @@ public class QueryExpression : QueryRequest, IDynamoCommonQuery
     {
         if (args != null)
         {
+            ExpressionAttributeValues ??= new Dictionary<string, AttributeValue>();
             Db.ToExpressionAttributeValues(args).Each(x =>
                 ExpressionAttributeValues[x.Key] = x.Value);
         }
@@ -52,19 +59,19 @@ public class QueryExpression<T> : QueryExpression
         {
             Table = Table,
             TableName = TableName,
-            AttributesToGet = [..AttributesToGet],
+            AttributesToGet = AttributesToGet != null ? [..AttributesToGet] : null,
             ConditionalOperator = ConditionalOperator,
             ConsistentRead = ConsistentRead,
-            ExclusiveStartKey = new Dictionary<string, AttributeValue>(ExclusiveStartKey),
-            ExpressionAttributeNames = new Dictionary<string, string>(ExpressionAttributeNames),
-            ExpressionAttributeValues = new Dictionary<string, AttributeValue>(ExpressionAttributeValues),
+            ExclusiveStartKey = ExclusiveStartKey != null ? new Dictionary<string, AttributeValue>(ExclusiveStartKey) : null,
+            ExpressionAttributeNames = ExpressionAttributeNames != null ? new Dictionary<string, string>(ExpressionAttributeNames) : new Dictionary<string, string>(),
+            ExpressionAttributeValues = ExpressionAttributeValues != null ? new Dictionary<string, AttributeValue>(ExpressionAttributeValues) : new Dictionary<string, AttributeValue>(),
             FilterExpression = FilterExpression,
             IndexName = IndexName,
             KeyConditionExpression = KeyConditionExpression,
-            KeyConditions = new Dictionary<string, Condition>(KeyConditions),
+            KeyConditions = KeyConditions != null ? new Dictionary<string, Condition>(KeyConditions) : null,
             Limit = Limit,
             ProjectionExpression = ProjectionExpression,
-            QueryFilter = new Dictionary<string, Condition>(QueryFilter),
+            QueryFilter = QueryFilter != null ? new Dictionary<string, Condition>(QueryFilter) : null,
             ReturnConsumedCapacity = ReturnConsumedCapacity,
             ScanIndexForward = ScanIndexForward,                                
         }.SetSelect(base.Select);
@@ -167,12 +174,14 @@ public class QueryExpression<T> : QueryExpression
     {
         if (args != null)
         {
+            this.ExpressionAttributeValues ??= new Dictionary<string, AttributeValue>();
             Db.ToExpressionAttributeValues(args).Each(x =>
                 this.ExpressionAttributeValues[x.Key] = x.Value);
         }
 
         if (aliases != null)
         {
+            this.ExpressionAttributeNames ??= new Dictionary<string, string>();
             foreach (var entry in aliases)
             {
                 this.ExpressionAttributeNames[entry.Key] = entry.Value;

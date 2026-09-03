@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System.Collections.Generic;
@@ -33,19 +33,23 @@ public static class DynamoQueryUtils
         var alias = "#" + field.Substring(0, 2).ToUpper();
         bool aliasExists = false;
 
-        foreach (var entry in q.ExpressionAttributeNames)
+        var exprNames = q.ExpressionAttributeNames;
+        if (exprNames != null)
         {
-            if (entry.Value == field)
-                return entry.Key;
+            foreach (var entry in exprNames)
+            {
+                if (entry.Value == field)
+                    return entry.Key;
 
-            if (entry.Key == alias)
-                aliasExists = true;
+                if (entry.Key == alias)
+                    aliasExists = true;
+            }
+
+            if (aliasExists)
+                alias += exprNames.Count;
+
+            exprNames[alias] = field;
         }
-
-        if (aliasExists)
-            alias += q.ExpressionAttributeNames.Count;
-
-        q.ExpressionAttributeNames[alias] = field;
         return alias;
     }
 

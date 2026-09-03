@@ -1,4 +1,4 @@
-﻿#if NETCORE
+#if NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
+using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.Aws
 {
@@ -44,17 +45,17 @@ namespace ServiceStack.Aws
 
         public static PutItemResponse PutItem(this IAmazonDynamoDB client, PutItemRequest request)
         {
-            return client.PutItemAsync(request).GetResult();
+            return client.PutItemAsync(request.Prepare()).GetResult();
         }
 
         public static UpdateItemResponse UpdateItem(this IAmazonDynamoDB client, UpdateItemRequest request)
         {
-            return client.UpdateItemAsync(request).GetResult();
+            return client.UpdateItemAsync(request.Prepare()).GetResult();
         }
 
         public static DeleteItemResponse DeleteItem(this IAmazonDynamoDB client, DeleteItemRequest request)
         {
-            return client.DeleteItemAsync(request).GetResult();
+            return client.DeleteItemAsync(request.Prepare()).GetResult();
         }
 
         public static BatchGetItemResponse BatchGetItem(this IAmazonDynamoDB client, BatchGetItemRequest request)
@@ -69,12 +70,12 @@ namespace ServiceStack.Aws
 
         public static ScanResponse Scan(this IAmazonDynamoDB client, ScanRequest request)
         {
-            return client.ScanAsync(request).GetResult();
+            return client.ScanAsync(request.Prepare()).GetResult();
         }
 
         public static QueryResponse Query(this IAmazonDynamoDB client, QueryRequest request)
         {
-            return client.QueryAsync(request).GetResult();
+            return client.QueryAsync(request.Prepare()).GetResult();
         }
 
         public static ListBucketsResponse ListBuckets(this IAmazonS3 client, ListBucketsRequest request)
