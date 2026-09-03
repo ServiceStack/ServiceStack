@@ -22,31 +22,40 @@ public static class ServiceStackOpenApiExtensions
         // configuration is needed, but it's currently a no-op.
     }
 
-    public static void AddOpenApi(this ServiceStackServicesOptions options, Action<OpenApiMetadata>? configure = null)
+    public static void AddOpenApi(this ServiceStackServicesOptions options, Action<OpenApiMetadata>? configure = null) =>
+        options.AddOpenApi(OpenApiMetadata.Instance, configure);
+
+    public static void AddOpenApi(this ServiceStackServicesOptions options, OpenApiMetadata metadata, Action<OpenApiMetadata>? configure = null)
     {
-        configure?.Invoke(OpenApiMetadata.Instance);
+        configure?.Invoke(metadata);
 
-        options.Services!.AddSingleton(OpenApiMetadata.Instance);
-        options.Services!.AddSingleton<IConfigureOptions<OpenApiOptions>, ConfigureServiceStackOpenApi>();
-        options.Services!.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackOpenApi>();
+        if (options.Services != null)
+        {
+            options.Services.AddSingleton(metadata);
+            options.Services.AddSingleton<IConfigureOptions<OpenApiOptions>, ConfigureServiceStackOpenApi>();
+            options.Services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackOpenApi>();
 
-        options.Services!.ConfigurePlugin<MetadataFeature>(feature => {
-            feature.AddPluginLink("/openapi/v1.json", "OpenAPI");
-        });
+            options.Services.ConfigurePlugin<MetadataFeature>(feature => {
+                feature.AddPluginLink("/openapi/v1.json", "OpenAPI");
+            });
+        }
     }
 
-    public static void AddServiceStackOpenApi(this IServiceCollection services, string documentName = "v1", Action<OpenApiMetadata>? configure = null)
-    {
-        configure?.Invoke(OpenApiMetadata.Instance);
+    public static void AddServiceStackOpenApi(this IServiceCollection services, string documentName = "v1", Action<OpenApiMetadata>? configure = null) =>
+        services.AddServiceStackOpenApi(OpenApiMetadata.Instance, documentName, configure);
 
-        services.AddSingleton(OpenApiMetadata.Instance);
+    public static void AddServiceStackOpenApi(this IServiceCollection services, OpenApiMetadata metadata, string documentName = "v1", Action<OpenApiMetadata>? configure = null)
+    {
+        configure?.Invoke(metadata);
+
+        services.AddSingleton(metadata);
 
         // Register the transformer types as services so they can be DI-activated
-        foreach (var transformerType in OpenApiMetadata.Instance.DocumentTransformerTypes)
+        foreach (var transformerType in metadata.DocumentTransformerTypes)
         {
             services.AddTransient(transformerType);
         }
-        foreach (var transformerType in OpenApiMetadata.Instance.SchemaTransformerTypes)
+        foreach (var transformerType in metadata.SchemaTransformerTypes)
         {
             services.AddTransient(transformerType);
         }
@@ -56,25 +65,31 @@ public static class ServiceStackOpenApiExtensions
         services.PostConfigure<OpenApiOptions>(documentName, options =>
         {
             // Register document transformers using DI activation
-            foreach (var transformerType in OpenApiMetadata.Instance.DocumentTransformerTypes)
+            foreach (var transformerType in metadata.DocumentTransformerTypes)
             {
                 // Use reflection to call AddDocumentTransformer<T>()
                 var method = typeof(OpenApiOptions).GetMethod(nameof(OpenApiOptions.AddDocumentTransformer),
                     System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
                     null, Type.EmptyTypes, null);
-                var genericMethod = method!.MakeGenericMethod(transformerType);
-                genericMethod.Invoke(options, null);
+                if (method != null)
+                {
+                    var genericMethod = method.MakeGenericMethod(transformerType);
+                    genericMethod.Invoke(options, null);
+                }
             }
 
             // Register schema transformers using DI activation
-            foreach (var transformerType in OpenApiMetadata.Instance.SchemaTransformerTypes)
+            foreach (var transformerType in metadata.SchemaTransformerTypes)
             {
                 // Use reflection to call AddSchemaTransformer<T>()
                 var method = typeof(OpenApiOptions).GetMethod(nameof(OpenApiOptions.AddSchemaTransformer),
                     System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
                     null, Type.EmptyTypes, null);
-                var genericMethod = method!.MakeGenericMethod(transformerType);
-                genericMethod.Invoke(options, null);
+                if (method != null)
+                {
+                    var genericMethod = method.MakeGenericMethod(transformerType);
+                    genericMethod.Invoke(options, null);
+                }
             }
         });
 

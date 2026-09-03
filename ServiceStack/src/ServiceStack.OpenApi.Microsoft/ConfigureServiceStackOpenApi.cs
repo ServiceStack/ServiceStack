@@ -17,7 +17,6 @@ public class ConfigureServiceStackOpenApi(OpenApiMetadata metadata, IServiceProv
         {
             // Create instance and register it
             var instance = ActivatorUtilities.CreateInstance(serviceProvider, transformerType);
-        Console.WriteLine($"ConfigureServiceStackOpenApi.Configure called with {metadata.DocumentTransformerTypes.Count} transformers");
             if (instance is IOpenApiDocumentTransformer documentTransformer)
             {
                 options.AddDocumentTransformer(documentTransformer);

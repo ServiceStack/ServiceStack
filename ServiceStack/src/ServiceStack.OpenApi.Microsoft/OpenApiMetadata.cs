@@ -1,8 +1,9 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
 using ServiceStack.Host;
@@ -113,7 +114,7 @@ public class OpenApiMetadata
     };
 
     public ConcurrentDictionary<string, OpenApiSchema> Schemas { get; } = new();
-    internal static List<string> InlineSchemaTypesInNamespaces { get; set; } = new();
+    public List<string> InlineSchemaTypesInNamespaces { get; set; } = new();
 
     public OpenApiSecurityScheme? SecurityDefinition { get; set; }
 
@@ -169,42 +170,48 @@ public class OpenApiMetadata
             {
                 // Move path parameters from body
                 var inPaths = new List<string>();
-                foreach (var entry in openApiType.Properties)
+                if (openApiType.Properties != null)
                 {
-                    var inPath = route.Contains("{" + entry.Key + "}", StringComparison.OrdinalIgnoreCase);
-                    if (inPath)
+                    foreach (var entry in openApiType.Properties)
                     {
-                        var propNameUsed = route.Contains("{" + entry.Key + "}")
-                            ? entry.Key
-                            : TypeProperties.Get(operation.RequestType).GetPublicProperty(entry.Key)?.Name
-                              ?? throw new ArgumentException($"Could not find property '{entry.Key}' for route '{route}' in Request {operation.RequestType.Name}");
-                        inPaths.Add(entry.Key);
-                        IOpenApiSchema prop = entry.Value;
-                        if (op.Parameters == null)
-                            op.Parameters = new List<IOpenApiParameter>();
-                        op.Parameters.Add(new OpenApiParameter
+                        var inPath = route.Contains("{" + entry.Key + "}", StringComparison.OrdinalIgnoreCase)
+                            || route.Contains("{" + entry.Key + "*", StringComparison.OrdinalIgnoreCase)
+                            || route.Contains("{" + entry.Key + ":", StringComparison.OrdinalIgnoreCase);
+                        if (inPath)
                         {
-                            Name = propNameUsed,
-                            In = ParameterLocation.Path,
-                            Required = true,
-                            Schema = prop,
-                            Style = ParameterStyle.Simple,
-                            Explode = true,
-                        });
+                            var propNameUsed = TypeProperties.Get(operation.RequestType).GetPublicProperty(entry.Key)?.Name
+                                ?? entry.Key;
+                            inPaths.Add(entry.Key);
+                            IOpenApiSchema prop = entry.Value;
+                            if (op.Parameters == null)
+                                op.Parameters = new List<IOpenApiParameter>();
+                            op.Parameters.Add(new OpenApiParameter
+                            {
+                                Name = propNameUsed,
+                                In = ParameterLocation.Path,
+                                Required = true,
+                                Schema = prop,
+                                Style = ParameterStyle.Simple,
+                                Explode = true,
+                            });
+                        }
                     }
                 }
 
                 var formSchema = openApiType.CreateShallowCopy();
-                foreach (var propName in inPaths)
+                if (formSchema.Properties != null)
                 {
-                    formSchema.Properties.Remove(propName);
+                    foreach (var propName in inPaths)
+                    {
+                        formSchema.Properties.Remove(propName);
+                    }
                 }
 
                 var formType = new OpenApiMediaType
                 {
                     Schema = formSchema,
                 };
-                if (formSchema.Properties.Count > 0)
+                if (formSchema.Properties != null && formSchema.Properties.Count > 0)
                 {
                     formType.Encoding ??= new OrderedDictionary<string, OpenApiEncoding>();
                     foreach (var entry in formSchema.Properties)
@@ -231,7 +238,7 @@ public class OpenApiMetadata
 
         if (operation.RequiresAuthentication)
         {
-            if (SecurityDefinition != null && hostDocument != null)
+            if (SecurityDefinition?.Scheme != null && hostDocument != null)
             {
                 op.Security ??= new List<OpenApiSecurityRequirement>();
                 op.Security.Add(OpenApiSecurity.CreateSecurityRequirement(SecurityDefinition.Scheme, hostDocument));
@@ -239,7 +246,7 @@ public class OpenApiMetadata
         }
         if (operation.RequiresApiKey)
         {
-            if (ApiKeySecurityDefinition != null && hostDocument != null)
+            if (ApiKeySecurityDefinition?.Scheme != null && hostDocument != null)
             {
                 op.Security ??= new List<OpenApiSecurityRequirement>();
                 op.Security.Add(OpenApiSecurity.CreateSecurityRequirement(ApiKeySecurityDefinition.Scheme, hostDocument));
@@ -252,7 +259,11 @@ public class OpenApiMetadata
             // Clear the endpoint out of the first (ServiceName) tag, so the API only appears once under its custom tag
             op.Tags ??= new HashSet<OpenApiTagReference>();
             op.Tags.Clear();
-            userTags.Each(tag => op.Tags.Add(new OpenApiTagReference(tag)));
+            foreach (var tag in userTags)
+            {
+                if (tag != null)
+                    op.Tags.Add(new OpenApiTagReference(tag));
+            }
         }
 
         OperationFilter?.Invoke(verb, op, operation);
@@ -451,7 +462,9 @@ public class OpenApiMetadata
             if (hasDataContract && attr == null)
                 continue;
 
-            var inPath = route.Contains("{" + propertyName + "}", StringComparison.OrdinalIgnoreCase);
+            var inPath = route.Contains("{" + propertyName + "}", StringComparison.OrdinalIgnoreCase)
+                || route.Contains("{" + propertyName + "*", StringComparison.OrdinalIgnoreCase)
+                || route.Contains("{" + propertyName + ":", StringComparison.OrdinalIgnoreCase);
             var paramLocation = inPath
                 ? ParameterLocation.Path
                 : ParameterLocation.Query;
@@ -571,7 +584,7 @@ public class OpenApiMetadata
 
         if (IsInlineSchema(propType))
         {
-            openApiSchema = CreateSchema(propType);
+            openApiSchema = CreateSchema(propType) ?? new OpenApiSchema();
         }
         else
         {
@@ -636,7 +649,10 @@ public class OpenApiMetadata
         return parameter;
     }
 
-    private static string GetSchemaDefinitionRef(Type schemaType) => GetSchemaTypeName(schemaType);
+    private static readonly Regex schemaRefRegex = new("[^A-Za-z0-9\\.\\-_]", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+    public static string GetSchemaDefinitionRef(Type schemaType) =>
+        schemaRefRegex.Replace(GetSchemaTypeName(schemaType), "_");
 
     private IOpenApiSchema GetOpenApiProperty(PropertyInfo pi)
     {
@@ -698,7 +714,7 @@ public class OpenApiMetadata
         else if (IsDictionaryType(propertyType))
         {
             var schemaProp = CreateDictionarySchema(propertyType);
-            return ApplyNullable(schemaProp, isNullable);
+            return ApplyNullable(schemaProp ?? new OpenApiSchema(), isNullable);
         }
         else if (propertyType.IsEnum)
         {
@@ -872,11 +888,11 @@ public class OpenApiMetadata
             var propDataMemberAttrs = properties.ToDictionary(prop => prop, prop => prop.FirstAttribute<DataMemberAttribute>());
 
             properties = propsWithDataMember
-                .OrderBy(prop => propDataMemberAttrs[prop].Order)                // Order by DataMember.Order
-                .ThenByDescending(prop => typeOrder.IndexOf(prop.DeclaringType)) // Then by BaseTypes First
+                .OrderBy(prop => propDataMemberAttrs[prop]?.Order ?? 0)                // Order by DataMember.Order
+                .ThenByDescending(prop => prop.DeclaringType != null ? typeOrder.IndexOf(prop.DeclaringType) : -1) // Then by BaseTypes First
                 .ThenBy(prop =>                                                  // Then by [DataMember].Name / prop.Name
                 {
-                    var name = propDataMemberAttrs[prop].Name;
+                    var name = propDataMemberAttrs[prop]?.Name;
                     return name.IsNullOrEmpty() ? prop.Name : name;
                 }).ToArray();
         }
@@ -946,6 +962,7 @@ public class OpenApiMetadata
 
                     SchemaPropertyFilter?.Invoke(openApiSchema);
                 }
+                schema.Properties ??= new OrderedDictionary<string, IOpenApiSchema>();
                 schema.Properties[schemaPropertyName] = schemaProperty;
             }
         }
@@ -1054,11 +1071,15 @@ public class OpenApiMetadata
         {
             Description = !string.IsNullOrEmpty(schemaDescription) ? schemaDescription : "Success"
         };
-        var content = response.Content ??= new OrderedDictionary<string, OpenApiMediaType>();
-        content[MimeTypes.Json] = new OpenApiMediaType
+        var is204 = statusCode == ((int)HttpStatusCode.NoContent).ToString();
+        if (!is204)
         {
-            Schema = responseSchema,
-        };
+            var content = response.Content ??= new OrderedDictionary<string, OpenApiMediaType>();
+            content[MimeTypes.Json] = new OpenApiMediaType
+            {
+                Schema = responseSchema,
+            };
+        }
         responses.Add(statusCode, response);
 
         foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())

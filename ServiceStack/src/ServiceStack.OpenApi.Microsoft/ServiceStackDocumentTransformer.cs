@@ -20,12 +20,12 @@ public class ServiceStackDocumentTransformer(OpenApiMetadata metadata) : IOpenAp
 
         // Use AddComponent to properly register security schemes with the workspace
         // This is required for OpenApiSecuritySchemeReference.Target to resolve correctly
-        if (metadata.SecurityDefinition != null)
+        if (metadata.SecurityDefinition?.Scheme != null)
         {
             document.AddComponent(metadata.SecurityDefinition.Scheme, metadata.SecurityDefinition);
         }
 
-        if (metadata.ApiKeySecurityDefinition != null)
+        if (metadata.ApiKeySecurityDefinition?.Scheme != null)
         {
             document.AddComponent(metadata.ApiKeySecurityDefinition.Scheme, metadata.ApiKeySecurityDefinition);
         }
@@ -60,7 +60,7 @@ public class ServiceStackDocumentTransformer(OpenApiMetadata metadata) : IOpenAp
             {
                 document.Components ??= new OpenApiComponents();
                 document.Components.Schemas ??= new Dictionary<string, IOpenApiSchema>();
-                document.Components.Schemas[OpenApiMetadata.GetSchemaTypeName(type)] = schema;
+                document.Components.Schemas[OpenApiMetadata.GetSchemaDefinitionRef(type)] = schema;
             }
         }
 
@@ -121,6 +121,7 @@ public class ServiceStackDocumentTransformer(OpenApiMetadata metadata) : IOpenAp
 
                     // Responses
                     var responses = GetResponses(metadata, restPath, requestType);
+                    openApiOp.Responses ??= new OpenApiResponses();
                     foreach (var entry in responses)
                     {
                         openApiOp.Responses[entry.Key] = entry.Value;
@@ -130,8 +131,11 @@ public class ServiceStackDocumentTransformer(OpenApiMetadata metadata) : IOpenAp
                     var userTags = requestType.AllAttributes<TagAttribute>().Map(x => x.Name);
                     foreach (var tag in userTags)
                     {
-                        openApiOp.Tags ??= new HashSet<OpenApiTagReference>();
-                        openApiOp.Tags.Add(new OpenApiTagReference(tag));
+                        if (tag != null)
+                        {
+                            openApiOp.Tags ??= new HashSet<OpenApiTagReference>();
+                            openApiOp.Tags.Add(new OpenApiTagReference(tag));
+                        }
                     }
 
                     // Map verb to HttpMethod and add operation to path
