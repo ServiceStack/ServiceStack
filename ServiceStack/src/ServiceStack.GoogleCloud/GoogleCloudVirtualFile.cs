@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using Google.Cloud.Storage.V1;
 using ServiceStack.IO;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using Object = Google.Apis.Storage.v1.Data.Object;
 
@@ -40,13 +41,13 @@ public class GoogleCloudVirtualFile : AbstractVirtualFileBase
 
     public string? Etag { get; set; }
 
-    public Stream Stream { get; set; }
+    public Stream? Stream { get; set; }
 
     public GoogleCloudVirtualFile Init(Object response)
     {
         FilePath = response.Name;
         ContentType = response.ContentType;
-        FileLastModified = response.Updated ?? DateTime.UtcNow;
+        FileLastModified = response.UpdatedDateTimeOffset?.UtcDateTime ?? DateTime.UtcNow;
         ContentLength = (long)(response.Size ?? 0);
         Etag = response.ETag;
         Stream = new MemoryStream();
@@ -58,36 +59,44 @@ public class GoogleCloudVirtualFile : AbstractVirtualFileBase
     {
         if (Stream is not { CanRead: true })
         {
-            var response = Client.GetObject(bucket:BucketName, objectName:FilePath);
+            if (FilePath == null)
+                throw new InvalidOperationException("FilePath is not set");
+
+            var response = Client.GetObject(bucket: BucketName, objectName: FilePath);
             Init(response);
         }
         if (Stream is { CanSeek: true })
         {
             Stream.Position = 0;
         }
-        return Stream;
+        return Stream ?? Stream.Null;
     }
 
     public override void Refresh()
     {
+        if (FilePath == null)
+            return;
+
         try
         {
             // Optimize with ETag
-            var response = Client.GetObject(bucket:BucketName, objectName:FilePath);
+            var response = Client.GetObject(bucket: BucketName, objectName: FilePath);
             Init(response);
         }
-        catch (Exception ex)
+        catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            // if (ex.StatusCode != HttpStatusCode.NotModified)
-            //     throw;
+            // Object was deleted remotely
         }
     }
 
     public override async Task WritePartialToAsync(Stream toStream, long start, long end, CancellationToken token = default)
     {
+        if (FilePath == null)
+            throw new InvalidOperationException("FilePath is not set");
+
         await Client.DownloadObjectAsync(bucket: BucketName, objectName: FilePath, destination: toStream,
             new DownloadObjectOptions {
                 Range = new RangeHeaderValue(start, end)
-            }, token);
+            }, token).ConfigAwait();
     }
 }

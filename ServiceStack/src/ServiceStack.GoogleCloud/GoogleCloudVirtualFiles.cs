@@ -20,8 +20,8 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
 
     public GoogleCloudVirtualFiles(StorageClient client, string bucketName)
     {
-        this.StorageClient = client;
-        this.BucketName = bucketName;
+        this.StorageClient = client ?? throw new ArgumentNullException(nameof(client));
+        this.BucketName = bucketName ?? throw new ArgumentNullException(nameof(bucketName));
         this.rootDirectory = new GoogleCloudVirtualDirectory(this, null, null);
     }
 
@@ -48,7 +48,7 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
             var dirPath = GetDirPath(filePath);
             var dir = dirPath == null
                 ? RootDirectory
-                : GetParentDirectory(dirPath);
+                : GetParentDirectory(dirPath) ?? RootDirectory;
             return new GoogleCloudVirtualFile(this, dir).Init(response);
         }
         catch (GoogleApiException ex)
@@ -60,12 +60,12 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
         }
     }
 
-    protected GoogleCloudVirtualDirectory? GetParentDirectory(string dirPath)
+    protected GoogleCloudVirtualDirectory? GetParentDirectory(string? dirPath)
     {
         if (string.IsNullOrEmpty(dirPath))
             return null;
 
-        var parentDirPath = GetDirPath(dirPath.TrimEnd(DirSep));
+        var parentDirPath = GetDirPath(dirPath!.TrimEnd(DirSep));
         var parentDir = parentDirPath != null
             ? GetParentDirectory(parentDirPath)
             : (GoogleCloudVirtualDirectory)RootDirectory;
@@ -81,9 +81,9 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
         if (string.IsNullOrEmpty(dirPath))
             return RootDirectory;
 
-        var seekPath = dirPath[dirPath.Length - 1] != DirSep
-            ? dirPath + DirSep
-            : dirPath;
+        var seekPath = dirPath!.EndsWith(DirSep.ToString())
+            ? dirPath!
+            : dirPath! + DirSep;
 
         PagedEnumerable<Objects, Object>? response = StorageClient.ListObjects(bucket:BucketName, prefix:seekPath);
 
@@ -149,11 +149,11 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
         }
         else throw new NotSupportedException($"Unknown File Content Type: {contents.GetType().Name}");
 
-        if (buffer && fileContents.Stream != null) // Dispose MemoryStream buffer created by FileContents
+        if (buffer && fileContents?.Stream != null) // Dispose MemoryStream buffer created by FileContents
             using (fileContents.Stream) {}
     }
 
-    public virtual void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
+    public virtual void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string>? toPath = null)
     {
         this.CopyFrom(files, toPath);
     }
@@ -192,16 +192,16 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
 
     public virtual void DeleteFolder(string dirPath)
     {
-        dirPath = SanitizePath(dirPath);
-        var nestedFiles = EnumerateFiles(dirPath).Map(x => x.FilePath);
+        var sanitizedDirPath = SanitizePath(dirPath);
+        var nestedFiles = EnumerateFiles(sanitizedDirPath).Select(x => x.FilePath).OfType<string>().ToList();
         DeleteFiles(nestedFiles);
     }
 
 #if NET6_0_OR_GREATER
-    public virtual async Task DeleteFolderAsync(string dirPath, CancellationToken token=default)
+    public virtual async Task DeleteFolderAsync(string dirPath, CancellationToken token = default)
     {
-        dirPath = SanitizePath(dirPath);
-        var nestedFiles = await EnumerateFilesAsync(dirPath, token).Select(x => x.FilePath).ToListAsync(token);
+        var sanitizedDirPath = SanitizePath(dirPath);
+        var nestedFiles = (await EnumerateFilesAsync(sanitizedDirPath, token).Select(x => x.FilePath).ToListAsync(token)).OfType<string>().ToList();
         DeleteFiles(nestedFiles);
     }
 #endif    
@@ -219,20 +219,20 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
             {
                 FilePath = filePath,
                 ContentLength = (long)(file.Size ?? 0),
-                FileLastModified = file.Updated ?? DateTime.UtcNow,
+                FileLastModified = file.UpdatedDateTimeOffset?.UtcDateTime ?? DateTime.UtcNow,
                 Etag = file.ETag,
             };
         }
     }
 
 #if NET6_0_OR_GREATER
-    public virtual async IAsyncEnumerable<GoogleCloudVirtualFile> EnumerateFilesAsync(string? prefix = null, CancellationToken token = default)
+    public virtual async IAsyncEnumerable<GoogleCloudVirtualFile> EnumerateFilesAsync(string? prefix = null, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken token = default)
     {
         var response = StorageClient.ListObjectsAsync(
             bucket:BucketName,
             prefix:prefix);
 
-        await foreach (var file in response)
+        await foreach (var file in response.WithCancellation(token))
         {
             var filePath = SanitizePath(file.Name);
 
@@ -241,7 +241,7 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
             {
                 FilePath = filePath,
                 ContentLength = (long)(file.Size ?? 0),
-                FileLastModified = file.Updated ?? DateTime.UtcNow,
+                FileLastModified = file.UpdatedDateTimeOffset?.UtcDateTime ?? DateTime.UtcNow,
                 Etag = file.ETag,
             };
         }
@@ -257,27 +257,27 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
     public IAsyncEnumerable<GoogleCloudVirtualFile> GetAllFilesAsync(CancellationToken token=default) => EnumerateFilesAsync(token:token);
 #endif
 
-    public virtual IEnumerable<GoogleCloudVirtualDirectory> GetImmediateDirectories(string fromDirPath)
+    public virtual IEnumerable<GoogleCloudVirtualDirectory> GetImmediateDirectories(string? fromDirPath)
     {
         var files = EnumerateFiles(fromDirPath);
         var dirPaths = files
             .Map(x => x.DirPath)
             .Distinct()
             .Map(x => GetImmediateSubDirPath(fromDirPath, x))
-            .Where(x => x != null)
+            .Where(x => !string.IsNullOrEmpty(x))
             .Distinct();
 
         return dirPaths.Select(x => new GoogleCloudVirtualDirectory(this, x, GetParentDirectory(x)));
     }
 
 #if NET6_0_OR_GREATER
-    public virtual IAsyncEnumerable<GoogleCloudVirtualDirectory> GetImmediateDirectoriesAsync(string fromDirPath, CancellationToken token=default)
+    public virtual IAsyncEnumerable<GoogleCloudVirtualDirectory> GetImmediateDirectoriesAsync(string? fromDirPath, CancellationToken token = default)
     {
         var dirPaths = EnumerateFilesAsync(fromDirPath, token)
             .Select(x => x.DirPath)
             .Distinct()
             .Select(x => GetImmediateSubDirPath(fromDirPath, x))
-            .Where(x => x != null)
+            .Where(x => !string.IsNullOrEmpty(x))
             .Distinct();
 
         var parentDir = GetParentDirectory(fromDirPath);
@@ -285,44 +285,44 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
     }
 #endif
     
-    public virtual IEnumerable<GoogleCloudVirtualFile> GetImmediateFiles(string fromDirPath)
+    public virtual IEnumerable<GoogleCloudVirtualFile> GetImmediateFiles(string? fromDirPath)
     {
         return EnumerateFiles(fromDirPath)
             .Where(x => x.DirPath == fromDirPath);
     }
     
 #if NET6_0_OR_GREATER
-    public virtual IAsyncEnumerable<GoogleCloudVirtualFile> GetImmediateFilesAsync(string fromDirPath, CancellationToken token=default)
+    public virtual IAsyncEnumerable<GoogleCloudVirtualFile> GetImmediateFilesAsync(string? fromDirPath, CancellationToken token = default)
     {
         return EnumerateFilesAsync(fromDirPath, token)
             .Where(x => x.DirPath == fromDirPath);
     }
 #endif
 
-    public virtual string? GetDirPath(string filePath)
+    public virtual string? GetDirPath(string? filePath)
     {
         if (string.IsNullOrEmpty(filePath))
             return null;
 
-        var lastDirPos = filePath.LastIndexOf(DirSep);
+        var lastDirPos = filePath!.LastIndexOf(DirSep);
         return lastDirPos >= 0
             ? filePath.Substring(0, lastDirPos)
             : null;
     }
 
-    public virtual string? GetImmediateSubDirPath(string? fromDirPath, string subDirPath)
+    public virtual string? GetImmediateSubDirPath(string? fromDirPath, string? subDirPath)
     {
         if (string.IsNullOrEmpty(subDirPath))
             return null;
 
         if (fromDirPath == null)
         {
-            return subDirPath.CountOccurrencesOf(DirSep) == 0 
+            return subDirPath!.CountOccurrencesOf(DirSep) == 0 
                 ? subDirPath
                 : subDirPath.LeftPart(DirSep);
         }
 
-        if (!subDirPath.StartsWith(fromDirPath))
+        if (!subDirPath!.StartsWith(fromDirPath))
             return null;
 
         return fromDirPath.CountOccurrencesOf(DirSep) == subDirPath.CountOccurrencesOf(DirSep) - 1 
@@ -330,33 +330,37 @@ public partial class GoogleCloudVirtualFiles : AbstractVirtualPathProviderBase, 
             : null;
     }
 
-    public override string? SanitizePath(string filePath)
+    public override string? SanitizePath(string? filePath)
     {
-        var sanitizedPath = string.IsNullOrEmpty(filePath)
-            ? null
-            : (filePath[0] == DirSep ? filePath.Substring(1) : filePath);
+        if (string.IsNullOrEmpty(filePath))
+            return null;
 
-        return sanitizedPath?.Replace('\\', DirSep);
+        var sanitizedPath = filePath.Replace('\\', DirSep);
+        return sanitizedPath[0] == DirSep ? sanitizedPath.Substring(1) : sanitizedPath;
     }
 
-    public static string GetFileName(string filePath)
+    public static string? GetFileName(string? filePath)
     {
-        return filePath.SplitOnLast(DirSep).Last();
+        return filePath?.SplitOnLast(DirSep).Last();
     }
     
     public virtual void ClearBucket()
     {
         var allFilePaths = EnumerateFiles()
-            .Map(x => x.FilePath);
+            .Select(x => x.FilePath)
+            .OfType<string>()
+            .ToList();
 
         DeleteFiles(allFilePaths);
     }
  
 #if NET6_0_OR_GREATER
-    public virtual async Task ClearBucketAsync(CancellationToken token=default)
+    public virtual async Task ClearBucketAsync(CancellationToken token = default)
     {
-        var allFilePaths = await EnumerateFilesAsync(token:token)
-            .Select(x => x.FilePath).ToListAsync(token);
+        var allFilePaths = (await EnumerateFilesAsync(token: token)
+            .Select(x => x.FilePath).ToListAsync(token))
+            .OfType<string>()
+            .ToList();
 
         DeleteFiles(allFilePaths);
     }

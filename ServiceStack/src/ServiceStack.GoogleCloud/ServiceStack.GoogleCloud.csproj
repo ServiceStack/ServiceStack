@@ -9,7 +9,7 @@
             ServiceStack integration for Google Cloud Platform (GCP) including:
             - GoogleCloudVirtualFiles - A read/write Virtual FileSystem around Google Cloud Object Storage
         </PackageDescription>
-        <PackageTags>ServiceStack;AWS;Amazon;WebServices;DynamoDb;S3;SQS;Cache;CacheClient</PackageTags>
+        <PackageTags>ServiceStack;Google;Cloud;GCP;Storage;VirtualFiles;Speech;SpeechToText</PackageTags>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER</DefineConstants>

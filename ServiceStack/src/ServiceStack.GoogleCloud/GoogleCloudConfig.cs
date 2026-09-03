@@ -12,12 +12,16 @@ public class GoogleCloudConfig
     public string RecognizerModel { get; set; } = "latest_short";
     public string[] RecognizerLanguageCodes { get; set; } = { "en-US", "en-AU" };
 
-    public GoogleCloudConfig ToSpeechToTextConfig(Action<GoogleCloudConfig>? configure=null)
+    public GoogleCloudConfig ToSpeechToTextConfig(Action<GoogleCloudConfig>? configure = null)
     {
 #if NET6_0_OR_GREATER        
         ArgumentNullException.ThrowIfNull(Project, nameof(Project));
         ArgumentNullException.ThrowIfNull(Location, nameof(Location));
         ArgumentNullException.ThrowIfNull(Bucket, nameof(Bucket));
+#else
+        if (Project == null) throw new ArgumentNullException(nameof(Project));
+        if (Location == null) throw new ArgumentNullException(nameof(Location));
+        if (Bucket == null) throw new ArgumentNullException(nameof(Bucket));
 #endif
 
         var to = Clone();
@@ -36,9 +40,9 @@ public class GoogleCloudConfig
     {
         var googleCredentials = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
         if (string.IsNullOrEmpty(googleCredentials))
-            throw new Exception("GOOGLE_APPLICATION_CREDENTIALS Environment Variable not set");
+            throw new InvalidOperationException("GOOGLE_APPLICATION_CREDENTIALS Environment Variable not set");
         if (!File.Exists(googleCredentials))
-            throw new Exception($"GOOGLE_APPLICATION_CREDENTIALS '{googleCredentials}' does not exist");
+            throw new FileNotFoundException($"GOOGLE_APPLICATION_CREDENTIALS '{googleCredentials}' does not exist", googleCredentials);
     }
 
     public GoogleCloudConfig Clone() => new()

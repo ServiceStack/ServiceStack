@@ -1,4 +1,4 @@
-﻿using Google.Cloud.Speech.V2;
+using Google.Cloud.Speech.V2;
 using Google.Protobuf;
 using ServiceStack.AI;
 using ServiceStack.IO;
@@ -20,7 +20,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
 
     public async Task InitAsync(InitSpeechToText config, CancellationToken token = default)
     {
-        if (config.PhraseWeights != null)
+        if (config.PhraseWeights != null && Config.PhraseSetId != null)
         {
             try
             {
@@ -29,7 +29,7 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
                     PhraseSetName = new PhraseSetName(Config.Project, Config.Location, Config.PhraseSetId)
                 }).ConfigAwait();
             }
-            catch (Exception ignoreNonExistingPhraseSet) {}
+            catch (Exception) {}
 
             await SpeechClient.CreatePhraseSetAsync(new CreatePhraseSetRequest
             {
@@ -44,38 +44,41 @@ public class GoogleCloudSpeechToText : ISpeechToText, IRequireVirtualFiles
                 }
             }).ConfigAwait();
         }
-        
-        try
-        {
-            await SpeechClient.DeleteRecognizerAsync(new DeleteRecognizerRequest
-            {
-                RecognizerName = new RecognizerName(Config.Project, Config.Location, Config.RecognizerId)
-            }).ConfigAwait();
-        }
-        catch (Exception ignoreNonExistingRecognizer) {}
 
-        var request = new CreateRecognizerRequest
+        if (Config.RecognizerId != null)
         {
-            Parent = $"projects/{Config.Project}/locations/{Config.Location}",
-            RecognizerId = Config.RecognizerId,
-            Recognizer = new Recognizer
+            try
             {
-                DefaultRecognitionConfig = Config.ToRecognitionConfig(),
-            },
-        };
-        if (Config.PhraseSetId != null)
-        {
-            request.Recognizer.DefaultRecognitionConfig.Adaptation ??= new();
-            if (request.Recognizer.DefaultRecognitionConfig.Adaptation.PhraseSets.Count == 0)
-            {
-                request.Recognizer.DefaultRecognitionConfig.Adaptation.PhraseSets.Add(new SpeechAdaptation.Types.AdaptationPhraseSet
+                await SpeechClient.DeleteRecognizerAsync(new DeleteRecognizerRequest
                 {
-                    PhraseSet = $"projects/{Config.Project}/locations/{Config.Location}/phraseSets/{Config.PhraseSetId}"
-                });
+                    RecognizerName = new RecognizerName(Config.Project, Config.Location, Config.RecognizerId)
+                }).ConfigAwait();
             }
-        }
+            catch (Exception) {}
 
-        await SpeechClient.CreateRecognizerAsync(request).ConfigAwait();
+            var request = new CreateRecognizerRequest
+            {
+                Parent = $"projects/{Config.Project}/locations/{Config.Location}",
+                RecognizerId = Config.RecognizerId,
+                Recognizer = new Recognizer
+                {
+                    DefaultRecognitionConfig = Config.ToRecognitionConfig(),
+                },
+            };
+            if (Config.PhraseSetId != null)
+            {
+                request.Recognizer.DefaultRecognitionConfig.Adaptation ??= new();
+                if (request.Recognizer.DefaultRecognitionConfig.Adaptation.PhraseSets.Count == 0)
+                {
+                    request.Recognizer.DefaultRecognitionConfig.Adaptation.PhraseSets.Add(new SpeechAdaptation.Types.AdaptationPhraseSet
+                    {
+                        PhraseSet = $"projects/{Config.Project}/locations/{Config.Location}/phraseSets/{Config.PhraseSetId}"
+                    });
+                }
+            }
+
+            await SpeechClient.CreateRecognizerAsync(request).ConfigAwait();
+        }
     }
 
     public async Task<TranscriptResult> TranscribeAsync(string recordingPath, CancellationToken token = default)
