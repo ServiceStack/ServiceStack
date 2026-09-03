@@ -23,6 +23,7 @@ public class ConfigureAiChat : IHostingStartup
         .ConfigureServices((context, services) => {
 
             services.AddPlugin(new ChatFeature {
+                NamedConnection = "northwind",
                 // RequireAuth = false, // open access, runs as the "default" user
                 Extensions = {
                     new BookingToolsExtension(),
