@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System.Text.RegularExpressions;
 
@@ -10,7 +10,7 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
     public class InlineFormatter : ISqlFormatter
     {
         private static readonly Regex _paramPrefixes = new Regex(@"[@:?].+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static bool _includeTypeInfo;
+        private readonly bool _includeTypeInfo;
 
         /// <summary>
         /// Creates a new Inline SQL Formatter, optionally including the parameter type info in comments beside the replaced value
@@ -37,10 +37,16 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
 
             foreach(var p in timing.Parameters)
             {
+                if (string.IsNullOrEmpty(p.Name))
+                    continue;
+
                 // If the parameter doesn't have a prefix (@,:,etc), append one
-                var name = _paramPrefixes.IsMatch(p.Name) ? p.Name : Regex.Match(sql, "([@:?])" + p.Name).Value;
+                var name = _paramPrefixes.IsMatch(p.Name) ? p.Name : Regex.Match(sql, "([@:?])" + Regex.Escape(p.Name)).Value;
+                if (string.IsNullOrEmpty(name))
+                    continue;
+
                 var value = GetParameterValue(p);
-                sql = Regex.Replace(sql, name, m => value, RegexOptions.IgnoreCase);
+                sql = Regex.Replace(sql, Regex.Escape(name), m => value, RegexOptions.IgnoreCase);
             }
 
             return sql;

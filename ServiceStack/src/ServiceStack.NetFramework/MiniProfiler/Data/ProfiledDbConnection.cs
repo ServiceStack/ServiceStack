@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System;
 using System.Data;
@@ -32,6 +32,9 @@ namespace ServiceStack.MiniProfiler.Data
 
         private static IDbProfiler GetDbProfiler(IProfiler profiler)
         {
+            if (profiler == null)
+                return null;
+
             if (profiler is IDbProfiler dbProfiler)
                 return dbProfiler;
 

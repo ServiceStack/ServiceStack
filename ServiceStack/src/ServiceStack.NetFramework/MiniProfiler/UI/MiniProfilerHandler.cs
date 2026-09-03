@@ -1,6 +1,7 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -179,7 +180,8 @@ namespace ServiceStack.MiniProfiler.UI
 			//cache.SetValidUntilExpires(true);
 
 			var embeddedFile = Path.GetFileName(path).Replace("ssr-", "");
-			return GetResource(embeddedFile);
+			var resource = GetResource(embeddedFile);
+			return resource ?? NotFound(httpRes);
 		}
 
 		/// <summary>
@@ -192,17 +194,7 @@ namespace ServiceStack.MiniProfiler.UI
 			var isPopup = !httpReq.QueryString["popup"].IsNullOrWhiteSpace();
 
 			// this guid is the MiniProfiler.Id property
-			var id = new Guid();
-
-			var validGuid = false;
-			try
-			{
-				id = new Guid(httpReq.QueryString["id"]);
-				validGuid = true;
-			}
-			catch { }
-
-			if (!validGuid)
+			if (!Guid.TryParse(httpReq.QueryString["id"], out var id))
 				return isPopup ? NotFound(httpRes) : NotFound(httpRes, "text/plain", "No Guid id specified on the query string");
 
 			MiniProfiler.Settings.EnsureStorageStrategy();
@@ -234,7 +226,7 @@ namespace ServiceStack.MiniProfiler.UI
 			httpRes.ContentType = "text/html";
 			var sb = StringBuilderCache.Allocate()
                 .AppendLine("<html><head>")
-				.AppendFormat("<title>{0} ({1} ms) - MvcMiniProfiler Results</title>", profiler.Name, profiler.DurationMilliseconds)
+				.AppendFormat("<title>{0} ({1} ms) - MvcMiniProfiler Results</title>", HttpUtility.HtmlEncode(profiler.Name), profiler.DurationMilliseconds)
 				.AppendLine()
 				.AppendLine("<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'></script>")
 				.Append("<script type='text/javascript'> var profiler = ")
@@ -248,25 +240,24 @@ namespace ServiceStack.MiniProfiler.UI
         private static string GetResource(string filename)
 		{
 			filename = filename.ToLower();
-			string result;
+			if (_ResourceCache.TryGetValue(filename, out var cached))
+				return cached;
 
-			if (!_ResourceCache.TryGetValue(filename, out result))
+			using (var stream = typeof(MiniProfilerHandler).Assembly.GetManifestResourceStream("ServiceStack.MiniProfiler.UI." + filename))
 			{
-				using (var stream = typeof(MiniProfilerHandler).Assembly.GetManifestResourceStream("ServiceStack.MiniProfiler.UI." + filename))
-				{
-					result = stream.ReadToEnd();
-				}
+				if (stream == null)
+					return null;
 
+				var result = stream.ReadToEnd();
 				_ResourceCache[filename] = result;
+				return result;
 			}
-
-			return result;
 		}
 
 		/// <summary>
 		/// Embedded resource contents keyed by filename.
 		/// </summary>
-		private static readonly Dictionary<string, string> _ResourceCache = new Dictionary<string, string>();
+		private static readonly ConcurrentDictionary<string, string> _ResourceCache = new ConcurrentDictionary<string, string>();
 
 		/// <summary>
 		/// Helper method that sets a proper 404 response code.

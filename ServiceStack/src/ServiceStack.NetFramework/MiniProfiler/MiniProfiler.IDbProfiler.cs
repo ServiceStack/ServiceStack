@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -84,8 +84,9 @@ namespace ServiceStack.MiniProfiler
             if (Head == null)
                 return;
 
-            stats.IsDuplicate = _sqlExecutionCounts.TryGetValue(stats.CommandString, out var count);
-            _sqlExecutionCounts[stats.CommandString] = count + 1;
+            var cmd = stats.CommandString ?? "";
+            stats.IsDuplicate = _sqlExecutionCounts.TryGetValue(cmd, out var count);
+            _sqlExecutionCounts[cmd] = count + 1;
 
             HasSqlTimings = true;
             if (stats.IsDuplicate)

@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -81,7 +81,7 @@ namespace ServiceStack.MiniProfiler
                 _root = value;
 
                 // when being deserialized, we need to go through and set all child timings' parents
-                if (_root.HasChildren)
+                if (_root != null && _root.HasChildren)
                 {
                     var timings = new Stack<Timing>();
 
@@ -141,7 +141,7 @@ namespace ServiceStack.MiniProfiler
         /// Milliseconds, to one decimal place, that this MiniProfiler ran.
         /// </summary>
 		[DataMember(Order = 9, Name = "DurationMilliseconds")]
-        public decimal DurationMilliseconds => _root.DurationMilliseconds ?? GetRoundedMilliseconds(ElapsedTicks);
+        public decimal DurationMilliseconds => _root?.DurationMilliseconds ?? GetRoundedMilliseconds(ElapsedTicks);
 
         /// <summary>
         /// Returns true when <see cref="Root"/> or any of its <see cref="Timing.Children"/> are <see cref="Timing.IsTrivial"/>.
@@ -284,6 +284,9 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         public IEnumerable<Timing> GetTimingHierarchy()
         {
+            if (_root == null)
+                yield break;
+
             var timings = new Stack<Timing>();
 
             timings.Push(_root);

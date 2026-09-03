@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -76,15 +76,8 @@ namespace ServiceStack.MiniProfiler.SqlFormatters
                 var parsed = DbType.AnsiString;
                 string resolvedType = null;
 
-            	var validEnum = false;
-            	try
-            	{
-            		parsed = p.DbType.ToEnum<DbType>();
-            		validEnum = true;
-            	}
-            	catch {}
-
-				if (!validEnum)
+                var validEnum = !string.IsNullOrEmpty(p.DbType) && Enum.TryParse(p.DbType, true, out parsed);
+                if (!validEnum)
                 {
                     resolvedType = p.DbType;
                 }

@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>ServiceStack.NetFramework</PackageId>
     <AssemblyName>ServiceStack.NetFramework</AssemblyName>
     <TargetFramework>net472</TargetFramework>
     <RootNamespace>ServiceStack</RootNamespace>
-    <Title>.NET v4.5 only features for ServiceStack</Title>
+    <Title>.NET Framework features for ServiceStack</Title>
     <PackageDescription>
       Contains ASP.NET and .NET Framework only features used in ServiceStack:
       - MiniProfiler

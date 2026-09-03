@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System;
 using System.Net;
@@ -43,7 +43,10 @@ namespace ServiceStack.SmartThreadPool
                 if (disposed) return;
 
                 if (disposing)
+                {
                     threadPoolManager.Dispose();
+                    listenForNextRequest.Dispose();
+                }
 
                 // new shared cleanup logic
                 disposed = true;

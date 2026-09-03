@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System.Web;
 using ServiceStack.MiniProfiler.Helpers;
@@ -30,7 +30,8 @@ namespace ServiceStack.MiniProfiler
             if (context == null) return null;
 
             var url = context.Request.Url;
-            var path = context.Request.AppRelativeCurrentExecutionFilePath.Substring(1);
+            var filePath = context.Request.AppRelativeCurrentExecutionFilePath;
+            var path = filePath != null && filePath.Length > 1 ? filePath.Substring(1) : (filePath ?? "");
 
             // don't profile /content or /scripts, either - happens in web.dev
             foreach (var ignored in MiniProfiler.Settings.IgnoredPaths.Safe())
@@ -39,7 +40,8 @@ namespace ServiceStack.MiniProfiler
                     return null;
             }
 
-            var result = new MiniProfiler(url.OriginalString, level);
+            var urlString = url?.OriginalString ?? context.Request.RawUrl ?? "";
+            var result = new MiniProfiler(urlString, level);
             Current = result;
 
             SetProfilerActive(result);

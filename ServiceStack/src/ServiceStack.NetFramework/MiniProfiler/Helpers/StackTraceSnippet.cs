@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,13 +31,16 @@ namespace ServiceStack.MiniProfiler.Helpers
 			foreach (StackFrame t in frames)
 			{
 				var method = t.GetMethod();
+				if (method == null)
+					continue;
 
 				// no need to continue up the chain
 				if (method.Name == AspNetEntryPointMethodName)
 					break;
 
-				var assembly = method.Module.Assembly.GetName().Name;
-				if (!MiniProfiler.Settings.AssembliesToExclude.Contains(assembly) &&
+				var assembly = method.Module?.Assembly?.GetName()?.Name;
+				if (assembly != null &&
+					!MiniProfiler.Settings.AssembliesToExclude.Contains(assembly) &&
 					!ShouldExcludeType(method) &&
 					!MiniProfiler.Settings.MethodsToExclude.Contains(method.Name))
 				{
@@ -53,6 +56,10 @@ namespace ServiceStack.MiniProfiler.Helpers
 	            if (index >= MiniProfiler.Settings.StackMaxLength)		
 	            {
 	                result = result.Substring(0, index);		
+	            }
+	            else
+	            {
+	                result = result.Substring(0, MiniProfiler.Settings.StackMaxLength);
 	            }
 	        }
 
