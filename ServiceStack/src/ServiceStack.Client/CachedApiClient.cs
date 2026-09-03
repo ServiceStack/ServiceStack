@@ -323,7 +323,7 @@ public class CachedApiClient : ICachedServiceClient
 
     public Task PatchAsync(IReturnVoid requestDto, CancellationToken token = default)
     {
-        return client.PutAsync(requestDto, token);
+        return client.PatchAsync(requestDto, token);
     }
 
     public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))

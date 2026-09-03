@@ -20,7 +20,7 @@ public delegate object? ResultsFilterHttpDelegate(Type responseType, string http
 
 public delegate void ResultsFilterHttpResponseDelegate(HttpResponseMessage webResponse, object? response, string httpMethod, string requestUri, object? request);
 
-public delegate object ExceptionFilterHttpDelegate(HttpResponseMessage webResponse, string requestUri, Type responseType);
+public delegate object? ExceptionFilterHttpDelegate(HttpResponseMessage webResponse, string requestUri, Type responseType);
 
 public static class JsonApiClientUtils
 {
@@ -46,25 +46,38 @@ public static class JsonApiClientUtils
 
     public static string? GetContentType(this HttpResponseMessage httpRes)
     {
+        var contentType = httpRes.Content?.Headers.ContentType?.ToString();
+        if (contentType != null)
+            return contentType;
+
         return httpRes.Headers.TryGetValues(HttpHeaders.ContentType, out var values)
             ? values.FirstOrDefault()
             : null;
     }
 
-    public static void AddBasicAuth(this HttpRequestMessage request, string userName, string password)
+    public static void AddBasicAuth(this HttpRequestMessage request, string? userName, string? password)
     {
+        if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
+            return;
+
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
             Convert.ToBase64String(Encoding.UTF8.GetBytes(userName + ":" + password)));
     }
 
-    public static void AddApiKeyAuth(this HttpRequestMessage request, string apiKey)
+    public static void AddApiKeyAuth(this HttpRequestMessage request, string? apiKey)
     {
+        if (string.IsNullOrEmpty(apiKey))
+            return;
+
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
             Convert.ToBase64String(Encoding.UTF8.GetBytes(apiKey + ":")));
     }
 
-    public static void AddBearerToken(this HttpRequestMessage request, string bearerToken)
+    public static void AddBearerToken(this HttpRequestMessage request, string? bearerToken)
     {
+        if (string.IsNullOrEmpty(bearerToken))
+            return;
+
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
     }
 

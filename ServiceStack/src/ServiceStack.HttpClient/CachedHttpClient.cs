@@ -1,4 +1,6 @@
-﻿using System;
+#nullable enable
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -9,9 +11,9 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack
-{
-    public class CachedHttpClient : ICachedServiceClient
+namespace ServiceStack;
+
+public class CachedHttpClient : ICachedServiceClient
     {
         public TimeSpan? ClearCachesOlderThan { get; set; }
         public TimeSpan? ClearExpiredCachesOlderThan { get; set; }
@@ -37,14 +39,14 @@ namespace ServiceStack
 
         private ConcurrentDictionary<string, HttpCacheEntry> cache = new();
 
-        private readonly Action<HttpRequestMessage> existingRequestFilter;
-        private readonly ResultsFilterHttpDelegate existingResultsFilter;
-        private readonly ResultsFilterHttpResponseDelegate existingResultsFilterResponse;
-        private readonly ExceptionFilterHttpDelegate existingExceptionFilter;
+        private readonly Action<HttpRequestMessage>? existingRequestFilter;
+        private readonly ResultsFilterHttpDelegate? existingResultsFilter;
+        private readonly ResultsFilterHttpResponseDelegate? existingResultsFilterResponse;
+        private readonly ExceptionFilterHttpDelegate? existingExceptionFilter;
 
         private readonly JsonHttpClient client;
 
-        public CachedHttpClient(JsonHttpClient client, ConcurrentDictionary<string, HttpCacheEntry> cache)
+        public CachedHttpClient(JsonHttpClient client, ConcurrentDictionary<string, HttpCacheEntry>? cache)
             : this(client)
         {
             if (cache != null)
@@ -70,14 +72,14 @@ namespace ServiceStack
 
         private void OnRequestFilter(HttpRequestMessage webReq)
         {
-            if (existingRequestFilter != null)
-                existingRequestFilter(webReq);
+            existingRequestFilter?.Invoke(webReq);
 
-            if (webReq.Method.Method == HttpMethods.Get && cache.TryGetValue(webReq.RequestUri.ToString(), out var entry))
+            var requestUri = webReq.RequestUri?.ToString();
+            if (webReq.Method.Method == HttpMethods.Get && requestUri != null && cache.TryGetValue(requestUri, out var entry))
             {
                 if (entry.ETag != null)
                     webReq.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(
-                        entry.ETag.StripWeakRef(),
+                        entry.ETag.StripWeakRef()!,
                         entry.ETag.StartsWith("W/")));
 
                 if (entry.LastModified != null)
@@ -85,7 +87,7 @@ namespace ServiceStack
             }
         }
 
-        private object OnResultsFilter(Type responseType, string httpMethod, string requestUri, object request)
+        private object? OnResultsFilter(Type responseType, string httpMethod, string requestUri, object? request)
         {
             var ret = existingResultsFilter?.Invoke(responseType, httpMethod, requestUri, request);
 
@@ -101,13 +103,13 @@ namespace ServiceStack
             return ret;
         }
 
-        public object OnExceptionFilter(HttpResponseMessage webRes, string requestUri, Type responseType)
+        public object? OnExceptionFilter(HttpResponseMessage webRes, string requestUri, Type responseType)
         {
             var response = existingExceptionFilter?.Invoke(webRes, requestUri, responseType);
             if (response != null)
                 return response;
 
-            if (webRes.RequestMessage.Method == HttpMethod.Get && cache.TryGetValue(requestUri, out var entry))
+            if (webRes.RequestMessage?.Method == HttpMethod.Get && cache.TryGetValue(requestUri, out var entry))
             {
                 if (webRes.StatusCode == HttpStatusCode.NotModified)
                 {
@@ -124,26 +126,25 @@ namespace ServiceStack
             return null;
         }
 
-        private void OnResultsFilterResponse(HttpResponseMessage webRes, object response, string httpMethod, string requestUri, object request)
+        private void OnResultsFilterResponse(HttpResponseMessage webRes, object? response, string httpMethod, string requestUri, object? request)
         {
-            if (existingResultsFilterResponse != null)
-                existingResultsFilterResponse(webRes, response, httpMethod, requestUri, request);
+            existingResultsFilterResponse?.Invoke(webRes, response, httpMethod, requestUri, request);
 
             if (httpMethod != HttpMethods.Get || response == null || webRes == null)
                 return;
             
             var eTag = webRes.Headers.ETag?.Tag;
             
-            if (eTag == null && webRes.Content.Headers.LastModified == null)
+            if (eTag == null && webRes.Content?.Headers.LastModified == null)
                 return;
 
             var entry = new HttpCacheEntry(response)
             {
                 ETag = eTag,
-                ContentLength = webRes.Content.Headers.ContentLength
+                ContentLength = webRes.Content?.Headers.ContentLength
             };
 
-            if (webRes.Content.Headers.LastModified != null)
+            if (webRes.Content?.Headers.LastModified != null)
                 entry.LastModified = webRes.Content.Headers.LastModified.Value.UtcDateTime;
 
             entry.Age = webRes.Headers.Age;
@@ -310,7 +311,7 @@ namespace ServiceStack
 
         public Task<TResponse> PatchAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token = default)
         {
-            return client.PatchAsync<TResponse>(requestDto);
+            return client.PatchAsync<TResponse>(requestDto, token);
         }
 
         public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token = default)
@@ -320,7 +321,7 @@ namespace ServiceStack
 
         public Task PatchAsync(IReturnVoid requestDto, CancellationToken token = default)
         {
-            return client.PutAsync(requestDto, token);
+            return client.PatchAsync(requestDto, token);
         }
 
         public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
@@ -579,13 +580,13 @@ namespace ServiceStack
             return client.PublishAllAsync(requestDtos, token);
         }
 
-        public string SessionId
+        public string? SessionId
         {
             get => client.SessionId;
             set => client.SessionId = value;
         }
 
-        public string BearerToken
+        public string? BearerToken
         {
             get => client.BearerToken;
             set => client.BearerToken = value;
@@ -610,11 +611,10 @@ namespace ServiceStack
             return new CachedHttpClient(client, cache);
         }
 
-        internal static string StripWeakRef(this string eTag)
+        internal static string? StripWeakRef(this string? eTag)
         {
             return eTag != null && eTag.StartsWith("W/")
                 ? eTag.Substring(2)
                 : eTag;
         }
     }
-}
