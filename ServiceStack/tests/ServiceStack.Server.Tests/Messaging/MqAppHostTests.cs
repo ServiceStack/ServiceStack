@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
@@ -58,7 +58,10 @@ namespace ServiceStack.Server.Tests.Messaging
 
         protected override void Dispose(bool disposing)
         {
-            Resolve<IMessageService>().Dispose();
+            if (disposing)
+            {
+                TryResolve<IMessageService>()?.Dispose();
+            }
             base.Dispose(disposing);
         }
 
@@ -117,17 +120,19 @@ namespace ServiceStack.Server.Tests.Messaging
         
     }
 
+    [TestFixture, Category("Integration")]
     public class MqAppHostTests
     {
-        private readonly MqAppHost appHost;
+        private MqAppHost appHost;
 
-        public MqAppHostTests()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             this.appHost = new MqAppHost();
             appHost
                 .Init()
                 .Start(Config.ListeningOn);
-    }
+        }
 
         [OneTimeTearDown]
         public void TestFixtureTearDown()

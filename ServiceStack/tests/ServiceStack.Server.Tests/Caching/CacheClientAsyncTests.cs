@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -10,6 +10,7 @@ using ServiceStack.Server.Tests.Shared;
 
 namespace ServiceStack.Server.Tests.Caching
 {
+    [TestFixture, Category("Integration")]
     public class SqlServerOrmLiteCacheClientAsyncTests : CacheClientTestsAsyncBase
     {
         public override ICacheClientAsync CreateClient()
@@ -83,6 +84,7 @@ namespace ServiceStack.Server.Tests.Caching
     }
 
     //TODO: replace with async
+    [TestFixture, Category("Integration")]
     public class RedisCacheClientAsyncTests : CacheClientTestsAsyncBase
     {
         public override ICacheClientAsync CreateClient()

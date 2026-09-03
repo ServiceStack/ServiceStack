@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Caching;
@@ -9,6 +9,7 @@ using ServiceStack.Server.Tests.Shared;
 
 namespace ServiceStack.Server.Tests.Caching
 {
+    [TestFixture, Category("Integration")]
     public class SqlServerOrmLiteCacheClientTests : CacheClientTestsBase
     {
         public override ICacheClient CreateClient()
@@ -81,6 +82,7 @@ namespace ServiceStack.Server.Tests.Caching
         }
     }
 
+    [TestFixture, Category("Integration")]
     public class RedisCacheClientTests : CacheClientTestsBase
     {
         public override ICacheClient CreateClient()
@@ -89,6 +91,7 @@ namespace ServiceStack.Server.Tests.Caching
         }
     }
 
+    [TestFixture, Category("Integration")]
     public class SqlServer2014MemoryOptimizedOrmLiteCacheClientTests : CacheClientTestsBase
     {
         public override ICacheClient CreateClient()
@@ -125,6 +128,7 @@ namespace ServiceStack.Server.Tests.Caching
         public DateTime ModifiedDate { get; set; }
     }
 
+    [TestFixture, Category("Integration")]
     public class SqlServer2016MemoryOptimizedOrmLiteCacheClientTests : CacheClientTestsBase
     {
         public override ICacheClient CreateClient()

@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
+using ServiceStack.Caching;
 using ServiceStack.Host;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
@@ -10,9 +12,11 @@ using ServiceStack.RabbitMq;
 using ServiceStack.Redis;
 using ServiceStack.Testing;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Server.Tests.Messaging
 {
+    [TestFixture, Category("Integration")]
     public class RabbitMqServerIntroTests : MqServerIntroTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
@@ -27,6 +31,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    [TestFixture, Category("Integration")]
     public class RedisMqServerIntroTests : MqServerIntroTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
@@ -40,6 +45,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    [TestFixture]
     public class InMemoryMqServerIntroTests : MqServerIntroTests
     {
         public override IMessageService CreateMqServer(int retryCount = 1)
@@ -56,11 +62,13 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    [RuntimeSerializable]
     public class HelloIntro : IReturn<HelloIntroResponse>
     {
         public string Name { get; set; }
     }
 
+    [RuntimeSerializable]
     public class HelloIntroResponse
     {
         public string Result { get; set; }
@@ -74,17 +82,20 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    [RuntimeSerializable]
     public class MqAuthOnly : IReturn<MqAuthOnlyResponse>
     {
         public string Name { get; set; }
         public string SessionId { get; set; }
     }
 
+    [RuntimeSerializable]
     public class MqAuthOnlyResponse
     {
         public string Result { get; set; }
     }
 
+    [RuntimeSerializable]
     public class MqAuthOnlyToken : IHasBearerToken, IReturn<MqAuthOnlyResponse>
     {
         public string Name { get; set; }
@@ -115,11 +126,13 @@ namespace ServiceStack.Server.Tests.Messaging
     }
 
     [Restrict(RequestAttributes.MessageQueue)]
+    [RuntimeSerializable]
     public class MqRestriction : IReturn<MqRestrictionResponse>
     {
         public string Name { get; set; }
     }
 
+    [RuntimeSerializable]
     public class MqRestrictionResponse
     {
         public string Result { get; set; }
@@ -184,11 +197,20 @@ namespace ServiceStack.Server.Tests.Messaging
                     Verb = HttpMethods.Post,
                     Headers = { ["X-ss-id"] = m.GetBody().SessionId }
                 };
+                var s = req.GetSession();
+                Console.WriteLine($"DEBUG SESSION FROM REQ: '{s?.UserAuthName}', IsAuth={s?.IsAuthenticated}, Id={s?.Id}");
                 var response = ExecuteMessage(m, req);
+                Console.WriteLine($"EXECUTE MSG RESULT: {response}, STATUS: {req.Response.StatusCode}, DTO: {req.Response.Dto}");
                 return response;
             });
             mqServer.RegisterHandler<MqRestriction>(ExecuteMessage);
             mqServer.Start();
+        }
+
+        public override Task OnSaveSessionAsync(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token = default)
+        {
+            Console.WriteLine($"ON SAVE SESSION: Id={session.Id}, User={session.UserAuthName}, FromToken={session.FromToken}, HasPlugin={HasPlugin<SessionFeature>()}");
+            return base.OnSaveSessionAsync(httpReq, session, expiresIn, token);
         }
 
         protected override void Dispose(bool disposable)
@@ -370,6 +392,7 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             using var appHost = new AppHost(() => CreateMqServer()).Init();
             appHost.Start(Config.ListeningOn);
+            Console.WriteLine($"APPHOST STARTED: {appHost.IsStarted}, LISTEN: {string.Join(",", appHost.GetListenUris())}");
 
             var client = new JsonServiceClient(Config.ListeningOn);
 
@@ -379,8 +402,15 @@ namespace ServiceStack.Server.Tests.Messaging
                 UserName = "mythz",
                 Password = "p@55word"
             });
+            Console.WriteLine($"AUTH RESPONSE: {response.Dump()}");
 
             var sessionId = response.SessionId;
+            var memCache = appHost.GetMemoryCacheClient();
+            Console.WriteLine($"DefaultCache: {ServiceStackHost.DefaultCache.GetHashCode()}, appHostCache: {appHost.GetCacheClient().GetHashCode()}, ContainerCache: {appHost.Container.TryResolve<ICacheClient>()?.GetHashCode()}");
+            Console.WriteLine($"DefaultCache keys: {string.Join(",", ServiceStackHost.DefaultCache.GetAllKeys())}");
+            Console.WriteLine($"DEBUG MEMCACHE KEYS: {string.Join(",", memCache.GetAllKeys())}");
+            var cached = appHost.GetCacheClient().Get<IAuthSession>("urn:iauthsession:" + sessionId);
+            Console.WriteLine($"DEBUG SESSION ID: '{sessionId}', BEARER: '{response.BearerToken}', CACHED: '{cached?.UserAuthName}', IsAuth={cached?.IsAuthenticated}");
 
             using var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient();
             mqClient.Publish(new MqAuthOnly
@@ -472,6 +502,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    [RuntimeSerializable]
     public class HelloIntroWithDep
     {
         public string Name { get; set; }

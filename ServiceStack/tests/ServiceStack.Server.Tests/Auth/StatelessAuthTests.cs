@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -145,6 +145,7 @@ namespace ServiceStack.Server.Tests.Auth
     
 #endif
 
+    [TestFixture, Category("Integration")]
     public class DynamoDbAuthRepoStatelessAuthTests : StatelessAuthTests
     {
         public static AmazonDynamoDBClient CreateDynamoDBClient()
@@ -179,6 +180,7 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 
+    [TestFixture, Category("Integration")]
     public class RedisAuthRepoStatelessAuthTests : StatelessAuthTests
     {
         protected override ServiceStackHost CreateAppHost()
@@ -289,14 +291,15 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 
+    [TestFixture]
     public class FallbackAuthKeyTests
     {
         public const string ListeningOn = "http://localhost:2337/";
 
-        protected readonly ServiceStackHost appHost;
+        protected ServiceStackHost appHost;
 
-        private readonly byte[] authKey;
-        private readonly byte[] fallbackAuthKey;
+        private byte[] authKey;
+        private byte[] fallbackAuthKey;
 
         class JwtAuthProviderReaderAppHost : AppSelfHostBase
         {
@@ -311,7 +314,8 @@ namespace ServiceStack.Server.Tests.Auth
             }
         }
 
-        public FallbackAuthKeyTests()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             authKey = AesUtils.CreateKey();
             fallbackAuthKey = AesUtils.CreateKey();
@@ -331,7 +335,7 @@ namespace ServiceStack.Server.Tests.Auth
         [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
-            appHost.Dispose();
+            appHost?.Dispose();
         }
 
         [Test]
@@ -425,14 +429,15 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 
+    [TestFixture]
     public class JwtAuthProviderReaderTests
     {
         public const string ListeningOn = "http://localhost:2337/";
 
-        protected readonly ServiceStackHost appHost;
+        protected ServiceStackHost appHost;
 
-        private readonly RSAParameters privateKey;
-        private readonly RSAParameters fallbackPrivakeKey;
+        private RSAParameters privateKey;
+        private RSAParameters fallbackPrivakeKey;
 
         class JwtAuthProviderReaderAppHost : AppSelfHostBase
         {
@@ -447,7 +452,8 @@ namespace ServiceStack.Server.Tests.Auth
             }
         }
 
-        public JwtAuthProviderReaderTests()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             privateKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
             fallbackPrivakeKey = RsaUtils.CreatePrivateKeyParams(RsaKeyLengths.Bit2048);
@@ -468,7 +474,7 @@ namespace ServiceStack.Server.Tests.Auth
         [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
-            appHost.Dispose();
+            appHost?.Dispose();
         }
 
         [Test]

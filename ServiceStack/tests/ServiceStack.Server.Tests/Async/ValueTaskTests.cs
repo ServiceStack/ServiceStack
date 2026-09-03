@@ -49,7 +49,8 @@ namespace ServiceStack.Server.Tests.Async
 
         JsonServiceClient client = new JsonServiceClient(ListeningOn);
 
-        public ValueTaskTests()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             appHost = new AppHost()
                 .Init()

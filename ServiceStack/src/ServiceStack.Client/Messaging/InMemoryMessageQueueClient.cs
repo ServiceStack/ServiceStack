@@ -67,12 +67,14 @@ namespace ServiceStack.Messaging
         public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
         {
             var startedAt = DateTime.UtcNow.Ticks; //No Stopwatch in Silverlight
-            var timeOutMs = timeOut == null ? -1 : (long)timeOut.Value.TotalMilliseconds;
-            while (timeOutMs == -1 || timeOutMs >= new TimeSpan(DateTime.UtcNow.Ticks - startedAt).TotalMilliseconds)
+            var timeOutMs = timeOut == null ? 10000 : (long)timeOut.Value.TotalMilliseconds;
+            while (timeOutMs >= new TimeSpan(DateTime.UtcNow.Ticks - startedAt).TotalMilliseconds)
             {
                 var msg = GetAsync<T>(queueName);
                 if (msg != null)
                     return msg;
+
+                System.Threading.Thread.Sleep(10);
             }
 
             throw new TimeoutException($"Exceeded elapsed time of {timeOutMs}ms");

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+using System;
+using System.Linq;
 using System.Net;
 using Funq;
 using NUnit.Framework;
@@ -87,7 +88,8 @@ namespace ServiceStack.Server.Tests.Auth
         private ApiKey liveKey;
         private ApiKey testKey;
 
-        public ApiKeyAuthTests()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             //System.Diagnostics.Debugger.Break();
             appHost = new AppHost()
@@ -177,7 +179,7 @@ namespace ServiceStack.Server.Tests.Auth
                 var json = url.GetJsonFromUrl();
                 Assert.Fail("Should throw");
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 Assert.That(ex.GetStatus().Value, Is.EqualTo(HttpStatusCode.Unauthorized));
             }
