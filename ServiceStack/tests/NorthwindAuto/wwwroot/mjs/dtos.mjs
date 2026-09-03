@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-02 11:42:29
+Date: 2026-09-02 18:56:04
 Version: 10.15
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -1418,7 +1418,7 @@ export class ChatAssistant {
     config;
 }
 export class ChatDocument {
-    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,tags?:string,startedAt?:string,uploadedAt?:string,metadata?:string,error?:string,ref?:string}} [init] */
+    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,tags?:string,startedAt?:string,uploadedAt?:string,searchHash?:string,searchIndexedHash?:string,searchStartedAt?:string,searchIndexedAt?:string,searchError?:string,metadata?:string,error?:string,ref?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1494,6 +1494,16 @@ export class ChatDocument {
     startedAt;
     /** @type {?string} */
     uploadedAt;
+    /** @type {?string} */
+    searchHash;
+    /** @type {?string} */
+    searchIndexedHash;
+    /** @type {?string} */
+    searchStartedAt;
+    /** @type {?string} */
+    searchIndexedAt;
+    /** @type {?string} */
+    searchError;
     /** @type {?string} */
     metadata;
     /** @type {?string} */
@@ -1688,6 +1698,112 @@ export class ChatRequest {
     stackTrace;
     /** @type {?string} */
     ref;
+}
+export class ChatSearchSectionFtsConfig {
+    /** @param {{k?:string,v?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    k;
+    /** @type {?number} */
+    v;
+}
+export class ChatSearchSectionFtsContent {
+    /** @param {{id?:number,c0?:number,c1?:string,c2?:string,c3?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    c0;
+    /** @type {?string} */
+    c1;
+    /** @type {?string} */
+    c2;
+    /** @type {?string} */
+    c3;
+}
+export class ChatSearchSectionFtsData {
+    /** @param {{id?:number,block?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?string} */
+    block;
+}
+export class ChatSearchSectionFtsDocsize {
+    /** @param {{id?:number,sz?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?string} */
+    sz;
+}
+export class ChatSearchSection {
+    /** @param {{id?:number,documentId?:number,filestoreId?:number,user?:string,ordinal?:number,documentTitle?:string,heading?:string,headingLevel?:number,hierarchy?:string,anchor?:string,url?:string,kind?:string,content?:string,category?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,tags?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {number} */
+    documentId;
+    /** @type {number} */
+    filestoreId;
+    /** @type {?string} */
+    user;
+    /** @type {number} */
+    ordinal;
+    /** @type {?string} */
+    documentTitle;
+    /** @type {?string} */
+    heading;
+    /** @type {number} */
+    headingLevel;
+    /** @type {?string} */
+    hierarchy;
+    /** @type {?string} */
+    anchor;
+    /** @type {?string} */
+    url;
+    /** @type {?string} */
+    kind;
+    /** @type {?string} */
+    content;
+    /** @type {?string} */
+    category;
+    /** @type {?string} */
+    docType;
+    /** @type {?string} */
+    status;
+    /** @type {?string} */
+    locale;
+    /** @type {?string} */
+    product;
+    /** @type {?string} */
+    versions;
+    /** @type {?string} */
+    tags;
+}
+export class ChatSearchWidget {
+    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,name?:string,publicId?:string,enabled?:boolean,publishedAt?:string,config?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {number} */
+    filestoreId;
+    /** @type {?string} */
+    user;
+    /** @type {string} */
+    createdAt;
+    /** @type {string} */
+    updatedAt;
+    /** @type {?string} */
+    name;
+    /** @type {?string} */
+    publicId;
+    /** @type {boolean} */
+    enabled;
+    /** @type {?string} */
+    publishedAt;
+    /** @type {?string} */
+    config;
 }
 export class ChatSourceRun {
     /** @param {{id?:number,sourceId?:number,user?:string,startedAt?:string,completedAt?:string,status?:string,dryRun?:boolean,discovered?:number,added?:number,changed?:number,metadataOnly?:number,unchanged?:number,removed?:number,skipped?:number,failed?:number,bytes?:number,plan?:string,log?:string,error?:string}} [init] */
@@ -4737,6 +4853,60 @@ export class QueryChatRequests extends QueryDb {
     getMethod() { return 'GET' }
     createResponse() { return new QueryResponse() }
 }
+export class QueryChatSearchSectionFtsConfigs extends QueryDb {
+    /** @param {{k?:string,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?string} */
+    k;
+    getTypeName() { return 'QueryChatSearchSectionFtsConfigs' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class QueryChatSearchSectionFtsContents extends QueryDb {
+    /** @param {{id?:number,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    getTypeName() { return 'QueryChatSearchSectionFtsContents' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class QueryChatSearchSectionFtsDatas extends QueryDb {
+    /** @param {{id?:number,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    getTypeName() { return 'QueryChatSearchSectionFtsDatas' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class QueryChatSearchSectionFtsDocsizes extends QueryDb {
+    /** @param {{id?:number,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    getTypeName() { return 'QueryChatSearchSectionFtsDocsizes' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class QueryChatSearchSections extends QueryDb {
+    /** @param {{id?:number,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    getTypeName() { return 'QueryChatSearchSections' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
+export class QueryChatSearchWidgets extends QueryDb {
+    /** @param {{id?:number,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { super(init); Object.assign(this, init) }
+    /** @type {?number} */
+    id;
+    getTypeName() { return 'QueryChatSearchWidgets' }
+    getMethod() { return 'GET' }
+    createResponse() { return new QueryResponse() }
+}
 export class QueryChatSourceRuns extends QueryDb {
     /** @param {{id?:number,skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { super(init); Object.assign(this, init) }
@@ -6550,7 +6720,7 @@ export class CreateChatAssistantMessage {
     createResponse() { return new IdResponse() }
 }
 export class CreateChatDocument {
-    /** @param {{filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,tags?:string,startedAt?:string,uploadedAt?:string,metadata?:string,error?:string,ref?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number}} [init] */
+    /** @param {{filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,tags?:string,startedAt?:string,uploadedAt?:string,metadata?:string,error?:string,ref?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,searchHash?:string,searchIndexedHash?:string,searchStartedAt?:string,searchIndexedAt?:string,searchError?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     filestoreId;
@@ -6630,6 +6800,16 @@ export class CreateChatDocument {
     versions;
     /** @type {?number} */
     sourceUpdatedAt;
+    /** @type {?string} */
+    searchHash;
+    /** @type {?string} */
+    searchIndexedHash;
+    /** @type {?string} */
+    searchStartedAt;
+    /** @type {?string} */
+    searchIndexedAt;
+    /** @type {?string} */
+    searchError;
     getTypeName() { return 'CreateChatDocument' }
     getMethod() { return 'POST' }
     createResponse() { return new IdResponse() }
@@ -6823,6 +7003,126 @@ export class CreateChatRequest {
     /** @type {?string} */
     ref;
     getTypeName() { return 'CreateChatRequest' }
+    getMethod() { return 'POST' }
+    createResponse() { return new IdResponse() }
+}
+export class CreateChatSearchSection {
+    /** @param {{documentId?:number,filestoreId?:number,user?:string,ordinal?:number,documentTitle?:string,heading?:string,headingLevel?:number,hierarchy?:string,anchor?:string,url?:string,kind?:string,content?:string,category?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,tags?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    documentId;
+    /** @type {number} */
+    filestoreId;
+    /** @type {?string} */
+    user;
+    /** @type {number} */
+    ordinal;
+    /** @type {?string} */
+    documentTitle;
+    /** @type {?string} */
+    heading;
+    /** @type {number} */
+    headingLevel;
+    /** @type {?string} */
+    hierarchy;
+    /** @type {?string} */
+    anchor;
+    /** @type {?string} */
+    url;
+    /** @type {?string} */
+    kind;
+    /** @type {?string} */
+    content;
+    /** @type {?string} */
+    category;
+    /** @type {?string} */
+    docType;
+    /** @type {?string} */
+    status;
+    /** @type {?string} */
+    locale;
+    /** @type {?string} */
+    product;
+    /** @type {?string} */
+    versions;
+    /** @type {?string} */
+    tags;
+    getTypeName() { return 'CreateChatSearchSection' }
+    getMethod() { return 'POST' }
+    createResponse() { return new IdResponse() }
+}
+export class CreateChatSearchSectionFtsConfig {
+    /** @param {{k?:string,v?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    k;
+    /** @type {?number} */
+    v;
+    getTypeName() { return 'CreateChatSearchSectionFtsConfig' }
+    getMethod() { return 'POST' }
+    createResponse() { return new IdResponse() }
+}
+export class CreateChatSearchSectionFtsContent {
+    /** @param {{id?:number,c0?:number,c1?:string,c2?:string,c3?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    c0;
+    /** @type {?string} */
+    c1;
+    /** @type {?string} */
+    c2;
+    /** @type {?string} */
+    c3;
+    getTypeName() { return 'CreateChatSearchSectionFtsContent' }
+    getMethod() { return 'POST' }
+    createResponse() { return new IdResponse() }
+}
+export class CreateChatSearchSectionFtsData {
+    /** @param {{id?:number,block?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?string} */
+    block;
+    getTypeName() { return 'CreateChatSearchSectionFtsData' }
+    getMethod() { return 'POST' }
+    createResponse() { return new IdResponse() }
+}
+export class CreateChatSearchSectionFtsDocsize {
+    /** @param {{id?:number,sz?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?string} */
+    sz;
+    getTypeName() { return 'CreateChatSearchSectionFtsDocsize' }
+    getMethod() { return 'POST' }
+    createResponse() { return new IdResponse() }
+}
+export class CreateChatSearchWidget {
+    /** @param {{filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,name?:string,publicId?:string,enabled?:number,publishedAt?:string,config?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    filestoreId;
+    /** @type {?string} */
+    user;
+    /** @type {?string} */
+    createdAt;
+    /** @type {?string} */
+    updatedAt;
+    /** @type {?string} */
+    name;
+    /** @type {?string} */
+    publicId;
+    /** @type {number} */
+    enabled;
+    /** @type {?string} */
+    publishedAt;
+    /** @type {?string} */
+    config;
+    getTypeName() { return 'CreateChatSearchWidget' }
     getMethod() { return 'POST' }
     createResponse() { return new IdResponse() }
 }
@@ -7433,6 +7733,60 @@ export class DeleteChatRequest {
     getMethod() { return 'DELETE' }
     createResponse() { return new IdResponse() }
 }
+export class DeleteChatSearchSection {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    getTypeName() { return 'DeleteChatSearchSection' }
+    getMethod() { return 'DELETE' }
+    createResponse() { return new IdResponse() }
+}
+export class DeleteChatSearchSectionFtsConfig {
+    /** @param {{k?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    k;
+    getTypeName() { return 'DeleteChatSearchSectionFtsConfig' }
+    getMethod() { return 'DELETE' }
+    createResponse() { return new IdResponse() }
+}
+export class DeleteChatSearchSectionFtsContent {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    getTypeName() { return 'DeleteChatSearchSectionFtsContent' }
+    getMethod() { return 'DELETE' }
+    createResponse() { return new IdResponse() }
+}
+export class DeleteChatSearchSectionFtsData {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    getTypeName() { return 'DeleteChatSearchSectionFtsData' }
+    getMethod() { return 'DELETE' }
+    createResponse() { return new IdResponse() }
+}
+export class DeleteChatSearchSectionFtsDocsize {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    getTypeName() { return 'DeleteChatSearchSectionFtsDocsize' }
+    getMethod() { return 'DELETE' }
+    createResponse() { return new IdResponse() }
+}
+export class DeleteChatSearchWidget {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    getTypeName() { return 'DeleteChatSearchWidget' }
+    getMethod() { return 'DELETE' }
+    createResponse() { return new IdResponse() }
+}
 export class DeleteChatSource {
     /** @param {{id?:number}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -8035,7 +8389,7 @@ export class PatchChatAssistantMessage {
     createResponse() { return new IdResponse() }
 }
 export class PatchChatDocument {
-    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,tags?:string,startedAt?:string,uploadedAt?:string,metadata?:string,error?:string,ref?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number}} [init] */
+    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,tags?:string,startedAt?:string,uploadedAt?:string,metadata?:string,error?:string,ref?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,searchHash?:string,searchIndexedHash?:string,searchStartedAt?:string,searchIndexedAt?:string,searchError?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -8117,6 +8471,16 @@ export class PatchChatDocument {
     versions;
     /** @type {?number} */
     sourceUpdatedAt;
+    /** @type {?string} */
+    searchHash;
+    /** @type {?string} */
+    searchIndexedHash;
+    /** @type {?string} */
+    searchStartedAt;
+    /** @type {?string} */
+    searchIndexedAt;
+    /** @type {?string} */
+    searchError;
     getTypeName() { return 'PatchChatDocument' }
     getMethod() { return 'PATCH' }
     createResponse() { return new IdResponse() }
@@ -8318,6 +8682,130 @@ export class PatchChatRequest {
     /** @type {?string} */
     ref;
     getTypeName() { return 'PatchChatRequest' }
+    getMethod() { return 'PATCH' }
+    createResponse() { return new IdResponse() }
+}
+export class PatchChatSearchSection {
+    /** @param {{id?:number,documentId?:number,filestoreId?:number,user?:string,ordinal?:number,documentTitle?:string,heading?:string,headingLevel?:number,hierarchy?:string,anchor?:string,url?:string,kind?:string,content?:string,category?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,tags?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {number} */
+    documentId;
+    /** @type {number} */
+    filestoreId;
+    /** @type {?string} */
+    user;
+    /** @type {number} */
+    ordinal;
+    /** @type {?string} */
+    documentTitle;
+    /** @type {?string} */
+    heading;
+    /** @type {number} */
+    headingLevel;
+    /** @type {?string} */
+    hierarchy;
+    /** @type {?string} */
+    anchor;
+    /** @type {?string} */
+    url;
+    /** @type {?string} */
+    kind;
+    /** @type {?string} */
+    content;
+    /** @type {?string} */
+    category;
+    /** @type {?string} */
+    docType;
+    /** @type {?string} */
+    status;
+    /** @type {?string} */
+    locale;
+    /** @type {?string} */
+    product;
+    /** @type {?string} */
+    versions;
+    /** @type {?string} */
+    tags;
+    getTypeName() { return 'PatchChatSearchSection' }
+    getMethod() { return 'PATCH' }
+    createResponse() { return new IdResponse() }
+}
+export class PatchChatSearchSectionFtsConfig {
+    /** @param {{k?:string,v?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    k;
+    /** @type {?number} */
+    v;
+    getTypeName() { return 'PatchChatSearchSectionFtsConfig' }
+    getMethod() { return 'PATCH' }
+    createResponse() { return new IdResponse() }
+}
+export class PatchChatSearchSectionFtsContent {
+    /** @param {{id?:number,c0?:number,c1?:string,c2?:string,c3?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    c0;
+    /** @type {?string} */
+    c1;
+    /** @type {?string} */
+    c2;
+    /** @type {?string} */
+    c3;
+    getTypeName() { return 'PatchChatSearchSectionFtsContent' }
+    getMethod() { return 'PATCH' }
+    createResponse() { return new IdResponse() }
+}
+export class PatchChatSearchSectionFtsData {
+    /** @param {{id?:number,block?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?string} */
+    block;
+    getTypeName() { return 'PatchChatSearchSectionFtsData' }
+    getMethod() { return 'PATCH' }
+    createResponse() { return new IdResponse() }
+}
+export class PatchChatSearchSectionFtsDocsize {
+    /** @param {{id?:number,sz?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?string} */
+    sz;
+    getTypeName() { return 'PatchChatSearchSectionFtsDocsize' }
+    getMethod() { return 'PATCH' }
+    createResponse() { return new IdResponse() }
+}
+export class PatchChatSearchWidget {
+    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,name?:string,publicId?:string,enabled?:number,publishedAt?:string,config?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {number} */
+    filestoreId;
+    /** @type {?string} */
+    user;
+    /** @type {?string} */
+    createdAt;
+    /** @type {?string} */
+    updatedAt;
+    /** @type {?string} */
+    name;
+    /** @type {?string} */
+    publicId;
+    /** @type {number} */
+    enabled;
+    /** @type {?string} */
+    publishedAt;
+    /** @type {?string} */
+    config;
+    getTypeName() { return 'PatchChatSearchWidget' }
     getMethod() { return 'PATCH' }
     createResponse() { return new IdResponse() }
 }
@@ -9257,7 +9745,7 @@ export class UpdateChatAssistantMessage {
     createResponse() { return new IdResponse() }
 }
 export class UpdateChatDocument {
-    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,tags?:string,startedAt?:string,uploadedAt?:string,metadata?:string,error?:string,ref?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number}} [init] */
+    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,tags?:string,startedAt?:string,uploadedAt?:string,metadata?:string,error?:string,ref?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,searchHash?:string,searchIndexedHash?:string,searchStartedAt?:string,searchIndexedAt?:string,searchError?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -9339,6 +9827,16 @@ export class UpdateChatDocument {
     versions;
     /** @type {?number} */
     sourceUpdatedAt;
+    /** @type {?string} */
+    searchHash;
+    /** @type {?string} */
+    searchIndexedHash;
+    /** @type {?string} */
+    searchStartedAt;
+    /** @type {?string} */
+    searchIndexedAt;
+    /** @type {?string} */
+    searchError;
     getTypeName() { return 'UpdateChatDocument' }
     getMethod() { return 'PUT' }
     createResponse() { return new IdResponse() }
@@ -9540,6 +10038,130 @@ export class UpdateChatRequest {
     /** @type {?string} */
     ref;
     getTypeName() { return 'UpdateChatRequest' }
+    getMethod() { return 'PUT' }
+    createResponse() { return new IdResponse() }
+}
+export class UpdateChatSearchSection {
+    /** @param {{id?:number,documentId?:number,filestoreId?:number,user?:string,ordinal?:number,documentTitle?:string,heading?:string,headingLevel?:number,hierarchy?:string,anchor?:string,url?:string,kind?:string,content?:string,category?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,tags?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {number} */
+    documentId;
+    /** @type {number} */
+    filestoreId;
+    /** @type {?string} */
+    user;
+    /** @type {number} */
+    ordinal;
+    /** @type {?string} */
+    documentTitle;
+    /** @type {?string} */
+    heading;
+    /** @type {number} */
+    headingLevel;
+    /** @type {?string} */
+    hierarchy;
+    /** @type {?string} */
+    anchor;
+    /** @type {?string} */
+    url;
+    /** @type {?string} */
+    kind;
+    /** @type {?string} */
+    content;
+    /** @type {?string} */
+    category;
+    /** @type {?string} */
+    docType;
+    /** @type {?string} */
+    status;
+    /** @type {?string} */
+    locale;
+    /** @type {?string} */
+    product;
+    /** @type {?string} */
+    versions;
+    /** @type {?string} */
+    tags;
+    getTypeName() { return 'UpdateChatSearchSection' }
+    getMethod() { return 'PUT' }
+    createResponse() { return new IdResponse() }
+}
+export class UpdateChatSearchSectionFtsConfig {
+    /** @param {{k?:string,v?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    k;
+    /** @type {?number} */
+    v;
+    getTypeName() { return 'UpdateChatSearchSectionFtsConfig' }
+    getMethod() { return 'PUT' }
+    createResponse() { return new IdResponse() }
+}
+export class UpdateChatSearchSectionFtsContent {
+    /** @param {{id?:number,c0?:number,c1?:string,c2?:string,c3?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    c0;
+    /** @type {?string} */
+    c1;
+    /** @type {?string} */
+    c2;
+    /** @type {?string} */
+    c3;
+    getTypeName() { return 'UpdateChatSearchSectionFtsContent' }
+    getMethod() { return 'PUT' }
+    createResponse() { return new IdResponse() }
+}
+export class UpdateChatSearchSectionFtsData {
+    /** @param {{id?:number,block?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?string} */
+    block;
+    getTypeName() { return 'UpdateChatSearchSectionFtsData' }
+    getMethod() { return 'PUT' }
+    createResponse() { return new IdResponse() }
+}
+export class UpdateChatSearchSectionFtsDocsize {
+    /** @param {{id?:number,sz?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?string} */
+    sz;
+    getTypeName() { return 'UpdateChatSearchSectionFtsDocsize' }
+    getMethod() { return 'PUT' }
+    createResponse() { return new IdResponse() }
+}
+export class UpdateChatSearchWidget {
+    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,name?:string,publicId?:string,enabled?:number,publishedAt?:string,config?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {number} */
+    filestoreId;
+    /** @type {?string} */
+    user;
+    /** @type {?string} */
+    createdAt;
+    /** @type {?string} */
+    updatedAt;
+    /** @type {?string} */
+    name;
+    /** @type {?string} */
+    publicId;
+    /** @type {number} */
+    enabled;
+    /** @type {?string} */
+    publishedAt;
+    /** @type {?string} */
+    config;
+    getTypeName() { return 'UpdateChatSearchWidget' }
     getMethod() { return 'PUT' }
     createResponse() { return new IdResponse() }
 }

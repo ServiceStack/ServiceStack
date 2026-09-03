@@ -22,6 +22,8 @@ public partial class GeminiDb(ChatDb db)
         conn.CreateTableIfNotExists<ChatAssistant>();
         conn.CreateTableIfNotExists<ChatAssistantConversation>();
         conn.CreateTableIfNotExists<ChatAssistantMessage>();
+        conn.CreateTableIfNotExists<ChatSearchWidget>();
+        conn.CreateTableIfNotExists<ChatSearchSection>();
         ChatDb.AddMissingColumns<ChatFilestore>(conn);
         ChatDb.AddMissingColumns<ChatDocument>(conn);
         ChatDb.AddMissingColumns<ChatSource>(conn);
@@ -29,6 +31,9 @@ public partial class GeminiDb(ChatDb db)
         ChatDb.AddMissingColumns<ChatAssistant>(conn);
         ChatDb.AddMissingColumns<ChatAssistantConversation>(conn);
         ChatDb.AddMissingColumns<ChatAssistantMessage>(conn);
+        ChatDb.AddMissingColumns<ChatSearchWidget>(conn);
+        ChatDb.AddMissingColumns<ChatSearchSection>(conn);
+        InitSearchSchema(conn);
     }
 
     public static readonly Dictionary<string, string> FilestoreColumns = ChatDb.ColumnsOf<ChatFilestore>();
@@ -123,6 +128,7 @@ public partial class GeminiDb(ChatDb db)
                 documents.TryAdd(document.Id, document);
         }
         var assistants = conn.Select<ChatAssistant>(x => x.FilestoreId == id);
+        var searches = conn.Select<ChatSearchWidget>(x => x.FilestoreId == id);
         var conversationIds = new List<long>();
         foreach (var assistantIdsBatch in assistants.Select(x => x.Id).Chunk(500))
         {
@@ -149,6 +155,9 @@ public partial class GeminiDb(ChatDb db)
             ["importRuns"] = sourceIds.Count == 0 ? 0 : conn.Count<ChatSourceRun>(x => sourceIds.Contains(x.SourceId)),
             ["assistants"] = assistants.Count,
             ["publishedAssistants"] = assistants.Count(x => x.Enabled && x.PublishedAt != null),
+            ["searchWidgets"] = searches.Count,
+            ["publishedSearchWidgets"] = searches.Count(x => x.Enabled && x.PublishedAt != null),
+            ["searchSections"] = conn.Count<ChatSearchSection>(x => x.FilestoreId == id),
             ["conversations"] = conversationIds.Count,
             ["messages"] = messages,
         };
@@ -170,6 +179,11 @@ public partial class GeminiDb(ChatDb db)
 
         var sourceIds = conn.Column<long>(conn.From<ChatSource>()
             .Where(x => x.FilestoreId == id).Select(x => x.Id));
+        var documentIds = conn.Column<long>(conn.From<ChatDocument>()
+            .Where(x => x.FilestoreId == id).Select(x => x.Id));
+        foreach (var sourceIdsBatch in sourceIds.Chunk(500))
+            documentIds.AddRange(conn.Column<long>(conn.From<ChatDocument>()
+                .Where(x => x.SourceId != null && sourceIdsBatch.Contains(x.SourceId.Value)).Select(x => x.Id)));
         var assistantIds = conn.Column<long>(conn.From<ChatAssistant>()
             .Where(x => x.FilestoreId == id).Select(x => x.Id));
         var conversationIds = new List<long>();
@@ -181,6 +195,8 @@ public partial class GeminiDb(ChatDb db)
 
         foreach (var conversationIdsBatch in conversationIds.Chunk(500))
             conn.Delete<ChatAssistantMessage>(x => conversationIdsBatch.Contains(x.ConversationId));
+        DeleteSearchSections(conn, documentIds);
+        conn.Delete<ChatSearchWidget>(x => x.FilestoreId == id);
         foreach (var assistantIdsBatch in assistantIds.Chunk(500))
             conn.Delete<ChatAssistantConversation>(x => assistantIdsBatch.Contains(x.AssistantId));
         conn.Delete<ChatAssistant>(x => x.FilestoreId == id);
@@ -396,7 +412,10 @@ public partial class GeminiDb(ChatDb db)
         var q = conn.From<ChatDocument>().Where(x => x.Id == id);
         if (user != null)
             ChatDb.ApplyUserFilter(q, user);
-        conn.Delete(q);
+        var document = conn.Single(q);
+        if (document == null) return;
+        conn.Delete<ChatSearchSection>(x => x.DocumentId == document.Id);
+        conn.DeleteById<ChatDocument>(document.Id);
     }
 
     public ChatDocument? FindDocumentBySourceKey(long filestoreId, long? sourceId, string sourceKey, string? user)

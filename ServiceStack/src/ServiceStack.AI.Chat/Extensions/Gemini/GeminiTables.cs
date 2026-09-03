@@ -127,6 +127,15 @@ public class ChatDocument
     public DateTime? StartedAt { get; set; }
     public DateTime? UploadedAt { get; set; }
 
+    /// <summary>Desired and completed signatures for the independent local Search index.</summary>
+    [Index]
+    public string? SearchHash { get; set; }
+    public string? SearchIndexedHash { get; set; }
+    public DateTime? SearchStartedAt { get; set; }
+    public DateTime? SearchIndexedAt { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
+    public string? SearchError { get; set; }
+
     public string? Metadata { get; set; }          // JSON
     [StringLength(StringLengthAttribute.MaxText)]
     public string? Error { get; set; }
@@ -231,6 +240,46 @@ public class ChatAssistantMessage
     [StringLength(StringLengthAttribute.MaxText)] public string? Error { get; set; }
 }
 
+/// <summary>A separately published, model-free Search widget backed by one File Store.</summary>
+public class ChatSearchWidget
+{
+    [AutoIncrement] public long Id { get; set; }
+    [Index] public long FilestoreId { get; set; }
+    [Alias("user"), Index] public string? User { get; set; }
+    [Index] public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public string? Name { get; set; }
+    [Index(Unique = true)] public string? PublicId { get; set; }
+    public bool Enabled { get; set; } = true;
+    public DateTime? PublishedAt { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Config { get; set; }
+}
+
+/// <summary>A heading-aware local-search section extracted from a cached document.</summary>
+public class ChatSearchSection
+{
+    [AutoIncrement] public long Id { get; set; }
+    [Index] public long DocumentId { get; set; }
+    [Index] public long FilestoreId { get; set; }
+    [Alias("user"), Index] public string? User { get; set; }
+    public int Ordinal { get; set; }
+    public string? DocumentTitle { get; set; }
+    public string? Heading { get; set; }
+    public int HeadingLevel { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Hierarchy { get; set; }
+    public string? Anchor { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Url { get; set; }
+    public string? Kind { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? Content { get; set; }
+    [Index] public string? Category { get; set; }
+    [Index] public string? DocType { get; set; }
+    [Index] public string? Status { get; set; }
+    [Index] public string? Locale { get; set; }
+    [Index] public string? Product { get; set; }
+    public string? Versions { get; set; }
+    public string? Tags { get; set; }
+}
+
 /// <summary>Document counts + total size per category (port of GeminiDB.document_categories)</summary>
 public class AiChatDocumentCategory
 {
@@ -324,6 +373,11 @@ public static class GeminiDtos
         ["tags"] = ChatDtos.ParseJson(x.Tags),
         ["startedAt"] = ChatDb.ToDateNode(x.StartedAt),
         ["uploadedAt"] = ChatDb.ToDateNode(x.UploadedAt),
+        ["searchHash"] = x.SearchHash,
+        ["searchIndexedHash"] = x.SearchIndexedHash,
+        ["searchStartedAt"] = ChatDb.ToDateNode(x.SearchStartedAt),
+        ["searchIndexedAt"] = ChatDb.ToDateNode(x.SearchIndexedAt),
+        ["searchError"] = x.SearchError,
         ["metadata"] = ChatDtos.ParseJson(x.Metadata),
         ["error"] = x.Error,
         ["ref"] = x.Ref,
@@ -376,6 +430,14 @@ public static class GeminiDtos
         ["id"] = x.Id, ["conversationId"] = x.ConversationId,
         ["createdAt"] = ChatDb.ToDateString(x.CreatedAt), ["role"] = x.Role,
         ["content"] = x.Content, ["citations"] = ChatDtos.ParseJson(x.Citations), ["error"] = x.Error,
+    };
+
+    public static JsonObject ToDto(this ChatSearchWidget x) => new()
+    {
+        ["id"] = x.Id, ["filestoreId"] = x.FilestoreId, ["user"] = x.User,
+        ["createdAt"] = ChatDb.ToDateString(x.CreatedAt), ["updatedAt"] = ChatDb.ToDateString(x.UpdatedAt),
+        ["name"] = x.Name, ["publicId"] = x.PublicId, ["enabled"] = x.Enabled,
+        ["publishedAt"] = ChatDb.ToDateNode(x.PublishedAt), ["config"] = ChatDtos.ParseJson(x.Config),
     };
 
     public static JsonObject ToDto(this AiChatDocumentCategory x) => new()

@@ -93,10 +93,10 @@ export const ImportPanel = {
                     <div v-if="tab === 'crawl'" class="space-y-4">
                         <div class="grid sm:grid-cols-[1fr_14rem_7rem] gap-3">
                             <div><label class="block text-xs font-semibold mb-1">Start URL</label>
-                                <input v-model="crawlForm.url" @input="deriveCrawlName" placeholder="https://docs.example.org/"
+                                <input type="url" v-model="crawlForm.url" @input="deriveCrawlName" placeholder="https://docs.example.org/"
                                     class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
                             <div><label class="block text-xs font-semibold mb-1">Import folder</label>
-                                <input v-model="crawlForm.name" @input="crawlNameEdited = true" placeholder="docs.example.org"
+                                <input type="text" v-model="crawlForm.name" @input="crawlNameEdited = true" placeholder="docs.example.org"
                                     class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
                             <div><label class="block text-xs font-semibold mb-1">Max pages</label>
                                 <input v-model.number="crawlForm.maxPages" type="number" min="1" max="10000"
@@ -104,10 +104,10 @@ export const ImportPanel = {
                         </div>
                         <div class="grid sm:grid-cols-2 gap-3">
                             <div><label class="block text-xs font-semibold mb-1">Include paths</label>
-                                <input v-model="crawlForm.includeText" placeholder="/** — comma or newline separated"
+                                <input type="text" v-model="crawlForm.includeText" placeholder="/** — comma or newline separated"
                                     class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
                             <div><label class="block text-xs font-semibold mb-1">Exclude paths</label>
-                                <input v-model="crawlForm.excludeText" placeholder="e.g. /archives/**, /account/**"
+                                <input type="text" v-model="crawlForm.excludeText" placeholder="e.g. /archives/**, /account/**"
                                     class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
                             <div class="grid grid-cols-[10rem_1fr] gap-2">
                                 <div><label class="block text-xs font-semibold mb-1">Query strings</label>
@@ -115,7 +115,7 @@ export const ImportPanel = {
                                         <option value="ignore">Ignore</option><option value="allow">Allow selected</option><option value="all">Include all</option>
                                     </select></div>
                                 <div><label class="block text-xs font-semibold mb-1">Allowed parameters</label>
-                                    <input v-model="crawlForm.queryAllowText" :disabled="crawlForm.queryMode !== 'allow'" placeholder="version, lang"
+                                    <input type="text" v-model="crawlForm.queryAllowText" :disabled="crawlForm.queryMode !== 'allow'" placeholder="version, lang"
                                         class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900 disabled:opacity-50" :class="[$styles.chromeBorder]"></div>
                             </div>
                             <div class="grid grid-cols-[7rem_1fr] gap-2">
@@ -123,7 +123,7 @@ export const ImportPanel = {
                                     <input v-model.number="crawlForm.maxDepth" type="number" min="0" max="100"
                                         class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
                                 <div><label class="block text-xs font-semibold mb-1">Additional hosts</label>
-                                    <input v-model="crawlForm.allowedHostsText" placeholder="cdn.example.org"
+                                    <input type="text" v-model="crawlForm.allowedHostsText" placeholder="cdn.example.org"
                                         class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
                             </div>
                         </div>

@@ -677,14 +677,14 @@ export const MetadataDialog = {
                         </button>
                         <div v-if="rulesOpen" class="mt-2 space-y-2">
                             <div v-for="(rule, i) in draft.rules" :key="i" class="flex flex-wrap items-center gap-2">
-                                <input v-model="rule.match" placeholder="**/reference/**"
+                                <input type="text" v-model="rule.match" placeholder="**/reference/**"
                                     class="w-48 px-2 py-1 rounded-md text-xs font-mono border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]">
                                 <select v-model="rule.field" class="pl-2 pr-8 py-1 rounded-md text-xs border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]">
                                     <option value="">skip these files</option>
                                     <option v-for="f in [...fields, ...listFields]" :key="f.key" :value="f.key">{{ f.label }}</option>
                                 </select>
                                 <div v-if="rule.field" class="w-40">
-                                    <input v-model="rule.value" placeholder="value"
+                                    <input type="text" v-model="rule.value" placeholder="value"
                                         class="w-full px-2 py-1 rounded-md text-xs border-2 bg-white dark:bg-gray-900"
                                         :class="rule.field === 'sourceUrl' && sourceUrlTemplateError(rule.value)
                                             ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : $styles.chromeBorder">

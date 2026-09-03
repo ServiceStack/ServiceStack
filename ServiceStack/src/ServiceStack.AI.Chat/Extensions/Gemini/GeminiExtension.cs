@@ -20,6 +20,7 @@ public partial class GeminiExtension() : ChatExtension("gemini")
     GeminiClient client = null!;
     GeminiStores stores = null!;
     GeminiUploadWorker? worker;
+    GeminiSearchWorker? searchWorker;
     string? writeRole;
 
     public override void Install(ExtensionContext ctx)
@@ -56,7 +57,9 @@ public partial class GeminiExtension() : ChatExtension("gemini")
         client = new GeminiClient(ctx.Feature.HttpClientFactory, apiKey);
         stores = new GeminiStores(db, client, ctx.Log);
         worker = new GeminiUploadWorker(ctx, db, client, stores);
+        searchWorker = new GeminiSearchWorker(ctx, db);
         ctx.RegisterShutdownHandler(worker.Stop);
+        ctx.RegisterShutdownHandler(searchWorker.Stop);
 
         ctx.AddGet("filestores", QueryFilestoresAsync, allowAnon: true);
         ctx.AddPost("filestores", CreateFilestoreAsync);
@@ -99,12 +102,15 @@ public partial class GeminiExtension() : ChatExtension("gemini")
         ctx.AddPut("imports/{name}", SaveCrawlConfigAsync);
         ctx.AddPost("imports/{name}/transform", TransformCrawlImportAsync);
         InstallAssistantRoutes(ctx);
+        InstallSearchRoutes(ctx);
     }
 
     /// <summary>Resume any uploads that were still queued when the app last shut down</summary>
     public override Task LoadAsync(ExtensionContext ctx, CancellationToken token = default)
     {
         worker?.Start();
+        db.EnsureSearchDesiredHashes();
+        searchWorker?.Start();
         return Task.CompletedTask;
     }
 
@@ -459,6 +465,8 @@ public partial class GeminiExtension() : ChatExtension("gemini")
             db.UpdateDocumentState(doc.Id, "DUPLICATE_FILE");
 
         await stores.RefreshAsync(filestore).ConfigAwait();
+        db.EnsureSearchDesiredHashes();
+        searchWorker?.Start();
 
         Log.LogInformation(
             "Sync complete: remote={Remote}, local={Local}, matched={Matched}, missing_metadata={MissingMetadata}, unmatched={Unmatched}",
@@ -472,6 +480,7 @@ public partial class GeminiExtension() : ChatExtension("gemini")
             ["Metadata Mismatch"] = Issue(metadataMismatch.Count, metadataMismatch.Take(5).Select(FileNameOf)),
             ["Unmatched Fields"] = Issue(unmatched.Count, unmatched.Take(5).Select(FileNameOf)),
             ["Duplicate Documents"] = Issue(duplicates.Count, duplicates.Take(5).Select(FileNameOf)),
+            ["Local Search"] = new JsonObject { ["queued"] = db.SearchStats(id, user).Pending },
             ["Summary"] = new JsonObject
             {
                 ["Local Documents"] = localDocs.Count,

@@ -51,6 +51,7 @@ public partial class GeminiExtension
         var docs = db.SelectDocuments(BulkSelector(body), UserOf(req));
         var changes = BulkChanges(body);
         var ret = db.BulkPreview(docs, changes, apply: !body.GetBool("dryRun"));
+        if (!body.GetBool("dryRun") && ret.GetInt("changed") > 0) searchWorker?.Start();
         if (body.GetBool("dryRun")) ret["dryRun"] = true;
         return ret;
     }

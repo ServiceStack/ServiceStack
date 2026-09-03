@@ -427,7 +427,7 @@ export const AssistantsPanel = {
                     </div>
                     <div class="flex flex-col justify-end pb-1">
                       <label class="inline-flex items-center gap-2 text-sm"><CheckBox v-model="config.behavior.keyboardShortcut"/> Open with Ctrl/⌘+K</label>
-                      <span class="mt-1 text-xs" :class="$styles.muted">The shortcut opens and focuses the Assistant.</span>
+                      <span class="mt-1 text-xs" :class="$styles.muted">Uses Ctrl/⌘+Shift+K when a Search widget is on the same page.</span>
                     </div>
                   </div>
                   <div class="grid sm:grid-cols-2 gap-3">

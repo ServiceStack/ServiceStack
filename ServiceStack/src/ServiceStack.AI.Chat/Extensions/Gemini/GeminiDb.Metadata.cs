@@ -169,6 +169,7 @@ public partial class GeminiDb
             totals[overall]++;
             if (apply && anyChange)
             {
+                SetSearchDesired(doc);
                 UpdateDocument(doc);
                 changedIds.Add(doc.Id);
             }

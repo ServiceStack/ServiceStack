@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-02 11:42:29
+Date: 2026-09-02 18:56:04
 Version: 10.15
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -1543,6 +1543,13 @@ export class ChatDocument
     public tags?: string;
     public startedAt?: string;
     public uploadedAt?: string;
+    public searchHash?: string;
+    public searchIndexedHash?: string;
+    public searchStartedAt?: string;
+    public searchIndexedAt?: string;
+    // @StringLength(2147483647)
+    public searchError?: string;
+
     public metadata?: string;
     // @StringLength(2147483647)
     public error?: string;
@@ -1672,6 +1679,112 @@ export class ChatRequest
     public ref?: string;
 
     public constructor(init?: Partial<ChatRequest>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class ChatSearchSectionFtsConfig
+{
+    // @DataMember(Order=1)
+    public k?: string;
+
+    // @DataMember(Order=2)
+    public v?: number;
+
+    public constructor(init?: Partial<ChatSearchSectionFtsConfig>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class ChatSearchSectionFtsContent
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public c0?: number;
+
+    // @DataMember(Order=3)
+    public c1?: string;
+
+    // @DataMember(Order=4)
+    public c2?: string;
+
+    // @DataMember(Order=5)
+    public c3?: string;
+
+    public constructor(init?: Partial<ChatSearchSectionFtsContent>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class ChatSearchSectionFtsData
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public block?: string;
+
+    public constructor(init?: Partial<ChatSearchSectionFtsData>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class ChatSearchSectionFtsDocsize
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public sz?: string;
+
+    public constructor(init?: Partial<ChatSearchSectionFtsDocsize>) { (Object as any).assign(this, init); }
+}
+
+export class ChatSearchSection
+{
+    public id: number;
+    public documentId: number;
+    public filestoreId: number;
+    public user?: string;
+    public ordinal: number;
+    public documentTitle?: string;
+    public heading?: string;
+    public headingLevel: number;
+    // @StringLength(2147483647)
+    public hierarchy?: string;
+
+    public anchor?: string;
+    // @StringLength(2147483647)
+    public url?: string;
+
+    public kind?: string;
+    // @StringLength(2147483647)
+    public content?: string;
+
+    public category?: string;
+    public docType?: string;
+    public status?: string;
+    public locale?: string;
+    public product?: string;
+    public versions?: string;
+    public tags?: string;
+
+    public constructor(init?: Partial<ChatSearchSection>) { (Object as any).assign(this, init); }
+}
+
+export class ChatSearchWidget
+{
+    public id: number;
+    public filestoreId: number;
+    public user?: string;
+    public createdAt: string;
+    public updatedAt: string;
+    public name?: string;
+    public publicId?: string;
+    public enabled: boolean;
+    public publishedAt?: string;
+    // @StringLength(2147483647)
+    public config?: string;
+
+    public constructor(init?: Partial<ChatSearchWidget>) { (Object as any).assign(this, init); }
 }
 
 export class ChatSourceRun
@@ -4871,6 +4984,90 @@ export class QueryChatRequests extends QueryDb<ChatRequest> implements IReturn<Q
     public createResponse() { return new QueryResponse<ChatRequest>(); }
 }
 
+// @Route("/chatsearchsectionftsconfigs", "GET")
+// @Route("/chatsearchsectionftsconfigs/{K}", "GET")
+// @DataContract
+export class QueryChatSearchSectionFtsConfigs extends QueryDb<ChatSearchSectionFtsConfig> implements IReturn<QueryResponse<ChatSearchSectionFtsConfig>>, IGet
+{
+    // @DataMember(Order=1)
+    public k?: string;
+
+    public constructor(init?: Partial<QueryChatSearchSectionFtsConfigs>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueryChatSearchSectionFtsConfigs'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<ChatSearchSectionFtsConfig>(); }
+}
+
+// @Route("/chatsearchsectionftscontents", "GET")
+// @Route("/chatsearchsectionftscontents/{Id}", "GET")
+// @DataContract
+export class QueryChatSearchSectionFtsContents extends QueryDb<ChatSearchSectionFtsContent> implements IReturn<QueryResponse<ChatSearchSectionFtsContent>>, IGet
+{
+    // @DataMember(Order=1)
+    public id?: number;
+
+    public constructor(init?: Partial<QueryChatSearchSectionFtsContents>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueryChatSearchSectionFtsContents'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<ChatSearchSectionFtsContent>(); }
+}
+
+// @Route("/chatsearchsectionftsdatas", "GET")
+// @Route("/chatsearchsectionftsdatas/{Id}", "GET")
+// @DataContract
+export class QueryChatSearchSectionFtsDatas extends QueryDb<ChatSearchSectionFtsData> implements IReturn<QueryResponse<ChatSearchSectionFtsData>>, IGet
+{
+    // @DataMember(Order=1)
+    public id?: number;
+
+    public constructor(init?: Partial<QueryChatSearchSectionFtsDatas>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueryChatSearchSectionFtsDatas'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<ChatSearchSectionFtsData>(); }
+}
+
+// @Route("/chatsearchsectionftsdocsizes", "GET")
+// @Route("/chatsearchsectionftsdocsizes/{Id}", "GET")
+// @DataContract
+export class QueryChatSearchSectionFtsDocsizes extends QueryDb<ChatSearchSectionFtsDocsize> implements IReturn<QueryResponse<ChatSearchSectionFtsDocsize>>, IGet
+{
+    // @DataMember(Order=1)
+    public id?: number;
+
+    public constructor(init?: Partial<QueryChatSearchSectionFtsDocsizes>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueryChatSearchSectionFtsDocsizes'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<ChatSearchSectionFtsDocsize>(); }
+}
+
+// @Route("/chatsearchsections", "GET")
+// @Route("/chatsearchsections/{Id}", "GET")
+// @DataContract
+export class QueryChatSearchSections extends QueryDb<ChatSearchSection> implements IReturn<QueryResponse<ChatSearchSection>>, IGet
+{
+    // @DataMember(Order=1)
+    public id?: number;
+
+    public constructor(init?: Partial<QueryChatSearchSections>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueryChatSearchSections'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<ChatSearchSection>(); }
+}
+
+// @Route("/chatsearchwidgets", "GET")
+// @Route("/chatsearchwidgets/{Id}", "GET")
+// @DataContract
+export class QueryChatSearchWidgets extends QueryDb<ChatSearchWidget> implements IReturn<QueryResponse<ChatSearchWidget>>, IGet
+{
+    // @DataMember(Order=1)
+    public id?: number;
+
+    public constructor(init?: Partial<QueryChatSearchWidgets>) { super(init); (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueryChatSearchWidgets'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new QueryResponse<ChatSearchWidget>(); }
+}
+
 // @Route("/chatsourceruns", "GET")
 // @Route("/chatsourceruns/{Id}", "GET")
 // @DataContract
@@ -7056,6 +7253,21 @@ export class CreateChatDocument implements IReturn<IdResponse>, IPost, ICreateDb
     // @DataMember(Order=40)
     public sourceUpdatedAt?: number;
 
+    // @DataMember(Order=41)
+    public searchHash?: string;
+
+    // @DataMember(Order=42)
+    public searchIndexedHash?: string;
+
+    // @DataMember(Order=43)
+    public searchStartedAt?: string;
+
+    // @DataMember(Order=44)
+    public searchIndexedAt?: string;
+
+    // @DataMember(Order=45)
+    public searchError?: string;
+
     public constructor(init?: Partial<CreateChatDocument>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'CreateChatDocument'; }
     public getMethod() { return 'POST'; }
@@ -7344,6 +7556,183 @@ export class CreateChatRequest implements IReturn<IdResponse>, IPost, ICreateDb<
 
     public constructor(init?: Partial<CreateChatRequest>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'CreateChatRequest'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsections", "POST")
+// @DataContract
+export class CreateChatSearchSection implements IReturn<IdResponse>, IPost, ICreateDb<ChatSearchSection>
+{
+    // @DataMember(Order=2)
+    public documentId: number;
+
+    // @DataMember(Order=3)
+    public filestoreId: number;
+
+    // @DataMember(Order=4)
+    public user?: string;
+
+    // @DataMember(Order=5)
+    public ordinal: number;
+
+    // @DataMember(Order=6)
+    public documentTitle?: string;
+
+    // @DataMember(Order=7)
+    public heading?: string;
+
+    // @DataMember(Order=8)
+    public headingLevel: number;
+
+    // @DataMember(Order=9)
+    public hierarchy?: string;
+
+    // @DataMember(Order=10)
+    public anchor?: string;
+
+    // @DataMember(Order=11)
+    public url?: string;
+
+    // @DataMember(Order=12)
+    public kind?: string;
+
+    // @DataMember(Order=13)
+    public content?: string;
+
+    // @DataMember(Order=14)
+    public category?: string;
+
+    // @DataMember(Order=15)
+    public docType?: string;
+
+    // @DataMember(Order=16)
+    public status?: string;
+
+    // @DataMember(Order=17)
+    public locale?: string;
+
+    // @DataMember(Order=18)
+    public product?: string;
+
+    // @DataMember(Order=19)
+    public versions?: string;
+
+    // @DataMember(Order=20)
+    public tags?: string;
+
+    public constructor(init?: Partial<CreateChatSearchSection>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'CreateChatSearchSection'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsconfigs", "POST")
+// @DataContract
+export class CreateChatSearchSectionFtsConfig implements IReturn<IdResponse>, IPost, ICreateDb<ChatSearchSectionFtsConfig>
+{
+    // @DataMember(Order=1)
+    public k?: string;
+
+    // @DataMember(Order=2)
+    public v?: number;
+
+    public constructor(init?: Partial<CreateChatSearchSectionFtsConfig>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'CreateChatSearchSectionFtsConfig'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftscontents", "POST")
+// @DataContract
+export class CreateChatSearchSectionFtsContent implements IReturn<IdResponse>, IPost, ICreateDb<ChatSearchSectionFtsContent>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public c0?: number;
+
+    // @DataMember(Order=3)
+    public c1?: string;
+
+    // @DataMember(Order=4)
+    public c2?: string;
+
+    // @DataMember(Order=5)
+    public c3?: string;
+
+    public constructor(init?: Partial<CreateChatSearchSectionFtsContent>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'CreateChatSearchSectionFtsContent'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsdatas", "POST")
+// @DataContract
+export class CreateChatSearchSectionFtsData implements IReturn<IdResponse>, IPost, ICreateDb<ChatSearchSectionFtsData>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public block?: string;
+
+    public constructor(init?: Partial<CreateChatSearchSectionFtsData>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'CreateChatSearchSectionFtsData'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsdocsizes", "POST")
+// @DataContract
+export class CreateChatSearchSectionFtsDocsize implements IReturn<IdResponse>, IPost, ICreateDb<ChatSearchSectionFtsDocsize>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public sz?: string;
+
+    public constructor(init?: Partial<CreateChatSearchSectionFtsDocsize>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'CreateChatSearchSectionFtsDocsize'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchwidgets", "POST")
+// @DataContract
+export class CreateChatSearchWidget implements IReturn<IdResponse>, IPost, ICreateDb<ChatSearchWidget>
+{
+    // @DataMember(Order=2)
+    public filestoreId: number;
+
+    // @DataMember(Order=3)
+    public user?: string;
+
+    // @DataMember(Order=4)
+    public createdAt?: string;
+
+    // @DataMember(Order=5)
+    public updatedAt?: string;
+
+    // @DataMember(Order=6)
+    public name?: string;
+
+    // @DataMember(Order=7)
+    public publicId?: string;
+
+    // @DataMember(Order=8)
+    public enabled: number;
+
+    // @DataMember(Order=9)
+    public publishedAt?: string;
+
+    // @DataMember(Order=10)
+    public config?: string;
+
+    public constructor(init?: Partial<CreateChatSearchWidget>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'CreateChatSearchWidget'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new IdResponse(); }
 }
@@ -8239,6 +8628,84 @@ export class DeleteChatRequest implements IReturn<IdResponse>, IDelete, IDeleteD
 
     public constructor(init?: Partial<DeleteChatRequest>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'DeleteChatRequest'; }
+    public getMethod() { return 'DELETE'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsections/{Id}", "DELETE")
+// @DataContract
+export class DeleteChatSearchSection implements IReturn<IdResponse>, IDelete, IDeleteDb<ChatSearchSection>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    public constructor(init?: Partial<DeleteChatSearchSection>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'DeleteChatSearchSection'; }
+    public getMethod() { return 'DELETE'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsconfigs/{K}", "DELETE")
+// @DataContract
+export class DeleteChatSearchSectionFtsConfig implements IReturn<IdResponse>, IDelete, IDeleteDb<ChatSearchSectionFtsConfig>
+{
+    // @DataMember(Order=1)
+    public k?: string;
+
+    public constructor(init?: Partial<DeleteChatSearchSectionFtsConfig>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'DeleteChatSearchSectionFtsConfig'; }
+    public getMethod() { return 'DELETE'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftscontents/{Id}", "DELETE")
+// @DataContract
+export class DeleteChatSearchSectionFtsContent implements IReturn<IdResponse>, IDelete, IDeleteDb<ChatSearchSectionFtsContent>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    public constructor(init?: Partial<DeleteChatSearchSectionFtsContent>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'DeleteChatSearchSectionFtsContent'; }
+    public getMethod() { return 'DELETE'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsdatas/{Id}", "DELETE")
+// @DataContract
+export class DeleteChatSearchSectionFtsData implements IReturn<IdResponse>, IDelete, IDeleteDb<ChatSearchSectionFtsData>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    public constructor(init?: Partial<DeleteChatSearchSectionFtsData>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'DeleteChatSearchSectionFtsData'; }
+    public getMethod() { return 'DELETE'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsdocsizes/{Id}", "DELETE")
+// @DataContract
+export class DeleteChatSearchSectionFtsDocsize implements IReturn<IdResponse>, IDelete, IDeleteDb<ChatSearchSectionFtsDocsize>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    public constructor(init?: Partial<DeleteChatSearchSectionFtsDocsize>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'DeleteChatSearchSectionFtsDocsize'; }
+    public getMethod() { return 'DELETE'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchwidgets/{Id}", "DELETE")
+// @DataContract
+export class DeleteChatSearchWidget implements IReturn<IdResponse>, IDelete, IDeleteDb<ChatSearchWidget>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    public constructor(init?: Partial<DeleteChatSearchWidget>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'DeleteChatSearchWidget'; }
     public getMethod() { return 'DELETE'; }
     public createResponse() { return new IdResponse(); }
 }
@@ -9255,6 +9722,21 @@ export class PatchChatDocument implements IReturn<IdResponse>, IPatch, IPatchDb<
     // @DataMember(Order=40)
     public sourceUpdatedAt?: number;
 
+    // @DataMember(Order=41)
+    public searchHash?: string;
+
+    // @DataMember(Order=42)
+    public searchIndexedHash?: string;
+
+    // @DataMember(Order=43)
+    public searchStartedAt?: string;
+
+    // @DataMember(Order=44)
+    public searchIndexedAt?: string;
+
+    // @DataMember(Order=45)
+    public searchError?: string;
+
     public constructor(init?: Partial<PatchChatDocument>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'PatchChatDocument'; }
     public getMethod() { return 'PATCH'; }
@@ -9555,6 +10037,189 @@ export class PatchChatRequest implements IReturn<IdResponse>, IPatch, IPatchDb<C
 
     public constructor(init?: Partial<PatchChatRequest>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'PatchChatRequest'; }
+    public getMethod() { return 'PATCH'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsections/{Id}", "PATCH")
+// @DataContract
+export class PatchChatSearchSection implements IReturn<IdResponse>, IPatch, IPatchDb<ChatSearchSection>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public documentId: number;
+
+    // @DataMember(Order=3)
+    public filestoreId: number;
+
+    // @DataMember(Order=4)
+    public user?: string;
+
+    // @DataMember(Order=5)
+    public ordinal: number;
+
+    // @DataMember(Order=6)
+    public documentTitle?: string;
+
+    // @DataMember(Order=7)
+    public heading?: string;
+
+    // @DataMember(Order=8)
+    public headingLevel: number;
+
+    // @DataMember(Order=9)
+    public hierarchy?: string;
+
+    // @DataMember(Order=10)
+    public anchor?: string;
+
+    // @DataMember(Order=11)
+    public url?: string;
+
+    // @DataMember(Order=12)
+    public kind?: string;
+
+    // @DataMember(Order=13)
+    public content?: string;
+
+    // @DataMember(Order=14)
+    public category?: string;
+
+    // @DataMember(Order=15)
+    public docType?: string;
+
+    // @DataMember(Order=16)
+    public status?: string;
+
+    // @DataMember(Order=17)
+    public locale?: string;
+
+    // @DataMember(Order=18)
+    public product?: string;
+
+    // @DataMember(Order=19)
+    public versions?: string;
+
+    // @DataMember(Order=20)
+    public tags?: string;
+
+    public constructor(init?: Partial<PatchChatSearchSection>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'PatchChatSearchSection'; }
+    public getMethod() { return 'PATCH'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsconfigs/{K}", "PATCH")
+// @DataContract
+export class PatchChatSearchSectionFtsConfig implements IReturn<IdResponse>, IPatch, IPatchDb<ChatSearchSectionFtsConfig>
+{
+    // @DataMember(Order=1)
+    public k?: string;
+
+    // @DataMember(Order=2)
+    public v?: number;
+
+    public constructor(init?: Partial<PatchChatSearchSectionFtsConfig>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'PatchChatSearchSectionFtsConfig'; }
+    public getMethod() { return 'PATCH'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftscontents/{Id}", "PATCH")
+// @DataContract
+export class PatchChatSearchSectionFtsContent implements IReturn<IdResponse>, IPatch, IPatchDb<ChatSearchSectionFtsContent>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public c0?: number;
+
+    // @DataMember(Order=3)
+    public c1?: string;
+
+    // @DataMember(Order=4)
+    public c2?: string;
+
+    // @DataMember(Order=5)
+    public c3?: string;
+
+    public constructor(init?: Partial<PatchChatSearchSectionFtsContent>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'PatchChatSearchSectionFtsContent'; }
+    public getMethod() { return 'PATCH'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsdatas/{Id}", "PATCH")
+// @DataContract
+export class PatchChatSearchSectionFtsData implements IReturn<IdResponse>, IPatch, IPatchDb<ChatSearchSectionFtsData>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public block?: string;
+
+    public constructor(init?: Partial<PatchChatSearchSectionFtsData>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'PatchChatSearchSectionFtsData'; }
+    public getMethod() { return 'PATCH'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsdocsizes/{Id}", "PATCH")
+// @DataContract
+export class PatchChatSearchSectionFtsDocsize implements IReturn<IdResponse>, IPatch, IPatchDb<ChatSearchSectionFtsDocsize>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public sz?: string;
+
+    public constructor(init?: Partial<PatchChatSearchSectionFtsDocsize>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'PatchChatSearchSectionFtsDocsize'; }
+    public getMethod() { return 'PATCH'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchwidgets/{Id}", "PATCH")
+// @DataContract
+export class PatchChatSearchWidget implements IReturn<IdResponse>, IPatch, IPatchDb<ChatSearchWidget>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public filestoreId: number;
+
+    // @DataMember(Order=3)
+    public user?: string;
+
+    // @DataMember(Order=4)
+    public createdAt?: string;
+
+    // @DataMember(Order=5)
+    public updatedAt?: string;
+
+    // @DataMember(Order=6)
+    public name?: string;
+
+    // @DataMember(Order=7)
+    public publicId?: string;
+
+    // @DataMember(Order=8)
+    public enabled: number;
+
+    // @DataMember(Order=9)
+    public publishedAt?: string;
+
+    // @DataMember(Order=10)
+    public config?: string;
+
+    public constructor(init?: Partial<PatchChatSearchWidget>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'PatchChatSearchWidget'; }
     public getMethod() { return 'PATCH'; }
     public createResponse() { return new IdResponse(); }
 }
@@ -11072,6 +11737,21 @@ export class UpdateChatDocument implements IReturn<IdResponse>, IPut, IUpdateDb<
     // @DataMember(Order=40)
     public sourceUpdatedAt?: number;
 
+    // @DataMember(Order=41)
+    public searchHash?: string;
+
+    // @DataMember(Order=42)
+    public searchIndexedHash?: string;
+
+    // @DataMember(Order=43)
+    public searchStartedAt?: string;
+
+    // @DataMember(Order=44)
+    public searchIndexedAt?: string;
+
+    // @DataMember(Order=45)
+    public searchError?: string;
+
     public constructor(init?: Partial<UpdateChatDocument>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'UpdateChatDocument'; }
     public getMethod() { return 'PUT'; }
@@ -11372,6 +12052,189 @@ export class UpdateChatRequest implements IReturn<IdResponse>, IPut, IUpdateDb<C
 
     public constructor(init?: Partial<UpdateChatRequest>) { (Object as any).assign(this, init); }
     public getTypeName() { return 'UpdateChatRequest'; }
+    public getMethod() { return 'PUT'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsections/{Id}", "PUT")
+// @DataContract
+export class UpdateChatSearchSection implements IReturn<IdResponse>, IPut, IUpdateDb<ChatSearchSection>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public documentId: number;
+
+    // @DataMember(Order=3)
+    public filestoreId: number;
+
+    // @DataMember(Order=4)
+    public user?: string;
+
+    // @DataMember(Order=5)
+    public ordinal: number;
+
+    // @DataMember(Order=6)
+    public documentTitle?: string;
+
+    // @DataMember(Order=7)
+    public heading?: string;
+
+    // @DataMember(Order=8)
+    public headingLevel: number;
+
+    // @DataMember(Order=9)
+    public hierarchy?: string;
+
+    // @DataMember(Order=10)
+    public anchor?: string;
+
+    // @DataMember(Order=11)
+    public url?: string;
+
+    // @DataMember(Order=12)
+    public kind?: string;
+
+    // @DataMember(Order=13)
+    public content?: string;
+
+    // @DataMember(Order=14)
+    public category?: string;
+
+    // @DataMember(Order=15)
+    public docType?: string;
+
+    // @DataMember(Order=16)
+    public status?: string;
+
+    // @DataMember(Order=17)
+    public locale?: string;
+
+    // @DataMember(Order=18)
+    public product?: string;
+
+    // @DataMember(Order=19)
+    public versions?: string;
+
+    // @DataMember(Order=20)
+    public tags?: string;
+
+    public constructor(init?: Partial<UpdateChatSearchSection>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'UpdateChatSearchSection'; }
+    public getMethod() { return 'PUT'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsconfigs/{K}", "PUT")
+// @DataContract
+export class UpdateChatSearchSectionFtsConfig implements IReturn<IdResponse>, IPut, IUpdateDb<ChatSearchSectionFtsConfig>
+{
+    // @DataMember(Order=1)
+    public k?: string;
+
+    // @DataMember(Order=2)
+    public v?: number;
+
+    public constructor(init?: Partial<UpdateChatSearchSectionFtsConfig>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'UpdateChatSearchSectionFtsConfig'; }
+    public getMethod() { return 'PUT'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftscontents/{Id}", "PUT")
+// @DataContract
+export class UpdateChatSearchSectionFtsContent implements IReturn<IdResponse>, IPut, IUpdateDb<ChatSearchSectionFtsContent>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public c0?: number;
+
+    // @DataMember(Order=3)
+    public c1?: string;
+
+    // @DataMember(Order=4)
+    public c2?: string;
+
+    // @DataMember(Order=5)
+    public c3?: string;
+
+    public constructor(init?: Partial<UpdateChatSearchSectionFtsContent>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'UpdateChatSearchSectionFtsContent'; }
+    public getMethod() { return 'PUT'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsdatas/{Id}", "PUT")
+// @DataContract
+export class UpdateChatSearchSectionFtsData implements IReturn<IdResponse>, IPut, IUpdateDb<ChatSearchSectionFtsData>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public block?: string;
+
+    public constructor(init?: Partial<UpdateChatSearchSectionFtsData>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'UpdateChatSearchSectionFtsData'; }
+    public getMethod() { return 'PUT'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchsectionftsdocsizes/{Id}", "PUT")
+// @DataContract
+export class UpdateChatSearchSectionFtsDocsize implements IReturn<IdResponse>, IPut, IUpdateDb<ChatSearchSectionFtsDocsize>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public sz?: string;
+
+    public constructor(init?: Partial<UpdateChatSearchSectionFtsDocsize>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'UpdateChatSearchSectionFtsDocsize'; }
+    public getMethod() { return 'PUT'; }
+    public createResponse() { return new IdResponse(); }
+}
+
+// @Route("/chatsearchwidgets/{Id}", "PUT")
+// @DataContract
+export class UpdateChatSearchWidget implements IReturn<IdResponse>, IPut, IUpdateDb<ChatSearchWidget>
+{
+    // @DataMember(Order=1)
+    public id: number;
+
+    // @DataMember(Order=2)
+    public filestoreId: number;
+
+    // @DataMember(Order=3)
+    public user?: string;
+
+    // @DataMember(Order=4)
+    public createdAt?: string;
+
+    // @DataMember(Order=5)
+    public updatedAt?: string;
+
+    // @DataMember(Order=6)
+    public name?: string;
+
+    // @DataMember(Order=7)
+    public publicId?: string;
+
+    // @DataMember(Order=8)
+    public enabled: number;
+
+    // @DataMember(Order=9)
+    public publishedAt?: string;
+
+    // @DataMember(Order=10)
+    public config?: string;
+
+    public constructor(init?: Partial<UpdateChatSearchWidget>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'UpdateChatSearchWidget'; }
     public getMethod() { return 'PUT'; }
     public createResponse() { return new IdResponse(); }
 }

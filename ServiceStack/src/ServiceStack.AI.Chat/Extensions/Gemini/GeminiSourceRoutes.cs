@@ -194,7 +194,7 @@ public partial class GeminiExtension
             if (!dryRun)
             {
                 var applied = await ApplyPlanAsync(plan, source, req).ConfigAwait();
-                source.LastRunId = run.Id; source.LastRunAt = DateTime.Now; source.Error = null; db.UpdateSource(source); worker?.Start();
+                source.LastRunId = run.Id; source.LastRunAt = DateTime.Now; source.Error = null; db.UpdateSource(source); worker?.Start(); searchWorker?.Start();
                 foreach (var (key, value) in applied) summary[key] = value?.DeepClone();
                 var sourceConfig = ChatDtos.ParseJson(source.Config) as JsonObject;
                 if (body.GetBool("saveConfig") && source.Type == "folder" && sourceConfig?.GetBool("metadataSpecified") == true
@@ -235,6 +235,7 @@ public partial class GeminiExtension
             doc.MimeType = MimeTypes.GetMimeType(filename); doc.ContentHash = entry.ContentHash; doc.MetadataHash = entry.MetadataHash;
             doc.ExtractorVer = entry.ExtractorVer; doc.TombstonedAt = null; doc.Error = null; doc.UploadedAt = null;
             ApplyMetadata(doc, entry.Metadata);
+            db.SetSearchDesired(doc);
             if (entry.Id != null) db.UpdateDocument(doc); else { doc.Id = db.InsertDocument(doc); }
             queued++;
         }
@@ -247,7 +248,7 @@ public partial class GeminiExtension
                 catch (GeminiApiException e) when (e.StatusCode == 404) { }
             }
             if (source.OnDelete == "remove") db.DeleteDocument(doc.Id, UserOf(req));
-            else { doc.TombstonedAt = DateTime.Now; doc.Name = null; doc.State = "REMOVED_UPSTREAM"; db.UpdateDocument(doc); }
+            else { doc.TombstonedAt = DateTime.Now; doc.Name = null; doc.State = "REMOVED_UPSTREAM"; db.UpdateDocument(doc); db.RemoveSearchDocument(doc.Id); }
             removed++;
         }
         return new JsonObject { ["queued"] = queued, ["removedApplied"] = removed };

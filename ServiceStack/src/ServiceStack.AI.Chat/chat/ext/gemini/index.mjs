@@ -11,6 +11,7 @@ import {
 } from './explorer.mjs'
 import { initImport, ImportPanel } from './import.mjs'
 import { initAssistants, AssistantsPanel } from './assistants.mjs'
+import { initSearches, SearchesPanel } from './searches.mjs'
 
 let ext = null
 let ctx = null
@@ -766,6 +767,13 @@ const DeleteStoreDialog = {
                                 <b>{{ Number(summary.assistants || 0).toLocaleString() }}</b>
                             </div>
                             <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Search widgets <small v-if="summary.publishedSearchWidgets" class="text-red-600 dark:text-red-400">({{ summary.publishedSearchWidgets }} published)</small></span>
+                                <b>{{ Number(summary.searchWidgets || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Local search sections</span><b>{{ Number(summary.searchSections || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
                                 <span>Customer conversations</span><b>{{ Number(summary.conversations || 0).toLocaleString() }}</b>
                             </div>
                             <div class="flex items-center justify-between gap-4 px-3 py-2.5">
@@ -811,7 +819,7 @@ const DeleteStoreDialog = {
 const FileStoreDetails = {
     components: {
         SyncReport, GeminiModelSelector, CoverageStrip, SelectionBar, BulkEditDialog, MetadataDialog,
-        MetaChip, ConfirmDialog, SourcesPanel, ImportPanel, AssistantsPanel, RunReport, TrustedFolders,
+        MetaChip, ConfirmDialog, SourcesPanel, ImportPanel, AssistantsPanel, SearchesPanel, RunReport, TrustedFolders,
         Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState, CheckBox,
         DeleteStoreDialog
     },
@@ -820,7 +828,7 @@ const FileStoreDetails = {
     template: `
         <!-- Room for the docked selection bar, so the last row isn't the one it covers. -->
         <div data-tag="FileStoreDetails" class="mx-auto px-4 sm:px-6 lg:px-8 py-8"
-            :class="[bulkCount ? 'pb-24' : '', view === 'assistants' ? 'max-w-7xl' : 'max-w-5xl']" v-if="store">
+            :class="[bulkCount ? 'pb-24' : '', ['assistants','search'].includes(view) ? 'max-w-7xl' : 'max-w-5xl']" v-if="store">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                  <div class="flex items-center gap-4">
                      <button type="button"
@@ -872,6 +880,13 @@ const FileStoreDetails = {
                                                   : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'">
                     Assistants
                     <span v-if="assistantCount" class="ml-1 text-xs tabular-nums" :class="[$styles.muted]">{{ assistantCount }}</span>
+                </button>
+                <button type="button" @click="selectView('search')"
+                    class="px-4 py-2 text-sm font-medium border-b-2 -mb-px"
+                    :class="view === 'search' ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                              : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'">
+                    Search
+                    <span v-if="searchCount" class="ml-1 text-xs tabular-nums" :class="[$styles.muted]">{{ searchCount }}</span>
                 </button>
             </div>
 
@@ -1197,6 +1212,11 @@ const FileStoreDetails = {
                     :route-assistant="routeQuery.assistant" :route-conversations="routeQuery.conversations"
                     :route-conversation="routeQuery.conversation" @navigate="onAssistantNavigate"
                     @count="assistantCount = $event" />
+            </div>
+
+            <div v-show="view === 'search'" class="border-b border-gray-200 dark:border-gray-700 mb-8">
+                <SearchesPanel :storeId="storeId" :facets="facets" :route-search="routeQuery.search"
+                    @navigate="onSearchNavigate" @count="searchCount = $event" />
             </div>
 
             <Modal :open="coverageOpen" title="Coverage & filters"
@@ -1652,13 +1672,14 @@ const FileStoreDetails = {
         // A preview is always shown before anything is indexed, so the operator sees the cost
         // (and which rules matched) before committing.
         const importPreview = ref(null)
-        const pageViews = ['explore', 'import', 'assistants']
+        const pageViews = ['explore', 'import', 'assistants', 'search']
         const importViews = ['upload', 'folder', 'crawl']
         const view = computed({
             get: () => {
                 const explicit = queryValue(routeQuery.value.view)
                 if (pageViews.includes(explicit)) return explicit
                 if (routeQuery.value.assistant || routeQuery.value.conversations || routeQuery.value.conversation) return 'assistants'
+                if (routeQuery.value.search) return 'search'
                 if (routeQuery.value.import || routeQuery.value.crawl) return 'import'
                 return 'explore'
             },
@@ -1691,24 +1712,30 @@ const FileStoreDetails = {
                 patch.conversations = null
                 patch.conversation = null
             }
+            if (next !== 'search') patch.search = null
             ext.setPrefs({ view: next })
             updateNavigation(patch)
         }
         function onImportNavigate(patch) {
-            updateNavigation({ view: 'import', assistant: null, conversations: null, conversation: null, ...patch })
+            updateNavigation({ view: 'import', assistant: null, conversations: null, conversation: null, search: null, ...patch })
         }
         function onAssistantNavigate(patch) {
-            updateNavigation({ view: 'assistants', import: null, crawl: null, ...patch })
+            updateNavigation({ view: 'assistants', import: null, crawl: null, search: null, ...patch })
+        }
+        function onSearchNavigate(patch) {
+            updateNavigation({ view: 'search', import: null, crawl: null, assistant: null,
+                conversations: null, conversation: null, ...patch })
         }
         function updateExploreCategory(category) {
             updateNavigation({
                 view: 'explore', category, import: null, crawl: null,
-                assistant: null, conversations: null, conversation: null
+                assistant: null, conversations: null, conversation: null, search: null
             })
         }
         const importCategory = ref(null)
         const sourceCount = ref(0)
         const assistantCount = ref(0)
+        const searchCount = ref(0)
         const sourceListVersion = ref(0)
         const importPanel = ref(null)
         const uploadProgress = ref(null)
@@ -2228,8 +2255,8 @@ const FileStoreDetails = {
             clearFilters, reviewPending, facetFields: FACET_FIELDS,
             docMeta,
             reload,
-            view, routeQuery, selectView, onImportNavigate, onAssistantNavigate,
-            sourceCount, assistantCount, sourceListVersion, importPanel, uploadProgress, uploadStatus,
+            view, routeQuery, selectView, onImportNavigate, onAssistantNavigate, onSearchNavigate,
+            sourceCount, assistantCount, searchCount, sourceListVersion, importPanel, uploadProgress, uploadStatus,
             importCategory,
             importInto,
             onImported, onUploadImported, viewUploads,
@@ -2542,6 +2569,7 @@ export default {
         initSources(ext)
         initImport(ext)
         initAssistants(ext, ctx, { GeminiModelSelector })
+        initSearches(ext)
         initExplorer(ext)
 
         ctx.setLeftIcons({

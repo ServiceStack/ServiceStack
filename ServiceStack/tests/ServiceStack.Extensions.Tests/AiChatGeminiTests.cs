@@ -491,6 +491,110 @@ public class AiChatGeminiTests
     }
 
     [Test]
+    public void Local_search_indexes_heading_sections_and_applies_scope()
+    {
+        var db = CreateDb();
+        var storeId = AddFilestore(db, "Docs");
+        var id = AddDocument(db, storeId, "testing.md", new string('a', 64), category: "guides");
+        var doc = db.GetDocument(id, User)!;
+        doc.SourceUrl = "https://docs.example/testing";
+        doc.ContentHash = "content-v1";
+        doc.DocType = "guide";
+        db.SetSearchDesired(doc);
+        var initialSearchHash = doc.SearchHash;
+        doc.Status = "published";
+        db.SetSearchDesired(doc);
+        Assert.That(doc.SearchHash, Is.Not.EqualTo(initialSearchHash),
+            "metadata used to scope Search must invalidate the section index");
+        db.UpdateDocument(doc);
+
+        var sections = GeminiSearch.SplitSections("# Unit tests\n\nRun integration tests locally.\n\n## Fixtures\n\nReuse test fixtures.", doc);
+        db.ReplaceSearchSections(doc, sections, doc.SearchHash!);
+
+        var results = db.SearchSections(storeId, "integration tests", User);
+        Assert.That(results, Is.Not.Empty);
+        Assert.That(results.Any(x => x.Score != 0), Is.True, "SQLite should use its FTS5 rank before LIKE fallback");
+        Assert.That(results[0].Url, Is.EqualTo("https://docs.example/testing#unit-tests"));
+        Assert.That(db.SearchSections(storeId, "integration", User,
+            new JsonObject { ["category"] = "guides", ["docType"] = "guide" }), Is.Not.Empty);
+        Assert.That(db.SearchSections(storeId, "integration", User,
+            new JsonObject { ["category"] = "api" }), Is.Empty);
+
+        var stats = db.SearchStats(storeId, User);
+        Assert.Multiple(() =>
+        {
+            Assert.That(stats.Indexed, Is.EqualTo(1));
+            Assert.That(stats.Pending, Is.Zero);
+            Assert.That(stats.Sections, Is.GreaterThanOrEqualTo(2));
+        });
+
+        db.DeleteDocument(id, User);
+        Assert.That(db.SearchSections(storeId, "integration", User), Is.Empty);
+    }
+
+    [Test]
+    public void Local_search_preserves_filename_underscores_and_prefers_frontmatter_titles()
+    {
+        var doc = new ChatDocument { DisplayName = "2025-10-15_ormlite-new-configuration.md" };
+        var filename = GeminiSearch.SplitSections("Configuration details.", doc);
+        var frontmatter = GeminiSearch.SplitSections("Configuration details.", doc,
+            documentTitle: "New OrmLite Configuration");
+        Assert.Multiple(() =>
+        {
+            Assert.That(filename[0].DocumentTitle, Is.EqualTo("2025-10-15_ormlite-new-configuration"));
+            Assert.That(frontmatter[0].DocumentTitle, Is.EqualTo("New OrmLite Configuration"));
+        });
+    }
+
+    [Test]
+    public void Search_widget_archive_restore_and_public_lookup_are_independent_of_assistants()
+    {
+        var db = CreateDb();
+        var storeId = AddFilestore(db, "Docs");
+        var now = DateTime.Now;
+        var widget = new ChatSearchWidget
+        {
+            FilestoreId = storeId, User = User, CreatedAt = now, UpdatedAt = now,
+            Name = "Docs Search", PublicId = GeminiSearch.NewPublicId(), Enabled = true,
+            PublishedAt = now, Config = GeminiSearch.NormalizeConfig().ToJsonString(),
+        };
+        widget.Id = db.InsertSearchWidget(widget);
+
+        Assert.That(db.GetPublicSearchWidget(widget.PublicId!), Is.Not.Null);
+        Assert.That(db.ArchiveSearchWidget(widget.Id, User), Is.True);
+        Assert.That(db.GetPublicSearchWidget(widget.PublicId!), Is.Null);
+        Assert.That(db.RestoreSearchWidget(widget.Id, User)!.PublishedAt, Is.Null);
+        Assert.That(db.QuerySearchWidgets(storeId, User, includeArchived: true), Has.Count.EqualTo(1));
+        var appearance = GeminiSearch.NormalizeConfig(new JsonObject
+        {
+            ["appearance"] = new JsonObject
+            {
+                ["theme"] = "nord", ["accent"] = "#ff0000", ["highlightColor"] = "#12abEF",
+            },
+        }).GetObject("appearance")!;
+        Assert.That(appearance.GetString("theme"), Is.EqualTo("nord"));
+        Assert.That(appearance.ContainsKey("accent"), Is.False);
+        Assert.That(appearance.GetString("highlightColor"), Is.EqualTo("#12abEF"));
+        Assert.That(GeminiSearch.NormalizeConfig(new JsonObject
+        {
+            ["appearance"] = new JsonObject { ["highlightColor"] = "blue" },
+        }).GetObject("appearance")!.GetString("highlightColor"), Is.Empty);
+        var shortcuts = GeminiSearch.NormalizeConfig().GetObject("behavior")!;
+        var legacyShortcuts = GeminiSearch.NormalizeConfig(new JsonObject
+        {
+            ["behavior"] = new JsonObject { ["keyboardShortcut"] = false },
+        }).GetObject("behavior")!;
+        Assert.Multiple(() =>
+        {
+            Assert.That(shortcuts.GetBool("commandKShortcut"), Is.True);
+            Assert.That(shortcuts.GetBool("slashShortcut"), Is.True);
+            Assert.That(legacyShortcuts.GetBool("commandKShortcut"), Is.False);
+            Assert.That(legacyShortcuts.GetBool("slashShortcut"), Is.False);
+            Assert.That(legacyShortcuts.ContainsKey("keyboardShortcut"), Is.False);
+        });
+    }
+
+    [Test]
     public void Source_url_templates_can_extract_a_regex_capture()
     {
         var values = GeminiIngest.TemplateValues("2026-09-04_servicestack-pdf.md");

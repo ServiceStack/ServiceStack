@@ -345,6 +345,8 @@ if (launch.openMode === 'page-bottom') {
 if (launch.keyboardShortcut) {
     document.addEventListener('keydown', event => {
         if (event.repeat || event.altKey || String(event.key).toLowerCase() !== 'k' || (!event.ctrlKey && !event.metaKey)) return;
+        const searchPresent = Boolean(document.querySelector('[data-gemini-search]'));
+        if (event.shiftKey !== searchPresent) return;
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();

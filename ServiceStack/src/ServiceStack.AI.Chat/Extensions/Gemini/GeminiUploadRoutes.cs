@@ -57,6 +57,7 @@ public partial class GeminiExtension
             ids.Add(await QueueManualDocumentAsync(filestoreId, user, part, partMetadata).ConfigAwait());
         }
         worker?.Start();
+        searchWorker?.Start();
         var docs = ids.Count == 0 ? [] : db.QueryDocuments(new JsonObject
             { ["ids_in"] = string.Join(',', ids), ["take"] = ids.Count }, user);
         return docs.ToDtos(ToClientDto);
@@ -130,6 +131,7 @@ public partial class GeminiExtension
         doc.Product = metadata.GetString("product"); doc.Versions = Json(metadata["versions"]); doc.Tags = Json(metadata["tags"]);
         doc.SourceUrl = metadata.GetString("sourceUrl"); doc.ContentHash = GeminiIngest.ContentHash(Encoding.UTF8.GetString(part.Content));
         doc.Error = null; doc.StartedAt = null; doc.UploadedAt = null; doc.TombstonedAt = null;
+        db.SetSearchDesired(doc);
         if (doc.Id == 0) { doc.Id = db.InsertDocument(doc); return doc.Id; }
         db.UpdateDocument(doc); return doc.Id;
     }
