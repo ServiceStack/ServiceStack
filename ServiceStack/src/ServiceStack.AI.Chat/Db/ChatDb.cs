@@ -62,11 +62,15 @@ public partial class ChatDb(IDbConnectionFactory dbFactory, string? namedConnect
     public static void AddMissingColumns<T>(IDbConnection db)
     {
         var modelDef = typeof(T).GetModelMetadata();
+        var dialect = db.GetDialectProvider();
         foreach (var fieldDef in modelDef.FieldDefinitions)
         {
             if (fieldDef.IsComputed || fieldDef.IsRowVersion)
                 continue;
-            if (db.ColumnExists(fieldDef.FieldName, new TableRef(modelDef)))
+            var columnName = fieldDef.Alias != null
+                ? dialect.NamingStrategy.GetAlias(fieldDef.Alias)
+                : dialect.NamingStrategy.GetColumnName(fieldDef.Name);
+            if (db.ColumnExists(columnName, new TableRef(modelDef)))
                 continue;
             try
             {

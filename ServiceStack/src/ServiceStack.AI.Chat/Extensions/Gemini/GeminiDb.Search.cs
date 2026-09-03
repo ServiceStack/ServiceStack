@@ -23,44 +23,18 @@ public class ChatSearchStats
 
 public partial class GeminiDb
 {
-    string searchProvider = "like";
+    GeminiSearchDbProvider searchProvider = null!;
 
     void InitSearchSchema(IDbConnection conn)
     {
-        var dialect = conn.GetDialectProvider();
-        var provider = dialect.GetType().Name;
-        var table = dialect.GetQuotedTableName(typeof(ChatSearchSection));
-        var model = typeof(ChatSearchSection).GetModelMetadata();
-        string Col(string name) => dialect.GetQuotedColumnName(model.GetFieldDefinition(name));
+        searchProvider = GeminiSearchDbProvider.Detect(conn);
         try
         {
-            if (provider.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
-            {
-                conn.ExecuteSql("CREATE VIRTUAL TABLE IF NOT EXISTS ChatSearchSectionFts USING fts5(sectionId UNINDEXED, documentTitle, heading, content)");
-                searchProvider = "sqlite-fts5+like";
-            }
-            else if (provider.Contains("Postgre", StringComparison.OrdinalIgnoreCase))
-            {
-                conn.ExecuteSql($"CREATE INDEX IF NOT EXISTS ix_chat_search_section_fts ON {table} USING GIN (to_tsvector('simple', coalesce({Col(nameof(ChatSearchSection.DocumentTitle))},'') || ' ' || coalesce({Col(nameof(ChatSearchSection.Heading))},'') || ' ' || coalesce({Col(nameof(ChatSearchSection.Content))},'')))");
-                searchProvider = "postgresql-fts+like";
-            }
-            else if (provider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
-            {
-                var exists = conn.Scalar<long>("SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name=@table AND index_name='ix_chat_search_section_fts'", new { table = model.ModelName });
-                if (exists == 0) conn.ExecuteSql($"ALTER TABLE {table} ADD FULLTEXT INDEX ix_chat_search_section_fts ({Col(nameof(ChatSearchSection.DocumentTitle))}, {Col(nameof(ChatSearchSection.Heading))}, {Col(nameof(ChatSearchSection.Content))})");
-                searchProvider = "mysql-fulltext+like";
-            }
-            else if (provider.Contains("SqlServer", StringComparison.OrdinalIgnoreCase))
-            {
-                var rawTable = model.ModelName;
-                conn.ExecuteSql($"IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='UX_ChatSearchSection_FtsId' AND object_id=OBJECT_ID('{rawTable}')) CREATE UNIQUE INDEX UX_ChatSearchSection_FtsId ON {table} ({Col(nameof(ChatSearchSection.Id))})");
-                conn.ExecuteSql("IF NOT EXISTS (SELECT 1 FROM sys.fulltext_catalogs WHERE name='ChatSearchCatalog') CREATE FULLTEXT CATALOG ChatSearchCatalog");
-                conn.ExecuteSql($"IF NOT EXISTS (SELECT 1 FROM sys.fulltext_indexes WHERE object_id=OBJECT_ID('{rawTable}')) CREATE FULLTEXT INDEX ON {table} ({Col(nameof(ChatSearchSection.DocumentTitle))}, {Col(nameof(ChatSearchSection.Heading))}, {Col(nameof(ChatSearchSection.Content))}) KEY INDEX UX_ChatSearchSection_FtsId ON ChatSearchCatalog WITH CHANGE_TRACKING AUTO");
-                searchProvider = "sqlserver-fulltext+like";
-            }
+            searchProvider.Initialize(conn);
         }
         catch
         {
+            searchProvider.DisableNative();
             // Full-text extensions/permissions are optional. SearchSections transparently uses LIKE.
         }
     }
@@ -174,7 +148,7 @@ public partial class GeminiDb
     public void ReplaceSearchSections(ChatDocument doc, List<ChatSearchSection> sections, string desiredHash)
     {
         using var conn = OpenDb(); using var tx = conn.OpenTransaction();
-        var sqlite = conn.GetDialectProvider().GetType().Name.Contains("Sqlite", StringComparison.OrdinalIgnoreCase);
+        var sqlite = searchProvider.UsesManualFullTextRows;
         if (sqlite)
         {
             var oldIds = conn.Column<long>(conn.From<ChatSearchSection>().Where(x => x.DocumentId == doc.Id).Select(x => x.Id));
@@ -199,7 +173,7 @@ public partial class GeminiDb
     public void RemoveSearchDocument(long documentId)
     {
         using var conn = OpenDb(); using var tx = conn.OpenTransaction();
-        if (conn.GetDialectProvider().GetType().Name.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
+        if (searchProvider.UsesManualFullTextRows)
         {
             var ids = conn.Column<long>(conn.From<ChatSearchSection>().Where(x => x.DocumentId == documentId).Select(x => x.Id));
             foreach (var batch in ids.Chunk(200)) conn.ExecuteSql($"DELETE FROM ChatSearchSectionFts WHERE sectionId IN ({string.Join(',', batch)})");
@@ -211,7 +185,7 @@ public partial class GeminiDb
     {
         foreach (var documentBatch in documentIds.Distinct().Chunk(200))
         {
-            if (conn.GetDialectProvider().GetType().Name.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
+            if (searchProvider.UsesManualFullTextRows)
             {
                 var sectionIds = conn.Column<long>(conn.From<ChatSearchSection>()
                     .Where(x => documentBatch.Contains(x.DocumentId)).Select(x => x.Id));
@@ -232,7 +206,7 @@ public partial class GeminiDb
         {
             Documents = rows.Count, Indexed = rows.Count(x => x.SearchHash != null && x.SearchIndexedHash == x.SearchHash),
             Pending = rows.Count(x => x.SearchHash != null && x.SearchIndexedHash != x.SearchHash),
-            Failed = rows.Count(x => !string.IsNullOrEmpty(x.SearchError)), Sections = conn.Count(sections), Provider = searchProvider,
+            Failed = rows.Count(x => !string.IsNullOrEmpty(x.SearchError)), Sections = conn.Count(sections), Provider = searchProvider.StatusName,
         };
     }
 
@@ -258,18 +232,23 @@ public partial class GeminiDb
 
     public List<ChatSearchResult> SearchSections(long filestoreId, string query, string? user, JsonObject? scope = null, int take = 30)
     {
-        query = query.Trim(); if (query.Length == 0) return [];
+        query = query.Trim().SafeSubstring(0, 200); if (query.Length == 0) return [];
         take = Math.Clamp(take, 1, 100);
         var tokens = Regex.Matches(query, @"[\p{L}\p{N}_]+\*?").Select(x => x.Value.TrimEnd('*')).Where(x => x.Length > 0).Take(10).ToList();
         if (tokens.Count == 0) return [];
         using var conn = OpenDb();
         List<ChatSearchResult> rows = [];
-        try { rows = NativeSearch(conn, filestoreId, query, tokens, user, Math.Min(1000, Math.Max(take * 10, 100))); }
-        catch { rows = []; }
+        try { rows = NativeSearch(conn, filestoreId, query, tokens, user, scope, Math.Min(1000, Math.Max(take * 10, 100))); }
+        catch
+        {
+            searchProvider.DisableNative();
+            rows = [];
+        }
         if (rows.Count == 0)
         {
             var q = conn.From<ChatSearchSection>().Where(x => x.FilestoreId == filestoreId);
             ChatDb.ApplyUserFilter(q, user);
+            GeminiSearchDbProvider.ApplyFallbackScope(q, scope);
             foreach (var token in tokens) q.And(x => x.DocumentTitle!.Contains(token) || x.Heading!.Contains(token) || x.Content!.Contains(token));
             rows = conn.Select(q.Limit(1000)).Select(x => new ChatSearchResult
             {
@@ -283,38 +262,10 @@ public partial class GeminiDb
         return rows.Where(x => ScopeMatch(x, scope)).Take(take).ToList();
     }
 
-    static List<ChatSearchResult> NativeSearch(IDbConnection conn, long storeId, string query, List<string> tokens, string? user, int take)
+    List<ChatSearchResult> NativeSearch(IDbConnection conn, long storeId, string query, List<string> tokens,
+        string? user, JsonObject? scope, int take)
     {
-        var dialect = conn.GetDialectProvider(); var provider = dialect.GetType().Name;
-        var table = dialect.GetQuotedTableName(typeof(ChatSearchSection));
-        var model = typeof(ChatSearchSection).GetModelMetadata();
-        string Col(string name, string alias="s") => alias + "." + dialect.GetQuotedColumnName(model.GetFieldDefinition(name));
-        var userClause = ChatDb.IsAllUsers(user) ? "" : $" AND {Col(nameof(ChatSearchSection.User))}=@user";
-        var args = new { storeId, user = user ?? ChatDb.DefaultUser, query, take };
-        string sql;
-        if (provider.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
-        {
-            var match = string.Join(" AND ", tokens.Select(x => $"\"{x.Replace("\"", "\"\"")}\""));
-            args = new { storeId, user = user ?? ChatDb.DefaultUser, query = match, take };
-            sql = $"SELECT s.*, bm25(ChatSearchSectionFts) AS Score, s.{dialect.GetQuotedColumnName(model.GetFieldDefinition(nameof(ChatSearchSection.Content)))} AS Snippet FROM ChatSearchSectionFts f JOIN {table} s ON {Col(nameof(ChatSearchSection.Id))}=f.sectionId WHERE ChatSearchSectionFts MATCH @query AND {Col(nameof(ChatSearchSection.FilestoreId))}=@storeId{userClause} ORDER BY Score LIMIT @take";
-        }
-        else if (provider.Contains("Postgre", StringComparison.OrdinalIgnoreCase))
-        {
-            var vector = $"to_tsvector('simple',coalesce({Col(nameof(ChatSearchSection.DocumentTitle))},'')||' '||coalesce({Col(nameof(ChatSearchSection.Heading))},'')||' '||coalesce({Col(nameof(ChatSearchSection.Content))},''))";
-            sql = $"SELECT s.*, ts_rank_cd({vector},websearch_to_tsquery('simple',@query)) AS \"Score\", {Col(nameof(ChatSearchSection.Content))} AS \"Snippet\" FROM {table} s WHERE {Col(nameof(ChatSearchSection.FilestoreId))}=@storeId{userClause} AND {vector} @@ websearch_to_tsquery('simple',@query) ORDER BY \"Score\" DESC LIMIT @take";
-        }
-        else if (provider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
-        {
-            var cols = string.Join(',', new[] { nameof(ChatSearchSection.DocumentTitle), nameof(ChatSearchSection.Heading), nameof(ChatSearchSection.Content) }.Select(x => Col(x)));
-            args = new { storeId, user = user ?? ChatDb.DefaultUser, query = string.Join(' ', tokens.Select(x => "+" + x + "*")), take };
-            sql = $"SELECT s.*, MATCH({cols}) AGAINST(@query IN BOOLEAN MODE) AS Score, {Col(nameof(ChatSearchSection.Content))} AS Snippet FROM {table} s WHERE {Col(nameof(ChatSearchSection.FilestoreId))}=@storeId{userClause} AND MATCH({cols}) AGAINST(@query IN BOOLEAN MODE) ORDER BY Score DESC LIMIT @take";
-        }
-        else if (provider.Contains("SqlServer", StringComparison.OrdinalIgnoreCase))
-        {
-            args = new { storeId, user = user ?? ChatDb.DefaultUser, query = string.Join(" AND ", tokens.Select(x => $"\"{x}*\"")), take };
-            sql = $"SELECT TOP (@take) s.*, ft.RANK AS Score, {Col(nameof(ChatSearchSection.Content))} AS Snippet FROM {table} s JOIN CONTAINSTABLE({table}, *, @query) ft ON ft.[KEY]={Col(nameof(ChatSearchSection.Id))} WHERE {Col(nameof(ChatSearchSection.FilestoreId))}=@storeId{userClause} ORDER BY ft.RANK DESC";
-        }
-        else return [];
-        return conn.SqlList<ChatSearchResult>(sql, args);
+        var native = searchProvider.BuildNativeQuery(conn, storeId, query, tokens, user, scope, take);
+        return native == null ? [] : conn.SqlList<ChatSearchResult>(native.Sql, native.Args);
     }
 }

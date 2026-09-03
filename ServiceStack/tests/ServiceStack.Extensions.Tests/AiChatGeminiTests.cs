@@ -526,6 +526,7 @@ public class AiChatGeminiTests
             Assert.That(stats.Indexed, Is.EqualTo(1));
             Assert.That(stats.Pending, Is.Zero);
             Assert.That(stats.Sections, Is.GreaterThanOrEqualTo(2));
+            Assert.That(stats.Provider, Is.EqualTo("sqlite-fts5"));
         });
 
         db.DeleteDocument(id, User);
@@ -543,6 +544,34 @@ public class AiChatGeminiTests
         {
             Assert.That(filename[0].DocumentTitle, Is.EqualTo("2025-10-15_ormlite-new-configuration"));
             Assert.That(frontmatter[0].DocumentTitle, Is.EqualTo("New OrmLite Configuration"));
+        });
+    }
+
+    [Test]
+    public void Local_search_applies_scope_before_native_limit_and_supports_prefix_terms()
+    {
+        var db = CreateDb();
+        var storeId = AddFilestore(db, "Scoped Docs");
+        var outsideId = AddDocument(db, storeId, "api.md", new string('b', 64), category: "api");
+        var outside = db.GetDocument(outsideId, User)!;
+        outside.ContentHash = "outside"; db.SetSearchDesired(outside); db.UpdateDocument(outside);
+        var outsideText = string.Join('\n', Enumerable.Range(1, 120)
+            .Select(i => $"## API {i}\n\nintegration reference {i}\n"));
+        db.ReplaceSearchSections(outside, GeminiSearch.SplitSections(outsideText, outside), outside.SearchHash!);
+
+        var targetId = AddDocument(db, storeId, "guide.md", new string('c', 64), category: "guides");
+        var target = db.GetDocument(targetId, User)!;
+        target.ContentHash = "target"; db.SetSearchDesired(target); db.UpdateDocument(target);
+        db.ReplaceSearchSections(target,
+            GeminiSearch.SplitSections("# Guide\n\nIntegration testing guide.", target), target.SearchHash!);
+
+        var results = db.SearchSections(storeId, "integr", User,
+            new JsonObject { ["category"] = "guides" }, take: 1);
+        Assert.Multiple(() =>
+        {
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(results[0].DocumentId, Is.EqualTo(targetId));
+            Assert.That(results[0].Score, Is.Not.Zero, "prefix search should stay on the native FTS path");
         });
     }
 

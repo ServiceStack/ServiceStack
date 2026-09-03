@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -16,8 +16,11 @@ namespace ServiceStack.Aws.DynamoDb;
 
 public partial class PocoDynamo
 {
-    public Task InitSchemaAsync(CancellationToken token = default) => 
-        CreateMissingTablesAsync(DynamoMetadata.GetTables(), token);
+    public async Task InitSchemaAsync(CancellationToken token = default)
+    {
+        Sequences.InitSchema();
+        await CreateMissingTablesAsync(DynamoMetadata.GetTables(), token).ConfigAwait();
+    }
         
     public async Task<List<string>> GetTableNamesAsync(CancellationToken token = default)
     {
@@ -242,7 +245,7 @@ public partial class PocoDynamo
         };
 
         var response = await ExecAsync(async () => 
-            await DynamoDb.PutItemAsync(request, token).ConfigAwait()).ConfigAwait();
+            await DynamoDb.PutItemAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
 
         if (response.Attributes.IsEmpty())
             return default(T);
@@ -255,7 +258,7 @@ public partial class PocoDynamo
         try
         {
             await ExecAsync(async () => 
-                await DynamoDb.UpdateItemAsync(update, token).ConfigAwait()).ConfigAwait();
+                await DynamoDb.UpdateItemAsync(update.Prepare(), token).ConfigAwait()).ConfigAwait();
             return true;
         }
         catch (ConditionalCheckFailedException)
@@ -268,7 +271,7 @@ public partial class PocoDynamo
     {
         var request = ToUpdateItemRequest<T>(update);
         await ExecAsync(async () => 
-            await DynamoDb.UpdateItemAsync(request, token).ConfigAwait()).ConfigAwait();
+            await DynamoDb.UpdateItemAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
     }
 
     public async Task<T> UpdateItemNonDefaultsAsync<T>(T value, bool returnOld = false, CancellationToken token = default)
@@ -283,7 +286,7 @@ public partial class PocoDynamo
         };
 
         var response = await ExecAsync(async () => 
-            await DynamoDb.UpdateItemAsync(request, token).ConfigAwait()).ConfigAwait();
+            await DynamoDb.UpdateItemAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
 
         if (response.Attributes.IsEmpty())
             return default;
@@ -359,7 +362,7 @@ public partial class PocoDynamo
         };
 
         var response = await ExecAsync(async () => 
-            await DynamoDb.DeleteItemAsync(request, token).ConfigAwait()).ConfigAwait();
+            await DynamoDb.DeleteItemAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
 
         if (response.Attributes.IsEmpty())
             return default(T);
@@ -385,7 +388,7 @@ public partial class PocoDynamo
         };
 
         var response = await ExecAsync(async () => 
-            await DynamoDb.DeleteItemAsync(request, token).ConfigAwait()).ConfigAwait();
+            await DynamoDb.DeleteItemAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
 
         if (response.Attributes.IsEmpty())
             return default(T);
@@ -494,7 +497,7 @@ public partial class PocoDynamo
                 request.ExclusiveStartKey = response.LastEvaluatedKey;
 
             response = await ExecAsync(async () => 
-                await DynamoDb.ScanAsync(request, token).ConfigAwait()).ConfigAwait();
+                await DynamoDb.ScanAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
 
             var results = converter(response);
             foreach (var result in results)
@@ -518,7 +521,7 @@ public partial class PocoDynamo
                 request.ExclusiveStartKey = response.LastEvaluatedKey;
 
             response = await ExecAsync(async () => 
-                await DynamoDb.ScanAsync(request, token).ConfigAwait()).ConfigAwait();
+                await DynamoDb.ScanAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
             var results = response.ConvertAll<T>();
 
             foreach (var result in results)
@@ -552,7 +555,7 @@ public partial class PocoDynamo
                 request.ExclusiveStartKey = response.LastEvaluatedKey;
 
             response = await ExecAsync(async () => 
-                await DynamoDb.ScanAsync(request, token).ConfigAwait()).ConfigAwait();
+                await DynamoDb.ScanAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
             var results = response.ConvertAll<T>();
 
             foreach (var result in results)
@@ -601,7 +604,7 @@ public partial class PocoDynamo
                 request.ExclusiveStartKey = response.LastEvaluatedKey;
 
             response = await ExecAsync(async () => 
-                await DynamoDb.QueryAsync(request, token).ConfigAwait()).ConfigAwait();
+                await DynamoDb.QueryAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
             var results = response.ConvertAll<T>();
 
             foreach (var result in results)
@@ -626,7 +629,7 @@ public partial class PocoDynamo
                 request.ExclusiveStartKey = response.LastEvaluatedKey;
 
             response = await ExecAsync(async () => 
-                await DynamoDb.QueryAsync(request, token).ConfigAwait()).ConfigAwait();
+                await DynamoDb.QueryAsync(request.Prepare(), token).ConfigAwait()).ConfigAwait();
             var results = converter(response);
                 
             foreach (var result in results)

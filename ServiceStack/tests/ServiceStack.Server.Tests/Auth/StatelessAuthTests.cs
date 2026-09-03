@@ -159,12 +159,15 @@ namespace ServiceStack.Server.Tests.Auth
         }
         protected override ServiceStackHost CreateAppHost()
         {
+            DynamoMetadata.Reset();
             var pocoDynamo = new PocoDynamo(CreateDynamoDBClient());
             pocoDynamo.DeleteAllTables(TimeSpan.FromMinutes(1));
+            var authRepo = new DynamoDbAuthRepository(pocoDynamo);
+            authRepo.InitSchema();
     
             return new AppHost
             {
-                Use = container => container.Register<IAuthRepository>(c => new DynamoDbAuthRepository(pocoDynamo))
+                Use = container => container.Register<IAuthRepository>(c => authRepo)
             };
         }
     }
@@ -713,19 +716,27 @@ namespace ServiceStack.Server.Tests.Auth
         {
             //LogManager.LogFactory = new ConsoleLogFactory();
             appHost = CreateAppHost()
-               .Init()
-               .Start("http://*:2337/");
+               .Start(ListeningOn);
 
             var client = GetClient();
-            var response = client.Post(new Register
+            RegisterResponse response;
+            try
             {
-                UserName = "user",
-                Password = "p@55word",
-                Email = "as@if{0}.com",
-                DisplayName = "DisplayName",
-                FirstName = "FirstName",
-                LastName = "LastName",
-            });
+                response = client.Post(new Register
+                {
+                    UserName = "user",
+                    Password = "p@55word",
+                    Email = "as@if{0}.com",
+                    DisplayName = "DisplayName",
+                    FirstName = "FirstName",
+                    LastName = "LastName",
+                });
+            }
+            catch (WebServiceException ex)
+            {
+                TestContext.Progress.WriteLine($"[StatelessAuthTests.OneTimeSetUp] WebServiceException: StatusCode={ex.StatusCode}, ResponseStatus={ex.ResponseStatus?.ToJson()}, ResponseBody={ex.ResponseBody}, StackTrace={ex.ServerStackTrace}");
+                throw;
+            }
 
             userId = response.UserId;
             apiRepo = (IManageApiKeys)appHost.Resolve<IAuthRepository>();

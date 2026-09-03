@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System.Threading;
@@ -15,7 +15,7 @@ public class Seq
 
 public class DynamoDbSequenceSource(IPocoDynamo db) : ISequenceSource, ISequenceSourceAsync
 {
-    private readonly DynamoMetadataType table = DynamoMetadata.RegisterTable<Seq>();
+    private DynamoMetadataType table => DynamoMetadata.RegisterTable<Seq>();
 
     public void InitSchema()
     {

@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
@@ -41,18 +42,41 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSc
     public T Exec<T>(Func<IDbConnection, T> action)
     {
         using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
-        using (var db = DbFactory.Open(ConfigureDb))
         {
-            return action(db);
+            var retries = 3;
+            while (true)
+            {
+                try
+                {
+                    using var db = DbFactory.Open(ConfigureDb);
+                    return action(db);
+                }
+                catch (Exception) when (--retries > 0)
+                {
+                    Thread.Sleep(10);
+                }
+            }
         }
     }
 
     public void Exec(Action<IDbConnection> action)
     {
         using (JsConfig.With(new Config { ExcludeTypeInfo = false }))
-        using (var db = DbFactory.Open(ConfigureDb))
         {
-            action(db);
+            var retries = 3;
+            while (true)
+            {
+                try
+                {
+                    using var db = DbFactory.Open(ConfigureDb);
+                    action(db);
+                    return;
+                }
+                catch (Exception) when (--retries > 0)
+                {
+                    Thread.Sleep(10);
+                }
+            }
         }
     }
 

@@ -335,4 +335,39 @@ public static class PocoDynamoExtensions
 
         return db.Converters.ToAttributeValue(db, argType, dbType, value);
     }
+
+    public static PutItemRequest Prepare(this PutItemRequest request)
+    {
+        if (request.ExpressionAttributeNames?.Count == 0) request.ExpressionAttributeNames = null;
+        if (request.ExpressionAttributeValues?.Count == 0) request.ExpressionAttributeValues = null;
+        return request;
+    }
+
+    public static UpdateItemRequest Prepare(this UpdateItemRequest request)
+    {
+        if (request.ExpressionAttributeNames?.Count == 0) request.ExpressionAttributeNames = null;
+        if (request.ExpressionAttributeValues?.Count == 0) request.ExpressionAttributeValues = null;
+        return request;
+    }
+
+    public static DeleteItemRequest Prepare(this DeleteItemRequest request)
+    {
+        if (request.ExpressionAttributeNames?.Count == 0) request.ExpressionAttributeNames = null;
+        if (request.ExpressionAttributeValues?.Count == 0) request.ExpressionAttributeValues = null;
+        return request;
+    }
+
+    public static ScanRequest Prepare(this ScanRequest request)
+    {
+        if (request.ExpressionAttributeNames?.Count == 0) request.ExpressionAttributeNames = null;
+        if (request.ExpressionAttributeValues?.Count == 0) request.ExpressionAttributeValues = null;
+        return request;
+    }
+
+    public static QueryRequest Prepare(this QueryRequest request)
+    {
+        if (request.ExpressionAttributeNames?.Count == 0) request.ExpressionAttributeNames = null;
+        if (request.ExpressionAttributeValues?.Count == 0) request.ExpressionAttributeValues = null;
+        return request;
+    }
 }
