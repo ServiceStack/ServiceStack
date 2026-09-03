@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Linq;
@@ -38,7 +38,7 @@ namespace ServiceStack;
 
 public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConfigureServices, IRequireConfiguration
 {
-    public IConfiguration Configuration { get; set; }
+    public IConfiguration Configuration { get; set; } = null!;
     
     protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
         : base(serviceName, assembliesWithServices) 
@@ -297,7 +297,11 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
             }
 
             if (includedInPathInfo)
+            {
                 pathInfo = pathInfo.Substring(mode.Length + 1);
+                if (string.IsNullOrEmpty(pathInfo))
+                    pathInfo = "/";
+            }
         }
 
         RequestContext.Instance.StartRequestContext();
@@ -322,10 +326,13 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
                 log.LogError(default(EventId), ex, ex.Message);
             }
 
-            context.Response.ContentType = MimeTypes.PlainText;
-            await context.Response.WriteAsync($"{ex.GetType().Name}: {ex.Message}");
-            if (Config.DebugMode)
-                await context.Response.WriteAsync($"\nStackTrace:\n{ex.StackTrace}");
+            if (!context.Response.HasStarted)
+            {
+                context.Response.ContentType = MimeTypes.PlainText;
+                await context.Response.WriteAsync($"{ex.GetType().Name}: {ex.Message}");
+                if (Config.DebugMode)
+                    await context.Response.WriteAsync($"\nStackTrace:\n{ex.StackTrace}");
+            }
             return;
         }
 
@@ -372,16 +379,24 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         base.Init();
     }
 
-    private string ParsePathBase(string urlBase)
+    public virtual string ParsePathBase(string urlBase)
     {
-        var pos = urlBase.IndexOf('/', "https://".Length);
-        if (pos >= 0)
+        if (string.IsNullOrEmpty(urlBase))
+            return urlBase;
+
+        var schemeEnd = urlBase.IndexOf("://", StringComparison.Ordinal);
+        var startIndex = schemeEnd >= 0 ? schemeEnd + 3 : 0;
+        if (startIndex < urlBase.Length)
         {
-            var afterHost = urlBase.Substring(pos);
-            if (afterHost.Length > 1)
+            var pos = urlBase.IndexOf('/', startIndex);
+            if (pos >= 0)
             {
-                PathBase = afterHost;
-                return urlBase.Substring(0, pos + 1);
+                var afterHost = urlBase.Substring(pos);
+                if (afterHost.Length > 1)
+                {
+                    PathBase = afterHost;
+                    return urlBase.Substring(0, pos + 1);
+                }
             }
         }
 
@@ -460,9 +475,10 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
         }
     }
 
-    public override IRequest TryGetCurrentRequest()
+    public override IRequest? TryGetCurrentRequest()
     {
-        return AppHostBase.GetOrCreateRequest(app.ApplicationServices.GetService<IHttpContextAccessor>());
+        var accessor = app?.ApplicationServices.GetService<IHttpContextAccessor>();
+        return accessor != null ? AppHostBase.GetOrCreateRequest(accessor) : null;
     }
 
     protected override void Dispose(bool disposing)
