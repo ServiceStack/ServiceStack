@@ -392,7 +392,7 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             using var appHost = new AppHost(() => CreateMqServer()).Init();
             appHost.Start(Config.ListeningOn);
-            Console.WriteLine($"APPHOST STARTED: {appHost.IsStarted}, LISTEN: {string.Join(",", appHost.GetListenUris())}");
+            Console.WriteLine($"APPHOST STARTED: {appHost.HasStarted}, LISTEN: {Config.ListeningOn}");
 
             var client = new JsonServiceClient(Config.ListeningOn);
 
