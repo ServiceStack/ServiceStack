@@ -25,22 +25,26 @@ public static class BasicAuthenticationHandler
     }
 }
 
-public class BasicAuthenticationHandler<TUser>
+public class BasicAuthenticationHandler<TUser> : BasicAuthenticationHandler<TUser, string>
+    where TUser : IdentityUser<string>
+{
 #if NET6_0
-    (SignInManager<TUser> signInManager,
-    IOptionsMonitor<AuthenticationSchemeOptions> options,
-    ILoggerFactory logger,
-    UrlEncoder encoder,
-    ISystemClock clock)
-    : BasicAuthenticationHandler<TUser,string>(signInManager, options, logger, encoder, clock)
+    public BasicAuthenticationHandler(
+        SignInManager<TUser> signInManager,
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock)
+        : base(signInManager, options, logger, encoder, clock) {}
 #else
-    (SignInManager<TUser> signInManager,
-    IOptionsMonitor<AuthenticationSchemeOptions> options,
-    ILoggerFactory logger,
-    UrlEncoder encoder)
-    : BasicAuthenticationHandler<TUser,string>(signInManager, options, logger, encoder)
+    public BasicAuthenticationHandler(
+        SignInManager<TUser> signInManager,
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder)
+        : base(signInManager, options, logger, encoder) {}
 #endif
-    where TUser : IdentityUser<string>;
+}
 
 public class BasicAuthenticationHandler<TUser, TKey>
 #if NET6_0
@@ -62,12 +66,31 @@ public class BasicAuthenticationHandler<TUser, TKey>
 {  
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()  
     {  
-        if (!Request.Headers.TryGetValue(HttpHeaders.Authorization, out var auth) 
-            || auth.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        if (!Request.Headers.TryGetValue(HttpHeaders.Authorization, out var auth))
             return AuthenticateResult.NoResult();
-                
-        var authHeader = AuthenticationHeaderValue.Parse(auth!);
-        var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(authHeader.Parameter!));  
+
+        var authStr = auth.ToString();
+        if (string.IsNullOrWhiteSpace(authStr) || authStr.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            return AuthenticateResult.NoResult();
+
+        if (!AuthenticationHeaderValue.TryParse(authStr, out var authHeader)
+            || !authHeader.Scheme.Equals("Basic", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrEmpty(authHeader.Parameter))
+        {
+            return AuthenticateResult.NoResult();
+        }
+
+        string credentials;
+        try
+        {
+            var bytes = Convert.FromBase64String(authHeader.Parameter);
+            credentials = Encoding.UTF8.GetString(bytes);
+        }
+        catch (FormatException)
+        {
+            return AuthenticateResult.Fail("Invalid Base64-encoded credentials.");
+        }
+
         var username = credentials.LeftPart(':');  
         var password = credentials.RightPart(':');
 

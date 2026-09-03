@@ -14,10 +14,10 @@ namespace ServiceStack;
 
 public abstract class GrpcServiceBase : IGrpcService
 {
-    private ServiceStackHost appHost;
+    private ServiceStackHost? appHost;
     private ServiceStackHost AppHost => appHost ??= HostContext.AppHost;
 
-    private RpcGateway rpcGateway;
+    private RpcGateway? rpcGateway;
     protected RpcGateway RpcGateway => rpcGateway ??= HostContext.AppHost.RpcGateway;
 
     private GrpcFeature? feature;
@@ -81,7 +81,7 @@ public abstract class GrpcServiceBase : IGrpcService
     protected virtual async Task<TResponse> Execute<TResponse>(string method, object request, CallContext context)
     {
         AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
-        if (!Feature.DisableRequestParamsInHeaders)
+        if (!Feature.DisableRequestParamsInHeaders && context.CallOptions.Headers != null)
             PopulateRequestFromHeaders(request, context.CallOptions.Headers);
 
         var req = new GrpcRequest(context, request, method);
@@ -125,7 +125,7 @@ public abstract class GrpcServiceBase : IGrpcService
     protected virtual async IAsyncEnumerable<TResponse> Stream<TRequest,TResponse>(TRequest request, CallContext context)
     {
         AppHost.AssertFeatures(ServiceStack.Feature.Grpc);
-        if (!Feature.DisableRequestParamsInHeaders)
+        if (!Feature.DisableRequestParamsInHeaders && request != null && context.CallOptions.Headers != null)
             PopulateRequestFromHeaders(request, context.CallOptions.Headers);
             
         if (!Feature.RequestServiceTypeMap.TryGetValue(typeof(TRequest), out var serviceType))
@@ -134,7 +134,7 @@ public abstract class GrpcServiceBase : IGrpcService
         var service = (IStreamService<TRequest,TResponse>) AppHost.Container.Resolve(serviceType);
         using var disposableService = service as IDisposable;
             
-        var req = new GrpcRequest(context, request, HttpMethods.Post);
+        var req = new GrpcRequest(context, request!, HttpMethods.Post);
         using var scope = req.StartScope();
         var res = req.Response;
 

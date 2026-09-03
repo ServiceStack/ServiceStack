@@ -14,8 +14,8 @@ public class IdentityBasicAuthProvider<TUser,TRole,TKey> : IdentityAuthProvider<
     where TRole : IdentityRole<TKey>
     where TKey : IEquatable<TKey>
 {
-    public new static string Name = AuthenticateService.BasicProvider;
-    public new static string Realm = "/auth/" + AuthenticateService.BasicProvider;
+    public static string Name = AuthenticateService.BasicProvider;
+    public static string Realm = "/auth/" + AuthenticateService.BasicProvider;
 
     public override string Type => "Basic";
 

@@ -76,12 +76,12 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
     /// <summary>
     /// .p8 Private Key bytes 
     /// </summary>
-    public byte[] KeyBytes { get; set; }
+    public byte[]? KeyBytes { get; set; }
 
     /// <summary>
     /// Customize ClientSecret JWT
     /// </summary>
-    public Func<AppleAuthProvider, string> ClientSecretFactory { get; set; }
+    public Func<AppleAuthProvider, string>? ClientSecretFactory { get; set; }
 
     /// <summary>
     /// When JWT Client Secret expires, defaults to Apple Max 6 Month Expiry 
@@ -306,6 +306,8 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
             if (privateKeyFile == null)
                 throw new Exception($"Could not find '{KeyPath}' in AppHost.VirtualFiles");
             var ret = ConvertPrivateKeyToBytes(privateKeyFile.ReadAllText());
+            if (ret == null)
+                throw new Exception($"Private key file '{KeyPath}' is empty");
             if (CacheKey)
                 KeyBytes = ret;
             return ret;
@@ -313,7 +315,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
         return privateKeyBytes;
     }
 
-    private static byte[] ConvertPrivateKeyToBytes(string keyText)
+    private static byte[]? ConvertPrivateKeyToBytes(string keyText)
     {
         if (string.IsNullOrEmpty(keyText))
             return null;
@@ -390,7 +392,7 @@ public class AppleAuthProvider : OAuth2Provider, IAuthPlugin
      */
 
     protected override async Task<object> AuthenticateWithAccessTokenAsync(IServiceBase authService, IAuthSession session, IAuthTokens tokens,
-        string accessToken, Dictionary<string, string> authInfo = null, CancellationToken token = default)
+        string accessToken, Dictionary<string, string>? authInfo = null, CancellationToken token = default)
     {
         if (authInfo == null)
             throw new ArgumentNullException(nameof(authInfo));
@@ -541,7 +543,7 @@ public static class AppleAuthProviderExtensions
         if (url.StartsWith("android:"))
         {
             var packageId = url.RightPart(':');
-            string hashParams = null;
+            string? hashParams = null;
             if (packageId.IndexOf('#') >= 0)
             {
                 hashParams = packageId.RightPart('#');

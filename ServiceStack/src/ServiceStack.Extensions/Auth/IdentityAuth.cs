@@ -86,7 +86,7 @@ public static class IdentityAuth
             {
                 authProviders.Add(ctx.AuthApplication);
                 services.AddSingleton<IIdentityApplicationAuthProvider>(ctx.AuthApplication);
-                if (ctx.EnableCredentialsAuth)
+                if (ctx.HasCredentialsAuth)
                 {
                     authProviders.Add(ctx.AuthCredentials);
                     services.AddSingleton<IIdentityCredentialsAuthProvider>(ctx.AuthCredentials);
@@ -134,7 +134,7 @@ public static class IdentityAuth
                 }
                 if (ctx.AuthJwt.IncludeConvertSessionToTokenService)
                 {
-                    authFeature.ServiceRoutes[typeof(ConvertSessionToTokenService)] = ["/" + "session-to-token".Localize()];
+                    authFeature.ServiceRoutes[typeof(IdentityConvertSessionToTokenService)] = ["/" + "session-to-token".Localize()];
                 }
             }
 
@@ -242,11 +242,17 @@ public class IdentityAuthContext<TUser, TRole, TKey>(
     /// </summary>
     internal bool EnableApplicationAuth { get; set; } = true;
 
+    internal bool HasCredentialsAuth { get; set; }
+
     /// <summary>
     /// Enable Username/Password SignIn via ServiceStack's Authenticate API (/auth) 
     /// </summary>
     [Obsolete("Use CredentialsAuth()")]
-    public bool EnableCredentialsAuth { get; set; }
+    public bool EnableCredentialsAuth
+    {
+        get => HasCredentialsAuth;
+        set => HasCredentialsAuth = value;
+    }
     
     /// <summary>
     /// Enable Authentication via Identity Auth JWT
@@ -284,7 +290,7 @@ public class IdentityAuthContext<TUser, TRole, TKey>(
     public bool IncludeRegisterService { get; set; }
 
     /// <summary>
-    /// Register ServiceStack's Assign & UnAssign Roles Services
+    /// Register ServiceStack's Assign &amp; UnAssign Roles Services
     /// </summary>
     public bool IncludeAssignRoleServices { get; set; }
 
@@ -325,7 +331,7 @@ public class IdentityAuthContext<TUser, TRole, TKey>(
 
     public void CredentialsAuth(Action<IdentityCredentialsAuthProvider<TUser,TRole,TKey>>? configure=null)
     {
-        EnableCredentialsAuth = true;
+        HasCredentialsAuth = true;
         configure?.Invoke(AuthCredentials);
     }
 
@@ -636,10 +642,10 @@ public class IdentityAuthContextManager<TUser, TRole, TKey> : IIdentityAuthConte
     }
     
     public Task<TUser?> FindUserByIdAsync(string userId, IRequest? request = null) =>
-        FindUserAsync(userManager => userManager.FindByIdAsync(userId), request);
+        FindUserAsync(async userManager => await userManager.FindByIdAsync(userId), request);
 
     public Task<TUser?> FindUserByNameAsync(string userName, IRequest? request = null) =>
-        FindUserAsync(userManager => userManager.FindByNameAsync(userName), request);
+        FindUserAsync(async userManager => await userManager.FindByNameAsync(userName), request);
 
     public async Task<TUser?> FindUserAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
     {
@@ -709,10 +715,10 @@ public class IdentityAuthContextManager<TUser, TRole, TKey> : IIdentityAuthConte
     }
 
     public Task<(TUser, List<string>)> GetUserAndRolesByIdAsync(string userId, IRequest? request = null) =>
-        GetUserAndRolesAsync(userManager => userManager.FindByIdAsync(userId), request);
+        GetUserAndRolesAsync(async userManager => await userManager.FindByIdAsync(userId), request);
     
     public Task<(TUser, List<string>)> GetUserAndRolesByNameAsync(string userName, IRequest? request = null) =>
-        GetUserAndRolesAsync(userManager => userManager.FindByNameAsync(userName), request);
+        GetUserAndRolesAsync(async userManager => await userManager.FindByNameAsync(userName), request);
     
     public async Task<(TUser, List<string>)> GetUserAndRolesAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
     {
@@ -750,9 +756,9 @@ public class IdentityAuthContextManager<TUser, TRole, TKey> : IIdentityAuthConte
     }
     
     public Task<(TUser, ClaimsPrincipal)> GetUserClaimsPrincipalByIdAsync(string userId, IRequest? request = null) =>
-        GetUserClaimsPrincipalAsync(userManager => userManager.FindByIdAsync(userId), request);
+        GetUserClaimsPrincipalAsync(async userManager => await userManager.FindByIdAsync(userId), request);
     public Task<(TUser, ClaimsPrincipal)> GetUserClaimsPrincipalByNameAsync(string userName, IRequest? request = null) =>
-        GetUserClaimsPrincipalAsync(userManager => userManager.FindByNameAsync(userName), request);
+        GetUserClaimsPrincipalAsync(async userManager => await userManager.FindByNameAsync(userName), request);
     
     public async Task<(TUser, ClaimsPrincipal)> GetUserClaimsPrincipalAsync(Func<UserManager<TUser>, Task<TUser?>> findUser, IRequest? request = null)
     {

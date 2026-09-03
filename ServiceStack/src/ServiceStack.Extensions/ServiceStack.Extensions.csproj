@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <PackageId>ServiceStack.Extensions</PackageId>
@@ -14,6 +14,7 @@
     
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER</DefineConstants>
+        <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
         <DefineConstants>$(DefineConstants);NETCORE;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>

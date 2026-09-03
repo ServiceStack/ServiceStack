@@ -130,7 +130,7 @@ public class IdentityRegisterService<TUser, TRole, TKey>(UserManager<TUser> user
 
         var newUser = ToUser(request);
 
-        var result = await userManager.CreateAsync(newUser, request.Password);
+        var result = await UserManager.CreateAsync(newUser, request.Password);
         if (result.Succeeded)
         {
             session = AuthContext.UserToSessionConverter(newUser);
@@ -152,7 +152,7 @@ public class IdentityRegisterService<TUser, TRole, TKey>(UserManager<TUser> user
                 {
                     ErrorCode = x.Code,
                     Message = x.Description,
-                    FieldName = x.Code.StartsWith(nameof(Register.Password)) ? nameof(Register.Password) : null,
+                    FieldName = x.Code.StartsWith(nameof(Register.Password)) ? nameof(Register.Password) : null!,
                 })
             }
         };

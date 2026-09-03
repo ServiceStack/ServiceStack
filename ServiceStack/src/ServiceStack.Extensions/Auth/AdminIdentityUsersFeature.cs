@@ -92,8 +92,8 @@ public class IdentityAdminUsersFeature<TUser, TRole, TKey> : IIdentityAdminUsers
     {
         var queryUpper = query.ToUpper();
         q = typeof(TKey) == typeof(string)
-            ? q.Where(x => x.NormalizedEmail.Contains(queryUpper) || x.NormalizedUserName.Contains(queryUpper) || x.Id.ToString().Contains(query))
-            : q.Where(x => x.NormalizedEmail.Contains(queryUpper) || x.NormalizedUserName.Contains(queryUpper));
+            ? q.Where(x => x.NormalizedEmail!.Contains(queryUpper) || x.NormalizedUserName!.Contains(queryUpper) || x.Id!.ToString()!.Contains(query))
+            : q.Where(x => x.NormalizedEmail!.Contains(queryUpper) || x.NormalizedUserName!.Contains(queryUpper));
         return q;
     }
 
@@ -444,6 +444,8 @@ public class IdentityAdminUsersFeature<TUser, TRole, TKey> : IIdentityAdminUsers
 
 public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Service
 {
+    public new IRequest Request => base.Request!;
+
     private async Task AssertRequiredRole()
     {
         await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AdminRole);
@@ -524,7 +526,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         await AssertRequiredRole().ConfigAwait();
         await feature.ValidateUpdateUser(Request!, request).ConfigAwait();
         
-        var existingUser = await feature.FindUserByIdAsync(Request, request.Id).ConfigAwait();
+        var existingUser = await feature.FindUserByIdAsync(Request!, request.Id).ConfigAwait();
         if (existingUser == null)
             throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
         
@@ -532,7 +534,7 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         if (request.LockUser == true || request.UnlockUser == true || !string.IsNullOrEmpty(request.Password))
         {
             hasFiredEvents = true;
-            await feature.BeforeUpdateUserAsync(Request, existingUser).ConfigAwait();
+            await feature.BeforeUpdateUserAsync(Request!, existingUser).ConfigAwait();
             if (request.LockUser == true)
             {
                 var result = await feature.LockUserAsync(Request, existingUser).ConfigAwait();
@@ -617,11 +619,11 @@ public class AdminIdentityUsersService(IIdentityAdminUsersFeature feature) : Ser
         if (request.Id == null)
             throw new ArgumentNullException(nameof(request.Id));
             
-        await feature.BeforeDeleteUserAsync(Request, request.Id).ConfigAwait();
+        await feature.BeforeDeleteUserAsync(Request!, request.Id).ConfigAwait();
             
         await feature.DeleteUserByIdAsync(request.Id);
 
-        await feature.AfterDeleteUserAsync(Request, request.Id).ConfigAwait();
+        await feature.AfterDeleteUserAsync(Request!, request.Id).ConfigAwait();
 
         return new AdminDeleteUserResponse {
             Id = request.Id,

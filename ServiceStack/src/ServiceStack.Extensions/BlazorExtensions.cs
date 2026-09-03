@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,11 +35,12 @@ public static class BlazorExtensions
                 client.BaseAddress = new Uri(baseUrl);
                 config.HttpClientFilter?.Invoke(client);
             })
-            .ConfigureHttpMessageHandlerBuilder(h =>
+            .ConfigurePrimaryHttpMessageHandler(() =>
             {
                 var to = HttpUtils.HttpClientHandlerFactory();
                 to.DefaultProxyCredentials = CredentialCache.DefaultCredentials;
                 config.HttpClientHandlerFilter?.Invoke(to);
+                return to;
             });
     }
 }

@@ -17,11 +17,11 @@ namespace ServiceStack;
 
 public class NodeProxy
 {
-    public HttpClient Client { get; set; }
+    public HttpClient Client { get; set; } = null!;
     public ILogger? Log { get; set; }
     
-    public string ProcessFileName { get; set; }
-    public string ProcessArguments { get; set; }
+    public string ProcessFileName { get; set; } = string.Empty;
+    public string ProcessArguments { get; set; } = string.Empty;
     public Action<Process>? ConfigureProcess { get; set; }
     public Action<Process>? ConfigureLinuxProcess { get; set; }
     public Action<Process>? ConfigureMacProcess { get; set; }
@@ -54,12 +54,12 @@ public class NodeProxy
         ".map"
     ];
 
-    public Func<HttpContext, bool> ShouldCache { get; set; }
+    public Func<HttpContext, bool> ShouldCache { get; set; } = null!;
 
     public bool DefaultShouldCache(HttpContext context)
     {
         // Ignore if local
-        if (context.Request.Host.Value!.Contains("localhost"))
+        if (context.Request.Host.Value?.Contains("localhost") == true)
             return false;
         // Ignore Cache-Control headers
         if (context.Request.Headers.TryGetValue("Cache-Control", out var cacheControlValues))
@@ -241,7 +241,7 @@ public class NodeProxy
                 var response = baseUrl.GetStringFromUrl();
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Thread.Sleep(200);
             }
@@ -379,6 +379,15 @@ public class NodeProxy
 
         using var forwardRequest = new HttpRequestMessage(new HttpMethod(request.Method), targetUri);
 
+        // Copy body for non-GET methods before copying headers so content headers (e.g. Content-Type) can be attached to Content
+        if (!ServiceStack.HttpMethods.IsGet(request.Method) &&
+            !ServiceStack.HttpMethods.IsHead(request.Method) &&
+            !ServiceStack.HttpMethods.IsDelete(request.Method) &&
+            !ServiceStack.HttpMethods.IsTrace(request.Method))
+        {
+            forwardRequest.Content = new StreamContent(request.Body);
+        }
+
         // Copy headers (excluding hop-by-hop headers)
         foreach (var header in request.Headers)
         {
@@ -389,15 +398,6 @@ public class NodeProxy
             {
                 forwardRequest.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
             }
-        }
-
-        // Copy body for non-GET methods
-        if (!ServiceStack.HttpMethods.IsGet(request.Method) &&
-            !ServiceStack.HttpMethods.IsHead(request.Method) &&
-            !ServiceStack.HttpMethods.IsDelete(request.Method) &&
-            !ServiceStack.HttpMethods.IsTrace(request.Method))
-        {
-            forwardRequest.Content = new StreamContent(request.Body);
         }
 
         using var response = await Client.SendAsync(

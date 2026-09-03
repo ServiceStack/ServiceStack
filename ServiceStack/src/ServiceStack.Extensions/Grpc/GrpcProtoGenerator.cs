@@ -17,7 +17,7 @@ public class GrpcProtoGenerator
     readonly MetadataTypesConfig Config;
     readonly NativeTypesFeature feature;
     readonly GrpcFeature grpc;
-    public static string Package { get; set; }
+    public static string? Package { get; set; }
 
     public static Func<List<Type>, string> DefaultNamespace { get; set; } = ResolveDefaultNamespace;
         
@@ -25,8 +25,8 @@ public class GrpcProtoGenerator
     {
         var ns = orderedTypes.FirstOrDefault(x =>
                      x.Namespace != null && !"ServiceStack".StartsWith(x.Namespace) && !"System".StartsWith(x.Namespace))?.Namespace
-                 ?? orderedTypes[0].Namespace;
-        var pos = ns?.IndexOf(".ServiceModel", StringComparison.OrdinalIgnoreCase) ?? -1;
+                 ?? orderedTypes.FirstOrDefault()?.Namespace ?? "Service";
+        var pos = ns.IndexOf(".ServiceModel", StringComparison.OrdinalIgnoreCase);
         return pos >= 0 ? ns.Substring(0, pos) : ns;
     }
         
@@ -65,7 +65,7 @@ public class GrpcProtoGenerator
         sb.AppendLine("*/");
         sb.AppendLine();
 
-        var methods = grpc.GrpcServicesType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+        var methods = grpc.GrpcServicesType!.GetMethods(BindingFlags.Public | BindingFlags.Instance)
             .Where(x => x.GetParameters().Length > 0)
             .OrderBy(x => x.GetParameters()[0].ParameterType.Name);
 
@@ -131,7 +131,7 @@ public class GrpcProtoGenerator
                     
                 sb.AppendLine();
                     
-                sb.AppendLine($"service {grpc.GrpcServicesType.Name} {{");
+                sb.AppendLine($"service {grpc.GrpcServicesType!.Name} {{");
                 sb = sb.Indent();
 
                 foreach (var service in services)

@@ -14,10 +14,11 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
 
-public class IdentityException(List<IdentityError> errors) : Exception(errors[0].Description), 
+public class IdentityException(List<IdentityError> errors) 
+    : Exception(errors.FirstOrDefault()?.Description ?? "Identity operation failed"), 
     IHasStatusCode, IResponseStatusConvertible
 {
-    public string Code { get; } = errors[0].Code;
+    public string? Code { get; } = errors.FirstOrDefault()?.Code;
     private List<IdentityError> Errors { get; } = errors;
     
     public int StatusCode => (int)HttpStatusCode.BadRequest;
@@ -55,7 +56,8 @@ public static class IdentityUtils
     public static List<string> GetClaimsPrincipalRoles(this IRequest req, ClaimsPrincipal principal)
     {
         var options = req.TryResolve<IOptions<IdentityOptions>>();
-        var roleClaims = principal.Claims.Where(x => x.Type == options.Value.ClaimsIdentity.RoleClaimType).ToList();
+        var roleClaimType = options?.Value?.ClaimsIdentity?.RoleClaimType ?? ClaimTypes.Role;
+        var roleClaims = principal.Claims.Where(x => x.Type == roleClaimType).ToList();
         return roleClaims.Map(x => x.Value);
     }
 }

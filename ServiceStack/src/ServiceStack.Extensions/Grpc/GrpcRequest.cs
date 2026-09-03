@@ -22,15 +22,15 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
     public object OriginalRequest { get; }
     public IResponse Response { get; set; }
 
-    private IResolver resolver;
+    private IResolver? resolver;
 
     public IResolver Resolver
     {
-        get => resolver ?? Service.GlobalResolver;
+        get => resolver ?? Service.GlobalResolver!;
         set => resolver = value;
     }
 
-    public IServiceScope ServiceScope { get; set; }
+    public IServiceScope? ServiceScope { get; set; }
 
     public CallContext Context { get; }
         
@@ -59,8 +59,10 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
         this.FormData = new NameValueCollection();
         this.Files = TypeConstants<IHttpFile>.EmptyArray;
 
-        foreach (var header in context.RequestHeaders)
+        if (context.RequestHeaders != null)
         {
+            foreach (var header in context.RequestHeaders)
+            {
             var key = header.Key;
             if (header.Key.IndexOf('.') >= 0)
             {
@@ -88,6 +90,7 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 
             this.Headers[key] =  header.Value;
         }
+    }
 
         if (context.ServerCallContext.UserState != null)
         {
@@ -103,7 +106,7 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 
     public ClaimsPrincipal? User => Context.ServerCallContext?.GetHttpContext()?.User;
 
-    private string operationName;
+    private string? operationName;
     public string OperationName
     {
         get => operationName ?? Dto.GetType().Name;
@@ -129,14 +132,14 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 
     public object GetService(Type serviceType)
     {
-        var mi = typeof(GrpcRequest).GetMethod(nameof(TryResolve));
+        var mi = typeof(GrpcRequest).GetMethod(nameof(TryResolve))!;
         var genericMi = mi.MakeGenericMethod(serviceType);
-        return genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
+        return genericMi.Invoke(this, TypeConstants.EmptyObjectArray)!;
     }
 
-    public string UserHostAddress { get; set; }
+    public string? UserHostAddress { get; set; }
 
-    public string GetHeader(string headerName)
+    public string? GetHeader(string headerName)
     {
         var headerValue = Headers[headerName];
         return headerValue;
@@ -144,7 +147,7 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 
     public Dictionary<string, object> Items { get; set; }
 
-    public string UserAgent { get; private set; }
+    public string? UserAgent { get; private set; }
 
     public IDictionary<string, Cookie> Cookies { get; set; }
 
@@ -152,7 +155,7 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 
     public RequestAttributes RequestAttributes { get; set; }
 
-    private IRequestPreferences requestPreferences;
+    private IRequestPreferences? requestPreferences;
 
     public IRequestPreferences RequestPreferences => requestPreferences ??= new RequestPreferences(this);
 
@@ -166,7 +169,7 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 
     public bool HasExplicitResponseContentType { get; set; }
 
-    public string CompressionType { get; set; }
+    public string? CompressionType { get; set; }
 
     public string AbsoluteUri { get; set; }
 
@@ -176,7 +179,7 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 
     public IHttpFile[] Files { get; set; }
 
-    public Uri UrlReferrer { get; set; }
+    public Uri? UrlReferrer { get; set; }
 
     public NameValueCollection Headers { get; set; }
 
@@ -187,7 +190,7 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
     public bool UseBufferedStream { get; set; }
 
     public string? GetRawBody() => null;
-    public Task<string?> GetRawBodyAsync() => Task.FromResult((string)null);
+    public Task<string?> GetRawBodyAsync() => Task.FromResult((string?)null);
 
     public string RawUrl { get; set; }
 
@@ -213,7 +216,7 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
         }
     }
 
-    public string[] AcceptTypes { get; set; }
+    public string[]? AcceptTypes { get; set; }
 
     public Stream InputStream { get; set; }
 
@@ -240,11 +243,11 @@ public class GrpcRequest : IHttpRequest, IHasServiceScope, IHasClaimsPrincipal
 
     public bool IsDirectory { get; set; }
         
-    public IHttpResponse HttpResponse { get; set; }
-    public string HttpMethod { get; set; }
-    public string XForwardedFor { get; set; }
+    public IHttpResponse? HttpResponse { get; set; }
+    public string? HttpMethod { get; set; }
+    public string? XForwardedFor { get; set; }
     public int? XForwardedPort { get; set; }
-    public string XForwardedProtocol { get; set; }
-    public string XRealIp { get; set; }
-    public string Accept { get; set; } 
+    public string? XForwardedProtocol { get; set; }
+    public string? XRealIp { get; set; }
+    public string? Accept { get; set; } 
 }

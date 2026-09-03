@@ -348,7 +348,6 @@ public class IdentityJwtAuthProvider<TUser,TRole,TKey> :
 
         if (ctx.Token != null || refreshToken != null)
         {
-            bool isValid = false;
             if (ctx.Token != null)
             {
                 try
@@ -636,10 +635,11 @@ public class IdentityJwtAuthProvider<TUser,TRole,TKey> :
 
             return requireRefreshToken;
         }
+
+        return null;
 #else
         throw new NotSupportedException("IRequireRefreshToken requires .NET 8.0+");
 #endif
-        return null;
     }
 
     public async Task OnLogoutAsync(IRequest req)
@@ -797,15 +797,15 @@ public class IdentityJwtAuthProvider<TUser,TRole,TKey> :
 
 [Authenticate]
 [DefaultRequest(typeof(ConvertSessionToToken))]
-public class ConvertSessionToTokenService(IIdentityJwtAuthProvider jwtAuthProvider) : Service
+public class IdentityConvertSessionToTokenService(IIdentityJwtAuthProvider jwtAuthProvider) : Service
 {
     public async Task<object> Any(ConvertSessionToToken request)
     {
-        if (!Request.AllowConnection(jwtAuthProvider.RequireSecureConnection))
+        if (!Request!.AllowConnection(jwtAuthProvider.RequireSecureConnection))
             throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
-        if (Request.ResponseContentType.MatchesContentType(MimeTypes.Html))
-            Request.ResponseContentType = MimeTypes.Json;
+        if (Request!.ResponseContentType?.MatchesContentType(MimeTypes.Html) == true)
+            Request!.ResponseContentType = MimeTypes.Json;
 
         var dto = new ConvertSessionToTokenResponse();
         var httpResult = new HttpResult(dto); 
@@ -874,10 +874,10 @@ public class GetAccessTokenIdentityService(IIdentityJwtAuthProvider jwtAuthProvi
 {
     public async Task<object> Any(GetAccessToken request)
     {
-        if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
+        if (jwtAuthProvider.RequireSecureConnection && !Request!.IsSecureConnection)
             throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
-        var refreshTokenCookie = Request.Cookies.TryGetValue(Keywords.RefreshTokenCookie, out var refTok)
+        var refreshTokenCookie = Request!.Cookies != null && Request.Cookies.TryGetValue(Keywords.RefreshTokenCookie, out var refTok)
             ? refTok.Value
             : null; 
 

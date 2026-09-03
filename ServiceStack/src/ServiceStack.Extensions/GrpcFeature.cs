@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -86,13 +86,13 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
     public string ServicesName { get; set; } = "GrpcServices";
     public Type GrpcServicesBaseType { get; set; } = typeof(GrpcServiceBase);
         
-    public Type GrpcServicesType { get; private set; }
+    public Type? GrpcServicesType { get; private set; }
         
-    public Action<TypeBuilder, MethodBuilder, Type> GenerateServiceFilter { get; set; }
+    public Action<TypeBuilder, MethodBuilder, Type>? GenerateServiceFilter { get; set; }
 
     public Func<Type, string, bool> CreateDynamicService { get; set; } = GrpcConfig.HasDynamicAttribute;
 
-    public Func<IResponse, Status?> ToGrpcStatus { get; set; }
+    public Func<IResponse, Status?>? ToGrpcStatus { get; set; }
 
     /// <summary>
     /// Only generate specified Verb entries for "ANY" routes
@@ -230,7 +230,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
         }
 
         GrpcServicesType = GenerateGrpcServices(ops, streamServices);
-        var genericMi = GetType().GetMethod(nameof(MapGrpcService), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        var genericMi = GetType().GetMethod(nameof(MapGrpcService), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!;
         var mi = genericMi.MakeGenericMethod(GrpcServicesType);
         mi.Invoke(this, TypeConstants.EmptyObjectArray);
 
@@ -247,7 +247,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
         RegisterDtoTypes(allDtos);
     }
         
-    public Func<Operation, bool?> RegisterService { get; set; }
+    public Func<Operation, bool?>? RegisterService { get; set; }
 
     private bool ShouldRegisterService(Operation op)
     {
@@ -347,8 +347,10 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
             var responseType = op.ResponseType ?? typeof(EmptyResponse); //void responses can return empty ErrorResponse 
                 
             methods.Clear();
-            foreach (var action in op.Actions)
+            if (op.Actions != null)
             {
+                foreach (var action in op.Actions)
+                {
                 if (action == ActionContext.AnyAction)
                 {
                     if (typeof(IVerb).IsAssignableFrom(op.RequestType))
@@ -408,7 +410,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
 
                 var il = method.GetILGenerator();
 
-                var mi = GrpcServicesBaseType.GetMethod("Execute", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var mi = GrpcServicesBaseType.GetMethod("Execute", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!;
                     
                 var genericMi = mi.MakeGenericMethod(responseType);
                     
@@ -437,7 +439,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
 
                     il = method.GetILGenerator();
 
-                    mi = GrpcServicesBaseType.GetMethod("ExecuteDynamic", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    mi = GrpcServicesBaseType.GetMethod("ExecuteDynamic", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!;
                     
                     genericMi = mi.MakeGenericMethod(requestType,responseType);
                     
@@ -449,6 +451,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
                     il.Emit(OpCodes.Callvirt, genericMi);
                     il.Emit(OpCodes.Ret);
                 }
+            }
             }
         }
 
@@ -471,7 +474,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
 
             var il = method.GetILGenerator();
 
-            var mi = GrpcServicesBaseType.GetMethod("Stream", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var mi = GrpcServicesBaseType.GetMethod("Stream", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!;
                     
             var genericMi = mi.MakeGenericMethod(requestType, responseType);
                     
@@ -483,7 +486,7 @@ public class GrpcFeature : IPlugin, IConfigureServices, IPreInitPlugin, IPostIni
             il.Emit(OpCodes.Ret);
         }
             
-        var servicesType = typeBuilder.CreateTypeInfo().AsType();
+        var servicesType = typeBuilder.CreateTypeInfo()!.AsType();
         return servicesType;
     }
 }
@@ -505,7 +508,7 @@ public class TypesProtoService(INativeTypesMetadata metadata) : Service
 
         var typesConfig = metadata.GetConfig(request);
         var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
-        var proto = new GrpcProtoGenerator(typesConfig).GetCode(metadataTypes, base.Request);
+        var proto = new GrpcProtoGenerator(typesConfig).GetCode(metadataTypes, base.Request!);
         return proto;
     }
 }
@@ -523,7 +526,7 @@ public class StreamFileService : Service, IStreamService<StreamFiles,FileContent
         {
             var file = VirtualFileSources.GetFile(paths[i]);
             var bytes = file?.ReadAllBytes();
-            var to = file != null
+            var to = file != null && bytes != null
                 ? new FileContent {
                     Name = file.Name,
                     Type = MimeTypes.GetMimeType(file.Extension),
@@ -574,12 +577,12 @@ public class SubscribeServerEventsService : Service, IStreamService<StreamServer
     public async IAsyncEnumerable<StreamServerEventsResponse> Stream(StreamServerEvents request, [EnumeratorCancellation] CancellationToken cancel=default)
     {
         if (request.Channels != null)
-            Request.QueryString["channels"] = string.Join(",", request.Channels);
+            Request!.QueryString["channels"] = string.Join(",", request.Channels);
 
         var handler = new ServerEventsHandler();
-        await handler.ProcessRequestAsync(Request, Request.Response, nameof(StreamServerEvents)).ConfigAwait();
+        await handler.ProcessRequestAsync(Request!, Request!.Response, nameof(StreamServerEvents)).ConfigAwait();
 
-        var res = (GrpcResponse) Request.Response;
+        var res = (GrpcResponse) Request!.Response;
 
         //ensure response is cancelled after stream is cancelled 
         using var deferResponse = new Defer(() => res.Close());
