@@ -14,13 +14,20 @@ namespace ServiceStack.Server.Tests.Shared
     [TestFixture]
     public abstract class CacheClientTestsAsyncBase
     {
-        private readonly ICacheClientAsync Cache;
+        protected ICacheClientAsync Cache;
 
         public abstract ICacheClientAsync CreateClient();
 
-        protected CacheClientTestsAsyncBase()
+        [OneTimeSetUp]
+        public virtual void OneTimeSetUp()
         {
             Cache = CreateClient();
+        }
+
+        [OneTimeTearDown]
+        public void TestFixtureTearDown()
+        {
+            (Cache as IDisposable)?.Dispose();
         }
 
         [SetUp]

@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -148,11 +150,19 @@ namespace ServiceStack.Server.Tests.Messaging
     public class AppHost : AppSelfHostBase
     {
         private readonly Func<IMessageService> createMqServerFn;
+        private IMessageService mqServer;
 
         public AppHost(Func<IMessageService> createMqServerFn)
             : base("Rabbit MQ Test Host", typeof(HelloService).Assembly)
         {
             this.createMqServerFn = createMqServerFn;
+        }
+
+        public override void Configure(IServiceCollection services)
+        {
+            services.AddSingleton<ICacheClient>(DefaultCache);
+            services.AddSingleton<ICacheClientAsync>(DefaultCache.AsAsync());
+            services.AddSingleton<MemoryCacheClient>(DefaultCache);
         }
 
         public override void Configure(Container container)
@@ -163,9 +173,13 @@ namespace ServiceStack.Server.Tests.Messaging
                     new JwtAuthProvider(AppSettings) {
                         AuthKey = AesUtils.CreateKey(),
                         RequireSecureConnection = false,
+                        UseTokenCookie = false,
                     }, 
                 }));
 
+            container.Register<ICacheClient>(DefaultCache);
+            container.Register<ICacheClientAsync>(DefaultCache.AsAsync());
+            container.Register<MemoryCacheClient>(DefaultCache);
             container.Register<IAuthRepository>(c => new InMemoryAuthRepository());
             var authRepo = container.Resolve<IAuthRepository>();
 
@@ -184,9 +198,8 @@ namespace ServiceStack.Server.Tests.Messaging
                 DisplayName = "Display",
             }, "p@55word");
 
-            container.Register(c => createMqServerFn());
-
-            var mqServer = container.Resolve<IMessageService>();
+            mqServer = createMqServerFn();
+            container.Register(mqServer);
 
             mqServer.RegisterHandler<HelloIntro>(ExecuteMessage);
             mqServer.RegisterHandler<MqAuthOnlyToken>(ExecuteMessage);
@@ -197,26 +210,16 @@ namespace ServiceStack.Server.Tests.Messaging
                     Verb = HttpMethods.Post,
                     Headers = { ["X-ss-id"] = m.GetBody().SessionId }
                 };
-                var s = req.GetSession();
-                Console.WriteLine($"DEBUG SESSION FROM REQ: '{s?.UserAuthName}', IsAuth={s?.IsAuthenticated}, Id={s?.Id}");
-                var response = ExecuteMessage(m, req);
-                Console.WriteLine($"EXECUTE MSG RESULT: {response}, STATUS: {req.Response.StatusCode}, DTO: {req.Response.Dto}");
-                return response;
+                return ExecuteMessage(m, req);
             });
             mqServer.RegisterHandler<MqRestriction>(ExecuteMessage);
             mqServer.Start();
         }
 
-        public override Task OnSaveSessionAsync(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null, CancellationToken token = default)
-        {
-            Console.WriteLine($"ON SAVE SESSION: Id={session.Id}, User={session.UserAuthName}, FromToken={session.FromToken}, HasPlugin={HasPlugin<SessionFeature>()}");
-            return base.OnSaveSessionAsync(httpReq, session, expiresIn, token);
-        }
-
         protected override void Dispose(bool disposable)
         {
-            var mqServer = TryResolve<IMessageService>();
             mqServer?.Dispose();
+            mqServer = null;
 
             base.Dispose(disposable);
         }
@@ -339,7 +342,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Does_process_messages_in_HttpListener_AppHost()
         {
-            using var appHost = new AppHost(() => CreateMqServer()).Init().Start(Config.ListeningOn);
+            using var appHost = new AppHost(() => CreateMqServer()).Start(Config.ListeningOn);
             using var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient();
             mqClient.Publish(new HelloIntro { Name = "World" });
 
@@ -351,7 +354,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Does_process_multi_messages_in_HttpListener_AppHost()
         {
-            using var appHost = new AppHost(() => CreateMqServer()).Init().Start(Config.ListeningOn);
+            using var appHost = new AppHost(() => CreateMqServer()).Start(Config.ListeningOn);
             using var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient();
             var requests = new[]
             {
@@ -374,7 +377,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Does_allow_MessageQueue_restricted_Services()
         {
-            using var appHost = new AppHost(() => CreateMqServer()).Init().Start(Config.ListeningOn);
+            using var appHost = new AppHost(() => CreateMqServer()).Start(Config.ListeningOn);
             using var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient();
             mqClient.Publish(new MqRestriction
             {
@@ -390,9 +393,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Can_make_authenticated_requests_with_MQ()
         {
-            using var appHost = new AppHost(() => CreateMqServer()).Init();
-            appHost.Start(Config.ListeningOn);
-            Console.WriteLine($"APPHOST STARTED: {appHost.HasStarted}, LISTEN: {Config.ListeningOn}");
+            using var appHost = new AppHost(() => CreateMqServer()).Start(Config.ListeningOn);
 
             var client = new JsonServiceClient(Config.ListeningOn);
 
@@ -402,15 +403,9 @@ namespace ServiceStack.Server.Tests.Messaging
                 UserName = "mythz",
                 Password = "p@55word"
             });
-            Console.WriteLine($"AUTH RESPONSE: {response.Dump()}");
 
-            var sessionId = response.SessionId;
-            var memCache = appHost.GetMemoryCacheClient();
-            Console.WriteLine($"DefaultCache: {ServiceStackHost.DefaultCache.GetHashCode()}, appHostCache: {appHost.GetCacheClient().GetHashCode()}, ContainerCache: {appHost.Container.TryResolve<ICacheClient>()?.GetHashCode()}");
-            Console.WriteLine($"DefaultCache keys: {string.Join(",", ServiceStackHost.DefaultCache.GetAllKeys())}");
-            Console.WriteLine($"DEBUG MEMCACHE KEYS: {string.Join(",", memCache.GetAllKeys())}");
-            var cached = appHost.GetCacheClient().Get<IAuthSession>("urn:iauthsession:" + sessionId);
-            Console.WriteLine($"DEBUG SESSION ID: '{sessionId}', BEARER: '{response.BearerToken}', CACHED: '{cached?.UserAuthName}', IsAuth={cached?.IsAuthenticated}");
+            var sessionId = response.SessionId ?? client.GetSessionId();
+            Assert.That(sessionId, Is.Not.Null, "Session ID should not be null");
 
             using var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient();
             mqClient.Publish(new MqAuthOnly
@@ -419,7 +414,8 @@ namespace ServiceStack.Server.Tests.Messaging
                 SessionId = sessionId,
             });
 
-            var responseMsg = mqClient.Get<MqAuthOnlyResponse>(QueueNames<MqAuthOnlyResponse>.In);
+            var responseMsg = mqClient.Get<MqAuthOnlyResponse>(QueueNames<MqAuthOnlyResponse>.In, TimeSpan.FromSeconds(5));
+            Assert.That(responseMsg, Is.Not.Null, "MQ response was null for MqAuthOnly");
             mqClient.Ack(responseMsg);
             Assert.That(responseMsg.GetBody().Result,
                 Is.EqualTo("Hello, MQ Auth! Your UserName is mythz"));
@@ -428,8 +424,7 @@ namespace ServiceStack.Server.Tests.Messaging
         [Test]
         public void Can_make_authenticated_requests_with_MQ_BearerToken()
         {
-            using var appHost = new AppHost(() => CreateMqServer()).Init();
-            appHost.Start(Config.ListeningOn);
+            using var appHost = new AppHost(() => CreateMqServer()).Start(Config.ListeningOn);
 
             var client = new JsonServiceClient(Config.ListeningOn);
 
@@ -447,7 +442,8 @@ namespace ServiceStack.Server.Tests.Messaging
                 BearerToken = response.BearerToken,
             });
 
-            var responseMsg = mqClient.Get<MqAuthOnlyResponse>(QueueNames<MqAuthOnlyResponse>.In);
+            var responseMsg = mqClient.Get<MqAuthOnlyResponse>(QueueNames<MqAuthOnlyResponse>.In, TimeSpan.FromSeconds(5));
+            Assert.That(responseMsg, Is.Not.Null, "MQ response was null for MqAuthOnlyToken");
             mqClient.Ack(responseMsg);
             Assert.That(responseMsg.GetBody().Result,
                 Is.EqualTo("Hello, MQ AuthToken! Your UserName is mythz"));
@@ -460,9 +456,8 @@ namespace ServiceStack.Server.Tests.Messaging
             {
                 ConfigureAppHost = host =>
                 {
-                    host.Container.Register(c => CreateMqServer());
-
-                    var mqServer = host.Container.Resolve<IMessageService>();
+                    var mqServer = CreateMqServer();
+                    host.Container.Register(mqServer);
 
                     mqServer.RegisterHandler<HelloIntro>(host.ExecuteMessage);
                     mqServer.Start();
@@ -559,9 +554,8 @@ namespace ServiceStack.Server.Tests.Messaging
                             Interlocked.Increment(ref disposeCount);
                         }))
                         .ReusedWithin(ReuseScope.Request);
-                    host.Container.Register(c => CreateMqServer(host));
-
-                    var mqServer = host.Container.Resolve<IMessageService>();
+                    var mqServer = CreateMqServer(host);
+                    host.Container.Register(mqServer);
 
                     mqServer.RegisterHandler<HelloIntroWithDep>(host.ExecuteMessage);
                     mqServer.Start();

@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -883,9 +883,6 @@ public abstract partial class ServiceStackHost
         return message;
     }
     
-    /// <summary>
-    /// Override to intercept when Sessions using sync APIs are saved
-    /// </summary>
     [Obsolete("Use OnSaveSessionAsync")]
     public virtual void OnSaveSession(IRequest httpReq, IAuthSession session, TimeSpan? expiresIn = null)
     {
@@ -896,10 +893,8 @@ public abstract partial class ServiceStackHost
 
         session.LastModified = DateTime.UtcNow;
         httpReq.SetItem(Keywords.Session, session);
-        if (!HasPlugin<SessionFeature>())
-            return;
-
-        var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
+        session.Id ??= httpReq.GetOrCreateSessionId();
+        var sessionKey = SessionFeature.GetSessionKey(session.Id);
         this.GetCacheClient(httpReq).CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
     }
 
@@ -916,8 +911,16 @@ public abstract partial class ServiceStackHost
         if (!HasPlugin<SessionFeature>())
             return Task.CompletedTask;
         
-        var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
-        return this.GetCacheClientAsync(httpReq).CacheSetAsync(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq), token);
+        session.Id ??= httpReq.GetOrCreateSessionId();
+        var sessionKey = SessionFeature.GetSessionKey(session.Id);
+        var expiry = expiresIn ?? GetDefaultSessionExpiry(httpReq);
+        var asyncCache = this.GetCacheClientAsync(httpReq);
+        if (asyncCache is CacheClientAsyncWrapper wrapper)
+        {
+            wrapper.Cache.CacheSet(sessionKey, session, expiry);
+            return Task.CompletedTask;
+        }
+        return asyncCache.CacheSetAsync(sessionKey, session, expiry, token);
     }
 
     /// <summary>

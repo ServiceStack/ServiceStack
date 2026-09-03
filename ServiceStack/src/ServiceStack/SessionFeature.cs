@@ -23,7 +23,7 @@ public class SessionFeature : IPlugin, Model.IHasStringId
     public TimeSpan? SessionBagExpiry { get; set; }
     public TimeSpan? PermanentSessionExpiry { get; set; }
 
-    private static bool alreadyConfigured;
+    private bool alreadyConfigured;
 
     public void Register(IAppHost appHost)
     {

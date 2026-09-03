@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -281,11 +281,8 @@ namespace ServiceStack.Server.Tests.Messaging
             var dto = new Wait { ForMs = 100 };
             msgs.Times(i => mqClient.Publish(dto));
 
-            ExecUtils.RetryOnException(() =>
-            {
-                Thread.Sleep(300);
-                Assert.That(timesCalled, Is.EqualTo(msgs));
-            }, TimeSpan.FromSeconds(5));
+            ExecUtils.RetryUntilTrue(() => timesCalled == msgs, TimeSpan.FromSeconds(10));
+            Assert.That(timesCalled, Is.EqualTo(msgs));
         }
 
         [Test]

@@ -130,11 +130,12 @@ namespace ServiceStack.Server.Tests.Shared
     [TestFixture]
     public abstract class CacheClientTestsBase
     {
-        private readonly ICacheClient Cache;
+        protected ICacheClient Cache;
 
         public abstract ICacheClient CreateClient();
 
-        protected CacheClientTestsBase()
+        [OneTimeSetUp]
+        public virtual void OneTimeSetUp()
         {
             Cache = CreateClient();
         }
@@ -142,7 +143,7 @@ namespace ServiceStack.Server.Tests.Shared
         [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
-            Cache.Dispose();
+            Cache?.Dispose();
         }
 
         [SetUp]
