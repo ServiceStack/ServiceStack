@@ -53,7 +53,10 @@ public partial class RedisLock
                 //Try to set the lock, if it does not exist this will succeed and the lock is obtained
                 var nx = await redisClient.SetValueIfNotExistsAsync(key, lockString, token: ct).ConfigureAwait(false);
                 if (nx)
+                {
+                    this.lockValue = lockString;
                     return true;
+                }
 
                 //If we've gotten here then a key for the lock is present. This could be because the lock is
                 //correctly acquired or it could be because a client that had acquired the lock crashed (or didn't release it properly).
@@ -80,11 +83,44 @@ public partial class RedisLock
                 //was able to acquire the lock before we finished processing.
                 await using var trans = await redisClient.CreateTransactionAsync(ct).ConfigureAwait(false);
                 trans.QueueCommand(r => r.SetValueAsync(key, lockString));
-                return await trans.CommitAsync(ct).ConfigureAwait(false); //returns false if Transaction failed
+                var success = await trans.CommitAsync(ct).ConfigureAwait(false); //returns false if Transaction failed
+                if (success)
+                    this.lockValue = lockString;
+                return success;
             },
             timeOut, token
         ).ConfigureAwait(false);
     }
 
-    ValueTask IAsyncDisposable.DisposeAsync() => new(((IRedisClientAsync)untypedClient).RemoveAsync(key));
+    ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        var client = untypedClient as IRedisClientAsync;
+        if (client == null || lockValue == null)
+            return default;
+
+        return DisposeAsyncInternal(client);
+    }
+
+    private async ValueTask DisposeAsyncInternal(IRedisClientAsync client)
+    {
+        try
+        {
+            await client.WatchAsync(new[] { key }).ConfigureAwait(false);
+            var currentVal = await client.GetValueAsync(key).ConfigureAwait(false);
+            if (currentVal == lockValue)
+            {
+                await using var trans = await client.CreateTransactionAsync().ConfigureAwait(false);
+                trans.QueueCommand(r => r.RemoveEntryAsync(key));
+                await trans.CommitAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                await client.UnWatchAsync().ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            // Failure during lock cleanup shouldn't crash callers
+        }
+    }
 }

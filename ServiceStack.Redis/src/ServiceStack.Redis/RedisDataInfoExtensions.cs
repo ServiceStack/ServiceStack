@@ -1,4 +1,4 @@
-﻿using ServiceStack.Text;
+using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,14 +26,14 @@ public static class RedisDataInfoExtensions
             {
                 var name = ParseSection(row);
                 section = new Dictionary<string, string>();
-                result.Add(name, section);
+                result[name] = section;
             }
             else
             {
                 var pair = ParseKeyValue(row);
                 if (pair.HasValue)
                 {
-                    section.Add(pair.Value.Key, pair.Value.Value);
+                    section[pair.Value.Key] = pair.Value.Value;
                 }
             }
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using ServiceStack.Logging;
@@ -253,7 +253,7 @@ public class RedisPubSubServer : IRedisPubSubServer
                     {
                         if (msg.Length < 4)
                             return false;
-                        return msg[0] == 'C' && msg[1] == 'T' && msg[0] == 'R' && msg[0] == 'L';
+                        return msg[0] == 'C' && msg[1] == 'T' && msg[2] == 'R' && msg[3] == 'L';
                     }
                                 
                     ((RedisSubscription)subscription).OnMessageBytes = (channel, msg) => {

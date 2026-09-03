@@ -1,4 +1,5 @@
-﻿using System.IO;
+using System;
+using System.IO;
 #if !NETCORE
 using System.Runtime.Serialization.Formatters.Binary;
 #endif
@@ -9,6 +10,7 @@ namespace ServiceStack.Redis.Support;
 /// serialize/deserialize arbitrary objects
 /// (objects must be serializable)
 /// </summary>
+[Obsolete("Deprecated due to insecure BinaryFormatter usage. BinaryFormatter is vulnerable to remote code execution and unsupported in modern .NET.")]
 public class ObjectSerializer : ISerializer
 {
 #if !NETCORE

@@ -8,6 +8,7 @@ public partial class RedisLock
 {
     private readonly object untypedClient;
     private readonly string key;
+    private string lockValue;
 
     private RedisLock(object redisClient, string key)
     {
@@ -31,7 +32,10 @@ public partial class RedisLock
                 //Try to set the lock, if it does not exist this will succeed and the lock is obtained
                 var nx = redisClient.SetValueIfNotExists(key, lockString);
                 if (nx)
+                {
+                    this.lockValue = lockString;
                     return true;
+                }
 
                 //If we've gotten here then a key for the lock is present. This could be because the lock is
                 //correctly acquired or it could be because a client that had acquired the lock crashed (or didn't release it properly).
@@ -58,7 +62,10 @@ public partial class RedisLock
                 //was able to acquire the lock before we finished processing.
                 using var trans = redisClient.CreateTransaction();
                 trans.QueueCommand(r => r.Set(key, lockString));
-                return trans.Commit(); //returns false if Transaction failed
+                var success = trans.Commit(); //returns false if Transaction failed
+                if (success)
+                    this.lockValue = lockString;
+                return success;
             },
             timeOut
         );
@@ -66,6 +73,28 @@ public partial class RedisLock
 
     public void Dispose()
     {
-        ((IRedisClient)untypedClient).Remove(key);
+        var client = untypedClient as IRedisClient;
+        if (client == null || lockValue == null)
+            return;
+
+        try
+        {
+            client.Watch(key);
+            var currentVal = client.Get<string>(key);
+            if (currentVal == lockValue)
+            {
+                using var trans = client.CreateTransaction();
+                trans.QueueCommand(r => r.Remove(key));
+                trans.Commit();
+            }
+            else
+            {
+                client.UnWatch();
+            }
+        }
+        catch
+        {
+            // Failure during lock cleanup shouldn't crash callers
+        }
     }
 }

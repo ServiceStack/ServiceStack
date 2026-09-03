@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -23,20 +23,22 @@ namespace ServiceStack.Redis.Tests.Examples
         public void Use_multiple_redis_clients_to_safely_execute()
         {
             //The number of concurrent clients to run
-            const int noOfClients = 5;
-            var asyncResults = new List<IAsyncResult>(noOfClients);
-            for (var i = 1; i <= noOfClients; i++)
+            const int noOfConcurrentClients = 5;
+
+#if NETCORE
+            var tasks = new List<System.Threading.Tasks.Task>();
+#else
+            var asyncResults = new List<IAsyncResult>();
+#endif
+            for (var i = 0; i < noOfConcurrentClients; i++)
             {
                 var clientNo = i;
-                var actionFn = (Action)delegate
+                Action actionFn = () =>
                 {
-                    var redisClient = new RedisClient(TestConfig.SingleHost);
+                    using (var redisClient = new RedisClient(TestConfig.SingleHost))
                     using (redisClient.AcquireLock("testlock"))
                     {
-                        Debug.WriteLine(String.Format("client {0} acquired lock", clientNo));
                         var counter = redisClient.Get<int>("atomic-counter");
-
-                        //Add an artificial delay to demonstrate locking behaviour
                         Thread.Sleep(100);
 
                         redisClient.Set("atomic-counter", counter + 1);
@@ -45,11 +47,19 @@ namespace ServiceStack.Redis.Tests.Examples
                 };
 
                 //Asynchronously invoke the above delegate in a background thread
+#if NETCORE
+                tasks.Add(System.Threading.Tasks.Task.Run(actionFn));
+#else
                 asyncResults.Add(actionFn.BeginInvoke(null, null));
+#endif
             }
 
             //Wait at most 1 second for all the threads to complete
+#if NETCORE
+            System.Threading.Tasks.Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
+#else
             asyncResults.WaitAll(TimeSpan.FromSeconds(1));
+#endif
 
             //Print out the 'atomic-counter' result
             using (var redisClient = new RedisClient(TestConfig.SingleHost))

@@ -1,4 +1,4 @@
-﻿//
+//
 // https://github.com/ServiceStack/ServiceStack.Redis
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
@@ -101,8 +101,9 @@ public partial class RedisClient
             var parts = line.Split(' ');
             foreach (var part in parts)
             {
+                if (string.IsNullOrEmpty(part)) continue;
                 var keyValue = part.SplitOnFirst('=');
-                map[keyValue[0]] = keyValue[1];
+                map[keyValue[0]] = keyValue.Length > 1 ? keyValue[1] : string.Empty;
             }
             results.Add(map);
         }

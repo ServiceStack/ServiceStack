@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using NUnit.Framework;
@@ -12,14 +12,17 @@ namespace ServiceStack.Redis.Tests.Issues
         public List<DomainEvent> Events { get; set; }
     }
 
+    [RuntimeSerializable]
     public abstract class DomainEvent { }
 
+    [RuntimeSerializable]
     public class UserRegisteredEvent : DomainEvent
     {
         public Guid UserId { get; set; }
         public string Name { get; set; }
     }
 
+    [RuntimeSerializable]
     [Serializable]
     public class UserPromotedEvent : DomainEvent
     {

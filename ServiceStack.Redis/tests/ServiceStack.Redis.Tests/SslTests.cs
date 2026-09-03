@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -291,7 +291,11 @@ namespace ServiceStack.Redis.Tests
 
             const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
 
+#if NETCORE
+            var tasks = new List<System.Threading.Tasks.Task>();
+#else
             var clientAsyncResults = new List<IAsyncResult>();
+#endif
             using (var manager = new PooledRedisClientManager(TestConfig.MasterHosts, TestConfig.ReplicaHosts))
             {
                 manager.GetClient().Run(x => x.FlushAll());
@@ -300,11 +304,19 @@ namespace ServiceStack.Redis.Tests
                 {
                     var clientNo = i;
                     var action = (Action)(() => UseClientAsync(manager, clientNo, testData));
+#if NETCORE
+                    tasks.Add(System.Threading.Tasks.Task.Run(action));
+#else
                     clientAsyncResults.Add(action.BeginInvoke(null, null));
+#endif
                 }
             }
 
+#if NETCORE
+            System.Threading.Tasks.Task.WaitAll(tasks.ToArray());
+#else
             WaitHandle.WaitAll(clientAsyncResults.ConvertAll(x => x.AsyncWaitHandle).ToArray());
+#endif
 
             Debug.WriteLine(String.Format("Completed in {0} ticks", (Stopwatch.GetTimestamp() - before)));
         }

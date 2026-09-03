@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Authentication;
@@ -101,6 +101,7 @@ public class RedisEndpoint : IRedisEndpoint
                && IdleTimeOutSecs == other.IdleTimeOutSecs 
                && Db == other.Db 
                && string.Equals(Client, other.Client) 
+               && string.Equals(Username, other.Username) 
                && string.Equals(Password, other.Password) 
                && string.Equals(NamespacePrefix, other.NamespacePrefix);
     }
@@ -128,6 +129,7 @@ public class RedisEndpoint : IRedisEndpoint
             hashCode = (hashCode * 397) ^ IdleTimeOutSecs;
             hashCode = (hashCode * 397) ^ Db.GetHashCode();
             hashCode = (hashCode * 397) ^ (Client != null ? Client.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ (Username != null ? Username.GetHashCode() : 0);
             hashCode = (hashCode * 397) ^ (Password != null ? Password.GetHashCode() : 0);
             hashCode = (hashCode * 397) ^ (NamespacePrefix != null ? NamespacePrefix.GetHashCode() : 0);
             return hashCode;

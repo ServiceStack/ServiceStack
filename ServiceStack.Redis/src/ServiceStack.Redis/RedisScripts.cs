@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
@@ -185,6 +185,9 @@ public class RedisScripts : ScriptMethods
             var db = d.TryGetValue("db", out object oDb) ? DynamicInt.Instance.ConvertFrom(oDb) : 0;
 
             connectionString = $"{host}:{port}?db={db}";
+
+            if (d.TryGetValue("username", out object username) && username != null)
+                connectionString += "&username=" + username.ToString().UrlEncode();
 
             if (d.TryGetValue("password", out object password))
                 connectionString += "&password=" + password.ToString().UrlEncode();

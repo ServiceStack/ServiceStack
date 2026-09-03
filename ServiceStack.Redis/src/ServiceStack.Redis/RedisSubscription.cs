@@ -59,17 +59,24 @@ public partial class RedisSubscription
 
     private void ParseSubscriptionResults(byte[][] multiBytes)
     {
-        int componentsPerMsg = IsPSubscription ? 4 : 3;
-        for (var i = 0; i < multiBytes.Length; i += componentsPerMsg)
+        if (multiBytes == null) return;
+        for (var i = 0; i < multiBytes.Length; )
         {
             var messageType = multiBytes[i];
+            var isPMessage = PMessageWord.AreEqual(messageType);
+            var componentsPerMsg = isPMessage ? 4 : 3;
+
+            if (i + componentsPerMsg > multiBytes.Length)
+                break;
+
             var channel = multiBytes[i + 1].FromUtf8Bytes();
             if (SubscribeWord.AreEqual(messageType)
                 || PSubscribeWord.AreEqual(messageType))
             {
                 IsPSubscription = PSubscribeWord.AreEqual(messageType);
 
-                this.SubscriptionCount = int.Parse(multiBytes[i + MsgIndex].FromUtf8Bytes());
+                if (int.TryParse(multiBytes[i + MsgIndex].FromUtf8Bytes(), out var subCount))
+                    this.SubscriptionCount = subCount;
 
                 activeChannels.Add(channel);
 
@@ -78,7 +85,8 @@ public partial class RedisSubscription
             else if (UnSubscribeWord.AreEqual(messageType)
                      || PUnSubscribeWord.AreEqual(messageType))
             {
-                this.SubscriptionCount = int.Parse(multiBytes[i + 2].FromUtf8Bytes());
+                if (int.TryParse(multiBytes[i + 2].FromUtf8Bytes(), out var subCount))
+                    this.SubscriptionCount = subCount;
 
                 activeChannels.Remove(channel);
 
@@ -106,6 +114,8 @@ public partial class RedisSubscription
                 throw new RedisException(
                     "Invalid state. Expected [[p]subscribe|[p]unsubscribe|message] got: " + messageType.FromUtf8Bytes());
             }
+
+            i += componentsPerMsg;
         }
     }
 

@@ -9,6 +9,7 @@ namespace ServiceStack.Redis.Support;
 /// <summary>
 /// Optimized  <see cref="ISerializer"/> implementation. Primitive types are manually serialized, the rest are serialized using binary serializer />.
 /// </summary>
+[Obsolete("Deprecated due to insecure BinaryFormatter usage. BinaryFormatter is vulnerable to remote code execution and unsupported in modern .NET.")]
 public class OptimizedObjectSerializer : ObjectSerializer
 {
     internal const ushort RawDataFlag = 0xfa52;

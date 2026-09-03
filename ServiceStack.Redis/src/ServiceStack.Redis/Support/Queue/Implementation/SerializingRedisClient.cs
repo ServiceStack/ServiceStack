@@ -1,8 +1,10 @@
-﻿using System.Collections;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace ServiceStack.Redis.Support.Queue.Implementation;
 
+[Obsolete("Deprecated due to insecure BinaryFormatter usage in default ObjectSerializer. BinaryFormatter is vulnerable to remote code execution and unsupported in modern .NET.")]
 public class SerializingRedisClient : RedisClient
 {
     private ISerializer serializer = new ObjectSerializer();

@@ -40,7 +40,7 @@ public partial class BasicRedisClientManager
 
 	public bool Remove(string key)
 	{
-		using var client = GetReadOnlyCacheClient();
+		using var client = GetCacheClient();
 		return client.Remove(key);
 	}
 
