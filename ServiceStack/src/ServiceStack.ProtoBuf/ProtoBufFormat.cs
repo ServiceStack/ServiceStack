@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using ProtoBuf.Meta;
 using ServiceStack.Text;
@@ -16,7 +16,28 @@ namespace ServiceStack.ProtoBuf
         }
 
         private static RuntimeTypeModel model;
-        public static RuntimeTypeModel Model => model ??= RuntimeTypeModel.Create();
+        private static readonly object modelLock = new();
+        public static RuntimeTypeModel Model
+        {
+            get
+            {
+                if (model == null)
+                {
+                    lock (modelLock)
+                    {
+                        model ??= RuntimeTypeModel.Create();
+                    }
+                }
+                return model;
+            }
+            set
+            {
+                lock (modelLock)
+                {
+                    model = value;
+                }
+            }
+        }
 
         public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
         {
@@ -25,6 +46,7 @@ namespace ServiceStack.ProtoBuf
 
         public static void Serialize(object dto, Stream outputStream)
         {
+            if (dto == null || outputStream == null) return;
             Model.Serialize(outputStream, dto);
         }
 
@@ -32,12 +54,15 @@ namespace ServiceStack.ProtoBuf
 
         public static object Deserialize(Type type, Stream fromStream)
         {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (fromStream == null) return null;
             var obj = Model.Deserialize(fromStream, null, type);
             return obj;
         }
 
         public string GetProto(Type type)
         {
+            if (type == null) throw new ArgumentNullException(nameof(type));
             return Model.GetSchema(type);
         }
     }

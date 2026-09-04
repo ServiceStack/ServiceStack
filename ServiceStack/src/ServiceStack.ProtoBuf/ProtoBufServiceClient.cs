@@ -19,6 +19,8 @@ namespace ServiceStack.ProtoBuf
 
         public override void SerializeToStream(IRequest req, object request, Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
+            if (request == null) return;
             try
             {
                 ProtoBufFormat.Serialize(req, request, stream);
@@ -31,6 +33,7 @@ namespace ServiceStack.ProtoBuf
 
         public override T DeserializeFromStream<T>(Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
             try
             {
                 return ProtoBufFormat.Deserialize<T>(stream);
@@ -47,6 +50,8 @@ namespace ServiceStack.ProtoBuf
 
         private static object Deserialize(Type type, Stream source)
         {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (source == null) throw new ArgumentNullException(nameof(source));
             try
             {
                 return ProtoBufFormat.Deserialize(type, source);

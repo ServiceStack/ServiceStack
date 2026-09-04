@@ -1,4 +1,4 @@
-﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -178,5 +178,55 @@ public class ProtoBufServiceTests
         bytes = ListeningOn.CombineWith("protobufemail")
             .GetBytesFromUrl(accept: "{0}, */*".Fmt(MimeTypes.ProtoBuf),
                 responseFilter: res => Assert.That(res.MatchesContentType(MimeTypes.ProtoBuf)));
+    }
+
+    [Test]
+    public void ToProtoBuf_on_null_returns_empty_array()
+    {
+        ProtoBufEmail email = null;
+        var bytes = email.ToProtoBuf();
+        Assert.That(bytes, Is.Not.Null);
+        Assert.That(bytes.Length, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void FromProtoBuf_on_null_or_empty_returns_default()
+    {
+        byte[] nullBytes = null;
+        Assert.That(nullBytes.FromProtoBuf<ProtoBufEmail>(), Is.Null);
+
+        byte[] emptyBytes = [];
+        Assert.That(emptyBytes.FromProtoBuf<ProtoBufEmail>(), Is.Null);
+    }
+
+    [Test]
+    public void ProtoBufFormat_Serialize_null_dto_safely_ignored()
+    {
+        using var ms = new System.IO.MemoryStream();
+        ProtoBufFormat.Serialize((ProtoBufEmail)null, ms);
+        Assert.That(ms.Length, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void ProtoBufFormat_Model_thread_safe_access()
+    {
+        var tasks = new Task[10];
+        for (int i = 0; i < tasks.Length; i++)
+        {
+            tasks[i] = Task.Run(() =>
+            {
+                var m = ProtoBufFormat.Model;
+                Assert.That(m, Is.Not.Null);
+            });
+        }
+        Task.WaitAll(tasks);
+    }
+
+    [Test]
+    public void ProtoBufServiceClient_validates_null_stream()
+    {
+        var client = new ProtoBufServiceClient("http://localhost");
+        Assert.Throws<System.ArgumentNullException>(() => client.SerializeToStream(null, new ProtoBufEmail(), null));
+        Assert.Throws<System.ArgumentNullException>(() => client.DeserializeFromStream<ProtoBufEmail>(null));
     }
 }
