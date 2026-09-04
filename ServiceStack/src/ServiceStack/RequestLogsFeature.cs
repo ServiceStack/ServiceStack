@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
@@ -137,6 +137,7 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         
     public bool DefaultIgnoreFilter(object o)
     {
+        if (o == null) return false;
         var type = o.GetType();
         return IgnoreTypes?.Contains(type) == true || o is IDisposable;
     }
@@ -221,13 +222,16 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
 
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         if (appHost is ServiceStackHost host)
             host.AddTimings = true;
         
         if (RegisterAllowRuntimeTypeInTypes != null)
             JsConfig.AllowRuntimeTypeInTypes.Add(RegisterAllowRuntimeTypeInTypes);
 
-        RequestLogger = appHost.TryResolve<IRequestLogger>();
+        RequestLogger = appHost.TryResolve<IRequestLogger>() ?? RequestLogger ?? new InMemoryRollingRequestLogger(Capacity);
         requestLoggerType = RequestLogger.GetType();
         RequestLogger.EnableSessionTracking = EnableSessionTracking;
         RequestLogger.EnableResponseTracking = EnableResponseTracking;
@@ -237,9 +241,9 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
         RequestLogger.LimitToServiceRequests = LimitToServiceRequests;
         RequestLogger.SkipLogging = SkipLogging;
         RequestLogger.EnableErrorTracking = EnableErrorTracking;
-        RequestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes.ToArray();
-        RequestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes.ToArray();
-        RequestLogger.ExcludeResponseTypes = ExcludeResponseTypes.ToArray();
+        RequestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes?.ToArray() ?? Type.EmptyTypes;
+        RequestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes?.ToArray() ?? Type.EmptyTypes;
+        RequestLogger.ExcludeResponseTypes = ExcludeResponseTypes?.ToArray() ?? Type.EmptyTypes;
         RequestLogger.RequestLogFilter = RequestLogFilter;
         RequestLogger.IgnoreFilter = IgnoreFilter;
         RequestLogger.CurrentDateFn = CurrentDateFn;
@@ -250,10 +254,11 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
             {
 #if NETCORE
                 // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
-                if (httpReq.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
+                if (httpReq?.ContentType.MatchesContentType(MimeTypes.MultiPartFormData) == true)
                     return;                    
 #endif
-                httpReq.UseBufferedStream = EnableRequestBodyTracking;
+                if (httpReq != null)
+                    httpReq.UseBufferedStream = EnableRequestBodyTracking;
             });
         }
 
@@ -277,8 +282,8 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
                 var info = analytics.GetAnalyticInfo(AnalyticsConfig);
                 meta.Plugins.RequestLogs.Analytics = new()
                 {
-                    Months = info.Months,
-                    Tabs = info.Tabs,
+                    Months = info?.Months,
+                    Tabs = info?.Tabs,
                     DisableAnalytics = DisableAnalytics.NullIfFalse(),
                     DisableUserAnalytics = DisableUserAnalytics.NullIfFalse(),
                     DisableApiKeyAnalytics = DisableApiKeyAnalytics.NullIfFalse(),
@@ -294,6 +299,9 @@ public class RequestLogsFeature : IPlugin, Model.IHasStringId, IPreInitPlugin, I
 
     public void BeforePluginsLoaded(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         appHost.ConfigurePlugin<UiFeature>(feature =>
         {
             var role = AccessRole; 

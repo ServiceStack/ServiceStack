@@ -513,4 +513,36 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - In `SerializeToStream<T>` and `BclSerializeToStream<T>`, guarded against null objects and null/closed streams, adding string serialization fallback when `TextSerializer` does not implement `IStringStreamSerializer`.
   - In `BclDeserializeFromString`, `DeserializeFromStream<T>`, and `DeserializeFromStream(Type, Stream)`, added null guards for null JSON string, null streams, and null types, falling back to reading stream to string when `TextSerializer` does not implement `IStringStreamSerializer`.
 
+## 18. RequestLogs & Logging Subsystem Modernization
+- **`InMemoryRollingRequestLogger.cs`**:
+  - Guarded against null `request` in `Log` with immediate exit.
+  - Safe navigation for `request?.Dto` in `ShouldSkip`.
+  - Hardened rolling queue capacity maintenance under high concurrency using a while-loop `while (capacity > 0 && logEntries.Count > capacity) logEntries.TryDequeue(out _);`.
+  - Defensive null-coalescing on `request.Headers?.ToDictionary() ?? new()`, `request.Items`, `request.FormData?.ToDictionary()`, and `request.Response?.Items`.
+  - Null-safe predicates in `ExcludeRequestType`, `HideRequestBodyForRequestDtoTypes`, and `ExcludeResponseTypes`.
+  - Guarded null keys in `entry.ExceptionData.Keys` during `IgnoreFilter` filtering.
+  - Defensive handling for null input in `ToSerializableErrorResponse`.
+  - Clamped negative values in `GetLatestLogs` with `Math.Max(0, take.Value)`.
+- **`RequestLogsFeature.cs`**:
+  - Added null guard in `DefaultIgnoreFilter(object o)` returning `false` on null input.
+  - Added null guards on `appHost` in `Register` and `BeforePluginsLoaded`.
+  - Fallback logger resolution `appHost.TryResolve<IRequestLogger>() ?? RequestLogger ?? new InMemoryRollingRequestLogger(Capacity)`.
+  - Safe null-coalesced array conversion for `ExcludeRequestDtoTypes`, `HideRequestBodyForRequestDtoTypes`, and `ExcludeResponseTypes`.
+- **`CsvRequestLogger.cs`**:
+  - Implemented `IDisposable` with `timer?.Dispose(); Flush();` to ensure flush and clean resource shutdown.
+  - Added public `Flush()` method for synchronous buffer flush.
+  - Guarded `HostContext.Config?.WebHostPhysicalPath ?? "."`.
+  - Fixed logging bug in `OnFlush` to log the target file name rather than the logger instance.
+  - Guarded CSV row slicing in `WriteLogs` to handle single-line or header-only output safely.
+  - Clamped pagination in `GetLatestLogs` to prevent negative count exceptions.
+- **`RedisErrorLoggerFeature.cs`**:
+  - Null guard in `Register(IAppHost appHost)` on null host.
+  - Safe navigation `httpReq?.OperationName ?? request?.GetType().Name ?? "Unknown"` in `HandleServiceException`.
+  - Defensive null handling for exception and fallback operation name in `LogErrorInRedis`.
+- **`RequestLogsService.cs`**:
+  - In `AssertRequiredRole`, skip role assertion if `AccessRole` is null/empty or equals `RoleNames.AllowAnon` to prevent false 401 Unauthorized responses.
+  - In `Any(RequestLogs)`, default null request to empty instance, clamp `Take` and `Skip` to non-negative values, and resolve fallback logger.
+  - In `Any(GetAnalyticsReports)`, guarded against null report objects, null IP lists, null user collections, and null user items.
+
+
 

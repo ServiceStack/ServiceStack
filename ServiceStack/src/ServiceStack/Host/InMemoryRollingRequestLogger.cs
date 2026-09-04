@@ -51,17 +51,20 @@ public class InMemoryRollingRequestLogger : IRequestLogger
 
     public virtual bool ShouldSkip(IRequest req, object requestDto)
     {
-        var dto = requestDto ?? req.Dto;
+        var dto = requestDto ?? req?.Dto;
         if (LimitToServiceRequests && dto == null)
             return true;
 
         var requestType = dto?.GetType();
 
-        return ExcludeRequestType(requestType) || SkipLogging?.Invoke(req) == true;
+        return ExcludeRequestType(requestType) || (req != null && SkipLogging?.Invoke(req) == true);
     }
 
     public virtual void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
     {
+        if (request == null)
+            return;
+
         if (ShouldSkip(request, requestDto))
             return;
 
@@ -86,6 +89,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
                 List<object> keysToRemove = null;
                 foreach (var key in entry.ExceptionData.Keys)
                 {
+                    if (key == null) continue;
                     var val = entry.ExceptionData[key];
                     if (val != null && IgnoreFilter(val))
                     {
@@ -99,7 +103,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
 
         logEntries.Enqueue(entry);
 
-        if (logEntries.Count > capacity)
+        while (capacity > 0 && logEntries.Count > capacity)
             logEntries.TryDequeue(out _);
     }
 
@@ -116,9 +120,9 @@ public class InMemoryRollingRequestLogger : IRequestLogger
             AbsoluteUri = request.AbsoluteUri,
             PathInfo = request.PathInfo,
             IpAddress = request.UserHostAddress,
-            ForwardedFor = request.Headers[HttpHeaders.XForwardedFor],
-            Referer = request.Headers[HttpHeaders.Referer],
-            Headers = request.Headers.ToDictionary(),
+            ForwardedFor = request.Headers?[HttpHeaders.XForwardedFor],
+            Referer = request.Headers?[HttpHeaders.Referer],
+            Headers = request.Headers?.ToDictionary() ?? new(),
             UserAuthId = request.GetItemStringValue(HttpHeaders.XUserAuthId),
             Items = SerializableItems(request.Items),
             Session = EnableSessionTracking ? request.GetSession() : null,
@@ -138,7 +142,8 @@ public class InMemoryRollingRequestLogger : IRequestLogger
 
         if (string.IsNullOrEmpty(entry.UserAuthId))
         {
-            if (request.Items.TryGetValue(Keywords.Session, out var oSession) 
+            if (request.Items != null
+                && request.Items.TryGetValue(Keywords.Session, out var oSession) 
                 && oSession is IAuthSession { UserAuthId: not null } authSession)
             {
                 entry.UserAuthId = authSession.UserAuthId;
@@ -174,12 +179,12 @@ public class InMemoryRollingRequestLogger : IRequestLogger
 
         if (HideRequestBodyForRequestDtoTypes != null
             && requestType != null
-            && !HideRequestBodyForRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType)))
+            && !HideRequestBodyForRequestDtoTypes.Any(x => x != null && x.IsAssignableFrom(requestType)))
         {
             entry.RequestDto = requestDto;
 
             if (!isClosed)
-                entry.FormData = request.FormData.ToDictionary();
+                entry.FormData = request.FormData?.ToDictionary();
 
             var enableRequestBodyTracking = RequestBodyTrackingFilter?.Invoke(request);
             if (enableRequestBodyTracking ?? EnableRequestBodyTracking && request.CanReadRequestBody())
@@ -197,7 +202,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
         }
 
         // Error Response has been converted into Response DTO before it's logged at end of request, use Result to get original error
-        var useResponse = (request.Response?.Items.TryGetValue(Keywords.Result, out var originalResponse) == true
+        var useResponse = (request.Response?.Items != null && request.Response.Items.TryGetValue(Keywords.Result, out var originalResponse) == true
             ? originalResponse
             : null) ?? response;
 
@@ -207,7 +212,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
             if (enableResponseTracking ?? EnableResponseTracking)
             {
                 var responseDto = response.GetResponseDto();
-                if (responseDto != null && (ExcludeResponseTypes == null || !ExcludeResponseTypes.Any(x => x.IsInstanceOfType(responseDto))))
+                if (responseDto != null && (ExcludeResponseTypes == null || !ExcludeResponseTypes.Any(x => x != null && x.IsInstanceOfType(responseDto))))
                 {
                     entry.ResponseDto = responseDto;
                 }
@@ -242,7 +247,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
     {
         return ExcludeRequestDtoTypes != null
                && requestType != null
-               && ExcludeRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType));
+               && ExcludeRequestDtoTypes.Any(x => x != null && x.IsAssignableFrom(requestType));
     }
 
     public Dictionary<string, string> SerializableItems(Dictionary<string, object> items)
@@ -268,9 +273,10 @@ public class InMemoryRollingRequestLogger : IRequestLogger
 
     public static object ToSerializableErrorResponse(object response)
     {
+        if (response == null) return null;
         if (response is IHttpResult errorResult)
             return errorResult.Response;
-        else if (response is ErrorResponse errorResponse)
+        if (response is ErrorResponse errorResponse)
             return errorResponse.GetResponseDto();
 
         var ex = response as Exception;

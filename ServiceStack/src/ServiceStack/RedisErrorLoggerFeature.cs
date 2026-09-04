@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -22,6 +22,9 @@ public class RedisErrorLoggerFeature : IPlugin, Model.IHasStringId
 
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         appHost.ServiceExceptionHandlers.Add(HandleServiceException);
         appHost.UncaughtExceptionHandlers.Add(HandleUncaughtException);
     }
@@ -38,18 +41,23 @@ public class RedisErrorLoggerFeature : IPlugin, Model.IHasStringId
 
     public void HandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
     {
-        LogErrorInRedis(operationName, ex);
+        LogErrorInRedis(operationName ?? httpReq?.OperationName ?? "Unknown", ex);
     }
 
     public object HandleServiceException(IRequest httpReq, object request, Exception ex)
     {
-        LogErrorInRedis(httpReq.OperationName, ex);
+        var opName = httpReq?.OperationName ?? request?.GetType().Name ?? "Unknown";
+        LogErrorInRedis(opName, ex);
 
         return null;
     }
 
     private void LogErrorInRedis(string operationName, Exception ex)
     {
+        if (ex == null)
+            return;
+
+        operationName ??= "Unknown";
         try
         {
             //Get a thread-safe redis client from the client manager pool

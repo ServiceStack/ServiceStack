@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ServiceStack.Host;
 using ServiceStack.Web;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack;
 
-public class CsvRequestLogger : InMemoryRollingRequestLogger
+public class CsvRequestLogger : InMemoryRollingRequestLogger, IDisposable
 {
     private static readonly ILog log = LogManager.GetLogger(typeof(CsvRequestLogger));
 
@@ -30,7 +30,7 @@ public class CsvRequestLogger : InMemoryRollingRequestLogger
 
     public CsvRequestLogger(IVirtualFiles files = null, string requestLogsPattern = null, string errorLogsPattern = null, TimeSpan? appendEvery = null)
     {
-        this.files = files ?? new FileSystemVirtualFiles(HostContext.Config.WebHostPhysicalPath);
+        this.files = files ?? new FileSystemVirtualFiles(HostContext.Config?.WebHostPhysicalPath ?? ".");
         this.requestLogsPattern = requestLogsPattern ?? "requestlogs/{year}-{month}/{year}-{month}-{day}.csv";
         this.errorLogsPattern = errorLogsPattern ?? "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv";
         this.appendEverySecs = appendEvery ?? TimeSpan.FromSeconds(1);
@@ -46,30 +46,33 @@ public class CsvRequestLogger : InMemoryRollingRequestLogger
     {
         try
         {
-            if (this.files.FileExists(logFile))
+            if (this.files != null && this.files.FileExists(logFile))
             {
                 var file = this.files.GetFile(logFile);
-                using var reader = file.OpenText();
-                string first = null, last = null;
-                while (reader.ReadLine() is { } line)
+                if (file != null)
                 {
-                    if (first == null)
-                        first = line;
+                    using var reader = file.OpenText();
+                    string first = null, last = null;
+                    while (reader.ReadLine() is { } line)
+                    {
+                        if (first == null)
+                            first = line;
 
-                    last = line;
-                }
-                if (last != null)
-                {
-                    var entry = (first + "\n" + last).FromCsv<RequestLogEntry>();
-                    if (entry.Id > 0)
-                        return entry;
+                        last = line;
+                    }
+                    if (last != null)
+                    {
+                        var entry = (first + "\n" + last).FromCsv<RequestLogEntry>();
+                        if (entry.Id > 0)
+                            return entry;
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
             OnReadLastEntryError?.Invoke(logFile, ex);
-            log.Error($"Could not read last entry from '{log}'", ex);
+            log.Error($"Could not read last entry from '{logFile}'", ex);
         }
         return null;
     }
@@ -107,7 +110,11 @@ public class CsvRequestLogger : InMemoryRollingRequestLogger
                 WriteLogs(errorLogsSnapshot, logFile);
             }
         }
-        timer.Change(appendEverySecs, Timeout.InfiniteTimeSpan);
+        try
+        {
+            timer?.Change(appendEverySecs, Timeout.InfiniteTimeSpan);
+        }
+        catch (ObjectDisposedException) {}
     }
 
     public string GetLogFilePath(string logFilePattern, DateTime forDate)
@@ -120,17 +127,25 @@ public class CsvRequestLogger : InMemoryRollingRequestLogger
 
     public virtual void WriteLogs(List<RequestLogEntry> logs, string logFile)
     {
+        if (logs == null || logs.Count == 0 || files == null)
+            return;
+
         try
         {
             var csv = logs.ToCsv();
+            if (string.IsNullOrEmpty(csv))
+                return;
+
             if (!files.FileExists(logFile))
             {
                 files.WriteFile(logFile, csv);
             }
             else
             {
-                var csvRows = csv.Substring(csv.IndexOf('\n') + 1);
-                files.AppendFile(logFile, csvRows);
+                var idx = csv.IndexOf('\n');
+                var csvRows = idx >= 0 ? csv.Substring(idx + 1) : "";
+                if (!string.IsNullOrEmpty(csvRows))
+                    files.AppendFile(logFile, csvRows);
             }
         }
         catch (Exception ex)
@@ -142,6 +157,9 @@ public class CsvRequestLogger : InMemoryRollingRequestLogger
 
     public override void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
     {
+        if (request == null)
+            return;
+
         if (ShouldSkip(request, requestDto))
             return;
         
@@ -169,15 +187,25 @@ public class CsvRequestLogger : InMemoryRollingRequestLogger
 
     public override List<RequestLogEntry> GetLatestLogs(int? take)
     {
+        if (files == null)
+            return base.GetLatestLogs(take);
+
         var logFile = files.GetFile(GetLogFilePath(this.requestLogsPattern, CurrentDateFn()));
-        if (!logFile.Exists()) 
+        if (logFile == null || !logFile.Exists()) 
             return base.GetLatestLogs(take);
             
         using var reader = logFile.OpenText();
-        var results = CsvSerializer.DeserializeFromReader<List<RequestLogEntry>>(reader);
+        var results = CsvSerializer.DeserializeFromReader<List<RequestLogEntry>>(reader) ?? [];
         return take.HasValue
-            ? results.Take(take.Value).ToList()
+            ? results.Take(Math.Max(0, take.Value)).ToList()
             : results;
+    }
 
+    public void Flush() => OnFlush(null);
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+        Flush();
     }
 }

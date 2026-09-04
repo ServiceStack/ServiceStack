@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -233,7 +235,8 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
     private async Task<RequestLogsFeature> AssertRequiredRole()
     {
         var feature = AssertPlugin<RequestLogsFeature>();
-        await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+        if (!string.IsNullOrEmpty(feature.AccessRole) && feature.AccessRole != RoleNames.AllowAnon)
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
         return feature;
     }
     
@@ -247,13 +250,16 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
 
     public async Task<object> Any(RequestLogs request)
     {
+        request ??= new RequestLogs();
         var feature = await AssertRequiredRole().ConfigAwait();
+        var logger = requestLogger ?? feature.RequestLogger ?? HostContext.TryResolve<IRequestLogger>() ?? new InMemoryRollingRequestLogger(feature.Capacity);
         if (request.EnableSessionTracking.HasValue)
-            requestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
+            logger.EnableSessionTracking = request.EnableSessionTracking.Value;
 
-        request.Take ??= feature.DefaultLimit;
+        var take = Math.Max(0, request.Take ?? feature.DefaultLimit);
+        var skip = Math.Max(0, request.Skip);
 
-        if (requestLogger is IRequireAnalytics analytics)
+        if (logger is IRequireAnalytics analytics)
         {
             var results = analytics.QueryLogs(request);
             return new RequestLogsResponse {
@@ -263,7 +269,7 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             };
         }
 
-        var snapshot =  requestLogger.GetLatestLogs(null);
+        var snapshot = logger.GetLatestLogs(null) ?? [];
         var logs = snapshot.AsQueryable();
         var now = DateTime.UtcNow;
         if (request.BeforeSecs.HasValue)
@@ -303,8 +309,8 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             ? logs.OrderByDescending(x => x.Id)
             : logs.OrderBy(request.OrderBy);
 
-        query = query.Skip(request.Skip);
-        query = query.Take(request.Take.Value);
+        query = query.Skip(skip);
+        query = query.Take(take);
 
         return new RequestLogsResponse {
             Results = query.ToList(),
@@ -449,32 +455,43 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
         }
 
         var ret = analytics.GetAnalyticsReports(feature.AnalyticsConfig, request.Month ?? DateTime.UtcNow);
-        foreach (var item in ret.Ips.ToList())
+        if (ret == null)
+            return new GetAnalyticsReportsResponse();
+
+        if (ret.Ips != null)
         {
-            item.Value.Name = item.Key;
+            foreach (var item in ret.Ips.ToList())
+            {
+                if (item.Value != null)
+                    item.Value.Name = item.Key;
+            }
         }
 
         var userResolver = Request?.TryResolve<IUserResolver>();
-        if (userResolver != null)
+        if (userResolver != null && ret.Users != null)
         {
-            var allUserIds = ret.Users.Where(x => x.Value.Name == null)
+            var allUserIds = ret.Users.Where(x => x.Value?.Name == null)
                 .Map(x => x.Key);
             var allUsers = await userResolver.GetUsersByIdsAsync(Request, allUserIds).ConfigAwait();
             var allUsersMap = new Dictionary<string, string>();
-            foreach (var user in allUsers)
+            if (allUsers != null)
             {
-                if (user.TryGetValue(nameof(IUserAuth.Id), out var oId)
-                    && user.TryGetValue(nameof(IUserAuth.UserName), out var oUserName))
+                foreach (var user in allUsers)
                 {
-                    if (oId != null && oUserName != null)
+                    if (user != null
+                        && user.TryGetValue(nameof(IUserAuth.Id), out var oId)
+                        && user.TryGetValue(nameof(IUserAuth.UserName), out var oUserName))
                     {
-                        allUsersMap[oId.ToString()!] = oUserName.ToString();
+                        if (oId != null && oUserName != null)
+                        {
+                            allUsersMap[oId.ToString()!] = oUserName.ToString();
+                        }
                     }
                 }
             }
             foreach (var user in ret.Users)
             {
-                if (user.Value.Name == null && allUsersMap.TryGetValue(user.Key, out var userName))
+                if (user.Value != null && user.Value.Name == null && allUsersMap.TryGetValue(user.Key, out var userName))
                 {
                     user.Value.Name = userName;
                 }
@@ -495,9 +512,12 @@ public class RequestLogsService(IRequestLogger requestLogger) : Service
             _ => ret,
         };
 
-        results.Id = ret.Id;
-        results.Created = ret.Created;
-        results.Version = ret.Version;
+        if (results != null)
+        {
+            results.Id = ret.Id;
+            results.Created = ret.Created;
+            results.Version = ret.Version;
+        }
 
         return new GetAnalyticsReportsResponse
         {
