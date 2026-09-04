@@ -11,16 +11,14 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
 {
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
-        //Console.WriteLine(GetType().Name + "...");
-
         // Use AddComponent to properly register security schemes with the workspace
         // This is required for OpenApiSecuritySchemeReference.Target to resolve correctly
-        if (metadata.SecurityDefinition != null)
+        if (metadata.SecurityDefinition?.Scheme != null)
         {
             swaggerDoc.AddComponent(metadata.SecurityDefinition.Scheme, metadata.SecurityDefinition);
         }
 
-        if (metadata.ApiKeySecurityDefinition != null)
+        if (metadata.ApiKeySecurityDefinition?.Scheme != null)
         {
             swaggerDoc.AddComponent(metadata.ApiKeySecurityDefinition.Scheme, metadata.ApiKeySecurityDefinition);
         }
@@ -53,7 +51,9 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
             var schema = metadata.CreateSchema(type, allTypes: dtos);
             if (schema != null)
             {
-                swaggerDoc.Components.Schemas[OpenApiMetadata.GetSchemaTypeName(type)] = schema;
+                swaggerDoc.Components ??= new OpenApiComponents();
+                swaggerDoc.Components.Schemas ??= new Dictionary<string, IOpenApiSchema>();
+                swaggerDoc.Components.Schemas[OpenApiMetadata.GetSchemaDefinitionRef(type)] = schema;
             }
         }
 
@@ -114,6 +114,7 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
 
                     // Responses
                     var responses = GetResponses(metadata, restPath, requestType);
+                    openApiOp.Responses ??= new OpenApiResponses();
                     foreach (var entry in responses)
                     {
                         openApiOp.Responses[entry.Key] = entry.Value;
@@ -123,8 +124,11 @@ public class ServiceStackDocumentFilter(OpenApiMetadata metadata) : IDocumentFil
                     var userTags = requestType.AllAttributes<TagAttribute>().Map(x => x.Name);
                     foreach (var tag in userTags)
                     {
-                        openApiOp.Tags ??= new HashSet<OpenApiTagReference>();
-                        openApiOp.Tags.Add(new OpenApiTagReference(tag));
+                        if (tag != null)
+                        {
+                            openApiOp.Tags ??= new HashSet<OpenApiTagReference>();
+                            openApiOp.Tags.Add(new OpenApiTagReference(tag));
+                        }
                     }
 
                     // Map verb to HttpMethod and add operation to path

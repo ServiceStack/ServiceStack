@@ -23,11 +23,14 @@ public static class ServiceStackOpenApiExtensions
         // configuration is needed, but it's currently a no-op.
     }
 
-    public static void AddServiceStackSwagger(this IServiceCollection services, Action<OpenApiMetadata>? configure = null)
-    {
-        configure?.Invoke(OpenApiMetadata.Instance);
+    public static void AddServiceStackSwagger(this IServiceCollection services, Action<OpenApiMetadata>? configure = null) =>
+        services.AddServiceStackSwagger(OpenApiMetadata.Instance, configure);
 
-        services.AddSingleton(OpenApiMetadata.Instance);
+    public static void AddServiceStackSwagger(this IServiceCollection services, OpenApiMetadata metadata, Action<OpenApiMetadata>? configure = null)
+    {
+        configure?.Invoke(metadata);
+
+        services.AddSingleton(metadata);
         services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureServiceStackSwagger>();
         services.AddSingleton<IConfigureOptions<ServiceStackOptions>, ConfigureServiceStackSwagger>();
         
@@ -52,14 +55,23 @@ public static class ServiceStackOpenApiExtensions
         return services;
     }
 
-    public static void AddBasicAuth(this SwaggerGenOptions options) =>
-        options.AddSecurityDefinition(OpenApiSecurity.BasicAuthScheme.Scheme, OpenApiSecurity.BasicAuthScheme);
+    public static void AddBasicAuth(this SwaggerGenOptions options)
+    {
+        if (OpenApiSecurity.BasicAuthScheme.Scheme != null)
+            options.AddSecurityDefinition(OpenApiSecurity.BasicAuthScheme.Scheme, OpenApiSecurity.BasicAuthScheme);
+    }
 
-    public static void AddJwtAuth(this SwaggerGenOptions options) =>
-        options.AddSecurityDefinition(OpenApiSecurity.JwtBearerScheme.Scheme, OpenApiSecurity.JwtBearerScheme);
+    public static void AddJwtAuth(this SwaggerGenOptions options)
+    {
+        if (OpenApiSecurity.JwtBearerScheme.Scheme != null)
+            options.AddSecurityDefinition(OpenApiSecurity.JwtBearerScheme.Scheme, OpenApiSecurity.JwtBearerScheme);
+    }
 
-    public static void AddApiKeys(this SwaggerGenOptions options) =>
-        options.AddSecurityDefinition(OpenApiSecurity.ApiKeyScheme.Scheme, OpenApiSecurity.ApiKeyScheme);
+    public static void AddApiKeys(this SwaggerGenOptions options)
+    {
+        if (OpenApiSecurity.ApiKeyScheme.Scheme != null)
+            options.AddSecurityDefinition(OpenApiSecurity.ApiKeyScheme.Scheme, OpenApiSecurity.ApiKeyScheme);
+    }
 
     internal static List<JsonNode> ToOpenApiEnums(this IEnumerable<string>? enums) =>
         enums.Safe().Map(x => (JsonNode)JsonValue.Create(x));
