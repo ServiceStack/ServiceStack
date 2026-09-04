@@ -57,7 +57,7 @@ public class BasicAuthProvider : CredentialsAuthProvider, IAuthWithRequest
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
-            using var authService = HostContext.ResolveService<AuthenticateService>(req);
+            await using var authService = HostContext.ResolveService<AuthenticateService>(req);
             var response = await authService.PostAsync(new Authenticate
             {
                 provider = Name,

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -67,11 +67,18 @@ public class GithubAuthProvider : OAuthProvider
             //https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
 
             var url = VerifyAccessTokenUrl.Fmt(ClientId, request.AccessToken);
-            var json = await url.GetJsonFromUrlAsync(requestFilter: req => 
-                req.With(c => {
-                    c.UserAgent = ServiceClientBase.DefaultUserAgent;
-                    c.SetAuthBasic(ClientId, ClientSecret);
-                }), token: token).ConfigAwait();
+            try
+            {
+                var json = await url.GetJsonFromUrlAsync(requestFilter: req => 
+                    req.With(c => {
+                        c.UserAgent = ServiceClientBase.DefaultUserAgent;
+                        c.SetAuthBasic(ClientId, ClientSecret);
+                    }), token: token).ConfigAwait();
+            }
+            catch (WebException)
+            {
+                return HttpError.Unauthorized(ErrorMessages.InvalidAccessToken.Localize(authService.Request));
+            }
 
             var isHtml = authService.Request.IsHtml();
             var failedResult = await AuthenticateWithAccessTokenAsync(authService, session, tokens, request.AccessToken, token).ConfigAwait();
@@ -111,7 +118,7 @@ public class GithubAuthProvider : OAuthProvider
         try
         {
             string accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&client_secret={ClientSecret}&code={code}";
-            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
+            var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetStringFromUrlAsync(token: token).ConfigAwait();
             var authInfo = PclExportClient.Instance.ParseQueryString(contents);
 
             //GitHub does not throw exception, but just return error with descriptions
@@ -134,12 +141,11 @@ public class GithubAuthProvider : OAuthProvider
         }
         catch (WebException webException)
         {
-            var errorBody = webException.GetResponseBodyAsync(token);
+            var errorBody = await webException.GetResponseBodyAsync(token).ConfigAwait();
             Log.Error("GitHub AccessToken Failed:\n" + errorBody);
                 
             //just in case GitHub will start throwing exceptions 
-            var statusCode = ((HttpWebResponse)webException.Response).StatusCode;
-            if (statusCode == HttpStatusCode.BadRequest)
+            if (webException.Response is HttpWebResponse httpRes && httpRes.StatusCode == HttpStatusCode.BadRequest)
             {
                 return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
             }

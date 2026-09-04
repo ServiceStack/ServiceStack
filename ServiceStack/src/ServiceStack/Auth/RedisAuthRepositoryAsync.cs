@@ -372,8 +372,11 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails>
 
     public virtual async Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token=default)
     {
+        if (userId == null || !long.TryParse(userId, out var longUserId))
+            return new List<ApiKey>();
+
         await using var redis = await factory.GetClientAsync(token).ConfigAwait();
-        var idx = IndexUserAuthAndApiKeyIdsSet(long.Parse(userId));
+        var idx = IndexUserAuthAndApiKeyIdsSet(longUserId);
         var authProviderIds = await redis.GetAllItemsFromSetAsync(idx, token).ConfigAwait();
         var apiKeys = await redis.AsAsync<ApiKey>().GetByIdsAsync(authProviderIds, token).ConfigAwait();
         return apiKeys
@@ -387,7 +390,9 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails>
         await using var redis = await factory.GetClientAsync(token).ConfigAwait();
         foreach (var apiKey in apiKeys)
         {
-            var userAuthId = long.Parse(apiKey.UserAuthId);
+            if (apiKey?.UserAuthId == null || !long.TryParse(apiKey.UserAuthId, out var userAuthId))
+                continue;
+
             await redis.StoreAsync(apiKey, token).ConfigAwait();
             await redis.AddItemToSetAsync(IndexUserAuthAndApiKeyIdsSet(userAuthId), apiKey.Id, token).ConfigAwait();
         }

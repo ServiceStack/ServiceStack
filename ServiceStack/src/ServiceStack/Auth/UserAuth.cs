@@ -684,8 +684,6 @@ public static class UserAuthExtensions
             addClaim(ClaimTypes.Rsa, sessionExt.Rsa);
             addClaim(ClaimTypes.Sid, sessionExt.Sid);
             addClaim(ClaimTypes.Hash, sessionExt.Hash);
-            addClaim(ClaimTypes.HomePhone, sessionExt.HomePhone);
-            addClaim(ClaimTypes.MobilePhone, sessionExt.MobilePhone);
             addClaim(ClaimTypes.OtherPhone, sessionExt.PhoneNumber);
             addClaim(ClaimTypes.Webpage, sessionExt.Webpage);
         }

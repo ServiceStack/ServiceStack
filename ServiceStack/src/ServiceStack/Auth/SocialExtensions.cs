@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth;
@@ -7,8 +7,9 @@ public static class SocialExtensions
 {
     public static string ToGravatarUrl(this string email, int size = 64)
     {
-        var md5 = MD5.Create();
-        var md5HashBytes = md5.ComputeHash(email.ToUtf8Bytes());
+        var normalizedEmail = (email ?? string.Empty).Trim().ToLowerInvariant();
+        using var md5 = MD5.Create();
+        var md5HashBytes = md5.ComputeHash(normalizedEmail.ToUtf8Bytes());
 
         var sb = StringBuilderCache.Allocate();
         foreach (var b in md5HashBytes)

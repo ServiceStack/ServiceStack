@@ -116,13 +116,13 @@ public abstract class AuthProvider : IAuthProvider, IAuthPlugin
         var session = await service.GetSessionAsync(token: token).ConfigAwait();
         var referrerUrl = service.Request.GetReturnUrl()
                           ?? request.ReturnUrl 
-                          ?? (feature.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
+                          ?? (feature?.HtmlLogoutRedirect != null ? service.Request.ResolveAbsoluteUrl(feature.HtmlLogoutRedirect) : null)
                           ?? session.ReferrerUrl
                           ?? service.Request.GetHeader("Referer").NotLogoutUrl()
                           ?? this.RedirectUrl;
 
         session.OnLogout(service);
-        if (service is IAuthSessionExtended sessionExt)
+        if (session is IAuthSessionExtended sessionExt)
             await sessionExt.OnLogoutAsync(service, token).ConfigAwait();
         AuthEvents.OnLogout(service.Request, session, service);
         if (AuthEvents is IAuthEventsAsync asyncEvents)
@@ -246,7 +246,8 @@ public abstract class AuthProvider : IAuthProvider, IAuthPlugin
                 {
                     var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
                     var userAuthProvider = authProvider as OAuthProvider;
-                    userAuthProvider?.LoadUserOAuthProviderAsync(session, oAuthToken);
+                    if (userAuthProvider != null)
+                        await userAuthProvider.LoadUserOAuthProviderAsync(session, oAuthToken).ConfigAwait();
                 }
 
                 var httpRes = authService.Request.Response as IHttpResponse;

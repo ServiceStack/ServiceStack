@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -54,9 +54,9 @@ public class RegisterService : RegisterUserAuthServiceBase
             if (authFeature.SaveUserNamesInLowerCase)
             {
                 if (request.UserName != null)
-                    request.UserName = request.UserName.ToLower();
+                    request.UserName = request.UserName.ToLowerInvariant();
                 if (request.Email != null)
-                    request.Email = request.Email.ToLower();
+                    request.Email = request.Email.ToLowerInvariant();
             }
         }
             
@@ -75,7 +75,7 @@ public class RegisterService : RegisterUserAuthServiceBase
         if (!registerNewUser && !AllowUpdates)
             throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled.Localize(Request));
 
-        var runValidation = !HostContext.AppHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync) //Already gets run
+        var runValidation = (HostContext.AppHost?.GlobalRequestFiltersAsync == null || !HostContext.AppHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
                             && RegistrationValidator != null;
 
         if (registerNewUser)
@@ -102,7 +102,7 @@ public class RegisterService : RegisterUserAuthServiceBase
     /// </summary>
     public object UpdateUserAuth(Register request)
     {
-        if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
+        if (HostContext.AppHost?.GlobalRequestFiltersAsyncArray == null || !HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
         {
             RegistrationValidator?.ValidateAndThrow(request, ApplyTo.Put);
         }
@@ -113,9 +113,12 @@ public class RegisterService : RegisterUserAuthServiceBase
 
         var session = this.GetSession();
 
-        var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+        var authRepo = HostContext.AppHost?.GetAuthRepository(base.Request);
         using (authRepo as IDisposable)
         {
+            if (authRepo == null)
+                throw new InvalidOperationException("AuthRepository is not configured.");
+
             var existingUser = authRepo.GetUserAuth(session, null);
             if (existingUser == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
@@ -135,7 +138,7 @@ public class RegisterService : RegisterUserAuthServiceBase
     /// </summary>
     public async Task<object> UpdateUserAuthAsync(Register request)
     {
-        if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
+        if (HostContext.AppHost?.GlobalRequestFiltersAsyncArray == null || !HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
         {
             await RegistrationValidator.ValidateAndThrowAsync(request, ApplyTo.Put).ConfigAwait();
         }
@@ -146,9 +149,12 @@ public class RegisterService : RegisterUserAuthServiceBase
 
         var session = await this.GetSessionAsync().ConfigAwait();
 
-        var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
+        var authRepo = HostContext.AppHost?.GetAuthRepositoryAsync(base.Request);
         await using (authRepo as IAsyncDisposable)
         {
+            if (authRepo == null)
+                throw new InvalidOperationException("AuthRepository is not configured.");
+
             var existingUser = await authRepo.GetUserAuthAsync(session, null).ConfigAwait();
             if (existingUser == null)
                 throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));

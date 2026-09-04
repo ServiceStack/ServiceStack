@@ -143,8 +143,7 @@ public abstract class OAuth2ProviderSync : OAuthProviderSync
             string errorBody = we.GetResponseBody();
             Log.Error($"Failed to get Access Token for '{Provider}': {errorBody}");
 
-            var statusCode = ((HttpWebResponse)we.Response).StatusCode;
-            if (statusCode == HttpStatusCode.BadRequest)
+            if (we.Response is HttpWebResponse webRes && webRes.StatusCode == HttpStatusCode.BadRequest)
             {
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
             }

@@ -81,7 +81,7 @@ public abstract class OAuth2Provider : OAuthProvider
             var httpParams = HttpUtils.HasRequestBody(httpRequest.Verb)
                 ? httpRequest.QueryString
                 : httpRequest.FormData;
-            Log.ErrorFormat($"OAuth2 Error callback. {0}", httpParams.Dump());
+            Log.ErrorFormat("OAuth2 Error callback. {0}", httpParams.Dump());
             return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", error)));
         }
         
@@ -125,7 +125,7 @@ public abstract class OAuth2Provider : OAuthProvider
             var authInfo = (Dictionary<string,object>)JSON.parse(contents);
             ctx.AuthInfo = authInfo.ToStringDictionary();
 
-            var accessToken = (string)authInfo["access_token"];
+            var accessToken = authInfo.TryGetValue("access_token", out var tokenObj) ? tokenObj?.ToString() : null;
 
             var redirectUrl = SuccessRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("s", "1"));
 
@@ -148,8 +148,7 @@ public abstract class OAuth2Provider : OAuthProvider
             var errorBody = await we.GetResponseBodyAsync(token).ConfigAwait();
             Log.Error($"Failed to get Access Token for '{Provider}': {errorBody}");
                 
-            var statusCode = ((HttpWebResponse)we.Response).StatusCode;
-            if (statusCode == HttpStatusCode.BadRequest)
+            if (we.Response is HttpWebResponse webRes && webRes.StatusCode == HttpStatusCode.BadRequest)
             {
                 return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -41,9 +41,9 @@ public class DigestAuthProvider : AuthProvider, IAuthWithRequest
         {
             var session = authService.GetSession();
             var digestInfo = authService.Request.GetDigestAuth();
-            if (authRepo.TryAuthenticate(digestInfo, PrivateKey, NonceTimeOut, session.Sequence, out var userAuth))
+            if (digestInfo != null && authRepo.TryAuthenticate(digestInfo, PrivateKey, NonceTimeOut, session.Sequence, out var userAuth))
             {
-                session.Sequence = digestInfo["nc"];
+                session.Sequence = digestInfo.TryGetValue("nc", out var nc) ? nc : null;
                 session.PopulateSession(userAuth, authRepo);
                 return true;
             }
@@ -134,7 +134,7 @@ public class DigestAuthProvider : AuthProvider, IAuthWithRequest
             {
                 if (tokens != null)
                 {
-                    authInfo.ForEach((x, y) => tokens.Items[x] = y);
+                    authInfo?.ForEach((x, y) => tokens.Items[x] = y);
                     session.UserAuthId = (await authRepo.CreateOrMergeAuthSessionAsync(session, tokens, token)).UserAuthId.ToString();
                 }
 
@@ -143,7 +143,8 @@ public class DigestAuthProvider : AuthProvider, IAuthWithRequest
                     var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
 
                     var userAuthProvider = authProvider as OAuthProvider;
-                    userAuthProvider?.LoadUserOAuthProviderAsync(session, oAuthToken);
+                    if (userAuthProvider != null)
+                        await userAuthProvider.LoadUserOAuthProviderAsync(session, oAuthToken).ConfigAwait();
                 }
 
                 var failed = await ValidateAccountAsync(authService, authRepo, session, tokens, token).ConfigAwait();
@@ -188,11 +189,11 @@ public class DigestAuthProvider : AuthProvider, IAuthWithRequest
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
-            using var authService = HostContext.ResolveService<AuthenticateService>(req);
+            await using var authService = HostContext.ResolveService<AuthenticateService>(req);
             var response = await authService.PostAsync(new Authenticate
             {
                 provider = Name,
-                UserName = digestAuth["username"]
+                UserName = digestAuth.TryGetValue("username", out var u) ? u : null
             }).ConfigAwait();
         }
     }

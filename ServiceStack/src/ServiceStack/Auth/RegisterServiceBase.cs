@@ -36,7 +36,7 @@ public class RegistrationValidator : AbstractValidator<Register>
                         var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
                         await using (authRepo as IAsyncDisposable)
                         {
-                            return await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
+                            return authRepo == null || await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
                         }
                     })
                     .WithErrorCode("AlreadyExists")
@@ -48,7 +48,7 @@ public class RegistrationValidator : AbstractValidator<Register>
                         var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(base.Request);
                         await using (authRepo as IAsyncDisposable)
                         {
-                            return x.IsNullOrEmpty() || await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
+                            return authRepo == null || x.IsNullOrEmpty() || await authRepo.GetUserAuthByUserNameAsync(x).ConfigAwait() == null;
                         }
                     })
                     .WithErrorCode("AlreadyExists")

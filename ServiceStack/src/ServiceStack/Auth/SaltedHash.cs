@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using ServiceStack.Text;
@@ -37,7 +37,10 @@ public class SaltedHash : IHashProvider
         Array.Copy(Data, DataAndSalt, Data.Length);
         Array.Copy(Salt, 0, DataAndSalt, Data.Length, SalthLength);
 
-        return HashProvider.ComputeHash(DataAndSalt);
+        lock (HashProvider)
+        {
+            return HashProvider.ComputeHash(DataAndSalt);
+        }
     }
 
     public void GetHashAndSalt(byte[] Data, out byte[] Hash, out byte[] Salt)
@@ -64,26 +67,29 @@ public class SaltedHash : IHashProvider
 
     public bool VerifyHash(byte[] Data, byte[] Hash, byte[] Salt)
     {
+        if (Data == null || Hash == null || Salt == null || Salt.Length < SalthLength)
+            return false;
+
         var NewHash = ComputeHash(Data, Salt);
-
-        if (NewHash.Length != Hash.Length) return false;
-
-        for (int Lp = 0; Lp < Hash.Length; Lp++)
-            if (!Hash[Lp].Equals(NewHash[Lp]))
-                return false;
-
-        return true;
+        return CryptUtils.FixedTimeEquals(Hash, NewHash);
     }
 
     public bool VerifyHashString(string Data, string Hash, string Salt)
     {
-        if (Hash == null || Salt == null)
+        if (Data == null || Hash == null || Salt == null)
             return false;
             
-        byte[] HashToVerify = Convert.FromBase64String(Hash);
-        byte[] SaltToVerify = Convert.FromBase64String(Salt);
-        byte[] DataToVerify = Encoding.UTF8.GetBytes(Data);
-        return VerifyHash(DataToVerify, HashToVerify, SaltToVerify);
+        try
+        {
+            byte[] HashToVerify = Convert.FromBase64String(Hash);
+            byte[] SaltToVerify = Convert.FromBase64String(Salt);
+            byte[] DataToVerify = Encoding.UTF8.GetBytes(Data);
+            return VerifyHash(DataToVerify, HashToVerify, SaltToVerify);
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentException)
+        {
+            return false;
+        }
     }
 }
 

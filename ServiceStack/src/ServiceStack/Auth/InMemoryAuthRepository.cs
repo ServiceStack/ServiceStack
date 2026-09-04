@@ -178,7 +178,7 @@ public class InMemoryAuthRepository<TUserAuth, TUserAuthDetails>
         {
             lock (root.Sets)
             {
-                return root.Sets.TryGetValue(setId, out var set) ? set : new HashSet<string>();
+                return root.Sets.TryGetValue(setId, out var set) ? new HashSet<string>(set) : new HashSet<string>();
             }
         }
 
@@ -369,7 +369,7 @@ public class InMemoryAuthRepository<TUserAuth, TUserAuthDetails>
         {
             lock (root.Sets)
             {
-                return (root.Sets.TryGetValue(setId, out var set) ? set : new HashSet<string>()).InTask();
+                return (root.Sets.TryGetValue(setId, out var set) ? new HashSet<string>(set) : new HashSet<string>()).InTask();
             }
         }
 

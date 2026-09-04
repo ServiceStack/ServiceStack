@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography;
@@ -11,10 +11,10 @@ public class DigestAuthFunctions
 {
     public string PrivateHashEncode(string TimeStamp, string IPAddress, string PrivateKey)
     {
-        var hashing = MD5.Create();
+        using var hashing = MD5.Create();
         return ConvertToHexString(hashing.ComputeHash(Encoding.UTF8.GetBytes($"{TimeStamp}:{IPAddress}:{PrivateKey}")));
-
     }
+
     public string Base64Encode(string StringToEncode)
     {
         return StringToEncode != null ? Convert.ToBase64String(Encoding.UTF8.GetBytes(StringToEncode)) : null;
@@ -22,12 +22,20 @@ public class DigestAuthFunctions
 
     public string Base64Decode(string StringToDecode)
     {
-        return StringToDecode != null ? Encoding.UTF8.GetString(Convert.FromBase64String(StringToDecode)) : null;
+        if (StringToDecode == null) return null;
+        try
+        {
+            return Encoding.UTF8.GetString(Convert.FromBase64String(StringToDecode));
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
     }
 
     public string[] GetNonceParts(string nonce)
     {
-        return Base64Decode(nonce).Split(':');
+        return Base64Decode(nonce)?.Split(':') ?? TypeConstants.EmptyStringArray;
     }
 
     public string GetNonce(string IPAddress, string PrivateKey)
@@ -41,6 +49,7 @@ public class DigestAuthFunctions
     public bool ValidateNonce(string nonce, string IPAddress, string PrivateKey)
     { 
         var nonceparts = GetNonceParts(nonce);
+        if (nonceparts.Length < 2) return false;
         string privateHash = PrivateHashEncode(nonceparts[0], IPAddress, PrivateKey);
         return string.CompareOrdinal(privateHash, nonceparts[1]) == 0;
     }
@@ -48,6 +57,7 @@ public class DigestAuthFunctions
     public bool StaleNonce(string nonce, int Timeout)
     {
         var nonceparts = GetNonceParts(nonce);
+        if (nonceparts.Length < 1) return true;
         return TimeStampAsDateTime(nonceparts[0]).AddSeconds(Timeout) < DateTime.UtcNow;
     }
 
@@ -78,34 +88,54 @@ public class DigestAuthFunctions
 
     public string CreateAuthResponse(Dictionary<string, string> digestHeaders, string Ha1, string Ha2)
     {
-        string response = $"{Ha1}:{digestHeaders["nonce"]}:{digestHeaders["nc"]}:{digestHeaders["cnonce"]}:{digestHeaders["qop"].ToLower()}:{Ha2}";
-        return ConvertToHexString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(response)));
+        var nonce = digestHeaders.TryGetValue("nonce", out var n) ? n : "";
+        var nc = digestHeaders.TryGetValue("nc", out var c) ? c : "";
+        var cnonce = digestHeaders.TryGetValue("cnonce", out var cn) ? cn : "";
+        var qop = digestHeaders.TryGetValue("qop", out var q) ? q.ToLower() : "";
+        string response = $"{Ha1}:{nonce}:{nc}:{cnonce}:{qop}:{Ha2}";
+        using var md5 = MD5.Create();
+        return ConvertToHexString(md5.ComputeHash(Encoding.UTF8.GetBytes(response)));
     }
 
     public string CreateHa1(Dictionary<string,string> digestHeaders, string password)
     {
-        return CreateHa1(digestHeaders["username"],digestHeaders["realm"],password);
+        var username = digestHeaders.TryGetValue("username", out var u) ? u : "";
+        var realm = digestHeaders.TryGetValue("realm", out var r) ? r : "";
+        return CreateHa1(username, realm, password);
     }
 
     public string CreateHa1(string Username, string Realm, string Password)
     {
-        return ConvertToHexString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes($"{Username}:{Realm}:{Password}")));
+        using var md5 = MD5.Create();
+        return ConvertToHexString(md5.ComputeHash(Encoding.UTF8.GetBytes($"{Username}:{Realm}:{Password}")));
     }
 
     public string CreateHa2(Dictionary<string, string> digestHeaders)
     {
-        return ConvertToHexString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes($"{digestHeaders["method"]}:{digestHeaders["uri"]}")));
+        var method = digestHeaders.TryGetValue("method", out var m) ? m : "";
+        var uri = digestHeaders.TryGetValue("uri", out var u) ? u : "";
+        using var md5 = MD5.Create();
+        return ConvertToHexString(md5.ComputeHash(Encoding.UTF8.GetBytes($"{method}:{uri}")));
     }
 
     public bool ValidateResponse(Dictionary<string, string> digestInfo, string PrivateKey, int NonceTimeOut, string DigestHA1, string sequence)
     {
-        if (string.IsNullOrEmpty(DigestHA1))
+        if (string.IsNullOrEmpty(DigestHA1) || digestInfo == null)
             return false;
-            
-        var noncevalid = ValidateNonce(digestInfo["nonce"], digestInfo["userhostaddress"], PrivateKey);
-        var noncestale = StaleNonce(digestInfo["nonce"], NonceTimeOut);
-        var uservalid = CreateAuthResponse(digestInfo, DigestHA1) == digestInfo["response"];
-        var sequencevalid = sequence != digestInfo["nc"];
+
+        if (!digestInfo.TryGetValue("nonce", out var nonce) ||
+            !digestInfo.TryGetValue("userhostaddress", out var userHostAddress) ||
+            !digestInfo.TryGetValue("response", out var clientResponse) ||
+            !digestInfo.TryGetValue("nc", out var nc))
+        {
+            return false;
+        }
+
+        var noncevalid = ValidateNonce(nonce, userHostAddress, PrivateKey);
+        var noncestale = StaleNonce(nonce, NonceTimeOut);
+        var authResponse = CreateAuthResponse(digestInfo, DigestHA1);
+        var uservalid = CryptUtils.FixedTimeEquals(authResponse, clientResponse);
+        var sequencevalid = sequence != nc;
         return noncevalid && !noncestale && uservalid && sequencevalid;
     }
 }

@@ -246,7 +246,7 @@ public class AuthHttpGateway : IAuthHttpGateway
             requestFilter: req => req.With(c => {
                 c.UserAgent = ServiceClientBase.DefaultUserAgent;
                 c.Authorization = new("token", accessToken);
-            }));
+            }), token: token).ConfigAwait();
 
         return json;
     }

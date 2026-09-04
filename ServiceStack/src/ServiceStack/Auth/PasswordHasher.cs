@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -86,7 +86,15 @@ public class PasswordHasher : IPasswordHasher
         if (providedPassword == null)
             throw new ArgumentNullException(nameof(providedPassword));
 
-        byte[] decodedHashedPassword = Convert.FromBase64String(hashedPassword);
+        byte[] decodedHashedPassword;
+        try
+        {
+            decodedHashedPassword = Convert.FromBase64String(hashedPassword);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
 
         // read the format marker from the hashed password
         if (decodedHashedPassword.Length == 0)

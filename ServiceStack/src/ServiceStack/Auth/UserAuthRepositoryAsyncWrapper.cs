@@ -5,10 +5,24 @@ using System.Threading.Tasks;
 
 namespace ServiceStack.Auth;
 
-public class UserAuthRepositoryAsyncWrapper : IUserAuthRepositoryAsync, IRequiresSchema, ICustomUserAuth, IQueryUserAuthAsync
+public class UserAuthRepositoryAsyncWrapper : IUserAuthRepositoryAsync, IRequiresSchema, ICustomUserAuth, IQueryUserAuthAsync, IDisposable, IAsyncDisposable
 {
     public IAuthRepository AuthRepo { get; }
     public UserAuthRepositoryAsyncWrapper(IAuthRepository authRepo) => this.AuthRepo = authRepo;
+
+    public void Dispose()
+    {
+        if (AuthRepo is IDisposable d)
+            d.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (AuthRepo is IAsyncDisposable ad)
+            await ad.DisposeAsync().ConfigureAwait(false);
+        else if (AuthRepo is IDisposable d)
+            d.Dispose();
+    }
 
     public Task LoadUserAuthAsync(IAuthSession session, IAuthTokens tokens, CancellationToken token = default)
     {

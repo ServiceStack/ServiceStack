@@ -67,8 +67,8 @@ public class MicrosoftGraphAuthProvider : OAuth2Provider
         this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", AccessTokenUrl);
         this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", DefaultUserProfileUrl);
 
-        this.AppId = appSettings.GetString($"oauth.{Name}.AppId");
-        this.AppSecret = appSettings.GetString($"oauth.{Name}.AppSecret");
+        this.AppId = appSettings.GetString($"oauth.{Name}.AppId") ?? ConsumerKey;
+        this.AppSecret = appSettings.GetString($"oauth.{Name}.AppSecret") ?? ConsumerSecret;
         this.SavePhoto = appSettings.Get($"oauth.{Name}.SavePhoto", false);
         this.SavePhotoSize = appSettings.GetString($"oauth.{Name}.SavePhotoSize");
 

@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
@@ -25,8 +26,8 @@ public class UnAssignRolesService : Service
 
         return new UnAssignRolesResponse
         {
-            AllRoles = (await AuthRepositoryAsync.GetRolesAsync(userAuth).ConfigAwait()).ToList(),
-            AllPermissions = (await AuthRepositoryAsync.GetPermissionsAsync(userAuth).ConfigAwait()).ToList(),
+            AllRoles = (await AuthRepositoryAsync.GetRolesAsync(userAuth).ConfigAwait())?.ToList() ?? new List<string>(),
+            AllPermissions = (await AuthRepositoryAsync.GetPermissionsAsync(userAuth).ConfigAwait())?.ToList() ?? new List<string>(),
         };
     }
 }

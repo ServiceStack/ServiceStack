@@ -159,7 +159,7 @@ public class AuthenticateService : Service
         if (string.IsNullOrEmpty(provider))
             throw new ArgumentNullException(nameof(provider));
             
-        if (AuthProviders.Length == 0)
+        if (AuthProviders == null || AuthProviders.Length == 0)
             return null;
         if (provider == LogoutAction)
             return AuthProviders[0];
@@ -186,7 +186,7 @@ public class AuthenticateService : Service
 
     public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
     {
-        if (authProviders.Length == 0)
+        if (authProviders == null || authProviders.Length == 0)
             throw new ArgumentNullException(nameof(authProviders));
 
         DefaultOAuthProvider = authProviders[0].Provider;
@@ -376,9 +376,12 @@ public class AuthenticateService : Service
                     DidAuthenticate = Request.IsSet(Keywords.DidAuthenticate),
                 };
 
-                foreach (var responseFilter in AuthResponseFilters)
+                if (AuthResponseFilters != null)
                 {
-                    await responseFilter.ExecuteAsync(authCtx);
+                    foreach (var responseFilter in AuthResponseFilters)
+                    {
+                        await responseFilter.ExecuteAsync(authCtx);
+                    }
                 }
 
                 if (AuthResponseDecorator != null)

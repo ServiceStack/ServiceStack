@@ -400,8 +400,11 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAut
 
     public virtual List<ApiKey> GetUserApiKeys(string userId)
     {
+        if (userId == null || !long.TryParse(userId, out var longUserId))
+            return new List<ApiKey>();
+
         using var redis = factory.GetClient();
-        var idx = IndexUserAuthAndApiKeyIdsSet(long.Parse(userId));
+        var idx = IndexUserAuthAndApiKeyIdsSet(longUserId);
         var authProviderIds = redis.GetAllItemsFromSet(idx);
         var apiKeys = redis.As<ApiKey>().GetByIds(authProviderIds);
         return apiKeys
@@ -415,7 +418,9 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAut
         using var redis = factory.GetClient();
         foreach (var apiKey in apiKeys)
         {
-            var userAuthId = long.Parse(apiKey.UserAuthId);
+            if (apiKey?.UserAuthId == null || !long.TryParse(apiKey.UserAuthId, out var userAuthId))
+                continue;
+
             redis.Store(apiKey);
             redis.AddItemToSet(IndexUserAuthAndApiKeyIdsSet(userAuthId), apiKey.Id);
         }

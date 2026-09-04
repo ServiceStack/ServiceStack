@@ -144,7 +144,7 @@ public class CredentialsAuthProvider : AuthProvider
         var authFeature = HostContext.AppHost.AssertPlugin<AuthFeature>();
         if (HostContext.HasValidAuthSecret(authService.Request))
         {
-            if (userName == authFeature.AuthSecretSession.UserName)
+            if (authFeature.AuthSecretSession != null && userName == authFeature.AuthSecretSession.UserName)
             {
                 session = authFeature.AuthSecretSession;
                 success = true;

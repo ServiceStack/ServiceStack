@@ -28,23 +28,33 @@ public abstract class OAuthProvider : AuthProvider, IOAuthProvider
         this.ConsumerKeyName = consumerKeyName;
         this.ConsumerSecretName = consumerSecretName;
 
-        this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);
+        this.AuthRealm = appSettings != null ? appSettings.Get("OAuthRealm", authRealm) : authRealm;
 
         this.Provider = oAuthProvider;
-        this.RedirectUrl = appSettings.GetString($"oauth.{Provider}.{nameof(RedirectUrl)}")
-                           ?? FallbackConfig(appSettings.GetString($"oauth.{nameof(RedirectUrl)}"));
-        this.CallbackUrl = appSettings.GetString($"oauth.{Provider}.{nameof(CallbackUrl)}")
-                           ?? FallbackConfig(appSettings.GetString($"oauth.{nameof(CallbackUrl)}"));
-        this.ConsumerKey = appSettings.GetString($"oauth.{Provider}.{consumerKeyName}");
-        this.ConsumerSecret = appSettings.GetString($"oauth.{Provider}.{consumerSecretName}");
+        if (appSettings != null)
+        {
+            this.RedirectUrl = appSettings.GetString($"oauth.{Provider}.{nameof(RedirectUrl)}")
+                               ?? FallbackConfig(appSettings.GetString($"oauth.{nameof(RedirectUrl)}"));
+            this.CallbackUrl = appSettings.GetString($"oauth.{Provider}.{nameof(CallbackUrl)}")
+                               ?? FallbackConfig(appSettings.GetString($"oauth.{nameof(CallbackUrl)}"));
+            this.ConsumerKey = appSettings.GetString($"oauth.{Provider}.{consumerKeyName}");
+            this.ConsumerSecret = appSettings.GetString($"oauth.{Provider}.{consumerSecretName}");
 
-        this.RequestTokenUrl = appSettings.Get($"oauth.{Provider}.{nameof(RequestTokenUrl)}", authRealm + "oauth/request_token");
-        this.AuthorizeUrl = appSettings.Get($"oauth.{Provider}.{nameof(AuthorizeUrl)}", authRealm + "oauth/authorize");
-        this.AccessTokenUrl = appSettings.Get($"oauth.{Provider}.{nameof(AccessTokenUrl)}", authRealm + "oauth/access_token");
-        this.SaveExtendedUserInfo = appSettings.Get($"oauth.{Provider}.{nameof(SaveExtendedUserInfo)}", true);
+            this.RequestTokenUrl = appSettings.Get($"oauth.{Provider}.{nameof(RequestTokenUrl)}", authRealm + "oauth/request_token");
+            this.AuthorizeUrl = appSettings.Get($"oauth.{Provider}.{nameof(AuthorizeUrl)}", authRealm + "oauth/authorize");
+            this.AccessTokenUrl = appSettings.Get($"oauth.{Provider}.{nameof(AccessTokenUrl)}", authRealm + "oauth/access_token");
+            this.SaveExtendedUserInfo = appSettings.Get($"oauth.{Provider}.{nameof(SaveExtendedUserInfo)}", true);
 
-        this.UserProfileUrl = appSettings.GetNullableString($"oauth.{Provider}.{nameof(UserProfileUrl)}");
-        this.VerifyTokenUrl = appSettings.GetNullableString($"oauth.{Provider}.{nameof(VerifyTokenUrl)}");
+            this.UserProfileUrl = appSettings.GetNullableString($"oauth.{Provider}.{nameof(UserProfileUrl)}");
+            this.VerifyTokenUrl = appSettings.GetNullableString($"oauth.{Provider}.{nameof(VerifyTokenUrl)}");
+        }
+        else
+        {
+            this.RequestTokenUrl = authRealm + "oauth/request_token";
+            this.AuthorizeUrl = authRealm + "oauth/authorize";
+            this.AccessTokenUrl = authRealm + "oauth/access_token";
+            this.SaveExtendedUserInfo = true;
+        }
 
         this.OAuthUtils = new OAuthAuthorizer(this);
         this.AuthHttpGateway = new AuthHttpGateway();

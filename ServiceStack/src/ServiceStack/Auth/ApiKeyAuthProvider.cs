@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -207,7 +207,7 @@ namespace ServiceStack.Auth
 
         public virtual string CreateApiKey(string environment, string keyType, int sizeBytes)
         {
-            if (CachedBytes == null)
+            if (CachedBytes == null || CachedBytes.Length != sizeBytes)
                 CachedBytes = new byte[sizeBytes];
 
             SessionExtensions.PopulateWithSecureRandomBytes(CachedBytes);
@@ -292,8 +292,11 @@ namespace ServiceStack.Auth
 
         protected virtual async Task<ApiKey> GetApiKeyAsync(IRequest req, string apiKey)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                return null;
+
             var manageApiKeys = HostContext.AppHost.AssertManageApiKeysAsync(req);
-            using (manageApiKeys as IDisposable)
+            await using (manageApiKeys as IAsyncDisposable)
             {
                 return await manageApiKeys.GetApiKeyAsync(apiKey).ConfigAwait();
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -509,6 +509,9 @@ public class GetAccessTokenService : Service
             : null; 
 
         var refreshToken = request.RefreshToken ?? refreshTokenCookie;
+        if (string.IsNullOrEmpty(refreshToken))
+            throw HttpError.Unauthorized(ErrorMessages.TokenInvalid.Localize(Request));
+
         var accessToken = await jwtAuthProvider.CreateAccessTokenFromRefreshToken(refreshToken, Request).ConfigAwait();
 
         var response = new GetAccessTokenResponse

@@ -116,8 +116,7 @@ public class FacebookAuthProvider : OAuthProvider
         }
         catch (WebException we)
         {
-            var statusCode = ((HttpWebResponse)we.Response).StatusCode;
-            if (statusCode == HttpStatusCode.BadRequest)
+            if (we.Response is HttpWebResponse webRes && webRes.StatusCode == HttpStatusCode.BadRequest)
             {
                 return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
             }
@@ -131,7 +130,7 @@ public class FacebookAuthProvider : OAuthProvider
     {
         tokens.AccessTokenSecret = accessToken;
 
-        var json = AuthHttpGateway.DownloadFacebookUserInfo(accessToken, Fields);
+        var json = await AuthHttpGateway.DownloadFacebookUserInfoAsync(accessToken, Fields, token).ConfigAwait();
         var authInfo = JsonObject.Parse(json);
 
         session.IsAuthenticated = true;

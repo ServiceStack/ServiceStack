@@ -72,3 +72,40 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
 ## 6. Multi-Targeting & Compilation
 - **`ServiceStack.csproj`**:
   - Standardized target framework define constants (`NET6_0`, `NET8_0`, `NET10_0`).
+
+---
+
+## 7. Authentication & Authorization Subsystem (`ServiceStack/Auth`)
+- **`AuthProvider.cs`**:
+  - Fixed bug in `LogoutAsync` where `if (service is IAuthSessionExtended sessionExt)` was checked instead of `session`, which prevented custom session `OnLogoutAsync` hooks from executing.
+  - Added null-safe navigation on `feature?.HtmlLogoutRedirect` in `LogoutAsync`.
+  - Awaited asynchronous OAuth provider loading: `await userAuthProvider.LoadUserOAuthProviderAsync(session, oAuthToken).ConfigAwait()`.
+- **`SaltedHash.cs`**:
+  - Synchronized `ComputeHash` via `lock (HashProvider)` to prevent concurrent mutation of internal cryptographic algorithm state.
+  - Implemented timing attack resistant equality check via `CryptUtils.FixedTimeEquals`.
+  - Guarded against malformed salt lengths (`Salt.Length < SalthLength`) and caught both `FormatException` and `ArgumentException` in `VerifyHashString`.
+- **`PasswordHasher.cs` & `AuthProviderExtensions.cs`**:
+  - Handled invalid base64 gracefully by catching `FormatException` in `VerifyPassword` instead of throwing unhandled 500 errors.
+  - Added fallback to `HostContext.TryResolve<IHashProvider>() ?? new SaltedHash()`.
+- **`DigestAuthFunctions.cs` & `DigestAuthProvider.cs`**:
+  - Disposed `MD5` instances with `using var md5 = MD5.Create()`.
+  - Replaced equality comparison with `CryptUtils.FixedTimeEquals` to prevent digest timing attacks.
+  - Added safe dictionary lookups for all required digest info keys.
+  - Converted `AuthenticateService` resolving to `await using var authService`.
+- **`OAuth2Provider.cs` & `GithubAuthProvider.cs`**:
+  - Awaited response body extraction in `GithubAuthProvider` error logging (`await webException.GetResponseBodyAsync(token).ConfigAwait()`).
+  - Added safe dictionary extraction for access tokens and guarded against null `WebException.Response`.
+- **`ApiKeyAuthProvider.cs`**:
+  - Fixed thread-static buffer reuse in `CreateApiKey` when requested `sizeBytes` did not match allocated array length.
+- **`JwtAuthProviderReader.cs` & `JwtAuthProvider.cs`**:
+  - Guarded `Cookies?.DeleteCookie(...)` in catch blocks.
+  - Handled null `refreshToken` in `GetAccessTokenService` returning `HttpError.Unauthorized` rather than throwing `ArgumentNullException`.
+- **`UserAuthRepositoryAsyncWrapper.cs`**:
+  - Implemented `IDisposable` and `IAsyncDisposable` forwarding to the inner repository to prevent connection and resource leaks.
+- **`RegisterService.cs` & `RegisterServiceBase.cs`**:
+  - Normalized usernames and emails using `ToLowerInvariant()`.
+  - Guarded against null `authRepo` before invoking repository methods.
+- **`UserAuth.cs`**:
+  - Removed duplicate `ClaimTypes.HomePhone` and `ClaimTypes.MobilePhone` registrations in `ConvertSessionToClaims`.
+- **`SocialExtensions.cs`**:
+  - Normalized Gravatar email with `Trim().ToLowerInvariant()`, disposed MD5 instance, and guarded null inputs.

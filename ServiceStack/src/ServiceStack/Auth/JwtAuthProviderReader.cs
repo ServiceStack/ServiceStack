@@ -611,7 +611,7 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
         catch (Exception)
         {
             if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.TokenCookie))
-                (res as IHttpResponse)?.Cookies.DeleteCookie(Keywords.TokenCookie);
+                (res as IHttpResponse)?.Cookies?.DeleteCookie(Keywords.TokenCookie);
             throw;
         }
         return false;
@@ -644,7 +644,7 @@ public class JwtAuthProviderReader : AuthProvider, IAuthWithRequest
                 refreshToken.SafeSubstring(0,4), e.Message);
             
             if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.RefreshTokenCookie))
-                (res as IHttpResponse)?.Cookies.DeleteCookie(Keywords.RefreshTokenCookie);
+                (res as IHttpResponse)?.Cookies?.DeleteCookie(Keywords.RefreshTokenCookie);
             return false;
         }
         return false;

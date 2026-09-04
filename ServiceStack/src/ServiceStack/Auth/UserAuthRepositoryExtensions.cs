@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -81,8 +81,8 @@ public static class UserAuthRepositoryExtensions
         }
         else
         {
-            roles.Each(x => userAuth.Roles.Remove(x));
-            permissions.Each(x => userAuth.Permissions.Remove(x));
+            roles?.Each(x => userAuth.Roles?.Remove(x));
+            permissions?.Each(x => userAuth.Permissions?.Remove(x));
 
             if (roles != null || permissions != null)
             {
@@ -100,8 +100,8 @@ public static class UserAuthRepositoryExtensions
         }
         else
         {
-            roles.Each(x => userAuth.Roles.Remove(x));
-            permissions.Each(x => userAuth.Permissions.Remove(x));
+            roles?.Each(x => userAuth.Roles?.Remove(x));
+            permissions?.Each(x => userAuth.Permissions?.Remove(x));
 
             if (roles != null || permissions != null)
             {

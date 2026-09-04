@@ -106,7 +106,7 @@ public static class AuthProviderExtensions
         }
         else
         {
-            var hashProvider = appHost.Resolve<IHashProvider>();
+            var hashProvider = appHost.TryResolve<IHashProvider>() ?? new SaltedHash();
             hashProvider.GetHashAndSaltString(password, out hash, out salt);
         }
     }
@@ -169,7 +169,7 @@ public static class AuthProviderExtensions
         var usedOriginalSaltedHash = userAuth.Salt != null;
         if (usedOriginalSaltedHash)
         {
-            var oldSaltedHashProvider = HostContext.Resolve<IHashProvider>();
+            var oldSaltedHashProvider = HostContext.TryResolve<IHashProvider>() ?? new SaltedHash();
             if (oldSaltedHashProvider.VerifyHashString(providedPassword, userAuth.PasswordHash, userAuth.Salt))
             {
                 needsRehash = !HostContext.Config.UseSaltedHash;
@@ -195,7 +195,16 @@ public static class AuthProviderExtensions
 
         if (HostContext.Config.FallbackPasswordHashers.Count > 0)
         {
-            var decodedHashedPassword = Convert.FromBase64String(userAuth.PasswordHash);
+            byte[] decodedHashedPassword;
+            try
+            {
+                decodedHashedPassword = Convert.FromBase64String(userAuth.PasswordHash);
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+
             if (decodedHashedPassword.Length == 0)
             {
                 if (Log.IsDebugEnabled)
