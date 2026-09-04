@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ServiceStack.Caching;
 
-public class CacheClientAsyncWrapper : ICacheClientAsync, IRemoveByPatternAsync
+public class CacheClientAsyncWrapper : ICacheClientAsync, IRemoveByPatternAsync, IDisposable
 {
     public ICacheClient Cache { get; }
     public CacheClientAsyncWrapper(ICacheClient cache) => Cache = cache;
@@ -15,7 +15,8 @@ public class CacheClientAsyncWrapper : ICacheClientAsync, IRemoveByPatternAsync
 
     public Task RemoveAllAsync(IEnumerable<string> keys, CancellationToken token=default)
     {
-        Cache.RemoveAll(keys);
+        if (keys != null)
+            Cache.RemoveAll(keys);
         return TypeConstants.EmptyTask;
     }
 
@@ -53,7 +54,8 @@ public class CacheClientAsyncWrapper : ICacheClientAsync, IRemoveByPatternAsync
 
     public Task SetAllAsync<T>(IDictionary<string, T> values, CancellationToken token=default)
     {
-        Cache.SetAll(values);
+        if (values != null)
+            Cache.SetAll(values);
         return TypeConstants.EmptyTask;
     }
 
@@ -67,12 +69,18 @@ public class CacheClientAsyncWrapper : ICacheClientAsync, IRemoveByPatternAsync
 
     public Task RemoveByPatternAsync(string pattern, CancellationToken token=default)
     {
+        if (Cache is IRemoveByPatternAsync asyncRemove)
+            return asyncRemove.RemoveByPatternAsync(pattern, token);
+
         Cache.RemoveByPattern(pattern);
         return TypeConstants.EmptyTask;
     }
 
     public Task RemoveByRegexAsync(string regex, CancellationToken token=default)
     {
+        if (Cache is IRemoveByPatternAsync asyncRemove)
+            return asyncRemove.RemoveByRegexAsync(regex, token);
+
         Cache.RemoveByRegex(regex);
         return TypeConstants.EmptyTask;
     }
@@ -80,19 +88,39 @@ public class CacheClientAsyncWrapper : ICacheClientAsync, IRemoveByPatternAsync
 #pragma warning disable CS1998
     public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, [EnumeratorCancellation] CancellationToken token = default)
     {
-        foreach (var key in Cache.GetKeysByPattern(pattern))
+        if (Cache is ICacheClientAsync asyncCache)
         {
-            token.ThrowIfCancellationRequested();
+            await foreach (var key in asyncCache.GetKeysByPatternAsync(pattern, token).WithCancellation(token))
+            {
+                yield return key;
+            }
+            yield break;
+        }
+
+        var keys = Cache.GetKeysByPattern(pattern);
+        if (keys != null)
+        {
+            foreach (var key in keys)
+            {
+                token.ThrowIfCancellationRequested();
                 
-            yield return key;
+                yield return key;
+            }
         }
     }
 #pragma warning restore CS1998
 
-    public ValueTask DisposeAsync()
+    public void Dispose()
     {
-        Cache.Dispose();
-        return default;
+        Cache?.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Cache is IAsyncDisposable asyncDisposable)
+            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+        else
+            Cache?.Dispose();
     }
 }
 

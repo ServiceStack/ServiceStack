@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,17 +16,17 @@ public class MultiCacheClient
 
     public MultiCacheClient(params ICacheClient[] cacheClients)
     {
-        if (cacheClients.Length == 0)
+        if (cacheClients == null || cacheClients.Length == 0)
             throw new ArgumentNullException(nameof(cacheClients));
 
         this.cacheClients = new List<ICacheClient>(cacheClients);
-        this.cacheClientsAsync = cacheClients.Map(x => x.AsAsync());
+        this.cacheClientsAsync = cacheClients.Where(x => x != null).Select(x => x.AsAsync()).ToList();
     }
 
     public MultiCacheClient(List<ICacheClient> cacheClients, List<ICacheClientAsync> cacheClientsAsync)
     {
-        this.cacheClients = cacheClients;
-        this.cacheClientsAsync = cacheClientsAsync;
+        this.cacheClients = cacheClients ?? new List<ICacheClient>();
+        this.cacheClientsAsync = cacheClientsAsync ?? this.cacheClients.Where(x => x != null).Select(x => x.AsAsync()).ToList();
     }
 
     public void Dispose()
@@ -129,6 +130,7 @@ public class MultiCacheClient
 
     public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
     {
+        if (keys == null) return new Dictionary<string, T>();
         foreach (var client in cacheClients)
         {
             try
@@ -150,11 +152,13 @@ public class MultiCacheClient
 
     public void RemoveAll(IEnumerable<string> keys)
     {
+        if (keys == null) return;
         cacheClients.ExecAll(client => client.RemoveAll(keys));
     }
 
     public void SetAll<T>(IDictionary<string, T> values)
     {
+        if (values == null) return;
         cacheClients.ExecAll(client => client.SetAll(values));
     }
 
@@ -165,6 +169,7 @@ public class MultiCacheClient
 
     public async Task RemoveAllAsync(IEnumerable<string> keys, CancellationToken token = default)
     {
+        if (keys == null) return;
         await cacheClientsAsync.ExecAllAsync(cache => cache.RemoveAllAsync(keys, token)).ConfigAwait();
     }
 
@@ -220,7 +225,7 @@ public class MultiCacheClient
 
     public async Task<bool> SetAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token = default)
     {
-        return await cacheClientsAsync.ExecAllReturnFirstAsync(client => client.AddAsync(key, value, expiresIn, token)).ConfigAwait();
+        return await cacheClientsAsync.ExecAllReturnFirstAsync(client => client.SetAsync(key, value, expiresIn, token)).ConfigAwait();
     }
 
     public async Task<bool> ReplaceAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token = default)
@@ -235,11 +240,14 @@ public class MultiCacheClient
 
     public async Task<IDictionary<string, T>> GetAllAsync<T>(IEnumerable<string> keys, CancellationToken token = default)
     {
-        return await cacheClientsAsync.ExecReturnFirstWithResultAsync(client => client.GetAllAsync<T>(keys, token)).ConfigAwait();
+        if (keys == null) return new Dictionary<string, T>();
+        var result = await cacheClientsAsync.ExecReturnFirstWithResultAsync(client => client.GetAllAsync<T>(keys, token)).ConfigAwait();
+        return result ?? new Dictionary<string, T>();
     }
 
     public async Task SetAllAsync<T>(IDictionary<string, T> values, CancellationToken token = default)
     {
+        if (values == null) return;
         await cacheClientsAsync.ExecAllAsync(client => client.SetAllAsync(values, token)).ConfigAwait();
     }
 
@@ -268,12 +276,14 @@ public class MultiCacheClient
     public async IAsyncEnumerable<string> GetKeysByPatternAsync(string pattern, [EnumeratorCancellation] CancellationToken token = default)
     {
         var results = cacheClientsAsync.ExecReturnFirstWithResult(client => 
-            client.GetKeysByPatternAsync(pattern, token)).ConfigureAwait(false);
-        await foreach (var key in results)
+            client.GetKeysByPatternAsync(pattern, token));
+        if (results != null)
         {
-            token.ThrowIfCancellationRequested();
-                
-            yield return key;
+            await foreach (var key in results.WithCancellation(token).ConfigureAwait(false))
+            {
+                token.ThrowIfCancellationRequested();
+                yield return key;
+            }
         }
     }
 }

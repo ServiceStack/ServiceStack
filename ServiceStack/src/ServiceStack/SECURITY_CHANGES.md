@@ -109,3 +109,33 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - Removed duplicate `ClaimTypes.HomePhone` and `ClaimTypes.MobilePhone` registrations in `ConvertSessionToClaims`.
 - **`SocialExtensions.cs`**:
   - Normalized Gravatar email with `Trim().ToLowerInvariant()`, disposed MD5 instance, and guarded null inputs.
+
+---
+
+## 7. Caching Subsystem Hardening & Reliability
+- **`MemoryCacheClient.cs`**:
+  - Guarded against `DivideByZeroException` in `IncrHit` by checking `CleaningInterval > 0`.
+  - Added null / empty guards in `RemoveAll`, `GetAll<T>`, and `SetAll<T>` to safely handle null parameters without throwing `NullReferenceException`.
+  - Fixed race condition and non-deterministic return value in `UpdateCounter` by returning `Convert.ToInt64(entry.Value)` directly from the `AddOrUpdate` result rather than reading from a mutated local variable across threads.
+  - Hardened pattern conversion in `ConvertToRegex` by escaping all regex metacharacters (`.`, `$`, `^`, `{`, `[`, `(`, `|`, `)`, `+`, `\`) while translating `*` to `.*` and `?` to `.+`.
+  - Added ReDoS protection with a 2-second regex match timeout and wrapped regex execution in `RemoveByRegex` and `GetKeysByRegex` with try-catch blocks.
+- **`CacheClientAsyncWrapper.cs`**:
+  - Implemented `IDisposable` forwarding `Cache.Dispose()` to prevent resource leaks when synchronous containers dispose async wrappers.
+  - In `DisposeAsync`, awaited `Cache is IAsyncDisposable asyncDisposable` before falling back to `Cache?.Dispose()`.
+  - Delegated `RemoveByPatternAsync` and `RemoveByRegexAsync` to `Cache as IRemoveByPatternAsync` when implemented.
+  - Corrected `GetKeysByPatternAsync` to check if `Cache is ICacheClientAsync asyncCache` and stream keys with cancellation token support, falling back safely to null-checked sync keys.
+  - Added null guards in `RemoveAllAsync` and `SetAllAsync`.
+- **`CacheClientWithPrefix.cs` & `CacheClientWithPrefixAsync.cs`**:
+  - Fixed `GetAll<T>` and `GetAllAsync<T>` to strip prefixes from returned dictionary keys using `RemovePrefix`, ensuring callers receive the exact keys they requested instead of tenant-prefixed keys.
+  - Added `IDisposable` implementation in `CacheClientWithPrefixAsync` forwarding to `(cache as IDisposable)?.Dispose()`.
+  - Replaced unsafe hard cast `((IRemoveByPatternAsync)cache)` in `RemoveByPatternAsync` and `RemoveByRegexAsync` with safe type checks.
+  - Added null and empty guards to `GetAll`, `GetAllAsync`, `SetAll`, `SetAllAsync`, `RemoveAll`, and `RemoveAllAsync`.
+- **`MultiCacheClient.cs`**:
+  - Guarded constructors against null or empty client collections with `ArgumentNullException`.
+  - Fixed copy-paste bug in `SetAsync(key, value, expiresIn, token)` which erroneously invoked `AddAsync` instead of `SetAsync`.
+  - Added null checks to `GetAll`, `GetAllAsync`, `SetAll`, `SetAllAsync`, `RemoveAll`, and `RemoveAllAsync`.
+  - Guarded against null enumeration in `GetKeysByPatternAsync` and added cancellation token support.
+- **`CacheClientExtensions.cs` & `HttpCacheFeature.cs`**:
+  - Added null-safe conditional access `HostContext.GetPlugin<HttpCacheFeature>()?.ShouldAddLastModifiedToOptimizedResults() == true` across cache evaluation methods to prevent `NullReferenceException` when `HttpCacheFeature` is not registered.
+  - Guarded `GetAllContentCacheKeys` against null or empty input keys.
+  - Added null guards for `HostContext.AppHost` and resolved cache client in `HttpCacheFeature.CacheAndWriteResponse`.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -58,12 +58,21 @@ public class CacheClientWithPrefix : ICacheClient, ICacheClientExtended, IRemove
 
     public void SetAll<T>(IDictionary<string, T> values)
     {
+        if (values == null) return;
         cache.SetAll(values.ToDictionary(x => EnsurePrefix(x.Key), x => x.Value));
     }
 
     public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
     {
-        return cache.GetAll<T>(keys.Select(EnsurePrefix));
+        if (keys == null) return new Dictionary<string, T>();
+        var results = cache.GetAll<T>(keys.Select(EnsurePrefix));
+        if (results == null) return new Dictionary<string, T>();
+        var to = new Dictionary<string, T>();
+        foreach (var entry in results)
+        {
+            to[RemovePrefix(entry.Key)] = entry.Value;
+        }
+        return to;
     }
 
     public bool Replace<T>(string key, T value, TimeSpan expiresIn)
@@ -98,6 +107,7 @@ public class CacheClientWithPrefix : ICacheClient, ICacheClientExtended, IRemove
 
     public void RemoveAll(IEnumerable<string> keys)
     {
+        if (keys == null) return;
         cache.RemoveAll(keys.Select(EnsurePrefix));
     }
 
@@ -140,6 +150,11 @@ public class CacheClientWithPrefix : ICacheClient, ICacheClientExtended, IRemove
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private string EnsurePrefix(string s) => s != null && !s.StartsWith(prefix)
         ? prefix + s
+        : s;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private string RemovePrefix(string s) => s != null && prefix != null && s.StartsWith(prefix)
+        ? s.Substring(prefix.Length)
         : s;
         
     public string Prefix => prefix;

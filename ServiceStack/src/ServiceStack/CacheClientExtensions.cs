@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ServiceStack.Caching;
 using ServiceStack.Web;
@@ -57,7 +57,7 @@ public static class CacheClientExtensions
     {
         lastModified = null;
 
-        if (!HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults())
+        if (HostContext.GetPlugin<HttpCacheFeature>()?.ShouldAddLastModifiedToOptimizedResults() != true)
             return false;
 
         var ticks = cache.Get<long>(DateCacheKey(cacheKey));
@@ -88,7 +88,7 @@ public static class CacheClientExtensions
     public static async Task<ValidCache> HasValidCacheAsync(this ICacheClientAsync cache, IRequest req, string cacheKey, DateTime? checkLastModified, 
         CancellationToken token=default)
     {
-        if (!HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults())
+        if (HostContext.GetPlugin<HttpCacheFeature>()?.ShouldAddLastModifiedToOptimizedResults() != true)
             return ValidCache.NotValid;
 
         var ticks = await cache.GetAsync<long>(DateCacheKey(cacheKey), token).ConfigAwait();
@@ -286,7 +286,7 @@ public static class CacheClientExtensions
             bool doCompression = compressionType != null;
             if (doCompression)
             {
-                var lastModified = HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults()
+                var lastModified = HostContext.GetPlugin<HttpCacheFeature>()?.ShouldAddLastModifiedToOptimizedResults() == true
                                    && string.IsNullOrEmpty(req.Response.GetHeader(HttpHeaders.CacheControl))
                     ? DateTime.UtcNow
                     : (DateTime?)null;
@@ -358,7 +358,7 @@ public static class CacheClientExtensions
             bool doCompression = compressionType != null;
             if (doCompression)
             {
-                var lastModified = HostContext.GetPlugin<HttpCacheFeature>().ShouldAddLastModifiedToOptimizedResults()
+                var lastModified = HostContext.GetPlugin<HttpCacheFeature>()?.ShouldAddLastModifiedToOptimizedResults() == true
                                    && string.IsNullOrEmpty(req.Response.GetHeader(HttpHeaders.CacheControl))
                     ? DateTime.UtcNow
                     : (DateTime?)null;
@@ -394,6 +394,9 @@ public static class CacheClientExtensions
 
     private static List<string> GetAllContentCacheKeys(string[] cacheKeys)
     {
+        if (cacheKeys == null || cacheKeys.Length == 0)
+            return new List<string>();
+
         var allContentTypes = new List<string>(HostContext.ContentTypes.ContentTypeFormats.Values) {
             MimeTypes.XmlText, MimeTypes.JsonText, MimeTypes.JsvText
         };

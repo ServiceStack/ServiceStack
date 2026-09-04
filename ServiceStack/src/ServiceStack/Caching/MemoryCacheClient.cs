@@ -90,7 +90,7 @@ public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IncrHit()
     {
-        if (Interlocked.Increment(ref hitCounter) % CleaningInterval == 0)
+        if (CleaningInterval > 0 && Interlocked.Increment(ref hitCounter) % CleaningInterval == 0)
         {
             this.RemoveExpiredEntries();
         }
@@ -149,6 +149,7 @@ public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
 
     public void RemoveAll(IEnumerable<string> keys)
     {
+        if (keys == null) return;
         foreach (var key in keys)
         {
             try
@@ -193,12 +194,13 @@ public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
     private long UpdateCounter(string key, long value)
     {
         IncrHit();
-        var currVal = value;
-        this.memory.AddOrUpdate(key, new CacheEntry(value, null), (k, existingEntry) => {
-            var int64 = Convert.ToInt64(existingEntry.Value);
-            return new CacheEntry(currVal = int64 + value, null);
-        });
-        return currVal;
+        var entry = this.memory.AddOrUpdate(key,
+            _ => new CacheEntry(value, null),
+            (_, existingEntry) => {
+                var int64 = Convert.ToInt64(existingEntry.Value);
+                return new CacheEntry(int64 + value, null);
+            });
+        return Convert.ToInt64(entry.Value);
     }
 
     public long Increment(string key, uint amount)
@@ -306,6 +308,7 @@ public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
     public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
     {
         var valueMap = new Dictionary<string, T>();
+        if (keys == null) return valueMap;
         foreach (var key in keys)
         {
             var value = Get<T>(key);
@@ -316,15 +319,31 @@ public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
 
     public void SetAll<T>(IDictionary<string, T> values)
     {
+        if (values == null) return;
         foreach (var entry in values)
         {
             Set(entry.Key, entry.Value);
         }
     }
 
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(2);
+
     private static string ConvertToRegex(string pattern)
     {
-        return pattern.Replace("*", ".*").Replace("?", ".+");
+        if (string.IsNullOrEmpty(pattern)) return string.Empty;
+        var sb = StringBuilderCache.Allocate();
+        foreach (var c in pattern)
+        {
+            if (c == '*')
+                sb.Append(".*");
+            else if (c == '?')
+                sb.Append(".+");
+            else if (c is '.' or '$' or '^' or '{' or '[' or '(' or '|' or ')' or '+' or '\\')
+                sb.Append('\\').Append(c);
+            else
+                sb.Append(c);
+        }
+        return StringBuilderCache.ReturnAndFree(sb);
     }
 
     public void RemoveByPattern(string pattern)
@@ -334,26 +353,25 @@ public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
 
     public void RemoveByRegex(string pattern)
     {
-        var regex = new Regex(pattern);
-        using (var enumerator = this.memory.GetEnumerator())
+        if (string.IsNullOrEmpty(pattern)) return;
+        try
         {
+            var regex = new Regex(pattern, RegexOptions.None, RegexTimeout);
+            using var enumerator = this.memory.GetEnumerator();
             var keysToRemove = new List<string>();
-            try
+            while (enumerator.MoveNext())
             {
-                while (enumerator.MoveNext())
+                var current = enumerator.Current;
+                if (regex.IsMatch(current.Key) || current.Value.HasExpired)
                 {
-                    var current = enumerator.Current;
-                    if (regex.IsMatch(current.Key) || current.Value.HasExpired)
-                    {
-                        keysToRemove.Add(current.Key);
-                    }
+                    keysToRemove.Add(current.Key);
                 }
-                RemoveAll(keysToRemove);
             }
-            catch (Exception ex)
-            {
-                Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
-            }
+            RemoveAll(keysToRemove);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
         }
     }
 
@@ -366,37 +384,35 @@ public class MemoryCacheClient : ICacheClientExtended, IRemoveByPattern
 
     public List<string> GetKeysByRegex(string pattern)
     {
-        var regex = new Regex(pattern);
-        using (var enumerator = this.memory.GetEnumerator())
+        var keys = new List<string>();
+        if (string.IsNullOrEmpty(pattern)) return keys;
+        try
         {
-            var keys = new List<string>();
+            var regex = new Regex(pattern, RegexOptions.None, RegexTimeout);
+            using var enumerator = this.memory.GetEnumerator();
             var expiredKeys = new List<string>();
-            try
+            while (enumerator.MoveNext())
             {
-                while (enumerator.MoveNext())
+                var current = enumerator.Current;
+                if (!regex.IsMatch(current.Key))
+                    continue;
+
+                if (current.Value.HasExpired)
                 {
-                    var current = enumerator.Current;
-                    if (!regex.IsMatch(current.Key))
-                        continue;
-
-                    if (current.Value.HasExpired)
-                    {
-                        expiredKeys.Add(current.Key);
-                    }
-                    else
-                    {
-                        keys.Add(current.Key);
-                    }
+                    expiredKeys.Add(current.Key);
                 }
-
-                RemoveAll(expiredKeys);
+                else
+                {
+                    keys.Add(current.Key);
+                }
             }
-            catch (Exception ex)
-            {
-                Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
-            }
-            return keys;
+            RemoveAll(expiredKeys);
         }
+        catch (Exception ex)
+        {
+            Log.Error($"Error trying to remove items from cache with this {pattern} pattern", ex);
+        }
+        return keys;
     }
 
     public void RemoveExpiredEntries()

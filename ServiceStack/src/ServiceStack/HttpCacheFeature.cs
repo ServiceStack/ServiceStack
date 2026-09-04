@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0618
+#pragma warning disable CS0618
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -96,7 +96,12 @@ public class HttpCacheFeature : IPlugin, Model.IHasStringId
             return false;
 
         var expiresIn = cacheInfo.ExpiresIn.GetValueOrDefault(DefaultExpiresIn);
-        var cache = cacheInfo.LocalCache ? HostContext.AppHost.GetMemoryCacheClient(req) : HostContext.AppHost.GetCacheClient(req);
+        var appHost = HostContext.AppHost;
+        if (appHost == null)
+            return false;
+        var cache = cacheInfo.LocalCache ? appHost.GetMemoryCacheClient(req) : appHost.GetCacheClient(req);
+        if (cache == null)
+            return false;
 
         var responseBytes = dto as byte[];
         if (responseBytes == null)
