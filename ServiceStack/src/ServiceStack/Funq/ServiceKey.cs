@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Funq
 {
@@ -11,9 +11,7 @@ namespace Funq
             FactoryType = factoryType;
             Name = serviceName;
 
-            hash = factoryType.GetHashCode();
-            if (serviceName != null)
-                hash ^= serviceName.GetHashCode();
+            hash = (factoryType?.GetHashCode() ?? 0) ^ (serviceName?.GetHashCode() ?? 0);
         }
 
         public Type FactoryType;
@@ -33,12 +31,13 @@ namespace Funq
 
         public static bool Equals(ServiceKey obj1, ServiceKey obj2)
         {
-            if (Object.Equals(null, obj1) ||
-                Object.Equals(null, obj2))
+            if (ReferenceEquals(obj1, obj2))
+                return true;
+            if (obj1 is null || obj2 is null)
                 return false;
 
             return obj1.FactoryType == obj2.FactoryType &&
-                obj1.Name == obj2.Name;
+                string.Equals(obj1.Name, obj2.Name, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()

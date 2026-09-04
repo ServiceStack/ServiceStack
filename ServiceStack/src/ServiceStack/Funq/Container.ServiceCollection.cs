@@ -28,7 +28,10 @@ public partial class Container : IServiceCollection
     
     public Func<IServiceProvider, object> CreateFactory(ServiceDescriptor item)
     {
-        var factory = item!.ImplementationFactory
+        if (item == null)
+            throw new ArgumentNullException(nameof(item));
+
+        var factory = item.ImplementationFactory
                       ?? (item.ImplementationType != null
                           ? CreateServiceCollectionFactory(item.ImplementationType)
                           : c => item.ImplementationInstance);
@@ -101,6 +104,9 @@ public partial class Container : IServiceCollection
 
     public void Add(ServiceDescriptor item)
     {
+        if (item == null)
+            throw new ArgumentNullException(nameof(item));
+
         CheckReadOnly();
 
         try

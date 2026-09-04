@@ -193,3 +193,28 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - Guarded `ExportSoapType` against null `type`.
   - Guarded `WriteSoapMessage` against null `req`, `outputStream`, `req.Dto`, and `req.GetSoapMessage()?.Headers`.
 
+---
+
+## 10. Funq IoC Container Hardening & Concurrency Safety
+- **`Container.cs`**:
+  - Hardened `Dispose` by safely checking `if (wr?.Target is IDisposable disposable)` instead of casting weak reference target, preventing `InvalidCastException` or `NullReferenceException` if instances are garbage collected before container disposal.
+  - Synchronized `services.Values` iteration under `lock (services)` during disposal to eliminate concurrency modifications (`InvalidOperationException: Collection was modified`).
+  - Added null safety check `childContainers.Pop()?.Dispose()`.
+- **`Container.Adapter.cs`**:
+  - Added immediate null check in `TryResolve(Type type)` to return null rather than throwing `ArgumentNullException` on dictionary key lookup.
+  - Added null check in `Exists(Type type)` returning false, and safely handled reflection method lookup via `FirstOrDefault`.
+  - Guarded `AutoWire(object instance)` and `AutoWire(Container container, object instance)` against null instances.
+  - Added null/empty guards in `GetLazyResolver(params Type[] types)` to safely return null when unsupported argument counts or null types are supplied.
+  - Guarded `RequiredResolve(Type type, Type ownerType)` against null types and null owner types.
+- **`Container.ServiceCollection.cs`**:
+  - Guarded `Add(ServiceDescriptor item)` and `CreateFactory(ServiceDescriptor item)` against null `item` by throwing `ArgumentNullException(nameof(item))`.
+- **`ServiceEntry.Generic.cs`**:
+  - Guarded `RequestContext.Instance?.Items` in `ReuseScope.Request` getter and setter to prevent `NullReferenceException` when resolving request-scoped services outside active HTTP contexts.
+  - Guarded `RequestContext.Instance?.TrackDisposable` in `InitializeInstance`.
+- **`ServiceKey.cs`**:
+  - Guarded constructor against null `factoryType` in hash code calculation (`(factoryType?.GetHashCode() ?? 0)`).
+  - Hardened static `Equals` against null references and validated case-sensitive ordinal names.
+- **`ResolutionException.cs`**:
+  - Guarded `missingServiceType?.FullName ?? "null"` in constructors to prevent NRE during exception creation.
+
+

@@ -89,15 +89,22 @@ public partial class Container : IResolver, IContainer
     /// <param name="instance"></param>
     public void AutoWire(object instance)
     {
+        if (instance == null) return;
         AutoWire(this, instance);
     }
 
     public object GetLazyResolver(params Type[] types) // returns Func<type>
     {
+        if (types == null || types.Length == 0)
+            return null;
+
         var tryResolveGeneric = typeof(Container).GetMethods()
-            .First(x => x.Name == "ReverseLazyResolve"
+            .FirstOrDefault(x => x.Name == "ReverseLazyResolve"
                         && x.GetGenericArguments().Length == types.Length
                         && x.GetParameters().Length == 0);
+
+        if (tryResolveGeneric == null)
+            return null;
 
         var tryResolveMethod = tryResolveGeneric.MakeGenericMethod(types);
         var instance = tryResolveMethod.Invoke(this, TypeConstants.EmptyObjectArray);
@@ -146,10 +153,16 @@ public partial class Container : IResolver, IContainer
 
     public bool Exists(Type type)
     {
+        if (type == null)
+            return false;
+
         var existsGeneric = typeof(Container).GetMethods()
-            .First(x => x.Name == "Exists"
+            .FirstOrDefault(x => x.Name == "Exists"
                         && x.IsGenericMethod
                         && x.GetGenericArguments().Length == 1);
+
+        if (existsGeneric == null)
+            return false;
 
         var existsMethod = existsGeneric.MakeGenericMethod(type);
         var instance = existsMethod.Invoke(this, TypeConstants.EmptyObjectArray);
@@ -222,6 +235,7 @@ public partial class Container : IResolver, IContainer
     /// </summary>
     public void AutoWire(Container container, object instance)
     {
+        if (instance == null) return;
         var instanceType = instance.GetType();
         var propertyResolveFn = typeof(Container).GetMethod("TryResolve", TypeConstants.EmptyTypeArray);
 
@@ -303,6 +317,9 @@ public partial class Container : IResolver, IContainer
 
     public object TryResolve(Type type)
     {
+        if (type == null)
+            return null;
+
         if (tryResolveCache.TryGetValue(type, out var fn))
             return fn(this);
 
@@ -334,9 +351,12 @@ public partial class Container : IResolver, IContainer
 
     public object RequiredResolve(Type type, Type ownerType)
     {
+        if (type == null)
+            throw new ArgumentNullException(nameof(type));
+
         var instance = Resolve(type);
         if (instance == null)
-            throw new ArgumentNullException($"Required Type of '{type.Name}' in '{ownerType.Name}' constructor was not registered in '{GetType().Name}'");
+            throw new ArgumentNullException($"Required Type of '{type.Name}' in '{ownerType?.Name ?? "Unknown"}' constructor was not registered in '{GetType().Name}'");
 
         return instance;
     }

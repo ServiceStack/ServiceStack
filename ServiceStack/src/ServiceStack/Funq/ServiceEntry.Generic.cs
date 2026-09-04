@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using ServiceStack;
 using ServiceStack.Common;
@@ -27,16 +27,23 @@ namespace Funq
             get
             {
                 if (Reuse == ReuseScope.Request)
-                    return RequestContext.Instance.Items[this] is TService
-                        ? (TService)RequestContext.Instance.Items[this]
+                {
+                    var items = RequestContext.Instance?.Items;
+                    return items != null && items[this] is TService reqInstance
+                        ? reqInstance
                         : default(TService);
+                }
 
                 return instance;
             }
             set
             {
                 if (Reuse == ReuseScope.Request)
-                    RequestContext.Instance.Items[this] = value;
+                {
+                    var items = RequestContext.Instance?.Items;
+                    if (items != null)
+                        items[this] = value;
+                }
                 else
                     instance = value;
             }
@@ -62,7 +69,7 @@ namespace Funq
             else
             {
                 //Keep track of ReuseScope.None IDisposable instances to dispose of end of the request
-                RequestContext.Instance.TrackDisposable(instance as IDisposable);
+                RequestContext.Instance?.TrackDisposable(instance as IDisposable);
             }
 
             // Track for disposal if necessary

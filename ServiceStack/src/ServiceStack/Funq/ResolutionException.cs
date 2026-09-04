@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 
 namespace Funq
@@ -18,7 +18,7 @@ namespace Funq
             : base(String.Format(
                 CultureInfo.CurrentCulture,
                 ServiceStack.ResourceDesigner.Resources.ResolutionException_MissingType,
-                missingServiceType.FullName))
+                missingServiceType?.FullName ?? "null"))
         { }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Funq
             : base(String.Format(
                 CultureInfo.CurrentCulture,
                 ServiceStack.ResourceDesigner.Resources.ResolutionException_MissingNamedType,
-                missingServiceType.FullName, missingServiceName))
+                missingServiceType?.FullName ?? "null", missingServiceName ?? "null"))
         { }
 
         /// <summary>

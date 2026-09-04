@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack;
@@ -76,8 +76,7 @@ public partial class Container : IDisposable
             while (disposables.Count > 0)
             {
                 var wr = disposables.Pop();
-                var disposable = (IDisposable)wr.Target;
-                if (wr.IsAlive)
+                if (wr?.Target is IDisposable disposable)
                     disposable.Dispose();
             }
         }
@@ -86,15 +85,18 @@ public partial class Container : IDisposable
         {
             while (childContainers.Count > 0)
             {
-                childContainers.Pop().Dispose();
+                childContainers.Pop()?.Dispose();
             }
         }
 
-        foreach (var serviceEntry in services.Values)
+        lock (services)
         {
-            if (serviceEntry.GetInstance() is IDisposable disposable && !(disposable is Container))
+            foreach (var serviceEntry in services.Values)
             {
-                disposable.Dispose();
+                if (serviceEntry?.GetInstance() is IDisposable disposable && !(disposable is Container))
+                {
+                    disposable.Dispose();
+                }
             }
         }
             
