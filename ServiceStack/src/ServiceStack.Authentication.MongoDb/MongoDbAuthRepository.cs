@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
@@ -28,7 +28,7 @@ namespace ServiceStack.Authentication.MongoDb
         // ApiKey collection name
         private static string ApiKeysCol => nameof(ApiKey);
 
-        public MongoDbAuthRepository(IMongoDatabase mongoDatabase, bool createMissingCollections)
+        public MongoDbAuthRepository(IMongoDatabase mongoDatabase, bool createMissingCollections = false)
         {
             this.mongoDatabase = mongoDatabase;
 
@@ -54,7 +54,7 @@ namespace ServiceStack.Authentication.MongoDb
             };
 
             var collections = mongoDatabase.ListCollections().ToList();
-            return collections.Any(document => collectionNames.Contains(document["name"].AsString));
+            return collectionNames.TrueForAll(name => collections.Exists(document => document["name"] == name));
         }
 
         public void CreateMissingCollections()
@@ -128,16 +128,17 @@ namespace ServiceStack.Authentication.MongoDb
 
         private static void AssertNoExistingUser(IMongoDatabase mongoDatabase, IUserAuth newUser, IUserAuth exceptForExistingUser = null)
         {
+            var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
             if (newUser.UserName != null)
             {
-                var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.UserName);
+                var existingUser = collection.Find(u => u.UserName == newUser.UserName).FirstOrDefault();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(ErrorMessages.UserAlreadyExistsFmt.LocalizeFmt(newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
-                var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.Email);
+                var existingUser = collection.Find(u => u.Email == newUser.Email).FirstOrDefault();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(ErrorMessages.EmailAlreadyExistsFmt.LocalizeFmt(newUser.Email.SafeInput()));
@@ -163,7 +164,7 @@ namespace ServiceStack.Authentication.MongoDb
         {
             newUser.ValidateNewUser();
 
-            AssertNoExistingUser(mongoDatabase, newUser);
+            AssertNoExistingUser(mongoDatabase, newUser, existingUser);
 
             newUser.Id = existingUser.Id;
             newUser.PasswordHash = existingUser.PasswordHash;
@@ -253,8 +254,11 @@ namespace ServiceStack.Authentication.MongoDb
 
         public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
         {
-            //userId = null;
-            userAuth = GetUserAuthByUserName(digestHeaders["username"]);
+            userAuth = null;
+            if (digestHeaders == null || !digestHeaders.TryGetValue("username", out var username))
+                return false;
+
+            userAuth = GetUserAuthByUserName(username);
             if (userAuth == null)
                 return false;
 
@@ -287,26 +291,30 @@ namespace ServiceStack.Authentication.MongoDb
 
         public IUserAuth GetUserAuth(string userAuthId)
         {
+            if (!int.TryParse(userAuthId, out var intUserId))
+                return null;
+
             var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
-            var intUserId = int.Parse(userAuthId);
             UserAuth userAuth = collection.Find(u => u.Id == intUserId).FirstOrDefault();
             return userAuth;
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
+            if (authSession == null)
+                throw new ArgumentNullException(nameof(authSession));
+
             var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
                 ? (UserAuth) GetUserAuth(authSession.UserAuthId)
                 : authSession.ConvertTo<UserAuth>();
 
-            if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
-                userAuth.Id = int.Parse(authSession.UserAuthId);
+            if (userAuth.Id == default && int.TryParse(authSession.UserAuthId, out var parsedId))
+                userAuth.Id = parsedId;
 
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
             SaveUser(userAuth);
         }
 
@@ -321,32 +329,40 @@ namespace ServiceStack.Authentication.MongoDb
 
         public void DeleteUserAuth(string userAuthId)
         {
+            if (!int.TryParse(userAuthId, out var intUserId))
+                return;
+
             var userAuthCollection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
-            userAuthCollection.DeleteOne(u => u.Id == int.Parse(userAuthId));
+            userAuthCollection.DeleteOne(u => u.Id == intUserId);
 
             var userAuthDetails = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            userAuthDetails.DeleteOne(u => u.UserAuthId == int.Parse(userAuthId));
+            userAuthDetails.DeleteMany(u => u.UserAuthId == intUserId);
         }
 
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
+            if (!int.TryParse(userAuthId, out var intUserId))
+                return new List<IUserAuthDetails>();
+
             var collection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            var intUserId = int.Parse(userAuthId);
             var queryResult = collection.Find(ud => ud.UserAuthId == intUserId);
             return queryResult.ToList().Cast<IUserAuthDetails>().ToList();
         }
 
         public IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
-            if (!authSession.UserAuthId.IsNullOrEmpty())
+            if (authSession != null)
             {
-                var userAuth = GetUserAuth(authSession.UserAuthId);
-                if (userAuth != null) return userAuth;
-            }
-            if (!authSession.UserAuthName.IsNullOrEmpty())
-            {
-                var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
-                if (userAuth != null) return userAuth;
+                if (!authSession.UserAuthId.IsNullOrEmpty())
+                {
+                    var userAuth = GetUserAuth(authSession.UserAuthId);
+                    if (userAuth != null) return userAuth;
+                }
+                if (!authSession.UserAuthName.IsNullOrEmpty())
+                {
+                    var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
+                    if (userAuth != null) return userAuth;
+                }
             }
 
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
@@ -423,31 +439,39 @@ namespace ServiceStack.Authentication.MongoDb
 
         public ApiKey GetApiKey(string apiKey)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                return null;
             var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
             return collection.Find(key => key.Id == apiKey).FirstOrDefault();
         }
 
         public List<ApiKey> GetUserApiKeys(string userId)
         {
-            var collection = mongoDatabase.GetCollection<ApiKey>("ApiKey");
+            if (string.IsNullOrEmpty(userId))
+                return new List<ApiKey>();
+            var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
             var queryResult = collection.Find(key => 
-            key.UserAuthId == userId
-            && key.CancelledDate == null
-            && (key.ExpiryDate == null || key.ExpiryDate >= DateTime.UtcNow));
+                key.UserAuthId == userId
+                && key.CancelledDate == null
+                && (key.ExpiryDate == null || key.ExpiryDate >= DateTime.UtcNow));
             return queryResult.ToList();
         }
 
         public void StoreAll(IEnumerable<ApiKey> apiKeys)
         {
-            var collection = mongoDatabase.GetCollection<ApiKey>("ApiKey");
+            if (apiKeys == null)
+                return;
+            var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
             var bulkApiKeys = new List<WriteModel<ApiKey>>();
             foreach (var apiKey in apiKeys)
             {
+                if (apiKey == null || apiKey.Id == null)
+                    continue;
                 var apiKeyFilter = Builders<ApiKey>.Filter.Eq(key => key.Id, apiKey.Id);
                 bulkApiKeys.Add(new ReplaceOneModel<ApiKey>(apiKeyFilter, apiKey) {IsUpsert = true});
             }
 
-            if (bulkApiKeys.Any())
+            if (bulkApiKeys.Count > 0)
                 collection.BulkWrite(bulkApiKeys);
         }
 

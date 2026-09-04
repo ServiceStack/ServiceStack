@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -57,16 +57,17 @@ namespace ServiceStack.Authentication.MongoDb
         private static async Task AssertNoExistingUserAsync(IMongoDatabase mongoDatabase, IUserAuth newUser, IUserAuth exceptForExistingUser = null,
             CancellationToken token=default)
         {
+            var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
             if (newUser.UserName != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(mongoDatabase, newUser.UserName, token).ConfigAwait();
+                var existingUser = (await collection.FindAsync(u => u.UserName == newUser.UserName, cancellationToken: token).ConfigAwait()).FirstOrDefault();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(ErrorMessages.UserAlreadyExistsFmt.LocalizeFmt(newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
-                var existingUser = await GetUserAuthByUserNameAsync(mongoDatabase, newUser.Email, token).ConfigAwait();
+                var existingUser = (await collection.FindAsync(u => u.Email == newUser.Email, cancellationToken: token).ConfigAwait()).FirstOrDefault();
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException(ErrorMessages.EmailAlreadyExistsFmt.LocalizeFmt(newUser.Email.SafeInput()));
@@ -88,11 +89,11 @@ namespace ServiceStack.Authentication.MongoDb
             return newUser;
         }
 
-        public async Task<IUserAuth>  UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, CancellationToken token=default)
+        public async Task<IUserAuth> UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, CancellationToken token=default)
         {
             newUser.ValidateNewUser();
 
-            await AssertNoExistingUserAsync(mongoDatabase, newUser, token: token).ConfigAwait();
+            await AssertNoExistingUserAsync(mongoDatabase, newUser, existingUser, token).ConfigAwait();
 
             newUser.Id = existingUser.Id;
             newUser.PasswordHash = existingUser.PasswordHash;
@@ -180,8 +181,10 @@ namespace ServiceStack.Authentication.MongoDb
 
         public async Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, CancellationToken token = default)
         {
-            //userId = null;
-            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token).ConfigAwait();
+            if (digestHeaders == null || !digestHeaders.TryGetValue("username", out var username))
+                return null;
+
+            var userAuth = await GetUserAuthByUserNameAsync(username, token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
@@ -211,26 +214,30 @@ namespace ServiceStack.Authentication.MongoDb
 
         public async Task<IUserAuth> GetUserAuthAsync(string userAuthId, CancellationToken token = default)
         {
+            if (!int.TryParse(userAuthId, out var intUserId))
+                return null;
+
             var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
-            var intUserId = int.Parse(userAuthId);
             UserAuth userAuth = (await collection.FindAsync(u => u.Id == intUserId, cancellationToken: token).ConfigAwait()).FirstOrDefault();
             return userAuth;
         }
 
         public async Task SaveUserAuthAsync(IAuthSession authSession, CancellationToken token = default)
         {
+            if (authSession == null)
+                throw new ArgumentNullException(nameof(authSession));
+
             var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
                 ? (UserAuth) await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait()
                 : authSession.ConvertTo<UserAuth>();
 
-            if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
-                userAuth.Id = int.Parse(authSession.UserAuthId);
+            if (userAuth.Id == default && int.TryParse(authSession.UserAuthId, out var parsedId))
+                userAuth.Id = parsedId;
 
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
             await SaveUserAsync(userAuth, token).ConfigAwait();
         }
 
@@ -245,32 +252,40 @@ namespace ServiceStack.Authentication.MongoDb
 
         public async Task DeleteUserAuthAsync(string userAuthId, CancellationToken token = default)
         {
+            if (!int.TryParse(userAuthId, out var intUserId))
+                return;
+
             var userAuthCollection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
-            await userAuthCollection.DeleteOneAsync(u => u.Id == int.Parse(userAuthId), token).ConfigAwait();
+            await userAuthCollection.DeleteOneAsync(u => u.Id == intUserId, token).ConfigAwait();
 
             var userAuthDetails = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            await userAuthDetails.DeleteOneAsync(u => u.UserAuthId == int.Parse(userAuthId), token).ConfigAwait();
+            await userAuthDetails.DeleteManyAsync(u => u.UserAuthId == intUserId, cancellationToken: token).ConfigAwait();
         }
 
         public async Task<List<IUserAuthDetails>> GetUserAuthDetailsAsync(string userAuthId, CancellationToken token = default)
         {
+            if (!int.TryParse(userAuthId, out var intUserId))
+                return new List<IUserAuthDetails>();
+
             var collection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            var intUserId = int.Parse(userAuthId);
             var queryResult = await collection.FindAsync(ud => ud.UserAuthId == intUserId, cancellationToken: token).ConfigAwait();
             return (await queryResult.ToListAsync(token).ConfigAwait()).Cast<IUserAuthDetails>().ToList();
         }
 
         public async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default)
         {
-            if (!authSession.UserAuthId.IsNullOrEmpty())
+            if (authSession != null)
             {
-                var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait();
-                if (userAuth != null) return userAuth;
-            }
-            if (!authSession.UserAuthName.IsNullOrEmpty())
-            {
-                var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
-                if (userAuth != null) return userAuth;
+                if (!authSession.UserAuthId.IsNullOrEmpty())
+                {
+                    var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait();
+                    if (userAuth != null) return userAuth;
+                }
+                if (!authSession.UserAuthName.IsNullOrEmpty())
+                {
+                    var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
+                    if (userAuth != null) return userAuth;
+                }
             }
 
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
@@ -296,7 +311,7 @@ namespace ServiceStack.Authentication.MongoDb
             var userAuth = await GetUserAuthAsync(authSession, tokens, token).ConfigAwait() ?? new UserAuth();
 
             var providerCollection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            var authDetails = providerCollection.Find(ud => ud.Provider == tokens.Provider && ud.UserId == tokens.UserId).FirstOrDefault() ??
+            var authDetails = (await providerCollection.FindAsync(ud => ud.Provider == tokens.Provider && ud.UserId == tokens.UserId, cancellationToken: token).ConfigAwait()).FirstOrDefault() ??
                 new UserAuthDetails
                 {
                     Provider = tokens.Provider,
@@ -326,6 +341,20 @@ namespace ServiceStack.Authentication.MongoDb
                 token).ConfigAwait();
 
             return authDetails;
+        }
+
+        public async Task<bool> CollectionsExistsAsync(CancellationToken token = default)
+        {
+            var collectionNames = new List<string>()
+            {
+                UserAuthCol,
+                UserOAuthProviderCol,
+                CountersCol
+            };
+
+            var collections = await (await mongoDatabase.ListCollectionsAsync(cancellationToken: token).ConfigAwait())
+                .ToListAsync(token).ConfigAwait();
+            return collectionNames.TrueForAll(name => collections.Exists(document => document["name"] == name));
         }
 
         public async Task CreateMissingCollectionsAsync(CancellationToken token=default)
@@ -371,13 +400,17 @@ namespace ServiceStack.Authentication.MongoDb
 
         public async Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token = default)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                return null;
             var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
             return (await collection.FindAsync(key => key.Id == apiKey, cancellationToken: token).ConfigAwait()).FirstOrDefault();
         }
 
         public async Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token = default)
         {
-            var collection = mongoDatabase.GetCollection<ApiKey>("ApiKey");
+            if (string.IsNullOrEmpty(userId))
+                return new List<ApiKey>();
+            var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
             var queryResult = await collection.FindAsync(key => 
                 key.UserAuthId == userId
                 && key.CancelledDate == null
@@ -387,15 +420,19 @@ namespace ServiceStack.Authentication.MongoDb
 
         public async Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token = default)
         {
-            var collection = mongoDatabase.GetCollection<ApiKey>("ApiKey");
+            if (apiKeys == null)
+                return;
+            var collection = mongoDatabase.GetCollection<ApiKey>(ApiKeysCol);
             var bulkApiKeys = new List<WriteModel<ApiKey>>();
             foreach (var apiKey in apiKeys)
             {
+                if (apiKey == null || apiKey.Id == null)
+                    continue;
                 var apiKeyFilter = Builders<ApiKey>.Filter.Eq(key => key.Id, apiKey.Id);
                 bulkApiKeys.Add(new ReplaceOneModel<ApiKey>(apiKeyFilter, apiKey) {IsUpsert = true});
             }
 
-            if (bulkApiKeys.Any())
+            if (bulkApiKeys.Count > 0)
                 await collection.BulkWriteAsync(bulkApiKeys, cancellationToken: token).ConfigAwait();
         }
     }
