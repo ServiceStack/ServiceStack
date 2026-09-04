@@ -185,32 +185,38 @@ public class ServerEventsFeature : IPlugin, IConfigureServices, Model.IHasString
 
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         appHost.RawHttpHandlers.Add(httpReq =>
-            httpReq.PathInfo.EndsWith(StreamPath)
+            httpReq?.PathInfo != null && StreamPath != null && httpReq.PathInfo.EndsWith(StreamPath)
                 ? new ServerEventsHandler()
-                : httpReq.PathInfo.EndsWith(HeartbeatPath)
+                : httpReq?.PathInfo != null && HeartbeatPath != null && httpReq.PathInfo.EndsWith(HeartbeatPath)
                     ? new ServerEventsHeartbeatHandler()
                     : null);
 
-        appHost.OnDisposeCallbacks.Add(host => appHost.Resolve<IServerEvents>().Stop());
+        appHost.OnDisposeCallbacks.Add(host => host.TryResolve<IServerEvents>()?.Stop());
         
 #if NET8_0_OR_GREATER
-        (appHost as IAppHostNetCore).MapEndpoints(routeBuilder =>
+        if (appHost is IAppHostNetCore netCoreHost)
         {
-            routeBuilder.MapGet(StreamPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHandler()))
-                .WithMetadata<string>(nameof(StreamPath), tag:GetType().Name);
-            routeBuilder.MapPost(HeartbeatPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHeartbeatHandler()))
-                .WithMetadata<string>(nameof(HeartbeatPath), tag:GetType().Name);
-        });
+            netCoreHost.MapEndpoints(routeBuilder =>
+            {
+                routeBuilder.MapGet(StreamPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHandler()))
+                    .WithMetadata<string>(nameof(StreamPath), tag:GetType().Name);
+                routeBuilder.MapPost(HeartbeatPath, httpContext => httpContext.ProcessRequestAsync(new ServerEventsHeartbeatHandler()))
+                    .WithMetadata<string>(nameof(HeartbeatPath), tag:GetType().Name);
+            });
+        }
 #endif
     }
 
-    internal bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)
+    public bool CanAccessSubscription(IRequest req, SubscriptionInfo sub)
     {
         if (!ValidateUserAddress)
             return true;
 
-        return sub.UserAddress == null || sub.UserAddress == req.UserHostAddress;
+        return sub == null || sub.UserAddress == null || sub.UserAddress == req?.UserHostAddress;
     }
 }
 
@@ -233,20 +239,27 @@ public class ServerEventsHandler : HttpAsyncTaskHandler
 
     public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
     {
+        if (req == null || res == null)
+            return;
+
         if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
             return;
 
         var feature = HostContext.AssertPlugin<ServerEventsFeature>();
 
         var session = await req.GetSessionAsync().ConfigAwait();
-        if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
+        if (feature.LimitToAuthenticatedUsers && (session == null || !session.IsAuthenticated))
         {
             feature.IncrementCounter(EventStreamDenyNoAuth);
-            await session.ReturnFailedAuthentication(req).ConfigAwait();
+            if (session != null)
+                await session.ReturnFailedAuthentication(req).ConfigAwait();
             return;
         }
 
         var serverEvents = req.TryResolve<IServerEvents>();
+        if (serverEvents == null)
+            return;
+
         if ((Interlocked.Increment(ref ConnectionsCount) % RemoveExpiredSubscriptionsEvery) == 0)
         {
             await serverEvents.RemoveExpiredSubscriptionsAsync().ConfigAwait();
@@ -283,10 +296,10 @@ public class ServerEventsHandler : HttpAsyncTaskHandler
 
             //Handle both ?channel=A,B,C or ?channels=A,B,C
             var channels = new List<string>();
-            var channel = req.QueryString["channel"];
+            var channel = req.QueryString?["channel"];
             if (!string.IsNullOrEmpty(channel))
                 channels.AddRange(channel.Split(','));
-            channel = req.QueryString["channels"];
+            channel = req.QueryString?["channels"];
             if (!string.IsNullOrEmpty(channel))
                 channels.AddRange(channel.Split(','));
 
@@ -372,7 +385,7 @@ public class ServerEventsHandler : HttpAsyncTaskHandler
             return;
         }
             
-        var tcs = new TaskCompletionSource<bool>();
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         //Only invoked by subscription.Dispose() 
         subscription.OnDispose = sub =>
@@ -385,8 +398,7 @@ public class ServerEventsHandler : HttpAsyncTaskHandler
             if (!res.IsClosed)
                 System.Diagnostics.Debug.Fail("Should already be closed");
 
-            if (!tcs.Task.IsCompleted)
-                tcs.SetResult(true);
+            tcs.TrySetResult(true);
         };
 
         await tcs.Task.ConfigAwait();
@@ -394,7 +406,7 @@ public class ServerEventsHandler : HttpAsyncTaskHandler
 
     static string AddSessionParamsIfAny(string url, IRequest req)
     {
-        if (url != null && HostContext.Config.AllowSessionIdsInHttpParams)
+        if (url != null && req?.QueryString != null && HostContext.AppHost?.Config?.AllowSessionIdsInHttpParams == true)
         {
             var sessionKeys = new[] { "ss-id", "ss-pid", "ss-opt" };
             foreach (var key in sessionKeys)
@@ -418,30 +430,35 @@ public class ServerEventsHeartbeatHandler : HttpAsyncTaskHandler
 
     public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
     {
+        if (req == null || res == null)
+            return;
+
         if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
             return;
 
         res.ApplyGlobalResponseHeaders();
 
         var serverEvents = req.TryResolve<IServerEvents>();
+        if (serverEvents == null)
+            return;
 
         await serverEvents.RemoveExpiredSubscriptionsAsync().ConfigAwait();
 
         var feature = HostContext.GetPlugin<ServerEventsFeature>();
-        feature.OnHeartbeatInit?.Invoke(req);
+        feature?.OnHeartbeatInit?.Invoke(req);
 
         if (req.Response.IsClosed)
             return;
 
-        var subscriptionId = req.QueryString["id"];
-        var subscription = serverEvents.GetSubscriptionInfo(subscriptionId);
+        var subscriptionId = req.QueryString?["id"];
+        var subscription = subscriptionId != null ? serverEvents.GetSubscriptionInfo(subscriptionId) : null;
         if (subscription == null)
         {
             res.StatusCode = 404;
             res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(req, subscriptionId.SafeInput());
-            feature.IncrementCounter(HeartbeatSubNotExists);
+            feature?.IncrementCounter(HeartbeatSubNotExists);
         }
-        else if (!feature.CanAccessSubscription(req, subscription))
+        else if (feature != null && !feature.CanAccessSubscription(req, subscription))
         {
             res.StatusCode = 403;
             res.StatusDescription = "Invalid User Address";
@@ -451,7 +468,7 @@ public class ServerEventsHeartbeatHandler : HttpAsyncTaskHandler
         {
             res.StatusCode = 404;
             res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(req, subscriptionId.SafeInput());
-            feature.IncrementCounter(HeartbeatSubNotExists);
+            feature?.IncrementCounter(HeartbeatSubNotExists);
         }
             
         await res.EndHttpHandlerRequestAsync(skipHeaders: true).ConfigAwait();
@@ -464,18 +481,22 @@ public class ServerEventsSubscribersService(IServerEvents serverEvents) : Servic
 {
     public object Any(GetEventSubscribers request)
     {
+        var se = serverEvents ?? TryResolve<IServerEvents>();
+        if (se == null)
+            return new List<Dictionary<string, string>>();
+
         var channels = new List<string>();
 
-        var deprecatedChannels = Request.QueryString["channel"];
+        var deprecatedChannels = Request?.QueryString?["channel"];
         if (!string.IsNullOrEmpty(deprecatedChannels))
             channels.AddRange(deprecatedChannels.Split(','));
 
-        if (request.Channels != null)
+        if (request?.Channels != null)
             channels.AddRange(request.Channels);
 
         return channels.Count > 0
-            ? serverEvents.GetSubscriptionsDetails(channels.ToArray())
-            : serverEvents.GetAllSubscriptionsDetails();
+            ? se.GetSubscriptionsDetails(channels.ToArray())
+            : se.GetAllSubscriptionsDetails();
     }
 }
 
@@ -496,23 +517,28 @@ public class ServerEventsUnRegisterService(IServerEvents serverEvents) : Service
     [AddHeader(ContentType = MimeTypes.Json)]
     public async Task<object> Any(UnRegisterEventSubscriber request)
     {
-        var subscription = serverEvents.GetSubscriptionInfo(request.Id);
+        if (request == null || string.IsNullOrEmpty(request.Id))
+            throw new ArgumentNullException(nameof(request));
+
+        var se = serverEvents ?? TryResolve<IServerEvents>();
+        var subscription = se?.GetSubscriptionInfo(request.Id);
 
         var feature = HostContext.GetPlugin<ServerEventsFeature>();
         if (subscription == null)
         {
-            feature.IncrementCounter(UnRegisterSubNotExists);
+            feature?.IncrementCounter(UnRegisterSubNotExists);
             throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(Request, request.Id).SafeInput());
         }
 
-        if (!feature.CanAccessSubscription(base.Request, subscription))
+        if (feature != null && !feature.CanAccessSubscription(base.Request, subscription))
         {
             feature.IncrementCounter(UnRegisterInvalidAccess);
             throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.LocalizeFmt(Request, request.Id.SafeInput()));
         }
 
-        feature.IncrementCounter(UnRegisterApi);
-        await serverEvents.UnRegisterAsync(subscription.SubscriptionId).ConfigAwait();
+        feature?.IncrementCounter(UnRegisterApi);
+        if (se != null)
+            await se.UnRegisterAsync(subscription.SubscriptionId).ConfigAwait();
 
         return subscription.Meta;
     }
@@ -527,25 +553,32 @@ public class UpdateEventSubscriberService(IServerEvents serverEvents) : Service
 
     public async Task<object> Any(UpdateEventSubscriber request)
     {
-        var subscription = serverEvents.GetSubscriptionInfo(request.Id);
+        if (request == null || string.IsNullOrEmpty(request.Id))
+            throw new ArgumentNullException(nameof(request));
+
+        var se = serverEvents ?? TryResolve<IServerEvents>();
+        var subscription = se?.GetSubscriptionInfo(request.Id);
 
         var feature = HostContext.GetPlugin<ServerEventsFeature>();
         if (subscription == null)
         {
-            feature.IncrementCounter(UpdateEventSubNotExists);
+            feature?.IncrementCounter(UpdateEventSubNotExists);
             throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.LocalizeFmt(Request, request.Id).SafeInput());
         }
 
-        if (!feature.CanAccessSubscription(base.Request, subscription))
+        if (feature != null && !feature.CanAccessSubscription(base.Request, subscription))
         {
             feature.IncrementCounter(UpdateEventInvalidAccess);
             throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.LocalizeFmt(Request, request.Id.SafeInput()));
         }
 
-        if (request.UnsubscribeChannels != null)
-            await serverEvents.UnsubscribeFromChannelsAsync(subscription.SubscriptionId, request.UnsubscribeChannels).ConfigAwait();
-        if (request.SubscribeChannels != null)
-            await serverEvents.SubscribeToChannelsAsync(subscription.SubscriptionId, request.SubscribeChannels).ConfigAwait();
+        if (se != null)
+        {
+            if (request.UnsubscribeChannels != null)
+                await se.UnsubscribeFromChannelsAsync(subscription.SubscriptionId, request.UnsubscribeChannels).ConfigAwait();
+            if (request.SubscribeChannels != null)
+                await se.SubscribeToChannelsAsync(subscription.SubscriptionId, request.SubscribeChannels).ConfigAwait();
+        }
 
         return new UpdateEventSubscriberResponse();
     }
@@ -647,7 +680,7 @@ public class EventSubscription : SubscriptionInfo, IEventSubscription, IServiceS
     public Action<IResponse, string> WriteEvent { get; set; }
     public Func<IResponse, string, CancellationToken, Task> WriteEventAsync { get; set; }
     public Action<IEventSubscription, Exception> OnError { get; set; }
-    public bool IsClosed => this.response.IsClosed;
+    public bool IsClosed => this.response?.IsClosed == true;
 
     private readonly StringBuilder buffer = new();
         
@@ -861,7 +894,7 @@ public class EventSubscription : SubscriptionInfo, IEventSubscription, IServiceS
         return UnsubscribeAsync();
     }
 
-    private bool CanWrite() => !Disposing && !response.IsClosed;
+    private bool CanWrite() => !Disposing && response != null && !response.IsClosed;
 
     [Obsolete("Use UnsubscribeAsync. Will be removed in future.")]
     public void Unsubscribe()
@@ -870,7 +903,8 @@ public class EventSubscription : SubscriptionInfo, IEventSubscription, IServiceS
         {
             var fn = OnUnsubscribeAsync;
             OnUnsubscribeAsync = null;
-            response.Request.TryResolve<IServerEvents>()?.QueueAsyncTask(() => fn(this));
+            if (fn != null)
+                response?.Request?.TryResolve<IServerEvents>()?.QueueAsyncTask(() => fn(this));
         }
         Dispose();
     }
@@ -896,7 +930,7 @@ public class EventSubscription : SubscriptionInfo, IEventSubscription, IServiceS
         var i = 0;
         foreach (var entry in map)
         {
-            if (entry.Value == null)
+            if (entry.Key == null || entry.Value == null)
                 continue;
             if (i++ > 0)
                 sw.Write(',');
@@ -1191,11 +1225,13 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
     public async Task NotifyChannelsAsync(string[] channels, string selector, string body, CancellationToken token = default)
     {
-        if (isDisposed) 
+        if (isDisposed || channels == null || channels.Length == 0) 
             return;
 
         foreach (var channel in channels)
         {
+            if (string.IsNullOrEmpty(channel))
+                continue;
             await NotifyRawAsync(ChannelSubscriptions, channel, channel.AssertChannel() + "@" + selector.AssertSelector(), body, channel, token).ConfigAwait();
         }
     }
@@ -1311,9 +1347,16 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
         {
             if (pendingAsyncTasks.TryTake(out var asyncTask))
             {
-                await asyncTask().ConfigAwait();
-
-                this.feature?.IncrementCounter("MemDoAsyncTasks");
+                try
+                {
+                    await asyncTask().ConfigAwait();
+                    this.feature?.IncrementCounter("MemDoAsyncTasks");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error executing pending async task", ex);
+                    this.feature?.IncrementCounter("Error.MemDoAsyncTasks." + ex.GetType().Name);
+                }
             }
         }
             
@@ -1321,13 +1364,21 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
         {
             if (pendingSubscriptionUpdates.TryTake(out var sub))
             {
-                if (OnUpdateAsync != null)
-                    await OnUpdateAsync(sub).ConfigAwait();
+                try
+                {
+                    if (OnUpdateAsync != null)
+                        await OnUpdateAsync(sub).ConfigAwait();
                     
-                if (NotifyUpdateAsync != null)
-                    await NotifyUpdateAsync(sub).ConfigAwait();
+                    if (NotifyUpdateAsync != null)
+                        await NotifyUpdateAsync(sub).ConfigAwait();
                     
-                this.feature?.IncrementCounter("MemDoSubUpdates");
+                    this.feature?.IncrementCounter("MemDoSubUpdates");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error updating sub {sub?.SubscriptionId}", ex);
+                    this.feature?.IncrementCounter("Error.MemDoSubUpdates." + ex.GetType().Name);
+                }
             }
         }
             
@@ -1335,18 +1386,26 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
         {
             if (pendingUnSubscriptions.TryTake(out var sub))
             {
-                if (OnUnsubscribeAsync != null)
-                    await OnUnsubscribeAsync(sub).ConfigAwait();
+                try
+                {
+                    if (OnUnsubscribeAsync != null)
+                        await OnUnsubscribeAsync(sub).ConfigAwait();
 
-                await sub.DisposeAsync().ConfigAwait();
+                    await sub.DisposeAsync().ConfigAwait();
 
-                if (NotifyChannelOfSubscriptions && sub.Channels != null && NotifyLeaveAsync != null)
-                    await NotifyLeaveAsync(sub).ConfigAwait();
+                    if (NotifyChannelOfSubscriptions && sub.Channels != null && NotifyLeaveAsync != null)
+                        await NotifyLeaveAsync(sub).ConfigAwait();
                     
-                if (OnRemoveSubscriptionAsync != null)
-                    await OnRemoveSubscriptionAsync(sub).ConfigAwait();
+                    if (OnRemoveSubscriptionAsync != null)
+                        await OnRemoveSubscriptionAsync(sub).ConfigAwait();
 
-                this.feature?.IncrementCounter("MemDoUnSubs");
+                    this.feature?.IncrementCounter("MemDoUnSubs");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error unregistering sub {sub?.SubscriptionId}", ex);
+                    this.feature?.IncrementCounter("Error.MemDoUnSubs." + ex.GetType().Name);
+                }
             }
         }
             
@@ -1354,8 +1413,16 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
         {
             if (expiredSubs.TryTake(out var sub))
             {
-                await sub.UnsubscribeAsync().ConfigAwait();
-                this.feature?.IncrementCounter("MemDoExpiredSubs");
+                try
+                {
+                    await sub.UnsubscribeAsync().ConfigAwait();
+                    this.feature?.IncrementCounter("MemDoExpiredSubs");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error unsubscribing expired sub {sub?.SubscriptionId}", ex);
+                    this.feature?.IncrementCounter("Error.MemDoExpiredSubs." + ex.GetType().Name);
+                }
             }
         }
 
@@ -1564,7 +1631,7 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
     public bool Pulse(string id)
     {
-        if (isDisposed) 
+        if (isDisposed || string.IsNullOrEmpty(id)) 
             return false;
 
         var sub = GetSubscription(id);
@@ -1580,7 +1647,7 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
     public async Task<bool> PulseAsync(string id, CancellationToken token=default)
     {
-        if (isDisposed) return false;
+        if (isDisposed || string.IsNullOrEmpty(id)) return false;
 
         var sub = GetSubscription(id);
         if (sub == null)
@@ -1685,10 +1752,10 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
         lock (sub)
         {
-            var subChannels = sub.Channels.ToList();
+            var subChannels = (sub.Channels != null ? sub.Channels.ToList() : new List<string>());
             foreach (var channel in channels)
             {
-                if (subChannels.Contains(channel))
+                if (string.IsNullOrEmpty(channel) || subChannels.Contains(channel))
                     continue;
 
                 subChannels.Add(channel);
@@ -1724,16 +1791,17 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
         lock (sub)
         {
+            var currentChannels = sub.Channels ?? Array.Empty<string>();
             foreach (var channel in channels)
             {
-                if (!sub.Channels.Contains(channel))
+                if (string.IsNullOrEmpty(channel) || !currentChannels.Contains(channel))
                     continue;
 
                 UnRegisterSubscription(sub, channel, ChannelSubscriptions);
             }
 
-            var subChannels = sub.Channels.ToList();
-            subChannels.RemoveAll(channels.Contains);
+            var subChannels = currentChannels.ToList();
+            subChannels.RemoveAll(c => channels.Contains(c));
 
             sub.UpdateChannels(subChannels.ToArray());
 
@@ -1752,17 +1820,23 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
     public List<Dictionary<string, string>> GetSubscriptionsDetails(params string[] channels)
     {
         var ret = new List<Dictionary<string, string>>();
+        if (channels == null || channels.Length == 0)
+            return ret;
+
         var alreadyAdded = new HashSet<string>();
 
         foreach (var channel in channels)
         {
+            if (string.IsNullOrEmpty(channel))
+                continue;
+
             var subs = ChannelSubscriptions.TryGet(channel);
             if (subs == null)
                 continue;
 
             foreach (var sub in subs.KeysWithoutLock())
             {
-                if (alreadyAdded.Contains(sub.SubscriptionId))
+                if (sub?.SubscriptionId == null || alreadyAdded.Contains(sub.SubscriptionId))
                     continue;
 
                 ret.Add(sub.Meta.ToDictionary());
@@ -1795,7 +1869,7 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
     public async Task RegisterAsync(IEventSubscription subscription, Dictionary<string, string> connectArgs = null, CancellationToken token=default)
     {
-        if (isDisposed) 
+        if (isDisposed || subscription == null) 
             return;
 
         try
@@ -1854,7 +1928,7 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
     public async Task FlushNopToChannelsAsync(string[] channels, CancellationToken token=default)
     {
-        if (isDisposed) return;
+        if (isDisposed || channels == null || channels.Length == 0) return;
 
         //For some yet-to-be-determined reason we need to send something to all channels to determine
         //which subscriptions are no longer connected so we can dispose of them right then and there.
@@ -1862,6 +1936,8 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
         //ref: https://forums.servicestack.net/t/serversentevents-with-notifychannelofsubscriptions-set-to-false-leaks-requests/2552/2
         foreach (var channel in channels)
         {
+            if (string.IsNullOrEmpty(channel))
+                continue;
             await FlushNopAsync(ChannelSubscriptions, channel, channel, token).ConfigAwait();
         }
     }
@@ -1887,6 +1963,9 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
     public void UnRegister(string subscriptionId, CancellationToken token=default)
     {
+        if (string.IsNullOrEmpty(subscriptionId))
+            return;
+
         var subscription = GetSubscription(subscriptionId);
         if (subscription == null)
             return;
@@ -1896,7 +1975,7 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
         
     void HandleUnsubscription(IEventSubscription subscription)
     {
-        if (isDisposed) 
+        if (isDisposed || subscription == null) 
             return;
 
         lock (subscription)
@@ -1919,6 +1998,9 @@ public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 
     public Task UnRegisterAsync(string subscriptionId, CancellationToken token=default)
     {
+        if (string.IsNullOrEmpty(subscriptionId))
+            return TypeConstants.EmptyTask;
+
         var subscription = GetSubscription(subscriptionId);
         if (subscription == null)
             return TypeConstants.EmptyTask;
@@ -2111,57 +2193,94 @@ public static class ServerEventExtensions
 
     public static bool HasChannel(this IEventSubscription sub, string channel)
     {
-        return sub != null && (channel == null || Array.IndexOf(sub.Channels, channel) >= 0);
+        return sub?.Channels != null && (channel == null || Array.IndexOf(sub.Channels, channel) >= 0);
     }
 
     public static bool HasAnyChannel(this IEventSubscription sub, string[] channels)
     {
-        if (sub == null || channels == null)
+        if (sub?.Channels == null || channels == null || channels.Length == 0)
             return false;
 
         foreach (var channel in channels)
         {
-            if (sub.HasChannel(channel))
+            if (channel != null && sub.HasChannel(channel))
                 return true;
         }
 
         return false;
     }
 
-    public static void NotifyAll(this IServerEvents server, object message) => 
+    public static void NotifyAll(this IServerEvents server, object message)
+    {
+        if (server == null || message == null) return;
         server.NotifyAll(Selector.Id(message.GetType()), message);
-    public static Task NotifyAllAsync(this IServerEvents server, object message, CancellationToken token=default) => 
-        server.NotifyAllAsync(Selector.Id(message.GetType()), message, token);
+    }
 
-    public static void NotifyChannel(this IServerEvents server, string channel, object message) => 
+    public static Task NotifyAllAsync(this IServerEvents server, object message, CancellationToken token = default)
+    {
+        if (server == null || message == null) return TypeConstants.EmptyTask;
+        return server.NotifyAllAsync(Selector.Id(message.GetType()), message, token);
+    }
+
+    public static void NotifyChannel(this IServerEvents server, string channel, object message)
+    {
+        if (server == null || message == null) return;
         server.NotifyChannel(channel, Selector.Id(message.GetType()), message);
+    }
 
-    public static Task NotifyChannelAsync(this IServerEvents server, string channel, object message, CancellationToken token=default) => 
-        server.NotifyChannelAsync(channel, Selector.Id(message.GetType()), message, token);
+    public static Task NotifyChannelAsync(this IServerEvents server, string channel, object message, CancellationToken token = default)
+    {
+        if (server == null || message == null) return TypeConstants.EmptyTask;
+        return server.NotifyChannelAsync(channel, Selector.Id(message.GetType()), message, token);
+    }
 
-    public static void NotifySubscription(this IServerEvents server, string subscriptionId, object message, string channel = null) => 
+    public static void NotifySubscription(this IServerEvents server, string subscriptionId, object message, string channel = null)
+    {
+        if (server == null || message == null) return;
         server.NotifySubscription(subscriptionId, Selector.Id(message.GetType()), message, channel);
+    }
 
-    public static Task NotifySubscriptionAsync(this IServerEvents server, string subscriptionId, object message, string channel = null, CancellationToken token=default) => 
-        server.NotifySubscriptionAsync(subscriptionId, Selector.Id(message.GetType()), message, channel, token);
+    public static Task NotifySubscriptionAsync(this IServerEvents server, string subscriptionId, object message, string channel = null, CancellationToken token = default)
+    {
+        if (server == null || message == null) return TypeConstants.EmptyTask;
+        return server.NotifySubscriptionAsync(subscriptionId, Selector.Id(message.GetType()), message, channel, token);
+    }
 
-    public static void NotifyUserId(this IServerEvents server, string userId, object message, string channel = null) => 
+    public static void NotifyUserId(this IServerEvents server, string userId, object message, string channel = null)
+    {
+        if (server == null || message == null) return;
         server.NotifyUserId(userId, Selector.Id(message.GetType()), message, channel);
+    }
 
-    public static Task NotifyUserIdAsync(this IServerEvents server, string userId, object message, string channel = null, CancellationToken token=default) => 
-        server.NotifyUserIdAsync(userId, Selector.Id(message.GetType()), message, channel, token);
+    public static Task NotifyUserIdAsync(this IServerEvents server, string userId, object message, string channel = null, CancellationToken token = default)
+    {
+        if (server == null || message == null) return TypeConstants.EmptyTask;
+        return server.NotifyUserIdAsync(userId, Selector.Id(message.GetType()), message, channel, token);
+    }
 
-    public static void NotifyUserName(this IServerEvents server, string userName, object message, string channel = null) => 
+    public static void NotifyUserName(this IServerEvents server, string userName, object message, string channel = null)
+    {
+        if (server == null || message == null) return;
         server.NotifyUserName(userName, Selector.Id(message.GetType()), message, channel);
+    }
 
-    public static Task NotifyUserNameAsync(this IServerEvents server, string userName, object message, string channel = null, CancellationToken token=default) => 
-        server.NotifyUserNameAsync(userName, Selector.Id(message.GetType()), message, channel, token);
+    public static Task NotifyUserNameAsync(this IServerEvents server, string userName, object message, string channel = null, CancellationToken token = default)
+    {
+        if (server == null || message == null) return TypeConstants.EmptyTask;
+        return server.NotifyUserNameAsync(userName, Selector.Id(message.GetType()), message, channel, token);
+    }
 
-    public static void NotifySession(this IServerEvents server, string sspid, object message, string channel = null) => 
+    public static void NotifySession(this IServerEvents server, string sspid, object message, string channel = null)
+    {
+        if (server == null || message == null) return;
         server.NotifySession(sspid, Selector.Id(message.GetType()), message, channel);
+    }
 
-    public static Task NotifySessionAsync(this IServerEvents server, string sspid, object message, string channel = null, CancellationToken token=default) => 
-        server.NotifySessionAsync(sspid, Selector.Id(message.GetType()), message, channel, token);
+    public static Task NotifySessionAsync(this IServerEvents server, string sspid, object message, string channel = null, CancellationToken token = default)
+    {
+        if (server == null || message == null) return TypeConstants.EmptyTask;
+        return server.NotifySessionAsync(sspid, Selector.Id(message.GetType()), message, channel, token);
+    }
 
     internal static TElement TryGet<TKey, TElement>(this ConcurrentDictionary<TKey, TElement> dic, TKey key)
     {
@@ -2181,5 +2300,5 @@ public static class ServerEventExtensions
         : throw new ArgumentException(@"Illegal '@' used in name", nameof(selector));
 
     public static bool IsGrpc(this IEventSubscription sub) =>
-        ((EventSubscription)sub).Request.RequestAttributes.HasFlag(RequestAttributes.Grpc);
-}
+        sub is EventSubscription { Request: { } req } && req.RequestAttributes.HasFlag(RequestAttributes.Grpc);
+}

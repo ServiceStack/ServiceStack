@@ -445,3 +445,33 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - Eliminated unused variable compiler warnings (CS0219) in `PhpGenerator.cs` (`var i = 0;`) and `MjsGenerator.cs` (`var wasAdded = false;`).
 - **`ServiceMetadata.cs`**:
   - Guarded `ForceInclude` extension methods against null `HostContext.AppHost` to prevent `ConfigurationErrorsException` during standalone code generation.
+
+## 16. ServiceStack.ServerEvents Hardening & Modernization
+- **`ServerEventsFeature.cs`**:
+  - In `Register(IAppHost appHost)`, guarded against null `appHost` to prevent `NullReferenceException`.
+  - In raw HTTP handlers, added safe null checks on `httpReq.PathInfo` and endpoint path strings.
+  - Replaced eager `host.Resolve<IServerEvents>()` in AppHost dispose callback with safe `host.TryResolve<IServerEvents>()?.Stop()`.
+  - Switched endpoint mapping from direct unvalidated cast `(appHost as IAppHostNetCore).MapEndpoints(...)` to safe pattern matching `if (appHost is IAppHostNetCore netCoreHost) netCoreHost.MapEndpoints(...)`.
+  - Promoted `CanAccessSubscription` to public for external extensibility and testability, adding null checks on `sub` and `req`.
+- **`ServerEventsHandler`**:
+  - Guarded `ProcessRequestAsync` against null `req`, null `res`, and uninitialized `IServerEvents`.
+  - Instantiated `TaskCompletionSource<bool>` with `TaskCreationOptions.RunContinuationsAsynchronously` and completed it via `tcs.TrySetResult(true)` to eliminate `InvalidOperationException` on concurrent completion.
+  - In `AddSessionParamsIfAny`, safely guarded `HostContext.AppHost?.Config?.AllowSessionIdsInHttpParams == true` and `req?.QueryString`.
+- **`ServerEventsHeartbeatHandler` & SSE Services**:
+  - In `ServerEventsHeartbeatHandler`, guarded against null `req`, null `res`, null `feature`, and sanitized subscription ID inputs.
+  - In `ServerEventsSubscribersService`, `ServerEventsUnRegisterService`, and `UpdateEventSubscriberService`, added null request DTO checks and dependency injection fallbacks via `TryResolve<IServerEvents>()`.
+- **`MemoryServerEvents`**:
+  - Guarded `NotifyChannelsAsync`, `FlushNopToChannelsAsync`, and `GetSubscriptionsDetails` against null channel arrays and null channel elements.
+  - Guarded `Pulse` and `PulseAsync` against null or empty subscription IDs.
+  - In `SubscribeToChannels` and `UnsubscribeFromChannels`, guarded against null/empty channel items and null subscription channel lists.
+  - In `RegisterAsync` and `UnRegister`/`UnRegisterAsync`, added null subscription guards and null subscription ID handling.
+  - In `DoAsyncTasks`, wrapped all callback invocations (`OnUpdateAsync`, `NotifyUpdateAsync`, `OnUnsubscribeAsync`, `NotifyLeaveAsync`, `OnRemoveSubscriptionAsync`) in try/catch blocks with error counter tracking to prevent callback exceptions from halting subsequent queue processing.
+- **`EventSubscription`**:
+  - Hardened `CanWrite()` to verify `!Disposing && response != null && !response.IsClosed`.
+  - In `IsClosed`, safely navigated `this.response?.IsClosed == true`.
+  - In `SerializeDictionary`, guarded against null dictionary, null keys, and null values.
+- **`ServerEventExtensions`**:
+  - Replaced unsafe cast `((EventSubscription)sub).Request.RequestAttributes.HasFlag(...)` in `IsGrpc()` with safe pattern matching `sub is EventSubscription { Request: { } req } && req.RequestAttributes.HasFlag(...)` to prevent `InvalidCastException` when custom `IEventSubscription` mocks/implementations are used.
+  - Hardened `HasChannel` and `HasAnyChannel` to handle null subscriptions and null channel collections safely.
+  - Guarded all `Notify*` extension method overloads against null `server` and null `message` inputs.
+
