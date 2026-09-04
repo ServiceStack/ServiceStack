@@ -132,7 +132,7 @@ public class KotlinGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        var formatter = request.TryResolve<INativeTypesFormatter>();
+        var formatter = request?.TryResolve<INativeTypesFormatter>();
         var typeNamespaces = new HashSet<string>();
         var includeList = RemoveIgnoredTypes(metadata);
         metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -156,11 +156,11 @@ public class KotlinGenerator : ILangGenerator
             }
         }
 
-        string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+        string defaultValue(string k) => request?.QueryString[k].IsNullOrEmpty() != false ? "//" : "";
 
         var sbInner = StringBuilderCache.Allocate();
         var sb = new StringBuilderWrapper(sbInner);
-        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        var includeOptions = !WithoutOptions && request?.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
             sb.AppendLine("/* Options:");
@@ -179,7 +179,7 @@ public class KotlinGenerator : ILangGenerator
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request?.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -430,7 +430,7 @@ public class KotlinGenerator : ILangGenerator
                 }
             }
 
-            foreach (var x in type.Implements)
+            foreach (var x in type.Implements.Safe())
             {
                 interfaces.Add(Type(x));
                 if (x.Type != null)
@@ -516,7 +516,7 @@ public class KotlinGenerator : ILangGenerator
                 }
             }
             
-            foreach (var prop in type.Properties)
+            foreach (var prop in type.Properties.Safe())
             {
                 if (wasAdded) sb.AppendLine();
 
@@ -528,7 +528,7 @@ public class KotlinGenerator : ILangGenerator
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                 var initProp = (prop.IsRequired == true || Config.InitializeCollections) 
-                    && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface();
+                    && prop.IsEnumerable() && (feature?.ShouldInitializeCollection(type) ?? true) && !prop.IsInterface();
                 var initializer = initProp 
                     ? propType == "ByteArray"
                         ? "ByteArray(0)"

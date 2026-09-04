@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
@@ -204,8 +204,9 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
     private string GetBaseUrl(string baseUrl)
     {
         return baseUrl
-           ?? HostContext.AssertPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl 
-           ?? Request.GetBaseUrl();
+           ?? HostContext.GetPlugin<NativeTypesFeature>()?.MetadataTypesConfig?.BaseUrl 
+           ?? Request?.GetBaseUrl()
+           ?? "/";
     }
 
     public MetadataTypes Any(TypesMetadata request)
@@ -661,7 +662,8 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         if (typesConfig.AddServiceStackTypes)
         {
             //IReturn markers are metadata properties that are not included as normal interfaces
-            var generator = ((NativeTypesMetadata) nativeTypesMetadata).GetGenerator(typesConfig);
+            var generator = (nativeTypesMetadata as NativeTypesMetadata)?.GetGenerator(typesConfig)
+                ?? new NativeTypesMetadata(HostContext.AppHost?.Metadata ?? new ServiceMetadata([]), typesConfig).GetGenerator();
 
             var allTypes = metadataTypes.GetAllTypesOrdered();
             var allTypeNames = allTypes.Select(x => x.Name).ToSet();
@@ -757,7 +759,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
     private static void ExportMissingSystemTypes(MetadataTypesConfig typesConfig)
     {
         typesConfig.ExportTypes ??= [];
-        typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
+        typesConfig.ExportTypes.AddIfNotExists(typeof(KeyValuePair<,>));
         typesConfig.ExportTypes.Remove(typeof(IMeta));
     }
 }

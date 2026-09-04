@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +21,8 @@ public class NativeTypesMetadata(ServiceMetadata meta, MetadataTypesConfig defau
 {
     public MetadataTypesConfig GetConfig(NativeTypesBase req)
     {
+        defaults ??= NativeTypesFeature.CreateMetadataTypesConfig();
+        req ??= new NativeTypesBase();
         return new() {
             BaseUrl = req.BaseUrl ?? defaults.BaseUrl,
             MakePartial = req.MakePartial ?? defaults.MakePartial,
@@ -118,7 +120,7 @@ public class MetadataTypesGenerator
             if (predicate != null && !predicate(op))
                 return true;
 
-            if (!meta.IsVisible(req, op) && exportTags.All(tag => op.Tags?.Any(x => x == tag) != true))
+            if ((meta?.IsVisible(req, op) != true) && exportTags.All(tag => op.Tags?.Any(x => x == tag) != true))
                 return true;
 
             if (skipTypes.Contains(op.RequestType))
@@ -151,7 +153,7 @@ public class MetadataTypesGenerator
                 RequiresAnyRole = operation.RequiresAnyRole.NullIfEmpty(),
                 RequiredPermissions = operation.RequiredPermissions.NullIfEmpty(),
                 RequiresAnyPermission = operation.RequiresAnyPermission.NullIfEmpty(),
-                Tags = operation.Tags.Count > 0 ? operation.Tags.Map(x => x) : null,
+                Tags = operation.Tags != null && operation.Tags.Count > 0 ? operation.Tags.Map(x => x) : null,
                 Ui = operation.LocodeCss == null && operation.ExplorerCss == null && operation.FormLayout == null 
                     ? null 
                     : new ApiUiInfo {
@@ -1075,6 +1077,10 @@ public static class MetadataExtensions
 
     public static List<string> RemoveIgnoredTypes(this MetadataTypes metadata, MetadataTypesConfig config)
     {
+        if (metadata == null)
+            return [];
+        config ??= new MetadataTypesConfig();
+
         var excludeServices = config.ExcludeTypes?.Remove("services") ?? false;
         var excludeTypes = config.ExcludeTypes?.Remove("types") ?? false;
                 
@@ -1087,7 +1093,7 @@ public static class MetadataExtensions
                 .Map(x => x.Response).ToArray()
             : TypeConstants<MetadataType>.EmptyArray;
 
-        metadata.Operations.RemoveAll(x => x.Request.IgnoreType(config, includeList));
+        metadata.Operations.RemoveAll(x => x.Request == null || x.Request.IgnoreType(config, includeList));
         metadata.Operations.Each(x => {
             if (x.Response != null && x.Response.IgnoreType(config, includeList))
             {

@@ -414,5 +414,34 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - In `LocalizeMetadata`, guarded against null `response.App`, null `response.Api.Types`, and null `response.Api.Operations`.
   - In `RemovePluginLink` and `RemoveDebugLink`, guarded against null `metadata` and null `href`.
 
-
-
+## 15. ServiceStack.NativeTypes Hardening & Modernization
+- **`NativeTypesFeature.cs`**:
+  - Guarded `ExportAttribute` against null `attributeType` and null `converter` throwing `ArgumentNullException`.
+  - In `GetGenerator()`, safely navigated `HostContext.AppHost?.TryResolve<INativeTypesMetadata>()` with fallback `new NativeTypesMetadata(HostContext.AppHost?.Metadata ?? new ServiceMetadata([]), MetadataTypesConfig)` to eliminate `ConfigurationErrorsException` when running outside an active AppHost.
+  - In `Register(IAppHost appHost)`, guarded null `appHost` safely and resolved `appHost.TryResolve<INativeTypesMetadata>()`.
+- **`NativeTypesService.cs`**:
+  - In `GetBaseUrl(baseUrl)`, safely resolved `HostContext.GetPlugin<NativeTypesFeature>()?.MetadataTypesConfig?.BaseUrl ?? Request?.GetBaseUrl() ?? "/"` instead of throwing `ConfigurationErrorsException`.
+  - In `ResolveMetadataTypes`, safely pattern-matched `(nativeTypesMetadata as NativeTypesMetadata)?.GetGenerator(typesConfig) ?? ...` to eliminate `InvalidCastException` when custom `INativeTypesMetadata` implementations are injected.
+  - In `ExportMissingSystemTypes`, replaced raw `.Add()` with `.AddIfNotExists(typeof(KeyValuePair<,>))` to prevent duplicate key/type registrations.
+- **`NativeTypesMetadata.cs`**:
+  - In `GetConfig(NativeTypesBase req)`, initialized defaults and safely fallback created `req ??= new NativeTypesBase()` to avoid NRE.
+  - In operation tag filtering, safely checked `(meta?.IsVisible(req, op) != true) && exportTags.All(...)`.
+  - In `RemoveIgnoredTypes`, guarded against null `metadata` (returning empty list) and null `config`, and safely handled null `operation.Request` via `x.Request == null || x.Request.IgnoreType(config, includeList)`.
+- **`StringBuilderWrapper.cs`**:
+  - Guarded constructor against null `StringBuilder` by falling back to `new StringBuilder()`.
+  - Clamped indent levels to `Math.Max(0, indent)` in constructor and `UnIndent()` to prevent negative indent padding errors.
+  - Rewrote `Chop(char c)` to eliminate `IndexOutOfRangeException` when the character is absent or when called on empty buffers.
+- **`GenerateDtos.cs`**:
+  - Guarded `ParseReference` against null `source` throwing `InvalidDataException`.
+  - Safely dispatched `ExecuteService` via pattern matching `appHost is ServiceStackHost ssh ? ssh.ExecuteService(...) : HostContext.ServiceController.Execute(...)`.
+- **`ILangGenerator.cs`**:
+  - In `GenerateSourceCode` extension methods, safely navigated `HostContext.AppHost?.GetPlugin<NativeTypesFeature>()` and fallback to `new NativeTypesMetadata(...)` when AppHost is uninitialized.
+  - Added case-insensitive matching `(lang?.ToLowerInvariant())` for all supported languages.
+- **All 16 Language Generators (`CSharp`, `TypeScript`, `Mjs`, `CommonJs`, `Dart`, `FSharp`, `Go`, `Java`, `Kotlin`, `Php`, `Python`, `Ruby`, `Rust`, `Swift`, `VbNet`, `Zig`)**:
+  - Safely resolved formatter with `request?.TryResolve<INativeTypesFormatter>()` instead of throwing `NullReferenceException` when `request == null`.
+  - Guarded `defaultValue` and `includeOptions` against null `request` (`request?.QueryString[...]`).
+  - In `DartGenerator.cs`, safely handled null/relative `BaseUrl` in `dtosName` calculation without throwing `ArgumentNullException`.
+  - In `KotlinGenerator.cs`, added `.Safe()` guards when iterating `type.Implements`, `type.Properties`, and safely checked `feature?.ShouldInitializeCollection(type)`.
+  - Eliminated unused variable compiler warnings (CS0219) in `PhpGenerator.cs` (`var i = 0;`) and `MjsGenerator.cs` (`var wasAdded = false;`).
+- **`ServiceMetadata.cs`**:
+  - Guarded `ForceInclude` extension methods against null `HostContext.AppHost` to prevent `ConfigurationErrorsException` during standalone code generation.

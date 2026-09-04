@@ -129,7 +129,7 @@ public class SwiftGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        var formatter = request.TryResolve<INativeTypesFormatter>();
+        var formatter = request?.TryResolve<INativeTypesFormatter>();
         var typeNamespaces = new HashSet<string>();
         var includeList = RemoveIgnoredTypes(metadata);
         metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -139,12 +139,12 @@ public class SwiftGenerator : ILangGenerator
             ? Config.DefaultImports
             : DefaultImports;
 
-        string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+        string defaultValue(string k) => request?.QueryString[k].IsNullOrEmpty() != false ? "//" : "";
 
         var sbInner = StringBuilderCache.Allocate();
         var sb = new StringBuilderWrapper(sbInner);
         var sbExt = new StringBuilderWrapper(new StringBuilder());
-        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        var includeOptions = !WithoutOptions && request?.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
             sb.AppendLine("/* Options:");
@@ -167,7 +167,7 @@ public class SwiftGenerator : ILangGenerator
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request?.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();

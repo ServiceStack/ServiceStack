@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.DataAnnotations;
@@ -142,13 +142,15 @@ public partial class NativeTypesFeature : IPlugin, IConfigureServices, Model.IHa
         
     public void ExportAttribute(Type attributeType, Func<Attribute, MetadataAttribute> converter)
     {
+        if (attributeType == null) throw new ArgumentNullException(nameof(attributeType));
+        if (converter == null) throw new ArgumentNullException(nameof(converter));
         MetadataTypesConfig.ExportAttributes.Add(attributeType);
         MetadataTypesGenerator.AttributeConverters[attributeType] = converter;
     }
 
     public MetadataTypesGenerator GetGenerator() =>
-        (HostContext.TryResolve<INativeTypesMetadata>() ??
-         new NativeTypesMetadata(HostContext.AppHost.Metadata, MetadataTypesConfig))
+        (HostContext.AppHost?.TryResolve<INativeTypesMetadata>() ??
+         new NativeTypesMetadata(HostContext.AppHost?.Metadata ?? new ServiceMetadata([]), MetadataTypesConfig))
         .GetGenerator();
 
     public MetadataTypesGenerator DefaultGenerator { get; private set; }
@@ -163,8 +165,10 @@ public partial class NativeTypesFeature : IPlugin, IConfigureServices, Model.IHa
     
     public void Register(IAppHost appHost)
     {
-        var nativeTypesMeta = appHost.Resolve<INativeTypesMetadata>();
-        DefaultGenerator = nativeTypesMeta.GetGenerator();
+        if (appHost == null) return;
+        var nativeTypesMeta = appHost.TryResolve<INativeTypesMetadata>();
+        if (nativeTypesMeta != null)
+            DefaultGenerator = nativeTypesMeta.GetGenerator();
     }
 }
 

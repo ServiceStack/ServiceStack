@@ -332,7 +332,7 @@ public class DartGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        var formatter = request.TryResolve<INativeTypesFormatter>();
+        var formatter = request?.TryResolve<INativeTypesFormatter>();
         var typeNamespaces = new HashSet<string>();
         var includeList = metadata.RemoveIgnoredTypes(Config);
         metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
@@ -344,11 +344,11 @@ public class DartGenerator : ILangGenerator
 
         var globalNamespace = Config.GlobalNamespace;
 
-        string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+        string defaultValue(string k) => request?.QueryString[k].IsNullOrEmpty() != false ? "//" : "";
 
         var sbInner = StringBuilderCache.Allocate();
         var sb = new StringBuilderWrapper(sbInner);
-        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        var includeOptions = !WithoutOptions && request?.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
             sb.AppendLine("/* Options:");
@@ -365,7 +365,7 @@ public class DartGenerator : ILangGenerator
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request?.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -442,7 +442,7 @@ public class DartGenerator : ILangGenerator
 
         existingTypeInfos = [..IgnoreTypeInfosFor];
         sbTypeInfos = new StringBuilder();
-        var dtosName = Config.GlobalNamespace ?? new Uri(Config.BaseUrl).Host;
+        var dtosName = Config.GlobalNamespace ?? (Config.BaseUrl != null && Uri.TryCreate(Config.BaseUrl, UriKind.Absolute, out var uri) ? uri.Host : "dtos");
         sbTypeInfos.AppendLine().AppendLine("TypeContext _ctx = TypeContext(library: '" + dtosName.SafeVarRef() + "', types: <String, TypeInfo> {");
 
         //ServiceStack core interfaces

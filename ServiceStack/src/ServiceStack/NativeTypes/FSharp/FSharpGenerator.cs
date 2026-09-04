@@ -75,7 +75,7 @@ public class FSharpGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        var formatter = request.TryResolve<INativeTypesFormatter>();
+        var formatter = request?.TryResolve<INativeTypesFormatter>();
         var namespaces = Config.GetDefaultNamespaces(metadata);
 
         var typeNamespaces = new HashSet<string>();
@@ -93,11 +93,11 @@ public class FSharpGenerator : ILangGenerator
                                   .OrderBy(x => x).FirstOrDefault()
                               ?? typeNamespaces.OrderBy(x => x).FirstOrDefault() ?? "ServiceModel";
 
-        string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+        string defaultValue(string k) => request?.QueryString[k].IsNullOrEmpty() != false ? "//" : "";
 
         var sbInner = new StringBuilder();
         var sb = new StringBuilderWrapper(sbInner);
-        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        var includeOptions = !WithoutOptions && request?.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
             sb.AppendLine("(* Options:");
@@ -121,7 +121,7 @@ public class FSharpGenerator : ILangGenerator
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
             //sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
             sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request?.QueryString[name]}"));
 
             sb.AppendLine("*)");
             sb.AppendLine();

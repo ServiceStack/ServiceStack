@@ -348,7 +348,7 @@ public class RubyGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        var formatter = request.TryResolve<INativeTypesFormatter>();
+        var formatter = request?.TryResolve<INativeTypesFormatter>();
         Init(metadata);
 
         var typeNamespaces = new HashSet<string>();
@@ -360,7 +360,7 @@ public class RubyGenerator : ILangGenerator
             : DefaultImports);
 
         Func<string, string> defaultValue = k =>
-            request.QueryString[k].IsNullOrEmpty() ? "#" : "";
+            request?.QueryString[k].IsNullOrEmpty() != false ? "#" : "";
 
         var sbInner = StringBuilderCache.Allocate();
         var sb = new StringBuilderWrapper(sbInner);
@@ -368,7 +368,7 @@ public class RubyGenerator : ILangGenerator
         sb.AppendLine("# encoding: utf-8");
         sb.AppendLine();
 
-        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        var includeOptions = !WithoutOptions && request?.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
             sb.AppendLine("# Options:");
@@ -400,7 +400,7 @@ public class RubyGenerator : ILangGenerator
             {
                 foreach (var name in AddQueryParamOptions)
                 {
-                    sb.AppendLine("{0}{1}: {2}".Fmt(defaultValue(name), name, request.QueryString[name]));
+                    sb.AppendLine("{0}{1}: {2}".Fmt(defaultValue(name), name, request?.QueryString[name]));
                 }
             }
 

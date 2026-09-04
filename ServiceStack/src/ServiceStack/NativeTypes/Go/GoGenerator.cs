@@ -303,7 +303,7 @@ public class GoGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        var formatter = request.TryResolve<INativeTypesFormatter>();
+        var formatter = request?.TryResolve<INativeTypesFormatter>();
         Init(metadata);
 
         List<string> defaultImports = new(!Config.DefaultImports.IsEmpty()
@@ -312,11 +312,11 @@ public class GoGenerator : ILangGenerator
 
         var packageName = Config.GlobalNamespace ?? "dtos";
 
-        string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+        string defaultValue(string k) => request?.QueryString[k].IsNullOrEmpty() != false ? "//" : "";
 
         var sbInner = StringBuilderCache.Allocate();
         var sb = new StringBuilderWrapper(sbInner);
-        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        var includeOptions = !WithoutOptions && request?.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
             sb.AppendLine("/* Options:");
@@ -341,7 +341,7 @@ public class GoGenerator : ILangGenerator
                 Config.ExcludeTypes.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
             AddQueryParamOptions.Each(name =>
-                sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+                sb.AppendLine($"{defaultValue(name)}{name}: {request?.QueryString[name]}"));
 
             sb.AppendLine("*/");
             sb.AppendLine();

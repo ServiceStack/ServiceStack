@@ -275,8 +275,11 @@ public partial class NativeTypesFeature
             fileName.EndsWith(x.Suffix, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static DtoReference ParseReference(string source, string language, string filePath)
+    private static DtoReference ParseReference(string? source, string language, string filePath)
     {
+        if (source == null)
+            throw new InvalidDataException($"Source content is null: {filePath}");
+
         var startPos = source.IndexOf("Options:", StringComparison.Ordinal);
         if (startPos < 0)
             throw new InvalidDataException($"Not an existing ServiceStack Reference: {filePath}");
@@ -355,7 +358,9 @@ public partial class NativeTypesFeature
         foreach (var entry in reference.Options)
             request.QueryString[entry.Key] = entry.Value;
 
-        var response = ((ServiceStackHost)appHost).ExecuteService(requestDto, request);
+        var response = appHost is ServiceStackHost ssh 
+            ? ssh.ExecuteService(requestDto, request)
+            : HostContext.ServiceController.Execute(requestDto, request);
         return response as string
             ?? throw new InvalidDataException($"NativeTypesService returned {response?.GetType().Name ?? "null"}");
     }

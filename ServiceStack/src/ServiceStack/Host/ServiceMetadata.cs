@@ -1293,13 +1293,13 @@ public static class MetadataTypeExtensions
     }
 
     public static bool ForceInclude(this MetadataTypesConfig config, Type type) =>
-        HostContext.Metadata.ForceInclude.Contains(type);
+        HostContext.AppHost?.Metadata.ForceInclude.Contains(type) == true;
 
     public static bool ForceInclude(this MetadataTypesConfig config, MetadataType type) =>
-        HostContext.Metadata.ForceInclude.Any(x =>
+        HostContext.AppHost?.Metadata.ForceInclude.Any(x =>
             type.Type != null
                 ? x == type.Type
-                : type.Name == x.Name && type.Namespace == x.Namespace);
+                : type.Name == x.Name && type.Namespace == x.Namespace) == true;
 
-    internal static bool ForceInclude(this Type type) => HostContext.Metadata.ForceInclude.Contains(type);
+    internal static bool ForceInclude(this Type type) => HostContext.AppHost?.Metadata.ForceInclude.Contains(type) == true;
 }

@@ -225,7 +225,7 @@ public class VbNetGenerator : ILangGenerator
 
     public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
     {
-        var formatter = request.TryResolve<INativeTypesFormatter>();
+        var formatter = request?.TryResolve<INativeTypesFormatter>();
         var namespaces = Config.GetDefaultNamespaces(metadata);
 
         metadata.RemoveIgnoredTypesForNet(Config);
@@ -244,11 +244,11 @@ public class VbNetGenerator : ILangGenerator
             namespaces.Add(Config.GlobalNamespace);
         }
 
-        string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "'''" : "'";
+        string defaultValue(string k) => request?.QueryString[k].IsNullOrEmpty() != false ? "'''" : "'";
 
         var sbInner = new StringBuilder();
         var sb = new StringBuilderWrapper(sbInner);
-        var includeOptions = !WithoutOptions && request.QueryString[nameof(WithoutOptions)] == null;
+        var includeOptions = !WithoutOptions && request?.QueryString[nameof(WithoutOptions)] == null;
         if (includeOptions)
         {
             sb.AppendLine("' Options:");
@@ -274,7 +274,7 @@ public class VbNetGenerator : ILangGenerator
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(", ")));
             sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
             sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
-            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request.QueryString[name]}"));
+            AddQueryParamOptions.Each(name => sb.AppendLine($"{defaultValue(name)}{name}: {request?.QueryString[name]}"));
             sb.AppendLine();
         }
 

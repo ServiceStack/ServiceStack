@@ -12,10 +12,10 @@ public class StringBuilderWrapper
 
     public StringBuilderWrapper(StringBuilder sb, int indent = 0)
     {
-        this.sb = sb;
-        this.indent = indent;
+        this.sb = sb ?? new StringBuilder();
+        this.indent = Math.Max(0, indent);
 
-        tab = "".PadLeft(indent * indentSize, ' ');
+        tab = "".PadLeft(this.indent * indentSize, ' ');
     }
 
     public void AppendLine(string str = null)
@@ -37,7 +37,7 @@ public class StringBuilderWrapper
 
     public StringBuilderWrapper UnIndent()
     {
-        return new StringBuilderWrapper(sb, indent - 1);
+        return new StringBuilderWrapper(sb, Math.Max(0, indent - 1));
     }
 
     public override string ToString()
@@ -47,13 +47,16 @@ public class StringBuilderWrapper
 
     public void Chop(char c)
     {
-        var endsWithNewLine = sb.Length > 0 && sb[sb.Length - 1] == '\n';
-        do
+        if (sb.Length == 0) return;
+        var endsWithNewLine = sb[sb.Length - 1] == '\n';
+        while (sb.Length > 0 && sb[sb.Length - 1] != c)
         {
-            if (sb.Length == 0) return;
             sb.Length--;
-        } while (sb[sb.Length - 1] != c);
-        sb.Length--; //TODO why is this needed
+        }
+        if (sb.Length > 0 && sb[sb.Length - 1] == c)
+        {
+            sb.Length--;
+        }
         if (endsWithNewLine)
         {
             sb.AppendLine();
