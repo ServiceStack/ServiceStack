@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
@@ -8,11 +8,11 @@ namespace ServiceStack.Authentication.RavenDb
 {
     public class RavenDbUserAuthRepository : RavenDbUserAuthRepository<RavenUserAuth, RavenUserAuthDetails>, IUserAuthRepository
     {
-        public RavenDbUserAuthRepository(IDocumentStore documentStore) : base(documentStore) { }
+        public RavenDbUserAuthRepository(IDocumentStore documentStore, bool createIndexes = true) : base(documentStore, createIndexes) { }
 
         public static Func<MemberInfo, bool> FindIdentityProperty { get; set; } = DefaultFindIdentityProperty;
 
         public static bool DefaultFindIdentityProperty(MemberInfo p) =>
-            p.Name == (p.DeclaringType.FirstAttribute<IndexAttribute>()?.Name ?? "Id");
+            p != null && p.Name == ((p.ReflectedType ?? p.DeclaringType)?.FirstAttribute<IndexAttribute>()?.Name ?? "Id");
     }
 }

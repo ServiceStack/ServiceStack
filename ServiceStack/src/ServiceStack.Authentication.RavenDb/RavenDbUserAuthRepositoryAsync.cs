@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -26,6 +26,7 @@ namespace ServiceStack.Authentication.RavenDb
 
         public async Task<IUserAuth> CreateUserAuthAsync(IUserAuth newUser, string password, CancellationToken token = default)
         {
+            if (newUser == null) throw new ArgumentNullException(nameof(newUser));
 
             newUser.ValidateNewUser(password);
 
@@ -36,34 +37,55 @@ namespace ServiceStack.Authentication.RavenDb
             newUser.ModifiedDate = newUser.CreatedDate;
 
             using var session = documentStore.OpenAsyncSession();
-            await session.StoreAsync(newUser, token);
+            await session.StoreAsync(newUser, token).ConfigAwait();
             UpdateIntKey(newUser);
-            await session.SaveChangesAsync(token);
+            await session.SaveChangesAsync(token).ConfigAwait();
 
             return newUser;
         }
 
         public async Task DeleteUserAuthAsync(string ravenUserAuthId, CancellationToken token = default)
         {
+            if (string.IsNullOrEmpty(ravenUserAuthId))
+                return;
+
+            if (int.TryParse(ravenUserAuthId, out var intId) && !ravenUserAuthId.Contains("/"))
+                ravenUserAuthId = RavenIdConverter.ToString(UserAuthCollectionName, intId);
+
             using var session = documentStore.OpenAsyncSession();
-            var userAuth = await session.LoadAsync<TUserAuth>(ravenUserAuthId, token);
+            var userAuth = await session.LoadAsync<TUserAuth>(ravenUserAuthId, token).ConfigAwait();
 
             var userAuthDetails = await session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
                 .Customize(x => x.WaitForNonStaleResults())
-                .Where(q => q.UserAuthId == ravenUserAuthId).ToListAsync(token);
+                .Where(q => q.UserAuthId == ravenUserAuthId)
+                .OfType<TUserAuthDetails>()
+                .ToListAsync(token).ConfigAwait();
+
+            if (userAuth != null)
+                session.Delete(userAuth);
             userAuthDetails.Each(session.Delete);
-            session.Delete(userAuth);
-            await session.SaveChangesAsync(token);
+            await session.SaveChangesAsync(token).ConfigAwait();
         }
 
         public async Task<IUserAuth> GetUserAuthAsync(string ravenUserAuthId, CancellationToken token = default)
         {
+            if (string.IsNullOrEmpty(ravenUserAuthId))
+                return null;
+
             using var session = documentStore.OpenAsyncSession();
-            return await session.LoadAsync<TUserAuth>(ravenUserAuthId, token);
+            var userAuth = await session.LoadAsync<TUserAuth>(ravenUserAuthId, token).ConfigAwait();
+            if (userAuth == null && int.TryParse(ravenUserAuthId, out var intId) && !ravenUserAuthId.Contains("/"))
+            {
+                userAuth = await session.LoadAsync<TUserAuth>(RavenIdConverter.ToString(UserAuthCollectionName, intId), token).ConfigAwait();
+            }
+            return userAuth;
         }
 
         public async Task<IUserAuth> UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, CancellationToken token = default)
         {
+            if (existingUser == null) throw new ArgumentNullException(nameof(existingUser));
+            if (newUser == null) throw new ArgumentNullException(nameof(newUser));
+
             newUser.ValidateNewUser();
 
             await AssertNoExistingUserAsync(newUser, existingUser, token).ConfigAwait();
@@ -78,14 +100,17 @@ namespace ServiceStack.Authentication.RavenDb
             newUser.ModifiedDate = DateTime.UtcNow;
 
             using var session = documentStore.OpenAsyncSession();
-            await session.StoreAsync(newUser, token);
-            await session.SaveChangesAsync(token);
+            await session.StoreAsync(newUser, token).ConfigAwait();
+            await session.SaveChangesAsync(token).ConfigAwait();
 
             return newUser;
         }
 
         public async Task<IUserAuth> UpdateUserAuthAsync(IUserAuth existingUser, IUserAuth newUser, string password, CancellationToken token = default)
         {
+            if (existingUser == null) throw new ArgumentNullException(nameof(existingUser));
+            if (newUser == null) throw new ArgumentNullException(nameof(newUser));
+
             newUser.ValidateNewUser(password);
 
             await AssertNoExistingUserAsync(newUser, existingUser, token).ConfigAwait();
@@ -98,8 +123,8 @@ namespace ServiceStack.Authentication.RavenDb
             newUser.ModifiedDate = DateTime.UtcNow;
 
             using var session = documentStore.OpenAsyncSession();
-            await session.StoreAsync(newUser, token);
-            await session.SaveChangesAsync(token);
+            await session.StoreAsync(newUser, token).ConfigAwait();
+            await session.SaveChangesAsync(token).ConfigAwait();
 
             return newUser;
         }
@@ -135,9 +160,9 @@ namespace ServiceStack.Authentication.RavenDb
             if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            await session.StoreAsync(userAuth, token);
+            await session.StoreAsync(userAuth, token).ConfigAwait();
             UpdateIntKey(userAuth);
-            await session.SaveChangesAsync(token);
+            await session.SaveChangesAsync(token).ConfigAwait();
 
             var key = GetKey(userAuth);
 
@@ -148,14 +173,17 @@ namespace ServiceStack.Authentication.RavenDb
                 authDetails.CreatedDate = userAuth.ModifiedDate;
             authDetails.ModifiedDate = userAuth.ModifiedDate;
 
-            await session.StoreAsync(authDetails, token);
-            await session.SaveChangesAsync(token);
+            await session.StoreAsync(authDetails, token).ConfigAwait();
+            await session.SaveChangesAsync(token).ConfigAwait();
 
             return authDetails;
         }
 
         public async Task<IUserAuth> GetUserAuthAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default)
         {
+            if (authSession == null)
+                return null;
+
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
                 var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait();
@@ -180,7 +208,7 @@ namespace ServiceStack.Authentication.RavenDb
 
             if (oAuthProvider != null)
             {
-                var userAuth = await session.LoadAsync<TUserAuth>(RavenIdConverter.ToString(UserAuthCollectionName, oAuthProvider.UserAuthId), token);
+                var userAuth = await session.LoadAsync<TUserAuth>(RavenIdConverter.ToString(UserAuthCollectionName, oAuthProvider.UserAuthId), token).ConfigAwait();
                 return userAuth;
             }
             return null;
@@ -200,6 +228,12 @@ namespace ServiceStack.Authentication.RavenDb
 
         public async Task<List<IUserAuthDetails>> GetUserAuthDetailsAsync(string ravenUserAuthId, CancellationToken token = default)
         {
+            if (string.IsNullOrEmpty(ravenUserAuthId))
+                return new List<IUserAuthDetails>();
+
+            if (int.TryParse(ravenUserAuthId, out var intId) && !ravenUserAuthId.Contains("/"))
+                ravenUserAuthId = RavenIdConverter.ToString(UserAuthCollectionName, intId);
+
             using var session = documentStore.OpenAsyncSession();
             return (await session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
                     .Customize(x => x.WaitForNonStaleResults())
@@ -227,39 +261,51 @@ namespace ServiceStack.Authentication.RavenDb
 
         public async Task SaveUserAuthAsync(IAuthSession authSession, CancellationToken token = default)
         {
+            if (authSession == null)
+                throw new ArgumentNullException(nameof(authSession));
+
             using var session = documentStore.OpenAsyncSession();
-            var userAuth = await LoadOrCreateFromSessionAsync(authSession, session);
+            var userAuth = await LoadOrCreateFromSessionAsync(authSession, session).ConfigAwait();
+            if (userAuth == null)
+                return;
 
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            await session.StoreAsync(userAuth, token);
-            await session.SaveChangesAsync(token);
+            await session.StoreAsync(userAuth, token).ConfigAwait();
+            await session.SaveChangesAsync(token).ConfigAwait();
         }
 
         static async Task<TUserAuth> LoadOrCreateFromSessionAsync(IAuthSession authSession, Raven.Client.Documents.Session.IAsyncDocumentSession session)
         {
-            TUserAuth userAuth;
-            if (!authSession.UserAuthId.IsNullOrEmpty())
+            TUserAuth userAuth = null;
+            if (authSession != null && !authSession.UserAuthId.IsNullOrEmpty())
             {
-                var ravenKey = RavenIdConverter.ToString(UserAuthCollectionName, int.Parse(authSession.UserAuthId));
-                userAuth = await session.LoadAsync<TUserAuth>(ravenKey);
+                string ravenKey = authSession.UserAuthId;
+                if (int.TryParse(authSession.UserAuthId, out var intId) && !authSession.UserAuthId.Contains("/"))
+                {
+                    ravenKey = RavenIdConverter.ToString(UserAuthCollectionName, intId);
+                }
+                userAuth = await session.LoadAsync<TUserAuth>(ravenKey).ConfigAwait();
             }
-            else
+            if (userAuth == null && authSession != null)
                 userAuth = authSession.ConvertTo<TUserAuth>();
             return userAuth;
         }
 
         public async Task SaveUserAuthAsync(IUserAuth userAuth, CancellationToken token = default)
         {
+            if (userAuth == null)
+                throw new ArgumentNullException(nameof(userAuth));
+
             using var session = documentStore.OpenAsyncSession();
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            await session.StoreAsync(userAuth, token);
-            await session.SaveChangesAsync(token);
+            await session.StoreAsync(userAuth, token).ConfigAwait();
+            await session.SaveChangesAsync(token).ConfigAwait();
         }
 
         public async Task<IUserAuth> TryAuthenticateAsync(string userName, string password, CancellationToken token = default)
@@ -280,7 +326,10 @@ namespace ServiceStack.Authentication.RavenDb
 
         public async Task<IUserAuth> TryAuthenticateAsync(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, CancellationToken token = default)
         {
-            var userAuth = await GetUserAuthByUserNameAsync(digestHeaders["username"], token).ConfigAwait();
+            if (digestHeaders == null || !digestHeaders.TryGetValue("username", out var userName) || string.IsNullOrEmpty(userName))
+                return null;
+
+            var userAuth = await GetUserAuthByUserNameAsync(userName, token).ConfigAwait();
             if (userAuth == null)
                 return null;
 
@@ -301,14 +350,14 @@ namespace ServiceStack.Authentication.RavenDb
             {
                 var existingUser = await GetUserAuthByUserNameAsync(newUser.UserName, token).ConfigAwait();
                 if (existingUser != null
-                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+                    && (exceptForExistingUser == null || (existingUser.Id != exceptForExistingUser.Id && GetKey(existingUser) != GetKey(exceptForExistingUser))))
                     throw new ArgumentException(ErrorMessages.UserAlreadyExistsFmt.LocalizeFmt(newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
                 var existingUser = await GetUserAuthByUserNameAsync(newUser.Email, token).ConfigAwait();
                 if (existingUser != null
-                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+                    && (exceptForExistingUser == null || (existingUser.Id != exceptForExistingUser.Id && GetKey(existingUser) != GetKey(exceptForExistingUser))))
                     throw new ArgumentException(ErrorMessages.EmailAlreadyExistsFmt.LocalizeFmt(newUser.Email.SafeInput()));
             }
         }
@@ -319,7 +368,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             using var session = documentStore.OpenAsyncSession();
             var q = session.Query<TUserAuth>();
-            return (await SortAndPage(q, orderBy, skip, take).ToListAsync(token)).OfType<IUserAuth>().ToList();
+            return (await SortAndPage(q, orderBy, skip, take).ToListAsync(token).ConfigAwait()).OfType<IUserAuth>().ToList();
         }
 
         public async Task<List<IUserAuth>> SearchUserAuthsAsync(string query, string orderBy = null, int? skip = null, int? take = null, CancellationToken token = default)
@@ -334,7 +383,7 @@ namespace ServiceStack.Authentication.RavenDb
                             x.Email.StartsWith(query) || x.Email.EndsWith(query))
                 .Customize(x => x.WaitForNonStaleResults());
 
-            return (await SortAndPage(q, orderBy, skip, take).ToListAsync(token)).OfType<IUserAuth>().ToList();
+            return (await SortAndPage(q, orderBy, skip, take).ToListAsync(token).ConfigAwait()).OfType<IUserAuth>().ToList();
         }
 
 
@@ -343,34 +392,46 @@ namespace ServiceStack.Authentication.RavenDb
         #region IManageApiKeysAsync
         public async Task<bool> ApiKeyExistsAsync(string apiKey, CancellationToken token = default)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                return false;
+
             using var session = documentStore.OpenAsyncSession();
-            var key = await session.LoadAsync<ApiKey>(apiKey);
+            var key = await session.LoadAsync<ApiKey>(apiKey, token).ConfigAwait();
             return key != null;
         }
 
         public async Task<ApiKey> GetApiKeyAsync(string apiKey, CancellationToken token = default)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                return null;
+
             using var session = documentStore.OpenAsyncSession();
-            return await session.LoadAsync<ApiKey>(apiKey);
+            return await session.LoadAsync<ApiKey>(apiKey, token).ConfigAwait();
         }
 
         public async Task<List<ApiKey>> GetUserApiKeysAsync(string userId, CancellationToken token = default)
         {
+            if (string.IsNullOrEmpty(userId))
+                return new List<ApiKey>();
+
             using var session = documentStore.OpenAsyncSession();
             return await session.Query<ApiKey>()
                 .Where(key =>
                     key.UserAuthId == userId
                     && key.CancelledDate == null
                     && (key.ExpiryDate == null || key.ExpiryDate >= DateTime.UtcNow)
-                ).ToListAsync();
+                ).ToListAsync(token).ConfigAwait();
         }
 
         public async Task StoreAllAsync(IEnumerable<ApiKey> apiKeys, CancellationToken token = default)
         {
+            if (apiKeys == null)
+                return;
+
             using var session = documentStore.OpenAsyncSession();
             foreach (ApiKey apiKey in apiKeys)
-                await session.StoreAsync(apiKey);
-            await session.SaveChangesAsync();
+                await session.StoreAsync(apiKey, token).ConfigAwait();
+            await session.SaveChangesAsync(token).ConfigAwait();
         }
         #endregion
     }

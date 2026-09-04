@@ -1,4 +1,4 @@
-﻿using Raven.Client.Documents;
+using Raven.Client.Documents;
 using Raven.Client.Documents.Indexes;
 using Raven.Client.Documents.Linq;
 using ServiceStack.Auth;
@@ -46,29 +46,49 @@ namespace ServiceStack.Authentication.RavenDb
             ?? throw new NotSupportedException(typeof(TUserAuthDetails).Name +
                 $" does not contain '{UserAuthDetailsIdentifier}' property, add property or specify alternate Raven Identifier in UserAuthDetailsIdentifier");
 
-        public RavenDbUserAuthRepository(IDocumentStore documentStore)
-        {
-            this.documentStore = documentStore;
+        private static readonly object initLock = new object();
+        private static bool isPopulatorRegistered;
+        private static readonly object populatorLock = new object();
 
-            EnsureThatUniqueIndexesAreCreated(documentStore);
+        public RavenDbUserAuthRepository(IDocumentStore documentStore, bool createIndexes = true)
+        {
+            this.documentStore = documentStore ?? throw new ArgumentNullException(nameof(documentStore));
+
+            EnsureThatUniqueIndexesAreCreated(documentStore, createIndexes);
 
             RegisterPopulator();
         }
 
-        static void EnsureThatUniqueIndexesAreCreated(IDocumentStore documentStore)
+        static void EnsureThatUniqueIndexesAreCreated(IDocumentStore documentStore, bool createIndexes)
         {
-            if (!IsInitialized)
-                CreateOrUpdateUserAuthIndex(documentStore);
+            if (createIndexes && !IsInitialized)
+            {
+                lock (initLock)
+                {
+                    if (!IsInitialized)
+                        CreateOrUpdateUserAuthIndex(documentStore);
+                }
+            }
         }
 
         void RegisterPopulator()
         {
-            var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
-            AutoMapping.RegisterPopulator((IAuthSession session, IUserAuth userAuth) =>
+            if (!isPopulatorRegistered)
             {
-                existingPopulator?.Invoke(session, userAuth);
-                UpdateSessionKey(session, userAuth);
-            });
+                lock (populatorLock)
+                {
+                    if (!isPopulatorRegistered)
+                    {
+                        var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
+                        AutoMapping.RegisterPopulator((IAuthSession session, IUserAuth userAuth) =>
+                        {
+                            existingPopulator?.Invoke(session, userAuth);
+                            UpdateSessionKey(session, userAuth);
+                        });
+                        isPopulatorRegistered = true;
+                    }
+                }
+            }
         }
 
         public class UserAuth_By_UserNameOrEmail : AbstractIndexCreationTask<TUserAuth, UserAuth_By_UserNameOrEmail.Result>
@@ -120,6 +140,8 @@ namespace ServiceStack.Authentication.RavenDb
         #region IUserAuthRepository
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
         {
+            if (newUser == null) throw new ArgumentNullException(nameof(newUser));
+
             newUser.ValidateNewUser(password);
 
             AssertNoExistingUser(newUser);
@@ -148,25 +170,46 @@ namespace ServiceStack.Authentication.RavenDb
 
         public void DeleteUserAuth(string ravenUserAuthId)
         {
+            if (string.IsNullOrEmpty(ravenUserAuthId))
+                return;
+
+            if (int.TryParse(ravenUserAuthId, out var intId) && !ravenUserAuthId.Contains("/"))
+                ravenUserAuthId = RavenIdConverter.ToString(UserAuthCollectionName, intId);
+
             using var session = documentStore.OpenSession();
             var userAuth = session.Load<TUserAuth>(ravenUserAuthId);
 
             var userAuthDetails = session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
                 .Customize(x => x.WaitForNonStaleResults())
-                .Where(q => q.UserAuthId == ravenUserAuthId);
-            session.Delete(userAuth);
+                .Where(q => q.UserAuthId == ravenUserAuthId)
+                .OfType<TUserAuthDetails>()
+                .ToList();
+
+            if (userAuth != null)
+                session.Delete(userAuth);
             userAuthDetails.Each(session.Delete);
             session.SaveChanges();
         }
 
         public IUserAuth GetUserAuth(string ravenUserAuthId)
         {
+            if (string.IsNullOrEmpty(ravenUserAuthId))
+                return null;
+
             using var session = documentStore.OpenSession();
-            return session.Load<TUserAuth>(ravenUserAuthId);
+            var userAuth = session.Load<TUserAuth>(ravenUserAuthId);
+            if (userAuth == null && int.TryParse(ravenUserAuthId, out var intId) && !ravenUserAuthId.Contains("/"))
+            {
+                userAuth = session.Load<TUserAuth>(RavenIdConverter.ToString(UserAuthCollectionName, intId));
+            }
+            return userAuth;
         }
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
         {
+            if (existingUser == null) throw new ArgumentNullException(nameof(existingUser));
+            if (newUser == null) throw new ArgumentNullException(nameof(newUser));
+
             newUser.ValidateNewUser();
 
             AssertNoExistingUser(newUser, existingUser);
@@ -189,6 +232,9 @@ namespace ServiceStack.Authentication.RavenDb
 
         public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
+            if (existingUser == null) throw new ArgumentNullException(nameof(existingUser));
+            if (newUser == null) throw new ArgumentNullException(nameof(newUser));
+
             newUser.ValidateNewUser(password);
 
             AssertNoExistingUser(newUser, existingUser);
@@ -256,6 +302,9 @@ namespace ServiceStack.Authentication.RavenDb
 
         public IUserAuth GetUserAuth(IAuthSession authSession, IAuthTokens tokens)
         {
+            if (authSession == null)
+                return null;
+
             if (!authSession.UserAuthId.IsNullOrEmpty())
             {
                 var userAuth = GetUserAuth(authSession.UserAuthId);
@@ -301,6 +350,12 @@ namespace ServiceStack.Authentication.RavenDb
 
         public List<IUserAuthDetails> GetUserAuthDetails(string ravenUserAuthId)
         {
+            if (string.IsNullOrEmpty(ravenUserAuthId))
+                return new List<IUserAuthDetails>();
+
+            if (int.TryParse(ravenUserAuthId, out var intId) && !ravenUserAuthId.Contains("/"))
+                ravenUserAuthId = RavenIdConverter.ToString(UserAuthCollectionName, intId);
+
             using var session = documentStore.OpenSession();
             return session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
                 .Customize(x => x.WaitForNonStaleResults())
@@ -328,8 +383,13 @@ namespace ServiceStack.Authentication.RavenDb
 
         public void SaveUserAuth(IAuthSession authSession)
         {
+            if (authSession == null)
+                throw new ArgumentNullException(nameof(authSession));
+
             using var session = documentStore.OpenSession();
             var userAuth = LoadOrCreateFromSession(authSession, session);
+            if (userAuth == null)
+                return;
 
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default)
@@ -342,18 +402,25 @@ namespace ServiceStack.Authentication.RavenDb
         static TUserAuth LoadOrCreateFromSession(IAuthSession authSession, Raven.Client.Documents.Session.IDocumentSession session)
         {
             TUserAuth userAuth = null;
-            if (!authSession.UserAuthId.IsNullOrEmpty())
+            if (authSession != null && !authSession.UserAuthId.IsNullOrEmpty())
             {
-                var ravenKey = RavenIdConverter.ToString(UserAuthCollectionName, int.Parse(authSession.UserAuthId));
+                string ravenKey = authSession.UserAuthId;
+                if (int.TryParse(authSession.UserAuthId, out var intId) && !authSession.UserAuthId.Contains("/"))
+                {
+                    ravenKey = RavenIdConverter.ToString(UserAuthCollectionName, intId);
+                }
                 userAuth = session.Load<TUserAuth>(ravenKey);
             }
-            else
+            if (userAuth == null && authSession != null)
                 userAuth = authSession.ConvertTo<TUserAuth>();
             return userAuth;
         }
 
         public void SaveUserAuth(IUserAuth userAuth)
         {
+            if (userAuth == null)
+                throw new ArgumentNullException(nameof(userAuth));
+
             using var session = documentStore.OpenSession();
             userAuth.ModifiedDate = DateTime.UtcNow;
             if (userAuth.CreatedDate == default)
@@ -382,7 +449,13 @@ namespace ServiceStack.Authentication.RavenDb
 
         public bool TryAuthenticate(Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence, out IUserAuth userAuth)
         {
-            userAuth = GetUserAuthByUserName(digestHeaders["username"]);
+            if (digestHeaders == null || !digestHeaders.TryGetValue("username", out var userName) || string.IsNullOrEmpty(userName))
+            {
+                userAuth = null;
+                return false;
+            }
+
+            userAuth = GetUserAuthByUserName(userName);
             if (userAuth == null)
                 return false;
 
@@ -419,14 +492,14 @@ namespace ServiceStack.Authentication.RavenDb
             {
                 var existingUser = GetUserAuthByUserName(newUser.UserName);
                 if (existingUser != null
-                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+                    && (exceptForExistingUser == null || (existingUser.Id != exceptForExistingUser.Id && GetKey(existingUser) != GetKey(exceptForExistingUser))))
                     throw new ArgumentException(ErrorMessages.UserAlreadyExistsFmt.LocalizeFmt(newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(newUser.Email);
                 if (existingUser != null
-                    && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+                    && (exceptForExistingUser == null || (existingUser.Id != exceptForExistingUser.Id && GetKey(existingUser) != GetKey(exceptForExistingUser))))
                     throw new ArgumentException(ErrorMessages.EmailAlreadyExistsFmt.LocalizeFmt(newUser.Email.SafeInput()));
             }
         }
@@ -489,6 +562,9 @@ namespace ServiceStack.Authentication.RavenDb
         #region IManageApiKeys
         public bool ApiKeyExists(string apiKey)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                return false;
+
             using var session = documentStore.OpenSession();
             var key = session.Load<ApiKey>(apiKey);
             return key != null;
@@ -496,12 +572,18 @@ namespace ServiceStack.Authentication.RavenDb
 
         public ApiKey GetApiKey(string apiKey)
         {
+            if (string.IsNullOrEmpty(apiKey))
+                return null;
+
             using var session = documentStore.OpenSession();
             return session.Load<ApiKey>(apiKey);
         }
 
         public List<ApiKey> GetUserApiKeys(string userId)
         {
+            if (string.IsNullOrEmpty(userId))
+                return new List<ApiKey>();
+
             using var session = documentStore.OpenSession();
             return session.Query<ApiKey>()
                 .Where(key =>
@@ -517,6 +599,9 @@ namespace ServiceStack.Authentication.RavenDb
 
         public void StoreAll(IEnumerable<ApiKey> apiKeys)
         {
+            if (apiKeys == null)
+                return;
+
             using var session = documentStore.OpenSession();
             foreach (ApiKey apiKey in apiKeys)
                 session.Store(apiKey);
