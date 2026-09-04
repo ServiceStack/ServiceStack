@@ -171,9 +171,11 @@ internal class MessageHandlerWorker(
                     if (!bgThread.Join(TimeSpan.FromSeconds(3)))
                     {
                         Log.Warn(bgThread.Name + " just wont die, so we're now aborting it...");
+#if !NETCORE
 #pragma warning disable CS0618, SYSLIB0014, SYSLIB0006
                         bgThread.Abort();
 #pragma warning restore CS0618, SYSLIB0014, SYSLIB0006
+#endif
                     }
                 }
             }
@@ -212,6 +214,6 @@ internal class MessageHandlerWorker(
 
     public string GetStatus()
     {
-        return $"[Worker: {QueueName}, Status: {WorkerStatus.ToString(status)}, ThreadStatus: {bgThread.ThreadState}, LastMsgAt: {LastMsgProcessed}]";
+        return $"[Worker: {QueueName}, Status: {WorkerStatus.ToString(status)}, ThreadStatus: {bgThread?.ThreadState.ToString() ?? "None"}, LastMsgAt: {LastMsgProcessed}]";
     }
 }

@@ -69,7 +69,7 @@ public class DbJobsWorker : IDisposable
         if (Interlocked.CompareExchange(ref running, 1, 0) == 0)
         {
             Interlocked.Increment(ref tasksStarted);
-            bgTask = Task.Factory.StartNew(RunAsync, new JobWorkerContext(Queue, jobs, ct), ct);
+            bgTask = Task.Factory.StartNew(RunAsync, new JobWorkerContext(Queue, jobs, ct), ct).Unwrap();
         }
     }
 
@@ -147,12 +147,12 @@ public class DbJobsWorker : IDisposable
                 workerCts.CancelAfter(timeoutMs);
                 try
                 {
-                    bgTask?.Wait(defaultTimeOutSecs); // Wait for the task to complete
+                    bgTask?.Wait(timeoutMs); // Wait for the task to complete
                 }
                 catch (Exception e)
                 {
                     LogManager.GetLogger(GetType())
-                        .Error($"BackgroundJobsWorker dispose error: {e.Message}", e);
+                        .Error($"DbJobsWorker dispose error: {e.Message}", e);
                 }
                 finally
                 {

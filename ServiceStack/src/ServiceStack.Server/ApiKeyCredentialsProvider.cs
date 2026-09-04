@@ -140,6 +140,9 @@ public class ApiKeyCredentialsProvider : AuthProvider
             return null;
         
         var source = request.TryResolve<IApiKeySource>();
+        if (source == null)
+            return null;
+
         if (ValidApiKeys.TryGetValue(token, out var apiKey))
             return apiKey;
 

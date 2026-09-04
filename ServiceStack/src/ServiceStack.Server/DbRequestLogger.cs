@@ -115,16 +115,22 @@ public class DbLoggingProvider
         var q = db.From<RequestLog>();
         var dateTimeColumn = q.Column<RequestLog>(c => c.DateTime);
         var months = db.SqlColumn<string>(q
-            .Select(x => new {
+            .SelectDistinct(x => new {
                 Month = SqlDateFormat(dateTimeColumn, "%Y-%m"),
             }));
 
         var ret = months
-            .Where(x => x.Contains('_'))
-            .Select(x => 
-                DateTime.TryParse(x.RightPart('_').LeftPart('.') + "-01", out var date) ? date : (DateTime?)null)
+            .Select(x => {
+                var str = x.StripDbQuotes();
+                if (str.Contains('_'))
+                {
+                    str = str.RightPart('_').LeftPart('.').Replace('_', '-');
+                }
+                return DateTime.TryParse(str + "-01", out var date) ? date : (DateTime?)null;
+            })
             .Where(x => x != null)
             .Select(x => x!.Value)
+            .Distinct()
             .OrderDescending()
             .ToList();
         
@@ -433,7 +439,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
 
         if (IgnoreRequestTypes.Length > 0)
         {
-            ExcludeRequestDtoTypes = ExcludeRequestDtoTypes.Union(IgnoreRequestTypes).ToArray(); 
+            ExcludeRequestDtoTypes = (ExcludeRequestDtoTypes ?? []).Union(IgnoreRequestTypes).ToArray(); 
         }
 
         if (AutoInitSchema)
@@ -509,15 +515,15 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
                 (SELECT 1 WHERE EXISTS(SELECT 1 from {tableName} where {ipAddress} IS NOT NULL)) AS ips
                 """;
             using var dbMonth = OpenMonthDb(DateTime.UtcNow);
-            var result = dbMonth.SqlList<(int? apis, int? users, int? apiKeys, bool? ips)>(sql).FirstOrDefault();
+            var result = dbMonth.SqlList<(int? apis, int? users, int? apiKeys, int? ips)>(sql).FirstOrDefault();
             ret.Tabs = new();
             if (result.apis == 1)
                 ret.Tabs["APIs"] = "";
             if (result.users == 1)
                 ret.Tabs["Users"] = "users";
-            if (result.apis == 1)
+            if (result.apiKeys == 1)
                 ret.Tabs["API Keys"] = "apiKeys";
-            if (result.apis == 1)
+            if (result.ips == 1)
                 ret.Tabs["IP Addresses"] = "ips";
         }
         catch (Exception ignore) {}
@@ -894,7 +900,7 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
         ret.Id = lastPk;
         ret.CleanResults(config);
 
-        if (ret.ApiKeys?.Count > 0)
+        if (ret.Ips?.Count > 0)
         {
             db.CreateTableIfNotExists<IpAnalytics>();
             db.Delete<IpAnalytics>(x => x.Ip == ip);

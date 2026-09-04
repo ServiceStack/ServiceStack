@@ -82,16 +82,22 @@ public class DbJobsProvider
         var q = db.From<CompletedJob>();
         var dateTimeColumn = q.Column<CompletedJob>(c => c.CreatedDate);
         var months = db.SqlColumn<string>(q
-            .Select(x => new {
+            .SelectDistinct(x => new {
                 Month = SqlDateFormat(dateTimeColumn, "%Y-%m"),
             }));
 
         var ret = months
-            .Where(x => x.Contains('_'))
-            .Select(x => 
-                DateTime.TryParse(x.RightPart('_').LeftPart('.') + "-01", out var date) ? date : (DateTime?)null)
+            .Select(x => {
+                var str = x.StripDbQuotes();
+                if (str.Contains('_'))
+                {
+                    str = str.RightPart('_').LeftPart('.').Replace('_', '-');
+                }
+                return DateTime.TryParse(str + "-01", out var date) ? date : (DateTime?)null;
+            })
             .Where(x => x != null)
             .Select(x => x!.Value)
+            .Distinct()
             .OrderDescending()
             .ToList();
         

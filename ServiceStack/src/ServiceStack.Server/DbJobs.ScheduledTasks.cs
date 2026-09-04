@@ -27,7 +27,8 @@ public partial class DbJobs
         var tasks = db.Select<ScheduledTask>();
         foreach (var task in tasks)
         {
-            namedScheduledTasks[task.Name] = task;
+            if (task.Name != null)
+                namedScheduledTasks[task.Name] = task;
             if (task.CronExpression != null && !cronExpressions.ContainsKey(task.CronExpression))
             {
                 cronExpressions[task.CronExpression] = CronExpression.Parse(task.CronExpression);
@@ -50,7 +51,8 @@ public partial class DbJobs
         }, where:x => x.Name == task.Name);
         if (updated == 0)
             task.Id = db.Insert(task, selectIdentity:true);
-        namedScheduledTasks[task.Name] = task;
+        if (task.Name != null)
+            namedScheduledTasks[task.Name] = task;
     }
 
     public void RecurringCommand(string taskName, Schedule schedule, string commandName, object arg, BackgroundJobOptions? options = null)
@@ -148,7 +150,7 @@ public partial class DbJobs
         BackgroundJobRef? jobRef = null;
         if (task.RequestType == CommandResult.Command)
         {
-            var request = CreateRequestForCommand(task.Command!, task.Request, task.RequestBody);
+            var request = CreateRequestForCommand(task.Command!, task.Request!, task.RequestBody);
             if (task.Options?.RunCommand == true)
             {
                 RunCommand(task.Command!, request, task.Options);
@@ -161,7 +163,7 @@ public partial class DbJobs
         }
         else if (task.RequestType == CommandResult.Api)
         {
-            var request = CreateRequestForApi(task.Request, task.RequestBody);
+            var request = CreateRequestForApi(task.Request!, task.RequestBody);
             jobRef = EnqueueApi(request, task.Options);
             task.LastJobId = jobRef.Id;
         }

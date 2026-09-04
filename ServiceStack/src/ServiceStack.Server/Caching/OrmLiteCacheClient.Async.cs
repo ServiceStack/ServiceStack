@@ -47,7 +47,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
     {
         return await ExecAsync(async db =>
         {
-            var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait());
+            var cache = await VerifyAsync(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait(), token).ConfigAwait();
             return cache == null
                 ? default
                 : db.Deserialize<T>(cache.Data);
@@ -60,7 +60,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
         {
             long nextVal;
             using var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted);
-            var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait());
+            var cache = await VerifyAsync(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait(), token).ConfigAwait();
 
             if (cache == null)
             {
@@ -87,7 +87,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
         {
             long nextVal;
             using var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted);
-            var cache = Verify(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait());
+            var cache = await VerifyAsync(db, await db.SingleByIdAsync<TCacheEntry>(key, token).ConfigAwait(), token).ConfigAwait();
 
             if (cache == null)
             {
@@ -328,7 +328,7 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
     {
         return await ExecAsync(async db =>
         {
-            var results = Verify(db, await db.SelectByIdsAsync<TCacheEntry>(keys, token).ConfigAwait());
+            var results = await VerifyAsync(db, await db.SelectByIdsAsync<TCacheEntry>(keys, token).ConfigAwait(), token).ConfigAwait();
             var map = new Dictionary<string, T?>();
 
             results.Each(x =>
@@ -414,4 +414,27 @@ public partial class OrmLiteCacheClient<TCacheEntry> : ICacheClientAsync, IRemov
 
     public Task RemoveByRegexAsync(string regex, CancellationToken token=default) => 
         throw new NotImplementedException();
+
+    public async Task<List<TCacheEntry>> VerifyAsync(IDbConnection db, IEnumerable<TCacheEntry> entries, CancellationToken token = default)
+    {
+        var results = entries.ToList();
+        var expired = results.RemoveAll(x => x.ExpiryDate != null && DateTime.UtcNow > x.ExpiryDate);
+        if (expired > 0)
+        {
+            await db.DeleteAsync<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate, token: token).ConfigAwait();
+        }
+
+        return results;
+    }
+
+    public async Task<TCacheEntry?> VerifyAsync(IDbConnection db, TCacheEntry? entry, CancellationToken token = default)
+    {
+        if (entry != null &&
+            entry.ExpiryDate != null && DateTime.UtcNow > entry.ExpiryDate)
+        {
+            await db.DeleteByIdAsync<TCacheEntry>(entry.Id, token: token).ConfigAwait();
+            return default;
+        }
+        return entry;
+    }
 }

@@ -74,12 +74,12 @@ public partial class DbJobs : IBackgroundJobs
         return RecordAndDispatchJob(job);
     }
  
-    readonly HashSet<Type> uniqueCommandTypes = new();
+    readonly ConcurrentDictionary<Type, bool> uniqueCommandTypes = new();
 
     public BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null)
     {
         var commandInfo = AssertCommand(commandName);
-        uniqueCommandTypes.Add(commandInfo.Type);
+        uniqueCommandTypes.TryAdd(commandInfo.Type, true);
         if (uniqueCommandTypes.Count > LicenseUtils.FreeQuotas.JobCommandTypes)
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Commands, uniqueCommandTypes.Count);
         
