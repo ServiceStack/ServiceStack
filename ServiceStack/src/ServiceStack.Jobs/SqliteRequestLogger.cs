@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -237,7 +237,9 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         
         if (IgnoreRequestTypes.Length > 0)
         {
-            ExcludeRequestDtoTypes = ExcludeRequestDtoTypes.Union(IgnoreRequestTypes).ToArray(); 
+            ExcludeRequestDtoTypes = ExcludeRequestDtoTypes != null
+                ? ExcludeRequestDtoTypes.Union(IgnoreRequestTypes).ToArray()
+                : IgnoreRequestTypes; 
         }
 
         if (AutoInitSchema)
@@ -380,15 +382,15 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
                 (SELECT 1 WHERE EXISTS(SELECT 1 from RequestLog where IpAddress IS NOT NULL)) AS ips
                 """;
             using var db = OpenMonthDb(DateTime.UtcNow);
-            var result = db.SqlList<(int? apis, int? users, int? apiKeys, bool? ips)>(sql).FirstOrDefault();
+            var result = db.SqlList<(int? apis, int? users, int? apiKeys, int? ips)>(sql).FirstOrDefault();
             ret.Tabs = new();
             if (result.apis == 1)
                 ret.Tabs["APIs"] = "";
             if (result.users == 1)
                 ret.Tabs["Users"] = "users";
-            if (result.apis == 1)
+            if (result.apiKeys == 1)
                 ret.Tabs["API Keys"] = "apiKeys";
-            if (result.apis == 1)
+            if (result.ips == 1)
                 ret.Tabs["IP Addresses"] = "ips";
         }
         catch (Exception ignore) {}
@@ -763,7 +765,7 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         ret.Id = lastPk;
         ret.CleanResults(config);
 
-        if (ret.ApiKeys?.Count > 0)
+        if (ret.Ips?.Count > 0)
         {
             db.CreateTableIfNotExists<IpAnalytics>();
             db.Delete<IpAnalytics>(x => x.Ip == ip);

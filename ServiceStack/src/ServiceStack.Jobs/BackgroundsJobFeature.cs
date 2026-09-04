@@ -176,6 +176,9 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
             new DirectoryInfo(DbDir)
             : new DirectoryInfo(HostContext.AppHost.GetHostingEnvironment().ContentRootPath.CombineWith(DbDir));
         
+        if (!dir.Exists)
+            return new List<DateTime>();
+        
         var monthDbs = dir.GetFiles()
             .Where(x => x.Name.Contains('_'));
 

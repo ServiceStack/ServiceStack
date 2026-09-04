@@ -12,8 +12,8 @@ public static class SqliteDataExtensions
         {
             if (!c.Exists<IAutoQueryDb>())
             {
-                c.AddSingleton<IAutoQueryDb>(c => 
-                    feature.CreateAutoQueryDb(c.GetService<IDbConnectionFactory>()));
+                c.AddSingleton<IAutoQueryDb>(sp => 
+                    feature.CreateAutoQueryDb(sp.GetService<IDbConnectionFactory>()));
             }
         });
     }

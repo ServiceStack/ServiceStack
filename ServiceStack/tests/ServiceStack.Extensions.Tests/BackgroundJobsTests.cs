@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
+using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.IO;
@@ -978,5 +979,115 @@ public class BackgroundJobsTests
         task = await db.SingleAsync<ScheduledTask>(x => x.Name == taskName);
         Assert.That(task.LastRun, Is.GreaterThan(startedAt));
         Assert.That(task.LastJobId, Is.EqualTo(job.Id));
+    }
+
+    [Test]
+    public void GetTableMonths_Handles_NonExistent_Directory()
+    {
+        var dummyFeature = new BackgroundsJobFeature
+        {
+            DbDir = Path.Combine(Path.GetTempPath(), "jobs_nonexistent_" + Guid.NewGuid().ToString("N"))
+        };
+        using var db = feature.Jobs.OpenDb();
+        var months = dummyFeature.GetTableMonths(db);
+        Assert.That(months, Is.Not.Null);
+        Assert.That(months, Is.Empty);
+    }
+
+    [Test]
+    public void SqliteRequestLogger_GetAnalyticInfo_Tabs_Correctly_Identified()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "requests_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var logger = new SqliteRequestLogger
+            {
+                DbDir = tempDir,
+                AppHost = appHost,
+                DbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider),
+                AutoInitSchema = true,
+            };
+            logger.Register(appHost);
+
+            using var db = logger.OpenMonthDb(DateTime.UtcNow);
+            // Insert only an IP entry (no operation name, user, or api key)
+            db.Insert(new RequestLog
+            {
+                Id = 1,
+                DateTime = DateTime.UtcNow,
+                IpAddress = "127.0.0.1",
+            });
+
+            var info = logger.GetAnalyticInfo(new AnalyticsConfig());
+            Assert.That(info.Tabs.ContainsKey("IP Addresses"), Is.True);
+            Assert.That(info.Tabs.ContainsKey("APIs"), Is.False);
+            Assert.That(info.Tabs.ContainsKey("Users"), Is.False);
+            Assert.That(info.Tabs.ContainsKey("API Keys"), Is.False);
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, true); } catch {}
+        }
+    }
+
+    [Test]
+    public void SqliteRequestLogger_GetIpAnalytics_Caches_When_Only_Ip_Exists()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "requests_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var logger = new SqliteRequestLogger
+            {
+                DbDir = tempDir,
+                AppHost = appHost,
+                DbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider),
+                AutoInitSchema = true,
+            };
+            logger.Register(appHost);
+
+            using var db = logger.OpenMonthDb(DateTime.UtcNow);
+            db.Insert(new RequestLog
+            {
+                Id = 1,
+                DateTime = DateTime.UtcNow,
+                IpAddress = "192.168.1.100",
+                OperationName = "TestOp",
+                StatusCode = 200,
+                RequestDuration = TimeSpan.FromMilliseconds(50),
+            });
+
+            var report = logger.GetIpAnalytics(new AnalyticsConfig(), DateTime.UtcNow, "192.168.1.100");
+            Assert.That(report, Is.Not.Null);
+
+            // Verify it was cached in the database table IpAnalytics
+            var cached = db.Single<IpAnalytics>(x => x.Ip == "192.168.1.100");
+            Assert.That(cached, Is.Not.Null);
+            Assert.That(cached.Ip, Is.EqualTo("192.168.1.100"));
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, true); } catch {}
+        }
+    }
+
+    [Test]
+    public async Task Concurrent_EnqueueCommand_Is_ThreadSafe()
+    {
+        ResetState();
+        var exceptions = new System.Collections.Concurrent.ConcurrentBag<Exception>();
+        var tasks = Enumerable.Range(0, 20).Select(i => Task.Run(() =>
+        {
+            try
+            {
+                feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = i });
+            }
+            catch (Exception ex)
+            {
+                exceptions.Add(ex);
+            }
+        })).ToArray();
+
+        await Task.WhenAll(tasks);
+        Assert.That(exceptions, Is.Empty);
     }
 }
