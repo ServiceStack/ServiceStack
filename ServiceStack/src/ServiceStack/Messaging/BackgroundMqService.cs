@@ -277,7 +277,7 @@ public class BackgroundMqService : IMessageService
             if (message is Message msg)
             {
                 (msg.Meta ?? (msg.Meta = new Dictionary<string, string>()))[MessageQueueKey] = queueName;
-                unknownQueues.Add(msg);
+                (unknownQueues ??= new BlockingCollection<IMessage>()).Add(msg);
             }
             else
             {
@@ -711,27 +711,34 @@ public class BackgroundMqWorker : IMqWorker
         bgTask = Task.Factory.StartNew(Run, null, TaskCreationOptions.LongRunning);
     }
 
-    private Task Run(object state)
+    private Task Run(object? state)
     {
         if (Log.IsDebugEnabled)
             Log.Debug($"MQ Starting {QueueName} BackgroundMqWorker...");
 
         while (cts != null && !cts.IsCancellationRequested)
         {
-            foreach (var item in queue.GetConsumingEnumerable(cts.Token))
+            try
             {
-                try
+                foreach (var item in queue.GetConsumingEnumerable(cts.Token))
                 {
-                    LastMessage = DateTime.UtcNow;
-                    if (Log.IsDebugEnabled)
-                        Log.Debug($"MQ [{QueueName}] ProcessMessage(): {item.Id}");
-                        
-                    handler.ProcessMessage(mqClient, item);
+                    try
+                    {
+                        LastMessage = DateTime.UtcNow;
+                        if (Log.IsDebugEnabled)
+                            Log.Debug($"MQ [{QueueName}] ProcessMessage(): {item.Id}");
+                            
+                        handler.ProcessMessage(mqClient, item);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"MQ [{QueueName}] failed to ProcessMessage with id {item.Id}: {ex.Message}", ex);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Log.Error($"MQ [{QueueName}] failed to ProcessMessage with id {item.Id}: {ex.Message}", ex);
-                }
+            }
+            catch (OperationCanceledException)
+            {
+                break;
             }
         }
         
@@ -758,7 +765,7 @@ public class BackgroundMqWorker : IMqWorker
         if (Log.IsDebugEnabled)
             Log.Debug($"MQ Disposing {QueueName} BackgroundMqWorker...");
 
-        new IDisposable[]{ cts, bgTask }.Dispose();
+        new IDisposable?[]{ cts, bgTask }.Dispose();
         cts = null;
         bgTask = null;
     }

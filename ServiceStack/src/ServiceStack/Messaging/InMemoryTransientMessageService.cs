@@ -26,4 +26,13 @@ public class InMemoryTransientMessageService
     public override IMessageFactory MessageFactory => Factory;
 
     public MessageQueueClientFactory MessageQueueFactory => Factory.MqFactory;
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        if (Factory?.MqFactory != null)
+        {
+            Factory.MqFactory.MessageReceived -= factory_MessageReceived;
+        }
+    }
 }

@@ -217,4 +217,23 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
 - **`ResolutionException.cs`**:
   - Guarded `missingServiceType?.FullName ?? "null"` in constructors to prevent NRE during exception creation.
 
+---
 
+## 11. Messaging Subsystem Modernization & Concurrency Safety
+- **`TransientMessageServiceBase.cs`**:
+  - Synchronized `RegisterHandler<T>` and `RegisteredTypes` using `lock (handlerMap)` to prevent race conditions during concurrent handler registrations and type discovery.
+  - Added null safety checks in `GetStats()` and `GetStatsDescription()` to guard against `messageHandlers == null` when called on stopped or unstarted services, preventing `NullReferenceException`.
+  - Guarded `DisposeMessageHandler` against `messageHandlers == null` and race conditions on service teardown.
+- **`InMemoryTransientMessageService.cs`**:
+  - Overrode `Dispose()` to safely detach `Factory.MqFactory.MessageReceived -= factory_MessageReceived`, preventing event handler memory leaks and duplicate invocations after disposal.
+- **`InMemoryTransientMessageFactory.cs`**:
+  - Implemented `SendAllOneWay(IEnumerable<object> requests)` to iterate and dispatch batch one-way requests instead of throwing `NotImplementedException`.
+  - Added null guards in `Publish(string queueName, IMessage message)` for null/empty queue names and null messages.
+  - Guarded `Publish<T>(IMessage<T> message)` against null messages before queue name resolution.
+  - Added null parameter guards in `SendOneWay(object requestDto)` and `SendOneWay(string queueName, object requestDto)`.
+- **`MessageHandler.cs`**:
+  - Guarded `ProcessMessage(IMessageQueueClient mqClient, IMessage<T> message)` and `ProcessMessage(IMessageQueueClient mqClient, object mqResponse)` against null `mqClient` or null `message`.
+  - Guarded `DefaultInExceptionHandler` against null `message`, null `ex`, and null `mqHandler.MqClient` to prevent cascaded exceptions during MQ failure handling.
+- **`BackgroundMqService.cs`**:
+  - Guarded `unknownQueues` publishing: initialized lazily with `(unknownQueues ??= new BlockingCollection<IMessage>()).Add(msg)` to prevent `NullReferenceException` when published before `Start()` or after `Stop()`.
+  - Handled `OperationCanceledException` cleanly in `BackgroundMqWorker.Run` consuming loop to allow background worker threads to exit gracefully upon cancellation without unobserved task exceptions.

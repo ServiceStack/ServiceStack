@@ -101,26 +101,29 @@ public class MessageHandler<T>
         Log.Error("Message exception handler threw an error", ex);
 
         bool requeue = ex is not UnRetryableMessagingException
-                       && message.RetryAttempts < retryCount;
+                       && message != null && message.RetryAttempts < retryCount;
 
-        if (requeue)
+        if (requeue && message != null)
         {
             message.RetryAttempts++;
             this.TotalRetries++;
         }
 
-        message.Error = ex.ToResponseStatus();
-        mqHandler.MqClient.Nak(message, requeue: requeue, exception: ex);
+        if (message != null)
+            message.Error = ex?.ToResponseStatus();
+        mqHandler?.MqClient?.Nak(message, requeue: requeue, exception: ex);
     }
 
     public void ProcessMessage(IMessageQueueClient mqClient, object mqResponse)
     {
+        if (mqClient == null || mqResponse == null) return;
         var message = mqClient.CreateMessage<T>(mqResponse);
         ProcessMessage(mqClient, message);
     }
 
     public void ProcessMessage(IMessageQueueClient mqClient, IMessage<T> message)
     {
+        if (mqClient == null || message == null) return;
         this.MqClient = mqClient;
         bool msgHandled = false;
 

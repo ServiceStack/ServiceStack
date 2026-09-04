@@ -52,22 +52,36 @@ public abstract class TransientMessageServiceBase
 
     public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
     {
-        if (handlerMap.ContainsKey(typeof(T)))
+        lock (handlerMap)
         {
-            throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).GetOperationName());
-        }
+            if (handlerMap.ContainsKey(typeof(T)))
+            {
+                throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).GetOperationName());
+            }
 
-        handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
+            handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
+        }
     }
 
     public IMessageHandlerStats GetStats()
     {
         var total = new MessageHandlerStats("All Handlers");
-        messageHandlers.Each(x => total.Add(x.GetStats()));
+        messageHandlers?.Each(x => {
+            if (x != null) total.Add(x.GetStats());
+        });
         return total;
     }
 
-    public List<Type> RegisteredTypes => handlerMap.Keys.ToList();
+    public List<Type> RegisteredTypes
+    {
+        get
+        {
+            lock (handlerMap)
+            {
+                return handlerMap.Keys.ToList();
+            }
+        }
+    }
 
     public string GetStatus()
     {
@@ -79,10 +93,14 @@ public abstract class TransientMessageServiceBase
         var sb = StringBuilderCache.Allocate();
         sb.Append("#MQ HOST STATS:\n");
         sb.AppendLine("===============");
-        foreach (var messageHandler in messageHandlers)
+        if (messageHandlers != null)
         {
-            sb.AppendLine(messageHandler.GetStats().ToString());
-            sb.AppendLine("---------------");
+            foreach (var messageHandler in messageHandlers)
+            {
+                if (messageHandler == null) continue;
+                sb.AppendLine(messageHandler.GetStats().ToString());
+                sb.AppendLine("---------------");
+            }
         }
         return StringBuilderCache.ReturnAndFree(sb);
     }
@@ -138,7 +156,7 @@ public abstract class TransientMessageServiceBase
     {
         lock (handlerMap)
         {
-            if (!isRunning) return;
+            if (!isRunning || messageHandlers == null) return;
 
             var allHandlersAreDisposed = true;
             for (var i = 0; i < messageHandlers.Length; i++)

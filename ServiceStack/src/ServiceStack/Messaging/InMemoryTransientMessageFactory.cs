@@ -66,28 +66,37 @@ public class InMemoryTransientMessageFactory
 
         public void Publish<T>(IMessage<T> message)
         {
+            if (message == null) return;
             Publish(message.ToInQueueName(), message);
         }
 
         public void Publish(string queueName, IMessage message)
         {
-            this.parent.transientMessageService.MessageQueueFactory
+            if (string.IsNullOrEmpty(queueName) || message == null) return;
+            this.parent?.transientMessageService?.MessageQueueFactory?
                 .PublishMessage(queueName, MessageSerializer.Instance.ToBytes(message));
         }
 
         public void SendOneWay(object requestDto)
         {
+            if (requestDto == null) return;
             Publish(MessageFactory.Create(requestDto));
         }
 
         public void SendOneWay(string queueName, object requestDto)
         {
+            if (string.IsNullOrEmpty(queueName) || requestDto == null) return;
             Publish(queueName, MessageFactory.Create(requestDto));
         }
 
         public void SendAllOneWay(IEnumerable<object> requests)
         {
-            throw new NotImplementedException();
+            if (requests == null) return;
+            foreach (var request in requests)
+            {
+                if (request != null)
+                    SendOneWay(request);
+            }
         }
 
         public void Dispose()
