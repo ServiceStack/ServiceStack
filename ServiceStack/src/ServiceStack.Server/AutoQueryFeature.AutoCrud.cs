@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -194,23 +194,23 @@ public partial class CheckCrudEventService(IAutoQueryDb autoQuery) : Service
 
 public class CrudContext
 {
-    public ServiceStackHost AppHost { get; private set; }
-    public IRequest Request { get; private set; }
-    public IDbConnection Db { get; private set; }
-    public ICrudEvents? Events { get; private set; }
+    public ServiceStackHost AppHost { get; set; }
+    public IRequest Request { get; set; }
+    public IDbConnection Db { get; set; }
+    public ICrudEvents? Events { get; set; }
     public string Operation { get; set; }
-    public object Dto { get; private set; }
-    public Type ModelType { get; private set; }
-    public Type RequestType { get; private set; }
-    public Type? ResponseType { get; private set; }
-    public ModelDefinition ModelDef { get; private set; }
-    public PropertyAccessor? IdProp { get; private set; }
-    public PropertyAccessor? ResultProp { get; private set; }
-    public PropertyAccessor? CountProp { get; private set; }
-    public PropertyAccessor? RowVersionProp { get; private set; }
+    public object Dto { get; set; }
+    public Type ModelType { get; set; }
+    public Type RequestType { get; set; }
+    public Type? ResponseType { get; set; }
+    public ModelDefinition ModelDef { get; set; }
+    public PropertyAccessor? IdProp { get; set; }
+    public PropertyAccessor? ResultProp { get; set; }
+    public PropertyAccessor? CountProp { get; set; }
+    public PropertyAccessor? RowVersionProp { get; set; }
     // When UseDatabaseWriteLocks=true to prevent concurrent writes (e.g for SQLite)
     // Primary DB Connection uses Locks.AppDb whilst Named Connections uses Locks.NamedConnections
-    public object? DbLock { get; private set; }
+    public object? DbLock { get; set; }
     public T DbExec<T>(Func<IDbConnection, T> fn)
     {
         if (DbLock != null)
@@ -250,8 +250,11 @@ public class CrudContext
         RowsUpdated = result.RowsUpdated;
     }
         
-    internal GetMemberDelegate? RequestIdGetter() => 
-        TypeProperties.Get(RequestType).GetPublicGetter(ModelDef.PrimaryKey.Name);
+    internal GetMemberDelegate? RequestIdGetter()
+    {
+        var pk = ModelDef?.FieldDefinitions.FirstOrDefault(x => x.IsPrimaryKey);
+        return pk != null ? TypeProperties.Get(RequestType).GetPublicGetter(pk.Name) : null;
+    }
         
     internal void ThrowPrimaryKeyRequiredForRowVersion() =>
         throw new NotSupportedException($"Could not resolve Primary Key from '{RequestType.Name}' to be able to resolve RowVersion");
@@ -270,7 +273,7 @@ public class CrudContext
             Operation = operation,
             Request = request ?? throw new ArgumentNullException(nameof(request)),
             Db = db ?? throw new ArgumentNullException(nameof(db)),
-            NamedConnection = appHost.TryResolve<IAutoQueryDb>().GetDbNamedConnection(tableType), 
+            NamedConnection = appHost.TryResolve<IAutoQueryDb>()?.GetDbNamedConnection(tableType), 
             Events = appHost.TryResolve<ICrudEvents>(),
             Dto = dto,
             ModelType = tableType,
@@ -386,10 +389,10 @@ public class AutoCrudMetadata
 
             if (!AutoQuery.IncludeCrudProperties.Contains(propName))
             {
-                var hasProp = to.ModelDef.GetFieldDefinition(propName) != null;
+                var hasProp = to.ModelDef?.GetFieldDefinition(propName) != null;
                 if (!hasProp)
                 {
-                    var modelProp = to.ModelType.GetPublicProperties()
+                    var modelProp = to.ModelType?.GetPublicProperties()
                         .FirstOrDefault(x => x.Name.Equals(propName, StringComparison.OrdinalIgnoreCase));
                     hasProp = modelProp?.FirstAttribute<ReferenceAttribute>() != null;
                 }
@@ -1030,9 +1033,10 @@ public partial class AutoQuery : IAutoCrudDb
             var exprParamsList = new List<object?>();
 
             //Update's require PK's, Delete's don't need to
-            if (dtoValues.TryRemove(meta.ModelDef.PrimaryKey.Name, out var idValue))
+            var pk = meta.ModelDef?.FieldDefinitions.FirstOrDefault(x => x.IsPrimaryKey);
+            if (pk != null && dtoValues.TryRemove(pk.Name, out var idValue))
             {
-                var idColumn = dialectProvider.GetQuotedColumnName(meta.ModelDef, meta.ModelDef.PrimaryKey);
+                var idColumn = dialectProvider.GetQuotedColumnName(meta.ModelDef, pk);
                 sb.Append(idColumn + " = {0}");
                 exprParamsList.Add(idValue);
             }
@@ -1237,6 +1241,9 @@ public abstract partial class AutoQueryServiceBase
 
     public virtual async Task<object> BatchCreateAsync<T>(IEnumerable<ICreateDb<T>> requests)
     {
+        if (requests == null)
+            return CreateGenericList<T>(typeof(object));
+
         using var db = AutoQuery.GetDb<T>(Request);
         using var dbTrans = db.OpenTransaction();
 
@@ -1258,6 +1265,9 @@ public abstract partial class AutoQueryServiceBase
 
     public virtual async Task<object> BatchUpdateAsync<T>(IEnumerable<IUpdateDb<T>> requests)
     {
+        if (requests == null)
+            return CreateGenericList<T>(typeof(object));
+
         using var db = AutoQuery.GetDb<T>(Request);
         using var dbTrans = db.OpenTransaction();
 
@@ -1279,6 +1289,9 @@ public abstract partial class AutoQueryServiceBase
 
     public virtual async Task<object> BatchPatchAsync<T>(IEnumerable<IPatchDb<T>> requests)
     {
+        if (requests == null)
+            return CreateGenericList<T>(typeof(object));
+
         using var db = AutoQuery.GetDb<T>(Request);
         using var dbTrans = db.OpenTransaction();
 
@@ -1300,6 +1313,9 @@ public abstract partial class AutoQueryServiceBase
 
     public virtual async Task<object> BatchDeleteAsync<T>(IEnumerable<IDeleteDb<T>> requests)
     {
+        if (requests == null)
+            return CreateGenericList<T>(typeof(object));
+
         using var db = AutoQuery.GetDb<T>(Request);
         using var dbTrans = db.OpenTransaction();
 
@@ -1321,6 +1337,9 @@ public abstract partial class AutoQueryServiceBase
 
     public virtual async Task<object> BatchSaveAsync<T>(IEnumerable<ISaveDb<T>> requests)
     {
+        if (requests == null)
+            return CreateGenericList<T>(typeof(object));
+
         using var db = AutoQuery.GetDb<T>(Request);
         using var dbTrans = db.OpenTransaction();
 

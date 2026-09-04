@@ -176,10 +176,10 @@ public static class CrudUtils
         List<string>? excludeTables = null,
         ITableResolver? config = null)
     {
-        var results = dbFactory.GetTableSchemas(namedConnection: null,
-            schema: null,
-            includeTables: null, excludeTables: null, config: null);
-        results.Each(t => t.Columns.Each(c => c.BaseServerName = null));
+        var results = dbFactory.GetTableSchemas(namedConnection: namedConnection,
+            schema: schema,
+            includeTables: includeTables, excludeTables: excludeTables, config: config);
+        results.Each(t => t.Columns?.Each(c => c.BaseServerName = null));
         return results;
     }
 

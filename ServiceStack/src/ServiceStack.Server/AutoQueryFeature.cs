@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -176,6 +176,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
     }
 
     public AutoQuery CreateAutoQueryDb(IDbConnectionFactory dbFactory) => new() {
+        DbFactory = dbFactory,
         Feature = this,
         IgnoreProperties = IgnoreProperties,
         IllegalSqlFragmentTokens = IllegalSqlFragmentTokens,
@@ -242,6 +243,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
 
     public void BeforePluginsLoaded(IAppHost appHost)
     {
+        if (appHost == null) return;
         if (HtmlModule != null)
         {
             appHost.ConfigurePlugin<UiFeature>(feature =>
@@ -256,6 +258,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
 
     public void Register(IAppHost appHost)
     {
+        if (appHost == null) return;
         if (StripUpperInLike)
         {
             if (ImplicitConventions.TryGetValue("%Like%", out var convention) && convention == SqlTemplate.CaseInsensitiveLike)
@@ -287,7 +290,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
                 Async = EnableAsync.NullIfFalse(),
                 AutoQueryViewer = EnableAutoQueryViewer.NullIfFalse(),
                 OrderByPrimaryKey = OrderByPrimaryKeyOnPagedQuery.NullIfFalse(),
-                CrudEvents = appHost.GetContainer().Exists<ICrudEvents>().NullIfFalse(),
+                CrudEvents = (appHost.GetContainer()?.Exists<ICrudEvents>() == true).NullIfFalse(),
                 CrudEventsServices = (ServiceRoutes.ContainsKey(typeof(GetCrudEventsService)) && AccessRole != null).NullIfFalse(),
                 AccessRole = AccessRole,
                 NamedConnection = UseNamedConnection,
@@ -365,8 +368,9 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
                 
             var genericArgs = genericDef.GetGenericArguments();
             var mi = AutoQueryServiceBaseType.GetMethods()
-                .First(x => x.Name == queryMethod && 
-                            x.GetGenericArguments().Length == genericArgs.Length);
+                .FirstOrDefault(x => x.Name == queryMethod && 
+                            x.GetGenericArguments().Length == genericArgs.Length)
+                ?? throw new NotSupportedException($"Method '{queryMethod}' with {genericArgs.Length} generic arguments not found on '{AutoQueryServiceBaseType.Name}'");
             var genericMi = mi.MakeGenericMethod(genericArgs);
 
             var queryType = hasExplicitInto
@@ -415,8 +419,9 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
                 
             var genericArgs = genericDef.GetGenericArguments();
             var mi = AutoQueryServiceBaseType.GetMethods()
-                .First(x => x.Name == crudMethod && 
-                            x.GetGenericArguments().Length == genericArgs.Length);
+                .FirstOrDefault(x => x.Name == crudMethod && 
+                            x.GetGenericArguments().Length == genericArgs.Length)
+                ?? throw new NotSupportedException($"Method '{crudMethod}' with {genericArgs.Length} generic arguments not found on '{AutoQueryServiceBaseType.Name}'");
             var genericMi = mi.MakeGenericMethod(genericArgs);
 
             var crudTypeArg = crudType.MakeGenericType(genericArgs);
@@ -719,9 +724,9 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
         using var db = AutoQuery.GetDb<From>(Request);
         using (Profiler.Current.Step("AutoQuery.CreateQuery"))
         {
-            var reqParams = Request.IsInProcessRequest()
-                ? Request.GetDtoQueryParams()
-                : Request.GetRequestParams();
+            var reqParams = Request != null
+                ? (Request.IsInProcessRequest() ? Request.GetDtoQueryParams() : Request.GetRequestParams())
+                : [];
             q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
         }
         using (Profiler.Current.Step("AutoQuery.Execute"))
@@ -736,9 +741,9 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
         using var db = AutoQuery.GetDb<From>(Request);
         using (Profiler.Current.Step("AutoQuery.CreateQuery"))
         {
-            var reqParams = Request.IsInProcessRequest()
-                ? Request.GetDtoQueryParams()
-                : Request.GetRequestParams();
+            var reqParams = Request != null
+                ? (Request.IsInProcessRequest() ? Request.GetDtoQueryParams() : Request.GetRequestParams())
+                : [];
             q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
         }
         using (Profiler.Current.Step("AutoQuery.Execute"))
@@ -753,9 +758,9 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
         using var db = AutoQuery.GetDb<From>(Request);
         using (Profiler.Current.Step("AutoQuery.CreateQuery"))
         {
-            var reqParams = Request.IsInProcessRequest()
-                ? Request.GetDtoQueryParams()
-                : Request.GetRequestParams();
+            var reqParams = Request != null
+                ? (Request.IsInProcessRequest() ? Request.GetDtoQueryParams() : Request.GetRequestParams())
+                : [];
             q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
         }
         using (Profiler.Current.Step("AutoQuery.Execute"))
@@ -770,9 +775,9 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
         using var db = AutoQuery.GetDb<From>(Request);
         using (Profiler.Current.Step("AutoQuery.CreateQuery"))
         {
-            var reqParams = Request.IsInProcessRequest()
-                ? Request.GetDtoQueryParams()
-                : Request.GetRequestParams();
+            var reqParams = Request != null
+                ? (Request.IsInProcessRequest() ? Request.GetDtoQueryParams() : Request.GetRequestParams())
+                : [];
             q = AutoQuery.CreateQuery(dto, reqParams, Request, db);
         }
         using (Profiler.Current.Step("AutoQuery.Execute"))
@@ -862,6 +867,9 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
     public SqlExpression<From> Filter<From>(ISqlExpression q, IQueryDb dto, IRequest? req)
     {
+        if (dto == null)
+            return (SqlExpression<From>)q;
+
         GlobalQueryFilter?.Invoke(q, dto, req);
 
         if (QueryFilters == null)
@@ -883,6 +891,9 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
     public ISqlExpression Filter(ISqlExpression q, IQueryDb dto, IRequest? req)
     {
+        if (dto == null)
+            return q;
+
         GlobalQueryFilter?.Invoke(q, dto, req);
 
         if (QueryFilters == null)
@@ -953,22 +964,35 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
         return response;
     }
 
+    public IDbConnectionFactory? DbFactory { get; set; }
+
     public string? GetDbNamedConnection(Type fromType, IRequest? req = null)
     {
         var namedConnection = UseNamedConnection;
-        var attr = fromType.FirstAttribute<NamedConnectionAttribute>();
+        var attr = fromType?.FirstAttribute<NamedConnectionAttribute>();
         return attr != null 
             ? attr.Name 
-            : namedConnection ?? (req != null ? HostContext.AppHost.GetDbNamedConnection(req) : null);
+            : namedConnection ?? (req != null && HostContext.AppHost != null ? HostContext.AppHost.GetDbNamedConnection(req) : null);
     }
 
     public IDbConnection GetDb<From>(IRequest? req = null) => GetDb(typeof(From), req);
     public IDbConnection GetDb(Type fromType, IRequest? req = null)
     {
         var namedConnection = GetDbNamedConnection(fromType, req);
-        return namedConnection == null 
-            ? HostContext.AppHost.GetDbConnection(req)
-            : HostContext.AppHost.GetDbConnection(namedConnection, req);
+        if (namedConnection != null)
+        {
+            if (HostContext.AppHost != null)
+                return HostContext.AppHost.GetDbConnection(namedConnection, req);
+            if (DbFactory is IDbConnectionFactoryExtended dbe)
+                return dbe.OpenDbConnection(namedConnection);
+            return (DbFactory ?? HostContext.TryResolve<IDbConnectionFactory>())?.OpenDbConnection()
+                ?? throw new InvalidOperationException("IDbConnectionFactory is not configured");
+        }
+
+        if (HostContext.AppHost != null)
+            return HostContext.AppHost.GetDbConnection(req);
+        return (DbFactory ?? HostContext.TryResolve<IDbConnectionFactory>())?.OpenDbConnection()
+            ?? throw new InvalidOperationException("IDbConnectionFactory is not configured");
     }
 
     public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest? req = null, IDbConnection? db = null)
@@ -1050,7 +1074,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
             
         ResolveTypes(requestDtoType, out var fromType, out var intoType);
 
-        if (genericAutoQueryCache.TryGetValue(fromType, out GenericAutoQueryDb typedApi))
+        if (genericAutoQueryCache.TryGetValue(requestDtoType, out GenericAutoQueryDb typedApi))
             return typedApi.ExecuteObject(this, request, q, db);
 
         var instance = GetGenericAutoQueryDb(fromType, intoType, requestDtoType);
@@ -1067,7 +1091,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
             
         ResolveTypes(requestDtoType, out var fromType, out var intoType);
 
-        if (genericAutoQueryCache.TryGetValue(fromType, out GenericAutoQueryDb typedApi))
+        if (genericAutoQueryCache.TryGetValue(requestDtoType, out GenericAutoQueryDb typedApi))
             return typedApi.ExecuteObjectAsync(this, request, q, db);
 
         var instance = GetGenericAutoQueryDb(fromType, intoType, requestDtoType);
@@ -1449,7 +1473,9 @@ public class TypedQuery<QueryModel, From> : ITypedQuery
         else if ((dto.Skip != null || dto.Take != null)
                  && options is { OrderByPrimaryKeyOnLimitQuery: true })
         {
-            q.OrderByFields(typeof(From).GetModelMetadata().PrimaryKey);
+            var pk = typeof(From).GetModelMetadata()?.PrimaryKey;
+            if (pk != null)
+                q.OrderByFields(pk);
         }
     }
 
@@ -1734,22 +1760,22 @@ public static class AutoQueryExtensions
 
     public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest? request)
     {
-        return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
+        return autoQuery.CreateQuery(model, request?.GetRequestParams() ?? [], request);
     }
 
     public static SqlExpression<From> CreateQuery<From>(this IAutoQueryDb autoQuery, IQueryDb<From> model, IRequest? request, IDbConnection? db)
     {
-        return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
+        return autoQuery.CreateQuery(model, request?.GetRequestParams() ?? [], request, db);
     }
 
     public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From, Into> model, IRequest? request)
     {
-        return autoQuery.CreateQuery(model, request.GetRequestParams(), request);
+        return autoQuery.CreateQuery(model, request?.GetRequestParams() ?? [], request);
     }
 
     public static SqlExpression<From> CreateQuery<From, Into>(this IAutoQueryDb autoQuery, IQueryDb<From, Into> model, IRequest? request, IDbConnection db)
     {
-        return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
+        return autoQuery.CreateQuery(model, request?.GetRequestParams() ?? [], request, db);
     }
 
     public static IDbConnection GetDb<From>(this IAutoQueryDb autoQuery, IQueryDb<From> dto, IRequest? req = null) => 

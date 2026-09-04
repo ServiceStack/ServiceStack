@@ -44,22 +44,22 @@ public abstract class CrudEventsBase<T>
         if (urnValue.IndexOf(':') >= 0)
             urnValue = urnValue.Replace(":", "%3A");
 
-        var userSession = context.Request.GetSession();
+        var userSession = context.Request?.GetSession();
         if (userSession?.IsAuthenticated != true)
             userSession = null;
 
         var to = typeof(T).CreateInstance<T>();
-        to.Urn = $"urn:{context.ModelType.Name}:{urnValue}";
+        to.Urn = $"urn:{context.ModelType?.Name}:{urnValue}";
         to.EventType = context.Operation;
-        to.Model = context.ModelType.Name;
+        to.Model = context.ModelType?.Name;
         to.ModelId = context.Id?.ToString();
         to.EventDate = DateTime.UtcNow;
         to.RowsUpdated = context.RowsUpdated;
-        to.RequestType = context.Dto.GetType().Name;
-        to.RequestBody = Serializer?.Invoke(context.Dto);
+        to.RequestType = context.Dto?.GetType().Name ?? context.RequestType?.Name;
+        to.RequestBody = context.Dto != null ? Serializer?.Invoke(context.Dto) : null;
         to.UserAuthId = userSession?.UserAuthId;
         to.UserAuthName = userSession?.GetUserAuthName();
-        to.RemoteIp = IpMask(context.Request.RemoteIp);
+        to.RemoteIp = IpMask != null && context.Request != null ? IpMask(context.Request.RemoteIp) : context.Request?.RemoteIp;
         return to;
     }
 }
@@ -188,7 +188,7 @@ public class OrmLiteCrudEvents<T>(IDbConnectionFactory dbFactory) : CrudEventsBa
 
     private IDbConnectionFactory DbFactory { get; } = dbFactory;
 
-    public bool ShouldRecord(CrudContext context) => context.NamedConnection != null
+    public bool ShouldRecord(CrudContext context) => context?.NamedConnection != null
         ? NamedConnections.Contains(context.NamedConnection)
         : !ExcludePrimaryDb;
 
@@ -356,6 +356,7 @@ public static class CrudEventsUtils
         
     public static void InitSchema(this ICrudEvents events)
     {
+        if (events == null) return;
         if (events is IRequiresSchema requiresSchema)
         {
             requiresSchema.InitSchema();
@@ -364,6 +365,7 @@ public static class CrudEventsUtils
 
     public static void Clear(this ICrudEvents events)
     {
+        if (events == null) return;
         if (events is IClearable clearable)
         {
             clearable.Clear();

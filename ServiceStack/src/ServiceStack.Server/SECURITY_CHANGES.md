@@ -54,4 +54,37 @@ This document summarizes modernization, concurrency hardening, reliability, and 
 - **`ServiceStack.Server.csproj`**:
   - Standardized target framework define constants (`NET6_0`, `NET8_0`, `NET10_0`).
 - **`Properties/AssemblyInfo.cs`**:
-  - Added `#if !NET472` conditional `InternalsVisibleTo("ServiceStack.Server.Tests")` to support strong-named builds under `net472` while enabling comprehensive unit testing on modern .NET targets.
+  - Added `#if !NET472` conditional `InternalsVisibleTo("ServiceStack.Server.Tests")` and `InternalsVisibleTo("ServiceStack.WebHost.Endpoints.Tests")` to support strong-named builds under `net472` while enabling comprehensive unit testing on modern .NET targets.
+
+---
+
+## 8. AutoQuery and AutoCrud Reliability & Cache Hardening
+- **`AutoQueryFeature.cs`**:
+  - Aligned cache key in untyped `Execute` and `ExecuteAsync` (`genericAutoQueryCache.TryGetValue(requestDtoType, ...)` instead of `fromType`), eliminating cache misses and preventing mapping collisions across different query DTOs targeting the same source table.
+  - Replaced unsafe reflection `.First(...)` in dynamic IL service generation (`GenerateMissingQueryServices`) with `.FirstOrDefault(...)` and descriptive `NotSupportedException` errors.
+  - Added `DbFactory` property on `AutoQuery` with fallback in `GetDb` and `GetDbNamedConnection` to support standalone / in-process execution when `HostContext.AppHost` is null.
+  - Guarded `AutoQueryServiceBase.Exec` and `ExecAsync` against null `Request` references, falling back cleanly to empty parameter dictionaries.
+  - Guarded `AutoQueryExtensions.CreateQuery` against null `IRequest`, using null-coalescing empty dictionaries.
+  - Guarded `Filter<From>` and `Filter` against null `IQueryDb dto` inputs.
+  - Guarded `OrderByPrimaryKey` in `AppendLimits` against models without a defined primary key.
+  - Guarded `BeforePluginsLoaded` and `Register` against null `appHost` and uninitialized container instances.
+- **`AutoQueryFeature.AutoCrud.cs`**:
+  - Made `CrudContext` properties read-write for flexible testing and customization.
+  - Guarded `RequestIdGetter` against models without primary keys using `ModelDef?.FieldDefinitions.FirstOrDefault(x => x.IsPrimaryKey)` instead of accessing `ModelDef.PrimaryKey` (which throws when no primary key exists).
+  - Guarded `NamedConnection` resolution in `CrudContext.Create` against unresolvable `IAutoQueryDb`.
+  - Guarded `to.ModelDef` and `to.ModelType` in `AutoCrudMetadata.Create` for POCOs lacking OrmLite metadata.
+  - Guarded primary key access in `GetAutoFilterExpressions`.
+  - Added null guards in `BatchCreateAsync`, `BatchUpdateAsync`, `BatchPatchAsync`, `BatchDeleteAsync`, and `BatchSaveAsync` to return empty lists when `requests` is null.
+- **`CrudUtils.cs`**:
+  - Fixed argument forwarding in `GetTables`: preserved `namedConnection`, `schema`, `includeTables`, `excludeTables`, and `config` instead of discarding them as `null`.
+  - Guarded `t.Columns?.Each(...)` against null column arrays when table introspection reports errors.
+- **`CrudEvents.cs`**:
+  - Guarded `ToEvent` against null `context.Request`, null `context.ModelType`, null `context.Dto`, and null `IpMask`.
+  - Guarded `ShouldRecord` against null `context`.
+  - Added null guards in `InitSchema` and `Clear` extension methods.
+- **`GenerateCrudServices.cs`**:
+  - Added null guard for `column` in `DefaultResolveColumnType`.
+  - Replaced unsafe `First(x => x.IsKey)` with `FirstOrDefault(x => x.IsKey)` in `ResolveMetadataTypes`.
+- **`AutoQueryScripts.cs`**:
+  - Added null propagation for `appHost`, `Metadata`, and `Context?.ScriptMethods`.
+

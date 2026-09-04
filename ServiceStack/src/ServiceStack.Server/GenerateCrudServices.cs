@@ -130,6 +130,9 @@ public class GenerateCrudServices : IGenerateCrudServices
 
     public static Type? DefaultResolveColumnType(ColumnSchema column, IOrmLiteDialectProvider dialect)
     {
+        if (column == null)
+            return null;
+
         var dataType = column.DataType;
         if (dataType == null)
             return null;
@@ -1257,7 +1260,7 @@ public class GenerateCrudServices : IGenerateCrudServices
                 
             if (includeCrudServices != null)
             {
-                var pkField = tableSchema.Columns?.First(x => x.IsKey)
+                var pkField = tableSchema.Columns?.FirstOrDefault(x => x.IsKey)
                     ?? throw new NotSupportedException($"Table {tableSchema.Name} does not have a Primary Key");
                 var id = StringUtils.SnakeCaseToPascalCase(pkField.ColumnName);
                 foreach (var operation in includeCrudServices)

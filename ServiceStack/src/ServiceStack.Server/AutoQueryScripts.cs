@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Script;
@@ -23,19 +23,19 @@ public class AutoQueryScripts : ScriptMethods, IAutoQueryDbFilters
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            var requestType = appHost.Metadata.GetOperationType(requestName);
+            var requestType = appHost?.Metadata?.GetOperationType(requestName);
             if (requestType == null)
                 throw new ArgumentException("Request DTO not found: " + requestName);
 
             if (requestType.HasInterface(typeof(IQueryData)))
             {
-                if (Context.ScriptMethods.FirstOrDefault(x => x is ServiceStackScripts) is not ServiceStackScripts ssFilter)
+                if (Context?.ScriptMethods.FirstOrDefault(x => x is ServiceStackScripts) is not ServiceStackScripts ssFilter)
                     throw new NotImplementedException(nameof(sendToAutoQuery) + " Data requires " + nameof(ServiceStackScripts));
 
                 return ssFilter.sendToAutoQuery(scope, dto, requestName, options);
             }
                 
-            var autoQuery = appHost.TryResolve<IAutoQueryDb>();
+            var autoQuery = appHost?.TryResolve<IAutoQueryDb>();
             if (autoQuery == null)
                 throw new NotSupportedException("The AutoQueryFeature plugin is not registered.");
 

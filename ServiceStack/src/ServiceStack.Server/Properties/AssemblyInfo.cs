@@ -3,4 +3,5 @@
 [assembly: System.Reflection.AssemblyVersion("6.0.0.0")]
 #if !NET472
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ServiceStack.Server.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ServiceStack.WebHost.Endpoints.Tests")]
 #endif
