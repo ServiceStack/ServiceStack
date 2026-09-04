@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
+using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.Jobs;
 using DateTime = System.DateTime;
@@ -15,13 +16,15 @@ public class DbJobsAdminServices(ILogger<DbJobsAdminServices> log, IBackgroundJo
     private DatabaseJobFeature AssertRequiredRole()
     {
         var feature = AssertPlugin<DatabaseJobFeature>();
-        RequiredRoleAttribute.AssertRequiredRoles(Request, feature.AccessRole);
+        if (!string.IsNullOrEmpty(feature.AccessRole) && feature.AccessRole != RoleNames.AllowAnon)
+            RequiredRoleAttribute.AssertRequiredRoles(Request, feature.AccessRole);
         return feature;
     }
 
     public object Any(AdminJobDashboard request)
     {
         var feature = AssertRequiredRole();
+        request ??= new AdminJobDashboard();
 
         var to = new AdminJobDashboardResponse();
         using var db = jobs.OpenDb();
@@ -222,8 +225,8 @@ public class DbJobsAdminServices(ILogger<DbJobsAdminServices> log, IBackgroundJo
             };
         }
 
-        var logs = request.LogStart != null
-            ? job.Logs?[request.LogStart.Value..]
+        var logs = request.LogStart != null && job.Logs != null
+            ? job.Logs[Math.Clamp(request.LogStart.Value, 0, job.Logs.Length)..]
             : job.Logs;
         var durationMs = (int)(DateTime.UtcNow - job.StartedDate.GetValueOrDefault(job.CreatedDate)).TotalMilliseconds;
 
@@ -364,6 +367,7 @@ public static class AdminJobServiceExtensions
 {
     public static List<JobStatSummary> ToSummaries(this List<JobStat> jobStats)
     {
+        if (jobStats == null) return [];
         var map = new Dictionary<string, JobStatSummary>();
         foreach (var stat in jobStats)
         {
@@ -395,6 +399,7 @@ public static class AdminJobServiceExtensions
 
     public static List<HourSummary> ToSummaries(this List<HourStat> hourStats)
     {
+        if (hourStats == null) return [];
         var map = new Dictionary<string, HourSummary>();
         foreach (var stat in hourStats)
         {

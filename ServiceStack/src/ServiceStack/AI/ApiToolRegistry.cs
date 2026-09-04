@@ -143,7 +143,11 @@ public class ApiToolRegistry(ApiToolsConfig config)
     List<ApiTool> Build()
     {
         var to = new List<ApiTool>();
-        foreach (var op in HostContext.Metadata.Operations)
+        var operations = HostContext.Metadata?.Operations;
+        if (operations == null)
+            return to;
+
+        foreach (var op in operations)
         {
             var type = op.RequestType;
             var attr = type.FirstAttribute<ToolAttribute>();
@@ -272,10 +276,16 @@ public class ApiToolRegistry(ApiToolsConfig config)
     /// </summary>
     public bool CanAccess(ApiTool tool, IRequest req)
     {
+        if (tool == null)
+            return false;
+
         if (!tool.RequiresAuth && !tool.RequiresApiKey && tool.RequiredRoles.Count == 0 && tool.RequiresAnyRole.Count == 0
             && tool.RequiredPermissions.Count == 0 && tool.RequiresAnyPermission.Count == 0
             && tool.RequiredClaims.Count == 0 && tool.RequiredScopes.Count == 0)
             return true;
+
+        if (req == null)
+            return false;
 
         var apiKey = req.GetApiKey();
         if (tool.RequiresApiKey && apiKey == null)
@@ -323,6 +333,7 @@ public class ApiToolRegistry(ApiToolsConfig config)
     /// </summary>
     public List<ApiTool> Search(IRequest req, string? query, string? tag = null, int take = 20)
     {
+        take = Math.Max(0, take);
         var tools = GetTools(req);
         if (!string.IsNullOrEmpty(tag))
             tools = tools.Where(x => x.Tags.Any(t => t.EqualsIgnoreCase(tag))).ToList();
@@ -391,6 +402,9 @@ public class ApiToolRegistry(ApiToolsConfig config)
     /// </summary>
     public async Task<object?> ExecuteAsync(ApiTool tool, string? argsJson, IRequest req)
     {
+        if (tool == null) throw new ArgumentNullException(nameof(tool));
+        if (req == null) throw new ArgumentNullException(nameof(req));
+
         if (!CanAccess(tool, req))
             throw HttpError.Forbidden($"'{tool.Name}' requires access this user doesn't have");
 

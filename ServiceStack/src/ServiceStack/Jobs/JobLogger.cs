@@ -15,19 +15,36 @@ public struct JobLogger(IBackgroundJobs jobs, BackgroundJob job, ILogger? logger
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         logger?.Log(logLevel, eventId, state, exception, formatter);
-        var message = state?.ToString();
-        if (message != null)
+        var message = formatter != null ? formatter(state, exception) : state?.ToString();
+        if (message != null && jobs != null && job != null)
         {
             jobs.UpdateJobStatus(new(job, progress:null, status:null, log:message));
         }
     }
 
-    public void UpdateProgress(double progress) => jobs.UpdateJobStatus(new(job, progress));
-    public void UpdateStatus(double? progress = null, string? status = null, string? log = null) =>
-        jobs.UpdateJobStatus(new(job, progress, status, log));
-    public void UpdateStatus(string? status = null, string? log = null) =>
-        jobs.UpdateJobStatus(new(job, progress:null, status, log));
-    public void UpdateLog(string log) => jobs.UpdateJobStatus(new(job, progress:null, null, log));
+    public void UpdateProgress(double progress)
+    {
+        if (jobs != null && job != null)
+            jobs.UpdateJobStatus(new(job, progress));
+    }
+
+    public void UpdateStatus(double? progress = null, string? status = null, string? log = null)
+    {
+        if (jobs != null && job != null)
+            jobs.UpdateJobStatus(new(job, progress, status, log));
+    }
+
+    public void UpdateStatus(string? status = null, string? log = null)
+    {
+        if (jobs != null && job != null)
+            jobs.UpdateJobStatus(new(job, progress:null, status, log));
+    }
+
+    public void UpdateLog(string log)
+    {
+        if (jobs != null && job != null)
+            jobs.UpdateJobStatus(new(job, progress:null, null, log));
+    }
 }
 
 #endif

@@ -544,5 +544,41 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - In `Any(RequestLogs)`, default null request to empty instance, clamp `Take` and `Skip` to non-negative values, and resolve fallback logger.
   - In `Any(GetAnalyticsReports)`, guarded against null report objects, null IP lists, null user collections, and null user items.
 
+---
 
-
+## 19. Commands and Background Jobs Subsystem Modernization & Hardening
+- **`CommandsFeature.cs`**:
+  - Replaced unsafe null-forgiving log operations (`Log!.LogDebug`, `Log!.LogError`) with safe null-conditional `Log?.` invocations.
+  - Hardened `Register` and `BeforePluginsLoaded` to guard against null `appHost`.
+  - Resolved `Log` via safe cast `(appHost as IAppHostNetCore)?.App?.ApplicationServices?.GetService<ILogger<CommandsFeature>>() ?? appHost.TryResolve<ILogger<CommandsFeature>>()`, preventing `InvalidCastException` when running outside ASP.NET Core hosts (e.g. `BasicAppHost` or self-hosts).
+  - Enforced strict lower bounds on queue capacities (`ResultsCapacity > 0`, `FailuresCapacity > 0`, `TimingsCapacity > 0`).
+  - Added null check on `result` and default fallback `result.Name ??= "Unknown"` in `AddCommandResult`.
+  - In `CommandsService.AssertRequiredRole`: bypassed role assertion if `feature.AccessRole == RoleNames.AllowAnon` or empty, preventing false 401 Unauthorized responses for anonymous-enabled configurations.
+  - In `CommandsService.Any(ViewCommands)`: defaulted `request ??= new ViewCommands()` and clamped `Skip` and `Take` with `Math.Max(0, ...)`.
+  - In `CommandsService.Any(ExecuteCommand)`: validated non-empty `request.Command` and safely handled commands with null request types (`commandInfo.Request?.Type ?? typeof(NoArgs)`).
+- **`JobLogger.cs`**:
+  - In `Log<TState>`: guarded custom formatter invocations `formatter != null ? formatter(state, exception) : state?.ToString()`, supporting both null and non-null formatters safely.
+  - Guarded `jobs?.UpdateJobStatus(...)` in `Log` against null background job manager.
+  - Guarded `UpdateProgress`, `UpdateStatus`, and `UpdateLog` against null `jobs` manager.
+- **`JobUtils.cs`**:
+  - Guarded `ToBackgroundJob(this object arg)` with `ArgumentNullException.ThrowIfNull(arg)`.
+  - Guarded `PopulateJob` with `if (from == null || to == null) return to;`.
+  - Guarded `ToJobSummary` with `if (from == null) return null;`.
+  - Replaced unvalidated cast in `GetCancellationToken` with type pattern matching `oToken is CancellationToken token ? token : default`.
+  - Guarded `GetBackgroundJob` and `CreateJobLogger` against null `IRequest` inputs.
+- **`ApiToolRegistry.cs`**:
+  - In `CanAccess`: safely handled null `tool` returning `false`, and null `req` returning `true` only when no auth attributes are present.
+  - Guarded metadata inspection `HostContext.Metadata?.Operations` against null host metadata.
+  - In `Search`: clamped `take = Math.Max(0, take)`.
+  - In `ExecuteAsync`: added explicit argument null checks for `tool` and `req`.
+- **`BackgroundsJobFeature.cs`**:
+  - Guarded `Register(IAppHost appHost)` against null `appHost` and used safe cast `AppHost ??= appHost as IAppHostNetCore;`.
+- **`AdminJobServices.cs` & `DbJobsAdminServices.cs`**:
+  - In `AssertRequiredRole`: bypassed role assertion if `feature.AccessRole == RoleNames.AllowAnon` or empty.
+  - In `AdminJobDashboard`: defaulted `request ??= new AdminJobDashboard()` and used safe `DateTime.TryParse` / `int.TryParse` in `ToDate`.
+  - In `AdminGetJobProgress`: clamped log slicing `job.Logs[Math.Clamp(request.LogStart.Value, 0, job.Logs.Length)..]` to prevent `ArgumentOutOfRangeException`.
+  - In `ToSummaries(List<JobStat>)` and `ToSummaries(List<HourStat>)`: guarded against null stats collections, safely returning empty list `[]`.
+- **`SqliteRequestLogger.cs`**:
+  - In `AssertRequiredRole`: bypassed role assertion if `feature.AccessRole == RoleNames.AllowAnon` or empty.
+  - In `Register`: guarded against null `appHost` and used safe cast `AppHost ??= appHost as IAppHostNetCore;`.
+  - In `QueryLogs`: defaulted `request ??= new RequestLogs()`, clamped `take = Math.Max(0, request.Take ?? MaxLimit)` and `skip = Math.Max(0, request.Skip)`.

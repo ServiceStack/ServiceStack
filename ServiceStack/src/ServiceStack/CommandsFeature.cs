@@ -188,11 +188,15 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
 
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         if (appHost is ServiceStackHost host)
             host.AddTimings = true;
 
-        ValidationFeature ??= appHost.GetPlugin<ValidationFeature>();
-        Log ??= appHost.GetApplicationServices().GetRequiredService<ILogger<CommandsFeature>>();
+        ValidationFeature ??= appHost.TryResolve<ValidationFeature>() ?? appHost.GetPlugin<ValidationFeature>();
+        Log ??= (appHost as IAppHostNetCore)?.App?.ApplicationServices?.GetService<ILogger<CommandsFeature>>()
+            ?? appHost.TryResolve<ILogger<CommandsFeature>>();
         
         appHost.AddToAppMetadata(meta =>
         {
@@ -275,7 +279,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                 }
 
                 await execFn(requestDto);
-                Log!.LogDebug("{Command} took {ElapsedMilliseconds}ms to execute", commandType.Name, sw.ElapsedMilliseconds);
+                Log?.LogDebug("{Command} took {ElapsedMilliseconds}ms to execute", commandType.Name, sw.ElapsedMilliseconds);
 
                 result.Ms = sw.ElapsedMilliseconds;
                 if (retries > 0)
@@ -287,7 +291,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
             {
                 var attempt = retries + 1;
                 var requestBody = requestDto.ToSafeJson();
-                Log!.LogError(e, "{Command}({Request}) x{Attempt} failed: {Message}", 
+                Log?.LogError(e, "{Command}({Request}) x{Attempt} failed: {Message}", 
                     commandType.Name, requestBody, attempt, e.Message);
 
                 var errorResult = result.Clone();
@@ -412,6 +416,10 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
 
     public void AddCommandResult(CommandResult result)
     {
+        if (result == null)
+            return;
+        result.Name ??= "Unknown";
+
         if (Ignore.Contains(result.Name))
             return;
         if (ShouldIgnore != null && ShouldIgnore(result))
@@ -421,7 +429,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         if (result.Error == null)
         {
             CommandResults.Enqueue(result);
-            while (CommandResults.Count > ResultsCapacity)
+            while (ResultsCapacity > 0 && CommandResults.Count > ResultsCapacity)
                 CommandResults.TryDequeue(out _);
 
             CommandTotals.AddOrUpdate(result.Name, 
@@ -446,7 +454,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
                     summary.MaxMs = Math.Max(summary.MaxMs, ms);
                     summary.MinMs = summary.MinMs < 0 ? ms : Math.Min(summary.MinMs, ms);
                     summary.Timings.Enqueue(ms);
-                    while (summary.Timings.Count > TimingsCapacity)
+                    while (TimingsCapacity > 0 && summary.Timings.Count > TimingsCapacity)
                         summary.Timings.TryDequeue(out var _);
                     return summary;
                 });
@@ -454,7 +462,7 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
         else
         {
             CommandFailures.Enqueue(result);
-            while (CommandFailures.Count > FailuresCapacity)
+            while (FailuresCapacity > 0 && CommandFailures.Count > FailuresCapacity)
                 CommandFailures.TryDequeue(out _);
 
             CommandTotals.AddOrUpdate(result.Name, 
@@ -563,6 +571,9 @@ public class CommandsFeature : IPlugin, IConfigureServices, IHasStringId, IPreIn
 
     public void BeforePluginsLoaded(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         appHost.ConfigurePlugin<UiFeature>(feature => {
             feature.AddAdminLink(AdminUiFeature.Commands, new LinkInfo {
                 Id = "commands",
@@ -652,13 +663,15 @@ public class CommandsService(ILogger<CommandsService> log) : Service
     private async Task<CommandsFeature> AssertRequiredRole()
     {
         var feature = HostContext.AssertPlugin<CommandsFeature>();
-        await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
+        if (!string.IsNullOrEmpty(feature.AccessRole) && feature.AccessRole != RoleNames.AllowAnon)
+            await RequiredRoleAttribute.AssertRequiredRoleAsync(Request, feature.AccessRole);
         return feature;
     }
 
     public async Task<object> Any(ViewCommands request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
+        request ??= new ViewCommands();
 
         var to = new ViewCommandsResponse
         {
@@ -678,11 +691,12 @@ public class CommandsService(ILogger<CommandsService> log) : Service
         
         if (request.Skip != null)
         {
-            to.LatestCommands = to.LatestCommands.Skip(request.Skip.Value).ToList();
-            to.LatestFailed = to.LatestFailed.Skip(request.Skip.Value).ToList();
+            var skip = Math.Max(0, request.Skip.Value);
+            to.LatestCommands = to.LatestCommands.Skip(skip).ToList();
+            to.LatestFailed = to.LatestFailed.Skip(skip).ToList();
         }
 
-        var take = request.Take ?? 50;
+        var take = Math.Max(0, request.Take ?? 50);
         to.LatestCommands = to.LatestCommands.Take(take).ToList();
         to.LatestFailed = to.LatestFailed.Take(take).ToList();
         
@@ -692,11 +706,14 @@ public class CommandsService(ILogger<CommandsService> log) : Service
     public async Task<object> Any(ExecuteCommand request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
+        if (request == null || string.IsNullOrEmpty(request.Command))
+            throw new ArgumentNullException(nameof(request.Command));
+
         var services = Request.GetServiceProvider();
 
         var commandInfo = feature.AssertCommandInfo(request.Command);
         var commandType = commandInfo.Type;
-        var requestType = commandInfo.Request.Type;
+        var requestType = commandInfo.Request?.Type ?? typeof(NoArgs);
         var commandRequest = string.IsNullOrEmpty(request.RequestJson)
             ? requestType.CreateInstance()
             : Text.JsonSerializer.DeserializeFromString(request.RequestJson, requestType);

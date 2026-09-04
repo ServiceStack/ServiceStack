@@ -80,6 +80,7 @@ public static class JobUtils
     
     public static BackgroundJob ToBackgroundJob(this BackgroundJobOptions? options, string requestType, object arg)
     {
+        ArgumentNullException.ThrowIfNull(arg);
         return new BackgroundJob
         {
             State = BackgroundJobState.Queued,
@@ -111,6 +112,9 @@ public static class JobUtils
 
     public static T PopulateJob<T>(this BackgroundJobBase from, T to) where T : BackgroundJobBase
     {
+        if (from == null || to == null)
+            return to;
+
         to.Id = from.Id;
         to.ParentId = from.ParentId;
         to.RefId = from.RefId;
@@ -149,8 +153,11 @@ public static class JobUtils
         return to;
     }
 
-    public static JobSummary ToJobSummary(this BackgroundJob from)
+    public static JobSummary? ToJobSummary(this BackgroundJob? from)
     {
+        if (from == null)
+            return null;
+
         return new JobSummary {
             Id = from.Id,
             ParentId = from.ParentId,
@@ -179,11 +186,11 @@ public static class JobUtils
     public static void SetCancellationToken(this IRequest req, CancellationToken token) => req.SetItem(nameof(CancellationToken), token);
 
     public static CancellationToken GetCancellationToken(this IRequest? req) =>
-        req?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true
-            ? (CancellationToken)oToken
+        req?.Items.TryGetValue(nameof(CancellationToken), out var oToken) == true && oToken is CancellationToken token
+            ? token
             : default;
 
-    public static BackgroundJob GetBackgroundJob(this IRequest? req) => req.TryGetBackgroundJob()
+    public static BackgroundJob GetBackgroundJob(this IRequest? req) => req?.TryGetBackgroundJob()
         ?? throw new Exception("BackgroundJob not found");
 
     public static void SetBackgroundJob(this IRequest req, BackgroundJob job) => req.SetItem(nameof(BackgroundJob), job);
@@ -205,7 +212,10 @@ public static class JobUtils
         var job = result?.Job;
         return job != null ? jobs.CreateResponse(job) : null;
     }
-    public static JobLogger CreateJobLogger(this IRequest req, IBackgroundJobs jobs, ILogger log=null) =>
-        new(jobs, req.GetBackgroundJob(), log);
+    public static JobLogger CreateJobLogger(this IRequest req, IBackgroundJobs jobs, ILogger? log = null)
+    {
+        ArgumentNullException.ThrowIfNull(req);
+        return new(jobs, req.GetBackgroundJob(), log);
+    }
 }
 #endif

@@ -65,6 +65,9 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         DialectProvider = SqliteConfiguration.Configure(SqliteDialect.Create());
 
         CommandsFeature ??= appHost.GetPlugin<CommandsFeature>()
@@ -81,7 +84,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         DialectProvider.EnableWriterLock = EnableWriterLock;
         ConfigureDialectProvider?.Invoke(DialectProvider);
 
-        AppHost ??= (IAppHostNetCore)appHost;
+        AppHost ??= appHost as IAppHostNetCore;
         var fullDirPath = GetDbDir();
 
         DbFactory.RegisterConnection(DbFile, fullDirPath.AssertDir().CombineWith(DbFile), DialectProvider);

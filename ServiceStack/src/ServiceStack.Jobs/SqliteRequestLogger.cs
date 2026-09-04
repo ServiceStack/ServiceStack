@@ -3,6 +3,7 @@ using System.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Admin;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
@@ -19,7 +20,8 @@ public class SqliteRequestLogsService(IRequestLogger requestLogger, IAutoQueryDb
     private RequestLogsFeature AssertRequiredRole()
     {
         var feature = AssertPlugin<RequestLogsFeature>();
-        RequiredRoleAttribute.AssertRequiredRoles(Request, feature.AccessRole);
+        if (!string.IsNullOrEmpty(feature.AccessRole) && feature.AccessRole != RoleNames.AllowAnon)
+            RequiredRoleAttribute.AssertRequiredRoles(Request, feature.AccessRole);
         return feature;
     }
 
@@ -122,9 +124,11 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public List<RequestLogEntry> QueryLogs(RequestLogs request)
     {
+        request ??= new RequestLogs();
         using var db = OpenMonthDb(request.Month ?? DateTime.UtcNow);
         var now = DateTime.UtcNow;
-        var take = request.Take ?? MaxLimit;
+        var take = Math.Max(0, request.Take ?? MaxLimit);
+        var skip = Math.Max(0, request.Skip);
         
         var q = db.From<RequestLog>();
         var Headers = q.DialectProvider.GetQuotedColumnName(nameof(RequestLog.Headers));
@@ -165,8 +169,8 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
         q = string.IsNullOrEmpty(request.OrderBy)
             ? q.OrderByDescending(x => x.Id)
             : q.OrderBy(request.OrderBy);
-        q = request.Skip > 0
-            ? q.Limit(request.Skip, take)
+        q = skip > 0
+            ? q.Limit(skip, take)
             : q.Limit(take);
         
         var results = db.Select(q);
@@ -222,13 +226,16 @@ public class SqliteRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema
 
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         DialectProvider = SqliteConfiguration.Configure(SqliteDialect.Create());
         DialectProvider.EnableWriterLock = EnableWriterLock;
         ConfigureDialectProvider?.Invoke(DialectProvider);
 
         DbFactory ??= appHost.TryResolve<IDbConnectionFactory>() 
                       ?? new OrmLiteConnectionFactory("Data Source=:memory:", DialectProvider);
-        AppHost ??= (IAppHostNetCore)appHost;
+        AppHost ??= appHost as IAppHostNetCore;
 #if NET8_0_OR_GREATER
         Logger ??= appHost.TryResolve<ILogger>();
 #endif

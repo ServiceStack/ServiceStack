@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
+using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 
@@ -10,13 +11,15 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     private BackgroundsJobFeature AssertRequiredRole()
     {
         var feature = AssertPlugin<BackgroundsJobFeature>();
-        RequiredRoleAttribute.AssertRequiredRoles(Request, feature.AccessRole);
+        if (!string.IsNullOrEmpty(feature.AccessRole) && feature.AccessRole != RoleNames.AllowAnon)
+            RequiredRoleAttribute.AssertRequiredRoles(Request, feature.AccessRole);
         return feature;
     }
 
     public object Any(AdminJobDashboard request)
     {
         var feature = AssertRequiredRole();
+        request ??= new AdminJobDashboard();
 
         var to = new AdminJobDashboardResponse();
         using var db = jobs.OpenDb();
@@ -79,10 +82,17 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
 
         DateTime ToDate(string hour)
         {
+            if (string.IsNullOrEmpty(hour)) return DateTime.UtcNow;
+            if (DateTime.TryParse(hour, out var dt)) return dt;
             var ymd = hour.LeftPart(' ').Split('-');
             var hm = hour.RightPart(' ').Split(':');
-            return new DateTime(int.Parse(ymd[0]), int.Parse(ymd[1]), int.Parse(ymd[2]),
-                int.Parse(hm[0]), int.Parse(hm[1]), 0);
+            if (ymd.Length >= 3 && hm.Length >= 2 &&
+                int.TryParse(ymd[0], out var y) && int.TryParse(ymd[1], out var m) && int.TryParse(ymd[2], out var d) &&
+                int.TryParse(hm[0], out var hr) && int.TryParse(hm[1], out var min))
+            {
+                return new DateTime(y, m, d, hr, min, 0);
+            }
+            return DateTime.UtcNow;
         }
         if (first != null)
         {
@@ -198,8 +208,8 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             };
         }
 
-        var logs = request.LogStart != null
-            ? job.Logs?[request.LogStart.Value..]
+        var logs = request.LogStart != null && job.Logs != null
+            ? job.Logs[Math.Clamp(request.LogStart.Value, 0, job.Logs.Length)..]
             : job.Logs;
         var durationMs = (int)(DateTime.UtcNow - job.StartedDate.GetValueOrDefault(job.CreatedDate)).TotalMilliseconds;
 
@@ -340,6 +350,7 @@ public static class AdminJobServiceExtensions
 {
     public static List<JobStatSummary> ToSummaries(this List<JobStat> jobStats)
     {
+        if (jobStats == null) return [];
         var map = new Dictionary<string, JobStatSummary>();
         foreach (var stat in jobStats)
         {
@@ -371,6 +382,7 @@ public static class AdminJobServiceExtensions
 
     public static List<HourSummary> ToSummaries(this List<HourStat> hourStats)
     {
+        if (hourStats == null) return [];
         var map = new Dictionary<string, HourSummary>();
         foreach (var stat in hourStats)
         {
