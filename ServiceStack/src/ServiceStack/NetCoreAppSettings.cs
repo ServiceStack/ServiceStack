@@ -1,4 +1,4 @@
-﻿#if NETCORE
+#if NETCORE
 
 using System;
 using System.Collections;
@@ -13,6 +13,7 @@ namespace ServiceStack;
 
 public class NetCoreAppSettings(IConfiguration configuration) : IAppSettings
 {
+    private readonly IConfiguration configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     public IConfiguration Configuration => configuration;
     
     static object GetValue(IConfigurationSection section)
@@ -91,8 +92,11 @@ public class NetCoreAppSettings(IConfiguration configuration) : IAppSettings
 
     private IConfigurationSection GetSection(string key)
     {
+        if (key == null)
+            return configuration.GetSection(string.Empty);
+
         var child = configuration.GetChildren().FirstOrDefault(x => x.Key == key);
-        if (!child.Exists())
+        if (child == null || !child.Exists())
             child = configuration.GetSection(key);
         return child;
     }
@@ -110,14 +114,14 @@ public class NetCoreAppSettings(IConfiguration configuration) : IAppSettings
     public List<string> GetAllKeys() => configuration.GetChildren()
         .Map(x => x.Key);
 
-    public bool Exists(string key) => configuration.GetChildren().Any(x => x.Key == key)
-        || configuration.GetSection(key).Exists();
+    public bool Exists(string key) => key != null && (configuration.GetChildren().Any(x => x.Key == key)
+        || configuration.GetSection(key).Exists());
 
     public void Set<T>(string key, T value) => configuration[key] = value is string 
         ? value.ToString()
         : TypeSerializer.SerializeToString(value);
 
-    public string GetString(string name) => configuration[name];
+    public string GetString(string name) => name != null ? configuration[name] : null;
 
     public IList<string> GetList(string key)
     {
@@ -130,13 +134,13 @@ public class NetCoreAppSettings(IConfiguration configuration) : IAppSettings
     public IDictionary<string, string> GetDictionary(string key)
     {
         var to = Bind<Dictionary<string,string>>(GetRequiredSection(key));
-        return to;
+        return to ?? new Dictionary<string, string>();
     }
 
     public List<KeyValuePair<string, string>> GetKeyValuePairs(string key)
     {
         var section = GetRequiredSection(key);
-        return Bind<Dictionary<string,string>>(section).ToList();
+        return Bind<Dictionary<string,string>>(section)?.ToList() ?? new List<KeyValuePair<string, string>>();
     }
 
     public T Get<T>(string name)

@@ -1575,7 +1575,7 @@ public abstract partial class ServiceStackHost
     /// </summary>
     public virtual T TryResolve<T>()
     {
-        return this.Container.TryResolve<T>();
+        return this.Container != null ? this.Container.TryResolve<T>() : default;
     }
 
     /// <summary>

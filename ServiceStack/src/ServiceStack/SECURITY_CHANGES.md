@@ -139,3 +139,34 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - Added null-safe conditional access `HostContext.GetPlugin<HttpCacheFeature>()?.ShouldAddLastModifiedToOptimizedResults() == true` across cache evaluation methods to prevent `NullReferenceException` when `HttpCacheFeature` is not registered.
   - Guarded `GetAllContentCacheKeys` against null or empty input keys.
   - Added null guards for `HostContext.AppHost` and resolved cache client in `HttpCacheFeature.CacheAndWriteResponse`.
+
+---
+
+## 8. Configuration Subsystem Hardening & Data Integrity
+- **`AppSettings.cs`**:
+  - Guarded `ConfigurationManagerWrapper.GetAllKeys()` against null `ConfigurationManager.AppSettings.AllKeys` on .NET Framework.
+  - Hardened `RuntimeAppSettings.Get<T>` with null guards on `name` and `Settings`, safe handling of null lambda return values without throwing for value types, and safe conversion via `ConvertTo<T>` with graceful fallback to `defaultValue`.
+- **`AppSettingsBase.cs`**:
+  - Null-guarded `settings?.Get(name)` and `settings?.GetAllKeys()` when `AppSettingsBase` is instantiated with null settings.
+  - Guarded `GetNullableString` against null `name`.
+  - Fixed setting corruption in `AppSettingsUtils.SaveAppSetting`: replaced loose `line.StartsWith(name)` with exact delimiter/token matching (`line.StartsWith(name + " ") || line.StartsWith(name + "\t") || line == name`), preventing prefix-sharing settings (e.g. `Host` vs `HostName`) from overwriting each other.
+- **`DictionarySettings.cs`**:
+  - Guarded constructor `DictionarySettings(IEnumerable<KeyValuePair<string, string>> map)` against null input.
+  - Returned a defensive snapshot copy in `GetAll()` (`new Dictionary<string, string>(instance.Map)`) to protect internal configuration state against caller mutation and concurrent modification exceptions.
+  - Guarded `DictionaryWrapper.Set<T>` against null keys.
+- **`EnvironmentVariableSettings.cs`**:
+  - Guarded `Environment.GetEnvironmentVariable(key)` against null keys to avoid `ArgumentNullException`.
+  - Filtered null keys when mapping environment variables.
+- **`MultiAppSettings.cs`**:
+  - Guarded `MultiSettingsWrapper` constructor against null or empty `appSettings` array.
+  - Filtered `appSettings.Where(x => x != null)` across `Get`, `GetAllKeys()`, `Set`, and `Get<T>` to safely handle arrays containing null providers.
+- **`ConfigUtils.cs`**:
+  - Handled null and empty values in `GetListFromAppSettingValue` returning an empty list instead of throwing `NullReferenceException`.
+  - Preserved colons in setting values (such as URLs and times) in `GetDictionaryFromAppSettingValue` and `GetKeyValuePairsFromAppSettingValue` using `item.Split(new[] { KeyValueSeperator }, 2)`.
+  - Threw descriptive `FormatException` for items missing colons, ensuring `GetDictionary` properly surfaces `ConfigurationErrorsException`.
+  - Added thread-safe double-checked lock on `GetAppSettingsMap()` and verified `File.Exists(appConfigPath)` before reading.
+- **`NetCoreAppSettings.cs`**:
+  - Guarded constructor against null `configuration` instance.
+  - Provided null-safe fallbacks for `GetDictionary` and `GetKeyValuePairs` to prevent null reference exceptions.
+  - Guarded `Exists`, `GetString`, and `GetSection` against null keys.
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -23,7 +23,7 @@ public class MultiAppSettings : AppSettingsBase, ISettings
 
         public MultiSettingsWrapper(IAppSettings[] appSettings)
         {
-            if (appSettings.Length == 0)
+            if (appSettings == null || appSettings.Length == 0)
                 throw new ArgumentNullException(nameof(appSettings));
 
             this.appSettings = appSettings;
@@ -31,7 +31,10 @@ public class MultiAppSettings : AppSettingsBase, ISettings
 
         public string Get(string key)
         {
+            if (key == null) return null;
+
             return appSettings
+                .Where(x => x != null)
                 .Select(appSetting => appSetting.GetString(key))
                 .FirstOrDefault(value => value != null);
         }
@@ -39,13 +42,13 @@ public class MultiAppSettings : AppSettingsBase, ISettings
         public List<string> GetAllKeys()
         {
             var allKeys = new HashSet<string>();
-            appSettings.Each(s => s.GetAllKeys().Each(x => allKeys.Add(x)));
+            appSettings.Where(x => x != null).Each(s => s.GetAllKeys()?.Each(x => allKeys.Add(x)));
             return allKeys.ToList();
         }
 
         public void Set<T>(string key, T value)
         {
-            appSettings.Each(x => x.Set(key, value));
+            appSettings.Where(x => x != null).Each(x => x.Set(key, value));
         }
     }
 
@@ -55,10 +58,13 @@ public class MultiAppSettings : AppSettingsBase, ISettings
     {
         try
         {
-            foreach (var appSettings in AppSettings)
+            if (AppSettings != null)
             {
-                if (appSettings.Exists(name))
-                    return appSettings.Get<T>(name);
+                foreach (var appSettings in AppSettings)
+                {
+                    if (appSettings != null && appSettings.Exists(name))
+                        return appSettings.Get<T>(name);
+                }
             }
             return defaultValue;
         }

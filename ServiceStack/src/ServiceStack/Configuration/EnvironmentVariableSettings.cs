@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ServiceStack.Configuration;
@@ -9,12 +9,19 @@ public class EnvironmentVariableSettings : AppSettingsBase
     {
         public string Get(string key)
         {
-            return Environment.GetEnvironmentVariable(key);
+            return key != null ? Environment.GetEnvironmentVariable(key) : null;
         }
 
         public List<string> GetAllKeys()
         {
-            return Environment.GetEnvironmentVariables().Keys.Map(x => x.ToString());
+            var vars = Environment.GetEnvironmentVariables();
+            var list = new List<string>();
+            foreach (var key in vars.Keys)
+            {
+                if (key != null)
+                    list.Add(key.ToString());
+            }
+            return list;
         }
     }
 

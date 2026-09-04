@@ -62,7 +62,9 @@ public class ConfigUtils
 
     public static List<string> GetListFromAppSettingValue(string appSettingValue)
     {
-        return new List<string>(appSettingValue.Split(ItemSeperator));
+        return string.IsNullOrEmpty(appSettingValue)
+            ? new List<string>()
+            : new List<string>(appSettingValue.Split(ItemSeperator));
     }
 
     /// <summary>
@@ -76,11 +78,19 @@ public class ConfigUtils
 
     public static Dictionary<string, string> GetDictionaryFromAppSettingValue(string appSettingValue)
     {
+        if (appSettingValue == null)
+            throw new System.ArgumentNullException(nameof(appSettingValue));
+
         var dictionary = new Dictionary<string, string>();
+        if (appSettingValue.Length == 0)
+            return dictionary;
 
         foreach (var item in appSettingValue.Split(ItemSeperator))
         {
-            var keyValuePair = item.Split(KeyValueSeperator);
+            var keyValuePair = item.Split(new[] { KeyValueSeperator }, 2);
+            if (keyValuePair.Length < 2)
+                throw new System.FormatException($"The setting item had an invalid Key/Value format: \"{item}\"");
+
             dictionary.Add(keyValuePair[KeyIndex], keyValuePair[ValueIndex]);
         }
         return dictionary;
@@ -88,61 +98,76 @@ public class ConfigUtils
         
     public static List<KeyValuePair<string, string>> GetKeyValuePairsFromAppSettingValue(string appSettingValue)
     {
+        if (appSettingValue == null)
+            throw new System.ArgumentNullException(nameof(appSettingValue));
+
         var to = new List<KeyValuePair<string, string>>();
+        if (appSettingValue.Length == 0)
+            return to;
 
         foreach (var item in appSettingValue.Split(ItemSeperator))
         {
-            var keyValuePair = item.Split(KeyValueSeperator);
+            var keyValuePair = item.Split(new[] { KeyValueSeperator }, 2);
+            if (keyValuePair.Length < 2)
+                throw new System.FormatException($"The setting item had an invalid Key/Value format: \"{item}\"");
+
             to.Add(new KeyValuePair<string, string>(keyValuePair[KeyIndex], keyValuePair[ValueIndex]));
         }
         return to;
     }
         
     private static Dictionary<string, string> appSettings;
+    private static readonly object appSettingsLock = new();
 
     public static Dictionary<string, string> GetAppSettingsMap()
     {
         if (appSettings == null)
         {
-            var map = new Dictionary<string, string>();
-            var appConfigPath = Platform.Instance.GetAppConfigPath();
-            if (appConfigPath != null)
+            lock (appSettingsLock)
             {
-                var xml = File.ReadAllText(appConfigPath);
-                using (var reader = XmlReader.Create(new StringReader(xml)))
+                if (appSettings == null)
                 {
-                    var inAppSettings = false;
-                    while (reader.Read())
+                    var map = new Dictionary<string, string>();
+                    var appConfigPath = Platform.Instance.GetAppConfigPath();
+                    if (appConfigPath != null && File.Exists(appConfigPath))
                     {
-                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "appSettings")
-                            break;
-
-                        if (reader.NodeType != XmlNodeType.Element)
-                            continue;
-
-                        var elName = reader.Name;
-                        if (elName == "appSettings")
+                        var xml = File.ReadAllText(appConfigPath);
+                        using (var reader = XmlReader.Create(new StringReader(xml)))
                         {
-                            inAppSettings = true;
-                            continue;
-                        }
-
-                        if (!inAppSettings)
-                            continue;
-
-                        if (elName == "add")
-                        {
-                            var key = reader.GetAttribute("key");
-                            if (key != null)
+                            var inAppSettings = false;
+                            while (reader.Read())
                             {
-                                var value = reader.GetAttribute("value");
-                                map[key] = value;
+                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "appSettings")
+                                    break;
+
+                                if (reader.NodeType != XmlNodeType.Element)
+                                    continue;
+
+                                var elName = reader.Name;
+                                if (elName == "appSettings")
+                                {
+                                    inAppSettings = true;
+                                    continue;
+                                }
+
+                                if (!inAppSettings)
+                                    continue;
+
+                                if (elName == "add")
+                                {
+                                    var key = reader.GetAttribute("key");
+                                    if (key != null)
+                                    {
+                                        var value = reader.GetAttribute("value");
+                                        map[key] = value;
+                                    }
+                                }
                             }
                         }
                     }
+                    appSettings = map;
                 }
             }
-            appSettings = map;
         }
         return appSettings;
     }

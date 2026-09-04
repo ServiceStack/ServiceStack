@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Configuration;
@@ -28,10 +29,11 @@ public class AppSettings : AppSettingsBase
         public List<string> GetAllKeys()
         {
 #if !NETCORE
-            return new List<string>(ConfigurationManager.AppSettings.AllKeys);
+            var allKeys = ConfigurationManager.AppSettings.AllKeys;
+            return allKeys != null ? new List<string>(allKeys) : new List<string>();
 #else
             var appSettings = ConfigUtils.GetAppSettingsMap();
-            return appSettings.Keys.ToList();
+            return appSettings != null ? appSettings.Keys.ToList() : new List<string>();
 #endif
         }
     }
@@ -62,8 +64,22 @@ public class RuntimeAppSettings : IRuntimeAppSettings
 
     public T Get<T>(IRequest request, string name, T defaultValue)
     {
-        if (Settings.TryGetValue(name, out var fn))
-            return (T)fn(request);
+        if (name != null && Settings != null && Settings.TryGetValue(name, out var fn))
+        {
+            try
+            {
+                var val = fn(request);
+                if (val == null)
+                    return defaultValue;
+                if (val is T t)
+                    return t;
+                return val.ConvertTo<T>();
+            }
+            catch
+            {
+                return defaultValue;
+            }
+        }
 
         return defaultValue;
     }

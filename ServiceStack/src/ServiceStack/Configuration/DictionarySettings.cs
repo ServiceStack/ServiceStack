@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Text;
 
@@ -19,6 +20,7 @@ public class DictionarySettings : AppSettingsBase, ISettings
 
         public string Get(string key)
         {
+            if (key == null) return null;
             return Map.TryGetValue(key, out var value) ? value : null;
         }
 
@@ -29,8 +31,11 @@ public class DictionarySettings : AppSettingsBase, ISettings
 
         public void Set<T>(string key, T value)
         {
-            var textValue = value is string
-                ? (string)(object)value
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            var textValue = value is string str
+                ? str
                 : value.ToJsv();
 
             Map[key] = textValue;
@@ -38,7 +43,7 @@ public class DictionarySettings : AppSettingsBase, ISettings
     }
 
     public DictionarySettings(IEnumerable<KeyValuePair<string, string>> map)
-        : base(new DictionaryWrapper(map.ToStringDictionary()))
+        : base(new DictionaryWrapper(map?.ToStringDictionary()))
     {
         instance = (DictionaryWrapper)settings;
     }
@@ -51,6 +56,6 @@ public class DictionarySettings : AppSettingsBase, ISettings
 
     public override Dictionary<string, string> GetAll()
     {
-        return instance.Map;
+        return new Dictionary<string, string>(instance.Map);
     }
 }

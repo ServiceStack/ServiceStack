@@ -160,7 +160,8 @@ public abstract class HttpErrorAsyncTests
                                             .Or.EqualTo("No such host is known.")                           // .NET Core 3.1
                                             .Or.EqualTo("The server name or address could not be resolved") // .NET Core 2.0
                                             .Or.EqualTo("Resource temporarily unavailable")                 // GitHub Actions
-                                            .Or.EqualTo("Name or service not known"));                      // .NET 6
+                                            .Or.EqualTo("Name or service not known")                        // .NET 6
+                                            .Or.EqualTo("nodename nor servname provided, or not known"));   // macOS
 #endif        
         }
     }

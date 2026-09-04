@@ -32,6 +32,8 @@ public class AppSettingsBase : IAppSettings, ISettingsWriter
 
     public virtual string GetNullableString(string name)
     {
+        if (name == null) return null;
+
         var value = Tier != null
             ? Get($"{Tier}.{name}") ?? Get(name)
             : Get(name);
@@ -44,7 +46,7 @@ public class AppSettingsBase : IAppSettings, ISettingsWriter
     public string Get(string name)
     {
         var value = settingsWriter?.Get(name);
-        return value ?? settings.Get(name);
+        return value ?? settings?.Get(name);
     }
 
     public virtual Dictionary<string, string> GetAll()
@@ -53,15 +55,16 @@ public class AppSettingsBase : IAppSettings, ISettingsWriter
         var to = new Dictionary<string,string>();
         foreach (var key in keys)
         {
-            to[key] = GetNullableString(key);
+            if (key != null)
+                to[key] = GetNullableString(key);
         }
         return to;
     }
 
     public virtual List<string> GetAllKeys()
     {
-        var keys = settings.GetAllKeys().ToSet();
-        settingsWriter?.GetAllKeys().Each(x => keys.Add(x));
+        var keys = settings?.GetAllKeys()?.ToSet() ?? new HashSet<string>();
+        settingsWriter?.GetAllKeys()?.Each(x => keys.Add(x));
 
         return keys.ToList();
     }
@@ -236,7 +239,7 @@ public static class AppSettingsUtils
         var found = false;
         foreach (var line in lines)
         {
-            var match = line.StartsWith(name);
+            var match = line.StartsWith(name + " ") || line.StartsWith(name + "\t") || line == name;
             if (match)
                 found = true;
             var useLine = match
