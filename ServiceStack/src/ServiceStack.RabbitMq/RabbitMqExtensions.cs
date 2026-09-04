@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using RabbitMQ.Client;
@@ -218,8 +218,12 @@ public static class RabbitMqExtensions
 
         if (string.IsNullOrEmpty(props.ContentType) || props.ContentType.MatchesContentType(MimeTypes.Json))
         {
+#if NET6_0_OR_GREATER
+            string json = Encoding.UTF8.GetString(msgResult.Body.Span);
+#else
             byte[] bodyBytes = msgResult.Body.Span.ToArray();
             string json = Encoding.UTF8.GetString(bodyBytes); 
+#endif
             body = json.FromJson<T>();
         }
         else
@@ -228,14 +232,19 @@ public static class RabbitMqExtensions
             if (deserializer == null)
                 throw new NotSupportedException("Unknown Content-Type: " + props.ContentType);
             
-            var ms = MemoryStreamFactory.GetStream(msgResult.Body.ToArray());
+            using var ms = MemoryStreamFactory.GetStream(msgResult.Body.ToArray());
             body = (T)deserializer(typeof(T), ms);
-            ms.Dispose();
+        }
+
+        Guid messageId = Guid.Empty;
+        if (!string.IsNullOrEmpty(props.MessageId) && Guid.TryParse(props.MessageId, out var parsedId))
+        {
+            messageId = parsedId;
         }
 
         var message = new Message<T>(body)
         {
-            Id = props.MessageId != null ? Guid.Parse(props.MessageId) : new Guid(),
+            Id = messageId,
             CreatedDate = ((int) props.Timestamp.UnixTime).FromUnixTime(),
             Priority = props.Priority,
             ReplyTo = props.ReplyTo,
@@ -243,9 +252,9 @@ public static class RabbitMqExtensions
             RetryAttempts = msgResult.Redelivered ? 1 : 0,
         };
 
-        if (props.CorrelationId != null)
+        if (!string.IsNullOrEmpty(props.CorrelationId) && Guid.TryParse(props.CorrelationId, out var correlationId))
         {
-            message.ReplyId = Guid.Parse(props.CorrelationId);
+            message.ReplyId = correlationId;
         }
 
         if (props.Headers != null)

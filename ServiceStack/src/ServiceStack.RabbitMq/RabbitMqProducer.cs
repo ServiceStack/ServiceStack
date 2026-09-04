@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
@@ -19,6 +20,7 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
     //http://www.rabbitmq.com/amqp-0-9-1-reference.html
     public ushort PrefetchCount { get; set; } = 20;
 
+    private readonly object syncRoot = new();
     private IConnection connection;
     public IConnection Connection
     {
@@ -26,7 +28,10 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
         {
             if (connection == null)
             {
-                connection = msgFactory.ConnectionFactory.CreateConnection();
+                lock (syncRoot)
+                {
+                    connection ??= msgFactory.ConnectionFactory.CreateConnection();
+                }
             }
             return connection;
         }
@@ -39,6 +44,14 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
         {
             if (channel is not { IsOpen: true })
             {
+                try
+                {
+                    channel?.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error disposing closed RabbitMqProducer model", ex);
+                }
                 channel = Connection.OpenChannel();
                 //prefetch size is no supported by RabbitMQ
                 //http://www.rabbitmq.com/specification.html#method-status-basic.qos
@@ -121,7 +134,7 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
         OnPublishedCallback?.Invoke();
     }
 
-    static HashSet<string> Queues = new HashSet<string>();
+    static readonly ConcurrentDictionary<string, bool> Queues = new();
 
     public virtual void PublishMessage(string exchange, string routingKey, IBasicProperties basicProperties, byte[] body)
     {
@@ -135,10 +148,10 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
             }
             else
             {
-                if (!Queues.Contains(routingKey))
+                if (!Queues.ContainsKey(routingKey))
                 {
                     Channel.RegisterQueueByName(routingKey);
-                    Queues = [..Queues, routingKey];
+                    Queues.TryAdd(routingKey, true);
                 }
 
                 Channel.BasicPublish(exchange, routingKey, basicProperties, body);
@@ -153,12 +166,14 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
                 if (routingKey.IsServerNamedQueue())
                 {
                     Channel.BasicPublish("", routingKey, basicProperties, body);
+                    return;
                 }
                 else
                 {
                     Channel.RegisterExchangeByName(exchange);
 
                     Channel.BasicPublish(exchange, routingKey, basicProperties, body);
+                    return;
                 }
             }
             throw;
@@ -169,10 +184,10 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
     {
         try
         {
-            if (!Queues.Contains(queueName))
+            if (!Queues.ContainsKey(queueName))
             {
                 Channel.RegisterQueueByName(queueName);
-                Queues = new HashSet<string>(Queues) { queueName };
+                Queues.TryAdd(queueName, true);
             }
 
             var basicMsg = Channel.BasicGet(queueName, autoAck: noAck);

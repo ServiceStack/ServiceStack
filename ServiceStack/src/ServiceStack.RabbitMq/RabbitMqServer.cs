@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -140,8 +140,22 @@ public class RabbitMqServer : IMessageService
         set => PublishToOutqWhitelist = value ? TypeConstants.EmptyStringArray : null;
     }
         
+    private readonly object connectionLock = new();
     private IConnection connection;
-    private IConnection Connection => connection ??= ConnectionFactory.CreateConnection();
+    private IConnection Connection
+    {
+        get
+        {
+            if (connection == null)
+            {
+                lock (connectionLock)
+                {
+                    connection ??= ConnectionFactory.CreateConnection();
+                }
+            }
+            return connection;
+        }
+    }
 
     private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap = new();
     private readonly Dictionary<Type, int> handlerThreadCountMap = new();
@@ -563,9 +577,19 @@ public class RabbitMqServer : IMessageService
                 if (!bgThread.Join(TimeSpan.FromSeconds(3)))
                 {
                     Log.Warn(bgThread.Name + " just wont die, so we're now aborting it...");
+#if NETFRAMEWORK
 #pragma warning disable CS0618, SYSLIB0014, SYSLIB0006
                     bgThread.Abort();
 #pragma warning restore CS0618, SYSLIB0014, SYSLIB0006
+#else
+                    try
+                    {
+#pragma warning disable CS0618, SYSLIB0014, SYSLIB0006
+                        bgThread.Abort();
+#pragma warning restore CS0618, SYSLIB0014, SYSLIB0006
+                    }
+                    catch (PlatformNotSupportedException) {}
+#endif
                 }
             }
             bgThread = null;
@@ -603,10 +627,13 @@ public class RabbitMqServer : IMessageService
 
         try
         {
-            if (connection != null)
+            lock (connectionLock)
             {
-                connection.Dispose();
-                connection = null;
+                if (connection != null)
+                {
+                    connection.Dispose();
+                    connection = null;
+                }
             }
         }
         catch (Exception ex)

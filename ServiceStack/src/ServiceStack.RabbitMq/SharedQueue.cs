@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -99,14 +100,13 @@ public class SharedQueue<T> : IEnumerable<T>
             return true;
         }
 
-        DateTime startTime = DateTime.Now;
+        var sw = Stopwatch.StartNew();
         lock (m_queue)
         {
             while (m_queue.Count == 0)
             {
                 EnsureIsOpen();
-                TimeSpan elapsedTime = DateTime.Now.Subtract(startTime);
-                TimeSpan remainingTime = timeout.Subtract(elapsedTime);
+                TimeSpan remainingTime = timeout - sw.Elapsed;
                 if (remainingTime <= TimeSpan.Zero)
                 {
                     result = default;
@@ -209,6 +209,7 @@ struct SharedQueueEnumerator<T> : IEnumerator<T>
 {
     private readonly SharedQueue<T> _queue;
     private T _current;
+    private bool _hasCurrent;
 
     ///<summary>Construct an enumerator for the given
     ///SharedQueue.</summary>
@@ -216,13 +217,14 @@ struct SharedQueueEnumerator<T> : IEnumerator<T>
     {
         _queue = queue;
         _current = default;
+        _hasCurrent = false;
     }
 
     object IEnumerator.Current
     {
         get
         {
-            if (_current == null)
+            if (!_hasCurrent)
             {
                 throw new InvalidOperationException();
             }
@@ -234,7 +236,7 @@ struct SharedQueueEnumerator<T> : IEnumerator<T>
     {
         get
         {
-            if (_current == null)
+            if (!_hasCurrent)
             {
                 throw new InvalidOperationException();
             }
@@ -251,11 +253,13 @@ struct SharedQueueEnumerator<T> : IEnumerator<T>
         try
         {
             _current = _queue.Dequeue();
+            _hasCurrent = true;
             return true;
         }
         catch (EndOfStreamException)
         {
             _current = default;
+            _hasCurrent = false;
             return false;
         }
     }

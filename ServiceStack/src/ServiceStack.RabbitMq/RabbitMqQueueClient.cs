@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics;
 using System.Threading;
 using RabbitMQ.Client;
 using ServiceStack.Messaging;
@@ -20,9 +21,9 @@ public class RabbitMqQueueClient(RabbitMqMessageFactory msgFactory)
 
     public virtual IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)
     {
-        var now = DateTime.UtcNow;
+        var sw = Stopwatch.StartNew();
 
-        while (timeOut == null || (DateTime.UtcNow - now) < timeOut.Value)
+        while (timeOut == null || sw.Elapsed < timeOut.Value)
         {
             var basicMsg = GetMessage(queueName, noAck: false);
             if (basicMsg != null)
@@ -43,17 +44,24 @@ public class RabbitMqQueueClient(RabbitMqMessageFactory msgFactory)
 
     public virtual void Ack(IMessage message)
     {
-        var deliveryTag = ulong.Parse(message.Tag);
-        Channel.BasicAck(deliveryTag, multiple:false);
+        if (message?.Tag == null)
+            throw new ArgumentNullException(nameof(message), "Message or Message.Tag cannot be null");
+
+        if (!ulong.TryParse(message.Tag, out var deliveryTag))
+            throw new ArgumentException($"Invalid delivery tag '{message.Tag}'", nameof(message));
+
+        Channel.BasicAck(deliveryTag, multiple: false);
     }
 
     public virtual void Nak(IMessage message, bool requeue, Exception exception = null)
     {
+        if (message?.Tag == null || !ulong.TryParse(message.Tag, out var deliveryTag))
+            return;
+
         try
         {
             if (requeue)
             {
-                var deliveryTag = ulong.Parse(message.Tag);
                 Channel.BasicNack(deliveryTag, multiple: false, requeue: requeue);
             }
             else
@@ -64,7 +72,6 @@ public class RabbitMqQueueClient(RabbitMqMessageFactory msgFactory)
         }
         catch (Exception)
         {
-            var deliveryTag = ulong.Parse(message.Tag);
             Channel.BasicNack(deliveryTag, multiple: false, requeue: requeue);
         }
     }

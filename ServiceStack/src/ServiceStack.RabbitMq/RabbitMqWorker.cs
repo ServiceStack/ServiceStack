@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.IO;
 using System.Threading;
@@ -308,9 +308,19 @@ public class RabbitMqWorker : IDisposable
                     if (!bgThread.Join(TimeSpan.FromSeconds(3)))
                     {
                         Log.Warn(bgThread.Name + " just wont die, so we're now aborting it...");
+#if NETFRAMEWORK
 #pragma warning disable CS0618, SYSLIB0014, SYSLIB0006
                         bgThread.Abort();
 #pragma warning restore CS0618, SYSLIB0014, SYSLIB0006
+#else
+                        try
+                        {
+#pragma warning disable CS0618, SYSLIB0014, SYSLIB0006
+                            bgThread.Abort();
+#pragma warning restore CS0618, SYSLIB0014, SYSLIB0006
+                        }
+                        catch (PlatformNotSupportedException) {}
+#endif
                     }
                 }
             }
