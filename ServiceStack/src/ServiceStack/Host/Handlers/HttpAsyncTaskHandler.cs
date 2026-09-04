@@ -66,7 +66,7 @@ public abstract class HttpAsyncTaskHandler : IHttpAsyncHandler, IServiceStackHan
     public virtual void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
     {
         Log.Error($"HttpAsyncTaskHandler.ProcessRequest() that should never have been called, was just called from: {Environment.StackTrace}");
-        ProcessRequestAsync(httpReq, httpRes, operationName).Wait();
+        ProcessRequestAsync(httpReq, httpRes, operationName).GetAwaiter().GetResult();
     }
 
     //.NET Core entry point for: 

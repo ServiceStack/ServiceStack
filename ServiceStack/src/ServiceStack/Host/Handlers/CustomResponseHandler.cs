@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
@@ -17,15 +17,16 @@ public class CustomResponseHandler : HttpAsyncTaskHandler
     public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
     {
         if (Action == null)
-            throw new Exception("Action was not supplied to ActionHandler");
+            throw new InvalidOperationException("Action was not supplied to ActionHandler");
 
         if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
             return;
 
-        httpReq.OperationName ??= RequestName;
+        if (httpReq != null)
+            httpReq.OperationName ??= RequestName;
 
         var response = Action(httpReq, httpRes);
-        httpRes.WriteToResponse(httpReq, response);
+        httpRes?.WriteToResponse(httpReq, response);
     }
 }
 
@@ -42,15 +43,16 @@ public class CustomResponseHandlerAsync : HttpAsyncTaskHandler
     public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
     {
         if (Action == null)
-            throw new Exception("Action was not supplied to ActionHandler");
+            throw new InvalidOperationException("Action was not supplied to ActionHandler");
 
         if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
             return;
 
-        if (httpReq.OperationName == null)
+        if (httpReq != null && httpReq.OperationName == null)
             httpReq.OperationName = RequestName;
 
         var response = await Action(httpReq, httpRes);
-        await httpRes.WriteToResponse(httpReq, response);
+        if (httpRes != null)
+            await httpRes.WriteToResponse(httpReq, response);
     }
 }

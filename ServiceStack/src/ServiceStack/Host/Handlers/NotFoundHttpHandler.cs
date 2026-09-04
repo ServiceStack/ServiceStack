@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -18,12 +18,18 @@ public class NotFoundHttpHandler : HttpAsyncTaskHandler
 
     public override Task ProcessRequestAsync(IRequest request, IResponse response, string operationName)
     {
-        HostContext.AppHost.OnLogError(Log,
-            $"{request.UserHostAddress} Request not found: {request.RawUrl}");
+        if (request != null)
+        {
+            HostContext.AppHost?.OnLogError(Log,
+                $"{request.UserHostAddress} Request not found: {request.RawUrl}");
+        }
+
+        if (response == null)
+            return TypeConstants.EmptyTask;
 
         var sb = StringBuilderCache.Allocate();
 
-        var responseStatus = response.Dto.GetResponseStatus();
+        var responseStatus = response.Dto?.GetResponseStatus();
         if (responseStatus != null)
         {
             sb.AppendLine(
@@ -32,7 +38,7 @@ public class NotFoundHttpHandler : HttpAsyncTaskHandler
                     : $"Error: {responseStatus.Message ?? responseStatus.ErrorCode}\n");
         }
 
-        if (HostContext.DebugMode)
+        if (HostContext.DebugMode && request != null)
         {
             sb.AppendLine("Handler for Request not found (404):\n")
                 .AppendLine("  Request.HttpMethod: " + request.Verb)

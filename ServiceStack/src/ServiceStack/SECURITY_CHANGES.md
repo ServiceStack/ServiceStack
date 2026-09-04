@@ -289,3 +289,86 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - Guarded `Init` against null `validator` or `rule`, returning validator safely.
   - Guarded `RemoveValidatorSuffix` against null `name`.
 
+## 13. ServiceStack.Host & Handlers Subsystem Hardening
+
+- **`ContainerResolveCache.cs`**:
+  - Guarded `GenerateServiceFactory(Type)` against `type == null` throwing explicit `ArgumentNullException`.
+  - Guarded `PopulateInstance(IResolver, object)` against `instance == null` (returning null) and `resolver == null` (returning instance).
+  - Guarded `CreateInstance(IResolver, Type, bool)` against null `type` or null `resolver` returning null.
+- **`InMemoryRollingRequestLogger.cs`**:
+  - Guarded null response in `CreateEntry`: `request.Response?.StatusCode ?? 0`, `request.Response?.StatusDescription`, and `isClosed = request.Response?.IsClosed == true`.
+  - Safely resolved `request.GetSessionId()` only when `HostContext.AppHost != null`, avoiding uninitialized AppHost exceptions.
+  - Guarded `apiKeyNameFn(apiKey)?.ToString()`.
+  - Guarded `request.Response?.Items.TryGetValue(...)` and `(request.Response?.StatusCode ?? 200) < 400`.
+  - Fixed potential null reference in `ExcludeResponseTypes` evaluation.
+  - Guarded `SerializableItems` against null items dictionary.
+  - Clamped negative values in `GetLatestLogs(int? take)` via `Math.Max(0, take.Value)`.
+- **`RestPath.cs`**:
+  - Fixed route literal hashing bug where `sbHashKey.Append(i + PathSeparator + literalsToMatch)` appended `"System.String[]"` instead of the matching literal `literalsToMatch[i]`.
+  - Guarded `GetPathPartsForMatching(string pathInfo)` returning `TypeConstants.EmptyStringArray` on null or empty path info.
+  - Guarded `IsVariable(string name)` against null `name` or null `VariablesNames`.
+  - Guarded `GetHashCode()` against null `UniqueMatchHashKey`.
+- **`ContentTypes.cs`**:
+  - Added standalone fallback in `ContentTypeSerializers` and `ContentTypeDeserializers` when `HostContext.AppHost == null` using `JsonSerializer.SerializeToStream` / `DeserializeFromStream`.
+  - Guarded `SerializeToBytes` and `SerializeToString` against `req == null`.
+  - Replaced blocking `.Wait()` and `.Result` with `.GetAwaiter().GetResult()`.
+  - Guarded `httpReq?.Response` before setting DTO or allowing sync I/O.
+  - Replaced throwing `HostContext.Config.BufferSyncSerializers` with safe `HostContext.AppHost?.Config?.BufferSyncSerializers == true`.
+- **`ServiceController.cs`**:
+  - Guarded `GetResponseType` against null `requestType` or null `mi`.
+  - Guarded `IsRequestType` and `IsServiceType` against null `type` returning `false`.
+  - Guarded `IsServiceAction(ActionMethod mi)` and `IsServiceAction(string actionName)` against null inputs.
+  - Guarded `GetServiceRequestTypes` and `GetAutoBatchedRequestTypes` against null collections.
+- **`ServiceRunner.cs`**:
+  - Validated `actionContext ?? throw new ArgumentNullException(nameof(actionContext))`.
+  - Guarded null `requestDto` in strict mode check.
+  - Guarded `HostContext.AppHost?.OnLogRequest(...)`.
+  - Replaced `.Result` with `.GetAwaiter().GetResult()` in synchronous execution wrappers.
+- **`RestHandler.cs`**:
+  - In `GetSanitizedPathInfo`, guarded against null `pathInfo` and checked `HostContext.AppHost?.Config?.AllowRouteContentTypeExtensions == true`.
+  - In `ProcessRequestAsync`, guarded `HostContext.AppHost?.OnAfterAwait(httpReq)`.
+- **`GenericHandler.cs`**:
+  - Guarded `HostContext.AppHost?.OnAfterAwait(...)`, `HostContext.AppHost?.Config?.WriteErrorsToResponse`, and `HostContext.AppHost?.ApplyResponseConvertersAsync(...)`.
+- **`HttpAsyncTaskHandler.cs`**:
+  - Replaced `.Wait()` with `.GetAwaiter().GetResult()` in `ProcessRequest`.
+  - Preserved exception stack trace on rethrow in `HandleException`.
+- **`CustomActionHandler.cs`**:
+  - Replaced incorrect `NullReferenceException` with standard `ArgumentNullException(nameof(action))` in both synchronous and asynchronous constructors.
+  - Guarded `httpRes?.ApplyGlobalResponseHeaders()` and `httpRes?.EndHttpHandlerRequest()`.
+- **`CustomResponseHandler.cs`**:
+  - Replaced generic `Exception` with `InvalidOperationException` when action is missing.
+  - Guarded `httpRes?.WriteToResponse(httpReq, response)` against null response.
+- **`NotFoundHttpHandler.cs`**:
+  - Guarded `HostContext.AppHost?.OnLogError(...)` and null `request` / `response` references.
+- **`ForbiddenHttpHandler.cs`**:
+  - Replaced throwing `HostContext.Config.DebugMode` with safe `HostContext.DebugMode`.
+  - Guarded null `request` and null `response` references.
+- **`StaticFileHandler.cs`**:
+  - Guarded `HostContext.AppHost?.VirtualFiles?.GetFile(virtualPath)` in path constructor.
+  - Guarded `appHost?.Config` access and `request?.Headers?[HttpHeaders.Range]` against uninitialized AppHost or missing request/headers.
+- **`SoapHandler.cs`**:
+  - Converted blocking `.Result` and `.Wait()` inside async `ExecuteMessage` method to proper `await ...ConfigAwait()`.
+  - Replaced top-level `.Wait()` / `.Result` with `.GetAwaiter().GetResult()`.
+  - Added `ArgumentNullException(nameof(requestType))` check to `EmptyResponse`.
+- **`BasicRequest.cs`**:
+  - Guarded `GetService(Type)` returning `null` when `serviceType == null`.
+  - Guarded `GetHeader(string)` returning `null` on null header name or null headers collection.
+  - Guarded `GetRawBody()` against null `Message`.
+  - Guarded `Authorization` property getter and setter against null `Headers`.
+  - Guarded `PopulateWith(IRequest)` against null request.
+  - Safely called `HostContext.VirtualFileSources?.GetFile` and `GetDirectory`.
+- **`BasicResponse.cs`**:
+  - Fixed uninitialized backing stream bug in `Write(string)` by ensuring `OutputStream.Write(...)` is called instead of `ms.Write(...)`.
+  - Guarded `Write(string)` against null text.
+  - Guarded `AddHeader`, `RemoveHeader`, and `GetHeader` against null header names.
+- **`Cookies.cs` & `CookiesExtensions`**:
+  - In `ToCookieOptions()`, `ToHttpCookie()`, and `AsHeaderValue()`, used `HostContext.AppHost?.Config ?? new HostConfig()` to allow standalone/offline cookie formatting without requiring an initialized AppHost.
+  - Guarded against null cookie arguments throwing `ArgumentNullException` or returning null.
+  - Guarded `httpRes?.Request?.IsSecureConnection` in `UseSecureCookie`.
+- **`HttpFile.cs`**:
+  - Guarded `HttpFile(IHttpFile file)` with `ArgumentNullException(nameof(file))`.
+  - Guarded `HttpFileContent(HttpContent content)` with `ArgumentNullException(nameof(content))`.
+- **`HttpRequestAuthentication.cs`**:
+  - Added standalone fallback in `GetAuthorization`, `GetBearerToken`, and `GetJwtToken` when `HostContext.AppHost == null`.
+
+

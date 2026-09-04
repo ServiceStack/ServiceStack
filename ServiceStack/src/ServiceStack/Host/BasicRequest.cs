@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -91,6 +91,8 @@ public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IHasClaims
 
     public object GetService(Type serviceType)
     {
+        if (serviceType == null)
+            return null;
         var mi = typeof(BasicRequest).GetMethod(nameof(TryResolve));
         var genericMi = mi.MakeGenericMethod(serviceType);
         return genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
@@ -100,8 +102,9 @@ public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IHasClaims
 
     public string GetHeader(string headerName)
     {
-        var headerValue = Headers[headerName];
-        return headerValue;
+        if (headerName == null)
+            return null;
+        return Headers?[headerName];
     }
 
     public Dictionary<string, object> Items { get; set; }
@@ -146,7 +149,7 @@ public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IHasClaims
     public bool UseBufferedStream { get; set; }
 
     private string body;
-    public string GetRawBody() => body ??= (Message.Body ?? "").Dump();
+    public string GetRawBody() => body ??= (Message?.Body ?? "").Dump();
 
     public Task<string> GetRawBodyAsync() => Task.FromResult(GetRawBody());
 
@@ -156,10 +159,14 @@ public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IHasClaims
 
     public string Authorization
     {
-        get => string.IsNullOrEmpty(Headers[HttpHeaders.Authorization])
+        get => string.IsNullOrEmpty(Headers?[HttpHeaders.Authorization])
             ? null
             : Headers[HttpHeaders.Authorization];
-        set => Headers[HttpHeaders.Authorization] = value;
+        set
+        {
+            Headers ??= new NameValueCollection();
+            Headers[HttpHeaders.Authorization] = value;
+        }
     }
 
     public bool IsSecureConnection
@@ -182,20 +189,23 @@ public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles, IHasClaims
 
     public BasicRequest PopulateWith(IRequest request)
     {
-        this.Headers = request.Headers;
-        this.Cookies = request.Cookies;
-        this.Items = request.Items;
-        this.UserAgent = request.UserAgent;
-        this.RemoteIp = request.RemoteIp;
-        this.UserHostAddress = request.UserHostAddress;
-        this.IsSecureConnection = request.IsSecureConnection;
-        this.AcceptTypes = request.AcceptTypes;
+        if (request != null)
+        {
+            this.Headers = request.Headers;
+            this.Cookies = request.Cookies;
+            this.Items = request.Items;
+            this.UserAgent = request.UserAgent;
+            this.RemoteIp = request.RemoteIp;
+            this.UserHostAddress = request.UserHostAddress;
+            this.IsSecureConnection = request.IsSecureConnection;
+            this.AcceptTypes = request.AcceptTypes;
+        }
         return this;
     }
 
-    public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
+    public IVirtualFile GetFile() => HostContext.VirtualFileSources?.GetFile(PathInfo);
 
-    public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
+    public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources?.GetDirectory(PathInfo);
     
     public bool IsFile { get; set; }
     

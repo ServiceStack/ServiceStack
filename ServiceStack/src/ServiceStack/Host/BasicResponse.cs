@@ -26,18 +26,21 @@ public class BasicResponse(BasicRequest requestContext) : IResponse, IHasHeaders
 
     public void AddHeader(string name, string value)
     {
-        Headers[name] = value;
+        if (name != null)
+            Headers[name] = value;
     }
 
     public void RemoveHeader(string name)
     {
-        Headers.Remove(name);
+        if (name != null)
+            Headers.Remove(name);
     }
 
     public string GetHeader(string name)
     {
-        this.Headers.TryGetValue(name, out var value);
-        return value;
+        if (name != null && this.Headers.TryGetValue(name, out var value))
+            return value;
+        return null;
     }
 
     public void Redirect(string url)
@@ -46,14 +49,15 @@ public class BasicResponse(BasicRequest requestContext) : IResponse, IHasHeaders
 
     private MemoryStream ms;
 
-    public Stream OutputStream => ms ?? (ms = new MemoryStream());
+    public Stream OutputStream => ms ??= new MemoryStream();
 
     public object Dto { get; set; }
 
     public void Write(string text)
     {
+        if (text == null) return;
         var bytes = text.ToUtf8Bytes();
-        ms.Write(bytes, 0, bytes.Length);
+        OutputStream.Write(bytes, 0, bytes.Length);
     }
 
     public bool UseBufferedStream { get; set; }

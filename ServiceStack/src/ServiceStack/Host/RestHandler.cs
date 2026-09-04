@@ -32,13 +32,15 @@ public class RestHandler
     public static string GetSanitizedPathInfo(string pathInfo, out string contentType)
     {
         contentType = null;
-        if (HostContext.Config.AllowRouteContentTypeExtensions)
+        if (pathInfo == null) return null;
+
+        if (HostContext.AppHost?.Config?.AllowRouteContentTypeExtensions == true)
         {
             var pos = pathInfo.LastIndexOf('.');
             if (pos >= 0)
             {
                 var format = pathInfo.Substring(pos + 1);
-                contentType = HostContext.ContentTypes.GetFormatContentType(format);
+                contentType = HostContext.ContentTypes?.GetFormatContentType(format);
                 if (contentType != null)
                 {
                     pathInfo = pathInfo.Substring(0, pos);
@@ -88,10 +90,10 @@ public class RestHandler
             appHost.AssertContentType(httpReq.ResponseContentType);
 
             var request = httpReq.Dto = await CreateRequestAsync(httpReq, restPath).ConfigAwaitNetCore();
-            HostContext.AppHost.OnAfterAwait(httpReq);
+            HostContext.AppHost?.OnAfterAwait(httpReq);
 
             await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
-            HostContext.AppHost.OnAfterAwait(httpReq);
+            HostContext.AppHost?.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;
 
@@ -99,12 +101,12 @@ public class RestHandler
             httpReq.RequestAttributes |= HandlerAttributes | requestContentType;
 
             var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
-            HostContext.AppHost.OnAfterAwait(httpReq);
+            HostContext.AppHost?.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;
 
             await HandleResponse(httpReq, httpRes, rawResponse).ConfigAwaitNetCore();
-            HostContext.AppHost.OnAfterAwait(httpReq);
+            HostContext.AppHost?.OnAfterAwait(httpReq);
         }
         //sync with GenericHandler
         catch (TaskCanceledException)

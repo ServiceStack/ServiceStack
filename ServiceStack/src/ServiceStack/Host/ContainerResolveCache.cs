@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +15,7 @@ public class ContainerResolveCache : ITypeFactory
 
     private Func<IResolver, object> GenerateServiceFactory(Type type)
     {
+        if (type == null) throw new ArgumentNullException(nameof(type));
         var resolverParam = Expression.Parameter(typeof(IResolver), "resolver");
         var resolveInstance = Expression.Call(resolverParam, "TryResolve", [type]);
         var resolveObject = Expression.Convert(resolveInstance, typeof(object));
@@ -35,6 +36,9 @@ public class ContainerResolveCache : ITypeFactory
     
     public static object PopulateInstance(IResolver resolver, object instance)
     {
+        if (instance == null) return null;
+        if (resolver == null) return instance;
+
         var setters = settersCache.GetOrAdd(instance.GetType(), serviceType => {
             var setters = new List<Action<IResolver,object>>();
             foreach (var prop in serviceType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -77,6 +81,9 @@ public class ContainerResolveCache : ITypeFactory
     /// </summary>
 	public object CreateInstance(IResolver resolver, Type type, bool tryResolve)
     {
+        if (type == null || resolver == null)
+            return null;
+
         var resolveFn = resolveFnMap.GetOrAdd(type, GenerateServiceFactory);
 
         var instance = resolveFn(resolver);

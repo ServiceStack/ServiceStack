@@ -20,7 +20,7 @@ public class Cookies(IHttpResponse httpRes) : ICookies
     public List<Cookie> Collection { get; set; } = [];
 
     public bool UseSecureCookie(bool? secureOnly) =>
-        (secureOnly ?? HostContext.AppHost?.Config?.UseSecureCookies ?? true) && (httpRes.Request?.IsSecureConnection == true);
+        (secureOnly ?? HostContext.AppHost?.Config?.UseSecureCookies ?? true) && (httpRes?.Request?.IsSecureConnection == true);
 
     /// <summary>
     /// Sets a persistent cookie which never expires
@@ -31,7 +31,7 @@ public class Cookies(IHttpResponse httpRes) : ICookies
             Expires = PermanentCookieExpiry,
             Secure = UseSecureCookie(secureOnly)
         };
-        httpRes.SetCookie(cookie);
+        httpRes?.SetCookie(cookie);
         Collection.Add(cookie);
     }
 
@@ -43,7 +43,7 @@ public class Cookies(IHttpResponse httpRes) : ICookies
         var cookie = new Cookie(cookieName, cookieValue, RootPath) {
             Secure = UseSecureCookie(secureOnly)
         };
-        httpRes.SetCookie(cookie);
+        httpRes?.SetCookie(cookie);
         Collection.Add(cookie);
     }
 
@@ -57,7 +57,7 @@ public class Cookies(IHttpResponse httpRes) : ICookies
             Expires = DateTime.UtcNow.AddDays(-1),
             Secure = UseSecureCookie(null)
         };
-        httpRes.SetCookie(cookie);
+        httpRes?.SetCookie(cookie);
         Collection.RemoveAll(x => x.Name == cookieName);
     }
 }
@@ -93,7 +93,9 @@ public static class CookiesExtensions
         
         public static HttpCookie ToHttpCookie(this Cookie cookie)
         {
-            var config = HostContext.Config;
+            if (cookie == null)
+                throw new ArgumentNullException(nameof(cookie));
+            var config = HostContext.AppHost?.Config ?? new HostConfig();
             var httpCookie = new HttpCookie(cookie.Name, cookie.Value)
             {
                 Path = cookie.Path,
@@ -134,7 +136,9 @@ public static class CookiesExtensions
 #if NETCORE
     public static CookieOptions ToCookieOptions(this Cookie cookie)
     {
-        var config = HostContext.Config;
+        if (cookie == null)
+            throw new ArgumentNullException(nameof(cookie));
+        var config = HostContext.AppHost?.Config ?? new HostConfig();
         var cookieOptions = new CookieOptions {
             Path = cookie.Path,
             Expires = cookie.Expires == DateTime.MinValue ? (DateTimeOffset?) null : cookie.Expires,
@@ -160,7 +164,9 @@ public static class CookiesExtensions
 
     public static string AsHeaderValue(this Cookie cookie)
     {
-        var config = HostContext.Config;
+        if (cookie == null)
+            return null;
+        var config = HostContext.AppHost?.Config ?? new HostConfig();
         var path = cookie.Path ?? "/";
         var sb = StringBuilderCache.Allocate();
 

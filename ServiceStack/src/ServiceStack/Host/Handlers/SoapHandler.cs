@@ -25,7 +25,7 @@ public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
 
     void IOneWay.SendOneWay(Message requestMsg)
     {
-        SendOneWay(requestMsg, null, null).Wait();
+        SendOneWay(requestMsg, null, null).GetAwaiter().GetResult();
     }
 
     protected Task SendOneWay(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
@@ -39,7 +39,7 @@ public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
     {
         var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
 
-        return ExecuteMessage(requestMsg, endpointAttributes, null, null).Result;
+        return ExecuteMessage(requestMsg, endpointAttributes, null, null).GetAwaiter().GetResult();
     }
 
     protected abstract Message GetRequestMessageFromStream(Stream requestStream);
@@ -53,6 +53,9 @@ public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
 
     public Message EmptyResponse(Message requestMsg, Type requestType)
     {
+        if (requestType == null)
+            throw new ArgumentNullException(nameof(requestType));
+
         var responseType = AssemblyUtils.FindType(requestType.FullName + "Response");
         var response = (responseType ?? WebRequestUtils.GetErrorResponseDtoType(requestType)).CreateInstance();
 
@@ -101,11 +104,11 @@ public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
         {
             var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
 
-            var request = appHost.ApplyRequestConvertersAsync(httpReq,
+            var request = await appHost.ApplyRequestConvertersAsync(httpReq,
                 useXmlSerializerRequest
                     ? XmlSerializableSerializer.Instance.DeserializeFromString(requestXml, requestType)
                     : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType)
-            ).Result;
+            ).ConfigAwait();
 
             httpReq.Dto = request;
 
@@ -124,7 +127,7 @@ public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
 
             if (hasRequestFilters)
             {
-                HostContext.ApplyRequestFiltersAsync(httpReq, httpRes, request).Wait();
+                await HostContext.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwait();
                 if (httpRes.IsClosed)
                     return EmptyResponse(requestMsg, requestType);
             }
@@ -132,9 +135,9 @@ public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
             httpReq.RequestAttributes |= requestAttributes;
             var response = await GetResponseAsync(httpReq, request);
 
-            response = appHost.ApplyResponseConvertersAsync(httpReq, response).Result;
+            response = await appHost.ApplyResponseConvertersAsync(httpReq, response).ConfigAwait();
 
-            appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response).Wait();
+            await appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response).ConfigAwait();
             if (httpRes.IsClosed)
                 return EmptyResponse(requestMsg, requestType);
 
@@ -157,9 +160,9 @@ public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
             try
             {
                 if (httpReq.Dto != null)
-                    HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex).Wait();
+                    await HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex).ConfigAwait();
                 else
-                    HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex).Wait();
+                    await HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex).ConfigAwait();
 
                 throw new SerializationException($"Error trying to deserialize requestType: {requestType}", ex);
             }

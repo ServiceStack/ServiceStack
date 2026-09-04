@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0618
+#pragma warning disable CS0618
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,7 +25,7 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
     public ServiceRunner(IAppHost appHost, ActionContext actionContext)
     {
         this.AppHost = appHost;
-        this.ActionContext = actionContext;
+        this.ActionContext = actionContext ?? throw new ArgumentNullException(nameof(actionContext));
         this.ServiceAction = actionContext.ServiceAction;
 
         if (actionContext.RequestFilters != null)
@@ -136,7 +136,7 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
             {
                 if (response != null && response.GetType().IsValueType)
                     throw new StrictModeException(
-                        $"'{requestDto.GetType().Name}' Service cannot return Value Types for its Service Responses. " +
+                        $"'{requestDto?.GetType().Name ?? typeof(TRequest).Name}' Service cannot return Value Types for its Service Responses. " +
                         $"You can embed its '{response.GetType().Name}' return value in a Response DTO or return as raw data in a string or byte[]",
                         StrictModeCodes.ReturnsValueType);
             }
@@ -216,7 +216,7 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
             var logDto = !req.IsMultiRequest() ? requestDto : req.Dto;
             if (logDto != null)
             {
-                HostContext.AppHost.OnLogRequest(req, logDto, response, req.GetElapsed());
+                HostContext.AppHost?.OnLogRequest(req, logDto, response, req.GetElapsed());
             }
         }
         catch (Exception ex)
@@ -228,7 +228,7 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
     public virtual object Execute(IRequest req, object instance, IMessage<TRequest> request)
     {
         var task = ExecuteAsync(req, instance, request.GetBody());
-        return task.Result;
+        return task.GetAwaiter().GetResult();
     }
 
     [Obsolete("Use HandleExceptionAsync(req, requestDto, ex, service)")]
@@ -270,7 +270,7 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
         if (msgFactory == null)
         {
             var task = ExecuteAsync(req, instance, requestDto);
-            return task.Result;
+            return task.GetAwaiter().GetResult();
         }
 
         req.PopulateRequestDtoIfAuthenticated(requestDto);

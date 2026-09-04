@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
@@ -10,7 +10,7 @@ public class CustomActionHandler : HttpAsyncTaskHandler
 
     public CustomActionHandler(Action<IRequest, IResponse> action)
     {
-        Action = action ?? throw new NullReferenceException(nameof(action));
+        Action = action ?? throw new ArgumentNullException(nameof(action));
         this.RequestName = GetType().Name;
     }
 
@@ -19,9 +19,9 @@ public class CustomActionHandler : HttpAsyncTaskHandler
         if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
             return;
 
-        httpRes.ApplyGlobalResponseHeaders();
+        httpRes?.ApplyGlobalResponseHeaders();
         Action(httpReq, httpRes);
-        httpRes.EndHttpHandlerRequest(skipHeaders:true);
+        httpRes?.EndHttpHandlerRequest(skipHeaders:true);
     }
 }
 
@@ -31,7 +31,7 @@ public class CustomActionHandlerAsync : HttpAsyncTaskHandler
 
     public CustomActionHandlerAsync(Func<IRequest, IResponse, Task> action)
     {
-        Action = action ?? throw new NullReferenceException(nameof(action));
+        Action = action ?? throw new ArgumentNullException(nameof(action));
         this.RequestName = GetType().Name;
     }
 
@@ -40,8 +40,8 @@ public class CustomActionHandlerAsync : HttpAsyncTaskHandler
         if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
             return;
 
-        httpRes.ApplyGlobalResponseHeaders();
+        httpRes?.ApplyGlobalResponseHeaders();
         await Action(httpReq, httpRes);
-        httpRes.EndHttpHandlerRequest(skipHeaders: true);
+        httpRes?.EndHttpHandlerRequest(skipHeaders: true);
     }
 }

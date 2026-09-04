@@ -154,6 +154,8 @@ public class ServiceController : IServiceController
 
     public static Type GetResponseType(ActionMethod mi, Type requestType)
     {
+        if (requestType == null || mi == null) return null;
+
         var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
         var responseType = returnMarker != null ?
             returnMarker.GetGenericArguments()[0]
@@ -175,7 +177,8 @@ public class ServiceController : IServiceController
 
     public static bool IsRequestType(Type type)
     {
-        return !type.IsValueType
+        return type != null
+               && !type.IsValueType
                && type != typeof(string)
                && !type.IsAbstract 
                && !type.IsGenericTypeDefinition 
@@ -185,7 +188,8 @@ public class ServiceController : IServiceController
 
     public static bool IsServiceType(Type serviceType)
     {
-        return typeof(IService).IsAssignableFrom(serviceType)
+        return serviceType != null
+               && typeof(IService).IsAssignableFrom(serviceType)
                && !serviceType.IsAbstract 
                && !serviceType.IsGenericTypeDefinition 
                && !serviceType.ContainsGenericParameters;
@@ -193,7 +197,7 @@ public class ServiceController : IServiceController
 
     public static bool IsServiceAction(ActionMethod mi)
     {
-        if (mi.IsGenericMethod || mi.GetParameters().Length != 1)
+        if (mi == null || mi.IsGenericMethod || mi.GetParameters().Length != 1)
             return false;
 
         return IsServiceAction(mi.Name, mi.GetParameters()[0].ParameterType);
@@ -206,6 +210,7 @@ public class ServiceController : IServiceController
 
     public static bool IsServiceAction(string actionName)
     {
+        if (actionName == null) return false;
         actionName = actionName.ToUpper();
         if (actionName.EndsWith(ActionMethod.AsyncUpper))
             actionName = actionName.Substring(0, actionName.Length - ActionMethod.AsyncUpper.Length);
@@ -224,6 +229,7 @@ public class ServiceController : IServiceController
     public static HashSet<Type> GetServiceRequestTypes(IEnumerable<Type> serviceTypes)
     {
         var requestTypes = new HashSet<Type>();
+        if (serviceTypes == null) return requestTypes;
         foreach (var requestType in serviceTypes.SelectMany(x => x.GetActions()).Select(x => x.RequestType))
         {
             requestTypes.Add(requestType);
@@ -237,6 +243,7 @@ public class ServiceController : IServiceController
     public static HashSet<Type> GetAutoBatchedRequestTypes(IEnumerable<Type> serviceTypes)
     {
         var to = new HashSet<Type>();
+        if (serviceTypes == null) return to;
         foreach (var serviceType in serviceTypes)
         {
             var batchedRequestTypes = serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance)

@@ -11,6 +11,8 @@ public class HttpFile : IHttpFile
     public HttpFile() {}
     public HttpFile(IHttpFile file) 
     {
+        if (file == null)
+            throw new ArgumentNullException(nameof(file));
         Name = file.Name;
         FileName = file.FileName;
         ContentLength = file.ContentLength;
@@ -32,7 +34,7 @@ public class HttpFileContent : HttpFile
     System.Net.Http.HttpContent content;
     public HttpFileContent(System.Net.Http.HttpContent content)
     {
-        this.content = content;
+        this.content = content ?? throw new ArgumentNullException(nameof(content));
         this.ContentType = content.Headers.ContentType?.MediaType ?? MimeTypes.Binary;
         if (content.Headers.ContentLength != null)
             this.ContentLength = content.Headers.ContentLength.Value;

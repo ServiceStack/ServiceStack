@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -122,18 +122,18 @@ public class InMemoryRollingRequestLogger : IRequestLogger
             UserAuthId = request.GetItemStringValue(HttpHeaders.XUserAuthId),
             Items = SerializableItems(request.Items),
             Session = EnableSessionTracking ? request.GetSession() : null,
-            StatusCode = request.Response.StatusCode,
-            StatusDescription = request.Response.StatusDescription
+            StatusCode = request.Response?.StatusCode ?? 0,
+            StatusDescription = request.Response?.StatusDescription
         };
 
         if (request.Response is IHasHeaders hasHeaders)
             entry.ResponseHeaders = hasHeaders.Headers;
 
-        var isClosed = request.Response.IsClosed;
+        var isClosed = request.Response?.IsClosed == true;
         if (!isClosed)
         {
             entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
-            entry.SessionId = request.GetSessionId();
+            entry.SessionId = HostContext.AppHost != null ? request.GetSessionId() : null;
         }
 
         if (string.IsNullOrEmpty(entry.UserAuthId))
@@ -159,7 +159,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
             var apiKeyNameFn = TypeProperties.Get(apiKey.GetType()).GetPublicGetter("Name");
             if (apiKeyNameFn != null)
             {
-                entry.Meta["keyname"] = apiKeyNameFn(apiKey).ToString();
+                entry.Meta["keyname"] = apiKeyNameFn(apiKey)?.ToString();
             }
         }
         else
@@ -197,17 +197,17 @@ public class InMemoryRollingRequestLogger : IRequestLogger
         }
 
         // Error Response has been converted into Response DTO before it's logged at end of request, use Result to get original error
-        var useResponse = (request.Response.Items.TryGetValue(Keywords.Result, out var originalResponse)
+        var useResponse = (request.Response?.Items.TryGetValue(Keywords.Result, out var originalResponse) == true
             ? originalResponse
             : null) ?? response;
 
-        if (!useResponse.IsErrorResponse() && request.Response.StatusCode < 400)
+        if (!useResponse.IsErrorResponse() && (request.Response?.StatusCode ?? 200) < 400)
         {
             var enableResponseTracking = ResponseTrackingFilter?.Invoke(request);
             if (enableResponseTracking ?? EnableResponseTracking)
             {
                 var responseDto = response.GetResponseDto();
-                if (responseDto != null && !ExcludeResponseTypes.Any(x => x.IsInstanceOfType(responseDto)))
+                if (responseDto != null && (ExcludeResponseTypes == null || !ExcludeResponseTypes.Any(x => x.IsInstanceOfType(responseDto))))
                 {
                     entry.ResponseDto = responseDto;
                 }
@@ -248,6 +248,8 @@ public class InMemoryRollingRequestLogger : IRequestLogger
     public Dictionary<string, string> SerializableItems(Dictionary<string, object> items)
     {
         var to = new Dictionary<string, string>();
+        if (items == null) return to;
+
         foreach (var item in items)
         {
             var value = item.Value?.ToString() ?? "(null)";
@@ -260,7 +262,7 @@ public class InMemoryRollingRequestLogger : IRequestLogger
     public virtual List<RequestLogEntry> GetLatestLogs(int? take)
     {
         return take.HasValue
-            ? [..logEntries.Take(take.Value)]
+            ? [..logEntries.Take(Math.Max(0, take.Value))]
             : [..logEntries];
     }
 

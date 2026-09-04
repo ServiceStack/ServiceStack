@@ -61,7 +61,7 @@ public class StaticFileHandler : HttpAsyncTaskHandler
     /// </summary>
     public StaticFileHandler(string virtualPath) : this()
     {
-        VirtualNode = HostContext.AppHost.VirtualFiles.GetFile(virtualPath);
+        VirtualNode = HostContext.AppHost?.VirtualFiles?.GetFile(virtualPath);
 
         if (VirtualNode == null)
             throw new ArgumentException("Could not find file at VirtualPath: " + virtualPath);
@@ -105,47 +105,47 @@ public class StaticFileHandler : HttpAsyncTaskHandler
     public override async Task ProcessRequestAsync(IRequest request, IResponse response, string operationName)
     {
         HostContext.ApplyCustomHandlerRequestFilters(request, response);
-        if (response.IsClosed) return;
+        if (response == null || response.IsClosed) return;
 
         await response.EndHttpHandlerRequestAsync(afterHeaders: async r =>
         {
-            var node = this.VirtualNode ?? request.GetVirtualNode();
+            var node = this.VirtualNode ?? request?.GetVirtualNode();
             var file = node as IVirtualFile;
             var appHost = HostContext.AppHost;
             if (file == null)
             {
                 if (node is IVirtualDirectory dir)
                 {
-                    file = dir.GetDefaultDocument(appHost.Config.DefaultDocuments);
-                    if (file != null && HostContext.Config.RedirectToDefaultDocuments)
+                    file = dir.GetDefaultDocument(appHost?.Config?.DefaultDocuments);
+                    if (file != null && appHost?.Config?.RedirectToDefaultDocuments == true)
                     {
-                        r.Redirect(request.GetPathUrl() + '/' + file.Name);
+                        r.Redirect((request?.GetPathUrl() ?? "") + '/' + file.Name);
                         return;
                     }
                 }
 
                 if (file == null)
                 {
-                    var fileName = request.PathInfo;
+                    var fileName = request?.PathInfo;
                     var originalFileName = fileName;
 
-                    if (Env.IsMono)
+                    if (Env.IsMono && appHost != null)
                     {
                         //Create a case-insensitive file index of all host files
-                        if (allFiles == null)
+                        if (allFiles == null && appHost.RootDirectory != null)
                             allFiles = CreateFileIndex(appHost.RootDirectory.RealPath);
-                        if (allDirs == null)
+                        if (allDirs == null && appHost.RootDirectory != null)
                             allDirs = CreateDirIndex(appHost.RootDirectory.RealPath);
 
-                        if (allFiles.TryGetValue(fileName.ToLower(), out fileName))
+                        if (allFiles != null && fileName != null && allFiles.TryGetValue(fileName.ToLower(), out fileName))
                         {
-                            file = appHost.VirtualFileSources.GetFile(fileName);
+                            file = appHost.VirtualFileSources?.GetFile(fileName);
                         }
                     }
 
                     if (file == null)
                     {
-                        var msg = ErrorMessages.FileNotExistsFmt.LocalizeFmt(request, request.PathInfo.SafeInput());
+                        var msg = ErrorMessages.FileNotExistsFmt.LocalizeFmt(request, request?.PathInfo.SafeInput());
                         LogManager.GetLogger(GetType()).Warn($"{msg} in path: {originalFileName}");
                         response.StatusCode = 404;
                         response.StatusDescription = msg;
@@ -156,12 +156,12 @@ public class StaticFileHandler : HttpAsyncTaskHandler
 
             file.Refresh(); //refresh FileInfo, DateModified, Length
 
-            if (r.ContentType != null && appHost.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(r.ContentType, out var maxAge))
+            if (r.ContentType != null && appHost?.Config?.AddMaxAgeForStaticMimeTypes?.TryGetValue(r.ContentType, out var maxAge) == true)
             {
                 r.AddHeader(HttpHeaders.CacheControl, "max-age=" + maxAge.TotalSeconds);
             }
 
-            if (request.HasNotModifiedSince(file.LastModified))
+            if (request != null && request.HasNotModifiedSince(file.LastModified))
             {
                 r.ContentType = MimeTypes.GetMimeType(file.Name);
                 r.StatusCode = (int)HttpStatusCode.NotModified;
@@ -174,8 +174,8 @@ public class StaticFileHandler : HttpAsyncTaskHandler
 
             try
             {
-                var encoding = request.GetCompressionType();
-                var shouldCompress = encoding != null && appHost.ShouldCompressFile(file);
+                var encoding = request?.GetCompressionType();
+                var shouldCompress = encoding != null && appHost != null && appHost.ShouldCompressFile(file);
                 r.AddHeaderLastModified(file.LastModified);
                 r.ContentType = MimeTypes.GetMimeType(file.Name);
 
@@ -216,12 +216,12 @@ public class StaticFileHandler : HttpAsyncTaskHandler
                     return;
                 }
 
-                if (appHost.Config.AllowPartialResponses)
+                if (appHost?.Config?.AllowPartialResponses == true)
                     r.AddHeader(HttpHeaders.AcceptRanges, "bytes");
                 long contentLength = file.Length;
                 long rangeStart, rangeEnd;
-                var rangeHeader = request.Headers[HttpHeaders.Range];
-                if (appHost.Config.AllowPartialResponses && rangeHeader != null)
+                var rangeHeader = request?.Headers?[HttpHeaders.Range];
+                if (appHost?.Config?.AllowPartialResponses == true && rangeHeader != null)
                 {
                     rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
 

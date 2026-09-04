@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -19,6 +19,9 @@ public class ForbiddenHttpHandler : HttpAsyncTaskHandler
 
     public override Task ProcessRequestAsync(IRequest request, IResponse response, string operationName)
     {
+        if (response == null)
+            return TypeConstants.EmptyTask;
+
         response.StatusCode = 403;
         response.ContentType = "text/plain";
 
@@ -34,15 +37,15 @@ public class ForbiddenHttpHandler : HttpAsyncTaskHandler
         var sb = StringBuilderCache.Allocate()
             .Append($@"Forbidden
 
-Request.HttpMethod: {request.Verb}
-Request.PathInfo: {request.PathInfo}
-Request.QueryString: {request.QueryString}
+Request.HttpMethod: {request?.Verb}
+Request.PathInfo: {request?.PathInfo}
+Request.QueryString: {request?.QueryString}
 
 ");
 
-        if (HostContext.Config.DebugMode)
+        if (HostContext.DebugMode)
         {
-            sb.AppendLine($"Request.RawUrl: {request.RawUrl}");
+            sb.AppendLine($"Request.RawUrl: {request?.RawUrl}");
 
             if (!WebHostPhysicalPath.IsNullOrEmpty())
                 sb.AppendLine($"App.WebHostPhysicalPath: {WebHostPhysicalPath}");

@@ -16,13 +16,18 @@ public class ContentTypes : IContentTypes
     public static ContentTypes Instance = new();
 
     public Dictionary<string, StreamSerializerDelegate> ContentTypeSerializers = new() {
-        { MimeTypes.Json, (r, o, s) => HostContext.AppHost.OnSerializeJson(r, o, s) },
+        { MimeTypes.Json, (r, o, s) => {
+            if (HostContext.AppHost != null)
+                HostContext.AppHost.OnSerializeJson(r, o, s);
+            else
+                JsonSerializer.SerializeToStream(o, s);
+        } },
         { MimeTypes.Jsv, (r, o, s) => TypeSerializer.SerializeToStream(o, s) },
         { MimeTypes.Xml, (r, o, s) => XmlSerializer.SerializeToStream(o, s) },
     };
 
     public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers = new() {
-        { MimeTypes.Json, (t, s) => HostContext.AppHost.OnDeserializeJson(t,s) },
+        { MimeTypes.Json, (t, s) => (HostContext.AppHost != null ? HostContext.AppHost.OnDeserializeJson(t,s) : JsonSerializer.DeserializeFromStream(t, s)) },
         { MimeTypes.Jsv, TypeSerializer.DeserializeFromStream },
         { MimeTypes.Xml, XmlSerializer.DeserializeFromStream },
         { "text/xml; charset=utf-8", XmlSerializer.DeserializeFromStream }, //"text/xml; charset=utf-8" matches xml + soap11
@@ -182,6 +187,7 @@ public class ContentTypes : IContentTypes
         
     public byte[] SerializeToBytes(IRequest req, object response)
     {
+        if (req == null) return TypeConstants.EmptyByteArray;
         var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
 
         var responseStreamWriter = GetStreamSerializer(contentType);
@@ -197,7 +203,7 @@ public class ContentTypes : IContentTypes
         if (responseWriterAsync != null)
         {
             using var ms = MemoryStreamFactory.GetStream();
-            responseWriterAsync(req, response, ms).Wait();
+            responseWriterAsync(req, response, ms).GetAwaiter().GetResult();
             ms.Position = 0;
             return ms.ToArray();
         }
@@ -207,6 +213,7 @@ public class ContentTypes : IContentTypes
 
     public string SerializeToString(IRequest req, object response)
     {
+        if (req == null) return null;
         var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
         return SerializeToString(req, response, contentType);
     }
@@ -228,7 +235,7 @@ public class ContentTypes : IContentTypes
         if (responseWriterAsync != null)
         {
             using var ms = MemoryStreamFactory.GetStream();
-            responseWriterAsync(req, response, ms).Wait();
+            responseWriterAsync(req, response, ms).GetAwaiter().GetResult();
             return ms.ReadToEnd();
         }
 
@@ -237,7 +244,8 @@ public class ContentTypes : IContentTypes
 
     private static Task serializeAsync(StreamSerializerDelegateAsync serializer, IRequest httpReq, object dto, Stream stream)
     {
-        httpReq.Response.Dto = dto;
+        if (httpReq?.Response != null)
+            httpReq.Response.Dto = dto;
         if (stream == Stream.Null)
             return TypeConstants.EmptyTask;
 
@@ -246,11 +254,12 @@ public class ContentTypes : IContentTypes
         
     private static async Task serializeSync(StreamSerializerDelegate serializer, IRequest httpReq, object dto, Stream stream)
     {
-        httpReq.Response.Dto = dto;
+        if (httpReq?.Response != null)
+            httpReq.Response.Dto = dto;
         if (stream == Stream.Null)
             return;
             
-        if (HostContext.Config.BufferSyncSerializers)
+        if (HostContext.AppHost?.Config?.BufferSyncSerializers == true)
         {
             using (var ms = MemoryStreamFactory.GetStream())
             {
@@ -261,7 +270,7 @@ public class ContentTypes : IContentTypes
             }
         }
 
-        httpReq.Response.AllowSyncIO();
+        httpReq?.Response?.AllowSyncIO();
         serializer(httpReq, dto, stream);
     }
         
@@ -315,7 +324,7 @@ public class ContentTypes : IContentTypes
         {
             using var ms = MemoryStreamFactory.GetStream(request.ToUtf8Bytes());
             var task = deserializerAsync(type, ms);
-            return task.Result;
+            return task.GetAwaiter().GetResult();
         }
             
         throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(contentType));
@@ -333,7 +342,7 @@ public class ContentTypes : IContentTypes
         if (deserializerAsync != null)
         {
             var task = deserializerAsync(type, fromStream);
-            return task.Result;
+            return task.GetAwaiter().GetResult();
         }
             
         throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(contentType));

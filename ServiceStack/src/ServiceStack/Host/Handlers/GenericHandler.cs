@@ -57,9 +57,9 @@ public class GenericHandler : ServiceStackHandlerBase, IRequestHttpHandler
             }
         }
         
-        HostContext.AppHost.OnAfterAwait(req);
+        HostContext.AppHost?.OnAfterAwait(req);
         var ret = await appHost.ApplyRequestConvertersAsync(req, requestDto).ConfigAwaitNetCore();
-        HostContext.AppHost.OnAfterAwait(req);
+        HostContext.AppHost?.OnAfterAwait(req);
         return ret;
     }
 
@@ -77,22 +77,22 @@ public class GenericHandler : ServiceStackHandlerBase, IRequestHttpHandler
                 return;
 
             var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwaitNetCore();
-            HostContext.AppHost.OnAfterAwait(httpReq);
+            HostContext.AppHost?.OnAfterAwait(httpReq);
 
             await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
-            HostContext.AppHost.OnAfterAwait(httpReq);
+            HostContext.AppHost?.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;
 
             httpReq.RequestAttributes |= HandlerAttributes;
 
             var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
-            HostContext.AppHost.OnAfterAwait(httpReq);
+            HostContext.AppHost?.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;
 
             await HandleResponse(httpReq, httpRes, rawResponse).ConfigAwaitNetCore();
-            HostContext.AppHost.OnAfterAwait(httpReq);
+            HostContext.AppHost?.OnAfterAwait(httpReq);
         }
         //sync with RestHandler
         catch (TaskCanceledException)
@@ -102,13 +102,16 @@ public class GenericHandler : ServiceStackHandlerBase, IRequestHttpHandler
         }
         catch (Exception ex)
         {
-            if (!HostContext.Config.WriteErrorsToResponse)
+            if (HostContext.AppHost?.Config?.WriteErrorsToResponse != true)
             {
-                await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait();
+                if (HostContext.AppHost != null)
+                    await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait();
             }
             else
             {
-                var useEx = await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait() as Exception ?? ex;
+                var useEx = (HostContext.AppHost != null
+                    ? await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex).ConfigAwait() as Exception
+                    : null) ?? ex;
                 await HandleException(httpReq, httpRes, operationName, useEx).ConfigAwait();
             }
         }

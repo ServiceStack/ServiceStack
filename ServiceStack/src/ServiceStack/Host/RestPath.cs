@@ -82,6 +82,9 @@ public class RestPath : IRestPath
 
     public static string[] GetPathPartsForMatching(string pathInfo)
     {
+        if (string.IsNullOrEmpty(pathInfo))
+            return TypeConstants.EmptyStringArray;
+
         var parts = pathInfo.ToLowerInvariant()
             .Split(PathSeparatorCharArray, StringSplitOptions.RemoveEmptyEntries);
 
@@ -199,7 +202,7 @@ public class RestPath : IRestPath
             else
             {
                 literalsToMatch[i] = component.ToLowerInvariant();
-                sbHashKey.Append(i + PathSeparator + literalsToMatch);
+                sbHashKey.Append(i + PathSeparator + literalsToMatch[i]);
 
                 if (firstLiteralMatch == null)
                 {
@@ -561,11 +564,11 @@ public class RestPath : IRestPath
 
     public bool IsVariable(string name)
     {
-        return name != null && VariablesNames.Any(name.EqualsIgnoreCase);
+        return name != null && VariablesNames != null && VariablesNames.Any(name.EqualsIgnoreCase);
     }
 
     public override int GetHashCode()
     {
-        return UniqueMatchHashKey.GetHashCode();
+        return UniqueMatchHashKey?.GetHashCode() ?? 0;
     }
 }
