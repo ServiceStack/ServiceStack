@@ -62,7 +62,7 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
         {
             var operationType = metadata.GetOperationType(operationName);
             if (operationType == null)
-                throw new Exception("Could not find operation: " + operationName);
+                throw HttpError.NotFound("Could not find operation: " + operationName);
             var typeValidationRules = await httpReq.GetAllValidateRulesAsync(operationType.Name).ConfigAwait();
             var op = metadata.GetOperation(operationType).ApplyValidationRules(typeValidationRules);
             var requestMessage = CreateResponse(operationType);
@@ -133,7 +133,8 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
 
                     if (!isSoap)
                     {
-                        var path = "/" + PathUtils.CombinePaths(HostContext.Config.HandlerFactoryPath, route.Path);
+                        var handlerFactoryPath = HostContext.AppHost?.Config?.HandlerFactoryPath;
+                        var path = "/" + PathUtils.CombinePaths(handlerFactoryPath, route.Path);
 
                         sb.Append($"<th>{verbs}</th>");
                         sb.Append($"<th>{path}</th>");
@@ -228,7 +229,8 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
             }
 
             sb.Append(@"<div class=""call-info"">");
-            var overrideExtCopy = HostContext.Config.AllowRouteContentTypeExtensions
+            var allowRouteContentTypeExtensions = HostContext.AppHost?.Config?.AllowRouteContentTypeExtensions == true;
+            var overrideExtCopy = allowRouteContentTypeExtensions
                 ? $" the <b>.{ContentFormat}</b> suffix or "
                 : "";
             sb.AppendFormat(@"<p>To override the Content-type in your clients, use the HTTP <b>Accept</b> Header, append {1} <b>?format={0}</b></p>", ContentFormat, overrideExtCopy);
@@ -267,26 +269,34 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
                 
             sb.Append("<tbody>");
 
-            for (var i = 0; i < metadataType.EnumNames.Count; i++)
+            var enumNamesCount = metadataType.EnumNames?.Count ?? 0;
+            for (var i = 0; i < enumNamesCount; i++)
             {
                 sb.Append("<tr>");
+                var enumName = metadataType.EnumNames[i];
+                var enumDesc = (metadataType.EnumDescriptions != null && i < metadataType.EnumDescriptions.Count)
+                    ? metadataType.EnumDescriptions[i]
+                    : null;
                 if (hasEnumValues)
                 {
+                    var enumVal = (!metadataType.EnumMemberValues.IsEmpty() && i < metadataType.EnumMemberValues.Count)
+                        ? metadataType.EnumMemberValues[i]
+                        : (!metadataType.EnumValues.IsEmpty() && i < metadataType.EnumValues.Count)
+                            ? metadataType.EnumValues[i]
+                            : null;
                     sb.Append("<td>")
-                        .Append(metadataType.EnumNames[i])
+                        .Append(enumName)
                         .Append("</td><td>")
-                        .Append(!metadataType.EnumMemberValues.IsEmpty() 
-                            ? metadataType.EnumMemberValues[i]
-                            : metadataType.EnumValues[i])
+                        .Append(enumVal)
                         .Append("</td>")
-                        .Append($"<td>{metadataType.EnumDescriptions?[i]}</td>");
+                        .Append($"<td>{enumDesc}</td>");
                 }
                 else
                 {
                     sb.Append("<td>")
-                        .Append(metadataType.EnumNames[i])
+                        .Append(enumName)
                         .Append("</td>")
-                        .Append($"<td>{metadataType.EnumDescriptions?[i]}</td>");
+                        .Append($"<td>{enumDesc}</td>");
                 }
                 sb.Append("</tr>");
             }
@@ -366,8 +376,9 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
         await defaultPage.RenderAsync(output).ConfigAwait();
     }
 
-    private string ConvertToHtml(string text)
+    private string ConvertToHtml(string? text)
     {
+        if (text == null) return "";
         return text.Replace("<", "&lt;")
             .Replace(">", "&gt;")
             .Replace("\n", "<br />\n");
@@ -376,11 +387,12 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
     protected bool AssertAccess(IRequest httpReq, IResponse httpRes, string operationName)
     {
         var appHost = HostContext.AppHost;
+        if (appHost == null) return false;
         if (!appHost.HasAccessToMetadata(httpReq, httpRes)) return false;
 
         if (operationName == null) return true; //For non-operation pages we don't need to check further permissions
         if (!appHost.Config.EnableAccessRestrictions) return true;
-        if (!appHost.MetadataPagesConfig.IsVisible(httpReq, Format, operationName))
+        if (appHost.MetadataPagesConfig?.IsVisible(httpReq, Format, operationName) != true)
         {
             appHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
             return false;
@@ -397,7 +409,7 @@ public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
         var operationControl = new OperationControl
         {
             HttpRequest = httpReq,
-            MetadataConfig = HostContext.Config.ServiceEndpointsMetadataConfig,
+            MetadataConfig = HostContext.AppHost?.Config?.ServiceEndpointsMetadataConfig,
             Title = HostContext.ServiceName,
             Format = this.Format,
             OperationName = operationName,

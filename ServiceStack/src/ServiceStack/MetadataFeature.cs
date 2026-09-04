@@ -1,4 +1,4 @@
-﻿#if !NETCORE        
+#if !NETCORE        
 using System.Web;
 #endif
 
@@ -212,13 +212,15 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
 
     public virtual IHttpHandler GetHandler(IRequest req)
     {
+        if (req?.PathInfo == null) return null;
         var pathParts = req.PathInfo.TrimStart('/').Split('/');
-        if (pathParts.Length == 0) return null;
+        if (pathParts.Length == 0 || string.IsNullOrEmpty(pathParts[0])) return null;
         return GetHandlerForPathParts(pathParts);
     }
 
     private IHttpHandler GetHandlerForPathParts(string[] pathParts)
     {
+        if (pathParts == null || pathParts.Length == 0 || pathParts[0] == null) return null;
         var pathController = pathParts[0].ToLowerInvariant();
         if (pathParts.Length == 1)
         {
@@ -228,6 +230,7 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
             return null;
         }
 
+        if (pathParts[1] == null) return null;
         var pathAction = pathParts[1].ToLowerInvariant();
 #if !NETCORE
             if (pathAction == "wsdl")
@@ -261,15 +264,15 @@ public class MetadataFeature : IPlugin, IConfigureServices, Model.IHasStringId, 
 
             case "operations":
                 return new CustomResponseHandler((httpReq, httpRes) =>
-                    HostContext.AppHost.HasAccessToMetadata(httpReq, httpRes)
-                        ? HostContext.Metadata.GetOperationDtos()
+                    HostContext.AppHost?.HasAccessToMetadata(httpReq, httpRes) == true
+                        ? HostContext.Metadata?.GetOperationDtos()
                         : null, "Operations");
 
             default:
                 if (pathController.IndexOf(' ') >= 0)
                     pathController = pathController.Replace(' ', '+'); //Convert 'x-custom csv' -> 'x-custom+csv'
-                if (HostContext.ContentTypes
-                    .ContentTypeFormats.TryGetValue(pathController, out var contentType))
+                if (HostContext.ContentTypes?.ContentTypeFormats != null
+                    && HostContext.ContentTypes.ContentTypeFormats.TryGetValue(pathController, out var contentType))
                 {
                     var format = ContentFormat.GetContentFormat(contentType);
                     return new CustomMetadataHandler(contentType, format);
@@ -313,7 +316,7 @@ public static class MetadataUtils
     public static AppMetadata ToAppMetadata(this INativeTypesMetadata nativeTypesMetadata, IRequest req)
     {
         var feature = HostContext.AssertPlugin<MetadataFeature>();
-        var view = req.Dto is MetadataApp dto ? dto.View?.ToLower() : null;
+        var view = req?.Dto is MetadataApp dto ? dto.View?.ToLower() : null;
 
         var pluginsOnly = view?.StartsWith("plugins") == true; 
         var metadataTypes = new MetadataTypes
@@ -327,7 +330,7 @@ public static class MetadataUtils
         if (!pluginsOnly)
         {
             var typesConfig = nativeTypesMetadata.GetConfig(new TypesMetadata());
-            var includeTypes = req.QueryString["IncludeTypes"];
+            var includeTypes = req?.QueryString["IncludeTypes"];
             if (includeTypes != null)
                 typesConfig.IncludeTypes = includeTypes.FromJsv<List<string>>();
             
@@ -362,7 +365,10 @@ public static class MetadataUtils
             Api = metadataTypes,
         };
 
-        response.App.BaseUrl ??= req.GetBaseUrl();
+        if (req != null)
+        {
+            response.App.BaseUrl ??= req.GetBaseUrl();
+        }
         response.App.ServiceName ??= appHost.ServiceName;
         response.App.ApiVersion ??= config.ApiVersion;
         response.App.JsTextCase ??= $"{Text.JsConfig.TextCase}";
@@ -408,7 +414,7 @@ public static class MetadataUtils
             fn(response);
         }
 
-        if (feature.TagFilter != null)
+        if (feature.TagFilter != null && response.Api?.Operations != null)
         {
             foreach (var op in response.Api.Operations)
             {
@@ -430,8 +436,8 @@ public static class MetadataUtils
             response.ContentTypeFormats = null;
             response.HttpHandlers = null;
 
-            var plugins = view.IndexOf(':') >= 0 ? view.RightPart(':').Split(',').ToSet(StringComparer.OrdinalIgnoreCase) : null;
-            if (plugins != null)
+            var plugins = view != null && view.IndexOf(':') >= 0 ? view.RightPart(':').Split(',').ToSet(StringComparer.OrdinalIgnoreCase) : null;
+            if (plugins != null && response.Plugins != null)
             {
                 var obj = response.Plugins.ToObjectDictionary();
                 var to = new Dictionary<string, object>();
@@ -469,8 +475,11 @@ public static class MetadataUtils
                 input.Title = appHost.ResolveLocalizedString(input.Placeholder, req);
         }
 
-        response.App.ServiceName = localize(response.App.ServiceName);
-        response.App.ServiceDescription = localize(response.App.ServiceDescription);
+        if (response.App != null)
+        {
+            response.App.ServiceName = localize(response.App.ServiceName);
+            response.App.ServiceDescription = localize(response.App.ServiceDescription);
+        }
         var ui = response.Ui;
         if (ui != null)
         {
@@ -494,9 +503,10 @@ public static class MetadataUtils
 
         if (response.Api != null)
         {
-            var types = response.Api.Types;
-            var requests = response.Api.Operations.Select(x => x.Request);
-            var responses = response.Api.Operations.Where(x => x.Response != null).Select(x => x.Response);
+            var types = response.Api.Types ?? [];
+            var operations = response.Api.Operations ?? [];
+            var requests = operations.Where(x => x.Request != null).Select(x => x.Request);
+            var responses = operations.Where(x => x.Response != null).Select(x => x.Response);
             var allTypes = new[] { types, requests, responses }.SelectMany(x => x);
             foreach (var type in allTypes)
             {
@@ -518,7 +528,10 @@ public static class MetadataUtils
 
     public static MetadataFeature RemovePluginLink(this MetadataFeature metadata, string href)
     {
-        metadata.PluginLinks.Remove(href);
+        if (metadata != null && href != null)
+        {
+            metadata.PluginLinks.Remove(href);
+        }
         return metadata;
     }
 
@@ -533,7 +546,10 @@ public static class MetadataUtils
 
     public static MetadataFeature RemoveDebugLink(this MetadataFeature metadata, string href)
     {
-        metadata.DebugLinks.Remove(href);
+        if (metadata != null && href != null)
+        {
+            metadata.DebugLinks.Remove(href);
+        }
         return metadata;
     }
 }

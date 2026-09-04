@@ -16,7 +16,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host;
 
-public class ServiceMetadata(List<RestPath> restPaths)
+public class ServiceMetadata(List<RestPath>? restPaths = null)
 {
     public Dictionary<Type, Operation> OperationsMap { get; protected set; } = new();
     public Dictionary<Type, Operation> OperationsResponseMap { get; protected set; } = new();
@@ -61,6 +61,9 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public void Add(Type serviceType, Type requestType, Type? responseType)
     {
+        if (serviceType == null) throw new ArgumentNullException(nameof(serviceType));
+        if (requestType == null) throw new ArgumentNullException(nameof(requestType));
+
         if (requestType.IsArray) //Custom AutoBatched requests
         {
             this.ServiceTypes.Add(serviceType);
@@ -215,12 +218,15 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public void AfterInit()
     {
-        foreach (var restPath in restPaths)
+        if (restPaths != null)
         {
-            if (!OperationsMap.TryGetValue(restPath.RequestType, out var operation))
-                continue;
+            foreach (var restPath in restPaths)
+            {
+                if (!OperationsMap.TryGetValue(restPath.RequestType, out var operation))
+                    continue;
 
-            operation.Routes.Add(restPath);
+                operation.Routes.Add(restPath);
+            }
         }
 
         foreach (var entry in OperationsMap)
@@ -259,10 +265,10 @@ public class ServiceMetadata(List<RestPath> restPaths)
     }
 
     public List<Operation> GetOperationsByTag(string tag) => 
-        Operations.Where(x => x.Tags?.Any(t => t== tag) == true).ToList();
+        tag == null ? [] : Operations.Where(x => x.Tags?.Any(t => t== tag) == true).ToList();
 
     public List<Operation> GetOperationsByTags(string[] tags) => 
-        Operations.Where(x => x.Tags?.Any(t => Array.IndexOf(tags, t) >= 0) == true).ToList();
+        tags == null ? [] : Operations.Where(x => x.Tags?.Any(t => Array.IndexOf(tags, t) >= 0) == true).ToList();
 
     public Operation? GetOperation(Type? requestType)
     {
@@ -287,6 +293,9 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public Type? GetOperationType(string operationTypeName)
     {
+        if (operationTypeName == null)
+            return null;
+
         var opName = operationTypeName.ToLowerInvariant();
         if (!OperationNamesMap.TryGetValue(opName, out var operation))
         {
@@ -295,7 +304,7 @@ public class ServiceMetadata(List<RestPath> restPaths)
             {
                 opName = opName.Substring(0, arrayPos);
                 OperationNamesMap.TryGetValue(opName, out operation);
-                return operation?.RequestType.MakeArrayType();
+                return operation?.RequestType?.MakeArrayType();
             }
         }
         return operation?.RequestType;
@@ -355,20 +364,23 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool IsAuthorized(Operation operation, IRequest req, IAuthSession session)
     {
+        if (operation == null)
+            return false;
+
         if (HostContext.HasValidAuthSecret(req))
             return true;
 
-        if (operation.RequiresAuthentication && !session.IsAuthenticated)
+        if (operation.RequiresAuthentication && session?.IsAuthenticated != true)
             return false;
 
-        var authRepo = HostContext.AppHost.GetAuthRepository(req);
+        var authRepo = HostContext.AppHost?.GetAuthRepository(req);
         using (authRepo as IDisposable)
         {
-            var allRoles = session.GetRoles(authRepo);
+            var allRoles = session != null ? session.GetRoles(authRepo) : [];
             if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(allRoles.Contains))
                 return false;
 
-            var allPerms = session.GetPermissions(authRepo);
+            var allPerms = session != null ? session.GetPermissions(authRepo) : [];
             if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(allPerms.Contains))
                 return false;
 
@@ -384,20 +396,23 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public async Task<bool> IsAuthorizedAsync(Operation operation, IRequest req, IAuthSession session)
     {
+        if (operation == null)
+            return false;
+
         if (HostContext.HasValidAuthSecret(req))
             return true;
 
-        if (operation.RequiresAuthentication && !session.IsAuthenticated)
+        if (operation.RequiresAuthentication && session?.IsAuthenticated != true)
             return false;
 
-        var authRepo = HostContext.AppHost.GetAuthRepositoryAsync(req);
+        var authRepo = HostContext.AppHost?.GetAuthRepositoryAsync(req);
         await using (authRepo as IAsyncDisposable)
         {
-            var allRoles = await session.GetRolesAsync(authRepo).ConfigAwait();
+            var allRoles = session != null ? await session.GetRolesAsync(authRepo).ConfigAwait() : [];
             if (!operation.RequiredRoles.IsEmpty() && !operation.RequiredRoles.All(allRoles.Contains))
                 return false;
 
-            var allPerms = await session.GetPermissionsAsync(authRepo).ConfigAwait();
+            var allPerms = session != null ? await session.GetPermissionsAsync(authRepo).ConfigAwait() : [];
             if (!operation.RequiredPermissions.IsEmpty() && !operation.RequiredPermissions.All(allPerms.Contains))
                 return false;
 
@@ -413,6 +428,9 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool IsAuthorized(Operation operation, AuthenticateResponse? auth)
     {
+        if (operation == null)
+            return false;
+
         if (operation.RequiresAuthentication && auth == null)
             return false;
         
@@ -440,6 +458,9 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool IsVisible(IRequest httpReq, Operation operation)
     {
+        if (operation == null)
+            return false;
+
         var config = ServiceStackHost.Instance?.Config;
         if (config == null || config is { EnableAccessRestrictions: false } 
             || operation.RequestType.ForceInclude())
@@ -451,13 +472,16 @@ public class ServiceMetadata(List<RestPath> restPaths)
         if (operation.RestrictTo == null) return true;
 
         //Less fine-grained on /metadata pages. Only check Network and Format
-        var reqAttrs = httpReq.GetAttributes();
+        var reqAttrs = httpReq?.GetAttributes() ?? RequestAttributes.None;
         var showToNetwork = CanShowToNetwork(operation.RestrictTo, reqAttrs);
         return showToNetwork;
     }
 
     public bool IsVisible(IRequest httpReq, Type requestType)
     {
+        if (requestType == null)
+            return false;
+
         var config = ServiceStackHost.Instance?.Config;
         if (config is null or { EnableAccessRestrictions: false })
             return true;
@@ -468,6 +492,9 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool IsVisible(IRequest httpReq, Format format, string operationName)
     {
+        if (operationName == null)
+            return false;
+
         var config = ServiceStackHost.Instance?.Config;
         if (config is null or { EnableAccessRestrictions: false })
             return true;
@@ -494,12 +521,18 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool CanAccess(IRequest httpReq, Format format, string operationName)
     {
-        var reqAttrs = httpReq.GetAttributes();
+        if (operationName == null)
+            return false;
+
+        var reqAttrs = httpReq?.GetAttributes() ?? RequestAttributes.None;
         return CanAccess(reqAttrs, format, operationName);
     }
 
     public bool CanAccess(RequestAttributes reqAttrs, Format format, string operationName)
     {
+        if (operationName == null)
+            return false;
+
         var config = ServiceStackHost.Instance?.Config;
         if (config is null or { EnableAccessRestrictions: false })
             return true;
@@ -525,6 +558,9 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public bool CanAccess(Format format, string operationName)
     {
+        if (operationName == null)
+            return false;
+
         var config = ServiceStackHost.Instance?.Config;
         if (config is null or { EnableAccessRestrictions: false })
             return true;
@@ -584,10 +620,10 @@ public class ServiceMetadata(List<RestPath> restPaths)
         return allDtos = to;
     }
 
-    public HashSet<Type> GetDtoTypes(Func<Type,bool> include)
+    public HashSet<Type> GetDtoTypes(Func<Type,bool>? include)
     {
-        if (allDtos != null)
-            return allDtos;
+        if (include == null)
+            return GetAllDtos();
             
         var to = new HashSet<Type>();
         var ops = OperationsMap.Values;
@@ -598,11 +634,11 @@ public class ServiceMetadata(List<RestPath> restPaths)
             AddReferencedTypes(to, op.RequestType, include);
             AddReferencedTypes(to, op.ResponseType, include);
         }
-        return allDtos = to;
+        return to;
     }
 
     private Dictionary<string, Type>? dtoTypesMap;
-    private HashSet<string> duplicateTypeNames;
+    private HashSet<string> duplicateTypeNames = [];
     public Type? FindDtoType(string typeName)
     {
         var opType = GetOperationType(typeName ?? throw new ArgumentNullException(nameof(typeName)));
@@ -641,6 +677,9 @@ public class ServiceMetadata(List<RestPath> restPaths)
 
     public object CreateRequestFromUrl(string relativeOrAbsoluteUrl, string method = HttpMethods.Get)
     {
+        if (relativeOrAbsoluteUrl == null)
+            throw new ArgumentNullException(nameof(relativeOrAbsoluteUrl));
+
         var relativeUrl = relativeOrAbsoluteUrl.StartsWith("http:") || relativeOrAbsoluteUrl.StartsWith("https:")
             ? relativeOrAbsoluteUrl.RightPart("://").RightPart("/")
             : relativeOrAbsoluteUrl;
@@ -745,9 +784,10 @@ public class ServiceMetadata(List<RestPath> restPaths)
     {
         var typeMetadata = HostContext.TryResolve<INativeTypesMetadata>();
 
-        var typesConfig = HostContext.AppHost.GetTypesConfigForMetadata(httpReq);
+        var typesConfig = HostContext.AppHost?.GetTypesConfigForMetadata(httpReq)
+            ?? new NativeTypesFeature().MetadataTypesConfig;
 
-        if (HostContext.GetPlugin<MetadataFeature>().ShowResponseStatusInMetadataPages)
+        if (HostContext.GetPlugin<MetadataFeature>()?.ShowResponseStatusInMetadataPages == true)
         {
             typesConfig.IgnoreTypes.Remove(typeof(ResponseStatus));
             typesConfig.IgnoreTypes.Remove(typeof(ResponseError));
@@ -1052,9 +1092,9 @@ public class Operation : ICloneable
 
 public class OperationDto
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = "";
     public string? ResponseName { get; set; }
-    public string ServiceName { get; set; }
+    public string ServiceName { get; set; } = "";
     public List<string>? RestrictTo { get; set; }
     public List<string>? VisibleTo { get; set; }
     public List<string>? Actions { get; set; }
@@ -1128,10 +1168,10 @@ public static class ServiceMetadataExtensions
         {
             Name = operation.Name,
             ResponseName = operation.ReturnsVoid ? null : operation.ResponseType.GetOperationName(),
-            ServiceName = operation.ServiceType.GetOperationName(),
+            ServiceName = operation.ServiceType?.GetOperationName() ?? "",
             Actions = operation.Actions,
-            Routes = operation.Routes.Map(x => x.Path),
-            Tags = operation.Tags.Map(x => x),
+            Routes = operation.Routes?.Map(x => x.Path),
+            Tags = operation.Tags?.Map(x => x),
         };
 
         if (operation.RestrictTo != null)

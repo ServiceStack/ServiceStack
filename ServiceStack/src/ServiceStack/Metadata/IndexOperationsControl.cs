@@ -21,23 +21,28 @@ public class IndexOperationsControl
 
     public string RenderRow(string operationName)
     {
+        if (operationName == null) return "";
         var show = HostContext.DebugMode //Show in DebugMode
-                   && !MetadataConfig.AlwaysHideInMetadata(operationName); //Hide When [Restrict(VisibilityTo = None)]
+                   && (MetadataConfig?.AlwaysHideInMetadata(operationName) != true); //Hide When [Restrict(VisibilityTo = None)]
 
         // use a fully qualified path if WebHostUrl is set
-        string baseUrl = Request.ResolveAbsoluteUrl("~/");
+        string baseUrl = Request?.ResolveAbsoluteUrl("~/") ?? "/";
 
-        var op = GetOperation(operationName);
+        var op = GetOperation?.Invoke(operationName);
+        if (op == null) return "";
 
         var icons = CreateIcons(op);
 
         var opTemplate = StringBuilderCache.Allocate();
 
+        var tagsStr = op.Tags != null ? op.Tags.Map(x => x).Join(",") : "";
+        var isApiSchemaEnabled = HostContext.AppHost?.GetPlugin<MetadataFeature>()?.IsApiSchemaEnabled == true;
+        var hasUi = HostContext.AppHost?.HasUi() == true;
 
         opTemplate.Append($"<tr><th data-tags=\"" + 
-                          op.Tags.Map(x => x).Join(",") + 
+                          tagsStr + 
                           "\">" + icons + 
-                          (HostContext.AppHost.GetPlugin<MetadataFeature>()?.IsApiSchemaEnabled == true ? 
+                          (isApiSchemaEnabled ? 
                             """
                             <a href="schema/{0}" style="margin-right:0.3em;" title="{0} Schema"><svg xmlns="http://www.w3.org/2000/svg" width="1.3em" height="1.3em" style="vertical-align:bottom;" viewBox="0 0 24 24">
                                 <path d="M0 0h24v24H0z" fill="none" />
@@ -45,19 +50,22 @@ public class IndexOperationsControl
                             </svg></a>
                             """ 
                             : "") +
-                          (HostContext.AppHost.HasUi() ? "<a href='ui/{0}'>{0}</a>" : "{0}") +
+                          (hasUi ? "<a href='ui/{0}'>{0}</a>" : "{0}") +
                           "</th>");
-        foreach (var config in MetadataConfig.AvailableFormatConfigs)
+        if (MetadataConfig?.AvailableFormatConfigs != null)
         {
-            var uri = baseUrl.CombineWith(config.DefaultMetadataUri);
-            if (MetadataConfig.IsVisible(Request, config.Format.ToFormat(), operationName))
+            foreach (var config in MetadataConfig.AvailableFormatConfigs)
             {
-                show = true;
-                opTemplate.Append($@"<td><a href=""{uri}?op={{0}}"">{config.Name}</a></td>");
-            }
-            else
-            {
-                opTemplate.Append($"<td>{config.Name}</td>");
+                var uri = baseUrl.CombineWith(config.DefaultMetadataUri);
+                if (MetadataConfig.IsVisible(Request, config.Format.ToFormat(), operationName))
+                {
+                    show = true;
+                    opTemplate.Append($@"<td><a href=""{uri}?op={{0}}"">{config.Name}</a></td>");
+                }
+                else
+                {
+                    opTemplate.Append($"<td>{config.Name}</td>");
+                }
             }
         }
 
@@ -68,35 +76,46 @@ public class IndexOperationsControl
 
     private static string CreateIcons(Operation op)
     {
+        if (op == null) return "";
         var sbIcons = StringBuilderCache.Allocate();
         if (op.RequiresAuthentication)
         {
             sbIcons.Append("<i class=\"auth\" title=\"");
 
-            var hasRoles = op.RequiredRoles.Count + op.RequiresAnyRole.Count > 0;
+            var requiredRolesCount = op.RequiredRoles?.Count ?? 0;
+            var requiresAnyRoleCount = op.RequiresAnyRole?.Count ?? 0;
+            var hasRoles = requiredRolesCount + requiresAnyRoleCount > 0;
             if (hasRoles)
             {
                 sbIcons.Append("Requires Roles:");
                 var sbRoles = StringBuilderCacheAlt.Allocate();
-                foreach (var role in op.RequiredRoles)
+                if (op.RequiredRoles != null)
                 {
-                    if (sbRoles.Length > 0)
-                        sbRoles.Append(",");
+                    foreach (var role in op.RequiredRoles)
+                    {
+                        if (sbRoles.Length > 0)
+                            sbRoles.Append(",");
 
-                    sbRoles.Append(" " + role);
+                        sbRoles.Append(" " + role);
+                    }
                 }
 
-                foreach (var role in op.RequiresAnyRole)
+                if (op.RequiresAnyRole != null)
                 {
-                    if (sbRoles.Length > 0)
-                        sbRoles.Append(", ");
+                    foreach (var role in op.RequiresAnyRole)
+                    {
+                        if (sbRoles.Length > 0)
+                            sbRoles.Append(", ");
 
-                    sbRoles.Append(" " + role + "?");
+                        sbRoles.Append(" " + role + "?");
+                    }
                 }
                 sbIcons.Append(StringBuilderCacheAlt.ReturnAndFree(sbRoles));
             }
 
-            var hasPermissions = op.RequiredPermissions.Count + op.RequiresAnyPermission.Count > 0;
+            var requiredPermissionsCount = op.RequiredPermissions?.Count ?? 0;
+            var requiresAnyPermissionCount = op.RequiresAnyPermission?.Count ?? 0;
+            var hasPermissions = requiredPermissionsCount + requiresAnyPermissionCount > 0;
             if (hasPermissions)
             {
                 if (hasRoles)
@@ -104,20 +123,26 @@ public class IndexOperationsControl
 
                 sbIcons.Append("Requires Permissions:");
                 var sbPermission = StringBuilderCacheAlt.Allocate();
-                foreach (var permission in op.RequiredPermissions)
+                if (op.RequiredPermissions != null)
                 {
-                    if (sbPermission.Length > 0)
-                        sbPermission.Append(",");
+                    foreach (var permission in op.RequiredPermissions)
+                    {
+                        if (sbPermission.Length > 0)
+                            sbPermission.Append(",");
 
-                    sbPermission.Append(" " + permission);
+                        sbPermission.Append(" " + permission);
+                    }
                 }
 
-                foreach (var permission in op.RequiresAnyPermission)
+                if (op.RequiresAnyPermission != null)
                 {
-                    if (sbPermission.Length > 0)
-                        sbPermission.Append(",");
+                    foreach (var permission in op.RequiresAnyPermission)
+                    {
+                        if (sbPermission.Length > 0)
+                            sbPermission.Append(",");
 
-                    sbPermission.Append(" " + permission + "?");
+                        sbPermission.Append(" " + permission + "?");
+                    }
                 }
                 sbIcons.Append(StringBuilderCacheAlt.ReturnAndFree(sbPermission));
             }
@@ -143,7 +168,7 @@ public class IndexOperationsControl
             ForEachItem = RenderRow
         }.ToString();
         operationsPart = $"<div style=\"margin-bottom:3em\">{operationsPart}</div>\n"
-                         + (HostContext.AppHost.HasUi()
+                         + (HostContext.AppHost?.HasUi() == true
                              ? $"<div><h3><a id=\"ui\" href=\"ui\">API Explorer</a></h3></div>\n"
                              : "");
             
@@ -160,8 +185,8 @@ public class IndexOperationsControl
 #endif
 
         var wsdlTemplate = StringBuilderCache.Allocate();
-        var soap11Config = MetadataConfig.GetMetadataConfig("soap11") as SoapMetadataConfig;
-        var soap12Config = MetadataConfig.GetMetadataConfig("soap12") as SoapMetadataConfig;
+        var soap11Config = MetadataConfig?.GetMetadataConfig("soap11") as SoapMetadataConfig;
+        var soap12Config = MetadataConfig?.GetMetadataConfig("soap12") as SoapMetadataConfig;
         if (soap11Config != null || soap12Config != null)
         {
             wsdlTemplate.AppendLine("<h3>WSDLS:</h3>");
@@ -200,7 +225,7 @@ public class IndexOperationsControl
             }.ToString()
             : "";
 
-        var errorCount = HostContext.AppHost.StartUpErrors.Count;
+        var errorCount = HostContext.AppHost?.StartUpErrors?.Count ?? 0;
         var plural = errorCount > 1 ? "s" : "";
         var startupErrors = "";
         if (HostContext.DebugMode)
@@ -230,10 +255,12 @@ public class IndexOperationsControl
     public Dictionary<string, string> ToAbsoluteUrls(Dictionary<string, string> linksMap)
     {
         var to = new Dictionary<string,string>();
-        var baseUrl = Request.GetBaseUrl();
+        if (linksMap == null) return to;
+        var baseUrl = Request?.GetBaseUrl() ?? "/";
 
         foreach (var entry in linksMap)
         {
+            if (entry.Key == null) continue;
             var url = entry.Key.IndexOf("://", StringComparison.Ordinal) >= 0 
                 ? entry.Key
                 : baseUrl.CombineWith(entry.Key);

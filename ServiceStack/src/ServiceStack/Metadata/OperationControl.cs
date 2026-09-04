@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,37 +40,38 @@ public class OperationControl
     {
         get
         {
-            if (Operation != null && Operation.Routes.Count > 0)
+            if (Operation != null && Operation.Routes?.Count > 0)
             {
-                var postRoute = Operation.Routes.FirstOrDefault(x => x.AllowsAllVerbs || x.Verbs.Contains(HttpMethods.Post));
+                var postRoute = Operation.Routes.FirstOrDefault(x => x.AllowsAllVerbs || (x.Verbs != null && x.Verbs.Contains(HttpMethods.Post)));
                 var path = postRoute != null 
                     ? postRoute.Path 
                     : Operation.Routes[0].Path;
-                return HostContext.Config.HandlerFactoryPath != null
-                    ? "/" + HostContext.Config.HandlerFactoryPath.CombineWith(path)
+                var handlerFactoryPath = HostContext.AppHost?.Config?.HandlerFactoryPath;
+                return handlerFactoryPath != null
+                    ? "/" + handlerFactoryPath.CombineWith(path)
                     : path;
             }
 
-            var endpointConfig = MetadataConfig.GetEndpointConfig(ServiceStack.ContentFormat.GetContentFormat(ContentType));
+            var endpointConfig = MetadataConfig?.GetEndpointConfig(ServiceStack.ContentFormat.GetContentFormat(ContentType));
             var endpointPath = ResponseMessage != null
-                ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
+                ? endpointConfig?.SyncReplyUri : endpointConfig?.AsyncOneWayUri;
             return $"{endpointPath}/{OperationName}";
         }
     }
 
     public virtual Task RenderAsync(Stream output)
     {
-        var baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
+        var baseUrl = HttpRequest?.ResolveAbsoluteUrl("~/") ?? "/";
         var sbTags = StringBuilderCache.Allocate();
-        Operation?.Tags.Each(x => sbTags.Append($"<span><b>{x}</b></span>"));
+        Operation?.Tags?.Each(x => sbTags.Append($"<span><b>{x}</b></span>"));
         var tagsHtml = sbTags.Length > 0
             ? "<div class=\"tags\">" + StringBuilderCache.ReturnAndFree(sbTags) + "</div>"
             : "";
             
         var renderedTemplate = Templates.HtmlTemplates.Format(Templates.HtmlTemplates.GetOperationControlTemplate(),
             Title,
-            baseUrl.CombineWith(MetadataConfig.DefaultMetadataUri),
-            ContentFormat.ToUpper(),
+            MetadataConfig != null ? baseUrl.CombineWith(MetadataConfig.DefaultMetadataUri) : baseUrl,
+            ContentFormat?.ToUpper() ?? "",
             OperationName,
             GetHttpRequestTemplate(),
             ResponseTemplate,
@@ -81,20 +83,25 @@ public class OperationControl
 
     public virtual string GetHttpRequestTemplate()
     {
-        if (Operation == null || Operation.Routes.Count == 0)
+        if (Operation == null || Operation.Routes.IsEmpty())
             return HttpRequestTemplateWithBody(HttpMethods.Post);
 
-        var allowedVerbs = new HashSet<string>();
+        var allowedVerbs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var route in Operation.Routes)
         {
+            if (route == null) continue;
             if (route.AllowsAllVerbs)
             {
                 allowedVerbs.Add(HttpMethods.Post);
                 break;
             }
-            foreach (var routeVerb in route.Verbs)
+            if (route.Verbs != null)
             {
-                allowedVerbs.Add(routeVerb);
+                foreach (var routeVerb in route.Verbs)
+                {
+                    if (routeVerb != null)
+                        allowedVerbs.Add(routeVerb);
+                }
             }
         }
 

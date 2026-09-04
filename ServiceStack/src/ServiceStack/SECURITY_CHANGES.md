@@ -371,4 +371,48 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
 - **`HttpRequestAuthentication.cs`**:
   - Added standalone fallback in `GetAuthorization`, `GetBearerToken`, and `GetJwtToken` when `HostContext.AppHost == null`.
 
+## 14. ServiceStack.Metadata Subsystem Modernization & Hardening
+
+- **`ServiceMetadata.cs`**:
+  - **Fixed Critical Filter Cache Bug in `GetDtoTypes(Func<Type,bool> include)`**: Separated filtered DTO queries from `allDtos` global caching so filtered queries do not corrupt the global `allDtos` cache, and calling `GetAllDtos()` beforehand does not bypass the filter on subsequent queries.
+  - Made `restPaths` constructor parameter optional (`List<RestPath>? restPaths = null`) and guarded `AfterInit()` against null `restPaths`.
+  - Added null guards in `Add(Type serviceType, Type requestType, Type? responseType)` throwing `ArgumentNullException` for invalid service or request types.
+  - Guarded `GetOperationsByTag(string tag)` and `GetOperationsByTags(string[] tags)` against null arguments, returning empty lists safely.
+  - Guarded `GetOperationType(string operationTypeName)` against null input and safely invoked `.MakeArrayType()`.
+  - Guarded `IsAuthorized` and `IsAuthorizedAsync` overloads against null `operation`, null `session`, and uninitialized `HostContext.AppHost`.
+  - Guarded `IsVisible` and `CanAccess` overloads against null `operationName`, null `requestType`, and null `httpReq`.
+  - Initialized `duplicateTypeNames = []` and non-nullable `OperationDto.Name` and `OperationDto.ServiceName` properties to resolve compiler warnings CS8618.
+  - Guarded `CreateRequestFromUrl` against null `relativeOrAbsoluteUrl` throwing `ArgumentNullException`.
+  - Guarded `GetMetadataTypesForOperation` against null `HostContext.AppHost` and null `MetadataFeature`, falling back to `new NativeTypesFeature().MetadataTypesConfig`.
+  - Guarded `ToOperationDto` against null `operation.ServiceType`, null `Routes`, and null `Tags`.
+- **`BaseMetadataHandler.cs`**:
+  - Replaced generic `throw new Exception("Could not find operation: ...")` with `throw HttpError.NotFound(...)`.
+  - Replaced throwing `HostContext.Config` calls with safe `HostContext.AppHost?.Config?.HandlerFactoryPath` and `HostContext.AppHost?.Config?.AllowRouteContentTypeExtensions == true`.
+  - Guarded `ConvertToHtml(string? text)` against null input, returning `""`.
+  - Added array bounds and null checks in `AppendType` when iterating `EnumNames`, `EnumMemberValues`, `EnumValues`, and `EnumDescriptions`.
+  - Guarded `AssertAccess` against null `appHost` and null `appHost.MetadataPagesConfig`.
+  - Safely accessed `HostContext.AppHost?.Config?.ServiceEndpointsMetadataConfig` in `RenderOperationAsync`.
+- **`MetadataPagesConfig.cs`**:
+  - Guarded constructor against null `contentTypeFormats` and null `metadataConfig`, using `StringComparer.OrdinalIgnoreCase`.
+  - Guarded `GetMetadataConfig` against null `format` and null `ignoredFormats`.
+  - Guarded `IsVisible` and `CanAccess` overloads against null `metadata`.
+  - Guarded `AlwaysHideInMetadata` against null `operationName` and null `metadata.OperationNamesMap`.
+- **`IndexOperationsControl.cs`**:
+  - In `RenderRow`, guarded against null `operationName`, null `MetadataConfig`, null `Request`, null `GetOperation`, and null operation instance.
+  - Safely checked `HostContext.AppHost?.GetPlugin<MetadataFeature>()` and `HostContext.AppHost?.HasUi() == true`.
+  - Guarded `CreateIcons` against null roles and permissions collections on `Operation`.
+  - Safely accessed `HostContext.AppHost?.StartUpErrors` and `MetadataConfig` in `RenderAsync`.
+  - Guarded `ToAbsoluteUrls` against null `linksMap` and null `Request`.
+- **`OperationControl.cs`**:
+  - Safely navigated `HostContext.AppHost?.Config?.HandlerFactoryPath` and guarded null `MetadataConfig` in `RequestUri`.
+  - Guarded `RenderAsync` against null `HttpRequest`, null `MetadataConfig`, and null `ContentFormat`.
+  - Hardened `GetHttpRequestTemplate` with case-insensitive comparisons and null checks on route verbs.
+- **`MetadataFeature.cs`**:
+  - In `GetHandler`, guarded against null `req` and null or empty `req.PathInfo`.
+  - In `GetHandlerForPathParts`, guarded against null elements in `pathParts`, null `HostContext.AppHost`, and null `ContentTypeFormats`.
+  - In `ToAppMetadata`, guarded against null `req`, null `response.Api`, null `response.Api.Operations`, and null `response.Plugins`.
+  - In `LocalizeMetadata`, guarded against null `response.App`, null `response.Api.Types`, and null `response.Api.Operations`.
+  - In `RemovePluginLink` and `RemoveDebugLink`, guarded against null `metadata` and null `href`.
+
+
 
