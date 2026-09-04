@@ -63,7 +63,7 @@ namespace ServiceStack.Desktop
         public static Process Start(string url)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return Process.Start(new ProcessStartInfo("cmd", $"/c start {url}"));
+                return Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 return Process.Start("xdg-open", url);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -247,7 +247,9 @@ namespace ServiceStack.Desktop
         {
             int logicalScreenHeight = Gdi32.GetDeviceCaps(hdc, Gdi32.DeviceCap.VERTRES);
             int physicalScreenHeight = Gdi32.GetDeviceCaps(hdc, Gdi32.DeviceCap.DESKTOPVERTRES);
-            return physicalScreenHeight / (float) logicalScreenHeight;
+            return logicalScreenHeight > 0 
+                ? physicalScreenHeight / (float) logicalScreenHeight 
+                : 1.0f;
         }
 
         public static System.Drawing.Size GetScreenResolution()
@@ -428,6 +430,7 @@ namespace ServiceStack.Desktop
 
         public static bool SetStringInClipboard(string text)
         {
+            if (text == null) text = string.Empty;
             TryOpenClipboard();
             
             IntPtr hGlobal = default;
@@ -435,7 +438,8 @@ namespace ServiceStack.Desktop
             {
                 User32.EmptyClipboard();
 
-                var bytes = (text.Length + 1) * 2;
+                var chars = text.ToCharArray();
+                var bytes = (chars.Length + 1) * 2;
                 hGlobal = Marshal.AllocHGlobal(bytes);
 
                 if (hGlobal == default)
@@ -448,7 +452,8 @@ namespace ServiceStack.Desktop
 
                 try
                 {
-                    Marshal.Copy(text.ToCharArray(), 0, target, text.Length);
+                    Marshal.Copy(chars, 0, target, chars.Length);
+                    Marshal.WriteInt16(target, chars.Length * 2, 0);
                 }
                 finally
                 {
@@ -621,7 +626,7 @@ namespace ServiceStack.Desktop
         public static Guid SavedSearches => Shell32.KNOWNFOLDERID.FOLDERID_SavedSearches;
         public static Guid Videos => Shell32.KNOWNFOLDERID.FOLDERID_Videos;
         
-        static Dictionary<string, Guid> Map { get; } = new Dictionary<string, Guid> {
+        static Dictionary<string, Guid> Map { get; } = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase) {
             { nameof(Contacts), Contacts },
             { nameof(Desktop), Desktop },
             { nameof(Documents), Documents },
@@ -635,20 +640,72 @@ namespace ServiceStack.Desktop
             { nameof(Videos), Videos },
         };
 
+        private static string GetNonWindowsPath(string knownFolder)
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrEmpty(home))
+                home = Environment.GetEnvironmentVariable("HOME") ?? "";
+
+            switch (knownFolder.ToLowerInvariant())
+            {
+                case "desktop":
+                    return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                case "documents":
+                    return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                case "music":
+                    return Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+                case "pictures":
+                    return Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+                case "videos":
+                    return Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
+                case "downloads":
+                    return !string.IsNullOrEmpty(home) ? System.IO.Path.Combine(home, "Downloads") : null;
+                default:
+                    return null;
+            }
+        }
+
         public static string GetPath(string knownFolder,
-            Shell32.KNOWN_FOLDER_FLAG flags = Shell32.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY, bool defaultUser = false) =>
-            Map.TryGetValue(knownFolder, out var knownFolderId)
+            Shell32.KNOWN_FOLDER_FLAG flags = Shell32.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY, bool defaultUser = false)
+        {
+            if (knownFolder == null) throw new ArgumentNullException(nameof(knownFolder));
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var nonWinPath = GetNonWindowsPath(knownFolder);
+                if (!string.IsNullOrEmpty(nonWinPath))
+                    return nonWinPath;
+            }
+
+            return Map.TryGetValue(knownFolder, out var knownFolderId)
                 ? GetPath(knownFolderId, flags, defaultUser)
                 : ThrowUnknownFolder();
+        }
         
         public static string GetPath(Guid knownFolderId, 
             Shell32.KNOWN_FOLDER_FLAG flags=Shell32.KNOWN_FOLDER_FLAG.KF_FLAG_DONT_VERIFY, bool defaultUser=false)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                foreach (var kvp in Map)
+                {
+                    if (kvp.Value == knownFolderId)
+                    {
+                        var nonWinPath = GetNonWindowsPath(kvp.Key);
+                        if (!string.IsNullOrEmpty(nonWinPath))
+                            return nonWinPath;
+                        break;
+                    }
+                }
+                return ThrowUnknownFolder();
+            }
+
             if (SHGetKnownFolderPath(knownFolderId, (uint)flags, new IntPtr(defaultUser ? -1 : 0), out var outPath) >= 0)
             {
                 string path = Marshal.PtrToStringUni(outPath);
                 Marshal.FreeCoTaskMem(outPath);
-                return path;
+                if (path != null)
+                    return path;
             }
             return ThrowUnknownFolder();
         }
@@ -791,7 +848,7 @@ namespace ServiceStack.Desktop
             {
                 string path = Marshal.PtrToStringAuto(pszPath);
  
-                if (path.Length != 0 && path.Length < length)
+                if (!string.IsNullOrEmpty(path) && path.Length < length)
                     break;
  
                 noOfTimes += 2; //520 chars capacity increase in each iteration.

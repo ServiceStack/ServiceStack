@@ -77,11 +77,12 @@ namespace ServiceStack.Desktop
         {
             AssertFile(request.File);
 
-            var appSettingsDir= GetDesktopFilesDirectory();
+            var appSettingsDir = GetDesktopFilesDirectory();
             var filePath = Path.Combine(appSettingsDir, request.File);
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException("File not found", request.File);
+
             using var fs = new FileInfo(filePath).OpenRead();
-            if (fs == null)
-                throw new FileNotFoundException();
             
             Response.ContentType = MimeTypes.GetMimeType(filePath);
             await Response.EndRequestAsync(afterHeaders: async res => {
@@ -94,13 +95,13 @@ namespace ServiceStack.Desktop
         {
             AssertFile(request.File);
             
-            var appSettingsDir= GetDesktopFilesDirectory();
+            var appSettingsDir = GetDesktopFilesDirectory();
             FileSystemVirtualFiles.AssertDirectory(appSettingsDir);
 
             var filePath = Path.Combine(appSettingsDir, request.File);
             var tmpFilePath = Path.Combine(appSettingsDir, request.File + ".tmp");
             try { File.Delete(tmpFilePath); } catch {}
-            using (var fs = new FileInfo(tmpFilePath).Open(FileMode.OpenOrCreate))
+            using (var fs = new FileInfo(tmpFilePath).Open(FileMode.Create))
             {
                 await request.RequestStream.CopyToAsync(fs).ConfigAwait();
             }
@@ -112,7 +113,7 @@ namespace ServiceStack.Desktop
         {
             AssertFile(request.File);
 
-            var appSettingsDir= GetDesktopFilesDirectory();
+            var appSettingsDir = GetDesktopFilesDirectory();
             var filePath = Path.Combine(appSettingsDir, request.File);
             try { File.Delete(filePath); } catch {}
         }
@@ -121,7 +122,9 @@ namespace ServiceStack.Desktop
         {
             if (string.IsNullOrEmpty(file))
                 throw new ArgumentNullException(nameof(DesktopFile.File));
-            if (file.IndexOf("..", StringComparison.Ordinal) >= 0 || file.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            if (file.IndexOf("..", StringComparison.Ordinal) >= 0
+                || file.Contains('/') || file.Contains('\\') || file.Contains(':')
+                || file.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
                 throw new NotSupportedException("Invalid File Name");
         }
         
@@ -178,7 +181,7 @@ namespace ServiceStack.Desktop
 
             using (var webRes = await webReq.GetResponseAsync().ConfigAwait())
             using (var resStream = webRes.ResponseStream())
-            using (var fs = new FileInfo(downloadFile).Open(FileMode.OpenOrCreate))
+            using (var fs = new FileInfo(downloadFile).Open(FileMode.Create))
             {
                 await resStream.CopyToAsync(fs).ConfigAwait();
             }
@@ -186,12 +189,10 @@ namespace ServiceStack.Desktop
 
             if (request.Open)
             {
-                var p = new Process {
-                    StartInfo = request.Start != null 
-                        ? new ProcessStartInfo(request.Start, downloadFile) { UseShellExecute = true }
-                        : new ProcessStartInfo(downloadFile) { UseShellExecute = true }
-                };
-                p.Start();
+                var startInfo = request.Start != null 
+                    ? new ProcessStartInfo(request.Start, downloadFile) { UseShellExecute = true }
+                    : new ProcessStartInfo(downloadFile) { UseShellExecute = true };
+                using var p = Process.Start(startInfo);
             }
         }
     }
@@ -323,6 +324,7 @@ namespace ServiceStack.Desktop
                     await base.Response.EndRequestAsync(skipHeaders:false, async res => {
                         using var ms = MemoryStreamFactory.GetStream();
                         JsonSerializer.SerializeToStream(await valueTask.ConfigAwait(), ms);
+                        ms.Position = 0;
                         await ms.CopyToAsync(base.Response.OutputStream).ConfigAwait();
                     }).ConfigAwait();
                 }

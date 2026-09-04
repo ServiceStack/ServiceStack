@@ -13,6 +13,16 @@ public class ImageDrawingProvider : ImageProvider
 {
     public override Stream Resize(Stream origStream, int newWidth, int newHeight)
     {
+        if (origStream == null)
+            throw new ArgumentNullException(nameof(origStream));
+        if (newWidth <= 0)
+            throw new ArgumentOutOfRangeException(nameof(newWidth), "Width must be greater than zero.");
+        if (newHeight <= 0)
+            throw new ArgumentOutOfRangeException(nameof(newHeight), "Height must be greater than zero.");
+
+        if (origStream.CanSeek && origStream.Position != 0)
+            origStream.Position = 0;
+
         using var origImage = Image.FromStream(origStream);
         return origImage.ResizeToPng(newWidth, newHeight);
     }
@@ -22,6 +32,13 @@ public static class ImageExtensions
 {
     public static MemoryStream ResizeToPng(this Image img, int newWidth, int newHeight)
     {
+        if (img == null)
+            throw new ArgumentNullException(nameof(img));
+        if (newWidth <= 0)
+            throw new ArgumentOutOfRangeException(nameof(newWidth), "Width must be greater than zero.");
+        if (newHeight <= 0)
+            throw new ArgumentOutOfRangeException(nameof(newHeight), "Height must be greater than zero.");
+
         if (newWidth != img.Width || newHeight != img.Height)
         {
             var ratioX = (double)newWidth / img.Width;
@@ -31,13 +48,19 @@ public static class ImageExtensions
             var height = (int)(img.Height * ratio);
 
             using var newImage = new Bitmap(width, height);
-            Graphics.FromImage(newImage).DrawImage(img, 0, 0, width, height);
+            using (var g = Graphics.FromImage(newImage))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.DrawImage(img, 0, 0, width, height);
+            }
 
             if (newImage.Width != newWidth || newImage.Height != newHeight)
             {
                 var startX = (Math.Max(newImage.Width, newWidth) - Math.Min(newImage.Width, newWidth)) / 2;
                 var startY = (Math.Max(newImage.Height, newHeight) - Math.Min(newImage.Height, newHeight)) / 2;
-                return CropToPng(img, newWidth, newHeight, startX, startY);
+                return CropToPng(newImage, newWidth, newHeight, startX, startY);
             }
 
             var ms = MemoryStreamFactory.GetStream();
@@ -56,6 +79,13 @@ public static class ImageExtensions
 
     public static MemoryStream CropToPng(this Image img, int newWidth, int newHeight, int startX = 0, int startY = 0)
     {
+        if (img == null)
+            throw new ArgumentNullException(nameof(img));
+        if (newWidth <= 0)
+            throw new ArgumentOutOfRangeException(nameof(newWidth), "Width must be greater than zero.");
+        if (newHeight <= 0)
+            throw new ArgumentOutOfRangeException(nameof(newHeight), "Height must be greater than zero.");
+
         if (img.Height < newHeight)
             newHeight = img.Height;
 

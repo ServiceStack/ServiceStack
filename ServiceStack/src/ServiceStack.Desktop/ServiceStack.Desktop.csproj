@@ -2,11 +2,23 @@
 
     <PropertyGroup>
         <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <NoWarn>$(NoWarn);CA1416</NoWarn>
         <Title>ServiceStack.Desktop</Title>
         <PackageDescription>
             Desktop Assets, Vue and React Framework libraries, Bootstrap, Material Design SVGs, Font Awesome and Win32 APIs for ServiceStack CEF .NET Core Desktop Apps
         </PackageDescription>
-        <PackageTags>ServiceStack;Desktop,Cef,Vue,React,Bootstrap,MaterialDesign,fontawesone</PackageTags>
+        <PackageTags>ServiceStack;Desktop;Cef;Vue;React;Bootstrap;MaterialDesign;FontAwesome</PackageTags>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET6_0;NET6_0_OR_GREATER</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+        <DefineConstants>$(DefineConstants);NETCORE;NET8_0;NET6_0_OR_GREATER;NET8_0_OR_GREATER;NET10_0_OR_GREATER</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
