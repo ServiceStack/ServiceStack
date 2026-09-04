@@ -16,11 +16,14 @@ public static class ValidatorCache
 
     public static IValidator GetValidator(IRequest httpReq, Type type)
     {
+        if (type == null) return null;
+
         if (delegateCache.TryGetValue(type, out var parseFn)) 
             return parseFn.Invoke(httpReq);
 
         var genericType = typeof(ValidatorCache<>).MakeGenericType(type);
         var mi = genericType.GetMethod("GetValidator", BindingFlags.Public | BindingFlags.Static);
+        if (mi == null) return null;
         parseFn = (ResolveValidatorDelegate)mi.CreateDelegate(typeof(ResolveValidatorDelegate));
 
         Dictionary<Type, ResolveValidatorDelegate> snapshot, newCache;
@@ -39,6 +42,8 @@ public class ValidatorCache<T>
 {
     public static IValidator GetValidator(IRequest httpReq)
     {
+        if (httpReq == null) return null;
+
         try
         {
             var validator = httpReq.TryResolve<IValidator<T>>();
@@ -49,7 +54,7 @@ public class ValidatorCache<T>
         catch (Exception e)
         {
             var log = LogManager.GetLogger(typeof(ValidatorCache));
-            log.Error($@"ValidatorCache<{typeof(T).Name}>.GetValidator() at {httpReq.PathInfo}", e);
+            log.Error($@"ValidatorCache<{typeof(T).Name}>.GetValidator() at {httpReq?.PathInfo}", e);
             throw;
         }
     }

@@ -237,3 +237,55 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
 - **`BackgroundMqService.cs`**:
   - Guarded `unknownQueues` publishing: initialized lazily with `(unknownQueues ??= new BlockingCollection<IMessage>()).Add(msg)` to prevent `NullReferenceException` when published before `Start()` or after `Stop()`.
   - Handled `OperationCanceledException` cleanly in `BackgroundMqWorker.Run` consuming loop to allow background worker threads to exit gracefully upon cancellation without unobserved task exceptions.
+
+---
+
+## 12. Validation Subsystem Modernization & Hardening
+- **`ValidatorCache.cs`**:
+  - Guarded `ValidatorCache.GetValidator(IRequest httpReq, Type type)` against null `type` and null reflected `MethodInfo`, safely returning null instead of throwing `ArgumentNullException` or `NullReferenceException`.
+  - Guarded `ValidatorCache<T>.GetValidator(IRequest httpReq)` against null `httpReq`, returning null safely.
+  - Used null-conditional operator on `httpReq?.PathInfo` in logger exception format string to prevent cascaded NRE during error logging.
+- **`MultiRuleSetValidatorSelector.cs`**:
+  - Initialized `rulesetsToExecute` with `[]` fallback in constructor when passed null.
+  - Guarded `CanExecute` against null `rule` and null `rule.RuleSets`, returning `true` for unconstrained rules per FluentValidation semantics without crashing on null rule or ruleset references.
+- **`ExecOnlyOnce.cs`**:
+  - Added null check with `ArgumentNullException(nameof(forType))` in constructor overloads before invoking `forType.GetOperationName()`.
+  - Added `isDisposed` flag in `Dispose()` to guarantee idempotency and prevent duplicate rollback operations or multi-disposal side effects.
+- **`ValidationFilters.cs`**:
+  - Guarded `RequestFilterAsync` against null `requestDto`, returning immediately.
+  - Guarded `ResponseFilterAsync` against `req?.Dto == null` before resolving validator from container.
+  - Guarded `validationResult.Errors` index access (`validationResult.Errors.Count > 0 ? validationResult.Errors[0].ErrorCode : null`) preventing index out of bounds exceptions.
+- **`ValidationFeature.cs`**:
+  - Guarded `GetRequestErrorBody(object request)` returning `""` when `request == null`.
+  - Guarded `ValidateRequest` and `ValidateRequestAsync` against null `requestDto` or null `req`.
+  - Initialized `vfe.Meta ??= new Dictionary<string, string>()` before assigning `error.Severity`.
+  - Synchronized `Init(Assembly[] assemblies)` under `lock (RegisteredAssemblies)` to ensure thread safety during validator scanning, and guarded against null assemblies array or null elements.
+  - Guarded `GetAllValidateRulesAsync` against null resolver / validation source.
+  - Guarded `ApplyValidationRules` against `HostContext.AppHost == null`.
+- **`Validators.cs`**:
+  - Guarded `ScriptConditionValidator` against null `HostContext.AppHost` and null `context`.
+  - In `Validators.Reset()`, reset `DelayConfiguringPropertyRules = []` to prevent rule accumulation across test runs.
+  - Guarded `RegisterRequestRulesFor` against null `type`.
+  - Guarded `AddTypeValidator` against null `to` or `attr`.
+  - Guarded `ToPageResult` against null `context`.
+  - Guarded `HasValidateRequestAttributes(Type type)` and `HasValidateAttributes(Type type)` against null `type` returning `false`.
+- **`TypeValidators.cs`**:
+  - Guarded `ScriptValidator.IsValidAsync` against null `HostContext.AppHost`.
+  - In `TypeValidator.ResolveErrorMessage`, checked `appHost?.ScriptContext != null`, handled `dto == null` safely (`dto?.GetType().Name ?? "Request"`), and safely converted evaluated expression via `?.ToString()`.
+  - Defaulted null roles/permissions collections to `[]` in `HasRolesValidator`, `HasAnyRoleValidator`, and `HasPermissionsValidator`.
+- **`ValidateScripts.cs`**:
+  - Guarded `RegularExpression` against null `regex` (`regex ?? ""`).
+  - Guarded `HasRoles`, `HasAnyRole`, `HasPermission`, and `HasPermissions` against null string arguments.
+- **`MemoryValidationSource.cs`**:
+  - Guarded `GetValidationRules(Type type)` against null `type`, returning empty array.
+  - Guarded `GetAllValidateRulesAsync(string typeName)` against null `typeName`, returning empty list.
+  - Guarded `SaveValidationRules(List<ValidationRule> validateRules)` against null list and null entries within the list.
+  - Guarded `GetValidateRulesByIdsAsync` and `DeleteValidationRulesAsync` against null or empty `ids`.
+- **`ValidationResultExtensions.cs`**:
+  - Guarded `CustomStateAsDictionary` against null `error` and null `FormattedMessagePlaceholderValues`.
+  - Guarded `ToErrorResult` against null `result` and null `result.Errors`, and skipped null error elements.
+  - Guarded `ToException` against null `result`.
+- **`ValidatorUtils.cs`**:
+  - Guarded `Init` against null `validator` or `rule`, returning validator safely.
+  - Guarded `RemoveValidatorSuffix` against null `name`.
+

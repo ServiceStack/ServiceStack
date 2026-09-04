@@ -15,6 +15,7 @@ public class MemoryValidationSource : IValidationSource, IValidationSourceAdmin,
 
     public IEnumerable<KeyValuePair<string, IValidateRule>> GetValidationRules(Type type)
     {
+        if (type == null) return TypeConstants<KeyValuePair<string, IValidateRule>>.EmptyArray;
         var ret = TypeRulesMap.TryGetValue(type.Name, out var rules)
             ? rules.Where(x => ((ValidationRule)x.Value).SuspendedDate == null).ToArray()
             : TypeConstants<KeyValuePair<string, IValidateRule>>.EmptyArray;
@@ -35,6 +36,9 @@ public class MemoryValidationSource : IValidationSource, IValidationSourceAdmin,
 
     public Task<List<ValidationRule>> GetAllValidateRulesAsync(string typeName)
     {
+        if (typeName == null)
+            return Task.FromResult(new List<ValidationRule>());
+
         var ret = TypeRulesMap.TryGetValue(typeName, out var rules)
             ? rules
             : TypeConstants<KeyValuePair<string, IValidateRule>>.EmptyArray;
@@ -44,9 +48,10 @@ public class MemoryValidationSource : IValidationSource, IValidationSourceAdmin,
 
     public void SaveValidationRules(List<ValidationRule> validateRules)
     {
+        if (validateRules == null || validateRules.Count == 0) return;
         lock (semaphore)
         {
-            var typeGroup = validateRules.ToLookup(x => x.Type);
+            var typeGroup = validateRules.Where(x => x != null && x.Type != null).ToLookup(x => x.Type);
             foreach (var group in typeGroup)
             {
                 var typeRules = TypeRulesMap.TryGetValue(group.Key, out var existingRules)
@@ -84,6 +89,7 @@ public class MemoryValidationSource : IValidationSource, IValidationSourceAdmin,
 
     public Task<List<ValidationRule>> GetValidateRulesByIdsAsync(params int[] ids)
     {
+        if (ids == null || ids.Length == 0) return Task.FromResult(new List<ValidationRule>());
         var to = new List<ValidationRule>();
         foreach (var entry in TypeRulesMap)
         {
@@ -98,6 +104,7 @@ public class MemoryValidationSource : IValidationSource, IValidationSourceAdmin,
 
     public Task DeleteValidationRulesAsync(params int[] ids)
     {
+        if (ids == null || ids.Length == 0) return TypeConstants.EmptyTask;
         lock (semaphore)
         {
             var replace = new Dictionary<string, KeyValuePair<string, IValidateRule>[]>();

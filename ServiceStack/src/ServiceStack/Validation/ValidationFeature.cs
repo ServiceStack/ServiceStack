@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -214,6 +214,7 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
     /// </summary>
     public virtual string GetRequestErrorBody(object request)
     {
+        if (request == null) return "";
         var requestString = "";
         try
         {
@@ -229,6 +230,7 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
 
     public virtual void ValidateRequest(object requestDto, IRequest req)
     {
+        if (requestDto == null || req == null) return;
         var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
         if (validator == null) return;
             
@@ -244,6 +246,7 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
 
     public virtual async Task ValidateRequestAsync(object requestDto, IRequest req, CancellationToken token=default)
     {
+        if (requestDto == null || req == null) return;
         var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
         if (validator == null) return;
             
@@ -289,9 +292,10 @@ public class ValidationFeature : IPlugin, IPostConfigureServices, IPreInitPlugin
             }
             else
             {
-                vfe.Meta = error.FormattedMessagePlaceholderValues.ToStringDictionary();
+                vfe.Meta = error.FormattedMessagePlaceholderValues?.ToStringDictionary();
             }
 
+            vfe.Meta ??= new Dictionary<string, string>();
             vfe.Meta[nameof(error.Severity)] = error.Severity.ToString();
             ver.Errors.Add(vfe);
         }
@@ -479,19 +483,26 @@ public static class ValidationExtensions
         
     public static void Init(Assembly[] assemblies)
     {
-        foreach (var assembly in assemblies)
+        if (assemblies == null) return;
+
+        lock (RegisteredAssemblies)
         {
-            if (!RegisteredAssemblies.Contains(assembly))
+            foreach (var assembly in assemblies)
             {
-                RegisteredAssemblies.Add(assembly);
-                foreach (var type in assembly.GetTypes())
+                if (assembly == null) continue;
+
+                if (!RegisteredAssemblies.Contains(assembly))
                 {
-                    var genericValidator = type.GetTypeWithGenericInterfaceOf(typeof(IValidator<>));
-                    if (genericValidator != null && !type.IsAbstract && !type.IsGenericTypeDefinition)
+                    RegisteredAssemblies.Add(assembly);
+                    foreach (var type in assembly.GetTypes())
                     {
-                        if (type.GetCustomAttributes<IgnoreServicesAttribute>().Any())
-                            continue;
-                        ValidatorTypes.Add(type);
+                        var genericValidator = type.GetTypeWithGenericInterfaceOf(typeof(IValidator<>));
+                        if (genericValidator != null && !type.IsAbstract && !type.IsGenericTypeDefinition)
+                        {
+                            if (type.GetCustomAttributes<IgnoreServicesAttribute>().Any())
+                                continue;
+                            ValidatorTypes.Add(type);
+                        }
                     }
                 }
             }
@@ -609,7 +620,7 @@ public static class ValidationExtensions
     }
 
     public static Task<List<ValidationRule>> GetAllValidateRulesAsync(this IResolver resolver, string type=null) =>
-        resolver.TryResolve<IValidationSource>().GetAllValidateRulesAsync(type);
+        resolver?.TryResolve<IValidationSource>()?.GetAllValidateRulesAsync(type) ?? Task.FromResult(TypeConstants<ValidationRule>.EmptyList);
     public static async Task<List<ValidationRule>> GetAllValidateRulesAsync(this IValidationSource validationSource, string type=null)
     {
         return validationSource is IValidationSourceAdmin adminSource
@@ -640,11 +651,14 @@ public static class ValidationExtensions
             op = op.Clone();
             op.RequiresAuthentication = true;
             var appHost = HostContext.AppHost;
-            var allValidators = authRules.Select(x => appHost.EvalExpression(x.Validator) as ITypeValidator).Where(x => x != null).ToList();
-            if (allValidators.FirstOrDefault(x => x is HasRolesValidator) is HasRolesValidator roleValidator)
-                roleValidator.Roles.Each(op.RequiredRoles.AddIfNotExists);
-            if (allValidators.FirstOrDefault(x => x is HasPermissionsValidator) is HasPermissionsValidator permValidator)
-                permValidator.Permissions.Each(op.RequiredPermissions.AddIfNotExists);
+            if (appHost != null)
+            {
+                var allValidators = authRules.Select(x => appHost.EvalExpression(x.Validator) as ITypeValidator).Where(x => x != null).ToList();
+                if (allValidators.FirstOrDefault(x => x is HasRolesValidator) is HasRolesValidator roleValidator)
+                    roleValidator.Roles.Each(op.RequiredRoles.AddIfNotExists);
+                if (allValidators.FirstOrDefault(x => x is HasPermissionsValidator) is HasPermissionsValidator permValidator)
+                    permValidator.Permissions.Each(op.RequiredPermissions.AddIfNotExists);
+            }
         }
         return op;
     }

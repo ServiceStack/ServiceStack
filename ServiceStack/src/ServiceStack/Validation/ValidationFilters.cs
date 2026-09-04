@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
@@ -23,6 +23,7 @@ public static class ValidationFilters
     private static async Task RequestFilterAsync(IRequest req, IResponse res, object requestDto,
         bool treatInfoAndWarningsAsErrors)
     {
+        if (requestDto == null) return;
         var requestType = requestDto.GetType();
         await Validators.AssertTypeValidatorsAsync(req, requestDto, requestType);
 
@@ -147,6 +148,7 @@ public static class ValidationFilters
             return;
         }
 
+        if (req?.Dto == null) return;
         var validator = ValidatorCache.GetValidator(req, req.Dto.GetType());
         if (validator == null)
             return;
@@ -155,8 +157,9 @@ public static class ValidationFilters
 
         if (!validationResult.IsValid)
         {
+            var firstErrorCode = validationResult.Errors.Count > 0 ? validationResult.Errors[0].ErrorCode : null;
             var responseStatus = response.ResponseStatus
-                                 ?? DtoUtils.CreateResponseStatus(validationResult.Errors[0].ErrorCode);
+                                 ?? DtoUtils.CreateResponseStatus(firstErrorCode);
             foreach (var error in validationResult.Errors)
             {
                 var responseError = new ResponseError

@@ -30,13 +30,17 @@ public class ScriptConditionValidator(SharpPage code)
 
     protected override async Task<bool> IsValidAsync(PropertyValidatorContext context, CancellationToken cancellation)
     {
-        var ret = await HostContext.AppHost.EvalScriptAsync(context.ToPageResult(Code), context.ParentContext.Request);
+        var appHost = HostContext.AppHost;
+        if (appHost == null || context == null) return true;
+        var ret = await appHost.EvalScriptAsync(context.ToPageResult(Code), context.ParentContext?.Request);
         return DefaultScripts.isTruthy(ret);
     }
 
     protected override bool IsValid(PropertyValidatorContext context)
     {
-        var ret = HostContext.AppHost.EvalScript(context.ToPageResult(Code), context.ParentContext.Request);
+        var appHost = HostContext.AppHost;
+        if (appHost == null || context == null) return true;
+        var ret = appHost.EvalScript(context.ToPageResult(Code), context.ParentContext?.Request);
         return DefaultScripts.isTruthy(ret);
     }
 }
@@ -54,18 +58,19 @@ public static class Validators
         TypePropertyRulesMap = new();
         ConditionErrorCodes = new();
         ErrorCodeMessages = new();
+        DelayConfiguringPropertyRules = [];
         ValidationExtensions.Reset();
     }
 
     static readonly Func<CascadeMode> CascadeMode = () => ValidatorOptions.Global.CascadeMode;
 
-    public static bool HasValidateRequestAttributes(Type type) => type.HasAttributeOf<ValidateRequestAttribute>();
+    public static bool HasValidateRequestAttributes(Type type) => type != null && type.HasAttributeOf<ValidateRequestAttribute>();
 
-    public static bool HasValidateAttributes(Type type) => type.GetPublicProperties().Any(x => x.HasAttributeOf<ValidateAttribute>());
+    public static bool HasValidateAttributes(Type type) => type != null && type.GetPublicProperties().Any(x => x.HasAttributeOf<ValidateAttribute>());
 
     public static async Task AssertTypeValidatorsAsync(IRequest req, object requestDto, Type requestType)
     {
-        if (TypeRulesMap.TryGetValue(requestType, out var typeValidators))
+        if (requestType != null && TypeRulesMap.TryGetValue(requestType, out var typeValidators))
         {
             foreach (var scriptValidator in typeValidators)
             {
@@ -87,6 +92,7 @@ public static class Validators
 
     public static bool RegisterRequestRulesFor(Type type)
     {
+        if (type == null) return false;
         var requestAttrs = type.AllAttributes();
         var to = new List<ITypeValidator>();
 
@@ -111,6 +117,7 @@ public static class Validators
 
     public static void AddTypeValidator(List<ITypeValidator> to, IValidateRule attr)
     {
+        if (to == null || attr == null) return;
         var scriptContext = GetScriptContext();
         if (!string.IsNullOrEmpty(attr.Condition))
         {
@@ -437,12 +444,12 @@ public static class Validators
 
     public static PageResult ToPageResult(this PropertyValidatorContext context, SharpPage page)
     {
-        var to = new PageResult(page) {
-            Args = {
-                [ScriptConstants.It] = context.PropertyValue,
-                [ScriptConstants.Field] = context.PropertyName,
-            }
-        };
+        var to = new PageResult(page);
+        if (context != null)
+        {
+            to.Args[ScriptConstants.It] = context.PropertyValue;
+            to.Args[ScriptConstants.Field] = context.PropertyName;
+        }
         return to;
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation;
 
@@ -12,7 +12,7 @@ public class MultiRuleSetValidatorSelector : IValidatorSelector
     /// Creates a new instance of the RulesetValidatorSelector.
     /// </summary>
     public MultiRuleSetValidatorSelector(params string[] rulesetsToExecute) {
-        this.rulesetsToExecute = rulesetsToExecute;
+        this.rulesetsToExecute = rulesetsToExecute ?? [];
     }
 
     /// <summary>
@@ -23,13 +23,14 @@ public class MultiRuleSetValidatorSelector : IValidatorSelector
     /// <param name="context">Contextual information</param>
     /// <returns>Whether or not the validator can execute.</returns>
     public bool CanExecute(IValidationRule rule, string propertyPath, IValidationContext context) {
-        if (rule.RuleSets == null || rule.RuleSets.Length == 0) return true;
-        if (rulesetsToExecute.Contains("*")) return true;
+        if (rule?.RuleSets == null || rule.RuleSets.Length == 0) return true;
+        if (rulesetsToExecute != null && rulesetsToExecute.Contains("*")) return true;
+
+        if (rulesetsToExecute == null || rulesetsToExecute.Length == 0) return false;
 
         foreach (var ruleset in rule.RuleSets)
         {
-            if (!string.IsNullOrEmpty(ruleset) && rulesetsToExecute.Length > 0 && 
-                rulesetsToExecute.Contains(ruleset)) return true;
+            if (!string.IsNullOrEmpty(ruleset) && rulesetsToExecute.Contains(ruleset)) return true;
         }
 
         return false;

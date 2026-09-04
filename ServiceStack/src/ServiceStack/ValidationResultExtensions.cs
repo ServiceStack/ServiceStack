@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.Validation;
@@ -11,6 +11,7 @@ public static class ValidationResultExtensions
 {
     internal static Dictionary<string, string> CustomStateAsDictionary(this ValidationFailure error)
     {
+        if (error == null) return null;
         try
         {
             if (error.CustomState != null)
@@ -19,7 +20,7 @@ public static class ValidationResultExtensions
                     return error.CustomState.ToStringDictionary();
                 return error.CustomState.ToObjectDictionary().ToStringDictionary();
             }
-            return error.FormattedMessagePlaceholderValues.ToStringDictionary();
+            return error.FormattedMessagePlaceholderValues?.ToStringDictionary();
         }
         catch (Exception)
         {
@@ -35,12 +36,16 @@ public static class ValidationResultExtensions
     public static ValidationErrorResult ToErrorResult(this ValidationResult result)
     {
         var validationResult = new ValidationErrorResult();
-        foreach (var error in result.Errors)
+        if (result?.Errors != null)
         {
-            validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue)
+            foreach (var error in result.Errors)
             {
-                Meta = error.CustomStateAsDictionary()
-            });
+                if (error == null) continue;
+                validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage, error.AttemptedValue)
+                {
+                    Meta = error.CustomStateAsDictionary()
+                });
+            }
         }
 
         return validationResult;
@@ -54,6 +59,6 @@ public static class ValidationResultExtensions
     /// <returns></returns>
     public static ValidationError ToException(this ValidationResult result)
     {
-        return new ValidationError(result.ToErrorResult());
+        return new ValidationError(result?.ToErrorResult() ?? new ValidationErrorResult());
     }
 }

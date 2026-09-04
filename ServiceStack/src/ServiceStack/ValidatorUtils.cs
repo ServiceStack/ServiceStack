@@ -4,6 +4,9 @@ public static class ValidatorUtils
 {
     public static ITypeValidator Init(this ITypeValidator validator, IValidateRule rule)
     {
+        if (validator == null || rule == null)
+            return validator;
+
         if (rule.ErrorCode != null)
             validator.ErrorCode = rule.ErrorCode;
         if (rule.Message != null)
@@ -18,5 +21,5 @@ public static class ValidatorUtils
     }
 
     internal static string RemoveValidatorSuffix(this string name) => 
-        StringUtils.RemoveSuffix(name, "Validator");
+        name == null ? null : StringUtils.RemoveSuffix(name, "Validator");
 }

@@ -58,9 +58,9 @@ public class HasRolesValidator : TypeValidator, IAuthTypeValidator
     public HasRolesValidator(string[] roles)
         : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
     {
-        this.Roles = roles ?? throw new ArgumentNullException(nameof(roles));
+        this.Roles = roles ?? [];
         this.ContextArgs = new Dictionary<string, object> {
-            [nameof(Roles)] = roles
+            [nameof(Roles)] = this.Roles
         };
     }
 
@@ -89,9 +89,9 @@ public class HasAnyRoleValidator : TypeValidator, IAuthTypeValidator
     public HasAnyRoleValidator(string[] roles)
         : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
     {
-        this.Roles = roles ?? throw new ArgumentNullException(nameof(roles));
+        this.Roles = roles ?? [];
         this.ContextArgs = new Dictionary<string, object> {
-            [nameof(Roles)] = roles
+            [nameof(Roles)] = this.Roles
         };
     }
 
@@ -175,9 +175,9 @@ public class HasPermissionsValidator : TypeValidator, IAuthTypeValidator
     public HasPermissionsValidator(string[] permissions)
         : base(nameof(HttpStatusCode.Forbidden), DefaultErrorMessage, 403)
     {
-        this.Permissions = permissions ?? throw new ArgumentNullException(nameof(permissions));
+        this.Permissions = permissions ?? [];
         this.ContextArgs = new Dictionary<string, object> {
-            [nameof(Permissions)] = Permissions
+            [nameof(Permissions)] = this.Permissions
         };
     }
 
@@ -276,12 +276,14 @@ public class ScriptValidator(SharpPage code, string condition) : TypeValidator
 
     public override async Task<bool> IsValidAsync(object dto, IRequest request)
     {
+        var appHost = HostContext.AppHost;
+        if (appHost == null) return true;
         var pageResult = new PageResult(Code) {
             Args = {
                 [ScriptConstants.It] = dto,
             }
         };
-        var ret = await HostContext.AppHost.EvalScriptAsync(pageResult, request).ConfigAwait();
+        var ret = await appHost.EvalScriptAsync(pageResult, request).ConfigAwait();
         return DefaultScripts.isTruthy(ret);
     }
 }
@@ -324,13 +326,13 @@ public abstract class TypeValidator : ITypeValidator
     {
         var appHost = HostContext.AppHost;
         string errorMsg = messageExpr;
-        if (messageExpr.IndexOf('`') >= 0)
+        if (messageExpr.IndexOf('`') >= 0 && appHost?.ScriptContext != null)
         {
             var msgToken = JS.expressionCached(appHost.ScriptContext, messageExpr);
             var args = new Dictionary<string, object> {
                 [ScriptConstants.It] = dto,
                 [ScriptConstants.Request] = request,
-                ["TypeName"] = dto.GetType().Name,
+                ["TypeName"] = dto?.GetType().Name ?? "Request",
             };
             if (ContextArgs != null)
             {
@@ -339,7 +341,7 @@ public abstract class TypeValidator : ITypeValidator
                     args[entry.Key] = entry.Value;
                 }
             }
-            errorMsg = (string) msgToken.Evaluate(JS.CreateScope(args)) ?? Message ?? DefaultMessage!;
+            errorMsg = msgToken.Evaluate(JS.CreateScope(args))?.ToString() ?? Message ?? DefaultMessage!;
         }
 
         return errorMsg;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ServiceStack.Redis;
 
 namespace ServiceStack.Validation;
@@ -14,10 +14,10 @@ public class ExecOnceOnly : IDisposable
     private readonly IRedisClient redis;
 
     public ExecOnceOnly(IRedisClientsManager redisManager, Type forType, string correlationId)
-        : this(redisManager, "hash:nx:" + forType.GetOperationName(), correlationId) { }
+        : this(redisManager, "hash:nx:" + (forType != null ? forType.GetOperationName() : throw new ArgumentNullException(nameof(forType))), correlationId) { }
 
     public ExecOnceOnly(IRedisClientsManager redisManager, Type forType, Guid? correlationId)
-        : this(redisManager, "hash:nx:" + forType.GetOperationName(), correlationId?.ToString("N")) { }
+        : this(redisManager, "hash:nx:" + (forType != null ? forType.GetOperationName() : throw new ArgumentNullException(nameof(forType))), correlationId?.ToString("N")) { }
 
     public ExecOnceOnly(IRedisClientsManager redisManager, string hashKey, string correlationId)
     {
@@ -51,8 +51,13 @@ public class ExecOnceOnly : IDisposable
         this.Executed = false;
     }
 
+    private bool isDisposed;
+
     public void Dispose()
     {
+        if (isDisposed) return;
+        isDisposed = true;
+
         if (correlationId != null && !Executed)
         {
             Rollback();
