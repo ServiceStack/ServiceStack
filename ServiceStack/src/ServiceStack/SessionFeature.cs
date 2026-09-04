@@ -82,7 +82,11 @@ public class SessionFeature : IPlugin, Model.IHasStringId
         {
             var session = (cache ?? httpReq.GetCacheClient()).Get<T>(sessionKey);
             if (!Equals(session, default(T)))
-                return (T)HostContext.AppHost.OnSessionFilter(httpReq, (IAuthSession)session, sessionId);
+            {
+                if (session is IAuthSession authSession && HostContext.AppHost != null)
+                    return (T)HostContext.AppHost.OnSessionFilter(httpReq, authSession, sessionId);
+                return session;
+            }
         }
 
         return (T)CreateNewSession(httpReq, sessionId);
@@ -103,7 +107,11 @@ public class SessionFeature : IPlugin, Model.IHasStringId
         {
             var session = await (cache ?? httpReq.GetCacheClientAsync()).GetAsync<T>(sessionKey, token).ConfigAwait();
             if (!Equals(session, default(T)))
-                return (T)HostContext.AppHost.OnSessionFilter(httpReq, (IAuthSession)session, sessionId);
+            {
+                if (session is IAuthSession authSession && HostContext.AppHost != null)
+                    return (T)HostContext.AppHost.OnSessionFilter(httpReq, authSession, sessionId);
+                return session;
+            }
         }
 
         return (T)CreateNewSession(httpReq, sessionId);

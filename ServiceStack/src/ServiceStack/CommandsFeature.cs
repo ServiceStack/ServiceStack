@@ -736,6 +736,7 @@ public static class CommandExtensions
 
     public static double Median(this IEnumerable<int> nums)
     {
+        if (nums == null) return 0;
         var array = nums.ToArray();
         if (array.Length == 0) return 0;
         if (array.Length == 1) return array[0];

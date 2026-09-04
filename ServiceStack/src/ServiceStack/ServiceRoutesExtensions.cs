@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -93,7 +93,7 @@ public static class ServiceRoutesExtensions
 
     public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)
     {
-        while (toCheck != typeof(object))
+        while (toCheck != null && toCheck != typeof(object))
         {
             var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
             if (generic == cur)
@@ -113,7 +113,9 @@ public static class ServiceRoutesExtensions
 
     private static string PropertyName(LambdaExpression lambdaExpression)
     {
-        return (lambdaExpression.Body is UnaryExpression unary ? (MemberExpression)unary.Operand : (MemberExpression)lambdaExpression.Body).Member.Name;
+        if (lambdaExpression == null) return null;
+        var body = lambdaExpression.Body is UnaryExpression unary ? unary.Operand : lambdaExpression.Body;
+        return (body as MemberExpression)?.Member.Name;
     }
 
     public static IServiceRoutes Add<T>(this IServiceRoutes serviceRoutes, string restPath, ApplyTo verbs, params Expression<Func<T, object>>[] propertyExpressions)

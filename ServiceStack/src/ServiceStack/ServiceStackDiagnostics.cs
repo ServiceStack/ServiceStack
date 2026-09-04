@@ -26,7 +26,7 @@ internal static class ServiceStackDiagnostics
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Supports(this DiagnosticListener listener, string name) => 
-        HostContext.AppHost?.HasPlugin<ProfilingFeature>() == true && listener.IsEnabled(name);
+        HostContext.AppHost?.HasPlugin<ProfilingFeature>() == true && listener?.IsEnabled(name) == true;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Guid WriteRequestBefore(this DiagnosticListener listener, IRequest req, [CallerMemberName] string operation = "")

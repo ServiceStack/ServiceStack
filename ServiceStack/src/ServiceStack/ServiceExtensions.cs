@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,18 +33,21 @@ public static class ServiceExtensions
 
     public static string GetSessionId(this IServiceBase service)
     {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
         var req = service.Request;
-        var sessionId = req.GetSessionId();
+        var sessionId = req?.GetSessionId();
         if (sessionId == null)
             throw new ArgumentNullException(nameof(sessionId), ErrorMessages.SessionIdEmpty);
 
         return sessionId;
     }
 
-    public static ICacheClient GetCacheClient(this IRequest request) => HostContext.AppHost.GetCacheClient(request);
-    public static ICacheClientAsync GetCacheClientAsync(this IRequest request) => HostContext.AppHost.GetCacheClientAsync(request);
+    public static ICacheClient GetCacheClient(this IRequest request) => HostContext.AppHost?.GetCacheClient(request);
+    public static ICacheClientAsync GetCacheClientAsync(this IRequest request) => HostContext.AppHost?.GetCacheClientAsync(request);
 
-    public static ICacheClient GetMemoryCacheClient(this IRequest request) => HostContext.AppHost.GetMemoryCacheClient(request);
+    public static ICacheClient GetMemoryCacheClient(this IRequest request) => HostContext.AppHost?.GetMemoryCacheClient(request);
 
     [Obsolete("Use SaveSessionAsync")]
     public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn = null)
@@ -179,9 +182,9 @@ public static class ServiceExtensions
         if (HostContext.TestMode)
         {
             var mockSession = req.TryResolve<TUserSession>();
-            if (!Equals(mockSession, default(TUserSession)))
-                mockSession = req.TryResolve<IAuthSession>() is TUserSession
-                    ? (TUserSession)req.TryResolve<IAuthSession>()
+            if (Equals(mockSession, default(TUserSession)))
+                mockSession = req.TryResolve<IAuthSession>() is TUserSession authSession
+                    ? authSession
                     : default;
 
             if (!Equals(mockSession, default(TUserSession)))
@@ -196,9 +199,9 @@ public static class ServiceExtensions
         if (HostContext.TestMode)
         {
             var mockSession = req.TryResolve<TUserSession>();
-            if (!Equals(mockSession, default(TUserSession)))
-                mockSession = req.TryResolve<IAuthSession>() is TUserSession
-                    ? (TUserSession)req.TryResolve<IAuthSession>()
+            if (Equals(mockSession, default(TUserSession)))
+                mockSession = req.TryResolve<IAuthSession>() is TUserSession authSession
+                    ? authSession
                     : default;
 
             if (!Equals(mockSession, default(TUserSession)))

@@ -92,9 +92,25 @@ public static class HttpResponseExtensionsInternal
             var len = (bodyPrefix?.Length).GetValueOrDefault() +
                       rom.Length +
                       (bodySuffix?.Length).GetValueOrDefault();
-                
+
+            response.SetContentLength(len);
+
             if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
             await response.OutputStream.WriteAsync(rom, token);
+            if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
+            return true;
+        }
+
+        if (result is Memory<byte> mem)
+        {
+            var len = (bodyPrefix?.Length).GetValueOrDefault() +
+                      mem.Length +
+                      (bodySuffix?.Length).GetValueOrDefault();
+
+            response.SetContentLength(len);
+
+            if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
+            await response.OutputStream.WriteAsync(mem, token);
             if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
             return true;
         }

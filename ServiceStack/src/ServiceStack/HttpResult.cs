@@ -518,14 +518,16 @@ public static class HttpResultExtensions
 
     public static IHttpResult DeleteCookie(this IHttpResult httpResult, IRequest req, string cookieName)
     {
-        var cookies = (Cookies)((IHttpResponse)req.Response).Cookies;
+        if (httpResult == null)
+            throw new ArgumentNullException(nameof(httpResult));
+
+        var cookies = (req?.Response as IHttpResponse)?.Cookies as Cookies;
         httpResult.Cookies.Add(new Cookie(cookieName, string.Empty, Cookies.RootPath)
         {
             Expires = DateTime.UtcNow.AddDays(-1),
-            Secure = cookies.UseSecureCookie(null)
+            Secure = cookies?.UseSecureCookie(null) ?? false
         });
-        cookies.Collection.RemoveAll(x => x.Name == cookieName);
+        cookies?.Collection.RemoveAll(x => x.Name == cookieName);
         return httpResult;
     }
-        
 }

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Collections.Concurrent;
@@ -153,12 +153,17 @@ public class BackgroundMqService : IMessageService
     {
         AssertNotDisposed();
             
-        lock (workers)
+        var currentWorkers = workers;
+        if (currentWorkers != null)
         {
-            var total = new MessageHandlerStats("ALL WORKERS");
-            workers.Each(x => total.Add(x.GetStats()));
-            return total;
+            lock (currentWorkers)
+            {
+                var total = new MessageHandlerStats("ALL WORKERS");
+                currentWorkers.Each(x => total.Add(x.GetStats()));
+                return total;
+            }
         }
+        return new MessageHandlerStats("ALL WORKERS");
     }
 
     public IMqWorker[] GetWorkers(string queueName)
@@ -711,7 +716,7 @@ public class BackgroundMqWorker : IMqWorker
         if (Log.IsDebugEnabled)
             Log.Debug($"MQ Starting {QueueName} BackgroundMqWorker...");
 
-        while (!cts.IsCancellationRequested)
+        while (cts != null && !cts.IsCancellationRequested)
         {
             foreach (var item in queue.GetConsumingEnumerable(cts.Token))
             {
@@ -745,7 +750,7 @@ public class BackgroundMqWorker : IMqWorker
     {
         if (Log.IsDebugEnabled)
             Log.Debug($"MQ Stopping {QueueName} BackgroundMqWorker...");
-        cts.Cancel();
+        cts?.Cancel();
     }
 
     public void Dispose()

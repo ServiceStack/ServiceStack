@@ -1,4 +1,4 @@
-﻿#if NETCORE
+#if NETCORE
 using Microsoft.AspNetCore.Http;
 #else
 using System.Web;
@@ -20,7 +20,7 @@ public class Cookies(IHttpResponse httpRes) : ICookies
     public List<Cookie> Collection { get; set; } = [];
 
     public bool UseSecureCookie(bool? secureOnly) =>
-        (secureOnly ?? HostContext.Config?.UseSecureCookies ?? true) && httpRes.Request.IsSecureConnection;
+        (secureOnly ?? HostContext.AppHost?.Config?.UseSecureCookies ?? true) && (httpRes.Request?.IsSecureConnection == true);
 
     /// <summary>
     /// Sets a persistent cookie which never expires

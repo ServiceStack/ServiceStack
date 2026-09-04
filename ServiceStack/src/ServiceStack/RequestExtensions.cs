@@ -310,9 +310,9 @@ public static class RequestExtensions
         if (typeof(T) == typeof(IResponse))
             return (T)request.Response;
 
-        var instance = request is IHasResolver hasResolver 
+        var instance = request is IHasResolver hasResolver && hasResolver.Resolver != null
             ? hasResolver.Resolver.TryResolve<T>() 
-            : Service.GlobalResolver.TryResolve<T>();
+            : Service.GlobalResolver != null ? Service.GlobalResolver.TryResolve<T>() : default;
         if (instance is IRequiresRequest requiresRequest)
             requiresRequest.Request ??= request;
         return instance;
@@ -336,29 +336,31 @@ public static class RequestExtensions
 
     public static T GetRuntimeConfig<T>(this IRequest req, string name, T defaultValue)
     {
-        return req != null 
+        return req != null && HostContext.AppHost != null
             ? HostContext.AppHost.GetRuntimeConfig(req, name, defaultValue)
             : defaultValue;
     }
 
     public static void RegisterForDispose(this IRequest request, IDisposable disposable)
     {
-        if (disposable == null)
+        if (disposable == null || request == null)
             return;
 #if NETCORE
-        var netcoreReq = (Microsoft.AspNetCore.Http.HttpRequest) request.OriginalRequest;
-        netcoreReq.HttpContext.Response.RegisterForDispose(disposable);
-#else
-            // IDisposable's in IRequest.Items are disposed in AppHost.OnEndRequest()
-            var typeName = disposable.GetType().Name;
-            var i = 0;
-            var key = typeName;
-            while (request.Items.ContainsKey(key))
-            {
-                key = typeName + (++i);
-            }
-            request.SetItem(key, disposable);
+        if (request.OriginalRequest is Microsoft.AspNetCore.Http.HttpRequest netcoreReq)
+        {
+            netcoreReq.HttpContext?.Response?.RegisterForDispose(disposable);
+            return;
+        }
 #endif
+        // IDisposable's in IRequest.Items are disposed in AppHost.OnEndRequest()
+        var typeName = disposable.GetType().Name;
+        var i = 0;
+        var key = typeName;
+        while (request.Items.ContainsKey(key))
+        {
+            key = typeName + (++i);
+        }
+        request.SetItem(key, disposable);
     }
 
     public static async Task<SessionSourceResult> GetSessionFromSourceAsync(this IRequest request, 

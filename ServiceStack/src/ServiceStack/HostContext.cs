@@ -72,10 +72,16 @@ public static class HostContext
 
     public static bool StrictMode => AppHost?.Config?.StrictMode == true;
 
+    private static bool? testMode;
     public static bool TestMode
     {
-        get => ServiceStackHost.Instance is { TestMode: true };
-        set => ServiceStackHost.Instance.TestMode = value;
+        get => testMode ?? ServiceStackHost.Instance is { TestMode: true };
+        set
+        {
+            testMode = value;
+            if (ServiceStackHost.Instance != null)
+                ServiceStackHost.Instance.TestMode = value;
+        }
     }
 
     public static bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
@@ -121,17 +127,17 @@ public static class HostContext
     /// <summary>
     /// The FileSystem VirtualFiles provider in VirtualFileSources
     /// </summary>
-    public static FileSystemVirtualFiles FileSystemVirtualFiles => AssertAppHost().VirtualFileSources.GetFileSystemVirtualFiles();
+    public static FileSystemVirtualFiles FileSystemVirtualFiles => AssertAppHost().VirtualFileSources?.GetFileSystemVirtualFiles();
 
     /// <summary>
     /// The Memory VirtualFiles provider in VirtualFileSources
     /// </summary>
-    public static MemoryVirtualFiles MemoryVirtualFiles => AssertAppHost().VirtualFileSources.GetMemoryVirtualFiles();
+    public static MemoryVirtualFiles MemoryVirtualFiles => AssertAppHost().VirtualFileSources?.GetMemoryVirtualFiles();
 
     /// <summary>
     /// The GistVirtualFiles provider in VirtualFileSources (if any)
     /// </summary>
-    public static GistVirtualFiles GistVirtualFiles => AssertAppHost().VirtualFileSources.GetGistVirtualFiles();
+    public static GistVirtualFiles GistVirtualFiles => AssertAppHost().VirtualFileSources?.GetGistVirtualFiles();
 
     public static ICacheClient Cache => AssertAppHost().GetCacheClient();
 
@@ -232,6 +238,7 @@ public static class HostContext
     public static string GetDefaultNamespace()
     {
         if (!string.IsNullOrEmpty(defaultOperationNamespace)) return null;
+        if (ServiceStackHost.Instance == null) return null;
 
         foreach (var operationType in Metadata.RequestTypes)
         {
@@ -377,6 +384,8 @@ public static class HostContext
 
     public static void Reset()
     {
+        testMode = null;
+        defaultOperationNamespace = null;
         ServiceStackHost.GlobalAfterConfigureServices.Clear();
         ServiceStackHost.GlobalBeforeConfigure.Clear();
         ServiceStackHost.GlobalAfterConfigure.Clear();

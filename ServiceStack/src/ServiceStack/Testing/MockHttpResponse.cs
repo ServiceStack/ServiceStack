@@ -19,7 +19,7 @@ public class MockHttpResponse : IHttpResponse, IHasHeaders
         this.Headers = new Dictionary<string, string>();
         this.OutputStream = new MemoryStream();
         this.TextWritten = new StringBuilder();
-        this.Cookies = HostContext.AssertAppHost().GetCookies(this);
+        this.Cookies = HostContext.AppHost?.GetCookies(this) ?? new Cookies(this);
         this.Items = new Dictionary<string, object>();
     }
 

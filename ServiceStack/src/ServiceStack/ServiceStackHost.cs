@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 #if !NETCORE
@@ -2176,7 +2176,14 @@ public abstract partial class ServiceStackHost
             //clear managed resources here
             foreach (var callback in OnDisposeCallbacks)
             {
-                callback(this);
+                try
+                {
+                    callback(this);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error executing OnDisposeCallback: " + ex.Message, ex);
+                }
             }
 
             if (Container != null)

@@ -1,4 +1,4 @@
-﻿using ServiceStack.Web;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -119,13 +119,22 @@ public class ProxyFeatureHandler : HttpAsyncTaskHandler
         if (httpReq.ContentLength > 0)
         {
             var inputStream = httpReq.InputStream;
+            Stream transformedStream = null;
             if (TransformRequest != null)
-                inputStream = await TransformRequest(httpReq, inputStream) ?? inputStream;
-
-            using (inputStream)
-            using (var requestStream = await webReq.GetRequestStreamAsync())
             {
+                transformedStream = await TransformRequest(httpReq, inputStream);
+                if (transformedStream != null)
+                    inputStream = transformedStream;
+            }
+
+            try
+            {
+                using var requestStream = await webReq.GetRequestStreamAsync();
                 await inputStream.WriteToAsync(requestStream);
+            }
+            finally
+            {
+                transformedStream?.Dispose();
             }
         }
 
@@ -186,8 +195,18 @@ public class ProxyFeatureHandler : HttpAsyncTaskHandler
         }
         catch (WebException webEx)
         {
-            using var errorResponse = (HttpWebResponse) webEx.Response;
-            await CopyToResponse(res, errorResponse);
+            if (webEx.Response is HttpWebResponse errorResponse)
+            {
+                using (errorResponse)
+                {
+                    await CopyToResponse(res, errorResponse);
+                }
+            }
+            else
+            {
+                res.StatusCode = (int)HttpStatusCode.BadGateway;
+                await res.WriteErrorBody(webEx);
+            }
         }
     }
 

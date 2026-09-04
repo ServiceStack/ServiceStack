@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters, IAs
 
     private IResolver? resolver;
     public virtual IResolver? GetResolver() => resolver ?? GlobalResolver
-        ?? ServiceStackHost.Instance.Container;
+        ?? ServiceStackHost.Instance?.Container;
 
     public virtual Service SetResolver(IResolver resolver)
     {
@@ -49,9 +49,11 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters, IAs
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public virtual T? GetService<T>() => Request!.GetService<T>();
-    public virtual T GetRequiredService<T>() where T : notnull => Request!.GetRequiredService<T>();
-    public virtual IEnumerable<T> GetServices<T>() => Request!.GetServices<T>();
+    public virtual T? GetService<T>() => Request != null ? Request.GetService<T>() : default;
+    public virtual T GetRequiredService<T>() where T : notnull => Request != null
+        ? Request.GetRequiredService<T>()
+        : throw new ArgumentNullException(nameof(Request));
+    public virtual IEnumerable<T> GetServices<T>() => Request?.GetServices<T>() ?? [];
 
     /// <summary>
     /// Resolve ServiceStack Services

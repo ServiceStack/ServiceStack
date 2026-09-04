@@ -1,4 +1,4 @@
-﻿#if NETCORE        
+#if NETCORE        
 using ServiceStack.Host;
 #else
 using System.Web;
@@ -1052,7 +1052,7 @@ public class SubscriptionInfo
     public Dictionary<string, string> ServerArgs { get; set; }
 }
 
-public class MemoryServerEvents : IServerEvents
+public class MemoryServerEvents : IServerEvents, IAsyncDisposable
 {
     private static readonly ILog Log = LogManager.GetLogger(typeof(MemoryServerEvents));
     public static bool FlushNopOnSubscription = true;
@@ -1990,6 +1990,11 @@ public class MemoryServerEvents : IServerEvents
         isDisposed = true;
 
         TaskExt.RunSync(DisposeAsync);
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await DisposeAsync().ConfigAwait();
     }
 }
 
