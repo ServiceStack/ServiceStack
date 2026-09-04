@@ -75,6 +75,8 @@ public class ContentTypes : IContentTypes
         
     public string GetFormatContentType(string format)
     {
+        if (string.IsNullOrEmpty(format)) return null;
+
         return ContentTypeFormats.TryGetValue(format, out var registeredFormat)
             ? registeredFormat
             : format switch {
@@ -94,7 +96,8 @@ public class ContentTypes : IContentTypes
         var format = ContentFormat.GetContentFormat(contentType);
             
         var normalizedContentType = ContentFormat.NormalizeContentType(contentType);
-        ContentTypeFormats[format] = normalizedContentType;
+        if (!string.IsNullOrEmpty(format))
+            ContentTypeFormats[format] = normalizedContentType;
 
         if (streamSerializer != null)
             SetContentTypeSerializer(normalizedContentType, streamSerializer);
@@ -112,7 +115,8 @@ public class ContentTypes : IContentTypes
         var format = ContentFormat.GetContentFormat(contentType);
             
         var normalizedContentType = ContentFormat.NormalizeContentType(contentType);
-        ContentTypeFormats[format] = normalizedContentType;
+        if (!string.IsNullOrEmpty(format))
+            ContentTypeFormats[format] = normalizedContentType;
 
         if (streamSerializer != null)
             ContentTypeSerializersAsync[normalizedContentType] = streamSerializer;
@@ -123,7 +127,12 @@ public class ContentTypes : IContentTypes
 
     public void Remove(string contentType)
     {
+        if (string.IsNullOrEmpty(contentType))
+            return;
+
         contentType = ContentFormat.NormalizeContentType(contentType);
+        if (string.IsNullOrEmpty(contentType))
+            return;
 
         ContentTypeFormats.Remove(contentType);
             
@@ -145,18 +154,23 @@ public class ContentTypes : IContentTypes
 
     public void SetContentTypeSerializer(string contentType, StreamSerializerDelegate streamSerializer)
     {
+        if (string.IsNullOrEmpty(contentType))
+            return;
         ContentTypeSerializers[ContentFormat.NormalizeContentType(contentType)] = streamSerializer;
     }
 
     public void SetContentTypeDeserializer(string contentType, StreamDeserializerDelegate streamDeserializer)
     {
+        if (string.IsNullOrEmpty(contentType))
+            return;
         ContentTypeDeserializers[ContentFormat.NormalizeContentType(contentType)] = streamDeserializer;
     }
 
     public static async Task SerializeUnknownContentType(IRequest req, object response, Stream stream)
     {
-        req.Response.Dto = response;
-        if (stream == Stream.Null)
+        if (req?.Response != null)
+            req.Response.Dto = response;
+        if (stream == null || stream == Stream.Null)
             return;
             
         switch (response)
@@ -181,14 +195,16 @@ public class ContentTypes : IContentTypes
                 break;
 #endif
             default:
-                throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, req.ResponseContentType));
+                var ct = req?.ResponseContentType ?? "unknown";
+                throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, ct));
         }
     }
         
     public byte[] SerializeToBytes(IRequest req, object response)
     {
-        if (req == null) return TypeConstants.EmptyByteArray;
+        if (req == null || response == null) return TypeConstants.EmptyByteArray;
         var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
+        if (contentType == null) return TypeConstants.EmptyByteArray;
 
         var responseStreamWriter = GetStreamSerializer(contentType);
         if (responseStreamWriter != null)
@@ -220,6 +236,9 @@ public class ContentTypes : IContentTypes
 
     public string SerializeToString(IRequest req, object response, string contentType)
     {
+        if (contentType == null)
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupportedFmt.LocalizeFmt(req, "unknown"));
+
         if (ContentTypeStringSerializers.TryGetValue(contentType, out var stringSerializer))
             return stringSerializer(req, response);
 
@@ -246,7 +265,7 @@ public class ContentTypes : IContentTypes
     {
         if (httpReq?.Response != null)
             httpReq.Response.Dto = dto;
-        if (stream == Stream.Null)
+        if (stream == null || stream == Stream.Null)
             return TypeConstants.EmptyTask;
 
         return serializer(httpReq, dto, stream);
@@ -256,7 +275,7 @@ public class ContentTypes : IContentTypes
     {
         if (httpReq?.Response != null)
             httpReq.Response.Dto = dto;
-        if (stream == Stream.Null)
+        if (stream == null || stream == Stream.Null)
             return;
             
         if (HostContext.AppHost?.Config?.BufferSyncSerializers == true)
@@ -276,7 +295,14 @@ public class ContentTypes : IContentTypes
         
     public Task SerializeToStreamAsync(IRequest req, object response, Stream responseStream)
     {
-        var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
+        if (responseStream == null || responseStream == Stream.Null)
+            return TypeConstants.EmptyTask;
+
+        var contentType = ContentFormat.NormalizeContentType(req?.ResponseContentType);
+        if (contentType == null)
+            return UnknownContentTypeSerializer != null
+                ? UnknownContentTypeSerializer(req, response, responseStream)
+                : TypeConstants.EmptyTask;
 
         var serializer = GetStreamSerializer(contentType);
         if (serializer != null)
@@ -291,9 +317,9 @@ public class ContentTypes : IContentTypes
         
     public StreamSerializerDelegateAsync GetStreamSerializerAsync(string contentType)
     {
-        contentType = ContentFormat.NormalizeContentType(contentType);
+        var normalized = ContentFormat.NormalizeContentType(contentType);
             
-        if (ContentTypeSerializersAsync.TryGetValue(contentType, out var asyncSerializer))
+        if (normalized != null && ContentTypeSerializersAsync.TryGetValue(normalized, out var asyncSerializer))
             return (httpReq, dto, stream) => 
                 serializeAsync(asyncSerializer, httpReq, dto, stream);
 
@@ -307,16 +333,22 @@ public class ContentTypes : IContentTypes
 
     public StreamSerializerDelegate GetStreamSerializer(string contentType)
     {
-        return ContentTypeSerializers.TryGetValue(ContentFormat.NormalizeContentType(contentType), out var serializer) 
+        var normalized = ContentFormat.NormalizeContentType(contentType);
+        if (normalized == null) return null;
+        return ContentTypeSerializers.TryGetValue(normalized, out var serializer) 
             ? serializer 
             : null;
     }
 
     public object DeserializeFromString(string contentType, Type type, string request)
     {
+        if (type == null) return null;
+        if (string.IsNullOrEmpty(request)) return type.GetDefaultValue();
+        if (contentType == null) throw new ArgumentNullException(nameof(contentType));
+
         contentType = ContentFormat.NormalizeContentType(contentType);
 
-        if (ContentTypeStringDeserializers.TryGetValue(contentType, out var stringDeserializer))
+        if (contentType != null && ContentTypeStringDeserializers.TryGetValue(contentType, out var stringDeserializer))
             return stringDeserializer(request, type);
 
         var deserializerAsync = GetStreamDeserializerAsync(contentType);
@@ -332,6 +364,9 @@ public class ContentTypes : IContentTypes
 
     public object DeserializeFromStream(string contentType, Type type, Stream fromStream)
     {
+        if (type == null || fromStream == null || fromStream == Stream.Null) return null;
+        if (contentType == null) throw new ArgumentNullException(nameof(contentType));
+
         contentType = ContentFormat.NormalizeContentType(contentType);
 
         var deserializer = GetStreamDeserializer(contentType);
@@ -350,16 +385,18 @@ public class ContentTypes : IContentTypes
 
     public StreamDeserializerDelegate GetStreamDeserializer(string contentType)
     {
-        return ContentTypeDeserializers.TryGetValue(ContentFormat.NormalizeContentType(contentType), out var deserializer) 
+        var normalized = ContentFormat.NormalizeContentType(contentType);
+        if (normalized == null) return null;
+        return ContentTypeDeserializers.TryGetValue(normalized, out var deserializer) 
             ? deserializer 
             : null;
     }
  
     public StreamDeserializerDelegateAsync GetStreamDeserializerAsync(string contentType)
     {
-        contentType = ContentFormat.NormalizeContentType(contentType);
+        var normalized = ContentFormat.NormalizeContentType(contentType);
             
-        if (ContentTypeDeserializersAsync.TryGetValue(contentType, out var deserializerAsync))
+        if (normalized != null && ContentTypeDeserializersAsync.TryGetValue(normalized, out var deserializerAsync))
             return deserializerAsync;
 
         var deserializer = GetStreamDeserializer(contentType);

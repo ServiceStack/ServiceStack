@@ -12,6 +12,9 @@ public class JsonlFormat : IPlugin, Model.IHasStringId
     
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         //Register the 'text/jsonl' content-type and serializers (format is inferred from the last part of the content-type)
         appHost.ContentTypes.Register(MimeTypes.Jsonl,
             SerializeToStream, JsonlSerializer.DeserializeFromStream);
@@ -19,7 +22,7 @@ public class JsonlFormat : IPlugin, Model.IHasStringId
 
     public void SerializeToStream(IRequest req, object request, Stream stream)
     {
-        if (stream == null) return;
+        if (stream == null || request == null) return;
 
         switch (request)
         {

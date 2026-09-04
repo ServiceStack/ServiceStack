@@ -52,24 +52,34 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
 
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         AppHost = appHost;
         //Register this in ServiceStack with the custom formats
         appHost.ContentTypes.RegisterAsync(MimeTypes.Html, SerializeToStreamAsync, null);
 
-        appHost.Config.DefaultContentType = MimeTypes.Html;
-        appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.Html.ToContentFormat());
+        if (appHost.Config != null)
+        {
+            appHost.Config.DefaultContentType = MimeTypes.Html;
+            appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.Html.ToContentFormat());
+        }
     }
 
     public async Task SerializeToStreamAsync(IRequest req, object response, Stream outputStream)
     {
+        if (req == null || outputStream == null || outputStream == Stream.Null)
+            return;
+
         var res = req.Response;
         if (req.GetItem("HttpResult") is IHttpResult httpResult && httpResult.Headers.ContainsKey(HttpHeaders.Location) 
                                                                 && httpResult.StatusCode != System.Net.HttpStatusCode.Created)  
             return;
 
+        var appHost = AppHost ?? HostContext.AppHost;
         try
         {
-            if (res.StatusCode >= 400)
+            if (res?.StatusCode >= 400)
             {
                 var responseStatus = response.GetResponseStatus();
                 req.SetItem(Keywords.ErrorStatus, responseStatus);
@@ -77,15 +87,15 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
 
             if (response is CompressedResult)
             {
-                if (res.Dto != null)
+                if (res?.Dto != null)
                     response = res.Dto;
                 else 
                     throw new ArgumentException("Cannot use Cached Result as ViewModel");
             }
 
-            if (AppHost?.ViewEngines != null)
+            if (appHost?.ViewEngines != null)
             {
-                foreach (var viewEngine in AppHost.ViewEngines)
+                foreach (var viewEngine in appHost.ViewEngines)
                 {
                     var handled = await viewEngine.ProcessRequestAsync(req, response, outputStream);
                     if (handled)
@@ -95,7 +105,7 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
         }
         catch (Exception ex)
         {
-            if (res.StatusCode < 400)
+            if (res != null && res.StatusCode < 400)
                 throw;
 
             //If there was an exception trying to render a Error with a View, 
@@ -107,7 +117,8 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
         if (req.ResponseContentType == MimeTypes.PlainText)
         {
             req.ResponseContentType = MimeTypes.Html;
-            res.ContentType = MimeTypes.Html;
+            if (res != null)
+                res.ContentType = MimeTypes.Html;
         }
 
         if (req.ResponseContentType != MimeTypes.Html && req.ResponseContentType != MimeTypes.JsonReport) 
@@ -120,7 +131,7 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
             var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
             json = json.HtmlEncodeLite();
 
-            var url = req.ResolveAbsoluteUrl()
+            var url = (req.ResolveAbsoluteUrl() ?? "")
                 .Replace("format=html", "")
                 .Replace("format=shtm", "")
                 .TrimEnd('?', '&')
@@ -132,8 +143,10 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
             var requestName = req.OperationName ?? dto?.GetType().GetOperationName() ?? "Response";
             var serverInfo = new ServerInfo
             {
-                JsonApiRoute = AppHost?.GetPlugin<PredefinedRoutesFeature>()?.JsonApiRoute
+                JsonApiRoute = appHost?.GetPlugin<PredefinedRoutesFeature>()?.JsonApiRoute
             };
+
+            var mvcIncludes = MiniProfiler.Profiler.RenderIncludes()?.ToString() ?? "";
 
             html = ReplaceTokens(ResolveTemplate?.Invoke(req) ?? Templates.HtmlTemplates.GetHtmlFormatTemplate(), req)
                     .Replace("${RequestName}", EncodeForJavaScriptString(requestName))
@@ -141,7 +154,7 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
                     .Replace("${RequestDto}", JsonDataContractSerializer.Instance.SerializeToString(req.Dto)?.HtmlEncodeLite() ?? "null")
                     .Replace("${Dto}", json)
                     .Replace("${Title}", string.Format(TitleFormat, requestName, now))
-                    .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())
+                    .Replace("${MvcIncludes}", mvcIncludes)
                     .Replace("${Header}", string.Format(HtmlTitleFormat, requestName, now))
                     .Replace("${ServiceUrl}", EncodeForJavaScriptString(url))
                     .Replace("${HtmlServiceUrl}", EncodeForHtmlAttribute(url))
@@ -149,7 +162,7 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
                 ;
         }
             
-        if (AppHost is ServiceStackHost host)
+        if (appHost is ServiceStackHost host)
             await host.WriteAutoHtmlResponseAsync(req, response, html, outputStream);
     }
 

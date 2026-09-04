@@ -475,3 +475,42 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - Hardened `HasChannel` and `HasAnyChannel` to handle null subscriptions and null channel collections safely.
   - Guarded all `Notify*` extension method overloads against null `server` and null `message` inputs.
 
+---
+
+## 17. ServiceStack.Formats & Content Types Modernization & Hardening
+- **`XmlSerializerFormat.cs`**:
+  - Replaced un-cached dynamic `new XmlSerializer(type)` instantiations with thread-safe `ConcurrentDictionary<Type, XmlSerializer> SerializerCache` and `GetSerializer(type)` resolver to prevent heavy reflection overhead and dynamic assembly generation memory leaks under high loads.
+  - Guarded `Serialize` and `Deserialize` against null streams and null types.
+  - Guarded `Register(IAppHost appHost)` against null `appHost`.
+- **`CsvFormat.cs`**:
+  - Guarded `Register(IAppHost appHost)` against null `appHost`.
+  - Added null guards in `SerializeToStream` for null DTO and null/closed streams.
+  - Added null-safe request inspection in global response filter `req != null && req.ResponseContentType.MatchesContentType(MimeTypes.Csv)`.
+- **`HtmlFormat.cs`**:
+  - Guarded `Register(IAppHost appHost)` against null `appHost`.
+  - In `SerializeToStreamAsync`, added null checks and safe fallback `AppHost ?? HostContext.AppHost` when resolving virtual file sources.
+  - Hardened `MiniProfiler.Profiler.RenderIncludes()?.ToString() ?? ""` against null profiler instances.
+  - Safely formatted URLs in `GetAbsoluteUrl` and guarded against null request inputs.
+- **`JsonlFormat.cs`**:
+  - Guarded `Register(IAppHost appHost)` against null `appHost`.
+  - Guarded `SerializeToStream` against null `request`, null DTO, and null/closed stream.
+- **`SoapFormat.cs`**:
+  - Guarded `Register(IAppHost appHost)` against null `appHost`.
+  - Safely verified `appHost.ContentTypes as ContentTypes` before configuring SOAP serializers.
+  - In `WriteSoapMessage`, added null guards for null `message` and null `outputStream`.
+- **`ContentTypes.cs`**:
+  - In `GetFormatContentType(string format)`, added null/empty check before dictionary lookup to avoid key exceptions.
+  - In `Register` and `RegisterAsync`, validated non-empty `contentType` and guarded `format != null` before assigning to `ContentTypeFormats[format]`.
+  - In `Remove(string contentType)`, safely handled null or un-normalizable content types.
+  - In `SetContentTypeSerializer` and `SetContentTypeDeserializer`, guarded against null/empty `contentType`.
+  - In `SerializeUnknownContentType`, guarded `req?.Response != null` and `stream == null || stream == Stream.Null`, formatting safe fallback error messages when `req.ResponseContentType` is null.
+  - In `SerializeToBytes`, `SerializeToString`, and `SerializeToStreamAsync`, added null request, null response, and null/closed stream guards.
+  - In `GetStreamSerializer`, `GetStreamSerializerAsync`, `GetStreamDeserializer`, and `GetStreamDeserializerAsync`, guarded against null normalized content type keys before accessing dictionary lookup.
+  - In `DeserializeFromString` and `DeserializeFromStream`, guarded against null types, empty inputs, null content types, and null/closed streams.
+- **`ContentFormat.cs`**:
+  - In `GetRequestAttribute(string httpMethod)`, guarded against null `httpMethod` returning `RequestAttributes.None`, and normalized using culture-invariant `httpMethod.ToUpperInvariant()`.
+- **`JsonDataContractSerializer.cs` & `Deserialize.cs`**:
+  - In `SerializeToStream<T>` and `BclSerializeToStream<T>`, guarded against null objects and null/closed streams, adding string serialization fallback when `TextSerializer` does not implement `IStringStreamSerializer`.
+  - In `BclDeserializeFromString`, `DeserializeFromStream<T>`, and `DeserializeFromStream(Type, Stream)`, added null guards for null JSON string, null streams, and null types, falling back to reading stream to string when `TextSerializer` does not implement `IStringStreamSerializer`.
+
+

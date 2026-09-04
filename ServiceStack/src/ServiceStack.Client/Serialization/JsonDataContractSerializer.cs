@@ -52,12 +52,20 @@ namespace ServiceStack.Serialization
 
         public void SerializeToStream<T>(T obj, Stream stream)
         {
-            if (obj == null) return;
+            if (obj == null || stream == null || stream == Stream.Null) return;
 
-            var streamSerializer = TextSerializer as IStringStreamSerializer;
-            if (TextSerializer != null)
+            if (TextSerializer is IStringStreamSerializer streamSerializer)
             {
-                streamSerializer?.SerializeToStream(obj, stream);
+                streamSerializer.SerializeToStream(obj, stream);
+            }
+            else if (TextSerializer != null)
+            {
+                var str = TextSerializer.SerializeToString(obj);
+                if (str != null)
+                {
+                    var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+                    stream.Write(bytes, 0, bytes.Length);
+                }
             }
             else if (UseBcl)
             {
@@ -71,6 +79,7 @@ namespace ServiceStack.Serialization
 
         public static void BclSerializeToStream<T>(T obj, Stream stream)
         {
+            if (obj == null || stream == null || stream == Stream.Null) return;
             var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(obj.GetType());
             serializer.WriteObject(stream, obj);
         }

@@ -10,6 +10,9 @@ public class CsvFormat : IPlugin, Model.IHasStringId
     public string Id { get; set; } = Plugins.Csv;
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         //Register the 'text/csv' content-type and serializers (format is inferred from the last part of the content-type)
         appHost.ContentTypes.Register(MimeTypes.Csv,
             SerializeToStream, CsvSerializer.DeserializeFromStream);
@@ -21,8 +24,8 @@ public class CsvFormat : IPlugin, Model.IHasStringId
             {
                 if (res != null && string.IsNullOrEmpty(res.GetHeader(HttpHeaders.ContentDisposition)))
                 {
-                    var opName = !string.IsNullOrEmpty(req.OperationName) ? req.OperationName : "data";
-                    var fileName = req.GetItem(Keywords.FileName) as string ?? opName + ".csv";
+                    var opName = !string.IsNullOrEmpty(req?.OperationName) ? req.OperationName : "data";
+                    var fileName = (req != null ? req.GetItem(Keywords.FileName) as string : null) ?? opName + ".csv";
                     res.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
                 }
             }

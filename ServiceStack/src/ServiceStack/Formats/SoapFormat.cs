@@ -20,7 +20,13 @@ public class SoapFormat : IPlugin, Model.IHasStringId
     
     public void Register(IAppHost appHost)
     {
-        var contentTypes = (ContentTypes)appHost.ContentTypes;
+        if (appHost == null)
+            return;
+
+        var contentTypes = appHost.ContentTypes as ContentTypes;
+        if (contentTypes == null)
+            return;
+
         var predefinedRoutes = appHost.GetPlugin<PredefinedRoutesFeature>();
         if (predefinedRoutes == null)
             throw new NotSupportedException("SoapFormat requires the PredefinedRoutesFeature Plugin");
@@ -71,6 +77,9 @@ public abstract partial class ServiceStackHost
 
     public virtual void WriteSoapMessage(IRequest req, System.ServiceModel.Channels.Message message, Stream outputStream)
     {
+        if (message == null || outputStream == null)
+            return;
+
         try
         {
             using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))

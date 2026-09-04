@@ -195,7 +195,10 @@ namespace ServiceStack
         
         public static RequestAttributes GetRequestAttribute(string httpMethod)
         {
-            switch (httpMethod.ToUpper())
+            if (httpMethod == null)
+                return RequestAttributes.None;
+
+            switch (httpMethod.ToUpperInvariant())
             {
                 case HttpMethods.Get:
                     return RequestAttributes.HttpGet;

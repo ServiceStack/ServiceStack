@@ -21,6 +21,7 @@ namespace ServiceStack.Serialization
 
         public static object BclDeserializeFromString(string json, Type returnType)
         {
+            if (json == null) return null;
             try
             {
                 using (var ms = MemoryStreamFactory.GetStream())
@@ -51,8 +52,17 @@ namespace ServiceStack.Serialization
 
         public T DeserializeFromStream<T>(Stream stream)
         {
+            if (stream == null || stream == Stream.Null)
+                return default;
+
             if (TextSerializer is IStringStreamSerializer streamSerializer)
                 return streamSerializer.DeserializeFromStream<T>(stream);
+
+            if (TextSerializer != null)
+            {
+                var json = stream.ReadToEnd();
+                return json == null ? default : TextSerializer.DeserializeFromString<T>(json);
+            }
 
             if (UseBcl)
                 return (T)BclDeserializeFromStream(typeof(T), stream);
@@ -62,8 +72,17 @@ namespace ServiceStack.Serialization
 
         public object DeserializeFromStream(Type type, Stream stream)
         {
+            if (type == null || stream == null || stream == Stream.Null)
+                return null;
+
             if (TextSerializer is IStringStreamSerializer streamSerializer)
                 return streamSerializer.DeserializeFromStream(type, stream);
+
+            if (TextSerializer != null)
+            {
+                var json = stream.ReadToEnd();
+                return json == null ? null : TextSerializer.DeserializeFromString(json, type);
+            }
 
             if (UseBcl)
                 return BclDeserializeFromStream(type, stream);
@@ -73,6 +92,9 @@ namespace ServiceStack.Serialization
 
         public static object BclDeserializeFromStream(Type type, Stream stream)
         {
+            if (type == null || stream == null || stream == Stream.Null)
+                return null;
+
             var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);
             return serializer.ReadObject(stream);
         }
