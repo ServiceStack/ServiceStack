@@ -652,19 +652,19 @@ public abstract class ViewPageBase<TModel> : RenderingPage, IHasModel
         return MvcHtmlString.Create(GetErrorHtml(GetErrorStatus()) ?? "");
     }
 
-    private string GetErrorHtml(ResponseStatus responseStatus)
+    public string GetErrorHtml(ResponseStatus responseStatus)
     {
         if (responseStatus == null) return null;
 
         var stackTrace = responseStatus.StackTrace != null
-            ? "<pre>" + responseStatus.StackTrace + "</pre>"
+            ? "<pre>" + HttpUtility.HtmlEncode(responseStatus.StackTrace) + "</pre>"
             : "";
 
         var html = @"
                 <div id=""error-response"" class=""alert alert-danger"">
                     <h4>" +
-                   responseStatus.ErrorCode + ": " +
-                   responseStatus.Message + @"
+                   HttpUtility.HtmlEncode(responseStatus.ErrorCode) + ": " +
+                   HttpUtility.HtmlEncode(responseStatus.Message) + @"
                     </h4>" +
                    stackTrace +
                    "</div>";

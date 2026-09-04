@@ -1,8 +1,10 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -27,8 +29,8 @@ namespace ServiceStack.Razor.Managers
 
         public static ILog Log = LogManager.GetLogger(typeof(RazorViewManager));
 
-        public Dictionary<string, RazorPage> Pages = new Dictionary<string, RazorPage>(StringComparer.OrdinalIgnoreCase);
-        protected Dictionary<string, string> ViewNamesMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public ConcurrentDictionary<string, RazorPage> Pages = new ConcurrentDictionary<string, RazorPage>(StringComparer.OrdinalIgnoreCase);
+        protected ConcurrentDictionary<string, string> ViewNamesMap = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         protected IRazorConfig Config { get; set; }
 
@@ -74,9 +76,21 @@ namespace ServiceStack.Razor.Managers
 
         private void ScanAssemblies()
         {
+            if (this.Config?.LoadFromAssemblies == null) return;
+
             foreach (var assembly in this.Config.LoadFromAssemblies)
             {
-                foreach (var type in assembly.GetTypes()
+                Type[] types;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    types = ex.Types.Where(t => t != null).ToArray();
+                }
+
+                foreach (var type in types
                     .Where(w => w.FirstAttribute<GeneratedCodeAttribute>() != null
                         && w.FirstAttribute<GeneratedCodeAttribute>().Tool == "RazorGenerator"
                         && w.FirstAttribute<VirtualPathAttribute>() != null))

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -74,9 +74,15 @@ namespace ServiceStack.Razor.Compilation
             var domain = AppDomain.CurrentDomain;
             var dlls = domain.GetAssemblies().ToList();
 
-            foreach (var assembly in IncludeAssemblies)
+            List<Assembly> includes;
+            lock (IncludeAssemblies)
             {
-                if (dlls.All(x => x != assembly))
+                includes = IncludeAssemblies.ToList();
+            }
+
+            foreach (var assembly in includes)
+            {
+                if (assembly != null && dlls.All(x => x != assembly))
                 {
                     dlls.Add(assembly);
                 }

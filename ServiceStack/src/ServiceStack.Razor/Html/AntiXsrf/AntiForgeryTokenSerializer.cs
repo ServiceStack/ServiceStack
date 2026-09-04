@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -88,9 +88,11 @@ namespace ServiceStack.Html.AntiXsrf
 
         public string Serialize(AntiForgeryToken token)
         {
-#if NET_4_0
-            Contract.Assert(token != null);
-#endif
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
+            if (token.SecurityToken == null)
+                throw new ArgumentException("Token does not have a valid SecurityToken.", nameof(token));
+
             using (MemoryStream stream = MemoryStreamFactory.GetStream()) {
                 using (BinaryWriter writer = new BinaryWriter(stream)) {
                     writer.Write(TokenVersion);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using ServiceStack.Logging;
 
@@ -9,7 +9,7 @@ namespace ServiceStack.Razor.Managers
         void StartWatching(string scanRootPath);
     }
 
-    public class FileSystemWatcherLiveReload : ILiveReload
+    public class FileSystemWatcherLiveReload : ILiveReload, IDisposable
     {
         public static ILog Log = LogManager.GetLogger(typeof(FileSystemWatcherLiveReload));
 
@@ -57,7 +57,7 @@ namespace ServiceStack.Razor.Managers
             {
                 var oldPagePath = views.GetDictionaryPagePath(views.GetRelativePath(e.OldFullPath));
 
-                if (!views.Pages.Remove(oldPagePath))
+                if (!views.Pages.TryRemove(oldPagePath, out _))
                 {
                     //Debugger.Break();
                 }
@@ -79,7 +79,7 @@ namespace ServiceStack.Razor.Managers
 
                 var pathPage = views.GetDictionaryPagePath(file);
 
-                views.Pages.Remove(pathPage);
+                views.Pages.TryRemove(pathPage, out _);
             }
             catch (Exception ex)
             {
@@ -113,6 +113,31 @@ namespace ServiceStack.Razor.Managers
             catch (Exception ex)
             {
                 Log.Warn("FileSystemWatcher_Changed error: ", ex);
+            }
+        }
+
+        public virtual void Dispose()
+        {
+            if (this.FileSystemWatcher != null)
+            {
+                try
+                {
+                    this.FileSystemWatcher.EnableRaisingEvents = false;
+                    this.FileSystemWatcher.Changed -= FileSystemWatcher_Changed;
+                    this.FileSystemWatcher.Created -= FileSystemWatcher_Created;
+                    this.FileSystemWatcher.Deleted -= FileSystemWatcher_Deleted;
+                    this.FileSystemWatcher.Renamed -= FileSystemWatcher_Renamed;
+                    this.FileSystemWatcher.Error -= FileSystemWatcher_Error;
+                    this.FileSystemWatcher.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn("Error disposing FileSystemWatcher", ex);
+                }
+                finally
+                {
+                    this.FileSystemWatcher = null;
+                }
             }
         }
     }

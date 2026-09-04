@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -300,7 +300,8 @@ namespace ServiceStack.Razor.Compilation
                 }
 #endif
 
-                return results.CompiledAssembly.GetTypes().First();
+                var types = results.CompiledAssembly.GetTypes();
+                return types.FirstOrDefault(t => typeof(IRazorView).IsAssignableFrom(t)) ?? types.First();
             }
         }
 

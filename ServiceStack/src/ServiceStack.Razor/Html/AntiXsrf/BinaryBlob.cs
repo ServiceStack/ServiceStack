@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -21,7 +21,7 @@ namespace ServiceStack.Html.AntiXsrf
     [DebuggerDisplay("{DebuggerString}")]
     internal sealed class BinaryBlob : IEquatable<BinaryBlob>
     {
-        private static readonly RNGCryptoServiceProvider _prng = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator _prng = RandomNumberGenerator.Create();
 
         private readonly byte[] _data;
 
@@ -115,11 +115,11 @@ namespace ServiceStack.Html.AntiXsrf
                 return false;
             }
 
-            bool areEqual = true;
+            int diff = 0;
             for (int i = 0; i < a.Length; i++) {
-                areEqual &= (a[i] == b[i]);
+                diff |= a[i] ^ b[i];
             }
-            return areEqual;
+            return diff == 0;
         }
 
         // Computes a SHA256 hash over all of the input parameters.
@@ -130,7 +130,7 @@ namespace ServiceStack.Html.AntiXsrf
             using (MemoryStream ms = MemoryStreamFactory.GetStream()) {
                 using (BinaryWriter bw = new BinaryWriter(ms)) {
                     foreach (string parameter in parameters) {
-                        bw.Write(parameter); // also writes the length as a prefix; unambiguous
+                        bw.Write(parameter); // also writes the length as a prefix; fast and unambiguous
                     }
                     bw.Flush();
 
@@ -144,26 +144,7 @@ namespace ServiceStack.Html.AntiXsrf
 
         private static Func<SHA256> GetSHA256Factory()
         {
-            // Note: ASP.NET 4.5 always prefers CNG, but the CNG algorithms are not that
-            // performant on 4.0 and below. The following list is optimized for speed
-            // given our scenarios.
-#if NET_4_0
-            if (!CryptoConfig.AllowOnlyFipsAlgorithms) {
-                // This provider is not FIPS-compliant, so we can't use it if FIPS compliance
-                // is mandatory.
-                return () => new SHA256Managed();
-            }
-#endif
-            try {
-                using (SHA256Cng sha256 = new SHA256Cng()) {
-                    return () => new SHA256Cng();
-                }
-            } catch (PlatformNotSupportedException) {
-                // CNG not supported (perhaps because we're not on Windows Vista or above); move on
-            }
-
-            // If all else fails, fall back to CAPI.
-            return () => new SHA256CryptoServiceProvider();
+            return () => SHA256.Create();
         }
     }
 

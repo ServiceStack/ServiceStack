@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using ServiceStack.Html;
@@ -47,7 +47,7 @@ namespace ServiceStack.Razor
                 }
             }
 
-            result = httpReq.GetParam(name);
+            result = httpReq?.GetParam(name);
             return result != null || base.TryGetMember(binder, out result);
         }
     }
@@ -100,7 +100,7 @@ namespace ServiceStack.Razor
             if (this.dictionary.TryGetValue(name, out result))
                 return true;
 
-            return page.ChildPage != null
+            return page?.ChildPage != null
                 && page.ChildPage.TypedViewBag.TryGetItem(name, out result);
         }
 

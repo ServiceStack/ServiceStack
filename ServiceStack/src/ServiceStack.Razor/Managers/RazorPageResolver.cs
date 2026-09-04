@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -171,17 +171,20 @@ namespace ServiceStack.Razor.Managers
                     if (httpRes.IsClosed)
                         return result?.Item1;
 
-                    var layoutWriter = new StreamWriter(outputStream, UTF8EncodingWithoutBom);
-                    var html = HtmlFilter(result.Item2);
-
-                    layoutWriter.Write(html);
-                    layoutWriter.Flush();
+                    using (var layoutWriter = new StreamWriter(outputStream, UTF8EncodingWithoutBom, 1024, leaveOpen: true))
+                    {
+                        var html = HtmlFilter(result.Item2);
+                        layoutWriter.Write(html);
+                        layoutWriter.Flush();
+                    }
                     return result.Item1;
                 }
 
-                var writer = new StreamWriter(outputStream, UTF8EncodingWithoutBom);
-                page.WriteTo(writer);
-                writer.Flush();
+                using (var writer = new StreamWriter(outputStream, UTF8EncodingWithoutBom, 1024, leaveOpen: true))
+                {
+                    page.WriteTo(writer);
+                    writer.Flush();
+                }
 
                 return page;
             }
@@ -195,22 +198,26 @@ namespace ServiceStack.Razor.Managers
         {
             using (var ms = MemoryStreamFactory.GetStream())
             {
-                var childWriter = new StreamWriter(ms, UTF8EncodingWithoutBom); //ms disposed in using
-                //child page needs to execute before master template to populate ViewBags, sections, etc
-                try
+                using (var childWriter = new StreamWriter(ms, UTF8EncodingWithoutBom, 1024, leaveOpen: true))
                 {
-                    pageInstance.WriteTo(childWriter);
-                }
-                catch (StopExecutionException) { }
-                catch (Exception ex)
-                {
-                    ex = ex.UnwrapIfSingleException();
-                    if (ex is not StopExecutionException)
-                        throw;
-                }
+                    //child page needs to execute before master template to populate ViewBags, sections, etc
+                    try
+                    {
+                        pageInstance.WriteTo(childWriter);
+                    }
+                    catch (StopExecutionException) { }
+                    catch (Exception ex)
+                    {
+                        ex = ex.UnwrapIfSingleException();
+                        if (ex is not StopExecutionException)
+                            throw;
+                    }
 
-                if (httpRes.IsClosed)
-                    return null;
+                    if (httpRes.IsClosed)
+                        return null;
+
+                    childWriter.Flush();
+                }
 
                 var childBody = ms.ReadToEnd();
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +17,7 @@ namespace ServiceStack.Razor
 {
     using System.Reflection;
 
-    public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig, Model.IHasStringId
+    public class RazorFormat : IPlugin, IRazorPlugin, IRazorConfig, Model.IHasStringId, IDisposable
     {
         public string Id { get; set; } = Plugins.Razor;
         public const string TemplatePlaceHolder = "@RenderBody()";
@@ -31,7 +31,12 @@ namespace ServiceStack.Razor
             this.DefaultPageName = "default.cshtml";
             this.PageBaseType = typeof(ViewPage);
             this.LiveReloadFactory = CreateLiveReload;
-            CompilerServices.IncludeAssemblies.Add(typeof(OrmLiteConfig).Assembly);
+            lock (CompilerServices.IncludeAssemblies)
+            {
+                var ormLiteAssembly = typeof(OrmLiteConfig).Assembly;
+                if (!CompilerServices.IncludeAssemblies.Contains(ormLiteAssembly))
+                    CompilerServices.IncludeAssemblies.Add(ormLiteAssembly);
+            }
 
             Deny = [
                 DenyPathsWithLeading_,
@@ -311,6 +316,12 @@ namespace ServiceStack.Razor
             razorView = PageResolver.ExecuteRazorPage(httpReq, ms, model, razorPage);
 
             return ms.ReadToEnd();
+        }
+
+        public void Dispose()
+        {
+            (LiveReload as IDisposable)?.Dispose();
+            LiveReload = null;
         }
     }
 
