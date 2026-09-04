@@ -31,8 +31,11 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
 
     public string DefaultResolveTemplate(IRequest req)
     {
-        if (PathTemplates != null && PathTemplates.TryGetValue(req.PathInfo, out var templatePath))
+        if (req?.PathInfo != null && PathTemplates != null && PathTemplates.TryGetValue(req.PathInfo, out var templatePath))
         {
+            if (templatePath == null || HostContext.VirtualFileSources == null)
+                return null;
+
             var file = HostContext.VirtualFileSources.GetFile(templatePath);
             if (file == null)
                 throw new FileNotFoundException($"Could not load HTML template '{templatePath}'", templatePath);
@@ -80,11 +83,14 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
                     throw new ArgumentException("Cannot use Cached Result as ViewModel");
             }
 
-            foreach (var viewEngine in AppHost.ViewEngines)
+            if (AppHost?.ViewEngines != null)
             {
-                var handled = await viewEngine.ProcessRequestAsync(req, response, outputStream);
-                if (handled)
-                    return;
+                foreach (var viewEngine in AppHost.ViewEngines)
+                {
+                    var handled = await viewEngine.ProcessRequestAsync(req, response, outputStream);
+                    if (handled)
+                        return;
+                }
             }
         }
         catch (Exception ex)
@@ -123,10 +129,10 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
             url += url.Contains("?") ? "&" : "?";
 
             var now = DateTime.UtcNow;
-            var requestName = req.OperationName ?? dto.GetType().GetOperationName();
+            var requestName = req.OperationName ?? dto?.GetType().GetOperationName() ?? "Response";
             var serverInfo = new ServerInfo
             {
-                JsonApiRoute = AppHost.GetPlugin<PredefinedRoutesFeature>()?.JsonApiRoute
+                JsonApiRoute = AppHost?.GetPlugin<PredefinedRoutesFeature>()?.JsonApiRoute
             };
 
             html = ReplaceTokens(ResolveTemplate?.Invoke(req) ?? Templates.HtmlTemplates.GetHtmlFormatTemplate(), req)
@@ -143,7 +149,8 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
                 ;
         }
             
-        await ((ServiceStackHost)AppHost).WriteAutoHtmlResponseAsync(req, response, html, outputStream);
+        if (AppHost is ServiceStackHost host)
+            await host.WriteAutoHtmlResponseAsync(req, response, html, outputStream);
     }
 
     public static string ReplaceTokens(string html, IRequest req)
@@ -151,12 +158,18 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
         if (string.IsNullOrEmpty(html))
             return string.Empty;
 
+        var baseUrl = req != null && HostContext.AppHost != null ? req.GetBaseUrl().WithTrailingSlash() : "/";
+        var authRedirect = HostContext.AppHost?.GetPlugin<AuthFeature>()?.HtmlRedirect;
+        var authRedirectUrl = !string.IsNullOrEmpty(authRedirect) && req != null ? req.ResolveAbsoluteUrl(authRedirect) : authRedirect;
+        var allowOrigins = HostContext.AppHost?.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";");
+        var profileUrl = req?.TryResolve<IAuthMetadataProvider>()?.GetProfileUrl(null) ?? JwtClaimTypes.DefaultProfileUrl;
+
         html = html
-                .Replace("${BaseUrl}", EncodeForJavaScriptString(req.GetBaseUrl().WithTrailingSlash()))
-                .Replace("${HtmlBaseUrl}", EncodeForHtmlAttribute(req.GetBaseUrl().WithTrailingSlash()))
-                .Replace("${AuthRedirect}",  EncodeForJavaScriptString(req.ResolveAbsoluteUrl(HostContext.AppHost.GetPlugin<AuthFeature>()?.HtmlRedirect)))
-                .Replace("${AllowOrigins}", EncodeForJavaScriptString(HostContext.AppHost.GetPlugin<CorsFeature>()?.AllowOriginWhitelist?.Join(";")))
-                .Replace("${NoProfileImgUrl}", EncodeForJavaScriptString(req.TryResolve<IAuthMetadataProvider>()?.GetProfileUrl(null)) ?? JwtClaimTypes.DefaultProfileUrl)
+                .Replace("${BaseUrl}", EncodeForJavaScriptString(baseUrl))
+                .Replace("${HtmlBaseUrl}", EncodeForHtmlAttribute(baseUrl))
+                .Replace("${AuthRedirect}", EncodeForJavaScriptString(authRedirectUrl))
+                .Replace("${AllowOrigins}", EncodeForJavaScriptString(allowOrigins))
+                .Replace("${NoProfileImgUrl}", EncodeForJavaScriptString(profileUrl))
             ;
         return html;
     }
@@ -210,6 +223,15 @@ public class HtmlFormat : IPlugin, Model.IHasStringId
                     break;
                 case '\0':
                     sb.Append("\\0");
+                    break;
+                case '<':
+                    sb.Append("\\u003c");
+                    break;
+                case '>':
+                    sb.Append("\\u003e");
+                    break;
+                case '&':
+                    sb.Append("\\u0026");
                     break;
                 default:
                     // Handle control characters and non-ASCII characters

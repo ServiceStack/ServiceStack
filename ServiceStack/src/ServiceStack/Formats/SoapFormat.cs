@@ -1,4 +1,4 @@
-﻿#if !NETCORE
+#if !NETCORE
 
 using System;
 using System.Collections.Generic;
@@ -52,8 +52,9 @@ public abstract partial class ServiceStackHost
 {
     public virtual List<Type> ExportSoapOperationTypes(List<Type> operationTypes)
     {
+        if (operationTypes == null) return new List<Type>();
         var types = operationTypes
-            .Where(x => !x.AllAttributes<ExcludeAttribute>()
+            .Where(x => x != null && !x.AllAttributes<ExcludeAttribute>()
                 .Any(attr => attr.Feature.Has(Feature.Soap)))
             .Where(x => !x.IsGenericTypeDefinition)
             .ToList();
@@ -62,7 +63,8 @@ public abstract partial class ServiceStackHost
 
     public virtual bool ExportSoapType(Type type)
     {
-        return !type.IsGenericTypeDefinition &&
+        return type != null &&
+               !type.IsGenericTypeDefinition &&
                !type.AllAttributes<ExcludeAttribute>()
                    .Any(attr => attr.Feature.Has(Feature.Soap));
     }
@@ -78,15 +80,17 @@ public abstract partial class ServiceStackHost
         }
         catch (Exception ex)
         {
-            var response = OnServiceException(req, req.Dto, ex).Result;
-            if (response == null || !outputStream.CanSeek)
+            var response = req != null ? OnServiceException(req, req.Dto, ex).Result : null;
+            if (response == null || outputStream == null || !outputStream.CanSeek)
                 return;
 
             outputStream.Position = 0;
             try
             {
-                message = SoapHandler.CreateResponseMessage(response, message.Version, req.Dto.GetType(),
-                    req.GetSoapMessage().Headers.Action == null);
+                var dtoType = req?.Dto?.GetType();
+                var soapMsg = req?.GetSoapMessage();
+                var isActionNull = soapMsg?.Headers?.Action == null;
+                message = SoapHandler.CreateResponseMessage(response, message.Version, dtoType, isActionNull);
                 using (var writer = XmlWriter.Create(outputStream, Config.XmlWriterSettings))
                 {
                     message.WriteMessage(writer);
@@ -96,7 +100,8 @@ public abstract partial class ServiceStackHost
         }
         finally
         {
-            HostContext.CompleteRequest(req);
+            if (req != null)
+                HostContext.CompleteRequest(req);
         }
     }
 }

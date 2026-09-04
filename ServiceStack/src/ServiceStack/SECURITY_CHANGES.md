@@ -170,3 +170,26 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - Provided null-safe fallbacks for `GetDictionary` and `GetKeyValuePairs` to prevent null reference exceptions.
   - Guarded `Exists`, `GetString`, and `GetSection` against null keys.
 
+---
+
+## 9. Formats Subsystem Hardening & Deserialization Safety
+- **`XmlSerializerFormat.cs`**:
+  - Fixed critical reflection bug in `Deserialize`: replaced `new XmlSerializer(type.GetType())` with `new XmlSerializer(type)` (previously attempted to construct a serializer for `System.RuntimeType` instead of the target DTO).
+  - Fixed invalid cast in `Deserialize`: replaced invalid `(Type)serializer.Deserialize(stream)` with `serializer.Deserialize(stream)`.
+  - Added null guards for `type`, `stream`, and `response`.
+- **`HtmlFormat.cs`**:
+  - Hardened `EncodeForJavaScriptString` to escape `<` (`\u003c`), `>` (`\u003e`), and `&` (`\u0026`) to prevent script-tag termination breakouts (`</script>`) and XSS in rendered HTML templates.
+  - Fixed token replacement bug in `ReplaceTokens` where `EncodeForJavaScriptString(req.TryResolve<IAuthMetadataProvider>()?.GetProfileUrl(null)) ?? JwtClaimTypes.DefaultProfileUrl` was returning empty string `""` on null because `EncodeForJavaScriptString(null)` returns `""`, preventing the default fallback from applying; changed to evaluate fallback prior to encoding.
+  - Guarded `ReplaceTokens` against null `HostContext.AppHost` and uninitialized mock requests.
+  - Guarded null references for `AppHost?.ViewEngines`, operation names, `AppHost?.GetPlugin<PredefinedRoutesFeature>()`, and `AppHost as ServiceStackHost` in `SerializeToStreamAsync`.
+- **`CsvFormat.cs`**:
+  - Guarded against duplicate `Content-Disposition` response headers if already present.
+  - Provided fallback operation name `"data"` if `req.OperationName` is null or empty.
+  - Guarded `SerializeToStream` against null `stream` and null `request`.
+- **`JsonlFormat.cs`**:
+  - Guarded `SerializeToStream` against null `stream` and null `request`.
+- **`SoapFormat.cs`**:
+  - Guarded `ExportSoapOperationTypes` against null `operationTypes` collection and null items.
+  - Guarded `ExportSoapType` against null `type`.
+  - Guarded `WriteSoapMessage` against null `req`, `outputStream`, `req.Dto`, and `req.GetSoapMessage()?.Headers`.
+

@@ -17,16 +17,22 @@ public class CsvFormat : IPlugin, Model.IHasStringId
         //Add a response filter to add a 'Content-Disposition' header so browsers treat it natively as a .csv file
         appHost.GlobalResponseFilters.Add((req, res, dto) =>
         {
-            if (req.ResponseContentType == MimeTypes.Csv && dto is not IHttpResult) //avoid double Content-Disposition headers
+            if (req?.ResponseContentType == MimeTypes.Csv && dto is not IHttpResult) //avoid double Content-Disposition headers
             {
-                var fileName = req.GetItem(Keywords.FileName) as string ?? req.OperationName + ".csv";
-                res.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
+                if (res != null && string.IsNullOrEmpty(res.GetHeader(HttpHeaders.ContentDisposition)))
+                {
+                    var opName = !string.IsNullOrEmpty(req.OperationName) ? req.OperationName : "data";
+                    var fileName = req.GetItem(Keywords.FileName) as string ?? opName + ".csv";
+                    res.AddHeader(HttpHeaders.ContentDisposition, $"attachment;{HttpExt.GetDispositionFileName(fileName)}");
+                }
             }
         });
     }
 
     public void SerializeToStream(IRequest req, object request, Stream stream)
     {
+        if (stream == null || request == null) return;
+
         switch (request)
         {
             case string str:

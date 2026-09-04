@@ -19,6 +19,8 @@ public class JsonlFormat : IPlugin, Model.IHasStringId
 
     public void SerializeToStream(IRequest req, object request, Stream stream)
     {
+        if (stream == null) return;
+
         switch (request)
         {
             case string str:
