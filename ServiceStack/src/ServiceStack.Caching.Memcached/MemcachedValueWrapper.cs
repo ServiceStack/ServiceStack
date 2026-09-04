@@ -16,7 +16,25 @@ namespace ServiceStack.Caching.Memcached
             get
             {
                 if (_value == null && !string.IsNullOrEmpty(JsonString))
-                    _value = JsonSerializer.DeserializeFromString(JsonString, ValueType);
+                {
+                    try
+                    {
+                        _value = ValueType != null
+                            ? JsonSerializer.DeserializeFromString(JsonString, ValueType)
+                            : JsonSerializer.DeserializeFromString<object>(JsonString);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            _value = JsonSerializer.DeserializeFromString<object>(JsonString);
+                        }
+                        catch
+                        {
+                            _value = JsonString;
+                        }
+                    }
+                }
                 return _value;
             }
         }
@@ -25,6 +43,10 @@ namespace ServiceStack.Caching.Memcached
 
         public MemcachedValueWrapper(object value)
         {
+            while (value is MemcachedValueWrapper inner)
+            {
+                value = inner.Value;
+            }
             if (value == null) return;
             ValueType = value.GetType();
             _value = value;

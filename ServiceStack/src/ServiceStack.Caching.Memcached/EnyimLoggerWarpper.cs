@@ -9,7 +9,7 @@ namespace ServiceStack.Caching.Memcached
 
         public EnyimLoggerWarpper(ILog serviceStackLogger)
         {
-            _serviceStackLogger = serviceStackLogger;
+            _serviceStackLogger = serviceStackLogger ?? new NullDebugLogger(typeof(EnyimLoggerWarpper));
         }
 
         public void Debug(object message)
@@ -210,6 +210,16 @@ namespace ServiceStack.Caching.Memcached
         public bool IsFatalEnabled
         {
             get { return true; }
+        }
+    }
+
+    /// <summary>
+    /// Correctly spelled alias for <see cref="EnyimLoggerWarpper"/>.
+    /// </summary>
+    public class EnyimLoggerWrapper : EnyimLoggerWarpper
+    {
+        public EnyimLoggerWrapper(ILog serviceStackLogger) : base(serviceStackLogger)
+        {
         }
     }
 }

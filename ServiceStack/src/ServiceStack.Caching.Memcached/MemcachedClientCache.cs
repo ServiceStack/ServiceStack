@@ -37,24 +37,55 @@ namespace ServiceStack.Caching.Memcached
         /// <param name="hosts"></param>
         public MemcachedClientCache(IEnumerable<string> hosts)
         {
+            if (hosts == null)
+                throw new ArgumentNullException(nameof(hosts));
+
             const int defaultPort = 11211;
-            const int ipAddressIndex = 0;
-            const int portIndex = 1;
 
             var ipEndpoints = new List<IPEndPoint>();
             foreach (var host in hosts)
             {
-                var hostParts = host.Split(':');
-                if (hostParts.Length == 0)
-                    throw new ArgumentException("'{0}' is not a valid host IP Address: e.g. '127.0.0.0[:11211]'");
+                if (string.IsNullOrWhiteSpace(host))
+                    throw new ArgumentException($"'{host}' is not a valid host IP Address: e.g. '127.0.0.0[:11211]'");
 
-                var port = (hostParts.Length == 1) ? defaultPort : int.Parse(hostParts[portIndex]);
+                string hostName = host.Trim();
+                int port = defaultPort;
 
-                var hostAddresses = Dns.GetHostAddresses(hostParts[ipAddressIndex]);
-                foreach (var ipAddress in hostAddresses)
+                if (hostName.StartsWith("[") && hostName.Contains("]"))
                 {
-                    var endpoint = new IPEndPoint(ipAddress, port);
-                    ipEndpoints.Add(endpoint);
+                    var closeBracket = hostName.IndexOf(']');
+                    var ipPart = hostName.Substring(1, closeBracket - 1);
+                    if (closeBracket + 1 < hostName.Length && hostName[closeBracket + 1] == ':')
+                    {
+                        var portStr = hostName.Substring(closeBracket + 2);
+                        if (!int.TryParse(portStr, out port) || port < 1 || port > 65535)
+                            throw new ArgumentException($"'{host}' contains an invalid port: '{portStr}'");
+                    }
+                    hostName = ipPart;
+                }
+                else
+                {
+                    var lastColon = hostName.LastIndexOf(':');
+                    if (lastColon >= 0 && hostName.IndexOf(':') == lastColon)
+                    {
+                        var portStr = hostName.Substring(lastColon + 1);
+                        if (!int.TryParse(portStr, out port) || port < 1 || port > 65535)
+                            throw new ArgumentException($"'{host}' contains an invalid port: '{portStr}'");
+                        hostName = hostName.Substring(0, lastColon);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(hostName))
+                    throw new ArgumentException($"'{host}' is not a valid host IP Address: e.g. '127.0.0.0[:11211]'");
+
+                var hostAddresses = Dns.GetHostAddresses(hostName);
+                if (hostAddresses != null)
+                {
+                    foreach (var ipAddress in hostAddresses)
+                    {
+                        var endpoint = new IPEndPoint(ipAddress, port);
+                        ipEndpoints.Add(endpoint);
+                    }
                 }
             }
 
@@ -63,6 +94,9 @@ namespace ServiceStack.Caching.Memcached
 
         public MemcachedClientCache(IEnumerable<IPEndPoint> ipEndpoints)
         {
+            if (ipEndpoints == null)
+                throw new ArgumentNullException(nameof(ipEndpoints));
+
             LoadClient(PrepareMemcachedClientConfiguration(ipEndpoints));
         }
 
@@ -72,6 +106,9 @@ namespace ServiceStack.Caching.Memcached
         /// <param name="memcachedClientConfiguration">The <see cref="IMemcachedClientConfiguration"/>.</param>
         public MemcachedClientCache(IMemcachedClientConfiguration memcachedClientConfiguration)
         {
+            if (memcachedClientConfiguration == null)
+                throw new ArgumentNullException(nameof(memcachedClientConfiguration));
+
             LoadClient(memcachedClientConfiguration);
         }
 
@@ -117,6 +154,7 @@ namespace ServiceStack.Caching.Memcached
 
         public bool Remove(string key)
         {
+            if (key == null) return false;
             return Execute(() => _client.Remove(key));
         }
 
@@ -127,120 +165,151 @@ namespace ServiceStack.Caching.Memcached
 
         public object Get(string key, out ulong ucas)
         {
-            var result = _client.GetWithCas<MemcachedValueWrapper>(key);
-            if (result.Result != null)
+            if (key == null)
             {
-                ucas = result.Cas;
-                return result.Result;
+                ucas = default(ulong);
+                return null;
             }
 
-            ucas = default(ulong);
-            return null;
+            ulong cas = 0;
+            var val = Execute(() =>
+            {
+                var result = _client.GetWithCas<MemcachedValueWrapper>(key);
+                if (result.Result != null)
+                {
+                    cas = result.Cas;
+                    return result.Result.Value;
+                }
+
+                return null;
+            });
+            ucas = cas;
+            return val;
         }
 
         public T Get<T>(string key)
         {
+            if (key == null) return default(T);
             return Execute(() =>
-                               {
-                                   var result = _client.Get<MemcachedValueWrapper>(key);
-                                   if (result != null)
-                                       return (T)result.Value;
-                                   return default(T);
-                               });
+            {
+                var result = _client.Get<MemcachedValueWrapper>(key);
+                if (result != null)
+                    return (T)result.Value;
+                return default(T);
+            });
         }
 
         public long Increment(string key, uint amount)
         {
+            if (key == null) return -1;
             return Execute(() => (long)_client.Increment(key, 0, amount));
         }
 
         public long Decrement(string key, uint amount)
         {
+            if (key == null) return -1;
             return Execute(() => (long)_client.Decrement(key, 0, amount));
         }
 
         public bool Add<T>(string key, T value)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Add, key, new MemcachedValueWrapper(value)));
         }
 
         public bool Set<T>(string key, T value)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Set, key, new MemcachedValueWrapper(value)));
         }
 
         public bool Replace<T>(string key, T value)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Replace, key, new MemcachedValueWrapper(value)));
         }
 
         public bool Add<T>(string key, T value, DateTime expiresAt)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Add, key, new MemcachedValueWrapper(value), expiresAt));
         }
 
         public bool Set<T>(string key, T value, DateTime expiresAt)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Set, key, new MemcachedValueWrapper(value), expiresAt));
         }
 
         public bool Replace<T>(string key, T value, DateTime expiresAt)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Replace, key, new MemcachedValueWrapper(value), expiresAt));
         }
 
         public bool Add<T>(string key, T value, TimeSpan expiresIn)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Add, key, new MemcachedValueWrapper(value), expiresIn));
         }
 
         public bool Set<T>(string key, T value, TimeSpan expiresIn)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Set, key, new MemcachedValueWrapper(value), expiresIn));
         }
 
         public bool Replace<T>(string key, T value, TimeSpan expiresIn)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Replace, key, new MemcachedValueWrapper(value), expiresIn));
         }
 
         public bool Add(string key, object value)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Add, key, new MemcachedValueWrapper(value)));
         }
 
         public bool Set(string key, object value)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Set, key, new MemcachedValueWrapper(value)));
         }
 
         public bool Replace(string key, object value)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Replace, key, new MemcachedValueWrapper(value)));
         }
 
         public bool Add(string key, object value, DateTime expiresAt)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Add, key, new MemcachedValueWrapper(value), expiresAt));
         }
 
         public bool Set(string key, object value, DateTime expiresAt)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Set, key, new MemcachedValueWrapper(value), expiresAt));
         }
 
         public bool Replace(string key, object value, DateTime expiresAt)
         {
+            if (key == null) return false;
             return Execute(() => _client.Store(StoreMode.Replace, key, new MemcachedValueWrapper(value), expiresAt));
         }
 
         public bool CheckAndSet(string key, object value, ulong cas)
         {
+            if (key == null) return false;
             return Execute(() => _client.Cas(StoreMode.Replace, key, new MemcachedValueWrapper(value), cas).Result);
         }
 
         public bool CheckAndSet(string key, object value, ulong cas, DateTime expiresAt)
         {
+            if (key == null) return false;
             return Execute(() => _client.Cas(StoreMode.Replace, key, new MemcachedValueWrapper(value), expiresAt, cas).Result);
         }
 
@@ -252,8 +321,11 @@ namespace ServiceStack.Caching.Memcached
         public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
         {
             var results = new Dictionary<string, T>();
+            if (keys == null) return results;
+
             foreach (var key in keys)
             {
+                if (key == null) continue;
                 var result = Get<T>(key);
                 results[key] = result;
             }
@@ -263,6 +335,8 @@ namespace ServiceStack.Caching.Memcached
 
         public void SetAll<T>(IDictionary<string, T> values)
         {
+            if (values == null) return;
+
             foreach (var entry in values)
             {
                 Set(entry.Key, entry.Value);
@@ -272,8 +346,11 @@ namespace ServiceStack.Caching.Memcached
         public IDictionary<string, object> GetAll(IEnumerable<string> keys)
         {
             var results = new Dictionary<string, object>();
+            if (keys == null) return results;
+
             foreach (var key in keys)
             {
+                if (key == null) continue;
                 var result = Get(key);
                 results[key] = result;
             }
@@ -285,18 +362,30 @@ namespace ServiceStack.Caching.Memcached
         {
             var retVal = new Dictionary<string, object>();
             casValues = new Dictionary<string, ulong>();
-            foreach (var casResult in _client.GetWithCas(keys))
+            if (keys == null) return retVal;
+
+            var localCasValues = casValues;
+            return Execute(() =>
             {
-                retVal.Add(casResult.Key, ((MemcachedValueWrapper)casResult.Value.Result).Value);
-                casValues.Add(casResult.Key, casResult.Value.Cas);
-            }
-            return retVal;
+                foreach (var casResult in _client.GetWithCas(keys))
+                {
+                    var val = casResult.Value.Result is MemcachedValueWrapper wrapper
+                        ? wrapper.Value
+                        : casResult.Value.Result;
+                    retVal.Add(casResult.Key, val);
+                    localCasValues.Add(casResult.Key, casResult.Value.Cas);
+                }
+                return retVal;
+            });
         }
 
         public void RemoveAll(IEnumerable<string> keys)
         {
+            if (keys == null) return;
+
             foreach (var key in keys)
             {
+                if (key == null) continue;
                 try
                 {
                     Remove(key);

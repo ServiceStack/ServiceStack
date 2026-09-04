@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Caching.Memcached
@@ -7,12 +7,12 @@ namespace ServiceStack.Caching.Memcached
     {
         public Enyim.Caching.ILog GetLogger(string name)
         {
-            return new EnyimLoggerWarpper(LogManager.GetLogger(name));
+            return new EnyimLoggerWrapper(LogManager.GetLogger(name));
         }
 
         public Enyim.Caching.ILog GetLogger(Type type)
         {
-            return new EnyimLoggerWarpper(LogManager.GetLogger(type));
+            return new EnyimLoggerWrapper(LogManager.GetLogger(type));
         }
     }
 }
