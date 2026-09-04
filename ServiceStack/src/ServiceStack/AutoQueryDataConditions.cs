@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using ServiceStack.Text;
 
@@ -103,7 +103,7 @@ public class InCollectionCondition : QueryCondition, IQueryMultiple
 
     public override bool Match(object a, object b)
     {
-        if (b is not IEnumerable bValues)
+        if (b is not IEnumerable bValues || b is string)
             return EqualsCondition.Instance.Match(a, b);
         foreach (var item in bValues)
         {
@@ -121,7 +121,7 @@ public class CaseInsensitiveInCollectionCondition : QueryCondition, IQueryMultip
 
     public override bool Match(object a, object b)
     {
-        if (b is not IEnumerable bValues)
+        if (b is not IEnumerable bValues || b is string)
             return CaseInsensitiveEqualCondition.Instance.Match(a, b);
         foreach (var item in bValues)
         {
@@ -139,13 +139,12 @@ public class InBetweenCondition : QueryCondition, IQueryMultiple
 
     public override bool Match(object a, object b)
     {
-        var bValues = b as IEnumerable;
-        if (bValues == null)
-            throw new ArgumentException("InBetweenCondition must be queried with multiple values");
+        if (b is not IEnumerable bValues || b is string)
+            return false;
 
         var bList = bValues.Map(x => x);
         if (bList.Count != 2)
-            throw new ArgumentException($"InBetweenCondition expected 2 values, got {bList.Count} instead.");
+            return false;
 
         return GreaterEqualCondition.Instance.Match(a, bList[0]) &&
                LessEqualCondition.Instance.Match(a, bList[1]);
@@ -262,21 +261,24 @@ public static class CompareTypeUtils
 
     public static long? CoerceLong(object o)
     {
-        return (long?)(o.GetType().IsIntegerType()
-            ? Convert.ChangeType(o, typeof(long))
-            : null);
+        if (o == null) return null;
+        return o.GetType().IsIntegerType()
+            ? (long)Convert.ChangeType(o, typeof(long))
+            : null;
     }
 
     public static double? CoerceDouble(object o)
     {
-        return (long?)(o.GetType().IsRealNumberType()
-            ? Convert.ChangeType(o, typeof(double))
-            : null);
+        if (o == null) return null;
+        return o.GetType().IsRealNumberType()
+            ? (double)Convert.ChangeType(o, typeof(double))
+            : null;
     }
 
     public static string CoerceString(object o)
     {
-        return TypeSerializer.SerializeToString(o);
+        if (o == null) return null;
+        return o as string ?? TypeSerializer.SerializeToString(o);
     }
 
     public static object Add(object a, object b)

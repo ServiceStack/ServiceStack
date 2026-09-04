@@ -28,6 +28,9 @@ public static class AutoCrudOperation
 
     public static string ToHttpMethod(Type requestType)
     {
+        if (requestType == null)
+            return null;
+
         if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(ICreateDb<>)))
             return HttpMethods.Post;
         if (requestType.IsOrHasGenericInterfaceTypeOf(typeof(IUpdateDb<>)))
@@ -63,6 +66,8 @@ public static class AutoCrudOperation
 
     public static AutoQueryDtoType? GetAutoQueryGenericDefTypes(Type requestType, Type opType)
     {
+        if (requestType == null || opType == null)
+            return null;
         var genericType = requestType.GetTypeWithGenericTypeDefinitionOf(opType);
         if (genericType != null)
             return new AutoQueryDtoType(genericType, opType);
@@ -70,12 +75,15 @@ public static class AutoCrudOperation
     }
 
     public static AutoQueryDtoType? GetAutoQueryDtoType(Type requestType) =>
+        requestType == null ? null :
         GetAutoQueryGenericDefTypes(requestType, typeof(IQueryDb<>)) ??
         GetAutoQueryGenericDefTypes(requestType, typeof(IQueryDb<,>)) ??
         GetAutoCrudDtoType(requestType);
     
     public static AutoQueryDtoType? GetAutoCrudDtoType(Type requestType)
     {
+        if (requestType == null)
+            return null;
         var crudTypes = GetAutoQueryGenericDefTypes(requestType, typeof(ICreateDb<>))
             ?? GetAutoQueryGenericDefTypes(requestType, typeof(IUpdateDb<>))
             ?? GetAutoQueryGenericDefTypes(requestType, typeof(IDeleteDb<>))
@@ -86,7 +94,8 @@ public static class AutoCrudOperation
 
     public static AutoQueryDtoType AssertAutoCrudDtoType(Type requestType) =>
         GetAutoCrudDtoType(requestType) ??
-        throw new NotSupportedException($"{requestType.Name} is not an ICrud Type");
+        throw new NotSupportedException($"{(requestType != null ? requestType.Name : "null")} is not an ICrud Type");
+
     public static Type GetModelType(Type requestType)
     {
         if (requestType == null)
@@ -106,6 +115,9 @@ public static class AutoCrudOperation
 
     public static Type GetViewModelType(Type requestType, Type responseType)
     {
+        if (requestType == null)
+            return null;
+
         var intoTypeDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
         if (intoTypeDef != null)
             return intoTypeDef.GetGenericArguments()[1];
@@ -143,14 +155,15 @@ public static class AutoCrudOperation
         typeof(IDeleteDb<>),
         typeof(ISaveDb<>),
     };
-    public static bool HasNamedConnection(this MetadataType type, string name) => type.Type != null && 
+    public static bool HasNamedConnection(this MetadataType type, string name) => type?.Type != null && 
         (type.Type.FirstAttribute<NamedConnectionAttribute>()?.Name == name || 
          type.Type.FirstAttribute<ConnectionInfo>()?.NamedConnection == name || 
          X.Map(type.Type.GetTypeWithGenericTypeDefinitionOfAny(AutoQueryInterfaceTypes), 
              x => x.FirstGenericArg()?.FirstAttribute<NamedConnectionAttribute>()?.Name == name));
 
-    public static bool IsRequestDto(this MetadataType type) => HostContext.AppHost?.Metadata.OperationNamesMap.ContainsKey(type.Name) == true
-        || type.ImplementsAny(Crud.ApiInterfaces) || type.InheritsAny(Crud.ApiBaseTypes);
+    public static bool IsRequestDto(this MetadataType type) => type != null &&
+        (HostContext.AppHost?.Metadata?.OperationNamesMap.ContainsKey(type.Name) == true
+        || type.ImplementsAny(Crud.ApiInterfaces) || type.InheritsAny(Crud.ApiBaseTypes));
 }
 
 public struct AutoQueryDtoType

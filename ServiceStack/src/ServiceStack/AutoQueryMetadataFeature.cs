@@ -44,7 +44,8 @@ public class AutoQueryMetadataFeature : IPlugin, Model.IHasStringId
 
     public void Register(IAppHost appHost)
     {
-        if (MaxLimit != null)
+        if (appHost == null) return;
+        if (MaxLimit != null && AutoQueryViewerConfig != null)
             AutoQueryViewerConfig.MaxLimit = MaxLimit;
 
         appHost.RegisterService<AutoQueryMetadataService>();
@@ -144,29 +145,35 @@ public class AutoQueryMetadataService(INativeTypesMetadata metadata) : Service
             throw new NotSupportedException("AutoQueryViewer requires NativeTypesFeature");
 
         var feature = HostContext.GetPlugin<AutoQueryMetadataFeature>();
-        var config = feature.AutoQueryViewerConfig;
+        if (feature == null)
+            throw new NotSupportedException("AutoQueryMetadataFeature is not registered");
 
+        var config = feature.AutoQueryViewerConfig;
         if (config == null)
             throw new NotSupportedException("AutoQueryViewerConfig is missing");
 
-        config.ServiceBaseUrl ??= base.Request.GetBaseUrl();
+        config.ServiceBaseUrl ??= base.Request?.GetBaseUrl();
         config.ServiceName ??= HostContext.ServiceName;
 
-        var userSession = await Request.GetSessionAsync();
+        var userSession = Request != null ? await Request.GetSessionAsync() : null;
 
-        var typesConfig = metadata.GetConfig(new TypesMetadata { BaseUrl = Request.GetBaseUrl() });
-        foreach (var type in feature.ExportTypes)
+        var typesConfig = metadata.GetConfig(new TypesMetadata { BaseUrl = Request?.GetBaseUrl() });
+        if (feature.ExportTypes != null)
         {
-            typesConfig.ExportTypes.Add(type);
+            foreach (var type in feature.ExportTypes)
+            {
+                if (type != null)
+                    typesConfig.ExportTypes.Add(type);
+            }
         }
 
         var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig, 
-            op => HostContext.Metadata.IsAuthorized(op, Request, userSession));
+            op => HostContext.Metadata?.IsAuthorized(op, Request, userSession) == true);
 
         var response = new AutoQueryMetadataResponse {
             Config = config,
             UserInfo = new AutoQueryViewerUserInfo {
-                IsAuthenticated = userSession.IsAuthenticated,
+                IsAuthenticated = userSession?.IsAuthenticated == true,
             },
             Operations = [],
             Types = [],
@@ -193,8 +200,8 @@ public class AutoQueryMetadataService(INativeTypesMetadata metadata) : Service
                 response.Operations.Add(new AutoQueryOperation {
                     Request = op.Request.Name,
                     Routes = op.Routes,
-                    From = inheritArgs.First(),
-                    To = inheritArgs.Last(),
+                    From = inheritArgs.FirstOrDefault(),
+                    To = inheritArgs.LastOrDefault(),
                 });
 
                 response.Types.Add(op.Request);

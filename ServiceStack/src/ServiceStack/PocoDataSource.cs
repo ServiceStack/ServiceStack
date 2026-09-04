@@ -34,6 +34,7 @@ public class PocoDataSource<T>
 
     public PocoDataSource(IEnumerable<T> items, long nextIdSequence = 0)
     {
+        if (items == null) throw new ArgumentNullException(nameof(items));
         this.items = new List<T>(items);
         this.idSequence = nextIdSequence;
 
@@ -74,6 +75,7 @@ public class PocoDataSource<T>
     /// </summary>
     public T Add(T item)
     {
+        if (item == null) throw new ArgumentNullException(nameof(item));
         lock (items)
             items.Add(item);
         return item;
@@ -84,7 +86,7 @@ public class PocoDataSource<T>
     /// </summary>
     /// <param name="item"></param>
     /// <returns></returns>
-    public bool TryUpdate(T item) => TryUpdateById(item, idGetter(item));
+    public bool TryUpdate(T item) => item != null && TryUpdateById(item, idGetter(item));
 
     /// <summary>
     /// Replace existing Item with same Id 
@@ -92,6 +94,7 @@ public class PocoDataSource<T>
     /// <returns>true if an existing item was found and replaced otherwise false</returns>
     public bool TryUpdateById(T item, object itemId)
     {
+        if (item == null || itemId == null) return false;
         lock (items)
         {
             var updateIndex = FindIndexById(itemId);
@@ -107,14 +110,15 @@ public class PocoDataSource<T>
     /// Delete Item by Poco
     /// </summary>
     /// <returns>true if an item was deleted otherwise false</returns>
-    public bool TryDelete(T item) => TryDeleteById(idGetter(item));
+    public bool TryDelete(T item) => item != null && TryDeleteById(idGetter(item));
 
     /// <summary>
-    /// Delete Item with same Id
+    /// Delete Item with same Id 
     /// </summary>
     /// <returns>true if an item was deleted otherwise false</returns>
     public bool TryDeleteById(object itemId)
     {
+        if (itemId == null) return false;
         lock (items)
         {
             var updateIndex = FindIndexById(itemId);
@@ -132,6 +136,7 @@ public class PocoDataSource<T>
     /// <returns>true if an item was deleted otherwise false</returns>
     public int TryDeleteByIds<TId>(IEnumerable<TId> itemIds)
     {
+        if (itemIds == null) return 0;
         lock (items)
         {
             var itemsRemoved = 0;
@@ -143,11 +148,11 @@ public class PocoDataSource<T>
                 var updateIndex = FindIndexById(itemId);
                 if (updateIndex < 0)
                 {
-                    itemsRemoved++;
                     continue;
                 }
 
                 items.RemoveAt(updateIndex);
+                itemsRemoved++;
             }
 
             return itemsRemoved;
@@ -157,6 +162,7 @@ public class PocoDataSource<T>
     // Always call within lock
     private int FindIndexById(object id)
     {
+        if (id == null) return -1;
         for (int i = 0; i < items.Count; i++)
         {
             T el = items[i];
@@ -173,8 +179,9 @@ public class PocoDataSource<T>
     /// </summary>
     public T Save(T item)
     {
+        if (item == null) throw new ArgumentNullException(nameof(item));
         var itemId = idGetter(item);
-        if (itemId == defaultValue)
+        if (Equals(itemId, defaultValue))
         {
             itemId = NextId().ConvertTo(idProp.PropertyType);
             idSetter(item, itemId);

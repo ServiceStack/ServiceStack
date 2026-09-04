@@ -582,3 +582,37 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - In `AssertRequiredRole`: bypassed role assertion if `feature.AccessRole == RoleNames.AllowAnon` or empty.
   - In `Register`: guarded against null `appHost` and used safe cast `AppHost ??= appHost as IAppHostNetCore;`.
   - In `QueryLogs`: defaulted `request ??= new RequestLogs()`, clamped `take = Math.Max(0, request.Take ?? MaxLimit)` and `skip = Math.Max(0, request.Skip)`.
+
+---
+
+## 20. AutoQueryData Subsystem Modernization & Hardening
+- **`AutoQueryDataConditions.cs`**:
+  - In `InCollectionCondition`, `CaseInsensitiveInCollectionCondition`, and `InBetweenCondition`: excluded `string` from `IEnumerable` collection iteration (`if (b is not IEnumerable bValues || b is string)`), preventing strings from being erroneously treated as `IEnumerable<char>`.
+  - In `InBetweenCondition`: safely returned `false` on non-enumerable inputs or lists without exactly 2 items instead of throwing unhandled `ArgumentException`.
+  - In `CompareTypeUtils.CoerceDouble`: corrected invalid cast `(long?)` to `(double?)` on boxed `double` return from `Convert.ChangeType`, preventing `InvalidCastException`.
+  - In `CompareTypeUtils.CoerceLong`, `CoerceDouble`, and `CoerceString`: added null guards before invoking `o.GetType()` to prevent `NullReferenceException`.
+- **`PocoDataSource.cs`**:
+  - Fixed inversion bug in `TryDeleteByIds<TId>` where non-existent IDs incremented `itemsRemoved` while actually removed items were uncounted.
+  - Fixed value comparison in `Save`: replaced reference equality `itemId == defaultValue` with `Equals(itemId, defaultValue)`, ensuring boxed default value types (e.g. `0`) are assigned new IDs.
+  - Guarded `FindIndexById(object id)` against null `id` inputs.
+  - Added argument null checks in constructor and methods (`Add`, `TryUpdate`, `TryDelete`, `Save`).
+- **`AutoQueryDataFeature.cs`**:
+  - In `Register`: guarded against null `appHost` and replaced unsafe cast `((ServiceStackHost)appHost)` with pattern matching `if (appHost is ServiceStackHost ssHost)` to prevent `InvalidCastException` on non-`ServiceStackHost` hosts.
+  - In `GenerateMissingServices`: guarded `AutoQueryServiceBaseType` and used `.FirstOrDefault(...)` when selecting generic service methods.
+  - In `DataQuery<T>`: navigated `context?.Dto` and `context?.DynamicParams`, clamped `Limit` and `Take` to non-negative values, and guarded `OrderByPrimaryKey` when no primary key property exists on `T`.
+  - In `AutoQueryDataServiceBase.Exec`: guarded against null `Request` when executed in background tasks or unit tests.
+  - In `AutoQueryData.Execute`: aligned generic query cache key lookup `genericAutoQueryCache.TryGetValue(requestDtoType, ...)` with cache insertion `[requestDtoType] = instance`.
+  - In `AutoQueryData.Filter`: guarded against null `dto`.
+  - In `MemoryDataSource`: used null-safe `req?.GetRequestParams()`.
+  - In `QueryDataSource`: clamped `ApplyLimits` and guarded `Count` against null data source.
+  - In `AutoQueryDataExtensions`: guarded against null `feature`, null `request`, null `cache`, and null `sourceFn`.
+- **`AutoQueryDataServiceSource.cs`**:
+  - In `ServiceSource<T>`: guarded against null `requestDto` and null `cache`.
+  - In `GetResults<T>` and `GetResults`: guarded against null `response` and checked `pi.GetGetMethod() != null` before invoking reflected getter.
+- **`AutoCrudOperation.cs`**:
+  - Added null guards in `ToHttpMethod`, `GetAutoQueryGenericDefTypes`, `GetAutoQueryDtoType`, `GetAutoCrudDtoType`, `GetModelType`, `GetViewModelType`, `HasNamedConnection`, and `IsRequestDto`.
+- **`AutoQueryMetadataFeature.cs`**:
+  - In `Register`: guarded against null `appHost` and null `AutoQueryViewerConfig`.
+  - In `AutoQueryMetadataService.AnyAsync`: guarded against null `feature`, null `config`, null `Request`, and null `userSession`.
+  - Replaced `inheritArgs.First()` / `inheritArgs.Last()` with `inheritArgs.FirstOrDefault()` / `inheritArgs.LastOrDefault()`.
+

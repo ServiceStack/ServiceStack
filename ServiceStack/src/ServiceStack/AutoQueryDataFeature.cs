@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -200,6 +200,8 @@ public class AutoQueryDataFeature : IPlugin, IConfigureServices, IPostConfigureS
 
     public void Register(IAppHost appHost)
     {
+        if (appHost == null) return;
+
         foreach (var condition in Conditions)
         {
             ConditionsAliases[condition.Alias] = condition;
@@ -234,10 +236,16 @@ public class AutoQueryDataFeature : IPlugin, IConfigureServices, IPostConfigureS
             }
         }
 
-        appHost.Metadata.GetOperationAssemblies()
-            .Each(x => LoadFromAssemblies.Add(x));
+        if (appHost.Metadata != null)
+        {
+            appHost.Metadata.GetOperationAssemblies()
+                .Each(x => LoadFromAssemblies.Add(x));
+        }
 
-        ((ServiceStackHost)appHost).ServiceAssemblies.Each(x => LoadFromAssemblies.Add(x));
+        if (appHost is ServiceStackHost ssHost)
+        {
+            ssHost.ServiceAssemblies.Each(x => LoadFromAssemblies.Add(x));
+        }
 
         if (EnableAutoQueryViewer && appHost.GetPlugin<AutoQueryMetadataFeature>() == null)
             appHost.LoadPlugin(new AutoQueryMetadataFeature { MaxLimit = MaxLimit });
@@ -263,6 +271,9 @@ public class AutoQueryDataFeature : IPlugin, IConfigureServices, IPostConfigureS
 
     Type GenerateMissingServices(IEnumerable<Type> missingRequestTypes)
     {
+        if (AutoQueryServiceBaseType == null)
+            throw new InvalidOperationException($"{nameof(AutoQueryServiceBaseType)} is required.");
+
         var assemblyName = new AssemblyName { Name = "__AutoQueryDataAssembly" };
         var typeBuilder =
             AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run)
@@ -305,7 +316,9 @@ public class AutoQueryDataFeature : IPlugin, IConfigureServices, IPostConfigureS
 
             var genericArgs = genericDef.GetGenericArguments();
             var mi = AutoQueryServiceBaseType.GetMethods()
-                .First(x => x.GetGenericArguments().Length == genericArgs.Length);
+                .FirstOrDefault(x => x.GetGenericArguments().Length == genericArgs.Length);
+            if (mi == null)
+                continue;
             var genericMi = mi.MakeGenericMethod(genericArgs);
 
             var queryType = hasExplicitInto
@@ -478,8 +491,8 @@ public class DataQuery<T>(QueryDataContext context) : IDataQuery
 
     private QueryDataContext context = context;
 
-    public IQueryData Dto { get; } = context.Dto;
-    public Dictionary<string, string> DynamicParams { get; } = context.DynamicParams;
+    public IQueryData Dto { get; } = context?.Dto;
+    public Dictionary<string, string> DynamicParams { get; } = context?.DynamicParams;
     public List<DataConditionExpression> Conditions { get; set; } = [];
     public OrderByExpression OrderBy { get; set; }
     public HashSet<string> OnlyFields { get; set; }
@@ -499,13 +512,13 @@ public class DataQuery<T>(QueryDataContext context) : IDataQuery
 
     public virtual void Limit(int? skip, int? take)
     {
-        this.Offset = skip;
-        this.Rows = take;
+        this.Offset = skip != null ? Math.Max(0, skip.Value) : null;
+        this.Rows = take != null ? Math.Max(0, take.Value) : null;
     }
 
     public void Take(int take)
     {
-        this.Rows = take;
+        this.Rows = Math.Max(0, take);
     }
 
     public virtual void Select(string[] fields)
@@ -564,7 +577,8 @@ public class DataQuery<T>(QueryDataContext context) : IDataQuery
 
     public virtual void OrderByPrimaryKey()
     {
-        OrderBy = new OrderByExpression(PrimaryKey.Name, TypeProperties<T>.Instance.GetPublicGetter(PrimaryKey));
+        if (PrimaryKey != null)
+            OrderBy = new OrderByExpression(PrimaryKey.Name, TypeProperties<T>.Instance.GetPublicGetter(PrimaryKey));
     }
 
     public virtual void Join(Type joinType, Type type)
@@ -626,9 +640,9 @@ public abstract class AutoQueryDataServiceBase(IAutoQueryData autoQuery) : Servi
     public virtual object Exec<From>(IQueryData<From> dto)
     {
         DataQuery<From> q;
-        var requestParams = Request.IsInProcessRequest()
-            ? Request.GetDtoQueryParams()
-            : Request.GetRequestParams();
+        var requestParams = Request != null
+            ? (Request.IsInProcessRequest() ? Request.GetDtoQueryParams() : Request.GetRequestParams())
+            : (dto != null ? TypeSerializer.ToStringDictionary(dto) : new Dictionary<string, string>());
         var ctx = new QueryDataContext { Dto = dto, DynamicParams = requestParams, Request = Request };
         using var db = autoQuery.GetDb<From>(ctx);
         using (Profiler.Current.Step("AutoQueryData.CreateQuery"))
@@ -644,9 +658,9 @@ public abstract class AutoQueryDataServiceBase(IAutoQueryData autoQuery) : Servi
     public virtual object Exec<From, Into>(IQueryData<From, Into> dto)
     {
         DataQuery<From> q;
-        var requestParams = Request.IsInProcessRequest()
-            ? Request.GetDtoQueryParams()
-            : Request.GetRequestParams();
+        var requestParams = Request != null
+            ? (Request.IsInProcessRequest() ? Request.GetDtoQueryParams() : Request.GetRequestParams())
+            : (dto != null ? TypeSerializer.ToStringDictionary(dto) : new Dictionary<string, string>());
         var ctx = new QueryDataContext { Dto = dto, DynamicParams = requestParams, Request = Request };
         using var db = autoQuery.GetDb<From>(ctx);
         using (Profiler.Current.Step("AutoQueryData.CreateQuery"))
@@ -730,7 +744,7 @@ public class AutoQueryData : IAutoQueryData, IAutoQueryDataOptions
     {
         GlobalQueryFilter?.Invoke(q, dto, req);
 
-        if (QueryFilters == null)
+        if (QueryFilters == null || dto == null)
             return (DataQuery<From>)q;
 
         if (!QueryFilters.TryGetValue(dto.GetType(), out var filterFn))
@@ -751,7 +765,7 @@ public class AutoQueryData : IAutoQueryData, IAutoQueryDataOptions
     {
         GlobalQueryFilter?.Invoke(q, dto, req);
 
-        if (QueryFilters == null)
+        if (QueryFilters == null || dto == null)
             return q;
 
         if (!QueryFilters.TryGetValue(dto.GetType(), out var filterFn))
@@ -934,7 +948,7 @@ public class AutoQueryData : IAutoQueryData, IAutoQueryDataOptions
             intoType = args[0];
         }
 
-        if (genericAutoQueryCache.TryGetValue(fromType, out GenericAutoQueryData typedApi))
+        if (genericAutoQueryCache.TryGetValue(requestDtoType, out GenericAutoQueryData typedApi))
             return typedApi.ExecuteObject(this, request, q, db);
 
         var genericType = typeof(GenericAutoQueryData<,>).MakeGenericType(fromType, intoType);
@@ -991,7 +1005,7 @@ public class MemoryDataSource<T> : QueryDataSource<T>
         {
             Dto = dto,
             Request = req,
-            DynamicParams = req.GetRequestParams(),
+            DynamicParams = req?.GetRequestParams(),
         }, data)
     { }
 
@@ -1087,16 +1101,19 @@ public abstract class QueryDataSource<T> : IQueryDataSource<T>
 
     public virtual IEnumerable<T> ApplyLimits(IEnumerable<T> source, int? skip, int? take)
     {
-        if (skip != null)
+        if (source == null) return [];
+        if (skip != null && skip.Value > 0)
             source = source.Skip(skip.Value);
-        if (take != null)
+        if (take != null && take.Value >= 0)
             source = source.Take(take.Value);
         return source;
     }
 
     public virtual int Count(IDataQuery q)
     {
-        var source = ApplyConditions(GetDataSource(q), q.Conditions);
+        var data = GetDataSource(q);
+        if (data == null) return 0;
+        var source = ApplyConditions(data, q?.Conditions);
         return source.Count();
     }
 
@@ -1532,8 +1549,9 @@ public static class AutoQueryDataExtensions
 
         if (attr.Condition != null)
         {
-            if (!feature.ConditionsAliases.TryGetValue(attr.Condition, out var queryCondition))
-                throw new NotSupportedException($"No Condition registered with name '{attr.Condition}' on [QueryDataField({attr.Field ?? pi.Name})]");
+            var aliases = feature?.ConditionsAliases ?? HostContext.GetPlugin<AutoQueryDataFeature>()?.ConditionsAliases;
+            if (aliases == null || !aliases.TryGetValue(attr.Condition, out var queryCondition))
+                throw new NotSupportedException($"No Condition registered with name '{attr.Condition}' on [QueryDataField({attr.Field ?? pi?.Name})]");
 
             to.QueryCondition = queryCondition;
         }
@@ -1543,12 +1561,12 @@ public static class AutoQueryDataExtensions
 
     public static DataQuery<From> CreateQuery<From>(this IAutoQueryData autoQuery, IQueryData<From> model, IRequest request, IQueryDataSource db = null)
     {
-        return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
+        return autoQuery.CreateQuery(model, request?.GetRequestParams(), request, db);
     }
 
     public static DataQuery<From> CreateQuery<From, Into>(this IAutoQueryData autoQuery, IQueryData<From, Into> model, IRequest request, IQueryDataSource db = null)
     {
-        return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
+        return autoQuery.CreateQuery(model, request?.GetRequestParams(), request, db);
     }
 
     public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, IEnumerable<T> source)
@@ -1560,13 +1578,13 @@ public static class AutoQueryDataExtensions
     {
         cacheKey ??= "aqd:" + typeof(T).Name;
 
-        var cachedResults = cache.Get<List<T>>(cacheKey);
+        var cachedResults = cache?.Get<List<T>>(cacheKey);
         if (cachedResults != null)
             return new MemoryDataSource<T>(ctx, cachedResults);
 
-        var results = sourceFn();
+        var results = sourceFn != null ? sourceFn() : [];
         var source = new MemoryDataSource<T>(ctx, results);
-        return source.CacheMemorySource(cache, cacheKey, expiresIn);
+        return cache != null ? source.CacheMemorySource(cache, cacheKey, expiresIn) : source;
     }
 
     public static void And<T>(this IDataQuery q, Expression<Func<T, object>> fieldExpr, QueryCondition condition, object value)
