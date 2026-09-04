@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Runtime.Serialization;
 using System.Threading;
 using MsgPack;
@@ -12,8 +13,8 @@ namespace ServiceStack.MsgPack
     public class MsgPackType<T> : IMsgPackType
     {
         private static readonly Type type;
-        private static bool isGenericCollection;
-        private static Func<object, Type, object> collectionConvertFn;
+        private static readonly bool isGenericCollection;
+        private static readonly Func<object, Type, object> collectionConvertFn;
 
         static MsgPackType()
         {
@@ -26,25 +27,22 @@ namespace ServiceStack.MsgPack
             {
                 var elType = genericType.GetGenericArguments()[0];
                 var genericMi = typeof(CollectionExtensions).GetStaticMethod("Convert");
-                var mi = genericMi.MakeGenericMethod(elType);
-                collectionConvertFn = (Func<object, Type, object>)
-                    mi.CreateDelegate(typeof(Func<object, Type, object>));
+                if (genericMi != null)
+                {
+                    var mi = genericMi.MakeGenericMethod(elType);
+                    collectionConvertFn = (Func<object, Type, object>)
+                        mi.CreateDelegate(typeof(Func<object, Type, object>));
+                }
             }
 
             type = isGenericCollection ? genericType : typeof(T);
         }
 
-        public Type Type
-        {
-            get
-            {
-                return type;
-            }
-        }
+        public Type Type => type;
 
         public object Convert(object instance)
         {
-            if (!isGenericCollection)
+            if (!isGenericCollection || instance == null || collectionConvertFn == null)
                 return instance;
 
             var ret = collectionConvertFn(instance, typeof(T));
@@ -62,6 +60,8 @@ namespace ServiceStack.MsgPack
     public class MsgPackFormat : IPlugin, IMsgPackPlugin, Model.IHasStringId
     {
         public string Id { get; set; } = Plugins.MsgPack;
+        public static SerializationContext Context { get; set; } = SerializationContext.Default;
+
         public void Register(IAppHost appHost)
         {
             appHost.ContentTypes.Register(MimeTypes.MsgPack,
@@ -73,8 +73,9 @@ namespace ServiceStack.MsgPack
 
         internal static IMsgPackType GetMsgPackType(Type type)
         {
-            IMsgPackType msgPackType;
-            if (msgPackTypeCache.TryGetValue(type, out msgPackType))
+            if (type == null) throw new ArgumentNullException(nameof(type));
+
+            if (msgPackTypeCache.TryGetValue(type, out var msgPackType))
                 return msgPackType;
 
             var genericType = typeof(MsgPackType<>).MakeGenericType(type);
@@ -84,7 +85,7 @@ namespace ServiceStack.MsgPack
             do
             {
                 snapshot = msgPackTypeCache;
-                newCache = new Dictionary<Type, IMsgPackType>(msgPackTypeCache) {[type] = msgPackType};
+                newCache = new Dictionary<Type, IMsgPackType>(snapshot) { [type] = msgPackType };
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref msgPackTypeCache, newCache, snapshot), snapshot));
@@ -99,15 +100,16 @@ namespace ServiceStack.MsgPack
 
         public static void Serialize(object dto, Stream outputStream)
         {
-            if (dto == null) return;
+            if (dto == null || outputStream == null) return;
             var dtoType = dto.GetType();
             try
             {
                 var msgPackType = GetMsgPackType(dtoType);
                 dtoType = msgPackType.Type;
 
-                var serializer = MessagePackSerializer.Get(dtoType);
-                serializer.PackTo(Packer.Create(outputStream), dto);
+                var serializer = MessagePackSerializer.Get(dtoType, Context ?? SerializationContext.Default);
+                using var packer = Packer.Create(outputStream, ownsStream: false);
+                serializer.PackTo(packer, dto);
             }
             catch (Exception ex)
             {
@@ -115,15 +117,20 @@ namespace ServiceStack.MsgPack
             }
         }
 
+        public static T Deserialize<T>(Stream fromStream) => (T)Deserialize(typeof(T), fromStream);
+
         public static object Deserialize(Type type, Stream fromStream)
         {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (fromStream == null) return null;
+
             try
             {
                 var msgPackType = GetMsgPackType(type);
                 type = msgPackType.Type;
 
-                var serializer = MessagePackSerializer.Get(type);
-                var unpacker = Unpacker.Create(fromStream);
+                var serializer = MessagePackSerializer.Get(type, Context ?? SerializationContext.Default);
+                using var unpacker = Unpacker.Create(fromStream, ownsStream: false);
                 unpacker.Read();
                 var obj = serializer.UnpackFrom(unpacker);
 
@@ -146,11 +153,16 @@ namespace ServiceStack.MsgPack
         /// <returns></returns>
         public static object HandleException(Exception ex, Type type)
         {
+            if (ex == null) throw new ArgumentNullException(nameof(ex));
             if (ex is SerializationException
-                && ex.Message.Contains("does not have any serializable fields nor properties"))
+                && (ex.Message?.Contains("does not have any serializable fields nor properties") == true
+                    || ex.InnerException?.Message?.Contains("does not have any serializable fields nor properties") == true))
+            {
                 return type.CreateInstance();
+            }
 
-            throw ex;
+            ExceptionDispatchInfo.Capture(ex).Throw();
+            return null;
         }
     }
 }

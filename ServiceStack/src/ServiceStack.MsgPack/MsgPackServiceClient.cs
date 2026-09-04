@@ -7,10 +7,7 @@ namespace ServiceStack.MsgPack
 {
     public class MsgPackServiceClient : ServiceClientBase
     {
-        public override string Format
-        {
-            get { return "x-msgpack"; }
-        }
+        public override string Format => "x-msgpack";
 
         public MsgPackServiceClient(string baseUri)
         {
@@ -22,6 +19,7 @@ namespace ServiceStack.MsgPack
 
         public override void SerializeToStream(IRequest req, object request, Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
             if (request == null) return;
             try
             {
@@ -35,12 +33,10 @@ namespace ServiceStack.MsgPack
 
         public override T DeserializeFromStream<T>(Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
             try
             {
-                var serializer = MessagePackSerializer.Get<T>();
-                var obj = serializer.Unpack(stream);
-                return obj;
-
+                return MsgPackFormat.Deserialize<T>(stream);
             }
             catch (Exception ex)
             {
@@ -48,14 +44,8 @@ namespace ServiceStack.MsgPack
             }
         }
 
-        public override string ContentType
-        {
-            get { return MimeTypes.MsgPack; }
-        }
+        public override string ContentType => MimeTypes.MsgPack;
 
-        public override StreamDeserializerDelegate StreamDeserializer
-        {
-            get { return MsgPackFormat.Deserialize; }
-        }
+        public override StreamDeserializerDelegate StreamDeserializer => MsgPackFormat.Deserialize;
     }
 }
