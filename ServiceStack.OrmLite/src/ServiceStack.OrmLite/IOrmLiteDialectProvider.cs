@@ -21,8 +21,21 @@ using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite;
 
+public enum DbKind
+{
+    Sqlite,
+    PostgreSql,
+    SqlServer,
+    MySql,
+    Oracle,
+    Firebird,
+    Unknown,
+}
+
 public interface IOrmLiteDialectProvider
 {
+    DbKind Kind { get; }
+    
     /// <summary>
     /// Configure Provider with connection string options 
     /// </summary>

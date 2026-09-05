@@ -982,7 +982,7 @@ public partial class DbJobs : IBackgroundJobs
         var now = DateTime.UtcNow;
 
         var sqlCommandWorker = feature.Dialect.SqlConcat([columns.Command, "'.'", columns.Worker]);
-        var isSqlServer = db.GetDialectProvider().GetType().Name.StartsWith("SqlServer");
+        var isSqlServer = db.GetDialectProvider().Kind == DbKind.SqlServer;
         var durationColumn = isSqlServer ? $"CAST({columns.DurationMs} AS BIGINT)" : columns.DurationMs;
 
         // Use CASE WHEN to prevent SUM() from overflowing INT.MaxValue

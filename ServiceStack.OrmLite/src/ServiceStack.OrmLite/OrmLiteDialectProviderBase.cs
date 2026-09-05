@@ -33,6 +33,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     where TDialect : IOrmLiteDialectProvider
 {
     protected static readonly ILog Log = LogManager.GetLogger(typeof(IOrmLiteDialectProvider));
+    public virtual DbKind Kind => DbKind.Unknown;
 
     #region ADO.NET supported types
     /* ADO.NET UNDERSTOOD DATA TYPES:

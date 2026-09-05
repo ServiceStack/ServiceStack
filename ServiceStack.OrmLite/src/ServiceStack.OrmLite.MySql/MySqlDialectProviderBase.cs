@@ -12,7 +12,9 @@ namespace ServiceStack.OrmLite.MySql;
 
 public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProviderBase<TDialect> where TDialect : IOrmLiteDialectProvider
 {
-	private const string TextColumnDefinition = "TEXT";
+    public override DbKind Kind => DbKind.MySql;
+
+    private const string TextColumnDefinition = "TEXT";
 
 	public MySqlDialectProviderBase()
 	{

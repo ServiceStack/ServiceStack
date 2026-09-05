@@ -24,6 +24,8 @@ namespace ServiceStack.OrmLite.PostgreSQL;
 
 public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDialectProvider>
 {
+    public override DbKind Kind => DbKind.PostgreSql;
+
     public static PostgreSqlDialectProvider Instance = new();
 
     public bool UseReturningForLastInsertId { get; set; } = true;

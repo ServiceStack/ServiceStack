@@ -15,6 +15,8 @@ namespace ServiceStack.OrmLite.Firebird
 {
     public class FirebirdOrmLiteDialectProvider : OrmLiteDialectProviderBase<FirebirdOrmLiteDialectProvider>
     {
+        public override DbKind Kind => DbKind.Firebird;
+
         protected virtual string GetCreateSequenceSql(string sequence) => $@"
             EXECUTE BLOCK AS BEGIN
                 if (not exists(select 1 FROM RDB$GENERATORS WHERE RDB$GENERATOR_NAME = '{sequence}')) then

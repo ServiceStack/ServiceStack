@@ -7,6 +7,8 @@ namespace ServiceStack.OrmLite.Sqlite;
 
 public class SqliteOrmLiteDialectProvider : SqliteOrmLiteDialectProviderBase
 {
+    public override DbKind Kind => DbKind.Sqlite;
+
     public static SqliteOrmLiteDialectProvider Instance = new();
 
     public SqliteOrmLiteDialectProvider()

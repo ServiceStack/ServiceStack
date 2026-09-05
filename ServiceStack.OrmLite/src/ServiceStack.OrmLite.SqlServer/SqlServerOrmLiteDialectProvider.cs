@@ -22,6 +22,7 @@ namespace ServiceStack.OrmLite.SqlServer
 {
     public class SqlServerOrmLiteDialectProvider : OrmLiteDialectProviderBase<SqlServerOrmLiteDialectProvider>
     {
+        public override DbKind Kind => DbKind.SqlServer;
         public static SqlServerOrmLiteDialectProvider Instance = new();
 
         public SqlServerOrmLiteDialectProvider()

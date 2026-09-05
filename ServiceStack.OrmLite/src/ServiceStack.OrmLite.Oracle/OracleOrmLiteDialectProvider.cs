@@ -17,11 +17,13 @@ namespace ServiceStack.OrmLite.Oracle
 {
     public class OracleOrmLiteDialectProvider : OrmLiteDialectProviderBase<OracleOrmLiteDialectProvider>
     {
+        public override DbKind Kind => DbKind.Oracle;
+
         public const string ManagedProvider = "Oracle.ManagedDataAccess.Client";
         public string AutoIdGuidFunction { get; set; } = "SYS_GUID()";
         public bool UseReturningForLastInsertId { get; set; } = true;
         
-        public static readonly OracleOrmLiteDialectProvider Instance = new OracleOrmLiteDialectProvider();
+        public static readonly OracleOrmLiteDialectProvider Instance = new();
         public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
         // TODO refactor to hashset (case insensitive
