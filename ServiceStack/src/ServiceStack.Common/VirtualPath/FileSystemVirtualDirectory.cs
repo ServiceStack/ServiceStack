@@ -99,8 +99,9 @@ namespace ServiceStack.VirtualPath
 
                     if (dir != null)
                     {
-                        var matchingFilesInBackingDir = ((FileSystemVirtualDirectory)dir).EnumerateFiles(fileNameSearch)
-                            .Select(fInfo => (IVirtualFile)new FileSystemVirtualFile(VirtualPathProvider, dir, fInfo));
+                        var matchingFilesInBackingDir = (dir as FileSystemVirtualDirectory)?.EnumerateFiles(fileNameSearch)
+                            .Select(fInfo => (IVirtualFile)new FileSystemVirtualFile(VirtualPathProvider, dir, fInfo))
+                            ?? dir.GetAllMatchingFiles(fileNameSearch, 1);
 
                         return matchingFilesInBackingDir;
                     }

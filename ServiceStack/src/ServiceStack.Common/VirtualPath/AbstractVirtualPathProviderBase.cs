@@ -16,7 +16,13 @@ namespace ServiceStack.VirtualPath
 
         public virtual string CombineVirtualPath(string basePath, string relativePath)
         {
-            return string.Concat(basePath, VirtualPathSeparator, relativePath);
+            if (string.IsNullOrEmpty(basePath))
+                return relativePath ?? string.Empty;
+            if (string.IsNullOrEmpty(relativePath))
+                return basePath;
+
+            var sep = VirtualPathSeparator ?? "/";
+            return string.Concat(basePath.TrimEnd('/', '\\'), sep, relativePath.TrimStart('/', '\\'));
         }
 
         public virtual bool FileExists(string virtualPath)
@@ -101,6 +107,9 @@ namespace ServiceStack.VirtualPath
 
         public virtual void WriteFiles(Dictionary<string, string> textFiles)
         {
+            if (textFiles == null)
+                return;
+
             var vfs = this as IVirtualFiles;
             if (vfs == null)
                 throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
@@ -195,6 +204,9 @@ namespace ServiceStack.VirtualPath
 
         public virtual void WriteFiles(Dictionary<string, object> files)
         {
+            if (files == null)
+                return;
+
             foreach (var entry in files)
             {
                 WriteFile(entry.Key, entry.Value);

@@ -25,6 +25,9 @@ public static class VirtualPathUtils
         if (string.IsNullOrEmpty(str))
             return new Stack<string>();
 
+        if (string.IsNullOrEmpty(virtualPathSeparator))
+            virtualPathSeparator = "/";
+
         var tokens = str.Split([virtualPathSeparator], StringSplitOptions.RemoveEmptyEntries);
         return new Stack<string>(((IEnumerable<string>)tokens).Reverse());
     }
@@ -34,20 +37,27 @@ public static class VirtualPathUtils
         if (string.IsNullOrEmpty(str))
             return new Stack<string>();
 
-        var n = str.Count(c => c == pathSeparator);
-        var tokens = str.Split([pathSeparator], n);
-
+        var tokens = str.Split([pathSeparator], StringSplitOptions.RemoveEmptyEntries);
         return new Stack<string>(((IEnumerable<string>)tokens).Reverse());
     }
 
     public static IEnumerable<IGrouping<string, string[]>> GroupByFirstToken(this IEnumerable<string> resourceNames, char pathSeparator = '.')
     {
-        return resourceNames.Select(n => n.Split([pathSeparator], 2))
+        if (resourceNames == null)
+            return Enumerable.Empty<IGrouping<string, string[]>>();
+
+        return resourceNames
+            .Where(n => !string.IsNullOrEmpty(n))
+            .Select(n => n.Split([pathSeparator], 2))
+            .Where(t => t.Length > 1)
             .GroupBy(t => t[0]);
     }
 
     public static byte[] ReadAllBytes(this IVirtualFile file)
     {
+        if (file == null)
+            return TypeConstants.EmptyByteArray;
+
         using var stream = file.OpenRead();
         var bytes = stream.ReadFully();
         return bytes;
@@ -70,14 +80,21 @@ public static class VirtualPathUtils
 
     public static IVirtualNode GetVirtualNode(this IVirtualPathProvider pathProvider, string virtualPath)
     {
+        if (pathProvider == null)
+            return null;
+
         return (IVirtualNode)pathProvider.GetFile(virtualPath)
                ?? pathProvider.GetDirectory(virtualPath);
     }
 
     public static IVirtualFile GetDefaultDocument(this IVirtualDirectory dir, List<string> defaultDocuments)
     {
+        if (dir == null || defaultDocuments == null)
+            return null;
+
         foreach (var defaultDoc in defaultDocuments)
         {
+            if (string.IsNullOrEmpty(defaultDoc)) continue;
             var defaultFile = dir.GetFile(defaultDoc);
             if (defaultFile == null) continue;
 
@@ -101,7 +118,7 @@ public static class VirtualPathUtils
         
     public static readonly HashSet<char> InvalidFileNameChars = new(Path.GetInvalidFileNameChars()) { ':' };
 
-    public static string SafeFileName(string uri) => new(uri.Where(c => !InvalidFileNameChars.Contains(c)).ToArray());
+    public static string SafeFileName(string uri) => uri == null ? string.Empty : new(uri.Where(c => !InvalidFileNameChars.Contains(c)).ToArray());
 
     public static bool IsValidFileName(string path) => !string.IsNullOrEmpty(path) && path.All(c => !InvalidFileNameChars.Contains(c));
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using ServiceStack.IO;
@@ -42,9 +42,15 @@ namespace ServiceStack.VirtualPath
 
         public string GetRealVirtualPath(string virtualPath)
         {
+            if (string.IsNullOrEmpty(virtualPath))
+                return null;
+
             virtualPath = virtualPath.TrimStart('/');
-            return virtualPath.StartsWith(Alias, StringComparison.OrdinalIgnoreCase)
-                ? virtualPath.Substring(Alias.Length)
+            if (virtualPath.EqualsIgnoreCase(Alias))
+                return string.Empty;
+
+            return virtualPath.StartsWith(Alias + "/", StringComparison.OrdinalIgnoreCase)
+                ? virtualPath.Substring(Alias.Length + 1)
                 : null;
         }
 
@@ -58,7 +64,10 @@ namespace ServiceStack.VirtualPath
 
         public override IVirtualDirectory GetDirectory(string virtualPath)
         {
-            if (virtualPath.EqualsIgnoreCase(Alias))
+            if (string.IsNullOrEmpty(virtualPath))
+                return null;
+
+            if (virtualPath.TrimStart('/').EqualsIgnoreCase(Alias))
                 return RootDir;
 
             var nodePath = GetRealVirtualPath(virtualPath);

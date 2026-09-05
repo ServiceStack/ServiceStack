@@ -12,7 +12,7 @@ public class MultiVirtualFiles
 {
     public List<IVirtualPathProvider> ChildProviders { get; set; }
 
-    public override IVirtualDirectory RootDirectory => ChildProviders.FirstOrDefault().RootDirectory;
+    public override IVirtualDirectory RootDirectory => ChildProviders.FirstOrDefault()?.RootDirectory;
 
     public override string VirtualPathSeparator => "/";
     public override string RealPathSeparator => Convert.ToString(Path.DirectorySeparatorChar);
@@ -162,11 +162,11 @@ public class MultiVirtualDirectory : IVirtualDirectory
     }
 
     public IVirtualDirectory Directory => this;
-    public string Name => this.First().Name;
-    public string VirtualPath => this.First().VirtualPath;
-    public string RealPath => this.First().RealPath;
+    public string Name => dirs.First().Name;
+    public string VirtualPath => dirs.First().VirtualPath;
+    public string RealPath => dirs.First().RealPath;
     public bool IsDirectory => true;
-    public DateTime LastModified => this.First().LastModified;
+    public DateTime LastModified => dirs.First().LastModified;
 
     public IEnumerator<IVirtualNode> GetEnumerator() => dirs.SelectMany(dir => dir).GetEnumerator();
 
@@ -175,7 +175,7 @@ public class MultiVirtualDirectory : IVirtualDirectory
     public bool IsRoot => this.dirs.First().IsRoot;
 
     public IVirtualDirectory ParentDirectory =>
-        ToVirtualDirectory(dirs.SelectMany(x => x.ParentDirectory).Where(x => x != null).Cast<IVirtualDirectory>());
+        ToVirtualDirectory(dirs.Select(x => x.ParentDirectory).Where(x => x != null));
 
     public IEnumerable<IVirtualFile> Files => dirs.SelectMany(x => x.Files);
 
@@ -194,9 +194,12 @@ public class MultiVirtualDirectory : IVirtualDirectory
 
     public IVirtualFile GetFile(Stack<string> virtualPath)
     {
+        if (virtualPath == null || virtualPath.Count == 0)
+            return null;
+
         foreach (var dir in dirs)
         {
-            var file = dir.GetFile(virtualPath);
+            var file = dir.GetFile(new Stack<string>(virtualPath.Reverse()));
             if (file != null)
                 return file;
         }
@@ -216,9 +219,12 @@ public class MultiVirtualDirectory : IVirtualDirectory
 
     public IVirtualDirectory GetDirectory(Stack<string> virtualPath)
     {
+        if (virtualPath == null || virtualPath.Count == 0)
+            return null;
+
         foreach (var dir in dirs)
         {
-            var sub = dir.GetDirectory(virtualPath);
+            var sub = dir.GetDirectory(new Stack<string>(virtualPath.Reverse()));
             if (sub != null)
                 return sub;
         }

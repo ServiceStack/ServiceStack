@@ -63,7 +63,9 @@ namespace ServiceStack.VirtualPath
                     ? MemoryProvider.Instance.ToUtf8(romChars.Span).ToArray()
                     : contents is string s
                         ? MemoryProvider.Instance.ToUtf8(s.AsSpan()).ToArray()
-                        : ReadAllBytes();
+                        : contents is byte[] b
+                            ? b
+                            : VirtualPathUtils.ReadAllBytes(this);
             return bytes;
         }
 
@@ -119,7 +121,7 @@ namespace ServiceStack.VirtualPath
 
         public override int GetHashCode()
         {
-            return VirtualPath.GetHashCode();
+            return VirtualPath?.GetHashCode() ?? 0;
         }
 
         public override string ToString()
@@ -145,9 +147,16 @@ namespace ServiceStack
     {
         public static bool ShouldSkipPath(this IVirtualNode node)
         {
+            if (node?.VirtualPath == null)
+                return false;
+
+            var virtualPath = node.VirtualPath;
             foreach (var skipPath in AbstractVirtualFileBase.ScanSkipPaths)
             {
-                if (node.VirtualPath.StartsWith(skipPath.TrimStart('/'), StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(skipPath))
+                    continue;
+
+                if (virtualPath.StartsWith(skipPath.TrimStart('/'), StringComparison.OrdinalIgnoreCase))
                     return true;
             }
             return false;

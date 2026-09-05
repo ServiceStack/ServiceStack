@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -133,6 +133,7 @@ public class FileSystemVirtualFiles
 
     public void DeleteFiles(IEnumerable<string> filePaths)
     {
+        if (filePaths == null) return;
         filePaths.Each(DeleteFile);
     }
 
@@ -182,6 +183,9 @@ public class FileSystemVirtualFiles
         
     public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
     {
+        if (source == null || target == null)
+            return;
+
         if (string.Equals(source.FullName, target.FullName, StringComparison.CurrentCultureIgnoreCase))
             return;
 
@@ -241,16 +245,22 @@ public class FileSystemVirtualFiles
     /// <returns>True if the path is safe, false otherwise.</returns>
     public static bool IsPathSafe(string basePath, string relativePath)
     {
+        if (string.IsNullOrEmpty(basePath) || relativePath == null)
+            return false;
+
         try
         {
             // Normalize paths to handle different directory separators
             basePath = Path.GetFullPath(basePath);
+            var separator = Path.DirectorySeparatorChar.ToString();
+            var basePathWithSep = basePath.EndsWith(separator) ? basePath : basePath + separator;
                     
             // Combine the base path with the relative path
             string fullPath = Path.GetFullPath(Path.Combine(basePath, relativePath));
                     
-            // Check if the resulting path starts with the base path
-            return fullPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase);
+            // Check if the resulting path is identical to basePath or starts with basePath + separator
+            return string.Equals(fullPath, basePath, StringComparison.OrdinalIgnoreCase) ||
+                   fullPath.StartsWith(basePathWithSep, StringComparison.OrdinalIgnoreCase);
         }
         catch (Exception ex) when (ex is ArgumentException || 
                                    ex is NotSupportedException || 

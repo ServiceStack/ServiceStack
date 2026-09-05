@@ -46,7 +46,7 @@ namespace ServiceStack.VirtualPath
 
         public virtual IVirtualFile GetFile(Stack<string> virtualPath)
         {
-            if (virtualPath.Count == 0)
+            if (virtualPath == null || virtualPath.Count == 0)
                 return null;
 
             var pathToken = virtualPath.Pop();
@@ -59,7 +59,7 @@ namespace ServiceStack.VirtualPath
 
         public virtual IVirtualDirectory GetDirectory(Stack<string> virtualPath)
         {
-            if (virtualPath.Count == 0)
+            if (virtualPath == null || virtualPath.Count == 0)
                 return null;
 
             var pathToken = virtualPath.Pop();
@@ -128,7 +128,7 @@ namespace ServiceStack.VirtualPath
 
         public override int GetHashCode()
         {
-            return VirtualPath.GetHashCode();
+            return VirtualPath?.GetHashCode() ?? 0;
         }
 
         public override string ToString()

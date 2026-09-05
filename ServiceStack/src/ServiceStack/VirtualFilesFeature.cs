@@ -16,6 +16,9 @@ public class VirtualFilesFeature : IPlugin
     
     public void Register(IAppHost appHost)
     {
+        if (appHost == null)
+            return;
+
         AppHost = appHost;
         StaticFilesHandler ??= HttpHandlerFactory.StaticFilesHandler as HttpAsyncTaskHandler;
         ForbiddenHttpHandler ??= HttpHandlerFactory.ForbiddenHttpHandler as HttpAsyncTaskHandler;
@@ -25,13 +28,17 @@ public class VirtualFilesFeature : IPlugin
     
     public HttpAsyncTaskHandler? GetHandler(IRequest httpReq)
     {
+        if (httpReq == null)
+            return null;
+
         var isFile = httpReq.IsFile();
         var isDirectory = httpReq.IsDirectory();
         
         if (isFile || isDirectory)
         {
+            var config = AppHost?.Config ?? HostContext.Config;
             //If pathInfo is for Directory try again with redirect including '/' suffix
-            if (AppHost!.Config.RedirectDirectoriesToTrailingSlashes && isDirectory && !httpReq.OriginalPathInfo.EndsWith("/"))
+            if (config != null && config.RedirectDirectoriesToTrailingSlashes && isDirectory && !(httpReq.OriginalPathInfo ?? "").EndsWith("/"))
                 return new RedirectHttpHandler { RelativeUrl = httpReq.PathInfo + '/' };
         
             if (isDirectory)
@@ -52,6 +59,9 @@ public class VirtualFilesFeature : IPlugin
             return true;
 
         var config = HostContext.Config;
+        if (config == null)
+            return false;
+
         foreach (var path in config.ForbiddenPaths)
         {
             if (pathInfo.StartsWith(path))

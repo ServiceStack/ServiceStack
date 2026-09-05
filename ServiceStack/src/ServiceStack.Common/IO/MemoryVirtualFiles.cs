@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -165,6 +165,7 @@ public class MemoryVirtualFiles
 
     public void DeleteFiles(IEnumerable<string> filePaths)
     {
+        if (filePaths == null) return;
         var sanitizedFilePaths = filePaths.Select(SanitizePath).ToSet();
             
         List<InMemoryVirtualFile> snapshot, newFiles;
@@ -178,7 +179,8 @@ public class MemoryVirtualFiles
 
     public void DeleteFolder(string dirPath)
     {
-        var subFiles = Files.Where(x => x.DirPath.StartsWith(dirPath));
+        if (dirPath == null) return;
+        var subFiles = Files.Where(x => x.DirPath != null && x.DirPath.StartsWith(dirPath));
         DeleteFiles(subFiles.Map(x => x.VirtualPath));            
     }
 
@@ -241,7 +243,7 @@ public class MemoryVirtualFiles
             : null;
     }
 
-    public void Clear() => Files.Clear();
+    public void Clear() => Interlocked.Exchange(ref files, new List<InMemoryVirtualFile>());
 }
 
 public class InMemoryVirtualDirectory : AbstractVirtualDirectoryBase
@@ -273,10 +275,8 @@ public class InMemoryVirtualDirectory : AbstractVirtualDirectoryBase
         return pathProvider.GetFile(DirPath.CombineWith(virtualPath));
     }
 
-    public override IEnumerator<IVirtualNode> GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
+    public override IEnumerator<IVirtualNode> GetEnumerator() =>
+        Directories.Cast<IVirtualNode>().Union(Files.Cast<IVirtualNode>()).GetEnumerator();
 
     protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fileName)
     {

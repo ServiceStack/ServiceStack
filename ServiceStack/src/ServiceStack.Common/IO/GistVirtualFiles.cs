@@ -85,16 +85,26 @@ public partial class GistVirtualFiles : AbstractVirtualPathProviderBase, IVirtua
         
     public static bool GetGistContents(string filePath, Gist gist, out string text, out MemoryStream stream)
     {
+        if (gist?.Files == null)
+        {
+            text = null;
+            stream = null;
+            return false;
+        }
+
         var base64FilePath = filePath + Base64Modifier;
         foreach (var entry in gist.Files)
         {
             var file = entry.Value;
+            if (file == null)
+                continue;
+
             var isMatch = entry.Key == filePath || entry.Key == base64FilePath;
             if (!isMatch)
                 continue;
 
             // GitHub can truncate Gist and return partial content
-            if ((string.IsNullOrEmpty(file.Content) || file.Content.Length < file.Size) && file.Truncated)
+            if ((string.IsNullOrEmpty(file.Content) || file.Content.Length < file.Size) && file.Truncated && !string.IsNullOrEmpty(file.Raw_Url))
             {
                 file.Content = file.Raw_Url.GetStringFromUrl(
                     requestFilter: req => req.With(c => c.UserAgent = nameof(GitHubGateway)));
@@ -427,7 +437,7 @@ public class GistVirtualFile : AbstractVirtualFileBase
         this.PathProvider = pathProvider;
     }
 
-    public string DirPath => ((GistVirtualDirectory) base.Directory).DirPath;
+    public string DirPath => (base.Directory as GistVirtualDirectory)?.DirPath;
 
     public string FilePath { get; set; }
 
@@ -474,7 +484,7 @@ public class GistVirtualFile : AbstractVirtualFileBase
                 : Stream?.CopyToNewMemoryStream().GetBufferAsMemory());
     }
 
-    public override byte[] ReadAllBytes() => ((MemoryStream)Stream).GetBufferAsBytes();
+    public override byte[] ReadAllBytes() => Stream is MemoryStream ms ? ms.GetBufferAsBytes() : Stream?.ReadFully() ?? TypeConstants.EmptyByteArray;
 
     public override void Refresh()
     {
@@ -528,10 +538,8 @@ public class GistVirtualDirectory : AbstractVirtualDirectoryBase
         return VirtualPathProvider.GetFile(DirPath.CombineWith(virtualPath));
     }
 
-    public override IEnumerator<IVirtualNode> GetEnumerator()
-    {
-        throw new NotImplementedException();
-    }
+    public override IEnumerator<IVirtualNode> GetEnumerator() =>
+        Directories.Cast<IVirtualNode>().Union(Files.Cast<IVirtualNode>()).GetEnumerator();
 
     protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fileName)
     {
