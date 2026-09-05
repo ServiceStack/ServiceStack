@@ -50,6 +50,9 @@ namespace ServiceStack
 
         public AuthenticationInfo(string authHeader)
         {
+            if (string.IsNullOrEmpty(authHeader))
+                throw new ArgumentNullException(nameof(authHeader));
+
             cnonce = "0a4f113b";
             nc = 1;
 

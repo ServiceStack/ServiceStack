@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -52,17 +52,20 @@ namespace ServiceStack
             }
 
             if (IsNullOrEmpty(errorCode) && IsNullOrEmpty(to.ErrorCode))
-                throw new ArgumentException("Cannot create a valid error response with a en empty errorCode and an empty validationError list");
+                throw new ArgumentException("Cannot create a valid error response with an empty errorCode and an empty validationError list");
 
             return to;
         }
 
         public static string GetDetailedError(this ResponseStatus status)
         {
+            if (status == null) return string.Empty;
+
             var sb = StringBuilderCache.Allocate();
             sb.AppendLine($"{status.ErrorCode} {status.Message}");
             foreach (var error in status.Errors.OrEmpty())
             {
+                if (error == null) continue;
                 sb.AppendLine($" - {error.FieldName}: {error.ErrorCode} {error.Message}");
             }
             if (!string.IsNullOrEmpty(status.StackTrace))

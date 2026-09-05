@@ -108,14 +108,14 @@ namespace ServiceStack
 
         private ResponseStatus ToBuiltInResponseStatus(object statusDto)
         {
-            responseStatus = statusDto as ResponseStatus;
-            if (responseStatus != null)
-                return responseStatus;
+            if (statusDto is ResponseStatus directStatus)
+                return responseStatus = directStatus;
 
             // Generated DTO
-            return statusDto?.GetType().Name == nameof(IHasResponseStatus.ResponseStatus)
-                ? statusDto.ConvertTo(typeof(ResponseStatus)) as ResponseStatus
-                : responseStatus;
+            if (statusDto?.GetType().Name == nameof(IHasResponseStatus.ResponseStatus))
+                return responseStatus = statusDto.ConvertTo(typeof(ResponseStatus)) as ResponseStatus;
+
+            return responseStatus;
         }
 
         public ResponseStatus ToResponseStatus() => ResponseStatus;
@@ -140,6 +140,7 @@ namespace ServiceStack
                     sb.Append("Field Errors:\n");
                     foreach (var error in status.Errors)
                     {
+                        if (error == null) continue;
                         sb.Append($"  [{error.FieldName}] {error.ErrorCode}: {error.Message}\n");
 
                         if (error.Meta != null && error.Meta.Count > 0)

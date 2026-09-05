@@ -10,7 +10,7 @@ public static class ClientDiagnosticUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void InitMessage(this DiagnosticListener listener, IMessage msg)
     {
-        if (listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestBefore))
+        if (msg != null && listener.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestBefore))
         {
             var activity = Activity.Current;
             if (activity != null)

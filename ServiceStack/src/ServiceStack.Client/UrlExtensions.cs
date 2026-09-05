@@ -60,15 +60,17 @@ public static class UrlExtensions
 
     public static string ToOneWayUrlOnly(this object requestDto, string format = "json")
     {
+        if (requestDto == null) throw new ArgumentNullException(nameof(requestDto));
         var requestType = requestDto.GetType();
         return $"/{format}/oneway/{requestType.GetOperationName()}";
     }
 
     public static string ToOneWayUrl(this object requestDto, string format = "json")
     {
+        if (requestDto == null) throw new ArgumentNullException(nameof(requestDto));
         var requestType = requestDto.GetType();
         var predefinedRoute = $"/{format}/oneway/{requestType.GetOperationName()}";
-        var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
+        var queryProperties = RestRoute.GetQueryProperties(requestType);
         var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
         if (!IsNullOrEmpty(queryString))
             predefinedRoute += "?" + queryString;
@@ -78,15 +80,17 @@ public static class UrlExtensions
 
     public static string ToReplyUrlOnly(this object requestDto, string format = "json")
     {
+        if (requestDto == null) throw new ArgumentNullException(nameof(requestDto));
         var requestType = requestDto.GetType();
         return $"/{format}/reply/{requestType.GetOperationName()}";
     }
 
     public static string ToReplyUrl(this object requestDto, string format = "json")
     {
+        if (requestDto == null) throw new ArgumentNullException(nameof(requestDto));
         var requestType = requestDto.GetType();
         var predefinedRoute = $"/{format}/reply/{requestType.GetOperationName()}";
-        var queryProperties = RestRoute.GetQueryProperties(requestDto.GetType());
+        var queryProperties = RestRoute.GetQueryProperties(requestType);
         var queryString = RestRoute.GetQueryString(requestDto, queryProperties);
         if (!IsNullOrEmpty(queryString))
             predefinedRoute += "?" + queryString;
@@ -95,7 +99,7 @@ public static class UrlExtensions
     }
 
     public static string ToApiUrl(this Type requestType) =>
-        "/api".CombineWith(requestType.GetOperationName());
+        requestType == null ? null : "/api".CombineWith(requestType.GetOperationName());
 
 
     public static string ToUrl(this object requestDto, string httpMethod = "GET", string formatFallbackToPredefinedRoute = null) =>
@@ -105,7 +109,8 @@ public static class UrlExtensions
         
     public static string ToUrl(this object requestDto, string httpMethod, Func<Type, string> fallback)
     {
-        httpMethod = httpMethod.ToUpper();
+        if (requestDto == null) throw new ArgumentNullException(nameof(requestDto));
+        httpMethod = (httpMethod ?? "GET").ToUpper();
         var urlFilter = requestDto as IUrlFilter;
 
         var requestType = requestDto.GetType();
@@ -170,6 +175,7 @@ public static class UrlExtensions
 
     public static string GetOperationName(this Type type)
     {
+        if (type == null) return null;
         if (type.IsArray)
         {
             return type.GetCollectionType().Name + "[]";
@@ -179,6 +185,7 @@ public static class UrlExtensions
 
     public static string GetFullyQualifiedName(this Type type)
     {
+        if (type == null) return null;
         if (!type.IsGenericType)
             return type.Name;
         
@@ -203,6 +210,7 @@ public static class UrlExtensions
 
     public static string ExpandTypeName(this Type type)
     {
+        if (type == null) return null;
         if (type.IsGenericType)
             return ExpandGenericTypeName(type);
 
@@ -211,6 +219,7 @@ public static class UrlExtensions
 
     public static string ExpandGenericTypeName(Type type)
     {
+        if (type == null) return null;
         var nameOnly = type.Name.LeftPart('`');
 
         var sb = StringBuilderCache.Allocate();
@@ -430,7 +439,7 @@ public class RestRoute
             }
 
             var variableValue = FormatVariable(value);
-            uri = uri.Replace(VariablePrefix + variable.Key + VariablePostfix, variableValue);
+            uri = uri.Replace(VariablePrefix + variable.Key + VariablePostfix, variableValue ?? Empty);
         }
 
         if (unmatchedVariables.Any())
@@ -533,12 +542,18 @@ public class RestRoute
 
             if (component.Contains(VariablePrefix) || component.Contains(VariablePostfix))
             {
-                var variableName = component.Substring(1, component.Length - 2);
-
                 // Accept only variables matching this format: '/{property}/'
                 // Incorrect formats: '/{property/' or '/{property}-some-other-text/'
                 // I'm not sure that the second one will be parsed correctly at server side.
-                if (component[0] != VariablePrefixChar || component[component.Length - 1] != VariablePostfixChar || variableName.Contains(VariablePostfix))
+                if (component.Length < 2 || component[0] != VariablePrefixChar || component[component.Length - 1] != VariablePostfixChar)
+                {
+                    this.AppendError("Component '{0}' can not be parsed".Fmt(component));
+                    continue;
+                }
+
+                var variableName = component.Substring(1, component.Length - 2);
+
+                if (variableName.Contains(VariablePostfix))
                 {
                     this.AppendError("Component '{0}' can not be parsed".Fmt(component));
                     continue;
