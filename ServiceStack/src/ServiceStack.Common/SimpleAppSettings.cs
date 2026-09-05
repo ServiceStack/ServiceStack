@@ -12,11 +12,30 @@ public class SimpleAppSettings : IAppSettings
     public SimpleAppSettings(Dictionary<string, string> settings = null) =>
         this.settings = settings ?? new Dictionary<string, string>();
 
-    public Dictionary<string, string> GetAll() => settings;
+    public Dictionary<string, string> GetAll()
+    {
+        lock (settings)
+        {
+            return new Dictionary<string, string>(settings);
+        }
+    }
 
-    public List<string> GetAllKeys() => settings.Keys.ToList();
+    public List<string> GetAllKeys()
+    {
+        lock (settings)
+        {
+            return settings.Keys.ToList();
+        }
+    }
 
-    public bool Exists(string key) => key != null && settings.ContainsKey(key);
+    public bool Exists(string key)
+    {
+        if (key == null) return false;
+        lock (settings)
+        {
+            return settings.ContainsKey(key);
+        }
+    }
 
     public void Set<T>(string key, T value)
     {
@@ -27,12 +46,20 @@ public class SimpleAppSettings : IAppSettings
             ? s
             : value.ToJsv();
 
-        settings[key] = textValue;
+        lock (settings)
+        {
+            settings[key] = textValue;
+        }
     }
 
-    public string GetString(string key) => key != null && settings.TryGetValue(key, out string value)
-        ? value
-        : null;
+    public string GetString(string key)
+    {
+        if (key == null) return null;
+        lock (settings)
+        {
+            return settings.TryGetValue(key, out string value) ? value : null;
+        }
+    }
 
     public IList<string> GetList(string key)
     {

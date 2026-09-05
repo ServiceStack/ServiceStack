@@ -307,4 +307,67 @@ This document details security, robustness, and stability fixes across `ServiceS
   - Replaced `string.Contains(char)` with universal `string.IndexOf(char) >= 0`.
   - Routed `TaskExtensions.WaitAsync` to native BCL `Task.WaitAsync` on modern .NET targets.
 
+---
 
+## 30. Unhandled Bracket Stack Underflow, Index Exceptions & Quote Escape Bypasses in `StringUtils`
+- **Severity**: Medium / Parsing Exception & Security Filter Bypass
+- **Description**:
+  - `StringUtils.ReplaceOutsideOfQuotes` treated backslash characters verbatim without skipping escaped quotes (`\"`, `\'`), leading to corrupted state machine tracking where strings with escaped quotation marks caused code inside quotes to be treated as outside of quotes and vice versa.
+  - `StringUtils.ParseTypeIntoNodes` threw `InvalidOperationException: Stack empty` on malformed type definitions with unmatched closing generic brackets (`>`), crashing type inspection.
+  - `StringUtils.SnakeCaseToPascalCase` threw `IndexOutOfRangeException` when passed strings consisting solely of invalid/stripped characters.
+  - `StringUtils.SplitGenericArgs` corrupted block counting on unmatched closing brackets (`>`).
+- **Change**:
+  - Added escaped quote tracking (`\"`, `\'`, `\``, `\′`) in `ReplaceOutsideOfQuotes` and null safety.
+  - Guarded `blockStartingPos.Pop()` against empty stacks in `ParseTypeIntoNodes`.
+  - Added empty string check before indexing in `SnakeCaseToPascalCase` and optimized with `StringBuilderCache`.
+  - Clamped `blockCount` to zero in `SplitGenericArgs`.
+
+---
+
+## 31. Malformed HTML Output, Unchecked Cast Exceptions & Thread Safety in `ViewUtils`
+- **Severity**: Medium / HTML Malformation, Unhandled Exception & Race Condition
+- **Description**:
+  - `ViewUtils.NavLink` generated malformed HTML `</div` (missing closing `>`) and non-standard `</lI>`.
+  - `ViewUtils.ActiveClass` threw `NullReferenceException` when `ActivePath` was null (the default initialization).
+  - `ViewUtils.ToKeyValues` threw `InvalidCastException` when converting `IEnumerable<object>` containing non-string primitives (integers, booleans, enums) due to direct LINQ type filtering cast (`from string item in list`).
+  - `TextDumpOptions.Parse` and `HtmlDumpOptions.Parse` threw `NullReferenceException` when `options` dictionary was null, and threw unhandled cast exceptions when option values were not raw strings.
+  - `ViewUtils.Load` and `GetNavItems` accessed and initialized static collections (`NavItems`, `NavItemsMap`) without thread synchronization, creating race conditions in concurrent web requests.
+- **Change**:
+  - Corrected `</div` to `</div>` and normalized `</li>` in `NavLink`.
+  - Added null guard in `ActiveClass` returning empty string when `activePath` is null.
+  - Replaced restrictive LINQ cast in `ToKeyValues` with universal `item.AsString()` projection.
+  - Hardened `TextDumpOptions.Parse` and `HtmlDumpOptions.Parse` against null dictionaries and safe string conversion.
+  - Added lock synchronization to static navigation collection loaders in `ViewUtils`.
+
+---
+
+## 32. Truncation and Parsing Breakage on Quoted Aliases & Identifiers in `Command`
+- **Severity**: Low / Query Syntax Truncation
+- **Description**:
+  - `Command.IndexOfMethodEnd` truncated identifier parsing at underscore (`_`) and dollar sign (`$`), corrupting SQL/command parsing for aliases containing underscores (e.g. `SUM(*) as total_count`).
+  - It failed to handle quoted aliases (`"alias"`, `'alias'`, `` `alias` ``, `[alias]`) and flexible whitespace between `AS` and the alias.
+- **Change**:
+  - Extended identifier character support to alphanumeric, `_`, and `$`.
+  - Added support for quoted alias syntax across common SQL quote delimiters.
+
+---
+
+## 33. Race Conditions & State Leakage in `SimpleAppSettings`
+- **Severity**: Low / Concurrency Safety & Mutability Leak
+- **Description**:
+  - `SimpleAppSettings` performed read, write, and collection iteration over its internal dictionary without synchronization, risking `InvalidOperationException: Collection was modified` under concurrent access.
+  - `GetAll()` returned a direct reference to the internal mutable dictionary, allowing external callers to unintentionally mutate application configuration.
+- **Change**:
+  - Synchronized all read and write dictionary operations with `lock (settings)`.
+  - Returned a defensive snapshot copy (`new Dictionary<string, string>(settings)`) from `GetAll()`.
+
+---
+
+## 34. Integer Overflow on `int.MinValue` & Missing Color Guards in `SvgCreator`
+- **Severity**: Low / Runtime Arithmetic Overflow
+- **Description**:
+  - `SvgCreator.GetDarkColor` executed `Math.Abs(index) % colors.Length`. In .NET, `Math.Abs(int.MinValue)` throws `OverflowException` because `int.MinValue` has no positive 32-bit two's-complement representation.
+  - `CreateSvg` did not guard against null or empty `DarkColors` collections.
+- **Change**:
+  - Replaced `Math.Abs` with bitwise masking `(index & 0x7FFFFFFF) % colors.Length` to eliminate overflow risk.
+  - Added null safety checks for `DarkColors` and null-propagation in `ToDataUri`.

@@ -152,6 +152,9 @@ public class TextDumpOptions
 
     public static TextDumpOptions Parse(Dictionary<string, object> options, DefaultScripts defaults=null)
     {
+        if (options == null)
+            return new() { Defaults = defaults ?? ViewUtils.DefaultScripts, HeaderStyle = TextStyle.SplitCase };
+
         return new() {
             HeaderStyle = options.TryGetValue("headerStyle", out var oHeaderStyle)
                 ? oHeaderStyle.ConvertTo<TextStyle>()
@@ -192,23 +195,26 @@ public class HtmlDumpOptions
         
     public static HtmlDumpOptions Parse(Dictionary<string, object> options, DefaultScripts defaults=null)
     {
+        if (options == null)
+            return new HtmlDumpOptions { Defaults = defaults ?? ViewUtils.DefaultScripts, HeaderStyle = TextStyle.SplitCase };
+
         return new HtmlDumpOptions 
         {
             Id = options.TryGetValue("id", out var oId)
-                ? (string)oId
+                ? oId?.ToString()
                 : null,
             ClassName = options.TryGetValue("className", out var oClassName)
-                ? (string)oClassName
+                ? oClassName?.ToString()
                 : null,
             ChildClass = options.TryGetValue("childClass", out var oChildClass)
-                ? (string)oChildClass
+                ? oChildClass?.ToString()
                 : null,
 
             HeaderStyle = options.TryGetValue("headerStyle", out var oHeaderStyle)
                 ? oHeaderStyle.ConvertTo<TextStyle>()
                 : TextStyle.SplitCase,
             HeaderTag = options.TryGetValue("headerTag", out var oHeaderTag)
-                ? (string)oHeaderTag
+                ? oHeaderTag?.ToString()
                 : null,
                 
             Caption = options.TryGetValue("caption", out var caption)
@@ -382,15 +388,21 @@ public static class ViewUtils
         var navItems = settings?.Get<List<NavItem>>(NavItemsKey);
         if (navItems != null)
         {
-            NavItems.AddRange(navItems);
+            lock (NavItems)
+            {
+                NavItems.AddRange(navItems);
+            }
         }
 
         var navItemsMap = settings?.Get<Dictionary<string, List<NavItem>>>(NavItemsMapKey);
         if (navItemsMap != null)
         {
-            foreach (var entry in navItemsMap)
+            lock (NavItemsMap)
             {
-                NavItemsMap[entry.Key] = entry.Value;
+                foreach (var entry in navItemsMap)
+                {
+                    NavItemsMap[entry.Key] = entry.Value;
+                }
             }
         }
     }
@@ -409,9 +421,16 @@ public static class ViewUtils
     public static List<NavItem> NavItems { get; } = new();
     public static Dictionary<string, List<NavItem>> NavItemsMap { get; } = new();
 
-    public static List<NavItem> GetNavItems(string key) => NavItemsMap.TryGetValue(key, out var navItems)
-        ? navItems
-        : TypeConstants<NavItem>.EmptyList;
+    public static List<NavItem> GetNavItems(string key)
+    {
+        if (key == null) return TypeConstants<NavItem>.EmptyList;
+        lock (NavItemsMap)
+        {
+            return NavItemsMap.TryGetValue(key, out var navItems)
+                ? navItems
+                : TypeConstants<NavItem>.EmptyList;
+        }
+    }
 
     public static string CssIncludes(IVirtualPathProvider vfs, List<string> cssFiles)
     {
@@ -507,18 +526,32 @@ public static class ViewUtils
         return StringBuilderCache.ReturnAndFree(sb);
     }
 
-    static string ActiveClass(NavItem navItem, string activePath) => 
-        navItem.Href != null && (navItem.Exact == true || activePath.Length <= 1 
-            ? activePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Href?.TrimEnd('/')) == true
-            : activePath.TrimEnd('/').StartsWithIgnoreCase(navItem.Href?.TrimEnd('/')))
+    static string ActiveClass(NavItem navItem, string activePath)
+    {
+        if (string.IsNullOrEmpty(activePath) || string.IsNullOrEmpty(navItem?.Href))
+            return "";
+
+        var isExact = navItem.Exact == true || activePath.Length <= 1;
+        var activeTrimmed = activePath.TrimEnd('/');
+        var hrefTrimmed = navItem.Href.TrimEnd('/');
+
+        return (isExact
+            ? activeTrimmed.EqualsIgnoreCase(hrefTrimmed)
+            : activeTrimmed.StartsWithIgnoreCase(hrefTrimmed))
             ? " active"
             : "";
+    }
         
     /// <summary>
     /// Display a `nav-link` nav-item
     /// </summary>
     public static void NavLink(StringBuilder sb, NavItem navItem, NavOptions options)
     {
+        if (navItem == null)
+            return;
+
+        options ??= NavDefaults.Create();
+
         if (!navItem.ShowNav(options.Attributes))
             return;
             
@@ -544,7 +577,7 @@ public static class ViewUtils
             .Append("\"");
 
         sb.Append(" class=\"")
-            .Append(navLinkCls).Append(ActiveClass(navItem,options.ActivePath))
+            .Append(navLinkCls).Append(ActiveClass(navItem, options.ActivePath))
             .Append("\"");
 
         if (id != null)
@@ -575,7 +608,7 @@ public static class ViewUtils
                 {
                     sb.Append("    <a class=\"")
                         .Append(options.ChildNavMenuItemClass)
-                        .Append(ActiveClass(childNav,options.ActivePath))
+                        .Append(ActiveClass(childNav, options.ActivePath))
                         .Append("\"")
                         .Append(" href=\"")
                         .Append(options.BaseHref?.TrimEnd('/'))
@@ -585,10 +618,10 @@ public static class ViewUtils
                         .AppendLine("</a>");
                 }
             }
-            sb.AppendLine("</div");
+            sb.AppendLine("</div>");
         }
 
-        sb.Append("</lI>");
+        sb.Append("</li>");
     }
 
     public static string NavButtonGroup(List<NavItem> navItems, NavOptions options)
@@ -756,18 +789,16 @@ public static class ViewUtils
     /// <returns>string value or null if it doesn't exist</returns>
     public static string GetParam(IRequest req, string name)
     {
+        if (req == null || string.IsNullOrEmpty(name)) return null;
+
         string value;
         if ((value = req.Headers[HttpHeaders.XParamOverridePrefix + name]) != null) return value;
         if ((value = req.QueryString[name]) != null) return value;
         if ((value = req.FormData[name]) != null) return value;
 
-        //IIS will assign null to params without a name: .../?some_value can be retrieved as req.Params[null]
-        //TryGetValue is not happy with null dictionary keys, so we should bail out here
-        if (string.IsNullOrEmpty(name)) return null;
-
         if (req.Cookies.TryGetValue(name, out var cookie)) return cookie.Value;
 
-        if (req.Items.TryGetValue(name, out var oValue)) return oValue.ToString();
+        if (req.Items.TryGetValue(name, out var oValue)) return oValue?.ToString();
 
         return null;
     }
@@ -776,7 +807,9 @@ public static class ViewUtils
     /// Comma delimited field names
     /// </summary>
     public static List<string> ToVarNames(string fieldNames) =>
-        fieldNames.Split(',').Map(x => x.Trim());
+        string.IsNullOrEmpty(fieldNames)
+            ? new List<string>()
+            : fieldNames.Split(',').Map(x => x.Trim());
 
     public static IEnumerable<string> ToStrings(string filterName, object arg)
     {
@@ -844,18 +877,22 @@ public static class ViewUtils
     {
         if (errorStatus == null)
             return null;
+
+        if (fieldNames == null || fieldNames.Count == 0)
+            return ErrorResponseSummary(errorStatus);
             
         var fieldNamesLookup = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var fieldName in fieldNames)
         {
-            fieldNamesLookup.Add(fieldName);
+            if (fieldName != null)
+                fieldNamesLookup.Add(fieldName);
         }
 
-        if (!fieldNames.IsEmpty() && !errorStatus.Errors.IsEmpty())
+        if (!errorStatus.Errors.IsEmpty())
         {
             foreach (var fieldError in errorStatus.Errors)
             {
-                if (fieldNamesLookup.Contains(fieldError.FieldName))
+                if (fieldError.FieldName != null && fieldNamesLookup.Contains(fieldError.FieldName))
                     return null;
             }
 
@@ -908,7 +945,7 @@ public static class ViewUtils
             else if (values is IEnumerable<KeyValuePair<string, string>> kvpsStr)
                 foreach (var kvp in kvpsStr) to.Add(new KeyValuePair<string,string>(kvp.Key, kvp.Value));
             else if (values is IEnumerable<object> list)
-                to.AddRange(from string item in list select item.AsString() into s select new KeyValuePair<string, string>(s, s));
+                to.AddRange(from object item in list select item.AsString() into s select new KeyValuePair<string, string>(s, s));
         }
         return to;
     }
@@ -1255,6 +1292,7 @@ public static class ViewUtils
         ICompressor jsCompressor,
         BundleOptions options)
     {
+        options ??= new BundleOptions();
         var assetExt = "js";
         var outFile = options.OutputTo ?? (options.Minify 
             ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
@@ -1276,6 +1314,7 @@ public static class ViewUtils
         ICompressor cssCompressor,
         BundleOptions options)
     {
+        options ??= new BundleOptions();
         var assetExt = "css";
         var outFile = options.OutputTo ?? (options.Minify 
             ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
@@ -1293,6 +1332,7 @@ public static class ViewUtils
         ICompressor htmlCompressor,
         BundleOptions options)
     {
+        options ??= new BundleOptions();
         var assetExt = "html";
         var outFile = options.OutputTo ?? (options.Minify 
             ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
@@ -1317,192 +1357,189 @@ public static class ViewUtils
         string assetExt, 
         string pathBase)
     {
-        try
+        if (webVfs == null)
+            throw new ArgumentNullException(nameof(webVfs));
+        options ??= new BundleOptions();
+
+        var writeVfs = ResolveWriteVfs(filterName, webVfs, contentVfs, origOutFile, options.SaveToDisk, out var outFilePath);
+
+        var outHtmlTag = htmlTagFmt.Replace("{0}", pathBase == null ? outFilePath : pathBase.CombineWith(outFilePath));
+
+        var maxDate = DateTime.MinValue;
+        var hasHash = outFilePath.IndexOf("[hash]", StringComparison.Ordinal) >= 0;
+
+        if (!options.Sources.IsEmpty() && options.Bundle && options.Cache)
         {
-            var writeVfs = ResolveWriteVfs(filterName, webVfs, contentVfs, origOutFile, options.SaveToDisk, out var outFilePath);
-
-            var outHtmlTag = htmlTagFmt.Replace("{0}", pathBase == null ? outFilePath : pathBase.CombineWith(outFilePath));
-
-            var maxDate = DateTime.MinValue;
-            var hasHash = outFilePath.IndexOf("[hash]", StringComparison.Ordinal) >= 0;
-
-            if (!options.Sources.IsEmpty() && options.Bundle && options.Cache)
+            if (hasHash)
             {
-                if (hasHash)
+                var memFs = webVfs.GetMemoryVirtualFiles();
+
+                var existingBundleTag = webVfs.GetFile(outFilePath); 
+                if (existingBundleTag == null)
                 {
-                    var memFs = webVfs.GetMemoryVirtualFiles();
+                    // use existing bundle if file with matching hash pattern is found
+                    var outDirPath = outFilePath.LastLeftPart('/');
+                    var outFileName = outFilePath.LastRightPart('/');
+                    var outGlobFile = outFileName.Replace("[hash]", ".*");
 
-                    var existingBundleTag = webVfs.GetFile(outFilePath); 
-                    if (existingBundleTag == null)
+                    // use glob search to avoid unnecessary file scans
+                    var outDir = webVfs.GetDirectory(outDirPath);
+                    if (outDir != null)
                     {
-                        // use existing bundle if file with matching hash pattern is found
-                        var outDirPath = outFilePath.LastLeftPart('/');
-                        var outFileName = outFilePath.LastRightPart('/');
-                        var outGlobFile = outFileName.Replace("[hash]", ".*");
-
-                        // use glob search to avoid unnecessary file scans
-                        var outDir = webVfs.GetDirectory(outDirPath);
-                        if (outDir != null)
+                        var outDirFiles = outDir.GetFiles().OrderBy(x => x.VirtualPath);
+                        foreach (var file in outDirFiles)
                         {
-                            var outDirFiles = outDir.GetFiles().OrderBy(x => x.VirtualPath);
-                            foreach (var file in outDirFiles)
+                            if (file.Name.Glob(outGlobFile))
                             {
-                                if (file.Name.Glob(outGlobFile))
-                                {
-                                    outHtmlTag = htmlTagFmt.Replace("{0}", "/" + file.VirtualPath);
-                                    memFs.WriteFile(outFilePath, outHtmlTag); //cache lookup
-                                    return outHtmlTag;
-                                }
+                                outHtmlTag = htmlTagFmt.Replace("{0}", "/" + file.VirtualPath);
+                                memFs.WriteFile(outFilePath, outHtmlTag); //cache lookup
+                                return outHtmlTag;
                             }
                         }
                     }
-                    else
-                    {
-                        return existingBundleTag.ReadAllText();
-                    }
                 }
-                else if (webVfs.FileExists(outWebPath ?? outFilePath))
+                else
                 {
-                    return outHtmlTag;
+                    return existingBundleTag.ReadAllText();
                 }
             }
-
-            var sources = GetBundleFiles(filterName, webVfs, contentVfs, options.Sources, assetExt);
-
-            var existing = new HashSet<string>();
-            var sb = StringBuilderCache.Allocate();
-            var sbLog = StringBuilderCacheAlt.Allocate();
-
-            void LogWarning(string msg)
+            else if (webVfs.FileExists(outWebPath ?? outFilePath))
             {
-                sbLog.AppendLine()
-                    .Append(assetExt == "html" ? "<!--" : "/*")
-                    .Append(" WARNING: ")
-                    .Append(msg)
-                    .Append(assetExt == "html" ? "-->" : "*/");
+                return outHtmlTag;
             }
+        }
 
-                
-            var minExt = ".min." + assetExt;
-            if (options.Bundle)
+        var sources = GetBundleFiles(filterName, webVfs, contentVfs, options.Sources, assetExt);
+
+        var existing = new HashSet<string>();
+        var sb = StringBuilderCache.Allocate();
+        var sbLog = StringBuilderCacheAlt.Allocate();
+
+        void LogWarning(string msg)
+        {
+            sbLog.AppendLine()
+                .Append(assetExt == "html" ? "<!--" : "/*")
+                .Append(" WARNING: ")
+                .Append(msg)
+                .Append(assetExt == "html" ? "-->" : "*/");
+        }
+
+            
+        var minExt = ".min." + assetExt;
+        if (options.Bundle)
+        {
+            foreach (var file in sources)
             {
-                foreach (var file in sources)
-                {
-                    if (hasHash)
-                    {
-                        file.Refresh();
-                        if (file.LastModified > maxDate)
-                            maxDate = file.LastModified;
-                    }
-                        
-                    string src;
-                    try
-                    {
-                        src = file.ReadAllText();
-                    }
-                    catch (Exception e)
-                    {
-                        LogWarning($"Could not read '{file.VirtualPath}': {e.Message}");
-                        continue;
-                    }
-                        
-                    if (file.Name.EndsWith("bundle." + assetExt) ||
-                        file.Name.EndsWith("bundle.min." + assetExt) ||
-                        existing.Contains(file.VirtualPath))
-                        continue;
-
-                    if (options.IIFE) sb.AppendLine("(function(){");
-                        
-                    if (options.Minify && !file.Name.EndsWith(minExt))
-                    {
-                        string minified;
-                        try
-                        {
-                            minified = jsCompressor.Compress(src);
-                        }
-                        catch (Exception e)
-                        {
-                            LogWarning($"Could not Compress '{file.VirtualPath}': {e.Message}");
-                            minified = src;
-                        }
-                            
-                        sb.Append(minified).Append(assetExt == "js" ? ";" : "").AppendLine();
-                    }
-                    else
-                    {
-                        sb.AppendLine(src);
-                    }
-    
-                    if (options.IIFE) sb.AppendLine("})();");
-                        
-                    // Also define ES6 module in AMD's define(), required by /js/ss-require.js
-                    if (options.RegisterModuleInAmd && assetExt == "js")
-                    {
-                        sb.AppendLine("if (typeof define === 'function' && define.amd && typeof module !== 'undefined') define('" +
-                                      file.Name.WithoutExtension() + "', [], function(){ return module.exports; });");
-                    }
-
-                    existing.Add(file.VirtualPath);
-                }
-
-                var bundled = StringBuilderCache.ReturnAndFree(sb);
                 if (hasHash)
                 {
-                    var hash = "." + maxDate.ToUnixTimeMs();
-                    outHtmlTag = outHtmlTag.Replace("[hash]", hash);
-                    webVfs.GetMemoryVirtualFiles().WriteFile(outFilePath, outHtmlTag); //have bundle[hash].ext return rendered html
-                        
-                    outFilePath = outFilePath.Replace("[hash]", hash);
+                    file.Refresh();
+                    if (file.LastModified > maxDate)
+                        maxDate = file.LastModified;
                 }
                     
+                string src;
                 try
                 {
-                    writeVfs.WriteFile(outFilePath, bundled);
+                    src = file.ReadAllText();
                 }
                 catch (Exception e)
                 {
-                    LogWarning($"Could not write to '{origOutFile}': {e.Message}");
+                    LogWarning($"Could not read '{file.VirtualPath}': {e.Message}");
+                    continue;
                 }
-
-                if (sbLog.Length != 0) 
-                    return outHtmlTag + StringBuilderCacheAlt.ReturnAndFree(sbLog);
                     
-                StringBuilderCacheAlt.Free(sbLog);
-                return outHtmlTag;
-            }
-            else
-            {
-                var filePaths = new List<string>();
-                    
-                foreach (var file in sources)
-                {
-                    if (file.Name.EndsWith("bundle." + assetExt) ||
-                        file.Name.EndsWith("bundle.min." + assetExt) ||
-                        existing.Contains(file.VirtualPath))
-                        continue;
-                        
-                    filePaths.Add("/".CombineWith(file.VirtualPath));
-                    existing.Add(file.VirtualPath);
-                }
+                if (file.Name.EndsWith("bundle." + assetExt) ||
+                    file.Name.EndsWith("bundle.min." + assetExt) ||
+                    existing.Contains(file.VirtualPath))
+                    continue;
 
-                foreach (var filePath in filePaths)
+                if (options.IIFE) sb.AppendLine("(function(){");
+                    
+                if (options.Minify && !file.Name.EndsWith(minExt))
                 {
-                    if (filePath.EndsWith(minExt))
+                    string minified;
+                    try
                     {
-                        var withoutMin = filePath.Substring(0, filePath.Length - minExt.Length) + "." + assetExt;
-                        if (filePaths.Contains(withoutMin))
-                            continue;
+                        minified = jsCompressor.Compress(src);
                     }
-
-                    sb.AppendLine(htmlTagFmt.Replace("{0}", filePath));
+                    catch (Exception e)
+                    {
+                        LogWarning($"Could not Compress '{file.VirtualPath}': {e.Message}");
+                        minified = src;
+                    }
+                        
+                    sb.Append(minified).Append(assetExt == "js" ? ";" : "").AppendLine();
                 }
+                else
+                {
+                    sb.AppendLine(src);
+                }
+
+                if (options.IIFE) sb.AppendLine("})();");
                     
-                return StringBuilderCache.ReturnAndFree(sb);
+                // Also define ES6 module in AMD's define(), required by /js/ss-require.js
+                if (options.RegisterModuleInAmd && assetExt == "js")
+                {
+                    sb.AppendLine("if (typeof define === 'function' && define.amd && typeof module !== 'undefined') define('" +
+                                  file.Name.WithoutExtension() + "', [], function(){ return module.exports; });");
+                }
+
+                existing.Add(file.VirtualPath);
             }
+
+            var bundled = StringBuilderCache.ReturnAndFree(sb);
+            if (hasHash)
+            {
+                var hash = "." + maxDate.ToUnixTimeMs();
+                outHtmlTag = outHtmlTag.Replace("[hash]", hash);
+                webVfs.GetMemoryVirtualFiles().WriteFile(outFilePath, outHtmlTag); //have bundle[hash].ext return rendered html
+                    
+                outFilePath = outFilePath.Replace("[hash]", hash);
+            }
+                
+            try
+            {
+                writeVfs.WriteFile(outFilePath, bundled);
+            }
+            catch (Exception e)
+            {
+                LogWarning($"Could not write to '{origOutFile}': {e.Message}");
+            }
+
+            if (sbLog.Length != 0) 
+                return outHtmlTag + StringBuilderCacheAlt.ReturnAndFree(sbLog);
+                
+            StringBuilderCacheAlt.Free(sbLog);
+            return outHtmlTag;
         }
-        catch (Exception)
+        else
         {
-            throw;
+            var filePaths = new List<string>();
+                
+            foreach (var file in sources)
+            {
+                if (file.Name.EndsWith("bundle." + assetExt) ||
+                    file.Name.EndsWith("bundle.min." + assetExt) ||
+                    existing.Contains(file.VirtualPath))
+                    continue;
+                    
+                filePaths.Add("/".CombineWith(file.VirtualPath));
+                existing.Add(file.VirtualPath);
+            }
+
+            foreach (var filePath in filePaths)
+            {
+                if (filePath.EndsWith(minExt))
+                {
+                    var withoutMin = filePath.Substring(0, filePath.Length - minExt.Length) + "." + assetExt;
+                    if (filePaths.Contains(withoutMin))
+                        continue;
+                }
+
+                sb.AppendLine(htmlTagFmt.Replace("{0}", filePath));
+            }
+                
+            return StringBuilderCache.ReturnAndFree(sb);
         }
     }
 }

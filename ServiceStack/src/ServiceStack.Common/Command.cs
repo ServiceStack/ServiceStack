@@ -20,21 +20,48 @@ public class Command
 
     public int IndexOfMethodEnd(ReadOnlyMemory<char> commandsString, int pos)
     {
-        //finding end of suffix, e.g: 'SUM(*) Total' or 'SUM(*) as Total'
+        //finding end of suffix, e.g: 'SUM(*) Total', 'SUM(*) as total_count', or 'SUM(*) AS "Total Count"'
         var endPos = pos;
         var cmdSpan = commandsString.Span;
         while (cmdSpan.Length > endPos && char.IsWhiteSpace(cmdSpan[endPos]))
             endPos++;
 
-        if (cmdSpan.Length >= endPos + 3 && cmdSpan.Slice(endPos).StartsWith("as ".AsSpan(), StringComparison.OrdinalIgnoreCase))
-            endPos += "as ".Length;
+        if (cmdSpan.Length >= endPos + 2 && cmdSpan.Slice(endPos, 2).Equals("as".AsSpan(), StringComparison.OrdinalIgnoreCase))
+        {
+            if (cmdSpan.Length == endPos + 2 || char.IsWhiteSpace(cmdSpan[endPos + 2]))
+            {
+                endPos += 2;
+                while (cmdSpan.Length > endPos && char.IsWhiteSpace(cmdSpan[endPos]))
+                    endPos++;
+            }
+        }
 
-        while (cmdSpan.Length > endPos && char.IsWhiteSpace(cmdSpan[endPos]))
-            endPos++;
-
-        while (cmdSpan.Length > endPos &&
-               char.IsLetterOrDigit(cmdSpan[endPos]))
-            endPos++;
+        if (cmdSpan.Length > endPos)
+        {
+            var c = cmdSpan[endPos];
+            if (c is '"' or '\'' or '`')
+            {
+                endPos++;
+                while (cmdSpan.Length > endPos && cmdSpan[endPos] != c)
+                    endPos++;
+                if (cmdSpan.Length > endPos && cmdSpan[endPos] == c)
+                    endPos++;
+            }
+            else if (c == '[')
+            {
+                endPos++;
+                while (cmdSpan.Length > endPos && cmdSpan[endPos] != ']')
+                    endPos++;
+                if (cmdSpan.Length > endPos && cmdSpan[endPos] == ']')
+                    endPos++;
+            }
+            else
+            {
+                while (cmdSpan.Length > endPos &&
+                       (char.IsLetterOrDigit(cmdSpan[endPos]) || cmdSpan[endPos] is '_' or '$'))
+                    endPos++;
+            }
+        }
 
         this.Suffix = commandsString.Slice(pos, endPos - pos).TrimEnd();
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -329,6 +329,12 @@ public static class StringUtils
     /// </summary>
     public static string ReplaceOutsideOfQuotes(this string str, params string[] replaceStringsPairs)
     {
+        if (str == null)
+            return null;
+
+        if (replaceStringsPairs == null || replaceStringsPairs.Length == 0)
+            return str;
+
         var inDoubleQuotes = false;
         var inSingleQuotes = false;
         var inBackTickQuotes = false;
@@ -341,15 +347,13 @@ public static class StringUtils
         for (var i = 0; i < str.Length; i++)
         {
             var c = str[i];
-            if (i > 0 && c == '\\')
+            if (c == '\\' && i + 1 < str.Length)
             {
-                switch (str[i-1]) 
+                var next = str[i + 1];
+                if (next is '"' or '\'' or '`' or '′' or '\\')
                 {
-                    case '"':
-                    case '\'':
-                    case '`':
-                    case '′':
-                        continue;
+                    i++;
+                    continue;
                 }
             }
 
@@ -452,7 +456,10 @@ public static class StringUtils
 
     public static string ToEscapedString(this string input)
     {
-        var sb = new StringBuilder(input.Length + 2);
+        if (input == null)
+            return null;
+
+        var sb = StringBuilderCache.Allocate();
         sb.Append('"');
         foreach (var c in input)
         {
@@ -474,7 +481,7 @@ public static class StringUtils
             }
         }
         sb.Append('"');
-        return sb.ToString();
+        return StringBuilderCache.ReturnAndFree(sb);
     }
 
     public static string SnakeCaseToPascalCase(string snakeCase)
@@ -483,18 +490,23 @@ public static class StringUtils
             return snakeCase;
         
         var safeVarName = snakeCase.SafeVarName();
+        if (string.IsNullOrEmpty(safeVarName))
+            return string.Empty;
+
         if (safeVarName.IndexOf('_') >= 0)
         {
             var parts = safeVarName.Split('_').Where(x => !string.IsNullOrEmpty(x));
-            var pascalName = "";
+            var sb = StringBuilderCache.Allocate();
             foreach (var part in parts)
             {
-                pascalName += char.ToUpper(part[0]) + part.Substring(1);
+                sb.Append(char.ToUpper(part[0]));
+                if (part.Length > 1)
+                    sb.Append(part.Substring(1));
             }
-            return pascalName;
+            return StringBuilderCache.ReturnAndFree(sb);
         }
         return char.IsLower(safeVarName[0])
-            ? char.ToUpper(safeVarName[0]) + safeVarName.Substring(1)
+            ? char.ToUpper(safeVarName[0]) + (safeVarName.Length > 1 ? safeVarName.Substring(1) : string.Empty)
             : safeVarName;
     }
 
@@ -608,7 +620,7 @@ public static class StringUtils
                     blockCount++;
                     break;
                 case '>':
-                    blockCount--;
+                    blockCount = Math.Max(0, blockCount - 1);
                     break;
             }
         }
@@ -632,6 +644,9 @@ public static class StringUtils
     {
         if (string.IsNullOrEmpty(typeDef))
             return null;
+
+        if (genericDelimChars == null || genericDelimChars.Length < 2)
+            genericDelimChars = csharpGenericDelimChars;
 
         var openDelim = genericDelimChars[0];
         var openDelimStr = openDelim.ToString();
@@ -660,6 +675,12 @@ public static class StringUtils
                 }
                 else
                 {
+                    if (blockStartingPos.Count == 0)
+                    {
+                        lastBlockPos = nextPos;
+                        continue;
+                    }
+
                     var startPos = blockStartingPos.Pop();
                     if (blockStartingPos.Count == 0)
                     {

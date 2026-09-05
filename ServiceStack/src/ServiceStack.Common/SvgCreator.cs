@@ -57,19 +57,29 @@ public static class SvgCreator
 
     public static string GetDarkColor(int index)
     {
-        if (DarkColors == null || DarkColors.Length == 0)
+        var colors = DarkColors;
+        if (colors == null || colors.Length == 0)
             return "#334155";
-        var i = Math.Abs(index) % DarkColors.Length;
-        return DarkColors[i];
+        var i = (index & 0x7FFFFFFF) % colors.Length;
+        return colors[i];
     }
 
     public static string CreateSvg(char letter, string? bgColor = null, string? textColor = null)
     {
-        #if NET6_0_OR_GREATER
-        bgColor ??= GetDarkColor(Random.Shared.Next(DarkColors.Length));
-        #else
-        bgColor ??= GetDarkColor(new Random().Next(DarkColors.Length));
-        #endif
+        var colors = DarkColors;
+        var count = colors?.Length ?? 0;
+        if (count > 0)
+        {
+#if NET6_0_OR_GREATER
+            bgColor ??= GetDarkColor(Random.Shared.Next(count));
+#else
+            bgColor ??= GetDarkColor(new Random().Next(count));
+#endif
+        }
+        else
+        {
+            bgColor ??= "#334155";
+        }
         textColor ??= "#FFF";
 
         var svg = $@"<svg xmlns=""http://www.w3.org/2000/svg"" xmlns:xlink=""http://www.w3.org/1999/xlink"" version=""1.1"" style=""isolation:isolate"" viewBox=""0 0 32 32"">
@@ -79,7 +89,7 @@ public static class SvgCreator
         return svg;
     }
 
-    public static string CreateSvgDataUri(char letter, string? bgColor = null, string? textColor = null) =>
+    public static string? CreateSvgDataUri(char letter, string? bgColor = null, string? textColor = null) =>
         ToDataUri(CreateSvg(letter, bgColor, textColor));
     
     public static string Decode(string dataUri)
@@ -127,7 +137,7 @@ public static class SvgCreator
     
     public static string CreateGradeSvg(char grade) => CreateSvg(grade, GradeBgColor(grade), "#fff");
     
-    public static string CreateGradeDataUri(char grade) => ToDataUri(CreateGradeSvg(grade));
+    public static string? CreateGradeDataUri(char grade) => ToDataUri(CreateGradeSvg(grade));
 
     public static string? Encode(string svg)
     {
@@ -152,5 +162,5 @@ public static class SvgCreator
             .Replace("}","%7D");
     }
 
-    public static string ToDataUri(string svg) => "data:image/svg+xml," + Encode(svg);
+    public static string? ToDataUri(string? svg) => svg == null ? null : "data:image/svg+xml," + Encode(svg);
 }
