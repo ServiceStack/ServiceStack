@@ -11,6 +11,7 @@ internal enum GeminiSearchDbKind
     Sqlite,
     PostgreSql,
     MySql,
+    MariaDb,
     SqlServer,
 }
 
@@ -22,7 +23,7 @@ internal sealed record GeminiSearchDbQuery(string Sql, Dictionary<string, object
 /// </summary>
 internal sealed class GeminiSearchDbProvider
 {
-    public GeminiSearchDbKind Kind { get; }
+    public GeminiSearchDbKind Kind { get; private set; }
     public bool NativeEnabled { get; private set; }
     public bool UsesManualFullTextRows => Kind == GeminiSearchDbKind.Sqlite && NativeEnabled;
 
@@ -33,22 +34,26 @@ internal sealed class GeminiSearchDbProvider
         (GeminiSearchDbKind.Sqlite, true) => "sqlite-fts5",
         (GeminiSearchDbKind.PostgreSql, true) => "postgresql-fts",
         (GeminiSearchDbKind.MySql, true) => "mysql-fulltext",
+        (GeminiSearchDbKind.MariaDb, true) => "mariadb-fulltext",
         (GeminiSearchDbKind.SqlServer, true) => "sqlserver-fulltext",
         (GeminiSearchDbKind.Sqlite, false) => "sqlite-like",
         (GeminiSearchDbKind.PostgreSql, false) => "postgresql-like",
         (GeminiSearchDbKind.MySql, false) => "mysql-like",
+        (GeminiSearchDbKind.MariaDb, false) => "mariadb-like",
         (GeminiSearchDbKind.SqlServer, false) => "sqlserver-like",
         _ => "like",
     };
 
     public static GeminiSearchDbProvider Detect(IDbConnection conn)
     {
-        var name = conn.GetDialectProvider().GetType().Name;
-        var kind = name.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) ? GeminiSearchDbKind.Sqlite
-            : name.Contains("Postgre", StringComparison.OrdinalIgnoreCase) ? GeminiSearchDbKind.PostgreSql
-            : name.Contains("MySql", StringComparison.OrdinalIgnoreCase) ? GeminiSearchDbKind.MySql
-            : name.Contains("SqlServer", StringComparison.OrdinalIgnoreCase) ? GeminiSearchDbKind.SqlServer
-            : GeminiSearchDbKind.Unknown;
+        var kind = conn.GetDialectProvider().Kind switch
+        {
+            DbKind.Sqlite => GeminiSearchDbKind.Sqlite,
+            DbKind.PostgreSql => GeminiSearchDbKind.PostgreSql,
+            DbKind.SqlServer => GeminiSearchDbKind.SqlServer,
+            DbKind.MySql => GeminiSearchDbKind.MySql,
+            _ => GeminiSearchDbKind.Unknown,
+        };
         return new GeminiSearchDbProvider(kind);
     }
 
@@ -60,6 +65,15 @@ internal sealed class GeminiSearchDbProvider
         var model = typeof(ChatSearchSection).GetModelMetadata();
         string Col(string name) => dialect.GetQuotedColumnName(model.GetFieldDefinition(name));
 
+        // Both servers use the OrmLite MySQL dialect. Preserve that shared SQL path while
+        // reporting the actual engine so native/fallback status remains unambiguous.
+        if (Kind == GeminiSearchDbKind.MySql)
+        {
+            var version = conn.Scalar<string>("SELECT VERSION()") ?? "";
+            if (version.Contains("MariaDB", StringComparison.OrdinalIgnoreCase))
+                Kind = GeminiSearchDbKind.MariaDb;
+        }
+
         switch (Kind)
         {
             case GeminiSearchDbKind.Sqlite:
@@ -69,7 +83,9 @@ internal sealed class GeminiSearchDbProvider
                 conn.ExecuteSql($"CREATE INDEX IF NOT EXISTS ix_chat_search_section_fts ON {table} USING GIN (to_tsvector('simple', coalesce({Col(nameof(ChatSearchSection.DocumentTitle))},'') || ' ' || coalesce({Col(nameof(ChatSearchSection.Heading))},'') || ' ' || coalesce({Col(nameof(ChatSearchSection.Content))},'')))");
                 break;
             case GeminiSearchDbKind.MySql:
-                var exists = conn.Scalar<long>("SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name=@table AND index_name='ix_chat_search_section_fts'", new { table = model.ModelName });
+            case GeminiSearchDbKind.MariaDb:
+                var tableName = dialect.GetTableName(model);
+                var exists = conn.Scalar<long>("SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name=@table AND index_name='ix_chat_search_section_fts'", new { table = tableName });
                 if (exists == 0)
                     conn.ExecuteSql($"ALTER TABLE {table} ADD FULLTEXT INDEX ix_chat_search_section_fts ({Col(nameof(ChatSearchSection.DocumentTitle))}, {Col(nameof(ChatSearchSection.Heading))}, {Col(nameof(ChatSearchSection.Content))})");
                 break;
@@ -125,6 +141,7 @@ internal sealed class GeminiSearchDbProvider
                 sql = $"SELECT s.*, ts_rank_cd({vector},to_tsquery('simple',@query)) AS \"Score\", {Col(nameof(ChatSearchSection.Content))} AS \"Snippet\" FROM {table} s WHERE {Col(nameof(ChatSearchSection.FilestoreId))}=@storeId{userClause}{scopeClause} AND {vector} @@ to_tsquery('simple',@query) ORDER BY \"Score\" DESC LIMIT @take";
                 break;
             case GeminiSearchDbKind.MySql:
+            case GeminiSearchDbKind.MariaDb:
                 var cols = string.Join(',', new[] { nameof(ChatSearchSection.DocumentTitle), nameof(ChatSearchSection.Heading), nameof(ChatSearchSection.Content) }.Select(x => Col(x)));
                 args["query"] = string.Join(' ', tokens.Select(x => "+" + x + "*"));
                 sql = $"SELECT s.*, MATCH({cols}) AGAINST(@query IN BOOLEAN MODE) AS Score, {Col(nameof(ChatSearchSection.Content))} AS Snippet FROM {table} s WHERE {Col(nameof(ChatSearchSection.FilestoreId))}=@storeId{userClause}{scopeClause} AND MATCH({cols}) AGAINST(@query IN BOOLEAN MODE) ORDER BY Score DESC LIMIT @take";
@@ -170,7 +187,7 @@ internal sealed class GeminiSearchDbProvider
             {
                 GeminiSearchDbKind.Sqlite => $"EXISTS (SELECT 1 FROM json_each(COALESCE({column},'[]')) WHERE value=@{parameter})",
                 GeminiSearchDbKind.PostgreSql => $"EXISTS (SELECT 1 FROM jsonb_array_elements_text(COALESCE({column},'[]')::jsonb) AS scope_value(value) WHERE value=@{parameter})",
-                GeminiSearchDbKind.MySql => $"JSON_CONTAINS(COALESCE({column},JSON_ARRAY()),JSON_QUOTE(@{parameter}))",
+                GeminiSearchDbKind.MySql or GeminiSearchDbKind.MariaDb => $"JSON_CONTAINS(COALESCE({column},JSON_ARRAY()),JSON_QUOTE(@{parameter}))",
                 GeminiSearchDbKind.SqlServer => $"EXISTS (SELECT 1 FROM OPENJSON(COALESCE({column},'[]')) WHERE [value]=@{parameter})",
                 _ => "1=1",
             });

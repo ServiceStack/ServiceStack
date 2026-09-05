@@ -88,7 +88,7 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
         //        SqlServer2012Dialect.Provider));
 
         //container.Register<IDbConnectionFactory>(
-        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;UID=root;Password=test",
+        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;UID=root;Password=p@55wOrd",
         //        MySqlDialect.Provider));
 
         //container.Register<IDbConnectionFactory>(

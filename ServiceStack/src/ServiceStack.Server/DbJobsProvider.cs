@@ -62,14 +62,13 @@ public class DbJobsProvider
     public static DbJobsProvider Create(IDbConnectionFactory dbFactory, string? namedConnection = null)
     {
         var dialect = dbFactory.GetDialectProvider(namedConnection: namedConnection);
-        var typeName = dialect.GetType().Name;
-        var dbProvider = typeName.StartsWith("Postgre")
-            ? new PostgresDbJobsProvider()
-            :  typeName.StartsWith("MySql") || typeName.StartsWith("Maria")
-                ? new MySqlDbJobsProvider()
-                : typeName.StartsWith("SqlServer")
-                    ? new SqlServerDbJobsProvider()
-                    : new DbJobsProvider();
+        var dbProvider = dialect.Kind switch
+        {
+            DbKind.PostgreSql => new PostgresDbJobsProvider(),
+            DbKind.MySql => new MySqlDbJobsProvider(),
+            DbKind.SqlServer => new SqlServerDbJobsProvider(),
+            _ => new DbJobsProvider()
+        };
         dbProvider.DbFactory = dbFactory;
         dbProvider.NamedConnection = namedConnection;
         dbProvider.Dialect = dialect;
