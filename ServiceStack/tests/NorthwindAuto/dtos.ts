@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-02 18:56:04
+Date: 2026-09-05 12:09:12
 Version: 10.15
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -2101,7 +2101,7 @@ export class Option
 
 export class ValidateRule
 {
-    public validator: string;
+    public validator?: string;
     public condition?: string;
     public errorCode?: string;
     public message?: string;
