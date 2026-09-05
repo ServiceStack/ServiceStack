@@ -18,16 +18,16 @@ services:
     container_name: servicestack-postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: test
+      POSTGRES_PASSWORD: p@55wOrd
+      POSTGRES_DB: postgres
     ports:
       - "48303:5432"
       - "5432:5432"
     volumes:
-      - ./data/postgres-init:/docker-entrypoint-initdb.d:ro
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d test && psql -U postgres -d test -tAc \"SELECT to_tsvector('simple','full text search') @@ to_tsquery('simple','full & text')\" | grep -q t"]
+      test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -d test -tAc \"SELECT to_tsvector('simple','full text search') @@ to_tsquery('simple','full & text')\" | grep -q t"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -50,6 +50,8 @@ services:
     ports:
       - "48501:1433"
       - "1433:1433"
+    volumes:
+      - ./docker/sqlserver-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: >-
         /opt/mssql-tools18/bin/sqlcmd -b -S localhost -U sa -P "p@55wOrd" -C
@@ -57,7 +59,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 15s
+      start_period: 30s
 
   # MariaDB / MySQL - InnoDB full-text search is built into MariaDB
   mysql:
@@ -67,7 +69,7 @@ services:
       MYSQL_ROOT_PASSWORD: "p@55wOrd"
       MYSQL_DATABASE: "test"
       MYSQL_USER: "test"
-      MYSQL_PASSWORD: "test"
+      MYSQL_PASSWORD: "p@55wOrd"
     ports:
       - "48205:3306"
       - "3306:3306"

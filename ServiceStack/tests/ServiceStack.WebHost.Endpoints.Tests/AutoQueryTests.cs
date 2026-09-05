@@ -80,11 +80,11 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
             req.Items[Keywords.DbInfo] = dto.ConvertTo<ConnectionInfo>());
 
         //container.Register<IDbConnectionFactory>(
-        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
+        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=p@55wOrd;",
         //        SqlServerDialect.Provider));
 
         //container.Register<IDbConnectionFactory>(
-        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
+        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=p@55wOrd;",
         //        SqlServer2012Dialect.Provider));
 
         //container.Register<IDbConnectionFactory>(
@@ -92,7 +92,7 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
         //        MySqlDialect.Provider));
 
         //container.Register<IDbConnectionFactory>(
-        //    new OrmLiteConnectionFactory("Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+        //    new OrmLiteConnectionFactory("Server=localhost;Port=5432;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
         //        PostgreSqlDialect.Provider));
 
         using (var db = container.Resolve<IDbConnectionFactory>().Open())

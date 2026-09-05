@@ -814,8 +814,8 @@ public class TestsConfig
 
     public static readonly string ListeningOn = BaseUri + "/";
     public static readonly string RabbitMQConnString = Environment.GetEnvironmentVariable("CI_RABBITMQ") ?? "localhost";
-    public static readonly string SqlServerConnString = Environment.GetEnvironmentVariable("MSSQL_CONNECTION") ?? "Server=localhost;Database=test;User Id=test;Password=test;";
-    public static readonly string PostgreSqlConnString = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
+    public static readonly string SqlServerConnString = Environment.GetEnvironmentVariable("MSSQL_CONNECTION") ?? "Server=localhost;Database=test;User Id=test;Password=p@55wOrd;";
+    public static readonly string PostgreSqlConnString = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=5432;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
     public static readonly string DynamoDbServiceURL = Environment.GetEnvironmentVariable("CI_DYNAMODB") ?? "http://localhost:8000";
 
     public const string AspNetBaseUri = "http://localhost:50000/";
@@ -894,11 +894,11 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
             req.Items[Keywords.DbInfo] = dto.ConvertTo<ConnectionInfo>());
 
         //container.Register<IDbConnectionFactory>(
-        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
+        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=p@55wOrd;",
         //        SqlServerDialect.Provider));
 
         //container.Register<IDbConnectionFactory>(
-        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;",
+        //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=p@55wOrd;",
         //        SqlServer2012Dialect.Provider));
 
         //container.Register<IDbConnectionFactory>(
@@ -906,7 +906,7 @@ public class AutoQueryAppHost() : AppSelfHostBase("AutoQuery", typeof(AutoQueryS
         //        MySqlDialect.Provider));
 
         //container.Register<IDbConnectionFactory>(
-        //    new OrmLiteConnectionFactory("Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+        //    new OrmLiteConnectionFactory("Server=localhost;Port=5432;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
         //        PostgreSqlDialect.Provider));
 
         using (var db = container.Resolve<IDbConnectionFactory>().Open())

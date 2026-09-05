@@ -79,7 +79,7 @@ jobs:
         if: success() || failure()
         env:
           ORMLITE_DIALECT: PostgreSql11
-          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
         run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests.Setup/ServiceStack.OrmLite.Tests.Setup.csproj
 
       - name: Test Postgres OrmLite
@@ -87,7 +87,7 @@ jobs:
         if: success() || failure()
         env:
           ORMLITE_DIALECT: PostgreSql11
-          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
+          PGSQL_CONNECTION: Server=localhost;Port=48303;User Id=postgres;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200
         run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report

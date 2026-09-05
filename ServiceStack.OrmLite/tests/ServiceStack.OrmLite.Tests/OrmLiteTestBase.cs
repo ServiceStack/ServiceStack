@@ -22,14 +22,14 @@ namespace ServiceStack.OrmLite.Tests
 //        public static string SqliteMemoryDb = Environment.GetEnvironmentVariable("SQLITE_CONNECTION") ?? ":memory:";
 //        public static string SqlServerBuildDb = Environment.GetEnvironmentVariable("MSSQL_CONNECTION") ?? "Server=localhost;User Id=sa;Password=p@55wOrd;Database=test;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;";
 //        public static string OracleDb = Environment.GetEnvironmentVariable("ORACLE_CONNECTION") ?? "Data Source=localhost:48401/XE;User ID=system;Password=test";
-//        public static string MySqlDb_5_5 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48201;Database=test;UID=root;Password=test;SslMode=none";
-//        public static string MySqlDb_10_1 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48202;Database=test;UID=root;Password=test;SslMode=none";
-//        public static string MySqlDb_10_2 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48203;Database=test;UID=root;Password=test;SslMode=none";
-//        public static string MySqlDb_10_3 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48204;Database=test;UID=root;Password=test;SslMode=none";
-//        public static string MySqlDb_10_4 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48205;Database=test;UID=root;Password=test;SslMode=none";
-//        public static string PostgresDb_9 = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=48301;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
-//        public static string PostgresDb_10 = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=48302;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
-//        public static string PostgresDb_11 = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=48303;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
+//        public static string MySqlDb_5_5 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48201;Database=test;UID=root;Password=p@55wOrd;SslMode=none";
+//        public static string MySqlDb_10_1 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48202;Database=test;UID=root;Password=p@55wOrd;SslMode=none";
+//        public static string MySqlDb_10_2 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48203;Database=test;UID=root;Password=p@55wOrd;SslMode=none";
+//        public static string MySqlDb_10_3 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48204;Database=test;UID=root;Password=p@55wOrd;SslMode=none";
+//        public static string MySqlDb_10_4 = Environment.GetEnvironmentVariable("MYSQL_CONNECTION") ?? "Server=localhost;Port=48205;Database=test;UID=root;Password=p@55wOrd;SslMode=none";
+//        public static string PostgresDb_9 = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=48301;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
+//        public static string PostgresDb_10 = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=48302;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
+//        public static string PostgresDb_11 = Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? "Server=localhost;Port=48303;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
 //        public static string FirebirdDb_3 = Environment.GetEnvironmentVariable("FIREBIRD_CONNECTION") ?? @"User=SYSDBA;Password=masterkey;Database=/firebird/data/test.gdb;DataSource=localhost;Port=48101;Dialect=3;charset=ISO8859_1;MinPoolSize=0;MaxPoolSize=100;";
 //
 //        public static IOrmLiteDialectProvider DefaultProvider = SqlServerDialect.Provider;

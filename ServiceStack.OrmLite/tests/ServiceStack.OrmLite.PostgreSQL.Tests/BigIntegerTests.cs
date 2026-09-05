@@ -36,7 +36,7 @@ public class BigIntegerTests
     public void Can_use_BigInteger_TypeConverter()
     {
         //using var db = OpenDbConnection();
-        var dbFactory = new OrmLiteConnectionFactory("Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200", PostgreSqlDialect.Provider);
+        var dbFactory = new OrmLiteConnectionFactory("Server=localhost;Port=5432;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200", PostgreSqlDialect.Provider);
         PostgreSqlDialect.Provider.RegisterConverter<BigInteger>(new BigIntegerConverter());
         using var db = dbFactory.Open();
 

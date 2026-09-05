@@ -29,8 +29,13 @@ RUN set -eux; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
+RUN mkdir -p /docker-entrypoint-initdb.d
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 1433
 
 USER mssql
 
-CMD ["/opt/mssql/bin/sqlservr"]
+ENTRYPOINT ["/entrypoint.sh"]

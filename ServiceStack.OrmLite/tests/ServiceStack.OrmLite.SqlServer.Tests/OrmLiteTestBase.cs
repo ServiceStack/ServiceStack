@@ -27,7 +27,7 @@ public class OrmLiteTestBase
 
     public static string GetConnectionString() =>
         Environment.GetEnvironmentVariable("MSSQL_CONNECTION")
-        ?? "Server=localhost;Database=test;User Id=test;Password=test;MultipleActiveResultSets=True;";
+        ?? "Server=localhost;Database=test;User Id=test;Password=p@55wOrd;MultipleActiveResultSets=True;";
     public virtual IDbConnection OpenDbConnection(string connString = null, IOrmLiteDialectProvider dialectProvider = null)
     {
         return CreateDbFactory(connString, dialectProvider).OpenDbConnection();

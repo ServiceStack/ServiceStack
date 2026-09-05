@@ -29,7 +29,7 @@ public class LargeColumnBenchmark
     {
         dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
         dbFactory.RegisterConnection("pgsql", 
-            "Server=localhost;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+            "Server=localhost;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
             PostgreSqlDialect.Provider);
         dbFactory.RegisterConnection("mssql", 
             "Server=localhost;Database=test;User Id=sa;Password=p@55wOrd;MultipleActiveResultSets=True;TrustServerCertificate=True;",

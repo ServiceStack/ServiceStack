@@ -15,7 +15,7 @@ namespace ServiceStack.OrmLite.PostgreSQL.Tests
         public void Can_use_xml_in_postgresql()
         {
             OrmLiteUtils.PrintSql();
-            var dbFactory = new OrmLiteConnectionFactory("Server=192.168.1.8;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200", PostgreSqlDialect.Provider);
+            var dbFactory = new OrmLiteConnectionFactory("Server=192.168.1.8;Port=5432;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200", PostgreSqlDialect.Provider);
             using (var db = dbFactory.OpenDbConnection())
             {
                 db.DropAndCreateTable<XmlTest>();

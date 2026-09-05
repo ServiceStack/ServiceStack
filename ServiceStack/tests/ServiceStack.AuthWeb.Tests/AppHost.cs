@@ -67,7 +67,7 @@ namespace ServiceStack.AuthWeb.Tests
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(
                     Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ??
-                    "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+                    "Server=localhost;Port=5432;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
                     PostgreSqlDialect.Provider)
                 {
                     ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)

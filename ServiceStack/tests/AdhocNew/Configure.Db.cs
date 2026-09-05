@@ -16,7 +16,7 @@ public class ConfigureDb : IHostingStartup
     public void Configure(IWebHostBuilder builder) => builder
         .ConfigureServices((context, services) => {
             var connectionString = context.Configuration.GetConnectionString("DefaultConnection")
-                ?? "Server=test;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
+                ?? "Server=test;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200";
             
             services.AddOrmLite(options => options.UsePostgres(connectionString, dialect => {
                     // dialect.NamingStrategy = new OrmLiteNamingStrategyBase();

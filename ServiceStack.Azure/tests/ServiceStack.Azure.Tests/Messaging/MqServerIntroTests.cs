@@ -456,6 +456,6 @@ namespace ServiceStack.Azure.Tests.Messaging
         public const string AbsoluteBaseUri = ServiceStackBaseUri + "/";
         public const string ListeningOn = ServiceStackBaseUri + "/";
 
-        public static string SqlServerBuildDb = "Server=localhost;Database=test;User Id=test;Password=test;";
+        public static string SqlServerBuildDb = "Server=localhost;Database=test;User Id=test;Password=p@55wOrd;";
     }
 }

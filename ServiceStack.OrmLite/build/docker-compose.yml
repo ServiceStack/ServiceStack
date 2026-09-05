@@ -65,7 +65,7 @@ services:
         condition: service_healthy
     environment:
       ORMLITE_DIALECT: PostgreSQL
-      POSTGRES_CONNECTION: Host=postgres;Port=5432;Database=test;User ID=test;Password=test;
+      POSTGRES_CONNECTION: Host=postgres;Port=5432;Database=test;User ID=test;Password=p@55wOrd;
       SERVICESTACK_LICENSE: 
     volumes:
       - ../../:/servicestack

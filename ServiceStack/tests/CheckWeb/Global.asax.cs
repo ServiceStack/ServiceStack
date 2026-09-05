@@ -159,7 +159,7 @@ namespace CheckWeb
 //            container.Register<IDbConnectionFactory>(
 //                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 //            //container.Register<IDbConnectionFactory>(
-//            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;", SqlServerDialect.Provider));
+//            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=p@55wOrd;", SqlServerDialect.Provider));
 //
 //            using (var db = container.Resolve<IDbConnectionFactory>().Open())
 //            {
@@ -187,7 +187,7 @@ namespace CheckWeb
 //            var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
 //            dbFactory.RegisterConnection("SqlServer",
 //                new OrmLiteConnectionFactory(
-//                    "Server=localhost;Database=test;User Id=test;Password=test;",
+//                    "Server=localhost;Database=test;User Id=test;Password=p@55wOrd;",
 //                    SqlServerDialect.Provider)
 //                {
 //                    ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
@@ -196,7 +196,7 @@ namespace CheckWeb
 //            dbFactory.RegisterConnection("pgsql",
 //                new OrmLiteConnectionFactory(
 //                    Environment.GetEnvironmentVariable("PGSQL_CONNECTION") ?? 
-//                    "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
+//                    "Server=localhost;Port=5432;User Id=test;Password=p@55wOrd;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
 //                    PostgreSqlDialect.Provider));
 //
 //            using (var db = dbFactory.OpenDbConnection("pgsql"))
