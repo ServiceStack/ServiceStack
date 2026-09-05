@@ -1,3 +1,4 @@
+# SQLite FTS5 is supplied by the application's SQLite runtime, not a Docker service.
 services:
   # Redis - Used across ServiceStack.Redis, ServiceStack.Common, OrmLite, Auth, Cache & Session tests
   redis:
@@ -11,7 +12,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # PostgreSQL - Used in OrmLite, WebHost Endpoints, Benchmarks, NuGet Pack tests
+  # PostgreSQL - Native full-text search is built into PostgreSQL
   postgres:
     image: postgres:17
     container_name: servicestack-postgres
@@ -26,32 +27,38 @@ services:
       - ./data/postgres-init:/docker-entrypoint-initdb.d:ro
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d test"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d test && psql -U postgres -d test -tAc \"SELECT to_tsvector('simple','full text search') @@ to_tsquery('simple','full & text')\" | grep -q t"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  # Microsoft SQL Server 2025 - Used in OrmLite, WebHost Endpoints, Benchmarks, NuGet Pack tests
+  # Microsoft SQL Server 2025 with the optional Full-Text Search package
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2025-latest
+    image: servicestack/sqlserver-fts:2025
+    build:
+      context: ./docker/sqlserver-fts
+      args:
+        UBUNTU_VERSION: "24.04"
+        MSSQL_REPO_FLAVOR: mssql-server-2025
+        INSTALL_FTS: "true"
     container_name: servicestack-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: "p@55wOrd"
+      MSSQL_SA_PASSWORD: "p@55wOrd"
       MSSQL_PID: "Developer"
     ports:
       - "48501:1433"
       - "1433:1433"
     healthcheck:
       test: >-
-        /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "p@55wOrd" -C -Q "SELECT 1" ||
-        /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "p@55wOrd" -Q "SELECT 1"
+        /opt/mssql-tools18/bin/sqlcmd -b -S localhost -U sa -P "p@55wOrd" -C
+        -Q "SET NOCOUNT ON; SELECT 1 / COALESCE(CONVERT(int,FULLTEXTSERVICEPROPERTY('IsFullTextInstalled')),0)"
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 15s
 
-  # MariaDB / MySQL - Used in OrmLite MySql integration tests & benchmarks
+  # MariaDB / MySQL - InnoDB full-text search is built into MariaDB
   mysql:
     image: mariadb:latest
     container_name: servicestack-mysql
@@ -63,8 +70,10 @@ services:
     ports:
       - "48205:3306"
       - "3306:3306"
+    volumes:
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "--password=p@55wOrd"]
+      test: ["CMD-SHELL", "mariadb -N -s -h localhost -u root --password=p@55wOrd information_schema -e \"SELECT COUNT(*) FROM statistics WHERE table_schema='test' AND table_name='fts_health' AND index_name='ix_fts_health_content' AND index_type='FULLTEXT'\" | grep -qx 1"]
       interval: 5s
       timeout: 5s
       retries: 10
