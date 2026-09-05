@@ -52,6 +52,14 @@ services:
       - "1433:1433"
     volumes:
       - ./docker/sqlserver-init:/docker-entrypoint-initdb.d:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4G
+        reservations:
+          cpus: "2"
+          memory: 2G
     healthcheck:
       test: >-
         /opt/mssql-tools18/bin/sqlcmd -b -S localhost -U sa -P "p@55wOrd" -C
