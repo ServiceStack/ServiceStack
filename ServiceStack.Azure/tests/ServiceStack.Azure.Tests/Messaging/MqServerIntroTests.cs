@@ -116,7 +116,7 @@ namespace ServiceStack.Azure.Tests.Messaging
                     FirstName = "First",
                     LastName = "Last",
                     DisplayName = "Display",
-                }, "p@55word");
+                }, "p@55wOrd");
             }
 
             container.Register(c => createMqServerFn());
@@ -301,7 +301,7 @@ namespace ServiceStack.Azure.Tests.Messaging
                 var response = client.Post(new Authenticate
                 {
                     UserName = "mythz",
-                    Password = "p@55word"
+                    Password = "p@55wOrd"
                 });
 
                 var sessionId = response.SessionId;

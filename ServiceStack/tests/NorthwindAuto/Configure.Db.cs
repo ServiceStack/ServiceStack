@@ -28,15 +28,15 @@ public class ConfigureDb : IHostingStartup
 #if PGSQL            
             .AddPostgres(
                 "northwind", 
-                "Host=localhost;Port=5432;Database=northwind;Username=northwind;Password=northwind;Include Error Detail=true;")
+                "Host=localhost;Port=5432;Database=northwind;Username=northwind;Password=p@55wOrd;Include Error Detail=true;")
 #elif MYSQL
             .AddMySql(
                 "northwind", 
-                "Server=db;Database=northwind;UID=northwind;Password=northwind;SslMode=Required;AllowLoadLocalInfile=true;Convert Zero Datetime=True")
+                "Server=localhost;Database=northwind;UID=northwind;Password=p@55wOrd;SslMode=Required;AllowLoadLocalInfile=true;Convert Zero Datetime=True")
 #elif MSSQL
             .AddSqlServer(
                 "northwind", 
-                "Server=db;Database=northwind;User Id=northwind;Password=p@55wOrd;MultipleActiveResultSets=True;TrustServerCertificate=True;")
+                "Server=localhost;Database=northwind;User Id=northwind;Password=p@55wOrd;MultipleActiveResultSets=True;TrustServerCertificate=True;")
 #endif
             ;
             

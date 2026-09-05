@@ -403,7 +403,7 @@ public class AuthTests
     protected virtual string WebHostUrl => "http://mydomain.com";
 
     public const string UserName = "user";
-    public const string Password = "p@55word";
+    public const string Password = "p@55wOrd";
     public const string UserNameWithSessionRedirect = "user2";
     public const string PasswordForSessionRedirect = "p@55word2";
     public const string SessionRedirectUrl = "specialLandingPage.html";
@@ -533,7 +533,7 @@ public class AuthTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 RememberMe = true,
             });
 
@@ -681,7 +681,7 @@ public class AuthTests
         {
             provider = CredentialsAuthProvider.Name,
             UserName = "user",
-            Password = "p@55word",
+            Password = "p@55wOrd",
         });
         var cookies = client.GetCookieValues();
         Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-id"]));
@@ -691,7 +691,7 @@ public class AuthTests
         {
             provider = CredentialsAuthProvider.Name,
             UserName = "user",
-            Password = "p@55word",
+            Password = "p@55wOrd",
             RememberMe = true,
         });
         cookies = client.GetCookieValues();
@@ -706,7 +706,7 @@ public class AuthTests
         {
             provider = CredentialsAuthProvider.Name,
             UserName = "user",
-            Password = "p@55word",
+            Password = "p@55wOrd",
         });
         var cookies = client.GetCookieValues();
         Assert.That(authResponse.SessionId, Is.EqualTo(cookies["ss-id"]));
@@ -716,7 +716,7 @@ public class AuthTests
         {
             provider = CredentialsAuthProvider.Name,
             UserName = "user",
-            Password = "p@55word",
+            Password = "p@55wOrd",
             RememberMe = true,
         });
         cookies = client.GetCookieValues();
@@ -734,7 +734,7 @@ public class AuthTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 RememberMe = true,
             });
 
@@ -759,7 +759,7 @@ public class AuthTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 RememberMe = true,
             });
 
@@ -788,7 +788,7 @@ public class AuthTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 RememberMe = true,
             });
 
@@ -1020,7 +1020,7 @@ public class AuthTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 RememberMe = true,
             });
 
@@ -1052,7 +1052,7 @@ public class AuthTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 RememberMe = true,
             });
 
@@ -1077,7 +1077,7 @@ public class AuthTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 RememberMe = true,
             });
 
@@ -1496,7 +1496,7 @@ public class AuthTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 RememberMe = true,
             });
 

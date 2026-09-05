@@ -42,7 +42,7 @@ public class EncryptedMessagesAppHost : AppSelfHostBase
         var authRepo = container.Resolve<IAuthRepository>();
             
         var userAuth = authRepo.CreateUserAuth(
-            new UserAuth { Email = "test@gmail.com" }, "p@55word");
+            new UserAuth { Email = "test@gmail.com" }, "p@55wOrd");
 
         var apiKeys = apiKeyAuth.GenerateNewApiKeys(userAuth.Id.ToString(), "live");
         var apiKeyRepo = (IManageApiKeys) authRepo;
@@ -166,7 +166,7 @@ public abstract class EncryptedMessagesTests
             {
                 provider = CredentialsAuthProvider.Name,
                 UserName = "test@gmail.com",
-                Password = "p@55word",
+                Password = "p@55wOrd",
             });
 
             var encryptedClientCookies = client.GetCookieValues();
@@ -200,7 +200,7 @@ public abstract class EncryptedMessagesTests
         {
             provider = CredentialsAuthProvider.Name,
             UserName = "test@gmail.com",
-            Password = "p@55word",
+            Password = "p@55wOrd",
         });
 
         var encryptedClientCookies = client.GetCookieValues();
@@ -234,7 +234,7 @@ public abstract class EncryptedMessagesTests
         {
             provider = CredentialsAuthProvider.Name,
             UserName = "test@gmail.com",
-            Password = "p@55word",
+            Password = "p@55wOrd",
         });
 
         client.SetCookie("ss-id", authResponse.SessionId);
@@ -251,7 +251,7 @@ public abstract class EncryptedMessagesTests
         {
             provider = CredentialsAuthProvider.Name,
             UserName = "test@gmail.com",
-            Password = "p@55word",
+            Password = "p@55wOrd",
             RememberMe = true,
         });
 

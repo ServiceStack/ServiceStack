@@ -155,7 +155,7 @@ public class CustomAuthenticationPlugin : IPlugin
 
             // TODO: get DI working
             // TODO: Use PasswordList.SystemPass in production
-            var isAuth = password == "p@55word";
+            var isAuth = password == "p@55wOrd";
             if (!isAuth)
             {
                 // throw new UnauthorizedAccessException();

@@ -230,7 +230,7 @@ public class JwtAuthProviderHS256HttpClientTests : JwtAuthProviderHS256Tests
 public abstract class JwtAuthProviderTests
 {
     public const string Username = "mythz";
-    public const string Password = "p@55word";
+    public const string Password = "p@55wOrd";
 
     class AppHost() : AppSelfHostBase(nameof(JwtAuthProviderTests), typeof(JwtServices).Assembly)
     {
@@ -704,7 +704,7 @@ public abstract class JwtAuthProviderTests
 public class JwtAuthProviderIntegrationTests
 {
     public const string Username = "mythz";
-    public const string Password = "p@55word";
+    public const string Password = "p@55wOrd";
     private static readonly byte[] AuthKey = AesUtils.CreateKey();
 
     private readonly ServiceStackHost appHost;
@@ -811,7 +811,7 @@ public class JwtAuthProviderIntegrationTests
 public class JwtAuthProviderTokenCookieTests
 {
     public const string Username = "ss-reftok";
-    public const string Password = "p@55word";
+    public const string Password = "p@55wOrd";
     private static readonly byte[] AuthKey = AesUtils.CreateKey();
 
     private readonly ServiceStackHost appHost;

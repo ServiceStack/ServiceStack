@@ -231,7 +231,7 @@ public class JwtAuthProviderHS256HttpClientNoCookiesTests : JwtAuthProviderHS256
 public abstract class JwtAuthProviderNoCookiesTests
 {
     public const string Username = "cookieless";
-    public const string Password = "p@55word";
+    public const string Password = "p@55wOrd";
 
     class AppHost() : AppSelfHostBase(nameof(JwtAuthProviderTests), typeof(JwtServices).Assembly)
     {
@@ -660,7 +660,7 @@ public abstract class JwtAuthProviderNoCookiesTests
 public class JwtAuthProviderIntegrationNoCookiesTests
 {
     public const string Username = "cookieless";
-    public const string Password = "p@55word";
+    public const string Password = "p@55wOrd";
     private static readonly byte[] AuthKey = AesUtils.CreateKey();
 
     private readonly ServiceStackHost appHost;

@@ -14,7 +14,7 @@ public class JwtAuthProviderRsa256ReaderTests
     readonly string publicKeyXml;
 
     public const string Username = "rsa256reader";
-    public const string Password = "p@55word";
+    public const string Password = "p@55wOrd";
     private readonly ServiceStackHost appHost;
     class AppHost : AppSelfHostBase
     {

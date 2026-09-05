@@ -332,7 +332,7 @@ namespace ServiceStack.Server.Tests.Auth
                 })
             }
             .Init()
-            .Start("http://*:2337/");
+            .Start(ListeningOn);
         }
 
         [OneTimeTearDown]
@@ -471,7 +471,7 @@ namespace ServiceStack.Server.Tests.Auth
                 })
             }
             .Init()
-            .Start("http://*:2337/");
+            .Start(ListeningOn);
         }
 
         [OneTimeTearDown]
@@ -725,7 +725,7 @@ namespace ServiceStack.Server.Tests.Auth
                 response = client.Post(new Register
                 {
                     UserName = "user",
-                    Password = "p@55word",
+                    Password = "p@55wOrd",
                     Email = "as@if{0}.com",
                     DisplayName = "DisplayName",
                     FirstName = "FirstName",
@@ -748,7 +748,7 @@ namespace ServiceStack.Server.Tests.Auth
             response = client.Post(new Register
             {
                 UserName = "user2",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 Email = "as2@if{0}.com",
                 DisplayName = "DisplayName2",
                 FirstName = "FirstName2",
@@ -782,7 +782,7 @@ namespace ServiceStack.Server.Tests.Auth
         }
 
         public const string Username = "user";
-        public const string Password = "p@55word";
+        public const string Password = "p@55wOrd";
 
         protected virtual IJsonServiceClient GetClientWithUserPassword(bool alwaysSend = false, string userName = null)
         {

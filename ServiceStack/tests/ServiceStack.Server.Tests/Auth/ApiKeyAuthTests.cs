@@ -81,7 +81,7 @@ namespace ServiceStack.Server.Tests.Auth
 
         public const string ListeningOn = "http://localhost:2337/";
         public const string Username = "user";
-        public const string Password = "p@55word";
+        public const string Password = "p@55wOrd";
         private ServiceStackHost appHost;
         protected IManageApiKeys apiRepo;
         private string userId;
@@ -94,7 +94,7 @@ namespace ServiceStack.Server.Tests.Auth
             //System.Diagnostics.Debugger.Break();
             appHost = new AppHost()
                .Init()
-               .Start("http://*:2337/");
+               .Start(ListeningOn);
 
             var client = new JsonServiceClient(ListeningOn);
             var response = client.Post(new Register

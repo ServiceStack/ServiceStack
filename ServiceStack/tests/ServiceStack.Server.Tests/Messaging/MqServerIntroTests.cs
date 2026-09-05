@@ -196,7 +196,7 @@ namespace ServiceStack.Server.Tests.Messaging
                 FirstName = "First",
                 LastName = "Last",
                 DisplayName = "Display",
-            }, "p@55word");
+            }, "p@55wOrd");
 
             mqServer = createMqServerFn();
             container.Register(mqServer);
@@ -401,7 +401,7 @@ namespace ServiceStack.Server.Tests.Messaging
             {
                 provider = "credentials",
                 UserName = "mythz",
-                Password = "p@55word"
+                Password = "p@55wOrd"
             });
 
             var sessionId = response.SessionId ?? client.GetSessionId();
@@ -432,7 +432,7 @@ namespace ServiceStack.Server.Tests.Messaging
             {
                 provider = "credentials",
                 UserName = "mythz",
-                Password = "p@55word"
+                Password = "p@55wOrd"
             });
 
             using var mqClient = appHost.Resolve<IMessageService>().CreateMessageQueueClient();

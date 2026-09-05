@@ -133,7 +133,7 @@ namespace ServiceStack.Common.Tests.OAuth
             RegisterDto = new Register
             {
                 UserName = "UserName",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 Email = "as@if.com",
                 DisplayName = "DisplayName",
                 FirstName = "FirstName",

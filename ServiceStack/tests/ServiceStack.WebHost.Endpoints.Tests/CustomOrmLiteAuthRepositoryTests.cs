@@ -144,7 +144,7 @@ public class CustomOrmLiteAuthRepositoryTests
                 FirstName = "Admin",
                 LastName = "User",
                 Roles = new List<string> { RoleNames.Admin }
-            }, "p@55w0rd");
+            }, "p@55wOrd");
 
             userAuth = authRepo.GetUserAuth(userAuth.Id.ToString());
             Assert.That(userAuth, Is.Not.Null);
@@ -201,7 +201,7 @@ public class CustomOrmLiteAuthRepositoryTests
         {
             provider = "credentials",
             UserName = "admin",
-            Password = "p@55w0rd",
+            Password = "p@55wOrd",
             RememberMe = true
         });
 

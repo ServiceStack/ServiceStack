@@ -23,7 +23,7 @@ namespace ServiceStack.Extensions.Tests.Protoc
     {
         public static readonly byte[] AuthKey = AesUtils.CreateKey();
         public const string Username = "mythz";
-        public const string Password = "p@55word";
+        public const string Password = "p@55wOrd";
 
         private static IManageApiKeys apiRepo;
         private const string userId = "1";

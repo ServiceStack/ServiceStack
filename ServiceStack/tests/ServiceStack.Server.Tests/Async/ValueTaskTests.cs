@@ -41,7 +41,7 @@ namespace ServiceStack.Server.Tests.Async
 
         public const string ListeningOn = "http://localhost:20000/";
         public const string Username = "user";
-        public const string Password = "p@55word";
+        public const string Password = "p@55wOrd";
         private ServiceStackHost appHost;
         private string userId;
         private ApiKey liveKey;

@@ -90,7 +90,7 @@ namespace ServiceStack.Redis.Tests
             {
                 Host = "host",
                 Port = 1,
-                Password = "p@55W0rd="
+                Password = "p@55wOrd="
             };
 
             var connString = config.ToString();

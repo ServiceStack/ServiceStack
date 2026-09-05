@@ -136,7 +136,7 @@ public class ThrowsInFilterService : Service
 public abstract class RequestFiltersTests
 {
     private const string AllowedUser = "user";
-    private const string AllowedPass = "p@55word";
+    private const string AllowedPass = "p@55wOrd";
 
     public class RequestFiltersAppHostHttpListener
         : AppHostHttpListenerBase

@@ -57,7 +57,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var response = appHost.ExecuteService(new Register
             {
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 Email = email,
                 DisplayName = "DisplayName",
                 FirstName = "FirstName",
@@ -122,7 +122,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var response = appHost.ExecuteService(new Authenticate
             {
                 UserName = "as@if.com",
-                Password = "p@55word"
+                Password = "p@55wOrd"
             });
 
             var httpError = (HttpError)response;

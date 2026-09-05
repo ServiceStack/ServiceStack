@@ -19,20 +19,20 @@ namespace ServiceStack.Server.Tests.Auth
         protected ServiceStackHost appHost;
         protected string ApiKey;
         public const string Username = "user";
-        public const string Password = "p@55word";
+        public const string Password = "p@55wOrd";
 
         [OneTimeSetUp]
         public virtual void OneTimeSetUp()
         {
             appHost = CreateAppHost()
                .Init()
-               .Start("http://*:2337/");
+               .Start(ListeningOn);
 
             var client = GetClient();
             var response = client.Post(new Register
             {
                 UserName = "user",
-                Password = "p@55word",
+                Password = "p@55wOrd",
                 Email = "as@if{0}.com",
                 DisplayName = "DisplayName",
                 FirstName = "FirstName",
