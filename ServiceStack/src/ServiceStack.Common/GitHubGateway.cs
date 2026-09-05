@@ -250,18 +250,25 @@ public class GitHubGateway : IGistGateway, IGitHubGateway
 
         do
         {
-            results = nextUrl.GetJsonFromUrl(ApplyRequestFilters,
+            var url = nextUrl;
+            nextUrl = null;
+            var json = GetJsonFilter != null
+                ? GetJsonFilter(url)
+                : url.GetJsonFromUrl(ApplyRequestFilters,
                     responseFilter: res => {
                         var links = ParseLinkUrls(res.GetHeader("Link"));
                         links.TryGetValue("next", out nextUrl);
-                    })
-                .FromJson<List<T>>();
+                    });
 
-            foreach (var result in results)
+            results = json?.FromJson<List<T>>();
+            if (results != null)
             {
-                yield return result;
+                foreach (var result in results)
+                {
+                    yield return result;
+                }
             }
-        } while (results.Count > 0 && nextUrl != null);
+        } while (results?.Count > 0 && nextUrl != null);
     }
 
     public virtual async Task<List<T>> GetJsonCollectionAsync<T>(string route)
@@ -272,15 +279,22 @@ public class GitHubGateway : IGistGateway, IGitHubGateway
 
         do
         {
-            results = (await nextUrl.GetJsonFromUrlAsync(ApplyRequestFilters,
+            var url = nextUrl;
+            nextUrl = null;
+            var json = GetJsonFilter != null
+                ? GetJsonFilter(url)
+                : await url.GetJsonFromUrlAsync(ApplyRequestFilters,
                     responseFilter: res => {
                         var links = ParseLinkUrls(res.GetHeader("Link"));
                         links.TryGetValue("next", out nextUrl);
-                    }).ConfigAwait())
-                .FromJson<List<T>>();
+                    }).ConfigAwait();
 
-            to.AddRange(results);
-        } while (results.Count > 0 && nextUrl != null);
+            results = json?.FromJson<List<T>>();
+            if (results != null)
+            {
+                to.AddRange(results);
+            }
+        } while (results?.Count > 0 && nextUrl != null);
 
         return to;
     }
@@ -531,9 +545,7 @@ public class GitHubGateway : IGistGateway, IGitHubGateway
 
         if (!string.IsNullOrEmpty(description))
         {
-            if (i++ > 0)
-                sb.Append(",");
-            sb.Append("\"description\":").Append(description.ToJson());
+            sb.Append(",\"description\":").Append(description.ToJson());
         }
         sb.Append("}");
                 
@@ -801,18 +813,26 @@ public class GistLink
                 endName.SplitOnFirst('(', out _, out var startUrl);
                 startUrl.SplitOnFirst(')', out var url, out var endUrl);
 
-                var afterModifiers = endUrl.ParseJsToken(out var token);
-                    
+                var trimmedEnd = endUrl.TrimStart();
+                ReadOnlySpan<char> afterModifiers;
                 var modifiers = new Dictionary<string, object>();
-                if (token is JsObjectExpression obj)
+                if (trimmedEnd.StartsWith("{"))
                 {
-                    foreach (var jsProperty in obj.Properties)
+                    afterModifiers = trimmedEnd.ParseJsToken(out var token);
+                    if (token is JsObjectExpression obj)
                     {
-                        if (jsProperty.Key is JsIdentifier id)
+                        foreach (var jsProperty in obj.Properties)
                         {
-                            modifiers[id.Name] = (jsProperty.Value as JsLiteral)?.Value;
+                            if (jsProperty.Key is JsIdentifier id)
+                            {
+                                modifiers[id.Name] = (jsProperty.Value as JsLiteral)?.Value;
+                            }
                         }
                     }
+                }
+                else
+                {
+                    afterModifiers = trimmedEnd;
                 }
 
                 var toPath = modifiers.TryGetValue("to", out var oValue)
@@ -832,17 +852,28 @@ public class GistLink
                     }
                 }
 
-                if (name == null || url == null)
+                if (name.IsEmpty || url.IsEmpty)
                     continue;
+
+                var urlStr = url.ToString();
+                string defaultUser = null;
+                if (urlStr.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    defaultUser = urlStr.Substring("https://".Length).RightPart('/').LeftPart('/');
+                }
+                else if (urlStr.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                {
+                    defaultUser = urlStr.Substring("http://".Length).RightPart('/').LeftPart('/');
+                }
 
                 var link = new GistLink
                 {
                     Name = name.ToString(),
-                    Url = url.ToString(),
+                    Url = urlStr,
                     Modifiers = modifiers,
                     To = toPath,
                     Description = afterModifiers.Trim().ToString(),
-                    User = url.Substring("https://".Length).RightPart('/').LeftPart('/'),
+                    User = defaultUser,
                     Tags = tags?.Split(',').Map(x => x.Trim()).ToArray(),
                 };
 
@@ -870,6 +901,9 @@ public class GistLink
     {
         gistId = user = repo = null;
 
+        if (string.IsNullOrEmpty(url))
+            return false;
+
         if (url.StartsWith("https://gist.github.com"))
         {
             gistId = url.LastRightPart('/');
@@ -889,8 +923,11 @@ public class GistLink
 
     public static GistLink Get(List<GistLink> links, string gistAlias)
     {
+        if (links == null || string.IsNullOrEmpty(gistAlias))
+            return null;
+
         var sanitizedAlias = gistAlias.Replace("-", "");
-        var gistLink = links.FirstOrDefault(x => x.Name.Replace("-", "").EqualsIgnoreCase(sanitizedAlias));
+        var gistLink = links.FirstOrDefault(x => x?.Name != null && x.Name.Replace("-", "").EqualsIgnoreCase(sanitizedAlias));
         return gistLink;
     }
 

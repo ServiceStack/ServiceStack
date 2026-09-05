@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.Common;
 using ServiceStack.Data;
@@ -138,7 +138,6 @@ namespace ServiceStack.MiniProfiler.Data
 		//{
 		//    _conn.EnlistTransaction(transaction);
 		//}
-#if !NETCORE
         public override DataTable GetSchema()
         {
             return _conn.GetSchema();
@@ -153,13 +152,26 @@ namespace ServiceStack.MiniProfiler.Data
         {
             return _conn.GetSchema(collectionName, restrictionValues);
         }
-#endif
 
         public override void Open()
         {
             if (_conn.State != ConnectionState.Open)
                 _conn.Open();
         }
+
+        public override System.Threading.Tasks.Task OpenAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            if (_conn.State != ConnectionState.Open)
+                return _conn.OpenAsync(cancellationToken);
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+#if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
+        public override System.Threading.Tasks.Task CloseAsync()
+        {
+            return AutoDisposeConnection ? _conn.CloseAsync() : System.Threading.Tasks.Task.CompletedTask;
+        }
+#endif
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
@@ -183,6 +195,21 @@ namespace ServiceStack.MiniProfiler.Data
             _profiler = null;
             base.Dispose(disposing);
         }
+
+#if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
+        public override async System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            if (_conn != null)
+            {
+                _conn.StateChange -= StateChangeHandler;
+                if (AutoDisposeConnection)
+                    await _conn.DisposeAsync().ConfigureAwait(false);
+            }
+            _conn = null;
+            _profiler = null;
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
+#endif
 
         void StateChangeHandler(object sender, StateChangeEventArgs e)
         {

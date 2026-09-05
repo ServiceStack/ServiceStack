@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -28,6 +28,9 @@ public static class TypeExtensions
 {
     public static Type[] GetReferencedTypes(this Type type)
     {
+        if (type == null)
+            return Type.EmptyTypes;
+
         var refTypes = new HashSet<Type> { type };
 
         AddReferencedTypes(type, refTypes);
@@ -37,6 +40,9 @@ public static class TypeExtensions
 
     public static void AddReferencedTypes(Type type, HashSet<Type> refTypes)
     {
+        if (type == null || refTypes == null)
+            return;
+
         if (type.BaseType != null)
         {
             if (!refTypes.Contains(type.BaseType))
@@ -81,7 +87,7 @@ public static class TypeExtensions
                 if (!refTypes.Contains(p.PropertyType))
                 {
                     refTypes.Add(p.PropertyType);
-                    AddReferencedTypes(type, refTypes);
+                    AddReferencedTypes(p.PropertyType, refTypes);
                 }
 
                 var args = p.PropertyType.GetGenericArguments();
@@ -140,6 +146,8 @@ public static class TypeExtensions
 
     public static ObjectActivator GetActivator(this ConstructorInfo ctor)
     {
+        if (ctor == null) throw new ArgumentNullException(nameof(ctor));
+
         if (activatorCache.TryGetValue(ctor, out var fn))
             return fn;
 
@@ -191,6 +199,7 @@ public static class TypeExtensions
 
     public static MethodInvoker GetInvokerToCache(MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
         if (method.IsStatic)
             throw new NotSupportedException(UseCorrectInvokerErrorMessage(method));
             
@@ -217,6 +226,7 @@ public static class TypeExtensions
 
     public static StaticMethodInvoker GetStaticInvokerToCache(MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
         if (!method.IsStatic || method.ReturnType == typeof(void))
             throw new NotSupportedException(UseCorrectInvokerErrorMessage(method));
             
@@ -239,6 +249,7 @@ public static class TypeExtensions
 
     public static ActionInvoker GetActionInvokerToCache(MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
         if (method.IsStatic || method.ReturnType != typeof(void))
             throw new NotSupportedException(UseCorrectInvokerErrorMessage(method));
 
@@ -262,6 +273,7 @@ public static class TypeExtensions
 
     public static StaticActionInvoker GetStaticActionInvokerToCache(MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
         if (!method.IsStatic || method.ReturnType != typeof(void))
             throw new NotSupportedException(UseCorrectInvokerErrorMessage(method));
 
@@ -286,6 +298,7 @@ public static class TypeExtensions
     /// </summary>
     public static Delegate GetInvokerDelegate(this MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
         if (!method.IsStatic)
         {
             if (method.ReturnType != typeof(void))
@@ -305,6 +318,8 @@ public static class TypeExtensions
     /// </summary>
     public static MethodInvoker GetInvoker(this MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
+
         if (invokerCache.TryGetValue(method, out var fn))
             return fn;
 
@@ -329,6 +344,8 @@ public static class TypeExtensions
     /// </summary>
     public static StaticMethodInvoker GetStaticInvoker(this MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
+
         if (staticInvokerCache.TryGetValue(method, out var fn))
             return fn;
 
@@ -353,6 +370,8 @@ public static class TypeExtensions
     /// </summary>
     public static ActionInvoker GetActionInvoker(this MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
+
         if (actionInvokerCache.TryGetValue(method, out var fn))
             return fn;
 
@@ -377,6 +396,8 @@ public static class TypeExtensions
     /// </summary>
     public static StaticActionInvoker GetStaticActionInvoker(this MethodInfo method)
     {
+        if (method == null) throw new ArgumentNullException(nameof(method));
+
         if (staticActionInvokerCache.TryGetValue(method, out var fn))
             return fn;
 
@@ -412,6 +433,9 @@ public static class TypeExtensions
 
     public static Func<object,object> GetPropertyAccessor(this Type type, PropertyInfo forProperty)
     {
+        if (type == null) throw new ArgumentNullException(nameof(type));
+        if (forProperty == null) throw new ArgumentNullException(nameof(forProperty));
+
         var lambda = CreatePropertyAccessorExpression(type, forProperty);
         var fn = (Func<object,object>)lambda.Compile();
         return fn;
@@ -419,6 +443,9 @@ public static class TypeExtensions
 
     public static LambdaExpression CreatePropertyAccessorExpression(Type type, PropertyInfo forProperty)
     {
+        if (type == null) throw new ArgumentNullException(nameof(type));
+        if (forProperty == null) throw new ArgumentNullException(nameof(forProperty));
+
         var paramInstance = Expression.Parameter(typeof(object), "instance");
 
         var castToType = type.IsValueType
@@ -426,19 +453,24 @@ public static class TypeExtensions
             : Expression.TypeAs(paramInstance, type);
 
         var propExpr = Expression.Property(castToType, forProperty);
+        var returnExpr = propExpr.Type.IsValueType
+            ? (Expression)Expression.Convert(propExpr, typeof(object))
+            : propExpr;
 
         var lambda = Expression.Lambda(typeof(Func<object, object>),
-            propExpr,
+            returnExpr,
             paramInstance);
         return lambda;
     }
         
     public static bool IsRefStruct(this Type type)
     {
+        if (type == null)
+            return false;
 #if NET6_0_OR_GREATER
         return type.IsByRefLike;
 #else
-            return type.Name.Contains("Span");
+        return type.Name.Contains("Span");
 #endif
     }
 }

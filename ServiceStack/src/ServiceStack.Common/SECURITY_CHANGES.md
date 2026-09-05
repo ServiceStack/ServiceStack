@@ -260,4 +260,51 @@ This document details security, robustness, and stability fixes across `ServiceS
 - **Change**:
   - Synchronized `Register` and snapshotted task actions in `Run` using `lock (Tasks)`.
 
+---
+
+## 26. Thread-Safe Idempotent DbDataReader Close & Async Modernization in `ProfiledDbDataReader` & MiniProfiler
+- **Severity**: Medium / Double Free & Resource Lifecycle
+- **Description**:
+  - `ProfiledDbDataReader` executed `profiler.ReaderFinish(this)` and `reader.Close()` non-idempotently. When callers invoked both `.Close()` and `.Dispose()`, reader callbacks fired twice, skewing profiling timings and state.
+  - Async overrides (`ExecuteNonQueryAsync`, `ExecuteScalarAsync`, `ExecuteDbDataReaderAsync`, `ReadAsync`, `OpenAsync`, etc.) delegated to synchronous base DbCommand/DbConnection fallbacks rather than underlying wrapped ADO.NET connection/command async methods.
+- **Change**:
+  - Used `Interlocked.Exchange` to guarantee atomic single execution of `ReaderFinish` and `Close`.
+  - Implemented async overrides in `ProfiledCommand`, `ProfiledConnection`, `ProfiledDbDataReader`, and `ProfiledDbTransaction` with profiling telemetry hooks and modern `IAsyncDisposable`.
+
+---
+
+## 27. Value-Type Expression Tree Boxing Crash & Circular Recursion Bug in `TypeExtensions`
+- **Severity**: High / Expression Execution Failure & Stack Overflow
+- **Description**:
+  - `TypeExtensions.AddReferencedTypes` contained a recursive call `AddReferencedTypes(type, refTypes)` on the parent type itself instead of property type `p.PropertyType`, leading to self-referential infinite loops.
+  - `TypeExtensions.CreatePropertyAccessorExpression` failed to box value-type property access expressions (`int`, `DateTime`, enums, structs) when compiling `Func<object, object>` lambdas, causing runtime `ArgumentException: Expression of type 'X' cannot be used for return type 'System.Object'`.
+- **Change**:
+  - Corrected recursion to inspect `p.PropertyType` and prevent circular loops.
+  - Added boxing conversion `Expression.Convert(propExpr, typeof(object))` for value types in property accessor expression compilation.
+  - Added defensive null checks across all reflector invoker and accessor helpers.
+
+---
+
+## 28. Malformed JSON Serialization & Out-of-Bounds Substring Crash in `GitHubGateway`
+- **Severity**: Medium / API Malformed Payloads & Crash
+- **Description**:
+  - `GitHubGateway.WriteGistFiles` generated malformed JSON `{"files":{}"description":"..."}` missing comma separator when updating gists with description changes and no file changes.
+  - `GistLink.Parse` performed unchecked substring `url.Substring("https://".Length)` without verifying length or protocol scheme, throwing `ArgumentOutOfRangeException` on short or non-HTTPS URLs.
+  - `GistLink.Parse` inadvertently treated backtick-delimited tags on links without `{}` blocks as JS template tokens.
+- **Change**:
+  - Ensured valid JSON separator formatting in `WriteGistFiles`.
+  - Hardened URL scheme handling and backtick modifier parsing in `GistLink.Parse`.
+  - Added defensive null guards in collection iteration and pagination loops.
+
+---
+
+## 29. BCL Compatibility & Task Cancellation Optimization in `UrnId` & `AsyncManualResetEvent`
+- **Severity**: Low / Framework Compatibility & Performance
+- **Description**:
+  - `UrnId` used .NET Core-only `string.Contains(char)`, causing compilation and runtime incompatibilities on .NET Framework 4.7.2.
+  - `TaskExtensions.WaitAsync` allocated manual TaskCompletionSource instances instead of leveraging BCL native `Task.WaitAsync` on .NET 6+.
+- **Change**:
+  - Replaced `string.Contains(char)` with universal `string.IndexOf(char) >= 0`.
+  - Routed `TaskExtensions.WaitAsync` to native BCL `Task.WaitAsync` on modern .NET targets.
+
 

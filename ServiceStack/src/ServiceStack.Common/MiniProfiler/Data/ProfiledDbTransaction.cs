@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Common;
 using System.Data;
 using ServiceStack.Data;
@@ -38,6 +38,29 @@ namespace ServiceStack.MiniProfiler.Data
         {
             trans.Rollback();
         }
+
+#if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
+        public override System.Threading.Tasks.Task CommitAsync(System.Threading.CancellationToken cancellationToken = default)
+        {
+            return trans.CommitAsync(cancellationToken);
+        }
+
+        public override System.Threading.Tasks.Task RollbackAsync(System.Threading.CancellationToken cancellationToken = default)
+        {
+            return trans.RollbackAsync(cancellationToken);
+        }
+
+        public override async System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            if (trans != null)
+            {
+                await trans.DisposeAsync().ConfigureAwait(false);
+            }
+            trans = null;
+            db = null;
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
+#endif
 
         protected override void Dispose(bool disposing)
         {

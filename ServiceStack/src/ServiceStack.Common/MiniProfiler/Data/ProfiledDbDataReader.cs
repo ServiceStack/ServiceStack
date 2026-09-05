@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Common;
 using System.Data;
 
@@ -39,13 +39,52 @@ namespace ServiceStack.MiniProfiler.Data
 
         public override object this[int ordinal] => reader[ordinal];
 
+        private int isClosed;
+
         public override void Close()
         {
             // this can occur when we're not profiling, but we've inherited from ProfiledDbCommand and are returning a
             // an unwrapped reader from the base command
-            reader?.Close();
-            profiler?.ReaderFinish(this);
+            if (System.Threading.Interlocked.Exchange(ref isClosed, 1) == 0)
+            {
+                reader?.Close();
+                profiler?.ReaderFinish(this);
+            }
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Close();
+            }
+            base.Dispose(disposing);
+        }
+
+#if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
+        public override System.Threading.Tasks.Task CloseAsync()
+        {
+            if (System.Threading.Interlocked.Exchange(ref isClosed, 1) == 0)
+            {
+                profiler?.ReaderFinish(this);
+                return reader != null ? reader.CloseAsync() : System.Threading.Tasks.Task.CompletedTask;
+            }
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        public override async System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            if (System.Threading.Interlocked.Exchange(ref isClosed, 1) == 0)
+            {
+                profiler?.ReaderFinish(this);
+                if (reader != null)
+                {
+                    await reader.DisposeAsync().ConfigureAwait(false);
+                }
+            }
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
+#endif
 
         public override bool GetBoolean(int ordinal)
         {
@@ -137,12 +176,10 @@ namespace ServiceStack.MiniProfiler.Data
             return reader.GetOrdinal(name);
         }
 
-#if !NETCORE
         public override DataTable GetSchemaTable()
         {
             return reader.GetSchemaTable();
         }
-#endif
 
         public override string GetString(int ordinal)
         {
@@ -164,14 +201,49 @@ namespace ServiceStack.MiniProfiler.Data
             return reader.IsDBNull(ordinal);
         }
 
+        public override System.Threading.Tasks.Task<bool> IsDBNullAsync(int ordinal, System.Threading.CancellationToken cancellationToken)
+        {
+            return reader.IsDBNullAsync(ordinal, cancellationToken);
+        }
+
         public override bool NextResult()
         {
             return reader.NextResult();
         }
 
+        public override System.Threading.Tasks.Task<bool> NextResultAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            return reader.NextResultAsync(cancellationToken);
+        }
+
         public override bool Read()
         {
             return reader.Read();
+        }
+
+        public override System.Threading.Tasks.Task<bool> ReadAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            return reader.ReadAsync(cancellationToken);
+        }
+
+        public override T GetFieldValue<T>(int ordinal)
+        {
+            return reader.GetFieldValue<T>(ordinal);
+        }
+
+        public override System.Threading.Tasks.Task<T> GetFieldValueAsync<T>(int ordinal, System.Threading.CancellationToken cancellationToken)
+        {
+            return reader.GetFieldValueAsync<T>(ordinal, cancellationToken);
+        }
+
+        public override System.IO.Stream GetStream(int ordinal)
+        {
+            return reader.GetStream(ordinal);
+        }
+
+        public override System.IO.TextReader GetTextReader(int ordinal)
+        {
+            return reader.GetTextReader(ordinal);
         }
     }
 }

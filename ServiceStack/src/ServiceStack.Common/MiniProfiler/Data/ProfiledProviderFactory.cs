@@ -1,4 +1,4 @@
-﻿using System.Data.Common;
+using System.Data.Common;
 
 namespace ServiceStack.MiniProfiler.Data
 {
@@ -55,26 +55,32 @@ namespace ServiceStack.MiniProfiler.Data
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbCommand CreateCommand() => 
-            new ProfiledCommand(WrappedFactory.CreateCommand(), null, Profiler);
+        public override DbCommand CreateCommand()
+        {
+            var cmd = WrappedFactory?.CreateCommand();
+            return cmd != null ? new ProfiledCommand(cmd, null, Profiler) : null;
+        }
 
         /// <summary>
         /// proxy
         /// </summary>
-        public override DbConnection CreateConnection() => 
-            new ProfiledConnection(WrappedFactory.CreateConnection(), Profiler);
+        public override DbConnection CreateConnection()
+        {
+            var conn = WrappedFactory?.CreateConnection();
+            return conn != null ? new ProfiledConnection(conn, Profiler) : null;
+        }
 
         /// <summary>
         /// proxy
         /// </summary>
         public override DbParameter CreateParameter() => 
-            WrappedFactory.CreateParameter();
+            WrappedFactory?.CreateParameter();
 
         /// <summary>
         /// proxy
         /// </summary>
         public override DbConnectionStringBuilder CreateConnectionStringBuilder() => 
-            WrappedFactory.CreateConnectionStringBuilder();
+            WrappedFactory?.CreateConnectionStringBuilder();
 
 #if !NETCORE
         /// <summary>

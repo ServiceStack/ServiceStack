@@ -384,14 +384,20 @@ namespace ServiceStack.AsyncEx
                 return @this;
             if (cancellationToken.IsCancellationRequested)
                 return Task.FromCanceled(cancellationToken);
+#if NET6_0_OR_GREATER
+            return @this.WaitAsync(cancellationToken);
+#else
             return DoWaitAsync(@this, cancellationToken);
+#endif
         }
 
+#if !NET6_0_OR_GREATER
         private static async Task DoWaitAsync(Task task, CancellationToken cancellationToken)
         {
             using (var cancelTaskSource = new CancellationTokenTaskSource<object>(cancellationToken))
                 await (await Task.WhenAny(task, cancelTaskSource.Task).ConfigureAwait(false)).ConfigureAwait(false);
         }
+#endif
 
         /// <summary>
         /// Waits for the task to complete, unwrapping any exceptions.

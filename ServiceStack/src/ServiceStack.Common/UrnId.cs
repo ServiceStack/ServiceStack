@@ -46,10 +46,10 @@ public class UrnId
         if (idFieldValue == null)
             throw new ArgumentNullException(nameof(idFieldValue));
 
-        if (objectTypeName.Contains(FieldSeperator))
+        if (objectTypeName.IndexOf(FieldSeperator) >= 0)
             throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", nameof(objectTypeName));
 
-        if (idFieldValue.Contains(FieldSeperator))
+        if (idFieldValue.IndexOf(FieldSeperator) >= 0)
             throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", nameof(idFieldValue));
 
         return $"urn:{objectTypeName}:{idFieldValue}";
@@ -59,7 +59,7 @@ public class UrnId
     {
         if (objectTypeName == null)
             throw new ArgumentNullException(nameof(objectTypeName));
-        if (objectTypeName.Contains(FieldSeperator))
+        if (objectTypeName.IndexOf(FieldSeperator) >= 0)
             throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", nameof(objectTypeName));
 
         if (keyParts == null || keyParts.Length == 0)
@@ -98,7 +98,7 @@ public class UrnId
         if (idFieldValue == null)
             throw new ArgumentNullException(nameof(idFieldValue));
 
-        if (idFieldValue.Contains(FieldSeperator))
+        if (idFieldValue.IndexOf(FieldSeperator) >= 0)
             throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", nameof(idFieldValue));
 
         return $"urn:{objectType.Name}:{idFieldValue}";
@@ -118,10 +118,10 @@ public class UrnId
         if (idFieldValue == null)
             throw new ArgumentNullException(nameof(idFieldValue));
 
-        if (idFieldValue.Contains(FieldSeperator))
+        if (idFieldValue.IndexOf(FieldSeperator) >= 0)
             throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", nameof(idFieldValue));
 
-        if (idFieldName.Contains(FieldSeperator))
+        if (idFieldName.IndexOf(FieldSeperator) >= 0)
             throw new ArgumentException("idFieldName cannot have the illegal characters: ':'", nameof(idFieldName));
 
         return $"urn:{objectType.Name}:{idFieldName}:{idFieldValue}";

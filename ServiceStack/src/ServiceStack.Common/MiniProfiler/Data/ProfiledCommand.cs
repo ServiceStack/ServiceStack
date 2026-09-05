@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Common;
 using System.Data;
 using ServiceStack.Data;
@@ -129,6 +129,32 @@ namespace ServiceStack.MiniProfiler.Data
             return result;
         }
 
+        protected override async System.Threading.Tasks.Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken)
+        {
+            if (_profiler == null || !_profiler.IsActive)
+            {
+                return await _cmd.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
+            }
+
+            DbDataReader result = null;
+            _profiler.ExecuteStart(this, ExecuteType.Reader);
+            try
+            {
+                result = await _cmd.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
+                result = new ProfiledDbDataReader(result, _conn, _profiler);
+            }
+            catch (Exception e)
+            {
+                _profiler.OnError(this, ExecuteType.Reader, e);
+                throw;
+            }
+            finally
+            {
+                _profiler.ExecuteFinish(this, ExecuteType.Reader, result);
+            }
+            return result;
+        }
+
         public override int ExecuteNonQuery()
         {
             if (_profiler == null || !_profiler.IsActive)
@@ -142,6 +168,32 @@ namespace ServiceStack.MiniProfiler.Data
             try
             {
                 result = _cmd.ExecuteNonQuery();
+            }
+            catch (Exception e)
+            {
+                _profiler.OnError(this, ExecuteType.NonQuery, e);
+                throw;
+            }
+            finally
+            {
+                _profiler.ExecuteFinish(this, ExecuteType.NonQuery, null);
+            }
+            return result;
+        }
+
+        public override async System.Threading.Tasks.Task<int> ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            if (_profiler == null || !_profiler.IsActive)
+            {
+                return await _cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            int result;
+
+            _profiler.ExecuteStart(this, ExecuteType.NonQuery);
+            try
+            {
+                result = await _cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -180,6 +232,31 @@ namespace ServiceStack.MiniProfiler.Data
             return result;
         }
 
+        public override async System.Threading.Tasks.Task<object> ExecuteScalarAsync(System.Threading.CancellationToken cancellationToken)
+        {
+            if (_profiler == null || !_profiler.IsActive)
+            {
+                return await _cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            object result;
+            _profiler.ExecuteStart(this, ExecuteType.Scalar);
+            try
+            {
+                result = await _cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                _profiler.OnError(this, ExecuteType.Scalar, e);
+                throw;
+            }
+            finally
+            {
+                _profiler.ExecuteFinish(this, ExecuteType.Scalar, null);
+            }
+            return result;
+        }
+
         public override void Cancel()
         {
             _cmd.Cancel();
@@ -204,6 +281,18 @@ namespace ServiceStack.MiniProfiler.Data
             _cmd = null;
             base.Dispose(disposing);
         }
+
+#if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
+        public override async System.Threading.Tasks.ValueTask DisposeAsync()
+        {
+            if (_cmd != null)
+            {
+                await _cmd.DisposeAsync().ConfigureAwait(false);
+            }
+            _cmd = null;
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
+#endif
     }
 }
 
